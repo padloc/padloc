@@ -1,0 +1,21 @@
+{
+  "name": "safe",
+  "version": "0.0.0",
+  "homepage": "https://github.com/MaKleSoft/safe",
+  "authors": [
+    "Martin Kleinschrodt <martin@maklesoft.com>"
+  ],
+  "main": "index.html",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "~0.0.20131107"
+  },
+  "private": true
+}

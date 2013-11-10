@@ -1,0 +1,46 @@
+<polymer-element name="safe-record-view" attributes="record">
+    <template>
+        <style>
+            .header {
+                padding: 10px;
+                font-weight: bold;
+                border-bottom: solid 2px;
+            }
+
+            .field {
+                /*padding: 10px;*/
+            }
+
+            .field:not(:last-child) {
+                border-bottom: solid 1px;
+            }
+
+            .label {
+                font-size: 12px;
+                color: #bbb;
+                padding: 5px 10px;
+            }
+
+            .value {
+                padding: 0 10px 10px 10px;
+            }
+        </style>
+        <div class="header">
+            <button on-click="{{ back }}">back</button>
+            {{ record.name }}
+        </div>
+        <template repeat="{{ field, i in record.fields }}">
+            <div class="field">
+                <div class="label">{{ field.name }}</div>
+                <div class="value">{{ field.value }}</div>
+            </div>
+        </template>
+    </template>
+    <script>
+        Polymer('safe-record-view', {
+            back: function() {
+                this.fire("back");
+            }
+        });
+    </script>
+</polymer-element>

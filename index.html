@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- 1. Load Polymer before any code that touches the DOM. -->
+        <!-- // <script src="../../polymer/polymer.js"></script> -->
+        <script src="bower_components/polymer/polymer.min.js"></script>
+        <script src="lib/sjcl.js"></script>
+        <script src="src/safe.js"></script>
+        <script src="src/crypto.js"></script>
+        <script src="src/model.js"></script>
+        <!-- 2. Load a component -->
+        <link rel="import" href="src/components/app.html">
+        <link rel="import" href="src/components/record-item.html">
+        <link rel="import" href="src/components/record-view.html">
+        <style>
+            body {
+                padding: 0;
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- 3. Declare the component by its tag. -->
+        <safe-app></safe-app>
+    </body>
+</html>

@@ -1,0 +1,25 @@
+<polymer-element name="safe-record-item" attributes="record index" constructor="RecordItem">
+    <template>
+        <style>
+            :host {
+                display: block;
+                padding: 10px;
+            }
+
+            :host:not(:last-child) {
+                border-bottom: solid 1px;
+            }
+
+            :host:active:hover {
+                background: rgba(0, 0, 0, 0.3);
+            }
+        </style>
+        {{record.name}}
+    </template>
+    <script>
+        Polymer('safe-record-item', {
+            ready: function() {
+            }
+        });
+    </script>
+</polymer-element>

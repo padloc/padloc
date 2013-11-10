@@ -1,0 +1,196 @@
+<polymer-element name="safe-app">
+    <template>
+        <style>
+            :host {
+                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                top: 0;
+                margin: auto;
+            }
+
+            .view {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                margin: auto;
+            }
+        </style>
+        <div class="view" id="list">
+            <input value="{{ filterString }}" placeholder="type to filter..."></input>
+            <template repeat="{{ record, i in filteredRecords}}">
+                <safe-record-item record="{{ record }}" on-click="{{ recordClicked }}" index="{{ i }}"></safe-record-item>
+            </template>
+        </div>
+        <safe-record-view id="detail" on-back="{{ back }}" style="display: none;"></safe-record-view>
+    </template>
+    <script>
+        Polymer("safe-app", {
+            ready: function() {
+                this.records = [
+                    {name: "First", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Second", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Third", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Fourth", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Fifth", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Sixth", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Seventh", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Eight", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Nine", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Ten", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Eleven", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Twelve", fields: [
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"},
+                        {name: "myfield", value: "test"},
+                        {name: "another field", value: "Hello World!"}
+                    ]},
+                    {name: "Thirteen"},
+                    {name: "Fourteen"},
+                    {name: "Fiveteen"},
+                    {name: "Sexteen"},
+                    {name: "Seventeen"},
+                    {name: "Eighteen"},
+                    {name: "Nineteen"},
+                    {name: "Twenty"},
+                    {name: "Twenty One"},
+                    {name: "Twenty Two"},
+                    {name: "Twenty Three"},
+                    {name: "Twenty Four"},
+                    {name: "Twenty Five"},
+                    {name: "Twenty Six"},
+                    {name: "Twenty Eight"},
+                    {name: "Twenty Nine"},
+                    {name: "Thirty"},
+                    {name: "Thirty One"},
+                    {name: "Thirty Two"},
+                    {name: "Thirty Three"},
+                    {name: "Thirty Four"},
+                    {name: "Thirty Five"},
+                ];
+                this.filteredRecords = this.records;
+            },
+            recordClicked: function(event, detail, sender) {
+                this.$.detail.record = sender.templateInstance.model.record;
+                this.$.list.style.display = "none";
+                this.$.detail.style.display = "block";
+            },
+            back: function(event, detail, sender) {
+                this.$.detail.style.display = "none";
+                this.$.list.style.display = "block";
+            },
+            filterStringChanged: function(oldVal, newVal) {
+                this.filteredRecords = newVal ? this.records.filter(function(rec) {
+                    return rec.name.toLowerCase().search(newVal.toLowerCase()) != -1;
+                }) : this.records;
+            }
+        });
+    </script>
+</polymer-element>
