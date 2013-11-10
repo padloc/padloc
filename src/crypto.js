@@ -1,13 +1,20 @@
 safe.crypto = (function(sjcl) {
+    // Available cipher algorithms
     var ciphers = {
         AES: "AES"
     };
 
+    // Available cipher modes
     var modes = {
         CCM: "ccm",
         OCB2: "ocb2"
     };
 
+    /**
+     * Container object for encrypted values. Contains all the information needed to
+     * successfully decrypt the encrypted value, except the key.
+     * @type {[type]}
+     */
     var container = Object.create({}, {
         cipher: {value: ciphers.AES, writable: true, enumerable: true},
         mode:   {value: modes.CCM,   writable: true, enumerable: true},
@@ -17,10 +24,24 @@ safe.crypto = (function(sjcl) {
         ts:     {value: 64,          writable: true}
     });
 
-    function genKey(password, salt, size, iter) {
+    /**
+     * Generates a cryptographic key out of a provided _passphrase_ and a random
+     * _salt_ value. Uses the PBKDF2 algorithm.
+     * @param  {string} passphrase
+     * A string to be used as base for the key derivation
+     * @param  {array}  salt
+     * Salt to be used for key derivation. Will be generated if not provided
+     * @param  {number} size
+     * Desired key size. Defaults to 256
+     * @param  {number} iter
+     * Numer of iterations to use for the key derivation algorithm. Defaults to 1000
+     * @return {object}
+     * Key object containing the actual _key_ along with the used _salt_
+     */
+    function genKey(passphrase, salt, size, iter) {
         salt = salt || sjcl.random.randomWords(4,0);
         size = size || 256;
-        var p = sjcl.misc.cachedPbkdf2(password, {iter: iter || 1000, salt: salt});
+        var p = sjcl.misc.cachedPbkdf2(passphrase, {iter: iter || 1000, salt: salt});
         p.key = p.key.slice(0, size/32);
         return p;
     }
