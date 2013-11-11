@@ -17,5 +17,8 @@
   "dependencies": {
     "polymer": "~0.0.20131107"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "requirejs": "~2.1.9"
+  }
 }

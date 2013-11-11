@@ -1,4 +1,4 @@
-safe.crypto = (function(sjcl) {
+define(["sjcl"], function(sjcl) {
     // Available cipher algorithms
     var ciphers = {
         AES: "AES"
@@ -89,4 +89,4 @@ safe.crypto = (function(sjcl) {
         decrypt: decrypt,
         encrypt: encrypt
     };
-})(sjcl);
+});

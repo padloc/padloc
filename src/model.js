@@ -1,5 +1,6 @@
-safe.model = (function() {
+define(["safe/crypto"], function(crypto) {
     function insert(arr, rec, i) {
+        i = i || 0;
         return arr.slice(0, i).concat(rec).concat(arr.slice(i));
     }
 
@@ -94,10 +95,12 @@ safe.model = (function() {
     });
 
     return {
+        _private: {
+            insert: insert,
+            remove: remove
+        },
         record: record,
         collection: collection,
-        store: store,
-        remove: remove,
-        insert: insert
+        store: store
     };
-})();
+});
