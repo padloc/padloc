@@ -1,15 +1,4 @@
-define(["safe/crypto"], function(crypto) {
-    function insert(arr, rec, i) {
-        i = i || 0;
-        return arr.slice(0, i).concat(rec).concat(arr.slice(i));
-    }
-
-    function remove(arr, from, to) {
-        from = Math.max(from, 0);
-        to = Math.max(from, to || 0);
-        return arr.slice(0, from).concat(arr.slice(to + 1));
-    }
-
+define(["safe/crypto", "safe/util"], function(crypto, util) {
     var record = Object.create({}, {
         name: {
             enumerable: true,
@@ -61,7 +50,7 @@ define(["safe/crypto"], function(crypto) {
         },
         add: {
             value: function(rec, at) {
-                this.records = insert(this.records, rec, at);
+                this.records = util.insert(this.records, rec, at);
             }
         },
         remove: {
@@ -74,7 +63,7 @@ define(["safe/crypto"], function(crypto) {
         },
         removeAt: {
             value: function(from, to) {
-                remove(this.records, from, to);
+                util.remove(this.records, from, to);
             }
         }
     });
@@ -95,10 +84,6 @@ define(["safe/crypto"], function(crypto) {
     });
 
     return {
-        _private: {
-            insert: insert,
-            remove: remove
-        },
         record: record,
         collection: collection,
         store: store
