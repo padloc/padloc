@@ -9,18 +9,18 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         var key = crypto.genKey(pwd, null, keyLength);
 
         // Make sure key is the right size
-        equal(key.key.length, keyLength/32);
+        // equal(key.key.length, keyLength/32);
 
-        var newKey = crypto.genKey(pwd, key.salt, keyLength);
+        var newKey = crypto.genKey(pwd, key.salt, keyLength, key.iter);
 
         // Using the same password and salt should result in the same key
-        deepEqual(key.key, newKey.key);
-        deepEqual(key.salt, newKey.salt);
+        equal(key.key, newKey.key);
+        equal(key.salt, newKey.salt);
 
         newKey = crypto.genKey(pwd, null, keyLength);
 
         // A key generated with new salt should turn out differently.
-        notDeepEqual(newKey.key, key.key);
+        notEqual(newKey.key, key.key);
     });
 
     test("encrypt/decrypt roundtrip", function() {
@@ -42,6 +42,20 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         var dec = crypto.decrypt(key.key, c);
 
         equal(dec, pt);
+    });
+
+    test("pwdEncrypt/pwdDecrypt roundtrip", function() {
+        var pwd = "password", pt = "Hello World!";
+
+        var c = crypto.pwdEncrypt(pwd, pt);
+        var pt2 = crypto.pwdDecrypt(pwd, c);
+
+        // Decrypted value should be equal to original value
+        equal(pt2, pt);
+
+        // Same plaintext/password pair should not result in the same cypher text
+        c2 = crypto.pwdEncrypt(pwd, pt);
+        notEqual(c2.ct, c.ct);
     });
 
     module("safe/util");
@@ -89,6 +103,39 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         var e = util.remove(["a", "b", "c", "d", "e"], 10);
         deepEqual(e, ["a", "b", "c", "d", "e"]);
     });
-    
+
+    module("safe/model", {
+        setup: function() {
+            // console.log("*** setup ***");
+        },
+        teardown: function() {
+            // console.log("*** teardown ***");
+        }
+    });
+
+    test("create new collection", function() {
+        var collName = "test";
+        // First, make sure that the collection in question does not exist yet
+        localStorage.setItem("coll_" + collName, null);
+
+        var coll = Object.create(model.collection);
+        coll.name = collName;
+
+        coll.fetch();
+        deepEqual(coll.records, []);
+
+        coll.save();
+        notEqual(localStorage.getItem("coll_" + collName), null, "There should be something in the localStorage now.");
+    });
+
+    test("add record", function() {
+        var coll = Object.create(model.collection);
+        var record = Object.create(model.record);
+        
+        coll.add(record);
+        equal(coll.records.length, 1);
+        equal(coll.records[0], record);
+    });
+
     QUnit.start();
 });
