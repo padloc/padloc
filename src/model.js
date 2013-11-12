@@ -1,4 +1,34 @@
 define(["safe/crypto", "safe/util"], function(crypto, util) {
+    var store = Object.create({}, {
+        password: {
+            value: "", writable: true
+        },
+        fetch: {
+            value: function(coll, password) {
+                this.password = password || this.password;
+                var obj = {};
+
+                var json = localStorage.getItem("coll_" + coll.name);
+                if (json) {
+                    try {
+                        var c = JSON.parse(json);
+                        obj.records = crypto.pwdDecrypt(this.password, c);
+                    } catch (e) {
+                        console.error("*** failed decrypting! ***", e);
+                    }
+                }
+                return coll.parse(obj);
+            }
+        },
+        save: {
+            value: function(coll) {
+                var pt = JSON.stringify(coll.raw());
+                var c = crypto.pwdEncrypt(this.password, pt);
+                localStorage.setItem("coll_" + coll.name, JSON.stringify(c));
+            }
+        }
+    });
+
     var record = Object.create({}, {
         name: {
             enumerable: true,
@@ -18,7 +48,7 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
         },
         store: {
             writable: true,
-            value: null
+            value: store
         },
         records: {
             writable: true,
@@ -27,7 +57,7 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
         },
         parse: {
             value: function(obj) {
-                this.records = obj.records;
+                this.records = obj.records || [];
             }
         },
         raw: {
@@ -64,21 +94,6 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
         removeAt: {
             value: function(from, to) {
                 util.remove(this.records, from, to);
-            }
-        }
-    });
-
-    var store = Object.create({}, {
-        fetch: {
-            value: function(coll) {
-                var json = localStorage.getItem("coll_" + coll.name) || "{}";
-                return coll.parse(JSON.parse(json));
-            }
-        },
-        save: {
-            value: function(coll) {
-                var json = JSON.stringify(coll.raw());
-                localStorage.setItem("coll_" + coll.name, json);
             }
         }
     });
