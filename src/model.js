@@ -1,106 +1,60 @@
 define(["safe/crypto", "safe/util"], function(crypto, util) {
-    var store = Object.create({}, {
-        password: {
-            value: "", writable: true
-        },
-        fetch: {
-            value: function(coll, password) {
-                this.password = password || this.password;
-                var obj = {};
+    var Store = function(password) {
+        this.password = "";
+    };
 
-                var json = localStorage.getItem("coll_" + coll.name);
-                if (json) {
-                    try {
-                        var c = JSON.parse(json);
-                        obj.records = crypto.pwdDecrypt(this.password, c);
-                    } catch (e) {
-                        console.error("*** failed decrypting! ***", e);
-                    }
-                }
-                return coll.parse(obj);
+    Store.prototype = {
+        fetch: function(coll, password) {
+            this.password = password || this.password;
+            var obj = {};
+
+            var json = localStorage.getItem("coll_" + coll.name);
+            if (json) {
+                // try {
+                    var c = JSON.parse(json);
+                    coll.records = JSON.parse(crypto.pwdDecrypt(this.password, c));
+                // } catch (e) {
+                //     if (e ==)
+                // }
             }
+            return coll;
         },
-        save: {
-            value: function(coll) {
-                var pt = JSON.stringify(coll.raw());
-                var c = crypto.pwdEncrypt(this.password, pt);
-                localStorage.setItem("coll_" + coll.name, JSON.stringify(c));
-            }
+        save: function(coll) {
+            var pt = JSON.stringify(coll.records);
+            var c = crypto.pwdEncrypt(this.password, pt);
+            localStorage.setItem("coll_" + coll.name, JSON.stringify(c));
         }
-    });
+    };
 
-    var record = Object.create({}, {
-        name: {
-            enumerable: true,
-            value: ""
-        },
-        fields: {
-            enumerable: true,
-            value: []
-        },
-    });
+    var Collection = function(name, records, store) {
+        this.name = name || "default";
+        this.records = records || [];
+        this.store = store || new Store();
+    };
 
-    var collection = Object.create({}, {
-        name: {
-            writable: true,
-            enumerable: true,
-            value: "default"
+    Collection.prototype = {
+        fetch: function() {
+            this.store.fetch(this);
         },
-        store: {
-            writable: true,
-            value: store
+        save: function() {
+            this.store.save(this);
         },
-        records: {
-            writable: true,
-            enumerable: true,
-            value: []
+        add: function(rec, at) {
+            this.records = util.insert(this.records, rec, at || this.records.length);
         },
-        parse: {
-            value: function(obj) {
-                this.records = obj.records || [];
+        remove: function(rec) {
+            var index = this.records.indexOf(rec);
+            if (index != -1) {
+                this.removeAt(index);
             }
         },
-        raw: {
-            value: function() {
-                return {
-                    name: this.name,
-                    records: this.records
-                };
-            }
-        },
-        fetch: {
-            value: function() {
-                this.store.fetch(this);
-            }
-        },
-        save: {
-            value: function() {
-                this.store.save(this);
-            }
-        },
-        add: {
-            value: function(rec, at) {
-                this.records = util.insert(this.records, rec, at);
-            }
-        },
-        remove: {
-            value: function(rec) {
-                var index = this.records.indexOf(rec);
-                if (index != -1) {
-                    this.removeAt(index);
-                }
-            }
-        },
-        removeAt: {
-            value: function(from, to) {
-                util.remove(this.records, from, to);
-            }
+        removeAt: function(from, to) {
+            this.records = util.remove(this.records, from, to);
         }
-    });
+    };
 
     return {
-        record: record,
-        collection: collection,
-        store: store
+        Store: Store,
+        Collection: Collection
     };
 });
