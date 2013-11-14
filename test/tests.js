@@ -1,47 +1,35 @@
 QUnit.config.autostart = false;
 
 require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model) {
+
     module("safe/crypto");
 
     test("key generation", function() {
         var keyLength = 256, pwd = "password";
 
-        var key = crypto.genKey(pwd, null, keyLength);
+        var p = crypto.genKey(pwd);
+        var p2 = crypto.genKey(pwd, p.salt);
 
-        // Make sure key is the right size
-        // equal(key.key.length, keyLength/32);
+        equal(p.key, p2.key, "Two keys created with the same password and salt should be equal.");
+        equal(p.salt, p2.salt, "The correct salt should be passed back with the key object.");
 
-        var newKey = crypto.genKey(pwd, key.salt, keyLength, key.iter);
+        p2 = crypto.genKey(pwd);
 
-        // Using the same password and salt should result in the same key
-        equal(key.key, newKey.key);
-        equal(key.salt, newKey.salt);
-
-        newKey = crypto.genKey(pwd, null, keyLength);
-
-        // A key generated with new salt should turn out differently.
-        notEqual(newKey.key, key.key);
+        notEqual(p.key, p2.key, "A key generated with new salt should turn out differently.");
     });
 
     test("encrypt/decrypt roundtrip", function() {
         var pwd = "password", pt = "Hello World!";
-        var key = crypto.genKey(pwd);
+        var p = crypto.genKey(pwd);
 
-        var c = crypto.encrypt(key.key, pt);
+        var c = crypto.encrypt(p.key, pt);
 
-        // We should get back a _crypto.container_ object
-        ok(crypto.container.isPrototypeOf(c));
+        var newC = crypto.encrypt(p.key, pt);
+        notEqual(newC.ct, c.ct, "Encrypting the same value twice with the same key should result " +
+                                "in two different cipher texts.");
 
-        // Encrypting the same value twice with the same key should
-        // result in two different cipher texts, since a new iv is randomly
-        // generated each time
-        var newC = crypto.encrypt(key.key, pt);
-        notEqual(newC.ct, c.ct);
-
-        // Decrypted value should be equal to the original value
-        var dec = crypto.decrypt(key.key, c);
-
-        equal(dec, pt);
+        var dec = crypto.decrypt(p.key, c);
+        equal(dec, pt, "The decrypted value should be equal to the original value");
     });
 
     test("pwdEncrypt/pwdDecrypt roundtrip", function() {
@@ -50,12 +38,10 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         var c = crypto.pwdEncrypt(pwd, pt);
         var pt2 = crypto.pwdDecrypt(pwd, c);
 
-        // Decrypted value should be equal to original value
-        equal(pt2, pt);
+        equal(pt2, pt, "The decrypted value should be equal to original value.");
 
-        // Same plaintext/password pair should not result in the same cypher text
         c2 = crypto.pwdEncrypt(pwd, pt);
-        notEqual(c2.ct, c.ct);
+        notEqual(c2.ct, c.ct, "The same plaintext/password pair should not result in the same cypher text");
     });
 
     module("safe/util");
@@ -104,37 +90,61 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         deepEqual(e, ["a", "b", "c", "d", "e"]);
     });
 
-    module("safe/model", {
-        setup: function() {
-            // console.log("*** setup ***");
-        },
-        teardown: function() {
-            // console.log("*** teardown ***");
-        }
+    module("safe/model");
+
+    test("add records", function() {
+        var coll = new model.Collection();
+        var rec = {name: "Hello", value: "World"};
+        coll.add(rec);
+        equal(coll.records.length, 1);
+        equal(coll.records[0], rec);
+
+        var rec2 = {name: "Orang", value: "Utan"}, rec3 = {name: "John", value: "Travolta"};
+        coll.add([rec2, rec3]);
+        equal(coll.records.length, 3);
+        equal(coll.records[1], rec2);
+        equal(coll.records[2], rec3);
     });
 
-    test("create new collection", function() {
+    test("remove records", function() {
+        var coll = new model.Collection();
+        var recs = [];
+        for (var i=0; i<10; i++) {
+            recs.push({name: "name", value: "value"});
+        }
+        coll.add(recs);
+        equal(coll.records.length, recs.length);
+
+        coll.removeAt(2);
+        equal(coll.records.length, recs.length-1);
+        ok(coll.records.indexOf(recs[2]) == -1);
+
+        coll.remove(recs[3]);
+        equal(coll.records.length, recs.length-2);
+        ok(coll.records.indexOf(recs[3]) == -1);
+    });
+
+    test("save collection", function() {
         var collName = "test";
         // First, make sure that the collection in question does not exist yet
-        localStorage.setItem("coll_" + collName, null);
+        localStorage.removeItem("coll_" + collName);
 
-        var coll = Object.create(model.collection);
-        coll.name = collName;
+        var coll = new model.Collection(collName);
 
         coll.fetch();
-        deepEqual(coll.records, []);
+        deepEqual(coll.records, [], "Collection should be empty initially.");
 
         coll.save();
         notEqual(localStorage.getItem("coll_" + collName), null, "There should be something in the localStorage now.");
-    });
 
-    test("add record", function() {
-        var coll = Object.create(model.collection);
-        var record = Object.create(model.record);
-        
-        coll.add(record);
-        equal(coll.records.length, 1);
-        equal(coll.records[0], record);
+        var recs = ["one", "two", "three"];
+        coll.add(recs);
+        coll.save();
+
+        var newColl = new model.Collection(collName);
+
+        newColl.fetch();
+        deepEqual(newColl.records, coll.records, "After fetching, the collection should be populated with the correct records.");
     });
 
     QUnit.start();
