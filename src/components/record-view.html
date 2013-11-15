@@ -90,7 +90,7 @@
         </style>
         <div class="header">
             <button on-click="{{ back }}">&lt;</button>
-            <input value="{{ record.name }}" placeholder="Enter Title..." />
+            <input id="titleInput" value="{{ record.name }}" placeholder="Enter Title..." />
         </div>
         <template repeat="{{ field, i in record.fields }}">
             <div class="field">
@@ -111,6 +111,9 @@
                     value: ""
                 };
                 this.record.fields.push(field);
+            },
+            focusTitle: function() {
+                this.$.titleInput.focus();
             }
         });
     </script>
