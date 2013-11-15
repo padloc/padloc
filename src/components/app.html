@@ -31,11 +31,19 @@
                 -webkit-overflow-scrolling: touch;
             }
 
+            .list-view safe-record-item:nth-child(3) {
+                margin-top: 50px;
+            }
+
             .list-header {
+                position: fixed;
+                width: 100%;
                 padding: 8px;
                 background: rgb(245, 245, 245);
                 display: -webkit-box;
                 -webkit-box-align: center;
+                box-sizing: border-box;
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
             .list-header > input {
@@ -72,7 +80,7 @@
                 outline: none;
             }
         </style>
-        <div class="view" id="list" on-scroll="{{ scroll }}" on-touchmove="{{ drag }}">
+        <div class="view list-view" id="list" on-scroll="{{ scroll }}" on-touchmove="{{ drag }}">
             <div id="listHeader" class="list-header">
                 <input value="{{ filterString }}" type="search" placeholder="type to filter..." />
                 <button on-click="{{ addRecord }}">+</button>
@@ -123,9 +131,9 @@
                 }
             },
             applyFilter: function() {
-                console.log("*** apply filter ***"); 
-                this.filteredRecords = this.filterString ? this.collection.records.filter(function(rec) {
-                    return rec.name.toLowerCase().search(this.filterString.toLowerCase()) != -1;
+                var fs = this.filterString;
+                this.filteredRecords = fs ? this.collection.records.filter(function(rec) {
+                    return rec.name.toLowerCase().search(fs.toLowerCase()) != -1;
                 }) : this.collection.records;
             },
             addRecord: function() {
