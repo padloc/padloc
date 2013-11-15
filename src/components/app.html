@@ -2,13 +2,22 @@
     <template>
         <style>
             :host {
-                font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
                 position: absolute;
                 left: 0;
                 right: 0;
                 bottom: 0;
                 top: 0;
                 margin: auto;
+                font-weight: 300;
+                font-size: 18px;
+                color: #333;
+                -webkit-user-select: none;     
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                -webkit-tap-highlight-color: transparent;
+
             }
 
             .view {
@@ -18,10 +27,56 @@
                 top: 0;
                 bottom: 0;
                 margin: auto;
+                overflow: scroll;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .list-header {
+                padding: 8px;
+                background: rgb(245, 245, 245);
+                display: -webkit-box;
+                -webkit-box-align: center;
+            }
+
+            .list-header > input {
+                border: none;
+                font-family: inherit;
+                font-size: inherit;
+                font-weight: inherit;
+                -webkit-appearance: none;
+                padding: 6px;
+                display: block;
+                -webkit-box-flex: 1;
+                background: white;
+                border-radius: 2px;
+                margin: 0;
+            }
+
+            .list-header > button {
+                display: block;
+                border: none;
+                background: transparent;
+                font-size: 30px;
+                font-family: inherit;
+                font-weight: 100;
+                line-height: 15px;
+                color: #000;
+                margin-left: 8px;
+            }
+
+            ::-webkit-search-cancel-button {
+                display: none;
+            }
+
+            *:focus {
+                outline: none;
             }
         </style>
-        <div class="view" id="list">
-            <input value="{{ filterString }}" placeholder="type to filter..."></input>
+        <div class="view" id="list" on-scroll="{{ scroll }}" on-touchmove="{{ drag }}">
+            <div id="listHeader" class="list-header">
+                <input value="{{ filterString }}" type="search" placeholder="type to filter..." />
+                <button>+</button>
+            </div>
             <template repeat="{{ record, i in filteredRecords}}">
                 <safe-record-item record="{{ record }}" on-click="{{ recordClicked }}" index="{{ i }}"></safe-record-item>
             </template>
