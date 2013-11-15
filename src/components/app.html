@@ -75,7 +75,7 @@
         <div class="view" id="list" on-scroll="{{ scroll }}" on-touchmove="{{ drag }}">
             <div id="listHeader" class="list-header">
                 <input value="{{ filterString }}" type="search" placeholder="type to filter..." />
-                <button>+</button>
+                <button on-click="{{ addRecord }}">+</button>
             </div>
             <template repeat="{{ record, i in filteredRecords}}">
                 <safe-record-item record="{{ record }}" on-click="{{ recordClicked }}" index="{{ i }}"></safe-record-item>
@@ -233,7 +233,10 @@
                 this.filteredRecords = this.records;
             },
             recordClicked: function(event, detail, sender) {
-                this.$.detail.record = sender.templateInstance.model.record;
+                this.openRecord(sender.templateInstance.model.record);
+            },
+            openRecord: function(record) {
+                this.$.detail.record = record;
                 this.$.list.style.display = "none";
                 this.$.detail.style.display = "block";
             },
@@ -245,6 +248,14 @@
                 this.filteredRecords = newVal ? this.records.filter(function(rec) {
                     return rec.name.toLowerCase().search(newVal.toLowerCase()) != -1;
                 }) : this.records;
+            },
+            addRecord: function() {
+                var record = {
+                    name: "",
+                    fields: []
+                };
+                this.records.push(record);
+                this.openRecord(record);
             }
         });
     </script>
