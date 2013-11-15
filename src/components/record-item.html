@@ -18,12 +18,27 @@
             :host:active:hover:not(.disabled) {
                 background: rgba(0, 0, 0, 0.1);
             }
+
+            .delete {
+                float: right;
+                cursor: pointer;
+                width: 50px;
+                height: 50px;
+                line-height: 50px;
+                text-align: center;
+                margin: -13.5px -15px 0 0;
+            }
         </style>
         {{record.name}}
+        <div class="delete" on-click="{{ deleteClicked }}">x</div>
     </template>
     <script>
         Polymer('safe-record-item', {
             ready: function() {
+            },
+            deleteClicked: function(event) {
+                this.fire("delete");
+                event.stopPropagation();
             }
         });
     </script>
