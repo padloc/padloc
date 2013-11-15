@@ -70,12 +70,12 @@
         </style>
         <div class="header">
             <button on-click="{{ back }}">&lt;</button>
-            <input value="{{ record.name }}" />
+            <input value="{{ record.name }}" placeholder="Enter Title..." />
         </div>
         <template repeat="{{ field, i in record.fields }}">
             <div class="field">
-                <input class="value" value="{{ field.value }}" placeholder="content" />
-                <input class="label" value="{{ field.name }}" placeholder="label" />
+                <input class="value" value="{{ field.value }}" placeholder="Enter Content..." />
+                <input class="label" value="{{ field.name }}" placeholder="Enter Label..." />
             </div>
         </template>
     </template>
