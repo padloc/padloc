@@ -1,0 +1,105 @@
+<polymer-element name="safe-header" attributes="filterString record">
+    <template>
+        <style>
+            :host {
+                padding: 8px 0;
+                background: rgba(245, 245, 245, 0.8);
+                display: -webkit-box;
+                /*-webkit-box-align: center;*/
+                box-sizing: border-box;
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+
+            :host safe-shapeshifter {
+                display: block;
+                width: 30px;
+                height: 30px;
+                margin: 0 8px;
+            }
+
+            .middle {
+                -webkit-box-flex: 1;
+                position: relative;
+            }
+
+            .middle > * {
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                box-sizing: border-box;
+                -webkit-transition: -webkit-transform 0.5s, opacity 0.5s;
+            }
+
+            input {
+                font-family: inherit;
+                font-size: inherit;
+                font-weight: inherit;
+                -webkit-appearance: none;
+                border: none;
+                padding: 6px;
+                background: transparent;
+            }
+
+            input[type=search] {
+                background: rgba(255, 255, 255, 0.8);
+                border-radius: 2px;
+            }
+
+            .name-input {
+                opacity: 0;
+                -webkit-transform: translate(0, 100%);
+            }
+
+            .show-record .filter-input {
+                opacity: 0;
+                -webkit-transform: translate(0, -100%);
+            }
+
+            .show-record .name-input {
+                opacity: 1;
+                -webkit-transform: translate(0, 0);
+            }
+        </style>
+        <safe-shapeshifter id="leftIcon" shape="menu" on-click="{{ leftClicked }}"></safe-shapeshifter>
+        <div class="middle" id="middle">
+            <input id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." />
+            <input id="nameInput" class="name-input" value="{{ record.name }}" placeholder="Enter title..." />
+        </div>
+        <safe-shapeshifter id="rightIcon" shape="plus" on-mousedown="{{ rightClicked }}"></safe-shapeshifter>
+    </template>
+    <script>
+        Polymer("safe-header", {
+            recordChanged: function(oldRec, newRec) {
+                if (newRec) {
+                    this.$.nameInput.removeAttribute("disabled");
+                    this.$.filterInput.setAttribute("disabled", "disabled");
+                    this.$.middle.classList.add("show-record");
+                    this.$.leftIcon.shape = "arrow-left";
+                    this.$.rightIcon.shape = "more";
+                } else {
+                    this.$.filterInput.removeAttribute("disabled");
+                    this.$.nameInput.setAttribute("disabled", "disabled");
+                    this.$.middle.classList.remove("show-record");
+                    this.$.leftIcon.shape = "menu";
+                    this.$.rightIcon.shape = "plus";
+                }
+            },
+            leftClicked: function() {
+                if (!this.record) {
+                    this.fire("menu");
+                } else {
+                    this.fire("back");
+                }
+            },
+            rightClicked: function() {
+                if (!this.record) {
+                    this.fire("add");
+                }
+            }
+        })
+    </script>
+</polymer-element>

@@ -20,6 +20,12 @@
 
             }
 
+            safe-header {
+                position: absolute;
+                z-index: 1;
+                width: 100%;
+            }
+
             .view {
                 position: absolute;
                 left: 0;
@@ -38,8 +44,9 @@
                 outline: none;
             }
         </style>
-        <safe-list-view id="listView" class="view" collection="{{ collection }}" on-select-record="{{ selectRecord }}" on-delete-record="{{ deleteRecord }}" on-add-record="{{ addRecord }}"></safe-list-view>
-        <safe-record-view id="recordView" class="view" on-back="{{ back }}" style="display: none;"></safe-record-view>
+        <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}"></safe-header>
+        <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" on-delete-record="{{ deleteRecord }}"></safe-list-view>
+        <safe-record-view id="recordView" class="view" on-back="{{ back }}" style="display: none;" record="{{ selected }}"></safe-record-view>
     </template>
     <script>
         Polymer("safe-app", {
@@ -51,28 +58,34 @@
                     self.collection = coll;
                 });
             },
-            selectRecord: function(event, detail, sender) {
-                this.openRecord(detail.record);
+            selectedChanged: function(oldRec, newRec) {
+                if (newRec) {
+                    this.openRecordView();
+                } else {
+                    this.openListView();
+                }
             },
             deleteRecord: function(event, detail, sender) {
-                console.log("** delete ***", arguments);
                 this.collection.remove(detail.record);
                 this.collection.save();
             },
-            openRecord: function(record) {
-                this.$.recordView.record = record;
+            openRecordView: function() {
                 this.$.listView.style.display = "none";
                 this.$.recordView.style.display = "block";
             },
-            back: function(event, detail, sender) {
-                this.$.recordView.style.display = "none";
+            openListView: function() {
                 this.$.listView.style.display = "block";
-                var record = this.$.recordView.record;
-                if (record.name || record.fields.length) {
-                    record.name = record.name || "Unnamed";
-                    this.collection.save();
-                } else {
-                    this.collection.remove(record);
+                this.$.recordView.style.display = "none";
+            },
+            saveRecord: function() {
+                var record = this.selected;
+                if (record) {
+                    if (record.name || record.fields.length) {
+                        record.name = record.name || "Unnamed";
+                        this.collection.save();
+                    } else {
+                        this.collection.remove(record);
+                    }
                 }
             },
             addRecord: function() {
@@ -81,8 +94,12 @@
                     fields: []
                 };
                 this.collection.add(record);
-                this.openRecord(record);
-                this.$.recordView.focusTitle();
+                this.selected = record;
+                // this.$.recordView.focusTitle();
+            },
+            back: function() {
+                this.saveRecord();
+                this.selected = null;
             }
         });
     </script>

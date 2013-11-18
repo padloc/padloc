@@ -1,40 +1,12 @@
 <polymer-element name="safe-record-view" attributes="record">
     <template>
         <style>
-            .header {
-                padding: 8px;
-                background: rgb(245, 245, 245);
-                display: -webkit-box;
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-            }
-
-            .header > input {
-                border: none;
-                font-family: inherit;
-                font-size: inherit;
-                font-weight: inherit;
-                -webkit-appearance: none;
-                margin: 0;
-                padding: 6px;
-                display: block;
-                -webkit-box-flex: 1;
-                -webkit-box-align: center;
-                background-color: transparent;
-                /*background: white;*/
-                /*border-radius: 2px;*/
-                text-overflow: ellipsis;
-            }
-
-            .header > button {
-                display: block;
-                border: none;
-                background: transparent;
-                font-size: 30px;
-                font-family: inherit;
-                font-weight: 100;
-                line-height: 0;
-                color: #000;
-                margin-top: -1px;
+            :host {
+                padding-top: 50px;
+                overflow: scroll;
+                -webkit-overflow-scrolling: touch;
+                height: 100%;
+                box-sizing: border-box;
             }
 
             .field {
@@ -89,10 +61,6 @@
                 background: rgba(0, 0, 0, 0.1);
             }
         </style>
-        <div class="header">
-            <button on-click="{{ back }}">&lt;</button>
-            <input id="titleInput" value="{{ record.name }}" placeholder="Enter Title..." />
-        </div>
         <template repeat="{{ field, i in record.fields }}">
             <div class="field">
                 <input class="value" value="{{ field.value }}" placeholder="Enter Content..." />
@@ -112,9 +80,6 @@
                     value: ""
                 };
                 this.record.fields.push(field);
-            },
-            focusTitle: function() {
-                this.$.titleInput.focus();
             }
         });
     </script>
