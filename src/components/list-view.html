@@ -33,7 +33,6 @@
                 this.selected = sender.templateInstance.model.record;
             },
             deleteClicked: function(event, detail, sender) {
-                console.log("*** delete clicked ***", arguments);
                 this.fire("delete-record", {record: sender.templateInstance.model.record});
             }
         });
