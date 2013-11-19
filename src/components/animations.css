@@ -1,0 +1,19 @@
+@-webkit-keyframes slideInFromRight {
+    from {-webkit-transform: translate(100%, 0); opacity: 0;}
+    to {-webkit-transform: translate(0, 0); opacity: 1;}
+}
+
+@-webkit-keyframes slideInFromLeft {
+    from {-webkit-transform: translate(-100%, 0); opacity: 0;}
+    to {-webkit-transform: translate(0, 0); opacity: 1;}
+}
+
+@-webkit-keyframes slideOutToRight {
+    from {-webkit-transform: translate(0, 0); opacity: 1;}
+    to {-webkit-transform: translate(100%, 0); opacity: 0;}
+}
+
+@-webkit-keyframes slideOutToLeft {
+    from {-webkit-transform: translate(0, 0); opacity: 1;}
+    to {-webkit-transform: translate(-100%, 0); opacity: 0;}
+}

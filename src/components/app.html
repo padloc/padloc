@@ -1,4 +1,4 @@
-<polymer-element name="safe-app">
+<polymer-element name="safe-app" on-animation-end="{{ animationEnd }}">
     <template>
         <style>
             :host {
@@ -17,6 +17,7 @@
                 -ms-user-select: none;
                 user-select: none;
                 -webkit-tap-highlight-color: transparent;
+                background: #fafafa;
 
             }
 
@@ -46,7 +47,7 @@
         </style>
         <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}"></safe-header>
         <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" on-delete-record="{{ deleteRecord }}"></safe-list-view>
-        <safe-record-view id="recordView" class="view" on-back="{{ back }}" style="display: none;" record="{{ selected }}"></safe-record-view>
+        <safe-record-view id="recordView" class="view" on-back="{{ back }}" record="{{ selected }}" style="display: none"></safe-record-view>
     </template>
     <script>
         Polymer("safe-app", {
@@ -61,8 +62,6 @@
             selectedChanged: function(oldRec, newRec) {
                 if (newRec) {
                     this.openRecordView();
-                } else {
-                    this.openListView();
                 }
             },
             deleteRecord: function(event, detail, sender) {
@@ -70,12 +69,22 @@
                 this.collection.save();
             },
             openRecordView: function() {
-                this.$.listView.style.display = "none";
-                this.$.recordView.style.display = "block";
+                this.$.listView.startOutAnimation();
+                var self = this;
+
+                setTimeout(function() {
+                    self.$.recordView.startInAnimation();
+                    self.$.recordView.style.display = "block";
+                }, 300);
             },
             openListView: function() {
-                this.$.listView.style.display = "block";
-                this.$.recordView.style.display = "none";
+                this.$.recordView.startOutAnimation();
+
+                var self = this;
+                setTimeout(function() {
+                    self.$.listView.startInAnimation();
+                    self.$.listView.style.display = "block";
+                }, 300);
             },
             saveRecord: function() {
                 var record = this.selected;
@@ -98,7 +107,15 @@
             },
             back: function() {
                 this.saveRecord();
-                this.selected = null;
+                this.openListView();
+            },
+            animationEnd: function(event, detail, sender) {
+                if (detail.direction == "out") {
+                    event.srcElement.style.display = "none";
+                    if (event.srcElement.id == "recordView") {
+                        this.selected = null;
+                    }
+                }
             }
         });
     </script>

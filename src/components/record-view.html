@@ -2,7 +2,7 @@
     <template>
         <style>
             :host {
-                padding-top: 50px;
+                padding-top: 47px;
                 overflow: scroll;
                 -webkit-overflow-scrolling: touch;
                 height: 100%;
@@ -12,6 +12,7 @@
             .field {
                 display: -webkit-box;
                 border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                background: #fff;
             }
 
             /*.field:not(:last-child) {
@@ -51,6 +52,7 @@
                 line-height: 20px;
                 color: #000;
                 border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                background: #fff;
             }
 
             .add:hover {
@@ -71,6 +73,12 @@
     </template>
     <script>
         Polymer('safe-record-view', {
+            enteredView: function() {
+                var self = this;
+                this.addEventListener("webkitAnimationEnd", function() {
+                    this.animationEnd.apply(self, arguments);
+                }, false);
+            },
             back: function() {
                 this.fire("back");
             },
@@ -80,6 +88,34 @@
                     value: ""
                 };
                 this.record.fields.push(field);
+            },
+            startOutAnimation: function() {
+                this.animCount = 0;
+                var self = this;
+                this.shadowRoot.children.array().forEach(function(item) {
+                    var display = window.getComputedStyle(item, null).getPropertyValue("display");
+                    if (display != "none") {
+                        self.animCount++;
+                        item.style["-webkit-animation"] = "slideOutToRight 0.4s ease " + (Math.random()/5) + "s both";
+                    }
+                });
+            },
+            startInAnimation: function() {
+                this.animCount = 0;
+                var self = this;
+                this.shadowRoot.children.array().forEach(function(item) {
+                    var display = window.getComputedStyle(item, null).getPropertyValue("display");
+                    if (display != "none") {
+                        self.animCount++;
+                        item.style["-webkit-animation"] = "slideInFromRight 0.4s ease " + (Math.random()/5) + "s both";
+                    }
+                });
+            },
+            animationEnd: function(event) {
+                this.animCount--;
+                if (!this.animCount) {
+                    this.fire("animation-end", {direction: event.animationName == "slideInFromRight" ? "in" : "out"});
+                }
             }
         });
     </script>
