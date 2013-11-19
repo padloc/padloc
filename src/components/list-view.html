@@ -9,8 +9,6 @@
                 box-sizing: border-box;
             }
         </style>
-        <div id="listHeader" class="list-header">
-        </div>
         <div id="list" class="list">
             <template repeat="{{ record, i in filteredRecords}}">
                 <safe-record-item record="{{ record }}" on-click="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}"></safe-record-item>
