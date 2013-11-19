@@ -63,6 +63,15 @@
                 opacity: 1;
                 -webkit-transform: translate(0, 0);
             }
+
+            #leftIcon {
+                -webkit-transition: width 0.5s;
+                min-width: 0;
+            }
+
+            :host.filtering #leftIcon {
+                width: 0;
+            }
         </style>
         <safe-shapeshifter id="leftIcon" shape="menu" on-click="{{ leftClicked }}"></safe-shapeshifter>
         <div class="middle" id="middle">
@@ -96,8 +105,19 @@
                 }
             },
             rightClicked: function() {
-                if (!this.record) {
+                if (this.filterString) {
+                    this.filterString = "";
+                } else if (!this.record) {
                     this.fire("add");
+                }
+            },
+            filterStringChanged: function() {
+                if (this.filterString) {
+                    this.classList.add("filtering");
+                    this.$.rightIcon.shape = "cancel";
+                } else {
+                    this.classList.remove("filtering");
+                    this.$.rightIcon.shape = this.record ? "arrow-left" : "plus";
                 }
             }
         })
