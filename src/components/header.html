@@ -54,12 +54,12 @@
                 -webkit-transform: translate(0, 100%);
             }
 
-            .show-record .filter-input {
+            :host.show-record .filter-input {
                 opacity: 0;
                 -webkit-transform: translate(0, -100%);
             }
 
-            .show-record .name-input {
+            :host.show-record .name-input {
                 opacity: 1;
                 -webkit-transform: translate(0, 0);
             }
@@ -69,7 +69,7 @@
                 min-width: 0;
             }
 
-            :host.filtering #leftIcon {
+            :host.filtering:not(.show-record) #leftIcon {
                 width: 0;
             }
         </style>
@@ -86,15 +86,15 @@
                 if (newRec) {
                     this.$.nameInput.removeAttribute("disabled");
                     this.$.filterInput.setAttribute("disabled", "disabled");
-                    this.$.middle.classList.add("show-record");
+                    this.classList.add("show-record");
                     this.$.leftIcon.shape = "arrow-left";
                     this.$.rightIcon.shape = "more";
                 } else {
                     this.$.filterInput.removeAttribute("disabled");
                     this.$.nameInput.setAttribute("disabled", "disabled");
-                    this.$.middle.classList.remove("show-record");
+                    this.classList.remove("show-record");
                     this.$.leftIcon.shape = "menu";
-                    this.$.rightIcon.shape = "plus";
+                    this.$.rightIcon.shape = this.filterString ? "cancel" : "plus";
                 }
             },
             leftClicked: function() {
