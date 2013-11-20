@@ -2,11 +2,16 @@
     <template>
         <style>
             .list {
-                padding-top: 47px;
                 overflow: scroll;
                 -webkit-overflow-scrolling: touch;
                 height: 100%;
                 box-sizing: border-box;
+                font-size: 0;
+                padding: 47px 5px 5px 5px;
+            }
+
+            .list > * {
+                font-size: 18px;
             }
         </style>
         <div id="list" class="list">
