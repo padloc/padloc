@@ -5,6 +5,7 @@
                 display: inline-block;
                 width: 100%;
                 box-sizing: border-box;
+                cursor: pointer;
             }
 
             @media (min-width: 700px) and (max-width: 1000px) {
@@ -49,11 +50,11 @@
                 border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }*/
 
-            .inner:hover {
+            :host:hover .inner {
                 background: rgba(0, 0, 0, 0.05);
             }
 
-            .inner:active:hover:not(.disabled) {
+            :host:active:hover:not(.disabled) .inner {
                 background: rgba(0, 0, 0, 0.1);
             }
 
