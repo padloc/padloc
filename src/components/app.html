@@ -45,9 +45,14 @@
                 outline: none;
             }
         </style>
-        <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}"></safe-header>
+        <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMenu }}"></safe-header>
         <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" on-delete-record="{{ deleteRecord }}"></safe-list-view>
         <safe-record-view id="recordView" class="view" on-back="{{ back }}" record="{{ selected }}" style="display: none"></safe-record-view>
+        <safe-dialog id="menu">
+            <div>Settings</div>
+            <div>About</div>
+            <div>Help</div>
+        </safe-dialog>
     </template>
     <script>
         Polymer("safe-app", {
@@ -116,6 +121,9 @@
                         this.selected = null;
                     }
                 }
+            },
+            openMenu: function() {
+                this.$.menu.open();
             }
         });
     </script>
