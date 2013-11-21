@@ -72,6 +72,16 @@
                     var direction = event.animationName == "slideOutToLeft" ? "out" : "in";
                     this.fire("animation-end", {direction: direction});
                 }
+            },
+            selectedChanged: function() {
+                var selected = this.selected;
+                this.$.list.children.array().forEach(function(item) {
+                    if (item.record == selected) {
+                        item.classList.add("selected");
+                    } else {
+                        item.classList.remove("selected");
+                    }
+                });
             }
         });
     </script>
