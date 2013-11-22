@@ -45,14 +45,23 @@
                 outline: none;
             }
         </style>
-        <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMenu }}"></safe-header>
-        <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" on-delete-record="{{ deleteRecord }}"></safe-list-view>
+        <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}"></safe-header>
+        <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}"></safe-list-view>
         <safe-record-view id="recordView" class="view" on-back="{{ back }}" record="{{ selected }}" style="display: none"></safe-record-view>
-        <safe-dialog id="menu">
+        <safe-dialog id="mainMenu">
             <div>Settings</div>
             <div>About</div>
             <div>Help</div>
         </safe-dialog>
+        <safe-dialog id="recordMenu">
+            <div>Edit</div>
+            <div class="negative" on-click="{{ confirmDelete }}" id="confirmButton">Delete</div>
+        </safe-dialog>
+        <safe-dialog id="confirmDialog">
+            <div class="title">Are you sure you want to delete this record?</div>
+            <div>Cancel</div>
+            <div class="negative" on-click="{{ deleteRecord }}">Delete</div>
+        </safe-idalog>
     </template>
     <script>
         Polymer("safe-app", {
@@ -63,15 +72,23 @@
                     coll.fetch();
                     self.collection = coll;
                 });
+                // this.$.confirmButton.addEventListener("click", function() {
+                //     this.confirmDelete.apply(self, arguments);
+                // });
             },
             selectedChanged: function(oldRec, newRec) {
                 if (newRec) {
                     this.openRecordView();
                 }
             },
-            deleteRecord: function(event, detail, sender) {
-                this.collection.remove(detail.record);
+            confirmDelete: function() {
+                console.log("*** confirm delete ***");
+                this.$.confirmDialog.open();
+            },
+            deleteRecord: function() {
+                this.collection.remove(this.selected);
                 this.collection.save();
+                this.openListView();
             },
             openRecordView: function() {
                 this.$.listView.startOutAnimation();
@@ -122,8 +139,11 @@
                     }
                 }
             },
-            openMenu: function() {
-                this.$.menu.open();
+            openMainMenu: function() {
+                this.$.mainMenu.open();
+            },
+            openRecordMenu: function() {
+                this.$.recordMenu.open();
             }
         });
     </script>

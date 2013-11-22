@@ -105,10 +105,14 @@
                 }
             },
             rightClicked: function() {
-                if (this.filterString) {
-                    this.filterString = "";
-                } else if (!this.record) {
-                    this.fire("add");
+                if (this.record) {
+                    this.fire("record-menu");
+                } else {
+                    if (this.filterString) {
+                        this.filterString = "";
+                    } else {
+                        this.fire("add")
+                    }
                 }
             },
             filterStringChanged: function() {

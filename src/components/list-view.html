@@ -41,9 +41,6 @@
             recordClicked: function(event, detail, sender) {
                 this.selected = sender.templateInstance.model.record;
             },
-            deleteClicked: function(event, detail, sender) {
-                this.fire("delete-record", {record: sender.templateInstance.model.record});
-            },
             startOutAnimation: function() {
                 this.animCount = 0;
                 var self = this;

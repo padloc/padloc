@@ -76,17 +76,9 @@
         </style>
         <div class="inner">
             {{record.name}}
-            <div class="delete" on-click="{{ deleteClicked }}">x</div>
         </div>
     </template>
     <script>
-        Polymer('safe-record-item', {
-            ready: function() {
-            },
-            deleteClicked: function(event) {
-                this.fire("delete");
-                event.stopPropagation();
-            }
-        });
+        Polymer('safe-record-item');
     </script>
 </polymer-element>
