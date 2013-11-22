@@ -15,10 +15,8 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "~0.0.20131107"
-  },
-  "private": true,
-  "devDependencies": {
+    "polymer": "~0.0.20131107",
     "requirejs": "~2.1.9"
-  }
+  },
+  "private": true
 }
