@@ -41,7 +41,7 @@
                 -webkit-appearance: none;
                 border: none;
                 padding: 6px;
-                background: transparent;
+                background: #fff;
                 -webkit-transition: background 0.5s;
                 border-radius: 2px;
             }
@@ -50,9 +50,10 @@
                 background: rgba(255, 255, 255, 0.8);
             }
 
-            .name-input {
+            .name {
                 opacity: 0;
                 -webkit-transform: translate(0, 100%);
+                padding: 4px 6px;
             }
 
             :host.show-record .filter-input {
@@ -60,13 +61,9 @@
                 -webkit-transform: translate(0, -100%);
             }
 
-            :host.show-record .name-input {
+            :host.show-record .name {
                 opacity: 1;
                 -webkit-transform: translate(0, 0);
-            }
-
-            :host.editing .name-input {
-                background: #fff;
             }
 
             #leftIcon {
@@ -81,7 +78,12 @@
         <safe-shapeshifter id="leftIcon" shape="menu" on-click="{{ leftClicked }}"></safe-shapeshifter>
         <div class="middle" id="middle">
             <input id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." />
-            <input id="nameInput" class="name-input" value="{{ record.name }}" placeholder="Enter title..." readonly="true"/>
+            <template if="{{ editing }}">
+                <input id="nameInput" class="name" value="{{ record.name }}" placeholder="Enter title..."/>
+            </template>
+            <template if="{{ !editing }}">
+                <div class="name">{{ record.name }}</div>
+            </template>
         </div>
         <safe-shapeshifter id="rightIcon" shape="plus" on-mousedown="{{ rightClicked }}"></safe-shapeshifter>
     </template>
@@ -90,14 +92,12 @@
             editing: false,
             recordChanged: function(oldRec, newRec) {
                 if (newRec) {
-                    this.$.nameInput.removeAttribute("disabled");
                     this.$.filterInput.setAttribute("disabled", "disabled");
                     this.classList.add("show-record");
                     this.$.leftIcon.shape = "arrow-left";
                     this.$.rightIcon.shape = "more";
                 } else {
                     this.$.filterInput.removeAttribute("disabled");
-                    this.$.nameInput.setAttribute("disabled", "disabled");
                     this.classList.remove("show-record");
                     this.$.leftIcon.shape = "menu";
                     this.$.rightIcon.shape = this.filterString ? "cancel" : "plus";
@@ -139,12 +139,10 @@
             editingChanged: function() {
                 if (this.editing) {
                     this.classList.add("editing");
-                    this.$.nameInput.removeAttribute("readonly");
                     this.$.leftIcon.shape = "cancel";
                     this.$.rightIcon.shape = "check";
                 } else {
                     this.classList.remove("editing");
-                    this.$.nameInput.setAttribute("readonly", true);
                     this.$.leftIcon.shape = this.record ? "arrow-left" : "menu";
                     this.$.rightIcon.shape = this.record ? "more" : "plus";
                 }

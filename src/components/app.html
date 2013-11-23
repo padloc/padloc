@@ -49,7 +49,7 @@
             on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" editing="{{ editing }}"
             on-done="{{ editDone }}" on-cancel="{{ editCancel }}"></safe-header>
         <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}"></safe-list-view>
-        <safe-record-view id="recordView" class="view" on-back="{{ back }}" record="{{ selected }}" style="display: none"></safe-record-view>
+        <safe-record-view id="recordView" class="view" on-back="{{ back }}" record="{{ selected }}" editing="{{ editing }}" style="display: none"></safe-record-view>
         <safe-dialog id="mainMenu">
             <div>Settings</div>
             <div>About</div>
@@ -113,6 +113,9 @@
                 var record = this.selected;
                 if (record) {
                     record.name = record.name || "Unnamed";
+                    record.fields = record.fields.filter(function(field) {
+                        return field.name || field.value;
+                    });
                     this.collection.save();
                 }
             },
