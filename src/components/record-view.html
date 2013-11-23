@@ -105,7 +105,7 @@
             startOutAnimation: function() {
                 this.animCount = 0, self = this;
 
-                this.shadowRoot.children.array().forEach(function(item) {
+                this.shadowRoot.querySelectorAll(".field").array().forEach(function(item) {
                     var display = window.getComputedStyle(item, null).getPropertyValue("display");
                     if (display != "none") {
                         self.animCount++;
@@ -120,7 +120,7 @@
             startInAnimation: function() {
                 this.animCount = 0, self = this;
 
-                this.shadowRoot.children.array().forEach(function(item) {
+                this.shadowRoot.querySelectorAll(".field").array().forEach(function(item) {
                     var display = window.getComputedStyle(item, null).getPropertyValue("display");
                     if (display != "none") {
                         self.animCount++;

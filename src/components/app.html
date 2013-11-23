@@ -116,6 +116,10 @@
                     record.fields = record.fields.filter(function(field) {
                         return field.name || field.value;
                     });
+                    if (record.isNew) {
+                        this.openListView();
+                    }
+                    delete record.isNew;
                     this.collection.save();
                 }
             },
