@@ -42,8 +42,8 @@
                 this.selected = sender.templateInstance.model.record;
             },
             startOutAnimation: function() {
-                this.animCount = 0;
-                var self = this;
+                this.animCount = 0, self = this;
+
                 this.$.list.children.array().forEach(function(item) {
                     var display = window.getComputedStyle(item, null).getPropertyValue("display");
                     if (display != "none") {
@@ -51,10 +51,14 @@
                         item.style["-webkit-animation"] = "slideOutToLeft 0.4s ease " + (Math.random()/5) + "s both";
                     }
                 });
+
+                if (!this.animCount) {                    
+                    this.fire("animation-end", {direction: "out"});
+                }
             },
             startInAnimation: function() {
-                this.animCount = 0;
-                var self = this;
+                this.animCount = 0, self = this;
+
                 this.$.list.children.array().forEach(function(item) {
                     var display = window.getComputedStyle(item, null).getPropertyValue("display");
                     if (display != "none") {
@@ -62,6 +66,10 @@
                         item.style["-webkit-animation"] = "slideInFromLeft 0.4s ease " + (Math.random()/5) + "s both";
                     }
                 });
+
+                if (!this.animCount) {                    
+                    this.fire("animation-end", {direction: "in"});
+                }
             },
             animationEnd: function(event) {
                 this.animCount--;
