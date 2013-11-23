@@ -124,6 +124,18 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         ok(coll.records.indexOf(recs[3]) == -1);
     });
 
+    test("replace a record", function() {
+        var coll = new model.Collection();
+        var recs = [{}, {}, {}];
+        var orig = recs[1];
+        var repl = {};
+
+        coll.add(recs);
+        coll.replace(orig, repl);
+
+        equal(coll.records[1], repl);
+    });
+
     test("save collection", function() {
         var collName = "test";
         // First, make sure that the collection in question does not exist yet
