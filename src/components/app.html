@@ -45,7 +45,9 @@
                 outline: none;
             }
         </style>
-        <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}"></safe-header>
+        <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}"
+            on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" editing="{{ editing }}"
+            on-done="{{ editDone }}" on-cancel="{{ editCancel }}"></safe-header>
         <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}"></safe-list-view>
         <safe-record-view id="recordView" class="view" on-back="{{ back }}" record="{{ selected }}" style="display: none"></safe-record-view>
         <safe-dialog id="mainMenu">
@@ -54,7 +56,7 @@
             <div>Help</div>
         </safe-dialog>
         <safe-dialog id="recordMenu">
-            <div>Edit</div>
+            <div on-click="{{ startEditing }}">Edit</div>
             <div class="negative" on-click="{{ confirmDelete }}" id="confirmButton">Delete</div>
         </safe-dialog>
         <safe-dialog id="confirmDialog">
@@ -128,7 +130,6 @@
                 this.selected = record;
             },
             back: function() {
-                this.saveRecord();
                 this.openListView();
             },
             animationEnd: function(event, detail, sender) {
@@ -144,6 +145,24 @@
             },
             openRecordMenu: function() {
                 this.$.recordMenu.open();
+            },
+            startEditing: function() {
+                this.editCopy = {
+                    name: this.selected.name,
+                    fields: this.selected.fields
+                };
+                this.editing = true;
+            },
+            editDone: function() {
+                this.editing = false;
+                this.editCopy = null;
+                this.saveRecord();
+            },
+            editCancel: function() {
+                this.editing = false;
+                this.collection.replace(this.selected, this.editCopy);
+                this.selected = this.editCopy;
+                this.editCopy = null;
             }
         });
     </script>

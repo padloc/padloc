@@ -50,6 +50,9 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
         },
         removeAt: function(from, to) {
             this.records = util.remove(this.records, from, to);
+        },
+        replace: function(orig, repl) {
+            this.records[this.records.indexOf(orig)] = repl;
         }
     };
 

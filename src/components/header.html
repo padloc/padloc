@@ -1,4 +1,4 @@
-<polymer-element name="safe-header" attributes="filterString record">
+<polymer-element name="safe-header" attributes="filterString record editing">
     <template>
         <style>
             :host {
@@ -31,7 +31,7 @@
                 width: 100%;
                 height: 100%;
                 box-sizing: border-box;
-                -webkit-transition: -webkit-transform 0.5s, opacity 0.5s;
+                -webkit-transition: -webkit-transform 0.5s, opacity 0.5s, background 0.5s;
             }
 
             input {
@@ -42,11 +42,12 @@
                 border: none;
                 padding: 6px;
                 background: transparent;
+                -webkit-transition: background 0.5s;
+                border-radius: 2px;
             }
 
             input[type=search] {
                 background: rgba(255, 255, 255, 0.8);
-                border-radius: 2px;
             }
 
             .name-input {
@@ -64,6 +65,10 @@
                 -webkit-transform: translate(0, 0);
             }
 
+            :host.editing .name-input {
+                background: #fff;
+            }
+
             #leftIcon {
                 -webkit-transition: width 0.5s;
                 min-width: 0;
@@ -76,12 +81,13 @@
         <safe-shapeshifter id="leftIcon" shape="menu" on-click="{{ leftClicked }}"></safe-shapeshifter>
         <div class="middle" id="middle">
             <input id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." />
-            <input id="nameInput" class="name-input" value="{{ record.name }}" placeholder="Enter title..." />
+            <input id="nameInput" class="name-input" value="{{ record.name }}" placeholder="Enter title..." readonly="true"/>
         </div>
         <safe-shapeshifter id="rightIcon" shape="plus" on-mousedown="{{ rightClicked }}"></safe-shapeshifter>
     </template>
     <script>
         Polymer("safe-header", {
+            editing: false,
             recordChanged: function(oldRec, newRec) {
                 if (newRec) {
                     this.$.nameInput.removeAttribute("disabled");
@@ -100,13 +106,19 @@
             leftClicked: function() {
                 if (!this.record) {
                     this.fire("menu");
+                } else if (this.editing) {
+                    this.fire("cancel");
                 } else {
                     this.fire("back");
                 }
             },
             rightClicked: function() {
                 if (this.record) {
-                    this.fire("record-menu");
+                    if (this.editing) {
+                        this.fire("done");
+                    } else {
+                        this.fire("record-menu");
+                    }
                 } else {
                     if (this.filterString) {
                         this.filterString = "";
@@ -121,7 +133,20 @@
                     this.$.rightIcon.shape = "cancel";
                 } else {
                     this.classList.remove("filtering");
-                    this.$.rightIcon.shape = this.record ? "arrow-left" : "plus";
+                    this.$.rightIcon.shape = this.record ? "more" : "plus";
+                }
+            },
+            editingChanged: function() {
+                if (this.editing) {
+                    this.classList.add("editing");
+                    this.$.nameInput.removeAttribute("readonly");
+                    this.$.leftIcon.shape = "cancel";
+                    this.$.rightIcon.shape = "check";
+                } else {
+                    this.classList.remove("editing");
+                    this.$.nameInput.setAttribute("readonly", true);
+                    this.$.leftIcon.shape = this.record ? "arrow-left" : "menu";
+                    this.$.rightIcon.shape = this.record ? "more" : "plus";
                 }
             }
         })
