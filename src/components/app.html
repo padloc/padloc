@@ -84,7 +84,6 @@
                 }
             },
             confirmDelete: function() {
-                console.log("*** confirm delete ***");
                 this.$.confirmDialog.open();
             },
             deleteRecord: function() {
@@ -113,21 +112,19 @@
             saveRecord: function() {
                 var record = this.selected;
                 if (record) {
-                    if (record.name || record.fields.length) {
-                        record.name = record.name || "Unnamed";
-                        this.collection.save();
-                    } else {
-                        this.collection.remove(record);
-                    }
+                    record.name = record.name || "Unnamed";
+                    this.collection.save();
                 }
             },
             addRecord: function() {
                 var record = {
                     name: "",
-                    fields: []
+                    fields: [],
+                    isNew: true
                 };
                 this.collection.add(record);
                 this.selected = record;
+                this.editing = true;
             },
             back: function() {
                 this.openListView();
@@ -154,14 +151,23 @@
                 this.editing = true;
             },
             editDone: function() {
+                this.saveRecord();
+
+                if (this.selected.isNew) {
+                    this.openListView();
+                }
                 this.editing = false;
                 this.editCopy = null;
-                this.saveRecord();
             },
             editCancel: function() {
+                if (this.selected.isNew) {
+                    this.collection.remove(this.selected);
+                    this.openListView();
+                } else {
+                    this.collection.replace(this.selected, this.editCopy);
+                    this.selected = this.editCopy;
+                }
                 this.editing = false;
-                this.collection.replace(this.selected, this.editCopy);
-                this.selected = this.editCopy;
                 this.editCopy = null;
             }
         });
