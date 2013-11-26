@@ -115,9 +115,6 @@
                     record.fields = record.fields.filter(function(field) {
                         return field.name || field.value;
                     });
-                    if (record.isNew) {
-                        this.openListView();
-                    }
                     delete record.isNew;
                     this.collection.save();
                 }
@@ -157,11 +154,12 @@
                 this.editing = true;
             },
             editDone: function() {
+                var isNew = this.selected.isNew;
                 this.saveRecord();
-
-                if (this.selected.isNew) {
+                if (isNew) {
                     this.openListView();
                 }
+
                 this.editing = false;
                 this.editCopy = null;
             },
