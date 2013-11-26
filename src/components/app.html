@@ -149,7 +149,7 @@
             startEditing: function() {
                 this.editCopy = {
                     name: this.selected.name,
-                    fields: this.selected.fields
+                    fields: this.selected.fields.concat([])
                 };
                 this.editing = true;
             },
