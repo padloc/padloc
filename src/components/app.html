@@ -34,7 +34,6 @@
                 top: 0;
                 bottom: 0;
                 margin: auto;
-                overflow: hidden;
             }
 
             ::-webkit-search-cancel-button {
@@ -63,7 +62,7 @@
             <div class="title">Are you sure you want to delete this record?</div>
             <div>Cancel</div>
             <div class="negative" on-click="{{ deleteRecord }}">Delete</div>
-        </safe-idalog>
+        </safe-dialog>
     </template>
     <script>
         Polymer("safe-app", {
