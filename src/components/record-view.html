@@ -10,7 +10,7 @@
                 box-sizing: border-box;
             }
 
-            .field {
+            .field, .add {
                 display: -webkit-box;
                 border: solid 1px rgba(0, 0, 0, 0.08);
                 border-bottom: solid 1px rgba(0, 0, 0, 0.12);
@@ -29,7 +29,7 @@
                 font-weight: inherit;
                 -webkit-appearance: none;
                 padding: 6px;
-                margin: 8px;
+                margin: 6px;
                 display: block;
                 text-overflow: ellipsis;
                 border-radius: 2px;
@@ -51,12 +51,15 @@
             }
 
             .add {
-                padding: 10px;
                 line-height: 0;
                 text-align: center;
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-                background: #fff;
-                margin: 5px;
+            }
+
+            .add > safe-shapeshifter {
+                display: block;
+                width: 26px;
+                height: 26px;
+                margin: 10px auto;
             }
 
             .add:hover {
