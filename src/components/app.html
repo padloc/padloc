@@ -116,6 +116,7 @@
                         return field.name || field.value;
                     });
                     delete record.isNew;
+                    this.collection.add(record);
                     this.collection.save();
                 }
             },
@@ -125,7 +126,6 @@
                     fields: [],
                     isNew: true
                 };
-                this.collection.add(record);
                 this.selected = record;
                 this.editing = true;
             },
@@ -165,7 +165,6 @@
             },
             editCancel: function() {
                 if (this.selected.isNew) {
-                    this.collection.remove(this.selected);
                     this.openListView();
                 } else {
                     this.collection.replace(this.selected, this.editCopy);
