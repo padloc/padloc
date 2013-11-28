@@ -75,7 +75,7 @@
                 width: 0;
             }
         </style>
-        <safe-shapeshifter id="leftIcon" shape="menu" on-click="{{ leftClicked }}"></safe-shapeshifter>
+        <safe-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></safe-shapeshifter>
         <div class="middle" id="middle">
             <input id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." />
             <template if="{{ editing }}">
@@ -85,7 +85,7 @@
                 <div class="name">{{ record.name }}</div>
             </template>
         </div>
-        <safe-shapeshifter id="rightIcon" shape="plus" on-mousedown="{{ rightClicked }}"></safe-shapeshifter>
+        <safe-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></safe-shapeshifter>
     </template>
     <script>
         Polymer("safe-header", {

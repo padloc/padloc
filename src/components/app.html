@@ -1,4 +1,4 @@
-<polymer-element name="safe-app" on-animation-end="{{ animationEnd }}">
+<polymer-element name="safe-app" on-animation-end="{{ animationEnd }}" touch-action="pan-y">
     <template>
         <style>
             :host {
@@ -55,13 +55,13 @@
             <div>Help</div>
         </safe-dialog>
         <safe-dialog id="recordMenu">
-            <div on-click="{{ startEditing }}">Edit</div>
-            <div class="negative" on-click="{{ confirmDelete }}" id="confirmButton">Delete</div>
+            <div on-tap="{{ startEditing }}">Edit</div>
+            <div class="negative" on-tap="{{ confirmDelete }}" id="confirmButton">Delete</div>
         </safe-dialog>
         <safe-dialog id="confirmDialog">
             <div class="title">Are you sure you want to delete this record?</div>
             <div>Cancel</div>
-            <div class="negative" on-click="{{ deleteRecord }}">Delete</div>
+            <div class="negative" on-tap="{{ deleteRecord }}">Delete</div>
         </safe-dialog>
     </template>
     <script>
