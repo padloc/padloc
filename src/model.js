@@ -40,7 +40,7 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
             this.store.save(this);
         },
         add: function(rec, at) {
-            this.records = util.insert(this.records, rec, at || this.records.length);
+            this.records = util.insert(this.records, rec, at !== undefined ? at : this.records.length);
         },
         remove: function(rec) {
             var index = this.records.indexOf(rec);
