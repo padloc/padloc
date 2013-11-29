@@ -1,4 +1,4 @@
-<polymer-element name="safe-list-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}">
+<polymer-element name="safe-list-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
     <template>
         <style>
             .list {
@@ -13,10 +13,25 @@
             .list > * {
                 font-size: 18px;
             }
+
+            .track-surrogate {
+                position: absolute;
+                z-index: 10;
+                left: 0;
+                top: 0;
+                -webkit-transform: translate3d(0, 0, 0);
+                pointer-events: none;
+                opacity: 0.8;
+            }
+
+            .ghost {
+                opacity: 0.5;
+            }
         </style>
+        <safe-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></safe-record-item>
         <div id="list" class="list">
             <template repeat="{{ record, i in filteredRecords}}">
-                <safe-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}"></safe-record-item>
+                <safe-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}" on-hold="{{ holdItem }}" on-pointerover="{{ itemPointerOver }}" on-pointerout="{{ itemPointerOut }}"></safe-record-item>
             </template>
         </div>
     </template>
@@ -39,7 +54,10 @@
                 }) : this.collection.records;
             },
             recordClicked: function(event, detail, sender) {
-                this.selected = sender.templateInstance.model.record;
+                if (!this.itemHeld) {
+                    this.selected = sender.templateInstance.model.record;
+                }
+                this.itemHeld = false;
             },
             startOutAnimation: function() {
                 this.animCount = 0, self = this;
@@ -87,6 +105,68 @@
                         item.classList.remove("selected");
                     }
                 });
+            },
+            holdItem: function(event, detail, sender) {
+                var ts = this.$.trackSurrogate;
+                ts.record = sender.templateInstance.model.record;
+                ts.style.display = "block";
+                this.positionTrackSurrogate(this.lastPointerPos.x, this.lastPointerPos.y);
+                this.dragging = true;
+                this.setAttribute("touch-action", "none");
+                this.draggedItem = sender;
+                this.classList.add("dragging");
+                this.draggedItem.classList.add("ghost");
+                this.itemHeld = true;
+            },
+            pointerDown: function() {
+                this.lastPointerPos = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+            },
+            track: function(event, detail, sender) {
+                if (this.dragging) {
+                    this.positionTrackSurrogate(event.clientX, event.clientY);
+                }
+            },
+            release: function() {
+                if (this.dragging) {
+                    if (this.lastHovered) {
+                        this.lastHovered.classList.remove("drag-over");
+                        var hoveredRecord = this.lastHovered.templateInstance.model.record;
+                        var draggedRecord = this.draggedItem.templateInstance.model.record;
+                        var targetIndex = this.collection.records.indexOf(hoveredRecord);
+                        this.collection.remove(draggedRecord);
+                        this.collection.add(draggedRecord, targetIndex);
+                        this.collection.save();
+                    }
+
+                    this.classList.remove("dragging");
+                    this.$.trackSurrogate.style.display = "none";
+                    this.draggedItem.classList.remove("ghost");
+                    this.draggedItem = null;
+                    this.lastHovered = null;
+                    this.dragging = false;
+                    this.removeAttribute("touch-action");
+                }
+            },
+            positionTrackSurrogate: function(x, y) {
+                var ts = this.$.trackSurrogate;
+                x -= ts.offsetWidth/2;
+                y -= ts.offsetHeight/2;
+                ts.style["-webkit-transform"] = "translate3d(" + x + "px, " + y + "px, 0)";
+            },
+            itemPointerOver: function(event, detail, sender) {
+                if (this.dragging) {
+                    this.lastHovered = sender;
+                    sender.classList.add("drag-over");
+                }
+            },
+            itemPointerOut: function(event, detail, sender) {
+                if (this.dragging) {
+                    this.lastHovered = null;
+                    sender.classList.remove("drag-over");
+                }
             }
         });
     </script>
