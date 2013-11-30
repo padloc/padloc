@@ -23,10 +23,6 @@
                 pointer-events: none;
                 opacity: 0.8;
             }
-
-            .ghost {
-                opacity: 0.5;
-            }
         </style>
         <safe-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></safe-record-item>
         <div id="list" class="list">
@@ -133,12 +129,14 @@
                 if (this.dragging) {
                     if (this.lastHovered) {
                         this.lastHovered.classList.remove("drag-over");
-                        var hoveredRecord = this.lastHovered.templateInstance.model.record;
-                        var draggedRecord = this.draggedItem.templateInstance.model.record;
-                        var targetIndex = this.collection.records.indexOf(hoveredRecord);
-                        this.collection.remove(draggedRecord);
-                        this.collection.add(draggedRecord, targetIndex);
-                        this.collection.save();
+                        if (this.lastHovered != this.draggedItem) {
+                            var hoveredRecord = this.lastHovered.templateInstance.model.record;
+                            var draggedRecord = this.draggedItem.templateInstance.model.record;
+                            var targetIndex = this.collection.records.indexOf(hoveredRecord);
+                            this.collection.remove(draggedRecord);
+                            this.collection.add(draggedRecord, targetIndex);
+                            this.collection.save();
+                        }
                     }
 
                     this.classList.remove("dragging");
