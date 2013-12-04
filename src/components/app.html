@@ -88,11 +88,13 @@
                 this.openView(this.$.listView);
             },
             openView: function(view, outCallback, inCallback) {
+                var views = this.shadowRoot.querySelectorAll(".view").array();
+                var back = views.indexOf(view) < views.indexOf(this.currentView);
                 if (this.currentView) {
-                    this.currentView.hide(null, outCallback);
+                    this.currentView.hide(back ? "slideOutToRight": "slideOutToLeft", outCallback);
                 }
                 setTimeout(function() {
-                    view.show(inCallback);
+                    view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
                 }, 300);
                 this.currentView = view;
             },
