@@ -1,4 +1,4 @@
-<polymer-element name="safe-app" on-animation-end="{{ animationEnd }}" touch-action="pan-y">
+<polymer-element name="safe-app" touch-action="pan-y">
     <template>
         <style>
             :host {
@@ -27,15 +27,6 @@
                 width: 100%;
             }
 
-            .view {
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 0;
-                bottom: 0;
-                margin: auto;
-            }
-
             ::-webkit-search-cancel-button {
                 display: none;
             }
@@ -43,12 +34,17 @@
             *:focus {
                 outline: none;
             }
+
+            safe-lock-view {
+                z-index: 1000;
+            }
         </style>
+        <!-- <safe-lock-view class="view" on-enter="{{ pwdEnter }}"></safe-lock-view> -->
         <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}"
             on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" editing="{{ editing }}"
             on-done="{{ editDone }}" on-cancel="{{ editCancel }}"></safe-header>
-        <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}"></safe-list-view>
-        <safe-record-view id="recordView" class="view" on-back="{{ back }}" record="{{ selected }}" editing="{{ editing }}" style="display: none"></safe-record-view>
+        <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none"></safe-list-view>
+        <safe-record-view id="recordView" class="view" record="{{ selected }}" editing="{{ editing }}" style="display: none"></safe-record-view>
         <safe-dialog id="mainMenu">
             <div>Settings</div>
             <div>About</div>
@@ -73,13 +69,14 @@
                     coll.fetch();
                     self.collection = coll;
                 });
-                // this.$.confirmButton.addEventListener("click", function() {
-                //     this.confirmDelete.apply(self, arguments);
-                // });
+                this.openView(this.$.listView);
+            },
+            pwdEnter: function() {
+                console.log("*** pwd enter ***", arguments);
             },
             selectedChanged: function(oldRec, newRec) {
                 if (newRec) {
-                    this.openRecordView();
+                    this.openView(this.$.recordView);
                 }
             },
             confirmDelete: function() {
@@ -88,25 +85,16 @@
             deleteRecord: function() {
                 this.collection.remove(this.selected);
                 this.collection.save();
-                this.openListView();
+                this.openView(this.$.listView);
             },
-            openRecordView: function() {
-                this.$.listView.startOutAnimation();
-                var self = this;
-
+            openView: function(view, outCallback, inCallback) {
+                if (this.currentView) {
+                    this.currentView.hide(null, outCallback);
+                }
                 setTimeout(function() {
-                    self.$.recordView.startInAnimation();
-                    self.$.recordView.style.display = "block";
+                    view.show(inCallback);
                 }, 300);
-            },
-            openListView: function() {
-                this.$.recordView.startOutAnimation();
-
-                var self = this;
-                setTimeout(function() {
-                    self.$.listView.startInAnimation();
-                    self.$.listView.style.display = "block";
-                }, 300);
+                this.currentView = view;
             },
             saveRecord: function() {
                 var record = this.selected;
@@ -130,15 +118,13 @@
                 this.editing = true;
             },
             back: function() {
-                this.openListView();
+                this.recordViewBack();
             },
-            animationEnd: function(event, detail, sender) {
-                if (detail.direction == "out") {
-                    event.srcElement.style.display = "none";
-                    if (event.srcElement.id == "recordView") {
-                        this.selected = null;
-                    }
-                }
+            recordViewBack: function() {
+                var self = this;
+                this.openView(this.$.listView, function() {
+                    self.selected = null;
+                });;
             },
             openMainMenu: function() {
                 this.$.mainMenu.open();
@@ -157,7 +143,7 @@
                 var isNew = this.selected.isNew;
                 this.saveRecord();
                 if (isNew) {
-                    this.openListView();
+                    this.recordViewBack();
                 }
 
                 this.editing = false;
@@ -165,7 +151,7 @@
             },
             editCancel: function() {
                 if (this.selected.isNew) {
-                    this.openListView();
+                    this.recordViewBack();
                 } else {
                     this.collection.replace(this.selected, this.editCopy);
                     this.selected = this.editCopy;

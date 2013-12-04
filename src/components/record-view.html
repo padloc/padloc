@@ -1,4 +1,4 @@
-<polymer-element name="safe-record-view" attributes="record editing">
+<polymer-element name="safe-record-view" extends="safe-view" attributes="record editing">
     <template>
         <style>
             :host {
@@ -90,14 +90,8 @@
     </template>
     <script>
         Polymer('safe-record-view', {
-            enteredView: function() {
-                var self = this;
-                this.addEventListener("webkitAnimationEnd", function() {
-                    this.animationEnd.apply(self, arguments);
-                }, false);
-            },
-            back: function() {
-                this.fire("back");
+            getAnimationElements: function() {
+                return this.shadowRoot.querySelectorAll(".field").array();
             },
             addField: function() {
                 var field = {
@@ -105,42 +99,6 @@
                     value: ""
                 };
                 this.record.fields.push(field);
-            },
-            startOutAnimation: function() {
-                this.animCount = 0, self = this;
-
-                this.shadowRoot.querySelectorAll(".field").array().forEach(function(item) {
-                    var display = window.getComputedStyle(item, null).getPropertyValue("display");
-                    if (display != "none") {
-                        self.animCount++;
-                        item.style["-webkit-animation"] = "slideOutToRight 0.4s ease " + (Math.random()/5) + "s both";
-                    }
-                });
-                
-                if (!this.animCount) {
-                    this.fire("animation-end", {direction: "out"});
-                }
-            },
-            startInAnimation: function() {
-                this.animCount = 0, self = this;
-
-                this.shadowRoot.querySelectorAll(".field").array().forEach(function(item) {
-                    var display = window.getComputedStyle(item, null).getPropertyValue("display");
-                    if (display != "none") {
-                        self.animCount++;
-                        item.style["-webkit-animation"] = "slideInFromRight 0.4s ease " + (Math.random()/5) + "s both";
-                    }
-                });
-
-                if (!this.animCount) { 
-                    this.fire("animation-end", {direction: "in"});
-                }
-            },
-            animationEnd: function(event) {
-                this.animCount--;
-                if (!this.animCount) {
-                    this.fire("animation-end", {direction: event.animationName == "slideInFromRight" ? "in" : "out"});
-                }
             },
             editingChanged: function() {
                 if (this.editing) {

@@ -1,4 +1,4 @@
-<polymer-element name="safe-list-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
+<polymer-element name="safe-list-view" extends="safe-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
     <template>
         <style>
             .list {
@@ -37,11 +37,8 @@
                 filterString: "applyFilter",
                 "collection.records": "applyFilter"
             },
-            enteredView: function() {
-                var self = this;
-                this.addEventListener("webkitAnimationEnd", function() {
-                    this.animationEnd.apply(self, arguments);
-                }, false);
+            getAnimationElements: function() {
+                return this.$.list.children.array()
             },
             applyFilter: function() {
                 var fs = this.filterString;
@@ -54,43 +51,6 @@
                     this.selected = sender.templateInstance.model.record;
                 }
                 this.itemHeld = false;
-            },
-            startOutAnimation: function() {
-                this.animCount = 0, self = this;
-
-                this.$.list.children.array().forEach(function(item) {
-                    var display = window.getComputedStyle(item, null).getPropertyValue("display");
-                    if (display != "none") {
-                        self.animCount++;
-                        item.style["-webkit-animation"] = "slideOutToLeft 0.4s ease " + (Math.random()/5) + "s both";
-                    }
-                });
-
-                if (!this.animCount) {                    
-                    this.fire("animation-end", {direction: "out"});
-                }
-            },
-            startInAnimation: function() {
-                this.animCount = 0, self = this;
-
-                this.$.list.children.array().forEach(function(item) {
-                    var display = window.getComputedStyle(item, null).getPropertyValue("display");
-                    if (display != "none") {
-                        self.animCount++;
-                        item.style["-webkit-animation"] = "slideInFromLeft 0.4s ease " + (Math.random()/5) + "s both";
-                    }
-                });
-
-                if (!this.animCount) {                    
-                    this.fire("animation-end", {direction: "in"});
-                }
-            },
-            animationEnd: function(event) {
-                this.animCount--;
-                if (!this.animCount) {
-                    var direction = event.animationName == "slideOutToLeft" ? "out" : "in";
-                    this.fire("animation-end", {direction: direction});
-                }
             },
             selectedChanged: function() {
                 var selected = this.selected;

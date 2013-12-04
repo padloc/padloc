@@ -1,0 +1,87 @@
+<polymer-element name="safe-view" attributes="inAnimation outAnimation animationDuration animationEasing maxAnimationDelay">
+    <template>
+        <style>
+            :host {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                margin: auto;
+            }
+        </style>
+    </template>
+    <script>
+        Polymer('safe-view', {
+            inAnimation: "slideInFromRight",
+            outAnimation: "slideOutToLeft",
+            animationDuration: 400,
+            animationEasing: "ease",
+            maxAnimationDelay: 200,
+            enteredView: function() {
+                var self = this;
+                this.addEventListener("webkitAnimationEnd", function() {
+                    self.animationEnd.apply(self, arguments);
+                }, false);
+            },
+            getAnimationElements: function() {
+                return [this];
+            },
+            startAnimation: function(direction, animation, callback) {
+                animation = animation || this[direction + "Animation"];
+                this.currAnimation = animation;
+                this.currDirection = direction;
+                this.animCount = 0;
+                this.animationCallback = callback;
+                var self = this;
+
+                this.getAnimationElements().forEach(function(elem) {
+                    var display = window.getComputedStyle(elem, null).getPropertyValue("display");
+                    if (display != "none") {
+                        self.animCount++;
+                        elem.style["-webkit-animation"] = [
+                            animation,
+                            self.animationDuration + "ms",
+                            self.animationEasing,
+                            Math.floor(Math.random() * self.maxAnimationDelay) + "ms",
+                            "both"
+                        ].join(" ");
+                    }
+                });
+                
+                if (!this.animCount) {
+                    this.fire("animation-end", {direction: direction});
+                    if (this.animationCallback) {
+                        this.animationCallback();
+                        this.animationCallback = null;
+                    }
+                }
+            },
+            animationEnd: function(event) {
+                if (event.animationName == this.currAnimation) {
+                    this.animCount--;
+                    if (!this.animCount) {
+                        if (this.animationCallback) {
+                            this.animationCallback();
+                            this.animationCallback = null;
+                        }
+                        this.fire("animation-end", {direction: this.currDirection});
+                    }
+                }
+            },
+            show: function(animation, callback) {
+                this.startAnimation("in", animation, callback);
+                this.style.display = "";
+            },
+            hide: function(animation, callback) {
+                var self = this;
+                this.startAnimation("out", animation, function() {
+                    self.style.display = "none";
+                    if (callback) {
+                        callback();
+                    }
+                });
+            }
+        });
+    </script>
+</polymer-element>
