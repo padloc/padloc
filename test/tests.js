@@ -159,5 +159,20 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         deepEqual(newColl.records, coll.records, "After fetching, the collection should be populated with the correct records.");
     });
 
+    test("fetch an existing collection", function() {
+        var collName = "test", password = "password";
+        localStorage.removeItem("coll_" + collName);
+
+        var coll = new model.Collection(collName);
+        coll.add(["one", "two"]);
+        coll.store.password = password;
+        coll.save();
+
+        var coll2 = new model.Collection(collName);
+        ok(!coll2.fetch("drowssap"), "Fetching with a wrong password should return false");
+        ok(coll2.fetch(password), "Fetching with the correct password should return true");
+        deepEqual(coll.records, coll2.records, "After fetching, the collection should contain the correct records");
+    });
+
     QUnit.start();
 });

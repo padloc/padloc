@@ -10,14 +10,15 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
 
             var json = localStorage.getItem("coll_" + coll.name);
             if (json) {
-                // try {
+                try {
                     var c = JSON.parse(json);
                     coll.records = JSON.parse(crypto.pwdDecrypt(this.password, c));
-                // } catch (e) {
-                //     if (e ==)
-                // }
+                } catch (e) {
+                    return false;
+                }
             }
-            return coll;
+
+            return true;
         },
         save: function(coll) {
             var pt = JSON.stringify(coll.records);
@@ -33,8 +34,8 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
     };
 
     Collection.prototype = {
-        fetch: function() {
-            this.store.fetch(this);
+        fetch: function(password) {
+            return this.store.fetch(this, password);
         },
         save: function() {
             this.store.save(this);
