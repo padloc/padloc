@@ -89,6 +89,7 @@
             },
             lock: function() {
                 this.collection.lock();
+                this.$.mainMenu.close();
                 this.openView(this.$.lockView);
             },
             selectedChanged: function(oldRec, newRec) {
@@ -186,6 +187,7 @@
                 this.editCopy = null;
             },
             changePassword: function() {
+                this.$.mainMenu.close();
                 this.$.passwordView.currentPassword = this.collection.store.password;
                 this.openView(this.$.passwordView);
             }

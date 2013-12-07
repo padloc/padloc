@@ -54,7 +54,7 @@
                 opacity: 1;
             }
         </style>
-        <div class="inner">
+        <div class="inner" on-tap="{{ innerTap }}">
             <content></content>
         </div>
     </template>
@@ -93,6 +93,10 @@
                 if (!this.classList.contains("open") && !this.transCount) {
                     this.style.display = "none";
                 }
+            },
+            innerTap: function(event, detail, sender) {
+                // Intercept the tap event to prevent closing the popup
+                event.stopPropagation();
             }
         });
     </script>
