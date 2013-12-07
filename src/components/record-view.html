@@ -81,7 +81,7 @@
     <script>
         Polymer('safe-record-view', {
             getAnimationElements: function() {
-                return this.shadowRoot.children.array();
+                return this.shadowRoot.querySelectorAll(".field, .add").array();
             },
             addField: function() {
                 this.$.addFieldValueInput.value = "";
