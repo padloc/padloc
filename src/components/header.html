@@ -9,6 +9,8 @@
                 box-sizing: border-box;
                 border-bottom: solid 2px rgba(0, 0, 0, 0.15);
                 overflow: hidden;
+                -webkit-transform: translate3d(0, 0, 0);
+                -webkit-transition: -webkit-transform 0.5s;
             }
 
             :host safe-shapeshifter {
@@ -73,6 +75,10 @@
 
             :host.filtering:not(.show-record) #leftIcon {
                 width: 0;
+            }
+
+            :host.hidden {
+                -webkit-transform: translate3d(0, -100%, 0);
             }
         </style>
         <safe-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></safe-shapeshifter>

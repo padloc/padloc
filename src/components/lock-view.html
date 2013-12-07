@@ -1,0 +1,78 @@
+<polymer-element name="safe-lock-view" extends="safe-view">
+    <template>
+        <style>
+            .wrapper {
+                height: 300px;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                margin: auto 0;
+                text-align: center;
+            }
+
+            .header {
+                /*color: #fff;*/
+                font-size: 50px;
+                font-weight: 100;
+                padding: 20px;
+            }
+
+            input {
+                background: #fff;
+                font-family: inherit;
+                padding: 10px;
+                font-size: 20px;
+                border: none;
+                border-top: solid 1px #ccc;
+                border-bottom: solid 1px #ccc;
+                text-align: center;
+                width: 100%;
+                margin: 0;
+                box-sizing: border-box;
+            }
+
+            .error-message {
+                color: red;
+                padding: 20px;
+                -webkit-transform: translate(0, 100%);
+                opacity: 0;
+                -webkit-transition: -webkit-transform 0.5s, opacity 0.5s;
+            }
+
+            .error .error-message {
+                -webkit-transform: translate(0, 0);
+                opacity: 1;
+            }
+
+            .error input {
+                border-color: red;
+                color: red;
+            }
+        </style>
+        <div class="wrapper {{ errorMessage ? 'error' : '' }}">
+            <div class="header">
+                Padlock
+            </div>
+            <input type="password" placeholder="Enter Password" on-keydown="{{ keydown }}" id="pwdInput"/>
+            <div class="error-message">{{ errorMessage }}</div>
+        </div>
+    </template>
+    <script>
+        Polymer("safe-lock-view", {
+            keydown: function(event, detail, sender) {
+                if (event.keyCode == 13) { 
+                    this.fire("enter", {password: this.$.pwdInput.value});
+                }
+            },
+            getAnimationElements: function() {
+                return [this.shadowRoot.querySelector(".header"), this.shadowRoot.querySelector("input")];
+            },
+            show: function(animation, callback) {
+                this.super(arguments);
+                this.$.pwdInput.focus();
+            }
+        });
+    </script>
+</polymer>

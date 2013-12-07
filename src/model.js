@@ -5,18 +5,19 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
 
     Store.prototype = {
         fetch: function(coll, password) {
-            this.password = password || this.password;
+            password = password !== undefined && password !== null ? password : this.password;
             var obj = {};
 
             var json = localStorage.getItem("coll_" + coll.name);
             if (json) {
                 try {
                     var c = JSON.parse(json);
-                    coll.records = JSON.parse(crypto.pwdDecrypt(this.password, c));
+                    coll.records = JSON.parse(crypto.pwdDecrypt(password, c));
                 } catch (e) {
                     return false;
                 }
             }
+            this.password = password;
 
             return true;
         },
@@ -24,6 +25,9 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
             var pt = JSON.stringify(coll.records);
             var c = crypto.pwdEncrypt(this.password, pt);
             localStorage.setItem("coll_" + coll.name, JSON.stringify(c));
+        },
+        collectionExists: function(collName) {
+            return localStorage.getItem("coll_" + collName) !== null;
         }
     };
 
@@ -54,6 +58,17 @@ define(["safe/crypto", "safe/util"], function(crypto, util) {
         },
         replace: function(orig, repl) {
             this.records[this.records.indexOf(orig)] = repl;
+        },
+        setPassword: function(password) {
+            this.store.password = password;
+            this.save();
+        },
+        exists: function() {
+            return this.store.collectionExists(this.name);
+        },
+        lock: function() {
+            this.records = [];
+            this.store.password = null;
         }
     };
 

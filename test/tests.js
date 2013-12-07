@@ -174,5 +174,17 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         deepEqual(coll.records, coll2.records, "After fetching, the collection should contain the correct records");
     });
 
+    test("test if a collection exists", function() {
+        var collName = "test";
+        localStorage.removeItem("coll_" + collName);
+
+        var coll = new model.Collection(collName);
+
+        ok(!coll.exists(), "Collection has not been saved yet, so it shouldn't exist in the store");
+
+        coll.save();
+        ok(coll.exists(), "After the collection has been saved, it should exist ist the store.");
+    });
+
     QUnit.start();
 });

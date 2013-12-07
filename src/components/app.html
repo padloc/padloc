@@ -39,16 +39,19 @@
                 z-index: 1000;
             }
         </style>
-        <!-- <safe-lock-view class="view" on-enter="{{ pwdEnter }}"></safe-lock-view> -->
-        <safe-header filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}"
+        <safe-header id="header" filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}"
             on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" editing="{{ editing }}"
-            on-done="{{ editDone }}" on-cancel="{{ editCancel }}"></safe-header>
+            on-done="{{ editDone }}" on-cancel="{{ editCancel }}" class="hidden"></safe-header>
+        <safe-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}" style="display: none"></safe-password-view>
+        <safe-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}" style="display: none"></safe-lock-view>
         <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none"></safe-list-view>
         <safe-record-view id="recordView" class="view" record="{{ selected }}" editing="{{ editing }}" style="display: none"></safe-record-view>
         <safe-dialog id="mainMenu">
             <div>Settings</div>
             <div>About</div>
             <div>Help</div>
+            <div on-tap="{{ lock }}">Lock App</div>
+            <div on-tap="{{ changePassword }}">Change Password</div>
         </safe-dialog>
         <safe-dialog id="recordMenu">
             <div on-tap="{{ startEditing }}">Edit</div>
@@ -65,14 +68,28 @@
             ready: function() {
                 var self = this;
                 require(["safe/model"], function(model) {
-                    var coll = new model.Collection();
-                    coll.fetch();
-                    self.collection = coll;
+                    self.collection = new model.Collection();
+                    self.openView(self.collection.exists() ? self.$.lockView : self.$.passwordView);
                 });
+            },
+            pwdEnter: function(event, detail, sender) {
+                this.unlock(detail.password);
+            },
+            newPwdEnter: function(event, detail, sender) {
+                this.collection.setPassword(detail.password);
                 this.openView(this.$.listView);
             },
-            pwdEnter: function() {
-                console.log("*** pwd enter ***", arguments);
+            unlock: function(password) {
+                if (this.collection.fetch(password)) {
+                    this.$.lockView.errorMessage = null;
+                    this.openView(this.$.listView);
+                } else {
+                    this.$.lockView.errorMessage = "Wrong password!";
+                }
+            },
+            lock: function() {
+                this.collection.lock();
+                this.openView(this.$.lockView);
             },
             selectedChanged: function(oldRec, newRec) {
                 if (newRec) {
@@ -96,6 +113,13 @@
                 setTimeout(function() {
                     view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
                 }, 300);
+
+                if (view == this.$.lockView || view == this.$.passwordView) {
+                    this.$.header.classList.add("hidden");
+                } else {
+                    this.$.header.classList.remove("hidden");
+                }
+
                 this.currentView = view;
             },
             saveRecord: function() {
@@ -160,6 +184,10 @@
                 }
                 this.editing = false;
                 this.editCopy = null;
+            },
+            changePassword: function() {
+                this.$.passwordView.currentPassword = this.collection.store.password;
+                this.openView(this.$.passwordView);
             }
         });
     </script>
