@@ -16,34 +16,17 @@
                 border-bottom: solid 1px rgba(0, 0, 0, 0.12);
                 background: #fff;
                 margin: 5px;
+                padding: 12px;
             }
-
-            /*.field:not(:last-child) {
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-            }*/
 
             .field > * {
-                border: none;
-                font-family: inherit;
-                font-size: inherit;
-                font-weight: inherit;
-                -webkit-appearance: none;
-                padding: 6px;
-                margin: 6px;
-                display: block;
                 text-overflow: ellipsis;
-                border-radius: 2px;
-            }
-
-            .field > input {
-                background: #f5f5f5;
             }
 
             .field > .label {
-                width: 100px;
+                max-width: 100px;
                 text-align: right;
                 color: #539dc6;
-                /*font-size: 15px;*/
             }
 
             .field > .value {
@@ -53,6 +36,7 @@
             .add {
                 line-height: 0;
                 text-align: center;
+                padding: 0;
             }
 
             .add > safe-shapeshifter {
@@ -71,41 +55,71 @@
             }
         </style>
         <template repeat="{{ field, i in record.fields }}">
-            <div class="field">
-                <template if="{{ editing }}">
-                    <input class="value" value="{{ field.value }}" placeholder="Enter Content..."/>
-                    <input class="label" value="{{ field.name }}" placeholder="Enter Label..."/>
-                </template>
-                <template if="{{ !editing }}">
-                    <div class="value">{{ field.value }}</div>
-                    <div class="label">{{ field.name }}</div>
-                </template>
+            <div class="field" on-tap="{{ openFieldMenu }}">
+                <div class="value">{{ field.value }}</div>
+                <div class="label">{{ field.name }}</div>
             </div>
         </template>
-        <template if="{{ editing }}">
-            <div class="add" on-tap="{{ addField }}">
-                <safe-shapeshifter shape="plus"></safe-shapeshifter>
-            </div>
-        </template>
+        <div class="add" on-tap="{{ addField }}">
+            <safe-shapeshifter shape="plus"></safe-shapeshifter>
+        </div>
+        <safe-dialog id="fieldMenu">
+            <div on-tap="{{ editField }}">Edit Field</div>
+            <div class="negative" on-tap="{{ removeField }}">Remove Field</div>
+        </safe-dialog>
+        <safe-dialog id="addFieldDialog">
+            <input id="addFieldValueInput" placeholder="Enter Content" />
+            <input id="addFieldNameInput" placeholder="Enter Label" />
+            <div on-tap="{{ confirmAddField }}">Add</div>
+        </safe-dialog>
+        <safe-dialog id="editFieldDialog">
+            <input id="editValueInput" placeholder="Enter Content" />
+            <input id="editNameInput" placeholder="Enter Label" />
+            <div on-tap="{{ confirmEditField }}">Save</div>
+        </safe-dialog>
     </template>
     <script>
         Polymer('safe-record-view', {
             getAnimationElements: function() {
-                return this.shadowRoot.querySelectorAll(".field").array();
+                return this.shadowRoot.children.array();
             },
             addField: function() {
+                this.$.addFieldValueInput.value = "";
+                this.$.addFieldNameInput.value = "";
+                this.$.addFieldDialog.open();
+                this.$.addFieldValueInput.focus();
+            },
+            confirmAddField: function() {
+                this.$.addFieldDialog.close();
                 var field = {
-                    name: "",
-                    value: ""
+                    name: this.$.addFieldNameInput.value,
+                    value: this.$.addFieldValueInput.value
                 };
                 this.record.fields.push(field);
+                this.fire("save");
             },
-            editingChanged: function() {
-                if (this.editing) {
-                    this.classList.add("editing");
-                } else {
-                    this.classList.remove("editing");
-                }
+            editField: function() {
+                this.$.fieldMenu.close();
+                this.$.editValueInput.value = this.selectedField.value;
+                this.$.editNameInput.value = this.selectedField.name;
+                this.$.editFieldDialog.open();
+                this.$.editValueInput.select();
+            },
+            confirmEditField: function() {
+                this.$.editFieldDialog.close();
+                this.selectedField.value = this.$.editValueInput.value;
+                this.selectedField.name = this.$.editNameInput.value;
+                this.fire("save");
+            },
+            openFieldMenu: function(event, detail, sender) {
+                this.selectedField = sender.templateInstance.model.field;
+                this.$.fieldMenu.open();
+            },
+            removeField: function() {
+                this.$.fieldMenu.close();
+                var util = require("safe/util");
+                this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
+                this.fire("save");
             }
         });
     </script>

@@ -1,4 +1,4 @@
-<polymer-element name="safe-header" attributes="filterString record editing">
+<polymer-element name="safe-header" attributes="filterString record">
     <template>
         <style>
             :host {
@@ -43,13 +43,8 @@
                 -webkit-appearance: none;
                 border: none;
                 padding: 6px;
-                background: #fff;
-                -webkit-transition: background 0.5s;
-                border-radius: 2px;
-            }
-
-            input[type=search] {
                 background: rgba(255, 255, 255, 0.8);
+                border-radius: 2px;
             }
 
             .name {
@@ -84,12 +79,7 @@
         <safe-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></safe-shapeshifter>
         <div class="middle" id="middle">
             <input id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." />
-            <template if="{{ editing }}">
-                <input id="nameInput" class="name" value="{{ record.name }}" placeholder="Enter title..."/>
-            </template>
-            <template if="{{ !editing }}">
-                <div class="name">{{ record.name }}</div>
-            </template>
+            <div class="name">{{ record.name }}</div>
         </div>
         <safe-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></safe-shapeshifter>
     </template>
@@ -112,25 +102,17 @@
             leftClicked: function() {
                 if (!this.record) {
                     this.fire("menu");
-                } else if (this.editing) {
-                    this.fire("cancel");
                 } else {
                     this.fire("back");
                 }
             },
             rightClicked: function() {
                 if (this.record) {
-                    if (this.editing) {
-                        this.fire("done");
-                    } else {
-                        this.fire("record-menu");
-                    }
+                    this.fire("record-menu");
+                } else if (this.filterString) {
+                    this.filterString = "";
                 } else {
-                    if (this.filterString) {
-                        this.filterString = "";
-                    } else {
-                        this.fire("add")
-                    }
+                    this.fire("add")
                 }
             },
             filterStringChanged: function() {
@@ -139,17 +121,6 @@
                     this.$.rightIcon.shape = "cancel";
                 } else {
                     this.classList.remove("filtering");
-                    this.$.rightIcon.shape = this.record ? "more" : "plus";
-                }
-            },
-            editingChanged: function() {
-                if (this.editing) {
-                    this.classList.add("editing");
-                    this.$.leftIcon.shape = "cancel";
-                    this.$.rightIcon.shape = "check";
-                } else {
-                    this.classList.remove("editing");
-                    this.$.leftIcon.shape = this.record ? "arrow-left" : "menu";
                     this.$.rightIcon.shape = this.record ? "more" : "plus";
                 }
             }

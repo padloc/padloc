@@ -39,13 +39,11 @@
                 z-index: 1000;
             }
         </style>
-        <safe-header id="header" filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}"
-            on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" editing="{{ editing }}"
-            on-done="{{ editDone }}" on-cancel="{{ editCancel }}" class="hidden"></safe-header>
+        <safe-header id="header" filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" class="hidden"></safe-header>
         <safe-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}" style="display: none"></safe-password-view>
         <safe-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}" style="display: none"></safe-lock-view>
         <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none"></safe-list-view>
-        <safe-record-view id="recordView" class="view" record="{{ selected }}" editing="{{ editing }}" style="display: none"></safe-record-view>
+        <safe-record-view id="recordView" class="view" record="{{ selected }}" style="display: none" on-save="{{ saveRecord }}"></safe-record-view>
         <safe-dialog id="mainMenu">
             <div>Settings</div>
             <div>About</div>
@@ -54,13 +52,21 @@
             <div on-tap="{{ changePassword }}">Change Password</div>
         </safe-dialog>
         <safe-dialog id="recordMenu">
-            <div on-tap="{{ startEditing }}">Edit</div>
-            <div class="negative" on-tap="{{ confirmDelete }}" id="confirmButton">Delete</div>
+            <div on-tap="{{ editName }}">Edit Name</div>
+            <div class="negative" on-tap="{{ deleteRecord }}" id="confirmButton">Delete</div>
         </safe-dialog>
         <safe-dialog id="confirmDialog">
             <div class="title">Are you sure you want to delete this record?</div>
-            <div>Cancel</div>
-            <div class="negative" on-tap="{{ deleteRecord }}">Delete</div>
+            <div on-tap="{{ cancelDelete }}">Cancel</div>
+            <div class="negative" on-tap="{{ confirmDelete }}">Delete</div>
+        </safe-dialog>
+        <safe-dialog id="addDialog">
+            <input id="addInput" placeholder="Enter Record Name"/>
+            <div on-tap="{{ confirmAddRecord }}">Add</div>
+        </safe-dialog>
+        <safe-dialog id="editNameDialog">
+            <input id="editNameInput" placeholder="Enter Record Name"/>
+            <div on-tap="{{ confirmEditName }}">Save</div>
         </safe-dialog>
     </template>
     <script>
@@ -97,13 +103,18 @@
                     this.openView(this.$.recordView);
                 }
             },
-            confirmDelete: function() {
+            deleteRecord: function() {
+                this.$.recordMenu.close();
                 this.$.confirmDialog.open();
             },
-            deleteRecord: function() {
+            confirmDelete: function() {
+                this.$.confirmDialog.close();
                 this.collection.remove(this.selected);
                 this.collection.save();
-                this.openView(this.$.listView);
+                this.recordViewBack();
+            },
+            cancelDelete: function() {
+                this.$.confirmDialog.close();
             },
             openView: function(view, outCallback, inCallback) {
                 var views = this.shadowRoot.querySelectorAll(".view").array();
@@ -130,19 +141,24 @@
                     record.fields = record.fields.filter(function(field) {
                         return field.name || field.value;
                     });
-                    delete record.isNew;
-                    this.collection.add(record);
                     this.collection.save();
                 }
             },
             addRecord: function() {
+                this.$.addInput.value = "";
+                this.$.addDialog.open();
+                this.$.addInput.focus();
+            },
+            confirmAddRecord: function() {
+                this.$.addDialog.close();
                 var record = {
-                    name: "",
-                    fields: [],
-                    isNew: true
+                    name: this.$.addInput.value,
+                    fields: []
                 };
+
+                this.collection.add(record);
                 this.selected = record;
-                this.editing = true;
+                this.saveRecord();
             },
             back: function() {
                 this.recordViewBack();
@@ -159,32 +175,16 @@
             openRecordMenu: function() {
                 this.$.recordMenu.open();
             },
-            startEditing: function() {
-                this.editCopy = {
-                    name: this.selected.name,
-                    fields: this.selected.fields.concat([])
-                };
-                this.editing = true;
+            editName: function() {
+                this.$.recordMenu.close();
+                this.$.editNameInput.value = this.selected.name;
+                this.$.editNameDialog.open();
+                this.$.editNameInput.select();
             },
-            editDone: function() {
-                var isNew = this.selected.isNew;
+            confirmEditName: function() {
+                this.$.editNameDialog.close();
+                this.selected.name = this.$.editNameInput.value;
                 this.saveRecord();
-                if (isNew) {
-                    this.recordViewBack();
-                }
-
-                this.editing = false;
-                this.editCopy = null;
-            },
-            editCancel: function() {
-                if (this.selected.isNew) {
-                    this.recordViewBack();
-                } else {
-                    this.collection.replace(this.selected, this.editCopy);
-                    this.selected = this.editCopy;
-                }
-                this.editing = false;
-                this.editCopy = null;
             },
             changePassword: function() {
                 this.$.mainMenu.close();
