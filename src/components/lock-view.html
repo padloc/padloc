@@ -70,8 +70,15 @@
                 return [this.shadowRoot.querySelector(".header"), this.shadowRoot.querySelector("input")];
             },
             show: function(animation, callback) {
-                this.super(arguments);
-                this.$.pwdInput.focus();
+                var input = this.$.pwdInput;
+                input.value = "";
+                var cb = function() {
+                    input.focus();
+                    if (callback) {
+                        callback();
+                    }
+                } 
+                this.super([animation, cb]);
             }
         });
     </script>
