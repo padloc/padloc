@@ -38,6 +38,15 @@
             safe-lock-view {
                 z-index: 1000;
             }
+
+            .view {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                margin: auto;
+            }
         </style>
         <safe-header id="header" filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" class="hidden"></safe-header>
         <safe-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}" style="display: none"></safe-password-view>
