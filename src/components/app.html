@@ -94,9 +94,11 @@
                 }
             },
             lock: function() {
-                this.collection.lock();
                 this.$.mainMenu.close();
-                this.openView(this.$.lockView);
+                var coll = this.collection;
+                this.openView(this.$.lockView, function() {
+                    coll.lock();
+                });
             },
             selectedChanged: function(oldRec, newRec) {
                 if (newRec) {
