@@ -17,6 +17,7 @@
                 background: #fff;
                 margin: 5px;
                 padding: 12px;
+                cursor: pointer;
             }
 
             .field > * {
@@ -44,14 +45,6 @@
                 width: 26px;
                 height: 26px;
                 margin: 10px auto;
-            }
-
-            .add:hover {
-                background: rgba(0, 0, 0, 0.05);
-            }
-
-            .add:active:hover:not(.disabled) {
-                background: rgba(0, 0, 0, 0.1);
             }
         </style>
         <template repeat="{{ field, i in record.fields }}">
