@@ -1,0 +1,52 @@
+@import "../config.scss";
+
+:host {
+    font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    margin: auto;
+    font-weight: $font-weight-default;
+    font-size: $font-size-default;
+    color: $text-color;
+    -webkit-user-select: none;     
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    background: $bg-color-grey;
+    -webkit-transition: background 1s;
+}
+
+safe-header {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+}
+
+::-webkit-search-cancel-button {
+    display: none;
+}
+
+*:focus {
+    outline: none;
+}
+
+safe-lock-view {
+    z-index: 1000;
+}
+
+.view {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+}
+
+::-webkit-input-placeholder {
+   color: rgba(0, 0, 0, 0.3);
+}

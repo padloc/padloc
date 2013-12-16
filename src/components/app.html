@@ -1,53 +1,6 @@
 <polymer-element name="safe-app" touch-action="pan-y">
     <template>
-        <style>
-            :host {
-                font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
-                position: absolute;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                top: 0;
-                margin: auto;
-                font-weight: 400;
-                font-size: 18px;
-                color: #444;
-                -webkit-user-select: none;     
-                -moz-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-                -webkit-tap-highlight-color: transparent;
-                background: #f5f5f5;
-
-            }
-
-            safe-header {
-                position: absolute;
-                z-index: 1;
-                width: 100%;
-            }
-
-            ::-webkit-search-cancel-button {
-                display: none;
-            }
-
-            *:focus {
-                outline: none;
-            }
-
-            safe-lock-view {
-                z-index: 1000;
-            }
-
-            .view {
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 0;
-                bottom: 0;
-                margin: auto;
-            }
-        </style>
+        <link href="app.css" rel="stylesheet" type="text/css">
         <safe-header id="header" filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" class="hidden"></safe-header>
         <safe-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}" style="display: none"></safe-password-view>
         <safe-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}" style="display: none"></safe-lock-view>
@@ -133,6 +86,7 @@
                 if (this.currentView) {
                     this.currentView.hide(back ? "slideOutToRight": "slideOutToLeft", outCallback);
                 }
+                this.style.background = view.color;
                 setTimeout(function() {
                     view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
                 }, 300);
@@ -158,9 +112,10 @@
             addRecord: function() {
                 this.$.addInput.value = "";
                 this.$.addDialog.open();
-                this.$.addInput.focus();
+                // this.$.addInput.focus();
             },
             confirmAddRecord: function() {
+                this.$.addInput.blur();
                 this.$.addDialog.close();
                 var record = {
                     name: this.$.addInput.value,

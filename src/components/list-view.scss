@@ -1,0 +1,22 @@
+.list {
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    box-sizing: border-box;
+    font-size: 0;
+    padding: 50px 0 5px 0;
+}
+
+.list > * {
+    font-size: 18px;
+}
+
+.track-surrogate {
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    top: 0;
+    -webkit-transform: translate3d(0, 0, 0);
+    pointer-events: none;
+    opacity: 0.8;
+}

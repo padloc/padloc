@@ -5,25 +5,25 @@ module.exports = function(grunt) {
                 options: {                       // Target options
                     style: 'expanded'
                 },
-                files: {                         // Dictionary of files
-                    'main.css': 'main.scss',       // 'destination': 'source'
-                    'widgets.css': 'widgets.scss'
-                }
+                files: [{
+                    expand: true,
+                    src: ['src/**/*.scss'],
+                    ext: '.css'
+                }]
             }
         },
         qunit: {
             all: ['test/runner.html']
         },
         watch: {
-            files: ['src/*.js', 'test/*.js', 'test/*.html'],
-            tasks: ['qunit']
+            files: ['src/*.js', 'src/**/*.scss', 'test/*.js', 'test/*.html'],
+            tasks: ['sass', 'qunit']
         }
     });
 
-    // grunt.loadNpmTasks('grunt-contrib-sass');
+    grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
-    // grunt.registerTask('default', ['sass']);
-    grunt.registerTask('default', ['qunit']);
+    grunt.registerTask('default', ['watch']);
 };

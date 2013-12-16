@@ -1,0 +1,74 @@
+:host {
+    padding: 9px 0;
+    background: rgba(0, 0, 0, 0.1);
+    display: -webkit-box;
+    /*-webkit-box-align: center;*/
+    box-sizing: border-box;
+    /*border-bottom: solid 1px rgba(0, 0, 0, 0.1);*/
+    overflow: hidden;
+    -webkit-transform: translate3d(0, 0, 0);
+    -webkit-transition: -webkit-transform 0.5s;
+}
+
+:host safe-shapeshifter {
+    display: block;
+    width: 30px;
+    height: 30px;
+    margin: 0 8px;
+}
+
+.middle {
+    -webkit-box-flex: 1;
+    position: relative;
+}
+
+.middle > * {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    -webkit-transition: -webkit-transform 0.5s, opacity 0.5s, background 0.5s;
+}
+
+input {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    -webkit-appearance: none;
+    border: none;
+    background: transparent;
+    /*background: rgba(255, 255, 255, 0.4);*/
+    /*border-radius: 2px;*/
+}
+
+.name {
+    opacity: 0;
+    -webkit-transform: translate(0, 100%);
+    padding: 4px 6px;
+}
+
+:host.show-record .filter-input {
+    opacity: 0;
+    -webkit-transform: translate(0, -100%);
+}
+
+:host.show-record .name {
+    opacity: 1;
+    -webkit-transform: translate(0, 0);
+}
+
+#leftIcon {
+    -webkit-transition: width 0.5s;
+    min-width: 0;
+}
+
+:host.filtering:not(.show-record) #leftIcon {
+    width: 0;
+}
+
+:host.hidden {
+    -webkit-transform: translate3d(0, -100%, 0);
+}

@@ -1,52 +1,6 @@
 <polymer-element name="safe-record-view" extends="safe-view" attributes="record editing">
     <template>
-        <style>
-            :host {
-                display: block;
-                padding-top: 50px;
-                overflow: scroll;
-                -webkit-overflow-scrolling: touch;
-                height: 100%;
-                box-sizing: border-box;
-            }
-
-            .field, .add {
-                display: -webkit-box;
-                border: solid 1px rgba(0, 0, 0, 0.08);
-                border-bottom: solid 1px rgba(0, 0, 0, 0.12);
-                background: #fff;
-                margin: 5px;
-                padding: 12px;
-                cursor: pointer;
-            }
-
-            .field > * {
-                text-overflow: ellipsis;
-            }
-
-            .field > .label {
-                max-width: 100px;
-                text-align: right;
-                color: #539dc6;
-            }
-
-            .field > .value {
-                -webkit-box-flex: 1;
-            }
-
-            .add {
-                line-height: 0;
-                text-align: center;
-                padding: 0;
-            }
-
-            .add > safe-shapeshifter {
-                display: block;
-                width: 26px;
-                height: 26px;
-                margin: 10px auto;
-            }
-        </style>
+        <link href="record-view.css" rel="stylesheet" type="text/css">
         <template repeat="{{ field, i in record.fields }}">
             <div class="field" on-tap="{{ openFieldMenu }}">
                 <div class="value">{{ field.value }}</div>
@@ -73,6 +27,7 @@
     </template>
     <script>
         Polymer('safe-record-view', {
+            color: "#59c6ff",
             getAnimationElements: function() {
                 return this.shadowRoot.querySelectorAll(".field, .add").array();
             },

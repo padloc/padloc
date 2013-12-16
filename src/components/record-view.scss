@@ -1,0 +1,44 @@
+:host {
+    display: block;
+    padding-top: 50px;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.field, .add {
+    display: -webkit-box;
+    border: solid rgba(0, 0, 0, 0.1);
+    border-width: 1px 0;
+    margin: 5px 0;
+    padding: 12px;
+    cursor: pointer;
+}
+
+.field > * {
+    text-overflow: ellipsis;
+}
+
+.field > .label {
+    max-width: 100px;
+    text-align: right;
+    color: #feeb75;
+}
+
+.field > .value {
+    -webkit-box-flex: 1;
+}
+
+.add {
+    line-height: 0;
+    text-align: center;
+    padding: 0;
+}
+
+.add > safe-shapeshifter {
+    display: block;
+    width: 26px;
+    height: 26px;
+    margin: 10px auto;
+}

@@ -1,29 +1,6 @@
 <polymer-element name="safe-list-view" extends="safe-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
     <template>
-        <style>
-            .list {
-                overflow: scroll;
-                -webkit-overflow-scrolling: touch;
-                height: 100%;
-                box-sizing: border-box;
-                font-size: 0;
-                padding: 50px 5px 5px 5px;
-            }
-
-            .list > * {
-                font-size: 18px;
-            }
-
-            .track-surrogate {
-                position: absolute;
-                z-index: 10;
-                left: 0;
-                top: 0;
-                -webkit-transform: translate3d(0, 0, 0);
-                pointer-events: none;
-                opacity: 0.8;
-            }
-        </style>
+        <link href="list-view.css" rel="stylesheet" type="text/css">
         <safe-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></safe-record-item>
         <div id="list" class="list">
             <template repeat="{{ record, i in filteredRecords}}">
@@ -33,6 +10,7 @@
     </template>
     <script>
         Polymer('safe-list-view', {
+            color: "#9eed6d",
             observe: {
                 filterString: "applyFilter",
                 "collection.records": "applyFilter"
