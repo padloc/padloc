@@ -33,14 +33,14 @@
     > * {  
         display: block;
         padding: 13.5px 15px;
-        min-height: 23px;
-        background: #fff;
         margin: 5px 0;
         text-align: center;
         -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
         -webkit-transform: translate3d(0, 100%, 0);
         opacity: 0;
         cursor: pointer;
+        color: $text-color-white;
+        border: solid 1px;
     }
 
     input {
@@ -59,9 +59,11 @@
     background: transparent;
     color: $text-color-white;
     cursor: default;
+    border: none;
 }
 
 .negative {
     background: $color-negative;
     color: $text-color-white;
+    border: none;
 }
