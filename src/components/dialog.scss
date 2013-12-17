@@ -1,3 +1,5 @@
+@import "../config.scss";
+
 :host {
     position: absolute;
     z-index: 10;
@@ -9,10 +11,15 @@
     background-color: transparent;
     -webkit-transition: background-color 0.5s;
     display: none;
-}
 
-:host.open {
-    background-color: rgba(0, 0, 0, 0.5);
+    &.open {
+        background-color: rgba(0, 0, 0, 0.5);
+
+        .inner > * {
+            -webkit-transform: translate3d(0, 0, 0);
+            opacity: 1;
+        }
+    }
 }
 
 .inner {
@@ -22,44 +29,39 @@
     width: 100%;
     padding: 0 5px;
     box-sizing: border-box;
-}
 
-.inner > * {
-    display: block;
-    padding: 13.5px 15px;
-    min-height: 23px;
-    background: #fff;
-    margin: 5px 0;
-    text-align: center;
-    -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
-    -webkit-transform: translate3d(0, 100%, 0);
-    opacity: 0;
-    cursor: pointer;
-}
+    > * {  
+        display: block;
+        padding: 13.5px 15px;
+        min-height: 23px;
+        background: #fff;
+        margin: 5px 0;
+        text-align: center;
+        -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
+        -webkit-transform: translate3d(0, 100%, 0);
+        opacity: 0;
+        cursor: pointer;
+    }
 
-.inner > input {
-    width: 100%;
-    box-sizing: border-box;
-    border: none;
-    font-size: inherit;
-    color: inherit;
-    cursor: text;
-    -webkit-appearance: none;
-    border-radius: 0;
+    input {
+        width: 100%;
+        box-sizing: border-box;
+        border: none;
+        font-size: inherit;
+        color: inherit;
+        cursor: text;
+        -webkit-appearance: none;
+        border-radius: 0;
+    }
 }
 
 .title {
     background: transparent;
-    color: #fff;
+    color: $text-color-white;
     cursor: default;
 }
 
 .negative {
-    background: red;
-    color: #fff;
-}
-
-:host.open .inner > * {
-    -webkit-transform: translate3d(0, 0, 0);
-    opacity: 1;
+    background: $color-negative;
+    color: $text-color-white;
 }

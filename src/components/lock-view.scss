@@ -1,3 +1,5 @@
+@import "../config.scss";
+
 .wrapper {
     height: 300px;
     position: absolute;
@@ -10,7 +12,6 @@
 }
 
 .header {
-    /*color: #fff;*/
     font-size: 50px;
     font-weight: 100;
     padding: 20px;
@@ -21,10 +22,9 @@ input {
     font-family: inherit;
     font-size: inherit;
     padding: 12px;
-    /*font-size: 20px;*/
     border: none;
-    border-top: solid 1px rgba(0, 0, 0, 0.1);
-    border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+    border-top: solid 1px $border-color;
+    border-bottom: solid 1px $border-color;
     text-align: center;
     width: 100%;
     margin: 0;
@@ -34,19 +34,21 @@ input {
 }
 
 .error-message {
-    color: red;
+    color: $color-negative;
     padding: 20px;
     -webkit-transform: translate(0, 100%);
     opacity: 0;
     -webkit-transition: -webkit-transform 0.5s, opacity 0.5s;
 }
 
-.error .error-message {
-    -webkit-transform: translate(0, 0);
-    opacity: 1;
-}
+.error  {
+    .error-message {
+        -webkit-transform: translate(0, 0);
+        opacity: 1;
+    }
 
-.error input {
-    border-color: red;
-    color: red;
+    input {
+        border-color: $color-negative;
+        color: $color-negative;
+    }
 }

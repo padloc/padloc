@@ -1,3 +1,5 @@
+@import "../config.scss";
+
 .list {
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
@@ -8,7 +10,7 @@
 }
 
 .list > * {
-    font-size: 18px;
+    font-size: $font-size-default;
 }
 
 .track-surrogate {

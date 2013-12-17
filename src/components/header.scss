@@ -2,19 +2,17 @@
     padding: 9px 0;
     background: rgba(0, 0, 0, 0.1);
     display: -webkit-box;
-    /*-webkit-box-align: center;*/
     box-sizing: border-box;
-    /*border-bottom: solid 1px rgba(0, 0, 0, 0.1);*/
     overflow: hidden;
     -webkit-transform: translate3d(0, 0, 0);
     -webkit-transition: -webkit-transform 0.5s;
-}
 
-:host safe-shapeshifter {
-    display: block;
-    width: 30px;
-    height: 30px;
-    margin: 0 8px;
+    safe-shapeshifter {
+        display: block;
+        width: 30px;
+        height: 30px;
+        margin: 0 8px;
+    }
 }
 
 .middle {
@@ -40,8 +38,6 @@ input {
     -webkit-appearance: none;
     border: none;
     background: transparent;
-    /*background: rgba(255, 255, 255, 0.4);*/
-    /*border-radius: 2px;*/
 }
 
 .name {
