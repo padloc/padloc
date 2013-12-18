@@ -15,7 +15,7 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "~0.0.20131107",
+    "polymer": "~0.1.1",
     "requirejs": "~2.1.9"
   },
   "private": true
