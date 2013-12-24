@@ -4,7 +4,6 @@
 
 :host {
     display: block;
-    padding-top: 50px;
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
 
@@ -12,13 +11,14 @@
 }
 
 .field, .add {
-    border: solid $border-color;
-    border-width: 1px 0;
-    margin: 5px 0;
-    padding: 12px;
+    height: $row-height;
+    line-height: $row-height;
+    border-bottom: solid $border-color 1px;
+    padding: 0 10px;
     cursor: pointer;
 
     @include display-box;
+    @include box-sizing(border-box);
 }
 
 .field {

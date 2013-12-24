@@ -6,11 +6,9 @@
     <template>
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <safe-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></safe-record-item>
-        <div id="list" class="list">
-            <template repeat="{{ record, i in filteredRecords}}">
-                <safe-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}" on-hold="{{ holdItem }}" on-pointerover="{{ itemPointerOver }}" on-pointerout="{{ itemPointerOut }}"></safe-record-item>
-            </template>
-        </div>
+        <template repeat="{{ record, i in filteredRecords}}">
+            <safe-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}" on-hold="{{ holdItem }}" on-pointerover="{{ itemPointerOver }}" on-pointerout="{{ itemPointerOut }}"></safe-record-item>
+        </template>
     </template>
     <script>
         Polymer('safe-list-view', {
@@ -20,7 +18,7 @@
                 "collection.records": "applyFilter"
             },
             getAnimationElements: function() {
-                return this.$.list.children.array()
+                return this.shadowRoot.children.array();
             },
             applyFilter: function() {
                 var fs = this.filterString;

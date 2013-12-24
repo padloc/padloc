@@ -21,10 +21,12 @@
 }
 
 .inner {
-    padding: 12px;
-    border: solid $border-color;
-    border-width: 1px 0;
-    margin-top: 5px;
+    height: $row-height;
+    line-height: $row-height;
+    border-bottom: solid $border-color 1px;
+    padding: 0 10px;
+
+    @include box-sizing(border-box);
 }
 
 @media (min-width: 700px) and (max-width: 1000px) {

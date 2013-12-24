@@ -1,8 +1,10 @@
 @import "compass/css3";
+@import "../config.scss";
 
 :host {
     background: rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    height: $row-height;
 
     @include display-box;
     @include box-sizing(border-box);
@@ -11,9 +13,11 @@
 
     safe-shapeshifter {
         display: block;
-        width: 30px;
-        height: 30px;
-        padding: 8px;
+        width: $row-height;
+        height: $row-height;
+        padding: 10px;
+
+        @include box-sizing(border-box);
     }
 
     &.show-record {
@@ -44,15 +48,16 @@
 }
 
 .middle > * {
+    $line-height: 20px;
     display: block;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    padding: 9px 0;
+    line-height: $line-height;
+    padding: ($row-height - $line-height)/2 0;
 
-    @include box-sizing(border-box);
     @include transition(transform 0.5s, opacity 0.5s);
 }
 
@@ -62,12 +67,12 @@ input {
     font-weight: inherit;
     border: none;
     background: transparent;
+
     @include appearance(none);
 }
 
 .name {
     opacity: 0;
-    line-height: 28px;
     @include transform(translate(0, 100%));
 }
 

@@ -32,9 +32,11 @@
 
     @include box-sizing(border-box);
 
-    > * {  
+    > * {
+        $line-height: 20px;
         display: block;
-        padding: 13.5px 15px;
+        line-height: $line-height;
+        padding: ($row-height - $line-height)/2 0;
         margin: 5px 0;
         text-align: center;
         opacity: 0;
@@ -42,6 +44,7 @@
         color: $text-color-white;
         border: solid 1px;
 
+        @include box-sizing(border-box);
         @include transition(transform 0.3s, opacity 0.3s);
         @include transform(translate3d(0, 100%, 0));
     }
