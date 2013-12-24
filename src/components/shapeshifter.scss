@@ -1,3 +1,6 @@
+@import "compass/css3/transform";
+@import "compass/css3/transition";
+
 :host {
     display: inline-block;
     width: 30px;
@@ -13,71 +16,71 @@ svg {
 line {
     stroke: #333;
     stroke-width: 6;
-    -webkit-transform-origin: center center;
-    -webkit-transition: -webkit-transform 0.5s;
-    -webkit-transform: translate(0, 0) scale(0);
+    @include transform-origin(center center 0);
+    @include transition(transform 0.5s);
+    @include transform(translate(0, 0) scale(0));
 }
 
 .plus line:nth-child(1) {
-    -webkit-transform: translate(0, 0) scale(12, 1);
+    @include transform(translate(0, 0) scale(12, 1));
 }
 
 .plus line:nth-child(3) {
-    -webkit-transform: translate(0, 0) rotate(90deg) scale(12, 1);
+    @include transform(translate(0, 0) rotate(90deg) scale(12, 1));
 }
 
 .cancel line:nth-child(1) {
-    -webkit-transform: translate(0, 0) rotate(135deg) scale(12, 1);
+    @include transform(translate(0, 0) rotate(135deg) scale(12, 1));
 }
 
 .cancel line:nth-child(3) {
-    -webkit-transform: translate(0, 0) rotate(-135deg) scale(12, 1);
+    @include transform(translate(0, 0) rotate(-135deg) scale(12, 1));
 }
 
 .check line:nth-child(1) {
-    -webkit-transform: translate(-24.7px, 10.5px) rotate(45deg) scale(6, 1);
+    @include transform(translate(-24.7px, 10.5px) rotate(45deg) scale(6, 1));
 }
 
 .check line:nth-child(3) {
-    -webkit-transform: translate(11.5px, 0) rotate(-45deg) scale(12, 1);
+    @include transform(translate(11.5px, 0) rotate(-45deg) scale(12, 1));
 }
 
 .menu line:nth-child(1) {
-    -webkit-transform: translate(0, -23px) scale(12, 1);
+    @include transform(translate(0, -23px) scale(12, 1));
 }
 
 .menu line:nth-child(2) {
-    -webkit-transform: translate(0, 0) scale(12, 1);
+    @include transform(translate(0, 0) scale(12, 1));
 }
 
 .menu line:nth-child(3) {
-    -webkit-transform: translate(0, 23px) scale(12, 1);
+    @include transform(translate(0, 23px) scale(12, 1));
 }
 
 .more line:nth-child(1) {
-    -webkit-transform: translate(-26px, 0) scale(2, 2);
+    @include transform(translate(-26px, 0) scale(2, 2));
 }
 
 .more line:nth-child(2) {
-    -webkit-transform: translate(0, 0) scale(2, 2);
+    @include transform(translate(0, 0) scale(2, 2));
 }
 
 .more line:nth-child(3) {
-    -webkit-transform: translate(26px, 0) scale(2, 2);
+    @include transform(translate(26px, 0) scale(2, 2));
 }
 
 .arrow-right line:nth-child(1) {
-    -webkit-transform: translate(0, -17px) rotate(45deg) scale(9, 1);
+    @include transform(translate(0, -17px) rotate(45deg) scale(9, 1));
 }
 
 .arrow-right line:nth-child(3) {
-    -webkit-transform: translate(0, 17px) rotate(-45deg) scale(9, 1);
+    @include transform(translate(0, 17px) rotate(-45deg) scale(9, 1));
 }
 
 .arrow-left line:nth-child(1) {
-    -webkit-transform: translate(0, -17px) rotate(-45deg) scale(9, 1);
+    @include transform(translate(0, -17px) rotate(-45deg) scale(9, 1));
 }
 
 .arrow-left line:nth-child(3) {
-    -webkit-transform: translate(0, 17px) rotate(45deg) scale(9, 1);
+    @include transform(translate(0, 17px) rotate(45deg) scale(9, 1));
 }

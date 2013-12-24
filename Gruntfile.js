@@ -1,9 +1,9 @@
 module.exports = function(grunt) {
     grunt.initConfig({
-        sass: {                              // Task
-            dist: {                            // Target
-                options: {                       // Target options
-                    style: 'expanded'
+        compass: {
+            dist: {
+                options: {
+                    config: "config.rb"
                 },
                 files: [{
                     expand: true,
@@ -17,11 +17,12 @@ module.exports = function(grunt) {
         },
         watch: {
             files: ['src/*.js', 'src/**/*.scss', 'test/*.js', 'test/*.html'],
-            tasks: ['sass', 'qunit']
+            tasks: ['compass', 'qunit']
         }
     });
 
-    grunt.loadNpmTasks('grunt-contrib-sass');
+    // grunt.loadNpmTasks('grunt-contrib-sass');
+    grunt.loadNpmTasks('grunt-contrib-compass');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-watch');
 

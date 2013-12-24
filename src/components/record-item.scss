@@ -1,10 +1,11 @@
 @import "../config.scss";
+@import "compass/css3/box-sizing";
 
 :host {
     display: inline-block;
     width: 100%;
-    box-sizing: border-box;
     cursor: pointer;
+    @include box-sizing(border-box);
 
     &.selected .inner {
         background: rgba(0, 0, 0, 0.1);
@@ -16,7 +17,6 @@
 
     &.drag-over:not(.ghost) > .inner {
         background: rgba(0, 0, 0, 0.1);
-        // border-top: solid 2px #539dc6;
     }
 }
 

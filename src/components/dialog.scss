@@ -1,4 +1,5 @@
 @import "../config.scss";
+@import "compass/css3";
 
 :host {
     position: absolute;
@@ -7,16 +8,16 @@
     right: 0;
     top: 0;
     bottom: 0;
-    margin: auto;
     background-color: transparent;
-    -webkit-transition: background-color 0.5s;
     display: none;
+
+    @include transition(background-color 0.5s);
 
     &.open {
         background-color: rgba(0, 0, 0, 0.5);
 
         .inner > * {
-            -webkit-transform: translate3d(0, 0, 0);
+            @include transform(translate3d(0, 0, 0));
             opacity: 1;
         }
     }
@@ -28,30 +29,33 @@
     bottom: 0;
     width: 100%;
     padding: 0 5px;
-    box-sizing: border-box;
+
+    @include box-sizing(border-box);
 
     > * {  
         display: block;
         padding: 13.5px 15px;
         margin: 5px 0;
         text-align: center;
-        -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
-        -webkit-transform: translate3d(0, 100%, 0);
         opacity: 0;
         cursor: pointer;
         color: $text-color-white;
         border: solid 1px;
+
+        @include transition(transform 0.3s, opacity 0.3s);
+        @include transform(translate3d(0, 100%, 0));
     }
 
     input {
         width: 100%;
-        box-sizing: border-box;
         border: none;
         font-size: inherit;
         color: inherit;
         cursor: text;
-        -webkit-appearance: none;
         border-radius: 0;
+
+        @include box-sizing(border-box);
+        @include appearance(none);
     }
 }
 

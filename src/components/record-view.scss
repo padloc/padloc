@@ -1,21 +1,24 @@
 @import "../config.scss";
+@import "compass/css3/box";
+@import "compass/css3/box-sizing";
 
 :host {
     display: block;
     padding-top: 50px;
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
-    height: 100%;
-    box-sizing: border-box;
+
+    @include box-sizing(border-box);
 }
 
 .field, .add {
-    display: -webkit-box;
     border: solid $border-color;
     border-width: 1px 0;
     margin: 5px 0;
     padding: 12px;
     cursor: pointer;
+
+    @include display-box;
 }
 
 .field {
@@ -30,7 +33,7 @@
     }
 
     > .value {
-        -webkit-box-flex: 1;
+        @include box-flex(1);
     }
 }
 

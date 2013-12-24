@@ -1,4 +1,6 @@
 @import "../config.scss";
+@import "compass/css3/transition";
+@import "compass/css3/user-interface";
 
 :host {
     font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -11,13 +13,11 @@
     font-weight: $font-weight-default;
     font-size: $font-size-default;
     color: $text-color;
-    -webkit-user-select: none;     
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
     -webkit-tap-highlight-color: transparent;
     background: $bg-color-grey;
-    -webkit-transition: background 1s;
+    
+    @include user-select(none);
+    @include transition(background 1s);
 }
 
 safe-header {
@@ -44,7 +44,6 @@ safe-lock-view {
     right: 0;
     top: 0;
     bottom: 0;
-    margin: auto;
 }
 
 ::-webkit-input-placeholder {

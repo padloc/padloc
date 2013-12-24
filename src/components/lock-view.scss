@@ -1,4 +1,5 @@
 @import "../config.scss";
+@import "compass/css3";
 
 .wrapper {
     height: 300px;
@@ -28,23 +29,26 @@ input {
     text-align: center;
     width: 100%;
     margin: 0;
-    box-sizing: border-box;
-    -webkit-appearance: none;
     border-radius: 0;
+
+    @include appearance(none);
+    @include box-sizing(border-box);
 }
 
 .error-message {
     color: $color-negative;
     padding: 20px;
-    -webkit-transform: translate(0, 100%);
     opacity: 0;
-    -webkit-transition: -webkit-transform 0.5s, opacity 0.5s;
+
+    @include transform(translate(0, 100%));
+    @include transition(transform 0.5s, opacity 0.5s);
 }
 
 .error  {
     .error-message {
-        -webkit-transform: translate(0, 0);
         opacity: 1;
+
+        @include transform(translate(0, 0));
     }
 
     input {
