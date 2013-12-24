@@ -14,9 +14,12 @@
             color: "#f5f5f5",
             enteredView: function() {
                 var self = this;
-                this.addEventListener("webkitAnimationEnd", function() {
-                    self.animationEnd.apply(self, arguments);
-                }, false);
+                var eventName = require(["safe/util"], function(util) {
+                    var eventName = util.getAnimationEndEventName();  
+                    self.addEventListener(eventName, function() {
+                        self.animationEnd.apply(self, arguments);
+                    }, false);
+                })
             },
             getAnimationElements: function() {
                 return [this];
@@ -28,12 +31,13 @@
                 this.animCount = 0;
                 this.animationCallback = callback;
                 var self = this;
+                var prefix = require("safe/util").getVendorPrefix().css;
 
                 this.getAnimationElements().forEach(function(elem) {
                     var display = window.getComputedStyle(elem, null).getPropertyValue("display");
                     if (display != "none") {
                         self.animCount++;
-                        elem.style["-webkit-animation"] = [
+                        elem.style[prefix + "animation"] = [
                             animation,
                             self.animationDuration + "ms",
                             self.animationEasing,
