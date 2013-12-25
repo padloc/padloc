@@ -6,7 +6,7 @@
 <link rel="import" href="password-view.html">
 <link rel="import" href="lock-view.html">
 
-<polymer-element name="safe-app" touch-action="pan-y">
+<polymer-element name="safe-app" touch-action="pan-y" on-showheader="{{ showHeader }}" on-hideheader="{{ hideHeader }}">
     <template>
         <link href="app.css" rel="stylesheet" type="text/css">
         <safe-header id="header" filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" class="hidden"></safe-header>
@@ -101,12 +101,18 @@
                 }, 300);
 
                 if (view == this.$.lockView || view == this.$.passwordView) {
-                    this.$.header.classList.add("hidden");
+                    this.hideHeader();
                 } else {
-                    this.$.header.classList.remove("hidden");
+                    this.showHeader();
                 }
 
                 this.currentView = view;
+            },
+            showHeader: function() {
+                this.$.header.classList.remove("hidden");
+            },
+            hideHeader: function() {
+                this.$.header.classList.add("hidden");
             },
             saveRecord: function() {
                 var record = this.selected;
