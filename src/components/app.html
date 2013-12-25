@@ -132,8 +132,12 @@
                 };
 
                 this.collection.add(record);
-                this.selected = record;
-                this.saveRecord();
+
+                var self = this;
+                setTimeout(function() {
+                    self.selected = record;
+                    self.saveRecord();
+                }, 50);
             },
             back: function() {
                 this.recordViewBack();
