@@ -67,18 +67,22 @@
             },
             release: function() {
                 if (this.dragging) {
-                    if (this.lastHovered) {
-                        this.lastHovered.classList.remove("drag-over");
-                        if (this.lastHovered != this.draggedItem) {
-                            var hoveredRecord = this.lastHovered.templateInstance.model.record;
-                            var draggedRecord = this.draggedItem.templateInstance.model.record;
-                            var targetIndex = this.collection.records.indexOf(hoveredRecord);
-                            this.collection.remove(draggedRecord);
-                            this.collection.add(draggedRecord, targetIndex);
-                            this.collection.save();
-                        }
+                    var draggedRecord = this.draggedItem.templateInstance.model.record;
+                    var hoveredRecord = this.lastHovered && this.lastHovered.templateInstance.model.record;
+
+                    if (hoveredRecord != draggedRecord) {
+                        var targetIndex = hoveredRecord && this.collection.records.indexOf(hoveredRecord);
+                        var currentIndex = this.collection.records.indexOf(draggedRecord);
+                        targetIndex = currentIndex < targetIndex ? targetIndex-1 : targetIndex;
+
+                        this.collection.remove(draggedRecord);
+                        this.collection.add(draggedRecord, targetIndex);
+                        this.collection.save();
                     }
 
+                    if (this.lastHovered) {
+                        this.lastHovered.classList.remove("drag-over");
+                    }
                     this.classList.remove("dragging");
                     this.$.trackSurrogate.style.display = "none";
                     this.draggedItem.classList.remove("ghost");
