@@ -12,7 +12,7 @@
     </template>
     <script>
         Polymer('safe-list-view', {
-            color: "#9eed6d",
+            color: "green",
             observe: {
                 filterString: "applyFilter",
                 "collection.records": "applyFilter"
@@ -34,7 +34,7 @@
             },
             selectedChanged: function() {
                 var selected = this.selected;
-                this.$.list.children.array().forEach(function(item) {
+                this.shadowRoot.children.array().forEach(function(item) {
                     if (item.record == selected) {
                         item.classList.add("selected");
                     } else {

@@ -94,7 +94,8 @@
                 if (this.currentView) {
                     this.currentView.hide(back ? "slideOutToRight": "slideOutToLeft", outCallback);
                 }
-                this.style.background = view.color;
+                this.classList.remove(this.currentView && this.currentView.color);
+                this.classList.add(view.color);
                 setTimeout(function() {
                     view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
                 }, 300);

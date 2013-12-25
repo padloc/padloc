@@ -2,14 +2,14 @@
 @import "../config.scss";
 
 :host {
-    background: rgba(0, 0, 0, 0.1);
+    border-bottom: solid 2px $border-color;
     overflow: hidden;
     height: $row-height;
 
     @include display-box;
     @include box-sizing(border-box);
     @include transform(translate3d(0, 0, 0));
-    @include transition(transform 0.5s);
+    @include transition(transform 0.5s, background 1s);
 
     safe-shapeshifter {
         display: block;
