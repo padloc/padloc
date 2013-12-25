@@ -13,7 +13,7 @@
         <safe-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}" style="display: none"></safe-password-view>
         <safe-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}" style="display: none"></safe-lock-view>
         <safe-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none"></safe-list-view>
-        <safe-record-view id="recordView" class="view" record="{{ selected }}" style="display: none" on-save="{{ saveRecord }}"></safe-record-view>
+        <safe-record-view id="recordView" class="view" style="display: none" on-save="{{ saveRecord }}"></safe-record-view>
         <safe-dialog id="mainMenu">
             <div>Settings</div>
             <div>About</div>
@@ -139,10 +139,8 @@
                 this.recordViewBack();
             },
             recordViewBack: function() {
-                var self = this;
-                this.openView(this.$.listView, function() {
-                    self.selected = null;
-                });;
+                this.selected = null;
+                this.openView(this.$.listView);
             },
             openMainMenu: function() {
                 this.$.mainMenu.open();
