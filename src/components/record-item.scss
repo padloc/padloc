@@ -11,12 +11,12 @@
         background: rgba(0, 0, 0, 0.1);
     }
 
-    &.ghost .inner {
-        opacity: 0.5;
+    &.drag-over:not(.ghost) > .inner {
+        margin-top: $row-height;
     }
 
-    &.drag-over:not(.ghost) > .inner {
-        background: rgba(0, 0, 0, 0.1);
+    &.ghost {
+        display: none;
     }
 }
 
@@ -29,13 +29,37 @@
     @include box-sizing(border-box);
 }
 
+@media (min-width: 700px) {
+    :host {
+        padding: 5px 0 0 5px;
+
+        &.ghost {
+            display: inline-block;
+        }
+
+        &.ghost .inner {
+            opacity: 0.5;
+        }
+    }
+
+    .inner {
+        border: solid 1px $border-color;
+    }
+
+    :host.drag-over:not(.ghost) > .inner {
+        margin-top: 0;
+        background: rgba(0, 0, 0, 0.1);
+        border-left-width: 5px;
+    }
+}
+
 @media (min-width: 700px) and (max-width: 1000px) {
     :host {
         width: 50%;
     }
 
-    :host:nth-child(2n) .inner {
-        margin-right: 5px;
+    :host:nth-child(2n) {
+        padding-right: 5px;
     }
 }
 
@@ -44,8 +68,8 @@
         width: 33.33%;
     }
 
-    :host:nth-child(3n) .inner, :host:nth-child(3n-1) .inner {
-        margin-right: 5px;
+    :host:nth-child(3n-1) {
+        padding-right: 5px;
     }
 }
 
@@ -54,15 +78,7 @@
         width: 25%;
     }
 
-    :host:nth-child(4n) .inner, :host:nth-child(4n-1) .inner, :host:nth-child(4n-2) .inner {
-        margin-right: 5px;
-    }
-}
-
-@media (min-width: 700px) {
-    :host.drag-over:not(.ghost) > .inner {
-        background: #eeeeee;
-        border-top: solid 1px rgba(0, 0, 0, 0.08);
-        border-left: solid 2px #539dc6;
+    :host:nth-child(4n-2) {
+        padding-right: 5px;
     }
 }
