@@ -1,0 +1,14 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<polymer-element name="fast-input" extends="input" touch-action="none" on-tap="{{ tap }}" on-mousedown="{{ mousedown }}">
+    <script>
+        Polymer("fast-input", {
+            tap: function(event) {
+                this.setSelectionRange(this.value.length, this.value.length);
+            },
+            mousedown: function() {
+                event.preventDefault();
+            }
+        });
+    </script>
+</polymer-element>

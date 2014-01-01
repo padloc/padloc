@@ -31,11 +31,11 @@
             <div class="negative" on-tap="{{ confirmDelete }}">Delete</div>
         </safe-dialog>
         <safe-dialog id="addDialog">
-            <input id="addInput" placeholder="Enter Record Name"/>
+            <input is="fast-input" id="addInput" placeholder="Enter Record Name"/>
             <div on-tap="{{ confirmAddRecord }}">Add</div>
         </safe-dialog>
         <safe-dialog id="editNameDialog">
-            <input id="editNameInput" placeholder="Enter Record Name"/>
+            <input is="fast-input" id="editNameInput" placeholder="Enter Record Name"/>
             <div on-tap="{{ confirmEditName }}">Save</div>
         </safe-dialog>
     </template>

@@ -1,12 +1,13 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="shapeshifter.html">
+<link rel="import" href="fast-input.html">
 
 <polymer-element name="safe-header" attributes="filterString record">
     <template>
         <link href="header.css" rel="stylesheet" type="text/css">
         <safe-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></safe-shapeshifter>
         <div class="middle" id="middle">
-            <input id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." />
+            <input is="fast-input" id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." />
             <div class="name">{{ record.name }}</div>
         </div>
         <safe-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></safe-shapeshifter>

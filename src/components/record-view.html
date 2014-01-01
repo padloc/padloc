@@ -19,13 +19,13 @@
             <div class="negative" on-tap="{{ removeField }}">Remove Field</div>
         </safe-dialog>
         <safe-dialog id="addFieldDialog">
-            <input id="addFieldValueInput" placeholder="Enter Content" />
-            <input id="addFieldNameInput" placeholder="Enter Label" />
+            <input is="fast-input" id="addFieldValueInput" placeholder="Enter Content" />
+            <input is="fast-input" id="addFieldNameInput" placeholder="Enter Label" />
             <div on-tap="{{ confirmAddField }}">Add</div>
         </safe-dialog>
         <safe-dialog id="editFieldDialog">
-            <input id="editValueInput" placeholder="Enter Content" />
-            <input id="editNameInput" placeholder="Enter Label" />
+            <input is="fast-input" id="editValueInput" placeholder="Enter Content" />
+            <input is="fast-input" id="editNameInput" placeholder="Enter Label" />
             <div on-tap="{{ confirmEditField }}">Save</div>
         </safe-dialog>
     </template>
