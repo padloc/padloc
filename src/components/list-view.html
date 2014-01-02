@@ -2,7 +2,7 @@
 <link rel="import" href="record-item.html">
 <link rel="import" href="view.html">
 
-<polymer-element name="safe-list-view" extends="safe-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}" on-scroll="{{ scroll }}">
+<polymer-element name="safe-list-view" extends="safe-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
     <template>
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <safe-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></safe-record-item>
@@ -52,6 +52,7 @@
                 this.classList.add("dragging");
                 this.draggedItem.classList.add("ghost");
                 this.itemHeld = true;
+                this.fire("hideheader");
             },
             pointerDown: function() {
                 this.lastPointerPos = {
@@ -89,6 +90,7 @@
                     this.lastHovered = null;
                     this.dragging = false;
                     this.removeAttribute("touch-action");
+                    this.fire("showheader");
                 }
             },
             positionTrackSurrogate: function(x, y) {
@@ -108,21 +110,25 @@
                     this.lastHovered = null;
                     sender.classList.remove("drag-over");
                 }
-            },
-            scroll: function() {
-                var threshold = 10;
-                this.lastScrollTop = this.lastScrollTop || this.scrollTop;
-                var diff = this.scrollTop - this.lastScrollTop;
-                var reachedTop = this.scrollTop < 50;
-
-                if (reachedTop || diff < -threshold) {
-                    this.fire("showheader");
-                    this.lastScrollTop = this.scrollTop;
-                } else if (diff > threshold) {
-                    this.fire("hideheader");
-                    this.lastScrollTop = this.scrollTop;
-                }
             }
+            // scroll: function() {
+            //     if (this.dragging) {
+            //         return;
+            //     }
+                
+            //     var threshold = 10;
+            //     this.lastScrollTop = this.lastScrollTop || this.scrollTop;
+            //     var diff = this.scrollTop - this.lastScrollTop;
+            //     var reachedTop = this.scrollTop < 50;
+
+            //     if (reachedTop || diff < -threshold) {
+            //         this.fire("showheader");
+            //         this.lastScrollTop = this.scrollTop;
+            //     } else if (diff > threshold) {
+            //         this.fire("hideheader");
+            //         this.lastScrollTop = this.scrollTop;
+            //     }
+            // }
         });
     </script>
 </polymer-element>
