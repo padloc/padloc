@@ -5,6 +5,8 @@
     border-bottom: solid 2px $border-color;
     overflow: hidden;
     height: $row-height;
+    color: $text-color-light;
+    background: transparentize($color-primary, 0.1);
 
     @include display-box;
     @include box-sizing(border-box);
@@ -18,6 +20,10 @@
         padding: 10px;
 
         @include box-sizing(border-box);
+
+        line {
+            stroke: $text-color-light;
+        }
     }
 
     &.show-record {
@@ -67,8 +73,13 @@ input {
     font-weight: inherit;
     border: none;
     background: transparent;
+    color: $text-color-light;
 
     @include appearance(none);
+
+    &::-webkit-input-placeholder {
+       color: $placeholder-color-light;
+    }
 }
 
 .name {

@@ -11,10 +11,11 @@
 }
 
 .field, .add {
+    background: #ffffff;
     height: $row-height;
     line-height: $row-height;
     border-bottom: solid $border-color 1px;
-    padding: 0 10px;
+    padding: 0 15px;
     cursor: pointer;
 
     @include display-box;
@@ -29,7 +30,7 @@
     > .label {
         max-width: 100px;
         text-align: right;
-        color: #feeb75;
+        color: $color-primary;
     }
 
     > .value {

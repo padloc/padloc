@@ -1,3 +1,4 @@
+@import "../config.scss";
 @import "compass/css3/transform";
 @import "compass/css3/transition";
 
@@ -14,7 +15,7 @@ svg {
 }
 
 line {
-    stroke: #333;
+    stroke: $text-color;
     stroke-width: 6;
     @include transform-origin(center center 0);
     @include transition(transform 0.5s);

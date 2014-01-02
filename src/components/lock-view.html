@@ -14,7 +14,6 @@
     </template>
     <script>
         Polymer("safe-lock-view", {
-            color: "yellow",
             keydown: function(event, detail, sender) {
                 if (event.keyCode == 13) { 
                     this.$.pwdInput.blur();

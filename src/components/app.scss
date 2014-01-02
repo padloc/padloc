@@ -18,42 +18,6 @@
     
     @include user-select(none);
     @include transition(background 1s);
-
-    > safe-header {
-        background: transparentize($bg-color-grey, 0.1);
-    }
-
-    &.blue {
-        $color: $bg-color-blue;
-        background: $color;
-        > safe-header {
-            background: transparentize($color, 0.1);
-        }
-    }
-
-    &.green {
-        $color: $bg-color-green;
-        background: $color;
-        > safe-header {
-            background: transparentize($color, 0.1);
-        }
-    }
-
-    &.yellow {
-        $color: $bg-color-yellow;
-        background: $color;
-        > safe-header {
-            background: transparentize($color, 0.1);
-        }
-    }
-
-    &.red {
-        $color: $bg-color-red;
-        background: $color;
-        > safe-header {
-            background: transparentize($color, 0.1);
-        }
-    }
 }
 
 safe-header {
@@ -84,5 +48,5 @@ safe-lock-view {
 }
 
 ::-webkit-input-placeholder {
-   color: rgba(0, 0, 0, 0.3);
+   color: $placeholder-color;
 }

@@ -41,7 +41,7 @@
         text-align: center;
         opacity: 0;
         cursor: pointer;
-        color: $text-color-white;
+        color: $text-color-light;
         border: solid 1px;
 
         @include box-sizing(border-box);
@@ -64,13 +64,13 @@
 
 .title {
     background: transparent;
-    color: $text-color-white;
+    color: $text-color-light;
     cursor: default;
     border: none;
 }
 
 .negative {
-    background: $color-negative;
-    color: $text-color-white;
+    background: $color-primary;
+    color: $text-color-light;
     border: none;
 }

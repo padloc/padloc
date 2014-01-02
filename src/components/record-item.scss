@@ -24,7 +24,8 @@
     height: $row-height;
     line-height: $row-height;
     border-bottom: solid $border-color 1px;
-    padding: 0 10px;
+    padding: 0 15px;
+    background: #ffffff;
 
     @include box-sizing(border-box);
 }
