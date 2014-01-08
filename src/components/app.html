@@ -66,14 +66,20 @@
             lock: function() {
                 this.$.mainMenu.close();
                 var coll = this.collection;
-                this.openView(this.$.lockView, function() {
-                    coll.lock();
-                });
+                var self = this;
+                setTimeout(function() {
+                    self.openView(self.$.lockView, function() {
+                        coll.lock();
+                    });
+                }, 10);
             },
             selectedChanged: function(oldRec, newRec) {
                 if (newRec) {
                     this.$.recordView.record = newRec;
-                    this.openView(this.$.recordView);
+                    var self = this;
+                    setTimeout(function() {
+                        self.openView(self.$.recordView);
+                    }, 10);
                 }
             },
             deleteRecord: function() {
@@ -95,10 +101,8 @@
                 if (this.currentView) {
                     this.currentView.hide(back ? "slideOutToRight": "slideOutToLeft", outCallback);
                 }
-                
-                setTimeout(function() {
-                    view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
-                }, 300);
+
+                view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
 
                 if (view == this.$.lockView || view == this.$.passwordView) {
                     this.hideHeader();
@@ -172,7 +176,10 @@
             changePassword: function() {
                 this.$.mainMenu.close();
                 this.$.passwordView.currentPassword = this.collection.store.password;
-                this.openView(this.$.passwordView);
+                var self = this;
+                setTimeout(function() {
+                    self.openView(self.$.passwordView);
+                }, 10);
             }
         });
     </script>

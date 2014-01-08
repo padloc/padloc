@@ -20,9 +20,6 @@
                     this.fire("enter", {password: this.$.pwdInput.value});
                 }
             },
-            getAnimationElements: function() {
-                return [this.shadowRoot.querySelector(".header"), this.shadowRoot.querySelector("input")];
-            },
             show: function(animation, callback) {
                 var input = this.$.pwdInput;
                 input.value = "";

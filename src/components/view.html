@@ -20,33 +20,26 @@
                     }, false);
                 })
             },
-            getAnimationElements: function() {
-                return [this];
+            getAnimationElement: function() {
+                return this;
             },
             startAnimation: function(direction, animation, callback) {
                 animation = animation || this[direction + "Animation"];
+                // animation = "";
                 this.currAnimation = animation;
                 this.currDirection = direction;
-                this.animCount = 0;
                 this.animationCallback = callback;
-                var self = this;
                 var prefix = require("safe/util").getVendorPrefix().css;
 
-                this.getAnimationElements().forEach(function(elem) {
-                    var display = window.getComputedStyle(elem, null).getPropertyValue("display");
-                    if (display != "none") {
-                        self.animCount++;
-                        elem.style[prefix + "animation"] = [
-                            animation,
-                            self.animationDuration + "ms",
-                            self.animationEasing,
-                            Math.floor(Math.random() * self.maxAnimationDelay) + "ms",
-                            "both"
-                        ].join(" ");
-                    }
-                });
+                this.getAnimationElement().style[prefix + "animation"] = [
+                    animation,
+                    this.animationDuration + "ms",
+                    this.animationEasing,
+                    0,
+                    "both"
+                ].join(" ");
                 
-                if (!this.animCount) {
+                if (!animation || !this.animationDuration) {
                     this.fire("animation-end", {direction: direction});
                     if (this.animationCallback) {
                         this.animationCallback();
@@ -56,14 +49,11 @@
             },
             animationEnd: function(event) {
                 if (event.animationName == this.currAnimation) {
-                    this.animCount--;
-                    if (!this.animCount) {
-                        if (this.animationCallback) {
-                            this.animationCallback();
-                            this.animationCallback = null;
-                        }
-                        this.fire("animation-end", {direction: this.currDirection});
+                    if (this.animationCallback) {
+                        this.animationCallback();
+                        this.animationCallback = null;
                     }
+                    this.fire("animation-end", {direction: this.currDirection});
                 }
             },
             show: function(animation, callback) {

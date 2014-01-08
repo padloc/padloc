@@ -6,9 +6,11 @@
     <template>
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <safe-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></safe-record-item>
-        <template repeat="{{ record, i in filteredRecords}}">
-            <safe-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}" on-hold="{{ holdItem }}" on-pointerover="{{ itemPointerOver }}" on-pointerout="{{ itemPointerOut }}"></safe-record-item>
-        </template>
+        <div id="list">
+            <template repeat="{{ record, i in filteredRecords}}">
+                <safe-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}" on-hold="{{ holdItem }}" on-pointerover="{{ itemPointerOver }}" on-pointerout="{{ itemPointerOut }}"></safe-record-item>
+            </template>
+        </div>
     </template>
     <script>
         Polymer("safe-list-view", {
@@ -16,8 +18,8 @@
                 filterString: "applyFilter",
                 "collection.records": "applyFilter"
             },
-            getAnimationElements: function() {
-                return this.shadowRoot.children.array();
+            getAnimationElement: function() {
+                return this.$.list;
             },
             applyFilter: function() {
                 var fs = this.filterString;
@@ -33,7 +35,7 @@
             },
             selectedChanged: function() {
                 var selected = this.selected;
-                this.shadowRoot.children.array().forEach(function(item) {
+                this.$.list.children.array().forEach(function(item) {
                     if (item.record == selected) {
                         item.classList.add("selected");
                     } else {

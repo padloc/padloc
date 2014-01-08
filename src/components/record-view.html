@@ -5,14 +5,16 @@
 <polymer-element name="safe-record-view" extends="safe-view" attributes="record editing">
     <template>
         <link href="record-view.css" rel="stylesheet" type="text/css">
-        <template repeat="{{ field, i in record.fields }}">
-            <div class="field" on-tap="{{ openFieldMenu }}">
-                <div class="value">{{ field.value }}</div>
-                <div class="label">{{ field.name }}</div>
-            </div>
-        </template>
-        <div class="add" on-tap="{{ addField }}">
-            <safe-shapeshifter shape="plus"></safe-shapeshifter>
+        <div id="animated">
+            <template repeat="{{ field, i in record.fields }}">
+                <div class="field" on-tap="{{ openFieldMenu }}">
+                    <div class="value">{{ field.value }}</div>
+                    <div class="label">{{ field.name }}</div>
+                </div>
+            </template>
+            <!-- <div class="add" on-tap="{{ addField }}">
+                <safe-shapeshifter shape="plus"></safe-shapeshifter>
+            </div> -->
         </div>
         <safe-dialog id="fieldMenu">
             <div on-tap="{{ editField }}">Edit Field</div>
@@ -31,8 +33,8 @@
     </template>
     <script>
         Polymer('safe-record-view', {
-            getAnimationElements: function() {
-                return this.shadowRoot.querySelectorAll(".field, .add").array();
+            getAnimationElement: function() {
+                return this.$.animated;
             },
             addField: function() {
                 this.$.addFieldValueInput.value = "";
