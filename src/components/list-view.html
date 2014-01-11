@@ -2,18 +2,18 @@
 <link rel="import" href="record-item.html">
 <link rel="import" href="view.html">
 
-<polymer-element name="safe-list-view" extends="safe-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
+<polymer-element name="padlock-list-view" extends="padlock-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
     <template>
         <link href="list-view.css" rel="stylesheet" type="text/css">
-        <safe-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></safe-record-item>
+        <padlock-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></padlock-record-item>
         <div id="list">
             <template repeat="{{ record, i in filteredRecords}}">
-                <safe-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}" on-hold="{{ holdItem }}" on-pointerover="{{ itemPointerOver }}" on-pointerout="{{ itemPointerOut }}"></safe-record-item>
+                <padlock-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}" on-hold="{{ holdItem }}" on-pointerover="{{ itemPointerOver }}" on-pointerout="{{ itemPointerOut }}"></padlock-record-item>
             </template>
         </div>
     </template>
     <script>
-        Polymer("safe-list-view", {
+        Polymer("padlock-list-view", {
             observe: {
                 filterString: "applyFilter",
                 "collection.records": "applyFilter"

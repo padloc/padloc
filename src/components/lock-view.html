@@ -1,7 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="view.html">
 
-<polymer-element name="safe-lock-view" extends="safe-view">
+<polymer-element name="padlock-lock-view" extends="padlock-view">
     <template>
         <link href="lock-view.css" rel="stylesheet" type="text/css">
         <div class="wrapper {{ errorMessage ? 'error' : '' }}">
@@ -13,7 +13,7 @@
         </div>
     </template>
     <script>
-        Polymer("safe-lock-view", {
+        Polymer("padlock-lock-view", {
             keydown: function(event, detail, sender) {
                 if (event.keyCode == 13) { 
                     this.$.pwdInput.blur();

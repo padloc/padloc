@@ -2,7 +2,7 @@
 <link rel="import" href="dialog.html">
 <link rel="import" href="view.html">
 
-<polymer-element name="safe-record-view" extends="safe-view" attributes="record editing">
+<polymer-element name="padlock-record-view" extends="padlock-view" attributes="record editing">
     <template>
         <link href="record-view.css" rel="stylesheet" type="text/css">
         <div id="animated">
@@ -15,26 +15,26 @@
                 </template>
             </template>
             <!-- <div class="add" on-tap="{{ addField }}">
-                <safe-shapeshifter shape="plus"></safe-shapeshifter>
+                <padlock-shapeshifter shape="plus"></padlock-shapeshifter>
             </div> -->
         </div>
-        <safe-dialog id="fieldMenu">
+        <padlock-dialog id="fieldMenu">
             <div on-tap="{{ editField }}">Edit Field</div>
             <div class="negative" on-tap="{{ removeField }}">Remove Field</div>
-        </safe-dialog>
-        <safe-dialog id="addFieldDialog">
+        </padlock-dialog>
+        <padlock-dialog id="addFieldDialog">
             <input is="fast-input" id="addFieldValueInput" placeholder="Enter Content" />
             <input is="fast-input" id="addFieldNameInput" placeholder="Enter Label" />
             <div on-tap="{{ confirmAddField }}">Add</div>
-        </safe-dialog>
-        <safe-dialog id="editFieldDialog">
+        </padlock-dialog>
+        <padlock-dialog id="editFieldDialog">
             <input is="fast-input" id="editValueInput" placeholder="Enter Content" />
             <input is="fast-input" id="editNameInput" placeholder="Enter Label" />
             <div on-tap="{{ confirmEditField }}">Save</div>
-        </safe-dialog>
+        </padlock-dialog>
     </template>
     <script>
-        Polymer('safe-record-view', {
+        Polymer('padlock-record-view', {
             getAnimationElement: function() {
                 return this.$.animated;
             },

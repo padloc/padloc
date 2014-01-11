@@ -13,7 +13,7 @@
     @include transform(translate3d(0, 0, 0));
     @include transition(transform 0.5s, background 1s);
 
-    safe-shapeshifter {
+    padlock-shapeshifter {
         display: block;
         width: $row-height;
         height: $row-height;

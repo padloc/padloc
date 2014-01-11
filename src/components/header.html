@@ -2,18 +2,18 @@
 <link rel="import" href="shapeshifter.html">
 <link rel="import" href="fast-input.html">
 
-<polymer-element name="safe-header" attributes="filterString record">
+<polymer-element name="padlock-header" attributes="filterString record">
     <template>
         <link href="header.css" rel="stylesheet" type="text/css">
-        <safe-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></safe-shapeshifter>
+        <padlock-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></padlock-shapeshifter>
         <div class="middle" id="middle">
             <input is="fast-input" id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." />
             <div class="name">{{ record.name }}</div>
         </div>
-        <safe-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></safe-shapeshifter>
+        <padlock-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></padlock-shapeshifter>
     </template>
     <script>
-        Polymer("safe-header", {
+        Polymer("padlock-header", {
             editing: false,
             recordChanged: function(oldRec, newRec) {
                 if (newRec) {
@@ -40,6 +40,7 @@
                     this.fire("record-menu");
                 } else if (this.filterString) {
                     this.filterString = "";
+                    this.$.filterInput.blur();
                 } else {
                     this.fire("add")
                 }
