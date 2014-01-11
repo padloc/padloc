@@ -2,7 +2,7 @@
 <link rel="import" href="shapeshifter.html">
 <link rel="import" href="fast-input.html">
 
-<polymer-element name="padlock-header" attributes="filterString record">
+<polymer-element name="padlock-header" attributes="filterString record editingTags">
     <template>
         <link href="header.css" rel="stylesheet" type="text/css">
         <padlock-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></padlock-shapeshifter>
@@ -14,45 +14,63 @@
     </template>
     <script>
         Polymer("padlock-header", {
-            editing: false,
+            editingTags: false,
+            updateIcons: function() {
+                if (this.editingTags) {
+                    this.$.leftIcon.shape = "cancel";
+                    this.$.rightIcon.shape = "plus";
+                } else if (this.record) {
+                    this.$.leftIcon.shape = "arrow-left";
+                    this.$.rightIcon.shape = "more";
+                } else if (this.filterString) {
+                    this.$.leftIcon.shape = "";
+                    this.$.rightIcon.shape = "cancel";
+                } else {
+                    this.$.leftIcon.shape = "menu";
+                    this.$.rightIcon.shape = "plus";
+                }
+            },
             recordChanged: function(oldRec, newRec) {
                 if (newRec) {
                     this.$.filterInput.setAttribute("disabled", "disabled");
                     this.classList.add("show-record");
-                    this.$.leftIcon.shape = "arrow-left";
-                    this.$.rightIcon.shape = "more";
                 } else {
                     this.$.filterInput.removeAttribute("disabled");
                     this.classList.remove("show-record");
-                    this.$.leftIcon.shape = "menu";
-                    this.$.rightIcon.shape = this.filterString ? "cancel" : "plus";
                 }
+                this.updateIcons();
             },
             leftClicked: function() {
-                if (!this.record) {
-                    this.fire("menu");
-                } else {
+                if (this.editingTags) {
+                    this.fire("stop-editing-tags")
+                } else if (this.record) {
                     this.fire("back");
+                } else {
+                    this.fire("menu");
                 }
             },
             rightClicked: function() {
-                if (this.record) {
-                    this.fire("record-menu");
+                if (this.editingTags) {
+                    this.fire("create-tag");
+                } else if (this.record) {
+                    this.fire("record-menu")
                 } else if (this.filterString) {
                     this.filterString = "";
                     this.$.filterInput.blur();
                 } else {
-                    this.fire("add")
+                    this.fire("add");
                 }
             },
             filterStringChanged: function() {
                 if (this.filterString) {
                     this.classList.add("filtering");
-                    this.$.rightIcon.shape = "cancel";
                 } else {
                     this.classList.remove("filtering");
-                    this.$.rightIcon.shape = this.record ? "more" : "plus";
                 }
+                thisupdateIcons();
+            },
+            editingTagsChanged: function() {
+                this.updateIcons();
             }
         })
     </script>

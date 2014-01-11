@@ -9,7 +9,7 @@
 <polymer-element name="padlock-app" touch-action="pan-y" on-showheader="{{ showHeader }}" on-hideheader="{{ hideHeader }}">
     <template>
         <link href="app.css" rel="stylesheet" type="text/css">
-        <padlock-header id="header" filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" class="hidden"></padlock-header>
+        <padlock-header id="header" filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" class="hidden" on-stop-editing-tags="{{ stopEditingTags }}"></padlock-header>
         <padlock-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}" style="display: none"></padlock-password-view>
         <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}" style="display: none"></padlock-lock-view>
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none"></padlock-list-view>
@@ -23,6 +23,7 @@
         </padlock-dialog>
         <padlock-dialog id="recordMenu">
             <div on-tap="{{ editName }}">Edit Name</div>
+            <div on-tap="{{ editTags }}">Edit Tags</div>
             <div class="negative" on-tap="{{ deleteRecord }}" id="confirmButton">Delete</div>
         </padlock-dialog>
         <padlock-dialog id="confirmDialog">
@@ -180,6 +181,15 @@
                 setTimeout(function() {
                     self.openView(self.$.passwordView);
                 }, 10);
+            },
+            editTags: function() {
+                this.$.recordMenu.close();
+                // this.$.tagsView.show();
+                this.$.header.editingTags = true;
+            },
+            stopEditingTags: function() {
+                // this.$.tagsView.hide();
+                this.$.header.editingTags = false;
             }
         });
     </script>
