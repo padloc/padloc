@@ -5,6 +5,7 @@
 <link rel="import" href="record-view.html">
 <link rel="import" href="password-view.html">
 <link rel="import" href="lock-view.html">
+<link rel="import" href="tags-view.html">
 
 <polymer-element name="padlock-app" touch-action="pan-y" on-showheader="{{ showHeader }}" on-hideheader="{{ hideHeader }}">
     <template>
@@ -14,6 +15,7 @@
         <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}" style="display: none"></padlock-lock-view>
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none"></padlock-list-view>
         <padlock-record-view id="recordView" class="view" style="display: none" on-save="{{ saveRecord }}"></padlock-record-view>
+        <padlock-tags-view id="tagsView" class="view"></padlock-tags-view>
         <padlock-dialog id="mainMenu">
             <div>Settings</div>
             <div>About</div>
@@ -184,11 +186,11 @@
             },
             editTags: function() {
                 this.$.recordMenu.close();
-                // this.$.tagsView.show();
+                this.$.tagsView.show();
                 this.$.header.editingTags = true;
             },
             stopEditingTags: function() {
-                // this.$.tagsView.hide();
+                this.$.tagsView.hide();
                 this.$.header.editingTags = false;
             }
         });

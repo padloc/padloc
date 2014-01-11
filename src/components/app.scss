@@ -1,5 +1,6 @@
 @import "../config.scss";
 @import "compass/css3/transition";
+@import "compass/css3/transform";
 @import "compass/css3/user-interface";
 
 :host {
@@ -14,7 +15,8 @@
     font-size: $font-size-default;
     color: $text-color;
     -webkit-tap-highlight-color: transparent;
-    background: $bg-color-grey;
+    background: $color-grey;
+    overflow: hidden;
     
     @include user-select(none);
     @include transition(background 1s);
@@ -41,7 +43,6 @@ padlock-header {
     top: 0;
     bottom: 0;
     padding-top: $row-height;
-    // box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 ::-webkit-input-placeholder {

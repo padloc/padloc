@@ -4,13 +4,13 @@ $font-weight-default: 300;
 $text-color: #222;
 $text-color-light: #ffffff;
 
-$bg-color-grey: #f5f5f5;
-$bg-color-blue: #59c6ff;
-$bg-color-green: #9eed6d;
-$bg-color-yellow: #feeb75;
-$bg-color-red: #ff8283;
+$color-grey: #f5f5f5;
+$color-blue: #59c6ff;
+$color-green: #9eed6d;
+$color-yellow: #feeb75;
+$color-red: #ff8283;
 
-$color-primary: #59c6ff;
+$color-primary: $color-blue;
 $color-negative: red;
 
 $placeholder-color: rgba(0, 0, 0, 0.3);

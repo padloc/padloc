@@ -2,7 +2,7 @@
 <link rel="import" href="record-item.html">
 <link rel="import" href="view.html">
 
-<polymer-element name="padlock-list-view" extends="padlock-view" attributes="collection filterString selected" on-webkitAnimationEnd="{{ animationEnd }}" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
+<polymer-element name="padlock-list-view" extends="padlock-view" attributes="collection filterString selected" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
     <template>
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <padlock-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></padlock-record-item>

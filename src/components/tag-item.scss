@@ -1,0 +1,54 @@
+@import "../config.scss";
+@import "compass/css3/box";
+
+:host {
+    display: block;
+    height: $row-height;
+    border-top: solid 4px $border-color-light;
+    position: relative;
+
+    @include display-box;
+    @include box-align(center);
+}
+
+.tag-color {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    &.blue {
+        background: $color-blue;
+    }
+
+    &.red {
+        background: $color-red;
+    }
+
+    &.green {
+        background: $color-green;
+    }
+
+    &.yellow {
+        background: $color-yellow;
+    }
+}
+
+.tag-label {
+    line-height: $row-height;
+    color: $text-color-light;
+    padding: 0 15px;
+    position: relative;
+    z-index: 1;
+
+    @include box-flex(1);
+}
+
+padlock-shapeshifter {
+    margin-right: 10px;
+
+    line {
+        stroke: $text-color-light;
+    }
+}
