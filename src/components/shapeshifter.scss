@@ -19,7 +19,7 @@ line {
     stroke-width: 6;
     @include transform-origin(center center 0);
     @include transition(transform 0.5s);
-    @include transform(translate(0, 0) scale(0));
+    @include transform(translate(0, 0) scale(0.01));
 }
 
 .plus line:nth-child(1) {
