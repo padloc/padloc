@@ -7,7 +7,7 @@
         <link href="header.css" rel="stylesheet" type="text/css">
         <padlock-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></padlock-shapeshifter>
         <div class="middle" id="middle">
-            <input is="fast-input" id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." />
+            <input is="fast-input" id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." disabled?="{{ record }}"/>
             <div class="name">{{ record.name }}</div>
         </div>
         <padlock-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></padlock-shapeshifter>
@@ -23,7 +23,7 @@
                     this.$.leftIcon.shape = "arrow-left";
                     this.$.rightIcon.shape = "more";
                 } else if (this.filterString) {
-                    this.$.leftIcon.shape = "";
+                    // this.$.leftIcon.shape = "";
                     this.$.rightIcon.shape = "cancel";
                 } else {
                     this.$.leftIcon.shape = "menu";
@@ -32,10 +32,8 @@
             },
             recordChanged: function(oldRec, newRec) {
                 if (newRec) {
-                    this.$.filterInput.setAttribute("disabled", "disabled");
                     this.classList.add("show-record");
                 } else {
-                    this.$.filterInput.removeAttribute("disabled");
                     this.classList.remove("show-record");
                 }
                 this.updateIcons();
@@ -67,7 +65,7 @@
                 } else {
                     this.classList.remove("filtering");
                 }
-                thisupdateIcons();
+                this.updateIcons();
             },
             editingTagsChanged: function() {
                 this.updateIcons();
