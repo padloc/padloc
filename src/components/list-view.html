@@ -47,7 +47,7 @@
                 var ts = this.$.trackSurrogate;
                 ts.record = sender.templateInstance.model.record;
                 ts.style.display = "block";
-                this.positionTrackSurrogate(this.lastPointerPos.x, this.lastPointerPos.y);
+                this.positionTrackSurrogate(this.lastPointerPos.x, this.lastPointerPos.y + this.scrollTop);
                 this.dragging = true;
                 this.setAttribute("touch-action", "none");
                 this.draggedItem = sender;
@@ -64,7 +64,7 @@
             },
             track: function(event, detail, sender) {
                 if (this.dragging) {
-                    this.positionTrackSurrogate(event.clientX, event.clientY);
+                    this.positionTrackSurrogate(event.clientX, event.clientY + this.scrollTop);
                 }
             },
             release: function() {
