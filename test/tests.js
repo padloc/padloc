@@ -1,8 +1,8 @@
 QUnit.config.autostart = false;
 
-require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model) {
+require(["padlock/crypto", "padlock/util", "padlock/model"], function(crypto, util, model) {
 
-    module("safe/crypto");
+    module("padlock/crypto");
 
     test("key generation", function() {
         var keyLength = 256, pwd = "password";
@@ -44,7 +44,7 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         notEqual(c2.ct, c.ct, "The same plaintext/password pair should not result in the same cypher text");
     });
 
-    module("safe/util");
+    module("padlock/util");
 
     test("insert", function() {
         // Insert single element at the correct position
@@ -90,7 +90,7 @@ require(["safe/crypto", "safe/util", "safe/model"], function(crypto, util, model
         deepEqual(e, ["a", "b", "c", "d", "e"]);
     });
 
-    module("safe/model");
+    module("padlock/model");
 
     test("add records", function() {
         var coll = new model.Collection();

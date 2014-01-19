@@ -46,7 +46,7 @@
         Polymer("padlock-app", {
             ready: function() {
                 var self = this;
-                require(["safe/model"], function(model) {
+                require(["padlock/model"], function(model) {
                     self.collection = new model.Collection();
                     self.openView(self.collection.exists() ? self.$.lockView : self.$.passwordView);
                 });

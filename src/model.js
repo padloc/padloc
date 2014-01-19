@@ -1,4 +1,4 @@
-define(["safe/crypto", "safe/util"], function(crypto, util) {
+define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     var Store = function(password) {
         this.password = "";
     };

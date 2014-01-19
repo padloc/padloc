@@ -13,7 +13,7 @@
             maxAnimationDelay: 200,
             enteredView: function() {
                 var self = this;
-                var eventName = require(["safe/util"], function(util) {
+                var eventName = require(["padlock/util"], function(util) {
                     var eventName = util.getAnimationEndEventName();  
                     self.addEventListener(eventName, function() {
                         self.animationEnd.apply(self, arguments);
@@ -29,7 +29,7 @@
                 this.currAnimation = animation;
                 this.currDirection = direction;
                 this.animationCallback = callback;
-                var prefix = require("safe/util").getVendorPrefix().css;
+                var prefix = require("padlock/util").getVendorPrefix().css;
 
                 this.getAnimationElement().style[prefix + "animation"] = [
                     animation,

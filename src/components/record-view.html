@@ -72,7 +72,7 @@
             },
             removeField: function() {
                 this.$.fieldMenu.close();
-                var util = require("safe/util");
+                var util = require("padlock/util");
                 this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
                 this.fire("save");
             }

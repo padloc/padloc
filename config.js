@@ -1,7 +1,7 @@
 require.config({
     baseUrl: "./",
     paths: {
-        "safe": "src",
+        "padlock": "src",
         "sjcl": "lib/sjcl"
     },
     shim: {
