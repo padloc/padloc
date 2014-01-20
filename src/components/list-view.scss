@@ -7,10 +7,10 @@
     height: 100%;
     font-size: 0;
     @include box-sizing(border-box);
+}
 
-    > * {
-        font-size: $font-size-default;
-    }
+padlock-record-item {
+    font-size: $font-size-default;
 }
 
 .track-surrogate {
