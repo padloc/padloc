@@ -66,7 +66,9 @@ button {
     border: none;
     background: #fff;
     margin: 0;
-    padding: 15px;
+    height: $row-height;
+    line-height: $row-height;
+    padding: 0 15px;
     cursor: pointer;
 }
 
