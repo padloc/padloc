@@ -1,7 +1,7 @@
 @import "compass/css3";
 @import "../config.scss";
 
-:host {
+:host > div {
     border-bottom: solid 2px $border-color;
     overflow: hidden;
     height: $row-height;
@@ -9,9 +9,9 @@
     background: transparentize($color-primary, 0.1);
 
     @include display-box;
-    @include box-sizing(border-box);
     @include transform(translate3d(0, 0, 0));
     @include transition(transform 0.5s, background 1s);
+    @include transform(translate3d(0, -100%, 0));
 
     padlock-shapeshifter {
         display: block;
@@ -26,25 +26,25 @@
         }
     }
 
-    &.show-record {
-        .filter-input {
-            opacity: 0;
-            @include transform(translate(0, -100%));
-        }
+    &.showing {
+        @include transform(translate3d(0, 0, 0));
+    }
 
-        .name {
+    &.show-filter {
+        .filter-input {
             opacity: 1;
             @include transform(translate(0, 0));
         }
+
+        .title {
+            opacity: 0;
+            @include transform(translate(0, 100%));
+        }
     }
 
-    &.filtering:not(.show-record) #leftIcon {
+    &.filtering.show-filter #leftIcon {
         width: 0;
         padding-left: 0;
-    }
-
-    &.hidden {
-        @include transform(translate3d(0, -100%, 0));
     }
 }
 
@@ -67,24 +67,26 @@
     @include transition(transform 0.5s, opacity 0.5s);
 }
 
-input {
+.filter-input {
     font-family: inherit;
     font-size: inherit;
     font-weight: inherit;
     border: none;
     background: transparent;
     color: $text-color-light;
+    opacity: 0;
 
     @include appearance(none);
+    @include transform(translate(0, -100%));
 
     &::-webkit-input-placeholder {
        color: $placeholder-color-light;
     }
 }
 
-.name {
-    opacity: 0;
-    @include transform(translate(0, 100%));
+.title {
+    opacity: 1;
+    @include transform(translate(0, 0));
 }
 
 #leftIcon {

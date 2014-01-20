@@ -35,6 +35,18 @@
     </template>
     <script>
         Polymer('padlock-record-view', {
+            headerOptions: {
+                show: true,
+                leftIconShape: "arrow-left",
+                rightIconShape: "more",
+                titleText: "record"
+            },
+            leftHeaderButton: function() {
+                this.fire("back");
+            },
+            rightHeaderButton: function() {
+                this.fire("menu");
+            },
             getAnimationElement: function() {
                 return this.$.animated;
             },
@@ -75,6 +87,9 @@
                 var util = require("padlock/util");
                 this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
                 this.fire("save");
+            },
+            recordChanged: function() {
+                this.headerOptions.titleText = this.record.name;
             }
         });
     </script>

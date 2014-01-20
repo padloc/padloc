@@ -14,14 +14,30 @@
     </template>
     <script>
         Polymer("padlock-list-view", {
+            headerOptions: {
+                show: true,
+                leftIconShape: "menu",
+                rightIconShape: "plus",
+                showFilter: true
+            },
             observe: {
                 filterString: "applyFilter",
                 "collection.records": "applyFilter"
+            },
+            leftHeaderButton: function() {
+                this.fire("menu");
+            },
+            rightHeaderButton: function() {
+                this.fire("add");
             },
             getAnimationElement: function() {
                 return this.$.list;
             },
             applyFilter: function() {
+                if (!this.collection) {
+                    return;
+                }
+
                 var fs = this.filterString;
                 this.filteredRecords = fs ? this.collection.records.filter(function(rec) {
                     return rec.name.toLowerCase().search(fs.toLowerCase()) != -1;

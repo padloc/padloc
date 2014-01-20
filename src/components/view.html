@@ -6,11 +6,20 @@
     </template>
     <script>
         Polymer('padlock-view', {
+            headerOptions: {
+                show: false,
+                leftIconShape: "",
+                rightIconShape: "",
+                showFilter: false,
+                titleText: ""
+            },
             inAnimation: "slideInFromRight",
             outAnimation: "slideOutToLeft",
             animationDuration: 400,
             animationEasing: "ease",
             maxAnimationDelay: 200,
+            leftHeaderButton: function() {},
+            rightHeaderButton: function() {},
             enteredView: function() {
                 var self = this;
                 var eventName = require(["padlock/util"], function(util) {

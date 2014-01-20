@@ -10,11 +10,11 @@
 <polymer-element name="padlock-app" touch-action="pan-y" on-showheader="{{ showHeader }}" on-hideheader="{{ hideHeader }}">
     <template>
         <link href="app.css" rel="stylesheet" type="text/css">
-        <padlock-header id="header" filterString="{{ filterString }}" record="{{ selected }}" on-back="{{ back }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-record-menu="{{ openRecordMenu }}" class="hidden" on-stop-editing-tags="{{ stopEditingTags }}"></padlock-header>
+        <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"></padlock-header>
         <padlock-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}" style="display: none"></padlock-password-view>
         <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}" style="display: none"></padlock-lock-view>
-        <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none"></padlock-list-view>
-        <padlock-record-view id="recordView" class="view" style="display: none" on-save="{{ saveRecord }}"></padlock-record-view>
+        <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}"></padlock-list-view>
+        <padlock-record-view id="recordView" class="view" style="display: none" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}" on-menu="{{ openRecordMenu }}"></padlock-record-view>
         <padlock-tags-view id="tagsView" class="view"></padlock-tags-view>
         <padlock-dialog id="mainMenu">
             <div>Settings</div>
@@ -107,12 +107,6 @@
 
                 view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
 
-                if (view == this.$.lockView || view == this.$.passwordView) {
-                    this.hideHeader();
-                } else {
-                    this.showHeader();
-                }
-
                 this.currentView = view;
             },
             showHeader: function() {
@@ -152,10 +146,7 @@
                     self.saveRecord();
                 }, 50);
             },
-            back: function() {
-                this.recordViewBack();
-            },
-            recordViewBack: function() {
+            recordViewBack: function(event, detail, sender) {
                 this.selected = null;
                 this.openView(this.$.listView);
             },

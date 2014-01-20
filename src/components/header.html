@@ -2,73 +2,48 @@
 <link rel="import" href="shapeshifter.html">
 <link rel="import" href="fast-input.html">
 
-<polymer-element name="padlock-header" attributes="filterString record editingTags">
+<polymer-element name="padlock-header" attributes="view titleText showFilter filterString">
     <template>
-        <link href="header.css" rel="stylesheet" type="text/css">
-        <padlock-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></padlock-shapeshifter>
-        <div class="middle" id="middle">
-            <input is="fast-input" id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." disabled?="{{ record }}"/>
-            <div class="name">{{ record.name }}</div>
+        <div class="{{ {'showing': view ? view.headerOptions.show : false, 'show-filter': view ? view.headerOptions.showFilter : false, 'filtering': filterString} | tokenList }}">
+            <link href="header.css" rel="stylesheet" type="text/css">
+            <padlock-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></padlock-shapeshifter>
+            <div class="middle">
+                <input is="fast-input" id="filterInput" class="filter-input" value="{{ filterString }}" type="search" placeholder="type to filter..." disabled?="{{ record }}"/>
+                <div class="title">{{ view ? view.headerOptions.titleText : "" }}</div>
+            </div>
+            <padlock-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></padlock-shapeshifter>
         </div>
-        <padlock-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></padlock-shapeshifter>
     </template>
     <script>
         Polymer("padlock-header", {
-            editingTags: false,
+            view: null,
+            filterString: "",
+            observe: {
+                filterString: "updateIcons",
+                view: "updateIcons",
+                record: "updateIcons"
+            },
             updateIcons: function() {
-                if (this.editingTags) {
-                    this.$.leftIcon.shape = "cancel";
-                    this.$.rightIcon.shape = "plus";
-                } else if (this.record) {
-                    this.$.leftIcon.shape = "arrow-left";
-                    this.$.rightIcon.shape = "more";
-                } else if (this.filterString) {
-                    // this.$.leftIcon.shape = "";
+                if (this.view && this.view.headerOptions.showFilter && this.filterString) {
+                    this.$.leftIcon.shape = "";
                     this.$.rightIcon.shape = "cancel";
                 } else {
-                    this.$.leftIcon.shape = "menu";
-                    this.$.rightIcon.shape = "plus";
+                    this.$.leftIcon.shape = this.view.headerOptions.leftIconShape;
+                    this.$.rightIcon.shape = this.view.headerOptions.rightIconShape;
                 }
-            },
-            recordChanged: function(oldRec, newRec) {
-                if (newRec) {
-                    this.classList.add("show-record");
-                } else {
-                    this.classList.remove("show-record");
-                }
-                this.updateIcons();
             },
             leftClicked: function() {
-                if (this.editingTags) {
-                    this.fire("stop-editing-tags")
-                } else if (this.record) {
-                    this.fire("back");
-                } else {
-                    this.fire("menu");
+                if (this.view && this.view.leftHeaderButton) {
+                    this.view.leftHeaderButton();
                 }
             },
             rightClicked: function() {
-                if (this.editingTags) {
-                    this.fire("create-tag");
-                } else if (this.record) {
-                    this.fire("record-menu")
-                } else if (this.filterString) {
+                if (this.view && this.view.headerOptions.showFilter && this.filterString) {
                     this.filterString = "";
                     this.$.filterInput.blur();
-                } else {
-                    this.fire("add");
+                } else if (this.view && this.view.rightHeaderButton) {
+                    this.view.rightHeaderButton();
                 }
-            },
-            filterStringChanged: function() {
-                if (this.filterString) {
-                    this.classList.add("filtering");
-                } else {
-                    this.classList.remove("filtering");
-                }
-                this.updateIcons();
-            },
-            editingTagsChanged: function() {
-                this.updateIcons();
             }
         })
     </script>
