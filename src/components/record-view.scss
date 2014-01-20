@@ -28,6 +28,7 @@
         max-width: 100px;
         text-align: right;
         color: $color-primary;
+        @include ellipsis();
     }
 
     > .value {

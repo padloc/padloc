@@ -1,5 +1,6 @@
 @import "compass/css3";
 @import "../config.scss";
+@import "../mixins.scss";
 
 :host > div {
     overflow: hidden;
@@ -86,6 +87,7 @@
 .title {
     opacity: 1;
     @include transform(translate(0, 0));
+    @include ellipsis();
 }
 
 #leftIcon {
