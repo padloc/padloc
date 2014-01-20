@@ -58,3 +58,19 @@ padlock-header {
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
 }
+
+button {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    border: none;
+    background: #fff;
+    margin: 0;
+    padding: 15px;
+    cursor: pointer;
+}
+
+button.primary {
+    background: $color-primary;
+    color: #fff;
+}

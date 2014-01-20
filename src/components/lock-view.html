@@ -9,6 +9,7 @@
                 Padlock
             </div>
             <input is="fast-input" type="password" placeholder="Enter Password" on-keydown="{{ keydown }}" id="pwdInput"/>
+            <button class="enter-button primary" on-tap="{{ enter }}">OK</button>
             <div class="error-message">{{ errorMessage }}</div>
         </div>
     </template>
@@ -16,9 +17,12 @@
         Polymer("padlock-lock-view", {
             keydown: function(event, detail, sender) {
                 if (event.keyCode == 13) { 
-                    this.$.pwdInput.blur();
-                    this.fire("enter", {password: this.$.pwdInput.value});
+                    this.enter();
                 }
+            },
+            enter: function() {
+                this.$.pwdInput.blur();
+                this.fire("enter", {password: this.$.pwdInput.value});
             },
             show: function(animation, callback) {
                 var input = this.$.pwdInput;

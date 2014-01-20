@@ -1,10 +1,7 @@
 @import "../config.scss";
 @import "compass/css3";
 
-:host {
-    background: $color-primary;
-    color: $text-color-light;
-}
+:host {}
 
 .wrapper {
     height: 300px;
@@ -20,29 +17,28 @@
 .header {
     font-size: 50px;
     font-weight: 100;
-    padding: 20px;
+    padding: 40px;
+    color: $color-primary;
 }
 
 input {
-    background: transparent;
+    background: #fff;
     font-family: inherit;
     font-size: inherit;
     padding: 12px;
     border: none;
-    border-top: solid 1px $border-color-light;
-    border-bottom: solid 1px $border-color-light;
     text-align: center;
     width: 100%;
     margin: 0;
     border-radius: 0;
-    color: $text-color-light;
 
     @include appearance(none);
     @include box-sizing(border-box);
+}
 
-    &::-webkit-input-placeholder {
-       color: $placeholder-color-light;
-    }
+.enter-button {
+    width: 100%;
+    margin-top: 15px;
 }
 
 .error-message {
@@ -62,7 +58,10 @@ input {
     }
 
     input {
-        border-color: $color-negative;
         color: $color-negative;
+    }
+
+    ::-webkit-input-placeholder {
+       color: $color-negative;
     }
 }
