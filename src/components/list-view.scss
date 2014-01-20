@@ -22,9 +22,5 @@ padlock-record-item {
     pointer-events: none;
     opacity: 0.8;
 
-    > .inner {
-        border-top: solid 1px $border-color;
-    }
-
     @include transform(translate3d(0, 0, 0));
 }

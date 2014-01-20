@@ -46,6 +46,7 @@
     :host.drag-over:not(.ghost) > .inner {
         background: rgba(0, 0, 0, 0.1);
         border-left: solid 5px $border-color;
+        margin-top: 0;
     }
 }
 
