@@ -1,25 +1,22 @@
 @import "../config.scss";
+@import "../mixins.scss";
 @import "compass/css3/box";
-@import "compass/css3/box-sizing";
 
 :host {
     display: block;
     overflow: scroll;
     -webkit-overflow-scrolling: touch;
-
-    @include box-sizing(border-box);
 }
 
 .field, .add {
     background: #ffffff;
     height: $row-height;
     line-height: $row-height;
-    border-bottom: solid $border-color 1px;
     padding: 0 15px;
+    margin: 5px;
     cursor: pointer;
 
     @include display-box;
-    @include box-sizing(border-box);
 }
 
 .field {
@@ -35,6 +32,7 @@
 
     > .value {
         @include box-flex(1);
+        @include ellipsis();
     }
 }
 

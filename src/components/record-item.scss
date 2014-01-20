@@ -1,5 +1,6 @@
 @import "../config.scss";
 @import "compass/css3/box-sizing";
+@import "compass/css3/box";
 
 :host {
     display: inline-block;
@@ -18,16 +19,15 @@
     &.ghost {
         display: none;
     }
+
+    padding: 5px 5px 0 5px;
 }
 
 .inner {
     height: $row-height;
     line-height: $row-height;
-    border-bottom: solid $border-color 1px;
     padding: 0 15px;
     background: #ffffff;
-
-    @include box-sizing(border-box);
 }
 
 @media (min-width: 700px) {
@@ -43,14 +43,9 @@
         }
     }
 
-    .inner {
-        border: solid 1px $border-color;
-    }
-
     :host.drag-over:not(.ghost) > .inner {
-        margin-top: 0;
         background: rgba(0, 0, 0, 0.1);
-        border-left-width: 5px;
+        border-left: solid 5px $border-color;
     }
 }
 
@@ -59,7 +54,7 @@
         width: 50%;
     }
 
-    :host:nth-child(2n) {
+    :host:nth-child(2n-1) {
         padding-right: 5px;
     }
 }
@@ -69,7 +64,7 @@
         width: 33.33%;
     }
 
-    :host:nth-child(3n-1) {
+    :host:nth-child(3n-2) {
         padding-right: 5px;
     }
 }
@@ -79,7 +74,7 @@
         width: 25%;
     }
 
-    :host:nth-child(4n-2) {
+    :host:nth-child(4n-3) {
         padding-right: 5px;
     }
 }

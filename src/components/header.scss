@@ -2,7 +2,6 @@
 @import "../config.scss";
 
 :host > div {
-    border-bottom: solid 2px $border-color;
     overflow: hidden;
     height: $row-height;
     color: $text-color-light;
