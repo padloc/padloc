@@ -6,6 +6,7 @@
     -webkit-overflow-scrolling: touch;
     height: 100%;
     font-size: 0;
+    padding-bottom: 5px;
     @include box-sizing(border-box);
 }
 
