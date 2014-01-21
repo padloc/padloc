@@ -68,15 +68,10 @@
 }
 
 .filter-input {
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    border: none;
     background: transparent;
     color: $text-color-light;
     opacity: 0;
 
-    @include appearance(none);
     @include transform(translate(0, -100%));
 
     &::-webkit-input-placeholder {

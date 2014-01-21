@@ -1,6 +1,5 @@
 @import "../config.scss";
-@import "compass/css3/transition";
-@import "compass/css3/transform";
+@import "compass/css3";
 @import "compass/css3/user-interface";
 
 :host {
@@ -75,4 +74,22 @@ button {
 button.primary {
     background: $color-primary;
     color: #fff;
+}
+
+input {
+    $line-height: 20px;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    border-radius: 0;
+    background: #fff;
+    margin: 0;
+    height: $row-height;
+    line-height: $line-height;
+    padding: ($row-height - $line-height)/2 15px;
+
+    @include appearance(none);
+    @include box-sizing(border-box);
 }

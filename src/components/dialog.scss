@@ -33,44 +33,31 @@
     @include box-sizing(border-box);
 
     > * {
-        $line-height: 20px;
-        display: block;
-        line-height: $line-height;
-        padding: ($row-height - $line-height)/2 0;
-        margin: 5px 0;
+        margin-bottom: 5px;
         text-align: center;
         opacity: 0;
         cursor: pointer;
-        color: $text-color-light;
-        border: solid 1px;
+        width: 100%;
 
         @include box-sizing(border-box);
         @include transition(transform 0.3s, opacity 0.3s);
-        @include transform(translate3d(0, 100%, 0));
+        @include transform(translate3d(0, 100%, 0)); 
+
+        &.title {
+            background: transparent;
+            color: $text-color-light;
+            cursor: default;
+            border: none;
+        }
     }
 
-    input {
-        width: 100%;
-        border: none;
-        font-size: inherit;
-        color: inherit;
+    > button {
+        background: transparent;
+        color: $text-color-light;
+        border: solid 1px;
+    }
+
+    > input {
         cursor: text;
-        border-radius: 0;
-
-        @include box-sizing(border-box);
-        @include appearance(none);
     }
-}
-
-.title {
-    background: transparent;
-    color: $text-color-light;
-    cursor: default;
-    border: none;
-}
-
-.negative {
-    background: $color-primary;
-    color: $text-color-light;
-    border: none;
 }
