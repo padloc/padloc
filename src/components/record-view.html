@@ -18,19 +18,34 @@
                 <padlock-shapeshifter shape="plus"></padlock-shapeshifter>
             </div> -->
         </div>
+        <padlock-dialog id="menu">
+            <button on-tap="{{ editName }}">Edit Name</button>
+            <button on-tap="{{ editTags }}">Edit Tags</button>
+            <button on-tap="{{ addField }}">Add Field</button>
+            <button class="negative" on-tap="{{ deleteRecord }}" id="confirmButton">Delete</button>
+        </padlock-dialog>
+        <padlock-dialog id="confirmDialog">
+            <div class="title">Are you sure you want to delete this record?</div>
+            <button on-tap="{{ cancelDelete }}">Cancel</button>
+            <button class="negative" on-tap="{{ confirmDelete }}">Delete</button>
+        </padlock-dialog>
+        <padlock-dialog id="editNameDialog">
+            <input is="fast-input" id="nameInput" placeholder="Enter Record Name"/>
+            <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
+        </padlock-dialog>
         <padlock-dialog id="fieldMenu">
             <button on-tap="{{ editField }}">Edit Field</button>
             <button class="negative" on-tap="{{ removeField }}">Remove Field</button>
         </padlock-dialog>
         <padlock-dialog id="addFieldDialog">
-            <input is="fast-input" id="addFieldValueInput" placeholder="Enter Content" />
-            <input is="fast-input" id="addFieldNameInput" placeholder="Enter Label" />
-            <button on-tap="{{ confirmAddField }}">Add</button>
+            <input is="fast-input" id="newValueInput" placeholder="Enter Content" />
+            <input is="fast-input" id="newFieldNameInput" placeholder="Enter Label" />
+            <button class="primary" on-tap="{{ confirmAddField }}">Add</button>
         </padlock-dialog>
         <padlock-dialog id="editFieldDialog">
-            <input is="fast-input" id="editValueInput" placeholder="Enter Content" />
-            <input is="fast-input" id="editNameInput" placeholder="Enter Label" />
-            <button on-tap="{{ confirmEditField }}">Save</button>
+            <input is="fast-input" id="valueInput" placeholder="Enter Content" />
+            <input is="fast-input" id="fieldNameInput" placeholder="Enter Label" />
+            <button class="primary" on-tap="{{ confirmEditField }}">Save</button>
         </padlock-dialog>
     </template>
     <script>
@@ -45,37 +60,59 @@
                 this.fire("back");
             },
             rightHeaderButton: function() {
-                this.fire("menu");
+                this.$.menu.open();
             },
             getAnimationElement: function() {
                 return this.$.animated;
             },
+            deleteRecord: function() {
+                this.$.menu.close();
+                this.$.confirmDialog.open();
+            },
+            confirmDelete: function() {
+                this.$.confirmDialog.close();
+                this.fire("delete");
+            },
+            cancelDelete: function() {
+                this.$.confirmDialog.close();
+            },
+            editName: function() {
+                this.$.menu.close();
+                this.$.nameInput.value = this.record.name;
+                this.$.editNameDialog.open();
+                this.$.nameInput.select();
+            },
+            confirmEditName: function() {
+                this.$.editNameDialog.close();
+                this.record.name = this.$.nameInput.value;
+                this.fire("save");
+            },
             addField: function() {
-                this.$.addFieldValueInput.value = "";
-                this.$.addFieldNameInput.value = "";
+                this.$.menu.close();
+                this.$.newValueInput.value = "";
+                this.$.newFieldNameInput.value = "";
                 this.$.addFieldDialog.open();
-                this.$.addFieldValueInput.focus();
             },
             confirmAddField: function() {
                 this.$.addFieldDialog.close();
                 var field = {
-                    name: this.$.addFieldNameInput.value,
-                    value: this.$.addFieldValueInput.value
+                    name: this.$.newFieldNameInput.value,
+                    value: this.$.newValueInput.value
                 };
                 this.record.fields.push(field);
                 this.fire("save");
             },
             editField: function() {
                 this.$.fieldMenu.close();
-                this.$.editValueInput.value = this.selectedField.value;
-                this.$.editNameInput.value = this.selectedField.name;
+                this.$.valueInput.value = this.selectedField.value;
+                this.$.fieldNameInput.value = this.selectedField.name;
                 this.$.editFieldDialog.open();
-                this.$.editValueInput.select();
+                this.$.valueInput.select();
             },
             confirmEditField: function() {
                 this.$.editFieldDialog.close();
-                this.selectedField.value = this.$.editValueInput.value;
-                this.selectedField.name = this.$.editNameInput.value;
+                this.selectedField.value = this.$.valueInput.value;
+                this.selectedField.name = this.$.fieldNameInput.value;
                 this.fire("save");
             },
             openFieldMenu: function(event, detail, sender) {

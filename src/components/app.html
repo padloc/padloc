@@ -14,7 +14,7 @@
         <padlock-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}" style="display: none"></padlock-password-view>
         <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}" style="display: none"></padlock-lock-view>
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}"></padlock-list-view>
-        <padlock-record-view id="recordView" class="view" style="display: none" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}" on-menu="{{ openRecordMenu }}"></padlock-record-view>
+        <padlock-record-view id="recordView" class="view" style="display: none" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}" on-delete="{{ deleteRecord }}"></padlock-record-view>
         <padlock-tags-view id="tagsView" class="view"></padlock-tags-view>
         <padlock-dialog id="mainMenu">
             <button>Settings</button>
@@ -24,23 +24,9 @@
             <button on-tap="{{ lock }}">Lock App</button>
             <button on-tap="{{ changePassword }}">Change Password</button>
         </padlock-dialog>
-        <padlock-dialog id="recordMenu">
-            <button on-tap="{{ editName }}">Edit Name</button>
-            <button on-tap="{{ editTags }}">Edit Tags</button>
-            <button class="negative" on-tap="{{ deleteRecord }}" id="confirmButton">Delete</button>
-        </padlock-dialog>
-        <padlock-dialog id="confirmDialog">
-            <div class="title">Are you sure you want to delete this record?</div>
-            <button on-tap="{{ cancelDelete }}">Cancel</button>
-            <button class="negative" on-tap="{{ confirmDelete }}">Delete</button>
-        </padlock-dialog>
         <padlock-dialog id="addDialog">
             <input is="fast-input" id="addInput" placeholder="Enter Record Name"/>
             <button class="primary" on-tap="{{ confirmAddRecord }}">Add</button>
-        </padlock-dialog>
-        <padlock-dialog id="editNameDialog">
-            <input is="fast-input" id="editNameInput" placeholder="Enter Record Name"/>
-            <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
     </template>
     <script>
@@ -85,19 +71,6 @@
                         self.openView(self.$.recordView);
                     }, 10);
                 }
-            },
-            deleteRecord: function() {
-                this.$.recordMenu.close();
-                this.$.confirmDialog.open();
-            },
-            confirmDelete: function() {
-                this.$.confirmDialog.close();
-                this.collection.remove(this.selected);
-                this.collection.save();
-                this.recordViewBack();
-            },
-            cancelDelete: function() {
-                this.$.confirmDialog.close();
             },
             openView: function(view, outCallback, inCallback) {
                 var views = this.shadowRoot.querySelectorAll(".view").array();
@@ -147,26 +120,17 @@
                     self.saveRecord();
                 }, 50);
             },
+            deleteRecord: function() {
+                this.collection.remove(this.selected);
+                this.collection.save();
+                this.recordViewBack();
+            },
             recordViewBack: function(event, detail, sender) {
                 this.selected = null;
                 this.openView(this.$.listView);
             },
             openMainMenu: function() {
                 this.$.mainMenu.open();
-            },
-            openRecordMenu: function() {
-                this.$.recordMenu.open();
-            },
-            editName: function() {
-                this.$.recordMenu.close();
-                this.$.editNameInput.value = this.selected.name;
-                this.$.editNameDialog.open();
-                this.$.editNameInput.select();
-            },
-            confirmEditName: function() {
-                this.$.editNameDialog.close();
-                this.selected.name = this.$.editNameInput.value;
-                this.saveRecord();
             },
             changePassword: function() {
                 this.$.mainMenu.close();
