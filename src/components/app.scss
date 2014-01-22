@@ -73,7 +73,12 @@ button {
 
 button.primary {
     background: $color-primary;
-    color: #fff;
+    color: $text-color-light;
+}
+
+button.negative {
+    background: $color-negative;
+    color: $text-color-light;
 }
 
 input {

@@ -19,18 +19,18 @@
             </div> -->
         </div>
         <padlock-dialog id="fieldMenu">
-            <div on-tap="{{ editField }}">Edit Field</div>
-            <div class="negative" on-tap="{{ removeField }}">Remove Field</div>
+            <button on-tap="{{ editField }}">Edit Field</button>
+            <button class="negative" on-tap="{{ removeField }}">Remove Field</button>
         </padlock-dialog>
         <padlock-dialog id="addFieldDialog">
             <input is="fast-input" id="addFieldValueInput" placeholder="Enter Content" />
             <input is="fast-input" id="addFieldNameInput" placeholder="Enter Label" />
-            <div on-tap="{{ confirmAddField }}">Add</div>
+            <button on-tap="{{ confirmAddField }}">Add</button>
         </padlock-dialog>
         <padlock-dialog id="editFieldDialog">
             <input is="fast-input" id="editValueInput" placeholder="Enter Content" />
             <input is="fast-input" id="editNameInput" placeholder="Enter Label" />
-            <div on-tap="{{ confirmEditField }}">Save</div>
+            <button on-tap="{{ confirmEditField }}">Save</button>
         </padlock-dialog>
     </template>
     <script>

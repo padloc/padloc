@@ -17,29 +17,30 @@
         <padlock-record-view id="recordView" class="view" style="display: none" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}" on-menu="{{ openRecordMenu }}"></padlock-record-view>
         <padlock-tags-view id="tagsView" class="view"></padlock-tags-view>
         <padlock-dialog id="mainMenu">
-            <div>Settings</div>
-            <div>About</div>
-            <div>Help</div>
-            <div on-tap="{{ lock }}">Lock App</div>
-            <div on-tap="{{ changePassword }}">Change Password</div>
+            <button>Settings</button>
+            <button>About</button>
+            <button>Help</button>
+            <button on-tap="{{ openImportView }}">Import Records</button>
+            <button on-tap="{{ lock }}">Lock App</button>
+            <button on-tap="{{ changePassword }}">Change Password</button>
         </padlock-dialog>
         <padlock-dialog id="recordMenu">
-            <div on-tap="{{ editName }}">Edit Name</div>
-            <div on-tap="{{ editTags }}">Edit Tags</div>
-            <div class="negative" on-tap="{{ deleteRecord }}" id="confirmButton">Delete</div>
+            <button on-tap="{{ editName }}">Edit Name</button>
+            <button on-tap="{{ editTags }}">Edit Tags</button>
+            <button class="negative" on-tap="{{ deleteRecord }}" id="confirmButton">Delete</button>
         </padlock-dialog>
         <padlock-dialog id="confirmDialog">
             <div class="title">Are you sure you want to delete this record?</div>
-            <div on-tap="{{ cancelDelete }}">Cancel</div>
-            <div class="negative" on-tap="{{ confirmDelete }}">Delete</div>
+            <button on-tap="{{ cancelDelete }}">Cancel</button>
+            <button class="negative" on-tap="{{ confirmDelete }}">Delete</button>
         </padlock-dialog>
         <padlock-dialog id="addDialog">
             <input is="fast-input" id="addInput" placeholder="Enter Record Name"/>
-            <div on-tap="{{ confirmAddRecord }}">Add</div>
+            <button class="primary" on-tap="{{ confirmAddRecord }}">Add</button>
         </padlock-dialog>
         <padlock-dialog id="editNameDialog">
             <input is="fast-input" id="editNameInput" placeholder="Enter Record Name"/>
-            <div on-tap="{{ confirmEditName }}">Save</div>
+            <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
     </template>
     <script>
