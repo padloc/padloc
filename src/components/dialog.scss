@@ -21,6 +21,12 @@
             opacity: 1;
         }
     }
+
+    // Failsafe in case the out animation get interrupted and
+    // the dialog fails to set 'display: none'
+    &:not(.open) {
+        pointer-events: none;
+    }
 }
 
 .inner {
