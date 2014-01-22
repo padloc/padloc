@@ -22,31 +22,32 @@
             <button on-tap="{{ editName }}">Edit Name</button>
             <button on-tap="{{ editTags }}">Edit Tags</button>
             <button on-tap="{{ addField }}">Add Field</button>
-            <button class="negative" on-tap="{{ deleteRecord }}" id="confirmButton">Delete</button>
+            <button on-tap="{{ deleteRecord }}" id="confirmButton">Delete Record</button>
         </padlock-dialog>
-        <padlock-dialog id="confirmDialog">
+        <padlock-dialog id="confirmDeleteDialog">
             <div class="title">Are you sure you want to delete this record?</div>
-            <button on-tap="{{ cancelDelete }}">Cancel</button>
             <button class="negative" on-tap="{{ confirmDelete }}">Delete</button>
+            <button on-tap="{{ cancelDelete }}">Cancel</button>
         </padlock-dialog>
         <padlock-dialog id="editNameDialog">
             <input is="fast-input" id="nameInput" placeholder="Enter Record Name"/>
             <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
         <padlock-dialog id="fieldMenu">
-            <div class="title"><strong>{{ selectedField.name }}:</strong> {{ selectedField.value }}</div>
-            <button on-tap="{{ editField }}">Edit Field</button>
-            <button class="negative" on-tap="{{ removeField }}">Remove Field</button>
+            <input id="fieldValueInput" placeholder="Enter Content" />
+            <input id="fieldNameInput" placeholder="Enter Name" />
+            <button class="primary" on-tap="{{ confirmEditField }}">Save Changes</button>
+            <button on-tap="{{ removeField }}">Remove Field</button>
         </padlock-dialog>
         <padlock-dialog id="addFieldDialog">
             <input is="fast-input" id="newValueInput" placeholder="Enter Content" />
             <input is="fast-input" id="newFieldNameInput" placeholder="Enter Label" />
             <button class="primary" on-tap="{{ confirmAddField }}">Add</button>
         </padlock-dialog>
-        <padlock-dialog id="editFieldDialog">
-            <input is="fast-input" id="valueInput" placeholder="Enter Content" />
-            <input is="fast-input" id="fieldNameInput" placeholder="Enter Label" />
-            <button class="primary" on-tap="{{ confirmEditField }}">Save</button>
+        <padlock-dialog id="confirmRemoveFieldDialog">
+            <div class="title">Are you sure you want to remove this field?</div>
+            <button class="negative" on-tap="{{ confirmRemoveField }}">Remove</button>
+            <button on-tap="{{ cancelRemoveField }}">Cancel</button>
         </padlock-dialog>
     </template>
     <script>
@@ -68,14 +69,14 @@
             },
             deleteRecord: function() {
                 this.$.menu.close();
-                this.$.confirmDialog.open();
+                this.$.confirmDeleteDialog.open();
             },
             confirmDelete: function() {
-                this.$.confirmDialog.close();
+                this.$.confirmDeleteDialog.close();
                 this.fire("delete");
             },
             cancelDelete: function() {
-                this.$.confirmDialog.close();
+                this.$.confirmDeleteDialog.close();
             },
             editName: function() {
                 this.$.menu.close();
@@ -103,28 +104,31 @@
                 this.record.fields.push(field);
                 this.fire("save");
             },
-            editField: function() {
-                this.$.fieldMenu.close();
-                this.$.valueInput.value = this.selectedField.value;
-                this.$.fieldNameInput.value = this.selectedField.name;
-                this.$.editFieldDialog.open();
-                this.$.valueInput.select();
-            },
             confirmEditField: function() {
-                this.$.editFieldDialog.close();
-                this.selectedField.value = this.$.valueInput.value;
+                this.$.fieldMenu.close();
+                this.selectedField.value = this.$.fieldValueInput.value;
                 this.selectedField.name = this.$.fieldNameInput.value;
                 this.fire("save");
             },
             openFieldMenu: function(event, detail, sender) {
                 this.selectedField = sender.templateInstance.model.field;
+                this.$.fieldValueInput.value = this.selectedField.value;
+                this.$.fieldNameInput.value = this.selectedField.name;
                 this.$.fieldMenu.open();
+                this.$.fieldValueInput.select();
             },
             removeField: function() {
                 this.$.fieldMenu.close();
+                this.$.confirmRemoveFieldDialog.open();
+            },
+            confirmRemoveField: function() {
+                this.$.confirmRemoveFieldDialog.close();
                 var util = require("padlock/util");
                 this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
                 this.fire("save");
+            },
+            cancelRemoveField: function() {
+                this.$.confirmRemoveFieldDialog.close();
             },
             recordChanged: function() {
                 this.headerOptions.titleText = this.record.name;
