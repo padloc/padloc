@@ -1,11 +1,22 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="view.html">
+<link rel="import" href="dialog.html">
 
 <polymer-element name="padlock-import-view" extends="padlock-view">
     <template>
         <link href="import-view.css" rel="stylesheet" type="text/css">
         <textarea id="rawInput" placeholder="Paste your data here!"></textarea>
-        <button class="import-button primary" on-tap="{{ startImport }}">import</import>
+        <button class="import-button primary" on-tap="{{ requirePassword }}">import</button>
+        <padlock-dialog id="pwdDialog">
+            <div class="title">Please enter password.</div>
+            <input id="pwdInput" type="password" placeholder="Enter password..." />
+            <button class="primary" on-tap="{{ startImport }}">OK</button>
+        </padlock-dialog>
+        <padlock-dialog id="errorDialog">
+            <div class="title">Password incorrect or data corrupt.</div>
+            <button class="primary" on-tap="{{ requirePassword }}">retry</button>
+            <button on-tap="{{ importCancel }}">cancel</button>
+        </padlock-dialog>
     </template>
     <script>
         Polymer("padlock-import-view", {
@@ -22,12 +33,26 @@
                 this.$.rawInput.value = "";
                 this.super([animation, callback]);
             },
+            requirePassword: function() {
+                this.$.errorDialog.close();
+                this.$.pwdInput.value = "";
+                this.$.pwdDialog.open();
+            },
             startImport: function() {
+                this.$.pwdDialog.close();
                 var self = this;
                 require(["padlock/import"], function(imp) {
-                    var records = imp.importSecuStoreBackup(self.$.rawInput.value, "");
-                    self.fire("import", {records: records})
+                    var records = imp.importSecuStoreBackup(self.$.rawInput.value, self.$.pwdInput.value);
+                    if (records) {
+                        self.fire("import", {records: records})
+                    } else {
+                        self.$.errorDialog.open();
+                    }
                 });
+            },
+            importCancel: function() {
+                this.$.errorDialog.close();
+                this.fire("back");
             }
         });
     </script>

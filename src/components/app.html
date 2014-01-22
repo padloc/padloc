@@ -30,6 +30,10 @@
             <input is="fast-input" id="addInput" placeholder="Enter Record Name"/>
             <button class="primary" on-tap="{{ confirmAddRecord }}">Add</button>
         </padlock-dialog>
+        <padlock-dialog id="alertDialog">
+            <div class="title" id="alertText"></div>
+            <button on-tap="{{ dismissAlert }}">OK</button>
+        </padlock-dialog>
     </template>
     <script>
         Polymer("padlock-app", {
@@ -161,7 +165,7 @@
             saveImportedRecords: function(event, detail) {
                 this.collection.add(detail.records);
                 this.collection.save();
-                alert(detail.records.length + " records imported!");
+                this.alert(detail.records.length + " records imported!");
                 this.openView(this.$.listView);
             },
             importBack: function() {
@@ -172,6 +176,13 @@
             },
             dialogClose: function(event, detail, sender) {
                 this.$.header.scrim = false;
+            },
+            alert: function(msg) {
+                this.$.alertText.innerText = msg;
+                this.$.alertDialog.open();
+            },
+            dismissAlert: function() {
+                this.$.alertDialog.close();
             }
         });
     </script>
