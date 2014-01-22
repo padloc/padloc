@@ -7,7 +7,7 @@
 <link rel="import" href="lock-view.html">
 <link rel="import" href="tags-view.html">
 
-<polymer-element name="padlock-app" touch-action="pan-y" on-showheader="{{ showHeader }}" on-hideheader="{{ hideHeader }}">
+<polymer-element name="padlock-app" touch-action="pan-y" on-showheader="{{ showHeader }}" on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}">
     <template>
         <link href="app.css" rel="stylesheet" type="text/css">
         <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"></padlock-header>
@@ -183,6 +183,15 @@
             stopEditingTags: function() {
                 this.$.tagsView.hide();
                 this.$.header.editingTags = false;
+            },
+            importBack: function() {
+                this.openView(this.$.listView);
+            },
+            dialogOpen: function(event, detail, sender) {
+                this.$.header.scrim = true;
+            },
+            dialogClose: function(event, detail, sender) {
+                this.$.header.scrim = false;
             }
         });
     </script>

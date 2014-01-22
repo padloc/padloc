@@ -7,6 +7,7 @@
     height: $row-height;
     color: $text-color-light;
     background: transparentize($color-primary, 0.1);
+    position: relative;
 
     @include display-box;
     @include transform(translate3d(0, 0, 0));
@@ -45,6 +46,24 @@
     &.filtering.show-filter #leftIcon {
         width: 0;
         padding-left: 0;
+    }
+
+    &:after {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.3);
+        pointer-events: none;
+        opacity: 0;
+        @include transition(opacity 0.5s);
+    }
+
+    &.scrim:after {
+        opacity: 1;
     }
 }
 

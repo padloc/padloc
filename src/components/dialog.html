@@ -27,6 +27,7 @@
                 setTimeout(function() {
                     self.classList.add("open");
                 }, 10);
+                this.fire("open");
             },
             close: function() {
                 var items = this.children.array();
@@ -36,6 +37,7 @@
                 }
                 this.transCount = items.length * 2 + 1;
                 this.classList.remove("open");
+                this.fire("close");
             },
             transitionEnd: function(event) {
                 this.transCount--;

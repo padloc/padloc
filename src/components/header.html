@@ -4,7 +4,7 @@
 
 <polymer-element name="padlock-header" attributes="view titleText showFilter filterString">
     <template>
-        <div class="{{ {'showing': view ? view.headerOptions.show : false, 'show-filter': view ? view.headerOptions.showFilter : false, 'filtering': filterString} | tokenList }}">
+        <div class="{{ {'showing': view ? view.headerOptions.show : false, 'show-filter': view ? view.headerOptions.showFilter : false, 'filtering': filterString, 'scrim': scrim} | tokenList }}">
             <link href="header.css" rel="stylesheet" type="text/css">
             <padlock-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></padlock-shapeshifter>
             <div class="middle">
