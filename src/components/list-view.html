@@ -70,7 +70,6 @@
                 this.classList.add("dragging");
                 this.draggedItem.classList.add("ghost");
                 this.itemHeld = true;
-                this.fire("hideheader");
             },
             pointerDown: function() {
                 this.lastPointerPos = {
@@ -108,7 +107,6 @@
                     this.lastHovered = null;
                     this.dragging = false;
                     this.removeAttribute("touch-action");
-                    this.fire("showheader");
                 }
             },
             positionTrackSurrogate: function(x, y) {
