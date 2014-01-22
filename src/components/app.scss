@@ -98,3 +98,7 @@ input {
     @include appearance(none);
     @include box-sizing(border-box);
 }
+
+strong {
+    font-weight: 400;
+}

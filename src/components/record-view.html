@@ -34,6 +34,7 @@
             <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
         <padlock-dialog id="fieldMenu">
+            <div class="title"><strong>{{ selectedField.name }}:</strong> {{ selectedField.value }}</div>
             <button on-tap="{{ editField }}">Edit Field</button>
             <button class="negative" on-tap="{{ removeField }}">Remove Field</button>
         </padlock-dialog>
