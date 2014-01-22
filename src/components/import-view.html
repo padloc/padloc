@@ -1,0 +1,34 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="view.html">
+
+<polymer-element name="padlock-import-view" extends="padlock-view">
+    <template>
+        <link href="import-view.css" rel="stylesheet" type="text/css">
+        <textarea id="rawInput" placeholder="Paste your data here!"></textarea>
+        <button class="import-button primary" on-tap="{{ startImport }}">import</import>
+    </template>
+    <script>
+        Polymer("padlock-import-view", {
+            headerOptions: {
+                titleText: "Import Records",
+                show: true,
+                leftIconShape: "arrow-left",
+                rightIconShape: ""
+            },
+            leftHeaderButton: function() {
+                this.fire("back");
+            },
+            show: function(animation, callback) {
+                this.$.rawInput.value = "";
+                this.super([animation, callback]);
+            },
+            startImport: function() {
+                var self = this;
+                require(["padlock/import"], function(imp) {
+                    var records = imp.importSecuStoreBackup(self.$.rawInput.value, "");
+                    self.fire("import", {records: records})
+                });
+            }
+        });
+    </script>
+</polymer>

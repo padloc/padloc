@@ -1,0 +1,34 @@
+@import "../config.scss";
+@import "compass/css3/box";
+@import "compass/css3/appearance";
+
+:host {
+    @include display-box;
+    @include box-orient(vertical); 
+}
+
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    border: none;
+    background: #fff;
+    margin: 0;
+    display: block;
+    padding: 15px;
+    font-size: 12px;
+    margin: 10px;
+
+    @include appearance(none);
+    @include box-flex(1);
+
+    &::-webkit-input-placeholder {
+       color: $placeholder-color;
+       font-size: $font-size-default;
+    }
+}
+
+.import-button {
+    display: block;
+    margin: 0 10px 10px 10px;
+}

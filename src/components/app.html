@@ -6,6 +6,7 @@
 <link rel="import" href="password-view.html">
 <link rel="import" href="lock-view.html">
 <link rel="import" href="tags-view.html">
+<link rel="import" href="import-view.html">
 
 <polymer-element name="padlock-app" touch-action="pan-y" on-showheader="{{ showHeader }}" on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}">
     <template>
@@ -16,6 +17,7 @@
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}"></padlock-list-view>
         <padlock-record-view id="recordView" class="view" style="display: none" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}" on-delete="{{ deleteRecord }}"></padlock-record-view>
         <padlock-tags-view id="tagsView" class="view"></padlock-tags-view>
+        <padlock-import-view id="importView" class="view" style="display: none" on-import="{{ saveImportedRecords }}" on-back="{{ importBack }}"></padlock-import-view>
         <padlock-dialog id="mainMenu">
             <button>Settings</button>
             <button>About</button>
@@ -148,6 +150,19 @@
             stopEditingTags: function() {
                 this.$.tagsView.hide();
                 this.$.header.editingTags = false;
+            },
+            openImportView: function() {
+                this.$.mainMenu.close();
+                var self = this;
+                setTimeout(function() {
+                    self.openView(self.$.importView);
+                }, 10);
+            },
+            saveImportedRecords: function(event, detail) {
+                this.collection.add(detail.records);
+                this.collection.save();
+                alert(detail.records.length + " records imported!");
+                this.openView(this.$.listView);
             },
             importBack: function() {
                 this.openView(this.$.listView);
