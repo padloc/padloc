@@ -38,11 +38,10 @@
     <script>
         Polymer("padlock-app", {
             ready: function() {
-                var self = this;
                 require(["padlock/model"], function(model) {
-                    self.collection = new model.Collection();
-                    self.openView(self.collection.exists() ? self.$.lockView : self.$.passwordView);
-                });
+                    this.collection = new model.Collection();
+                    this.openView(this.collection.exists() ? this.$.lockView : this.$.passwordView);
+                }.bind(this));
             },
             pwdEnter: function(event, detail, sender) {
                 this.unlock(detail.password);
@@ -62,20 +61,18 @@
             lock: function() {
                 this.$.mainMenu.close();
                 var coll = this.collection;
-                var self = this;
                 setTimeout(function() {
-                    self.openView(self.$.lockView, function() {
+                    this.openView(this.$.lockView, function() {
                         coll.lock();
                     });
-                }, 10);
+                }.bind(this), 10);
             },
             selectedChanged: function(oldRec, newRec) {
                 if (newRec) {
                     this.$.recordView.record = newRec;
-                    var self = this;
                     setTimeout(function() {
-                        self.openView(self.$.recordView);
-                    }, 10);
+                        this.openView(this.$.recordView);
+                    }.bind(this), 10);
                 }
             },
             openView: function(view, outCallback, inCallback) {
@@ -114,11 +111,10 @@
 
                 this.collection.add(record);
 
-                var self = this;
                 setTimeout(function() {
-                    self.selected = record;
-                    self.saveRecord();
-                }, 50);
+                    this.selected = record;
+                    this.saveRecord();
+                }.bind(this), 50);
             },
             deleteRecord: function() {
                 this.collection.remove(this.selected);
@@ -135,10 +131,9 @@
             changePassword: function() {
                 this.$.mainMenu.close();
                 this.$.passwordView.currentPassword = this.collection.store.password;
-                var self = this;
                 setTimeout(function() {
-                    self.openView(self.$.passwordView);
-                }, 10);
+                    this.openView(this.$.passwordView);
+                }.bind(this), 10);
             },
             editTags: function() {
                 this.$.recordMenu.close();
@@ -151,10 +146,9 @@
             },
             openImportView: function() {
                 this.$.mainMenu.close();
-                var self = this;
                 setTimeout(function() {
-                    self.openView(self.$.importView);
-                }, 10);
+                    this.openView(this.$.importView);
+                }.bind(this), 10);
             },
             saveImportedRecords: function(event, detail) {
                 this.collection.add(detail.records);

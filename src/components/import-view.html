@@ -40,15 +40,14 @@
             },
             startImport: function() {
                 this.$.pwdDialog.close();
-                var self = this;
                 require(["padlock/import"], function(imp) {
-                    var records = imp.importSecuStoreBackup(self.$.rawInput.value, self.$.pwdInput.value);
+                    var records = imp.importSecuStoreBackup(this.$.rawInput.value, this.$.pwdInput.value);
                     if (records) {
-                        self.fire("import", {records: records})
+                        this.fire("import", {records: records})
                     } else {
-                        self.$.errorDialog.open();
+                        this.$.errorDialog.open();
                     }
-                });
+                }.bind(this));
             },
             importCancel: function() {
                 this.$.errorDialog.close();

@@ -10,10 +10,7 @@
     <script>
         Polymer("padlock-dialog", {
             enteredView: function() {
-                var self = this;
-                this.addEventListener("webkitTransitionEnd", function() {
-                    this.transitionEnd.apply(self, arguments);
-                }, false);
+                this.addEventListener("webkitTransitionEnd", this.transitionEnd.bind(this), false);
             },
             open: function() {
                 var items = this.children.array();
@@ -22,11 +19,10 @@
                     items[i].style["-webkit-transition-delay"] = (i*del) + "s";
                 }
                 this.style.display = "block";
-                var self = this;
                 this.transCount = items.length * 2 + 1;
                 setTimeout(function() {
-                    self.classList.add("open");
-                }, 10);
+                    this.classList.add("open");
+                }.bind(this), 10);
                 this.fire("open");
             },
             close: function() {

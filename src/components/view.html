@@ -21,13 +21,12 @@
             leftHeaderButton: function() {},
             rightHeaderButton: function() {},
             enteredView: function() {
-                var self = this;
                 var eventName = require(["padlock/util"], function(util) {
                     var eventName = util.getAnimationEndEventName();  
-                    self.addEventListener(eventName, function() {
-                        self.animationEnd.apply(self, arguments);
+                    this.addEventListener(eventName, function() {
+                        this.animationEnd.apply(this, arguments);
                     }, false);
-                })
+                }.bind(this))
             },
             getAnimationElement: function() {
                 return this;
@@ -70,13 +69,12 @@
                 this.style.display = "";
             },
             hide: function(animation, callback) {
-                var self = this;
                 this.startAnimation("out", animation, function() {
-                    self.style.display = "none";
+                    this.style.display = "none";
                     if (callback) {
                         callback();
                     }
-                });
+                }.bind(this));
             }
         });
     </script>
