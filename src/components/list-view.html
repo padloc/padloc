@@ -7,7 +7,10 @@
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <padlock-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></padlock-record-item>
         <div id="list">
-            <template repeat="{{ record, i in filteredRecords}}">
+            <template repeat="{{ record, i in records }}">
+                <template if="{{ record.firstInSection }}">
+                    <div class="section-header">{{ record.section }}</div>
+                </template>
                 <padlock-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}" on-hold="{{ holdItem }}" on-pointerover="{{ itemPointerOver }}" on-pointerout="{{ itemPointerOut }}"></padlock-record-item>
             </template>
         </div>
@@ -21,8 +24,8 @@
                 showFilter: true
             },
             observe: {
-                filterString: "applyFilter",
-                "collection.records": "applyFilter"
+                filterString: "prepareRecords",
+                "collection.records": "prepareRecords"
             },
             leftHeaderButton: function() {
                 this.fire("menu");
@@ -33,15 +36,46 @@
             getAnimationElement: function() {
                 return this.$.list;
             },
-            applyFilter: function() {
+            prepareRecords: function() {
                 if (!this.collection) {
                     return;
                 }
 
+                // Filter records based on filter string
                 var fs = this.filterString;
-                this.filteredRecords = fs ? this.collection.records.filter(function(rec) {
+                var records = fs ? this.collection.records.filter(function(rec) {
                     return rec.name.toLowerCase().search(fs.toLowerCase()) != -1;
-                }) : this.collection.records;
+                }) : this.collection.records.slice();
+
+                // Set _section_ property
+                for (var i=0; i<records.length; i++) {
+                    records[i].section = records[i].name.toUpperCase()[0];
+                }
+
+                // Sort by section property first, name second
+                var records = records.sort(function(a, b) {
+                    if (a.section > b.section) {
+                        return 1;
+                    } else if (a.name < b.name) {
+                        return -1;
+                    } else {
+                        if (a.name > b.name) {
+                            return 1;
+                        } else if (a.name < b.name) {
+                            return -1;
+                        } else {
+                            return 0
+                        }
+                    }
+                });
+
+                // Set _firstInSection_ property so we know were to display section headers
+                for (i=0; i<records.length; i++) {
+                    records[i].firstInSection = !records[i-1] || records[i-1].section != records[i].section;
+                }
+
+                // Update _records_ 
+                this.records = records;
             },
             recordClicked: function(event, detail, sender) {
                 if (!this.itemHeld) {
