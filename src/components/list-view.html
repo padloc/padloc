@@ -2,7 +2,7 @@
 <link rel="import" href="record-item.html">
 <link rel="import" href="view.html">
 
-<polymer-element name="padlock-list-view" extends="padlock-view" attributes="collection filterString selected" on-track="{{ track }}" on-pointerdown="{{ pointerDown }}" on-pointerup="{{ release }}">
+<polymer-element name="padlock-list-view" extends="padlock-view" attributes="collection filterString selected">
     <template>
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <padlock-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></padlock-record-item>
@@ -11,7 +11,7 @@
                 <template if="{{ record.firstInSection }}">
                     <div class="section-header">{{ record.section }}</div>
                 </template>
-                <padlock-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}" on-hold="{{ holdItem }}" on-pointerover="{{ itemPointerOver }}" on-pointerout="{{ itemPointerOut }}"></padlock-record-item>
+                <padlock-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}"></padlock-record-item>
             </template>
         </div>
     </template>
@@ -92,93 +92,7 @@
                         item.classList.remove("selected");
                     }
                 });
-            },
-            holdItem: function(event, detail, sender) {
-                var ts = this.$.trackSurrogate;
-                ts.record = sender.templateInstance.model.record;
-                ts.style.display = "block";
-                this.positionTrackSurrogate(this.lastPointerPos.x, this.lastPointerPos.y + this.scrollTop);
-                this.dragging = true;
-                this.setAttribute("touch-action", "none");
-                this.draggedItem = sender;
-                this.classList.add("dragging");
-                this.draggedItem.classList.add("ghost");
-                this.itemHeld = true;
-            },
-            pointerDown: function() {
-                this.lastPointerPos = {
-                    x: event.clientX,
-                    y: event.clientY
-                };
-            },
-            track: function(event, detail, sender) {
-                if (this.dragging) {
-                    this.positionTrackSurrogate(event.clientX, event.clientY + this.scrollTop);
-                }
-            },
-            release: function() {
-                if (this.dragging) {
-                    var draggedRecord = this.draggedItem.templateInstance.model.record;
-                    var hoveredRecord = this.lastHovered && this.lastHovered.templateInstance.model.record;
-
-                    if (hoveredRecord != draggedRecord) {
-                        var targetIndex = hoveredRecord && this.collection.records.indexOf(hoveredRecord);
-                        var currentIndex = this.collection.records.indexOf(draggedRecord);
-                        targetIndex = currentIndex < targetIndex ? targetIndex-1 : targetIndex;
-
-                        this.collection.remove(draggedRecord);
-                        this.collection.add(draggedRecord, targetIndex);
-                        this.collection.save();
-                    }
-
-                    if (this.lastHovered) {
-                        this.lastHovered.classList.remove("drag-over");
-                    }
-                    this.classList.remove("dragging");
-                    this.$.trackSurrogate.style.display = "none";
-                    this.draggedItem.classList.remove("ghost");
-                    this.draggedItem = null;
-                    this.lastHovered = null;
-                    this.dragging = false;
-                    this.removeAttribute("touch-action");
-                }
-            },
-            positionTrackSurrogate: function(x, y) {
-                var ts = this.$.trackSurrogate;
-                x -= ts.offsetWidth/2;
-                y -= ts.offsetHeight/2;
-                ts.style["-webkit-transform"] = "translate3d(" + x + "px, " + y + "px, 0)";
-            },
-            itemPointerOver: function(event, detail, sender) {
-                if (this.dragging) {
-                    this.lastHovered = sender;
-                    sender.classList.add("drag-over");
-                }
-            },
-            itemPointerOut: function(event, detail, sender) {
-                if (this.dragging) {
-                    this.lastHovered = null;
-                    sender.classList.remove("drag-over");
-                }
             }
-            // scroll: function() {
-            //     if (this.dragging) {
-            //         return;
-            //     }
-                
-            //     var threshold = 10;
-            //     this.lastScrollTop = this.lastScrollTop || this.scrollTop;
-            //     var diff = this.scrollTop - this.lastScrollTop;
-            //     var reachedTop = this.scrollTop < 50;
-
-            //     if (reachedTop || diff < -threshold) {
-            //         this.fire("showheader");
-            //         this.lastScrollTop = this.scrollTop;
-            //     } else if (diff > threshold) {
-            //         this.fire("hideheader");
-            //         this.lastScrollTop = this.scrollTop;
-            //     }
-            // }
         });
     </script>
 </polymer-element>
