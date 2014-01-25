@@ -31,6 +31,7 @@
         </padlock-dialog>
         <padlock-dialog id="editNameDialog">
             <input is="fast-input" id="nameInput" placeholder="Enter Record Name"/>
+            <div class="title">Edit Name</div>
             <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
         <padlock-dialog id="fieldMenu">
@@ -43,6 +44,7 @@
         <padlock-dialog id="addFieldDialog">
             <input is="fast-input" id="newValueInput" placeholder="Enter Content" />
             <input is="fast-input" id="newFieldNameInput" placeholder="Enter Label" />
+            <div class="title">Add Field</div>
             <button class="primary" on-tap="{{ confirmAddField }}">Add</button>
         </padlock-dialog>
         <padlock-dialog id="confirmRemoveFieldDialog">
