@@ -26,7 +26,36 @@ padlock-record-item, .section-header {
 }
 
 .section-header {
-    padding: 0 20px;
+    padding: 0 15px;
     color: $color-primary;
     margin-top: 5px;
+}
+
+@media (min-width: 700px) {
+    :host {
+        padding-left: 5px;
+    }
+
+    padlock-record-item {
+        display: inline-block;
+        padding-right: 5px;
+    }
+}
+
+@media (min-width: 700px) and (max-width: 1000px) {
+    padlock-record-item {
+        width: 50%;
+    }
+}
+
+@media (min-width: 1000px) and (max-width: 1300px) {
+    padlock-record-item {
+        width: 33.33%;
+    }
+}
+
+@media (min-width: 1300px) {
+    padlock-record-item {
+        width: 25%;
+    }
 }

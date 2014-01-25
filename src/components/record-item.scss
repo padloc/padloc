@@ -3,8 +3,7 @@
 @import "compass/css3/box";
 
 :host {
-    display: inline-block;
-    width: 100%;
+    display: block;
     cursor: pointer;
     @include box-sizing(border-box);
 
@@ -20,7 +19,7 @@
         display: none;
     }
 
-    padding: 5px 5px 0 5px;
+    padding: 5px 0 0 0;
 }
 
 .inner {
@@ -28,54 +27,4 @@
     line-height: $row-height;
     padding: 0 15px;
     background: #ffffff;
-}
-
-@media (min-width: 700px) {
-    :host {
-        padding: 5px 0 0 5px;
-
-        &.ghost {
-            display: inline-block;
-        }
-
-        &.ghost .inner {
-            opacity: 0.5;
-        }
-    }
-
-    :host.drag-over:not(.ghost) > .inner {
-        background: rgba(0, 0, 0, 0.1);
-        border-left: solid 5px $border-color;
-        margin-top: 0;
-    }
-}
-
-@media (min-width: 700px) and (max-width: 1000px) {
-    :host {
-        width: 50%;
-    }
-
-    :host:nth-child(2n-1) {
-        padding-right: 5px;
-    }
-}
-
-@media (min-width: 1000px) and (max-width: 1300px) {
-    :host {
-        width: 33.33%;
-    }
-
-    :host:nth-child(3n-2) {
-        padding-right: 5px;
-    }
-}
-
-@media (min-width: 1300px) {
-    :host {
-        width: 25%;
-    }
-
-    :host:nth-child(4n-3) {
-        padding-right: 5px;
-    }
 }
