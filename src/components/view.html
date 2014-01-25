@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<polymer-element name="padlock-view" attributes="inAnimation outAnimation animationDuration animationEasing maxAnimationDelay">
+<polymer-element name="padlock-view" attributes="inAnimation outAnimation animationDuration animationEasing maxAnimationDelay"
+    style="display: none">
     <template>
         <!-- STYLES -->
         <link href="view.css" rel="stylesheet" type="text/css">
@@ -67,7 +68,7 @@
             },
             show: function(animation, callback) {
                 this.startAnimation("in", animation, callback);
-                this.style.display = "block";
+                this.style.display = "";
             },
             hide: function(animation, callback) {
                 this.startAnimation("out", animation, function() {
