@@ -82,20 +82,7 @@
                 this.records = records;
             },
             recordClicked: function(event, detail, sender) {
-                if (!this.itemHeld) {
-                    this.selected = sender.templateInstance.model.record;
-                }
-                this.itemHeld = false;
-            },
-            selectedChanged: function() {
-                var selected = this.selected;
-                this.$.list.children.array().forEach(function(item) {
-                    if (item.record == selected) {
-                        item.classList.add("selected");
-                    } else {
-                        item.classList.remove("selected");
-                    }
-                });
+                this.selected = sender.templateInstance.model.record;
             }
         });
     </script>

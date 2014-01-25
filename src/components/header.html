@@ -1,7 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="shapeshifter.html">
 
-<polymer-element name="padlock-header" attributes="view titleText showFilter filterString">
+<polymer-element name="padlock-header" attributes="view showFilter filterString">
     <template>
         <!-- STYLES -->
         <link href="header.css" rel="stylesheet" type="text/css">
@@ -13,7 +13,7 @@
                 <input id="filterInput" class="filter-input" value="{{ filterString }}" type="search"
                     placeholder="type to filter..." disabled?="{{ record }}"/>
                 <!-- HEADER TITLE -->
-                <div class="title">{{ view ? view.headerOptions.titleText : "" }}</div>
+                <div class="title">{{ view.titleText }}</div>
             </div>
             <!-- RIGHT BUTTON -->
             <padlock-shapeshifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></padlock-shapeshifter>

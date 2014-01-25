@@ -7,18 +7,6 @@
     cursor: pointer;
     @include box-sizing(border-box);
 
-    &.selected .inner {
-        background: rgba(0, 0, 0, 0.1);
-    }
-
-    &.drag-over:not(.ghost) > .inner {
-        margin-top: $row-height;
-    }
-
-    &.ghost {
-        display: none;
-    }
-
     padding: 5px 0 0 0;
 }
 

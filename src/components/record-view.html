@@ -63,9 +63,9 @@
             headerOptions: {
                 show: true,
                 leftIconShape: "arrow-left",
-                rightIconShape: "more",
-                titleText: "record"
+                rightIconShape: "more"
             },
+            titleText: "",
             leftHeaderButton: function() {
                 this.fire("back");
             },
@@ -139,7 +139,7 @@
                 this.$.confirmRemoveFieldDialog.close();
             },
             recordChanged: function() {
-                this.headerOptions.titleText = this.record.name;
+                this.titleText = this.record.name;
             }
         });
     </script>

@@ -1,7 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<polymer-element name="padlock-view" attributes="inAnimation outAnimation animationDuration animationEasing maxAnimationDelay"
-    style="display: none">
+<polymer-element name="padlock-view" style="display: none"
+    attributes="inAnimation outAnimation animationDuration animationEasing maxAnimationDelay titleText">
     <template>
         <!-- STYLES -->
         <link href="view.css" rel="stylesheet" type="text/css">
@@ -12,9 +12,9 @@
                 show: false,
                 leftIconShape: "",
                 rightIconShape: "",
-                showFilter: false,
-                titleText: ""
+                showFilter: false
             },
+            titleText: "",
             inAnimation: "slideInFromRight",
             outAnimation: "slideOutToLeft",
             animationDuration: 400,

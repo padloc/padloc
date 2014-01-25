@@ -78,22 +78,15 @@
             //* Locks the collection and opens the lock view
             lock: function() {
                 this.$.mainMenu.close();
-                var coll = this.collection;
-                // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
-                setTimeout(function() {
-                    this.openView(this.$.lockView, function() {
-                        coll.lock();
-                    });
-                }.bind(this), 10);
+                this.openView(this.$.lockView, function() {
+                    this.collection.lock();
+                }.bind(this));
             },
             //* Change handler for the selected property; Opens the record view when record is selected
-            selectedChanged: function(oldRec, newRec) {
-                if (newRec) {
-                    this.$.recordView.record = newRec;
-                    // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
-                    setTimeout(function() {
-                        this.openView(this.$.recordView);
-                    }.bind(this), 10);
+            selectedChanged: function() {
+                if (this.selected) {
+                    this.$.recordView.record = this.selected;
+                    this.openView(this.$.recordView);
                 }
             },
             /**
@@ -114,7 +107,9 @@
                 }
 
                 // Show new view
-                view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
+                setTimeout(function() {
+                    view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
+                }, 10);
 
                 this.currentView = view;
             },
@@ -178,9 +173,7 @@
             openImportView: function() {
                 this.$.mainMenu.close();
                 // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
-                setTimeout(function() {
-                    this.openView(this.$.importView);
-                }.bind(this), 10);
+                this.openView(this.$.importView);
             },
             //* Add the records imported with the import view to the collection
             saveImportedRecords: function(event, detail) {
