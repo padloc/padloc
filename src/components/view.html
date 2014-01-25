@@ -2,6 +2,7 @@
 
 <polymer-element name="padlock-view" attributes="inAnimation outAnimation animationDuration animationEasing maxAnimationDelay">
     <template>
+        <!-- STYLES -->
         <link href="view.css" rel="stylesheet" type="text/css">
     </template>
     <script>
@@ -66,7 +67,7 @@
             },
             show: function(animation, callback) {
                 this.startAnimation("in", animation, callback);
-                this.style.display = "";
+                this.style.display = "block";
             },
             hide: function(animation, callback) {
                 this.startAnimation("out", animation, function() {

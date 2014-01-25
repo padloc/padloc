@@ -4,8 +4,10 @@
 
 <polymer-element name="padlock-record-view" extends="padlock-view" attributes="record editing">
     <template>
+        <!-- STYLES -->
         <link href="record-view.css" rel="stylesheet" type="text/css">
         <div id="animated">
+            <!-- FIELD LIST -->
             <template if="{{ record }}">
                 <template repeat="{{ field in record.fields }}">
                     <div class="field" on-tap="{{ openFieldMenu }}">
@@ -14,26 +16,27 @@
                     </div>
                 </template>
             </template>
-            <!-- <div class="add" on-tap="{{ addField }}">
-                <padlock-shapeshifter shape="plus"></padlock-shapeshifter>
-            </div> -->
         </div>
+        <!-- RECORD OPTIONS -->
         <padlock-dialog id="menu">
             <button on-tap="{{ editName }}">Edit Name</button>
             <button on-tap="{{ editTags }}">Edit Tags</button>
             <button on-tap="{{ addField }}">Add Field</button>
             <button on-tap="{{ deleteRecord }}" id="confirmButton">Delete Record</button>
         </padlock-dialog>
+        <!-- DELETE CONFIRM DIALOG -->
         <padlock-dialog id="confirmDeleteDialog">
             <div class="title">Are you sure you want to delete this record?</div>
             <button class="negative" on-tap="{{ confirmDelete }}">Delete</button>
             <button on-tap="{{ cancelDelete }}">Cancel</button>
         </padlock-dialog>
+        <!-- EDIT NAME DIALOG -->
         <padlock-dialog id="editNameDialog">
-            <input is="fast-input" id="nameInput" placeholder="Enter Record Name"/>
             <div class="title">Edit Name</div>
+            <input id="nameInput" placeholder="Enter Record Name"/>
             <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
+        <!-- FIELD CONTEXT MENU -->
         <padlock-dialog id="fieldMenu">
             <div class="title">{{ selectedField.name }}</div>
             <input id="fieldValueInput" placeholder="Enter Content" />
@@ -41,12 +44,14 @@
             <button class="primary" on-tap="{{ confirmEditField }}">Save Changes</button>
             <button on-tap="{{ removeField }}">Remove Field</button>
         </padlock-dialog>
+        <!-- ADD FIELD DIALOG -->
         <padlock-dialog id="addFieldDialog">
-            <input is="fast-input" id="newValueInput" placeholder="Enter Content" />
-            <input is="fast-input" id="newFieldNameInput" placeholder="Enter Label" />
             <div class="title">Add Field</div>
+            <input id="newValueInput" placeholder="Enter Content" />
+            <input id="newFieldNameInput" placeholder="Enter Label" />
             <button class="primary" on-tap="{{ confirmAddField }}">Add</button>
         </padlock-dialog>
+        <!-- REMOVE FIELD CONFIRM DIALOG -->
         <padlock-dialog id="confirmRemoveFieldDialog">
             <div class="title">Are you sure you want to remove this field?</div>
             <button class="negative" on-tap="{{ confirmRemoveField }}">Remove</button>

@@ -17,7 +17,6 @@
     background: $color-grey;
     overflow: hidden;
     
-    @include user-select(none);
     @include transition(background 1s);
 }
 
@@ -42,6 +41,7 @@ padlock-header {
     top: 0;
     bottom: 0;
     padding-top: $row-height;
+    display: none;
 }
 
 ::-webkit-input-placeholder {

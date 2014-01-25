@@ -3,13 +3,19 @@
 
 <polymer-element name="padlock-lock-view" extends="padlock-view">
     <template>
+        <!-- STYLES -->
         <link href="lock-view.css" rel="stylesheet" type="text/css">
+        <!-- WRAPPER (for centering) -->
         <div class="wrapper {{ errorMessage ? 'error' : '' }}">
+            <!-- HEADER -->
             <div class="header">
                 Padlock
             </div>
-            <input is="fast-input" type="password" placeholder="Enter Password" on-keydown="{{ keydown }}" id="pwdInput"/>
+            <!-- PASSWORD INPUT -->
+            <input type="password" placeholder="Enter Password" on-keydown="{{ keydown }}" id="pwdInput"/>
+            <!-- ENTER BUTTON -->
             <button class="enter-button primary" on-tap="{{ enter }}">OK</button>
+            <!-- ERROR MESSAGE -->
             <div class="error-message">{{ errorMessage }}</div>
         </div>
     </template>

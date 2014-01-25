@@ -3,7 +3,9 @@
 
 <polymer-element name="padlock-tags-view">
     <template>
+        <!-- STYLES -->
         <link href="tags-view.css" rel="stylesheet" type="text/css">
+        <!-- TAG LIST -->
         <template repeat="{{ tag in tags }}">
             <padlock-tag-item tag="{{ tag }}"></padlock-tag-item>
         </template>

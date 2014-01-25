@@ -4,14 +4,18 @@
 
 <polymer-element name="padlock-list-view" extends="padlock-view" attributes="collection filterString selected">
     <template>
+        <!-- STYLES -->
         <link href="list-view.css" rel="stylesheet" type="text/css">
-        <padlock-record-item id="trackSurrogate" class="track-surrogate" style="display: none"></padlock-record-item>
+        <!-- LIST CONTAINER -->
         <div id="list">
             <template repeat="{{ record, i in records }}">
+                <!-- SECTION HEADER -->
                 <template if="{{ record.firstInSection }}">
                     <div class="section-header">{{ record.section }}</div>
                 </template>
-                <padlock-record-item record="{{ record }}" on-tap="{{ recordClicked }}" on-delete="{{ deleteClicked }}" index="{{ i }}"></padlock-record-item>
+                <!-- RECORD ITEM -->
+                <padlock-record-item record="{{ record }}" on-tap="{{ recordClicked }}"
+                    on-delete="{{ deleteClicked }}" index="{{ i }}"></padlock-record-item>
             </template>
         </div>
     </template>

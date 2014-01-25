@@ -8,16 +8,27 @@
 <link rel="import" href="tags-view.html">
 <link rel="import" href="import-view.html">
 
-<polymer-element name="padlock-app" touch-action="pan-y" on-showheader="{{ showHeader }}" on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}">
+<polymer-element name="padlock-app" touch-action="pan-y" on-showheader="{{ showHeader }}"
+    on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}">
     <template>
+        <!-- STYLES -->
         <link href="app.css" rel="stylesheet" type="text/css">
+        <!-- HEADER -->
         <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"></padlock-header>
-        <padlock-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}" style="display: none"></padlock-password-view>
-        <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}" style="display: none"></padlock-lock-view>
-        <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}" selected="{{ selected }}" style="display: none" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}"></padlock-list-view>
-        <padlock-record-view id="recordView" class="view" style="display: none" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}" on-delete="{{ deleteRecord }}"></padlock-record-view>
-        <padlock-tags-view id="tagsView" class="view"></padlock-tags-view>
-        <padlock-import-view id="importView" class="view" style="display: none" on-import="{{ saveImportedRecords }}" on-back="{{ importBack }}"></padlock-import-view>
+        <!-- PASSWORD VIEW -->
+        <padlock-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}"></padlock-password-view>
+        <!-- LOCK VIEW -->
+        <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}"></padlock-lock-view>
+        <!-- LIST VIEW -->
+        <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}"
+            selected="{{ selected }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}"></padlock-list-view>
+        <!-- RECORD VIEW -->
+        <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
+            on-delete="{{ deleteRecord }}"></padlock-record-view>
+        <!-- IMPORT VIEW -->
+        <padlock-import-view id="importView" class="view" on-import="{{ saveImportedRecords }}"
+            on-back="{{ importBack }}"></padlock-import-view>
+        <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
             <button>Settings</button>
             <button>About</button>
@@ -26,11 +37,13 @@
             <button on-tap="{{ lock }}">Lock App</button>
             <button on-tap="{{ changePassword }}">Change Password</button>
         </padlock-dialog>
+        <!-- ADD RECORD -->
         <padlock-dialog id="addDialog">
-            <input is="fast-input" id="addInput" placeholder="Enter Record Name"/>
             <div class="title">Add Record</div>
+            <input id="addInput" placeholder="Enter Record Name"/>
             <button class="primary" on-tap="{{ confirmAddRecord }}">Add</button>
         </padlock-dialog>
+        <!-- ALERT -->
         <padlock-dialog id="alertDialog">
             <div class="title" id="alertText"></div>
             <button on-tap="{{ dismissAlert }}">OK</button>
