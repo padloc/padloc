@@ -70,6 +70,7 @@
 
 .middle {
     position: relative;
+    overflow: hidden;
     @include box-flex(1);
 }
 
@@ -103,8 +104,4 @@
     opacity: 1;
     @include transform(translate(0, 0));
     @include ellipsis();
-}
-
-#leftIcon {
-    @include transition(width 0.5s, padding-left 0.5s);
 }
