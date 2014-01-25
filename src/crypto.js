@@ -1,3 +1,6 @@
+/**
+ * Cyptrographic module for encrypting and decrypting content
+ */
 define(["sjcl"], function(sjcl) {
     // Available cipher algorithms
     var ciphers = {

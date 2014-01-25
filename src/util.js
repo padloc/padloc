@@ -1,9 +1,27 @@
+/**
+ * Module containing various utility functions
+ */
 define(function() {
+
+    /**
+     * Inserts an object or an array at the specified index
+     * @param  {Array}   arr The array that the object(s) should be inserted into
+     * @param  {Object}  rec Object or array of objects to insert
+     * @param  {Integer} i   Where to insert the object(s)
+     * return  {Array}       A new array that contains the inserted object(s)
+     */
     function insert(arr, rec, i) {
         i = i || 0;
         return arr.slice(0, i).concat(rec).concat(arr.slice(i));
     }
 
+    /**
+     * Remove a object from an array
+     * @param  {Array}   arr  Array to remove the object from
+     * @param  {Integer} from Where to start removing
+     * @param  {Integer} to   Where to stop removing
+     * @return {Array}        New array where the element(s) has/have been removed
+     */
     function remove(arr, from, to) {
         from = Math.max(from, 0);
         to = Math.max(from, to || 0);
@@ -34,6 +52,7 @@ define(function() {
         return vPrefix;
     };
 
+    // Names for transition end events on various platforms
     var transitionEndEventNames = {
         webkit: "webkitTransitionEnd",
         moz: "transitionend",
@@ -41,10 +60,15 @@ define(function() {
         o: "otransitionend"
     };
 
+    /**
+     * Returns the appropriate transition end event name for the current platform
+     * @return {String} Name of the transition end event name on this platform
+     */
     var getTransitionEndEventName = function () {
         return transitionEndEventNames[getVendorPrefix().lowercase];
     };
 
+    // Names for animation end events on various platforms
     var animationEndEventNames = {
         webkit: "webkitAnimationEnd",
         moz: "animationend",
@@ -52,6 +76,10 @@ define(function() {
         o: "oanimationend"
     };
 
+    /**
+     * Returns the appropriate animation end event name for the current platform
+     * @return {String} Name of the animation end event name on this platform
+     */
     var getAnimationEndEventName = function () {
         return animationEndEventNames[getVendorPrefix().lowercase];
     };
