@@ -54,6 +54,8 @@
             ready: function() {
                 require(["padlock/model"], function(model) {
                     this.collection = new model.Collection();
+                    // If there already is data in the local storage ask for password
+                    // Otherwise start with choosing a new one
                     this.openView(this.collection.exists() ? this.$.lockView : this.$.passwordView);
                 }.bind(this));
             },
@@ -64,6 +66,7 @@
                 this.collection.setPassword(detail.password);
                 this.openView(this.$.listView);
             },
+            //* Tries to unlock the current collection with the provided password
             unlock: function(password) {
                 if (this.collection.fetch(password)) {
                     this.$.lockView.errorMessage = null;
@@ -72,44 +75,63 @@
                     this.$.lockView.errorMessage = "Wrong password!";
                 }
             },
+            //* Locks the collection and opens the lock view
             lock: function() {
                 this.$.mainMenu.close();
                 var coll = this.collection;
+                // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
                 setTimeout(function() {
                     this.openView(this.$.lockView, function() {
                         coll.lock();
                     });
                 }.bind(this), 10);
             },
+            //* Change handler for the selected property; Opens the record view when record is selected
             selectedChanged: function(oldRec, newRec) {
                 if (newRec) {
                     this.$.recordView.record = newRec;
+                    // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
                     setTimeout(function() {
                         this.openView(this.$.recordView);
                     }.bind(this), 10);
                 }
             },
+            /**
+             * Opens the provided _view_
+             * @param  {PadlockView} view
+             * @param  {Function}    outCallback Called after out animation has finished
+             * @param  {Function}    inCallback  Called after in animation has finished
+             */
             openView: function(view, outCallback, inCallback) {
                 var views = this.shadowRoot.querySelectorAll(".view").array();
+                // Choose left or right animation based on the order the views
+                // are included in the app
                 var back = views.indexOf(view) < views.indexOf(this.currentView);
+
+                // Hide current view (if any)
                 if (this.currentView) {
                     this.currentView.hide(back ? "slideOutToRight": "slideOutToLeft", outCallback);
                 }
 
+                // Show new view
                 view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
 
                 this.currentView = view;
             },
+            //* Saves changes to the currently selected record (if any)
             saveRecord: function() {
                 var record = this.selected;
                 if (record) {
                     record.name = record.name || "Unnamed";
+                    // Filter out fields that have neither a name nor a value
                     record.fields = record.fields.filter(function(field) {
                         return field.name || field.value;
                     });
+                    // Save the changes
                     this.collection.save();
                 }
             },
+            //* Opens the dialog for adding a new record
             addRecord: function() {
                 this.$.addInput.value = "";
                 this.$.addDialog.open();
@@ -125,11 +147,11 @@
 
                 this.collection.add(record);
 
-                setTimeout(function() {
-                    this.selected = record;
-                    this.saveRecord();
-                }.bind(this), 50);
+                // select the newly added record (which will open the record view)
+                this.selected = record;
+                this.saveRecord();
             },
+            //* Deletes the currently selected record (if any)
             deleteRecord: function() {
                 this.collection.remove(this.selected);
                 this.collection.save();
@@ -139,31 +161,28 @@
                 this.selected = null;
                 this.openView(this.$.listView);
             },
+            //* Opens the main menu (duh)
             openMainMenu: function() {
                 this.$.mainMenu.open();
             },
+            //* Opens the change-password view
             changePassword: function() {
                 this.$.mainMenu.close();
                 this.$.passwordView.currentPassword = this.collection.store.password;
+                // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
                 setTimeout(function() {
                     this.openView(this.$.passwordView);
                 }.bind(this), 10);
             },
-            editTags: function() {
-                this.$.recordMenu.close();
-                this.$.tagsView.show();
-                this.$.header.editingTags = true;
-            },
-            stopEditingTags: function() {
-                this.$.tagsView.hide();
-                this.$.header.editingTags = false;
-            },
+            //* Opens the import view
             openImportView: function() {
                 this.$.mainMenu.close();
+                // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
                 setTimeout(function() {
                     this.openView(this.$.importView);
                 }.bind(this), 10);
             },
+            //* Add the records imported with the import view to the collection
             saveImportedRecords: function(event, detail) {
                 this.collection.add(detail.records);
                 this.collection.save();
@@ -173,12 +192,15 @@
             importBack: function() {
                 this.openView(this.$.listView);
             },
+            //* Triggers the headers scrim to match the scrim of the opened dialog
             dialogOpen: function(event, detail, sender) {
                 this.$.header.scrim = true;
             },
+            //* Removes the headers scrim
             dialogClose: function(event, detail, sender) {
                 this.$.header.scrim = false;
             },
+            //* Show an alert dialog with the provided message
             alert: function(msg) {
                 this.$.alertText.innerText = msg;
                 this.$.alertDialog.open();
