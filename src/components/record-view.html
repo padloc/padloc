@@ -34,8 +34,9 @@
             <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
         <padlock-dialog id="fieldMenu">
+            <div class="title">{{ selectedField.name }}</div>
             <input id="fieldValueInput" placeholder="Enter Content" />
-            <input id="fieldNameInput" placeholder="Enter Name" />
+            <input id="fieldNameInput" placeholder="Enter Name" style="display: none"/>
             <button class="primary" on-tap="{{ confirmEditField }}">Save Changes</button>
             <button on-tap="{{ removeField }}">Remove Field</button>
         </padlock-dialog>
