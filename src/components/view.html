@@ -23,11 +23,9 @@
             leftHeaderButton: function() {},
             rightHeaderButton: function() {},
             enteredView: function() {
-                var eventName = require(["padlock/util"], function(util) {
+                require(["padlock/util"], function(util) {
                     var eventName = util.getAnimationEndEventName();  
-                    this.addEventListener(eventName, function() {
-                        this.animationEnd.apply(this, arguments);
-                    }, false);
+                    this.addEventListener(eventName, this.animationEnd.bind(this));
                 }.bind(this))
             },
             getAnimationElement: function() {
