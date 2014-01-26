@@ -1,0 +1,69 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="view.html">
+<link rel="import" href="dialog.html">
+
+<polymer-element name="padlock-settings-view" extends="padlock-view" attributes="collection">
+    <template>
+        <!-- STYLES -->
+        <link href="settings-view.css" rel="stylesheet" type="text/css">
+        <button class="settings-button" on-tap="{{ changePassword }}">Change Password</button>
+        <!-- CHANGE PASSWORD DIALOG -->
+        <padlock-dialog id="changePasswordDialog">
+            <input type="password" placeholder="Enter Current Password" id="currPwdInput"/>
+            <input type="password" placeholder="Enter New Password" id="newPwdInput"/>
+            <input type="password" placeholder="Confirm Password" id="confirmNewPwdInput"/>
+            <button class="enter-button primary" on-tap="{{ confirmChangePassword }}">OK</button>
+        </padlock-dialog>
+        <!-- CHANGE PASSWORD ERROR DIALOG -->
+        <padlock-dialog id="changePasswordErrorDialog">
+            <div class="title" id="changePasswordErrorMsg"></div>
+            <button class="primary" on-tap="{{ changePassword }}">retry</button>
+            <button on-tap="{{ closeChangePasswordErrorDialog }}">cancel</button>
+        </padlock-dialog>
+        <!-- CHANGE PASSWORD SUCCESS DIALOG -->
+        <padlock-dialog id="changePasswordSuccessDialog">
+            <div class="title">Password changed successfully!</div>
+            <button on-tap="{{ closeChangePasswordSuccessDialog }}">OK</div>
+        </padlock-dialog>
+    </template>
+    <script>
+        Polymer("padlock-settings-view", {
+            headerOptions: {
+                show: true,
+                leftIconShape: "arrow-left",
+                rightIconShape: ""
+            },
+            titleText: "Settings",
+            leftHeaderButton: function() {
+                this.fire("back");
+            },
+            //* Opens the change password dialog and resets the corresponding input elements
+            changePassword: function() {
+                this.$.changePasswordErrorDialog.open = false;
+                this.$.currPwdInput.value = "";
+                this.$.newPwdInput.value = "";
+                this.$.confirmNewPwdInput.value = "";
+                this.$.changePasswordDialog.open = true;   
+            },
+            confirmChangePassword: function() {
+                this.$.changePasswordDialog.open = false;
+                if (this.$.currPwdInput.value != this.collection.store.password) {
+                    this.$.changePasswordErrorMsg.innerText = "You entered the wrong current password.";
+                    this.$.changePasswordErrorDialog.open = true;
+                } else if (this.$.newPwdInput.value != this.$.confirmNewPwdInput.value) {
+                    this.$.changePasswordErrorMsg.innerText = "The new password you entered did not match the one in the confirmation input.";
+                    this.$.changePasswordErrorDialog.open = true;
+                } else {
+                    this.collection.setPassword(this.$.newPwdInput.value);
+                    this.$.changePasswordSuccessDialog.open = true;
+                }
+            },
+            closeChangePasswordErrorDialog: function() {
+                this.$.changePasswordErrorDialog.open = false;
+            },
+            closeChangePasswordSuccessDialog: function() {
+                this.$.changePasswordSuccessDialog.open = false;
+            }
+        });
+    </script>
+</polymer>

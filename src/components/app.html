@@ -6,6 +6,7 @@
 <link rel="import" href="password-view.html">
 <link rel="import" href="lock-view.html">
 <link rel="import" href="tags-view.html">
+<link rel="import" href="settings-view.html">
 <link rel="import" href="import-view.html">
 
 <polymer-element name="padlock-app" touch-action="pan-y" on-showheader="{{ showHeader }}"
@@ -25,17 +26,17 @@
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
             on-delete="{{ deleteRecord }}"></padlock-record-view>
+        <!-- Settings VIEW -->
+        <padlock-settings-view id="settingsView" class="view" on-back="{{ settingsBack }}"
+            collection="{{ collection }}"></padlock-settings-view>
         <!-- IMPORT VIEW -->
         <padlock-import-view id="importView" class="view" on-import="{{ saveImportedRecords }}"
             on-back="{{ importBack }}"></padlock-import-view>
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
-            <button>Settings</button>
-            <button>About</button>
-            <button>Help</button>
+            <button on-tap="{{ openSettings }}">Settings</button>
             <button on-tap="{{ openImportView }}">Import Records</button>
             <button on-tap="{{ lock }}">Lock App</button>
-            <button on-tap="{{ changePassword }}">Change Password</button>
         </padlock-dialog>
         <!-- ADD RECORD -->
         <padlock-dialog id="addDialog">
@@ -160,14 +161,12 @@
             openMainMenu: function() {
                 this.$.mainMenu.open = true;
             },
-            //* Opens the change-password view
-            changePassword: function() {
-                this.$.mainMenu.close();
-                this.$.passwordView.currentPassword = this.collection.store.password;
-                // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
-                setTimeout(function() {
-                    this.openView(this.$.passwordView);
-                }.bind(this), 10);
+            openSettings: function() {
+                this.$.mainMenu.open = false;
+                this.openView(this.$.settingsView);
+            }, 
+            settingsBack: function() {
+                this.openView(this.$.listView);
             },
             //* Opens the import view
             openImportView: function() {
