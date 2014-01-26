@@ -1,6 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<polymer-element name="padlock-dialog" on-tap="{{ close }}" touch-action="none">
+<polymer-element name="padlock-dialog" touch-action="none" attributes="open"
+    on-tap="{{ close }}" on-transitionend="{{ transitionEnd }}" >
     <template>
         <!-- STYLES -->
         <link href="dialog.css" rel="stylesheet" type="text/css">
@@ -10,41 +11,45 @@
     </template>
     <script>
         Polymer("padlock-dialog", {
-            enteredView: function() {
-                this.addEventListener("webkitTransitionEnd", this.transitionEnd.bind(this), false);
-            },
-            open: function() {
-                var items = this.children.array();
-                var del = 0.2/items.length;
-                for (var i=0; i<items.length; i++) {
-                    items[i].style["-webkit-transition-delay"] = (i*del) + "s";
+            open: false,
+            openChanged: function() {
+                var items = this.children.array(),
+                    dt = 0.2/items.length,
+                    prefix = require("padlock/util").getVendorPrefix().css,
+                    l = items.length,
+                    delay;
+
+                for (var i=0; i<l; i++) {
+                    delay = this.open ? i * dt : (items.length - i - 1) * dt;
+                    items[i].style[prefix + "transition-delay"] = delay + "s";
                 }
-                this.style.display = "block";
+
+                if (this.open) {
+                    this.style.display = "block";
+                }
+
                 this.transCount = items.length * 2 + 1;
                 setTimeout(function() {
-                    this.classList.add("open");
+                    if (this.open) {
+                        this.classList.add("open");
+                    } else {
+                        this.classList.remove("open");
+                    }
                 }.bind(this), 10);
-                this.fire("open");
-            },
-            close: function() {
-                var items = this.children.array();
-                var del = 0.2/items.length;
-                for (var i=0; i<items.length; i++) {
-                    items[i].style["-webkit-transition-delay"] = ((items.length-i-1)*del) + "s";
-                }
-                this.transCount = items.length * 2 + 1;
-                this.classList.remove("open");
-                this.fire("close");
+                this.fire(this.open ? "open" : "close");
             },
             transitionEnd: function(event) {
                 this.transCount--;
-                if (!this.classList.contains("open") && !this.transCount) {
+                if (!this.open) {
                     this.style.display = "none";
                 }
             },
             innerTap: function(event, detail, sender) {
                 // Intercept the tap event to prevent closing the popup
                 event.stopPropagation();
+            },
+            close: function() {
+                this.open = false;
             }
         });
     </script>

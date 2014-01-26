@@ -39,23 +39,23 @@
                 this.super([animation, callback]);
             },
             requirePassword: function() {
-                this.$.errorDialog.close();
+                this.$.errorDialog.open = false;
                 this.$.pwdInput.value = "";
-                this.$.pwdDialog.open();
+                this.$.pwdDialog.open = true;
             },
             startImport: function() {
-                this.$.pwdDialog.close();
+                this.$.pwdDialog.open = false;
                 require(["padlock/import"], function(imp) {
                     var records = imp.importSecuStoreBackup(this.$.rawInput.value, this.$.pwdInput.value);
                     if (records) {
                         this.fire("import", {records: records})
                     } else {
-                        this.$.errorDialog.open();
+                        this.$.errorDialog.open = true;
                     }
                 }.bind(this));
             },
             importCancel: function() {
-                this.$.errorDialog.close();
+                this.$.errorDialog.open = false;
                 this.fire("back");
             }
         });

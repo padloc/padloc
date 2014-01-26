@@ -70,41 +70,41 @@
                 this.fire("back");
             },
             rightHeaderButton: function() {
-                this.$.menu.open();
+                this.$.menu.open = true;
             },
             getAnimationElement: function() {
                 return this.$.animated;
             },
             deleteRecord: function() {
-                this.$.menu.close();
-                this.$.confirmDeleteDialog.open();
+                this.$.menu.open = false;
+                this.$.confirmDeleteDialog.open = true;
             },
             confirmDelete: function() {
-                this.$.confirmDeleteDialog.close();
+                this.$.confirmDeleteDialog.open = false;
                 this.fire("delete");
             },
             cancelDelete: function() {
-                this.$.confirmDeleteDialog.close();
+                this.$.confirmDeleteDialog.open = false;
             },
             editName: function() {
-                this.$.menu.close();
+                this.$.menu.open = false;
                 this.$.nameInput.value = this.record.name;
-                this.$.editNameDialog.open();
+                this.$.editNameDialog.open = true;
                 this.$.nameInput.select();
             },
             confirmEditName: function() {
-                this.$.editNameDialog.close();
+                this.$.editNameDialog.open = false;
                 this.record.name = this.$.nameInput.value;
                 this.fire("save");
             },
             addField: function() {
-                this.$.menu.close();
+                this.$.menu.open = false;
                 this.$.newValueInput.value = "";
                 this.$.newFieldNameInput.value = "";
-                this.$.addFieldDialog.open();
+                this.$.addFieldDialog.open = true;
             },
             confirmAddField: function() {
-                this.$.addFieldDialog.close();
+                this.$.addFieldDialog.open = false;
                 var field = {
                     name: this.$.newFieldNameInput.value,
                     value: this.$.newValueInput.value
@@ -113,7 +113,7 @@
                 this.fire("save");
             },
             confirmEditField: function() {
-                this.$.fieldMenu.close();
+                this.$.fieldMenu.open = false;
                 this.selectedField.value = this.$.fieldValueInput.value;
                 this.selectedField.name = this.$.fieldNameInput.value;
                 this.fire("save");
@@ -122,21 +122,21 @@
                 this.selectedField = sender.templateInstance.model.field;
                 this.$.fieldValueInput.value = this.selectedField.value;
                 this.$.fieldNameInput.value = this.selectedField.name;
-                this.$.fieldMenu.open();
+                this.$.fieldMenu.open = true;
                 this.$.fieldValueInput.select();
             },
             removeField: function() {
-                this.$.fieldMenu.close();
-                this.$.confirmRemoveFieldDialog.open();
+                this.$.fieldMenu.open = false;
+                this.$.confirmRemoveFieldDialog.open = true;
             },
             confirmRemoveField: function() {
-                this.$.confirmRemoveFieldDialog.close();
+                this.$.confirmRemoveFieldDialog.open = false;
                 var util = require("padlock/util");
                 this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
                 this.fire("save");
             },
             cancelRemoveField: function() {
-                this.$.confirmRemoveFieldDialog.close();
+                this.$.confirmRemoveFieldDialog.open = false;
             },
             recordChanged: function() {
                 this.titleText = this.record.name;
