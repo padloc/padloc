@@ -75,6 +75,7 @@
             getAnimationElement: function() {
                 return this.$.animated;
             },
+            //* Opens the confirm dialog for deleting the current element
             deleteRecord: function() {
                 this.$.menu.open = false;
                 this.$.confirmDeleteDialog.open = true;
@@ -86,6 +87,7 @@
             cancelDelete: function() {
                 this.$.confirmDeleteDialog.open = false;
             },
+            //* Opens the edit name dialog
             editName: function() {
                 this.$.menu.open = false;
                 this.$.nameInput.value = this.record.name;
@@ -97,6 +99,7 @@
                 this.record.name = this.$.nameInput.value;
                 this.fire("save");
             },
+            //* Opens the add field dialog
             addField: function() {
                 this.$.menu.open = false;
                 this.$.newValueInput.value = "";
@@ -118,6 +121,7 @@
                 this.selectedField.name = this.$.fieldNameInput.value;
                 this.fire("save");
             },
+            //* Opens the field context menu
             openFieldMenu: function(event, detail, sender) {
                 this.selectedField = sender.templateInstance.model.field;
                 this.$.fieldValueInput.value = this.selectedField.value;
@@ -125,6 +129,7 @@
                 this.$.fieldMenu.open = true;
                 this.$.fieldValueInput.select();
             },
+            //* Opens the remove field confirm dialog
             removeField: function() {
                 this.$.fieldMenu.open = false;
                 this.$.confirmRemoveFieldDialog.open = true;
@@ -138,6 +143,7 @@
             cancelRemoveField: function() {
                 this.$.confirmRemoveFieldDialog.open = false;
             },
+            //* Change handler for the current record. Updates the title text.
             recordChanged: function() {
                 this.titleText = this.record.name;
             }

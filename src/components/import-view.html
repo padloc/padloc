@@ -38,11 +38,13 @@
                 this.$.rawInput.value = "";
                 this.super([animation, callback]);
             },
+            //* Shows password dialog
             requirePassword: function() {
                 this.$.errorDialog.open = false;
                 this.$.pwdInput.value = "";
                 this.$.pwdDialog.open = true;
             },
+            //* Starts the import using the raw input and the provided password
             startImport: function() {
                 this.$.pwdDialog.open = false;
                 require(["padlock/import"], function(imp) {
