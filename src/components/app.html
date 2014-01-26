@@ -3,7 +3,7 @@
 <link rel="import" href="dialog.html">
 <link rel="import" href="list-view.html">
 <link rel="import" href="record-view.html">
-<link rel="import" href="password-view.html">
+<link rel="import" href="start-view.html">
 <link rel="import" href="lock-view.html">
 <link rel="import" href="tags-view.html">
 <link rel="import" href="settings-view.html">
@@ -17,7 +17,7 @@
         <!-- HEADER -->
         <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"></padlock-header>
         <!-- PASSWORD VIEW -->
-        <padlock-password-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}"></padlock-password-view>
+        <padlock-start-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}"></padlock-start-view>
         <!-- LOCK VIEW -->
         <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}"></padlock-lock-view>
         <!-- LIST VIEW -->

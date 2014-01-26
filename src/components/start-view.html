@@ -1,0 +1,56 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="view.html">
+
+<polymer-element name="padlock-start-view" extends="padlock-view" on-keydown="{{ keyDown }}">
+    <template>
+        <!-- STYLES -->
+        <link href="start-view.css" rel="stylesheet" type="text/css">
+        <!-- WRAPPER (for centering) -->
+        <div class="wrapper">
+            <!-- HEADER -->
+            <div class="header">
+                Padlock
+            </div>
+            <!-- NEW PASSWORD INPUT -->
+            <input type="password" placeholder="Enter Master Password" id="pwdInput"/>
+            <!-- CONFIRM PASSWORD INPUT -->
+            <input type="password" placeholder="Confirm Password" id="confirmInput"/>
+            <!-- ENTER BUTTON -->
+            <button class="enter-button primary" on-tap="{{ enter }}">OK</button>
+            <!-- ERROR MESSAGE -->
+            <div class="error-message">Passwords do not match!</div>
+        </div>
+    </template>
+    <script>
+        Polymer("padlock-start-view", {
+            show: function(animation, callback) {
+                this.$.pwdInput.value = "";
+                this.$.confirmInput.value = "";
+
+                // var cb = function() {
+                //     this.$.pwdInput.focus();
+                //     if (callback) {
+                //         callback();
+                //     }
+                // }.bind(this);
+                this.super([animation, callback]);
+            },
+            keyDown: function(event) {
+                if (event.keyCode == 13) {
+                    this.enter();
+                }
+            },
+            enter: function() {
+                var newPwd = this.$.pwdInput.value,
+                    cfmPwd = this.$.confirmInput.value;
+
+                if (newPwd == cfmPwd) {
+                    this.classList.remove("error");
+                    this.fire("enter", {password: newPwd});
+                } else {
+                    this.classList.add("error");
+                }
+            }
+        });
+    </script>
+</polymer>
