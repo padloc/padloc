@@ -10,19 +10,23 @@
     @include box-sizing(border-box);
 }
 
-padlock-record-item, .section-header {
-    font-size: $font-size-default;
+.record-item {
+    display: block;
+    cursor: pointer;
+    @include box-sizing(border-box);
+
+    padding: 5px 0 0 0;
+
+    .record-item-inner {
+        height: $row-height;
+        line-height: $row-height;
+        padding: 0 15px;
+        background: #ffffff;
+    }
 }
 
-.track-surrogate {
-    position: absolute;
-    z-index: 10;
-    left: 0;
-    top: 0;
-    pointer-events: none;
-    opacity: 0.8;
-
-    @include transform(translate3d(0, 0, 0));
+.record-item, .section-header {
+    font-size: $font-size-default;
 }
 
 .section-header {
@@ -37,26 +41,26 @@ padlock-record-item, .section-header {
         padding-left: 5px;
     }
 
-    padlock-record-item {
+    .record-item {
         display: inline-block;
         padding-right: 5px;
     }
 }
 
 @media (min-width: 700px) and (max-width: 1000px) {
-    padlock-record-item {
+    .record-item {
         width: 50%;
     }
 }
 
 @media (min-width: 1000px) and (max-width: 1300px) {
-    padlock-record-item {
+    .record-item {
         width: 33.33%;
     }
 }
 
 @media (min-width: 1300px) {
-    padlock-record-item {
+    .record-item {
         width: 25%;
     }
 }

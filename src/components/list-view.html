@@ -14,8 +14,11 @@
                     <div class="section-header">{{ record.section }}</div>
                 </template>
                 <!-- RECORD ITEM -->
-                <padlock-record-item record="{{ record }}" on-tap="{{ recordClicked }}"
-                    on-delete="{{ deleteClicked }}" index="{{ i }}"></padlock-record-item>
+                <div class="record-item" on-tap="{{ recordClicked }}">
+                    <div class="record-item-inner">
+                        {{record.name}}
+                    </div>
+                </div>
             </template>
         </div>
     </template>
