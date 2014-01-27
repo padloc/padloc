@@ -1,4 +1,4 @@
-@import "../config.scss";
+@import "../../config.scss";
 @import "compass/css3";
 @import "compass/css3/user-interface";
 
@@ -68,7 +68,8 @@ button {
     line-height: $row-height;
     padding: 0 15px;
     cursor: pointer;
-    color: darken($color-primary, 0.3);
+    // color: darken($color-primary, 0.3);
+    color: $color-primary;
 }
 
 button.primary {
