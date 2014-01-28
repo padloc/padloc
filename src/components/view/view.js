@@ -49,13 +49,14 @@ Polymer('padlock-view', {
         this.currDirection = direction;
         this.animationCallback = callback;
         var prefix = require("padlock/util").getVendorPrefix().css;
+        prefix = prefix == "-moz-" ? "" : prefix;
 
         // Apply the animation the appropriate element
         this.getAnimationElement().style[prefix + "animation"] = [
             animation,
             this.animationDuration + "ms",
             this.animationEasing,
-            0,
+            "0ms",
             "both"
         ].join(" ");
         
