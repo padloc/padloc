@@ -1,7 +1,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../view/view.html">
 
-<polymer-element name="padlock-list-view" extends="padlock-view" attributes="collection filterString selected">
+<polymer-element name="padlock-list-view" extends="padlock-view"
+    attributes="collection filterString selected" touch-action="pan-y">
     <template>
         <!-- STYLES -->
         <link href="list-view.css" rel="stylesheet" type="text/css">
