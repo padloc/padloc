@@ -16,12 +16,11 @@
                     </div>
                 </template>
             </template>
+            <button class="add-button" on-tap="{{ addField }}">Add Field</button>
         </div>
         <!-- RECORD OPTIONS -->
         <padlock-dialog id="menu">
             <button on-tap="{{ editName }}">Edit Name</button>
-            <button on-tap="{{ editTags }}">Edit Tags</button>
-            <button on-tap="{{ addField }}">Add Field</button>
             <button on-tap="{{ deleteRecord }}" id="confirmButton">Delete Record</button>
         </padlock-dialog>
         <!-- DELETE CONFIRM DIALOG -->

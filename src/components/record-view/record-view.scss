@@ -8,7 +8,7 @@
     -webkit-overflow-scrolling: touch;
 }
 
-.field, .add {
+.field {
     background: #ffffff;
     height: $row-height;
     line-height: $row-height;
@@ -41,15 +41,7 @@
     }
 }
 
-.add {
-    line-height: 0;
-    text-align: center;
-    padding: 0;
-
-    > padlock-shapeshifter {
-        display: block;
-        width: 26px;
-        height: 26px;
-        margin: 10px auto;
-    }
+.add-button {
+    width: 100%;
+    margin: 5px 0;
 }
