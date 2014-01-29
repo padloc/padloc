@@ -1,6 +1,6 @@
 @import "../../config.scss";
 @import "../../mixins.scss";
-@import "compass/css3/box";
+@import "compass/css3";
 
 :host {
     display: block;
@@ -20,6 +20,9 @@
 }
 
 .field {
+    width: 100%;
+    @include box-sizing(border-box);
+
     > * {
         text-overflow: ellipsis;
     }
