@@ -3,6 +3,12 @@
 @import "compass/css3/appearance";
 
 :host {
+}
+
+.flex-wrapper {
+    width: 100%;
+    height: 100%;
+    
     @include display-box;
     @include box-orient(vertical); 
 }

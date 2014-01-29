@@ -6,10 +6,12 @@
     <template>
         <!-- STYLES -->
         <link href="import-view.css" rel="stylesheet" type="text/css">
-        <!-- RAW DATA INPUT -->
-        <textarea id="rawInput" placeholder="Paste your data here!"></textarea>
-        <!-- IMPORT BUTTON -->
-        <button class="import-button primary" on-tap="{{ requirePassword }}">import</button>
+        <div class="flex-wrapper">
+            <!-- RAW DATA INPUT -->
+            <textarea id="rawInput" placeholder="Paste your data here!"></textarea>
+            <!-- IMPORT BUTTON -->
+            <button class="import-button primary" on-tap="{{ requirePassword }}">import</button>
+        </div>
         <!-- PASSWORD DIALOG -->
         <padlock-dialog id="pwdDialog">
             <div class="title">Please enter password.</div>
