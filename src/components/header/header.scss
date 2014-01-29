@@ -2,6 +2,10 @@
 @import "../../config.scss";
 @import "../../mixins.scss";
 
+:host {
+    line-height: 0;
+}
+
 :host > div {
     overflow: hidden;
     height: $row-height;
@@ -17,11 +21,10 @@
 
     padlock-shapeshifter {
         display: block;
-        width: $row-height;
-        height: $row-height;
-        padding: 10px;
-
-        @include box-sizing(border-box);
+        $padding: 10px;
+        padding: $padding;
+        width: $row-height - $padding * 2;
+        height: $row-height - $padding * 2;
 
         line {
             stroke: $text-color-light;
