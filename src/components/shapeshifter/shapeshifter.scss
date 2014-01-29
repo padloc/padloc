@@ -17,7 +17,7 @@ svg {
 line {
     stroke: $text-color;
     stroke-width: 6;
-    @include transform-origin(center center 0);
+    // @include transform-origin(center center 0);
     @include transition(transform 0.5s);
     @include transform(translate(0, 0) scale(0.01));
 }
