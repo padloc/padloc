@@ -19,10 +19,10 @@ Polymer("padlock-settings-view", {
     confirmChangePassword: function() {
         this.$.changePasswordDialog.open = false;
         if (this.$.currPwdInput.value != this.collection.store.password) {
-            this.$.changePasswordErrorMsg.innerText = "You entered the wrong current password.";
+            this.$.changePasswordErrorMsg.innerHTML = "You entered the wrong current password.";
             this.$.changePasswordErrorDialog.open = true;
         } else if (this.$.newPwdInput.value != this.$.confirmNewPwdInput.value) {
-            this.$.changePasswordErrorMsg.innerText = "The new password you entered did not match the one in the confirmation input.";
+            this.$.changePasswordErrorMsg.innerHTML = "The new password you entered did not match the one in the confirmation input.";
             this.$.changePasswordErrorDialog.open = true;
         } else {
             this.collection.setPassword(this.$.newPwdInput.value);

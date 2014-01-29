@@ -141,7 +141,7 @@ Polymer("padlock-app", {
     },
     //* Show an alert dialog with the provided message
     alert: function(msg) {
-        this.$.alertText.innerText = msg;
+        this.$.alertText.innerHTML = msg;
         this.$.alertDialog.open = true;
     },
     dismissAlert: function() {
