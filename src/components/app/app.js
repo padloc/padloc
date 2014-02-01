@@ -4,7 +4,10 @@ Polymer("padlock-app", {
             this.collection = new model.Collection();
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one
-            this.openView(this.collection.exists() ? this.$.lockView : this.$.passwordView);
+            this.openView(this.collection.exists() ? this.$.lockView : this.$.passwordView, {
+                inAnimation: "floatUp",
+                inDuration: 1000
+            });
         }.bind(this));
 
         if (window.navigator.standalone) {
@@ -30,7 +33,10 @@ Polymer("padlock-app", {
     //* Locks the collection and opens the lock view
     lock: function() {
         this.$.mainMenu.open = false;
-        this.openView(this.$.lockView, function() {
+        this.openView(this.$.lockView, {
+            inAnimation: "floatUp",
+            inDuration: 1000
+        }, function() {
             this.collection.lock();
         }.bind(this));
     },
@@ -44,24 +50,27 @@ Polymer("padlock-app", {
     },
     /**
      * Opens the provided _view_
-     * @param  {PadlockView} view
-     * @param  {Function}    outCallback Called after out animation has finished
-     * @param  {Function}    inCallback  Called after in animation has finished
      */
-    openView: function(view, outCallback, inCallback) {
-        var views = this.shadowRoot.querySelectorAll(".view").array();
-        // Choose left or right animation based on the order the views
-        // are included in the app
-        var back = views.indexOf(view) < views.indexOf(this.currentView);
+    openView: function(view, params) {
+        var views = this.shadowRoot.querySelectorAll(".view").array(),
+            // Choose left or right animation based on the order the views
+            // are included in the app
+            back = views.indexOf(view) < views.indexOf(this.currentView);
+
+        // Unless otherwise specified, use a right-to-left animation when navigating 'forward'
+        // and a left-to-right animation when animating 'back'
+        params = params || {};
+        params.outAnimation = params.outAnimation || (back ? "slideOutToRight": "slideOutToLeft");
+        params.inAnimation = params.inAnimation || (back ? "slideInFromLeft": "slideInFromRight");
 
         // Hide current view (if any)
         if (this.currentView) {
-            this.currentView.hide(back ? "slideOutToRight": "slideOutToLeft", outCallback);
+            this.currentView.hide(params.outAnimation, params.outDuration, params.outCallback);
         }
 
         // Show new view
         setTimeout(function() {
-            view.show(back ? "slideInFromLeft": "slideInFromRight", inCallback);
+            view.show(params.inAnimation, params.inDuration, params.inCallback);
         }, 10);
 
         this.currentView = view;

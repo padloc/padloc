@@ -30,3 +30,8 @@
     from {@include transform(translate3d(0, 0, 0)); opacity: 1;}
     to {@include transform(translate3d(0, 100%, 0)); opacity: 0;}
 }
+
+@include keyframes(floatUp) {
+    from {@include transform(translate3d(0, 5%, 0)); opacity: 0;}
+    to {@include transform(translate3d(0, 0, 0)); opacity: 1;}
+}

@@ -40,11 +40,13 @@ Polymer('padlock-view', {
      * @param  {String}   direction The animation direction. Can be _in_ or _out_.
      * @param  {String}   animation The name of the animation to be used. If not provided
      *                              the default in/out animation will be used.
+     * @param  {Integer}  duration  Duration to use for the animation
      * @param  {Function} callback  This will be called after the animation has finished
      */
-    startAnimation: function(direction, animation, callback) {
+    startAnimation: function(direction, animation, duration, callback) {
         // If no animation is provided, use the default animation for this _direction_.
         animation = animation || this[direction + "Animation"];
+        duration = duration || this.animationDuration;
         this.currAnimation = animation;
         this.currDirection = direction;
         this.animationCallback = callback;
@@ -54,7 +56,7 @@ Polymer('padlock-view', {
         // Apply the animation the appropriate element
         this.getAnimationElement().style[prefix + "animation"] = [
             animation,
-            this.animationDuration + "ms",
+            duration + "ms",
             this.animationEasing,
             "0ms",
             "both"
@@ -82,15 +84,15 @@ Polymer('padlock-view', {
         }
     },
     //* Show the view
-    show: function(animation, callback) {
-        this.startAnimation("in", animation, callback);
+    show: function(animation, duration, callback) {
+        this.startAnimation("in", animation, duration, callback);
         this.style.display = "";
     },
     //* Hides the view
-    hide: function(animation, callback) {
+    hide: function(animation, duration, callback) {
         // We have to wait until the out animation is done before
         // we can set _display: none_.
-        this.startAnimation("out", animation, function() {
+        this.startAnimation("out", animation, duration, function() {
             this.style.display = "none";
             if (callback) {
                 callback();
