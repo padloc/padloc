@@ -6,6 +6,10 @@ Polymer("padlock-app", {
             // Otherwise start with choosing a new one
             this.openView(this.collection.exists() ? this.$.lockView : this.$.passwordView);
         }.bind(this));
+
+        if (window.navigator.standalone) {
+            this.classList.add("ios-standalone");
+        }
     },
     pwdEnter: function(event, detail, sender) {
         this.unlock(detail.password);

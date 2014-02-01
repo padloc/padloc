@@ -18,6 +18,16 @@
     overflow: hidden;
     
     @include transition(background 1s);
+
+    &.ios-standalone {
+        padlock-header > div {
+            padding-top: 20px;
+        }
+
+        .view {
+            padding-top: 70px;
+        }
+    }
 }
 
 padlock-header {
