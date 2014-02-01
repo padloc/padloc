@@ -2,7 +2,7 @@ Polymer("padlock-dialog", {
     open: false,
     //* Changed handler for the _open_ property. Shows/hides the dialog
     openChanged: function() {
-        var items = this.children.array(),
+        var items = this.children,
             // transition delay between individual items
             dt = 0.2/items.length,
             prefix = require("padlock/util").getVendorPrefix().css,
@@ -38,6 +38,13 @@ Polymer("padlock-dialog", {
                 this.classList.remove("open");
             }
         }.bind(this), 10);
+
+        // Remove focus from any input elements when closing
+        if (!this.open) {
+            Array.prototype.forEach.call(this.querySelectorAll("input"), function(input) {
+                input.blur();
+            });
+        }
 
         this.fire(this.open ? "open" : "close");
     },

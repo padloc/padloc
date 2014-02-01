@@ -39,6 +39,7 @@ Polymer("padlock-app", {
         if (this.selected) {
             this.$.recordView.record = this.selected;
             this.openView(this.$.recordView);
+            this.$.header.blurFilterInput();
         }
     },
     /**
@@ -85,7 +86,6 @@ Polymer("padlock-app", {
         // this.$.addInput.focus();
     },
     confirmAddRecord: function() {
-        this.$.addInput.blur();
         this.$.addDialog.open = false;
         var record = {
             name: this.$.addInput.value,
@@ -150,5 +150,15 @@ Polymer("padlock-app", {
     },
     dismissAlert: function() {
         this.$.alertDialog.open = false;
+    },
+    mousedown: function() {
+        if ('ontouchstart' in window) {
+            // On most browsers the mousedown event is coupled to triggering focus on
+            // the clicked elements. Since we're directly handling focussing inputs
+            // with the fast-input element we need to disable the native mechanism
+            // to prevent conflicts.
+            event.preventDefault();
+            event.stopPropagation();
+        }
     }
 });

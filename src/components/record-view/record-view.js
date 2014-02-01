@@ -31,7 +31,6 @@ Polymer('padlock-record-view', {
         this.$.menu.open = false;
         this.$.nameInput.value = this.record.name;
         this.$.editNameDialog.open = true;
-        this.$.nameInput.select();
     },
     confirmEditName: function() {
         this.$.editNameDialog.open = false;
@@ -66,7 +65,6 @@ Polymer('padlock-record-view', {
         this.$.fieldValueInput.value = this.selectedField.value;
         this.$.fieldNameInput.value = this.selectedField.name;
         this.$.fieldMenu.open = true;
-        this.$.fieldValueInput.select();
     },
     //* Opens the remove field confirm dialog
     removeField: function() {

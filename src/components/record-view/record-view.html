@@ -1,8 +1,9 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../view/view.html">
+<link rel="import" href="../fast-input.html">
 
-<polymer-element name="padlock-record-view" extends="padlock-view" attributes="record editing" touch-action="pan-y">
+<polymer-element name="padlock-record-view" extends="padlock-view" attributes="record editing" touch-action="pan-y" on-mousedown="{{ mousedown }}">
     <template>
         <!-- STYLES -->
         <link href="record-view.css" rel="stylesheet" type="text/css">
@@ -32,22 +33,22 @@
         <!-- EDIT NAME DIALOG -->
         <padlock-dialog id="editNameDialog">
             <div class="title">Edit Name</div>
-            <input id="nameInput" placeholder="Enter Record Name"/>
+            <input is="fast-input" id="nameInput" selectAllOnFocus="true" placeholder="Enter Record Name"/>
             <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
         <!-- FIELD CONTEXT MENU -->
         <padlock-dialog id="fieldMenu">
             <div class="title">{{ selectedField.name }}</div>
-            <input id="fieldValueInput" placeholder="Enter Content" />
-            <input id="fieldNameInput" placeholder="Enter Name" style="display: none"/>
+            <input is="fast-input" id="fieldValueInput" selectAllOnFocus="true" placeholder="Enter Content" />
+            <input is="fast-input" id="fieldNameInput" placeholder="Enter Name" style="display: none"/>
             <button class="primary" on-tap="{{ confirmEditField }}">Save Changes</button>
             <button on-tap="{{ removeField }}">Remove Field</button>
         </padlock-dialog>
         <!-- ADD FIELD DIALOG -->
         <padlock-dialog id="addFieldDialog">
             <div class="title">Add Field</div>
-            <input id="newValueInput" placeholder="Enter Content" />
-            <input id="newFieldNameInput" placeholder="Enter Label" />
+            <input is="fast-input" id="newValueInput" placeholder="Enter Content" />
+            <input is="fast-input" id="newFieldNameInput" placeholder="Enter Label" />
             <button class="primary" on-tap="{{ confirmAddField }}">Add</button>
         </padlock-dialog>
         <!-- REMOVE FIELD CONFIRM DIALOG -->

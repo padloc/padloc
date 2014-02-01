@@ -7,8 +7,9 @@
 <link rel="import" href="../lock-view/lock-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../import-view/import-view.html">
+<link rel="import" href="../fast-input.html">
 
-<polymer-element name="padlock-app" touch-action="none" on-showheader="{{ showHeader }}"
+<polymer-element name="padlock-app" touch-action="none" on-mousedown="{{ mousedown }}" on-showheader="{{ showHeader }}"
     on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}">
     <template>
         <!-- STYLES -->
@@ -21,7 +22,7 @@
         <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}"></padlock-lock-view>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}"
-            selected="{{ selected }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}"></padlock-list-view>
+            selected="{{ selected }}" on-add="{{ addRecord }}" on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
             on-delete="{{ deleteRecord }}"></padlock-record-view>
@@ -40,7 +41,7 @@
         <!-- ADD RECORD -->
         <padlock-dialog id="addDialog">
             <div class="title">Add Record</div>
-            <input id="addInput" placeholder="Enter Record Name"/>
+            <input is="fast-input" id="addInput" placeholder="Enter Record Name"/>
             <button class="primary" on-tap="{{ confirmAddRecord }}">Add</button>
         </padlock-dialog>
         <!-- ALERT -->

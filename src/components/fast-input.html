@@ -1,13 +1,44 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<polymer-element name="fast-input" extends="input" touch-action="none" on-tap="{{ tap }}" on-mousedown="{{ mousedown }}">
+<polymer-element name="fast-input" extends="input" touch-action="none" on-tap="{{ tap }}" on-mousedown="{{ mousedown }}"
+    on-focus="{{ focussed }}" on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus">
     <script>
         Polymer("fast-input", {
+            hasFocus: false,
+            selectAllOnFocus: false,
+            //* Checks if the browser supports touch events
+            isTouch: function() {
+                return 'ontouchstart' in window;
+            },
             tap: function(event) {
-                this.setSelectionRange(this.value.length, this.value.length);
+                if (this.isTouch() && !this.hasFocus) {
+                    // We're on a touch-capable device, so we're assuming there
+                    // is the typical 300ms touch delay. We're working around this
+                    // by focussing the input directly. For some reason _focus()_ is not
+                    // sufficient, so we actually set a selection range
+                    this.setSelectionRange(this.value.length, this.value.length);
+                }
             },
             mousedown: function() {
-                event.preventDefault();
+                if (this.isTouch()) {
+                    // We've already focussed the input. This is for suppressing the
+                    // native mechanism.
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            },
+            focussed: function() {
+                this.hasFocus = true;
+
+                if (this.selectAllOnFocus) {
+                    // Need to do this asynchronously in some browsers or it won't work
+                    setTimeout(function() {
+                        this.setSelectionRange(0, this.value.length);
+                    }.bind(this), 10);
+                }
+            },
+            blurred: function() {
+                this.hasFocus = false;
             }
         });
     </script>

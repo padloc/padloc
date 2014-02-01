@@ -35,5 +35,8 @@ Polymer("padlock-header", {
         } else if (this.view && this.view.rightHeaderButton) {
             this.view.rightHeaderButton();
         }
+    },
+    blurFilterInput: function() {
+        this.$.filterInput.blur();
     }
 });

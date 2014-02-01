@@ -7,16 +7,5 @@ Polymer("padlock-lock-view", {
     enter: function() {
         this.$.pwdInput.blur();
         this.fire("enter", {password: this.$.pwdInput.value});
-    },
-    show: function(animation, callback) {
-        var input = this.$.pwdInput;
-        input.value = "";
-        var cb = function() {
-            input.focus();
-            if (callback) {
-                callback();
-            }
-        };
-        this.super([animation, cb]);
     }
 });
