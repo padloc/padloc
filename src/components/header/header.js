@@ -38,5 +38,8 @@ Polymer("padlock-header", {
     },
     blurFilterInput: function() {
         this.$.filterInput.blur();
+    },
+    focusFilterInput: function() {
+        this.$.filterInput.focus();
     }
 });

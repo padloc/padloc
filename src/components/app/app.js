@@ -10,9 +10,14 @@ Polymer("padlock-app", {
             });
         }.bind(this));
 
+        // Add a special class in case the app is lanchend from the home screen in iOS
         if (window.navigator.standalone) {
             this.classList.add("ios-standalone");
         }
+
+        // If we want to capture all keydown events, we have to add the listener
+        // directly to the document
+        document.addEventListener("keydown", this.keydown.bind(this), false);
     },
     pwdEnter: function(event, detail, sender) {
         this.unlock(detail.password);
@@ -168,6 +173,22 @@ Polymer("padlock-app", {
             // to prevent conflicts.
             event.preventDefault();
             event.stopPropagation();
+        }
+    },
+    //* Captures all keydown events and brings focus to the filter input if it is showing
+    keydown: function(event) {
+        // We don't want to steal focus from any other input elements so we'll only focus
+        // the filter input if the event does not come from a input or textarea element.
+        // Unfortunately Polymer obscures the actual event target so we'll have to access
+        // the orginial event (event.impl) to get the actual target. This might break
+        // with future versions of polymer or the native web components implementation.
+        var isInput = event.impl.target.toString() == "[object HTMLInputElement]" ||
+            event.impl.target.toString() == "[object HTMLTextAreaElement]";
+
+        // Focus the filter input if the event does not come from an input element and
+        // if the filter input is currently showing.
+        if (!isInput && this.currentView && this.currentView.headerOptions.showFilter) {
+            this.$.header.focusFilterInput();
         }
     }
 });
