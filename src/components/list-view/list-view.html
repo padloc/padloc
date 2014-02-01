@@ -7,7 +7,7 @@
         <!-- STYLES -->
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <!-- LIST CONTAINER -->
-        <div id="list">
+        <div class="list" id="list">
             <template repeat="{{ record, i in records }}">
                 <!-- SECTION HEADER -->
                 <template if="{{ record.firstInSection }}">
@@ -18,6 +18,12 @@
                     <div class="record-item-inner">
                         {{record.name}}
                     </div>
+                </div>
+            </template>
+            <template if="{{ empty }}">
+                <div class="empty">
+                    <button on-tap="{{ import }}">Import Data</button>
+                    <button on-tap="{{ rightHeaderButton }}">Create Record</button>
                 </div>
             </template>
         </div>
