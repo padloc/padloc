@@ -11,16 +11,13 @@
 .field {
     background: #ffffff;
     height: $row-height;
-    line-height: $row-height;
+    width: 100%;
     padding: 0 15px;
     margin-top: 5px;
     cursor: pointer;
 
     @include display-box;
-}
-
-.field {
-    width: 100%;
+    @include box-align(center);
     @include box-sizing(border-box);
 
     > * {
