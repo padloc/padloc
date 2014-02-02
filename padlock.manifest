@@ -74,7 +74,6 @@ src/components/view/view.css
 src/components/fast-input.html
 
 # fonts
-assets/fonts/Lato-Hairline.ttf
 assets/fonts/Lato-Light.ttf
 assets/fonts/Lato-Regular.ttf
 
