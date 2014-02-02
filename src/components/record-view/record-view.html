@@ -9,13 +9,11 @@
         <link href="record-view.css" rel="stylesheet" type="text/css">
         <div id="animated">
             <!-- FIELD LIST -->
-            <template if="{{ record }}">
-                <template repeat="{{ field in record.fields }}">
-                    <div class="field" on-tap="{{ openFieldMenu }}">
-                        <div class="value">{{ field.value }}</div>
-                        <div class="label">{{ field.name }}</div>
-                    </div>
-                </template>
+            <template repeat="{{ record.fields }}">
+                <div class="field" on-tap="{{ openFieldMenu }}">
+                    <div class="value">{{ value }}</div>
+                    <div class="label">{{ name }}</div>
+                </div>
             </template>
             <button class="add-button" on-tap="{{ addField }}">Add Field</button>
         </div>

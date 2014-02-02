@@ -8,18 +8,19 @@
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <!-- LIST CONTAINER -->
         <div class="list" id="list">
-            <template repeat="{{ record, i in records }}">
+            <template repeat="{{ records }}">
                 <!-- SECTION HEADER -->
-                <template if="{{ record.firstInSection }}">
-                    <div class="section-header">{{ record.section }}</div>
+                <template if="{{ firstInSection }}">
+                    <div class="section-header">{{ section }}</div>
                 </template>
                 <!-- RECORD ITEM -->
                 <div class="record-item" on-tap="{{ recordClicked }}">
                     <div class="record-item-inner">
-                        {{record.name}}
+                        {{ name }}
                     </div>
                 </div>
             </template>
+            <!-- ACTIONS FOR EMPTY LIST -->
             <template if="{{ empty }}">
                 <div class="empty">
                     <button on-tap="{{ import }}">Import Data</button>

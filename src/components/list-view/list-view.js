@@ -61,7 +61,7 @@ Polymer("padlock-list-view", {
         this.empty = !(this.collection && this.collection.records.length);
     },
     recordClicked: function(event, detail, sender) {
-        this.selected = sender.templateInstance.model.record;
+        this.selected = sender.templateInstance.model;
     },
     import: function() {
         this.fire("import");

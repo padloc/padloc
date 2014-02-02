@@ -64,7 +64,7 @@ Polymer('padlock-record-view', {
     },
     //* Opens the field context menu
     openFieldMenu: function(event, detail, sender) {
-        this.selectedField = sender.templateInstance.model.field;
+        this.selectedField = sender.templateInstance.model;
         this.$.fieldValueInput.value = this.selectedField.value;
         this.$.fieldNameInput.value = this.selectedField.name;
         this.$.fieldMenu.open = true;
