@@ -5,6 +5,9 @@ Polymer('padlock-record-view', {
         rightIconShape: "more"
     },
     titleText: "",
+    observe: {
+        "record.name": "updateTitleText"
+    },
     leftHeaderButton: function() {
         this.fire("back");
     },
@@ -80,8 +83,8 @@ Polymer('padlock-record-view', {
     cancelRemoveField: function() {
         this.$.confirmRemoveFieldDialog.open = false;
     },
-    //* Change handler for the current record. Updates the title text.
-    recordChanged: function() {
-        this.titleText = this.record.name;
+    //* Updates the titleText property with the name of the current record
+    updateTitleText: function() {
+        this.titleText = this.record && this.record.name;
     }
 });
