@@ -86,3 +86,19 @@ line {
 .arrow-left line:nth-child(3) {
     @include transform(translate(0, 17px) rotate(45deg) scale(9, 1));
 }
+
+.arrow-up line:nth-child(1) {
+    @include transform(translate(-17px, 0) rotate(-45deg) scale(9, 1));
+}
+
+.arrow-up line:nth-child(3) {
+    @include transform(translate(17px, 0) rotate(45deg) scale(9, 1));
+}
+
+.arrow-down line:nth-child(1) {
+    @include transform(translate(-17px, 0) rotate(45deg) scale(9, 1));
+}
+
+.arrow-down line:nth-child(3) {
+    @include transform(translate(17px, 0) rotate(-45deg) scale(9, 1));
+}
