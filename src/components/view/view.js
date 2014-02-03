@@ -18,7 +18,7 @@ Polymer('padlock-view', {
     animationEasing: "ease",
     leftHeaderButton: function() {},
     rightHeaderButton: function() {},
-    enteredView: function() {
+    attached: function() {
         require(["padlock/util"], function(util) {
             // We have to register a listener for the animationend event manually
             // sind it doesn't seem to work declaratively (bug in Polymer?)
