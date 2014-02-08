@@ -107,5 +107,8 @@ Polymer("padlock-categories-view", {
     },
     cancelRemove: function() {
         this.$.confirmRemoveDialog.open = false;
+    },
+    selectNone: function() {
+        delete this.record.category;
     }
 });

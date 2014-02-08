@@ -61,6 +61,11 @@
 
         @include transform(scale(1.05));
     }
+
+    &.none {
+        background: transparent;
+        color: $text-color;
+    }
 }
 
 padlock-select {
