@@ -66,6 +66,19 @@
     color: $color-primary;
     margin-top: 5px;
     font-weight: 400;
+
+    &.color1 {
+        color: $cat-color-1;
+    }
+
+    &.color2 {
+        // color: rgb(35, 172, 243);
+        color: $cat-color-2;
+    }
+
+    &.color3 {
+        color: $cat-color-3;
+    }
 }
 
 .list {

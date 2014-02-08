@@ -1,4 +1,5 @@
 Polymer("padlock-list-view", {
+    orderByCategory: false,
     headerOptions: {
         show: true,
         leftIconShape: "menu",
@@ -7,7 +8,8 @@ Polymer("padlock-list-view", {
     },
     observe: {
         filterString: "prepareRecords",
-        "collection.records": "prepareRecords"
+        "collection.records": "prepareRecords",
+        "orderBy": "prepareRecords"
     },
     leftHeaderButton: function() {
         this.fire("menu");

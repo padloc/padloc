@@ -1,3 +1,5 @@
+Polymer("padlock-option");
+
 Polymer("padlock-select", {
     //* Determines wheter the select options are shown or not
     open: false,
@@ -10,7 +12,7 @@ Polymer("padlock-select", {
     attached: function() {
         // Initially select the first item with the _selected_ attribute
         for (var i=0; i<this.children.length; i++) {
-            if (this.children[i].getAttribute("selected")) {
+            if (this.children[i].selected) {
                 this.selected = this.children[i];
                 break;
             }
