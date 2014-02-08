@@ -91,5 +91,21 @@ Polymer("padlock-categories-view", {
         category.name = name;
         category.color = color;
         this.fire("categorychanged", {prev: oldCat, curr: category});
+    },
+    removeCategory: function() {
+        this.$.editDialog.open = false;
+        this.$.confirmRemoveDialog.open = true;
+    },
+    confirmRemove: function() {
+        var category = this.categoryEditing,
+            catList = this.categoryList;
+        this.$.confirmRemoveDialog.open = false;
+        this.categories.remove(this.categoryEditing.name);
+        this.categories.save();
+        this.fire("categorychanged", {prev: category, curr: {}});
+        this.updateCategories();
+    },
+    cancelRemove: function() {
+        this.$.confirmRemoveDialog.open = false;
     }
 });
