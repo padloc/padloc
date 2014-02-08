@@ -8,10 +8,6 @@ Polymer('padlock-view', {
     },
     //* Title text that is going to be displayed in header element
     titleText: "",
-    //* Animation to be used for when the view is shown
-    inAnimation: "slideInFromRight",
-    //* Animation to be used for when the view is hidden
-    outAnimation: "slideOutToLeft",
     //* Duration of the in/out animations
     animationDuration: 400,
     //* Animation timing function for the in/out animations
@@ -44,8 +40,6 @@ Polymer('padlock-view', {
      * @param  {Function} callback  This will be called after the animation has finished
      */
     startAnimation: function(direction, animation, duration, callback) {
-        // If no animation is provided, use the default animation for this _direction_.
-        animation = animation || this[direction + "Animation"];
         duration = duration || this.animationDuration;
         this.currAnimation = animation;
         this.currDirection = direction;

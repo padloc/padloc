@@ -67,8 +67,12 @@ Polymer("padlock-app", {
         // Unless otherwise specified, use a right-to-left animation when navigating 'forward'
         // and a left-to-right animation when animating 'back'
         params = params || {};
-        params.outAnimation = params.outAnimation || (back ? "slideOutToRight": "slideOutToLeft");
-        params.inAnimation = params.inAnimation || (back ? "slideInFromLeft": "slideInFromRight");
+        if (!("outAnimation" in params)) {
+            params.outAnimation = params.outAnimation || (back ? "slideOutToRight": "slideOutToLeft");
+        }
+        if (!("inAnimation" in params)) {
+            params.inAnimation = params.inAnimation || (back ? "slideInFromLeft": "slideInFromRight");
+        }
 
         // Hide current view (if any)
         if (this.currentView) {
