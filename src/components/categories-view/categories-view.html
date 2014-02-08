@@ -8,7 +8,7 @@
         <link href="categories-view.css" rel="stylesheet" type="text/css">
         <div class="list">
             <template repeat="{{ category in categoryList }}">
-                <div on-tap="{{ categoryTapped }}"
+                <div on-tap="{{ categoryTapped }}" on-hold="{{ editCategory }}"
                     class="category color{{ category.color }} {{ category.name == record.category ? 'selected' : '' }}">
                     <div class="category-inner">{{ category.name }}</div>
                 </div>
@@ -19,14 +19,15 @@
                 </div>
             </div>
         </div>
-        <padlock-dialog id="newCategoryDialog">
-            <padlock-select id="newColorSelect" openUpwards="true">
-                <padlock-option selected="true" class="color1" selectedClass="color1" value="1">Select a color</padlock-option>
+        <padlock-dialog id="editDialog">
+            <padlock-select id="colorSelect" openUpwards="true">
+                <padlock-option class="color1" selectedClass="color1" value="1">Select a color</padlock-option>
                 <padlock-option class="color2" selectedClass="color2" value="2">Select a color</padlock-option>
                 <padlock-option class="color3" selectedClass="color3" value="3">Select a color</padlock-option>
             </padlock-select>
-            <input is="fast-input" id="newNameInput" placeholder="Category Name"/>
-            <button class="primary" on-tap="{{ confirmNewCategory }}">Add</button>
+            <input is="fast-input" id="nameInput" placeholder="Category Name"/>
+            <button class="primary" on-tap="{{ editEnter }}">Save</button>
+            <button id="removeButton" on-tap="{{ removeCategory }}">Remove</button>
         </padlock-dialog>
     </template>
     <script src="categories-view.js"></script>

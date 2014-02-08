@@ -36,7 +36,7 @@
             on-back="{{ importBack }}"></padlock-import-view>
         <!-- CATEGORIES VIEW -->
         <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ selected }}"
-            on-done="{{ categoriesDone }}"></padlock-categories-view>
+            on-done="{{ categoriesDone }}" on-categorychanged="{{ categoryChanged }}"></padlock-categories-view>
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
             <padlock-select openUpwards="true" selected="{{ orderOption }}">

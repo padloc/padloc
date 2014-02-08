@@ -223,5 +223,13 @@ Polymer("padlock-app", {
             outAnimation: "fadeOut",
             inAnimation: "slideInFromBottom"
         });
+    },
+    categoryChanged: function(event, detail, sender) {
+        this.collection.records.forEach(function(rec) {
+            if (rec.category == detail.prev.name) {
+                rec.category = detail.curr.name;
+                rec.catColor = detail.curr.color;
+            }
+        });
     }
 });
