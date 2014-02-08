@@ -25,6 +25,7 @@
         padding: $padding;
         width: $row-height - $padding * 2;
         height: $row-height - $padding * 2;
+        cursor: pointer;
 
         line {
             stroke: $text-color-light;
