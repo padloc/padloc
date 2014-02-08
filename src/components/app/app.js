@@ -1,6 +1,8 @@
 Polymer("padlock-app", {
     ready: function() {
         require(["padlock/model"], function(model) {
+            this.categories = new model.Categories(null, 3);
+            this.categories.fetch();
             this.collection = new model.Collection();
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one

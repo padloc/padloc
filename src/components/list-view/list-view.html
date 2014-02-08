@@ -2,7 +2,7 @@
 <link rel="import" href="../view/view.html">
 
 <polymer-element name="padlock-list-view" extends="padlock-view"
-    attributes="collection filterString selected" touch-action="pan-y">
+    attributes="collection filterString selected categories" touch-action="pan-y">
     <template>
         <!-- STYLES -->
         <link href="list-view.css" rel="stylesheet" type="text/css">
@@ -11,12 +11,15 @@
             <template repeat="{{ records }}">
                 <!-- SECTION HEADER -->
                 <template if="{{ firstInSection }}">
-                    <div class="section-header">{{ section }}</div>
+                    <div class="section-header {{ showCategory ? '' : 'color' + catColor }}">{{ section }}</div>
                 </template>
                 <!-- RECORD ITEM -->
                 <div class="record-item" on-tap="{{ recordClicked }}">
                     <div class="record-item-inner">
-                        {{ name }}
+                        <div class="record-item-name">{{ name }}</div>
+                        <template if="{{ showCategory }}">
+                            <div class="record-item-category color{{ catColor }}">{{ category }}</div>
+                        </template>
                     </div>
                 </div>
             </template>

@@ -24,21 +24,24 @@ Polymer("padlock-list-view", {
         }
 
         // Filter records based on filter string
-        var fs = this.filterString;
+        var fs = this.filterString && this.filterString.toLowerCase();
         var records = fs ? this.collection.records.filter(function(rec) {
-            return rec.name.toLowerCase().search(fs.toLowerCase()) != -1;
+            return rec.category && rec.category.toLowerCase().search(fs) != -1 || rec.name.toLowerCase().search(fs) != -1;
         }) : this.collection.records.slice();
 
-        // Set _section_ property
-        for (var i=0; i<records.length; i++) {
-            records[i].section = records[i].name.toUpperCase()[0];
+        // Set _section_ and _color_ for each item
+        for (var i=0, rec; i<records.length; i++) {
+            rec = records[i];
+            rec.section = this.orderBy == "category" ? rec.category || "other" : rec.name.toUpperCase()[0];
+            rec.catColor = this.categories.get(rec.category) || "";
+            rec.showCategory = this.orderBy != "category";
         }
 
         // Sort by section property first, name second
         records = records.sort(function(a, b) {
             if (a.section > b.section) {
                 return 1;
-            } else if (a.name < b.name) {
+            } else if (a.section < b.section) {
                 return -1;
             } else {
                 if (a.name > b.name) {
