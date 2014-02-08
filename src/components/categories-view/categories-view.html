@@ -20,6 +20,11 @@
             </div>
         </div>
         <padlock-dialog id="newCategoryDialog">
+            <padlock-select id="newColorSelect" openUpwards="true">
+                <padlock-option selected="true" class="color1" selectedClass="color1" value="1">Select a color</padlock-option>
+                <padlock-option class="color2" selectedClass="color2" value="2">Select a color</padlock-option>
+                <padlock-option class="color3" selectedClass="color3" value="3">Select a color</padlock-option>
+            </padlock-select>
             <input is="fast-input" id="newNameInput" placeholder="Category Name"/>
             <button class="primary" on-tap="{{ confirmNewCategory }}">Add</button>
         </padlock-dialog>

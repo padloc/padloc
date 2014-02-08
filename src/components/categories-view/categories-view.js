@@ -38,7 +38,7 @@ Polymer("padlock-categories-view", {
     },
     confirmNewCategory: function() {
         var name = this.$.newNameInput.value;
-            color = this.categories.autoColor();
+            color = parseInt(this.$.newColorSelect.selected.value, 10);
 
         if (name) {
             this.$.newCategoryDialog.open = false;
