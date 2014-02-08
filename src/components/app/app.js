@@ -91,6 +91,7 @@ Polymer("padlock-app", {
             });
             // Save the changes
             this.collection.save();
+            this.$.listView.prepareRecords();
         }
     },
     //* Opens the dialog for adding a new record
