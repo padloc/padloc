@@ -3,6 +3,11 @@
 @import "../../mixins.scss";
 @import "compass/css3";
 
+:host {
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
 .list {
     text-align: center;
     padding: 10px 0 0 10px;

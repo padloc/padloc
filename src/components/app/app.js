@@ -3,6 +3,7 @@ Polymer("padlock-app", {
         require(["padlock/model"], function(model) {
             this.categories = new model.Categories(null, 3);
             this.categories.fetch();
+            this.$.categoriesView.updateCategories();
             this.collection = new model.Collection();
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one
@@ -208,6 +209,7 @@ Polymer("padlock-app", {
         }.bind(this));
 
         this.categories.save();
+        this.$.categoriesView.updateCategories();
     },
     openCategories: function() {
         this.openView(this.$.categoriesView, {

@@ -1,7 +1,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../view/view.html">
+<link rel="import" href="../dialog/dialog.html">
 
-<polymer-element name="padlock-categories-view" extends="padlock-view" attributes="categories record">
+<polymer-element name="padlock-categories-view" extends="padlock-view" attributes="categories record" touch-action="pan-y">
     <template>
         <!-- STYLES -->
         <link href="categories-view.css" rel="stylesheet" type="text/css">
@@ -12,12 +13,16 @@
                     <div class="category-inner">{{ category.name }}</div>
                 </div>
             </template>
-            <div class="category new">
+            <div class="category new" on-tap="{{ newCategory }}">
                 <div class="category-inner">
                     New...
                 </div>
             </div>
         </div>
+        <padlock-dialog id="newCategoryDialog">
+            <input is="fast-input" id="newNameInput" placeholder="Category Name"/>
+            <button class="primary" on-tap="{{ confirmNewCategory }}">Add</button>
+        </padlock-dialog>
     </template>
     <script src="categories-view.js"></script>
 </polymer>
