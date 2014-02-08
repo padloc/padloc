@@ -3,11 +3,12 @@
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../fast-input.html">
 
-<polymer-element name="padlock-record-view" extends="padlock-view" attributes="record editing" touch-action="pan-y" on-mousedown="{{ mousedown }}">
+<polymer-element name="padlock-record-view" extends="padlock-view" attributes="record" touch-action="pan-y" on-mousedown="{{ mousedown }}">
     <template>
         <!-- STYLES -->
         <link href="record-view.css" rel="stylesheet" type="text/css">
         <div id="animated">
+            <div class="category color{{ record.catColor }}" on-tap="{{ openCategories }}">{{ record.category ? record.category : "Add a Category" }}</div>
             <!-- FIELD LIST -->
             <template repeat="{{ record.fields }}">
                 <div class="field" on-tap="{{ openFieldMenu }}">

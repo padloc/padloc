@@ -7,6 +7,7 @@
 <link rel="import" href="../lock-view/lock-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../import-view/import-view.html">
+<link rel="import" href="../categories-view/categories-view.html">
 <link rel="import" href="../fast-input.html">
 
 <polymer-element name="padlock-app" touch-action="none" on-mousedown="{{ mousedown }}" on-showheader="{{ showHeader }}"
@@ -26,13 +27,16 @@
             on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
-            on-delete="{{ deleteRecord }}"></padlock-record-view>
+            on-delete="{{ deleteRecord }}" on-categories="{{ openCategories }}"></padlock-record-view>
         <!-- Settings VIEW -->
         <padlock-settings-view id="settingsView" class="view" on-back="{{ settingsBack }}"
             collection="{{ collection }}"></padlock-settings-view>
         <!-- IMPORT VIEW -->
         <padlock-import-view id="importView" class="view" on-import="{{ saveImportedRecords }}"
             on-back="{{ importBack }}"></padlock-import-view>
+        <!-- CATEGORIES VIEW -->
+        <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ selected }}"
+            on-done="{{ categoriesDone }}"></padlock-categories-view>
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
             <padlock-select openUpwards="true" selected="{{ orderOption }}">

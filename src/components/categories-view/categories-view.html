@@ -1,0 +1,23 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../view/view.html">
+
+<polymer-element name="padlock-categories-view" extends="padlock-view" attributes="categories record">
+    <template>
+        <!-- STYLES -->
+        <link href="categories-view.css" rel="stylesheet" type="text/css">
+        <div class="list">
+            <template repeat="{{ category in categoryList }}">
+                <div on-tap="{{ categoryTapped }}"
+                    class="category color{{ category.color }} {{ category.name == record.category ? 'selected' : '' }}">
+                    <div class="category-inner">{{ category.name }}</div>
+                </div>
+            </template>
+            <div class="category new">
+                <div class="category-inner">
+                    New...
+                </div>
+            </div>
+        </div>
+    </template>
+    <script src="categories-view.js"></script>
+</polymer>

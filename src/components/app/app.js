@@ -197,5 +197,18 @@ Polymer("padlock-app", {
         if (!isInput && this.currentView && this.currentView.headerOptions.showFilter) {
             this.$.header.focusFilterInput();
         }
+    },
+    openCategories: function() {
+        this.openView(this.$.categoriesView, {
+            outAnimation: "slideOutToBottom",
+            inAnimation: ""
+        });
+    },
+    categoriesDone: function() {
+        this.saveRecord();
+        this.openView(this.$.recordView, {
+            outAnimation: "fadeOut",
+            inAnimation: "slideInFromBottom"
+        });
     }
 });
