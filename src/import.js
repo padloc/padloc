@@ -41,6 +41,7 @@ define(["padlock/crypto"], function(crypto) {
 
                 return {
                     name: item.title,
+                    category: data.name,
                     fields: fields
                 };
             });

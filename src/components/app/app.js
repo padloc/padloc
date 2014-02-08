@@ -148,6 +148,7 @@ Polymer("padlock-app", {
     },
     //* Add the records imported with the import view to the collection
     saveImportedRecords: function(event, detail) {
+        this.updateCategories(detail.records);
         this.collection.add(detail.records);
         this.collection.save();
         this.alert(detail.records.length + " records imported!");
@@ -197,6 +198,16 @@ Polymer("padlock-app", {
         if (!isInput && this.currentView && this.currentView.headerOptions.showFilter) {
             this.$.header.focusFilterInput();
         }
+    },
+    //* Adds any categories inside of _records_ that don't exist yet
+    updateCategories: function(records) {
+        records.forEach(function(rec) {
+            if (rec.category && !this.categories.get(rec.category)) {
+                this.categories.set(rec.category, this.categories.autoColor());
+            }
+        }.bind(this));
+
+        this.categories.save();
     },
     openCategories: function() {
         this.openView(this.$.categoriesView, {
