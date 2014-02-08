@@ -84,11 +84,30 @@ define(function() {
         return animationEndEventNames[getVendorPrefix().lowercase];
     };
 
+    /**
+     * Copies over all properties from the _source_ to the _target_. Properties
+     * will only be overwritten if _overwrite_ is true. Returns the _target_ object
+     */
+    var mixin = function(target, source, overwrite) {
+        for (var prop in source) {
+            if (source.hasOwnProperty(prop) && (overwrite || !target.hasOwnProperty(prop))) {
+                target[prop] = source[prop];
+            }
+        }
+        return target;
+    };
+
+    var isArray = function(obj) {
+        return Object.prototype.toString.call(obj) === "[object Array]";
+    };
+
     return {
         insert: insert,
         remove: remove,
         getVendorPrefix: getVendorPrefix,
         getTransitionEndEventName: getTransitionEndEventName,
-        getAnimationEndEventName: getAnimationEndEventName
+        getAnimationEndEventName: getAnimationEndEventName,
+        mixin: mixin,
+        isArray: isArray
     };
 });
