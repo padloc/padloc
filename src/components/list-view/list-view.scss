@@ -37,7 +37,8 @@
         font-size: 14px;
         background: #ddd;
         color: $text-color-light;
-        padding: 0 5px;
+        border: solid transparent;
+        border-width: 0 5px;
         line-height: $row-height/2;
         max-width: 80px;
         border-radius: 4px;

@@ -28,13 +28,13 @@
         max-width: 100px;
         text-align: right;
         color: $color-primary;
-        @include ellipsis();
+        @include ellipsis;
     }
 
     > .value {
         margin-right: 15px;
         @include box-flex(1);
-        @include ellipsis();
+        @include ellipsis;
     }
 }
 
@@ -50,6 +50,7 @@
     font-size: 16px;
     padding: 10px;
     cursor: pointer;
+    @include ellipsis;
 
     &.color1 {
         background: $cat-color-1;
