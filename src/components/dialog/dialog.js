@@ -9,11 +9,14 @@ Polymer("padlock-dialog", {
             l = items.length,
             delay;
 
+        // Firefox apparently doesn't want a prefix when setting the style property directly via the dom
+        prefix = prefix == "-moz-" ? "" : prefix;
+
         // Apply incremental transition delays to the individual elements
         // to create a nice animation
         for (var i=0; i<l; i++) {
             delay = this.open ? i * dt : (items.length - i - 1) * dt;
-            items[i].style[prefix + "transition-delay"] = delay + "s";
+            items[i].style[prefix + "transition"] = prefix + "transform 0.3s ease " + delay + "s, opacity 0.3s ease " + delay + "s";
         }
 
         // Set _display: block_ if we're showing. If we're hiding

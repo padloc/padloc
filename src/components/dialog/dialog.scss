@@ -46,7 +46,6 @@
         width: 100%;
 
         @include box-sizing(border-box);
-        @include transition(transform 0.3s, opacity 0.3s);
         @include transform(translate3d(0, 100%, 0)); 
 
         &.title {
