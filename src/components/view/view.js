@@ -79,7 +79,13 @@ Polymer('padlock-view', {
     },
     //* Show the view
     show: function(animation, duration, callback) {
+        // We apply the animation before adding the node to the rendering
+        // tree in order to avoid 'flashes'
         this.startAnimation("in", animation, duration, callback);
+        // Trigger a style recalculation to make sure the style changes
+        // are applied before rendering the element
+        this.offsetLeft;
+        // Show the element
         this.style.display = "";
     },
     //* Hides the view

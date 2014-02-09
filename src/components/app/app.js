@@ -81,9 +81,7 @@ Polymer("padlock-app", {
         }
 
         // Show new view
-        setTimeout(function() {
-            view.show(params.inAnimation, params.inDuration, params.inCallback);
-        }, 10);
+        view.show(params.inAnimation, params.inDuration, params.inCallback);
 
         this.currentView = view;
     },
