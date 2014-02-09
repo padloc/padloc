@@ -16,8 +16,6 @@
     -webkit-tap-highlight-color: transparent;
     background: $color-grey;
     overflow: hidden;
-    
-    @include transition(background 1s);
 
     &.ios-standalone {
         padlock-header > div {

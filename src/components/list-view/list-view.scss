@@ -15,11 +15,13 @@
     display: block;
     cursor: pointer;
     padding: 5px 0 0 0;
+    vertical-align: top;
     @include box-sizing(border-box);
 
     .record-item-inner {
         height: $row-height;
         background: #ffffff;
+        width: 100%;
 
         @include display-box;
         @include box-align(center);

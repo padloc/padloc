@@ -35,7 +35,7 @@ Polymer("padlock-select", {
                 if (!this.open || o != this.selected) {
                     var y = (j + 1) * (rowHeight + gutterWidth);
                     y = this.openUpwards ? -y : y;
-                    var trans = this.open ? "translate(0, " + y + "px)" : "";
+                    var trans = this.open ? "translate(0px, " + y + "px)" : "";
                     o.style[prefix + "transform"] = trans;
                     o.style.opacity = this.open ? 1 : 0;
                     j++;
