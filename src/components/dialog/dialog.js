@@ -28,16 +28,15 @@ Polymer("padlock-dialog", {
         // we know when we're done animating.
         this.transCount = items.length * 2 + 1;
 
-        // We need a small delay before applying the class for the transitions
-        // to work correctly, at least if we've just changed the display
-        // property to _none_
-        setTimeout(function() {
-            if (this.open) {
-                this.classList.add("open");
-            } else {
-                this.classList.remove("open");
-            }
-        }.bind(this), 10);
+        // Trigger relayout to make sure all elements have been rendered
+        // when applying the transition
+        this.offsetLeft;
+
+        if (this.open) {
+            this.classList.add("open");
+        } else {
+            this.classList.remove("open");
+        }
 
         // Remove focus from any input elements when closing
         if (!this.open) {
