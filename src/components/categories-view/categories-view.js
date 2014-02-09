@@ -17,13 +17,29 @@ Polymer("padlock-categories-view", {
     show: function() {
         var minDelay = 0,
             maxDelay = 200,
+            prefix = require("padlock/util").getVendorPrefix().css,
+            catElements = this.shadowRoot.querySelectorAll(".category"),
             delay;
 
-        Array.prototype.forEach.call(this.shadowRoot.querySelectorAll(".category"), function(catEl) {
-            delay = minDelay + Math.floor(Math.random() * (maxDelay - minDelay));
-            catEl.style["-webkit-animation-delay"] = delay + "ms";
-        });
+        // Apparently firefox doesn't want a prefix when setting styles directly
+        prefix = prefix == "-moz-" ? "" : prefix;
+
         this.super(arguments);
+
+        // Remove animation property so the animation will restart
+        Array.prototype.forEach.call(catElements, function(catEl) {
+            catEl.style[prefix + "animation"] = "none";
+        });
+
+        // Trigger style recalculation to make sure the style change is applied
+        // when we re-add the animation property
+        this.offsetLeft;
+
+        // Trigger bounce in animation with random invidiual delays
+        Array.prototype.forEach.call(catElements, function(catEl) {
+            delay = minDelay + Math.floor(Math.random() * (maxDelay - minDelay));
+            catEl.style[prefix + "animation"] = "bounceIn 0.5s ease " + delay + "ms both";
+        });
     },
     categoryTapped: function(event, detail, sender) {
         this.record.category = sender.templateInstance.model.category.name;

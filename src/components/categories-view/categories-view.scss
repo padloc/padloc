@@ -31,7 +31,7 @@
     cursor: pointer;
 
     @include animation(bounceIn 0.5s ease 0s both);
-    @include transition(border-color 0.3s, transform 0.3s);
+    @include transition(border-color 0.2s);
 
     .category-inner {
         width: 100%;
@@ -58,8 +58,6 @@
 
     &.selected {
         border-color: $color-primary;
-
-        @include transform(scale(1.05));
     }
 
     &.none {
