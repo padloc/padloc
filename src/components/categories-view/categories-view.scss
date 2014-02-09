@@ -1,0 +1,97 @@
+@import "../../config.scss";
+@import "../../animations.scss";
+@import "../../mixins.scss";
+@import "compass/css3";
+
+:host {
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
+.list {
+    text-align: center;
+    padding: 10px 0 15px 10px;
+}
+
+.category {
+    $size: 70px;
+    display: inline-block;
+    width: $size;
+    height: $size;
+    margin: 10px 10px 0 0;
+    border-radius: $size;
+    background: #fff;
+    line-height: $size;
+    text-align: center;
+    font-size: 16px;
+    color: $text-color-light;
+    padding: 5px;
+    border: solid 5px #fff;
+    font-weight: 400;
+    cursor: pointer;
+
+    @include animation(bounceIn 0.5s ease 0s both);
+    @include transition(border-color 0.3s, transform 0.3s);
+
+    .category-inner {
+        width: 100%;
+        height: 100%;
+
+        @include ellipsis;
+    }
+
+    &.color1 {
+        background: $cat-color-1;
+    }
+
+    &.color2 {
+        background: $cat-color-2;
+    }
+
+    &.color3 {
+        background: $cat-color-3;
+    }
+
+    &.new {
+        color: $color-primary;
+    }
+
+    &.selected {
+        border-color: $color-primary;
+
+        @include transform(scale(1.05));
+    }
+
+    &.none {
+        background: transparent;
+        color: $text-color;
+    }
+}
+
+padlock-select {
+    line-height: 0;
+
+    button {
+        color: $text-color-light;
+    }
+
+    padlock-option {
+        color: transparent;
+    }
+
+    padlock-shapeshifter line {
+        stroke: $text-color-light;
+    }
+
+    .color1 {
+        background: $cat-color-1;
+    }
+
+    .color2 {
+        background: $cat-color-2;
+    }
+
+    .color3 {
+        background: $cat-color-3;
+    }
+}

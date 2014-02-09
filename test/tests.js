@@ -90,6 +90,30 @@ require(["padlock/crypto", "padlock/util", "padlock/model", "padlock/import"], f
         deepEqual(e, ["a", "b", "c", "d", "e"]);
     });
 
+    test("mixin", function() {
+        var a = {one: 1, two: "two"},
+            b = {one: 2, three: "three"},
+            c = util.mixin(a, b);
+
+        equal(a, c, "Returned object should be identical with target object");
+        deepEqual(a, {
+            one: 1,
+            two: "two",
+            three: "three"
+        }, "If overwrite is false, merge in all properties from source object without overwriting existing properties");
+
+        var d = util.mixin({one: 1}, {one: "one"}, true);
+        equal(d.one, "one", "If overwrte is true, overwrite existing properties in target object");
+    });
+
+    test("isArray", function() {
+        ok(util.isArray([]));
+        ok(util.isArray(new Array()));
+        ok(!util.isArray(null));
+        ok(!util.isArray(""));
+        ok(!util.isArray({}));
+    });
+
     module("padlock/model");
 
     test("add records", function() {
@@ -186,16 +210,71 @@ require(["padlock/crypto", "padlock/util", "padlock/model", "padlock/import"], f
         ok(coll.exists(), "After the collection has been saved, it should exist ist the store.");
     });
 
+    test("set/get category", function() {
+        var categories = new model.Categories(null, 5),
+            catName = "my category",
+            color = 1;
+
+        categories.set(catName, color);
+        equal(categories.get(catName), color, "Categories object should contain added category with correct value");
+        equal(categories.get("not there"), undefined, "Looking up a non-existent category should return undefined");
+    });
+
+    test("save/fetch categories", function() {
+        var name = "test",
+            categories = new model.Categories(name, 5),
+            catName = "my category",
+            catName2 = "another category",
+            color = 1,
+            color2 = 2,
+            color3 = 3;
+
+        categories.set(catName, color);
+        categories.set(catName2, color2);
+        categories.save();
+
+        categories = new model.Categories(name, 5);
+        categories.set(catName2, color3);
+        categories.fetch();
+
+        equal(categories.get(catName), color, "The set should contain the saved category with the correct value");
+        equal(categories.get(catName2), color3, "If a category name is already present in the set, the old value should be kept instead of overwriting it");
+    });
+
+    test("Get preferable color for a new category", function() {
+        var categories = new model.Categories(null, 3),
+            color = categories.autoColor();
+        
+        // The current implementation is hard to test as is just produces random values.
+        // All we can do is to check if the value is inside a valid range.
+        ok(color > 0 && color <= categories.numColors, "Returned number should be in range of available colors.");
+    });
+
+    test("Get array representation of categories", function() {
+        var categories = new model.Categories();
+        categories.set("one", 1);
+        categories.set("two", 2);
+
+        var arr = categories.asArray();
+        equal(arr.length, 2, "Array should have the right length");
+        // This test is actually too strict as the order of the categories is not guaranteed.
+        // Should be fine unless it produces false positives though.
+        deepEqual(arr, [
+            {name: "one", color: 1},
+            {name: "two", color: 2}
+        ], "Array should contain the correct information");
+    });
+
     module("padlock/import");
 
     asyncTest("import secustore set", function() {
         var sample = "secustore-backup.txt",
             password = "password",
             expected = [
-                {name: "My Record", fields: [
+                {name: "My Record", category: "Import Test", fields: [
                     {name: "My field", value: "some value"}
                 ]},
-                {name: "Website", fields: [
+                {name: "Website", category: "Import Test", fields: [
                     {name: "url", value: "http://test.org"},
                     {name: "login name", value: "username"},
                     {name: "password", value: "password"}

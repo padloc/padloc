@@ -35,3 +35,20 @@
     from {@include transform(translate3d(0, 5%, 0)); opacity: 0;}
     to {@include transform(translate3d(0, 0, 0)); opacity: 1;}
 }
+
+@include keyframes(fadeIn) {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@include keyframes(fadeOut) {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+
+@include keyframes(bounceIn) {
+    0% {@include transform(scale(0));}
+    30% {@include transform(scale(1.1));}
+    70% {@include transform(scale(0.95));}
+    100% {@include transform(scale(1));}
+}

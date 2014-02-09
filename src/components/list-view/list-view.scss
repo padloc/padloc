@@ -1,4 +1,5 @@
 @import "../../config.scss";
+@import "../../mixins.scss";
 @import "compass/css3";
 
 :host {
@@ -13,15 +14,46 @@
 .record-item {
     display: block;
     cursor: pointer;
-    @include box-sizing(border-box);
-
     padding: 5px 0 0 0;
+    @include box-sizing(border-box);
 
     .record-item-inner {
         height: $row-height;
-        line-height: $row-height;
-        padding: 0 15px;
         background: #ffffff;
+
+        @include display-box;
+        @include box-align(center);
+    }
+
+    .record-item-name {
+        padding: 0 15px;
+        @include box-flex(1);
+        @include ellipsis;
+    }
+
+    .record-item-category {
+        font-size: 14px;
+        background: #ddd;
+        color: $text-color-light;
+        padding: 0 5px;
+        line-height: $row-height/2;
+        max-width: 80px;
+        border-radius: 4px;
+        margin-right: 15px;
+        @include ellipsis;
+
+        &.color1 {
+            background: $cat-color-1;
+        }
+
+        &.color2 {
+            // background: rgb(35, 172, 243);
+            background: $cat-color-2;
+        }
+
+        &.color3 {
+            background: $cat-color-3;
+        }
     }
 }
 
@@ -34,6 +66,19 @@
     color: $color-primary;
     margin-top: 5px;
     font-weight: 400;
+
+    &.color1 {
+        color: $cat-color-1;
+    }
+
+    &.color2 {
+        // color: rgb(35, 172, 243);
+        color: $cat-color-2;
+    }
+
+    &.color3 {
+        color: $cat-color-3;
+    }
 }
 
 .list {

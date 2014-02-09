@@ -42,3 +42,27 @@
     width: 100%;
     margin: 5px 0;
 }
+
+.category {
+    background: #fff;
+    color: #C5C5C5;
+    text-align: center;
+    font-size: 16px;
+    padding: 10px;
+    cursor: pointer;
+
+    &.color1 {
+        background: $cat-color-1;
+        color: $text-color-light;
+    }
+
+    &.color2 {
+        background: $cat-color-2;
+        color: $text-color-light;
+    }
+
+    &.color3 {
+        background: $cat-color-3;
+        color: $text-color-light;
+    }
+}

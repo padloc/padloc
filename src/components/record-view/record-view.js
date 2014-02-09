@@ -86,5 +86,8 @@ Polymer('padlock-record-view', {
     //* Updates the titleText property with the name of the current record
     updateTitleText: function() {
         this.titleText = this.record && this.record.name;
+    },
+    openCategories: function() {
+        this.fire("categories");
     }
 });

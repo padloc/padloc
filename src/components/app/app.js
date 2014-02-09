@@ -1,6 +1,9 @@
 Polymer("padlock-app", {
     ready: function() {
         require(["padlock/model"], function(model) {
+            this.categories = new model.Categories(null, 3);
+            this.categories.fetch();
+            this.$.categoriesView.updateCategories();
             this.collection = new model.Collection();
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one
@@ -65,8 +68,12 @@ Polymer("padlock-app", {
         // Unless otherwise specified, use a right-to-left animation when navigating 'forward'
         // and a left-to-right animation when animating 'back'
         params = params || {};
-        params.outAnimation = params.outAnimation || (back ? "slideOutToRight": "slideOutToLeft");
-        params.inAnimation = params.inAnimation || (back ? "slideInFromLeft": "slideInFromRight");
+        if (!("outAnimation" in params)) {
+            params.outAnimation = params.outAnimation || (back ? "slideOutToRight": "slideOutToLeft");
+        }
+        if (!("inAnimation" in params)) {
+            params.inAnimation = params.inAnimation || (back ? "slideInFromLeft": "slideInFromRight");
+        }
 
         // Hide current view (if any)
         if (this.currentView) {
@@ -142,6 +149,7 @@ Polymer("padlock-app", {
     },
     //* Add the records imported with the import view to the collection
     saveImportedRecords: function(event, detail) {
+        this.updateCategories(detail.records);
         this.collection.add(detail.records);
         this.collection.save();
         this.alert(detail.records.length + " records imported!");
@@ -191,5 +199,37 @@ Polymer("padlock-app", {
         if (!isInput && this.currentView && this.currentView.headerOptions.showFilter) {
             this.$.header.focusFilterInput();
         }
+    },
+    //* Adds any categories inside of _records_ that don't exist yet
+    updateCategories: function(records) {
+        records.forEach(function(rec) {
+            if (rec.category && !this.categories.get(rec.category)) {
+                this.categories.set(rec.category, this.categories.autoColor());
+            }
+        }.bind(this));
+
+        this.categories.save();
+        this.$.categoriesView.updateCategories();
+    },
+    openCategories: function() {
+        this.openView(this.$.categoriesView, {
+            outAnimation: "slideOutToBottom",
+            inAnimation: ""
+        });
+    },
+    categoriesDone: function() {
+        this.saveRecord();
+        this.openView(this.$.recordView, {
+            outAnimation: "fadeOut",
+            inAnimation: "slideInFromBottom"
+        });
+    },
+    categoryChanged: function(event, detail, sender) {
+        this.collection.records.forEach(function(rec) {
+            if (rec.category == detail.prev.name) {
+                rec.category = detail.curr.name;
+                rec.catColor = detail.curr.color;
+            }
+        });
     }
 });
