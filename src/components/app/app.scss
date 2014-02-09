@@ -80,6 +80,7 @@ button {
     cursor: pointer;
     // color: darken($color-primary, 0.3);
     color: $color-primary;
+    font-weight: $font-weight-bold;
 }
 
 button.primary {
@@ -111,5 +112,5 @@ input {
 }
 
 strong {
-    font-weight: 400;
+    font-weight: $font-weight-bold;
 }

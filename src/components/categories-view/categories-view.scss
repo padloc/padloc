@@ -27,7 +27,7 @@
     color: $text-color-light;
     padding: 5px;
     border: solid 5px #fff;
-    font-weight: 400;
+    font-weight: $font-weight-bold;
     cursor: pointer;
 
     @include animation(bounceIn 0.5s ease 0s both);
