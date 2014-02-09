@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Padlock 0.0.1.0
+# Padlock 0.0.2.0
 
 NETWORK:
 *
@@ -31,6 +31,10 @@ src/overrides.css
 src/components/app/app.html
 src/components/app/app.js
 src/components/app/app.css
+# categories-view
+src/components/categories-view/categories-view.html
+src/components/categories-view/categories-view.js
+src/components/categories-view/categories-view.css
 # dialog
 src/components/dialog/dialog.html
 src/components/dialog/dialog.js
@@ -55,6 +59,10 @@ src/components/lock-view/lock-view.css
 src/components/record-view/record-view.html
 src/components/record-view/record-view.js
 src/components/record-view/record-view.css
+# select
+src/components/select/select.html
+src/components/select/select.js
+src/components/select/select.css
 # settings-view
 src/components/settings-view/settings-view.html
 src/components/settings-view/settings-view.js
