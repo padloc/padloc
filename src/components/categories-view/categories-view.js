@@ -44,6 +44,7 @@ Polymer("padlock-categories-view", {
     categoryTapped: function(event, detail, sender) {
         this.record.category = sender.templateInstance.model.category.name;
         this.record.catColor = sender.templateInstance.model.category.color;
+        this.bounce(sender);
     },
     //* Updates the titleText property with the name of the current record
     updateTitleText: function() {
@@ -124,7 +125,17 @@ Polymer("padlock-categories-view", {
     cancelRemove: function() {
         this.$.confirmRemoveDialog.open = false;
     },
-    selectNone: function() {
+    selectNone: function(event, detail, sender) {
         delete this.record.category;
+        this.bounce(sender);
+    },
+    bounce: function(el) {
+        var prefix = require("padlock/util").getVendorPrefix().css;
+        // Apparently firefox doesn't want a prefix when setting styles directly
+        prefix = prefix == "-moz-" ? "" : prefix;
+        el.style[prefix + "animation"] = "none";
+        // Trigger style recalculation
+        el.offsetLeft;
+        el.style[prefix + "animation"] = "bounce 0.5s ease 0s both";
     }
 });

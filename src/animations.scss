@@ -52,3 +52,10 @@
     70% {@include transform(scale(0.95));}
     100% {@include transform(scale(1));}
 }
+
+@include keyframes(bounce) {
+    0% {@include transform(scale(1));}
+    30% {@include transform(scale(1.1));}
+    70% {@include transform(scale(0.95));}
+    100% {@include transform(scale(1));}
+}
