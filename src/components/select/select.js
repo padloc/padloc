@@ -26,6 +26,9 @@ Polymer("padlock-select", {
                 rowHeight = options[0] && options[0].offsetHeight || 0,
                 gutterWidth = 5;
 
+            // Apparently firefox doesnt want a prefix when setting the style directly
+            prefix = prefix == "-moz-" ? "" : prefix;
+
             // Show all options except the selected one by making them opaque
             // and lining them up via a css transform
             for (var i=0, j=0, o; i<options.length; i++) {
