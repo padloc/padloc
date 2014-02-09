@@ -4,6 +4,7 @@
 
 :host {
     line-height: 0;
+    pointer-events: none;
 }
 
 :host > div {
@@ -13,6 +14,7 @@
     background: transparentize($color-primary, 0.1);
     position: relative;
     width: 100%;
+    pointer-events: auto;
 
     @include display-box;
     @include transform(translate3d(0, 0, 0));
@@ -67,9 +69,12 @@
         @include transition(opacity 0.5s);
     }
 
-    &.scrim:after {
-        opacity: 1;
-        pointer-events: auto;
+    &.scrim {
+        pointer-events: none;
+
+        &:after {
+            opacity: 1;
+        }
     }
 }
 
