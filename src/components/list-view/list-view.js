@@ -70,5 +70,13 @@ Polymer("padlock-list-view", {
     },
     import: function() {
         this.fire("import");
+    },
+    show: function(animation, duration, callback) {
+        this.super([animation, duration, callback]);
+        // This solves a problem in iOS where scrolling would sometimes not work
+        // on iOS after unlocking the app
+        this.style.overflow = "visible";
+        this.offsetLeft;
+        this.style.overflow = "";
     }
 });
