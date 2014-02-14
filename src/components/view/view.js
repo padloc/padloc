@@ -15,10 +15,10 @@ Polymer('padlock-view', {
     leftHeaderButton: function() {},
     rightHeaderButton: function() {},
     attached: function() {
-        require(["padlock/util"], function(util) {
+        require(["padlock/platform"], function(platform) {
             // We have to register a listener for the animationend event manually
             // sind it doesn't seem to work declaratively (bug in Polymer?)
-            var eventName = util.getAnimationEndEventName();
+            var eventName = platform.getAnimationEndEventName();
             this.addEventListener(eventName, this.animationEnd.bind(this));
         }.bind(this));
     },
@@ -40,11 +40,17 @@ Polymer('padlock-view', {
      * @param  {Function} callback  This will be called after the animation has finished
      */
     startAnimation: function(direction, animation, duration, callback) {
+        // The padlock/platform module was already requested in the _attached_ method
+        // so we're assuming it has already been loaded.
+        var platform = require("padlock/platform"),
+            prefix = platform.getVendorPrefix().css;
+
         duration = duration || this.animationDuration;
         this.currAnimation = animation;
         this.currDirection = direction;
         this.animationCallback = callback;
-        var prefix = require("padlock/util").getVendorPrefix().css;
+
+        // Apparently firefox doesn't want the prefix when directly changing styles
         prefix = prefix == "-moz-" ? "" : prefix;
 
         // Apply the animation the appropriate element

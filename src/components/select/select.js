@@ -19,9 +19,9 @@ Polymer("padlock-select", {
         }
     },
     openChanged: function() {
-        require(["padlock/util"], function(util) {
+        require(["padlock/platform"], function(platform) {
             var options = this.children,
-                prefix = util.getVendorPrefix().css,
+                prefix = platform.getVendorPrefix().css,
                 // We're assuming all rows have the same height
                 rowHeight = options[0] && options[0].offsetHeight || 0,
                 gutterWidth = 5;

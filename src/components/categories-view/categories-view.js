@@ -17,7 +17,7 @@ Polymer("padlock-categories-view", {
     show: function() {
         var minDelay = 0,
             maxDelay = 200,
-            prefix = require("padlock/util").getVendorPrefix().css,
+            prefix = require("padlock/platform").getVendorPrefix().css,
             catElements = this.shadowRoot.querySelectorAll(".category"),
             delay;
 
@@ -130,7 +130,7 @@ Polymer("padlock-categories-view", {
         this.bounce(sender);
     },
     bounce: function(el) {
-        var prefix = require("padlock/util").getVendorPrefix().css;
+        var prefix = require("padlock/platform").getVendorPrefix().css;
         // Apparently firefox doesn't want a prefix when setting styles directly
         prefix = prefix == "-moz-" ? "" : prefix;
         el.style[prefix + "animation"] = "none";

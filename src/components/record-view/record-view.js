@@ -76,9 +76,10 @@ Polymer('padlock-record-view', {
     },
     confirmRemoveField: function() {
         this.$.confirmRemoveFieldDialog.open = false;
-        var util = require("padlock/util");
-        this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
-        this.fire("save");
+        require(["padlock/util"], function(util) {
+            this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
+            this.fire("save");
+        }.bind(this));
     },
     cancelRemoveField: function() {
         this.$.confirmRemoveFieldDialog.open = false;

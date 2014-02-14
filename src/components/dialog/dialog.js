@@ -5,7 +5,7 @@ Polymer("padlock-dialog", {
         var items = this.children,
             // transition delay between individual items
             dt = 0.2/items.length,
-            prefix = require("padlock/util").getVendorPrefix().css,
+            prefix = require("padlock/platform").getVendorPrefix().css,
             l = items.length,
             delay;
 
