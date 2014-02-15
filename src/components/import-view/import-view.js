@@ -52,7 +52,8 @@ Polymer("padlock-import-view", {
     },
     //* Opens a dialog for selecting a column for record names
     getNameCol: function() {
-        this.colNames = this.csvData[0];
+        this.colNames = this.csvData[0].slice();
+        this.nameColOptions = this.colNames;
         // This is to make sure the option elements are generated right away
         // so we can select the first one.
         Platform.performMicrotaskCheckpoint();
@@ -62,15 +63,37 @@ Polymer("padlock-import-view", {
     },
     confirmNameCol: function() {
         var colName = this.$.nameColSelect.selected.innerHTML;
-            colIndex = this.colNames.indexOf(colName);
 
-        this.nameColIndex = colIndex;
+        this.nameColIndex = this.colNames.indexOf(colName);
         this.$.nameColDialog.open = false;
+        this.getCatCol();
+    },
+    //* Opens the dialog for selecting a column for the category
+    getCatCol: function() {
+        var util = require("padlock/util"),
+            select = this.$.catColSelect;
+
+        // One column is already taken by the record name
+        this.catColOptions = util.remove(this.colNames, this.nameColIndex);
+        // The category is optional so we need an option for selecting none of the columns
+        this.catColOptions.push("(none)");
+        // This is to make sure the option elements are generated right away
+        // so we can select the first one.
+        Platform.performMicrotaskCheckpoint();
+        // Select 'none' by default
+        select.selected = select.options[select.options.length-1];
+        this.$.catColDialog.open = true;
+    },
+    confirmCatCol: function() {
+        var colName = this.$.catColSelect.selected.innerHTML;
+
+        this.catColIndex = colName == "(none)" ? undefined : this.colNames.indexOf(colName);
+        this.$.catColDialog.open = false;
         this.importCsv();
     },
     importCsv: function() {
         var imp = require("padlock/import"),
-            records = imp.importTable(this.csvData, this.nameColIndex);
+            records = imp.importTable(this.csvData, this.nameColIndex, this.catColIndex);
 
         this.fire("import", {records: records});
     }

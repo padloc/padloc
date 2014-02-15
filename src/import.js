@@ -143,29 +143,30 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
      *                               should contain field names. All other rows represent records, containing
      *                               the record name, field values and optionally a category name.
      * @param  Integer  nameColIndex Index of the column containing the record names. Defaults to 0
+     * @param  Integer  catColIndex  Index of the column containing the record categories. If left empty
+     *                               no categories will be used
      * @return Array                 An array or records
      */
-    var importTable = function(data, nameColIndex) {
-        var colNames = data[0],
-            fieldNames = util.remove(colNames, nameColIndex);
-
+    var importTable = function(data, nameColIndex, catColIndex) {
+        var colNames = data[0];
         nameColIndex = nameColIndex || 0;
 
         return data.slice(1).map(function(row) {
-            var fieldVals = util.remove(row, nameColIndex),
-                fields = [];
+            var fields = [];
 
-            for (var i=0; i<fieldVals.length; i++) {
-                if (fieldVals[i]) {
+            for (var i=0; i<row.length; i++) {
+                // Skip name column, category column (if any) and empty fields
+                if (i != nameColIndex && i != catColIndex && row[i]) {
                     fields.push({
-                        name: fieldNames[i],
-                        value: fieldVals[i]
+                        name: colNames[i],
+                        value: row[i]
                     });
                 }
             }
 
             return {
                 name: row[nameColIndex],
+                category: row[catColIndex],
                 fields: fields
             };
         });

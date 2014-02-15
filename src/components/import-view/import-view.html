@@ -28,11 +28,20 @@
         <padlock-dialog id="nameColDialog">
             <div class="title">Which column would you like to use for record names?</div>
             <padlock-select id="nameColSelect" openUpwards="true">
-                <template repeat="{{ name in colNames }}">
+                <template repeat="{{ name in nameColOptions}}">
                     <padlock-option>{{ name }}</padlock-option>
                 </template>
             </padlock-select>
             <button class="primary" on-tap="{{ confirmNameCol }}">OK</button>
+        </padlock-dialog>
+        <padlock-dialog id="catColDialog">
+            <div class="title">Which column would you like to use for the category?</div>
+            <padlock-select id="catColSelect" openUpwards="true">
+                <template repeat="{{ name in catColOptions}}">
+                    <padlock-option>{{ name }}</padlock-option>
+                </template>
+            </padlock-select>
+            <button class="primary" on-tap="{{ confirmCatCol }}">OK</button>
         </padlock-dialog>
     </template>
     <script src="import-view.js"></script>
