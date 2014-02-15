@@ -18,8 +18,24 @@ Polymer("padlock-import-view", {
         this.$.pwdInput.value = "";
         this.$.pwdDialog.open = true;
     },
-    //* Starts the import using the raw input and the provided password
     startImport: function() {
+        // this.$.nameColDialog.open = true;
+        var rawStr = this.$.rawInput.value;
+        if (!rawStr) {
+            return;
+        }
+
+        require(["padlock/import"], function(imp) {
+            if (imp.isSecuStoreBackup(rawStr)) {
+                this.requirePassword();
+            } else {
+                this.csvData = imp.parseCsv(rawStr);
+                this.getNameCol();
+            }
+        }.bind(this));
+    },
+    //* Starts the import using the raw input and the provided password
+    importSecuStoreBackup: function() {
         this.$.pwdDialog.open = false;
         require(["padlock/import"], function(imp) {
             var records = imp.importSecuStoreBackup(this.$.rawInput.value, this.$.pwdInput.value);
@@ -33,5 +49,29 @@ Polymer("padlock-import-view", {
     importCancel: function() {
         this.$.errorDialog.open = false;
         this.fire("back");
+    },
+    //* Opens a dialog for selecting a column for record names
+    getNameCol: function() {
+        this.colNames = this.csvData[0];
+        // This is to make sure the option elements are generated right away
+        // so we can select the first one.
+        Platform.performMicrotaskCheckpoint();
+        // Select the first column by default
+        this.$.nameColSelect.selected = this.$.nameColSelect.options[0];
+        this.$.nameColDialog.open = true;
+    },
+    confirmNameCol: function() {
+        var colName = this.$.nameColSelect.selected.innerHTML;
+            colIndex = this.colNames.indexOf(colName);
+
+        this.nameColIndex = colIndex;
+        this.$.nameColDialog.open = false;
+        this.importCsv();
+    },
+    importCsv: function() {
+        var imp = require("padlock/import"),
+            records = imp.importTable(this.csvData, this.nameColIndex);
+
+        this.fire("import", {records: records});
     }
 });

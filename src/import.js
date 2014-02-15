@@ -1,7 +1,13 @@
 /**
  * Module for importing data from various formats.
  */
-define(["padlock/crypto"], function(crypto) {
+define(["padlock/crypto", "padlock/util"], function(crypto, util) {
+
+    //* Detects if a string contains a SecuStore backup
+    var isSecuStoreBackup = function(rawData) {
+        // Very simply check but I think it should do.
+        return rawData.indexOf("SecuStore") != -1 && rawData.indexOf("#begin") != -1 && rawData.indexOf("#end") != -1;
+    };
 
     /**
      * Decrypts a SecuStore backup and converts it into a Padlock-compatible array of records
@@ -53,7 +59,122 @@ define(["padlock/crypto"], function(crypto) {
         }
     };
 
+    /**
+     * Parses a raw CSV string into an 2-dimensional array.
+     * Taken from http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
+     * @param  String   strData      Raw CSV string
+     * @param  String   strDelimiter Row delimiter
+     * @return Array                 2-dimensional array containing rows & columns
+     */
+    var parseCsv = function(strData, strDelimiter) {
+        // Check to see if the delimiter is defined. If not,
+        // then default to comma.
+        strDelimiter = (strDelimiter || ",");
+
+        // Create a regular expression to parse the CSV values.
+        var objPattern = new RegExp(
+            (
+                // Delimiters.
+                "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+                // Quoted fields.
+                "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+                // Standard fields.
+                "([^\"\\" + strDelimiter + "\\r\\n]*))"
+            ),
+            "gi"
+        );
+
+        // Create an array to hold our data. Give the array
+        // a default empty first row.
+        var arrData = [[]];
+
+        // Create an array to hold our individual pattern
+        // matching groups.
+        var arrMatches = null;
+
+        // Keep looping over the regular expression matches
+        // until we can no longer find a match.
+        while (arrMatches = objPattern.exec(strData)) {
+
+            // Get the delimiter that was found.
+            var strMatchedDelimiter = arrMatches[1];
+
+            // Check to see if the given delimiter has a length
+            // (is not the start of string) and if it matches
+            // field delimiter. If id does not, then we know
+            // that this delimiter is a row delimiter.
+            if (strMatchedDelimiter.length && (strMatchedDelimiter != strDelimiter)) {
+
+                // Since we have reached a new row of data,
+                // add an empty row to our data array.
+                arrData.push([]);
+
+            }
+
+            // Now that we have our delimiter out of the way,
+            // lets check to see which kind of value we
+            // captured (quoted or unquoted).
+            var strMatchedValue;
+            if (arrMatches[2]){
+                // We found a quoted value. When we capture
+                // this value, unescape any double quotes.
+                strMatchedValue = arrMatches[2].replace(
+                    new RegExp("\"\"", "g"),
+                    "\""
+                );
+            } else {
+                // We found a non-quoted value.
+                strMatchedValue = arrMatches[3];
+            }
+
+            // Now that we have our value string, lets add
+            // it to the data array.
+            arrData[arrData.length - 1].push(strMatchedValue);
+        }
+
+        // Return the parsed data.
+        return arrData;
+    };
+
+    /**
+     * Takes a data table (represented by a two-dimensional array) and converts it
+     * into an array of records
+     * @param  Array    data         Two-dimensional array containing tabular record data; The first 'row'
+     *                               should contain field names. All other rows represent records, containing
+     *                               the record name, field values and optionally a category name.
+     * @param  Integer  nameColIndex Index of the column containing the record names. Defaults to 0
+     * @return Array                 An array or records
+     */
+    var importTable = function(data, nameColIndex) {
+        var colNames = data[0],
+            fieldNames = util.remove(colNames, nameColIndex);
+
+        nameColIndex = nameColIndex || 0;
+
+        return data.slice(1).map(function(row) {
+            var fieldVals = util.remove(row, nameColIndex),
+                fields = [];
+
+            for (var i=0; i<fieldVals.length; i++) {
+                if (fieldVals[i]) {
+                    fields.push({
+                        name: fieldNames[i],
+                        value: fieldVals[i]
+                    });
+                }
+            }
+
+            return {
+                name: row[nameColIndex],
+                fields: fields
+            };
+        });
+    };
+
     return {
-        importSecuStoreBackup: importSecuStoreBackup
+        isSecuStoreBackup: isSecuStoreBackup,
+        importSecuStoreBackup: importSecuStoreBackup,
+        parseCsv: parseCsv,
+        importTable: importTable
     };
 });
