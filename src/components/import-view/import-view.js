@@ -5,11 +5,19 @@ Polymer("padlock-import-view", {
         rightIconShape: ""
     },
     titleText: "Import Records",
+    inputPlaceholder:
+        "Paste your data here! It should be in CSV format, like this:\n" +
+        "\n" +
+        "Name,Category,Url,Username,Password\n" +
+        "Gmail,Work,google.com,Martin,j83jaDK\n" +
+        "Twitter,,twitter.com,mclovin,dj83$j\n" +
+        "\n" +
+        "SecuStore backups are also supported.",
     leftHeaderButton: function() {
         this.fire("back");
     },
     show: function(animation, callback) {
-        this.$.rawInput.value = "";
+        this.$.rawInput.value = this.inputPlaceholder;
         this.super([animation, callback]);
     },
     //* Shows password dialog
@@ -96,5 +104,10 @@ Polymer("padlock-import-view", {
             records = imp.importTable(this.csvData, this.nameColIndex, this.catColIndex);
 
         this.fire("import", {records: records});
+    },
+    selectInput: function() {
+        setTimeout(function() {
+            this.$.rawInput.select();
+        }.bind(this), 10);
     }
 });

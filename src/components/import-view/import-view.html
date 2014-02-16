@@ -9,7 +9,7 @@
         <link href="import-view.css" rel="stylesheet" type="text/css">
         <div class="flex-wrapper">
             <!-- RAW DATA INPUT -->
-            <textarea id="rawInput" placeholder="Paste your data here!"></textarea>
+            <textarea id="rawInput" on-focus="{{ selectInput }}"></textarea>
             <!-- IMPORT BUTTON -->
             <button class="import-button primary" on-tap="{{ startImport }}">import</button>
         </div>
