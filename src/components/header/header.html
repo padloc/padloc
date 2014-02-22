@@ -1,6 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../shapeshifter/shapeshifter.html">
-<link rel="import" href="../fast-input.html">
+<link rel="import" href="../padlock-input.html">
 
 <polymer-element name="padlock-header" attributes="view showFilter filterString">
     <template>
@@ -11,7 +11,7 @@
             <padlock-shapeshifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></padlock-shapeshifter>
             <div class="middle">
                 <!-- FILTER INPUT -->
-                <input id="filterInput" is="fast-input" class="filter-input" value="{{ filterString }}" type="search"
+                <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString }}" type="search"
                     placeholder="type to filter..." disabled?="{{ view ? !view.headerOptions.showFilter : true }}"/>
                 <!-- HEADER TITLE -->
                 <div class="title">{{ view.titleText }}</div>

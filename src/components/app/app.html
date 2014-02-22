@@ -9,7 +9,7 @@
 <link rel="import" href="../import-view/import-view.html">
 <link rel="import" href="../categories-view/categories-view.html">
 <link rel="import" href="../select/select.html">
-<link rel="import" href="../fast-input.html">
+<link rel="import" href="../padlock-input.html">
 
 <polymer-element name="padlock-app" touch-action="none" on-mousedown="{{ mousedown }}" on-showheader="{{ showHeader }}"
     on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}">
@@ -51,7 +51,7 @@
         <!-- ADD RECORD -->
         <padlock-dialog id="addDialog">
             <div class="title">Add Record</div>
-            <input is="fast-input" id="addInput" placeholder="Enter Record Name"/>
+            <input is="padlock-input" id="addInput" placeholder="Enter Record Name"/>
             <button class="primary" on-tap="{{ confirmAddRecord }}">Add</button>
         </padlock-dialog>
         <!-- ALERT -->

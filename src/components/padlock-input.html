@@ -1,9 +1,9 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
-<polymer-element name="fast-input" extends="input" touch-action="none" on-tap="{{ tap }}" on-mousedown="{{ mousedown }}"
+<polymer-element name="padlock-input" extends="input" touch-action="none" on-tap="{{ tap }}" on-mousedown="{{ mousedown }}"
     on-focus="{{ focussed }}" on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus">
     <script>
-        Polymer("fast-input", {
+        Polymer("padlock-input", {
             hasFocus: false,
             selectAllOnFocus: false,
             ready: function() {

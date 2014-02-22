@@ -1,6 +1,6 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../view/view.html">
-<link rel="import" href="../fast-input.html">
+<link rel="import" href="../padlock-input.html">
 
 <polymer-element name="padlock-lock-view" extends="padlock-view">
     <template>
@@ -13,7 +13,7 @@
                 Padlock
             </div>
             <!-- PASSWORD INPUT -->
-            <input is="fast-input" type="password" placeholder="Enter Password" on-keydown="{{ keydown }}" id="pwdInput"/>
+            <input is="padlock-input" type="password" placeholder="Enter Password" on-keydown="{{ keydown }}" id="pwdInput"/>
             <!-- ENTER BUTTON -->
             <button class="enter-button primary" on-tap="{{ enter }}">OK</button>
             <!-- ERROR MESSAGE -->

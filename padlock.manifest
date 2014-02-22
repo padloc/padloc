@@ -78,8 +78,8 @@ src/components/start-view/start-view.css
 src/components/view/view.html
 src/components/view/view.js
 src/components/view/view.css
-# fast-input
-src/components/fast-input.html
+# padlock-input
+src/components/padlock-input.html
 
 # fonts
 assets/fonts/Lato-Light.ttf

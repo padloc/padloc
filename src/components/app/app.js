@@ -19,7 +19,7 @@ Polymer("padlock-app", {
                 this.classList.add("ios-standalone");
                 // On most browsers the mousedown event is coupled to triggering focus on
                 // the clicked elements. Since we're directly handling focussing inputs
-                // with the fast-input element we need to disable the native mechanism
+                // with the padlock-input element we need to disable the native mechanism
                 // to prevent conflicts.
                 this.preventMousedownDefault = true;
             }
