@@ -20,6 +20,7 @@ src/crypto.js
 src/util.js
 src/model.js
 src/import.js
+src/platform.js
 
 # stylesheets
 src/fonts.css
