@@ -3,3 +3,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+@mixin unselectable {
+    cursor: default;
+    @include user-select(none);
+}
