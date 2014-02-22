@@ -74,6 +74,7 @@ Polymer("padlock-categories-view", {
         this.$.removeButton.style.display = "";
         
         this.$.editDialog.open = true;
+        this.bounce(sender);
     },
     editEnter: function() {
         var name = this.$.nameInput.value;
