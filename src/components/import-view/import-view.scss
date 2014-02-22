@@ -14,8 +14,7 @@
 }
 
 textarea {
-    font-family: inherit;
-    font-size: inherit;
+    font-family: monospace;
     font-weight: inherit;
     border: none;
     background: #fff;
@@ -24,14 +23,10 @@ textarea {
     padding: 15px;
     font-size: 12px;
     margin: 10px;
+    color: $placeholder-color;
 
     @include appearance(none);
     @include box-flex(1);
-
-    &::-webkit-input-placeholder {
-       color: $placeholder-color;
-       font-size: $font-size-default;
-    }
 }
 
 .import-button {

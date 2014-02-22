@@ -9,6 +9,9 @@ Polymer("padlock-select", {
     selected: null,
     //* If _true_, options will expand upwards instead of downwards
     openUpwards: false,
+    get options() {
+        return this.querySelectorAll("padlock-option");
+    },
     attached: function() {
         // Initially select the first item with the _selected_ attribute
         for (var i=0; i<this.children.length; i++) {
@@ -20,10 +23,10 @@ Polymer("padlock-select", {
     },
     openChanged: function() {
         require(["padlock/platform"], function(platform) {
-            var options = this.children,
+            var options = this.options,
                 prefix = platform.getVendorPrefix().css,
                 // We're assuming all rows have the same height
-                rowHeight = options[0] && options[0].offsetHeight || 0,
+                rowHeight = options[0] && options[0].offsetHeight || 50,
                 gutterWidth = 5;
 
             // Apparently firefox doesnt want a prefix when setting the style directly
