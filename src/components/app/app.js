@@ -13,10 +13,17 @@ Polymer("padlock-app", {
             });
         }.bind(this));
 
-        // Add a special class in case the app is lanchend from the home screen in iOS
-        if (window.navigator.standalone) {
-            this.classList.add("ios-standalone");
-        }
+        require(["padlock/platform"], function(platform) {
+            // Add a special class in case the app is lanchend from the home screen in iOS
+            if (platform.isIOSStandalone()) {
+                this.classList.add("ios-standalone");
+                // On most browsers the mousedown event is coupled to triggering focus on
+                // the clicked elements. Since we're directly handling focussing inputs
+                // with the fast-input element we need to disable the native mechanism
+                // to prevent conflicts.
+                this.preventMousedownDefault = true;
+            }
+        }.bind(this));
 
         // If we want to capture all keydown events, we have to add the listener
         // directly to the document
@@ -173,11 +180,7 @@ Polymer("padlock-app", {
         this.$.alertDialog.open = false;
     },
     mousedown: function() {
-        if ('ontouchstart' in window) {
-            // On most browsers the mousedown event is coupled to triggering focus on
-            // the clicked elements. Since we're directly handling focussing inputs
-            // with the fast-input element we need to disable the native mechanism
-            // to prevent conflicts.
+        if (this.preventMousedownDefault) {
             event.preventDefault();
             event.stopPropagation();
         }

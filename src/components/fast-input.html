@@ -6,21 +6,21 @@
         Polymer("fast-input", {
             hasFocus: false,
             selectAllOnFocus: false,
-            //* Checks if the browser supports touch events
-            isTouch: function() {
-                return 'ontouchstart' in window;
+            ready: function() {
+                require(["padlock/platform"], function(platform) {
+                    // In certain situations we want to handle the focussing
+                    // of input elements manually instead of relying on the native
+                    // tap-to-focus mechanism.
+                    this.overrideNativeFocus = platform.isIOSStandalone();
+                }.bind(this));
             },
             tap: function(event) {
-                if (this.isTouch() && !this.hasFocus) {
-                    // We're on a touch-capable device, so we're assuming there
-                    // is the typical 300ms touch delay. We're working around this
-                    // by focussing the input directly. For some reason _focus()_ is not
-                    // sufficient, so we actually set a selection range
+                if (this.overrideNativeFocus && !this.hasFocus) {
                     this.setSelectionRange(this.value.length, this.value.length);
                 }
             },
             mousedown: function() {
-                if (this.isTouch()) {
+                if (this.overrideNativeFocus) {
                     // We've already focussed the input. This is for suppressing the
                     // native mechanism.
                     event.preventDefault();

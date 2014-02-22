@@ -55,9 +55,18 @@ define(function() {
         return animationEndEventNames[getVendorPrefix().lowercase];
     };
 
+    /**
+     * Checks if the app is running on an iOS device in 'standalone' mode,
+     * i.e. when the user has added the app to the home screen
+     */
+    var isIOSStandalone = function() {
+        return !!navigator.standalone;
+    };
+ 
     return {
         getVendorPrefix: getVendorPrefix,
         getTransitionEndEventName: getTransitionEndEventName,
-        getAnimationEndEventName: getAnimationEndEventName
+        getAnimationEndEventName: getAnimationEndEventName,
+        isIOSStandalone: isIOSStandalone
     };
 });
