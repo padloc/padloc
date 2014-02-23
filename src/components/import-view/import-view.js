@@ -104,10 +104,5 @@ Polymer("padlock-import-view", {
             records = imp.importTable(this.csvData, this.nameColIndex, this.catColIndex);
 
         this.fire("import", {records: records});
-    },
-    selectInput: function() {
-        setTimeout(function() {
-            this.$.rawInput.select();
-        }.bind(this), 10);
     }
 });

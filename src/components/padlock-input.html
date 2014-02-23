@@ -2,8 +2,15 @@
 
 <polymer-element name="padlock-input" extends="input" touch-action="none" on-tap="{{ tap }}" on-mousedown="{{ mousedown }}"
     on-focus="{{ focussed }}" on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus">
-    <script>
-        Polymer("padlock-input", {
+</polymer-element>
+
+<polymer-element name="padlock-textarea" extends="input" touch-action="none" on-tap="{{ tap }}" on-mousedown="{{ mousedown }}"
+    on-focus="{{ focussed }}" on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus">
+</polymer-element>
+
+<script>
+    (function(Polymer) {
+        var proto = {
             hasFocus: false,
             selectAllOnFocus: false,
             ready: function() {
@@ -40,6 +47,9 @@
             blurred: function() {
                 this.hasFocus = false;
             }
-        });
-    </script>
-</polymer-element>
+        };
+
+        Polymer("padlock-input", proto);
+        Polymer("padlock-textarea", proto);
+    })(Polymer);
+</script>
