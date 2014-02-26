@@ -25,10 +25,18 @@ Polymer("padlock-list-view", {
             return;
         }
 
+        var fs = this.filterString && this.filterString.toLowerCase(),
+            words = fs.split(" ");
+
         // Filter records based on filter string
-        var fs = this.filterString && this.filterString.toLowerCase();
         var records = fs ? this.collection.records.filter(function(rec) {
-            return rec.category && rec.category.toLowerCase().search(fs) != -1 || rec.name.toLowerCase().search(fs) != -1;
+            // For the record to be a match, each word in the filter string has to appear
+            // in either the category or the record name.
+            for (var i=0, match=true; i<words.length && match; i++) {
+                match = rec.category && rec.category.toLowerCase().search(words[i]) != -1 ||
+                    rec.name.toLowerCase().search(words[i]) != -1;
+            }
+            return match;
         }) : this.collection.records.slice();
 
         // Set _section_ and _color_ for each item
