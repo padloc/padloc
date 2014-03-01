@@ -8,6 +8,7 @@
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../import-view/import-view.html">
 <link rel="import" href="../categories-view/categories-view.html">
+<link rel="import" href="../homescreen-view/homescreen-view.html">
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../padlock-input.html">
 
@@ -18,6 +19,8 @@
         <link href="app.css" rel="stylesheet" type="text/css">
         <!-- HEADER -->
         <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"></padlock-header>
+        <!-- ADD-TO-HOMESCREEN MESSAGE -->
+        <padlock-homescreen-view class="view" id="homescreenView"></padlock-homescreen-view>
         <!-- PASSWORD VIEW -->
         <padlock-start-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}"></padlock-start-view>
         <!-- LOCK VIEW -->

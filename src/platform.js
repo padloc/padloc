@@ -55,6 +55,17 @@ define(function() {
         return animationEndEventNames[getVendorPrefix().lowercase];
     };
 
+    // All the devices running iOS
+    var iDevices = ["iPad", "iPhone", "iPod"];
+    
+    /**
+     * Checks the _navigator.platform_ property to see if we are on a device
+     * running iOS
+     */
+    var isIOS = function() {
+        return iDevices.indexOf(navigator.platform) != -1;
+    };
+
     /**
      * Checks if the app is running on an iOS device in 'standalone' mode,
      * i.e. when the user has added the app to the home screen
@@ -67,6 +78,7 @@ define(function() {
         getVendorPrefix: getVendorPrefix,
         getTransitionEndEventName: getTransitionEndEventName,
         getAnimationEndEventName: getAnimationEndEventName,
+        isIOS: isIOS,
         isIOSStandalone: isIOSStandalone
     };
 });

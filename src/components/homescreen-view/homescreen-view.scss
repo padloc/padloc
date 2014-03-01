@@ -1,0 +1,32 @@
+.wrapper {
+    position: absolute;
+    text-align: center;
+    height: 200px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto auto;
+}
+
+.app-icon {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    background: #fff url(../../../assets/app-icon.svg) no-repeat center center;
+    background-size: cover;
+    border-radius: 20px;
+}
+
+.message {
+    font-size: 16px;
+    padding: 30px;
+}
+
+.hint {
+    display: inline-block;
+    width: 120px;
+    height: 40px;
+    background: url(../../../assets/add-homescreen.svg) no-repeat center center;
+    background-size: cover;
+}

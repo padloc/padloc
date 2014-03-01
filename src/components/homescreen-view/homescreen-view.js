@@ -1,0 +1,1 @@
+Polymer("padlock-homescreen-view");
