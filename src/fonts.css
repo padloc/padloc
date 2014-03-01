@@ -10,3 +10,9 @@
   font-weight: 400;
   src: local('Lato Regular'), local('Lato-Regular'),  url(../assets/fonts/Lato-Regular.ttf) format('truetype');
 }
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Lato Bold'), local('Lato-Bold'),  url(../assets/fonts/Lato-Bold.ttf) format('truetype');
+}
