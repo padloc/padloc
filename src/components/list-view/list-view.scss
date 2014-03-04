@@ -3,7 +3,8 @@
 @import "compass/css3";
 
 :host {
-    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
     height: 100%;
     font-size: 0;
