@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Padlock 0.0.2.0
+# Padlock 0.3.0.0
 
 NETWORK:
 *
@@ -44,6 +44,10 @@ src/components/dialog/dialog.css
 src/components/header/header.html
 src/components/header/header.js
 src/components/header/header.css
+# homescreen-view
+src/components/homescreen-view/homescreen-view.html
+src/components/homescreen-view/homescreen-view.js
+src/components/homescreen-view/homescreen-view.css
 # import-view
 src/components/import-view/import-view.html
 src/components/import-view/import-view.js
@@ -83,8 +87,11 @@ src/components/view/view.css
 src/components/padlock-input.html
 
 # fonts
-assets/fonts/Lato-Light.ttf
-assets/fonts/Lato-Regular.ttf
+assets/fonts/ClearSans-Thin.woff
+assets/fonts/ClearSans-Light.woff
+assets/fonts/ClearSans-Regular.woff
+assets/fonts/ClearSans-Bold.woff
 
 # images
 assets/app-icon.png
+assets/add-homescreen.svg
