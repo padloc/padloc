@@ -4,14 +4,14 @@
 @import "compass/css3/user-interface";
 
 :host {
-    font-family: Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Clear Sans", sans-serif;
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
     top: 0;
     margin: auto;
-    font-weight: $font-weight-default;
+    font-weight: $font-weight-regular;
     font-size: $font-size-default;
     color: $text-color;
     -webkit-tap-highlight-color: transparent;
@@ -82,21 +82,17 @@ button {
     line-height: $row-height;
     padding: 0 15px;
     cursor: pointer;
-    // color: darken($color-primary, 0.3);
     color: $color-primary;
-    // font-weight: $font-weight-bold;
 }
 
 button.primary {
     background: $color-primary;
     color: $text-color-light;
-    font-weight: $font-weight-bold;
 }
 
 button.negative {
     background: $color-negative;
     color: $text-color-light;
-    font-weight: $font-weight-bold;
 }
 
 input {

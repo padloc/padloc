@@ -1,18 +1,24 @@
 @font-face {
-  font-family: 'Lato';
+  font-family: 'Clear Sans';
+  font-style: normal;
+  font-weight: 100;
+  src: local('Clear Sans Thin'), local('ClearSans-Thin'), url(../assets/fonts/ClearSans-Thin.woff) format('woff');
+}
+@font-face {
+  font-family: 'Clear Sans';
   font-style: normal;
   font-weight: 300;
-  src: local('Lato Light'), local('Lato-Light'), url(../assets/fonts/Lato-Light.ttf) format('truetype');
+  src: local('Clear Sans Light'), local('ClearSans-Light'), url(../assets/fonts/ClearSans-Light.woff) format('woff');
 }
 @font-face {
-  font-family: 'Lato';
+  font-family: 'Clear Sans';
   font-style: normal;
   font-weight: 400;
-  src: local('Lato Regular'), local('Lato-Regular'),  url(../assets/fonts/Lato-Regular.ttf) format('truetype');
+  src: local('Clear Sans Regular'), local('ClearSans-Regular'), url(../assets/fonts/ClearSans-Regular.woff) format('woff');
 }
 @font-face {
-  font-family: 'Lato';
+  font-family: 'Clear Sans';
   font-style: normal;
   font-weight: 700;
-  src: local('Lato Bold'), local('Lato-Bold'),  url(../assets/fonts/Lato-Bold.ttf) format('truetype');
+  src: local('Clear Sans Bold'), local('ClearSans-Bold'), url(../assets/fonts/ClearSans-Bold.woff) format('woff');
 }

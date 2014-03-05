@@ -1,5 +1,7 @@
 $font-size-default: 18px;
-$font-weight-default: 400;
+$font-weight-thin: 100;
+$font-weight-light: 300;
+$font-weight-regular: 400;
 $font-weight-bold: 700;
 
 $text-color: #333;
@@ -16,7 +18,7 @@ $color-primary: $color-blue;
 $color-negative: red;
 
 $placeholder-color: rgba(0, 0, 0, 0.3);
-$placeholder-color-light: rgba(255, 255, 255, 0.5);
+$placeholder-color-light: rgba(255, 255, 255, 0.6);
 
 $border-color: rgba(0, 0, 0, 0.2);
 $border-color-light: rgba(255, 255, 255, 0.5);
