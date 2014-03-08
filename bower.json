@@ -15,8 +15,11 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "~0.1.4",
+    "polymer": "~0.2.1",
     "requirejs": "~2.1.9"
   },
-  "private": true
+  "private": true,
+  "resolutions": {
+    "platform": "0.2.1"
+  }
 }
