@@ -1,12 +1,12 @@
 {
-  "name": "safe",
-  "version": "0.0.0",
-  "homepage": "https://github.com/MaKleSoft/safe",
+  "name": "Padlock",
+  "version": "0.3.1",
+  "homepage": "http://padlock.io",
   "authors": [
     "Martin Kleinschrodt <martin@maklesoft.com>"
   ],
   "main": "index.html",
-  "license": "MIT",
+  "license": "GPL",
   "ignore": [
     "**/.*",
     "node_modules",
