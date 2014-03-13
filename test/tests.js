@@ -160,54 +160,70 @@ require(["padlock/crypto", "padlock/util", "padlock/model", "padlock/import"], f
         equal(coll.records[1], repl);
     });
 
-    test("save collection", function() {
+    // TODO: Test this with a mock source; Test sources separately
+    
+    asyncTest("save collection", function() {
+        expect(1);
         var collName = "test";
         // First, make sure that the collection in question does not exist yet
         localStorage.removeItem("coll_" + collName);
 
         var coll = new model.Collection(collName);
 
-        coll.fetch();
-        deepEqual(coll.records, [], "Collection should be empty initially.");
-
-        coll.save();
-        notEqual(localStorage.getItem("coll_" + collName), null, "There should be something in the localStorage now.");
-
         var recs = ["one", "two", "three"];
         coll.add(recs);
-        coll.save();
+        coll.save({success: function() {
+            var newColl = new model.Collection(collName);
 
-        var newColl = new model.Collection(collName);
-
-        newColl.fetch();
-        deepEqual(newColl.records, coll.records, "After fetching, the collection should be populated with the correct records.");
+            newColl.fetch({success: function() {
+                deepEqual(newColl.records, coll.records, "After fetching, the collection should be populated with the correct records.");
+                start();
+            }});
+        }});
     });
 
-    test("fetch an existing collection", function() {
+    asyncTest("fetch an existing collection", function() {
+        expect(2);
         var collName = "test", password = "password";
         localStorage.removeItem("coll_" + collName);
 
         var coll = new model.Collection(collName);
         coll.add(["one", "two"]);
         coll.store.password = password;
-        coll.save();
-
-        var coll2 = new model.Collection(collName);
-        ok(!coll2.fetch("drowssap"), "Fetching with a wrong password should return false");
-        ok(coll2.fetch(password), "Fetching with the correct password should return true");
-        deepEqual(coll.records, coll2.records, "After fetching, the collection should contain the correct records");
+        coll.save({success: function() {
+            var coll2 = new model.Collection(collName);
+            coll2.fetch({password: "drowssap", success: function() {
+                ok(false, "Fetching with the wrong password should fail");
+                start();
+            }, fail: function() {
+                ok(true, "Fetching with the wrong password should fail");
+                coll2.fetch({password: password, success: function() {
+                    deepEqual(coll.records, coll2.records, "After fetching, the collection should contain the correct records");
+                    start();
+                }, fail: function() {
+                    ok(false, "Fetching with the correct password should succeed");
+                    start();
+                }});
+            }});
+        }});
     });
 
-    test("test if a collection exists", function() {
+    asyncTest("test if a collection exists", function() {
+        expect(2);
         var collName = "test";
         localStorage.removeItem("coll_" + collName);
 
         var coll = new model.Collection(collName);
 
-        ok(!coll.exists(), "Collection has not been saved yet, so it shouldn't exist in the store");
+        coll.exists({success: function(exists) {
+            ok(!exists, "Collection has not been saved yet, so it shouldn't exist in the store");
 
-        coll.save();
-        ok(coll.exists(), "After the collection has been saved, it should exist ist the store.");
+            coll.save();
+            coll.exists({success: function(exists) {
+                ok(exists, "After the collection has been saved, it should exist ist the store.");
+                start();
+            }});
+        }});
     });
 
     test("set/get category", function() {
