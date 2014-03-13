@@ -3,44 +3,79 @@
  */
 define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     /**
+     * The _Source_ object is responsible for fetching/saving data from/to a persistent
+     * storage like localStorage or a cloud. It is meant as a base object to be extended
+     * by different implementations
+     */
+    var Source = function() {
+    };
+
+    Source.prototype = {
+        didFetch: function(rawData, opts) {
+            try {
+                // Try to parse data
+                var data = JSON.parse(rawData);
+                if (opts && opts.success) {
+                    opts.success(data);
+                }
+            } catch (e) {
+                if (opts && opts.fail) {
+                    opts.fail(e);
+                }
+            }
+        },
+        /**
+         * Fetches data
+         * @param Object opts
+         * Object containing options for the call. Options may include:
+         *
+         * - collName (required): Name of the collection to fetch data for
+         * - success: Success callback. Retrieved data will be passed as only argument
+         * - fail: Fail callback
+         */
+        fetch: function(opts) {
+            // Not implemented
+        },
+
+        /**
+         * Saves data
+         * @param Object opts
+         * Object containing options for the call. Options may include:
+         *
+         * - collName (required): Name of the collection to save data for
+         * - success: Success callback.
+         */
+        save: function(opts) {
+            // Not implemented
+        },
+
+        /**
+         * Checks if data for a collection exists.
+         * Object containing options for the call. Options may include:
+         *
+         * - collName (required): Name of the collection to check for
+         * - success: Success callback. Will be passed _true_ or _false_ as the
+         *            only argument, depending on the outcome
+         */
+        collectionExists: function(opts) {
+            // Not implemented
+        }
+    };
+
+    /**
      * This source uses the _localStorage_ api to fetch and store data. Although
      * _localStorage_ works synchronously, All methods use callbacks to be
      * consistent with asynchronous sources.
      */
     var LocalStorageSource = function() {};
+    LocalStorageSource.prototype = Object.create(Source.prototype);
+    LocalStorageSource.prototype.constructor = LocalStorageSource;
 
-    /**
-     * Fetches data from _localStorage_
-     * @param Object opts
-     * Object containing options for the call. Options may include:
-     *
-     * - collName (required): Name of the collection to fetch data for
-     * - success: Success callback. Retrieved data will be passed as only argument
-     * - fail: Fail callback
-     */
     LocalStorageSource.prototype.fetch = function(opts) {
         var json = localStorage.getItem("coll_" + opts.collName);
-        try {
-            // Try to parse data
-            var data = JSON.parse(json);
-            if (opts.success) {
-                opts.success(data);
-            }
-        } catch (e) {
-            if (opts.fail) {
-                opts.fail(e);
-            }
-        }
+        this.didFetch(json, opts);
     };
 
-    /**
-     * Saved data to _localStorage_
-     * @param Object opts
-     * Object containing options for the call. Options may include:
-     *
-     * - collName (required): Name of the collection to save data for
-     * - success: Success callback.
-     */
     LocalStorageSource.prototype.save = function(opts) {
         localStorage.setItem("coll_" + opts.collName, JSON.stringify(opts.data));
         if (opts.success) {
@@ -48,18 +83,76 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
         }
     };
 
-    /**
-     * Checks if data for a collection exists in _localStorage_
-     * Object containing options for the call. Options may include:
-     *
-     * - collName (required): Name of the collection to check for
-     * - success: Success callback.
-     */
     LocalStorageSource.prototype.collectionExists = function(opts) {
         var exists = localStorage.getItem("coll_" + opts.collName) !== null;
         if (opts.success) {
             opts.success(exists);
         }
+    };
+
+    /**
+     * This source uses the Padlock cloud api to fetch and store data.
+     */
+    CloudSource = function(host, email) {
+        this.host = host;
+        this.email = email;
+    };
+    CloudSource.prototype = Object.create(Source.prototype);
+    CloudSource.prototype.constructor = CloudSource;
+
+    CloudSource.prototype.fetch = function(opts) {
+        var req = new XMLHttpRequest(),
+            url = this.host + "/" + this.email;
+
+        req.onreadystatechange = function() {
+            if (req.readyState === 4) {
+                if (req.status === 200) {
+                    this.didFetch(req.responseText, opts);
+                } else if (opts && opts.fail) {
+                    opts.fail(req.status, req.responseText);
+                }
+            }
+        }.bind(this);
+
+        req.open("GET", url, true);
+        req.send();
+    };
+
+    CloudSource.prototype.save = function(opts) {
+        var req = new XMLHttpRequest(),
+            url = this.host + "/" + this.email;
+
+        req.onreadystatechange = function() {
+            if (req.readyState === 4) {
+                if (req.status === 200) {
+                    if (opts.success) {
+                        opts.success();
+                    }
+                } else if (opts.fail) {
+                    opts.fail(req.status, req.responseText);
+                }
+            }
+        };
+
+        req.open("POST", url, true);
+        req.send(JSON.stringify(opts.data));
+    };
+
+    CloudSource.prototype.collectionExists = function(opts) {
+        var success = opts.success,
+            fail = opts.fail;
+
+        opts.success = function() {
+            success(true);
+        };
+        opts.fail = function(status) {
+            if (status == 404) {
+                success(false);
+            } else if (fail) {
+                fail();
+            }
+        };
+        this.fetch(opts);
     };
 
     /**
@@ -312,6 +405,8 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     return {
         Store: Store,
         Collection: Collection,
-        Categories: Categories
+        Categories: Categories,
+        LocalStorageSource: LocalStorageSource,
+        CloudSource: CloudSource
     };
 });
