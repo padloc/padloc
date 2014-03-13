@@ -3,62 +3,146 @@
  */
 define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     /**
-     * A _Store_ manages encryption and persistent storage for collections
-     * @param {String} password Password used for encrpytion
+     * This source uses the _localStorage_ api to fetch and store data. Although
+     * _localStorage_ works synchronously, All methods use callbacks to be
+     * consistent with asynchronous sources.
      */
-    var Store = function(password) {
+    var LocalStorageSource = function() {};
+
+    /**
+     * Fetches data from _localStorage_
+     * @param Object opts
+     * Object containing options for the call. Options may include:
+     *
+     * - collName (required): Name of the collection to fetch data for
+     * - success: Success callback. Retrieved data will be passed as only argument
+     * - fail: Fail callback
+     */
+    LocalStorageSource.prototype.fetch = function(opts) {
+        var json = localStorage.getItem("coll_" + opts.collName);
+        try {
+            // Try to parse data
+            var data = JSON.parse(json);
+            if (opts.success) {
+                opts.success(data);
+            }
+        } catch (e) {
+            if (opts.fail) {
+                opts.fail(e);
+            }
+        }
+    };
+
+    /**
+     * Saved data to _localStorage_
+     * @param Object opts
+     * Object containing options for the call. Options may include:
+     *
+     * - collName (required): Name of the collection to save data for
+     * - success: Success callback.
+     */
+    LocalStorageSource.prototype.save = function(opts) {
+        localStorage.setItem("coll_" + opts.collName, JSON.stringify(opts.data));
+        if (opts.success) {
+            opts.success();
+        }
+    };
+
+    /**
+     * Checks if data for a collection exists in _localStorage_
+     * Object containing options for the call. Options may include:
+     *
+     * - collName (required): Name of the collection to check for
+     * - success: Success callback.
+     */
+    LocalStorageSource.prototype.collectionExists = function(opts) {
+        var exists = localStorage.getItem("coll_" + opts.collName) !== null;
+        if (opts.success) {
+            opts.success(exists);
+        }
+    };
+
+    /**
+     * The _Store_ acts as a proxy between the persistence layer (e.g. _LocalStorageSource_)
+     * and a _Collection_ object it mainly handles encryption and decryption of data
+     * @param Object defaultSource Default source to be used for _fetch_, _save_ etc.
+     */
+    var Store = function(defaultSource) {
+        this.defaultSource = defaultSource || new LocalStorageSource();
         this.password = "";
     };
 
     Store.prototype = {
         /**
-         * Fetches the data for an array from local storage, decrypts it and poplulates the collection
+         * Fetches the data for an array from local storage, decrypts it and populates the collection
          * @param  {Collection} coll     The collection to fetch the data for
-         * @param  {String}     password (Optional) Password to be used for decryption. If not provided,
-         *                               the stores own _password_ property will be used
-         * @return {Boolean}             _true_ if the fetch was successful, _false_ if not
+         * @param  {Object}     opts     Object containing options for this call. Options may include:
+         * 
+         * - password: Password to be used for decryption. If not provided,
+         *                        the stores own _password_ property will be used
+         * - success:  Success callback
+         * - fail:     Fail callback
+         * - source:   Source to use for retreiving the data. If not provided, _defaultSource_ is used. 
          */
-        fetch: function(coll, password) {
+        fetch: function(coll, opts) {
+            opts = opts || {};
+            source = opts.source || this.defaultSource;
             // Use password argument if provided, otherwise use _this.password_
-            password = password !== undefined && password !== null ? password : this.password;
+            var password = opts.password !== undefined && opts.password !== null ? opts.password : this.password;
             var obj = {};
 
-            // Get raw JSON data from local storage
-            var json = localStorage.getItem("coll_" + coll.name);
-            if (json) {
+            source.fetch({collName: coll.name, success: function(data) {
                 try {
                     // Try to decrypt and parse data
-                    var c = JSON.parse(json);
-                    coll.records = JSON.parse(crypto.pwdDecrypt(password, c));
+                    coll.records = JSON.parse(crypto.pwdDecrypt(password, data));
+                    if (opts.success) {
+                        opts.success(coll);
+                    }
                 } catch (e) {
-                    return false;
+                    if (opts.fail) {
+                        opts.fail(e);
+                    }
                 }
-            }
+            }, fail: opts.fail});
 
-            // Remember the password for next time we save of fetch data
+            // Remember the password for next time we save or fetch data
             this.password = password;
-
-            return true;
         },
         /**
          * Encrypts the contents of a collection and saves them to local storage.
          * @param  {Collection} coll Collection to save
+         * @param  {Object}     opts Object containing options for the call. Options may include:
+         *
+         * - success:  Success callback
+         * - fail:     Fail callback
+         * - source:   Source to store the data to. If not provided, _defaultSource_ is used. 
          */
-        save: function(coll) {
+        save: function(coll, opts) {
+            opts = opts || {};
+            source = opts.source || this.defaultSource;
             // Stringify the collections record array
             var pt = JSON.stringify(coll.records);
             // Encrypt the JSON string
             var c = crypto.pwdEncrypt(this.password, pt);
-            // Save a JSON representation of the crypto container to local storage
-            localStorage.setItem("coll_" + coll.name, JSON.stringify(c));
+            opts.collName = coll.name;
+            opts.data = c;
+            source.save(opts);
         },
         /**
          * Checks whether or not data for a collection exists in localstorage
-         * @param  {String} collName Name of the collection
-         * @return {Boolean}         _true_ if the collection exists, _false_ if not
+         * @param  {Collection} coll Collection to check for
+         * @param  {Object}     opts Object containing options for the call. Options may include:
+         *
+         * - success:  Success callback. Will be passed _true_ or _false_ as only argument,
+         *             depending on the outcome.
+         * - fail:     Fail callback
+         * - source:   Source to check for the collection. If not provided, _defaultSource_ is used. 
          */
-        collectionExists: function(collName) {
-            return localStorage.getItem("coll_" + collName) !== null;
+        collectionExists: function(coll, opts) {
+            source = opts.source || this.defaultSource;
+            opts = opts || {};
+            opts.collName = coll.name;
+            source.collectionExists(opts);
         }
     };
 
@@ -66,7 +150,8 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
      * A collection of records
      * @param {String} name    Name of the collection
      * @param {Array}  records Initial records
-     * @param {Store}  store   Store used for persistent storage
+     * @param {Store}  store   Store instance to be used. If not provided,
+     *                         a new instance will be created.
      */
     var Collection = function(name, records, store) {
         this.name = name || "default";
@@ -77,17 +162,26 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     Collection.prototype = {
         /**
          * Fetches the data for this collection
-         * @param  {String} password Password to be used for decyrption
-         * @return {Boolean}         _true_ if fetching was successful, _false_ if not
+         * @param {Object} opts Object containing options for the call. Options may include:
+         * 
+         * - password: Password to be used for decyrption
+         * - success:  Success callback. Will be passed the collection as only argument
+         * - fail:     Fail callback
+         * - source:   Source to to be used. If not provided, the stores default source is used.
          */
-        fetch: function(password) {
-            return this.store.fetch(this, password);
+        fetch: function(opts) {
+            this.store.fetch(this, opts);
         },
         /**
          * Saves the collections contents
+         * @param {Object} opts Object containing options for the call. Options may include:
+         * 
+         * - success:  Success callback. Will be passed the collection as only argument
+         * - fail:     Fail callback
+         * - source:   Source to to be used. If not provided, the stores default source is used.
          */
-        save: function() {
-            this.store.save(this);
+        save: function(opts) {
+            this.store.save(this, opts);
         },
         /**
          * Adds a record or an array of records to the collection
@@ -133,11 +227,16 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             this.save();
         },
         /**
-         * Checks if data for this collection exists in localstorage
-         * @return {Boolean} _true_ if data for this collection exists, _false_ if not
+         * Checks whether or not data for the collection exists
+         * @param  {Object}     opts Object containing options for the call. Options may include:
+         *
+         * - success:  Success callback. Will be passed _true_ or _false_ as only argument,
+         *             depending on the outcome.
+         * - fail:     Fail callback
+         * - source:   Source to check for the collection. If not provided, _defaultSource_ is used. 
          */
-        exists: function() {
-            return this.store.collectionExists(this.name);
+        exists: function(opts) {
+            this.store.collectionExists(this, opts);
         },
         /**
          * Empties the collection and removes the stored password

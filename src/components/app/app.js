@@ -1,14 +1,23 @@
 Polymer("padlock-app", {
     ready: function() {
-        require(["padlock/model", "padlock/platform"], function(model, platform) {
+        require(["padlock/model"], function(model, platform) {
             this.categories = new model.Categories(null, 3);
             this.categories.fetch();
             this.$.categoriesView.updateCategories();
             this.collection = new model.Collection();
 
+            this.collection.exists({success: this.initView.bind(this), fail: this.initView.bind(this, false)});
+        }.bind(this));
+
+        // If we want to capture all keydown events, we have to add the listener
+        // directly to the document
+        document.addEventListener("keydown", this.keydown.bind(this), false);
+    },
+    initView: function(collExists) {
+        require(["padlock/platform"], function(platform) {
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one
-            var initialView = this.collection.exists() ? this.$.lockView : this.$.passwordView;
+            var initialView = collExists ? this.$.lockView : this.$.passwordView;
 
             // iOS gets a special treatment since it has the ability to run a website
             // as a 'standalone' web app and we want to use that!
@@ -33,10 +42,6 @@ Polymer("padlock-app", {
                 inDuration: 1000
             });
         }.bind(this));
-
-        // If we want to capture all keydown events, we have to add the listener
-        // directly to the document
-        document.addEventListener("keydown", this.keydown.bind(this), false);
     },
     pwdEnter: function(event, detail, sender) {
         this.unlock(detail.password);
@@ -47,12 +52,12 @@ Polymer("padlock-app", {
     },
     //* Tries to unlock the current collection with the provided password
     unlock: function(password) {
-        if (this.collection.fetch(password)) {
+        this.collection.fetch({password: password, success: function() {
             this.$.lockView.errorMessage = null;
             this.openView(this.$.listView);
-        } else {
+        }.bind(this), fail: function() {
             this.$.lockView.errorMessage = "Wrong password!";
-        }
+        }.bind(this)});
     },
     //* Locks the collection and opens the lock view
     lock: function() {
