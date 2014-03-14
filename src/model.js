@@ -296,8 +296,9 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
                 r.uuid = r.uuid || util.uuid();
                 var existing = this.uuidMap[r.uuid];
                 if (existing && r.updated && r.updated > existing.updated) {
+                    this.uuidMap[r.uuid] = r;
                     records[records.indexOf(existing)] = r;
-                } else {
+                } else if (!existing) {
                     this.uuidMap[r.uuid] = r;
                     records.push(r);
                 }
