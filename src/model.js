@@ -90,6 +90,8 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
 
     /**
      * This source uses the Padlock cloud api to fetch and store data.
+     * @param String host  Base url for AJAX calls
+     * @param String email Email for identifying a user
      */
     CloudSource = function(host, email) {
         this.host = host;
@@ -144,6 +146,9 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             success(true);
         };
         opts.fail = function(status) {
+            // If the api returns a 'not found', we consider the request successful
+            // and return _false_. Otherwise something went wrong and we can't tell
+            // for sure, so we consider the request failed.
             if (status == 404) {
                 success(false);
             } else if (fail) {
@@ -172,7 +177,10 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
          * - password: Password to be used for decryption. If not provided,
          *                        the stores own _password_ property will be used
          * - success:  Success callback
-         * - fail:     Fail callback
+         * - fail:     Fail callback. The call will fail if 
+         *             a) retrieving the data from the source fails,
+         *             b) the encrypted data is corrupted or
+         *             c) the provided password is incorrect.
          * - source:   Source to use for retreiving the data. If not provided, _defaultSource_ is used. 
          */
         fetch: function(coll, opts) {
@@ -183,8 +191,10 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             var obj = {};
 
             source.fetch({collName: coll.name, success: function(data) {
+                // Try to decrypt and parse data. This might fail either if the password
+                // is incorrect or the data corrupted. If the decryption is successful, the parsing
+                // should usually be no problem.
                 try {
-                    // Try to decrypt and parse data
                     var records = JSON.parse(crypto.pwdDecrypt(password, data));
                     coll.add(records);
                     if (opts.success) {
@@ -248,6 +258,7 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
         this.name = name || "default";
         this.store = store || new Store();
         this.records = [];
+        // This is to keep track of all existing records via their uuid.
         this.uuidMap = {};
     };
 
@@ -285,15 +296,21 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             this.store.save(this, opts);
         },
         /**
-         * Adds a record or an array of records to the collection
+         * Adds a record or an array of records to the collection. If the record does not
+         * have a _uuid_ yet, it will be generated. If two records with the same _uuid_ exist, i.e.
+         * if one exists in the collection and one is added, the one with the more recent _updated_
+         * property is used.
          * @param {Object}  rec A record object or an array of record objects to be added to the collection
          */
-        add: function(rec, at) {
+        add: function(rec) {
             var records = this.records.slice();
 
             rec = util.isArray(rec) ? rec : [rec];
             rec.forEach(function(r) {
+                // Generate uuid if the record doesn't have one yet
                 r.uuid = r.uuid || util.uuid();
+                // If a record with the same uuid exists but the new one is more
+                // recent, replace the existing one. Otherwise just add it.
                 var existing = this.uuidMap[r.uuid];
                 if (existing && r.updated && r.updated > existing.updated) {
                     this.uuidMap[r.uuid] = r;
@@ -307,7 +324,10 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             this.records = records;
         },
         /**
-         * Removes a record from this collection
+         * Removes a record from this collection. This does not actually remove the record from
+         * the _records_ array but instead removes all the information except the _uuid_ and sets
+         * the _removed_ property to _true_. This makes it possible to synchronize deleting
+         * records between sources.
          * @param  {Object} rec The record object to be removed
          */
         remove: function(rec) {
