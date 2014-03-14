@@ -308,9 +308,11 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
          * @param  {Object} rec The record object to be removed
          */
         remove: function(rec) {
-            delete rec.name;
-            delete rec.category;
-            delete rec.fields;
+            for (var prop in rec) {
+                if (rec.hasOwnProperty(prop) && prop != "uuid") {
+                    delete rec[prop];
+                }
+            }
             rec.updated = new Date();
             rec.removed = true;
         },
