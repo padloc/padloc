@@ -185,7 +185,8 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             source.fetch({collName: coll.name, success: function(data) {
                 try {
                     // Try to decrypt and parse data
-                    coll.records = JSON.parse(crypto.pwdDecrypt(password, data));
+                    var records = JSON.parse(crypto.pwdDecrypt(password, data));
+                    coll.add(records);
                     if (opts.success) {
                         opts.success(coll);
                     }
