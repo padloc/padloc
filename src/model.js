@@ -36,7 +36,6 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
         fetch: function(opts) {
             // Not implemented
         },
-
         /**
          * Saves data
          * @param Object opts
@@ -48,7 +47,6 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
         save: function(opts) {
             // Not implemented
         },
-
         /**
          * Checks if data for a collection exists.
          * Object containing options for the call. Options may include:
@@ -242,14 +240,13 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     /**
      * A collection of records
      * @param {String} name    Name of the collection
-     * @param {Array}  records Initial records
      * @param {Store}  store   Store instance to be used. If not provided,
      *                         a new instance will be created.
      */
-    var Collection = function(name, records, store) {
+    var Collection = function(name, store) {
         this.name = name || "default";
-        this.records = records || [];
         this.store = store || new Store();
+        this.uuidMap = {};
     };
 
     Collection.prototype = {
@@ -274,42 +271,48 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
          * - source:   Source to to be used. If not provided, the stores default source is used.
          */
         save: function(opts) {
+            var rec = opts && opts.record;
+            if (rec) {
+                rec.name = rec.name || "Unnamed";
+                // Filter out fields that have neither a name nor a value
+                rec.fields = rec.fields.filter(function(field) {
+                    return field.name || field.value;
+                });
+                rec.updated = new Date();
+            }
             this.store.save(this, opts);
         },
         /**
          * Adds a record or an array of records to the collection
          * @param {Object}  rec A record object or an array of record objects to be added to the collection
-         * @param {Integer} at  (optional) Where to insert the record(s). If omitted, the record(s) will be
-         *                      added at the end
          */
         add: function(rec, at) {
-            this.records = util.insert(this.records, rec, at !== undefined && at !== null ? at : this.records.length);
+            var records = this.records.slice();
+
+            rec = util.isArray(rec) ? rec : [rec];
+            rec.forEach(function(r) {
+                r.uuid = r.uuid || util.uuid();
+                var existing = this.uuidMap[r.uuid];
+                if (existing && r.updated && r.updated > existing.updated) {
+                    records[records.indexOf(existing)] = r;
+                } else {
+                    this.uuidMap[r.uuid] = r;
+                    records.push(r);
+                }
+            }.bind(this));
+
+            this.records = records;
         },
         /**
          * Removes a record from this collection
          * @param  {Object} rec The record object to be removed
          */
         remove: function(rec) {
-            var index = this.records.indexOf(rec);
-            if (index != -1) {
-                this.removeAt(index);
-            }
-        },
-        /**
-         * Removes the records at the specified range
-         * @param  {Integer} from Start index for removal range
-         * @param  {[type]}  to   End index for removal range
-         */
-        removeAt: function(from, to) {
-            this.records = util.remove(this.records, from, to);
-        },
-        /**
-         * Replaces a record object with another object
-         * @param  {Object} orig Originial record
-         * @param  {Object} repl Replacement
-         */
-        replace: function(orig, repl) {
-            this.records[this.records.indexOf(orig)] = repl;
+            delete rec.name;
+            delete rec.category;
+            delete rec.fields;
+            rec.updated = new Date();
+            rec.deleted = true;
         },
         /**
          * Sets the new password for this collections store and saves the collection

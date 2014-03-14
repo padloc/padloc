@@ -53,6 +53,7 @@ Polymer("padlock-app", {
     //* Tries to unlock the current collection with the provided password
     unlock: function(password) {
         this.collection.fetch({password: password, success: function() {
+            this.updateCategories(this.collection.records);
             this.$.lockView.errorMessage = null;
             this.openView(this.$.listView);
         }.bind(this), fail: function() {
@@ -110,13 +111,8 @@ Polymer("padlock-app", {
     saveRecord: function() {
         var record = this.selected;
         if (record) {
-            record.name = record.name || "Unnamed";
-            // Filter out fields that have neither a name nor a value
-            record.fields = record.fields.filter(function(field) {
-                return field.name || field.value;
-            });
             // Save the changes
-            this.collection.save();
+            this.collection.save({record: record});
             this.$.listView.prepareRecords();
         }
     },
@@ -143,6 +139,7 @@ Polymer("padlock-app", {
     deleteRecord: function() {
         this.collection.remove(this.selected);
         this.collection.save();
+        this.$.listView.prepareRecords();
         this.recordViewBack();
     },
     recordViewBack: function(event, detail, sender) {
