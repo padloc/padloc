@@ -312,7 +312,7 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             delete rec.category;
             delete rec.fields;
             rec.updated = new Date();
-            rec.deleted = true;
+            rec.removed = true;
         },
         /**
          * Sets the new password for this collections store and saves the collection

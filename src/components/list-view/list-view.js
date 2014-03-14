@@ -27,13 +27,13 @@ Polymer("padlock-list-view", {
 
         var fs = this.filterString && this.filterString.toLowerCase(),
             words = fs.split(" "),
-            deletedCount = 0;
+            removedCount = 0;
 
         // Filter records based on filter string. Also, while we're at it filter out
-        // deleted records.
+        // removed records.
         var records = this.collection.records.filter(function(rec) {
-            if (rec.deleted) {
-                deletedCount++;
+            if (rec.removed) {
+                removedCount++;
                 return false;
             }
             if (!fs) {
@@ -80,7 +80,7 @@ Polymer("padlock-list-view", {
 
         // Update _records_ 
         this.records = records;
-        this.empty = !(this.collection && this.collection.records.length > deletedCount);
+        this.empty = !(this.collection && this.collection.records.length > removedCount);
     },
     recordClicked: function(event, detail, sender) {
         this.selected = sender.templateInstance.model;
