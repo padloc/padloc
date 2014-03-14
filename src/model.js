@@ -246,6 +246,7 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     var Collection = function(name, store) {
         this.name = name || "default";
         this.store = store || new Store();
+        this.records = [];
         this.uuidMap = {};
     };
 
