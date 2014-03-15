@@ -3,17 +3,34 @@
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../padlock-input.html">
 
-<polymer-element name="padlock-settings-view" extends="padlock-view" attributes="collection">
+<polymer-element name="padlock-settings-view" extends="padlock-view" attributes="collection settings">
     <template>
         <!-- STYLES -->
         <link href="settings-view.css" rel="stylesheet" type="text/css">
+        <div class="section-header">Padlock Cloud</div>
+        <button class="settings-button" on-tap="{{ cloudConnect }}"
+            style="{{ settings.settings.sync_connected ? 'display: none' : ''}}">Connect</button>
+        <button class="settings-button" on-tap="{{ cloudDisconnect }}"
+            style="{{ settings.settings.sync_connected ? '' : 'display: none'}}">Disconnect</button>
+        <div class="section-header">Master Password</div>
         <button class="settings-button" on-tap="{{ changePassword }}">Change Password</button>
+        <!-- CONNECT DIALOG -->
+        <padlock-dialog id="connectDialog">
+            <input is="padlock-input" placeholder="Enter Your Email Address" id="emailInput"/>
+            <button class="primary" on-tap="{{ confirmConnect }}">OK</button>
+        </padlock-dialog>
+        <!-- CONFIRM DISCONNECT DIALOG -->
+        <padlock-dialog id="disconnectDialog">
+            <div class="title">Are you sure you want to disconnect from Padlock Cloud?</div>
+            <button class="primary" on-tap="{{ confirmDisconnect }}">OK</button>
+            <button on-tap="{{ cancelDisconnect }}">Cancel</button>
+        </padlock-dialog>
         <!-- CHANGE PASSWORD DIALOG -->
         <padlock-dialog id="changePasswordDialog">
             <input is="padlock-input" type="password" placeholder="Enter Current Password" id="currPwdInput"/>
             <input is="padlock-input" type="password" placeholder="Enter New Password" id="newPwdInput"/>
             <input is="padlock-input" type="password" placeholder="Confirm Password" id="confirmNewPwdInput"/>
-            <button class="enter-button primary" on-tap="{{ confirmChangePassword }}">OK</button>
+            <button class="primary" on-tap="{{ confirmChangePassword }}">OK</button>
         </padlock-dialog>
         <!-- CHANGE PASSWORD ERROR DIALOG -->
         <padlock-dialog id="changePasswordErrorDialog">

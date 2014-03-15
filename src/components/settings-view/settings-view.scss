@@ -3,5 +3,11 @@
 .settings-button {
     display: block;
     width: 100%;
-    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.section-header {
+    padding: 0 15px;
+    color: $color-red;
+    margin: 15px 0 10px 0;
 }

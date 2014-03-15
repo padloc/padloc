@@ -34,5 +34,27 @@ Polymer("padlock-settings-view", {
     },
     closeChangePasswordSuccessDialog: function() {
         this.$.changePasswordSuccessDialog.open = false;
+    },
+    cloudConnect: function() {
+        this.$.emailInput.value = "";
+        this.$.connectDialog.open = true;
+    },
+    confirmConnect: function() {
+        this.$.connectDialog.open = false;
+        this.settings.set("sync_connected", true);
+        this.settings.set("sync_email", this.$.emailInput.value);
+        this.settings.save();
+    },
+    cloudDisconnect: function() {
+        this.$.disconnectDialog.open = true;
+    },
+    confirmDisconnect: function() {
+        this.$.disconnectDialog.open = false;
+        this.settings.set("sync_connected", false);
+        this.settings.set("sync_email", "");
+        this.settings.save();
+    },
+    cancelDisconnect: function() {
+        this.$.disconnectDialog.close();
     }
 });
