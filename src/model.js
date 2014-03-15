@@ -48,14 +48,14 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             // Not implemented
         },
         /**
-         * Checks if data for a collection exists.
+         * Checks if data for a given key exists.
          * Object containing options for the call. Options may include:
          *
-         * - collName (required): Name of the collection to check for
+         * - key (required): Name of the collection to check for
          * - success: Success callback. Will be passed _true_ or _false_ as the
          *            only argument, depending on the outcome
          */
-        collectionExists: function(opts) {
+        exists: function(opts) {
             // Not implemented
         }
     };
@@ -70,19 +70,19 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     LocalStorageSource.prototype.constructor = LocalStorageSource;
 
     LocalStorageSource.prototype.fetch = function(opts) {
-        var json = localStorage.getItem("coll_" + opts.collName);
+        var json = localStorage.getItem(opts.key);
         this.didFetch(json, opts);
     };
 
     LocalStorageSource.prototype.save = function(opts) {
-        localStorage.setItem("coll_" + opts.collName, JSON.stringify(opts.data));
+        localStorage.setItem(opts.key, JSON.stringify(opts.data));
         if (opts.success) {
             opts.success();
         }
     };
 
-    LocalStorageSource.prototype.collectionExists = function(opts) {
-        var exists = localStorage.getItem("coll_" + opts.collName) !== null;
+    LocalStorageSource.prototype.exists = function(opts) {
+        var exists = localStorage.getItem(opts.key) !== null;
         if (opts.success) {
             opts.success(exists);
         }
@@ -138,7 +138,7 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
         req.send(JSON.stringify(opts.data));
     };
 
-    CloudSource.prototype.collectionExists = function(opts) {
+    CloudSource.prototype.exists = function(opts) {
         var success = opts.success,
             fail = opts.fail;
 
@@ -169,6 +169,9 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     };
 
     Store.prototype = {
+        getKey: function(coll) {
+            return "coll_" + coll.name;
+        },
         /**
          * Fetches the data for an array from local storage, decrypts it and populates the collection
          * @param  {Collection} coll     The collection to fetch the data for
@@ -187,10 +190,10 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             opts = opts || {};
             source = opts.source || this.defaultSource;
             // Use password argument if provided, otherwise use _this.password_
-            var password = opts.password !== undefined && opts.password !== null ? opts.password : this.password;
-            var obj = {};
+            var password = opts.password !== undefined && opts.password !== null ? opts.password : this.password,
+                key = this.getKey(coll);
 
-            source.fetch({collName: coll.name, success: function(data) {
+            source.fetch({key: key, success: function(data) {
                 // Try to decrypt and parse data. This might fail either if the password
                 // is incorrect or the data corrupted. If the decryption is successful, the parsing
                 // should usually be no problem.
@@ -226,7 +229,7 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             var pt = JSON.stringify(coll.records);
             // Encrypt the JSON string
             var c = crypto.pwdEncrypt(this.password, pt);
-            opts.collName = coll.name;
+            opts.key = this.getKey(coll);
             opts.data = c;
             source.save(opts);
         },
@@ -240,11 +243,11 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
          * - fail:     Fail callback
          * - source:   Source to check for the collection. If not provided, _defaultSource_ is used. 
          */
-        collectionExists: function(coll, opts) {
+        exists: function(coll, opts) {
             source = opts.source || this.defaultSource;
             opts = opts || {};
-            opts.collName = coll.name;
-            source.collectionExists(opts);
+            opts.key = this.getKey(coll);
+            source.exists(opts);
         }
     };
 
@@ -357,7 +360,7 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
          * - source:   Source to check for the collection. If not provided, _defaultSource_ is used. 
          */
         exists: function(opts) {
-            this.store.collectionExists(this, opts);
+            this.store.exists(this, opts);
         },
         /**
          * Empties the collection and removes the stored password
