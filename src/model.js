@@ -3,168 +3,12 @@
  */
 define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     /**
-     * The _Source_ object is responsible for fetching/saving data from/to a persistent
-     * storage like localStorage or a cloud. It is meant as a base object to be extended
-     * by different implementations
-     */
-    var Source = function() {
-    };
-
-    Source.prototype = {
-        didFetch: function(rawData, opts) {
-            try {
-                // Try to parse data
-                var data = JSON.parse(rawData);
-                if (opts && opts.success) {
-                    opts.success(data);
-                }
-            } catch (e) {
-                if (opts && opts.fail) {
-                    opts.fail(e);
-                }
-            }
-        },
-        /**
-         * Fetches data
-         * @param Object opts
-         * Object containing options for the call. Options may include:
-         *
-         * - collName (required): Name of the collection to fetch data for
-         * - success: Success callback. Retrieved data will be passed as only argument
-         * - fail: Fail callback
-         */
-        fetch: function(opts) {
-            // Not implemented
-        },
-        /**
-         * Saves data
-         * @param Object opts
-         * Object containing options for the call. Options may include:
-         *
-         * - collName (required): Name of the collection to save data for
-         * - success: Success callback.
-         */
-        save: function(opts) {
-            // Not implemented
-        },
-        /**
-         * Checks if data for a given key exists.
-         * Object containing options for the call. Options may include:
-         *
-         * - key (required): Name of the collection to check for
-         * - success: Success callback. Will be passed _true_ or _false_ as the
-         *            only argument, depending on the outcome
-         */
-        exists: function(opts) {
-            // Not implemented
-        }
-    };
-
-    /**
-     * This source uses the _localStorage_ api to fetch and store data. Although
-     * _localStorage_ works synchronously, All methods use callbacks to be
-     * consistent with asynchronous sources.
-     */
-    var LocalStorageSource = function() {};
-    LocalStorageSource.prototype = Object.create(Source.prototype);
-    LocalStorageSource.prototype.constructor = LocalStorageSource;
-
-    LocalStorageSource.prototype.fetch = function(opts) {
-        var json = localStorage.getItem(opts.key);
-        this.didFetch(json, opts);
-    };
-
-    LocalStorageSource.prototype.save = function(opts) {
-        localStorage.setItem(opts.key, JSON.stringify(opts.data));
-        if (opts.success) {
-            opts.success();
-        }
-    };
-
-    LocalStorageSource.prototype.exists = function(opts) {
-        var exists = localStorage.getItem(opts.key) !== null;
-        if (opts.success) {
-            opts.success(exists);
-        }
-    };
-
-    /**
-     * This source uses the Padlock cloud api to fetch and store data.
-     * @param String host  Base url for AJAX calls
-     * @param String email Email for identifying a user
-     */
-    CloudSource = function(host, email) {
-        this.host = host;
-        this.email = email;
-    };
-    CloudSource.prototype = Object.create(Source.prototype);
-    CloudSource.prototype.constructor = CloudSource;
-
-    CloudSource.prototype.fetch = function(opts) {
-        var req = new XMLHttpRequest(),
-            url = this.host + "/" + this.email;
-
-        req.onreadystatechange = function() {
-            if (req.readyState === 4) {
-                if (req.status === 200) {
-                    this.didFetch(req.responseText, opts);
-                } else if (opts && opts.fail) {
-                    opts.fail(req.status, req.responseText);
-                }
-            }
-        }.bind(this);
-
-        req.open("GET", url, true);
-        req.send();
-    };
-
-    CloudSource.prototype.save = function(opts) {
-        var req = new XMLHttpRequest(),
-            url = this.host + "/" + this.email;
-
-        req.onreadystatechange = function() {
-            if (req.readyState === 4) {
-                if (req.status === 200) {
-                    if (opts.success) {
-                        opts.success();
-                    }
-                } else if (opts.fail) {
-                    opts.fail(req.status, req.responseText);
-                }
-            }
-        };
-
-        req.open("POST", url, true);
-        req.send(JSON.stringify(opts.data));
-    };
-
-    CloudSource.prototype.exists = function(opts) {
-        var success = opts.success,
-            fail = opts.fail;
-
-        opts.success = function() {
-            success(true);
-        };
-        opts.fail = function(status) {
-            // If the api returns a 'not found', we consider the request successful
-            // and return _false_. Otherwise something went wrong and we can't tell
-            // for sure, so we consider the request failed.
-            if (status == 404) {
-                success(false);
-            } else if (fail) {
-                fail();
-            }
-        };
-        this.fetch(opts);
-    };
-
-    /**
      * The _Store_ acts as a proxy between the persistence layer (e.g. _LocalStorageSource_)
      * and a _Collection_ object it mainly handles encryption and decryption of data
      * @param Object defaultSource Default source to be used for _fetch_, _save_ etc.
      */
     var Store = function(defaultSource) {
-        this.defaultSource = defaultSource || new LocalStorageSource();
+        this.defaultSource = defaultSource;
         this.password = "";
     };
 
@@ -459,8 +303,6 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
     return {
         Store: Store,
         Collection: Collection,
-        Categories: Categories,
-        LocalStorageSource: LocalStorageSource,
-        CloudSource: CloudSource
+        Categories: Categories
     };
 });
