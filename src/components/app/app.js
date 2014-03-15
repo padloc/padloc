@@ -255,5 +255,24 @@ Polymer("padlock-app", {
                 rec.catColor = detail.curr.color;
             }
         });
+    },
+    //* Synchronizes the data with a remote source
+    synchronize: function() {
+        this.$.mainMenu.open = false;
+
+        if (this.settings.get("sync_connected")) {
+            this.remoteSource = this.remoteSource || new CloudSource();
+            this.remoteSource.host = this.settings.get("sync_host");
+            this.remoteSource.email = this.settings.get("sync_email");
+
+            this.collection.sync(this.remoteSource, {
+                success: this.stopSpinner.bind(this),
+                fail: function() {
+                    this.alert("An error occurred while synchronizing. Please try again later!");
+                }.bind(this)
+            });
+        } else {
+            this.alert("You have to connect to the Padlock cloud first!");
+        }
     }
 });
