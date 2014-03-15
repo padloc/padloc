@@ -1,11 +1,23 @@
 Polymer("padlock-app", {
     ready: function() {
-        require(["padlock/model"], function(model, platform) {
-            this.categories = new model.Categories(null, 3);
+        require(["padlock/model", "padlock/LocalStorageSource", "padlock/CloudSource", "padlock/Categories", "padlock/Settings"],
+                function(model, LocalStorageSource, CloudSource, Categories, Settings) {
+            var source = new LocalStorageSource(),
+                store = new model.Store(source);
+
+            // Set up settings
+            this.settings = new Settings(source, {
+                sync_host: "http://localhost:3000"
+            });
+            this.settings.fetch();
+
+            // Set up categories
+            this.categories = new Categories(null, 3, source);
             this.categories.fetch();
             this.$.categoriesView.updateCategories();
-            this.collection = new model.Collection();
 
+            // Set up collection
+            this.collection = new model.Collection("default", store);
             this.collection.exists({success: this.initView.bind(this), fail: this.initView.bind(this, false)});
         }.bind(this));
 
