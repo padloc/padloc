@@ -365,6 +365,29 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
         lock: function() {
             this.records = [];
             this.store.password = null;
+        },
+        /**
+         * Synchronizes the collection with a different source
+         * @param  {Source} source The source to sync with
+         * @param  {Object} opts   Object containing options. Options may include:
+         *
+         *                         - success: Success callback
+         *                         - fail: Failure callback
+         */
+        sync: function(source, opts) {
+            // Fetch data from remote source
+            this.fetch({source: source, success: function() {
+                // Save data to local source
+                this.save({success: function() {
+                    // Update remote source
+                    this.save({source: source, success: function() {
+                        // Done!
+                        if (opts && opts.success) {
+                            opts.success();
+                        }
+                    }.bind(this), fail: opts && opts.fail});
+                }.bind(this), fail: opts && opts.fail});
+            }.bind(this), fail: opts && opts.fail});
         }
     };
 
