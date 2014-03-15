@@ -45,7 +45,10 @@ define(function(require) {
                 opts.success();
             }
         }.bind(this);
-        this.source.fetch({key: this.getKey(), success: success, fail: opts && opts.fail});
+        opts = opts || {};
+        opts.success = success;
+        opts.key = this.getKey();
+        this.source.fetch(opts);
     };
 
     //* Saves categories to local storage
