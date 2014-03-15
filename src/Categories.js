@@ -1,6 +1,6 @@
 define(function(require) {
     var util = require("./util");
-    
+
     /**
      * Manager object for a categories. Each category has a name
      * and a color, which is encoded as a number between 1 and _numColor_
@@ -8,10 +8,15 @@ define(function(require) {
      * @param {String}  name The name, used for persistent storage
      * @param {Integer} numColor [description]
      */
-    var Categories = function(name, numColors) {
+    var Categories = function(name, numColors, source) {
         this.name = name || "default";
         this.categories = {};
         this.numColors = numColors || 0;
+        this.source = source;
+    };
+
+    Categories.prototype.getKey = function() {
+        return "cat_" + this.name;
     };
 
     //* Sets the _color_ for a _category_. Adds the category if it doesn't exist yet.
@@ -30,16 +35,26 @@ define(function(require) {
     };
 
     //* Fetches stored categories from local storage 
-    Categories.prototype.fetch = function() {
-        var fetched = JSON.parse(localStorage.getItem("cat_" + this.name) || "{}");
-        // Merge in categories into _this.categories_ object. This will _not_
-        // overwrite categories already added.
-        this.categories = util.mixin(this.categories, fetched);
+    Categories.prototype.fetch = function(opts) {
+        var success = function(data) {
+            // Merge in categories into _this.categories_ object. This will _not_
+            // overwrite categories already added.
+            this.categories = util.mixin(this.categories, data);
+
+            if (opts && opts.success) {
+                opts.success();
+            }
+        }.bind(this);
+        this.source.fetch({key: this.getKey(), success: success, fail: opts && opts.fail});
     };
 
     //* Saves categories to local storage
-    Categories.prototype.save = function() {
-        localStorage.setItem("cat_" + this.name, JSON.stringify(this.categories));
+    Categories.prototype.save = function(opts) {
+        opts = opts || {};
+        opts.key = this.getKey();
+        opts.data = this.categories;
+        
+        this.source.save(opts);
     };
 
     //* Returns the preferable color for a new category
