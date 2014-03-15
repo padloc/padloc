@@ -12,21 +12,22 @@ define(function() {
 
     Settings.prototype = {
         fetch: function(opts) {
-            var success = function(data) {
-                this.settings = data;
-                if (opts && opts.success) {
-                    opts.success();
-                }
-            };
             opts = opts || {};
-            opts.success = success;
+            var success = opts.success;
+            opts.success = function(data) {
+                this.settings = data;
+                if (success) {
+                    success();
+                }
+            }.bind(this);
             opts.key = "settings";
             this.source.fetch(opts);
         },
         save: function(opts) {
             opts = opts || {};
             opts.key = "settings";
-            this.source.save(this.settings);
+            opts.data = this.settings;
+            this.source.save(opts);
         },
         get: function(setting) {
             return this.settings[setting] || this.defaults[setting];

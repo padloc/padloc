@@ -36,17 +36,17 @@ define(function(require) {
 
     //* Fetches stored categories from local storage 
     Categories.prototype.fetch = function(opts) {
-        var success = function(data) {
+        opts = opts || {};
+        var success = opts.success;
+        opts.success = function(data) {
             // Merge in categories into _this.categories_ object. This will _not_
             // overwrite categories already added.
             this.categories = util.mixin(this.categories, data);
 
-            if (opts && opts.success) {
-                opts.success();
+            if (success) {
+                success();
             }
         }.bind(this);
-        opts = opts || {};
-        opts.success = success;
         opts.key = this.getKey();
         this.source.fetch(opts);
     };
