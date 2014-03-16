@@ -59,3 +59,18 @@
     70% {@include transform(scale(0.95));}
     100% {@include transform(scale(1));}
 }
+
+@include keyframes(shapeshifter-spinner-1) {
+    from {@include transform(translate(0, -23px) scale(12, 1) rotateY(0deg))}
+    to {@include transform(translate(0, -23px) scale(12, 1) rotateY(360deg))}
+}
+
+@include keyframes(shapeshifter-spinner-2) {
+    from {@include transform(translate(0, 0) scale(12, 1) rotateY(0deg))}
+    to {@include transform(translate(0, 0) scale(12, 1) rotateY(360deg))}
+}
+
+@include keyframes(shapeshifter-spinner-3) {
+    from {@include transform(translate(0, 23px) scale(12, 1) rotateY(0deg))}
+    to {@include transform(translate(0, 23px) scale(12, 1) rotateY(360deg))}
+}

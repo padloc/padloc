@@ -256,6 +256,25 @@ Polymer("padlock-app", {
             }
         });
     },
+    //* Starts a spinner animation on the menu icon
+    startSpinner: function() {
+        this.spinnerStarted = new Date();
+        this.$.listView.headerOptions.leftIconShape = "spinner";
+        this.$.header.updateIcons();
+    },
+    //* Stops the spinner animation on the menu icon
+    stopSpinner: function() {
+        // Make sure the spinner animates at least for a certain amount of time,
+        // because otherwise it will look weird.
+        var minDur = 2000,
+            timePassed = new Date().getTime() - this.spinnerStarted.getTime(),
+            delay = Math.max(minDur - timePassed, 0);
+
+        setTimeout(function() {
+            this.$.listView.headerOptions.leftIconShape = "menu";
+            this.$.header.updateIcons();
+        }.bind(this), delay);
+    },
     //* Synchronizes the data with a remote source
     synchronize: function() {
         this.$.mainMenu.open = false;
@@ -265,10 +284,13 @@ Polymer("padlock-app", {
             this.remoteSource.host = this.settings.get("sync_host");
             this.remoteSource.email = this.settings.get("sync_email");
 
+            this.startSpinner();
+
             this.collection.sync(this.remoteSource, {
                 success: this.stopSpinner.bind(this),
                 fail: function() {
                     this.alert("An error occurred while synchronizing. Please try again later!");
+                    this.stopSpinner();
                 }.bind(this)
             });
         } else {
