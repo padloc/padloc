@@ -5,7 +5,8 @@ require([
     "test/crypto",
     "test/import",
     "test/Collection",
-    "test/Categories"
+    "test/Categories",
+    "test/Settings"
 ], function() {
     QUnit.start();
 });
