@@ -1,20 +1,32 @@
 <!DOCTYPE html>
-<html manifest="padlock.manifest">
+<html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+        <link rel="shortcut icon" type="image/png" href="assets/favicon.png"/>
+
+        <!-- Settings for running as standalone iOS web app (from homescreen) -->
         <meta name="apple-mobile-web-app-capable" content="yes"/>
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
         <meta name="apple-mobile-web-app-title" content="Padlock">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-        <link rel="shortcut icon" type="image/png" href="assets/favicon.png"/>
+        <link rel="apple-touch-icon" href="assets/app-icon.png">
+
+        <!-- require.js -->
         <script src="bower_components/requirejs/require.js"></script>
         <script src="config.js"></script>
+
+        <!-- Polymer platform layer -->
         <script src="bower_components/platform/platform.js"></script>
+
+        <!-- Custom app element -->
         <link rel="import" href="src/components/app/app.html">
+
+        <!-- This is the ENTRY POINT -->
+        <script src="src/start.js"></script>
+
+        <!-- Styles that are not include in custom elements -->
         <link href="src/styles/fonts.css" rel="stylesheet" type="text/css">
         <link href="src/styles/animations.css" rel="stylesheet" type="text/css">
         <link href="src/styles/overrides.css" rel="stylesheet" type="text/css">
-        <link rel="apple-touch-icon" href="assets/app-icon.png">
-        <!-- // <script type="text/javascript" src="phonegap.js"></script> -->
         <style>
             body {
                 padding: 0;
@@ -24,6 +36,5 @@
         </style>
     </head>
     <body>
-        <padlock-app></padlock-app>
     </body>
 </html>

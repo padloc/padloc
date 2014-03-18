@@ -1,25 +1,15 @@
 Polymer("padlock-app", {
-    ready: function() {
-        require(["padlock/model", "padlock/LocalStorageSource", "padlock/CloudSource", "padlock/Categories", "padlock/Settings"],
-                function(model, LocalStorageSource, CloudSource, Categories, Settings) {
-            var source = new LocalStorageSource(),
-                store = new model.Store(source);
+    init: function(collection, settings, categories) {
+        this.collection = collection;
+        this.settings = settings;
+        this.categories = categories;
 
-            // Set up settings
-            this.settings = new Settings(source, {
-                sync_host: "http://localhost:3000"
-            });
-            this.settings.fetch();
+        this.settings.fetch();
 
-            // Set up categories
-            this.categories = new Categories(null, 3, source);
-            this.categories.fetch();
-            this.$.categoriesView.updateCategories();
+        this.categories.fetch();
+        this.$.categoriesView.updateCategories();
 
-            // Set up collection
-            this.collection = new model.Collection("default", store);
-            this.collection.exists({success: this.initView.bind(this), fail: this.initView.bind(this, false)});
-        }.bind(this));
+        this.collection.exists({success: this.initView.bind(this), fail: this.initView.bind(this, false)});
 
         // If we want to capture all keydown events, we have to add the listener
         // directly to the document
