@@ -129,19 +129,45 @@ define(["padlock/util"], function(util) {
          *                         - fail: Failure callback
          */
         sync: function(source, opts) {
+            var fail = opts && opts.fail;
+
             // Fetch data from remote source
-            this.fetch({source: source, success: function() {
-                // Save data to local source
-                this.save({success: function() {
-                    // Update remote source
-                    this.save({source: source, success: function() {
-                        // Done!
-                        if (opts && opts.success) {
-                            opts.success();
-                        }
-                    }.bind(this), fail: opts && opts.fail});
-                }.bind(this), fail: opts && opts.fail});
-            }.bind(this), fail: opts && opts.fail});
+            var fetchRemote = function(exists) {
+                console.log("fetching remote data...");
+                this.fetch({source: source, success: saveLocal, fail: fail});
+            }.bind(this);
+            
+            // Save data to local source
+            var saveLocal = function() {
+                console.log("saving local data...");
+                this.save({success: saveRemote, fail: fail});
+            }.bind(this);
+
+            // Update remote source
+            var saveRemote = function() {
+                console.log("saving remote data...");
+                this.save({source: source, success: done, fail: fail});
+            }.bind(this);
+
+            // We're done!
+            var done = function() {
+                console.log("done!");
+                if (opts && opts.success) {
+                    opts.success();
+                }
+            }.bind(this);
+
+            // First, check if collection exists in remote source. If it does,
+            // fetch the remote data. If not, go directly to saving the local
+            // data to the remote
+            this.exists({source: source, success: function(exists) {
+                console.log("Exists: ", exists);
+                if (exists) {
+                    fetchRemote();
+                } else {
+                    saveRemote();
+                }
+            }, fail: fail});
         }
     };
 
