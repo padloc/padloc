@@ -10,7 +10,7 @@ define(["padlock/util"], function(util) {
      */
     var Collection = function(name, store) {
         this.name = name || "default";
-        this.store = store || new Store();
+        this.store = store;
         this.records = [];
         // This is to keep track of all existing records via their uuid.
         this.uuidMap = {};
