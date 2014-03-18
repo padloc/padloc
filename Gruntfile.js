@@ -16,7 +16,7 @@ module.exports = function(grunt) {
             all: ['test/runner.html']
         },
         watch: {
-            files: ['src/*.js', 'src/**/*.scss', 'test/*.js', 'test/*.html'],
+            files: ['src/**/*.js', 'src/**/*.scss', 'test/**/*.js', 'test/**/*.html'],
             tasks: ['compass', 'qunit']
         },
         connect: {
