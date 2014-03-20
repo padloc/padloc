@@ -277,7 +277,14 @@ Polymer("padlock-app", {
             this.startSpinner();
 
             this.collection.sync(this.remoteSource, {
-                success: this.stopSpinner.bind(this),
+                success: function() {
+                    this.stopSpinner();
+                    // Update the local set of categories with the categories from any
+                    // newly added records
+                    this.updateCategories(this.collection.records);
+                    // Rerender items in list view
+                    this.$.listView.prepareRecords();
+                }.bind(this),
                 fail: function() {
                     this.alert("An error occurred while synchronizing. Please try again later!");
                     this.stopSpinner();
