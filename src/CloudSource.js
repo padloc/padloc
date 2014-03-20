@@ -6,16 +6,17 @@ define(function(require) {
      * @param String host  Base url for AJAX calls
      * @param String email Email for identifying a user
      */
-    CloudSource = function(host, email) {
+    CloudSource = function(host, email, apiKey) {
         this.host = host;
         this.email = email;
+        this.apiKey = apiKey;
     };
     CloudSource.prototype = Object.create(Source.prototype);
     CloudSource.prototype.constructor = CloudSource;
 
     CloudSource.prototype.fetch = function(opts) {
         var req = new XMLHttpRequest(),
-            url = this.host + "/" + this.email;
+            url = this.host;
 
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
@@ -28,12 +29,13 @@ define(function(require) {
         }.bind(this);
 
         req.open("GET", url, true);
+        req.setRequestHeader("Authorization", "ApiKey " + this.email + ":" + this.apiKey);
         req.send();
     };
 
     CloudSource.prototype.save = function(opts) {
         var req = new XMLHttpRequest(),
-            url = this.host + "/" + this.email;
+            url = this.host;
 
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
@@ -47,7 +49,8 @@ define(function(require) {
             }
         };
 
-        req.open("POST", url, true);
+        req.open("PUT", url, true);
+        req.setRequestHeader("Authorization", "ApiKey " + this.email + ":" + this.apiKey);
         req.send(JSON.stringify(opts.data));
     };
 
