@@ -132,7 +132,7 @@ define(["padlock/util"], function(util) {
             var fail = opts && opts.fail;
 
             // Fetch data from remote source
-            var fetchRemote = function(exists) {
+            var fetchRemote = function() {
                 console.log("fetching remote data...");
                 this.fetch({source: source, success: saveLocal, fail: fail});
             }.bind(this);
@@ -160,14 +160,7 @@ define(["padlock/util"], function(util) {
             // First, check if collection exists in remote source. If it does,
             // fetch the remote data. If not, go directly to saving the local
             // data to the remote
-            this.exists({source: source, success: function(exists) {
-                console.log("Exists: ", exists);
-                if (exists) {
-                    fetchRemote();
-                } else {
-                    saveRemote();
-                }
-            }, fail: fail});
+            fetchRemote();
         }
     };
 
