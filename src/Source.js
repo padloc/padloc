@@ -11,7 +11,7 @@ define(function() {
         didFetch: function(rawData, opts) {
             try {
                 // Try to parse data
-                var data = JSON.parse(rawData);
+                var data = rawData ? JSON.parse(rawData) : null;
                 if (opts && opts.success) {
                     opts.success(data);
                 }
@@ -42,17 +42,6 @@ define(function() {
          * - success: Success callback.
          */
         save: function(opts) {
-            // Not implemented
-        },
-        /**
-         * Checks if data for a given key exists.
-         * Object containing options for the call. Options may include:
-         *
-         * - key (required): Name of the collection to check for
-         * - success: Success callback. Will be passed _true_ or _false_ as the
-         *            only argument, depending on the outcome
-         */
-        exists: function(opts) {
             // Not implemented
         }
     };

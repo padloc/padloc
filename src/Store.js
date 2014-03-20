@@ -35,19 +35,23 @@ define(["padlock/crypto"], function(crypto) {
                 key = this.getKey(coll);
 
             source.fetch({key: key, success: function(data) {
-                // Try to decrypt and parse data. This might fail either if the password
-                // is incorrect or the data corrupted. If the decryption is successful, the parsing
-                // should usually be no problem.
-                try {
-                    var records = JSON.parse(crypto.pwdDecrypt(password, data));
-                    coll.add(records);
-                    if (opts.success) {
-                        opts.success(coll);
+                // If there is no data, we simply consider the collection to be empty.
+                if (data) {
+                    // Try to decrypt and parse data. This might fail either if the password
+                    // is incorrect or the data corrupted. If the decryption is successful, the parsing
+                    // should usually be no problem.
+                    try {
+                        var records = JSON.parse(crypto.pwdDecrypt(password, data));
+                        coll.add(records);
+                    } catch (e) {
+                        if (opts.fail) {
+                            opts.fail(e);
+                        }
                     }
-                } catch (e) {
-                    if (opts.fail) {
-                        opts.fail(e);
-                    }
+                }
+
+                if (opts.success) {
+                    opts.success(coll);
                 }
             }, fail: opts.fail});
 
@@ -75,7 +79,7 @@ define(["padlock/crypto"], function(crypto) {
             source.save(opts);
         },
         /**
-         * Checks whether or not data for a collection exists in localstorage
+         * Checks whether or not data for a collection exists
          * @param  {Collection} coll Collection to check for
          * @param  {Object}     opts Object containing options for the call. Options may include:
          *
@@ -88,7 +92,13 @@ define(["padlock/crypto"], function(crypto) {
             source = opts.source || this.defaultSource;
             opts = opts || {};
             opts.key = this.getKey(coll);
-            source.exists(opts);
+            var success = opts.success;
+            opts.success = function(data) {
+                // The _data_ argument will be either a non-emtpy string or _null_.
+                // We want a boolean though so we'll have to convert it.
+                success(!!data);
+            };
+            source.fetch(opts);
         }
     };
 

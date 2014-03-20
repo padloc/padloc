@@ -22,7 +22,7 @@ define(function(require) {
                 if (req.status === 200) {
                     this.didFetch(req.responseText, opts);
                 } else if (opts && opts.fail) {
-                    opts.fail(req.status, req.responseText);
+                    opts.fail(req);
                 }
             }
         }.bind(this);
@@ -42,33 +42,13 @@ define(function(require) {
                         opts.success();
                     }
                 } else if (opts.fail) {
-                    opts.fail(req.status, req.responseText);
+                    opts.fail(req);
                 }
             }
         };
 
         req.open("POST", url, true);
         req.send(JSON.stringify(opts.data));
-    };
-
-    CloudSource.prototype.exists = function(opts) {
-        var success = opts.success,
-            fail = opts.fail;
-
-        opts.success = function() {
-            success(true);
-        };
-        opts.fail = function(status) {
-            // If the api returns a 'not found', we consider the request successful
-            // and return _false_. Otherwise something went wrong and we can't tell
-            // for sure, so we consider the request failed.
-            if (status == 404) {
-                success(false);
-            } else if (fail) {
-                fail();
-            }
-        };
-        this.fetch(opts);
     };
 
     return CloudSource;

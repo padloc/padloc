@@ -22,12 +22,5 @@ define(function(require) {
         }
     };
 
-    LocalStorageSource.prototype.exists = function(opts) {
-        var exists = localStorage.getItem(opts.key) !== null;
-        if (opts.success) {
-            opts.success(exists);
-        }
-    };
-
     return LocalStorageSource;
 });
