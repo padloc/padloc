@@ -36,14 +36,16 @@ Polymer("padlock-settings-view", {
         this.$.changePasswordSuccessDialog.open = false;
     },
     cloudConnect: function() {
-        this.$.emailInput.value = "";
+        this.$.emailInput.value = this.settings.get("sync_email") || "";
+        this.$.deviceNameInput.value = this.settings.get("sync_device") || "";
         this.$.connectDialog.open = true;
     },
     confirmConnect: function() {
         this.$.connectDialog.open = false;
-        this.settings.set("sync_connected", true);
         this.settings.set("sync_email", this.$.emailInput.value);
+        this.settings.set("sync_device", this.$.deviceNameInput.value);
         this.settings.save();
+        this.requestApiKey();
     },
     cloudDisconnect: function() {
         this.$.disconnectDialog.open = true;
@@ -51,10 +53,40 @@ Polymer("padlock-settings-view", {
     confirmDisconnect: function() {
         this.$.disconnectDialog.open = false;
         this.settings.set("sync_connected", false);
-        this.settings.set("sync_email", "");
+        this.settings.set("sync_key", "");
         this.settings.save();
     },
     cancelDisconnect: function() {
         this.$.disconnectDialog.close();
+    },
+    requestApiKey: function() {
+        var req = new XMLHttpRequest(),
+            url = this.settings.get("sync_host") + "/auth",
+            email = this.$.emailInput.value,
+            deviceName = this.$.deviceNameInput.value;
+
+        req.onreadystatechange = function() {
+            if (req.readyState === 4) {
+                if (req.status === 200) {
+                    this.settings.set("sync_key", req.response.key);
+                    this.settings.set("sync_connected", true);
+                    this.settings.save();
+                    this.alert("An email was sent to " + email + ". Please follow the " +
+                        "activation link in the message to complete the connection process!");
+                } else {
+                    this.alert("Something went wrong. Please make sure your internet " +
+                        "connection is working and try again!");
+                }
+            }
+        }.bind(this);
+
+        req.responseType = "json";
+        req.open("POST", url, true);
+        req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        req.setRequestHeader("Accept", "application/json");
+        req.send("email=" + email + "&device_name=" + deviceName);
+    },
+    alert: function(message) {
+        alert(message);
     }
 });

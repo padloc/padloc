@@ -273,6 +273,7 @@ Polymer("padlock-app", {
             this.remoteSource = this.remoteSource || new CloudSource();
             this.remoteSource.host = this.settings.get("sync_host");
             this.remoteSource.email = this.settings.get("sync_email");
+            this.remoteSource.apiKey = this.settings.get("sync_key");
 
             this.startSpinner();
 
@@ -285,8 +286,10 @@ Polymer("padlock-app", {
                     // Rerender items in list view
                     this.$.listView.prepareRecords();
                 }.bind(this),
-                fail: function() {
-                    this.alert("An error occurred while synchronizing. Please try again later!");
+                fail: function(req) {
+                    var msg = req.status == 401 ? "Authentication failed. Have you visited the link in the activation email yet?" :
+                        "An error occurred while synchronizing. Please try again later!";
+                    this.alert(msg);
                     this.stopSpinner();
                 }.bind(this)
             });

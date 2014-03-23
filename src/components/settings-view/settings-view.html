@@ -16,7 +16,8 @@
         <button class="settings-button" on-tap="{{ changePassword }}">Change Password</button>
         <!-- CONNECT DIALOG -->
         <padlock-dialog id="connectDialog">
-            <input is="padlock-input" placeholder="Enter Your Email Address" id="emailInput"/>
+            <input is="padlock-input" placeholder="Email Address" id="emailInput"/>
+            <input is="padlock-input" placeholder="Device Name (e.g. 'Bens iPhone')" id="deviceNameInput"/>
             <button class="primary" on-tap="{{ confirmConnect }}">OK</button>
         </padlock-dialog>
         <!-- CONFIRM DISCONNECT DIALOG -->
