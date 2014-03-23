@@ -44,6 +44,11 @@
             <div class="title">Password changed successfully!</div>
             <button on-tap="{{ closeChangePasswordSuccessDialog }}">OK</button>
         </padlock-dialog>
+        <!-- ALERT -->
+        <padlock-dialog id="alertDialog">
+            <div class="title" id="alertText"></div>
+            <button on-tap="{{ dismissAlert }}">OK</button>
+        </padlock-dialog>
     </template>
     <script src="settings-view.js"></script>
 </polymer>

@@ -87,6 +87,10 @@ Polymer("padlock-settings-view", {
         req.send("email=" + email + "&device_name=" + deviceName);
     },
     alert: function(message) {
-        alert(message);
+        this.$.alertText.innerHTML = message;
+        this.$.alertDialog.open = true;
+    },
+    dismissAlert: function() {
+        this.$.alertDialog.open = false;
     }
 });
