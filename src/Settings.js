@@ -15,7 +15,7 @@ define(function() {
             opts = opts || {};
             var success = opts.success;
             opts.success = function(data) {
-                this.settings = data;
+                this.settings = data || this.settings;
                 if (success) {
                     success();
                 }
