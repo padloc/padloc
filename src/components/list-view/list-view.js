@@ -95,5 +95,8 @@ Polymer("padlock-list-view", {
         this.style.overflow = "visible";
         this.offsetLeft;
         this.style.overflow = "";
+    },
+    synchronize: function() {
+        this.fire("synchronize");
     }
 });

@@ -28,7 +28,7 @@
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}"
             categories="{{ categories }}" selected="{{ selected }}" on-add="{{ addRecord }}" orderBy="{{ orderOption.value }}"
-            on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}"></padlock-list-view>
+            on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}" on-synchronize="{{ synchronize }}"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
             on-delete="{{ deleteRecord }}" on-categories="{{ openCategories }}"></padlock-record-view>
