@@ -133,25 +133,21 @@ define(["padlock/util"], function(util) {
 
             // Fetch data from remote source
             var fetchRemote = function() {
-                console.log("fetching remote data...");
                 this.fetch({source: source, success: saveLocal, fail: fail});
             }.bind(this);
             
             // Save data to local source
             var saveLocal = function() {
-                console.log("saving local data...");
                 this.save({success: saveRemote, fail: fail});
             }.bind(this);
 
             // Update remote source
             var saveRemote = function() {
-                console.log("saving remote data...");
                 this.save({source: source, success: done, fail: fail});
             }.bind(this);
 
             // We're done!
             var done = function() {
-                console.log("done!");
                 if (opts && opts.success) {
                     opts.success();
                 }
