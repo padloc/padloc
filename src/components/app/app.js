@@ -154,6 +154,7 @@ Polymer("padlock-app", {
     },
     openSettings: function() {
         this.$.mainMenu.open = false;
+        this.$.notConnectedDialog.open = false;
         this.openView(this.$.settingsView);
     },
     settingsBack: function() {
@@ -294,7 +295,10 @@ Polymer("padlock-app", {
                 }.bind(this)
             });
         } else {
-            this.alert("You have to connect to the Padlock cloud first!");
+            this.$.notConnectedDialog.open = true;
         }
+    },
+    dismissNotConnectedDialog: function() {
+        this.$.notConnectedDialog.open = false;
     }
 });
