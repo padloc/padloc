@@ -10,8 +10,9 @@ window.addEventListener("polymer-ready", function() {
 
         var source = new LocalStorageSource(),
             store = new Store(source),
+            cloudHost = window.location.protocol + "//" + window.location.host + "/cloud/",
             settings = new Settings(source, {
-                sync_host: "http://localhost:3000"
+                sync_host: cloudHost
             }),
             categories = new Categories(null, 3, source),
             collection = new Collection("default", store);

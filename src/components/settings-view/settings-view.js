@@ -61,7 +61,7 @@ Polymer("padlock-settings-view", {
     },
     requestApiKey: function() {
         var req = new XMLHttpRequest(),
-            url = this.settings.get("sync_host") + "/auth",
+            url = this.settings.get("sync_host") + "auth/",
             email = this.$.emailInput.value,
             deviceName = this.$.deviceNameInput.value;
 
