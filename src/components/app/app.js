@@ -58,6 +58,9 @@ Polymer("padlock-app", {
             this.updateCategories(this.collection.records);
             this.$.lockView.errorMessage = null;
             this.openView(this.$.listView);
+            if (this.settings.sync_auto) {
+                this.synchronize();
+            }
         }.bind(this), fail: function() {
             this.$.lockView.errorMessage = "Wrong password!";
         }.bind(this)});
@@ -116,6 +119,9 @@ Polymer("padlock-app", {
             // Save the changes
             this.collection.save({record: record});
             this.$.listView.prepareRecords();
+            if (this.settings.sync_auto) {
+                this.synchronize();
+            }
         }
     },
     //* Opens the dialog for adding a new record
@@ -270,11 +276,11 @@ Polymer("padlock-app", {
     synchronize: function() {
         this.$.mainMenu.open = false;
 
-        if (this.settings.get("sync_connected")) {
+        if (this.settings.sync_connected) {
             this.remoteSource = this.remoteSource || new CloudSource();
-            this.remoteSource.host = this.settings.get("sync_host");
-            this.remoteSource.email = this.settings.get("sync_email");
-            this.remoteSource.apiKey = this.settings.get("sync_key");
+            this.remoteSource.host = this.settings.sync_host;
+            this.remoteSource.email = this.settings.sync_email;
+            this.remoteSource.apiKey = this.settings.sync_key;
 
             this.startSpinner();
 
