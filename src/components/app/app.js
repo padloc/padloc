@@ -1,14 +1,25 @@
 Polymer("padlock-app", {
-    ready: function() {
-        require(["padlock/model", "padlock/platform"], function(model, platform) {
-            this.categories = new model.Categories(null, 3);
-            this.categories.fetch();
-            this.$.categoriesView.updateCategories();
-            this.collection = new model.Collection();
+    init: function(collection, settings, categories) {
+        this.collection = collection;
+        this.settings = settings;
+        this.categories = categories;
 
+        this.settings.fetch();
+
+        this.categories.fetch();
+        this.$.categoriesView.updateCategories();
+
+        this.collection.exists({success: this.initView.bind(this), fail: this.initView.bind(this, false)});
+
+        // If we want to capture all keydown events, we have to add the listener
+        // directly to the document
+        document.addEventListener("keydown", this.keydown.bind(this), false);
+    },
+    initView: function(collExists) {
+        require(["padlock/platform"], function(platform) {
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one
-            var initialView = this.collection.exists() ? this.$.lockView : this.$.passwordView;
+            var initialView = collExists ? this.$.lockView : this.$.passwordView;
 
             // iOS gets a special treatment since it has the ability to run a website
             // as a 'standalone' web app and we want to use that!
@@ -33,10 +44,6 @@ Polymer("padlock-app", {
                 inDuration: 1000
             });
         }.bind(this));
-
-        // If we want to capture all keydown events, we have to add the listener
-        // directly to the document
-        document.addEventListener("keydown", this.keydown.bind(this), false);
     },
     pwdEnter: function(event, detail, sender) {
         this.unlock(detail.password);
@@ -47,12 +54,16 @@ Polymer("padlock-app", {
     },
     //* Tries to unlock the current collection with the provided password
     unlock: function(password) {
-        if (this.collection.fetch(password)) {
+        this.collection.fetch({password: password, success: function() {
+            this.updateCategories(this.collection.records);
             this.$.lockView.errorMessage = null;
             this.openView(this.$.listView);
-        } else {
+            if (this.settings.sync_auto) {
+                this.synchronize();
+            }
+        }.bind(this), fail: function() {
             this.$.lockView.errorMessage = "Wrong password!";
-        }
+        }.bind(this)});
     },
     //* Locks the collection and opens the lock view
     lock: function() {
@@ -105,14 +116,12 @@ Polymer("padlock-app", {
     saveRecord: function() {
         var record = this.selected;
         if (record) {
-            record.name = record.name || "Unnamed";
-            // Filter out fields that have neither a name nor a value
-            record.fields = record.fields.filter(function(field) {
-                return field.name || field.value;
-            });
             // Save the changes
-            this.collection.save();
+            this.collection.save({record: record});
             this.$.listView.prepareRecords();
+            if (this.settings.sync_auto) {
+                this.synchronize();
+            }
         }
     },
     //* Opens the dialog for adding a new record
@@ -138,6 +147,7 @@ Polymer("padlock-app", {
     deleteRecord: function() {
         this.collection.remove(this.selected);
         this.collection.save();
+        this.$.listView.prepareRecords();
         this.recordViewBack();
     },
     recordViewBack: function(event, detail, sender) {
@@ -150,6 +160,7 @@ Polymer("padlock-app", {
     },
     openSettings: function() {
         this.$.mainMenu.open = false;
+        this.$.notConnectedDialog.open = false;
         this.openView(this.$.settingsView);
     },
     settingsBack: function() {
@@ -241,5 +252,59 @@ Polymer("padlock-app", {
                 rec.catColor = detail.curr.color;
             }
         });
+    },
+    //* Starts a spinner animation on the menu icon
+    startSpinner: function() {
+        this.spinnerStarted = new Date();
+        this.$.listView.headerOptions.leftIconShape = "spinner";
+        this.$.header.updateIcons();
+    },
+    //* Stops the spinner animation on the menu icon
+    stopSpinner: function() {
+        // Make sure the spinner animates at least for a certain amount of time,
+        // because otherwise it will look weird.
+        var minDur = 2000,
+            timePassed = new Date().getTime() - this.spinnerStarted.getTime(),
+            delay = Math.max(minDur - timePassed, 0);
+
+        setTimeout(function() {
+            this.$.listView.headerOptions.leftIconShape = "menu";
+            this.$.header.updateIcons();
+        }.bind(this), delay);
+    },
+    //* Synchronizes the data with a remote source
+    synchronize: function() {
+        this.$.mainMenu.open = false;
+
+        if (this.settings.sync_connected) {
+            this.remoteSource = this.remoteSource || new CloudSource();
+            this.remoteSource.host = this.settings.sync_host;
+            this.remoteSource.email = this.settings.sync_email;
+            this.remoteSource.apiKey = this.settings.sync_key;
+
+            this.startSpinner();
+
+            this.collection.sync(this.remoteSource, {
+                success: function() {
+                    this.stopSpinner();
+                    // Update the local set of categories with the categories from any
+                    // newly added records
+                    this.updateCategories(this.collection.records);
+                    // Rerender items in list view
+                    this.$.listView.prepareRecords();
+                }.bind(this),
+                fail: function(req) {
+                    var msg = req.status == 401 ? "Authentication failed. Have you visited the link in the activation email yet?" :
+                        "An error occurred while synchronizing. Please try again later!";
+                    this.alert(msg);
+                    this.stopSpinner();
+                }.bind(this)
+            });
+        } else {
+            this.$.notConnectedDialog.open = true;
+        }
+    },
+    dismissNotConnectedDialog: function() {
+        this.$.notConnectedDialog.open = false;
     }
 });

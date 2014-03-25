@@ -2,18 +2,44 @@
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../padlock-input.html">
+<link rel="import" href="../toggle/toggle.html">
 
-<polymer-element name="padlock-settings-view" extends="padlock-view" attributes="collection">
+<polymer-element name="padlock-settings-view" extends="padlock-view" attributes="collection settings">
     <template>
         <!-- STYLES -->
         <link href="settings-view.css" rel="stylesheet" type="text/css">
-        <button class="settings-button" on-tap="{{ changePassword }}">Change Password</button>
+        <div class="section">
+            <button class="settings-button" on-tap="{{ cloudConnect }}"
+                style="{{ settings.sync_connected ? 'display: none' : ''}}">Connect To Padlock Cloud</button>
+            <button class="settings-button" on-tap="{{ cloudDisconnect }}"
+                style="{{ settings.sync_connected ? '' : 'display: none'}}">
+                <div>Disconnect <span class="email">({{ settings.settings.sync_email }})</span></div></button>
+            <div class="settings-row" style="{{ settings.sync_connected ? '' : 'display: none'}}"
+                on-tap="{{ toggleAutoSync }}">
+                <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" on-change="{{ save }}"></padlock-toggle>
+            </div>
+        </div>
+        <div class="section">
+            <button class="settings-button" on-tap="{{ changePassword }}">Change Master Password</button>
+        </div>
+        <!-- CONNECT DIALOG -->
+        <padlock-dialog id="connectDialog">
+            <input is="padlock-input" placeholder="Email Address" id="emailInput"/>
+            <input is="padlock-input" placeholder="Device Name (e.g. 'Bens iPhone')" id="deviceNameInput"/>
+            <button class="primary" on-tap="{{ confirmConnect }}">OK</button>
+        </padlock-dialog>
+        <!-- CONFIRM DISCONNECT DIALOG -->
+        <padlock-dialog id="disconnectDialog">
+            <div class="title">Are you sure you want to disconnect from Padlock Cloud?</div>
+            <button class="primary" on-tap="{{ confirmDisconnect }}">OK</button>
+            <button on-tap="{{ cancelDisconnect }}">Cancel</button>
+        </padlock-dialog>
         <!-- CHANGE PASSWORD DIALOG -->
         <padlock-dialog id="changePasswordDialog">
             <input is="padlock-input" type="password" placeholder="Enter Current Password" id="currPwdInput"/>
             <input is="padlock-input" type="password" placeholder="Enter New Password" id="newPwdInput"/>
             <input is="padlock-input" type="password" placeholder="Confirm Password" id="confirmNewPwdInput"/>
-            <button class="enter-button primary" on-tap="{{ confirmChangePassword }}">OK</button>
+            <button class="primary" on-tap="{{ confirmChangePassword }}">OK</button>
         </padlock-dialog>
         <!-- CHANGE PASSWORD ERROR DIALOG -->
         <padlock-dialog id="changePasswordErrorDialog">
@@ -25,6 +51,11 @@
         <padlock-dialog id="changePasswordSuccessDialog">
             <div class="title">Password changed successfully!</div>
             <button on-tap="{{ closeChangePasswordSuccessDialog }}">OK</button>
+        </padlock-dialog>
+        <!-- ALERT -->
+        <padlock-dialog id="alertDialog">
+            <div class="title" id="alertText"></div>
+            <button on-tap="{{ dismissAlert }}">OK</button>
         </padlock-dialog>
     </template>
     <script src="settings-view.js"></script>

@@ -26,10 +26,19 @@ Polymer("padlock-list-view", {
         }
 
         var fs = this.filterString && this.filterString.toLowerCase(),
-            words = fs.split(" ");
+            words = fs.split(" "),
+            removedCount = 0;
 
-        // Filter records based on filter string
-        var records = fs ? this.collection.records.filter(function(rec) {
+        // Filter records based on filter string. Also, while we're at it filter out
+        // removed records.
+        var records = this.collection.records.filter(function(rec) {
+            if (rec.removed) {
+                removedCount++;
+                return false;
+            }
+            if (!fs) {
+                return true;
+            }
             // For the record to be a match, each word in the filter string has to appear
             // in either the category or the record name.
             for (var i=0, match=true; i<words.length && match; i++) {
@@ -37,7 +46,7 @@ Polymer("padlock-list-view", {
                     rec.name.toLowerCase().search(words[i]) != -1;
             }
             return match;
-        }) : this.collection.records.slice();
+        });
 
         // Set _section_ and _color_ for each item
         for (var i=0, rec; i<records.length; i++) {
@@ -71,7 +80,7 @@ Polymer("padlock-list-view", {
 
         // Update _records_ 
         this.records = records;
-        this.empty = !(this.collection && this.collection.records.length);
+        this.empty = !(this.collection && this.collection.records.length > removedCount);
     },
     recordClicked: function(event, detail, sender) {
         this.selected = sender.templateInstance.model;
@@ -86,5 +95,8 @@ Polymer("padlock-list-view", {
         this.style.overflow = "visible";
         this.offsetLeft;
         this.style.overflow = "";
+    },
+    synchronize: function() {
+        this.fire("synchronize");
     }
 });

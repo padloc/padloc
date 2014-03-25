@@ -13,7 +13,7 @@
 <link rel="import" href="../padlock-input.html">
 
 <polymer-element name="padlock-app" touch-action="none" on-mousedown="{{ mousedown }}" on-showheader="{{ showHeader }}"
-    on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}">
+    on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}" attributes="settings categories collection" constructor="Padlock">
     <template>
         <!-- STYLES -->
         <link href="app.css" rel="stylesheet" type="text/css">
@@ -28,13 +28,13 @@
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}"
             categories="{{ categories }}" selected="{{ selected }}" on-add="{{ addRecord }}" orderBy="{{ orderOption.value }}"
-            on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}"></padlock-list-view>
+            on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}" on-synchronize="{{ synchronize }}"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
             on-delete="{{ deleteRecord }}" on-categories="{{ openCategories }}"></padlock-record-view>
         <!-- Settings VIEW -->
         <padlock-settings-view id="settingsView" class="view" on-back="{{ settingsBack }}"
-            collection="{{ collection }}"></padlock-settings-view>
+            collection="{{ collection }}" settings="{{ settings }}"></padlock-settings-view>
         <!-- IMPORT VIEW -->
         <padlock-import-view id="importView" class="view" on-import="{{ saveImportedRecords }}"
             on-back="{{ importBack }}"></padlock-import-view>
@@ -47,6 +47,7 @@
                 <padlock-option selected="true" value="name">Order by Name</padlock-option>
                 <padlock-option value="category">Order by Category</padlock-option>
             </padlock-select>
+            <button on-tap="{{ synchronize }}">Synchronize</button>
             <button on-tap="{{ openSettings }}">Settings</button>
             <button on-tap="{{ openImportView }}">Import Records</button>
             <button on-tap="{{ lock }}">Lock App</button>
@@ -61,6 +62,11 @@
         <padlock-dialog id="alertDialog">
             <div class="title" id="alertText"></div>
             <button on-tap="{{ dismissAlert }}">OK</button>
+        </padlock-dialog>
+        <padlock-dialog id="notConnectedDialog">
+            <div class="title">You need to be connected to the Padlock Cloud to synchronize your data.</div>
+            <button on-tap="{{ openSettings }}" class="primary">Settings</button>
+            <button on-tap="{{ dismissNotConnectedDialog }}">Cancel</button>
         </padlock-dialog>
     </template>
     <script src="app.js"></script>

@@ -1,0 +1,40 @@
+@import "../../styles/config.scss";
+@import "compass/css3";
+
+$width: 50px;
+$height: 30px;
+$gutter-width: 2px;
+$bg-color-off: $color-grey;
+$bg-color-on: $color-green;
+$anim-duration: 0.2s;
+
+:host {
+    display: inline-block;
+    width: $width;
+    height: $height;
+    background: $bg-color-off;
+    border-radius: $height;
+
+    @include transition(background $anim-duration ease-out);
+}
+
+:host:before {
+    $size: $height - 2 * $gutter-width;
+    content: "";
+    display: block;
+    height: $size;
+    width: $size;
+    margin: $gutter-width;
+    background: #fff;
+    border-radius: $size;
+
+    @include transition(transform $anim-duration ease-out);
+}
+
+:host.on {
+    background: $bg-color-on;
+
+    &:before {
+        @include translate($width - $height, 0);
+    }
+}

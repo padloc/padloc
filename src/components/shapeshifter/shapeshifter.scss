@@ -1,6 +1,7 @@
-@import "../../config.scss";
+@import "../../styles/config.scss";
 @import "compass/css3/transform";
 @import "compass/css3/transition";
+@import "animation";
 
 :host {
     display: inline-block;
@@ -101,4 +102,16 @@ line {
 
 .arrow-down line:nth-child(3) {
     @include transform(translate(17px, 0) rotate(-45deg) scale(9, 1));
+}
+
+.spinner line:nth-child(1) {
+    @include animation(shapeshifter-spinner-1 2s linear infinite both);
+}
+
+.spinner line:nth-child(2) {
+    @include animation(shapeshifter-spinner-2 2s linear infinite 0.3s both);
+}
+
+.spinner line:nth-child(3) {
+    @include animation(shapeshifter-spinner-3 2s linear infinite 0.6s both);
 }
