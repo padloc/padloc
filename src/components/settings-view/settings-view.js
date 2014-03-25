@@ -36,14 +36,14 @@ Polymer("padlock-settings-view", {
         this.$.changePasswordSuccessDialog.open = false;
     },
     cloudConnect: function() {
-        this.$.emailInput.value = this.settings.get("sync_email") || "";
-        this.$.deviceNameInput.value = this.settings.get("sync_device") || "";
+        this.$.emailInput.value = this.settings.sync_email || "";
+        this.$.deviceNameInput.value = this.settings.sync_device || "";
         this.$.connectDialog.open = true;
     },
     confirmConnect: function() {
         this.$.connectDialog.open = false;
-        this.settings.set("sync_email", this.$.emailInput.value);
-        this.settings.set("sync_device", this.$.deviceNameInput.value);
+        this.settings.sync_email = this.$.emailInput.value;
+        this.settings.sync_device = this.$.deviceNameInput.value;
         this.settings.save();
         this.requestApiKey();
     },
@@ -52,8 +52,8 @@ Polymer("padlock-settings-view", {
     },
     confirmDisconnect: function() {
         this.$.disconnectDialog.open = false;
-        this.settings.set("sync_connected", false);
-        this.settings.set("sync_key", "");
+        this.settings.sync_connected = false;
+        this.settings.sync_key = "";
         this.settings.save();
     },
     cancelDisconnect: function() {
@@ -61,15 +61,15 @@ Polymer("padlock-settings-view", {
     },
     requestApiKey: function() {
         var req = new XMLHttpRequest(),
-            url = this.settings.get("sync_host") + "auth/",
+            url = this.settings.sync_host + "auth/",
             email = this.$.emailInput.value,
             deviceName = this.$.deviceNameInput.value;
 
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
                 if (req.status === 200) {
-                    this.settings.set("sync_key", req.response.key);
-                    this.settings.set("sync_connected", true);
+                    this.settings.sync_key = req.response.key;
+                    this.settings.sync_connected = true;
                     this.settings.save();
                     this.alert("An email was sent to " + email + ". Please follow the " +
                         "activation link in the message to complete the connection process!");
@@ -92,5 +92,13 @@ Polymer("padlock-settings-view", {
     },
     dismissAlert: function() {
         this.$.alertDialog.open = false;
+    },
+    toggleAutoSync: function(event, detail, sender) {
+        if (event.impl.target != this.$.autoSyncToggle.impl) {
+            this.$.autoSyncToggle.toggle();
+        }
+    },
+    save: function() {
+        this.settings.save();
     }
 });
