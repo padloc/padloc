@@ -4,10 +4,18 @@ define(function() {
      * @param Source source   Source to use for persistency
      * @param Object defaults Default values.
      */
-    var Settings = function(source, defaults) {
+    var Settings = function(settings, source) {
         this.source = source;
-        this.defaults = defaults || {};
+        this.defaults = settings;
         this.settings = {};
+
+        for (var prop in settings) {
+            Object.defineProperty(this, prop, {
+                enumerable: true,
+                get: this.get.bind(this, prop),
+                set: this.set.bind(this, prop)
+            });
+        }
     };
 
     Settings.prototype = {
@@ -30,7 +38,7 @@ define(function() {
             this.source.save(opts);
         },
         get: function(setting) {
-            return this.settings[setting] || this.defaults[setting];
+            return setting in this.settings ? this.settings[setting] : this.defaults[setting];
         },
         set: function(setting, value) {
             this.settings[setting] = value;
