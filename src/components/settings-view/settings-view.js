@@ -35,6 +35,7 @@ Polymer("padlock-settings-view", {
     closeChangePasswordSuccessDialog: function() {
         this.$.changePasswordSuccessDialog.open = false;
     },
+    //* Opens the dialog for connecting to the Padlock Cloud
     cloudConnect: function() {
         this.$.emailInput.value = this.settings.sync_email || "";
         this.$.deviceNameInput.value = this.settings.sync_device || "";
@@ -59,6 +60,7 @@ Polymer("padlock-settings-view", {
     cancelDisconnect: function() {
         this.$.disconnectDialog.close();
     },
+    //* Requests an api key from the cloud api with the entered email and device name
     requestApiKey: function() {
         var req = new XMLHttpRequest(),
             url = this.settings.sync_host + "auth/",
@@ -68,6 +70,8 @@ Polymer("padlock-settings-view", {
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
                 if (req.status === 200) {
+                    // We're getting back the api key directly, but it will valid only
+                    // after the user has visited the activation link in the email he was sent
                     this.settings.sync_key = req.response.key;
                     this.settings.sync_connected = true;
                     this.settings.save();
@@ -86,6 +90,7 @@ Polymer("padlock-settings-view", {
         req.setRequestHeader("Accept", "application/json");
         req.send("email=" + email + "&device_name=" + deviceName);
     },
+    //* Shows an alert dialog with a given _message_
     alert: function(message) {
         this.$.alertText.innerHTML = message;
         this.$.alertDialog.open = true;
@@ -93,11 +98,15 @@ Polymer("padlock-settings-view", {
     dismissAlert: function() {
         this.$.alertDialog.open = false;
     },
+    //* Tap handler for the auto sync row. Toggles the auto sync toggle element
     toggleAutoSync: function(event, detail, sender) {
+        // Make sure the event is not coming from the toggle element itself as this
+        // would result in the element being toggled twice
         if (event.impl.target != this.$.autoSyncToggle.impl) {
             this.$.autoSyncToggle.toggle();
         }
     },
+    //* Saves the current settings
     save: function() {
         this.settings.save();
     }
