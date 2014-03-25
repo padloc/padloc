@@ -50,12 +50,13 @@ Polymer("padlock-categories-view", {
     updateTitleText: function() {
         this.titleText = this.record && this.record.name;
     },
-    newCategory: function() {
+    newCategory: function(event, detail, sender) {
         this.categoryEditing = null;
         this.$.nameInput.value = "";
         this.$.colorSelect.selected = this.$.colorSelect.children[0];
         this.$.removeButton.style.display = "none";
         this.$.editDialog.open = true;
+        this.bounce(sender);
     },
     editCategory: function(event, detail, sender) {
         var colorOptions = this.$.colorSelect.children,
