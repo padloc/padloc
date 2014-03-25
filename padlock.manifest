@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Padlock 0.3.0.0
+# Padlock 0.4.0.0
 
 NETWORK:
 *
@@ -16,16 +16,23 @@ bower_components/polymer/polymer.js
 
 # core js
 lib/sjcl.js
+src/Categories.js
+src/CloudSource.js
+src/Collection.js
 src/crypto.js
-src/util.js
-src/model.js
 src/import.js
+src/LocalStorageSource.js
 src/platform.js
+src/Settings.js
+src/Source.js
+src/start.js
+src/Store.js
+src/util.js
 
 # stylesheets
-src/fonts.css
-src/animations.css
-src/overrides.css
+src/styles/animations.css
+src/styles/fonts.css
+src/styles/overrides.css
 
 # web components
 # app
@@ -79,6 +86,10 @@ src/components/shapeshifter/shapeshifter.css
 src/components/start-view/start-view.html
 src/components/start-view/start-view.js
 src/components/start-view/start-view.css
+# toggle
+src/components/toggle/toggle.html
+src/components/toggle/toggle.js
+src/components/toggle/toggle.css
 # view
 src/components/view/view.html
 src/components/view/view.js
@@ -93,5 +104,6 @@ assets/fonts/ClearSans-Regular.woff
 assets/fonts/ClearSans-Bold.woff
 
 # images
-assets/app-icon.png
+assets/app-icon.svg
 assets/add-homescreen.svg
+assets/favicon.png
