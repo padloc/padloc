@@ -58,7 +58,7 @@ Polymer("padlock-app", {
             this.updateCategories(this.collection.records);
             this.$.lockView.errorMessage = null;
             this.openView(this.$.listView);
-            if (this.settings.sync_auto) {
+            if (this.settings.sync_connected && this.settings.sync_auto) {
                 this.synchronize();
             }
         }.bind(this), fail: function() {
@@ -119,7 +119,7 @@ Polymer("padlock-app", {
             // Save the changes
             this.collection.save({record: record});
             this.$.listView.prepareRecords();
-            if (this.settings.sync_auto) {
+            if (this.settings.sync_connected && this.settings.sync_auto) {
                 this.synchronize();
             }
         }
@@ -274,8 +274,11 @@ Polymer("padlock-app", {
     },
     //* Synchronizes the data with a remote source
     synchronize: function() {
+        // In case this was called from the menu
         this.$.mainMenu.open = false;
 
+        // Check if the user has connected the client to the cloud already.
+        // If not, prompt him to do so
         if (this.settings.sync_connected) {
             this.remoteSource = this.remoteSource || new CloudSource();
             this.remoteSource.host = this.settings.sync_host;
