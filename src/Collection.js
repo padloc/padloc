@@ -63,10 +63,16 @@ define(["padlock/util"], function(util) {
             rec.forEach(function(r) {
                 // Generate uuid if the record doesn't have one yet
                 r.uuid = r.uuid || util.uuid();
+
+                // If the record does not have and 'updated' property, use the current time
+                var updated = r.updated || new Date();
+                // If the updated property is not a Date object, convert it to one.
+                r.updated = updated instanceof Date ? updated : new Date(updated);
+
                 // If a record with the same uuid exists but the new one is more
                 // recent, replace the existing one. Otherwise just add it.
                 var existing = this.uuidMap[r.uuid];
-                if (existing && r.updated && r.updated > existing.updated) {
+                if (existing && r.updated > existing.updated) {
                     this.uuidMap[r.uuid] = r;
                     records[records.indexOf(existing)] = r;
                 } else if (!existing) {
