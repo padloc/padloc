@@ -15,6 +15,7 @@ window.addEventListener("polymer-ready", function() {
                 sync_host: cloudHost,
                 sync_email: "",
                 sync_key: "",
+                sync_device: "",
                 sync_connected: false,
                 sync_auto: true
             }, source),
