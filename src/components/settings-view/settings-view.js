@@ -70,9 +70,10 @@ Polymer("padlock-settings-view", {
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
                 if (req.status === 200) {
+                    var apiKey = JSON.parse(req.responseText);
                     // We're getting back the api key directly, but it will valid only
                     // after the user has visited the activation link in the email he was sent
-                    this.settings.sync_key = req.response.key;
+                    this.settings.sync_key = apiKey.key;
                     this.settings.sync_connected = true;
                     this.settings.save();
                     this.alert("An email was sent to " + email + ". Please follow the " +
@@ -84,7 +85,6 @@ Polymer("padlock-settings-view", {
             }
         }.bind(this);
 
-        req.responseType = "json";
         req.open("POST", url, true);
         req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         req.setRequestHeader("Accept", "application/json");
