@@ -1,0 +1,19 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link href="animations.css" rel="stylesheet" type="text/css">
+
+<polymer-element name="padlock-progress" attributes="text" style="display: none">
+    <template>
+        <link href="progress.css" rel="stylesheet" type="text/css">
+        <span><content></content></span>
+    </template>
+    <script>
+        Polymer("padlock-progress", {
+            show: function() {
+                this.style.display = "";
+            },
+            hide: function() {
+                this.style.display = "none";
+            }
+        });
+    </script>
+</polymer-element>

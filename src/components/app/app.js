@@ -254,23 +254,13 @@ Polymer("padlock-app", {
         });
     },
     //* Starts a spinner animation on the menu icon
-    startSpinner: function() {
-        this.spinnerStarted = new Date();
-        this.$.listView.headerOptions.leftIconShape = "spinner";
-        this.$.header.updateIcons();
+    showProgress: function(text) {
+        this.$.progress.innerHTML = text;
+        this.$.progress.show();
     },
     //* Stops the spinner animation on the menu icon
-    stopSpinner: function() {
-        // Make sure the spinner animates at least for a certain amount of time,
-        // because otherwise it will look weird.
-        var minDur = 2000,
-            timePassed = new Date().getTime() - this.spinnerStarted.getTime(),
-            delay = Math.max(minDur - timePassed, 0);
-
-        setTimeout(function() {
-            this.$.listView.headerOptions.leftIconShape = "menu";
-            this.$.header.updateIcons();
-        }.bind(this), delay);
+    hideProgress: function() {
+        this.$.progress.hide();
     },
     //* Synchronizes the data with a remote source
     synchronize: function() {
@@ -285,11 +275,11 @@ Polymer("padlock-app", {
             this.remoteSource.email = this.settings.sync_email;
             this.remoteSource.apiKey = this.settings.sync_key;
 
-            this.startSpinner();
+            this.showProgress("synchronizing...");
 
             this.collection.sync(this.remoteSource, {
                 success: function() {
-                    this.stopSpinner();
+                    this.hideProgress();
                     // Update the local set of categories with the categories from any
                     // newly added records
                     this.updateCategories(this.collection.records);
@@ -300,7 +290,7 @@ Polymer("padlock-app", {
                     var msg = req.status == 401 ? "Authentication failed. Have you visited the link in the activation email yet?" :
                         "An error occurred while synchronizing. Please try again later!";
                     this.alert(msg);
-                    this.stopSpinner();
+                    this.hideProgress();
                 }.bind(this)
             });
         } else {

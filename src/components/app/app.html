@@ -11,6 +11,7 @@
 <link rel="import" href="../homescreen-view/homescreen-view.html">
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../padlock-input.html">
+<link rel="import" href="../progress/progress.html">
 <link href="../../styles/fonts.css" rel="stylesheet" type="text/css">
 <link href="../../styles/animations.css" rel="stylesheet" type="text/css">
 
@@ -70,6 +71,7 @@
             <button on-tap="{{ openSettings }}" class="primary">Settings</button>
             <button on-tap="{{ dismissNotConnectedDialog }}">Cancel</button>
         </padlock-dialog>
+        <padlock-progress id="progress">loading data...</padlock-progress>
     </template>
     <script src="app.js"></script>
 </polymer-element>
