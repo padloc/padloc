@@ -8,11 +8,25 @@
     </template>
     <script>
         Polymer("padlock-progress", {
+            ready: function() {
+                require(["padlock/platform"], function(platform) {
+                    this.addEventListener(platform.getAnimationIterationEventName(), this.iteration.bind(this));
+                }.bind(this));
+            },
             show: function() {
+                this.hidePending = false;
                 this.style.display = "";
             },
             hide: function() {
-                this.style.display = "none";
+                // We want the animation to finish first, so we'll just set this flag
+                // and do the hiding after the next iteration
+                this.hidePending = true;
+            },
+            iteration: function(event) {
+                // Hide the element if hide() was called during the last iteration
+                if (this.hidePending && event.impl.target == this.impl) {
+                    this.style.display = "none";
+                }
             }
         });
     </script>
