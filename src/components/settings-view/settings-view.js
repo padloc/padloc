@@ -1,7 +1,7 @@
 Polymer("padlock-settings-view", {
     headerOptions: {
         show: true,
-        leftIconShape: "arrow-left",
+        leftIconShape: "left",
         rightIconShape: ""
     },
     titleText: "Settings",

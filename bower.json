@@ -16,7 +16,8 @@
   ],
   "dependencies": {
     "polymer": "~0.2.1",
-    "requirejs": "~2.1.9"
+    "requirejs": "~2.1.9",
+    "shape-shifter": "~0.1.1"
   },
   "private": true,
   "resolutions": {

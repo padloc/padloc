@@ -1,7 +1,7 @@
 Polymer("padlock-import-view", {
     headerOptions: {
         show: true,
-        leftIconShape: "arrow-left",
+        leftIconShape: "left",
         rightIconShape: ""
     },
     titleText: "Import Records",

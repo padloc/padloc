@@ -1,7 +1,7 @@
 Polymer('padlock-record-view', {
     headerOptions: {
         show: true,
-        leftIconShape: "arrow-left",
+        leftIconShape: "left",
         rightIconShape: "more"
     },
     titleText: "",

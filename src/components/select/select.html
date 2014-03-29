@@ -1,5 +1,5 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../shapeshifter/shapeshifter.html">
+<link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 
 <polymer-element name="padlock-option" attributes="selected value selectedClass">
     <template>
@@ -11,7 +11,7 @@
     <template>
         <!-- STYLES -->
         <link href="select.css" rel="stylesheet" type="text/css">
-        <button on-tap="{{ toggleOpen }}" class="{{ selected.selectedClass }}">{{ selected ? selected.innerHTML : label}}<padlock-shapeshifter shape="{{ open ? 'cancel' : 'arrow-down' }}"></padlock-shapeshifter></button>
+        <button on-tap="{{ toggleOpen }}" class="{{ selected.selectedClass }}">{{ selected ? selected.innerHTML : label}}<shape-shifter shape="{{ open ? 'cancel' : 'down' }}"></shape-shifter></button>
         <div class="options" on-tap="{{ optionTap }}">
             <content></content>
         </div>
