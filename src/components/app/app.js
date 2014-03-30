@@ -254,7 +254,7 @@ Polymer("padlock-app", {
     },
     //* Starts a spinner animation on the menu icon
     showProgress: function(text) {
-        this.$.progress.innerHTML = text;
+        this.$.progress.innerHTML = text || "";
         this.$.progress.show();
     },
     //* Stops the spinner animation on the menu icon
