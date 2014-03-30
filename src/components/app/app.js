@@ -134,7 +134,9 @@ Polymer("padlock-app", {
         this.$.addDialog.open = false;
         var record = {
             name: this.$.addInput.value,
-            fields: []
+            fields: this.settings.default_fields.map(function(field) {
+                return {name: field, value: ""};
+            })
         };
 
         this.collection.add(record);

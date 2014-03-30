@@ -17,7 +17,8 @@ window.addEventListener("polymer-ready", function() {
                 sync_key: "",
                 sync_device: "",
                 sync_connected: false,
-                sync_auto: true
+                sync_auto: true,
+                default_fields: ["username", "password"]
             }, source),
             categories = new Categories(null, 3, source),
             collection = new Collection("default", store);
