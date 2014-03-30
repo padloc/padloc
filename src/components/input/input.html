@@ -1,0 +1,11 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<polymer-element name="padlock-input" extends="input" touch-action="none" on-tap="{{ tap }}" on-mousedown="{{ mousedown }}"
+    on-focus="{{ focussed }}" on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus" autocorrect="off" autocapitalize="off">
+</polymer-element>
+
+<polymer-element name="padlock-textarea" extends="textarea" touch-action="none" on-tap="{{ tap }}" on-mousedown="{{ mousedown }}"
+    on-focus="{{ focussed }}" on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus">
+</polymer-element>
+
+<script src="input.js"></script>
