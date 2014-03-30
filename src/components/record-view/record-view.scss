@@ -39,7 +39,7 @@
 
         &:empty:after {
             content: "(tap to edit)";
-            color: #C5C5C5;
+            color: $text-color-faint;
         }
     }
 }
@@ -51,7 +51,7 @@
 
 .category {
     background: #fff;
-    color: #C5C5C5;
+    color: $text-color-faint;
     text-align: center;
     font-size: 16px;
     padding: 10px;

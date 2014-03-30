@@ -6,6 +6,7 @@ $font-weight-bold: 700;
 
 $text-color: #333;
 $text-color-light: #ffffff;
+$text-color-faint: #C5C5C5;
 
 $color-grey: #f5f5f5;
 $color-blue: #59c6ff;
@@ -17,7 +18,7 @@ $color-red: #ff8283;
 $color-primary: $color-blue;
 $color-negative: red;
 
-$placeholder-color: rgba(0, 0, 0, 0.3);
+$placeholder-color: $text-color-faint;
 $placeholder-color-light: rgba(255, 255, 255, 0.6);
 
 $border-color: rgba(0, 0, 0, 0.2);
