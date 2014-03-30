@@ -44,6 +44,8 @@
         <!-- CATEGORIES VIEW -->
         <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ selected }}"
             on-done="{{ categoriesDone }}" on-categorychanged="{{ categoryChanged }}"></padlock-categories-view>
+        <!-- PROGRESS INDICATOR -->
+        <padlock-progress id="progress"></padlock-progress>
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
             <padlock-select openUpwards="true" selected="{{ orderOption }}">
@@ -71,7 +73,6 @@
             <button on-tap="{{ openSettings }}" class="primary">Settings</button>
             <button on-tap="{{ dismissNotConnectedDialog }}">Cancel</button>
         </padlock-dialog>
-        <padlock-progress id="progress">loading data...</padlock-progress>
     </template>
     <script src="app.js"></script>
 </polymer-element>

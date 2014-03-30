@@ -13,10 +13,8 @@
 }
 
 span {
-    display: block;
-    position: absolute;
+    display: inline-block;
     width: 100%;
-    top: 0;
     color: #fff;
-    -webkit-animation: leftToRight 3s cubic-bezier(0.2,1,0.8,0) reverse infinite;
+    -webkit-animation: rightToLeft 3s cubic-bezier(0.2,1,0.8,0) infinite;
 } 
