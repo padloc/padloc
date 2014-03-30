@@ -7,7 +7,6 @@ Polymer("padlock-app", {
         this.settings.fetch();
 
         this.categories.fetch();
-        this.$.categoriesView.updateCategories();
 
         this.collection.exists({success: this.initView.bind(this), fail: this.initView.bind(this, false)});
 
@@ -55,7 +54,6 @@ Polymer("padlock-app", {
     //* Tries to unlock the current collection with the provided password
     unlock: function(password) {
         this.collection.fetch({password: password, success: function() {
-            this.updateCategories(this.collection.records);
             this.$.lockView.errorMessage = null;
             this.openView(this.$.listView);
             if (this.settings.sync_connected && this.settings.sync_auto) {
@@ -176,7 +174,6 @@ Polymer("padlock-app", {
     },
     //* Add the records imported with the import view to the collection
     saveImportedRecords: function(event, detail) {
-        this.updateCategories(detail.records);
         this.collection.add(detail.records);
         this.collection.save();
         this.alert(detail.records.length + " records imported!");
@@ -282,11 +279,6 @@ Polymer("padlock-app", {
             this.collection.sync(this.remoteSource, {
                 success: function() {
                     this.hideProgress();
-                    // Update the local set of categories with the categories from any
-                    // newly added records
-                    this.updateCategories(this.collection.records);
-                    // Rerender items in list view
-                    this.$.listView.prepareRecords();
                 }.bind(this),
                 fail: function(req) {
                     var msg = req.status == 401 ? "Authentication failed. Have you visited the link in the activation email yet?" :

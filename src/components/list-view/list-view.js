@@ -48,13 +48,26 @@ Polymer("padlock-list-view", {
             return match;
         });
 
-        // Set _section_ and _color_ for each item
+        // Add some metadata to each record and do some other preparation work
         for (var i=0, rec; i<records.length; i++) {
             rec = records[i];
+
+            // Add the records category to known categories and assign it a color if it doesn't exist yet.
+            // This is done here mainly for efficiency reasons.
+            if (rec.category && !this.categories.get(rec.category)) {
+                this.categories.set(rec.category, this.categories.autoColor());
+            }
+
+            // Give it a section property for the rendering of the section headers
             rec.section = this.orderBy == "category" ? rec.category || "other" : rec.name.toUpperCase()[0];
+
+            // Add properties for rendering the category
             rec.catColor = this.categories.get(rec.category) || "";
             rec.showCategory = this.orderBy != "category";
         }
+
+        // Save the categories in case any new ones have been added
+        this.categories.save();
 
         // Sort by section property first, name second
         records = records.sort(function(a, b) {

@@ -24,6 +24,7 @@ Polymer("padlock-categories-view", {
         // Apparently firefox doesn't want a prefix when setting styles directly
         prefix = prefix == "-moz-" ? "" : prefix;
 
+        this.updateCategories();
         this.super(arguments);
 
         // Remove animation property so the animation will restart
