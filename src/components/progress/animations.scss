@@ -1,0 +1,14 @@
+@import "animation";
+@import "compass/css3/transform";
+
+@include keyframes(leftToRight) {
+    from {@include transform(translate(-100%, 0));}
+    60% {@include transform(translate(100%, 0));}
+    to {@include transform(translate(100%, 0));}
+}
+
+@include keyframes(rightToLeft) {
+    from {@include transform(translate(50%, 0));}
+    60% {@include transform(translate(-50%, 0));}
+    to {@include transform(translate(-50%, 0));}
+}

@@ -55,6 +55,22 @@ define(function() {
         return animationEndEventNames[getVendorPrefix().lowercase];
     };
 
+    // Names for animation iteration events on various platforms
+    var animationIterationEventNames = {
+        webkit: "webkitAnimationIteration",
+        moz: "animationiteration",
+        ms: "MSAnimationIteration",
+        o: "oanimationiteration"
+    };
+
+    /**
+     * Returns the appropriate animation end event name for the current platform
+     * @return {String} Name of the animation end event name on this platform
+     */
+    var getAnimationIterationEventName = function () {
+        return animationIterationEventNames[getVendorPrefix().lowercase];
+    };
+
     // All the devices running iOS
     var iDevices = ["iPad", "iPhone", "iPod"];
     
@@ -78,6 +94,7 @@ define(function() {
         getVendorPrefix: getVendorPrefix,
         getTransitionEndEventName: getTransitionEndEventName,
         getAnimationEndEventName: getAnimationEndEventName,
+        getAnimationIterationEventName: getAnimationIterationEventName,
         isIOS: isIOS,
         isIOSStandalone: isIOSStandalone
     };

@@ -22,6 +22,8 @@
         <div class="section">
             <button class="settings-button" on-tap="{{ changePassword }}">Change Master Password</button>
         </div>
+        <!-- PROGRESS INDICATOR -->
+        <padlock-progress id="progress">Connecting...</padlock-progress>
         <!-- CONNECT DIALOG -->
         <padlock-dialog id="connectDialog">
             <input is="padlock-input" placeholder="Email Address" id="emailInput"/>

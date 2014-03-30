@@ -67,9 +67,14 @@ Polymer("padlock-settings-view", {
             email = this.$.emailInput.value,
             deviceName = this.$.deviceNameInput.value;
 
+        // Show progress indicator
+        this.$.progress.show();
+
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
                 if (req.status === 200) {
+                    // Hide progress indicator
+                    this.$.progress.hide();
                     var apiKey = JSON.parse(req.responseText);
                     // We're getting back the api key directly, but it will valid only
                     // after the user has visited the activation link in the email he was sent

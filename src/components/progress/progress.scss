@@ -1,0 +1,20 @@
+:host {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    height: 30px;
+    line-height: 30px;
+    background: #59c6ff;
+    overflow: hidden;
+    font-size: 16px;
+    -webkit-animation: leftToRight 3s cubic-bezier(0.2,1,0.8,0) infinite;
+}
+
+span {
+    display: inline-block;
+    width: 100%;
+    color: #fff;
+    -webkit-animation: rightToLeft 3s cubic-bezier(0.2,1,0.8,0) infinite;
+} 
