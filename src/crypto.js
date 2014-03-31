@@ -1,7 +1,14 @@
 /**
  * Cyptrographic module for encrypting and decrypting content
  */
-define(["sjcl"], function(sjcl) {
+(function() {
+
+// Whether or not the script was loaded in the context of a web worker instance
+// Perhaps there is a more reliable way to detect this?
+var isWorker = !!self.importScripts;
+
+// The function defining the module
+var modFunc = function(sjcl) {
     // Available cipher algorithms
     var ciphers = {
         AES: "AES"
@@ -34,7 +41,7 @@ define(["sjcl"], function(sjcl) {
             iv: rand(),          // Initialization vector
             salt: "",            // Salt used during key derivation
             keySize: 256,        // The size of the used key
-            iter: 1000,          // The number of iterations used for the key derivation
+            iter: 100000,          // The number of iterations used for the key derivation
             ct: "",              // The resulting cipher text
             adata: rand(),       // Authenticated data used for checking the integrity of
                                  // the encrypted message during decryption
@@ -59,7 +66,7 @@ define(["sjcl"], function(sjcl) {
     function genKey(passphrase, salt, size, iter) {
         salt = toBits(salt || rand());
         size = size || 256;
-        iter = iter || 1000;
+        iter = iter || 100000;
         var p = sjcl.misc.cachedPbkdf2(passphrase, {iter: iter, salt: salt});
         p.key = fromBits(p.key.slice(0, size/32));
         p.salt = fromBits(salt);
@@ -127,6 +134,50 @@ define(["sjcl"], function(sjcl) {
         return cont;
     }
 
+    //* Spawns a worker instance using this same script and returns it.
+    function spawnWorker() {
+        return new Worker(require.toUrl("padlock/crypto.js"));
+    }
+
+    //* Helper function for delegating the call to a certain _method_ to a worker instance
+    function workerDo(method, args, callback) {
+        var worker = spawnWorker();
+
+        // Wait for the response.
+        worker.addEventListener("message", function(e) {
+            callback(e.data);
+            // This worker has done its part. Time to go.
+            worker.terminate();
+        });
+
+        // This will invoke the method. The worker will post back the result as soon as it's done
+        worker.postMessage({
+            method: method,
+            args: args
+        });
+
+        // Return the worker just in case
+        return worker;
+    }
+
+    /**
+     * Same as _pwdDecrypt_, only the work is delegated to a web worker. As a result, the method
+     * works asyncronously and the user has to pass a _callback_ function as the last argument.
+     * The result will be passed as the only argument to that function.
+     */
+    function workerPwdDecrypt(pwd, cont, callback) {
+        return workerDo("pwdDecrypt", [pwd, cont], callback);
+    }
+
+    /**
+     * Same as _pwndEncrypt_, only the work is delegated to a web worker. As a result, the method
+     * works asyncronously and the user has to pass a _callback_ function as the last argument.
+     * The result will be passed as the only argument to that function.
+     */
+    function workerPwdEncrypt(pwd, value, callback) {
+        return workerDo("pwdEncrypt", [pwd, value], callback);
+    }
+
     return {
         ciphers: ciphers,
         modes: modes,
@@ -135,6 +186,34 @@ define(["sjcl"], function(sjcl) {
         decrypt: decrypt,
         encrypt: encrypt,
         pwdDecrypt: pwdDecrypt,
-        pwdEncrypt: pwdEncrypt
+        pwdEncrypt: pwdEncrypt,
+        workerPwdDecrypt: workerPwdDecrypt,
+        workerPwdEncrypt: workerPwdEncrypt
     };
-});
+};
+
+if (isWorker) {
+    // We're in a web worker! Let's create an interface for calling some of the modules methods
+
+    // Load the sjcl dependency. This could be done with requirejs but that would probably be overkill
+    importScripts("../lib/sjcl.js");
+    // Create the module (Inject the dependy manually)
+    var crypto = modFunc(sjcl);
+    
+    // Register handler for messages to the worker. Users can use _postMessage_ to invoke methods on the module
+    // The result will be sent back via _postMessage_
+    self.addEventListener("message", function(event) {
+        var method = event.data.method,
+            args = event.data.args,
+            result;
+
+        result = crypto[method].apply(crypto, args);
+        self.postMessage(result);
+    });
+} else {
+    // The script was not loaded in the context of a web worker so we're assuming it was loaded
+    // as an amd module, so we'll register it via _define_
+    define(["sjcl"], modFunc);
+}
+
+})();
