@@ -140,14 +140,24 @@ var modFunc = function(sjcl) {
     }
 
     //* Helper function for delegating the call to a certain _method_ to a worker instance
-    function workerDo(method, args, callback) {
+    function workerDo(method, args, success, fail) {
         var worker = spawnWorker();
 
         // Wait for the response.
         worker.addEventListener("message", function(e) {
-            callback(e.data);
+            success(e.data);
             // This worker has done its part. Time to go.
             worker.terminate();
+        });
+
+        worker.addEventListener("error", function(e) {
+            if (fail) {
+                fail(e);
+            }
+            // This worker has done its part. Time to go.
+            worker.terminate();
+            // Prevent default behaviour of error event (i.e. recover)
+            e.preventDefault();
         });
 
         // This will invoke the method. The worker will post back the result as soon as it's done
@@ -165,8 +175,8 @@ var modFunc = function(sjcl) {
      * works asyncronously and the user has to pass a _callback_ function as the last argument.
      * The result will be passed as the only argument to that function.
      */
-    function workerPwdDecrypt(pwd, cont, callback) {
-        return workerDo("pwdDecrypt", [pwd, cont], callback);
+    function workerPwdDecrypt(pwd, cont, success, fail) {
+        return workerDo("pwdDecrypt", [pwd, cont], success, fail);
     }
 
     /**
@@ -174,8 +184,8 @@ var modFunc = function(sjcl) {
      * works asyncronously and the user has to pass a _callback_ function as the last argument.
      * The result will be passed as the only argument to that function.
      */
-    function workerPwdEncrypt(pwd, value, callback) {
-        return workerDo("pwdEncrypt", [pwd, value], callback);
+    function workerPwdEncrypt(pwd, value, success, fail) {
+        return workerDo("pwdEncrypt", [pwd, value], success, fail);
     }
 
     return {
