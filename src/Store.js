@@ -123,6 +123,11 @@ define(["padlock/crypto"], function(crypto) {
                 success(!!data);
             };
             source.fetch(opts);
+        },
+        //* Deletes the stored password and resets the key cache
+        clear: function() {
+            this.password = null;
+            crypto.clearKeyCache();
         }
     };
 

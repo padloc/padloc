@@ -68,10 +68,9 @@ Polymer("padlock-app", {
         this.$.mainMenu.open = false;
         this.openView(this.$.lockView, {
             inAnimation: "floatUp",
-            inDuration: 1000
-        }, function() {
-            this.collection.lock();
-        }.bind(this));
+            inDuration: 1000,
+            outCallback: this.collection.clear.bind(this.collection)
+        });
     },
     //* Change handler for the selected property; Opens the record view when record is selected
     selectedChanged: function() {
