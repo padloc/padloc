@@ -33,6 +33,7 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
             cont.salt = obj.salt;
             cont.iv = obj.data.iv;
             cont.ct = obj.data.ct;
+            cont.iter = 1000;
             cont.adata = unescape(obj.data.adata);
 
             // Decrypt data and parse the resulting JSON
