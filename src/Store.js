@@ -37,21 +37,22 @@ define(["padlock/crypto"], function(crypto) {
             source.fetch({key: key, success: function(data) {
                 // If there is no data, we simply consider the collection to be empty.
                 if (data) {
-                    // Try to decrypt and parse data. This might fail either if the password
-                    // is incorrect or the data corrupted. If the decryption is successful, the parsing
-                    // should usually be no problem.
-                    try {
-                        var records = JSON.parse(crypto.pwdDecrypt(password, data));
+                    // Try to decrypt and parse data. This might fail either if the password is incorrect
+                    // or the data corrupted. The decrypting happens in a web worker, which is why
+                    // it works asynchronously.
+                    crypto.workerPwdDecrypt(password, data, function(pt) {
+                        // If the decryption was successful, there should be, under normal circumstances, no
+                        // reason why why the parsing should fail. So we can do without a try-catch.
+                        var records = JSON.parse(pt);
                         coll.add(records);
-                    } catch (e) {
+                        if (opts.success) {
+                            opts.success(coll);
+                        }
+                    }, function(e) {
                         if (opts.fail) {
                             opts.fail(e);
                         }
-                    }
-                }
-
-                if (opts.success) {
-                    opts.success(coll);
+                    });
                 }
             }, fail: opts.fail});
 
@@ -69,14 +70,15 @@ define(["padlock/crypto"], function(crypto) {
          */
         save: function(coll, opts) {
             opts = opts || {};
+            opts.key = this.getKey(coll);
             source = opts.source || this.defaultSource;
             // Stringify the collections record array
             var pt = JSON.stringify(coll.records);
             // Encrypt the JSON string
-            var c = crypto.pwdEncrypt(this.password, pt);
-            opts.key = this.getKey(coll);
-            opts.data = c;
-            source.save(opts);
+            crypto.workerPwdEncrypt(this.password, pt, function(c) {
+                opts.data = c;
+                source.save(opts);
+            }.bind(this));
         },
         /**
          * Checks whether or not data for a collection exists
