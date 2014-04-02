@@ -36,7 +36,7 @@
         <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
             on-delete="{{ deleteRecord }}" on-categories="{{ openCategories }}"></padlock-record-view>
         <!-- Settings VIEW -->
-        <padlock-settings-view id="settingsView" class="view" on-back="{{ settingsBack }}"
+        <padlock-settings-view id="settingsView" class="view" on-back="{{ settingsBack }}" on-import="{{ openImportView }}"
             collection="{{ collection }}" settings="{{ settings }}"></padlock-settings-view>
         <!-- IMPORT VIEW -->
         <padlock-import-view id="importView" class="view" on-import="{{ saveImportedRecords }}"
@@ -54,7 +54,6 @@
             </padlock-select>
             <button on-tap="{{ synchronize }}">Synchronize</button>
             <button on-tap="{{ openSettings }}">Settings</button>
-            <button on-tap="{{ openImportView }}">Import Records</button>
             <button on-tap="{{ lock }}">Lock App</button>
         </padlock-dialog>
         <!-- ADD RECORD -->

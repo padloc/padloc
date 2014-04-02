@@ -114,5 +114,8 @@ Polymer("padlock-settings-view", {
     //* Saves the current settings
     save: function() {
         this.settings.save();
+    },
+    import: function() {
+        this.fire("import");
     }
 });

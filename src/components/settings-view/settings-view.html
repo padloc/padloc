@@ -9,6 +9,9 @@
         <!-- STYLES -->
         <link href="settings-view.css" rel="stylesheet" type="text/css">
         <div class="section">
+            <button class="settings-button" on-tap="{{ import }}">Import Data</button>
+        </div>
+        <div class="section">
             <button class="settings-button" on-tap="{{ cloudConnect }}"
                 style="{{ settings.sync_connected ? 'display: none' : ''}}">Connect To Padlock Cloud</button>
             <button class="settings-button" on-tap="{{ cloudDisconnect }}"
