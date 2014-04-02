@@ -205,6 +205,7 @@ var modFunc = function(sjcl) {
         ciphers: ciphers,
         modes: modes,
         defaults: defaults,
+        rand: rand,
         initContainer: initContainer,
         genKey: genKey,
         cachedGenKey: cachedGenKey,
