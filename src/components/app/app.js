@@ -151,6 +151,10 @@ Polymer("padlock-app", {
         this.collection.save();
         this.$.listView.prepareRecords();
         this.recordViewBack();
+        // Auto sync
+        if (this.settings.sync_connected && this.settings.sync_auto) {
+            this.synchronize();
+        }
     },
     recordViewBack: function(event, detail, sender) {
         this.selected = null;
@@ -180,6 +184,10 @@ Polymer("padlock-app", {
         this.collection.save();
         this.alert(detail.records.length + " records imported!");
         this.openView(this.$.listView);
+        // Auto sync
+        if (this.settings.sync_connected && this.settings.sync_auto) {
+            this.synchronize();
+        }
     },
     importBack: function() {
         this.openView(this.$.listView);
