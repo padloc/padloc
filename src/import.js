@@ -15,49 +15,56 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
      * @param  {String}   password Password to be used for decryption
      * @return {Array}             A list of records
      */
-    var importSecuStoreBackup = function(rawData, password) {
+    var importSecuStoreBackup = function(rawData, password, success, fail) {
         var begin = '#begin',
-            end = '#end';
-        // rawData = tData;
+            end = '#end',
+            objJSON, obj;
         
         //Get the JSON code for the data
         objJSON = rawData.substring(rawData.indexOf(begin) + begin.length, rawData.indexOf(end));
         
         try {
             // Try to parse JSON object containing data needed for decryption
-            var obj = JSON.parse(objJSON);
-
-            // Create a crypto container and initialize it with the parameters from the
-            // obtained object
-            var cont = crypto.initContainer();
-            cont.salt = obj.salt;
-            cont.iv = obj.data.iv;
-            cont.ct = obj.data.ct;
-            cont.iter = 1000;
-            cont.adata = unescape(obj.data.adata);
-
-            // Decrypt data and parse the resulting JSON
-            var data = JSON.parse(crypto.pwdDecrypt(password, cont));
-
-            // Convert the _items_ array of the SecuStore Set object into an array of Padlock records
-            var records = data.items.map(function(item) {
-                var fields = item.template.containsPassword ?
-                    // Passwords are a separate property in SecuStore but will be treated as
-                    // regular fields in Padlock
-                    item.fields.concat([{name: "password", value: item.password}]) : item.fields;
-
-                return {
-                    name: item.title,
-                    category: data.name,
-                    fields: fields
-                };
-            });
-
-            return records;
+            obj = JSON.parse(objJSON);
         } catch(e) {
-            console.error("Failed to restore backup! The data is corrupt or password incorrect!", e);
-            return null;
+            fail(e);
+            return;
         }
+
+        // Create a crypto container and initialize it with the parameters from the
+        // obtained object
+        var cont = crypto.initContainer();
+        cont.salt = obj.salt;
+        cont.iv = obj.data.iv;
+        cont.ct = obj.data.ct;
+        cont.iter = 1000;
+        cont.keySize = 256;
+        cont.adata = unescape(obj.data.adata);
+
+        // Generate a key from the password provided by the user and the meta data from the backup
+        crypto.cachedWorkerGenKey(password, cont.salt, cont.keySize, cont.iter, function(keyData) {
+            // Decrypt data
+            crypto.workerDecrypt(keyData, cont, function(pt) {
+                // If the decrypting was successful there should no reason why this should fail
+                var data = JSON.parse(pt);
+
+                // Convert the _items_ array of the SecuStore Set object into an array of Padlock records
+                var records = data.items.map(function(item) {
+                    var fields = item.template.containsPassword ?
+                        // Passwords are a separate property in SecuStore but will be treated as
+                        // regular fields in Padlock
+                        item.fields.concat([{name: "password", value: item.password}]) : item.fields;
+
+                    return {
+                        name: item.title,
+                        category: data.name,
+                        fields: fields
+                    };
+                });
+
+                success(records);
+            }, fail);
+        });
     };
 
     /**
