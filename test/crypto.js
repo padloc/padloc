@@ -28,4 +28,41 @@ define(["padlock/crypto"], function(crypto) {
         var dec = crypto.decrypt(p, c);
         equal(dec, pt, "The decrypted value should be equal to the original value");
     });
+
+    asyncTest("worker keyGen", function() {
+        expect(1);
+
+        var pwd = "password", salt = crypto.rand(), keyLength = 256, iter = 1000,
+            p = crypto.genKey(pwd, salt, keyLength, iter);
+
+        crypto.workerGenKey(pwd, salt, keyLength, iter, function(keyData) {
+            deepEqual(keyData, p, "Key obtained through the worker version should be identical to the one obtained " +
+                "through the regular one.");
+            start();
+        });
+    });
+
+    asyncTest("worker encrypt", function() {
+        var pwd = "password", salt = crypto.rand(), keyLength = 256, iter = 1000, pt = "Hello World!",
+            p = crypto.genKey(pwd, salt, keyLength, iter);
+
+        crypto.workerEncrypt(p, pt, function(c) {
+            var pt2 = crypto.decrypt(p, c);
+            equal(pt2, pt, "Worker version should work the same as the regular one, just asyncronously. I.e. the " +
+                "result should be decryptable with the same key.");
+            start();
+        });
+    });
+
+    asyncTest("worker encrypt", function() {
+        var pwd = "password", salt = crypto.rand(), keyLength = 256, iter = 1000, pt = "Hello World!",
+            p = crypto.genKey(pwd, salt, keyLength, iter),
+            c = crypto.encrypt(p, pt);
+
+        crypto.workerDecrypt(p, c, function(pt2) {
+            equal(pt2, pt, "Worker version should work the same as the regular one, just asyncronously. I.e. it " +
+                "should be able to decrypt a cipher text encrypted with the same key.");
+            start();
+        });
+    });
 });
