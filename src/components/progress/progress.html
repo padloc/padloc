@@ -15,7 +15,11 @@
             },
             show: function() {
                 this.hidePending = false;
+                this.classList.remove("animated");
                 this.style.display = "";
+                // Trigger style recalculation so that adding the 'animated' class has an effect
+                this.offsetLeft;
+                this.classList.add("animated");
             },
             hide: function() {
                 // We want the animation to finish first, so we'll just set this flag
