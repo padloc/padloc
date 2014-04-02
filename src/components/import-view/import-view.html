@@ -2,6 +2,7 @@
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../select/select.html">
+<link rel="import" href="../progress/progress.html">
 
 <polymer-element name="padlock-import-view" extends="padlock-view">
     <template>
@@ -13,6 +14,7 @@
             <!-- IMPORT BUTTON -->
             <button class="import-button primary" on-tap="{{ startImport }}">import</button>
         </div>
+        <padlock-progress id="progress">importing...</padlock-progress>
         <!-- PASSWORD DIALOG -->
         <padlock-dialog id="pwdDialog">
             <div class="title">SecuStore backup detected. Please enter the password for this backup.</div>

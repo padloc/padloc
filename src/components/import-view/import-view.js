@@ -45,13 +45,14 @@ Polymer("padlock-import-view", {
     //* Starts the import using the raw input and the provided password
     importSecuStoreBackup: function() {
         this.$.pwdDialog.open = false;
+        this.$.progress.show();
         require(["padlock/import"], function(imp) {
-            var records = imp.importSecuStoreBackup(this.$.rawInput.value, this.$.pwdInput.value);
-            if (records) {
+            imp.importSecuStoreBackup(this.$.rawInput.value, this.$.pwdInput.value, function(records) {
                 this.fire("import", {records: records});
-            } else {
+            }.bind(this), function(e) {
                 this.$.errorDialog.open = true;
-            }
+            }.bind(this));
+            this.$.progress.hide();
         }.bind(this));
     },
     importCancel: function() {

@@ -37,25 +37,37 @@ define(["padlock/crypto"], function(crypto) {
             source.fetch({key: key, success: function(data) {
                 // If there is no data, we simply consider the collection to be empty.
                 if (data) {
-                    // Try to decrypt and parse data. This might fail either if the password
-                    // is incorrect or the data corrupted. If the decryption is successful, the parsing
-                    // should usually be no problem.
-                    try {
-                        var records = JSON.parse(crypto.pwdDecrypt(password, data));
-                        coll.add(records);
-                    } catch (e) {
-                        if (opts.fail) {
-                            opts.fail(e);
-                        }
-                    }
-                }
-
-                if (opts.success) {
-                    opts.success(coll);
+                    // Store the key generation parameters for this source so we can later reconstruct
+                    // the same key when saving.
+                    source.keyOpts = {
+                        salt: data.salt,
+                        size: data.keySize,
+                        iter: data.iter
+                    };
+                    
+                    // Construct a cryptographic key using the password provided by the user and the metadata
+                    // from the fetched container. The whole thing happens in a web worker which is why it's asynchronous
+                    crypto.cachedWorkerGenKey(password, data.salt, data.keySize, data.iter, function(keyData) {
+                        // Use the generated key to decrypt the data. Again, this is done in a web worker.
+                        crypto.workerDecrypt(keyData, data, function(pt) {
+                            // If the decryption was successful, there should be, under normal circumstances, no
+                            // reason why the parsing should fail. So we can do without a try-catch.
+                            var records = JSON.parse(pt);
+                            coll.add(records);
+                            if (opts.success) {
+                                opts.success(coll);
+                            }
+                        }, function(e) {
+                            // The decryption failed, probably because the password was incorrect
+                            if (opts.fail) {
+                                fail(e);
+                            }
+                        });
+                    });
                 }
             }, fail: opts.fail});
 
-            // Remember the password for next time we save or fetch data
+            // Remember the password for the duration of the session
             this.password = password;
         },
         /**
@@ -69,14 +81,26 @@ define(["padlock/crypto"], function(crypto) {
          */
         save: function(coll, opts) {
             opts = opts || {};
-            source = opts.source || this.defaultSource;
-            // Stringify the collections record array
-            var pt = JSON.stringify(coll.records);
-            // Encrypt the JSON string
-            var c = crypto.pwdEncrypt(this.password, pt);
             opts.key = this.getKey(coll);
-            opts.data = c;
-            source.save(opts);
+            source = opts.source || this.defaultSource;
+            source.keyOpts = source.keyOpts || {};
+
+            var pt = JSON.stringify(coll.records),
+                // Take the existing parameters for the key generation from the source kind if they are set.
+                // Otherwise generate a new, random salt and use the defaults for key size and iteration count.
+                salt = source.keyOpts.salt = source.keyOpts.salt || crypto.rand(),
+                keySize = source.keyOpts.size = source.keyOpts.size || crypto.defaults.keySize,
+                iter = source.keyOpts.iter = source.keyOpts.iter || crypto.defaults.iter;
+
+            // Construct a cryptographic key using the password provided by the user and the metadata
+            // from the source. The whole thing happens in a web worker which is why it's asynchronous
+            crypto.cachedWorkerGenKey(this.password, salt, keySize, iter, function(keyData) {
+                // Encrypt the data. Again, this happens in a web worker.
+                crypto.workerEncrypt(keyData, pt, function(c) {
+                    opts.data = c;
+                    source.save(opts);
+                });
+            }.bind(this));
         },
         /**
          * Checks whether or not data for a collection exists
@@ -99,6 +123,11 @@ define(["padlock/crypto"], function(crypto) {
                 success(!!data);
             };
             source.fetch(opts);
+        },
+        //* Deletes the stored password and resets the key cache
+        clear: function() {
+            this.password = null;
+            crypto.clearKeyCache();
         }
     };
 

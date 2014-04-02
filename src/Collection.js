@@ -122,9 +122,10 @@ define(["padlock/util"], function(util) {
         /**
          * Empties the collection and removes the stored password
          */
-        lock: function() {
+        clear: function() {
             this.records = [];
-            this.store.password = null;
+            this.uuidMap = {};
+            this.store.clear();
         },
         /**
          * Synchronizes the collection with a different source

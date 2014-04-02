@@ -53,14 +53,17 @@ Polymer("padlock-app", {
     },
     //* Tries to unlock the current collection with the provided password
     unlock: function(password) {
+        this.showProgress("decrypting data...");
         this.collection.fetch({password: password, success: function() {
             this.$.lockView.errorMessage = null;
             this.openView(this.$.listView);
+            this.hideProgress();
             if (this.settings.sync_connected && this.settings.sync_auto) {
                 this.synchronize();
             }
         }.bind(this), fail: function() {
             this.$.lockView.errorMessage = "Wrong password!";
+            this.hideProgress();
         }.bind(this)});
     },
     //* Locks the collection and opens the lock view
@@ -68,10 +71,9 @@ Polymer("padlock-app", {
         this.$.mainMenu.open = false;
         this.openView(this.$.lockView, {
             inAnimation: "floatUp",
-            inDuration: 1000
-        }, function() {
-            this.collection.lock();
-        }.bind(this));
+            inDuration: 1000,
+            outCallback: this.collection.clear.bind(this.collection)
+        });
     },
     //* Change handler for the selected property; Opens the record view when record is selected
     selectedChanged: function() {
