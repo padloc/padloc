@@ -12,21 +12,21 @@
     display: none;
 
     @include transition(background-color 0.5s);
+}
 
-    &.open {
-        background-color: rgba(0, 0, 0, 0.3);
+:host(.open) {
+    background-color: rgba(0, 0, 0, 0.3);
 
-        .inner > * {
-            @include transform(translate3d(0, 0, 0));
-            opacity: 1;
-        }
+    .inner > * {
+        @include transform(translate3d(0, 0, 0));
+        opacity: 1;
     }
+}
 
-    // Failsafe in case the out animation get interrupted and
-    // the dialog fails to set 'display: none'
-    &:not(.open) {
-        pointer-events: none;
-    }
+// Failsafe in case the out animation get interrupted and
+// the dialog fails to set 'display: none'
+:host(:not(.open)) {
+    pointer-events: none;
 }
 
 .inner {

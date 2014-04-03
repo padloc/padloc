@@ -19,18 +19,18 @@
     overflow: hidden;
     @include unselectable;
 
-    &.ios-standalone {
-        padlock-header > div {
-            padding-top: 20px;
-        }
-
-        .view {
-            padding-top: 70px;
-        }
-    }
-
     &, & /shadow-deep/ button, & /shadow-deep/ input {     
         -webkit-font-smoothing: antialiased;
+    }
+}
+
+:host(.ios-standalone) {
+    padlock-header /shadow/ div {
+        padding-top: 20px;
+    }
+
+    .view {
+        padding-top: 70px;
     }
 }
 
