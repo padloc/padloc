@@ -160,7 +160,6 @@ Polymer("padlock-app", {
         this.selected = null;
         this.openView(this.$.listView);
     },
-    //* Opens the main menu (duh)
     openMainMenu: function() {
         this.$.mainMenu.open = true;
     },
@@ -172,10 +171,7 @@ Polymer("padlock-app", {
     settingsBack: function() {
         this.openView(this.$.listView);
     },
-    //* Opens the import view
     openImportView: function() {
-        this.$.mainMenu.open = false;
-        // Add a small delay to avoid issues with the animation. TODO: Find a better solution?
         this.openView(this.$.importView);
     },
     //* Add the records imported with the import view to the collection
