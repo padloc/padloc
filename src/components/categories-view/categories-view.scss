@@ -99,7 +99,7 @@ padlock-select {
             background: $cat-color-3;
         }
 
-        /shadow/ shape-shifter /shadow/ line {
+        &::shadow shape-shifter::shadow line {
             stroke: $text-color-light;
         }
     }

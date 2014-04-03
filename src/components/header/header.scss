@@ -29,7 +29,7 @@
         height: $row-height - $padding * 2;
         cursor: pointer;
 
-        /shadow/ line {
+        &::shadow line {
             stroke: $text-color-light;
         }
     }

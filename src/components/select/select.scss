@@ -21,7 +21,7 @@ button {
         width: $size;
         height: $size;
 
-        /shadow/ line {
+        &::shadow line {
             stroke: $color-primary;
         }
     }

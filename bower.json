@@ -15,7 +15,7 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "~0.2.1",
+    "polymer": "~0.2.2",
     "requirejs": "~2.1.9",
     "shape-shifter": "~0.1.1"
   },
