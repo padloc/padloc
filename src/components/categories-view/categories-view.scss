@@ -1,7 +1,22 @@
 @import "../../styles/config.scss";
-@import "../../styles/animations.scss";
 @import "../../styles/mixins.scss";
 @import "compass/css3";
+@import "animation";
+
+
+@include keyframes(bounceIn) {
+    0% {@include transform(scale(0.1)); opacity: 0;}
+    30% {@include transform(scale(1.1)); opacity: 1;}
+    70% {@include transform(scale(0.95));}
+    100% {@include transform(scale(1));}
+}
+
+@include keyframes(bounce) {
+    0% {@include transform(scale(1));}
+    30% {@include transform(scale(1.1));}
+    70% {@include transform(scale(0.95));}
+    100% {@include transform(scale(1));}
+}
 
 :host {
     overflow: scroll;
