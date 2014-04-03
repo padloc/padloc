@@ -28,24 +28,16 @@
             padding-top: 70px;
         }
     }
-}
 
-:host,button,input {
-    -webkit-font-smoothing: antialiased;
+    &, & /shadow-deep/ button, & /shadow-deep/ input {     
+        -webkit-font-smoothing: antialiased;
+    }
 }
 
 padlock-header {
     position: absolute;
     z-index: 10;
     width: 100%;
-}
-
-::-webkit-search-cancel-button {
-    display: none;
-}
-
-*:focus {
-    outline: none;
 }
 
 .view {
@@ -57,63 +49,67 @@ padlock-header {
     padding-top: $row-height;
 }
 
-::-webkit-input-placeholder {
-   color: $placeholder-color;
-}
+/*
+    These are are elements that should be styled consistently accross the app,
+    therefore the selectors should cross all shadow dom boundaries.
+ */
+/shadow-deep/ {
+    button {
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        border: none;
+        background: #fff;
+        margin: 0;
+        height: $row-height;
+        line-height: $row-height;
+        padding: 0 15px;
+        cursor: pointer;
+        color: $color-primary;
+    }
 
-.fill {
-    width: 100%;
-    height: 100%;
-}
+    button.primary {
+        background: $color-primary;
+        color: $text-color-light;
+    }
 
-.scroller {
-    overflow: scroll;
-    -webkit-overflow-scrolling: touch;
-}
+    button.negative {
+        background: $color-negative;
+        color: $text-color-light;
+    }
 
-button {
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    border: none;
-    background: #fff;
-    margin: 0;
-    height: $row-height;
-    line-height: $row-height;
-    padding: 0 15px;
-    cursor: pointer;
-    color: $color-primary;
-}
+    input {
+        $line-height: 20px;
+        border: none;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        color: inherit;
+        border-radius: 0;
+        background: #fff;
+        margin: 0;
+        height: $row-height;
+        line-height: $line-height;
+        padding: ($row-height - $line-height)/2 15px;
 
-button.primary {
-    background: $color-primary;
-    color: $text-color-light;
-}
+        @include appearance(none);
+        @include box-sizing(border-box);
+    }
 
-button.negative {
-    background: $color-negative;
-    color: $text-color-light;
-}
+    strong {
+        font-weight: $font-weight-bold;
+        color: $color-primary;
+    }
 
-input {
-    $line-height: 20px;
-    border: none;
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    color: inherit;
-    border-radius: 0;
-    background: #fff;
-    margin: 0;
-    height: $row-height;
-    line-height: $line-height;
-    padding: ($row-height - $line-height)/2 15px;
+    ::-webkit-search-cancel-button {
+        display: none;
+    }
 
-    @include appearance(none);
-    @include box-sizing(border-box);
-}
+    *:focus {
+        outline: none;
+    }
 
-strong {
-    font-weight: $font-weight-bold;
-    color: $color-primary;
-}
+    ::-webkit-input-placeholder {
+       color: $placeholder-color;
+    }
+} 
