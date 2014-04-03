@@ -107,7 +107,7 @@ Polymer("padlock-settings-view", {
     toggleAutoSync: function(event, detail, sender) {
         // Make sure the event is not coming from the toggle element itself as this
         // would result in the element being toggled twice
-        if (event.impl.target != this.$.autoSyncToggle.impl) {
+        if (event.target != this.$.autoSyncToggle) {
             this.$.autoSyncToggle.toggle();
         }
     },
