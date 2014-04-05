@@ -1,5 +1,6 @@
 @import "animation";
 @import "compass/css3/transform";
+@import "../../styles/config.scss";
 
 @include keyframes(slideInFromRight) {
     from {@include transform(translate3d(100%, 0, 0)); opacity: 0;}
@@ -52,5 +53,5 @@
     right: 0;
     top: 0;
     bottom: 0;
-    margin: auto;
+    padding-top: $row-height;
 }

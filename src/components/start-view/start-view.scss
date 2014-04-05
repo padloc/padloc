@@ -1,5 +1,6 @@
 @import "../../styles/config.scss";
 @import "compass/css3";
+@import "../view/view.scss";
 
 :host(.error)  {
     .error-message {

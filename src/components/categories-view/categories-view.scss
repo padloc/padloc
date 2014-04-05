@@ -2,6 +2,7 @@
 @import "../../styles/mixins.scss";
 @import "compass/css3";
 @import "animation";
+@import "../view/view.scss";
 
 
 @include keyframes(bounceIn) {
