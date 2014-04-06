@@ -210,20 +210,19 @@ Polymer("padlock-app", {
             event.stopPropagation();
         }
     },
-    //* Captures all keydown events and brings focus to the filter input if it is showing
+    //* Keyboard shortcuts
     keydown: function(event) {
-        // We don't want to steal focus from any other input elements so we'll only focus
-        // the filter input if the event does not come from a input or textarea element.
-        // Unfortunately Polymer obscures the actual event target so we'll have to access
-        // the orginial event (event.impl) to get the actual target. This might break
-        // with future versions of polymer or the native web components implementation.
-        var isInput = event.impl.target.toString() == "[object HTMLInputElement]" ||
-            event.impl.target.toString() == "[object HTMLTextAreaElement]";
+        var shortcut;
 
-        // Focus the filter input if the event does not come from an input element and
-        // if the filter input is currently showing.
-        if (!isInput && this.currentView && this.currentView.headerOptions.showFilter) {
-            this.$.header.focusFilterInput();
+        // CTRL/CMD + F
+        if ((event.ctrlKey || event.metaKey) && event.keyCode === 70) {
+            shortcut = this.$.header.focusFilterInput.bind(this.$.header);
+        }
+
+        // If one of the shortcuts matches, execute it and prevent the default behaviour
+        if (shortcut) {
+            shortcut();
+            event.preventDefault();
         }
     },
     //* Adds any categories inside of _records_ that don't exist yet

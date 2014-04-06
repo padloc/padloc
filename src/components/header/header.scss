@@ -112,6 +112,7 @@
 }
 
 .title {
+    pointer-events: none;
     opacity: 1;
     @include transform(translate(0, 0));
     @include ellipsis();
