@@ -104,3 +104,11 @@ padlock-header {
     z-index: 10;
     width: 100%;
 }
+
+padlock-progress#decrypting {
+    background: $color-red;
+}
+
+padlock-progress#synchronizing {
+    background: $color-green;
+}

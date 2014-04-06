@@ -53,17 +53,17 @@ Polymer("padlock-app", {
     },
     //* Tries to unlock the current collection with the provided password
     unlock: function(password) {
-        this.showProgress("decrypting data...");
+        this.$.decrypting.show();
         this.collection.fetch({password: password, success: function() {
             this.$.lockView.errorMessage = null;
             this.openView(this.$.listView);
-            this.hideProgress();
+            this.$.decrypting.hide();
             if (this.settings.sync_connected && this.settings.sync_auto) {
                 this.synchronize();
             }
         }.bind(this), fail: function() {
             this.$.lockView.errorMessage = "Wrong password!";
-            this.hideProgress();
+            this.$.decrypting.hide();
         }.bind(this)});
     },
     //* Locks the collection and opens the lock view
@@ -257,15 +257,6 @@ Polymer("padlock-app", {
             }
         });
     },
-    //* Starts a spinner animation on the menu icon
-    showProgress: function(text) {
-        this.$.progress.innerHTML = text || "";
-        this.$.progress.show();
-    },
-    //* Stops the spinner animation on the menu icon
-    hideProgress: function() {
-        this.$.progress.hide();
-    },
     //* Synchronizes the data with a remote source
     synchronize: function() {
         // In case this was called from the menu
@@ -279,17 +270,17 @@ Polymer("padlock-app", {
             this.remoteSource.email = this.settings.sync_email;
             this.remoteSource.apiKey = this.settings.sync_key;
 
-            this.showProgress("synchronizing...");
+            this.$.synchronizing.show();
 
             this.collection.sync(this.remoteSource, {
                 success: function() {
-                    this.hideProgress();
+                    this.$.synchronizing.hide();
                 }.bind(this),
                 fail: function(req) {
                     var msg = req.status == 401 ? "Authentication failed. Have you visited the link in the activation email yet?" :
                         "An error occurred while synchronizing. Please try again later!";
                     this.alert(msg);
-                    this.hideProgress();
+                    this.$.synchronizing.hide();
                 }.bind(this)
             });
         } else {

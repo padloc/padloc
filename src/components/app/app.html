@@ -44,7 +44,8 @@
         <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ selected }}"
             on-done="{{ categoriesDone }}" on-categorychanged="{{ categoryChanged }}"></padlock-categories-view>
         <!-- PROGRESS INDICATOR -->
-        <padlock-progress id="progress"></padlock-progress>
+        <padlock-progress id="decrypting">decrypting...</padlock-progress>
+        <padlock-progress id="synchronizing">synchronizing...</padlock-progress>
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
             <padlock-select openUpwards="true" selected="{{ orderOption }}">
