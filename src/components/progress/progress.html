@@ -27,7 +27,7 @@
             },
             iteration: function(event) {
                 // Hide the element if hide() was called during the last iteration
-                if (this.hidePending && event.impl.target == this.impl) {
+                if (this.hidePending) {
                     this.style.display = "none";
                 }
             }
