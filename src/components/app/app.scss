@@ -19,101 +19,88 @@
     overflow: hidden;
     @include unselectable;
 
-    &.ios-standalone {
-        padlock-header > div {
-            padding-top: 20px;
+    &, /deep/ button, /deep/ input {     
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /*
+        These are are elements that should be styled consistently accross the app,
+        therefore the selectors should cross all shadow dom boundaries.
+     */
+    /deep/ {
+        button {
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            border: none;
+            background: #fff;
+            margin: 0;
+            height: $row-height;
+            line-height: $row-height;
+            padding: 0 15px;
+            cursor: pointer;
+            color: $color-primary;
         }
 
-        .view {
-            padding-top: 70px;
+        button.primary {
+            background: $color-primary;
+            color: $text-color-light;
+        }
+
+        button.negative {
+            background: $color-negative;
+            color: $text-color-light;
+        }
+
+        input {
+            $line-height: 20px;
+            border: none;
+            font-family: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            color: inherit;
+            border-radius: 0;
+            background: #fff;
+            margin: 0;
+            height: $row-height;
+            line-height: $line-height;
+            padding: ($row-height - $line-height)/2 15px;
+
+            @include appearance(none);
+            @include box-sizing(border-box);
+        }
+
+        strong {
+            font-weight: $font-weight-bold;
+            color: $color-primary;
+        }
+
+        ::-webkit-search-cancel-button {
+            display: none;
+        }
+
+        *:focus {
+            outline: none;
+        }
+
+        ::-webkit-input-placeholder {
+           color: $placeholder-color;
         }
     }
 }
 
-:host,button,input {
-    -webkit-font-smoothing: antialiased;
+:host(.ios-standalone) {
+    padlock-header::shadow div {
+        padding-top: 20px;
+    }
+
+    .view {
+        padding-top: 70px;
+    }
 }
 
 padlock-header {
     position: absolute;
     z-index: 10;
     width: 100%;
-}
-
-::-webkit-search-cancel-button {
-    display: none;
-}
-
-*:focus {
-    outline: none;
-}
-
-.view {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    padding-top: $row-height;
-}
-
-::-webkit-input-placeholder {
-   color: $placeholder-color;
-}
-
-.fill {
-    width: 100%;
-    height: 100%;
-}
-
-.scroller {
-    overflow: scroll;
-    -webkit-overflow-scrolling: touch;
-}
-
-button {
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    border: none;
-    background: #fff;
-    margin: 0;
-    height: $row-height;
-    line-height: $row-height;
-    padding: 0 15px;
-    cursor: pointer;
-    color: $color-primary;
-}
-
-button.primary {
-    background: $color-primary;
-    color: $text-color-light;
-}
-
-button.negative {
-    background: $color-negative;
-    color: $text-color-light;
-}
-
-input {
-    $line-height: 20px;
-    border: none;
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    color: inherit;
-    border-radius: 0;
-    background: #fff;
-    margin: 0;
-    height: $row-height;
-    line-height: $line-height;
-    padding: ($row-height - $line-height)/2 15px;
-
-    @include appearance(none);
-    @include box-sizing(border-box);
-}
-
-strong {
-    font-weight: $font-weight-bold;
-    color: $color-primary;
 }

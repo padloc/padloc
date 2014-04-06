@@ -24,14 +24,13 @@
     background: #59c6ff;
     overflow: hidden;
     font-size: 16px;
+}
 
-    &.animated {
-        @include animation(leftToRight 3s cubic-bezier(0.2,1,0.8,0) infinite);
+:host(.animated) {
+    @include animation(leftToRight 3s cubic-bezier(0.2,1,0.8,0) infinite);
 
-        span {
-
-            @include animation(rightToLeft 3s cubic-bezier(0.2,1,0.8,0) infinite);
-        }
+    span {
+        @include animation(rightToLeft 3s cubic-bezier(0.2,1,0.8,0) infinite);
     }
 }
 

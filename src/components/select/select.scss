@@ -21,7 +21,7 @@ button {
         width: $size;
         height: $size;
 
-        line {
+        &::shadow line {
             stroke: $color-primary;
         }
     }
@@ -32,19 +32,20 @@ button {
     top: 0;
     right: 0;
     left: 0;
+}
 
-    > * {
-        position: absolute;
-        left: 0;
-        right: 0;
-        top: 0;
-        height: $row-height;
-        line-height: $row-height;
-        width: 100%;
-        background: #fefefe;
-        text-align: center;
-        cursor: pointer;
+polyfill-next-selector { content: '.options > *'; }
+::content > * {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: $row-height;
+    line-height: $row-height;
+    width: 100%;
+    background: #fefefe;
+    text-align: center;
+    cursor: pointer;
 
-        @include transition(transform 0.3s, opacity 0.3s);
-    }
+    @include transition(transform 0.3s, opacity 0.3s);
 }

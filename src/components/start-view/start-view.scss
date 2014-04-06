@@ -1,20 +1,11 @@
 @import "../../styles/config.scss";
 @import "compass/css3";
+@import "../view/view.scss";
 
-:host {
-    &.error  {
-        .error-message {
-            opacity: 1;
-            @include transform(translate(0, 0));
-        }
-
-        input {
-            color: $color-negative;
-        }
-
-        ::-webkit-input-placeholder {
-           color: $color-negative;
-        }
+:host(.error)  {
+    .error-message {
+        opacity: 1;
+        @include transform(translate(0, 0));
     }
 }
 

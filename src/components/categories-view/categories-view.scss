@@ -2,6 +2,7 @@
 @import "../../styles/mixins.scss";
 @import "compass/css3";
 @import "animation";
+@import "../view/view.scss";
 
 
 @include keyframes(bounceIn) {
@@ -84,27 +85,23 @@
 padlock-select {
     line-height: 0;
 
-    button {
-        color: $text-color-light;
-    }
-
     padlock-option {
         color: transparent;
-    }
 
-    shape-shifter line {
-        stroke: $text-color-light;
-    }
+        &.color1 {
+            background: $cat-color-1;
+        }
 
-    .color1 {
-        background: $cat-color-1;
-    }
+        &.color2 {
+            background: $cat-color-2;
+        }
 
-    .color2 {
-        background: $cat-color-2;
-    }
+        &.color3 {
+            background: $cat-color-3;
+        }
 
-    .color3 {
-        background: $cat-color-3;
+        &::shadow shape-shifter::shadow line {
+            stroke: $text-color-light;
+        }
     }
 }

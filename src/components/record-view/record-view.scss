@@ -1,6 +1,7 @@
 @import "../../styles/config.scss";
 @import "../../styles/mixins.scss";
 @import "compass/css3";
+@import "../view/view.scss";
 
 :host {
     display: block;

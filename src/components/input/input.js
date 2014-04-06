@@ -1,5 +1,5 @@
 (function(Polymer) {
-    var proto = {
+    var inputProto = {
         hasFocus: false,
         selectAllOnFocus: false,
         ready: function() {
@@ -40,8 +40,17 @@
         blurred: function() {
             this.hasFocus = false;
         }
+    },
+    taProto = {
+        hasFocus: false,
+        selectAllOnFocus: false,
+        ready: inputProto.ready,
+        tap: inputProto.tap,
+        mousedown: inputProto.mousedown,
+        focussed: inputProto.focussed,
+        blurred: inputProto.blurred
     };
 
-    Polymer("padlock-input", proto);
-    Polymer("padlock-textarea", proto);
+    Polymer("padlock-input", inputProto);
+    Polymer("padlock-textarea", taProto);
 })(Polymer);

@@ -12,21 +12,16 @@
     display: none;
 
     @include transition(background-color 0.5s);
+}
 
-    &.open {
-        background-color: rgba(0, 0, 0, 0.3);
+:host(.open) {
+    background-color: rgba(0, 0, 0, 0.3);
+}
 
-        .inner > * {
-            @include transform(translate3d(0, 0, 0));
-            opacity: 1;
-        }
-    }
-
-    // Failsafe in case the out animation get interrupted and
-    // the dialog fails to set 'display: none'
-    &:not(.open) {
-        pointer-events: none;
-    }
+// Failsafe in case the out animation get interrupted and
+// the dialog fails to set 'display: none'
+:host(:not(.open)) {
+    pointer-events: none;
 }
 
 .inner {
@@ -37,30 +32,39 @@
     padding: 0;
 
     @include box-sizing(border-box);
+}
 
-    > * {
-        margin-bottom: 5px;
-        text-align: center;
-        opacity: 0;
-        cursor: pointer;
-        width: 100%;
+polyfill-next-selector { content: '.inner > *'; }
+::content > * {
+    margin-bottom: 5px;
+    text-align: center;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
 
-        @include box-sizing(border-box);
-        @include transform(translate3d(0, 100%, 0)); 
+    @include box-sizing(border-box);
+    @include transform(translate3d(0, 100%, 0));
+}
 
-        &.title {
-            background: transparent;
-            color: $text-color-light;
-            cursor: default;
-            border: none;
-            padding: 10px;
-            line-height: 25px;
-            word-wrap: break-word;
-            font-weight: $font-weight-bold;
-        }
-    }
+polyfill-next-selector { content: '.inner > .title'; }
+::content > .title {
+    background: transparent;
+    color: $text-color-light;
+    cursor: default;
+    border: none;
+    padding: 10px;
+    line-height: 25px;
+    word-wrap: break-word;
+    font-weight: $font-weight-bold;
+}
 
-    > input {
-        cursor: text;
-    }
+polyfill-next-selector { content: '.inner > input'; }
+::content > input {
+    cursor: text;
+}
+
+polyfill-next-selector { content: ':host(.open) .inner > *'}
+:host(.open) ::content > * {
+    @include transform(translate3d(0, 0, 0));
+    opacity: 1;
 }
