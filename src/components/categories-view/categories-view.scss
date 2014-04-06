@@ -85,23 +85,29 @@
 padlock-select {
     line-height: 0;
 
-    padlock-option {
-        color: transparent;
+    /deep/ .color1 {
+        background: $cat-color-1;
+    }
 
-        &.color1 {
-            background: $cat-color-1;
+    /deep/ .color2 {
+        background: $cat-color-2;
+    }
+
+    /deep/ .color3 {
+        background: $cat-color-3;
+    }
+
+    &::shadow {
+        button {
+            color: $text-color-light;
         }
 
-        &.color2 {
-            background: $cat-color-2;
-        }
-
-        &.color3 {
-            background: $cat-color-3;
-        }
-
-        &::shadow shape-shifter::shadow line {
+        shape-shifter::shadow line {
             stroke: $text-color-light;
         }
+    }
+
+    padlock-option {
+        color: transparent;
     }
 }
