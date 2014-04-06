@@ -19,7 +19,7 @@
                 <div>Disconnect <span class="email">({{ settings.settings.sync_email }})</span></div></button>
             <div class="settings-row" style="{{ settings.sync_connected ? '' : 'display: none'}}"
                 on-tap="{{ toggleAutoSync }}">
-                <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" on-change="{{ save }}"></padlock-toggle>
+                <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.settings.sync_auto }}" on-change="{{ save }}"></padlock-toggle>
             </div>
         </div>
         <div class="section">
