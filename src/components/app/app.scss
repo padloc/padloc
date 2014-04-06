@@ -90,7 +90,7 @@
 }
 
 :host(.ios-standalone) {
-    padlock-header::shadow div {
+    padlock-header::shadow > div {
         padding-top: 20px;
     }
 
