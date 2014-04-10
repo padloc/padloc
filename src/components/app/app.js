@@ -277,7 +277,9 @@ Polymer("padlock-app", {
                     this.$.synchronizing.hide();
                 }.bind(this),
                 fail: function(req) {
-                    var msg = req.status == 401 ? "Authentication failed. Have you visited the link in the activation email yet?" :
+                    var msg = req.status == 401 ?
+                        "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
+                        "If the problem persists, try to disconnect and reconnect under settings!" :
                         "An error occurred while synchronizing. Please try again later!";
                     this.alert(msg);
                     this.$.synchronizing.hide();

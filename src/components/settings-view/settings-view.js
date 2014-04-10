@@ -81,8 +81,8 @@ Polymer("padlock-settings-view", {
                     this.settings.sync_key = apiKey.key;
                     this.settings.sync_connected = true;
                     this.settings.save();
-                    this.alert("An email was sent to " + email + ". Please follow the " +
-                        "activation link in the message to complete the connection process!");
+                    this.alert("Almost done! An email was sent to " + email + ". Please follow the " +
+                        "instructions to complete the connection process!");
                 } else {
                     this.alert("Something went wrong. Please make sure your internet " +
                         "connection is working and try again!");
