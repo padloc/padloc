@@ -23,7 +23,7 @@ var modFunc = function(sjcl) {
     // Various default parameters
     var defaults = {
         keySize: 256,
-        iter: 100000
+        iter: 25000
     };
 
     // Shorthands for base64 codec
