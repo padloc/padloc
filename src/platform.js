@@ -89,6 +89,11 @@ define(function() {
     var isIOSStandalone = function() {
         return !!navigator.standalone;
     };
+
+    //* Checks if the app is running as a packaged Chrome app
+    var isChromeApp = function() {
+        return (typeof chrome !== "undefined") && chrome.app && chrome.app.runtime;
+    };
  
     return {
         getVendorPrefix: getVendorPrefix,
@@ -96,6 +101,7 @@ define(function() {
         getAnimationEndEventName: getAnimationEndEventName,
         getAnimationIterationEventName: getAnimationIterationEventName,
         isIOS: isIOS,
-        isIOSStandalone: isIOSStandalone
+        isIOSStandalone: isIOSStandalone,
+        isChromeApp: isChromeApp
     };
 });

@@ -1,14 +1,15 @@
 window.addEventListener("polymer-ready", function() {
     require([
+        "padlock/platform",
         "padlock/LocalStorageSource",
+        "padlock/ChromeStorageSource",
         "padlock/CloudSource",
         "padlock/Store",
         "padlock/Collection",
         "padlock/Categories",
         "padlock/Settings"
-    ], function(LocalStorageSource, CloudSource, Store, Collection, Categories, Settings) {
-
-        var source = new LocalStorageSource(),
+    ], function(platform, LocalStorageSource, ChromeStorageSource, CloudSource, Store, Collection, Categories, Settings) {
+        var source = platform.isChromeApp() ? new ChromeStorageSource() : new LocalStorageSource(),
             store = new Store(source),
             cloudHost = "https://cloud.padlock.io/",
             settings = new Settings({
