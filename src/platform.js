@@ -92,7 +92,7 @@ define(function() {
 
     //* Checks if the app is running as a packaged Chrome app
     var isChromeApp = function() {
-        return (typeof chrome !== "undefined") && chrome.app && chrome.app.runtime;
+        return (typeof chrome !== "undefined") && chrome.app && !!chrome.app.runtime;
     };
  
     return {
