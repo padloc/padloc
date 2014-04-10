@@ -10,7 +10,7 @@ window.addEventListener("polymer-ready", function() {
 
         var source = new LocalStorageSource(),
             store = new Store(source),
-            cloudHost = window.location.protocol + "//" + window.location.host + "/cloud/",
+            cloudHost = "https://cloud.padlock.io/",
             settings = new Settings({
                 sync_host: cloudHost,
                 sync_email: "",
