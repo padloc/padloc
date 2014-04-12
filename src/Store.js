@@ -64,6 +64,8 @@ define(["padlock/crypto"], function(crypto) {
                             }
                         });
                     });
+                } else if (opts.success) {
+                    opts.success(coll);
                 }
             }, fail: opts.fail});
 
