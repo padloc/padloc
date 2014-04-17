@@ -94,6 +94,17 @@ define(function() {
     var isChromeApp = function() {
         return (typeof chrome !== "undefined") && chrome.app && !!chrome.app.runtime;
     };
+
+    var clipboardTextArea;
+    //* Sets the clipboard text to a given string
+    var setClipboard = function(text) {
+        clipboardTextArea = clipboardTextArea || document.createElement("textarea");
+        clipboardTextArea.value = text;
+        document.body.appendChild(clipboardTextArea);
+        clipboardTextArea.select();
+        document.execCommand("cut");
+        document.body.removeChild(clipboardTextArea);
+    };
  
     return {
         getVendorPrefix: getVendorPrefix,
@@ -102,6 +113,7 @@ define(function() {
         getAnimationIterationEventName: getAnimationIterationEventName,
         isIOS: isIOS,
         isIOSStandalone: isIOSStandalone,
-        isChromeApp: isChromeApp
+        isChromeApp: isChromeApp,
+        setClipboard: setClipboard
     };
 });

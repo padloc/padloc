@@ -59,14 +59,12 @@ Polymer('padlock-record-view', {
     confirmEditField: function() {
         this.$.fieldMenu.open = false;
         this.selectedField.value = this.$.fieldValueInput.value;
-        this.selectedField.name = this.$.fieldNameInput.value;
         this.fire("save");
     },
     //* Opens the field context menu
     openFieldMenu: function(event, detail, sender) {
         this.selectedField = sender.templateInstance.model;
         this.$.fieldValueInput.value = this.selectedField.value;
-        this.$.fieldNameInput.value = this.selectedField.name;
         this.$.fieldMenu.open = true;
     },
     //* Opens the remove field confirm dialog
@@ -90,5 +88,12 @@ Polymer('padlock-record-view', {
     },
     openCategories: function() {
         this.fire("categories");
+    },
+    copyToClipboard: function() {
+        var value = this.$.fieldValueInput.value;
+        require(["padlock/platform"], function(platform) {
+            platform.setClipboard(value);
+        });
+        this.$.fieldMenu.open = false;
     }
 });
