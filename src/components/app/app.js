@@ -262,7 +262,9 @@ Polymer("padlock-app", {
         });
     },
     //* Synchronizes the data with a remote source
-    synchronize: function() {
+    synchronize: function(remotePassword) {
+        // Ignore the remotePassword argument if it is not a string
+        remotePassword = typeof remotePassword === "string" ? remotePassword : undefined;
         // In case this was called from the menu
         this.$.mainMenu.open = false;
 
@@ -277,15 +279,23 @@ Polymer("padlock-app", {
             this.$.synchronizing.show();
 
             this.collection.sync(this.remoteSource, {
+                remotePassword: remotePassword,
                 success: function() {
                     this.$.synchronizing.hide();
                 }.bind(this),
-                fail: function(req) {
-                    var msg = req.status == 401 ?
-                        "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
-                        "If the problem persists, try to disconnect and reconnect under settings!" :
-                        "An error occurred while synchronizing. Please try again later!";
-                    this.alert(msg);
+                fail: function(e) {
+                    if (e && e.message == "Uncaught CORRUPT: ccm: tag doesn't match") {
+                        // Decryption failed, presumably on the remote data. This means that the local master
+                        // password does not match the one that was used for encrypting the remote data so
+                        // we need to prompt the user for the correct password.
+                        this.$.remotePasswordDialog.open = true;
+                    } else {
+                        var msg = e.status == 401 ?
+                            "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
+                            "If the problem persists, try to disconnect and reconnect under settings!" :
+                            "An error occurred while synchronizing. Please try again later!";
+                        this.alert(msg);
+                    }
                     this.$.synchronizing.hide();
                 }.bind(this)
             });
@@ -295,5 +305,10 @@ Polymer("padlock-app", {
     },
     dismissNotConnectedDialog: function() {
         this.$.notConnectedDialog.open = false;
+    },
+    remotePasswordEntered: function() {
+        this.$.remotePasswordDialog.open = false;
+        this.synchronize(this.$.remotePasswordInput.value);
+        this.$.remotePasswordInput.value = "";
     }
 });

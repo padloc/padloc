@@ -72,6 +72,11 @@
             <button on-tap="{{ openSettings }}" class="primary">Settings</button>
             <button on-tap="{{ dismissNotConnectedDialog }}">Cancel</button>
         </padlock-dialog>
+        <padlock-dialog id="remotePasswordDialog">
+            <div class="title">It seems your local master password does not match the one used to encrypt the data on Padlock Cloud.</div>
+            <input id="remotePasswordInput" placeholder="Enter Remote Password"></input>
+            <button class="primary" on-tap="{{ remotePasswordEntered }}">OK</button>
+        </padlock-dialog>
     </template>
     <script src="app.js"></script>
 </polymer-element>

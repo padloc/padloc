@@ -135,21 +135,27 @@ define(["padlock/util"], function(util) {
          *                         - fail: Failure callback
          */
         sync: function(source, opts) {
-            var fail = opts && opts.fail;
+            opts = opts || {};
+
+            // If a remote password is provided or a password is already stored on the remote source,
+            // use that one. Otherwise assume that the remote password is the same as the local one
+            if (opts.remotePassword === undefined && source.password === undefined) {
+                opts.remotePassword = this.store.defaultSource.password;
+            }
 
             // Fetch data from remote source
             var fetchRemote = function() {
-                this.fetch({source: source, success: saveLocal, fail: fail});
+                this.fetch({source: source, success: saveLocal, fail: opts.fail, password: opts.remotePassword});
             }.bind(this);
             
             // Save data to local source
             var saveLocal = function() {
-                this.save({success: saveRemote, fail: fail});
+                this.save({success: saveRemote, fail: opts.fail});
             }.bind(this);
 
             // Update remote source
             var saveRemote = function() {
-                this.save({source: source, success: done, fail: fail});
+                this.save({source: source, success: done, fail: opts.fail});
             }.bind(this);
 
             // We're done!
@@ -158,10 +164,7 @@ define(["padlock/util"], function(util) {
                     opts.success();
                 }
             }.bind(this);
-
-            // First, check if collection exists in remote source. If it does,
-            // fetch the remote data. If not, go directly to saving the local
-            // data to the remote
+            
             fetchRemote();
         }
     };
