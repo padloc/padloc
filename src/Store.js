@@ -30,9 +30,10 @@ define(["padlock/crypto"], function(crypto) {
         fetch: function(coll, opts) {
             opts = opts || {};
             source = opts.source || this.defaultSource;
-            // Use password argument if provided, otherwise use _this.password_
-            var password = opts.password !== undefined && opts.password !== null ? opts.password : this.password,
-                key = this.getKey(coll);
+            // Use password argument if provided, otherwise use the password stored in the source object
+            var password = source.password = opts.password !== undefined && opts.password !== null ?
+                opts.password : source.password;
+            var key = this.getKey(coll);
 
             source.fetch({key: key, success: function(data) {
                 // If there is no data, we simply consider the collection to be empty.
@@ -60,7 +61,7 @@ define(["padlock/crypto"], function(crypto) {
                         }, function(e) {
                             // The decryption failed, probably because the password was incorrect
                             if (opts.fail) {
-                                fail(e);
+                                opts.fail(e);
                             }
                         });
                     });
@@ -68,9 +69,6 @@ define(["padlock/crypto"], function(crypto) {
                     opts.success(coll);
                 }
             }, fail: opts.fail});
-
-            // Remember the password for the duration of the session
-            this.password = password;
         },
         /**
          * Encrypts the contents of a collection and saves them to local storage.
@@ -86,6 +84,9 @@ define(["padlock/crypto"], function(crypto) {
             opts.key = this.getKey(coll);
             source = opts.source || this.defaultSource;
             source.keyOpts = source.keyOpts || {};
+            // Use password argument if provided, otherwise use the password stored in the source object
+            var password = source.password = opts.password !== undefined && opts.password !== null ?
+                opts.password : source.password;
 
             var pt = JSON.stringify(coll.records),
                 // Take the existing parameters for the key generation from the source kind if they are set.
@@ -96,7 +97,7 @@ define(["padlock/crypto"], function(crypto) {
 
             // Construct a cryptographic key using the password provided by the user and the metadata
             // from the source. The whole thing happens in a web worker which is why it's asynchronous
-            crypto.cachedWorkerGenKey(this.password, salt, keySize, iter, function(keyData) {
+            crypto.cachedWorkerGenKey(password, salt, keySize, iter, function(keyData) {
                 // Encrypt the data. Again, this happens in a web worker.
                 crypto.workerEncrypt(keyData, pt, function(c) {
                     opts.data = c;
@@ -128,7 +129,7 @@ define(["padlock/crypto"], function(crypto) {
         },
         //* Deletes the stored password and resets the key cache
         clear: function() {
-            this.password = null;
+            delete this.defaultSource.password;
             crypto.clearKeyCache();
         }
     };

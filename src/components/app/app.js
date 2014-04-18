@@ -69,6 +69,10 @@ Polymer("padlock-app", {
     //* Locks the collection and opens the lock view
     lock: function() {
         this.$.mainMenu.open = false;
+        // Remove the stored password from the remote source if we've created on yet
+        if (this.remoteSource) {
+            delete this.remoteSource.password;
+        }
         this.openView(this.$.lockView, {
             inAnimation: "floatUp",
             inDuration: 1000,

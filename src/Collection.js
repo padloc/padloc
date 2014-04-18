@@ -104,8 +104,7 @@ define(["padlock/util"], function(util) {
          * @param {String} password New password
          */
         setPassword: function(password) {
-            this.store.password = password;
-            this.save();
+            this.save({password: password});
         },
         /**
          * Checks whether or not data for the collection exists
