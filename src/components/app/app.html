@@ -67,15 +67,23 @@
             <div class="title" id="alertText"></div>
             <button on-tap="{{ dismissAlert }}">OK</button>
         </padlock-dialog>
+        <!-- NOT CONNECTED DIALOG -->
         <padlock-dialog id="notConnectedDialog">
             <div class="title">You need to be connected to the Padlock Cloud to synchronize your data.</div>
             <button on-tap="{{ openSettings }}" class="primary">Settings</button>
             <button on-tap="{{ dismissNotConnectedDialog }}">Cancel</button>
         </padlock-dialog>
+        <!-- REMOTE PASSWORD DIALOG -->
         <padlock-dialog id="remotePasswordDialog">
             <div class="title">It seems your local master password does not match the one used to encrypt the data on Padlock Cloud.</div>
             <input id="remotePasswordInput" placeholder="Enter Remote Password"></input>
             <button class="primary" on-tap="{{ remotePasswordEntered }}">OK</button>
+        </padlock-dialog>
+        <!-- UPDATE REMOTE PASSWORD DIALOG -->
+        <padlock-dialog id="updateRemotePasswordDialog">
+            <div class="title">Do you want to update the remote password?</div>
+            <button class="primary" on-tap="{{ confirmUpdateRemotePassword }}">Yes</button>
+            <button on-tap="{{ cancelUpdateRemotePassword }}">No</button>
         </padlock-dialog>
     </template>
     <script src="app.js"></script>

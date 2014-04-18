@@ -282,6 +282,12 @@ Polymer("padlock-app", {
                 remotePassword: remotePassword,
                 success: function() {
                     this.$.synchronizing.hide();
+
+                    // If we explicitly used a differen password for the remote source than for the local source,
+                    // ask the user if he wants to update the remote password
+                    if (remotePassword !== undefined && this.collection.store.defaultSource.password !== remotePassword) {
+                        this.$.updateRemotePasswordDialog.open = true;
+                    }
                 }.bind(this),
                 fail: function(e) {
                     if (e && e.message == "Uncaught CORRUPT: ccm: tag doesn't match") {
@@ -310,5 +316,21 @@ Polymer("padlock-app", {
         this.$.remotePasswordDialog.open = false;
         this.synchronize(this.$.remotePasswordInput.value);
         this.$.remotePasswordInput.value = "";
+    },
+    confirmUpdateRemotePassword: function() {
+        this.$.updateRemotePasswordDialog.open = false;
+        this.$.synchronizing.show();
+        this.collection.save({
+            source: this.remoteSource,
+            password: this.collection.store.defaultSource.password,
+            success: this.$.synchronizing.hide.bind(this.$.synchronizing),
+            fail: function() {
+                this.$.synchronizing.hide();
+                this.alert("Failed to update remote password. Try again later!");
+            }.bind(this)
+        });
+    },
+    cancelUpdateRemotePassword: function() {
+        this.$.updateRemotePasswordDialog.open = false;
     }
 });
