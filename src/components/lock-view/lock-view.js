@@ -5,6 +5,7 @@ Polymer("padlock-lock-view", {
         }
     },
     enter: function() {
+        this.errorMessage = "";
         this.$.pwdInput.blur();
         this.fire("enter", {password: this.$.pwdInput.value});
     },
