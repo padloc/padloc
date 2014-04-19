@@ -63,7 +63,7 @@
         right: 0;
         bottom: 0;
         left: 0;
-        background-color: rgba(0, 0, 0, 0.3);
+        background-color: $scrim-color;
         pointer-events: none;
         opacity: 0;
         @include transition(opacity 0.5s);

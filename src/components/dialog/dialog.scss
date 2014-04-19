@@ -15,7 +15,7 @@
 }
 
 :host(.open) {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: $scrim-color;
 }
 
 // Failsafe in case the out animation get interrupted and
