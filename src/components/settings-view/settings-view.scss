@@ -1,10 +1,18 @@
 @import "../../styles/config.scss";
 @import "../../styles/mixins.scss";
 @import "../view/view.scss";
+@import "compass/css3";
 
-.settings-button {
+:host {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+}
+
+button.settings-button, .button.settings-button {
     display: block;
     width: 100%;
+    @include box-sizing(border-box);
 
     div {
         width: 100%;
@@ -30,10 +38,19 @@
     }
 }
 
-.settings-button, .settings-row {
+button.settings-button, .button.settings-button, .settings-button, .settings-row {
     margin-bottom: 5px;
 }
 
 .section {
     margin: 30px 0;
+}
+
+.info {
+    display: block;
+    padding: 15px;
+    width: 200px;
+    margin: 0 auto;
+    font-size: 15px;
+    text-align: center;
 }

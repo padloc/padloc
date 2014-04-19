@@ -28,7 +28,13 @@
         therefore the selectors should cross all shadow dom boundaries.
      */
     /deep/ {
-        button {
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button, a.button {
+            display: inline-block;
             font-family: inherit;
             font-size: inherit;
             font-weight: inherit;
@@ -40,6 +46,7 @@
             padding: 0 15px;
             cursor: pointer;
             color: $color-primary;
+            text-align: center;
         }
 
         button.primary {

@@ -4,10 +4,11 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../toggle/toggle.html">
 
-<polymer-element name="padlock-settings-view" extends="padlock-view" attributes="collection settings">
+<polymer-element name="padlock-settings-view" extends="padlock-view" attributes="collection settings" touch-action="pan-y">
     <template>
         <!-- STYLES -->
         <link href="settings-view.css" rel="stylesheet" type="text/css">
+        <div class="content">
         <div class="section">
             <button class="settings-button" on-tap="{{ import }}">Import Data</button>
         </div>
@@ -24,6 +25,12 @@
         </div>
         <div class="section">
             <button class="settings-button" on-tap="{{ changePassword }}">Change Master Password</button>
+        </div>
+        <div class="section">
+            <a href="http://padlock.io" target="_blank" class="button settings-button">Website</a>
+            <a href="mailto:support@padlock.io" class="button settings-button">Support</a>
+            <a href="http://github.com/maklesoft" target="_blank" class="info">Developed and maintained by <strong>Martin Kleinschrodt</strong></a>
+        </div>
         </div>
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id="progress">Connecting...</padlock-progress>
