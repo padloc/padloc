@@ -290,7 +290,7 @@ Polymer("padlock-app", {
                     }
                 }.bind(this),
                 fail: function(e) {
-                    if (e && e.message == "Uncaught CORRUPT: ccm: tag doesn't match") {
+                    if (e && e.message && e.message.indexOf("CORRUPT: ccm: tag doesn't match") !== -1) {
                         // Decryption failed, presumably on the remote data. This means that the local master
                         // password does not match the one that was used for encrypting the remote data so
                         // we need to prompt the user for the correct password.
