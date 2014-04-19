@@ -285,7 +285,7 @@ Polymer("padlock-app", {
 
                     // If we explicitly used a differen password for the remote source than for the local source,
                     // ask the user if he wants to update the remote password
-                    if (remotePassword !== undefined && this.collection.store.defaultSource.password !== remotePassword) {
+                    if (remotePassword !== undefined && this.collection.defaultPassword !== remotePassword) {
                         this.$.updateRemotePasswordDialog.open = true;
                     }
                 }.bind(this),
@@ -322,7 +322,7 @@ Polymer("padlock-app", {
         this.$.synchronizing.show();
         this.collection.save({
             source: this.remoteSource,
-            password: this.collection.store.defaultSource.password,
+            password: this.collection.defaultPassword,
             success: this.$.synchronizing.hide.bind(this.$.synchronizing),
             fail: function() {
                 this.$.synchronizing.hide();

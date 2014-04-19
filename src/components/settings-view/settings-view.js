@@ -22,7 +22,7 @@ Polymer("padlock-settings-view", {
     confirmChangePassword: function() {
         this.$.changePasswordDialog.open = false;
         // TODO: Add a better check for the current password
-        if (this.$.currPwdInput.value != this.collection.store.defaultSource.password) {
+        if (this.$.currPwdInput.value != this.collection.defaultPassword) {
             this.$.changePasswordErrorMsg.innerHTML = "You entered the wrong current password.";
             this.$.changePasswordErrorDialog.open = true;
         } else if (this.$.newPwdInput.value != this.$.confirmNewPwdInput.value) {

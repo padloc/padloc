@@ -140,7 +140,7 @@ define(["padlock/util"], function(util) {
             // If a remote password is provided or a password is already stored on the remote source,
             // use that one. Otherwise assume that the remote password is the same as the local one
             if (opts.remotePassword === undefined && source.password === undefined) {
-                opts.remotePassword = this.store.defaultSource.password;
+                opts.remotePassword = this.defaultPassword;
             }
 
             // Fetch data from remote source
@@ -164,8 +164,12 @@ define(["padlock/util"], function(util) {
                     opts.success();
                 }
             }.bind(this);
-            
+
             fetchRemote();
+        },
+        //* The password associated with the default source
+        get defaultPassword() {
+            return this.store.defaultSource.password;
         }
     };
 
