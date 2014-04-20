@@ -121,5 +121,17 @@ Polymer("padlock-settings-view", {
     },
     import: function() {
         this.fire("import");
+    },
+    sendMail: function() {
+        require(["padlock/platform"], function(platform) {
+            var url = "mailto:support@padlock.io";
+
+            // window.location = "mailto:..." won't work in packaged chrome apps so we have to use window.open
+            if (platform.isChromeApp()) {
+                window.open(url);
+            } else {
+                window.location = url;
+            }
+        });
     }
 });
