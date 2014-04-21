@@ -79,7 +79,9 @@ define(function() {
      * running iOS
      */
     var isIOS = function() {
-        return iDevices.indexOf(navigator.platform) != -1;
+        return iDevices.reduce(function(match, dev) {
+            return match || navigator.platform.indexOf(dev) !== -1;
+        }, false);
     };
 
     /**
