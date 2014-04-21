@@ -122,6 +122,9 @@ Polymer("padlock-settings-view", {
     import: function() {
         this.fire("import");
     },
+    openWebsite: function() {
+        window.open("http://padlock.io", "_system");
+    },
     sendMail: function() {
         require(["padlock/platform"], function(platform) {
             var url = "mailto:support@padlock.io";
@@ -133,5 +136,8 @@ Polymer("padlock-settings-view", {
                 window.location = url;
             }
         });
+    },
+    openGithub: function() {
+        window.open("http://github.com/maklesoft", "_system");
     }
 });

@@ -27,9 +27,9 @@
             <button class="settings-button" on-tap="{{ changePassword }}">Change Master Password</button>
         </div>
         <div class="section">
-            <a href="http://padlock.io" target="_blank" class="button settings-button">Website</a>
+            <button class="settings-button" on-tap="{{ openWebsite }}">Website</button>
             <button class="settings-button" on-tap="{{ sendMail }}">Support</button>
-            <a href="http://github.com/maklesoft" target="_blank" class="info">Developed and maintained by <strong>Martin Kleinschrodt</strong></a>
+            <div class="info" on-tap="{{ openGithub }}">Developed and maintained by <strong>Martin Kleinschrodt</strong></div>
         </div>
         </div>
         <!-- PROGRESS INDICATOR -->
