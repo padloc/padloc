@@ -13,36 +13,22 @@ Polymer("padlock-app", {
         // If we want to capture all keydown events, we have to add the listener
         // directly to the document
         document.addEventListener("keydown", this.keydown.bind(this), false);
+
+        // Prevent native mousedown behavior on iOS to avoid some quirks
+        if (require("padlock/platform").isIOS()) {
+            document.addEventListener("mousedown", this.preventDefault.bind(this), false);
+        }
     },
     initView: function(collExists) {
-        require(["padlock/platform"], function(platform) {
-            // If there already is data in the local storage ask for password
-            // Otherwise start with choosing a new one
-            var initialView = collExists ? this.$.lockView : this.$.passwordView;
+        // If there already is data in the local storage ask for password
+        // Otherwise start with choosing a new one
+        var initialView = collExists ? this.$.lockView : this.$.passwordView;
 
-            // iOS gets a special treatment since it has the ability to run a website
-            // as a 'standalone' web app and we want to use that!
-            if (platform.isIOS()) {
-                // Add a special class in case the app is lanchend from the home screen in iOS,
-                // otherwise as the user to add the site to their home screen.
-                if (platform.isIOSStandalone()) {
-                    this.classList.add("ios-standalone");
-                    // On most browsers the mousedown event is coupled to triggering focus on
-                    // the clicked elements. Since we're directly handling focussing inputs
-                    // with the padlock-input element we need to disable the native mechanism
-                    // to prevent conflicts.
-                    this.preventMousedownDefault = true;
-                } else {
-                    initialView = this.$.homescreenView;
-                }
-            }
-
-            // open the first view
-            this.openView(initialView, {
-                inAnimation: "floatUp",
-                inDuration: 1000
-            });
-        }.bind(this));
+        // open the first view
+        this.openView(initialView, {
+            inAnimation: "floatUp",
+            inDuration: 1000
+        });
     },
     pwdEnter: function(event, detail, sender) {
         this.unlock(detail.password);
@@ -208,11 +194,9 @@ Polymer("padlock-app", {
     dismissAlert: function() {
         this.$.alertDialog.open = false;
     },
-    mousedown: function() {
-        if (this.preventMousedownDefault) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
+    preventDefault: function() {
+        event.preventDefault();
+        event.stopPropagation();
     },
     //* Keyboard shortcuts
     keydown: function(event) {

@@ -5,7 +5,9 @@ window.addEventListener("polymer-ready", function() {
         "padlock/Store",
         "padlock/Collection",
         "padlock/Categories",
-        "padlock/Settings"
+        "padlock/Settings",
+        // These are included just for preloading
+        "padlock/platform"
     ], function(LocalSource, CloudSource, Store, Collection, Categories, Settings) {
         var source = new LocalSource(),
             store = new Store(source),

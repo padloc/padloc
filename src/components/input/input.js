@@ -3,16 +3,10 @@
         hasFocus: false,
         selectAllOnFocus: false,
         ready: function() {
-            // Turn off autocorrect and autocapitalize
-            // this.setAttribute("autocorrect", "off");
-            // this.setAttribute("autocapitalize", "off");
-            
-            require(["padlock/platform"], function(platform) {
-                // In certain situations we want to handle the focussing
-                // of input elements manually instead of relying on the native
-                // tap-to-focus mechanism.
-                this.overrideNativeFocus = platform.isIOSStandalone();
-            }.bind(this));
+            // In certain situations we want to handle the focussing
+            // of input elements manually instead of relying on the native
+            // tap-to-focus mechanism.
+            this.overrideNativeFocus = require("padlock/platform").isIOS();
         },
         tap: function(event) {
             if (this.overrideNativeFocus && !this.hasFocus) {
