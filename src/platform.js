@@ -116,6 +116,8 @@ define(function() {
         isIOS: isIOS,
         isIOSStandalone: isIOSStandalone,
         isChromeApp: isChromeApp,
-        setClipboard: setClipboard
+        // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
+        setClipboard: typeof cordova !== "undefined" && cordova.plugins && cordova.plugins.clipboard ?
+            cordova.plugins.clipboard.copy : setClipboard
     };
 });
