@@ -8,27 +8,32 @@
     <script>
         Polymer("padlock-progress", {
             ready: function() {
-                require(["padlock/platform"], function(platform) {
-                    this.addEventListener(platform.getAnimationIterationEventName(), this.iteration.bind(this));
-                }.bind(this));
+                var platform = require("padlock/platform");
+                this.addEventListener(platform.getAnimationEndEventName(), this.animationEnd.bind(this));
             },
             show: function() {
                 this.hidePending = false;
-                this.classList.remove("animated");
-                this.style.display = "";
-                // Trigger style recalculation so that adding the 'animated' class has an effect
-                this.offsetLeft;
                 this.classList.add("animated");
+                this.style.display = "";
+                // Trigger style recalculation so that adding the 'animated' class has an immediate effect
+                this.offsetLeft;
             },
             hide: function() {
                 // We want the animation to finish first, so we'll just set this flag
                 // and do the hiding after the next iteration
                 this.hidePending = true;
             },
-            iteration: function(event) {
-                // Hide the element if hide() was called during the last iteration
+            animationEnd: function(event) {
+                this.classList.remove("animated");
+
+                // Hide the element if hide() was called during the last iteration,
+                // otherwise restart the animation
                 if (this.hidePending) {
                     this.style.display = "none";
+                } else {
+                    // Trigger style recalculation so that removing and readding the 'animated' class has an effect
+                    this.offsetLeft;
+                    this.classList.add("animated");
                 }
             }
         });
