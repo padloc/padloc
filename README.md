@@ -1,10 +1,6 @@
 # Padlock
 A minimal open source password manager built with [Polymer](http://www.polymer-project.org/).
 
-Check out the live demo [here](http://maklesoft.github.io/padlock).
-
-**Note:** You'll need a modern browser. Chrome or Safari works best. IE is not supported at this time. *Make sure to try it on your iPhone or Chrome for Android!*
-
 ## Contributing
 Contributions are more than welcome!
 
@@ -54,5 +50,4 @@ A couple of things that we are planning for the near future:
 - Creating backups
 - Export to CSV (and possibly other open formats)
 - Quick delete in list view
-- Cloud synchronization
 - End-to-end testing
