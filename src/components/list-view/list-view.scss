@@ -67,9 +67,12 @@
 }
 
 .section-header {
-    padding: 0 15px;
+    padding: 5px 15px;
+    margin-bottom: -5px;
     color: $color-primary;
-    margin-top: 5px;
+    top: 0;
+    background: transparentize($color-grey, 0.1);
+    @include position-sticky;
 
     &.color1 {
         color: $cat-color-1;
