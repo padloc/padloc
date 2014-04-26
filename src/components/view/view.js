@@ -43,7 +43,11 @@ Polymer('padlock-view', {
         // The padlock/platform module was already requested in the _attached_ method
         // so we're assuming it has already been loaded.
         var platform = require("padlock/platform"),
-            prefix = platform.getVendorPrefix().css;
+            prefix = platform.getVendorPrefix().css,
+            // We use fill styles mainly to prevent the animated 'flashing' before an in animation starts
+            // or after an out animation ends. The reason we don't simply use a fill style of 'both' is
+            // that we don't want the elements to be in a separate composition layer after the're done animating.
+            fillStyle = direction == "in" ? "backwards" : "forwards";
 
         duration = duration || this.animationDuration;
         this.currAnimation = animation;
@@ -59,7 +63,7 @@ Polymer('padlock-view', {
             duration + "ms",
             this.animationEasing,
             "0ms",
-            "both"
+            fillStyle
         ].join(" ");
         
         // If we are not using an animation or the animation duration is 0,
