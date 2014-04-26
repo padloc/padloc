@@ -14,9 +14,6 @@ Polymer('padlock-record-view', {
     rightHeaderButton: function() {
         this.$.menu.open = true;
     },
-    getAnimationElement: function() {
-        return this.$.animated;
-    },
     //* Opens the confirm dialog for deleting the current element
     deleteRecord: function() {
         this.$.menu.open = false;

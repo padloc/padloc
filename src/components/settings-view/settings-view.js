@@ -8,9 +8,6 @@ Polymer("padlock-settings-view", {
     leftHeaderButton: function() {
         this.fire("back");
     },
-    getAnimationElement: function() {
-        return this.shadowRoot.querySelector(".content");
-    },
     //* Opens the change password dialog and resets the corresponding input elements
     changePassword: function() {
         this.$.changePasswordErrorDialog.open = false;

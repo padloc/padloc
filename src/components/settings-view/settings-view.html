@@ -8,7 +8,6 @@
     <template>
         <!-- STYLES -->
         <link href="settings-view.css" rel="stylesheet" type="text/css">
-        <div class="content">
         <div class="section">
             <button class="settings-button" on-tap="{{ import }}">Import Data</button>
         </div>
@@ -30,7 +29,6 @@
             <button class="settings-button" on-tap="{{ openWebsite }}">Website</button>
             <button class="settings-button" on-tap="{{ sendMail }}">Support</button>
             <div class="info" on-tap="{{ openGithub }}">Developed and maintained by <strong>Martin Kleinschrodt</strong></div>
-        </div>
         </div>
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id="progress">Connecting...</padlock-progress>

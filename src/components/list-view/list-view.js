@@ -17,9 +17,6 @@ Polymer("padlock-list-view", {
     rightHeaderButton: function() {
         this.fire("add");
     },
-    getAnimationElement: function() {
-        return this.$.list;
-    },
     prepareRecords: function() {
         if (!this.collection) {
             return;
