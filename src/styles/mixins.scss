@@ -8,3 +8,11 @@
     cursor: default;
     @include user-select(none);
 }
+
+@mixin position-sticky {
+    position: -webkit-sticky;
+    position: -moz-sticky;
+    position: -o-sticky;
+    position: -ms-sticky;
+    position: sticky;
+}
