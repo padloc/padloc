@@ -26,8 +26,8 @@ Polymer("padlock-app", {
 
         // open the first view
         this.openView(initialView, {
-            inAnimation: "floatUp",
-            inDuration: 1000
+            animation: "floatUp",
+            duration: 1000
         });
     },
     pwdEnter: function(event, detail, sender) {
@@ -60,9 +60,10 @@ Polymer("padlock-app", {
             delete this.remoteSource.password;
         }
         this.openView(this.$.lockView, {
-            inAnimation: "floatUp",
-            inDuration: 1000,
-            outCallback: this.collection.clear.bind(this.collection)
+            animation: "floatUp",
+            duration: 1000
+        }, {
+            endCallback: this.collection.clear.bind(this.collection)
         });
     },
     //* Change handler for the selected property; Opens the record view when record is selected
@@ -76,7 +77,7 @@ Polymer("padlock-app", {
     /**
      * Opens the provided _view_
      */
-    openView: function(view, params) {
+    openView: function(view, inOpts, outOpts) {
         var views = this.shadowRoot.querySelectorAll(".view").array(),
             // Choose left or right animation based on the order the views
             // are included in the app
@@ -84,22 +85,23 @@ Polymer("padlock-app", {
 
         // Unless otherwise specified, use a right-to-left animation when navigating 'forward'
         // and a left-to-right animation when animating 'back'
-        params = params || {};
-        if (!("outAnimation" in params)) {
-            params.outAnimation = params.outAnimation || (back ? "slideOutToRight": "slideOutToLeft");
+        inOpts = inOpts || {};
+        if (!("animation" in inOpts)) {
+            inOpts.animation = back ? "slideInFromLeft": "slideInFromRight";
         }
-        if (!("inAnimation" in params)) {
-            params.inAnimation = params.inAnimation || (back ? "slideInFromLeft": "slideInFromRight");
+        outOpts = outOpts || {};
+        if (!("animation" in outOpts)) {
+            outOpts.animation = back ? "slideOutToRight": "slideOutToLeft";
         }
 
         // Hide current view (if any)
         if (this.currentView) {
-            this.currentView.hide(params.outAnimation, params.outDuration, params.outCallback);
+            // Wait until the out animation has started before starting the in animation
+            outOpts.startCallback = view.show.bind(view, inOpts);
+            this.currentView.hide(outOpts);
+        } else {
+            view.show(inOpts);
         }
-
-        // Show new view
-        view.show(params.inAnimation, params.inDuration, params.inCallback);
-
         this.currentView = view;
     },
     //* Saves changes to the currently selected record (if any)
@@ -225,16 +227,14 @@ Polymer("padlock-app", {
         this.$.categoriesView.updateCategories();
     },
     openCategories: function() {
-        this.openView(this.$.categoriesView, {
-            outAnimation: "slideOutToBottom",
-            inAnimation: ""
-        });
+        this.openView(this.$.categoriesView, {animation: ""}, {animation: "slideOutToBottom"});
     },
     categoriesDone: function() {
-        this.saveRecord();
         this.openView(this.$.recordView, {
-            outAnimation: "fadeOut",
-            inAnimation: "slideInFromBottom"
+            animation: "slideInFromBottom",
+            endCallback: this.saveRecord.bind(this)
+        }, {
+            animation: "fadeOut"
         });
     },
     categoryChanged: function(event, detail, sender) {

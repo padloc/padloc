@@ -55,20 +55,20 @@ define(function() {
         return animationEndEventNames[getVendorPrefix().lowercase];
     };
 
-    // Names for animation iteration events on various platforms
-    var animationIterationEventNames = {
-        webkit: "webkitAnimationIteration",
-        moz: "animationiteration",
-        ms: "MSAnimationIteration",
-        o: "oanimationiteration"
+    // Names for animation start events on various platforms
+    var animationStartEventNames = {
+        webkit: "webkitAnimationStart",
+        moz: "animationstart",
+        ms: "MSAnimationStart",
+        o: "oanimationstart"
     };
 
     /**
-     * Returns the appropriate animation end event name for the current platform
+     * Returns the appropriate animation start event name for the current platform
      * @return {String} Name of the animation end event name on this platform
      */
-    var getAnimationIterationEventName = function () {
-        return animationIterationEventNames[getVendorPrefix().lowercase];
+    var getAnimationStartEventName = function () {
+        return animationStartEventNames[getVendorPrefix().lowercase];
     };
 
     // All the devices running iOS
@@ -112,7 +112,7 @@ define(function() {
         getVendorPrefix: getVendorPrefix,
         getTransitionEndEventName: getTransitionEndEventName,
         getAnimationEndEventName: getAnimationEndEventName,
-        getAnimationIterationEventName: getAnimationIterationEventName,
+        getAnimationStartEventName: getAnimationStartEventName,
         isIOS: isIOS,
         isIOSStandalone: isIOSStandalone,
         isChromeApp: isChromeApp,
