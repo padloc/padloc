@@ -25,6 +25,9 @@ Polymer("padlock-categories-view", {
         prefix = prefix == "-moz-" ? "" : prefix;
 
         this.updateCategories();
+        // Make sure any updates to the category list are done before showing the view
+        Platform.performMicrotaskCheckpoint();
+
         this.super(arguments);
 
         // Remove animation property so the animation will restart
