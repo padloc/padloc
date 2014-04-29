@@ -39,17 +39,26 @@ Polymer("padlock-app", {
     },
     //* Tries to unlock the current collection with the provided password
     unlock: function(password) {
+        if (this.decrypting) {
+            // We're already busy decrypting the data, so no unlocking right now!
+            return;
+        }
+        this.decrypting = true;
         this.$.decrypting.show();
         this.collection.fetch({password: password, success: function() {
             this.$.lockView.errorMessage = null;
+            this.$.lockView.enterLocked = false;
             this.openView(this.$.listView);
             this.$.decrypting.hide();
+            this.decrypting = false;
             if (this.settings.sync_connected && this.settings.sync_auto) {
                 this.synchronize();
             }
         }.bind(this), fail: function() {
             this.$.lockView.errorMessage = "Wrong password!";
+            this.$.lockView.enterLocked = false;
             this.$.decrypting.hide();
+            this.decrypting = false;
         }.bind(this)});
     },
     //* Locks the collection and opens the lock view
