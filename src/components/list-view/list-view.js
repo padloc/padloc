@@ -7,7 +7,7 @@ Polymer("padlock-list-view", {
         showFilter: true
     },
     observe: {
-        filterString: "prepareRecords",
+        filterString: "bufferedPrepareRecords",
         "collection.records": "prepareRecords",
         "orderBy": "prepareRecords"
     },
@@ -16,6 +16,12 @@ Polymer("padlock-list-view", {
     },
     rightHeaderButton: function() {
         this.fire("add");
+    },
+    bufferedPrepareRecords: function() {
+        if (this.prepareRecordsTimeout) {
+            clearTimeout(this.prepareRecordsTimeout);
+        }
+        this.prepareRecordsTimeout = setTimeout(this.prepareRecords.bind(this), 300);
     },
     prepareRecords: function() {
         if (!this.collection) {
