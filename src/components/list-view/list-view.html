@@ -17,9 +17,8 @@
                         <div class="record-item" on-tap="{{ recordClicked }}">
                             <div class="record-item-inner">
                                 <div class="record-item-name">{{ name }}</div>
-                                <template if="{{ showCategory }}">
-                                    <div class="record-item-category color{{ catColor }}">{{ category }}</div>
-                                </template>
+                                <div class="record-item-category color{{ catColor }}"
+                                    style="{{ showCategory ? '' : 'display:none' }}">{{ category }}</div>
                             </div>
                         </div>
                     </template>
