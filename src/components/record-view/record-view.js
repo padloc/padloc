@@ -39,6 +39,7 @@ Polymer('padlock-record-view', {
     },
     //* Opens the add field dialog
     addField: function() {
+        this.selectedField = null;
         this.$.menu.open = false;
         this.$.newValueInput.value = "";
         this.$.newFieldNameInput.value = "";
@@ -92,5 +93,13 @@ Polymer('padlock-record-view', {
             platform.setClipboard(value);
         });
         this.$.fieldMenu.open = false;
+    },
+    //* Fills the current value input with a randomized value
+    randomize: function() {
+        // Choose the right input based on whether we are creating a new field or editing an existing one
+        var input = this.selectedField ? this.$.fieldValueInput : this.$.newValueInput;
+        require(["padlock/rand"], function(rand) {
+            input.value = rand.randomString(20);
+        });
     }
 });

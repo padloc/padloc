@@ -39,6 +39,7 @@
             <input is="padlock-input" id="fieldValueInput" selectAllOnFocus="true" placeholder="Enter Content" />
             <button class="primary" on-tap="{{ confirmEditField }}">Save Changes</button>
             <button on-tap="{{ copyToClipboard }}">Copy to Clipboard</button>
+            <button on-tap="{{ randomize }}">Randomize</button>
             <button on-tap="{{ removeField }}">Remove Field</button>
         </padlock-dialog>
         <!-- ADD FIELD DIALOG -->
@@ -46,6 +47,7 @@
             <div class="title">Add Field</div>
             <input is="padlock-input" id="newValueInput" placeholder="Enter Content" />
             <input is="padlock-input" id="newFieldNameInput" placeholder="Enter Label" />
+            <button on-tap="{{ randomize }}">Randomize</button>
             <button class="primary" on-tap="{{ confirmAddField }}">Add</button>
         </padlock-dialog>
         <!-- REMOVE FIELD CONFIRM DIALOG -->
