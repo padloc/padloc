@@ -229,6 +229,10 @@ Polymer("padlock-app", {
         else if (event.keyCode == 13) {
             shortcut = this.$.listView.selectMarked.bind(this.$.listView);
         }
+        // ESCAPE -> Back
+        else if (event.keyCode == 27) {
+            shortcut = this.back.bind(this);
+        }
 
         // If one of the shortcuts matches, execute it and prevent the default behaviour
         if (shortcut) {
@@ -337,5 +341,17 @@ Polymer("padlock-app", {
     },
     cancelUpdateRemotePassword: function() {
         this.$.updateRemotePasswordDialog.open = false;
+    },
+    //* Back method. Chooses the right back method based on the current view
+    back: function() {
+        if (this.currentView == this.$.recordView) {
+            this.recordViewBack();
+        } else if (this.currentView == this.$.settingsView) {
+            this.settingsBack();
+        } else if (this.currentView == this.$.importView) {
+            this.importBack();
+        } else if (this.currentView == this.$.categoriesView) {
+            this.categoriesDone();
+        }
     }
 });
