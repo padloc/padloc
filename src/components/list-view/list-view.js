@@ -153,6 +153,17 @@ Polymer("padlock-list-view", {
         }
         if (newEl) {
             newEl.classList.add("marked");
+            this.scrollIntoView(newEl);
+        }
+    },
+    //* Scrolls a given element in the list into view
+    scrollIntoView: function(el) {
+        if (el.offsetTop < this.scrollTop) {
+            // The element is off to the top; Scroll it into view, aligning it at the top
+            el.scrollIntoView();
+        } else if (el.offsetTop + el.offsetHeight > this.scrollTop + this.offsetHeight) {
+            // The element is off to the bottom; Scroll it into view, aligning it at the bottom
+            el.scrollIntoView(false);
         }
     },
     selectMarked: function() {
