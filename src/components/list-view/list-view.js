@@ -11,6 +11,7 @@ Polymer("padlock-list-view", {
         "collection.records": "prepareRecords",
         "orderBy": "prepareRecords"
     },
+    marked: null,
     leftHeaderButton: function() {
         this.fire("menu");
     },
@@ -103,7 +104,8 @@ Polymer("padlock-list-view", {
             section.records.push(records[i]);
         }
 
-        // Update _records_ 
+        // Update records
+        this.records = records;
         this.sections = sections;
         this.empty = !(this.collection && this.collection.records.length > removedCount);
     },
@@ -114,14 +116,46 @@ Polymer("padlock-list-view", {
         this.fire("import");
     },
     show: function(animation, duration, callback) {
+        this.marked = null;
         this.super([animation, duration, callback]);
-        // This solves a problem in iOS where scrolling would sometimes not work
-        // on iOS after unlocking the app
-        this.style.overflow = "visible";
-        this.offsetLeft;
-        this.style.overflow = "";
     },
     synchronize: function() {
         this.fire("synchronize");
+    },
+    recordsChanged: function() {
+        this.marked = null;
+    },
+    markNext: function() {
+        if (this.records.length) {
+            if (this.marked === null) {
+                this.marked = 0;
+            } else {
+                this.marked = (this.marked + 1 + this.records.length) % this.records.length;
+            }
+        }
+    },
+    markPrev: function() {
+        if (this.records.length) {
+            if (this.marked === null) {
+                this.marked = this.records.length - 1;
+            } else {
+                this.marked = (this.marked - 1 + this.records.length) % this.records.length;
+            }
+        }
+    },
+    markedChanged: function(markedOld, markedNew) {
+        var elements = this.shadowRoot.querySelectorAll(".record-item"),
+            oldEl = elements[markedOld],
+            newEl = elements[markedNew];
+
+        if (oldEl) {
+            oldEl.classList.remove("marked");
+        }
+        if (newEl) {
+            newEl.classList.add("marked");
+        }
+    },
+    selectMarked: function() {
+        this.selected = this.records[this.marked];
     }
 });

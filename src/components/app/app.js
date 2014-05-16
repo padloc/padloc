@@ -213,9 +213,21 @@ Polymer("padlock-app", {
     keydown: function(event) {
         var shortcut;
 
-        // CTRL/CMD + F
+        // CTRL/CMD + F -> Filter
         if ((event.ctrlKey || event.metaKey) && event.keyCode === 70) {
             shortcut = this.$.header.focusFilterInput.bind(this.$.header);
+        }
+        // DOWN -> Mark next
+        else if (event.keyCode == 40) {
+            shortcut = this.$.listView.markNext.bind(this.$.listView);
+        }
+        // UP -> Mark previous
+        else if (event.keyCode == 38) {
+            shortcut = this.$.listView.markPrev.bind(this.$.listView);
+        }
+        // ENTER -> Select marked
+        else if (event.keyCode == 13) {
+            shortcut = this.$.listView.selectMarked.bind(this.$.listView);
         }
 
         // If one of the shortcuts matches, execute it and prevent the default behaviour

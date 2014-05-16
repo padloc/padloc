@@ -60,6 +60,11 @@
             background: $cat-color-3;
         }
     }
+
+    &.marked .record-item-inner {
+        background: $color-blue;
+        color: #fff;
+    }
 }
 
 .record-item, .section-header, .empty {
