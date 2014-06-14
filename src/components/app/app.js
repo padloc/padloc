@@ -222,15 +222,21 @@ Polymer("padlock-app", {
         }
         // DOWN -> Mark next
         else if (event.keyCode == 40) {
-            shortcut = this.$.listView.markNext.bind(this.$.listView);
+            if (this.currentView.markNext) {
+                shortcut = this.currentView.markNext.bind(this.currentView);
+            }
         }
         // UP -> Mark previous
         else if (event.keyCode == 38) {
-            shortcut = this.$.listView.markPrev.bind(this.$.listView);
+            if (this.currentView.markPrev) {
+                shortcut = this.currentView.markPrev.bind(this.currentView);
+            }
         }
         // ENTER -> Select marked
         else if (event.keyCode == 13) {
-            shortcut = this.$.listView.selectMarked.bind(this.$.listView);
+            if (this.currentView.selectMarked) {
+                shortcut = this.currentView.selectMarked.bind(this.currentView);
+            }
         }
         // ESCAPE -> Back
         else if (event.keyCode == 27) {

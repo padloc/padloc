@@ -3,14 +3,14 @@
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../input/input.html">
 
-<polymer-element name="padlock-record-view" extends="padlock-view" attributes="record" touch-action="pan-y">
+<polymer-element name="padlock-record-view" extends="padlock-view" attributes="record marked" touch-action="pan-y">
     <template>
         <!-- STYLES -->
         <link href="record-view.css" rel="stylesheet" type="text/css">
         <div class="category color{{ record.catColor }}" on-tap="{{ openCategories }}">{{ record.category ? record.category : "Add a Category" }}</div>
         <!-- FIELD LIST -->
         <template repeat="{{ record.fields }}">
-            <div class="field" on-tap="{{ openFieldMenu }}">
+            <div class="field" on-tap="{{ fieldTapped }}">
                 <div class="value">{{ value }}</div>
                 <div class="label">{{ name }}</div>
             </div>
@@ -34,7 +34,7 @@
             <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
         <!-- FIELD CONTEXT MENU -->
-        <padlock-dialog id="fieldMenu">
+        <padlock-dialog id="fieldMenu" on-close="{{ fieldMenuClosed }}">
             <div class="title">{{ selectedField.name }}</div>
             <input is="padlock-input" id="fieldValueInput" selectAllOnFocus="true" placeholder="Enter Content" />
             <button class="primary" on-tap="{{ confirmEditField }}">Save Changes</button>
@@ -51,7 +51,7 @@
             <button class="primary" on-tap="{{ confirmAddField }}">Add</button>
         </padlock-dialog>
         <!-- REMOVE FIELD CONFIRM DIALOG -->
-        <padlock-dialog id="confirmRemoveFieldDialog">
+        <padlock-dialog id="confirmRemoveFieldDialog" on-close="{{ fieldMenuClosed }}">
             <div class="title">Are you sure you want to remove this field?</div>
             <button class="primary" on-tap="{{ confirmRemoveField }}">Remove</button>
             <button on-tap="{{ cancelRemoveField }}">Cancel</button>

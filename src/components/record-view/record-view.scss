@@ -43,6 +43,16 @@
             color: $text-color-faint;
         }
     }
+
+    &.marked {
+        background: $color-blue;
+        color: #fff;
+
+        > .label {
+            color: inherit;
+            font-weight: $font-weight-bold;
+        }
+    }
 }
 
 .add-button {
