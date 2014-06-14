@@ -24,7 +24,7 @@
                 </div>
             </div>
         </div>
-        <padlock-dialog id="editDialog">
+        <padlock-dialog id="editDialog" on-close="{{ editDialogClosed }}">
             <padlock-select id="colorSelect" openUpwards="true">
                 <padlock-option class="color1" selectedClass="color1" value="1">Select a color</padlock-option>
                 <padlock-option class="color2" selectedClass="color2" value="2">Select a color</padlock-option>
