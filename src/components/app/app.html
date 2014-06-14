@@ -29,7 +29,7 @@
         <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}"></padlock-lock-view>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}"
-            categories="{{ categories }}" selected="{{ selected }}" on-add="{{ addRecord }}" orderBy="{{ orderOption.value }}"
+            categories="{{ categories }}" selected="{{ selected }}" on-add="{{ addRecord }}" settings="{{ settings }}"
             on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}" on-synchronize="{{ synchronize }}"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
@@ -48,8 +48,8 @@
         <padlock-progress id="synchronizing">synchronizing...</padlock-progress>
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
-            <padlock-select openUpwards="true" selected="{{ orderOption }}">
-                <padlock-option selected="true" value="name">Order by Name</padlock-option>
+            <padlock-select openUpwards="true" value="{{ settings.order_by }}">
+                <padlock-option value="name">Order by Name</padlock-option>
                 <padlock-option value="category">Order by Category</padlock-option>
             </padlock-select>
             <button on-tap="{{ synchronize }}">Synchronize</button>

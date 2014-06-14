@@ -1,5 +1,4 @@
 Polymer("padlock-list-view", {
-    orderByCategory: false,
     headerOptions: {
         show: true,
         leftIconShape: "menu",
@@ -9,7 +8,7 @@ Polymer("padlock-list-view", {
     observe: {
         filterString: "bufferedPrepareRecords",
         "collection.records": "prepareRecords",
-        "orderBy": "prepareRecords"
+        "settings.order_by": "prepareRecords"
     },
     marked: null,
     leftHeaderButton: function() {
@@ -63,11 +62,11 @@ Polymer("padlock-list-view", {
             }
 
             // Give it a section property for the rendering of the section headers
-            rec.section = this.orderBy == "category" ? rec.category || "other" : rec.name.toUpperCase()[0];
+            rec.section = this.settings.order_by == "category" ? rec.category || "other" : rec.name.toUpperCase()[0];
 
             // Add properties for rendering the category
             rec.catColor = this.categories.get(rec.category) || "";
-            rec.showCategory = this.orderBy != "category";
+            rec.showCategory = this.settings.order_by != "category";
         }
 
         // Save the categories in case any new ones have been added

@@ -1,4 +1,7 @@
 Polymer("padlock-app", {
+    observe: {
+        "settings.order_by": "saveSettings"
+    },
     init: function(collection, settings, categories) {
         this.collection = collection;
         this.settings = settings;
@@ -353,5 +356,8 @@ Polymer("padlock-app", {
         } else if (this.currentView == this.$.categoriesView) {
             this.categoriesDone();
         }
+    },
+    saveSettings: function() {
+        this.settings.save();
     }
 });
