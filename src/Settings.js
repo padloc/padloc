@@ -50,7 +50,16 @@ define(function() {
         },
         //* Sets a _setting_ to a _value_
         set: function(setting, value) {
+            var oldValue = this.settings[setting];
             this.settings[setting] = value;
+            if (Object.getNotifier) {
+                // Manually notify any observers registered through Object.observe
+                Object.getNotifier(this).notify({
+                    type: "update",
+                    name: setting,
+                    oldValue: oldValue
+                });
+            }
         }
     };
 

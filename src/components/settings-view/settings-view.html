@@ -16,7 +16,7 @@
                 style="{{ settings.sync_connected ? 'display: none' : ''}}">Connect To Padlock Cloud</button>
             <button class="settings-button" on-tap="{{ cloudDisconnect }}"
                 style="{{ settings.sync_connected ? '' : 'display: none'}}">
-                <div>Disconnect <span class="email">({{ settings.settings.sync_email }})</span></div></button>
+                <div>Disconnect <span class="email">({{ settings.sync_email }})</span></div></button>
             <div class="settings-row" style="{{ settings.sync_connected ? '' : 'display: none'}}"
                 on-tap="{{ toggleAutoSync }}">
                 <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" on-change="{{ save }}"></padlock-toggle>
