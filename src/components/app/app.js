@@ -353,15 +353,11 @@ Polymer("padlock-app", {
     },
     //* Back method. Chooses the right back method based on the current view
     back: function() {
-        if (this.currentView == this.$.recordView) {
-            this.recordViewBack();
-        } else if (this.currentView == this.$.settingsView) {
-            this.settingsBack();
-        } else if (this.currentView == this.$.importView) {
-            this.importBack();
-        } else if (this.currentView == this.$.categoriesView) {
-            this.categoriesDone();
-        }
+        this.currentView.back();
+        var dialogs = this.shadowRoot.querySelectorAll("padlock-dialog");
+        Array.prototype.forEach.call(dialogs, function(dialog) {
+            dialog.open = false;
+        });
     },
     saveSettings: function() {
         this.settings.save();

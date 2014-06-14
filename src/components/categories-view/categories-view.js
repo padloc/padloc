@@ -9,7 +9,7 @@ Polymer("padlock-categories-view", {
         "record.name": "updateTitleText"
     },
     leftHeaderButton: function() {
-        this.fire("done");
+        this.fire("back");
     },
     updateCategories: function() {
         this.categoryList = this.categories.asArray();
