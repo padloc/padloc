@@ -56,5 +56,17 @@ Polymer("padlock-select", {
     optionTap: function(event) {
         this.selected = event.target;
         this.open = false;
+    },
+    selectedChanged: function() {
+        this.value = this.selected.value;
+    },
+    valueChanged: function() {
+        this.selectValue(this.value);
+    },
+    //* Selects the first option with the given value
+    selectValue: function(value) {
+        this.selected = Array.prototype.filter.call(this.children, function(option) {
+            return option.value == value;
+        })[0];
     }
 });
