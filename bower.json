@@ -15,12 +15,15 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "0.2.2",
+    "polymer": "Polymer/polymer#~0.3.2",
     "requirejs": "~2.1.9",
     "shape-shifter": "~0.1.1"
   },
   "private": true,
   "resolutions": {
-    "platform": "0.2.1"
+    "platform": ">=0.3.0 <1.0.0",
+    "polymer": "~0.3.2",
+    "core-action-icons": "0.2.4",
+    "core-component-page": ">=0.3.0 <1.0.0"
   }
 }
