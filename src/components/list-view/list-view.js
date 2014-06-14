@@ -167,5 +167,9 @@ Polymer("padlock-list-view", {
     },
     selectMarked: function() {
         this.selected = this.records[this.marked];
+    },
+    selectedChanged: function() {
+        var ind = this.records.indexOf(this.selected);
+        this.marked = ind !== -1 ? ind : null;
     }
 });
