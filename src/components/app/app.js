@@ -245,6 +245,10 @@ Polymer("padlock-app", {
         else if (event.keyCode == 27) {
             shortcut = this.back.bind(this);
         }
+        // CTRL/CMD + C -> Copy
+        else if ((event.ctrlKey || event.metaKey) && event.keyCode === 67 && this.currentView == this.$.recordView) {
+            shortcut = this.$.recordView.copyToClipboard.bind(this.$.recordView);
+        }
 
         // If one of the shortcuts matches, execute it and prevent the default behaviour
         if (shortcut) {

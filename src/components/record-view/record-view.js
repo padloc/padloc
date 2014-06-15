@@ -87,7 +87,10 @@ Polymer('padlock-record-view', {
         this.fire("categories");
     },
     copyToClipboard: function() {
-        var value = this.$.fieldValueInput.value;
+        // If a field has been selected copy that one, otherwise copy the marked one
+        var field = this.selectedField ? this.selectedField : this.record.fields[this.marked],
+            value = field && field.value;
+
         require(["padlock/platform"], function(platform) {
             platform.setClipboard(value);
         });
