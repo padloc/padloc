@@ -21,6 +21,9 @@ Polymer("padlock-app", {
         if (require("padlock/platform").isIOS()) {
             document.addEventListener("mousedown", this.preventDefault.bind(this), false);
         }
+
+        // Listen for android back button
+        document.addEventListener("backbutton", this.back.bind(this));
     },
     initView: function(collExists) {
         // If there already is data in the local storage ask for password
