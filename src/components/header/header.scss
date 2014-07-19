@@ -17,8 +17,7 @@
     pointer-events: auto;
 
     @include display-box;
-    @include transform(translate3d(0, 0, 0));
-    @include transition(transform 0.5s, background 1s);
+    @include transition(transform 0.5s);
     @include transform(translate3d(0, -100%, 0));
 
     shape-shifter {
