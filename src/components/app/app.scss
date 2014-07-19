@@ -59,6 +59,15 @@
             color: $text-color-light;
         }
 
+        button.ghost {
+            background: transparent;
+            color: #fff;
+            border-top: solid 2px #fff;
+            border-bottom: solid 2px #fff;
+            font-weight: 600;
+            line-height: 46px;
+        }
+
         input {
             $line-height: 20px;
             border: none;
@@ -70,11 +79,21 @@
             background: #fff;
             margin: 0;
             height: $row-height;
-            line-height: $line-height;
-            padding: ($row-height - $line-height)/2 15px;
 
             @include appearance(none);
             @include box-sizing(border-box);
+        }
+
+        input.ghost {
+            background: transparent;
+            color: #fff;
+            border-bottom: solid 1px #fff;
+            width: 80%;
+            height: 40px;
+
+            &::-webkit-input-placeholder {
+               color: #fff;
+            }
         }
 
         strong {

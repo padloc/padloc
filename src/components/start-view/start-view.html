@@ -13,11 +13,11 @@
                 Padlock
             </div>
             <!-- NEW PASSWORD INPUT -->
-            <input is="padlock-input" type="password" placeholder="Enter Master Password" id="pwdInput"/>
+            <input is="padlock-input"  class="ghost" type="password" placeholder="Enter Master Password" id="pwdInput"/>
             <!-- CONFIRM PASSWORD INPUT -->
-            <input is="padlock-input" type="password" placeholder="Confirm Password" id="confirmInput"/>
+            <input is="padlock-input" class="ghost" type="password" placeholder="Confirm Master Password" id="confirmInput"/>
             <!-- ENTER BUTTON -->
-            <button class="enter-button primary" on-tap="{{ enter }}">OK</button>
+            <button class="enter-button ghost" on-tap="{{ enter }}">OK</button>
             <!-- ERROR MESSAGE -->
             <div class="error-message">Passwords do not match!</div>
         </div>

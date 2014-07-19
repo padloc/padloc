@@ -2,6 +2,10 @@
 @import "compass/css3";
 @import "../view/view.scss";
 
+:host {
+    background-color: $color-primary;
+}
+
 :host(.error)  {
     .error-message {
         opacity: 1;
@@ -20,7 +24,6 @@
     text-align: center;
 
     input {
-        display: block;
         text-align: center;
         width: 100%;
         margin-bottom: 15px;
@@ -30,8 +33,8 @@
 .header {
     font-size: 50px;
     font-weight: 300;
-    color: $color-primary;
-    margin-bottom: 50px;
+    color: #fff;
+    margin-bottom: 30px;
     font-weight: $font-weight-thin;
 }
 
@@ -50,4 +53,5 @@ p {
 
 .enter-button {
     width: 100%;
+    margin-top: 30px;
 }

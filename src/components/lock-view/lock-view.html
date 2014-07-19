@@ -13,9 +13,9 @@
                 Padlock
             </div>
             <!-- PASSWORD INPUT -->
-            <input is="padlock-input" type="password" placeholder="Enter Password" on-keydown="{{ keydown }}" id="pwdInput"/>
+            <input is="padlock-input" class="ghost" type="password" placeholder="Enter Password" on-keydown="{{ keydown }}" id="pwdInput"/>
             <!-- ENTER BUTTON -->
-            <button class="enter-button primary" on-tap="{{ enter }}">OK</button>
+            <button class="enter-button ghost" on-tap="{{ enter }}">OK</button>
             <!-- ERROR MESSAGE -->
             <div class="error-message">{{ errorMessage }}</div>
         </div>

@@ -2,10 +2,12 @@
 @import "compass/css3";
 @import "../view/view.scss";
 
-:host {}
+:host {
+    background: $color-primary;
+}
 
 .wrapper {
-    height: 300px;
+    height: 240px;
     position: absolute;
     left: 0;
     right: 0;
@@ -18,8 +20,8 @@
 .header {
     font-size: 50px;
     font-weight: $font-weight-thin;
-    padding: 35px;
-    color: $color-primary;
+    margin-bottom: 30px;
+    color: #fff;
 }
 
 input {
@@ -29,7 +31,7 @@ input {
 
 .enter-button {
     width: 100%;
-    margin-top: 15px;
+    margin-top: 30px;
 }
 
 .error-message {
