@@ -368,5 +368,8 @@ Polymer("padlock-app", {
     },
     saveSettings: function() {
         this.settings.save();
+    },
+    trackStart: function(event) {
+        event.preventTap();
     }
 });
