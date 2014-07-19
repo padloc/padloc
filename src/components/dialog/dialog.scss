@@ -11,11 +11,22 @@
     background-color: transparent;
     display: none;
 
-    @include transition(background-color 0.5s);
+    .scrim {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background: #000;
+        opacity: 0;
+        @include transition(opacity 0.5s);
+    }
 }
 
-:host(.open) {
-    background-color: $scrim-color;
+:host(.open) .scrim {
+    opacity: $scrim-opacity;
 }
 
 // Failsafe in case the out animation get interrupted and
