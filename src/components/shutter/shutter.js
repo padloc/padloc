@@ -15,5 +15,8 @@ Polymer("padlock-shutter", {
         if (this.open) {
             this.$.lockView.reset();
         }
+    },
+    focusPwdInput: function() {
+        this.$.lockView.focusPwdInput();
     }
 });

@@ -30,6 +30,9 @@ Polymer("padlock-app", {
         // // If there already is data in the local storage ask for password
         // // Otherwise start with choosing a new one
         this.$.shutter.startMode = !collExists;
+        if (collExists) {
+            setTimeout(this.$.shutter.focusPwdInput.bind(this.$.shutter), 500);
+        }
 
         // // open the first view
         this.openView(this.$.listView, { animation: "" });

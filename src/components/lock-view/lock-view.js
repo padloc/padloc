@@ -11,5 +11,8 @@ Polymer("padlock-lock-view", {
     },
     reset: function() {
         this.$.pwdInput.value = "";
+    },
+    focusPwdInput: function() {
+        this.$.pwdInput.focus();
     }
 });
