@@ -2,11 +2,11 @@
 <link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="../input/input.html">
 
-<polymer-element name="padlock-header" attributes="view showFilter filterString">
+<polymer-element name="padlock-header" attributes="view showFilter filterString scrim">
     <template>
         <!-- STYLES -->
         <link href="header.css" rel="stylesheet" type="text/css">
-        <div class="{{ {'showing': view ? view.headerOptions.show : false, 'show-filter': view ? view.headerOptions.showFilter : false, 'filtering': filterActive, 'scrim': scrim} | tokenList }}">
+        <div class="{{ {'show-filter': view ? view.headerOptions.showFilter : false, 'filtering': filterActive, 'scrim': scrim} | tokenList }}">
             <!-- LEFT BUTTON -->
             <shape-shifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></shape-shifter>
             <div class="middle">

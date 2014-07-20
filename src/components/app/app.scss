@@ -125,14 +125,9 @@
     }
 }
 
-padlock-header {
-    position: absolute;
-    z-index: 10;
-    width: 100%;
-}
-
 padlock-progress#decrypting {
     background: $color-red;
+    z-index: 10;
 }
 
 padlock-progress#synchronizing {

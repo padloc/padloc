@@ -1,10 +1,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../header/header.html">
+<link rel="import" href="../shutter/shutter.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../list-view/list-view.html">
 <link rel="import" href="../record-view/record-view.html">
-<link rel="import" href="../start-view/start-view.html">
-<link rel="import" href="../lock-view/lock-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../import-view/import-view.html">
 <link rel="import" href="../categories-view/categories-view.html">
@@ -19,14 +17,8 @@
     <template>
         <!-- STYLES -->
         <link href="app.css" rel="stylesheet" type="text/css">
-        <!-- HEADER -->
-        <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"></padlock-header>
-        <!-- ADD-TO-HOMESCREEN MESSAGE -->
-        <padlock-homescreen-view class="view" id="homescreenView"></padlock-homescreen-view>
-        <!-- PASSWORD VIEW -->
-        <padlock-start-view id="passwordView" class="view" on-enter="{{ newPwdEnter }}"></padlock-start-view>
-        <!-- LOCK VIEW -->
-        <padlock-lock-view id="lockView" class="view" on-enter="{{ pwdEnter }}"></padlock-lock-view>
+        <padlock-shutter id="shutter" on-newpwd="{{ newPwd }}" on-pwdenter="{{ pwdEnter }}"
+            currentView="{{ currentView }}" filterString="{{ filterString }}"></padlock-shutter>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}"
             categories="{{ categories }}" selected="{{ selected }}" on-add="{{ addRecord }}" settings="{{ settings }}"
