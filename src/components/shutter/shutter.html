@@ -14,7 +14,8 @@
         <padlock-lock-view id="lockView" errorMessage="{{ errorMessage }}"
             style="display: {{ startMode ? 'none' : '' }}"></padlock-lock-view>
         <!-- HEADER -->
-        <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}" scrim="{{ scrim }}"></padlock-header>
+        <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"
+            showFilterInput="{{ currentView.headerOptions.showFilter && open }}" scrim="{{ scrim }}"></padlock-header>
     </template>
     <script src="shutter.js"></script>
 </polymer-element>

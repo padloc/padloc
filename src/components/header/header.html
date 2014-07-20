@@ -2,17 +2,17 @@
 <link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="../input/input.html">
 
-<polymer-element name="padlock-header" attributes="view showFilter filterString scrim">
+<polymer-element name="padlock-header" attributes="view showFilterInput filterString scrim">
     <template>
         <!-- STYLES -->
         <link href="header.css" rel="stylesheet" type="text/css">
-        <div class="{{ {'show-filter': view ? view.headerOptions.showFilter : false, 'filtering': filterActive, 'scrim': scrim} | tokenList }}">
+        <div class="{{ {'show-filter': showFilterInput, 'filtering': filterActive, 'scrim': scrim} | tokenList }}">
             <!-- LEFT BUTTON -->
             <shape-shifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></shape-shifter>
             <div class="middle">
                 <!-- FILTER INPUT -->
                 <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString }}" type="search"
-                    placeholder="type to filter..." disabled?="{{ view ? !view.headerOptions.showFilter : true }}"
+                    placeholder="type to filter..." disabled?="{{ !showFilterInput }}"
                     on-focus="{{ filterGotFocus }}"/>
                 <!-- HEADER TITLE -->
                 <div class="title">{{ view.titleText }}</div>
