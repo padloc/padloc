@@ -22,7 +22,7 @@ Polymer("padlock-start-view", {
 
         if (newPwd == cfmPwd) {
             this.classList.remove("error");
-            this.fire("enter", {password: newPwd});
+            this.fire("newpwd", {password: newPwd});
         } else {
             this.classList.add("error");
         }

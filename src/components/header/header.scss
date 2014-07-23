@@ -17,8 +17,6 @@
     pointer-events: auto;
 
     @include display-box;
-    @include transition(transform 0.5s);
-    @include transform(translate3d(0, -100%, 0));
 
     shape-shifter {
         display: block;
@@ -31,10 +29,6 @@
         &::shadow line {
             stroke: $text-color-light;
         }
-    }
-
-    &.showing {
-        @include transform(translate3d(0, 0, 0));
     }
 
     &.show-filter {

@@ -1,0 +1,31 @@
+@import "compass/css3";
+@import "../../styles/config.scss";
+
+:host {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    @include transition(transform 0.5s cubic-bezier(.71, -0.51, 0, 1.2));
+}
+
+:host([open]) {
+    @include translate3d(0, -100%, 0);
+}
+
+padlock-header {
+    position: absolute;
+    width: 100%;
+    bottom: -$row-height;
+}
+
+.overhang {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: -100%;
+    background: $color-primary;
+}

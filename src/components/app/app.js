@@ -2,6 +2,7 @@ Polymer("padlock-app", {
     observe: {
         "settings.order_by": "saveSettings"
     },
+    filterString: "",
     init: function(collection, settings, categories) {
         this.collection = collection;
         this.settings = settings;
@@ -26,22 +27,25 @@ Polymer("padlock-app", {
         document.addEventListener("backbutton", this.back.bind(this));
     },
     initView: function(collExists) {
-        // If there already is data in the local storage ask for password
-        // Otherwise start with choosing a new one
-        var initialView = collExists ? this.$.lockView : this.$.passwordView;
+        // // If there already is data in the local storage ask for password
+        // // Otherwise start with choosing a new one
+        this.$.shutter.startMode = !collExists;
+        if (collExists) {
+            setTimeout(this.$.shutter.focusPwdInput.bind(this.$.shutter), 500);
+        }
 
-        // open the first view
-        this.openView(initialView, {
-            animation: "floatUp",
-            duration: 1000
-        });
+        // // open the first view
+        this.openView(this.$.listView, { animation: "" });
     },
     pwdEnter: function(event, detail, sender) {
         this.unlock(detail.password);
     },
-    newPwdEnter: function(event, detail, sender) {
+    newPwd: function(event, detail, sender) {
         this.collection.setPassword(detail.password);
-        this.openView(this.$.listView);
+        this.$.shutter.open = true;
+        setTimeout(function() {
+            this.$.shutter.startMode = false;
+        }.bind(this), 500);
     },
     //* Tries to unlock the current collection with the provided password
     unlock: function(password) {
@@ -52,17 +56,17 @@ Polymer("padlock-app", {
         this.decrypting = true;
         this.$.decrypting.show();
         this.collection.fetch({password: password, success: function() {
-            this.$.lockView.errorMessage = null;
-            this.$.lockView.enterLocked = false;
-            this.openView(this.$.listView);
+            this.$.shutter.errorMessage = null;
+            this.$.shutter.enterLocked = false;
+            this.$.shutter.open = true;
             this.$.decrypting.hide();
             this.decrypting = false;
             if (this.settings.sync_connected && this.settings.sync_auto) {
                 this.synchronize();
             }
         }.bind(this), fail: function() {
-            this.$.lockView.errorMessage = "Wrong password!";
-            this.$.lockView.enterLocked = false;
+            this.$.shutter.errorMessage = "Wrong password!";
+            this.$.shutter.enterLocked = false;
             this.$.decrypting.hide();
             this.decrypting = false;
         }.bind(this)});
@@ -70,23 +74,23 @@ Polymer("padlock-app", {
     //* Locks the collection and opens the lock view
     lock: function() {
         this.$.mainMenu.open = false;
-        // Remove the stored password from the remote source if we've created on yet
-        if (this.remoteSource) {
-            delete this.remoteSource.password;
-        }
-        this.openView(this.$.lockView, {
-            animation: "floatUp",
-            duration: 1000
-        }, {
-            endCallback: this.collection.clear.bind(this.collection)
-        });
+
+        setTimeout(function() {
+            // Remove the stored password from the remote source if we've created on yet
+            if (this.remoteSource) {
+                delete this.remoteSource.password;
+            }
+            
+            this.$.shutter.open = false;
+            setTimeout(this.collection.clear.bind(this.collection), 500);
+        }.bind(this), 500);
     },
     //* Change handler for the selected property; Opens the record view when record is selected
     selectedChanged: function() {
         if (this.selected) {
             this.$.recordView.record = this.selected;
             this.openView(this.$.recordView);
-            this.$.header.blurFilterInput();
+            this.$.shutter.blurFilterInput();
         }
     },
     /**
@@ -197,11 +201,11 @@ Polymer("padlock-app", {
     },
     //* Triggers the headers scrim to match the scrim of the opened dialog
     dialogOpen: function(event, detail, sender) {
-        this.$.header.scrim = true;
+        this.$.shutter.scrim = true;
     },
     //* Removes the headers scrim
     dialogClose: function(event, detail, sender) {
-        this.$.header.scrim = false;
+        this.$.shutter.scrim = false;
     },
     //* Show an alert dialog with the provided message
     alert: function(msg) {
@@ -219,9 +223,14 @@ Polymer("padlock-app", {
     keydown: function(event) {
         var shortcut;
 
+        // If the shutter is closed, ignore all shortcuts
+        if (!this.$.shutter.open) {
+            return;
+        }
+
         // CTRL/CMD + F -> Filter
-        if ((event.ctrlKey || event.metaKey) && event.keyCode === 70) {
-            shortcut = this.$.header.focusFilterInput.bind(this.$.header);
+        if ((event.ctrlKey || event.metaKey) && event.keyCode === 70 && this.currentView.headerOptions.showFilter) {
+            shortcut = this.$.shutter.focusFilterInput.bind(this.$.shutter);
         }
         // DOWN -> Mark next
         else if (event.keyCode == 40) {
