@@ -74,13 +74,16 @@ Polymer("padlock-app", {
     //* Locks the collection and opens the lock view
     lock: function() {
         this.$.mainMenu.open = false;
-        // Remove the stored password from the remote source if we've created on yet
-        if (this.remoteSource) {
-            delete this.remoteSource.password;
-        }
-        
-        this.$.shutter.open = false;
-        setTimeout(this.collection.clear.bind(this.collection), 500);
+
+        setTimeout(function() {
+            // Remove the stored password from the remote source if we've created on yet
+            if (this.remoteSource) {
+                delete this.remoteSource.password;
+            }
+            
+            this.$.shutter.open = false;
+            setTimeout(this.collection.clear.bind(this.collection), 500);
+        }.bind(this), 500);
     },
     //* Change handler for the selected property; Opens the record view when record is selected
     selectedChanged: function() {
