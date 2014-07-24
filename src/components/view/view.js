@@ -109,7 +109,9 @@ Polymer('padlock-view', {
         // are applied before rendering the element
         this.offsetLeft;
         // Show the element
-        this.style.display = "";
+        setTimeout(function() {
+            this.style.display = "";
+        }.bind(this), 50);
     },
     //* Hides the view
     hide: function(opts) {
