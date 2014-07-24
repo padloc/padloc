@@ -37,11 +37,11 @@
         margin-right: 15px;
         @include box-flex(1);
         @include ellipsis;
+    }
 
-        &:empty:after {
-            content: "(tap to edit)";
-            color: $text-color-faint;
-        }
+    &:not(.marked) > .value:empty:after {
+        content: "(tap to edit)";
+        color: $text-color-faint;
     }
 
     &.marked {
