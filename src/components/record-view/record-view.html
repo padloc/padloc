@@ -35,7 +35,7 @@
         </padlock-dialog>
         <!-- FIELD CONTEXT MENU -->
         <padlock-dialog id="fieldMenu" on-close="{{ fieldMenuClosed }}">
-            <div class="title">{{ selectedField.name }}</div>
+            <div class="title" id="fieldMenuTitle"></div>
             <input is="padlock-input" id="fieldValueInput" selectAllOnFocus="true" placeholder="Enter Content" />
             <button class="primary" on-tap="{{ confirmEditField }}">Save Changes</button>
             <button on-tap="{{ copyToClipboard }}">Copy to Clipboard</button>

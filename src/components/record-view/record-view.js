@@ -156,7 +156,10 @@ Polymer('padlock-record-view', {
         }
     },
     selectedFieldChanged: function() {
-        this.$.fieldValueInput.value = this.selectedField && this.selectedField.value || "";
+        if (this.selectedField) {
+            this.$.fieldMenuTitle.innerHTML = this.selectedField && this.selectedField.name || "";
+            this.$.fieldValueInput.value = this.selectedField && this.selectedField.value || "";
+        }
         this.$.fieldMenu.open = !!this.selectedField;
         var fieldIndex = this.record.fields.indexOf(this.selectedField);
         this.marked = fieldIndex !== -1 ? fieldIndex : null;
