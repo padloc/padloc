@@ -25,6 +25,8 @@
         width: $row-height - $padding * 2;
         height: $row-height - $padding * 2;
         cursor: pointer;
+        position: relative;
+        z-index: 1;
 
         &::shadow line {
             stroke: $text-color-light;
@@ -34,12 +36,12 @@
     &.show-filter {
         .filter-input {
             opacity: 1;
-            @include transform(translate(0, 0));
+            @include transform(translate3d(0, 0, 0));
         }
 
         .title {
             opacity: 0;
-            @include transform(translate(0, 100%));
+            @include transform(translate3d(50%, 0, 0));
         }
     }
 
@@ -52,6 +54,7 @@
         content: "";
         display: block;
         position: absolute;
+        z-index: 1;
         top: 0;
         right: 0;
         bottom: 0;
@@ -73,7 +76,6 @@
 
 .middle {
     position: relative;
-    overflow: hidden;
     @include box-flex(1);
 }
 
@@ -89,7 +91,7 @@
     padding: ($row-height - $line-height)/2 0;
 
     @include box-sizing(border-box);
-    @include transition(transform 0.5s, opacity 0.5s);
+    @include transition(transform 0.5s cubic-bezier(.71, -0.51, 0, 1.2), opacity 0.5s ease);
 }
 
 .filter-input {
@@ -97,7 +99,7 @@
     color: $text-color-light;
     opacity: 0;
 
-    @include transform(translate(0, -100%));
+    @include transform(translate3d(-50%, 0, 0));
 
     &::-webkit-input-placeholder {
        color: $placeholder-color-light;
@@ -107,6 +109,6 @@
 .title {
     pointer-events: none;
     opacity: 1;
-    @include transform(translate(0, 0));
+    @include transform(translate3d(0, 0, 0));
     @include ellipsis();
 }
