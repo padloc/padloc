@@ -8,7 +8,7 @@
         <link href="header.css" rel="stylesheet" type="text/css">
         <div class="{{ {'show-filter': showFilterInput, 'filtering': filterActive, 'scrim': scrim} | tokenList }}">
             <!-- LEFT BUTTON -->
-            <shape-shifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}"></shape-shifter>
+            <shape-shifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}" springy></shape-shifter>
             <div class="middle">
                 <!-- FILTER INPUT -->
                 <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString }}" type="search"
@@ -18,7 +18,7 @@
                 <div class="title">{{ view.titleText }}</div>
             </div>
             <!-- RIGHT BUTTON -->
-            <shape-shifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}"></shape-shifter>
+            <shape-shifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}" springy></shape-shifter>
         </div>
     </template>
     <script src="header.js"></script>
