@@ -9,7 +9,7 @@ Polymer('padlock-view', {
     //* Title text that is going to be displayed in header element
     titleText: "",
     //* Duration of the in/out animations
-    animationDuration: 400,
+    animationDuration: 500,
     //* Animation timing function for the in/out animations
     animationEasing: "ease",
     leftHeaderButton: function() {},
