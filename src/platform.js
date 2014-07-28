@@ -107,6 +107,15 @@ define(function() {
         document.execCommand("cut");
         document.body.removeChild(clipboardTextArea);
     };
+
+    var isTouch = function() {
+        try {
+            document.createEvent("TouchEvent");
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
  
     return {
         getVendorPrefix: getVendorPrefix,
@@ -116,6 +125,7 @@ define(function() {
         isIOS: isIOS,
         isIOSStandalone: isIOSStandalone,
         isChromeApp: isChromeApp,
+        isTouch: isTouch,
         // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
         setClipboard: typeof cordova !== "undefined" && cordova.plugins && cordova.plugins.clipboard ?
             cordova.plugins.clipboard.copy : setClipboard

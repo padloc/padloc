@@ -27,11 +27,12 @@ Polymer("padlock-app", {
         document.addEventListener("backbutton", this.back.bind(this));
     },
     initView: function(collExists) {
+        var isTouch = require("padlock/platform").isTouch();
         // // If there already is data in the local storage ask for password
         // // Otherwise start with choosing a new one
         this.$.shutter.startMode = !collExists;
-        if (collExists) {
-            setTimeout(this.$.shutter.focusPwdInput.bind(this.$.shutter), 500);
+        if (collExists && !isTouch) {
+            setTimeout(this.$.shutter.focusPwdInput.bind(this.$.shutter), 10);
         }
 
         // // open the first view
