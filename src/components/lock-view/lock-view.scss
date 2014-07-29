@@ -1,13 +1,20 @@
 @import "../../styles/config.scss";
 @import "compass/css3";
-@import "../view/view.scss";@import "animation";
+@import "../view/view.scss";
+@import "animation";
+
+@include keyframes(reveal) {
+    from {@include transform(translate3d(0, 100%, 0)); opacity: 0; }
+    50% {@include transform(translate3d(0, -10%, 0)); opacity: 1; }
+    to {@include transform(translate3d(0, 0, 0)); opacity: 1; }
+}
 
 :host {
     background: $color-primary;
 }
 
 .wrapper {
-    height: 240px;
+    height: 210px;
     position: absolute;
     left: 0;
     right: 0;
@@ -20,18 +27,22 @@
 .header {
     font-size: 50px;
     font-weight: $font-weight-thin;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     color: #fff;
+
+    @include animation(reveal 0.5s ease 0.25s both);
 }
 
-input {
+.password-input {
     text-align: center;
     width: 100%;
+    @include animation(reveal 0.5s ease 0.5s both);
 }
 
 .enter-button {
     width: 100%;
     margin-top: 30px;
+    @include animation(reveal 0.5s ease 0.75s both);
 }
 
 .error-message {

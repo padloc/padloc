@@ -2,6 +2,12 @@
 @import "compass/css3";
 @import "../view/view.scss";
 
+@include keyframes(reveal) {
+    from {@include transform(translate3d(0, 100%, 0)); opacity: 0; }
+    50% {@include transform(translate3d(0, -10%, 0)); opacity: 1; }
+    to {@include transform(translate3d(0, 0, 0)); opacity: 1; }
+}
+
 :host {
     background-color: $color-primary;
 }
@@ -36,6 +42,15 @@
     color: #fff;
     margin-bottom: 30px;
     font-weight: $font-weight-thin;
+    @include animation(reveal 0.5s ease 0.25s both);
+}
+
+.pwdinput-first {
+    @include animation(reveal 0.5s ease 0.50s both);
+}
+
+.pwdinput-second {
+    @include animation(reveal 0.5s ease 0.75s both);
 }
 
 p {
@@ -54,4 +69,5 @@ p {
 .enter-button {
     width: 100%;
     margin-top: 30px;
+    @include animation(reveal 0.5s ease 1s both);
 }
