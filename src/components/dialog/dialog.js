@@ -1,3 +1,5 @@
+(function(Polymer, platform) {
+
 Polymer("padlock-dialog", {
     open: false,
     //* Changed handler for the _open_ property. Shows/hides the dialog
@@ -5,7 +7,7 @@ Polymer("padlock-dialog", {
         var items = this.children,
             // transition delay between individual items
             dt = 0.2/items.length,
-            prefix = require("padlock/platform").getVendorPrefix().css,
+            prefix = platform.getVendorPrefix().css,
             l = items.length,
             delay;
 
@@ -70,3 +72,5 @@ Polymer("padlock-dialog", {
         this.open = false;
     }
 });
+
+})(Polymer, padlock.platform);

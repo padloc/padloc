@@ -1,3 +1,5 @@
+(function(Polymer) {
+
 Polymer("padlock-toggle", {
     value: false,
     toggle: function() {
@@ -13,3 +15,5 @@ Polymer("padlock-toggle", {
         this.fire("change");
     }
 });
+
+})(Polymer);

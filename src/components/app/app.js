@@ -1,3 +1,5 @@
+(function(Polymer, platform) {
+
 Polymer("padlock-app", {
     observe: {
         "settings.order_by": "saveSettings"
@@ -19,7 +21,7 @@ Polymer("padlock-app", {
         document.addEventListener("keydown", this.keydown.bind(this), false);
 
         // Prevent native mousedown behavior on iOS to avoid some quirks
-        if (require("padlock/platform").isIOS()) {
+        if (platform.isIOS()) {
             document.addEventListener("mousedown", this.preventDefault.bind(this), false);
         }
 
@@ -27,7 +29,7 @@ Polymer("padlock-app", {
         document.addEventListener("backbutton", this.back.bind(this));
     },
     initView: function(collExists) {
-        var isTouch = require("padlock/platform").isTouch();
+        var isTouch = platform.isTouch();
         // // If there already is data in the local storage ask for password
         // // Otherwise start with choosing a new one
         this.$.shutter.startMode = !collExists;
@@ -383,3 +385,5 @@ Polymer("padlock-app", {
         event.preventTap();
     }
 });
+
+})(Polymer, padlock.platform);

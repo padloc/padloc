@@ -1,3 +1,4 @@
+<link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
 <polymer-element name="padlock-progress" attributes="text" style="display: none">
@@ -6,9 +7,10 @@
         <span><content></content></span>
     </template>
     <script>
+        (function(Polymer, platform) {
+
         Polymer("padlock-progress", {
             ready: function() {
-                var platform = require("padlock/platform");
                 this.addEventListener(platform.getAnimationEndEventName(), this.animationEnd.bind(this));
             },
             show: function() {
@@ -37,5 +39,7 @@
                 }
             }
         });
+
+        })(Polymer, padlock.platform);
     </script>
 </polymer-element>

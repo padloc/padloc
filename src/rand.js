@@ -1,4 +1,4 @@
-define(function() {
+padlock.rand = (function() {
     var chars = {
         numbers: "0123456789",
         lower: "abcdefghijklmnopqrstuvwxyz",
@@ -33,4 +33,4 @@ define(function() {
     return {
         randomString: randomString
     };
-});
+})();

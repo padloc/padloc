@@ -1,8 +1,7 @@
 /**
  * Module for importing data from various formats.
  */
-define(["padlock/crypto", "padlock/util"], function(crypto, util) {
-
+padlock.import = (function(crypto, util) {
     //* Detects if a string contains a SecuStore backup
     var isSecuStoreBackup = function(rawData) {
         // Very simply check but I think it should do.
@@ -186,4 +185,4 @@ define(["padlock/crypto", "padlock/util"], function(crypto, util) {
         parseCsv: parseCsv,
         importTable: importTable
     };
-});
+})(padlock.crypto, padlock.util);

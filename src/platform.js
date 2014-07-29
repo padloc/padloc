@@ -1,4 +1,4 @@
-define(function() {
+padlock.platform = (function() {
     var vPrefix;
     /**
      *  Detects the vendor prefix to be used in the current browser
@@ -130,4 +130,4 @@ define(function() {
         setClipboard: typeof cordova !== "undefined" && cordova.plugins && cordova.plugins.clipboard ?
             cordova.plugins.clipboard.copy : setClipboard
     };
-});
+})();

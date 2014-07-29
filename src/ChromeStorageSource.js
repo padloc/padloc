@@ -1,5 +1,5 @@
-define(function(require) {
-    var storage = chrome.storage.local;
+padlock.ChromeStorageSource = (function(require) {
+    var storage = typeof chrome !== "undefined" && chrome.storage && chrome.storage.local;
     
     /**
      * Source object using the local storage mechanism provided by the chrome apps api
@@ -23,4 +23,4 @@ define(function(require) {
     };
 
     return ChromeStorageSource;
-});
+})();

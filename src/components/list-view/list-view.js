@@ -1,3 +1,5 @@
+(function(Polymer) {
+
 Polymer("padlock-list-view", {
     headerOptions: {
         show: true,
@@ -173,3 +175,5 @@ Polymer("padlock-list-view", {
         this.marked = ind !== -1 ? ind : null;
     }
 });
+
+})(Polymer);

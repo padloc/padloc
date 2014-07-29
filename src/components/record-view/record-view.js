@@ -1,3 +1,5 @@
+(function(Polymer, util, rand, platform) {
+
 Polymer('padlock-record-view', {
     headerOptions: {
         show: true,
@@ -70,11 +72,9 @@ Polymer('padlock-record-view', {
     },
     confirmRemoveField: function() {
         this.$.confirmRemoveFieldDialog.open = false;
-        require(["padlock/util"], function(util) {
-            this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
-            this.selectedField = null;
-            this.fire("save");
-        }.bind(this));
+        this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
+        this.selectedField = null;
+        this.fire("save");
     },
     cancelRemoveField: function() {
         this.$.confirmRemoveFieldDialog.open = false;
@@ -91,18 +91,14 @@ Polymer('padlock-record-view', {
         var field = this.selectedField ? this.selectedField : this.record.fields[this.marked],
             value = field && field.value;
 
-        require(["padlock/platform"], function(platform) {
-            platform.setClipboard(value);
-        });
+        platform.setClipboard(value);
         this.selectedField = null;
     },
     //* Fills the current value input with a randomized value
     randomize: function() {
         // Choose the right input based on whether we are creating a new field or editing an existing one
         var input = this.selectedField ? this.$.fieldValueInput : this.$.newValueInput;
-        require(["padlock/rand"], function(rand) {
-            input.value = rand.randomString(20);
-        });
+        input.value = rand.randomString(20);
     },
     markNext: function() {
         if (this.record.fields.length && !this.selectedField) {
@@ -165,3 +161,5 @@ Polymer('padlock-record-view', {
         this.marked = fieldIndex !== -1 ? fieldIndex : null;
     }
 });
+
+})(Polymer, padlock.util, padlock.rand, padlock.platform);

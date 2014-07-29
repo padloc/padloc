@@ -1,4 +1,4 @@
-define(["padlock/crypto"], function(crypto) {
+padlock.Store = (function(crypto) {
     /**
      * The _Store_ acts as a proxy between the persistence layer (e.g. _LocalStorageSource_)
      * and a _Collection_ object it mainly handles encryption and decryption of data
@@ -135,4 +135,4 @@ define(["padlock/crypto"], function(crypto) {
     };
 
     return Store;
-});
+})(padlock.crypto);

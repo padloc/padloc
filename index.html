@@ -17,16 +17,15 @@
         <!-- Polymer platform layer -->
         <script src="bower_components/platform/platform.js"></script>
 
-        <!-- require.js -->
-        <script src="bower_components/requirejs/require.js"></script>
-        <script src="config.js"></script>
-
-
         <!-- Custom app element -->
         <link rel="import" href="src/components/app/app.html">
 
         <!-- This is the ENTRY POINT -->
-        <script src="src/start.js"></script>
+        <link rel="import" href="src/padlock.html">
+        <script src="src/init.js"></script>
+
+        <!-- Load the cordova api if available -->
+        <script src="cordova.js"></script>
         <style>
             body {
                 padding: 0;
@@ -35,5 +34,7 @@
             }
         </style>
     </head>
-    <body></body>
+    <body unresolved>
+        <padlock-app></padlock-app>
+    </body>
 </html>

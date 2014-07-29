@@ -1,4 +1,4 @@
-(function(Polymer) {
+(function(Polymer, platform) {
     var inputProto = {
         hasFocus: false,
         selectAllOnFocus: false,
@@ -6,7 +6,7 @@
             // In certain situations we want to handle the focussing
             // of input elements manually instead of relying on the native
             // tap-to-focus mechanism.
-            this.overrideNativeFocus = require("padlock/platform").isIOS();
+            this.overrideNativeFocus = platform.isIOS();
         },
         tap: function(event) {
             if (this.overrideNativeFocus && !this.hasFocus) {
@@ -47,4 +47,4 @@
 
     Polymer("padlock-input", inputProto);
     Polymer("padlock-textarea", taProto);
-})(Polymer);
+})(Polymer, padlock.platform);

@@ -1,3 +1,5 @@
+(function(Polymer, platform) {
+
 Polymer("padlock-settings-view", {
     headerOptions: {
         show: true,
@@ -123,18 +125,18 @@ Polymer("padlock-settings-view", {
         window.open("http://padlock.io", "_system");
     },
     sendMail: function() {
-        require(["padlock/platform"], function(platform) {
-            var url = "mailto:support@padlock.io";
+        var url = "mailto:support@padlock.io";
 
-            // window.location = "mailto:..." won't work in packaged chrome apps so we have to use window.open
-            if (platform.isChromeApp()) {
-                window.open(url);
-            } else {
-                window.location = url;
-            }
-        });
+        // window.location = "mailto:..." won't work in packaged chrome apps so we have to use window.open
+        if (platform.isChromeApp()) {
+            window.open(url);
+        } else {
+            window.location = url;
+        }
     },
     openGithub: function() {
         window.open("http://github.com/maklesoft", "_system");
     }
 });
+
+})(Polymer, padlock.platform);

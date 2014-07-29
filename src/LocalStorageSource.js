@@ -1,6 +1,4 @@
-define(function(require) {
-    var Source = require("./Source");
-    
+padlock.LocalStorageSource = (function(Source) {
     /**
      * This source uses the _localStorage_ api to fetch and store data. Although
      * _localStorage_ works synchronously, All methods use callbacks to be
@@ -23,4 +21,4 @@ define(function(require) {
     };
 
     return LocalStorageSource;
-});
+})(padlock.Source);
