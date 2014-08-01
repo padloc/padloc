@@ -27,14 +27,24 @@
         <!-- Load the cordova api if available -->
         <script src="cordova.js"></script>
         <style>
-            body {
-                padding: 0;
-                margin: 0;
-                background: #f5f5f5;
+            body[unresolved], padlock-app[unresolved] {
+                opacity: 1;
+            }
+
+            body[unresolved]::after, padlock-app[unresolved]::after {
+                content: "";
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #59c6ff;
+                z-index: 1000;
             }
         </style>
     </head>
     <body unresolved>
-        <padlock-app></padlock-app>
+        <padlock-app unresolved></padlock-app>
     </body>
 </html>
