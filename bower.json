@@ -1,6 +1,6 @@
 {
   "name": "Padlock",
-  "version": "0.3.1",
+  "version": "0.7.0",
   "homepage": "http://padlock.io",
   "authors": [
     "Martin Kleinschrodt <martin@maklesoft.com>"
@@ -16,7 +16,6 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#~0.3.2",
-    "requirejs": "~2.1.9",
     "shape-shifter": "~0.2.0"
   },
   "private": true,
