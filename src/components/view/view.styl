@@ -1,0 +1,52 @@
+@import "nib";
+
+@keyframes slideInFromRight {
+    from {transform: translate3d(100%, 0, 0);}
+    50% {transform: translate3d(-2%, 0, 0);}
+    to {transform: translate3d(0, 0, 0);}
+}
+
+@keyframes slideInFromLeft {
+    from {transform: translate3d(-100%, 0, 0);}
+    50% {transform: translate3d(2%, 0, 0);}
+    to {transform: translate3d(0, 0, 0);}
+}
+
+@keyframes slideOutToRight  {
+    from {transform: translate3d(0, 0, 0);}
+    50% {transform: translate3d(100%, 0, 0);}
+    to {transform: translate3d(100%, 0, 0);}
+}
+
+@keyframes slideOutToLeft {
+    from {transform: translate3d(0, 0, 0);}
+    50% {transform: translate3d(-100%, 0, 0);}
+    to {transform: translate3d(-100%, 0, 0);}
+}
+
+@keyframes slideInFromBottom {
+    from {transform: translate3d(0, 100%, 0);}
+    50% {transform: translate3d(0, -2%, 0);}
+    to {transform: translate3d(0, 0, 0);}
+}
+
+@keyframes slideOutToBottom {
+    from {transform: translate3d(0, 0, 0);}
+    50% {transform: translate3d(0, 100%, 0);}
+    to {transform: translate3d(0, 100%, 0);}
+}
+
+@keyframes fadeOut {
+    from {opacity: 1;}
+    50% {opacity: 0;}
+    to {opacity: 0;}
+}
+
+:host {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    padding-top: $row-height;
+}

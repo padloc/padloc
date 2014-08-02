@@ -1,12 +1,11 @@
-@import "../../styles/config.scss";
-@import "compass/css3";
-@import "../view/view.scss";
-@import "animation";
+@import "../../styles/config";
+@import "../view/view";
+@import "nib";
 
-@include keyframes(reveal) {
-    from {@include transform(translate3d(0, 100%, 0)); opacity: 0; }
-    50% {@include transform(translate3d(0, -10%, 0)); opacity: 1; }
-    to {@include transform(translate3d(0, 0, 0)); opacity: 1; }
+@keyframes reveal {
+    from { transform: translate3d(0, 100%, 0); opacity: 0; }
+    50% { transform: translate3d(0, -10%, 0); opacity: 1; }
+    to { transform: translate3d(0, 0, 0); opacity: 1; }
 }
 
 :host {
@@ -30,19 +29,19 @@
     margin-bottom: 20px;
     color: #fff;
 
-    @include animation(reveal 0.5s ease 0.25s both);
+    animation: reveal 0.5s ease 0.25s both;
 }
 
 .password-input {
     text-align: center;
     width: 100%;
-    @include animation(reveal 0.5s ease 0.5s both);
+    animation: reveal 0.5s ease 0.5s both;
 }
 
 .enter-button {
     width: 100%;
     margin-top: 30px;
-    @include animation(reveal 0.5s ease 0.75s both);
+    animation: reveal 0.5s ease 0.75s both;
 }
 
 .error-message {
@@ -50,15 +49,15 @@
     padding: 20px;
     opacity: 0;
 
-    @include transform(translate(0, 100%));
-    @include transition(transform 0.5s, opacity 0.5s);
+    transform: translate(0, 100%);
+    transition: transform 0.5s, opacity 0.5s;
 }
 
 .error  {
     .error-message {
         opacity: 1;
 
-        @include transform(translate(0, 0));
+        transform: translate(0, 0);
     }
 
     input {

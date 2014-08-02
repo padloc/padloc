@@ -1,5 +1,5 @@
-@import "../../styles/config.scss";
-@import "compass/css3";
+@import "../../styles/config";
+@import "nib";
 
 :host {
     position: fixed;
@@ -21,7 +21,7 @@
         bottom: 0;
         background: #000;
         opacity: 0;
-        @include transition(opacity 0.5s);
+        transition: opacity 0.5s;
     }
 }
 
@@ -42,7 +42,7 @@
     width: 100%;
     padding: 0;
 
-    @include box-sizing(border-box);
+    box-sizing: border-box;
 }
 
 polyfill-next-selector { content: '.inner > *'; }
@@ -53,8 +53,8 @@ polyfill-next-selector { content: '.inner > *'; }
     cursor: pointer;
     width: 100%;
 
-    @include box-sizing(border-box);
-    @include transform(translate3d(0, 100%, 0));
+    box-sizing: border-box;
+    transform: translate3d(0, 100%, 0);
 }
 
 polyfill-next-selector { content: '.inner > .title'; }
@@ -76,6 +76,6 @@ polyfill-next-selector { content: '.inner > input'; }
 
 polyfill-next-selector { content: ':host(.open) .inner > *'}
 :host(.open) ::content > * {
-    @include transform(translate3d(0, 0, 0));
+    transform: translate3d(0, 0, 0);
     opacity: 1;
 }

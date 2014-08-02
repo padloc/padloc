@@ -1,22 +1,21 @@
-@import "../../styles/config.scss";
-@import "../../styles/mixins.scss";
-@import "compass/css3";
-@import "animation";
-@import "../view/view.scss";
+@import "../../styles/config";
+@import "../../styles/mixins";
+@import "../view/view";
+@import "nib";
 
 
-@include keyframes(bounceIn) {
-    0% {@include transform(scale(0.1)); opacity: 0;}
-    30% {@include transform(scale(1.1)); opacity: 1;}
-    70% {@include transform(scale(0.95));}
-    100% {@include transform(scale(1));}
+@keyframes bounceIn {
+    0% { transform: scale(0.1); opacity: 0; }
+    30% { transform: scale(1.1); opacity: 1; }
+    70% { transform: scale(0.95); }
+    100% { transform: scale(1); }
 }
 
-@include keyframes(bounce) {
-    0% {@include transform(scale(1));}
-    30% {@include transform(scale(1.1));}
-    70% {@include transform(scale(0.95));}
-    100% {@include transform(scale(1));}
+@keyframes bounce {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.1); }
+    70% { transform: scale(0.95); }
+    100% { transform: scale(1); }
 }
 
 :host {
@@ -30,7 +29,7 @@
 }
 
 .category {
-    $size: 70px;
+    $size = 70px;
     display: inline-block;
     width: $size;
     height: $size;
@@ -46,13 +45,12 @@
     font-weight: $font-weight-bold;
     cursor: pointer;
 
-    @include animation(bounceIn 0.5s ease 0s both);
+    animation: bounceIn 0.5s ease 0s both;
 
     .category-inner {
         width: 100%;
         height: 100%;
-
-        @include ellipsis;
+        overflow: ellipsis;
     }
 
     &.color1 {
@@ -84,15 +82,15 @@
 padlock-select {
     line-height: 0;
 
-    /deep/ .color1 {
+    & /deep/ .color1 {
         background: $cat-color-1;
     }
 
-    /deep/ .color2 {
+    & /deep/ .color2 {
         background: $cat-color-2;
     }
 
-    /deep/ .color3 {
+    & /deep/ .color3 {
         background: $cat-color-3;
     }
 

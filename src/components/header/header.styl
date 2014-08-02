@@ -1,6 +1,6 @@
-@import "compass/css3";
-@import "../../styles/config.scss";
-@import "../../styles/mixins.scss";
+@require "../../styles/config.styl";
+@require "../../styles/mixins.styl";
+@import "nib";
 
 :host {
     line-height: 0;
@@ -11,16 +11,16 @@
     overflow: hidden;
     height: $row-height;
     color: $text-color-light;
-    background: transparentize($color-primary, 0.1);
+    background: transparentify($color-primary, 0.9);
     position: relative;
     width: 100%;
     pointer-events: auto;
 
-    @include display-box;
+    display: flex;
 
     shape-shifter {
         display: block;
-        $padding: 10px;
+        $padding = 10px;
         padding: $padding;
         width: $row-height - $padding * 2;
         height: $row-height - $padding * 2;
@@ -36,12 +36,12 @@
     &.show-filter {
         .filter-input {
             opacity: 1;
-            @include transform(translate3d(0, 0, 0));
+            transform: translate3d(0, 0, 0);
         }
 
         .title {
             opacity: 0;
-            @include transform(translate3d(50%, 0, 0));
+            transform: translate3d(50%, 0, 0);
         }
     }
 
@@ -62,7 +62,7 @@
         background-color: #000;
         pointer-events: none;
         opacity: 0;
-        @include transition(opacity 0.5s);
+        transition: opacity 0.5s;
     }
 
     &.scrim {
@@ -76,11 +76,11 @@
 
 .middle {
     position: relative;
-    @include box-flex(1);
+    flex: 1;
 }
 
 .middle > * {
-    $line-height: 22px;
+    $line-height = 22px;
     display: block;
     position: absolute;
     top: 0;
@@ -88,10 +88,10 @@
     width: 100%;
     // height: 100%;
     line-height: $line-height;
-    padding: ($row-height - $line-height)/2 0;
+    padding: (($row-height - $line-height) / 2) 0;
 
-    @include box-sizing(border-box);
-    @include transition(transform 0.5s cubic-bezier(.71, 0.5, 0, 1.2), opacity 0.5s ease);
+    box-sizing: border-box;
+    transition: transform 0.5s cubic-bezier(.71, 0.5, 0, 1.2), opacity 0.5s ease;
 }
 
 .filter-input {
@@ -99,7 +99,7 @@
     color: $text-color-light;
     opacity: 0;
 
-    @include transform(translate3d(-50%, 0, 0));
+    transform: translate3d(-50%, 0, 0);
 
     &::-webkit-input-placeholder {
        color: $placeholder-color-light;
@@ -109,6 +109,6 @@
 .title {
     pointer-events: none;
     opacity: 1;
-    @include transform(translate3d(0, 0, 0));
-    @include ellipsis();
+    transform: translate3d(0, 0, 0);
+    overflow: ellipsis;
 }

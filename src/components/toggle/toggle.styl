@@ -1,12 +1,12 @@
-@import "../../styles/config.scss";
-@import "compass/css3";
+@import "../../styles/config";
+@import "nib";
 
-$width: 50px;
-$height: 30px;
-$gutter-width: 2px;
-$bg-color-off: $color-grey;
-$bg-color-on: $color-green;
-$anim-duration: 0.2s;
+$width = 50px;
+$height = 30px;
+$gutter-width = 2px;
+$bg-color-off = $color-grey;
+$bg-color-on = $color-green;
+$anim-duration = 0.2s;
 
 :host {
     display: inline-block;
@@ -15,7 +15,7 @@ $anim-duration: 0.2s;
     background: $bg-color-off;
     border-radius: $height;
 
-    @include transition(background $anim-duration ease-out);
+    transition: background $anim-duration ease-out;
 }
 
 .knob {
@@ -28,13 +28,13 @@ $anim-duration: 0.2s;
     background: #fff;
     border-radius: $size;
 
-    @include transition(transform $anim-duration ease-out);
+    transition: transform $anim-duration ease-out;
 }
 
 :host(.on) {
     background: $bg-color-on;
 
     .knob {
-        @include translate($width - $height, 0);
+        transform: translate($width - $height, 0);
     }
 }

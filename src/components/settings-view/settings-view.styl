@@ -1,7 +1,7 @@
-@import "../../styles/config.scss";
-@import "../../styles/mixins.scss";
-@import "../view/view.scss";
-@import "compass/css3";
+@import "../../styles/config";
+@import "../../styles/mixins";
+@import "../view/view";
+@import "nib";
 
 :host {
     overflow-x: hidden;
@@ -12,11 +12,11 @@
 button.settings-button, .button.settings-button {
     display: block;
     width: 100%;
-    @include box-sizing(border-box);
+    box-sizing: border-box;
 
     div {
         width: 100%;
-        @include ellipsis;
+        overflow: ellipsis;
 
         .email {
             font-size: 14px;

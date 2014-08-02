@@ -1,7 +1,6 @@
-@import "../../styles/config.scss";
-@import "../../styles/mixins.scss";
-@import "compass/css3";
-@import "compass/css3/user-interface";
+@import "../../styles/config";
+@import "../../styles/mixins";
+@import "nib";
 
 :host {
     font-family: "Clear Sans", sans-serif;
@@ -17,9 +16,9 @@
     -webkit-tap-highlight-color: transparent;
     background: $color-grey;
     overflow: hidden;
-    @include unselectable;
+    unselectable();
 
-    &, /deep/ button, /deep/ input {     
+    &, & /deep/ button, & /deep/ input {     
         -webkit-font-smoothing: antialiased;
     }
 
@@ -27,7 +26,7 @@
         These are are elements that should be styled consistently accross the app,
         therefore the selectors should cross all shadow dom boundaries.
      */
-    /deep/ {
+    & /deep/ {
         a {
             text-decoration: none;
             color: inherit;
@@ -80,8 +79,8 @@
             margin: 0;
             height: $row-height;
 
-            @include appearance(none);
-            @include box-sizing(border-box);
+            appearance: none;
+            box-sizing: border-box;
         }
 
         input.ghost {
