@@ -2,7 +2,8 @@ var gulp = require("gulp"),
     stylus = require("gulp-stylus"),
     nib = require("nib"),
     watch = require("gulp-watch"),
-    argv = require("yargs").argv;
+    argv = require("yargs").argv,
+    qunit = require("gulp-qunit");
 
 gulp.task("stylus", function () {
     if (argv.watch) {
@@ -16,4 +17,9 @@ gulp.task("stylus", function () {
             .pipe(stylus({use: [nib()]}))
             .pipe(gulp.dest("./src"));
     }
+});
+
+gulp.task("test", function() {
+    return gulp.src("./test/runner.html")
+        .pipe(qunit());
 });

@@ -10,24 +10,28 @@
     <div id="qunit-fixture"></div>
 
     <script src="qunit.js"></script>
-    <script src="../polyfills/bind.js"></script>
 
-    <script src="../lib/sjcl.js"></script>
+    <!-- Function.prototype.bind polyfill -->
+    <script src="bind.js"></script>
+
+    <!-- Source code, symlinked into the test dir -->
+    <script src="lib/sjcl.js"></script>
     <script>padlock={};</script>
-    <script src="../src/util.js"></script>
-    <script src="../src/rand.js"></script>
-    <script src="../src/crypto.js"></script>
-    <script src="../src/platform.js"></script>
-    <script src="../src/Source.js"></script>
-    <script src="../src/LocalStorageSource.js"></script>
-    <script src="../src/ChromeStorageSource.js"></script>
-    <script src="../src/CloudSource.js"></script>
-    <script src="../src/Store.js"></script>
-    <script src="../src/Collection.js"></script>
-    <script src="../src/Settings.js"></script>
-    <script src="../src/Categories.js"></script>
-    <script src="../src/util.js"></script>
+    <script src="src/util.js"></script>
+    <script src="src/rand.js"></script>
+    <script src="src/crypto.js"></script>
+    <script src="src/import.js"></script>
+    <script src="src/platform.js"></script>
+    <script src="src/Source.js"></script>
+    <script src="src/LocalStorageSource.js"></script>
+    <script src="src/ChromeStorageSource.js"></script>
+    <script src="src/CloudSource.js"></script>
+    <script src="src/Store.js"></script>
+    <script src="src/Collection.js"></script>
+    <script src="src/Settings.js"></script>
+    <script src="src/Categories.js"></script>
 
+    <!-- Tests -->
     <script src="util.js"></script>
     <script src="crypto.js"></script>
     <script src="import.js"></script>
