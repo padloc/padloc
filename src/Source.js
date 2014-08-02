@@ -1,4 +1,4 @@
-define(function() {
+padlock.Source = (function() {
     /**
      * The _Source_ object is responsible for fetching/saving data from/to a persistent
      * storage like localStorage or a cloud. It is meant as a base object to be extended
@@ -47,4 +47,4 @@ define(function() {
     };
 
     return Source;
-});
+})();

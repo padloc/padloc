@@ -1,3 +1,5 @@
+(function(Polymer, util, imp) {
+
 Polymer("padlock-import-view", {
     headerOptions: {
         show: true,
@@ -33,27 +35,24 @@ Polymer("padlock-import-view", {
             return;
         }
 
-        require(["padlock/import"], function(imp) {
-            if (imp.isSecuStoreBackup(rawStr)) {
-                this.requirePassword();
-            } else {
-                this.csvData = imp.parseCsv(rawStr);
-                this.getNameCol();
-            }
-        }.bind(this));
+        if (imp.isSecuStoreBackup(rawStr)) {
+            this.requirePassword();
+        } else {
+            this.csvData = imp.parseCsv(rawStr);
+            this.getNameCol();
+        }
     },
     //* Starts the import using the raw input and the provided password
     importSecuStoreBackup: function() {
         this.$.pwdDialog.open = false;
         this.$.progress.show();
-        require(["padlock/import"], function(imp) {
-            imp.importSecuStoreBackup(this.$.rawInput.value, this.$.pwdInput.value, function(records) {
-                this.fire("import", {records: records});
-            }.bind(this), function(e) {
-                this.$.errorDialog.open = true;
-            }.bind(this));
-            this.$.progress.hide();
+
+        imp.importSecuStoreBackup(this.$.rawInput.value, this.$.pwdInput.value, function(records) {
+            this.fire("import", {records: records});
+        }.bind(this), function(e) {
+            this.$.errorDialog.open = true;
         }.bind(this));
+        this.$.progress.hide();
     },
     importCancel: function() {
         this.$.errorDialog.open = false;
@@ -79,8 +78,7 @@ Polymer("padlock-import-view", {
     },
     //* Opens the dialog for selecting a column for the category
     getCatCol: function() {
-        var util = require("padlock/util"),
-            select = this.$.catColSelect;
+        var select = this.$.catColSelect;
 
         // One column is already taken by the record name
         this.catColOptions = util.remove(this.colNames, this.nameColIndex);
@@ -101,9 +99,10 @@ Polymer("padlock-import-view", {
         this.importCsv();
     },
     importCsv: function() {
-        var imp = require("padlock/import"),
-            records = imp.importTable(this.csvData, this.nameColIndex, this.catColIndex);
+        var records = imp.importTable(this.csvData, this.nameColIndex, this.catColIndex);
 
         this.fire("import", {records: records});
     }
 });
+
+})(Polymer, padlock.util, padlock.import);

@@ -1,7 +1,7 @@
 /**
  * Module containing various utility functions
  */
-define(function() {
+padlock.util = (function() {
 
     /**
      * Inserts an object or an array at the specified index
@@ -60,4 +60,4 @@ define(function() {
         isArray: isArray,
         uuid: uuid
     };
-});
+})();

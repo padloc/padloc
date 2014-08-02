@@ -1,4 +1,4 @@
-define(["padlock/util"], function(util) {
+(function(util) {
     module("padlock/util");
 
     test("insert", function() {
@@ -68,4 +68,4 @@ define(["padlock/util"], function(util) {
         ok(!util.isArray(""));
         ok(!util.isArray({}));
     });
-});
+})(padlock.util);

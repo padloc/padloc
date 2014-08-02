@@ -1,6 +1,4 @@
-define(function(require) {
-    var util = require("./util");
-
+padlock.Categories = (function(util) {
     /**
      * Manager object for a categories. Each category has a name
      * and a color, which is encoded as a number between 1 and _numColor_
@@ -82,4 +80,4 @@ define(function(require) {
     };
 
     return Categories;
-});
+})(padlock.util);

@@ -1,7 +1,7 @@
 /**
  * Module containing logic for records, collections and the data store.
  */
-define(["padlock/util"], function(util) {
+padlock.Collection = (function(util) {
     /**
      * A collection of records
      * @param {String} name    Name of the collection
@@ -174,4 +174,4 @@ define(["padlock/util"], function(util) {
     };
 
     return Collection;
-});
+})(padlock.util);

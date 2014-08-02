@@ -1,6 +1,4 @@
-define(function(require) {
-    var Source = require("./Source");
-
+padlock.CloudSource = (function(Source) {
     /**
      * This source uses the Padlock cloud api to fetch and store data.
      * @param String host  Base url for AJAX calls
@@ -55,4 +53,4 @@ define(function(require) {
     };
 
     return CloudSource;
-});
+})(padlock.Source);

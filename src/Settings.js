@@ -1,4 +1,4 @@
-define(function() {
+padlock.Settings = (function() {
     /**
      * Object for storing settings.
      * @param Object settings Object containing predefined setings with default values.
@@ -64,4 +64,4 @@ define(function() {
     };
 
     return Settings;
-});
+})();

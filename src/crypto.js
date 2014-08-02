@@ -129,7 +129,7 @@ var modFunc = function(sjcl) {
 
     //* Spawns a worker instance using this same script and returns it.
     function spawnWorker() {
-        return new Worker(require.toUrl("padlock/crypto.js"));
+        return new Worker("src/crypto.js");
     }
 
     //* Helper function for delegating the call to a certain _method_ to a worker instance
@@ -222,7 +222,7 @@ var modFunc = function(sjcl) {
 if (isWorker) {
     // We're in a web worker! Let's create an interface for calling some of the modules methods
 
-    // Load the sjcl dependency. This could be done with requirejs but that would probably be overkill
+    // Load the sjcl dependency.
     importScripts("../lib/sjcl.js");
     // Create the module (Inject the dependy manually)
     var crypto = modFunc(sjcl);
@@ -238,9 +238,8 @@ if (isWorker) {
         self.postMessage(result);
     });
 } else {
-    // The script was not loaded in the context of a web worker so we're assuming it was loaded
-    // as an amd module, so we'll register it via _define_
-    define(["sjcl"], modFunc);
+    // The script was not loaded in the context of a web worker so we're assuming it was loaded in a script tag
+    padlock.crypto = modFunc(sjcl);
 }
 
 })();

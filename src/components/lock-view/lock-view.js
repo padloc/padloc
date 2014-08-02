@@ -1,3 +1,5 @@
+(function(Polymer) {
+
 Polymer("padlock-lock-view", {
     keydown: function(event, detail, sender) {
         if (event.keyCode == 13) {
@@ -16,3 +18,5 @@ Polymer("padlock-lock-view", {
         this.$.pwdInput.focus();
     }
 });
+
+})(Polymer);

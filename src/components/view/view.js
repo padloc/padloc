@@ -1,3 +1,5 @@
+(function(Polymer, platform) {
+
 Polymer('padlock-view', {
     //* Options the header element is going to use to adjust ist appearance
     headerOptions: {
@@ -15,14 +17,12 @@ Polymer('padlock-view', {
     leftHeaderButton: function() {},
     rightHeaderButton: function() {},
     attached: function() {
-        require(["padlock/platform"], function(platform) {
-            // We have to register a listener for the animationend event manually
-            // sind it doesn't seem to work declaratively
-            var startEventName = platform.getAnimationStartEventName(),
-                endEventName = platform.getAnimationEndEventName();
-            this.addEventListener(startEventName, this.animationStart.bind(this));
-            this.addEventListener(endEventName, this.animationEnd.bind(this));
-        }.bind(this));
+        // We have to register a listener for the animationend event manually
+        // sind it doesn't seem to work declaratively
+        var startEventName = platform.getAnimationStartEventName(),
+            endEventName = platform.getAnimationEndEventName();
+        this.addEventListener(startEventName, this.animationStart.bind(this));
+        this.addEventListener(endEventName, this.animationEnd.bind(this));
     },
     /**
      * Returns the element that the animation should be applied to. Sometimes
@@ -45,8 +45,7 @@ Polymer('padlock-view', {
         opts = opts || {};
         // The padlock/platform module was already requested in the _attached_ method
         // so we're assuming it has already been loaded.
-        var platform = require("padlock/platform"),
-            prefix = platform.getVendorPrefix().css,
+        var prefix = platform.getVendorPrefix().css,
             direction = this.currDirection = opts.direction,
             duration = opts.duration || this.animationDuration,
             animation = this.currAnimation = opts.animation,
@@ -146,3 +145,5 @@ Polymer('padlock-view', {
         }
     }
 });
+
+})(Polymer, padlock.platform);

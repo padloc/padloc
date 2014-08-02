@@ -1,3 +1,5 @@
+(function(Polymer) {
+
 Polymer("padlock-start-view", {
     show: function(animation, callback) {
         this.$.pwdInput.value = "";
@@ -28,3 +30,5 @@ Polymer("padlock-start-view", {
         }
     }
 });
+
+})(Polymer);

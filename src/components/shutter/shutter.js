@@ -1,3 +1,5 @@
+(function(Polymer) {
+
 Polymer("padlock-shutter", {
     publish: {
         open: {
@@ -20,3 +22,5 @@ Polymer("padlock-shutter", {
         this.$.lockView.focusPwdInput();
     }
 });
+
+})(Polymer);

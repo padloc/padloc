@@ -1,3 +1,5 @@
+(function(Polymer) {
+
 Polymer("padlock-header", {
     view: null,
     filterString: "",
@@ -48,3 +50,5 @@ Polymer("padlock-header", {
         this.filterActive = true;
     }
 });
+
+})(Polymer);
