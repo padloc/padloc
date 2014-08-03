@@ -1,6 +1,8 @@
 bower_components
 node_modules
 deploy
+build.html
+build.js
 
 # stylus-generated css files
 src/components/**/*.css

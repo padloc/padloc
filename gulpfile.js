@@ -29,7 +29,7 @@ function compileCss() {
     return deferred.promise;
 }
 
-function build(dest) {
+function build() {
     var deferred = Q.defer();
 
     vulcan.setOptions({
@@ -37,7 +37,7 @@ function build(dest) {
         inline: true,
         csp: true,
         input: "index.html",
-        output: path.join(dest, "index.html")
+        output: "build.html"
     }, function(err) {
         if (err) {
             console.error(err);
@@ -108,11 +108,13 @@ gulp.task("deploy", function() {
     })
     .then(function() {
         console.log("Building source...");
-        return build(dest);
+        return build();
     })
     .then(function() {
         console.log("Copying assets...");
         return Q.all([
+            Q.nfcall(ncp, "build.html", path.join(dest, "index.html")),
+            Q.nfcall(ncp, "build.js", path.join(dest, "build.js")),
             Q.nfcall(ncp, path.join("src", "crypto.js"), path.join(dest, "src", "crypto.js")),
             Q.nfcall(ncp, path.join("lib", "sjcl.js"), path.join(dest, "lib", "sjcl.js")),
             Q.nfcall(ncp, "assets", path.join(dest, "assets"))
@@ -120,6 +122,6 @@ gulp.task("deploy", function() {
     })
     .then(function() {
         console.log("Done!");
-        process.exit(1);
+        process.exit(0);
     });
 });
