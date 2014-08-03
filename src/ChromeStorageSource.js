@@ -1,4 +1,8 @@
-padlock.ChromeStorageSource = (function(require) {
+/* global padlock, chrome */
+
+padlock.ChromeStorageSource = (function() {
+    "use strict";
+
     var storage = typeof chrome !== "undefined" && chrome.storage && chrome.storage.local;
     
     /**

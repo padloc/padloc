@@ -1,4 +1,8 @@
+/* global padlock */
+
 padlock.Categories = (function(util) {
+    "use strict";
+
     /**
      * Manager object for a categories. Each category has a name
      * and a color, which is encoded as a number between 1 and _numColor_

@@ -1,4 +1,8 @@
+/* global padlock */
+
 padlock.Store = (function(crypto) {
+    "use strict";
+
     /**
      * The _Store_ acts as a proxy between the persistence layer (e.g. _LocalStorageSource_)
      * and a _Collection_ object it mainly handles encryption and decryption of data
@@ -29,7 +33,7 @@ padlock.Store = (function(crypto) {
          */
         fetch: function(coll, opts) {
             opts = opts || {};
-            source = opts.source || this.defaultSource;
+            var source = opts.source || this.defaultSource;
             // Use password argument if provided, otherwise use the password stored in the source object
             var password = source.password = opts.password !== undefined && opts.password !== null ?
                 opts.password : source.password;
@@ -46,8 +50,8 @@ padlock.Store = (function(crypto) {
                         iter: data.iter
                     };
                     
-                    // Construct a cryptographic key using the password provided by the user and the metadata
-                    // from the fetched container. The whole thing happens in a web worker which is why it's asynchronous
+                    // Construct a cryptographic key using the password provided by the user and the metadata from
+                    // the fetched container. The whole thing happens in a web worker which is why it's asynchronous
                     crypto.cachedWorkerGenKey(password, data.salt, data.keySize, data.iter, function(keyData) {
                         // Use the generated key to decrypt the data. Again, this is done in a web worker.
                         crypto.workerDecrypt(keyData, data, function(pt) {
@@ -82,7 +86,7 @@ padlock.Store = (function(crypto) {
         save: function(coll, opts) {
             opts = opts || {};
             opts.key = this.getKey(coll);
-            source = opts.source || this.defaultSource;
+            var source = opts.source || this.defaultSource;
             source.keyOpts = source.keyOpts || {};
             // Use password argument if provided, otherwise use the password stored in the source object
             var password = source.password = opts.password !== undefined && opts.password !== null ?
@@ -116,7 +120,7 @@ padlock.Store = (function(crypto) {
          * - source:   Source to check for the collection. If not provided, _defaultSource_ is used. 
          */
         exists: function(coll, opts) {
-            source = opts.source || this.defaultSource;
+            var source = opts.source || this.defaultSource;
             opts = opts || {};
             opts.key = this.getKey(coll);
             var success = opts.success;

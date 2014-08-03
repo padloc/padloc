@@ -1,4 +1,9 @@
+/* jshint browser: true */
+/* global padlock */
+
 padlock.LocalStorageSource = (function(Source) {
+    "use strict";
+
     /**
      * This source uses the _localStorage_ api to fetch and store data. Although
      * _localStorage_ works synchronously, All methods use callbacks to be

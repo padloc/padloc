@@ -1,7 +1,11 @@
+/* global padlock */
+
 /**
  * Module containing logic for records, collections and the data store.
  */
 padlock.Collection = (function(util) {
+    "use strict";
+
     /**
      * A collection of records
      * @param {String} name    Name of the collection

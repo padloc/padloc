@@ -7,38 +7,45 @@
         <span><content></content></span>
     </template>
     <script>
+        /* global Polymer, padlock */
+
         (function(Polymer, platform) {
+            "use strict";
 
-        Polymer("padlock-progress", {
-            ready: function() {
-                this.addEventListener(platform.getAnimationEndEventName(), this.animationEnd.bind(this));
-            },
-            show: function() {
-                this.hidePending = false;
-                this.classList.add("animated");
-                this.style.display = "";
-                // Trigger style recalculation so that adding the 'animated' class has an immediate effect
-                this.offsetLeft;
-            },
-            hide: function() {
-                // We want the animation to finish first, so we'll just set this flag
-                // and do the hiding after the next iteration
-                this.hidePending = true;
-            },
-            animationEnd: function(event) {
-                this.classList.remove("animated");
-
-                // Hide the element if hide() was called during the last iteration,
-                // otherwise restart the animation
-                if (this.hidePending) {
-                    this.style.display = "none";
-                } else {
-                    // Trigger style recalculation so that removing and readding the 'animated' class has an effect
-                    this.offsetLeft;
+            Polymer("padlock-progress", {
+                ready: function() {
+                    this.addEventListener(platform.getAnimationEndEventName(), this.animationEnd.bind(this));
+                },
+                show: function() {
+                    this.hidePending = false;
                     this.classList.add("animated");
+                    this.style.display = "";
+                    // Trigger style recalculation so that adding the 'animated' class has an immediate effect
+                    // jshint expr: true
+                    this.offsetLeft;
+                    // jshint expr: false
+                },
+                hide: function() {
+                    // We want the animation to finish first, so we'll just set this flag
+                    // and do the hiding after the next iteration
+                    this.hidePending = true;
+                },
+                animationEnd: function() {
+                    this.classList.remove("animated");
+
+                    // Hide the element if hide() was called during the last iteration,
+                    // otherwise restart the animation
+                    if (this.hidePending) {
+                        this.style.display = "none";
+                    } else {
+                        // Trigger style recalculation so that removing and readding the 'animated' class has an effect
+                        // jshint expr: true
+                        this.offsetLeft;
+                        // jshint expr: false
+                        this.classList.add("animated");
+                    }
                 }
-            }
-        });
+            });
 
         })(Polymer, padlock.platform);
     </script>

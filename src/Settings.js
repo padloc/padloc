@@ -1,4 +1,8 @@
+/* global padlock */
+
 padlock.Settings = (function() {
+    "use strict";
+
     /**
      * Object for storing settings.
      * @param Object settings Object containing predefined setings with default values.

@@ -1,4 +1,9 @@
+/* jshint browser: true */
+/* global padlock, chrome, cordova */
+
 padlock.platform = (function() {
+    "use strict";
+
     var vPrefix;
     /**
      *  Detects the vendor prefix to be used in the current browser
@@ -13,11 +18,12 @@ padlock.platform = (function() {
      */
     var getVendorPrefix = function () {
         if (!vPrefix) {
-            var styles = window.getComputedStyle(document.documentElement, '');
-            var pre = (Array.prototype.slice.call(styles).join('').match(/-(moz|webkit|ms)-/) || (styles.OLink === '' && ['', 'o']))[1];
+            var styles = getComputedStyle(document.documentElement, "");
+            var pre = (Array.prototype.slice.call(styles).join("").match(/-(moz|webkit|ms)-/) ||
+                (styles.OLink === "" && ["", "o"]))[1];
             vPrefix = {
                 lowercase: pre,
-                css: '-' + pre + '-'
+                css: "-" + pre + "-"
             };
         }
         return vPrefix;
@@ -85,7 +91,7 @@ padlock.platform = (function() {
     };
 
     /**
-     * Checks if the app is running on an iOS device in 'standalone' mode,
+     * Checks if the app is running on an iOS device in "standalone" mode,
      * i.e. when the user has added the app to the home screen
      */
     var isIOSStandalone = function() {

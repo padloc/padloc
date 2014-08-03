@@ -1,4 +1,9 @@
+/* jshint browser: true */
+/* global Polymer, padlock */
+
 (function(Polymer, platform) {
+    "use strict";
+
     var inputProto = {
         hasFocus: false,
         selectAllOnFocus: false,
@@ -8,12 +13,12 @@
             // tap-to-focus mechanism.
             this.overrideNativeFocus = platform.isIOS();
         },
-        tap: function(event) {
+        tap: function() {
             if (this.overrideNativeFocus && !this.hasFocus) {
                 this.setSelectionRange(this.value.length, this.value.length);
             }
         },
-        mousedown: function() {
+        mousedown: function(event) {
             if (this.overrideNativeFocus) {
                 // We've already focussed the input. This is for suppressing the
                 // native mechanism.
@@ -47,4 +52,5 @@
 
     Polymer("padlock-input", inputProto);
     Polymer("padlock-textarea", taProto);
+
 })(Polymer, padlock.platform);

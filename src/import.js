@@ -1,7 +1,11 @@
+/* global padlock, unescape */
+
 /**
  * Module for importing data from various formats.
  */
-padlock.import = (function(crypto, util) {
+padlock.import = (function(crypto) {
+    "use strict";
+
     //* Detects if a string contains a SecuStore backup
     var isSecuStoreBackup = function(rawData) {
         // Very simply check but I think it should do.
@@ -15,8 +19,8 @@ padlock.import = (function(crypto, util) {
      * @return {Array}             A list of records
      */
     var importSecuStoreBackup = function(rawData, password, success, fail) {
-        var begin = '#begin',
-            end = '#end',
+        var begin = "#begin",
+            end = "#end",
             objJSON, obj;
         
         //Get the JSON code for the data
@@ -68,7 +72,8 @@ padlock.import = (function(crypto, util) {
 
     /**
      * Parses a raw CSV string into an 2-dimensional array.
-     * Taken from http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
+     * Taken from
+     * http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
      * @param  String   strData      Raw CSV string
      * @param  String   strDelimiter Row delimiter
      * @return Array                 2-dimensional array containing rows & columns
@@ -101,7 +106,7 @@ padlock.import = (function(crypto, util) {
 
         // Keep looping over the regular expression matches
         // until we can no longer find a match.
-        while (arrMatches = objPattern.exec(strData)) {
+        while ((arrMatches = objPattern.exec(strData))) {
 
             // Get the delimiter that was found.
             var strMatchedDelimiter = arrMatches[1];
@@ -185,4 +190,4 @@ padlock.import = (function(crypto, util) {
         parseCsv: parseCsv,
         importTable: importTable
     };
-})(padlock.crypto, padlock.util);
+})(padlock.crypto);
