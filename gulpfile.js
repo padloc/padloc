@@ -37,7 +37,10 @@ function build() {
         inline: true,
         csp: true,
         input: "index.html",
-        output: "build.html"
+        output: "build.html",
+        excludes: {
+            styles: ["src/styles/overrides.css"]
+        }
     }, function(err) {
         if (err) {
             console.error(err);
