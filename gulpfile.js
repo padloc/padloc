@@ -62,7 +62,7 @@ function lint(files) {
 
 gulp.task("stylus", function () {
     if (argv.watch) {
-        watch({glob: "src/**/*.less"}, function(files) {
+        watch({glob: "src/**/*.styl"}, function(files) {
             return files
                 .pipe(stylus({use: [nib()]}))
                 .pipe(gulp.dest("./src"));
