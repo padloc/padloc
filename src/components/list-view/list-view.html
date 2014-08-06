@@ -9,20 +9,17 @@
         <link href="list-view.css" rel="stylesheet" type="text/css">
         <!-- LIST CONTAINER -->
         <div class="list" id="list">
-            <template repeat="{{ sections }}">
-                <div>
-                    <!-- SECTION HEADER -->
-                    <div class="section-header {{ showCategory ? '' : 'color' + color }}">{{ name }}</div>
-                    <!-- RECORD ITEM -->
-                    <template repeat="{{ records }}">
-                        <div class="record-item" on-tap="{{ recordClicked }}">
-                            <div class="record-item-inner">
-                                <div class="record-item-name">{{ name }}</div>
-                                <div class="record-item-category color{{ catColor }}"
-                                    style="{{ showCategory ? '' : 'display:none' }}">{{ category }}</div>
-                            </div>
-                        </div>
-                    </template>
+            <template repeat="{{ records }}">
+                <template if="{{ firstInSection && !hidden }}">
+                        <!-- SECTION HEADER -->
+                    <div class="section-header {{ showCategory ? '' : 'color' + catColor }}">{{ section }}</div>
+                </template>
+                <div class="record-item" on-tap="{{ recordClicked }}" style="{{ hidden ? 'display: none' : '' }}">
+                    <div class="record-item-inner">
+                        <div class="record-item-name">{{ name }}</div>
+                        <div class="record-item-category color{{ catColor }}"
+                            style="{{ showCategory ? '' : 'display:none' }}">{{ category }}</div>
+                    </div>
                 </div>
             </template>
             <!-- ACTIONS FOR EMPTY LIST -->

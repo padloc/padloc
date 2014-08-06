@@ -12,7 +12,7 @@
             showFilter: true
         },
         observe: {
-            filterString: "bufferedPrepareRecords",
+            filterString: "prepareRecords",
             "collection.records": "prepareRecords",
             "settings.order_by": "prepareRecords"
         },
@@ -36,51 +36,13 @@
 
             var fs = this.filterString && this.filterString.toLowerCase(),
                 words = fs.split(" "),
-                removedCount = 0;
-
-            // Filter records based on filter string. Also, while we're at it filter out
-            // removed records.
-            var records = this.collection.records.filter(function(rec) {
-                if (rec.removed) {
-                    removedCount++;
-                    return false;
-                }
-                if (!fs) {
-                    return true;
-                }
-                // For the record to be a match, each word in the filter string has to appear
-                // in either the category or the record name.
-                for (var i=0, match=true; i<words.length && match; i++) {
-                    match = rec.category && rec.category.toLowerCase().search(words[i]) != -1 ||
-                        rec.name.toLowerCase().search(words[i]) != -1;
-                }
-                return match;
-            });
-
-            // Add some metadata to each record and do some other preparation work
-            for (var i=0, rec; i<records.length; i++) {
-                rec = records[i];
-
-                // Add the records category to known categories and assign it a color if it doesn't exist yet.
-                // This is done here mainly for efficiency reasons.
-                if (rec.category && !this.categories.get(rec.category)) {
-                    this.categories.set(rec.category, this.categories.autoColor());
-                }
-
-                // Give it a section property for the rendering of the section headers
-                rec.section = this.settings.order_by == "category" ?
-                    rec.category || "other" : rec.name.toUpperCase()[0];
-
-                // Add properties for rendering the category
-                rec.catColor = this.categories.get(rec.category) || "";
-                rec.showCategory = this.settings.order_by != "category";
-            }
-
-            // Save the categories in case any new ones have been added
-            this.categories.save();
+                records = this.collection.records.filter(function(rec) {
+                    return !rec.removed;
+                }),
+                count = records.length;
 
             // Sort by section property first, name second
-            records = records.sort(function(a, b) {
+            records.sort(function(a, b) {
                 if (a.section > b.section) {
                     return 1;
                 } else if (a.section < b.section) {
@@ -96,24 +58,57 @@
                 }
             });
 
-            var sections = [], section;
-            for (i=0; i<records.length; i++) {
-                if (!records[i-1] || records[i-1].section != records[i].section) {
-                    section = {
-                        name: records[i].section,
-                        color: records[i].catColor,
-                        showCategory: records[i].showCategory,
-                        records: []
-                    };
-                    sections.push(section);
+            function filter(rec) {   
+                if (!fs) {
+                    return true;
                 }
-                section.records.push(records[i]);
+                // For the record to be a match, each word in the filter string has to appear
+                // in either the category or the record name.
+                for (var i=0, match=true; i<words.length && match; i++) {
+                    match = rec.category && rec.category.toLowerCase().search(words[i]) != -1 ||
+                        rec.name.toLowerCase().search(words[i]) != -1;
+                }
+                return match;
             }
+
+            var prevSection;
+            // Add some metadata to each record and do some other preparation work
+            records.forEach(function(rec) {
+                if (!filter(rec)) {
+                    rec.hidden = true;
+                    return;
+                } else {
+                    delete rec.hidden;
+                }
+
+                // Add the records category to known categories and assign it a color if it doesn't exist yet.
+                // This is done here mainly for efficiency reasons.
+                if (rec.category && !this.categories.get(rec.category)) {
+                    this.categories.set(rec.category, this.categories.autoColor());
+                }
+
+                // Give it a section property for the rendering of the section headers
+                rec.section = this.settings.order_by == "category" ?
+                    rec.category || "other" : rec.name.toUpperCase()[0];
+
+                if (rec.section !== prevSection) {
+                    rec.firstInSection = true;
+                    prevSection = rec.section;
+                } else {
+                    rec.firstInSection = false;
+                }
+
+                // Add properties for rendering the category
+                rec.catColor = this.categories.get(rec.category) || "";
+                rec.showCategory = this.settings.order_by != "category";
+            }.bind(this));
+
+            // Save the categories in case any new ones have been added
+            this.categories.save();
 
             // Update records
             this.records = records;
-            this.sections = sections;
-            this.empty = !(this.collection && this.collection.records.length > removedCount);
+            this.empty = !count;
         },
         recordClicked: function(event, detail, sender) {
             this.selected = sender.templateInstance.model;
