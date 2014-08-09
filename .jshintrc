@@ -7,5 +7,6 @@
     "unused": true,
     "strict": true,
     "maxlen": 120,
-    "newcap": false
+    "newcap": false,
+    "browser": true
 }
