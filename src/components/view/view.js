@@ -108,15 +108,9 @@
             // We apply the animation before adding the node to the rendering
             // tree in order to avoid 'flashes'
             this.startAnimation(opts);
-            // Trigger a style recalculation to make sure the style changes
-            // are applied before rendering the element
-            // jshint expr: true
-            this.offsetLeft;
-            // jshint expr: false
             // Show the element
-            setTimeout(function() {
-                this.style.display = "";
-            }.bind(this), 50);
+            this.style.opacity = 1;
+            this.style["z-index"] = 0;
         },
         //* Hides the view
         hide: function(opts) {
@@ -124,7 +118,8 @@
             opts.direction = "out";
             var endCallback = opts.endCallback;
             opts.endCallback = function() {
-                this.style.display = "none";
+                this.style.opacity = "";
+                this.style["z-index"] = "";
                 if (endCallback) {
                     endCallback();
                 }
