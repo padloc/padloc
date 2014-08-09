@@ -58,28 +58,16 @@
                 }
             });
 
-            function filter(rec) {   
-                if (!fs) {
-                    return true;
-                }
+            var prevSection;
+            // Add some metadata to each record and do some other preparation work
+            records.forEach(function(rec) {
                 // For the record to be a match, each word in the filter string has to appear
                 // in either the category or the record name.
                 for (var i=0, match=true; i<words.length && match; i++) {
                     match = rec.category && rec.category.toLowerCase().search(words[i]) != -1 ||
                         rec.name.toLowerCase().search(words[i]) != -1;
                 }
-                return match;
-            }
-
-            var prevSection;
-            // Add some metadata to each record and do some other preparation work
-            records.forEach(function(rec) {
-                if (!filter(rec)) {
-                    rec.hidden = true;
-                    return;
-                } else {
-                    delete rec.hidden;
-                }
+                rec.hidden = !match;
 
                 // Add the records category to known categories and assign it a color if it doesn't exist yet.
                 // This is done here mainly for efficiency reasons.
@@ -91,7 +79,7 @@
                 rec.section = this.settings.order_by == "category" ?
                     rec.category || "other" : rec.name.toUpperCase()[0];
 
-                if (rec.section !== prevSection) {
+                if (!rec.hidden && rec.section !== prevSection) {
                     rec.firstInSection = true;
                     prevSection = rec.section;
                 } else {

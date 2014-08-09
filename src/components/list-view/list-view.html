@@ -10,7 +10,7 @@
         <!-- LIST CONTAINER -->
         <div class="list" id="list">
             <template repeat="{{ records }}">
-                <template if="{{ firstInSection && !hidden }}">
+                <template if="{{ firstInSection }}">
                         <!-- SECTION HEADER -->
                     <div class="section-header {{ showCategory ? '' : 'color' + catColor }}">{{ section }}</div>
                 </template>
