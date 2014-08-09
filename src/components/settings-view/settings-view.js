@@ -80,9 +80,9 @@
 
             req.onreadystatechange = function() {
                 if (req.readyState === 4) {
+                    // Hide progress indicator
+                    this.$.progress.hide();
                     if (req.status === 200) {
-                        // Hide progress indicator
-                        this.$.progress.hide();
                         var apiKey = JSON.parse(req.responseText);
                         // We're getting back the api key directly, but it will valid only
                         // after the user has visited the activation link in the email he was sent
