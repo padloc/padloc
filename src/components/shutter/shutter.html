@@ -13,7 +13,7 @@
         <padlock-start-view id="startView" style="display: {{ startMode ? '' : 'none' }}"></padlock-start-view>
         <!-- LOCK VIEW -->
         <padlock-lock-view id="lockView" errorMessage="{{ errorMessage }}"
-            style="display: {{ startMode ? 'none' : '' }}"></padlock-lock-view>
+            style="{{ startMode ? 'display: none' : '' }}"></padlock-lock-view>
         <!-- HEADER -->
         <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"
             showFilterInput="{{ currentView.headerOptions.showFilter && open }}" scrim="{{ scrim }}"></padlock-header>
