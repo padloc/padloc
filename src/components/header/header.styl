@@ -1,6 +1,30 @@
-@require "../../styles/config.styl";
-@require "../../styles/mixins.styl";
+@import "../../styles/config.styl";
+@import "../../styles/mixins.styl";
 @import "nib";
+
+@keyframes titleIn {
+    from { transform: translate3d(100%, 0, 0); opacity: 0; }
+    50% { transform: translate3d(-5px, 0, 0); opacity: 1; }
+    to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+@keyframes filterIn {
+    from { transform: translate3d(-100%, 0, 0); opacity: 0; }
+    50% { transform: translate3d(5px, 0, 0); opacity: 1; }
+    to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
+@keyframes titleOut  {
+    from { transform: translate3d(0, 0, 0); opacity: 1; }
+    50% { transform: translate3d(100%, 0, 0); opacity: 0; }
+    to { transform: translate3d(100%, 0, 0); opacity: 0; }
+}
+
+@keyframes filterOut {
+    from { transform: translate3d(0, 0, 0); opacity: 1; }
+    50% { transform: translate3d(-100%, 0, 0); opacity: 0; }
+    to { transform: translate3d(-100%, 0, 0); opacity: 0; }
+}
 
 :host {
     line-height: 0;
@@ -35,13 +59,11 @@
 
     &.show-filter {
         .filter-input {
-            opacity: 1;
-            transform: translate3d(0, 0, 0);
+            animation: filterIn 0.5s ease 0s both;
         }
 
         .title {
-            opacity: 0;
-            transform: translate3d(50%, 0, 0);
+            animation: titleOut 0.5s ease 0s both;
         }
     }
 
@@ -91,15 +113,13 @@
     padding: (($row-height - $line-height) / 2) 0;
 
     box-sizing: border-box;
-    transition: transform 0.5s cubic-bezier(.71, 0.5, 0, 1.2), opacity 0.5s ease;
 }
 
 .filter-input {
     background: transparent;
     color: $text-color-light;
-    opacity: 0;
 
-    transform: translate3d(-50%, 0, 0);
+    animation: filterOut 0.5s ease 0s both;
 
     &::-webkit-input-placeholder {
        color: $placeholder-color-light;
@@ -108,7 +128,6 @@
 
 .title {
     pointer-events: none;
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
+    animation: titleIn 0.5s ease 0s both;
     overflow: ellipsis;
 }
