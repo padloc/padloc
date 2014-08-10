@@ -65,12 +65,14 @@
             this.collection.fetch({password: password, success: function() {
                 this.$.shutter.errorMessage = null;
                 this.$.shutter.enterLocked = false;
-                this.$.shutter.open = true;
                 this.$.decrypting.hide();
                 this.decrypting = false;
-                if (this.settings.sync_connected && this.settings.sync_auto) {
-                    this.synchronize();
-                }
+                setTimeout(function() {
+                    if (this.settings.sync_connected && this.settings.sync_auto) {
+                        this.synchronize();
+                    }
+                    this.$.shutter.open = true;
+                }.bind(this), 100);
             }.bind(this), fail: function() {
                 this.$.shutter.errorMessage = "Wrong password!";
                 this.$.shutter.enterLocked = false;
