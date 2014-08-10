@@ -12,7 +12,7 @@
     <template>
         <!-- STYLES -->
         <link href="select.css" rel="stylesheet" type="text/css">
-        <button on-tap="{{ toggleOpen }}" class="{{ selected.selectedClass }}">{{ selected ? selected.innerHTML : label}}<shape-shifter shape="{{ open ? 'cancel' : 'down' }}"></shape-shifter></button>
+        <button on-tap="{{ toggleOpen }}" class="{{ selected.selectedClass }}">{{ selected ? selected.innerHTML : label}}<shape-shifter shape="{{ open ? 'cancel' : 'down' }}" springy></shape-shifter></button>
         <div class="options" on-tap="{{ optionTap }}">
             <content></content>
         </div>
