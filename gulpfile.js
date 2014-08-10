@@ -39,7 +39,8 @@ function build() {
         input: "index.html",
         output: "build.html",
         excludes: {
-            styles: ["src/styles/overrides.css"]
+            styles: ["src/styles/overrides.css"],
+            scripts: ["cordova.js"]
         }
     }, function(err) {
         if (err) {
