@@ -109,8 +109,7 @@
             // tree in order to avoid 'flashes'
             this.startAnimation(opts);
             // Show the element
-            this.style.opacity = 1;
-            this.style["z-index"] = 0;
+            this.classList.add("showing");
         },
         //* Hides the view
         hide: function(opts) {
@@ -118,8 +117,7 @@
             opts.direction = "out";
             var endCallback = opts.endCallback;
             opts.endCallback = function() {
-                this.style.opacity = "";
-                this.style["z-index"] = "";
+                this.classList.remove("showing");
                 if (endCallback) {
                     endCallback();
                 }
