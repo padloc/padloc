@@ -59,6 +59,11 @@
             this.record.fields.push(field);
             this.fire("save");
         },
+        //* Opens the edit field dialog for the currently selected field
+        editField: function() {
+            this.$.editFieldDialog.open = true;
+            this.$.fieldMenu.open = false;
+        },
         confirmEditField: function() {
             this.selectedField.value = this.$.fieldValueInput.value;
             this.selectedField = null;
@@ -147,19 +152,22 @@
         selectMarked: function() {
             this.selectedField = this.record.fields[this.marked];
         },
-        fieldMenuClosed: function() {
-            // Reset the selected field property, but only if we're not currently waiting for a confirmation
-            // for deleting the currently selected field
-            if (!this.$.confirmRemoveFieldDialog.open) {
+        fieldDialogClosed: function() {
+            // If all field-related dialogs are closed, unselect the field
+            if (!this.$.fieldMenu.open && !this.$.confirmRemoveFieldDialog.open && !this.$.editFieldDialog.open) {
                 this.selectedField = null;
             }
         },
         selectedFieldChanged: function() {
             if (this.selectedField) {
-                this.$.fieldMenuTitle.innerHTML = this.selectedField && this.selectedField.name || "";
+                this.selectedFieldName = this.selectedField.name;
                 this.$.fieldValueInput.value = this.selectedField && this.selectedField.value || "";
+                this.$.fieldMenu.open = true;
+            } else {
+                this.$.fieldMenu.open = false;
+                this.$.editFieldDialog.open = false;
+                this.$.confirmDeleteDialog.open = false;
             }
-            this.$.fieldMenu.open = !!this.selectedField;
             var fieldIndex = this.record.fields.indexOf(this.selectedField);
             this.marked = fieldIndex !== -1 ? fieldIndex : null;
         }

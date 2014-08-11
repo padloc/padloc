@@ -35,13 +35,16 @@
             <button class="primary" on-tap="{{ confirmEditName }}">Save</button>
         </padlock-dialog>
         <!-- FIELD CONTEXT MENU -->
-        <padlock-dialog id="fieldMenu" on-close="{{ fieldMenuClosed }}">
-            <div class="title" id="fieldMenuTitle"></div>
-            <input is="padlock-input" id="fieldValueInput" selectAllOnFocus="true" placeholder="Enter Content" />
-            <button class="primary" on-tap="{{ confirmEditField }}">Save Changes</button>
+        <padlock-dialog id="fieldMenu" on-close="{{ fieldDialogClosed }}">
             <button on-tap="{{ copyToClipboard }}">Copy to Clipboard</button>
+            <button on-tap="{{ editField }}">Edit</button>
+            <button on-tap="{{ removeField }}">Remove</button>
+        </padlock-dialog>
+        <padlock-dialog id="editFieldDialog" on-close="{{ fieldDialogClosed }}">
+            <div class="title">Edit '<strong>{{ selectedFieldName }}</strong>'</div>
+            <input is="padlock-input" id="fieldValueInput" selectAllOnFocus="true" placeholder="Enter Content" />
             <button on-tap="{{ randomize }}">Randomize</button>
-            <button on-tap="{{ removeField }}">Remove Field</button>
+            <button class="primary" on-tap="{{ confirmEditField }}">Save Changes</button>
         </padlock-dialog>
         <!-- ADD FIELD DIALOG -->
         <padlock-dialog id="addFieldDialog">
@@ -52,7 +55,7 @@
             <button class="primary" on-tap="{{ confirmAddField }}">Add</button>
         </padlock-dialog>
         <!-- REMOVE FIELD CONFIRM DIALOG -->
-        <padlock-dialog id="confirmRemoveFieldDialog" on-close="{{ fieldMenuClosed }}">
+        <padlock-dialog id="confirmRemoveFieldDialog" on-close="{{ fieldDialogClosed }}">
             <div class="title">Are you sure you want to remove this field?</div>
             <button class="primary" on-tap="{{ confirmRemoveField }}">Remove</button>
             <button on-tap="{{ cancelRemoveField }}">Cancel</button>
