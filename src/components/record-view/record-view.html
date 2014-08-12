@@ -17,6 +17,8 @@
             </div>
         </template>
         <button class="add-button" on-tap="{{ addField }}">Add Field</button>
+        <!-- CLIPBOARD NOTIFICATION -->
+        <padlock-progress id="clipboardNotification">Value copied to clipboard!</padlock-progress>
         <!-- RECORD OPTIONS -->
         <padlock-dialog id="menu">
             <button on-tap="{{ editName }}">Edit Name</button>
@@ -40,6 +42,7 @@
             <button on-tap="{{ editField }}">Edit</button>
             <button on-tap="{{ removeField }}">Remove</button>
         </padlock-dialog>
+        <!-- EDIT FIELD DIALOG -->
         <padlock-dialog id="editFieldDialog" on-close="{{ fieldDialogClosed }}">
             <div class="title">Edit '<strong>{{ selectedFieldName }}</strong>'</div>
             <input is="padlock-input" id="fieldValueInput" selectAllOnFocus="true" placeholder="Enter Content" />

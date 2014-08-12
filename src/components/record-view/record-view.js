@@ -101,6 +101,8 @@
 
             platform.setClipboard(value);
             this.selectedField = null;
+            this.$.clipboardNotification.show();
+            this.$.clipboardNotification.hide();
         },
         //* Fills the current value input with a randomized value
         randomize: function() {
