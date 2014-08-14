@@ -53,7 +53,9 @@
             if (this.filterHasFocus) {
                 this.filterActive = true;
             } else if (!this.$.filterInput.value) {
-                this.filterActive = false;
+                setTimeout(function() {
+                    this.filterActive = false;
+                }.bind(this), 50);
             }
         }
     });
