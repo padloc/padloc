@@ -104,14 +104,23 @@ padlock.platform = (function() {
     };
 
     var clipboardTextArea;
-    //* Sets the clipboard text to a given string
-    var setClipboard = function(text) {
+    var domSetClipboard = function(text) {
         clipboardTextArea = clipboardTextArea || document.createElement("textarea");
         clipboardTextArea.value = text;
         document.body.appendChild(clipboardTextArea);
         clipboardTextArea.select();
         document.execCommand("cut");
         document.body.removeChild(clipboardTextArea);
+    };
+
+    //* Sets the clipboard text to a given string
+    var setClipboard = function(text) {
+        // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
+        if (typeof cordova !== "undefined" && cordova.plugins && cordova.plugins.clipboard) {
+            cordova.plugins.clipboard.copy(text);
+        } else {
+            domSetClipboard(text);
+        }
     };
 
     var isTouch = function() {
@@ -132,8 +141,6 @@ padlock.platform = (function() {
         isIOSStandalone: isIOSStandalone,
         isChromeApp: isChromeApp,
         isTouch: isTouch,
-        // If cordova clipboard plugin is available, use that one. Otherwise use the execCommand implemenation
-        setClipboard: typeof cordova !== "undefined" && cordova.plugins && cordova.plugins.clipboard ?
-            cordova.plugins.clipboard.copy : setClipboard
+        setClipboard: setClipboard
     };
 })();
