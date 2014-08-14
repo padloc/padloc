@@ -1,6 +1,6 @@
 {
   "name": "Padlock",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "homepage": "http://padlock.io",
   "authors": [
     "Martin Kleinschrodt <martin@maklesoft.com>"
@@ -14,14 +14,10 @@
     "test",
     "tests"
   ],
-  "dependencies": {
-    "polymer": "Polymer/polymer#~0.3.2",
-    "shape-shifter": "~0.2.0"
-  },
   "private": true,
-  "resolutions": {
-    "platform": ">=0.3.0 <1.0.0",
-    "polymer": "~0.3.2",
-    "core-component-page": ">=0.3.0 <1.0.0"
+  "dependencies": {
+    "shape-shifter": "~0.2.1",
+    "platform": "Polymer/platform#0.3.2",
+    "polymer": "Polymer/polymer#0.3.2"
   }
 }
