@@ -122,7 +122,11 @@
     animation: filterOut 0.5s ease 0s both;
 
     &::-webkit-input-placeholder {
-       color: $placeholder-color-light;
+        color: $placeholder-color-light;
+    }
+
+    &:not(:focus)::-webkit-input-placeholder {
+        text-align: center;
     }
 }
 
@@ -130,4 +134,5 @@
     pointer-events: none;
     animation: titleIn 0.5s ease 0s both;
     overflow: ellipsis;
+    text-align: center;
 }

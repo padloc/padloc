@@ -49,8 +49,12 @@
         focusFilterInput: function() {
             this.$.filterInput.focus();
         },
-        filterGotFocus: function() {
-            this.filterActive = true;
+        filterHasFocusChanged: function() {
+            if (this.filterHasFocus) {
+                this.filterActive = true;
+            } else if (!this.$.filterInput.value) {
+                this.filterActive = false;
+            }
         }
     });
 

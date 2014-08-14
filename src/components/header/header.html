@@ -13,8 +13,7 @@
             <div class="middle">
                 <!-- FILTER INPUT -->
                 <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString }}" type="search"
-                    placeholder="type to filter..." disabled?="{{ !showFilterInput }}"
-                    on-focus="{{ filterGotFocus }}"/>
+                    placeholder="{{ filterHasFocus ? 'type to search...' : 'tap to search...' }}" disabled?="{{ !showFilterInput }}" hasFocus="{{ filterHasFocus }}"/>
                 <!-- HEADER TITLE -->
                 <div class="title">{{ view.titleText }}</div>
             </div>
