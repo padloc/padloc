@@ -64,7 +64,7 @@
          */
         transitionEnd: function() {
             this.transCount--;
-            if (!this.open) {
+            if (!this.transCount && !this.open) {
                 this.style.display = "none";
             }
         },
