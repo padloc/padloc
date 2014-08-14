@@ -119,6 +119,8 @@ gulp.task("deploy", function() {
         return Q.all([
             Q.nfcall(ncp, "build.html", path.join(dest, "index.html")),
             Q.nfcall(ncp, "build.js", path.join(dest, "build.js")),
+            Q.nfcall(ncp, "background.js", path.join(dest, "background.js")),
+            Q.nfcall(ncp, "manifest.json", path.join(dest, "manifest.json")),
             Q.nfcall(ncp, path.join("src", "crypto.js"), path.join(dest, "src", "crypto.js")),
             Q.nfcall(ncp, path.join("lib", "sjcl.js"), path.join(dest, "lib", "sjcl.js")),
             Q.nfcall(ncp, "assets", path.join(dest, "assets"))
