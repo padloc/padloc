@@ -386,6 +386,11 @@
             Array.prototype.forEach.call(dialogs, function(dialog) {
                 dialog.open = false;
             });
+
+            // If we're in the list view, clear the filter input and restore the full list
+            if (this.currentView == this.$.listView) {
+                this.$.shutter.cancelFilter();
+            }
         },
         saveSettings: function() {
             if (this.settings.loaded) {

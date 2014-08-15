@@ -23,6 +23,9 @@
         },
         focusPwdInput: function() {
             this.$.lockView.focusPwdInput();
+        },
+        cancelFilter: function() {
+            this.$.header.cancelFilter();
         }
     });
 

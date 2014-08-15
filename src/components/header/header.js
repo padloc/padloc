@@ -36,12 +36,16 @@
          */
         rightClicked: function() {
             if (this.view && this.view.headerOptions.showFilter && this.filterActive) {
-                this.filterString = "";
-                this.$.filterInput.blur();
-                this.filterActive = false;
+                this.cancelFilter();
             } else if (this.view && this.view.rightHeaderButton) {
                 this.view.rightHeaderButton();
             }
+        },
+        //* Clears the filter input and resets the filter string
+        cancelFilter: function() {
+            this.filterString = "";
+            this.$.filterInput.blur();
+            this.filterActive = false;
         },
         blurFilterInput: function() {
             this.$.filterInput.blur();
