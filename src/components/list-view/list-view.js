@@ -34,6 +34,8 @@
                 return;
             }
 
+            this.marked = null;
+
             var fs = this.filterString && this.filterString.toLowerCase(),
                 words = fs.split(" "),
                 records = this.collection.records.filter(function(rec) {
@@ -115,25 +117,27 @@
             this.marked = null;
         },
         markNext: function() {
-            if (this.records.length) {
+            var length = this.records.filter(function(rec) { return !rec.hidden; }).length;
+            if (length) {
                 if (this.marked === null) {
                     this.marked = 0;
                 } else {
-                    this.marked = (this.marked + 1 + this.records.length) % this.records.length;
+                    this.marked = (this.marked + 1 + length) % length;
                 }
             }
         },
         markPrev: function() {
-            if (this.records.length) {
+            var length = this.records.filter(function(rec) { return !rec.hidden; }).length;
+            if (length) {
                 if (this.marked === null) {
-                    this.marked = this.records.length - 1;
+                    this.marked = length - 1;
                 } else {
-                    this.marked = (this.marked - 1 + this.records.length) % this.records.length;
+                    this.marked = (this.marked - 1 + length) % length;
                 }
             }
         },
         markedChanged: function(markedOld, markedNew) {
-            var elements = this.shadowRoot.querySelectorAll(".record-item"),
+            var elements = this.shadowRoot.querySelectorAll(".record-item:not([hidden])"),
                 oldEl = elements[markedOld],
                 newEl = elements[markedNew];
 

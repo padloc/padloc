@@ -14,7 +14,7 @@
                         <!-- SECTION HEADER -->
                     <div class="section-header {{ showCategory ? '' : 'color' + catColor }}">{{ section }}</div>
                 </template>
-                <div class="record-item" on-tap="{{ recordClicked }}" style="{{ hidden ? 'display: none' : '' }}">
+                <div class="record-item" on-tap="{{ recordClicked }}" hidden?="{{ hidden }}">
                     <div class="record-item-inner">
                         <div class="record-item-name">{{ name }}</div>
                         <div class="record-item-category color{{ catColor }}"
