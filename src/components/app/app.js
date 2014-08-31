@@ -126,7 +126,7 @@
             if (this.currentView) {
                 // Wait until the out animation has started before starting the in animation
                 outOpts.startCallback = function() {
-                    setTimeout(view.show.bind(view, inOpts), 100);
+                    setTimeout(view.show.bind(view, inOpts), 50);
                 };
                 this.currentView.hide(outOpts);
             } else {
