@@ -396,9 +396,6 @@
             if (this.settings.loaded) {
                 this.settings.save();
             }
-        },
-        trackStart: function(event) {
-            event.preventTap();
         }
     });
 
