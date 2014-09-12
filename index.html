@@ -34,6 +34,7 @@
         <script>
             document.addEventListener("deviceready", function() {
                 navigator.splashscreen.hide();
+                cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
             });
         </script>
     </head>
