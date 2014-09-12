@@ -43,7 +43,27 @@
                 }),
                 count = records.length;
 
-            // Sort by section property first, name second
+            // Set up category and section property
+            records.forEach(function(rec) {
+                // Add the records category to known categories and assign it a color if it doesn't exist yet.
+                // This is done here mainly for efficiency reasons.
+                if (rec.category && !this.categories.get(rec.category)) {
+                    this.categories.set(rec.category, this.categories.autoColor());
+                }
+
+                // Give it a section property for the rendering of the section headers
+                rec.section = this.settings.order_by == "category" ?
+                    rec.category || "other" : rec.name.toUpperCase()[0];
+
+                // Add properties for rendering the category
+                rec.catColor = this.categories.get(rec.category) || "";
+                rec.showCategory = this.settings.order_by != "category";
+            }.bind(this));
+
+            // Save the categories in case any new ones have been added
+            this.categories.save();
+
+            // Sort by section first, name second
             records.sort(function(a, b) {
                 if (a.section > b.section) {
                     return 1;
@@ -71,30 +91,13 @@
                 }
                 rec.hidden = !match;
 
-                // Add the records category to known categories and assign it a color if it doesn't exist yet.
-                // This is done here mainly for efficiency reasons.
-                if (rec.category && !this.categories.get(rec.category)) {
-                    this.categories.set(rec.category, this.categories.autoColor());
-                }
-
-                // Give it a section property for the rendering of the section headers
-                rec.section = this.settings.order_by == "category" ?
-                    rec.category || "other" : rec.name.toUpperCase()[0];
-
                 if (!rec.hidden && rec.section !== prevSection) {
                     rec.firstInSection = true;
                     prevSection = rec.section;
                 } else {
                     rec.firstInSection = false;
                 }
-
-                // Add properties for rendering the category
-                rec.catColor = this.categories.get(rec.category) || "";
-                rec.showCategory = this.settings.order_by != "category";
             }.bind(this));
-
-            // Save the categories in case any new ones have been added
-            this.categories.save();
 
             // Update records
             this.records = records;
