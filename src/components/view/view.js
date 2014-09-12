@@ -109,9 +109,7 @@
             // tree in order to avoid 'flashes'
             this.startAnimation(opts);
             // Show the element
-            setTimeout(function() {
-                this.classList.add("showing");
-            }.bind(this), 50);
+            this.classList.add("showing");
         },
         //* Hides the view
         hide: function(opts) {
