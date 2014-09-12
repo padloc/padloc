@@ -10,6 +10,9 @@
             }
         },
         enter: function() {
+            this.$.pwdInput.blur();
+            this.$.confirmInput.blur();
+
             var newPwd = this.$.pwdInput.value,
                 cfmPwd = this.$.confirmInput.value;
 

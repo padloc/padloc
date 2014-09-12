@@ -14,9 +14,11 @@
                 Padlock
             </div>
             <!-- NEW PASSWORD INPUT -->
-            <input is="padlock-input" class="ghost pwdinput-first" type="password" placeholder="Enter Master Password" id="pwdInput"/>
+            <input is="padlock-input" class="ghost pwdinput-first" type="password" placeholder="Enter Master Password"
+                id="pwdInput" selectAllOnFocus="true"/>
             <!-- CONFIRM PASSWORD INPUT -->
-            <input is="padlock-input" class="ghost pwdinput-second" type="password" placeholder="Confirm Master Password" id="confirmInput"/>
+            <input is="padlock-input" class="ghost pwdinput-second" type="password" placeholder="Confirm Master Password"
+                id="confirmInput" selectAllOnFocus="true"/>
             <!-- ENTER BUTTON -->
             <button class="enter-button ghost" on-tap="{{ enter }}">OK</button>
             <!-- ERROR MESSAGE -->
