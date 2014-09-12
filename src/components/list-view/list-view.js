@@ -101,6 +101,9 @@
 
             // Update records
             this.records = records;
+            this.filteredRecords = records.filter(function(rec) {
+                return !rec.hidden;
+            });
             this.empty = !count;
         },
         recordClicked: function(event, detail, sender) {
@@ -120,23 +123,25 @@
             this.marked = null;
         },
         markNext: function() {
-            var length = this.records.filter(function(rec) { return !rec.hidden; }).length;
+            var length = this.filteredRecords.length;
             if (length) {
                 if (this.marked === null) {
                     this.marked = 0;
                 } else {
                     this.marked = (this.marked + 1 + length) % length;
                 }
+                this.revealMarked();
             }
         },
         markPrev: function() {
-            var length = this.records.filter(function(rec) { return !rec.hidden; }).length;
+            var length = this.filteredRecords.length;
             if (length) {
                 if (this.marked === null) {
                     this.marked = length - 1;
                 } else {
                     this.marked = (this.marked - 1 + length) % length;
                 }
+                this.revealMarked();
             }
         },
         markedChanged: function(markedOld, markedNew) {
@@ -149,8 +154,13 @@
             }
             if (newEl) {
                 newEl.classList.add("marked");
-                this.scrollIntoView(newEl);
             }
+        },
+        revealMarked: function() {
+            var elements = this.shadowRoot.querySelectorAll(".record-item:not([hidden])"),
+                el = elements[this.marked];
+            
+            this.scrollIntoView(el);
         },
         //* Scrolls a given element in the list into view
         scrollIntoView: function(el) {
@@ -163,10 +173,10 @@
             }
         },
         selectMarked: function() {
-            this.selected = this.records[this.marked];
+            this.selected = this.filteredRecords[this.marked];
         },
         selectedChanged: function() {
-            var ind = this.records.indexOf(this.selected);
+            var ind = this.filteredRecords.indexOf(this.selected);
             this.marked = ind !== -1 ? ind : null;
         }
     });
