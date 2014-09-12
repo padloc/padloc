@@ -24,11 +24,6 @@
             // directly to the document
             document.addEventListener("keydown", this.keydown.bind(this), false);
 
-            // Prevent native mousedown behavior on iOS to avoid some quirks
-            if (platform.isIOS()) {
-                document.addEventListener("mousedown", this.preventDefault.bind(this), false);
-            }
-
             // Listen for android back button
             document.addEventListener("backbutton", this.back.bind(this));
         },
@@ -225,10 +220,6 @@
         },
         dismissAlert: function() {
             this.$.alertDialog.open = false;
-        },
-        preventDefault: function() {
-            event.preventDefault();
-            event.stopPropagation();
         },
         //* Keyboard shortcuts
         keydown: function(event) {

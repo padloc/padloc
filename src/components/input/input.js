@@ -18,14 +18,6 @@
                 this.setSelectionRange(this.value.length, this.value.length);
             }
         },
-        mousedown: function(event) {
-            if (this.overrideNativeFocus) {
-                // We've already focussed the input. This is for suppressing the
-                // native mechanism.
-                event.preventDefault();
-                event.stopPropagation();
-            }
-        },
         focussed: function() {
             this.hasFocus = true;
 
@@ -45,7 +37,6 @@
         selectAllOnFocus: false,
         ready: inputProto.ready,
         tap: inputProto.tap,
-        mousedown: inputProto.mousedown,
         focussed: inputProto.focussed,
         blurred: inputProto.blurred
     };
