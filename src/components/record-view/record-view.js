@@ -172,6 +172,9 @@
             }
             var fieldIndex = this.record.fields.indexOf(this.selectedField);
             this.marked = fieldIndex !== -1 ? fieldIndex : null;
+        },
+        preventDefault: function(event) {
+            event.preventDefault();
         }
     });
 
