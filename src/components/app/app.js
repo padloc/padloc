@@ -25,7 +25,10 @@
             document.addEventListener("keydown", this.keydown.bind(this), false);
 
             // Listen for android back button
-            document.addEventListener("backbutton", this.back.bind(this));
+            document.addEventListener("backbutton", this.back.bind(this), false);
+
+            // Lock app when it goes into the background
+            document.addEventListener("pause", this.lock.bind(this), false);
         },
         initView: function(collExists) {
             var isTouch = platform.isTouch();
