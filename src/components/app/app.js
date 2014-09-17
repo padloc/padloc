@@ -28,6 +28,7 @@
             document.addEventListener("backbutton", this.back.bind(this), false);
 
             // Lock app when it goes into the background
+            document.addEventListener("resign", this.lock.bind(this), false);
             document.addEventListener("pause", this.lock.bind(this), false);
         },
         initView: function(collExists) {
@@ -82,15 +83,13 @@
         lock: function() {
             this.$.mainMenu.open = false;
 
-            setTimeout(function() {
-                // Remove the stored password from the remote source if we've created on yet
-                if (this.remoteSource) {
-                    delete this.remoteSource.password;
-                }
-                
-                this.$.shutter.open = false;
-                setTimeout(this.collection.clear.bind(this.collection), 500);
-            }.bind(this), 500);
+            // Remove the stored password from the remote source if we've created on yet
+            if (this.remoteSource) {
+                delete this.remoteSource.password;
+            }
+            
+            this.$.shutter.open = false;
+            setTimeout(this.collection.clear.bind(this.collection), 500);
         },
         //* Change handler for the selected property; Opens the record view when record is selected
         selectedChanged: function() {
