@@ -141,6 +141,24 @@
         },
         openGithub: function() {
             window.open("http://github.com/maklesoft", "_system");
+        },
+        resetData: function() {
+            this.$.resetConfirmPwd.value = "";
+            this.$.resetDataDialog.open = true;
+        },
+        confirmResetData: function() {
+            this.$.resetDataDialog.open = false;
+
+            if (this.$.resetConfirmPwd.value == this.collection.defaultPassword) {
+                this.collection.clear();
+                this.collection.destroy();
+                this.fire("reset");
+            } else {
+                this.alert("The password you entered was incorrect.");
+            }
+        },
+        cancelResetData: function() {
+            this.$.resetDataDialog.open = false;
         }
     });
 

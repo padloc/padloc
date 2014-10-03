@@ -11,6 +11,8 @@
         <link href="settings-view.css" rel="stylesheet" type="text/css">
         <div class="section">
             <button class="settings-button" on-tap="{{ import }}">Import Data</button>
+            <button class="settings-button" on-tap="{{ resetData }}">Reset Data</button>
+            <button class="settings-button" on-tap="{{ changePassword }}">Change Master Password</button>
         </div>
         <div class="section">
             <button class="settings-button" on-tap="{{ cloudConnect }}"
@@ -22,9 +24,6 @@
                 on-tap="{{ toggleAutoSync }}">
                 <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" on-change="{{ save }}"></padlock-toggle>
             </div>
-        </div>
-        <div class="section">
-            <button class="settings-button" on-tap="{{ changePassword }}">Change Master Password</button>
         </div>
         <div class="section">
             <button class="settings-button" on-tap="{{ openWebsite }}">Website</button>
@@ -67,6 +66,13 @@
         <padlock-dialog id="alertDialog">
             <div class="title" id="alertText"></div>
             <button on-tap="{{ dismissAlert }}">OK</button>
+        </padlock-dialog>
+        <!-- CONFIRM RESET DATA DIALOG -->
+        <padlock-dialog id="resetDataDialog">
+            <div class="title">Are you sure you want to reset all your data? This action can not be undone! Please enter your master password to confirm.</div>
+            <input is="padlock-input" id="resetConfirmPwd" placeholder="Enter Master Password"/>
+            <button class="primary" on-tap="{{ confirmResetData }}">OK</button>
+            <button on-tap="{{ cancelResetData }}">Cancel</button>
         </padlock-dialog>
     </template>
     <script src="settings-view.js"></script>

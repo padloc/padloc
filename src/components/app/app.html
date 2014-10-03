@@ -28,7 +28,8 @@
         <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
             on-delete="{{ deleteRecord }}" on-categories="{{ openCategories }}"></padlock-record-view>
         <!-- Settings VIEW -->
-        <padlock-settings-view id="settingsView" class="view" on-back="{{ settingsBack }}" on-import="{{ openImportView }}"
+        <padlock-settings-view id="settingsView" class="view" on-back="{{ settingsBack }}"
+            on-import="{{ openImportView }}" on-reset="{{ reset }}"
             collection="{{ collection }}" settings="{{ settings }}"></padlock-settings-view>
         <!-- IMPORT VIEW -->
         <padlock-import-view id="importView" class="view" on-import="{{ saveImportedRecords }}"

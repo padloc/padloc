@@ -57,5 +57,12 @@ padlock.CloudSource = (function(Source) {
         req.send(JSON.stringify(opts.data));
     };
 
+    CloudSource.prototype.destroy = function(opts) {
+        // Not implemented yet
+        if (opts.fail) {
+            opts.fail();
+        }
+    };
+
     return CloudSource;
 })(padlock.Source);

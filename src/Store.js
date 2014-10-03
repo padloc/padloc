@@ -110,6 +110,21 @@ padlock.Store = (function(crypto) {
             }.bind(this));
         },
         /**
+         * Destroy the collection and delete its data
+         * @param {Collection} coll Collection to destroy
+         * @param {Object} opts Object containing options for the call. Options may include:
+         * 
+         * - success:  Success callback. Will be passed the collection as only argument
+         * - fail:     Fail callback
+         * - source:   Source to delete this collection from. If not provided, the stores default source is used.
+         */
+        destroy: function(coll, opts) {
+            opts = opts || {};
+            opts.key = this.getKey(coll);
+            var source = opts.source || this.defaultSource;
+            source.destroy(opts);
+        },
+        /**
          * Checks whether or not data for a collection exists
          * @param  {Collection} coll Collection to check for
          * @param  {Object}     opts Object containing options for the call. Options may include:

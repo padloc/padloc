@@ -33,14 +33,14 @@
         },
         initView: function(collExists) {
             var isTouch = platform.isTouch();
-            // // If there already is data in the local storage ask for password
-            // // Otherwise start with choosing a new one
+            // If there already is data in the local storage ask for password
+            // Otherwise start with choosing a new one
             this.$.shutter.startMode = !collExists;
             if (collExists && !isTouch) {
                 setTimeout(this.$.shutter.focusPwdInput.bind(this.$.shutter), 10);
             }
 
-            // // open the first view
+            // open the first view
             this.openView(this.$.listView, { animation: "" });
         },
         pwdEnter: function(event, detail) {
@@ -387,6 +387,11 @@
             if (this.settings.loaded) {
                 this.settings.save();
             }
+        },
+        reset: function() {
+            this.$.shutter.startMode = true;
+            this.$.shutter.open = false;
+            this.openView(this.$.listView, {animation: ""}, {animation: ""});
         }
     });
 

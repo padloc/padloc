@@ -25,5 +25,12 @@ padlock.LocalStorageSource = (function(Source) {
         }
     };
 
+    LocalStorageSource.prototype.destroy = function(opts) {
+        localStorage.removeItem(opts.key);
+        if (opts.success) {
+            opts.success();
+        }
+    };
+
     return LocalStorageSource;
 })(padlock.Source);

@@ -54,6 +54,17 @@ padlock.Collection = (function(util) {
             this.store.save(this, opts);
         },
         /**
+         * Destroy the collection and delete its data
+         * @param {Object} opts Object containing options for the call. Options may include:
+         * 
+         * - success:  Success callback. Will be passed the collection as only argument
+         * - fail:     Fail callback
+         * - source:   Source to delete this collection from. If not provided, the stores default source is used.
+         */
+        destroy: function(opts) {
+            this.store.destroy(this, opts);
+        },
+        /**
          * Adds a record or an array of records to the collection. If the record does not
          * have a _uuid_ yet, it will be generated. If two records with the same _uuid_ exist, i.e.
          * if one exists in the collection and one is added, the one with the more recent _updated_

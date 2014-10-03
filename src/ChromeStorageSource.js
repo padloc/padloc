@@ -26,5 +26,13 @@ padlock.ChromeStorageSource = (function() {
         });
     };
 
+    ChromeStorageSource.prototype.destroy = function(opts) {
+        storage.remove(opts.key, function() {
+            if (opts.success) {
+                opts.success();
+            }
+        });
+    };
+
     return ChromeStorageSource;
 })();
