@@ -16,12 +16,12 @@
         </div>
         <div class="section">
             <button class="settings-button" on-tap="{{ cloudConnect }}"
-                style="{{ settings.sync_connected ? 'display: none' : ''}}">Connect To Padlock Cloud</button>
-            <button class="settings-button" on-tap="{{ cloudDisconnect }}"
-                style="{{ settings.sync_connected ? '' : 'display: none'}}">
+                hidden?="{{ settings.sync_connected }}">Connect To Padlock Cloud</button>
+            <button class="settings-button" on-tap="{{ cloudDisconnect }}" hidden?="{{ !settings.sync_connected }}">
                 <div>Disconnect <span class="email">({{ settings.sync_email }})</span></div></button>
-            <div class="settings-row" style="{{ settings.sync_connected ? '' : 'display: none'}}"
-                on-tap="{{ toggleAutoSync }}">
+            <button class="settings-button" on-tap="{{ resetRemoteData }}"
+                hidden?="{{ !settings.sync_connected }}">Reset Remote Data</button>
+            <div class="settings-row" hidden?="{{ !settings.sync_connected }}" on-tap="{{ toggleAutoSync }}">
                 <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" on-change="{{ save }}"></padlock-toggle>
             </div>
         </div>
@@ -31,7 +31,7 @@
             <div class="info" on-tap="{{ openGithub }}">Developed and maintained by <strong>Martin Kleinschrodt</strong></div>
         </div>
         <!-- PROGRESS INDICATOR -->
-        <padlock-progress id="progress">Connecting...</padlock-progress>
+        <padlock-progress id="progress">Sending request...</padlock-progress>
         <!-- CONNECT DIALOG -->
         <padlock-dialog id="connectDialog">
             <input is="padlock-input" placeholder="Email Address" id="emailInput" type="email"/>
@@ -73,6 +73,12 @@
             <input is="padlock-input" id="resetConfirmPwd" placeholder="Enter Master Password"/>
             <button class="primary" on-tap="{{ confirmResetData }}">OK</button>
             <button on-tap="{{ cancelResetData }}">Cancel</button>
+        </padlock-dialog>
+        <!-- CONFIRM RESET REMOTE DATA DIALOG -->
+        <padlock-dialog id="resetRemoteDataDialog">
+            <div class="title">Are you sure you want to reset all your data on Padlock Cloud?</div>
+            <button class="primary" on-tap="{{ confirmResetRemoteData }}">OK</button>
+            <button on-tap="{{ cancelResetRemoteData }}">Cancel</button>
         </padlock-dialog>
     </template>
     <script src="settings-view.js"></script>

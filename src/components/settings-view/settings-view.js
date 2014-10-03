@@ -159,6 +159,38 @@
         },
         cancelResetData: function() {
             this.$.resetDataDialog.open = false;
+        },
+        resetRemoteData: function() {
+            this.$.resetRemoteDataDialog.open = true;
+        },
+        confirmResetRemoteData: function() {
+            this.$.resetRemoteDataDialog.open = false;
+
+            var req = new XMLHttpRequest(),
+                email = this.settings.sync_email,
+                url = this.settings.sync_host + email;
+
+            this.$.progress.show();
+
+            req.onreadystatechange = function() {
+                if (req.readyState === 4) {
+                    // Hide progress indicator
+                    this.$.progress.hide();
+                    if (req.status === 202) {
+                        this.alert("Almost done! An email was sent to " + email + ". Please follow the " +
+                            "instructions to confirm the reset!");
+                    } else {
+                        this.alert("Something went wrong. Please make sure your internet " +
+                            "connection is working and try again!");
+                    }
+                }
+            }.bind(this);
+
+            req.open("DELETE", url, true);
+            req.send();
+        },
+        cancelResetRemoteData: function() {
+            this.$.resetRemoteDataDialog.open = false;
         }
     });
 
