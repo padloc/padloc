@@ -118,7 +118,7 @@
          * Opens the provided _view_
          */
         openView: function(view, inOpts, outOpts) {
-            var views = Array.prototype.slice.apply(this.$$(".view")),
+            var views = Polymer.dom(this.root).querySelectorAll(".view"),
                 // Choose left or right animation based on the order the views
                 // are included in the app
                 back = views.indexOf(view) < views.indexOf(this.currentView);

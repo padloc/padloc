@@ -5,30 +5,32 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../toggle/toggle.html">
 
-<polymer-element name="padlock-settings-view" extends="padlock-view" attributes="collection settings" touch-action="pan-y">
+<dom-module id="padlock-settings-view">
+
+    <link href="../view/view.css" rel="import" type="css">
+    <link href="settings-view.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="settings-view.css" rel="stylesheet" type="text/css">
         <div class="section">
-            <button class="settings-button" on-tap="{{ import }}">Import Data</button>
-            <button class="settings-button" on-tap="{{ resetData }}">Reset Data</button>
-            <button class="settings-button" on-tap="{{ changePassword }}">Change Master Password</button>
+            <button class="settings-button" on-tap="import">Import Data</button>
+            <button class="settings-button" on-tap="resetData">Reset Data</button>
+            <button class="settings-button" on-tap="changePassword">Change Master Password</button>
         </div>
         <div class="section">
-            <button class="settings-button" on-tap="{{ cloudConnect }}"
-                hidden?="{{ settings.sync_connected }}">Connect To Padlock Cloud</button>
-            <button class="settings-button" on-tap="{{ cloudDisconnect }}" hidden?="{{ !settings.sync_connected }}">
+            <button class="settings-button" on-tap="cloudConnect"
+                hidden$="{{ settings.sync_connected }}">Connect To Padlock Cloud</button>
+            <button class="settings-button" on-tap="cloudDisconnect" hidden$="{{ !settings.sync_connected }}">
                 <div>Disconnect <span class="email">({{ settings.sync_email }})</span></div></button>
-            <button class="settings-button" on-tap="{{ resetRemoteData }}"
-                hidden?="{{ !settings.sync_connected }}">Reset Remote Data</button>
-            <div class="settings-row" hidden?="{{ !settings.sync_connected }}" on-tap="{{ toggleAutoSync }}">
-                <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" on-change="{{ save }}"></padlock-toggle>
+            <button class="settings-button" on-tap="resetRemoteData"
+                hidden$="{{ !settings.sync_connected }}">Reset Remote Data</button>
+            <div class="settings-row" hidden$="{{ !settings.sync_connected }}" on-tap="toggleAutoSync">
+                <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" on-change="save"></padlock-toggle>
             </div>
         </div>
         <div class="section">
-            <button class="settings-button" on-tap="{{ openWebsite }}">Website</button>
-            <button class="settings-button" on-tap="{{ sendMail }}">Support</button>
-            <div class="info" on-tap="{{ openGithub }}">Developed and maintained by <strong>Martin Kleinschrodt</strong></div>
+            <button class="settings-button" on-tap="openWebsite">Website</button>
+            <button class="settings-button" on-tap="sendMail">Support</button>
+            <div class="info" on-tap="openGithub">Developed and maintained by <strong>Martin Kleinschrodt</strong></div>
         </div>
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id="progress">Sending request...</padlock-progress>
@@ -36,50 +38,52 @@
         <padlock-dialog id="connectDialog">
             <input is="padlock-input" placeholder="Email Address" id="emailInput" type="email"/>
             <input is="padlock-input" placeholder="Device Name (e.g. 'Bens iPhone')" id="deviceNameInput"/>
-            <button class="primary" on-tap="{{ confirmConnect }}">OK</button>
+            <button class="primary" on-tap="confirmConnect">OK</button>
         </padlock-dialog>
         <!-- CONFIRM DISCONNECT DIALOG -->
         <padlock-dialog id="disconnectDialog">
             <div class="title">Are you sure you want to disconnect from Padlock Cloud?</div>
-            <button class="primary" on-tap="{{ confirmDisconnect }}">OK</button>
-            <button on-tap="{{ cancelDisconnect }}">Cancel</button>
+            <button class="primary" on-tap="confirmDisconnect">OK</button>
+            <button on-tap="cancelDisconnect">Cancel</button>
         </padlock-dialog>
         <!-- CHANGE PASSWORD DIALOG -->
         <padlock-dialog id="changePasswordDialog">
             <input is="padlock-input" type="password" placeholder="Enter Current Password" id="currPwdInput"/>
             <input is="padlock-input" type="password" placeholder="Enter New Password" id="newPwdInput"/>
             <input is="padlock-input" type="password" placeholder="Confirm Password" id="confirmNewPwdInput"/>
-            <button class="primary" on-tap="{{ confirmChangePassword }}">OK</button>
+            <button class="primary" on-tap="confirmChangePassword">OK</button>
         </padlock-dialog>
         <!-- CHANGE PASSWORD ERROR DIALOG -->
         <padlock-dialog id="changePasswordErrorDialog">
             <div class="title" id="changePasswordErrorMsg"></div>
-            <button class="primary" on-tap="{{ changePassword }}">retry</button>
-            <button on-tap="{{ closeChangePasswordErrorDialog }}">cancel</button>
+            <button class="primary" on-tap="changePassword">retry</button>
+            <button on-tap="closeChangePasswordErrorDialog">cancel</button>
         </padlock-dialog>
         <!-- CHANGE PASSWORD SUCCESS DIALOG -->
         <padlock-dialog id="changePasswordSuccessDialog">
             <div class="title">Password changed successfully!</div>
-            <button on-tap="{{ closeChangePasswordSuccessDialog }}">OK</button>
+            <button on-tap="closeChangePasswordSuccessDialog">OK</button>
         </padlock-dialog>
         <!-- ALERT -->
         <padlock-dialog id="alertDialog">
             <div class="title" id="alertText"></div>
-            <button on-tap="{{ dismissAlert }}">OK</button>
+            <button on-tap="dismissAlert">OK</button>
         </padlock-dialog>
         <!-- CONFIRM RESET DATA DIALOG -->
         <padlock-dialog id="resetDataDialog">
             <div class="title">Are you sure you want to reset all your data? This action can not be undone! Please enter your master password to confirm.</div>
             <input is="padlock-input" id="resetConfirmPwd" placeholder="Enter Master Password"/>
-            <button class="primary" on-tap="{{ confirmResetData }}">OK</button>
-            <button on-tap="{{ cancelResetData }}">Cancel</button>
+            <button class="primary" on-tap="confirmResetData">OK</button>
+            <button on-tap="cancelResetData">Cancel</button>
         </padlock-dialog>
         <!-- CONFIRM RESET REMOTE DATA DIALOG -->
         <padlock-dialog id="resetRemoteDataDialog">
             <div class="title">Are you sure you want to reset all your data on Padlock Cloud?</div>
-            <button class="primary" on-tap="{{ confirmResetRemoteData }}">OK</button>
-            <button on-tap="{{ cancelResetRemoteData }}">Cancel</button>
+            <button class="primary" on-tap="confirmResetRemoteData">OK</button>
+            <button on-tap="cancelResetRemoteData">Cancel</button>
         </padlock-dialog>
     </template>
+
     <script src="settings-view.js"></script>
-</polymer>
+
+</dom-module>

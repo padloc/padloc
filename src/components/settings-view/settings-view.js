@@ -1,16 +1,22 @@
 /* jshint browser: true */
 /* global Polymer, padlock */
 
-(function(Polymer, platform) {
+(function(Polymer, platform, ViewBehavior) {
     "use strict";
 
-    Polymer("padlock-settings-view", {
-        headerOptions: {
-            show: true,
-            leftIconShape: "left",
-            rightIconShape: ""
+    Polymer({
+        is: "padlock-settings-view",
+        behaviors: [ViewBehavior],
+        properties: {
+            collection: Object,
+            settings: Object
         },
-        titleText: "Settings",
+        ready: function() {
+            this.headerOptions.show = true;
+            this.headerOptions.leftIconShape = "left";
+            this.headerOptions.rightIconShape = "";
+            this.titleText = "Settings";
+        },
         leftHeaderButton: function() {
             this.fire("back");
         },
@@ -121,7 +127,7 @@
         },
         //* Saves the current settings
         save: function() {
-            this.settings.save();
+            this.settings && this.settings.save();
         },
         import: function() {
             this.fire("import");
@@ -194,4 +200,4 @@
         }
     });
 
-})(Polymer, padlock.platform);
+})(Polymer, padlock.platform, padlock.ViewBehavior);
