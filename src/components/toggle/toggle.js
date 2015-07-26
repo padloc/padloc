@@ -3,18 +3,24 @@
 (function(Polymer) {
     "use strict";
 
-    Polymer("padlock-toggle", {
-        value: false,
+    Polymer({
+        is: "padlock-toggle",
+        properties: {
+            value: {
+                type: Boolean,
+                value: false,
+                notify: true,
+                observer: "_valueChanged"
+            }
+        },
+        listeners: {
+            tap: "toggle"
+        },
         toggle: function() {
             this.value = !this.value;
-            this.valueChanged();
         },
-        valueChanged: function() {
-            if (this.value) {
-                this.classList.add("on");
-            } else {
-                this.classList.remove("on");
-            }
+        _valueChanged: function() {
+            this.toggleClass("on", this.value);
             this.fire("change");
         }
     });

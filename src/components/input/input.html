@@ -1,12 +1,76 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
-<polymer-element name="padlock-input" extends="input" touch-action="none" on-tap="{{ tap }}" on-focus="{{ focussed }}"
-    on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus" autocorrect="off" autocapitalize="off">
-</polymer-element>
+<script>
 
-<polymer-element name="padlock-textarea" extends="textarea" touch-action="none" on-tap="{{ tap }}"
-    on-focus="{{ focussed }}" on-blur="{{ blurred }}" attributes="hasFocus selectAllOnFocus" autocorrect="off" autocapitalize="off">
-</polymer-element>
+/* jshint browser: true */
+/* global Polymer, padlock */
 
-<script src="input.js"></script>
+(function(Polymer, platform) {
+    "use strict";
+
+    var inputBehavior = {
+        properties: {
+            hasFocus: {
+                type: Boolean,
+                value: false,
+                notify: true
+            },
+            selectAllOnFocus: Boolean
+        },
+        hostAttributes: {
+            autocorrect: "off",
+            autocapitalize: "off"
+        },
+        listeners: {
+            tap: "_tap",
+            focus: "_focus",
+            blur: "_blur",
+            keydown: "_keydown"
+        },
+        ready: function() {
+            // In certain situations we want to handle the focussing
+            // of input elements manually instead of relying on the native
+            // tap-to-focus mechanism.
+            this._overrideNativeFocus = platform.isIOS();
+        },
+        _tap: function() {
+            if (this._overrideNativeFocus && !this.hasFocus) {
+                this.setSelectionRange(this.value.length, this.value.length);
+            }
+        },
+        _focus: function() {
+            this.hasFocus = true;
+
+            if (this.selectAllOnFocus) {
+                // Need to do this asynchronously in some browsers or it won't work
+                setTimeout(function() {
+                    this.setSelectionRange(0, this.value.length);
+                }.bind(this), 10);
+            }
+        },
+        _blur: function() {
+            this.hasFocus = false;
+        },
+        _keydown: function(e) {
+            if (e.keyCode == 13) {
+                this.fire("enter");
+            }
+        }
+    };
+
+    Polymer({
+        is: "padlock-input",
+        extends: "input",
+        behaviors: [inputBehavior]
+    });
+
+    Polymer({
+        is: "padlock-textarea",
+        extends: "textarea",
+        behaviors: [inputBehavior]
+    });
+
+})(Polymer, padlock.platform);
+
+</script>

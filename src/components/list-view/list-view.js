@@ -1,22 +1,40 @@
 /* jshint browser: true */
-/* global Polymer, PadlockView */
+/* global Polymer, padlock */
 
-(function(Polymer) {
+(function(Polymer, ViewBehavior) {
     "use strict";
 
-    Polymer("padlock-list-view", {
-        headerOptions: {
-            show: true,
-            leftIconShape: "menu",
-            rightIconShape: "plus",
-            showFilter: true
+    Polymer({
+        is: "padlock-list-view",
+        behaviors: [ViewBehavior],
+        properties: {
+            collection: Object,
+            filterString: String,
+            selected: {
+                type: Object,
+                notify: true
+            },
+            categories: Object,
+            marked: Object,
+            settings: Object,
+            _records: Array,
+            _filteredRecords: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            _empty: Boolean
         },
-        observe: {
-            filterString: "prepareRecords",
-            "collection.records": "prepareRecords",
-            "settings.order_by": "prepareRecords"
+        observers: [
+            "prepareRecords(collection.records, filterString, settings.order_by)"
+        ],
+        ready: function() {
+            this.headerOptions.show = true;
+            this.headerOptions.leftIconShape = "menu";
+            this.headerOptions.rightIconShape = "plus";
+            this.headerOptions.showFilter = true;
         },
-        marked: null,
         leftHeaderButton: function() {
             this.fire("menu");
         },
@@ -37,7 +55,7 @@
             this.marked = null;
 
             var fs = this.filterString && this.filterString.toLowerCase(),
-                words = fs.split(" "),
+                words = fs && fs.split(" ") || [],
                 records = this.collection.records.filter(function(rec) {
                     return !rec.removed;
                 }),
@@ -100,30 +118,23 @@
             }.bind(this));
 
             // Update records
-            this.records = records;
-            this.filteredRecords = records.filter(function(rec) {
+            this._records = records;
+            this._filteredRecords = records.filter(function(rec) {
                 return !rec.hidden;
             });
-            this.empty = !count;
+            this._empty = !count;
         },
-        recordClicked: function(event, detail, sender) {
+        _recordClicked: function(event, detail, sender) {
             this.selected = sender.templateInstance.model;
         },
         import: function() {
             this.fire("import");
         },
-        show: function() {
-            this.marked = null;
-            PadlockView.prototype.show.apply(this, arguments);
-        },
         synchronize: function() {
             this.fire("synchronize");
         },
-        recordsChanged: function() {
-            this.marked = null;
-        },
         markNext: function() {
-            var length = this.filteredRecords.length;
+            var length = this._filteredRecords.length;
             if (length) {
                 if (this.marked === null) {
                     this.marked = 0;
@@ -134,7 +145,7 @@
             }
         },
         markPrev: function() {
-            var length = this.filteredRecords.length;
+            var length = this._filteredRecords.length;
             if (length) {
                 if (this.marked === null) {
                     this.marked = length - 1;
@@ -159,7 +170,7 @@
         revealMarked: function() {
             var elements = this.shadowRoot.querySelectorAll(".record-item:not([hidden])"),
                 el = elements[this.marked];
-            
+
             this.scrollIntoView(el);
         },
         //* Scrolls a given element in the list into view
@@ -173,12 +184,15 @@
             }
         },
         selectMarked: function() {
-            this.selected = this.filteredRecords[this.marked];
+            this.selected = this._filteredRecords[this.marked];
         },
         selectedChanged: function() {
-            var ind = this.filteredRecords.indexOf(this.selected);
+            var ind = this._filteredRecords.indexOf(this.selected);
             this.marked = ind !== -1 ? ind : null;
+        },
+        _categoryClass: function(record, baseClass) {
+            return baseClass + " " + (record.showCategory ? "" : "color" + record.catColor);
         }
     });
 
-})(Polymer);
+})(Polymer, padlock.ViewBehavior);

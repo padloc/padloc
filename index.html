@@ -5,17 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
         <link rel="shortcut icon" type="image/png" href="assets/icon16.png"/>
 
-        <!-- Settings for running as standalone iOS web app (from homescreen) -->
-        <meta name="apple-mobile-web-app-capable" content="yes"/>
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="Padlock">
-        <link rel="apple-touch-icon" href="assets/app-icon.png">
-
         <!-- Overrides for platform-specific styling -->
         <link href="src/styles/overrides.css" rel="stylesheet" type="text/css">
-        
+
         <!-- Polymer platform layer -->
-        <script src="bower_components/platform/platform.js"></script>
+        <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 
         <!-- Custom app element -->
         <link rel="import" href="src/components/app/app.html">
@@ -37,8 +31,11 @@
                 cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
             });
         </script>
+
     </head>
-    <body unresolved>
-        <padlock-app unresolved></padlock-app>
+    <body>
+
+        <padlock-app></padlock-app>
+
     </body>
 </html>

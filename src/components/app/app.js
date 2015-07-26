@@ -4,11 +4,26 @@
 (function(Polymer, platform, CloudSource) {
     "use strict";
 
-    Polymer("padlock-app", {
-        observe: {
-            "settings.order_by": "saveSettings"
+    Polymer({
+        is: "padlock-app",
+        properties: {
+            settings: Object,
+            categories: Object,
+            collection: Object,
+            filterString: String,
+            selected: {
+                type: Object,
+                observer: "_selectedChanged"
+            },
+            currentView: Object
         },
-        filterString: "",
+        listeners: {
+            open: "_dialogOpen",
+            close: "_dialogClose"
+        },
+        observers: [
+            "_saveSettings(settings.*)"
+        ],
         init: function(collection, settings, categories) {
             this.collection = collection;
             this.settings = settings;
@@ -62,7 +77,7 @@
             this.decrypting = true;
             this.$.decrypting.show();
             this.collection.fetch({password: password, success: function() {
-                this.$.shutter.errorMessage = null;
+                this.$.shutter.errorMessage = "";
                 this.$.shutter.enterLocked = false;
                 this.$.decrypting.hide();
                 this.decrypting = false;
@@ -87,23 +102,23 @@
             if (this.remoteSource) {
                 delete this.remoteSource.password;
             }
-            
+
             this.$.shutter.open = false;
             setTimeout(this.collection.clear.bind(this.collection), 500);
         },
         //* Change handler for the selected property; Opens the record view when record is selected
-        selectedChanged: function() {
-            if (this.selected) {
-                this.$.recordView.record = this.selected;
-                this.openView(this.$.recordView);
-                this.$.shutter.blurFilterInput();
-            }
+        _selectedChanged: function() {
+            // if (this.selected) {
+            //     this.$.recordView.record = this.selected;
+            //     this.openView(this.$.recordView);
+            //     this.$.shutter.blurFilterInput();
+            // }
         },
         /**
          * Opens the provided _view_
          */
         openView: function(view, inOpts, outOpts) {
-            var views = this.shadowRoot.querySelectorAll(".view").array(),
+            var views = Array.prototype.slice.apply(this.$$(".view")),
                 // Choose left or right animation based on the order the views
                 // are included in the app
                 back = views.indexOf(view) < views.indexOf(this.currentView);
@@ -206,11 +221,11 @@
             this.openView(this.$.listView);
         },
         //* Triggers the headers scrim to match the scrim of the opened dialog
-        dialogOpen: function() {
+        _dialogOpen: function() {
             this.$.shutter.scrim = true;
         },
         //* Removes the headers scrim
-        dialogClose: function() {
+        _dialogClose: function() {
             this.$.shutter.scrim = false;
         },
         //* Show an alert dialog with the provided message
@@ -373,7 +388,7 @@
         //* Back method. Chooses the right back method based on the current view
         back: function() {
             this.currentView.back();
-            var dialogs = this.shadowRoot.querySelectorAll("padlock-dialog");
+            var dialogs = Polymer.dom(this.root).querySelectorAll("padlock-dialog");
             Array.prototype.forEach.call(dialogs, function(dialog) {
                 dialog.open = false;
             });
@@ -383,7 +398,7 @@
                 this.$.shutter.cancelFilter();
             }
         },
-        saveSettings: function() {
+        _saveSettings: function() {
             if (this.settings.loaded) {
                 this.settings.save();
             }

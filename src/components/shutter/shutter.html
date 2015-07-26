@@ -4,19 +4,22 @@
 <link rel="import" href="../start-view/start-view.html">
 <link rel="import" href="../header/header.html">
 
-<polymer-element name="padlock-shutter" attributes="errorMessage enterLocked currentView filterString scrim startMode">
+<dom-module id="padlock-shutter">
+
+    <link href="shutter.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="shutter.css" rel="stylesheet" type="text/css">
         <div class="overhang"></div>
         <!-- START VIEW -->
-        <padlock-start-view id="startView" style="display: {{ startMode ? '' : 'none' }}"></padlock-start-view>
+        <padlock-start-view id="startView" hidden$="{{ !startMode }}"></padlock-start-view>
         <!-- LOCK VIEW -->
-        <padlock-lock-view id="lockView" errorMessage="{{ errorMessage }}"
-            style="{{ startMode ? 'display: none' : '' }}"></padlock-lock-view>
+        <padlock-lock-view id="lockView" error-message="{{ errorMessage }}"
+            hidden$="{{ startMode }}"></padlock-lock-view>
         <!-- HEADER -->
-        <padlock-header id="header" view="{{ currentView }}" filterString="{{ filterString }}"
-            showFilterInput="{{ currentView.headerOptions.showFilter && open }}" scrim="{{ scrim }}"></padlock-header>
+        <padlock-header id="header" view="{{ currentView }}" filter-string="{{ filterString }}"
+            show-filter="{{ _showFilter(currentView.headerOptions.showFilter, open) }}" scrim="{{ scrim }}"></padlock-header>
     </template>
+
     <script src="shutter.js"></script>
-</polymer-element>
+
+</dom-module>

@@ -1,7 +1,7 @@
 /* jshint browser: true */
 /* global padlock, chrome */
 
-window.addEventListener("polymer-ready", function() {
+window.addEventListener("WebComponentsReady", function() {
     "use strict";
 
     var source = (typeof chrome !== "undefined") && chrome.storage ?
