@@ -20,7 +20,7 @@
         <padlock-shutter id="shutter" on-newpwd="newPwd" on-pwdenter="pwdEnter"
             current-view="{{ currentView }}" filter-string="{{ filterString }}"></padlock-shutter>
         <!-- LIST VIEW -->
-        <padlock-list-view id="listView" class="view" collection="{{ collection }}" filter-string="{{ filterString }}"
+        <padlock-list-view id="listView" class="view" records="{{ records }}" filter-string="{{ filterString }}"
             categories="{{ categories }}" selected="{{ selected }}" on-add="addRecord" settings="{{ settings }}"
             on-menu="openMainMenu" on-import="openImportView" on-synchronize="synchronize"></padlock-list-view>
         <!-- RECORD VIEW -->

@@ -7,17 +7,20 @@
     <link href="list-view.css" rel="import" type="css">
 
     <template>
-        <div class="list" id="list">
+        <div class="list">
 
-            <template is="dom-repeat" items="{{ _records }}" as="record">
-                <template is="dom-if" if="{{ record.firstInSection }}">
-                    <div class$="{{ _categoryClass(record, 'section-header') }}">{{ record.section }}</div>
+            <template id="list" is="dom-repeat" items="{{ records }}"
+                filter="_filter" sort="_sort" observe="name category removed">
+                <template is="dom-if" if="{{ _showSectionHeader(item.name, item.category, settings.order_by, index) }}">
+                    <div class$="{{ _categoryClass(item, 'section-header') }}">
+                        <span>{{ _section(item.name, item.category, settings.order_by) }}</span>
+                    </div>
                 </template>
-                <div class="record-item" on-tap="_recordClicked" hidden$="{{ record.hidden }}">
+                <div class="record-item" on-tap="_recordClicked">
                     <div class="record-item-inner">
-                        <div class="record-item-name">{{ record.name }}</div>
-                        <div class="_categoryClass(record, 'record-item-category')"
-                            hidden$="{{ !record.showCategory }}">{{ category }}</div>
+                        <div class="record-item-name">{{ item.name }}</div>
+                        <div class="_categoryClass(item, 'record-item-category')"
+                            hidden$="{{ _showCategory(settings.order_by) }}">{{ category }}</div>
                     </div>
                 </div>
             </template>

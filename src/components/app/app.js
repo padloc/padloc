@@ -15,7 +15,11 @@
                 type: Object,
                 observer: "_selectedChanged"
             },
-            currentView: Object
+            currentView: Object,
+            records: {
+                type: Array,
+                value: function() { return []; }
+            }
         },
         listeners: {
             open: "_dialogOpen",
@@ -26,6 +30,9 @@
         ],
         init: function(collection, settings, categories) {
             this.collection = collection;
+            this.collection.addEventListener("update", function(e) {
+                this.splice.apply(this, ["records"].concat(e.detail));
+            }.bind(this));
             this.settings = settings;
             this.categories = categories;
 
@@ -168,7 +175,8 @@
                 name: this.$.addInput.value,
                 fields: this.settings.default_fields.map(function(field) {
                     return {name: field, value: ""};
-                })
+                }),
+                category: ""
             };
 
             this.collection.add(record);
