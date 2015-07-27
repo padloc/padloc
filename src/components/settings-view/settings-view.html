@@ -20,7 +20,7 @@
             <button class="settings-button" on-tap="cloudConnect"
                 hidden$="{{ settings.sync_connected }}">Connect To Padlock Cloud</button>
             <button class="settings-button" on-tap="cloudDisconnect" hidden$="{{ !settings.sync_connected }}">
-                <div>Disconnect <span class="email">({{ settings.sync_email }})</span></div></button>
+                <div>Disconnect <span class="email">(<span>{{ settings.sync_email }}</span>)</span></div></button>
             <button class="settings-button" on-tap="resetRemoteData"
                 hidden$="{{ !settings.sync_connected }}">Reset Remote Data</button>
             <div class="settings-row" hidden$="{{ !settings.sync_connected }}" on-tap="toggleAutoSync">

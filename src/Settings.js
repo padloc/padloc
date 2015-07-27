@@ -1,6 +1,6 @@
 /* global padlock */
 
-padlock.Settings = (function() {
+padlock.Settings = (function(util) {
     "use strict";
 
     /**
@@ -10,22 +10,11 @@ padlock.Settings = (function() {
      *                        properties on the _Settings_ object directly
      * @param Source source   Source to use for persistency
      */
-    var Settings = function(settings, source) {
+    var Settings = function(properties, source) {
+        this.properties = properties;
+        util.mixin(this, properties);
         this.source = source;
-        this.defaults = settings;
-        this.settings = {};
         this.loaded = false;
-
-        // Define properties with getters and setters for all properties specified
-        // in the _settings_ object. This allows direct access to settings without
-        // the use of the _get_ or _set_ method and make data binding a little easier
-        for (var prop in settings) {
-            Object.defineProperty(this, prop, {
-                enumerable: true,
-                get: this.get.bind(this, prop),
-                set: this.set.bind(this, prop)
-            });
-        }
     };
 
     Settings.prototype = {
@@ -34,7 +23,7 @@ padlock.Settings = (function() {
             opts = opts || {};
             var success = opts.success;
             opts.success = function(data) {
-                this.settings = data || this.settings;
+                util.mixin(this, data, true);
                 this.loaded = true;
                 if (success) {
                     success();
@@ -47,27 +36,19 @@ padlock.Settings = (function() {
         save: function(opts) {
             opts = opts || {};
             opts.key = "settings";
-            opts.data = this.settings;
+            opts.data = this.raw();
+            // opts.data = this.settings;
             this.source.save(opts);
         },
-        //* Gets a _setting_
-        get: function(setting) {
-            return setting in this.settings ? this.settings[setting] : this.defaults[setting];
-        },
-        //* Sets a _setting_ to a _value_
-        set: function(setting, value) {
-            var oldValue = this.settings[setting];
-            this.settings[setting] = value;
-            if (Object.getNotifier) {
-                // Manually notify any observers registered through Object.observe
-                Object.getNotifier(this).notify({
-                    type: "update",
-                    name: setting,
-                    oldValue: oldValue
-                });
+        //* Returns a raw JS object containing the current settings
+        raw: function() {
+            var obj = {};
+            for (var prop in this.properties) {
+                obj[prop] = this[prop];
             }
+            return obj;
         }
     };
 
     return Settings;
-})();
+})(padlock.util);

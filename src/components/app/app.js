@@ -29,7 +29,7 @@
             this.settings = settings;
             this.categories = categories;
 
-            this.settings.fetch();
+            this.settings.fetch({success: this._notifySettings.bind(this)});
 
             this.categories.fetch();
 
@@ -401,6 +401,11 @@
         _saveSettings: function() {
             if (this.settings.loaded) {
                 this.settings.save();
+            }
+        },
+        _notifySettings: function() {
+            for (var prop in this.settings.properties) {
+                this.notifyPath("settings." + prop, this.settings[prop]);
             }
         },
         reset: function() {

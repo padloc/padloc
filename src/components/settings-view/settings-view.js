@@ -57,9 +57,8 @@
         },
         confirmConnect: function() {
             this.$.connectDialog.open = false;
-            this.settings.sync_email = this.$.emailInput.value;
-            this.settings.sync_device = this.$.deviceNameInput.value;
-            this.settings.save();
+            this.set("settings.sync_email", this.$.emailInput.value);
+            this.set("settings.sync_device", this.$.deviceNameInput.value);
             this.requestApiKey();
         },
         cloudDisconnect: function() {
@@ -67,9 +66,8 @@
         },
         confirmDisconnect: function() {
             this.$.disconnectDialog.open = false;
-            this.settings.sync_connected = false;
-            this.settings.sync_key = "";
-            this.settings.save();
+            this.set("settings.sync_connected", false);
+            this.set("settings.sync_key", "");
         },
         cancelDisconnect: function() {
             this.$.disconnectDialog.close();
@@ -92,9 +90,8 @@
                         var apiKey = JSON.parse(req.responseText);
                         // We're getting back the api key directly, but it will valid only
                         // after the user has visited the activation link in the email he was sent
-                        this.settings.sync_key = apiKey.key;
-                        this.settings.sync_connected = true;
-                        this.settings.save();
+                        this.set("settings.sync_key", apiKey.key);
+                        this.set("settings.sync_connected", true);
                         this.alert("Almost done! An email was sent to " + email + ". Please follow the " +
                             "instructions to complete the connection process!");
                     } else {
@@ -127,7 +124,7 @@
         },
         //* Saves the current settings
         save: function() {
-            this.settings && this.settings.save();
+            this.settings && this.settings.loaded && this.settings.save();
         },
         import: function() {
             this.fire("import");
