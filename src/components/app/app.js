@@ -31,6 +31,13 @@
         init: function(collection, settings, categories) {
             this.collection = collection;
             this.collection.addEventListener("update", function(e) {
+                e.detail.slice(2).forEach(function(record) {
+                    // Add any categories that are not registered yet
+                    if (record.category && !this.categories.get(record.category)) {
+                        this.categories.set(record.category, this.categories.autoColor());
+                    }
+                }.bind(this));
+                this.categories.save();
                 this.splice.apply(this, ["records"].concat(e.detail));
             }.bind(this));
             this.settings = settings;

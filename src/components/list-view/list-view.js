@@ -141,8 +141,13 @@
         _section: function(name, category, orderBy) {
             return orderBy == "category" ? category || "other" : name.toUpperCase()[0];
         },
-        _categoryClass: function(category, baseClass) {
-            return baseClass + " " + (this.categories.get(category) || "");
+        _sectionHeaderClass: function(category, orderBy) {
+            var showCategory = this._showCategory(orderBy);
+            var colorClass = "color" + (this.categories.get(category) || "");
+            return "section-header " + (showCategory ? "" : colorClass);
+        },
+        _categoryClass: function(category) {
+            return "record-item-category color" + (this.categories.get(category) || "");
         },
         _showSectionHeader: function(name, category, orderBy, index) {
             var section = this._section(name, category, orderBy);
