@@ -1,48 +1,51 @@
-/* global Polymer, Platform, padlock, PadlockView, cordova */
+/* global Polymer, padlock, cordova */
 
-(function(Polymer, Platform, util, imp) {
+(function(Polymer, ViewBehavior, util, imp) {
     "use strict";
 
-    Polymer("padlock-import-view", {
-        headerOptions: {
-            show: true,
-            leftIconShape: "left",
-            rightIconShape: ""
+    var inputPlaceholder =
+        "Paste your data here! It should be in CSV format, like this:\n" +
+        "\n" +
+        "Name,Category,Url,Username,Password\n" +
+        "Gmail,Work,google.com,Martin,j83jaDK\n" +
+        "Twitter,,twitter.com,mclovin,dj83$j\n" +
+        "\n" +
+        "SecuStore backups are also supported.";
+
+    Polymer({
+        is: "padlock-import-view",
+        behaviors: [ViewBehavior],
+        ready: function() {
+            this.headerOptions.show = true;
+            this.headerOptions.leftIconShape = "left";
+            this.headerOptions.rightIconShape = "";
+            this.titleText = "Import Records";
         },
-        titleText: "Import Records",
-        inputPlaceholder:
-            "Paste your data here! It should be in CSV format, like this:\n" +
-            "\n" +
-            "Name,Category,Url,Username,Password\n" +
-            "Gmail,Work,google.com,Martin,j83jaDK\n" +
-            "Twitter,,twitter.com,mclovin,dj83$j\n" +
-            "\n" +
-            "SecuStore backups are also supported.",
         leftHeaderButton: function() {
             this.fire("back");
         },
         show: function() {
-            this.$.rawInput.value = this.inputPlaceholder;
+            this.$.rawInput.value = inputPlaceholder;
             if (typeof cordova !== "undefined") {
                 setTimeout(function() {
                     cordova.plugins.Keyboard.hideKeyboardAccessoryBar(false);
                 }, 10);
             }
-            PadlockView.prototype.show.apply(this, arguments);
+            ViewBehavior.show.apply(this, arguments);
         },
         hide: function() {
             if (typeof cordova !== "undefined") {
                 cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
             }
-            PadlockView.prototype.hide.apply(this, arguments);
+            ViewBehavior.hide.apply(this, arguments);
         },
         //* Shows password dialog
-        requirePassword: function() {
+        _requirePassword: function() {
             this.$.errorDialog.open = false;
             this.$.pwdInput.value = "";
             this.$.pwdDialog.open = true;
         },
-        startImport: function() {
+        _startImport: function() {
             // this.$.nameColDialog.open = true;
             var rawStr = this.$.rawInput.value;
             if (!rawStr) {
@@ -50,14 +53,14 @@
             }
 
             if (imp.isSecuStoreBackup(rawStr)) {
-                this.requirePassword();
+                this._requirePassword();
             } else {
-                this.csvData = imp.parseCsv(rawStr);
-                this.getNameCol();
+                this._csvData = imp.parseCsv(rawStr);
+                this._getNameCol();
             }
         },
         //* Starts the import using the raw input and the provided password
-        importSecuStoreBackup: function() {
+        _importSecuStoreBackup: function() {
             this.$.pwdDialog.open = false;
             this.$.progress.show();
 
@@ -68,55 +71,55 @@
             }.bind(this));
             this.$.progress.hide();
         },
-        importCancel: function() {
+        _importCancel: function() {
             this.$.errorDialog.open = false;
             this.fire("back");
         },
         //* Opens a dialog for selecting a column for record names
-        getNameCol: function() {
-            this.colNames = this.csvData[0].slice();
-            this.nameColOptions = this.colNames;
+        _getNameCol: function() {
+            this.colNames = this._csvData[0].slice();
+            this._nameColOptions = this.colNames;
             // This is to make sure the option elements are generated right away
             // so we can select the first one.
-            Platform.performMicrotaskCheckpoint();
+            // Platform.performMicrotaskCheckpoint();
             // Select the first column by default
             this.$.nameColSelect.selected = this.$.nameColSelect.options[0];
             this.$.nameColDialog.open = true;
         },
-        confirmNameCol: function() {
-            var colName = this.$.nameColSelect.selected.innerHTML;
+        _confirmNameCol: function() {
+            var colName = this.$.nameColSelect.value;
 
-            this.nameColIndex = this.colNames.indexOf(colName);
+            this._nameColIndex = this.colNames.indexOf(colName);
             this.$.nameColDialog.open = false;
-            this.getCatCol();
+            this._getCatCol();
         },
         //* Opens the dialog for selecting a column for the category
-        getCatCol: function() {
+        _getCatCol: function() {
             var select = this.$.catColSelect;
 
             // One column is already taken by the record name
-            this.catColOptions = util.remove(this.colNames, this.nameColIndex);
+            this._catColOptions = util.remove(this.colNames, this._nameColIndex);
             // The category is optional so we need an option for selecting none of the columns
-            this.catColOptions.push("(none)");
+            this._catColOptions.push("(none)");
             // This is to make sure the option elements are generated right away
             // so we can select the first one.
-            Platform.performMicrotaskCheckpoint();
+            // Platform.performMicrotaskCheckpoint();
             // Select 'none' by default
             select.selected = select.options[select.options.length-1];
             this.$.catColDialog.open = true;
         },
-        confirmCatCol: function() {
-            var colName = this.$.catColSelect.selected.innerHTML;
+        _confirmCatCol: function() {
+            var colName = this.$.catColSelect.value;
 
-            this.catColIndex = colName == "(none)" ? undefined : this.colNames.indexOf(colName);
+            this._catColIndex = colName == "(none)" ? undefined : this.colNames.indexOf(colName);
             this.$.catColDialog.open = false;
-            this.importCsv();
+            this._importCsv();
         },
-        importCsv: function() {
-            var records = imp.importTable(this.csvData, this.nameColIndex, this.catColIndex);
+        _importCsv: function() {
+            var records = imp.importTable(this._csvData, this._nameColIndex, this._catColIndex);
 
             this.fire("import", {records: records});
         }
     });
 
-})(Polymer, Platform, padlock.util, padlock.import);
+})(Polymer, padlock.ViewBehavior, padlock.util, padlock.import);
