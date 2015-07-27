@@ -141,8 +141,8 @@
         _section: function(name, category, orderBy) {
             return orderBy == "category" ? category || "other" : name.toUpperCase()[0];
         },
-        _categoryClass: function(record, baseClass) {
-            return baseClass + " " + (record.showCategory ? "" : "color" + record.catColor);
+        _categoryClass: function(category, baseClass) {
+            return baseClass + " " + (this.categories.get(category) || "");
         },
         _showSectionHeader: function(name, category, orderBy, index) {
             var section = this._section(name, category, orderBy);

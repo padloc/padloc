@@ -12,15 +12,15 @@
             <template id="list" is="dom-repeat" items="{{ records }}"
                 filter="_filter" sort="_sort" observe="name category removed">
                 <template is="dom-if" if="{{ _showSectionHeader(item.name, item.category, settings.order_by, index) }}">
-                    <div class$="{{ _categoryClass(item, 'section-header') }}">
+                    <div class$="{{ _categoryClass(item.category, 'section-header') }}">
                         <span>{{ _section(item.name, item.category, settings.order_by) }}</span>
                     </div>
                 </template>
                 <div class="record-item" on-tap="_recordClicked">
                     <div class="record-item-inner">
                         <div class="record-item-name">{{ item.name }}</div>
-                        <div class="_categoryClass(item, 'record-item-category')"
-                            hidden$="{{ _showCategory(settings.order_by) }}">{{ category }}</div>
+                        <div class$="{{ _categoryClass(item.category, 'record-item-category') }}"
+                            hidden$="{{ !_showCategory(settings.order_by) }}">{{ item.category }}</div>
                     </div>
                 </div>
             </template>
