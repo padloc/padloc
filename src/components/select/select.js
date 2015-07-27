@@ -20,13 +20,13 @@
             //* The selected element
             selected: {
                 type: Object,
-                notifiy: true,
+                notify: true,
                 observer: "_selectedChanged"
             },
             //* Value of the selected option
             value: {
                 type: String,
-                notifiy: true,
+                notify: true,
                 observer: "_valueChanged"
             },
             //* If _true_, options will expand upwards instead of downwards
