@@ -1,12 +1,12 @@
 /* jshint browser: true */
 /* global Polymer, padlock */
 
-(function(Polymer, ViewBehavior) {
+(function(Polymer, ViewBehavior, MarkableBehavior) {
     "use strict";
 
     Polymer({
         is: "padlock-list-view",
-        behaviors: [ViewBehavior],
+        behaviors: [ViewBehavior, MarkableBehavior],
         properties: {
             filterString: {
                 type: String,
@@ -20,11 +20,6 @@
             categories: Object,
             settings: Object,
             records: Array,
-            _marked: {
-                type: Number,
-                value: -1,
-                observer: "_markedChanged"
-            },
             _filteredRecords: {
                 type: Array,
                 computed: "_filtered(records.*, filterString, settings.order_by)"
@@ -42,6 +37,7 @@
             this.headerOptions.leftIconShape = "menu";
             this.headerOptions.rightIconShape = "plus";
             this.headerOptions.showFilter = true;
+            this._itemSelector = ".record-item";
         },
         leftHeaderButton: function() {
             this.fire("menu");
@@ -93,56 +89,6 @@
         _synchronize: function() {
             this.fire("synchronize");
         },
-        markNext: function() {
-            var length = this._filteredRecords.length;
-            if (length) {
-                if (this._marked === null) {
-                    this._marked = 0;
-                } else {
-                    this._marked = (this._marked + 1 + length) % length;
-                }
-                this._revealMarked();
-            }
-        },
-        markPrev: function() {
-            var length = this._filteredRecords.length;
-            if (length) {
-                if (this._marked === null) {
-                    this._marked = length - 1;
-                } else {
-                    this._marked = (this._marked - 1 + length) % length;
-                }
-                this._revealMarked();
-            }
-        },
-        _markedChanged: function(markedNew, markedOld) {
-            var elements = Polymer.dom(this.root).querySelectorAll(".record-item:not([hidden])"),
-                oldEl = elements[markedOld],
-                newEl = elements[markedNew];
-
-            if (oldEl) {
-                this.toggleClass("marked", false, oldEl);
-            }
-            if (newEl) {
-                this.toggleClass("marked", true, newEl);
-            }
-        },
-        _revealMarked: function() {
-            var elements = Polymer.dom(this.root).querySelectorAll(".record-item:not([hidden])"),
-                el = elements[this._marked];
-
-            this._scrollIntoView(el);
-        },
-        //* Scrolls a given element in the list into view
-        _scrollIntoView: function(el) {
-            if (el.offsetTop < this.scrollTop) {
-                // The element is off to the top; Scroll it into view, aligning it at the top
-                el.scrollIntoView();
-            } else if (el.offsetTop + el.offsetHeight > this.scrollTop + this.offsetHeight) {
-                // The element is off to the bottom; Scroll it into view, aligning it at the bottom
-                el.scrollIntoView(false);
-            }
-        },
         selectMarked: function() {
             this.selected = this._filteredRecords[this._marked];
         },
@@ -182,4 +128,4 @@
         }
     });
 
-})(Polymer, padlock.ViewBehavior);
+})(Polymer, padlock.ViewBehavior, padlock.MarkableBehavior);
