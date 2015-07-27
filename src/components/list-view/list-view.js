@@ -8,18 +8,26 @@
         is: "padlock-list-view",
         behaviors: [ViewBehavior],
         properties: {
-            filterString: String,
+            filterString: {
+                type: String,
+                value: ""
+            },
             selected: {
                 type: Object,
-                notify: true
+                notify: true,
+                observer: "_selectedChanged"
             },
             categories: Object,
-            marked: Object,
             settings: Object,
             records: Array,
+            _marked: {
+                type: Number,
+                value: -1,
+                observer: "_markedChanged"
+            },
             _filteredRecords: {
                 type: Array,
-                computed: "_filtered(records.*)"
+                computed: "_filtered(records.*, filterString, settings.order_by)"
             },
             _empty: {
                 type: Boolean,
@@ -45,6 +53,10 @@
             var fs = this.filterString && this.filterString.toLowerCase(),
                 words = fs && fs.split(" ") || [];
 
+            if (rec.removed) {
+                return false;
+            }
+
             // For the record to be a match, each word in the filter string has to appear
             // in either the category or the record name.
             for (var i=0, match=true; i<words.length && match; i++) {
@@ -52,7 +64,7 @@
                     rec.name.toLowerCase().search(words[i]) != -1;
             }
 
-            return !!match && !rec.removed;
+            return !!match;
         },
         _sort: function(a, b) {
             var secA = this._section(a.name, a.category, this.settings.order_by);
@@ -72,57 +84,57 @@
                 }
             }
         },
-        _recordClicked: function(event, detail, sender) {
-            this.selected = sender.templateInstance.model;
+        _recordClicked: function(e) {
+            this.selected = e.model.item;
         },
-        import: function() {
+        _import: function() {
             this.fire("import");
         },
-        synchronize: function() {
+        _synchronize: function() {
             this.fire("synchronize");
         },
         markNext: function() {
             var length = this._filteredRecords.length;
             if (length) {
-                if (this.marked === null) {
-                    this.marked = 0;
+                if (this._marked === null) {
+                    this._marked = 0;
                 } else {
-                    this.marked = (this.marked + 1 + length) % length;
+                    this._marked = (this._marked + 1 + length) % length;
                 }
-                this.revealMarked();
+                this._revealMarked();
             }
         },
         markPrev: function() {
             var length = this._filteredRecords.length;
             if (length) {
-                if (this.marked === null) {
-                    this.marked = length - 1;
+                if (this._marked === null) {
+                    this._marked = length - 1;
                 } else {
-                    this.marked = (this.marked - 1 + length) % length;
+                    this._marked = (this._marked - 1 + length) % length;
                 }
-                this.revealMarked();
+                this._revealMarked();
             }
         },
-        markedChanged: function(markedOld, markedNew) {
-            var elements = this.shadowRoot.querySelectorAll(".record-item:not([hidden])"),
+        _markedChanged: function(markedNew, markedOld) {
+            var elements = Polymer.dom(this.root).querySelectorAll(".record-item:not([hidden])"),
                 oldEl = elements[markedOld],
                 newEl = elements[markedNew];
 
             if (oldEl) {
-                oldEl.classList.remove("marked");
+                this.toggleClass("marked", false, oldEl);
             }
             if (newEl) {
-                newEl.classList.add("marked");
+                this.toggleClass("marked", true, newEl);
             }
         },
-        revealMarked: function() {
-            var elements = this.shadowRoot.querySelectorAll(".record-item:not([hidden])"),
-                el = elements[this.marked];
+        _revealMarked: function() {
+            var elements = Polymer.dom(this.root).querySelectorAll(".record-item:not([hidden])"),
+                el = elements[this._marked];
 
-            this.scrollIntoView(el);
+            this._scrollIntoView(el);
         },
         //* Scrolls a given element in the list into view
-        scrollIntoView: function(el) {
+        _scrollIntoView: function(el) {
             if (el.offsetTop < this.scrollTop) {
                 // The element is off to the top; Scroll it into view, aligning it at the top
                 el.scrollIntoView();
@@ -132,11 +144,11 @@
             }
         },
         selectMarked: function() {
-            this.selected = this._filteredRecords[this.marked];
+            this.selected = this._filteredRecords[this._marked];
         },
-        selectedChanged: function() {
+        _selectedChanged: function() {
             var ind = this._filteredRecords.indexOf(this.selected);
-            this.marked = ind !== -1 ? ind : null;
+            this._marked = ind !== -1 ? ind : null;
         },
         _section: function(name, category, orderBy) {
             return orderBy == "category" ? category || "other" : name.toUpperCase()[0];
