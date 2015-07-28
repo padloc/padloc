@@ -10,60 +10,60 @@
     <link href="record-view.css" rel="import" type="css">
 
     <template>
-        <div class="_categoryClass(record.category)" on-tap="openCategories">{{ record.category ? record.category : "Add a Category" }}</div>
+        <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
         <!-- FIELD LIST -->
         <template is="dom-repeat" items="{{ record.fields }}">
-            <div class="field" on-tap="fieldTapped">
+            <div class="field" on-tap="_fieldTapped">
                 <div class="value">{{ item.value }}</div>
                 <div class="label">{{ item.name }}</div>
             </div>
         </template>
-        <button class="add-button" on-tap="addField">Add Field</button>
+        <button class="add-button" on-tap="_addField">Add Field</button>
         <!-- CLIPBOARD NOTIFICATION -->
         <padlock-progress id="clipboardNotification">Value copied to clipboard!</padlock-progress>
         <!-- RECORD OPTIONS -->
         <padlock-dialog id="menu">
-            <button on-tap="editName">Edit Name</button>
-            <button on-tap="deleteRecord" id="confirmButton">Delete Record</button>
+            <button on-tap="_editName">Edit Name</button>
+            <button on-tap="_deleteRecord" id="confirmButton">Delete Record</button>
         </padlock-dialog>
         <!-- DELETE CONFIRM DIALOG -->
         <padlock-dialog id="confirmDeleteDialog">
             <div class="title">Are you sure you want to delete this record?</div>
-            <button class="primary" on-tap="confirmDelete">Delete</button>
-            <button on-tap="cancelDelete">Cancel</button>
+            <button class="primary" on-tap="_confirmDelete">Delete</button>
+            <button on-tap="_cancelDelete">Cancel</button>
         </padlock-dialog>
         <!-- EDIT NAME DIALOG -->
         <padlock-dialog id="editNameDialog">
             <div class="title">Edit Name</div>
             <input is="padlock-input" id="nameInput" select-all-on-focus placeholder="Enter Record Name"/>
-            <button class="primary" on-tap="confirmEditName">Save</button>
+            <button class="primary" on-tap="_confirmEditName">Save</button>
         </padlock-dialog>
         <!-- FIELD CONTEXT MENU -->
-        <padlock-dialog id="fieldMenu" on-close="fieldDialogClosed">
-            <button on-tap="copyToClipboard">Copy to Clipboard</button>
-            <button on-tap="editField">Edit</button>
-            <button on-tap="removeField">Remove</button>
+        <padlock-dialog id="fieldMenu" on-close="_fieldDialogClosed">
+            <button on-tap="_copyToClipboard">Copy to Clipboard</button>
+            <button on-tap="_editField">Edit</button>
+            <button on-tap="_removeField">Remove</button>
         </padlock-dialog>
         <!-- EDIT FIELD DIALOG -->
-        <padlock-dialog id="editFieldDialog" on-close="fieldDialogClosed">
+        <padlock-dialog id="editFieldDialog" on-close="_fieldDialogClosed">
             <div class="title">Edit '<strong>{{ _fieldName(_selectedField) }}</strong>'</div>
             <input is="padlock-input" id="fieldValueInput" select-all-on-focus placeholder="Enter Content" />
-            <button on-tap="randomize" on-mousedown="preventDefault">Randomize</button>
-            <button class="primary" on-tap="confirmEditField">Save Changes</button>
+            <button on-tap="_randomize" on-mousedown="_preventDefault">Randomize</button>
+            <button class="primary" on-tap="_confirmEditField">Save Changes</button>
         </padlock-dialog>
         <!-- ADD FIELD DIALOG -->
         <padlock-dialog id="addFieldDialog">
             <div class="title">Add Field</div>
             <input is="padlock-input" id="newFieldNameInput" placeholder="Enter Label" />
             <input is="padlock-input" id="newValueInput" placeholder="Enter Content" />
-            <button on-tap="randomize" on-mousedown="preventDefault">Randomize</button>
-            <button class="primary" on-tap="confirmAddField">Add</button>
+            <button on-tap="_randomize" on-mousedown="_preventDefault">Randomize</button>
+            <button class="primary" on-tap="_confirmAddField">Add</button>
         </padlock-dialog>
         <!-- REMOVE FIELD CONFIRM DIALOG -->
-        <padlock-dialog id="confirmRemoveFieldDialog" on-close="fieldDialogClosed">
+        <padlock-dialog id="confirmRemoveFieldDialog" on-close="_fieldDialogClosed">
             <div class="title">Are you sure you want to remove this field?</div>
-            <button class="primary" on-tap="confirmRemoveField">Remove</button>
-            <button on-tap="cancelRemoveField">Cancel</button>
+            <button class="primary" on-tap="_confirmRemoveField">Remove</button>
+            <button on-tap="_cancelRemoveField">Cancel</button>
         </padlock-dialog>
     </template>
     <script src="record-view.js"></script>

@@ -8,10 +8,6 @@
         behaviors: [ViewBehavior, MarkableBehavior],
         properties: {
             record: Object,
-            titleText: {
-                type: String,
-                computed: "_titleText(record.name)"
-            },
             categories: Object,
             _marked: {
                 type: Number,
@@ -23,6 +19,9 @@
                 observer: "_selectedFieldChanged"
             }
         },
+        observers: [
+            "_updateTitleText(record.name)"
+        ],
         ready: function() {
             this.headerOptions.show = true;
             this.headerOptions.leftIconShape = "left";
@@ -40,77 +39,79 @@
             this.$.menu.open = true;
         },
         //* Opens the confirm dialog for deleting the current element
-        deleteRecord: function() {
+        _deleteRecord: function() {
             this.$.menu.open = false;
             this.$.confirmDeleteDialog.open = true;
         },
-        confirmDelete: function() {
+        _confirmDelete: function() {
             this.$.confirmDeleteDialog.open = false;
             this.fire("delete");
         },
-        cancelDelete: function() {
+        _cancelDelete: function() {
             this.$.confirmDeleteDialog.open = false;
         },
         //* Opens the edit name dialog
-        editName: function() {
+        _editName: function() {
             this.$.menu.open = false;
             this.$.nameInput.value = this.record.name;
             this.$.editNameDialog.open = true;
         },
-        confirmEditName: function() {
+        _confirmEditName: function() {
             this.$.editNameDialog.open = false;
-            this.record.name = this.$.nameInput.value;
+            this.set("record.name", this.$.nameInput.value);
             this.fire("save");
         },
         //* Opens the add field dialog
-        addField: function() {
+        _addField: function() {
             this._selectedField = null;
             this.$.menu.open = false;
             this.$.newValueInput.value = "";
             this.$.newFieldNameInput.value = "";
             this.$.addFieldDialog.open = true;
         },
-        confirmAddField: function() {
+        _confirmAddField: function() {
             this.$.addFieldDialog.open = false;
             var field = {
                 name: this.$.newFieldNameInput.value,
                 value: this.$.newValueInput.value
             };
-            this.record.fields.push(field);
+            this.push("record.fields", field);
             this.fire("save");
         },
         //* Opens the edit field dialog for the currently selected field
-        editField: function() {
+        _editField: function() {
             this.$.editFieldDialog.open = true;
             this.$.fieldMenu.open = false;
         },
-        confirmEditField: function() {
-            this._selectedField.value = this.$.fieldValueInput.value;
+        _confirmEditField: function() {
+            var ind = this.record.fields.indexOf(this._selectedField);
+            this.set("record.fields." + ind + ".value", this.$.fieldValueInput.value);
             this._selectedField = null;
             this.fire("save");
         },
         //* Opens the field context menu
-        fieldTapped: function(e) {
+        _fieldTapped: function(e) {
             this._selectedField = e.model.item;
         },
         //* Opens the remove field confirm dialog
-        removeField: function() {
+        _removeField: function() {
             this.$.confirmRemoveFieldDialog.open = true;
             this.$.fieldMenu.open = false;
         },
-        confirmRemoveField: function() {
-            this.$.confirmRemoveFieldDialog.open = false;
-            this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this._selectedField));
+        _confirmRemoveField: function() {
+            var ind = this.record.fields.indexOf(this._selectedField);
+            this.splice("record.fields", ind, 1);
             this._selectedField = null;
             this.fire("save");
-        },
-        cancelRemoveField: function() {
             this.$.confirmRemoveFieldDialog.open = false;
         },
-        openCategories: function() {
+        _cancelRemoveField: function() {
+            this.$.confirmRemoveFieldDialog.open = false;
+        },
+        _openCategories: function() {
             this.fire("categories");
         },
-        copyToClipboard: function() {
+        _copyToClipboard: function() {
             // If a field has been selected copy that one, otherwise copy the marked one
             var field = this._selectedField ? this._selectedField : this.record.fields[this._marked],
                 value = field && field.value;
@@ -121,7 +122,7 @@
             this.$.clipboardNotification.hide();
         },
         //* Fills the current value input with a randomized value
-        randomize: function() {
+        _randomize: function() {
             // Choose the right input based on whether we are creating a new field or editing an existing one
             var input = this._selectedField ? this.$.fieldValueInput : this.$.newValueInput;
             input.value = rand.randomString(20);
@@ -129,7 +130,7 @@
         selectMarked: function() {
             this._selectedField = this.record.fields[this._marked];
         },
-        fieldDialogClosed: function() {
+        _fieldDialogClosed: function() {
             // If all field-related dialogs are closed, unselect the field
             if (!this.$.fieldMenu.open && !this.$.confirmRemoveFieldDialog.open && !this.$.editFieldDialog.open) {
                 this._selectedField = null;
@@ -149,14 +150,17 @@
         _fieldName: function(field) {
             return field && field.name;
         },
-        preventDefault: function(event) {
+        _preventDefault: function(event) {
             event.preventDefault();
         },
-        _titleText: function(name) {
-            return name;
+        _updateTitleText: function(name) {
+            this.titleText = name;
         },
         _categoryClass: function(category) {
             return "category color" + (this.categories.get(category) || "");
+        },
+        _categoryLabel: function(category) {
+            return category || "Add a Category";
         }
     });
 

@@ -122,11 +122,11 @@
         },
         //* Change handler for the selected property; Opens the record view when record is selected
         _selectedChanged: function() {
-            // if (this.selected) {
-            //     this.$.recordView.record = this.selected;
-            //     this.openView(this.$.recordView);
-            //     this.$.shutter.blurFilterInput();
-            // }
+            if (this.selected) {
+                this.$.recordView.record = this.selected;
+                this.openView(this.$.recordView);
+                this.$.shutter.blurFilterInput();
+            }
         },
         /**
          * Opens the provided _view_
@@ -164,7 +164,6 @@
             if (record) {
                 // Save the changes
                 this.collection.save({record: record});
-                this.$.listView.prepareRecords();
                 if (this.settings.sync_connected && this.settings.sync_auto) {
                     this.synchronize();
                 }

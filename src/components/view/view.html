@@ -27,7 +27,11 @@ padlock.ViewBehavior = (function(platform) {
             inAnimation: String,
             outAnimation: String,
             //* Title text that is going to be displayed in header element
-            titleText: String,
+            titleText: {
+                type: String,
+                value: "",
+                notify: true
+            },
             //* Duration of the in/out animations
             animationDuration: {
                 type: Number,

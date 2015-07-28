@@ -93,8 +93,7 @@
             this.selected = this._filteredRecords[this._marked];
         },
         _selectedChanged: function() {
-            var ind = this._filteredRecords.indexOf(this.selected);
-            this._marked = ind !== -1 ? ind : null;
+            this._marked = this._filteredRecords.indexOf(this.selected);
         },
         _section: function(name, category, orderBy) {
             return orderBy == "category" ? category || "other" : name.toUpperCase()[0];

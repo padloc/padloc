@@ -3,7 +3,7 @@
 <link rel="import" href="../shutter/shutter.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../list-view/list-view.html">
-<!-- <link rel="import" href="../record&#45;view/record&#45;view.html"> -->
+<link rel="import" href="../record-view/record-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../import-view/import-view.html">
 <!-- <link rel="import" href="../categories&#45;view/categories&#45;view.html"> -->
@@ -25,7 +25,7 @@
             on-menu="openMainMenu" on-import="openImportView" on-synchronize="synchronize"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="saveRecord" on-back="recordViewBack"
-            on-delete="deleteRecord" on-categories="openCategories"></padlock-record-view>
+            on-delete="deleteRecord" on-categories="openCategories" categories="{{ categories }}"></padlock-record-view>
         <!-- Settings VIEW -->
         <padlock-settings-view id="settingsView" class="view" on-back="settingsBack"
             on-import="openImportView" on-reset="reset"
