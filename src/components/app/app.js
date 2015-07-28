@@ -195,8 +195,9 @@
         deleteRecord: function() {
             this.collection.remove(this.selected);
             this.collection.save();
-            this.$.listView.prepareRecords();
             this.recordViewBack();
+            var index = this.records.indexOf(this.selected);
+            this.notifyPath("records." + index + ".removed", true);
             // Auto sync
             if (this.settings.sync_connected && this.settings.sync_auto) {
                 this.synchronize();
