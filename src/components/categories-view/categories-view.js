@@ -1,18 +1,21 @@
 /* jshint browser: true */
-/* global Polymer, Platform, padlock, PadlockView */
+/* global Polymer, padlock */
 
-(function(Polymer, Platform, plPlatform) {
+(function(Polymer, ViewBehavior, platform) {
     "use strict";
 
-    Polymer("padlock-categories-view", {
-        headerOptions: {
-            show: true,
-            leftIconShape: "cancel",
-            rightIconShape: ""
+    Polymer({
+        is: "padlock-categories-view",
+        behaviors: [ViewBehavior],
+        properties: {
+            categories: Object,
+            record: Object
         },
-        titleText: "Categories",
-        observe: {
-            "record.name": "updateTitleText"
+        ready: function() {
+            this.headerOptions.show = true;
+            this.headerOptions.leftIconShape = "cancel";
+            this.headerOptions.rightIconShape = "";
+            this.titleText = "Categories";
         },
         leftHeaderButton: function() {
             this.fire("back");
@@ -21,54 +24,24 @@
             this.categoryList = this.categories.asArray();
         },
         show: function() {
-            var minDelay = 0,
-                maxDelay = 200,
-                prefix = plPlatform.getVendorPrefix().css,
-                catElements = this.shadowRoot.querySelectorAll(".category"),
-                delay;
-
-            // Apparently firefox doesn't want a prefix when setting styles directly
-            prefix = prefix == "-moz-" ? "" : prefix;
-
             this.updateCategories();
-            // Make sure any updates to the category list are done before showing the view
-            Platform.performMicrotaskCheckpoint();
-
-            PadlockView.prototype.show.apply(this, arguments);
-
-            // Remove animation property so the animation will restart
-            Array.prototype.forEach.call(catElements, function(catEl) {
-                catEl.style[prefix + "animation"] = "none";
-            });
-
-            // Trigger style recalculation to make sure the style change is applied
-            // when we re-add the animation property
-            // jshint expr: true
-            this.offsetLeft;
-            // jshint expr: false
-
-            // Trigger bounce in animation with random invidiual delays
-            Array.prototype.forEach.call(catElements, function(catEl) {
-                delay = minDelay + Math.floor(Math.random() * (maxDelay - minDelay));
-                catEl.style[prefix + "animation"] = "bounceIn 0.5s ease " + delay + "ms both";
-            });
+            ViewBehavior.show.apply(this, arguments);
         },
-        categoryTapped: function(event, detail, sender) {
-            this.record.category = sender.templateInstance.model.category.name;
-            this.record.catColor = sender.templateInstance.model.category.color;
-            this.bounce(sender);
+        categoryTapped: function(e) {
+            this.record.category = e.model.item.name;
+            this.bounce(e.currentTarget);
         },
         //* Updates the titleText property with the name of the current record
-        updateTitleText: function() {
+        _updateTitleText: function() {
             this.titleText = this.record && this.record.name;
         },
-        newCategory: function(event, detail, sender) {
+        newCategory: function() {
             this.categoryEditing = null;
             this.$.nameInput.value = "";
             this.$.colorSelect.selected = this.$.colorSelect.children[0];
             this.$.removeButton.style.display = "none";
             this.$.editDialog.open = true;
-            this.bounce(sender);
+            this.bounce(this.$.newButton);
         },
         editCategory: function(event, detail, sender) {
             var colorOptions = this.$.colorSelect.children,
@@ -85,7 +58,6 @@
                 }
             }
             this.$.removeButton.style.display = "";
-            
             this.$.editDialog.open = true;
             this.bounce(sender);
         },
@@ -139,12 +111,12 @@
         cancelRemove: function() {
             this.$.confirmRemoveDialog.open = false;
         },
-        selectNone: function(event, detail, sender) {
-            delete this.record.category;
-            this.bounce(sender);
+        selectNone: function() {
+            this.record.category = "";
+            this.bounce(this.$.noneButton);
         },
         bounce: function(el) {
-            var prefix = plPlatform.getVendorPrefix().css;
+            var prefix = platform.getVendorPrefix().css;
             // Apparently firefox doesn't want a prefix when setting styles directly
             prefix = prefix == "-moz-" ? "" : prefix;
             el.style[prefix + "animation"] = "none";
@@ -156,7 +128,10 @@
         },
         editDialogClosed: function() {
             this.$.colorSelect.open = false;
+        },
+        _categoryClass: function(color) {
+            return "category color" + color;
         }
     });
 
-})(Polymer, Platform, padlock.platform);
+})(Polymer, padlock.ViewBehavior, padlock.platform);

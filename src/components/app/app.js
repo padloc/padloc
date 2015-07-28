@@ -309,7 +309,7 @@
             this.$.categoriesView.updateCategories();
         },
         openCategories: function() {
-            this.openView(this.$.categoriesView, {animation: ""}, {animation: "slideOutToBottom"});
+            this.openView(this.$.categoriesView, {animation: "slideInFromBottom"}, {animation: "slideOutToBottom"});
         },
         categoriesDone: function() {
             this.openView(this.$.recordView, {
