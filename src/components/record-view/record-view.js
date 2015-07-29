@@ -157,7 +157,7 @@
             this.titleText = name;
         },
         _categoryClass: function(category) {
-            return "category color" + (this.categories.get(category) || "");
+            return this.categories && "category color" + (this.categories.get(category) || "");
         },
         _categoryLabel: function(category) {
             return category || "Add a Category";

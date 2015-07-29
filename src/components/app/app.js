@@ -123,7 +123,6 @@
         //* Change handler for the selected property; Opens the record view when record is selected
         _selectedChanged: function() {
             if (this.selected) {
-                this.$.recordView.record = this.selected;
                 this.openView(this.$.recordView);
                 this.$.shutter.blurFilterInput();
             }
@@ -188,24 +187,28 @@
             this.collection.add(record);
 
             // select the newly added record (which will open the record view)
-            this.selected = record;
+            this.$.selector.select(record);
             this.saveRecord();
         },
         //* Deletes the currently selected record (if any)
         deleteRecord: function() {
             this.collection.remove(this.selected);
             this.collection.save();
+            this.notifyPath("selected.removed", true);
             this.recordViewBack();
-            var index = this.records.indexOf(this.selected);
-            this.notifyPath("records." + index + ".removed", true);
+            // var index = this.records.indexOf(this.selected);
+            // this.notifyPath("records." + index + ".removed", true);
             // Auto sync
             if (this.settings.sync_connected && this.settings.sync_auto) {
                 this.synchronize();
             }
         },
         recordViewBack: function() {
-            this.selected = null;
-            this.openView(this.$.listView);
+            this.openView(this.$.listView, null, {
+                endCallback: function() {
+                    this.$.selector.deselect();
+                }.bind(this)
+            });
         },
         openMainMenu: function() {
             this.$.mainMenu.open = true;
@@ -427,6 +430,9 @@
             this.$.shutter.startMode = true;
             this.$.shutter.open = false;
             this.openView(this.$.listView, {animation: ""}, {animation: ""});
+        },
+        _recordSelected: function(e) {
+            this.$.selector.select(e.detail.record);
         }
     });
 

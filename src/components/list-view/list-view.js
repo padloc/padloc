@@ -12,11 +12,7 @@
                 type: String,
                 value: ""
             },
-            selected: {
-                type: Object,
-                notify: true,
-                observer: "_selectedChanged"
-            },
+            selected: Object,
             categories: Object,
             records: Array,
             _filteredRecords: {
@@ -44,6 +40,10 @@
         },
         rightHeaderButton: function() {
             this.fire("add");
+        },
+        show: function() {
+            this._marked = -1;
+            ViewBehavior.show.apply(this, arguments);
         },
         _filterBySearchString: function(rec) {
             var fs = this.filterString && this.filterString.toLowerCase(),
@@ -91,8 +91,9 @@
                 }
             }
         },
-        _recordClicked: function(e) {
-            this.selected = e.model.item;
+        _recordTapped: function(e) {
+            this._marked = e.model.index;
+            this.fire("select", {record: e.model.item});
         },
         _import: function() {
             this.fire("import");
@@ -101,10 +102,7 @@
             this.fire("synchronize");
         },
         selectMarked: function() {
-            this.selected = this._filteredRecords[this._marked];
-        },
-        _selectedChanged: function() {
-            this._marked = this._filteredRecords.indexOf(this.selected);
+            this.fire("select", {record: this._filteredRecords[this._marked]});
         },
         _section: function(name) {
             return (name || "").toUpperCase()[0];

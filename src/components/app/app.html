@@ -21,10 +21,10 @@
             current-view="{{ currentView }}" filter-string="{{ filterString }}"></padlock-shutter>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" records="{{ records }}" filter-string="{{ filterString }}"
-            categories="{{ categories }}" selected="{{ selected }}" on-add="addRecord"
+            categories="{{ categories }}" selected="{{ selected }}" on-select="_recordSelected" on-add="addRecord"
             on-menu="openMainMenu" on-import="openImportView" on-synchronize="synchronize"></padlock-list-view>
         <!-- RECORD VIEW -->
-        <padlock-record-view id="recordView" class="view" on-save="saveRecord" on-back="recordViewBack"
+        <padlock-record-view id="recordView" class="view" on-save="saveRecord" on-back="recordViewBack" record="{{ selected }}"
             on-delete="deleteRecord" on-categories="openCategories" categories="{{ categories }}"></padlock-record-view>
         <!-- Settings VIEW -->
         <padlock-settings-view id="settingsView" class="view" on-back="settingsBack"
@@ -74,6 +74,8 @@
             <button class="primary" on-tap="confirmUpdateRemotePassword">Yes</button>
             <button on-tap="cancelUpdateRemotePassword">No</button>
         </padlock-dialog>
+
+        <array-selector id="selector" items="{{ records }}" selected="{{ selected }}"></array-selector>
     </template>
 
     <script src="app.js"></script>
