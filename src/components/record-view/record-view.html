@@ -65,6 +65,8 @@
             <button class="primary" on-tap="_confirmRemoveField">Remove</button>
             <button on-tap="_cancelRemoveField">Cancel</button>
         </padlock-dialog>
+
+        <array-selector id="selector" items="{{ record.fields }}" selected="{{ _selectedField }}"></array-selector>
     </template>
     <script src="record-view.js"></script>
 </dom-module>

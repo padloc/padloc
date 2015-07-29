@@ -63,7 +63,7 @@
         },
         //* Opens the add field dialog
         _addField: function() {
-            this._selectedField = null;
+            this.$.selector.deselect();
             this.$.menu.open = false;
             this.$.newValueInput.value = "";
             this.$.newFieldNameInput.value = "";
@@ -84,14 +84,13 @@
             this.$.fieldMenu.open = false;
         },
         _confirmEditField: function() {
-            var ind = this.record.fields.indexOf(this._selectedField);
-            this.set("record.fields." + ind + ".value", this.$.fieldValueInput.value);
-            this._selectedField = null;
+            this.set("_selectedField.value", this.$.fieldValueInput.value);
+            this.$.selector.deselect();
             this.fire("save");
         },
         //* Opens the field context menu
         _fieldTapped: function(e) {
-            this._selectedField = e.model.item;
+            this.$.selector.select(e.model.item);
         },
         //* Opens the remove field confirm dialog
         _removeField: function() {
@@ -101,7 +100,7 @@
         _confirmRemoveField: function() {
             var ind = this.record.fields.indexOf(this._selectedField);
             this.splice("record.fields", ind, 1);
-            this._selectedField = null;
+            this.$.selector.deselect();
             this.fire("save");
             this.$.confirmRemoveFieldDialog.open = false;
         },
@@ -128,12 +127,12 @@
             input.value = rand.randomString(20);
         },
         selectMarked: function() {
-            this._selectedField = this.record.fields[this._marked];
+            this.$.selector.select(this.record.fields[this._marked]);
         },
         _fieldDialogClosed: function() {
             // If all field-related dialogs are closed, unselect the field
             if (!this.$.fieldMenu.open && !this.$.confirmRemoveFieldDialog.open && !this.$.editFieldDialog.open) {
-                this._selectedField = null;
+                this.$.selector.deselect();
             }
         },
         _selectedFieldChanged: function() {
