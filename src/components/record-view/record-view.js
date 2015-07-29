@@ -153,7 +153,7 @@
             event.preventDefault();
         },
         _updateTitleText: function(name) {
-            this.titleText = name;
+            this.headerTitle = name;
         },
         _categoryClass: function(category) {
             return this.categories && "category color" + (this.categories.get(category) || "");

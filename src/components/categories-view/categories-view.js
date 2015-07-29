@@ -15,7 +15,7 @@
             this.headerOptions.show = true;
             this.headerOptions.leftIconShape = "cancel";
             this.headerOptions.rightIconShape = "";
-            this.titleText = "Categories";
+            this.headerTitle = "Categories";
         },
         leftHeaderButton: function() {
             this.fire("back");

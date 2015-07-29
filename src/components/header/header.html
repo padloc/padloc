@@ -16,7 +16,7 @@
                 <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString::keyup }}" type="search"
                     placeholder$="{{ _filterPlaceholder(_filterHasFocus) }}" disabled$="{{ !showFilter }}" has-focus="{{ _filterHasFocus }}"/>
                 <!-- HEADER TITLE -->
-                <div class="title">{{ view.titleText }}</div>
+                <div class="title">{{ view.headerTitle }}</div>
             </div>
             <!-- RIGHT BUTTON -->
             <shape-shifter id="rightIcon" shape="plus" on-tap="_rightClicked" springy></shape-shifter>

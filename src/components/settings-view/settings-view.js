@@ -15,7 +15,7 @@
             this.headerOptions.show = true;
             this.headerOptions.leftIconShape = "left";
             this.headerOptions.rightIconShape = "";
-            this.titleText = "Settings";
+            this.headerTitle = "Settings";
         },
         leftHeaderButton: function() {
             this.fire("back");
