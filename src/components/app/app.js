@@ -26,7 +26,8 @@
             close: "_dialogClose"
         },
         observers: [
-            "_saveSettings(settings.*)"
+            "_saveSettings(settings.*)",
+            "_notifyHeaderTitle(selected.name)"
         ],
         init: function(collection, settings, categories) {
             this.collection = collection;
@@ -433,6 +434,9 @@
         },
         _recordSelected: function(e) {
             this.$.selector.select(e.detail.record);
+        },
+        _notifyHeaderTitle: function() {
+            this.notifyPath("currentView.headerTitle", this.currentView && this.currentView.headerTitle);
         }
     });
 
