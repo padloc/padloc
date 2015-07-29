@@ -10,7 +10,7 @@ var gulp = require("gulp"),
     jshint = require("gulp-jshint"),
     stylish = require("jshint-stylish"),
     Q = require("q"),
-    vulcan = require("vulcanize"),
+    vulcanize = require("gulp-vulcanize"),
     rmdir = require("rimraf"),
     ncp = require("ncp").ncp,
     path = require("path"),
@@ -29,29 +29,18 @@ function compileCss() {
     return deferred.promise;
 }
 
-function build() {
-    var deferred = Q.defer();
-
-    vulcan.setOptions({
-        verbose: true,
-        inline: true,
-        csp: true,
-        input: "index.html",
-        output: "build.html",
-        excludes: {
-            styles: ["src/styles/overrides.css"],
-            scripts: ["cordova.js"]
-        }
-    }, function(err) {
-        if (err) {
-            console.error(err);
-            process.exit(1);
-        }
-        vulcan.processDocument();
-        deferred.resolve();
-    });
-
-    return deferred.promise;
+function build(dest) {
+    dest = dest || "build";
+    return gulp.src("index.html")
+        .pipe(vulcanize({
+            inlineScripts: true,
+            inlineCss: true,
+            excludes: [
+                "src/styles/overrides.css",
+                "cordova.js"
+            ]
+        }))
+        .pipe(gulp.dest(dest));
 }
 
 function lint(files) {
@@ -112,13 +101,11 @@ gulp.task("deploy", function() {
     })
     .then(function() {
         console.log("Building source...");
-        return build();
+        return build(dest);
     })
     .then(function() {
         console.log("Copying assets...");
         return Q.all([
-            Q.nfcall(ncp, "build.html", path.join(dest, "index.html")),
-            Q.nfcall(ncp, "build.js", path.join(dest, "build.js")),
             Q.nfcall(ncp, "background.js", path.join(dest, "background.js")),
             Q.nfcall(ncp, "manifest.json", path.join(dest, "manifest.json")),
             Q.nfcall(ncp, path.join("src", "crypto.js"), path.join(dest, "src", "crypto.js")),
@@ -128,6 +115,5 @@ gulp.task("deploy", function() {
     })
     .then(function() {
         console.log("Done!");
-        process.exit(0);
     });
 });

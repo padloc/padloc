@@ -13,7 +13,9 @@
     "nib": "^1.0.3",
     "q": "^1.0.1",
     "rimraf": "^2.2.8",
-    "vulcanize": "^0.4.2",
-    "yargs": "^1.3.1"
+    "yargs": "^1.3.1",
+    "gulp-vulcanize": "^6.0.1"
+  },
+  "dependencies": {
   }
 }
