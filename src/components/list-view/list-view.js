@@ -15,10 +15,6 @@
             selected: Object,
             categories: Object,
             records: Array,
-            _filteredRecords: {
-                type: Array,
-                computed: "_filtered(records.*, filterString)"
-            },
             _empty: {
                 type: Boolean,
                 computed: "_isEmpty(records.length)"
@@ -102,7 +98,10 @@
             this.fire("synchronize");
         },
         selectMarked: function() {
-            this.fire("select", {record: this._filteredRecords[this._marked]});
+            var item = this.$.list.itemForElement(this._items()[this._marked]);
+            if (item) {
+                this.fire("select", {record: item});
+            }
         },
         _section: function(name) {
             return (name || "").toUpperCase()[0];
@@ -125,11 +124,6 @@
             this._cachedItems = null;
             this.$.list.render();
         }
-        // _domChange: function() {
-        //     this._filteredRecords = this._items().map(function(item, index) {
-        //         return this.$.list.modelForElement(item).item;
-        //     }.bind(this));
-        // }
     });
 
 })(Polymer, padlock.ViewBehavior, padlock.MarkableBehavior);
