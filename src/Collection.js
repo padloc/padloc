@@ -144,7 +144,7 @@ padlock.Collection = (function(util) {
          * Empties the collection and removes the stored password
          */
         clear: function() {
-            this.records = [];
+            this.splice(0, this.records.length);
             this.uuidMap = {};
             this.store.clear();
         },
