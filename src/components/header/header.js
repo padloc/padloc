@@ -29,10 +29,12 @@
             _filterHasFocus: {
                 type: Boolean,
                 observer: "_filterHasFocusChanged"
-            }
+            },
+            _title: String
         },
         observers: [
-            "_updateIcons(view, filterActive)"
+            "_updateIcons(view, filterActive)",
+            "_updateTitle(view.headerTitle)"
         ],
         //* Updates the icon shapes for the left and right header button
         _updateIcons: function(view, filterActive) {
@@ -86,6 +88,9 @@
         },
         _filterPlaceholder: function(hasFocus) {
            return hasFocus ? "type to search..." : "tap to search...";
+        },
+        _updateTitle: function(title) {
+            this._title = title || this._title;
         }
     });
 
