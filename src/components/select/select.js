@@ -36,10 +36,14 @@
             return Polymer.dom(this).querySelectorAll("padlock-option");
         },
         attached: function() {
+            this.async(this._selectDefault.bind(this));
+        },
+        _selectDefault: function() {
+            var opts = this.options;
             // Initially select the first item with the _selected_ attribute
-            for (var i=0; i<this.children.length; i++) {
-                if (this.children[i].selected) {
-                    this.selected = this.children[i];
+            for (var i=0; i < opts.length; i++) {
+                if (opts[i].selected) {
+                    this.selected = opts[i];
                     break;
                 }
             }
