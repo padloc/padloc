@@ -15,8 +15,7 @@ window.addEventListener("WebComponentsReady", function() {
             "sync_device": "",
             "sync_connected": false,
             "sync_auto": true,
-            "default_fields": ["username", "password"],
-            "order_by": "name"
+            "default_fields": ["username", "password"]
         }, source),
         categories = new padlock.Categories(null, 3, source),
         collection = new padlock.Collection("default", store);

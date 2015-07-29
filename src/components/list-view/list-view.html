@@ -11,17 +11,16 @@
         <div class="list">
 
             <template id="list" is="dom-repeat" items="{{ records }}"
-                filter="_filter" sort="_sort" observe="name category removed">
-                <template is="dom-if" if="{{ _showSectionHeader(item.name, item.category, settings.order_by, index) }}">
-                    <div class$="{{ _sectionHeaderClass(item.category, settings.order_by) }}">
-                        <span>{{ _section(item.name, item.category, settings.order_by) }}</span>
+                filter="_filter" sort="_sort" observe="name category removed" delay="100">
+                <template is="dom-if" if="{{ _showSectionHeader(item) }}">
+                    <div class="section-header">
+                        <span>{{ _section(item.name) }}</span>
                     </div>
                 </template>
                 <div class="record-item" on-tap="_recordClicked">
                     <div class="record-item-inner">
                         <div class="record-item-name">{{ item.name }}</div>
-                        <div class$="{{ _categoryClass(item.category) }}"
-                            hidden$="{{ !_showCategory(settings.order_by) }}">{{ item.category }}</div>
+                        <div class$="{{ _categoryClass(item.category, 'record-item-category') }}">{{ item.category }}</div>
                     </div>
                 </div>
             </template>

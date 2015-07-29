@@ -21,7 +21,7 @@
             current-view="{{ currentView }}" filter-string="{{ filterString }}"></padlock-shutter>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" records="{{ records }}" filter-string="{{ filterString }}"
-            categories="{{ categories }}" selected="{{ selected }}" on-add="addRecord" settings="{{ settings }}"
+            categories="{{ categories }}" selected="{{ selected }}" on-add="addRecord"
             on-menu="openMainMenu" on-import="openImportView" on-synchronize="synchronize"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="saveRecord" on-back="recordViewBack"
@@ -41,10 +41,6 @@
         <padlock-progress id="synchronizing">synchronizing...</padlock-progress>
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
-            <padlock-select open-upwards value="{{ settings.order_by }}">
-                <padlock-option value="name">Order by Name</padlock-option>
-                <padlock-option value="category">Order by Category</padlock-option>
-            </padlock-select>
             <button on-tap="synchronize">Synchronize</button>
             <button on-tap="openSettings">Settings</button>
             <button on-tap="lock">Lock App</button>
