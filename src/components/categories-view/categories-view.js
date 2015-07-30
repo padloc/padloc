@@ -36,6 +36,7 @@
         },
         _categoryTapped: function(e) {
             this.set("record.category", e.model.item.name);
+            this._delayedBack();
         },
         //* Updates the headerTitle property with the name of the current record
         _updateHeaderTitle: function() {
@@ -86,6 +87,7 @@
                 this._updateCategories();
             }
             this.set("record.category", name);
+            this._delayedBack(200);
         },
         _doEditCategory: function(category, name, color) {
             var oldCat = {
@@ -93,13 +95,16 @@
                 color: category.color
             };
 
-            this.categories.remove(category.name);
+            if (name != category.name) {
+                this.categories.remove(category.name);
+            }
             this.categories.set(name, color);
             this.categories.save();
-            category.name = name;
-            category.color = color;
-            this.fire("categorychanged", {prev: oldCat, curr: category});
+            this.fire("categorychanged", {prev: oldCat, curr: {name: name, color: color}});
             this._updateCategories();
+            if (this.record.category == name) {
+                this._delayedBack(200);
+            }
         },
         _removeCategory: function() {
             this.$.editDialog.open = false;
@@ -112,12 +117,16 @@
             this.categories.save();
             this.fire("categorychanged", {prev: category, curr: {name: ""}});
             this._updateCategories();
+            if (!this.record.category) {
+                this._delayedBack(200);
+            }
         },
         _cancelRemove: function() {
             this.$.confirmRemoveDialog.open = false;
         },
         _selectNone: function() {
             this.set("record.category", "");
+            this._delayedBack();
         },
         _editDialogClosed: function() {
             this.$.colorSelect.open = false;
@@ -127,6 +136,9 @@
         },
         _isSelected: function(cat, currentCat) {
             return cat == currentCat;
+        },
+        _delayedBack: function(delay) {
+            this.async(this.fire.bind(this, "back"), delay || 50);
         }
     });
 

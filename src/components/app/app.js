@@ -320,9 +320,11 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _categoryChanged: function(e) {
             this._records.forEach(function(rec, ind) {
-                if (rec.category == e.detail.prev.name) {
-                    // This is necessary in order to make sure that some computed bindings are updated
-                    if (e.detail.curr.name == e.detail.prev.name) {
+                var equalsOld = rec.category == e.detail.prev.name;
+                var equalsNew = e.detail.curr.name && rec.category == e.detail.curr.name;
+                if (equalsOld || equalsNew) {
+                    if (equalsNew) {
+                        // This is necessary in order to make sure that some computed bindings are updated
                         this.notifyPath("_records." + ind + ".category", "");
                     }
 
