@@ -10,19 +10,22 @@
     <link href="categories-view.css" rel="import" type="css">
 
     <template>
-        <div class="list">
-            <div class="header">Select a category</div>
+        <div class="header">Select a category</div>
+
+        <div class="list" hidden$="{{ !_hasCategories(_categoryList.length) }}">
             <div id="noneButton" on-tap="_selectNone" class="category none" selected$="{{ _isSelected('', record.category) }}">
                 <div class="category-inner">None</div>
             </div>
-            <template is="dom-repeat" items="{{ categoryList }}">
+            <template is="dom-repeat" items="{{ _categoryList }}">
                 <div on-tap="_categoryTapped" class$="{{ _categoryClass(item.color) }}" selected$="{{ _isSelected(item.name, record.category) }}">
                     <div>{{ item.name }}</div>
                     <shape-shifter shape="more" on-tap="_editCategory"></shape-shifter>
                 </div>
             </template>
-            <!-- <button id="newButton" class="new&#45;button" on&#45;tap="_newCategory">New...</button> -->
         </div>
+
+        <button id="newButton" class="new-button" on-tap="_newCategory" hidden$="{{ _hasCategories(_categoryList.length) }}">New Category...</button>
+
         <padlock-dialog id="editDialog" on-close="_editDialogClosed">
             <div class="title" hidden$="{{ _editing }}">New Category</div>
             <padlock-select id="colorSelect" open-upwards="true">
@@ -34,11 +37,13 @@
             <button class="primary" on-tap="_editEnter">Save</button>
             <button hidden$="{{ !_editing }}" on-tap="_removeCategory">Remove</button>
         </padlock-dialog>
+
         <padlock-dialog id="confirmRemoveDialog">
             <div class="title">Are you sure you want to remove this category? The category will be removed from all other records as well.</div>
             <button on-tap="_confirmRemove" class="primary">Remove</button>
             <button on-tap="_cancelRemove">Cancel</button>
         </padlock-dialog>
+
     </template>
     <script src="categories-view.js"></script>
 </dom-module>

@@ -10,7 +10,8 @@
         properties: {
             categories: Object,
             record: Object,
-            _editing: Object
+            _editing: Object,
+            _categoryList: Array
         },
         observers: [
             "_updateHeaderTitle(record.name)"
@@ -28,7 +29,7 @@
             this._newCategory();
         },
         _updateCategories: function() {
-            this.categoryList = this.categories.asArray();
+            this._categoryList = this.categories.asArray();
         },
         show: function() {
             this._updateCategories();
@@ -139,6 +140,9 @@
         },
         _delayedBack: function(delay) {
             this.async(this.fire.bind(this, "back"), delay || 50);
+        },
+        _hasCategories: function(count) {
+            return !!count;
         }
     });
 
