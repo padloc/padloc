@@ -1,5 +1,6 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../select/select.html">
@@ -10,35 +11,33 @@
 
     <template>
         <div class="list">
-            <div id="noneButton" on-tap="selectNone" class="category none">
+            <div class="header">Select a category</div>
+            <div id="noneButton" on-tap="_selectNone" class="category none" selected$="{{ _isSelected('', record.category) }}">
                 <div class="category-inner">None</div>
             </div>
             <template is="dom-repeat" items="{{ categoryList }}">
-                <div on-tap="categoryTapped" on-hold="editCategory"
-                    class$="{{ _categoryClass(item.color) }}">
-                    <div class="category-inner">{{ item.name }}</div>
+                <div on-tap="_categoryTapped" class$="{{ _categoryClass(item.color) }}" selected$="{{ _isSelected(item.name, record.category) }}">
+                    <div>{{ item.name }}</div>
+                    <shape-shifter shape="more" on-tap="_editCategory"></shape-shifter>
                 </div>
             </template>
-            <div id="newButton" class="category new" on-tap="newCategory">
-                <div class="category-inner">
-                    New...
-                </div>
-            </div>
+            <!-- <button id="newButton" class="new&#45;button" on&#45;tap="_newCategory">New...</button> -->
         </div>
-        <padlock-dialog id="editDialog" on-close="editDialogClosed">
+        <padlock-dialog id="editDialog" on-close="_editDialogClosed">
+            <div class="title" hidden$="{{ _editing }}">New Category</div>
             <padlock-select id="colorSelect" open-upwards="true">
-                <padlock-option class="color1" selected-class="color1" value="1" selected>Select a color</padlock-option>
+                <padlock-option class="color1" selected-class="color1" value="1">Select a color</padlock-option>
                 <padlock-option class="color2" selected-class="color2" value="2">Select a color</padlock-option>
                 <padlock-option class="color3" selected-class="color3" value="3">Select a color</padlock-option>
             </padlock-select>
             <input is="padlock-input" id="nameInput" placeholder="Category Name"/>
-            <button class="primary" on-tap="editEnter">Save</button>
-            <button id="removeButton" on-tap="removeCategory">Remove</button>
+            <button class="primary" on-tap="_editEnter">Save</button>
+            <button hidden$="{{ !_editing }}" on-tap="_removeCategory">Remove</button>
         </padlock-dialog>
         <padlock-dialog id="confirmRemoveDialog">
             <div class="title">Are you sure you want to remove this category? The category will be removed from all other records as well.</div>
-            <button on-tap="confirmRemove" class="primary">Remove</button>
-            <button on-tap="cancelRemove">Cancel</button>
+            <button on-tap="_confirmRemove" class="primary">Remove</button>
+            <button on-tap="_cancelRemove">Cancel</button>
         </padlock-dialog>
     </template>
     <script src="categories-view.js"></script>

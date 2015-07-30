@@ -1,7 +1,7 @@
 /* jshint browser: true */
 /* global Polymer, padlock */
 
-(function(Polymer, ViewBehavior, platform) {
+(function(Polymer, ViewBehavior) {
     "use strict";
 
     Polymer({
@@ -9,47 +9,52 @@
         behaviors: [ViewBehavior],
         properties: {
             categories: Object,
-            record: Object
+            record: Object,
+            _editing: Object
         },
+        observers: [
+            "_updateHeaderTitle(record.name)"
+        ],
         ready: function() {
             this.headerOptions.show = true;
             this.headerOptions.leftIconShape = "cancel";
-            this.headerOptions.rightIconShape = "";
-            this.headerTitle = "Categories";
+            this.headerOptions.rightIconShape = "plus";
+            this._updateHeaderTitle();
         },
         leftHeaderButton: function() {
             this.fire("back");
         },
-        updateCategories: function() {
+        rightHeaderButton: function() {
+            this._newCategory();
+        },
+        _updateCategories: function() {
             this.categoryList = this.categories.asArray();
         },
         show: function() {
-            this.updateCategories();
+            this._updateCategories();
             ViewBehavior.show.apply(this, arguments);
         },
-        categoryTapped: function(e) {
-            this.record.category = e.model.item.name;
-            this.bounce(e.currentTarget);
+        _categoryTapped: function(e) {
+            this.set("record.category", e.model.item.name);
         },
-        //* Updates the titleText property with the name of the current record
-        _updateTitleText: function() {
-            this.titleText = this.record && this.record.name;
+        //* Updates the headerTitle property with the name of the current record
+        _updateHeaderTitle: function() {
+            this.headerTitle = this.record && this.record.name || "Categories";
         },
-        newCategory: function() {
-            this.categoryEditing = null;
+        _newCategory: function() {
+            this._editing = null;
             this.$.nameInput.value = "";
-            this.$.colorSelect.selected = this.$.colorSelect.children[0];
-            this.$.removeButton.style.display = "none";
+            this.$.colorSelect.selected = Polymer.dom(this.$.colorSelect).children[0];
             this.$.editDialog.open = true;
-            this.bounce(this.$.newButton);
         },
-        editCategory: function(event, detail, sender) {
-            var colorOptions = this.$.colorSelect.children,
-                category = sender.templateInstance.model.category;
+        _editCategory: function(e) {
+            var colorOptions = Polymer.dom(this.$.colorSelect).children,
+                category = e.model.item;
 
-            this.categoryEditing = category;
+            this._editing = category;
             this.$.nameInput.value = category.name;
 
+            // Select current color
             for (var i=0, co; i<colorOptions.length; i++) {
                 co = colorOptions[i];
                 if (parseInt(co.value, 10) == category.color) {
@@ -57,32 +62,32 @@
                     break;
                 }
             }
-            this.$.removeButton.style.display = "";
+
             this.$.editDialog.open = true;
-            this.bounce(sender);
+            e.stopPropagation();
         },
-        editEnter: function() {
+        _editEnter: function() {
             var name = this.$.nameInput.value,
                 color = parseInt(this.$.colorSelect.value, 10);
 
             if (name) {
                 this.$.editDialog.open = false;
-                if (this.categoryEditing) {
-                    this.doEditCategory(this.categoryEditing, name, color);
+                if (this._editing) {
+                    this._doEditCategory(this._editing, name, color);
                 } else {
-                    this.doNewCategory(name, color);
+                    this._doNewCategory(name, color);
                 }
             }
         },
-        doNewCategory: function(name, color) {
+        _doNewCategory: function(name, color) {
             if (!this.categories.get(name)) {
                 this.categories.set(name, color);
                 this.categories.save();
-                this.categoryList.push({name: name, color: color});
+                this._updateCategories();
             }
-            this.record.category = name;
+            this.set("record.category", name);
         },
-        doEditCategory: function(category, name, color) {
+        _doEditCategory: function(category, name, color) {
             var oldCat = {
                 name: category.name,
                 color: category.color
@@ -94,44 +99,35 @@
             category.name = name;
             category.color = color;
             this.fire("categorychanged", {prev: oldCat, curr: category});
+            this._updateCategories();
         },
-        removeCategory: function() {
+        _removeCategory: function() {
             this.$.editDialog.open = false;
             this.$.confirmRemoveDialog.open = true;
         },
-        confirmRemove: function() {
-            var category = this.categoryEditing;
-
+        _confirmRemove: function() {
+            var category = this._editing;
             this.$.confirmRemoveDialog.open = false;
-            this.categories.remove(this.categoryEditing.name);
+            this.categories.remove(this._editing.name);
             this.categories.save();
-            this.fire("categorychanged", {prev: category, curr: {}});
-            this.updateCategories();
+            this.fire("categorychanged", {prev: category, curr: {name: ""}});
+            this._updateCategories();
         },
-        cancelRemove: function() {
+        _cancelRemove: function() {
             this.$.confirmRemoveDialog.open = false;
         },
-        selectNone: function() {
-            this.record.category = "";
-            this.bounce(this.$.noneButton);
+        _selectNone: function() {
+            this.set("record.category", "");
         },
-        bounce: function(el) {
-            var prefix = platform.getVendorPrefix().css;
-            // Apparently firefox doesn't want a prefix when setting styles directly
-            prefix = prefix == "-moz-" ? "" : prefix;
-            el.style[prefix + "animation"] = "none";
-            // Trigger style recalculation
-            // jshint expr: true
-            el.offsetLeft;
-            // jshint expr: false
-            el.style[prefix + "animation"] = "bounce 0.5s ease 0s both";
-        },
-        editDialogClosed: function() {
+        _editDialogClosed: function() {
             this.$.colorSelect.open = false;
         },
         _categoryClass: function(color) {
             return "category color" + color;
+        },
+        _isSelected: function(cat, currentCat) {
+            return cat == currentCat;
         }
     });
 
-})(Polymer, padlock.ViewBehavior, padlock.platform);
+})(Polymer, padlock.ViewBehavior);

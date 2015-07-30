@@ -33,6 +33,10 @@
             this.collection = collection;
             this.collection.addEventListener("update", function(e) {
                 e.detail.slice(2).forEach(function(record) {
+                    // Recent changes require that the category property be not undefined
+                    if (!record.removed && !record.category) {
+                        record.category = "";
+                    }
                     // Add any categories that are not registered yet
                     if (record.category && !this.categories.get(record.category)) {
                         this.categories.set(record.category, this.categories.autoColor());
@@ -302,17 +306,6 @@
                 event.preventDefault();
             }
         },
-        //* Adds any categories inside of _records_ that don't exist yet
-        updateCategories: function(records) {
-            records.forEach(function(rec) {
-                if (rec.category && !this.categories.get(rec.category)) {
-                    this.categories.set(rec.category, this.categories.autoColor());
-                }
-            }.bind(this));
-
-            this.categories.save();
-            this.$.categoriesView.updateCategories();
-        },
         openCategories: function() {
             this.openView(this.$.categoriesView, {animation: "slideInFromBottom"}, {animation: "slideOutToBottom"});
         },
@@ -321,16 +314,20 @@
                 animation: "slideInFromBottom",
                 endCallback: this.saveRecord.bind(this)
             }, {
-                animation: "fadeOut"
+                animation: "slideOutToBottom"
             });
         },
-        categoryChanged: function(event, detail) {
-            this.collection.records.forEach(function(rec) {
-                if (rec.category == detail.prev.name) {
-                    rec.category = detail.curr.name;
-                    rec.catColor = detail.curr.color;
+        categoryChanged: function(e) {
+            this.records.forEach(function(rec, ind) {
+                if (rec.category == e.detail.prev.name) {
+                    // This is necessary in order to make sure that some computed bindings are updated
+                    if (e.detail.curr.name == e.detail.prev.name) {
+                        this.notifyPath("records." + ind + ".category", "");
+                    }
+
+                    this.set("records." + ind + ".category", e.detail.curr.name);
                 }
-            });
+            }.bind(this));
         },
         //* Synchronizes the data with a remote source
         synchronize: function(remotePassword) {
