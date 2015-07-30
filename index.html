@@ -5,28 +5,53 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
         <link rel="shortcut icon" type="image/png" href="assets/icon16.png"/>
 
+        <!-- Fonts -->
+        <link href="../../styles/fonts.css" rel="stylesheet" type="text/css">
+        <style>
+            html { background: #59c6ff; }
+        </style>
+
         <!-- Overrides for platform-specific styling -->
-        <link href="src/styles/overrides.css" rel="stylesheet" type="text/css">
+        <link href="overrides.css" rel="stylesheet" type="text/css">
 
         <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 
         <link rel="import" href="src/padlock.html">
-
-        <!-- Custom app element -->
         <link rel="import" href="src/components/app/app.html">
 
         <!-- This is the ENTRY POINT -->
-        <script src="src/init.js"></script>
-        <style>
-            html {
-                background: #59c6ff;
-            }
-        </style>
+        <script>
+            /* global padlock, chrome */
+            window.addEventListener("WebComponentsReady", function() {
+                "use strict";
+
+                var source = (typeof chrome !== "undefined") && chrome.storage ?
+                    new padlock.ChromeStorageSource() : new padlock.LocalStorageSource(),
+                    store = new padlock.Store(source),
+                    cloudHost = "https://cloud.padlock.io/",
+                    settings = new padlock.Settings({
+                        "sync_host": cloudHost,
+                        "sync_email": "",
+                        "sync_key": "",
+                        "sync_device": "",
+                        "sync_connected": false,
+                        "sync_auto": true,
+                        "default_fields": ["username", "password"]
+                    }, source),
+                    categories = new padlock.Categories(null, 3, source),
+                    collection = new padlock.Collection("default", store);
+
+                var app = new padlock.App(collection, settings, categories);
+                document.body.appendChild(app);
+            });
+        </script>
 
         <!-- Load the cordova api if available -->
         <script src="cordova.js"></script>
         <script>
+            /* global cordova */
             document.addEventListener("deviceready", function() {
+                "use strict";
                 navigator.splashscreen.hide();
                 cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
             });
@@ -34,8 +59,5 @@
 
     </head>
     <body>
-
-        <padlock-app></padlock-app>
-
     </body>
 </html>

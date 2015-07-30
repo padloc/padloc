@@ -1,10 +1,10 @@
 /* jshint browser: true */
 /* global Polymer, padlock */
 
-(function(Polymer, platform, CloudSource) {
+padlock.App = (function(Polymer, platform, CloudSource) {
     "use strict";
 
-    Polymer({
+    return Polymer({
         is: "padlock-app",
         properties: {
             settings: Object,
@@ -29,6 +29,9 @@
             "_saveSettings(settings.*)",
             "_notifyHeaderTitle(_selected.name)"
         ],
+        factoryImpl: function() {
+            this.init.apply(this, arguments);
+        },
         init: function(collection, settings, categories) {
             this.collection = collection;
             this.collection.addEventListener("update", function(e) {

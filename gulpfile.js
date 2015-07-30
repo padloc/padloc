@@ -36,7 +36,7 @@ function build(dest) {
             inlineScripts: true,
             inlineCss: true,
             excludes: [
-                "src/styles/overrides.css",
+                "overrides.css",
                 "cordova.js"
             ]
         }))
@@ -107,6 +107,8 @@ gulp.task("deploy", function() {
         console.log("Copying assets...");
         return Q.all([
             Q.nfcall(ncp, "background.js", path.join(dest, "background.js")),
+            Q.nfcall(ncp, "cordova.js", path.join(dest, "cordova.js")),
+            Q.nfcall(ncp, "overrides.css", path.join(dest, "overrides.css")),
             Q.nfcall(ncp, "manifest.json", path.join(dest, "manifest.json")),
             Q.nfcall(ncp, path.join("src", "crypto.js"), path.join(dest, "src", "crypto.js")),
             Q.nfcall(ncp, path.join("lib", "sjcl.js"), path.join(dest, "lib", "sjcl.js")),
