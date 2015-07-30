@@ -10,13 +10,13 @@
             settings: Object,
             categories: Object,
             collection: Object,
-            filterString: String,
-            selected: {
+            _filterString: String,
+            _selected: {
                 type: Object,
                 observer: "_selectedChanged"
             },
-            currentView: Object,
-            records: {
+            _currentView: Object,
+            _records: {
                 type: Array,
                 value: function() { return []; }
             }
@@ -27,7 +27,7 @@
         },
         observers: [
             "_saveSettings(settings.*)",
-            "_notifyHeaderTitle(selected.name)"
+            "_notifyHeaderTitle(_selected.name)"
         ],
         init: function(collection, settings, categories) {
             this.collection = collection;
@@ -43,7 +43,7 @@
                     }
                 }.bind(this));
                 this.categories.save();
-                this.splice.apply(this, ["records"].concat(e.detail));
+                this.splice.apply(this, ["_records"].concat(e.detail));
             }.bind(this));
             this.settings = settings;
             this.categories = categories;
@@ -52,20 +52,20 @@
 
             this.categories.fetch();
 
-            this.collection.exists({success: this.initView.bind(this), fail: this.initView.bind(this, false)});
+            this.collection.exists({success: this._initView.bind(this), fail: this._initView.bind(this, false)});
 
             // If we want to capture all keydown events, we have to add the listener
             // directly to the document
-            document.addEventListener("keydown", this.keydown.bind(this), false);
+            document.addEventListener("keydown", this._keydown.bind(this), false);
 
             // Listen for android back button
-            document.addEventListener("backbutton", this.back.bind(this), false);
+            document.addEventListener("backbutton", this._back.bind(this), false);
 
             // Lock app when it goes into the background
-            document.addEventListener("resign", this.lock.bind(this), false);
-            document.addEventListener("pause", this.lock.bind(this), false);
+            document.addEventListener("resign", this._lock.bind(this), false);
+            document.addEventListener("pause", this._lock.bind(this), false);
         },
-        initView: function(collExists) {
+        _initView: function(collExists) {
             var isTouch = platform.isTouch();
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one
@@ -75,12 +75,12 @@
             }
 
             // open the first view
-            this.openView(this.$.listView, { animation: "" });
+            this._openView(this.$.listView, { animation: "" });
         },
-        pwdEnter: function(event, detail) {
-            this.unlock(detail.password);
+        _pwdEnter: function(event, detail) {
+            this._unlock(detail.password);
         },
-        newPwd: function(event, detail) {
+        _newPwd: function(event, detail) {
             this.collection.setPassword(detail.password);
             this.$.shutter.open = true;
             setTimeout(function() {
@@ -88,7 +88,7 @@
             }.bind(this), 500);
         },
         //* Tries to unlock the current collection with the provided password
-        unlock: function(password) {
+        _unlock: function(password) {
             if (this.decrypting) {
                 // We're already busy decrypting the data, so no unlocking right now!
                 return;
@@ -102,7 +102,7 @@
                 this.decrypting = false;
                 setTimeout(function() {
                     if (this.settings.sync_connected && this.settings.sync_auto) {
-                        this.synchronize();
+                        this._synchronize();
                     }
                     this.$.shutter.open = true;
                 }.bind(this), 100);
@@ -114,7 +114,7 @@
             }.bind(this)});
         },
         //* Locks the collection and opens the lock view
-        lock: function() {
+        _lock: function() {
             this.$.mainMenu.open = false;
 
             // Remove the stored password from the remote source if we've created on yet
@@ -125,21 +125,21 @@
             this.$.shutter.open = false;
             setTimeout(this.collection.clear.bind(this.collection), 500);
         },
-        //* Change handler for the selected property; Opens the record view when record is selected
+        //* Change handler for the _selected property; Opens the record view when record is selected
         _selectedChanged: function() {
-            if (this.selected) {
-                this.openView(this.$.recordView);
+            if (this._selected) {
+                this._openView(this.$.recordView);
                 this.$.shutter.blurFilterInput();
             }
         },
         /**
          * Opens the provided _view_
          */
-        openView: function(view, inOpts, outOpts) {
+        _openView: function(view, inOpts, outOpts) {
             var views = Polymer.dom(this.root).querySelectorAll(".view"),
                 // Choose left or right animation based on the order the views
                 // are included in the app
-                back = views.indexOf(view) < views.indexOf(this.currentView);
+                back = views.indexOf(view) < views.indexOf(this._currentView);
 
             // Unless otherwise specified, use a right-to-left animation when navigating 'forward'
             // and a left-to-right animation when animating 'back'
@@ -153,33 +153,33 @@
             }
 
             // Hide current view (if any)
-            if (this.currentView) {
+            if (this._currentView) {
                 // Start the in animation after a small delay
                 setTimeout(view.show.bind(view, inOpts), 100);
-                this.currentView.hide(outOpts);
+                this._currentView.hide(outOpts);
             } else {
                 view.show(inOpts);
             }
-            this.currentView = view;
+            this._currentView = view;
         },
         //* Saves changes to the currently selected record (if any)
-        saveRecord: function() {
-            var record = this.selected;
+        _saveRecord: function() {
+            var record = this._selected;
             if (record) {
                 // Save the changes
                 this.collection.save({record: record});
                 if (this.settings.sync_connected && this.settings.sync_auto) {
-                    this.synchronize();
+                    this._synchronize();
                 }
             }
         },
         //* Opens the dialog for adding a new record
-        addRecord: function() {
+        _addRecord: function() {
             this.$.addInput.value = "";
             this.$.addDialog.open = true;
             // this.$.addInput.focus();
         },
-        confirmAddRecord: function() {
+        _confirmAddRecord: function() {
             this.$.addDialog.open = false;
             var record = {
                 name: this.$.addInput.value,
@@ -193,55 +193,53 @@
 
             // select the newly added record (which will open the record view)
             this.$.selector.select(record);
-            this.saveRecord();
+            this._saveRecord();
         },
         //* Deletes the currently selected record (if any)
-        deleteRecord: function() {
-            this.collection.remove(this.selected);
+        _deleteRecord: function() {
+            this.collection.remove(this._selected);
             this.collection.save();
-            this.notifyPath("selected.removed", true);
-            this.recordViewBack();
-            // var index = this.records.indexOf(this.selected);
-            // this.notifyPath("records." + index + ".removed", true);
+            this.notifyPath("_selected.removed", true);
+            this._recordViewBack();
             // Auto sync
             if (this.settings.sync_connected && this.settings.sync_auto) {
-                this.synchronize();
+                this._synchronize();
             }
         },
-        recordViewBack: function() {
-            this.openView(this.$.listView, null, {
+        _recordViewBack: function() {
+            this._openView(this.$.listView, null, {
                 endCallback: function() {
                     this.$.selector.deselect();
                 }.bind(this)
             });
         },
-        openMainMenu: function() {
+        _openMainMenu: function() {
             this.$.mainMenu.open = true;
         },
-        openSettings: function() {
+        _openSettings: function() {
             this.$.mainMenu.open = false;
             this.$.notConnectedDialog.open = false;
-            this.openView(this.$.settingsView);
+            this._openView(this.$.settingsView);
         },
-        settingsBack: function() {
-            this.openView(this.$.listView);
+        _settingsBack: function() {
+            this._openView(this.$.listView);
         },
-        openImportView: function() {
-            this.openView(this.$.importView);
+        _openImportView: function() {
+            this._openView(this.$.importView);
         },
         //* Add the records imported with the import view to the collection
-        saveImportedRecords: function(event, detail) {
+        _saveImportedRecords: function(event, detail) {
             this.collection.add(detail.records);
             this.collection.save();
-            this.alert(detail.records.length + " records imported!");
-            this.openView(this.$.listView);
+            this._alert(detail.records.length + " records imported!");
+            this._openView(this.$.listView);
             // Auto sync
             if (this.settings.sync_connected && this.settings.sync_auto) {
-                this.synchronize();
+                this._synchronize();
             }
         },
-        importBack: function() {
-            this.openView(this.$.listView);
+        _importBack: function() {
+            this._openView(this.$.listView);
         },
         //* Triggers the headers scrim to match the scrim of the opened dialog
         _dialogOpen: function() {
@@ -252,15 +250,15 @@
             this.$.shutter.scrim = false;
         },
         //* Show an alert dialog with the provided message
-        alert: function(msg) {
+        _alert: function(msg) {
             this.$.alertText.innerHTML = msg;
             this.$.alertDialog.open = true;
         },
-        dismissAlert: function() {
+        _dismissAlert: function() {
             this.$.alertDialog.open = false;
         },
         //* Keyboard shortcuts
-        keydown: function(event) {
+        _keydown: function(event) {
             var shortcut;
 
             // If the shutter is closed, ignore all shortcuts
@@ -269,34 +267,34 @@
             }
 
             // CTRL/CMD + F -> Filter
-            if ((event.ctrlKey || event.metaKey) && event.keyCode === 70 && this.currentView.headerOptions.showFilter) {
+            if ((event.ctrlKey || event.metaKey) && event.keyCode === 70 && this._currentView.headerOptions.showFilter) {
                 shortcut = this.$.shutter.focusFilterInput.bind(this.$.shutter);
             }
             // DOWN -> Mark next
             else if (event.keyCode == 40) {
-                if (this.currentView.markNext) {
-                    shortcut = this.currentView.markNext.bind(this.currentView);
+                if (this._currentView.markNext) {
+                    shortcut = this._currentView.markNext.bind(this._currentView);
                 }
             }
             // UP -> Mark previous
             else if (event.keyCode == 38) {
-                if (this.currentView.markPrev) {
-                    shortcut = this.currentView.markPrev.bind(this.currentView);
+                if (this._currentView.markPrev) {
+                    shortcut = this._currentView.markPrev.bind(this._currentView);
                 }
             }
             // ENTER -> Select marked
             else if (event.keyCode == 13) {
-                if (this.currentView.selectMarked) {
-                    shortcut = this.currentView.selectMarked.bind(this.currentView);
+                if (this._currentView.selectMarked) {
+                    shortcut = this._currentView.selectMarked.bind(this._currentView);
                 }
             }
             // ESCAPE -> Back
             else if (event.keyCode == 27) {
-                shortcut = this.back.bind(this);
+                shortcut = this._back.bind(this);
             }
             // CTRL/CMD + C -> Copy
             else if ((event.ctrlKey || event.metaKey) && event.keyCode === 67 &&
-                this.currentView == this.$.recordView) {
+                this._currentView == this.$.recordView) {
                 shortcut = this.$.recordView.copyToClipboard.bind(this.$.recordView);
             }
 
@@ -306,31 +304,31 @@
                 event.preventDefault();
             }
         },
-        openCategories: function() {
-            this.openView(this.$.categoriesView, {animation: "slideInFromBottom"}, {animation: "slideOutToBottom"});
+        _openCategories: function() {
+            this._openView(this.$.categoriesView, {animation: "slideInFromBottom"}, {animation: "slideOutToBottom"});
         },
-        categoriesDone: function() {
-            this.openView(this.$.recordView, {
+        _categoriesDone: function() {
+            this._openView(this.$.recordView, {
                 animation: "slideInFromBottom",
-                endCallback: this.saveRecord.bind(this)
+                endCallback: this._saveRecord.bind(this)
             }, {
                 animation: "slideOutToBottom"
             });
         },
-        categoryChanged: function(e) {
-            this.records.forEach(function(rec, ind) {
+        _categoryChanged: function(e) {
+            this._records.forEach(function(rec, ind) {
                 if (rec.category == e.detail.prev.name) {
                     // This is necessary in order to make sure that some computed bindings are updated
                     if (e.detail.curr.name == e.detail.prev.name) {
-                        this.notifyPath("records." + ind + ".category", "");
+                        this.notifyPath("_records." + ind + ".category", "");
                     }
 
-                    this.set("records." + ind + ".category", e.detail.curr.name);
+                    this.set("_records." + ind + ".category", e.detail.curr.name);
                 }
             }.bind(this));
         },
         //* Synchronizes the data with a remote source
-        synchronize: function(remotePassword) {
+        _synchronize: function(remotePassword) {
             // Ignore the remotePassword argument if it is not a string
             remotePassword = typeof remotePassword === "string" ? remotePassword : undefined;
             // In case this was called from the menu
@@ -368,7 +366,7 @@
                                 "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
                                 "If the problem persists, try to disconnect and reconnect under settings!" :
                                 "An error occurred while synchronizing. Please try again later!";
-                            this.alert(msg);
+                            this._alert(msg);
                         }
                         this.$.synchronizing.hide();
                     }.bind(this)
@@ -377,15 +375,15 @@
                 this.$.notConnectedDialog.open = true;
             }
         },
-        dismissNotConnectedDialog: function() {
+        _dismissNotConnectedDialog: function() {
             this.$.notConnectedDialog.open = false;
         },
-        remotePasswordEntered: function() {
+        _remotePasswordEntered: function() {
             this.$.remotePasswordDialog.open = false;
-            this.synchronize(this.$.remotePasswordInput.value);
+            this._synchronize(this.$.remotePasswordInput.value);
             this.$.remotePasswordInput.value = "";
         },
-        confirmUpdateRemotePassword: function() {
+        _confirmUpdateRemotePassword: function() {
             this.$.updateRemotePasswordDialog.open = false;
             this.$.synchronizing.show();
             this.collection.save({
@@ -394,23 +392,23 @@
                 success: this.$.synchronizing.hide.bind(this.$.synchronizing),
                 fail: function() {
                     this.$.synchronizing.hide();
-                    this.alert("Failed to update remote password. Try again later!");
+                    this._alert("Failed to update remote password. Try again later!");
                 }.bind(this)
             });
         },
-        cancelUpdateRemotePassword: function() {
+        _cancelUpdateRemotePassword: function() {
             this.$.updateRemotePasswordDialog.open = false;
         },
         //* Back method. Chooses the right back method based on the current view
-        back: function() {
-            this.currentView.back();
+        _back: function() {
+            this._currentView.back();
             var dialogs = Polymer.dom(this.root).querySelectorAll("padlock-dialog");
             Array.prototype.forEach.call(dialogs, function(dialog) {
                 dialog.open = false;
             });
 
             // If we're in the list view, clear the filter input and restore the full list
-            if (this.currentView == this.$.listView) {
+            if (this._currentView == this.$.listView) {
                 this.$.shutter.cancelFilter();
             }
         },
@@ -424,16 +422,16 @@
                 this.notifyPath("settings." + prop, this.settings[prop]);
             }
         },
-        reset: function() {
+        _reset: function() {
             this.$.shutter.startMode = true;
             this.$.shutter.open = false;
-            this.openView(this.$.listView, {animation: ""}, {animation: ""});
+            this._openView(this.$.listView, {animation: ""}, {animation: ""});
         },
         _recordSelected: function(e) {
             this.$.selector.select(e.detail.record);
         },
         _notifyHeaderTitle: function() {
-            this.notifyPath("currentView.headerTitle", this.currentView && this.currentView.headerTitle);
+            this.notifyPath("_currentView.headerTitle", this._currentView && this._currentView.headerTitle);
         }
     });
 
