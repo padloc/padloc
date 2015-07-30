@@ -11,10 +11,16 @@
                 value: false,
                 notify: true,
                 observer: "_valueChanged"
-            }
+            },
+            notap: Boolean
         },
         listeners: {
-            tap: "toggle"
+            tap: "_tap"
+        },
+        _tap: function() {
+            if (!this.notap) {
+                this.toggle();
+            }
         },
         toggle: function() {
             this.value = !this.value;

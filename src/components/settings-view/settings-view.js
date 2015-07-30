@@ -115,12 +115,8 @@
             this.$.alertDialog.open = false;
         },
         //* Tap handler for the auto sync row. Toggles the auto sync toggle element
-        _toggleAutoSync: function(event) {
-            // Make sure the event is not coming from the toggle element itself as this
-            // would result in the element being toggled twice
-            if (event.target != this.$.autoSyncToggle) {
-                this.$.autoSyncToggle.toggle();
-            }
+        _toggleAutoSync: function() {
+            this.$.autoSyncToggle.toggle();
         },
         _import: function() {
             this.fire("import");

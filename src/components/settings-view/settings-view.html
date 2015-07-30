@@ -24,7 +24,7 @@
             <button class="settings-button" on-tap="_resetRemoteData"
                 hidden$="{{ !settings.sync_connected }}">Reset Remote Data</button>
             <div class="settings-row" hidden$="{{ !settings.sync_connected }}" on-tap="_toggleAutoSync">
-                <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}"></padlock-toggle>
+                <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" notap></padlock-toggle>
             </div>
         </div>
         <div class="section">
