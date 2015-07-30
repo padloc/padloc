@@ -1,12 +1,12 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../view/view.html">
 <link rel="import" href="../input/input.html">
 
-<polymer-element name="padlock-start-view" on-keydown="{{ keyDown }}">
+<dom-module id="padlock-start-view">
+
+    <link href="start-view.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="start-view.css" rel="stylesheet" type="text/css">
         <!-- WRAPPER (for centering) -->
         <div class="wrapper">
             <!-- HEADER -->
@@ -15,15 +15,17 @@
             </div>
             <!-- NEW PASSWORD INPUT -->
             <input is="padlock-input" class="ghost pwdinput-first" type="password" placeholder="Enter Master Password"
-                id="pwdInput" selectAllOnFocus="true"/>
+                id="pwdInput" on-enter="enter" selectAllOnFocus />
             <!-- CONFIRM PASSWORD INPUT -->
             <input is="padlock-input" class="ghost pwdinput-second" type="password" placeholder="Confirm Master Password"
-                id="confirmInput" selectAllOnFocus="true"/>
+                id="confirmInput" on-enter="enter" selectAllOnFocus />
             <!-- ENTER BUTTON -->
-            <button class="enter-button ghost" on-tap="{{ enter }}">OK</button>
+            <button class="enter-button ghost" on-tap="enter">OK</button>
             <!-- ERROR MESSAGE -->
             <div class="error-message">Passwords do not match!</div>
         </div>
     </template>
+
     <script src="start-view.js"></script>
-</polymer>
+
+</dom-module>

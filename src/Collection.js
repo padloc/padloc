@@ -18,13 +18,14 @@ padlock.Collection = (function(util) {
         this.records = [];
         // This is to keep track of all existing records via their uuid.
         this.uuidMap = {};
+        this.dispatcher = document.createElement("div");
     };
 
     Collection.prototype = {
         /**
          * Fetches the data for this collection
          * @param {Object} opts Object containing options for the call. Options may include:
-         * 
+         *
          * - password: Password to be used for decyrption
          * - success:  Success callback. Will be passed the collection as only argument
          * - fail:     Fail callback
@@ -36,7 +37,7 @@ padlock.Collection = (function(util) {
         /**
          * Saves the collections contents
          * @param {Object} opts Object containing options for the call. Options may include:
-         * 
+         *
          * - success:  Success callback. Will be passed the collection as only argument
          * - fail:     Fail callback
          * - source:   Source to to be used. If not provided, the stores default source is used.
@@ -56,13 +57,19 @@ padlock.Collection = (function(util) {
         /**
          * Destroy the collection and delete its data
          * @param {Object} opts Object containing options for the call. Options may include:
-         * 
+         *
          * - success:  Success callback. Will be passed the collection as only argument
          * - fail:     Fail callback
          * - source:   Source to delete this collection from. If not provided, the stores default source is used.
          */
         destroy: function(opts) {
             this.store.destroy(this, opts);
+        },
+        splice: function() {
+            var rem = Array.prototype.splice.apply(this.records, arguments);
+            var e = new CustomEvent("update", {detail: Array.prototype.slice.apply(arguments)});
+            this.dispatcher.dispatchEvent(e);
+            return rem;
         },
         /**
          * Adds a record or an array of records to the collection. If the record does not
@@ -72,7 +79,7 @@ padlock.Collection = (function(util) {
          * @param {Object}  rec A record object or an array of record objects to be added to the collection
          */
         add: function(rec) {
-            var records = this.records.slice();
+            var records = [];
 
             rec = util.isArray(rec) ? rec : [rec];
             rec.forEach(function(r) {
@@ -96,7 +103,7 @@ padlock.Collection = (function(util) {
                 }
             }.bind(this));
 
-            this.records = records;
+            this.splice.apply(this, [this.records.length, 0].concat(records));
         },
         /**
          * Removes a record from this collection. This does not actually remove the record from
@@ -128,7 +135,7 @@ padlock.Collection = (function(util) {
          * - success:  Success callback. Will be passed _true_ or _false_ as only argument,
          *             depending on the outcome.
          * - fail:     Fail callback
-         * - source:   Source to check for the collection. If not provided, _defaultSource_ is used. 
+         * - source:   Source to check for the collection. If not provided, _defaultSource_ is used.
          */
         exists: function(opts) {
             this.store.exists(this, opts);
@@ -137,7 +144,7 @@ padlock.Collection = (function(util) {
          * Empties the collection and removes the stored password
          */
         clear: function() {
-            this.records = [];
+            this.splice(0, this.records.length);
             this.uuidMap = {};
             this.store.clear();
         },
@@ -162,7 +169,7 @@ padlock.Collection = (function(util) {
             var fetchRemote = function() {
                 this.fetch({source: source, success: saveLocal, fail: opts.fail, password: opts.remotePassword});
             }.bind(this);
-            
+
             // Save data to local source
             var saveLocal = function() {
                 this.save({success: saveRemote, fail: opts.fail});
@@ -185,6 +192,9 @@ padlock.Collection = (function(util) {
         //* The password associated with the default source
         get defaultPassword() {
             return this.store.defaultSource.password;
+        },
+        addEventListener: function() {
+            this.dispatcher.addEventListener.apply(this.dispatcher, arguments);
         }
     };
 

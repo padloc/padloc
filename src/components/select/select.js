@@ -3,28 +3,52 @@
 (function(Polymer, platform) {
     "use strict";
 
-    Polymer("padlock-select", {
-        //* Determines wheter the select options are shown or not
-        open: false,
-        //* Text shown if no option is selected
-        label: "tap to select",
-        //* The selected element
-        selected: null,
-        //* If _true_, options will expand upwards instead of downwards
-        openUpwards: false,
+    Polymer({
+        is: "padlock-select",
+        properties: {
+            //* Determines wheter the select options are shown or not
+            open: {
+                type: Boolean,
+                value: false,
+                observer: "_openChanged"
+            },
+            //* Text shown if no option is selected
+            label: {
+                type: String,
+                value: "tap to select"
+            },
+            //* The selected element
+            selected: {
+                type: Object,
+                notify: true,
+                observer: "_selectedChanged"
+            },
+            //* Value of the selected option
+            value: {
+                type: String,
+                notify: true,
+                observer: "_valueChanged"
+            },
+            //* If _true_, options will expand upwards instead of downwards
+            openUpwards: Boolean
+        },
         get options() {
-            return this.querySelectorAll("padlock-option");
+            return Polymer.dom(this).querySelectorAll("padlock-option");
         },
         attached: function() {
+            this.async(this._selectDefault.bind(this));
+        },
+        _selectDefault: function() {
+            var opts = this.options;
             // Initially select the first item with the _selected_ attribute
-            for (var i=0; i<this.children.length; i++) {
-                if (this.children[i].selected) {
-                    this.selected = this.children[i];
+            for (var i=0; i < opts.length; i++) {
+                if (opts[i].selected) {
+                    this.selected = opts[i];
                     break;
                 }
             }
         },
-        openChanged: function() {
+        _openChanged: function() {
             var options = this.options,
                 prefix = platform.getVendorPrefix().css,
                 // We're assuming all rows have the same height
@@ -54,21 +78,27 @@
         toggleOpen: function() {
             this.open = !this.open;
         },
-        optionTap: function(event) {
+        _optionTap: function(event) {
             this.selected = event.target;
             this.open = false;
         },
-        selectedChanged: function() {
-            this.value = this.selected.value;
+        _selectedChanged: function() {
+            this.value = this.selected && this.selected.value;
         },
-        valueChanged: function() {
+        _valueChanged: function() {
             this.selectValue(this.value);
         },
         //* Selects the first option with the given value
         selectValue: function(value) {
-            this.selected = Array.prototype.filter.call(this.children, function(option) {
+            this.selected = Array.prototype.filter.call(Polymer.dom(this).children, function(option) {
                 return option.value == value;
             })[0];
+        },
+        _label: function(selected, label) {
+            return selected ? selected.innerHTML : label;
+        },
+        _shape: function(open) {
+            return open ? "cancel" : "down";
         }
     });
 

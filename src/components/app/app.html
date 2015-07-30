@@ -10,75 +10,73 @@
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../progress/progress.html">
-<link href="../../styles/fonts.css" rel="stylesheet" type="text/css">
 
-<polymer-element name="padlock-app" on-showheader="{{ showHeader }}" touch-action="none" on-tap on-hold
-    on-hideheader="{{ hideHeader }}" on-open="{{ dialogOpen }}" on-close="{{ dialogClose }}"
-    attributes="settings categories collection" constructor="Padlock">
+<dom-module id="padlock-app">
+
+    <link href="app.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="app.css" rel="stylesheet" type="text/css">
-        <padlock-shutter id="shutter" on-newpwd="{{ newPwd }}" on-pwdenter="{{ pwdEnter }}"
-            currentView="{{ currentView }}" filterString="{{ filterString }}"></padlock-shutter>
+        <padlock-shutter id="shutter" on-newpwd="_newPwd" on-pwdenter="_pwdEnter"
+            current-view="{{ _currentView }}" filter-string="{{ _filterString }}"></padlock-shutter>
         <!-- LIST VIEW -->
-        <padlock-list-view id="listView" class="view" collection="{{ collection }}" filterString="{{ filterString }}"
-            categories="{{ categories }}" selected="{{ selected }}" on-add="{{ addRecord }}" settings="{{ settings }}"
-            on-menu="{{ openMainMenu }}" on-import="{{ openImportView }}" on-synchronize="{{ synchronize }}"></padlock-list-view>
+        <padlock-list-view id="listView" class="view" records="{{ _records }}" filter-string="{{ _filterString }}"
+            categories="{{ categories }}" selected="{{ _selected }}" on-select="_recordSelected" on-add="_addRecord"
+            on-menu="_openMainMenu" on-import="_openImportView" on-synchronize="_synchronize"></padlock-list-view>
         <!-- RECORD VIEW -->
-        <padlock-record-view id="recordView" class="view" on-save="{{ saveRecord }}" on-back="{{ recordViewBack }}"
-            on-delete="{{ deleteRecord }}" on-categories="{{ openCategories }}"></padlock-record-view>
+        <padlock-record-view id="recordView" class="view" on-save="_saveRecord" on-back="_recordViewBack" record="{{ _selected }}"
+            on-delete="_deleteRecord" on-categories="_openCategories" categories="{{ categories }}"></padlock-record-view>
         <!-- Settings VIEW -->
-        <padlock-settings-view id="settingsView" class="view" on-back="{{ settingsBack }}"
-            on-import="{{ openImportView }}" on-reset="{{ reset }}"
+        <padlock-settings-view id="settingsView" class="view" on-back="_settingsBack"
+            on-import="_openImportView" on-reset="_reset"
             collection="{{ collection }}" settings="{{ settings }}"></padlock-settings-view>
         <!-- IMPORT VIEW -->
-        <padlock-import-view id="importView" class="view" on-import="{{ saveImportedRecords }}"
-            on-back="{{ importBack }}"></padlock-import-view>
+        <padlock-import-view id="importView" class="view" on-import="_saveImportedRecords"
+            on-back="_importBack"></padlock-import-view>
         <!-- CATEGORIES VIEW -->
-        <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ selected }}"
-            on-back="{{ categoriesDone }}" on-categorychanged="{{ categoryChanged }}"></padlock-categories-view>
+        <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ _selected }}"
+            on-back="_categoriesDone" on-categorychanged="_categoryChanged"></padlock-categories-view>
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id="decrypting">decrypting...</padlock-progress>
         <padlock-progress id="synchronizing">synchronizing...</padlock-progress>
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu">
-            <padlock-select openUpwards="true" value="{{ settings.order_by }}">
-                <padlock-option value="name">Order by Name</padlock-option>
-                <padlock-option value="category">Order by Category</padlock-option>
-            </padlock-select>
-            <button on-tap="{{ synchronize }}">Synchronize</button>
-            <button on-tap="{{ openSettings }}">Settings</button>
-            <button on-tap="{{ lock }}">Lock App</button>
+            <button on-tap="_synchronize">Synchronize</button>
+            <button on-tap="_openSettings">Settings</button>
+            <button on-tap="_lock">Lock App</button>
         </padlock-dialog>
         <!-- ADD RECORD -->
         <padlock-dialog id="addDialog">
             <div class="title">Add Record</div>
             <input is="padlock-input" id="addInput" placeholder="Enter Record Name"/>
-            <button class="primary" on-tap="{{ confirmAddRecord }}">Add</button>
+            <button class="primary" on-tap="_confirmAddRecord">Add</button>
         </padlock-dialog>
         <!-- ALERT -->
         <padlock-dialog id="alertDialog">
             <div class="title" id="alertText"></div>
-            <button on-tap="{{ dismissAlert }}">OK</button>
+            <button on-tap="_dismissAlert">OK</button>
         </padlock-dialog>
         <!-- NOT CONNECTED DIALOG -->
         <padlock-dialog id="notConnectedDialog">
             <div class="title">You need to be connected to Padlock Cloud to synchronize your data.</div>
-            <button on-tap="{{ openSettings }}" class="primary">Settings</button>
-            <button on-tap="{{ dismissNotConnectedDialog }}">Cancel</button>
+            <button on-tap="_openSettings" class="primary">Settings</button>
+            <button on-tap="_dismissNotConnectedDialog">Cancel</button>
         </padlock-dialog>
         <!-- REMOTE PASSWORD DIALOG -->
         <padlock-dialog id="remotePasswordDialog">
             <div class="title">It seems your local master password does not match the one used to encrypt the data on Padlock Cloud.</div>
             <input id="remotePasswordInput" type="password" placeholder="Enter Remote Password"></input>
-            <button class="primary" on-tap="{{ remotePasswordEntered }}">OK</button>
+            <button class="primary" on-tap="_remotePasswordEntered">OK</button>
         </padlock-dialog>
         <!-- UPDATE REMOTE PASSWORD DIALOG -->
         <padlock-dialog id="updateRemotePasswordDialog">
             <div class="title">Do you want to update the remote password?</div>
-            <button class="primary" on-tap="{{ confirmUpdateRemotePassword }}">Yes</button>
-            <button on-tap="{{ cancelUpdateRemotePassword }}">No</button>
+            <button class="primary" on-tap="_confirmUpdateRemotePassword">Yes</button>
+            <button on-tap="_cancelUpdateRemotePassword">No</button>
         </padlock-dialog>
+
+        <array-selector id="selector" items="{{ _records }}" selected="{{ _selected }}"></array-selector>
     </template>
+
     <script src="app.js"></script>
-</polymer-element>
+
+</dom-module>

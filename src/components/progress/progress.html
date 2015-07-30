@@ -1,24 +1,32 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
-<polymer-element name="padlock-progress" attributes="text" style="display: none">
+<dom-module id="padlock-progress">
+
+    <link href="progress.css" rel="import" type="css">
+
     <template>
-        <link href="progress.css" rel="stylesheet" type="text/css">
         <span><content></content></span>
     </template>
+
     <script>
         /* global Polymer, padlock */
 
         (function(Polymer, platform) {
             "use strict";
 
-            Polymer("padlock-progress", {
+            Polymer({
+                is: "padlock-progress",
+                properties: {
+                    text: String
+                },
                 ready: function() {
-                    this.addEventListener(platform.getAnimationEndEventName(), this.animationEnd.bind(this));
+                    this.style.display = "none";
+                    this.addEventListener(platform.getAnimationEndEventName(), this._animationEnd.bind(this));
                 },
                 show: function() {
-                    this.hidePending = false;
-                    this.classList.add("animated");
+                    this._hidePending = false;
+                    this.toggleClass("animated", true);
                     this.style.display = "";
                     // Trigger style recalculation so that adding the 'animated' class has an immediate effect
                     // jshint expr: true
@@ -28,25 +36,25 @@
                 hide: function() {
                     // We want the animation to finish first, so we'll just set this flag
                     // and do the hiding after the next iteration
-                    this.hidePending = true;
+                    this._hidePending = true;
                 },
-                animationEnd: function() {
-                    this.classList.remove("animated");
+                _animationEnd: function() {
+                    this.toggleClass("animated", false);
 
                     // Hide the element if hide() was called during the last iteration,
                     // otherwise restart the animation
-                    if (this.hidePending) {
+                    if (this._hidePending) {
                         this.style.display = "none";
                     } else {
                         // Trigger style recalculation so that removing and readding the 'animated' class has an effect
                         // jshint expr: true
                         this.offsetLeft;
                         // jshint expr: false
-                        this.classList.add("animated");
+                        this.toggleClass("animated", true);
                     }
                 }
             });
 
         })(Polymer, padlock.platform);
     </script>
-</polymer-element>
+</dom-module>

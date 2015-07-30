@@ -1,17 +1,36 @@
 /* global Polymer, padlock */
 
-(function(Polymer, util, rand, platform) {
+(function(Polymer, ViewBehavior, MarkableBehavior, util, rand, platform) {
     "use strict";
 
-    Polymer("padlock-record-view", {
-        headerOptions: {
-            show: true,
-            leftIconShape: "left",
-            rightIconShape: "more"
+    Polymer({
+        is: "padlock-record-view",
+        behaviors: [ViewBehavior, MarkableBehavior],
+        properties: {
+            record: Object,
+            categories: Object,
+            _marked: {
+                type: Number,
+                value: -1,
+                observer: "_markedChanged"
+            },
+            _selectedField: {
+                type: Object,
+                observer: "_selectedFieldChanged"
+            }
         },
-        titleText: "",
-        observe: {
-            "record.name": "updateTitleText"
+        observers: [
+            "_updateTitleText(record.name)"
+        ],
+        ready: function() {
+            this.headerOptions.show = true;
+            this.headerOptions.leftIconShape = "left";
+            this.headerOptions.rightIconShape = "more";
+            this._itemSelector = ".field";
+        },
+        show: function() {
+            this._marked = -1;
+            ViewBehavior.show.apply(this, arguments);
         },
         leftHeaderButton: function() {
             this.fire("back");
@@ -20,162 +39,128 @@
             this.$.menu.open = true;
         },
         //* Opens the confirm dialog for deleting the current element
-        deleteRecord: function() {
+        _deleteRecord: function() {
             this.$.menu.open = false;
             this.$.confirmDeleteDialog.open = true;
         },
-        confirmDelete: function() {
+        _confirmDelete: function() {
             this.$.confirmDeleteDialog.open = false;
             this.fire("delete");
         },
-        cancelDelete: function() {
+        _cancelDelete: function() {
             this.$.confirmDeleteDialog.open = false;
         },
         //* Opens the edit name dialog
-        editName: function() {
+        _editName: function() {
             this.$.menu.open = false;
             this.$.nameInput.value = this.record.name;
             this.$.editNameDialog.open = true;
         },
-        confirmEditName: function() {
+        _confirmEditName: function() {
             this.$.editNameDialog.open = false;
-            this.record.name = this.$.nameInput.value;
+            this.set("record.name", this.$.nameInput.value);
             this.fire("save");
         },
         //* Opens the add field dialog
-        addField: function() {
-            this.selectedField = null;
+        _addField: function() {
+            this.$.selector.deselect();
             this.$.menu.open = false;
             this.$.newValueInput.value = "";
             this.$.newFieldNameInput.value = "";
             this.$.addFieldDialog.open = true;
         },
-        confirmAddField: function() {
+        _confirmAddField: function() {
             this.$.addFieldDialog.open = false;
             var field = {
                 name: this.$.newFieldNameInput.value,
                 value: this.$.newValueInput.value
             };
-            this.record.fields.push(field);
+            this.push("record.fields", field);
             this.fire("save");
         },
         //* Opens the edit field dialog for the currently selected field
-        editField: function() {
+        _editField: function() {
             this.$.editFieldDialog.open = true;
             this.$.fieldMenu.open = false;
         },
-        confirmEditField: function() {
-            this.selectedField.value = this.$.fieldValueInput.value;
-            this.selectedField = null;
+        _confirmEditField: function() {
+            this.set("_selectedField.value", this.$.fieldValueInput.value);
+            this.$.selector.deselect();
             this.fire("save");
         },
         //* Opens the field context menu
-        fieldTapped: function(event, detail, sender) {
-            this.selectedField = sender.templateInstance.model;
+        _fieldTapped: function(e) {
+            this.$.selector.select(e.model.item);
         },
         //* Opens the remove field confirm dialog
-        removeField: function() {
+        _removeField: function() {
             this.$.confirmRemoveFieldDialog.open = true;
             this.$.fieldMenu.open = false;
         },
-        confirmRemoveField: function() {
-            this.$.confirmRemoveFieldDialog.open = false;
-            this.record.fields = util.remove(this.record.fields, this.record.fields.indexOf(this.selectedField));
-            this.selectedField = null;
+        _confirmRemoveField: function() {
+            var ind = this.record.fields.indexOf(this._selectedField);
+            this.splice("record.fields", ind, 1);
+            this.$.selector.deselect();
             this.fire("save");
-        },
-        cancelRemoveField: function() {
             this.$.confirmRemoveFieldDialog.open = false;
         },
-        //* Updates the titleText property with the name of the current record
-        updateTitleText: function() {
-            this.titleText = this.record && this.record.name;
+        _cancelRemoveField: function() {
+            this.$.confirmRemoveFieldDialog.open = false;
         },
-        openCategories: function() {
+        _openCategories: function() {
             this.fire("categories");
         },
-        copyToClipboard: function() {
+        _copyToClipboard: function() {
             // If a field has been selected copy that one, otherwise copy the marked one
-            var field = this.selectedField ? this.selectedField : this.record.fields[this.marked],
+            var field = this._selectedField ? this._selectedField : this.record.fields[this._marked],
                 value = field && field.value;
 
             platform.setClipboard(value);
-            this.selectedField = null;
+            this._selectedField = null;
             this.$.clipboardNotification.show();
             this.$.clipboardNotification.hide();
         },
         //* Fills the current value input with a randomized value
-        randomize: function() {
+        _randomize: function() {
             // Choose the right input based on whether we are creating a new field or editing an existing one
-            var input = this.selectedField ? this.$.fieldValueInput : this.$.newValueInput;
+            var input = this._selectedField ? this.$.fieldValueInput : this.$.newValueInput;
             input.value = rand.randomString(20);
         },
-        markNext: function() {
-            if (this.record.fields.length && !this.selectedField) {
-                if (typeof this.marked !== "number") {
-                    this.marked = 0;
-                } else {
-                    this.marked = (this.marked + 1 + this.record.fields.length) % this.record.fields.length;
-                }
-            }
-        },
-        markPrev: function() {
-            if (this.record.fields.length && !this.selectedField) {
-                if (typeof this.marked !== "number") {
-                    this.marked = this.record.fields.length - 1;
-                } else {
-                    this.marked = (this.marked - 1 + this.record.fields.length) % this.record.fields.length;
-                }
-            }
-        },
-        markedChanged: function(markedOld, markedNew) {
-            var elements = this.shadowRoot.querySelectorAll(".field"),
-                oldEl = elements[markedOld],
-                newEl = elements[markedNew];
-
-            if (oldEl) {
-                oldEl.classList.remove("marked");
-            }
-            if (newEl) {
-                newEl.classList.add("marked");
-                this.scrollIntoView(newEl);
-            }
-        },
-        //* Scrolls a given element in the list into view
-        scrollIntoView: function(el) {
-            if (el.offsetTop < this.scrollTop) {
-                // The element is off to the top; Scroll it into view, aligning it at the top
-                el.scrollIntoView();
-            } else if (el.offsetTop + el.offsetHeight > this.scrollTop + this.offsetHeight) {
-                // The element is off to the bottom; Scroll it into view, aligning it at the bottom
-                el.scrollIntoView(false);
-            }
-        },
         selectMarked: function() {
-            this.selectedField = this.record.fields[this.marked];
+            this.$.selector.select(this.record.fields[this._marked]);
         },
-        fieldDialogClosed: function() {
+        _fieldDialogClosed: function() {
             // If all field-related dialogs are closed, unselect the field
             if (!this.$.fieldMenu.open && !this.$.confirmRemoveFieldDialog.open && !this.$.editFieldDialog.open) {
-                this.selectedField = null;
+                this.$.selector.deselect();
             }
         },
-        selectedFieldChanged: function() {
-            if (this.selectedField) {
-                this.selectedFieldName = this.selectedField.name;
-                this.$.fieldValueInput.value = this.selectedField && this.selectedField.value || "";
+        _selectedFieldChanged: function() {
+            if (this._selectedField) {
+                this.$.fieldValueInput.value = this._selectedField && this._selectedField.value || "";
                 this.$.fieldMenu.open = true;
             } else {
                 this.$.fieldMenu.open = false;
                 this.$.editFieldDialog.open = false;
                 this.$.confirmDeleteDialog.open = false;
             }
-            var fieldIndex = this.record.fields.indexOf(this.selectedField);
-            this.marked = fieldIndex !== -1 ? fieldIndex : null;
+            this._marked = this.record ? this.record.fields.indexOf(this._selectedField) : -1;
         },
-        preventDefault: function(event) {
+        _fieldName: function(field) {
+            return field && field.name;
+        },
+        _preventDefault: function(event) {
             event.preventDefault();
+        },
+        _updateTitleText: function(name) {
+            this.headerTitle = name;
+        },
+        _categoryClass: function(category) {
+            return this.categories && "category color" + (this.categories.get(category) || "");
+        },
+        _categoryLabel: function(category) {
+            return category || "Add a Category";
         }
     });
 
-})(Polymer, padlock.util, padlock.rand, padlock.platform);
+})(Polymer, padlock.ViewBehavior, padlock.MarkableBehavior, padlock.util, padlock.rand, padlock.platform);

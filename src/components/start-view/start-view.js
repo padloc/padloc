@@ -3,12 +3,8 @@
 (function(Polymer) {
     "use strict";
 
-    Polymer("padlock-start-view", {
-        keyDown: function(event) {
-            if (event.keyCode == 13) {
-                this.enter();
-            }
-        },
+    Polymer({
+        is: "padlock-start-view",
         enter: function() {
             this.$.pwdInput.blur();
             this.$.confirmInput.blur();

@@ -57,21 +57,6 @@
         }
     }
 
-    &.show-filter {
-        .filter-input {
-            animation: filterIn 0.5s ease 0s both;
-        }
-
-        .title {
-            animation: titleOut 0.5s ease 0s both;
-        }
-    }
-
-    &.filtering.show-filter #leftIcon {
-        width: 0;
-        padding-left: 0;
-    }
-
     &::after {
         content: "";
         display: block;
@@ -86,13 +71,28 @@
         opacity: 0;
         transition: opacity 0.5s;
     }
+}
 
-    &.scrim {
-        pointer-events: none;
+:host([show-filter]) {
+    .filter-input {
+        animation: filterIn 0.5s ease 0s both;
+    }
 
-        &::after {
-            opacity: $scrim-opacity;
-        }
+    .title {
+        animation: titleOut 0.5s ease 0s both;
+    }
+}
+
+:host([filter-active][show-filter]) #leftIcon {
+    width: 0;
+    padding-left: 0;
+}
+
+:host([scrim]) {
+    pointer-events: none;
+
+    & > div::after {
+        opacity: $scrim-opacity;
     }
 }
 

@@ -3,11 +3,23 @@
 (function(Polymer) {
     "use strict";
 
-    Polymer("padlock-shutter", {
-        publish: {
+    Polymer({
+        is: "padlock-shutter",
+        properties: {
+            errorMessage: String,
+            enterLocked: Boolean,
+            currentView: Object,
+            filterString: {
+                type: Boolean,
+                notify: true
+            },
+            scrim: Boolean,
+            startMode: Boolean,
             open: {
+                type: Boolean,
                 value: false,
-                reflect: true
+                reflectToAttribute: true,
+                observer: "_openChanged"
             }
         },
         blurFilterInput: function() {
@@ -16,7 +28,7 @@
         focusFilterInput: function() {
             this.$.header.focusFilterInput();
         },
-        openChanged: function() {
+        _openChanged: function() {
             if (this.open) {
                 this.$.lockView.reset();
             }
@@ -26,6 +38,9 @@
         },
         cancelFilter: function() {
             this.$.header.cancelFilter();
+        },
+        _showFilter: function(showFilter, open) {
+            return showFilter && open;
         }
     });
 

@@ -18,7 +18,7 @@
     overflow: hidden;
     unselectable();
 
-    &, & /deep/ button, & /deep/ input {     
+    &, & /deep/ button, & /deep/ input {
         -webkit-font-smoothing: antialiased;
     }
 
@@ -109,6 +109,10 @@
 
         ::-webkit-input-placeholder {
            color: $placeholder-color;
+        }
+
+        [hidden] {
+            display: none !important;
         }
     }
 }

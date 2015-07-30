@@ -1,11 +1,14 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
-<polymer-element name="padlock-toggle" touch-action="none" attributes="value" on-tap="{{ toggle }}">
+<dom-module id="padlock-toggle">
+
+    <link href="toggle.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="toggle.css" rel="stylesheet" type="text/css">
         <div class="knob"></div>
     </template>
+
     <script src="toggle.js"></script>
-</polymer-element>
+
+</dom-module>

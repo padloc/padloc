@@ -3,11 +3,22 @@
 (function(Polymer, platform) {
     "use strict";
 
-    Polymer("padlock-dialog", {
-        open: false,
+    Polymer({
+        is: "padlock-dialog",
+        properties: {
+            open: {
+                type: Boolean,
+                value: false,
+                observer: "_openChanged"
+            }
+        },
+        listeners: {
+            tap: "close",
+            transitionend: "_transitionEnd"
+        },
         //* Changed handler for the _open_ property. Shows/hides the dialog
-        openChanged: function() {
-            var items = this.children,
+        _openChanged: function() {
+            var items = Polymer.dom(this).children,
                 // transition delay between individual items
                 dt = 0.2/items.length,
                 prefix = platform.getVendorPrefix().css,
@@ -43,11 +54,7 @@
             this.offsetLeft;
             // jshint expr: false
 
-            if (this.open) {
-                this.classList.add("open");
-            } else {
-                this.classList.remove("open");
-            }
+            this.toggleClass("open", this.open);
 
             // Remove focus from any input elements when closing
             if (!this.open) {
@@ -58,17 +65,17 @@
 
             this.fire(this.open ? "open" : "close");
         },
-        /** 
+        /**
          * Counts down the transition count and, if we are hiding the dialog,
          * sets _display: none_ once all transitions are through
          */
-        transitionEnd: function() {
+        _transitionEnd: function() {
             this.transCount--;
             if (!this.transCount && !this.open) {
                 this.style.display = "none";
             }
         },
-        innerTap: function(event) {
+        _innerTap: function(event) {
             // Intercept the tap event to prevent closing the popup if one
             // of the inner elements was tapped.
             event.stopPropagation();

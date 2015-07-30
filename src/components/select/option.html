@@ -1,0 +1,27 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<dom-module id="padlock-option">
+
+    <template>
+        <content></content>
+    </template>
+
+    <script>
+        /* global Polymer */
+
+        (function(Polymer) {
+            "use strict";
+
+            Polymer({
+                is: "padlock-option",
+                properties: {
+                    selected: Boolean,
+                    value: String,
+                    selectedClass: String
+                }
+            });
+
+        })(Polymer);
+    </script>
+
+</dom-module>

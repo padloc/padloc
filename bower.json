@@ -16,8 +16,7 @@
   ],
   "private": true,
   "dependencies": {
-    "shape-shifter": "~0.2.1",
-    "platform": "Polymer/platform#0.3.2",
-    "polymer": "Polymer/polymer#master"
+    "shape-shifter": "~1.0.0",
+    "polymer": "Polymer/polymer#^1.0.0"
   }
 }

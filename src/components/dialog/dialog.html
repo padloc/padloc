@@ -1,15 +1,16 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
-<polymer-element name="padlock-dialog" touch-action="none" attributes="open"
-    on-tap="{{ close }}" on-transitionend="{{ transitionEnd }}" >
+<dom-module id="padlock-dialog">
+    <link href="dialog.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="dialog.css" rel="stylesheet" type="text/css">
         <div class="scrim"></div>
-        <div class="inner" on-tap="{{ innerTap }}">
+        <div class="inner" on-tap="_innerTap">
             <content></content>
         </div>
     </template>
+
     <script src="dialog.js"></script>
-</polymer-element>
+
+</dom-module>

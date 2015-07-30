@@ -5,47 +5,51 @@
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../progress/progress.html">
 
-<polymer-element name="padlock-import-view" extends="padlock-view">
+<dom-module is="padlock-import-view">
+
+    <link href="import-view.css" rel="import" type="css">
+
     <template>
         <!-- STYLES -->
-        <link href="import-view.css" rel="stylesheet" type="text/css">
         <div class="flex-wrapper">
             <!-- RAW DATA INPUT -->
             <textarea id="rawInput" is="padlock-textarea" selectAllOnFocus></textarea>
             <!-- IMPORT BUTTON -->
-            <button class="import-button primary" on-tap="{{ startImport }}">import</button>
+            <button class="import-button primary" on-tap="_startImport">import</button>
         </div>
         <padlock-progress id="progress">importing...</padlock-progress>
         <!-- PASSWORD DIALOG -->
         <padlock-dialog id="pwdDialog">
             <div class="title">SecuStore backup detected. Please enter the password for this backup.</div>
-            <input id="pwdInput" type="password" placeholder="Enter password..." />
-            <button class="primary" on-tap="{{ importSecuStoreBackup }}">OK</button>
+            <input id="pwdInput" type="password" placeholder$="Enter password..." />
+            <button class="primary" on-tap="_importSecuStoreBackup">OK</button>
         </padlock-dialog>
         <!-- ERROR DIALOG -->
         <padlock-dialog id="errorDialog">
             <div class="title">Password incorrect or data corrupt.</div>
-            <button class="primary" on-tap="{{ requirePassword }}">retry</button>
-            <button on-tap="{{ importCancel }}">cancel</button>
+            <button class="primary" on-tap="_requirePassword">retry</button>
+            <button on-tap="_importCancel">cancel</button>
         </padlock-dialog>
         <padlock-dialog id="nameColDialog">
             <div class="title">Which column would you like to use for record names?</div>
-            <padlock-select id="nameColSelect" openUpwards="true">
-                <template repeat="{{ name in nameColOptions}}">
-                    <padlock-option>{{ name }}</padlock-option>
+            <padlock-select id="nameColSelect" open-upwards>
+                <template is="dom-repeat" items="{{ _nameColOptions }}">
+                    <padlock-option value="{{ item }}">{{ item }}</padlock-option>
                 </template>
             </padlock-select>
-            <button class="primary" on-tap="{{ confirmNameCol }}">OK</button>
+            <button class="primary" on-tap="_confirmNameCol">OK</button>
         </padlock-dialog>
         <padlock-dialog id="catColDialog">
             <div class="title">Which column would you like to use for the category?</div>
-            <padlock-select id="catColSelect" openUpwards="true">
-                <template repeat="{{ name in catColOptions}}">
-                    <padlock-option>{{ name }}</padlock-option>
+            <padlock-select id="catColSelect" open-upwards>
+                <template is="dom-repeat" items="{{ _catColOptions }}">
+                    <padlock-option value="{{ item }}">{{ item }}</padlock-option>
                 </template>
             </padlock-select>
-            <button class="primary" on-tap="{{ confirmCatCol }}">OK</button>
+            <button class="primary" on-tap="_confirmCatCol">OK</button>
         </padlock-dialog>
     </template>
+
     <script src="import-view.js"></script>
-</polymer>
+
+</dom-module>

@@ -1,36 +1,40 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../view/view.html">
+<link rel="import" href="../markable-behavior/markable-behavior.html">
 
-<polymer-element name="padlock-list-view" extends="padlock-view"
-    attributes="collection filterString selected categories marked settings" touch-action="pan-y">
+<dom-module id="padlock-list-view">
+    <link href="../view/view.css" rel="import" type="css">
+    <link href="list-view.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="list-view.css" rel="stylesheet" type="text/css">
-        <!-- LIST CONTAINER -->
-        <div class="list" id="list">
-            <template repeat="{{ records }}">
-                <template if="{{ firstInSection }}">
-                        <!-- SECTION HEADER -->
-                    <div class="section-header {{ showCategory ? '' : 'color' + catColor }}">{{ section }}</div>
+        <div class="list">
+
+            <template id="list" is="dom-repeat" items="{{ records }}"
+                filter="_filter" sort="_sort" observe="name category removed" delay="100">
+                <template is="dom-if" if="{{ _showSectionHeader(item) }}">
+                    <div class="section-header">
+                        <span>{{ _section(item.name) }}</span>
+                    </div>
                 </template>
-                <div class="record-item" on-tap="{{ recordClicked }}" hidden?="{{ hidden }}">
+                <div class="record-item" on-tap="_recordTapped">
                     <div class="record-item-inner">
-                        <div class="record-item-name">{{ name }}</div>
-                        <div class="record-item-category color{{ catColor }}"
-                            style="{{ showCategory ? '' : 'display:none' }}">{{ category }}</div>
+                        <div class="record-item-name">{{ item.name }}</div>
+                        <div class$="{{ _categoryClass(item.category, 'record-item-category') }}">{{ item.category }}</div>
                     </div>
                 </div>
             </template>
+
             <!-- ACTIONS FOR EMPTY LIST -->
-            <template if="{{ empty }}">
-                <div class="empty">
-                    <button on-tap="{{ import }}">Import Data</button>
-                    <button on-tap="{{ synchronize }}">Synchronize</button>
-                    <button on-tap="{{ rightHeaderButton }}">Create Record</button>
-                </div>
-            </template>
+            <div class="empty" hidden$="{{ !_empty }}">
+                <button on-tap="_import">Import Data</button>
+                <button on-tap="_synchronize">Synchronize</button>
+                <button on-tap="rightHeaderButton">Create Record</button>
+            </div>
+
         </div>
     </template>
+
     <script src="list-view.js"></script>
-</polymer-element>
+
+</dom-module>

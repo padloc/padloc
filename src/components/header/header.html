@@ -3,23 +3,26 @@
 <link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="../input/input.html">
 
-<polymer-element name="padlock-header" attributes="view showFilterInput filterString scrim">
+<dom-module id="padlock-header">
+
+    <link href="header.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="header.css" rel="stylesheet" type="text/css">
-        <div class="{{ {'show-filter': showFilterInput, 'filtering': filterActive, 'scrim': scrim} | tokenList }}">
+        <div>
             <!-- LEFT BUTTON -->
-            <shape-shifter id="leftIcon" shape="menu" on-tap="{{ leftClicked }}" springy></shape-shifter>
+            <shape-shifter id="leftIcon" shape="menu" on-tap="_leftClicked" springy></shape-shifter>
             <div class="middle">
                 <!-- FILTER INPUT -->
-                <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString }}" type="search"
-                    placeholder="{{ filterHasFocus ? 'type to search...' : 'tap to search...' }}" disabled?="{{ !showFilterInput }}" hasFocus="{{ filterHasFocus }}"/>
+                <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString::keyup }}" type="search"
+                    placeholder$="{{ _filterPlaceholder(_filterHasFocus) }}" disabled$="{{ !showFilter }}" has-focus="{{ _filterHasFocus }}"/>
                 <!-- HEADER TITLE -->
-                <div class="title">{{ view.titleText }}</div>
+                <div class="title">{{ _title }}</div>
             </div>
             <!-- RIGHT BUTTON -->
-            <shape-shifter id="rightIcon" shape="plus" on-tap="{{ rightClicked }}" springy></shape-shifter>
+            <shape-shifter id="rightIcon" shape="plus" on-tap="_rightClicked" springy></shape-shifter>
         </div>
     </template>
+
     <script src="header.js"></script>
-</polymer-element>
+
+</dom-module>

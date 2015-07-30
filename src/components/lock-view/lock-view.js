@@ -3,10 +3,13 @@
 (function(Polymer) {
     "use strict";
 
-    Polymer("padlock-lock-view", {
-        keydown: function(event) {
-            if (event.keyCode == 13) {
-                this.enter();
+    Polymer({
+        is: "padlock-lock-view",
+        properties: {
+            errorMessage: {
+                type: String,
+                observer: "_errorMessageChanged",
+                notify: true
             }
         },
         enter: function() {
@@ -19,6 +22,9 @@
         },
         focusPwdInput: function() {
             this.$.pwdInput.focus();
+        },
+        _errorMessageChanged: function(message) {
+            this.toggleClass("error", !!message);
         }
     });
 

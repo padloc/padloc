@@ -1,21 +1,25 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
+<link rel="import" href="option.html">
 
-<polymer-element name="padlock-option" attributes="selected value selectedClass" noscript>
-    <template>
-        <content></content>
-    </template>
-</polymer-elment>
+<dom-module id="padlock-select">
 
-<polymer-element name="padlock-select" touch-action="none" attributes="open label selected openUpwards value">
+    <link href="select.css" rel="import" type="css">
+
     <template>
-        <!-- STYLES -->
-        <link href="select.css" rel="stylesheet" type="text/css">
-        <button on-tap="{{ toggleOpen }}" class="{{ selected.selectedClass }}">{{ selected ? selected.innerHTML : label}}<shape-shifter shape="{{ open ? 'cancel' : 'down' }}" springy></shape-shifter></button>
-        <div class="options" on-tap="{{ optionTap }}">
+
+        <button on-tap="toggleOpen" class$="{{ selected.selectedClass }}">
+            <span>{{ _label(selected, label) }}</span>
+            <shape-shifter shape="{{ _shape(open) }}" springy></shape-shifter>
+        </button>
+
+        <div class="options" on-tap="_optionTap">
             <content></content>
         </div>
+
     </template>
+
     <script src="select.js"></script>
-</polymer-element>
+
+</dom-module>

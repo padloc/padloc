@@ -5,40 +5,59 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
         <link rel="shortcut icon" type="image/png" href="assets/icon16.png"/>
 
-        <!-- Settings for running as standalone iOS web app (from homescreen) -->
-        <meta name="apple-mobile-web-app-capable" content="yes"/>
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="Padlock">
-        <link rel="apple-touch-icon" href="assets/app-icon.png">
+        <!-- Fonts -->
+        <link href="assets/fonts/fonts.css" rel="stylesheet" type="text/css">
+        <style>
+            html { background: #59c6ff; }
+        </style>
 
         <!-- Overrides for platform-specific styling -->
-        <link href="src/styles/overrides.css" rel="stylesheet" type="text/css">
-        
-        <!-- Polymer platform layer -->
-        <script src="bower_components/platform/platform.js"></script>
+        <link href="overrides.css" rel="stylesheet" type="text/css">
 
-        <!-- Custom app element -->
+        <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+
+        <link rel="import" href="src/padlock.html">
         <link rel="import" href="src/components/app/app.html">
 
         <!-- This is the ENTRY POINT -->
-        <link rel="import" href="src/padlock.html">
-        <script src="src/init.js"></script>
-        <style>
-            html {
-                background: #59c6ff;
-            }
-        </style>
+        <script>
+            /* global padlock, chrome */
+            window.addEventListener("WebComponentsReady", function() {
+                "use strict";
+
+                var source = (typeof chrome !== "undefined") && chrome.storage ?
+                    new padlock.ChromeStorageSource() : new padlock.LocalStorageSource(),
+                    store = new padlock.Store(source),
+                    cloudHost = "https://cloud.padlock.io/",
+                    settings = new padlock.Settings({
+                        "sync_host": cloudHost,
+                        "sync_email": "",
+                        "sync_key": "",
+                        "sync_device": "",
+                        "sync_connected": false,
+                        "sync_auto": true,
+                        "default_fields": ["username", "password"]
+                    }, source),
+                    categories = new padlock.Categories(null, 3, source),
+                    collection = new padlock.Collection("default", store);
+
+                var app = new padlock.App(collection, settings, categories);
+                document.body.appendChild(app);
+            });
+        </script>
 
         <!-- Load the cordova api if available -->
         <script src="cordova.js"></script>
         <script>
+            /* global cordova */
             document.addEventListener("deviceready", function() {
+                "use strict";
                 navigator.splashscreen.hide();
                 cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
             });
         </script>
+
     </head>
-    <body unresolved>
-        <padlock-app unresolved></padlock-app>
+    <body>
     </body>
 </html>
