@@ -4,6 +4,7 @@
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../toggle/toggle.html">
+<link rel="import" href="../notification/notification.html">
 
 <dom-module id="padlock-settings-view">
 
@@ -53,17 +54,6 @@
             <input is="padlock-input" type="password" placeholder="Confirm Password" id="confirmNewPwdInput"/>
             <button class="primary" on-tap="_confirmChangePassword">OK</button>
         </padlock-dialog>
-        <!-- CHANGE PASSWORD ERROR DIALOG -->
-        <padlock-dialog id="changePasswordErrorDialog">
-            <div class="title" id="changePasswordErrorMsg"></div>
-            <button class="primary" on-tap="_changePassword">retry</button>
-            <button on-tap="_closeChangePasswordErrorDialog">cancel</button>
-        </padlock-dialog>
-        <!-- CHANGE PASSWORD SUCCESS DIALOG -->
-        <padlock-dialog id="changePasswordSuccessDialog">
-            <div class="title">Password changed successfully!</div>
-            <button on-tap="_closeChangePasswordSuccessDialog">OK</button>
-        </padlock-dialog>
         <!-- ALERT -->
         <padlock-dialog id="alertDialog">
             <div class="title" id="alertText"></div>
@@ -82,6 +72,9 @@
             <button class="primary" on-tap="_confirmResetRemoteData">OK</button>
             <button on-tap="_cancelResetRemoteData">Cancel</button>
         </padlock-dialog>
+
+        <padlock-notification id="notification"></padlock-notification>
+
     </template>
 
     <script src="settings-view.js"></script>

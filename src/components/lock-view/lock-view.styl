@@ -44,27 +44,3 @@
     animation: reveal 0.5s ease 0.75s both;
 }
 
-.error-message {
-    color: $color-red;
-    padding: 20px;
-    opacity: 0;
-
-    transform: translate(0, 100%);
-    transition: transform 0.5s, opacity 0.5s;
-}
-
-:host(.error)  {
-    .error-message {
-        opacity: 1;
-
-        transform: translate(0, 0);
-    }
-
-    input {
-        color: $color-negative;
-    }
-
-    ::-webkit-input-placeholder {
-       color: $color-negative;
-    }
-}

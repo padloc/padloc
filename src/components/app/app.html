@@ -10,6 +10,7 @@
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../progress/progress.html">
+<link rel="import" href="../notification/notification.html">
 
 <dom-module id="padlock-app">
 
@@ -63,16 +64,18 @@
         </padlock-dialog>
         <!-- REMOTE PASSWORD DIALOG -->
         <padlock-dialog id="remotePasswordDialog">
-            <div class="title">It seems your local master password does not match the one used to encrypt the data on Padlock Cloud.</div>
+            <div class="title">It seems your local master password does not match the one used to encrypt the data on Padlock Cloud. Please enter your remote password!</div>
             <input id="remotePasswordInput" type="password" placeholder="Enter Remote Password"></input>
             <button class="primary" on-tap="_remotePasswordEntered">OK</button>
         </padlock-dialog>
         <!-- UPDATE REMOTE PASSWORD DIALOG -->
         <padlock-dialog id="updateRemotePasswordDialog">
-            <div class="title">Do you want to update the remote password?</div>
+            <div class="title">Synchronization successful! Do you want to change the remote password to your local one?</div>
             <button class="primary" on-tap="_confirmUpdateRemotePassword">Yes</button>
             <button on-tap="_cancelUpdateRemotePassword">No</button>
         </padlock-dialog>
+
+        <padlock-notification id="notification"></padlock-notification>
 
         <array-selector id="selector" items="{{ _records }}" selected="{{ _selected }}"></array-selector>
     </template>

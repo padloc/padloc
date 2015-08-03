@@ -22,7 +22,6 @@
         },
         //* Opens the change password dialog and resets the corresponding input elements
         _changePassword: function() {
-            this.$.changePasswordErrorDialog.open = false;
             this.$.currPwdInput.value = "";
             this.$.newPwdInput.value = "";
             this.$.confirmNewPwdInput.value = "";
@@ -32,15 +31,12 @@
             this.$.changePasswordDialog.open = false;
             // TODO: Add a better check for the current password
             if (this.$.currPwdInput.value != this.collection.defaultPassword) {
-                this.$.changePasswordErrorMsg.innerHTML = "You entered the wrong current password.";
-                this.$.changePasswordErrorDialog.open = true;
+                this.$.notification.show("Wrong password!", "error", 2000);
             } else if (this.$.newPwdInput.value != this.$.confirmNewPwdInput.value) {
-                this.$.changePasswordErrorMsg.innerHTML =
-                    "The new password you entered did not match the one in the confirmation input.";
-                this.$.changePasswordErrorDialog.open = true;
+                this.$.notification.show("Password do not match!", "error", 2000);
             } else {
                 this.collection.setPassword(this.$.newPwdInput.value);
-                this.$.changePasswordSuccessDialog.open = true;
+                this.$.notification.show("Password changed successfully!", "success", 2000);
             }
         },
         _closeChangePasswordErrorDialog: function() {
@@ -92,10 +88,10 @@
                         // after the user has visited the activation link in the email he was sent
                         this.set("settings.sync_key", apiKey.key);
                         this.set("settings.sync_connected", true);
-                        this.alert("Almost done! An email was sent to " + email + ". Please follow the " +
+                        this._alert("Almost done! An email was sent to " + email + ". Please follow the " +
                             "instructions to complete the connection process!");
                     } else {
-                        this.alert("Something went wrong. Please make sure your internet " +
+                        this._alert("Something went wrong. Please make sure your internet " +
                             "connection is working and try again!");
                     }
                 }
@@ -149,7 +145,7 @@
                 this.collection.destroy();
                 this.fire("reset");
             } else {
-                this.alert("The password you entered was incorrect.");
+                this.$.notification.show("Wrong password!", "error", 2000);
             }
         },
         _cancelResetData: function() {
@@ -172,10 +168,10 @@
                     // Hide progress indicator
                     this.$.progress.hide();
                     if (req.status === 202) {
-                        this.alert("Almost done! An email was sent to " + email + ". Please follow the " +
+                        this._alert("Almost done! An email was sent to " + email + ". Please follow the " +
                             "instructions to confirm the reset!");
                     } else {
-                        this.alert("Something went wrong. Please make sure your internet " +
+                        this._alert("Something went wrong. Please make sure your internet " +
                             "connection is working and try again!");
                     }
                 }

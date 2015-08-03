@@ -4,6 +4,7 @@
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../markable-behavior/markable-behavior.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../notification/notification.html">
 
 <dom-module id="padlock-record-view">
 
@@ -19,8 +20,6 @@
             </div>
         </template>
         <button class="add-button" on-tap="_addField">Add Field</button>
-        <!-- CLIPBOARD NOTIFICATION -->
-        <padlock-progress id="clipboardNotification">Value copied to clipboard!</padlock-progress>
         <!-- RECORD OPTIONS -->
         <padlock-dialog id="menu">
             <button on-tap="_editName">Edit Name</button>
@@ -40,7 +39,7 @@
         </padlock-dialog>
         <!-- FIELD CONTEXT MENU -->
         <padlock-dialog id="fieldMenu" on-close="_fieldDialogClosed">
-            <button on-tap="_copyToClipboard">Copy to Clipboard</button>
+            <button on-tap="copyToClipboard">Copy to Clipboard</button>
             <button on-tap="_editField">Edit</button>
             <button on-tap="_removeField">Remove</button>
         </padlock-dialog>
@@ -65,6 +64,8 @@
             <button class="primary" on-tap="_confirmRemoveField">Remove</button>
             <button on-tap="_cancelRemoveField">Cancel</button>
         </padlock-dialog>
+
+        <padlock-notification id="notification"></padlock-notification>
 
         <array-selector id="selector" items="{{ record.fields }}" selected="{{ _selectedField }}"></array-selector>
     </template>

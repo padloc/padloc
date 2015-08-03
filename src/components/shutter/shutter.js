@@ -7,7 +7,6 @@
         is: "padlock-shutter",
         properties: {
             errorMessage: String,
-            enterLocked: Boolean,
             currentView: Object,
             filterString: {
                 type: Boolean,

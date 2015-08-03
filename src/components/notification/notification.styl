@@ -1,0 +1,41 @@
+@import "../../styles/config";
+
+:host {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: $row-height;
+    color: $text-color-light;
+    transition: transform 0.5s cubic-bezier(.71, -0.51, 0, 1.38);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+}
+
+:host(:not(.showing)) {
+    transform: translate3d(0, 100%, 0);
+}
+
+div {
+    overflow: ellipsis;
+}
+
+shape-shifter {
+    width: 23px;
+    height: 23px;
+    margin-right: 5px;
+
+    &::shadow line {
+        stroke: #fff;
+    }
+}
+
+:host(.success) {
+    background: $color-green;
+}
+
+:host(.error) {
+    background: $color-red;
+}

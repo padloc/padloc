@@ -10,13 +10,7 @@
 :host {
     display: block;
     background-color: $color-primary;
-}
-
-:host(.error)  {
-    .error-message {
-        opacity: 1;
-        transform: translate(0, 0);
-    }
+    overflow: hidden;
 }
 
 .wrapper {
@@ -55,15 +49,6 @@
 
 p {
     padding: 15px;
-}
-
-.error-message {
-    color: $color-red;
-    padding: 20px;
-    opacity: 0;
-
-    transform: translate(0, 100%);
-    transition: transform 0.5s, opacity 0.5s;
 }
 
 .enter-button {

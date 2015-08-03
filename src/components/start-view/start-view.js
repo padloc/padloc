@@ -13,10 +13,9 @@
                 cfmPwd = this.$.confirmInput.value;
 
             if (newPwd == cfmPwd) {
-                this.classList.remove("error");
                 this.fire("newpwd", {password: newPwd});
             } else {
-                this.classList.add("error");
+                this.$.notification.show("Passwords do not match!", "error", 2000);
             }
         }
     });

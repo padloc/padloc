@@ -1,6 +1,7 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../notification/notification.html">
 
 <dom-module id="padlock-start-view">
 
@@ -21,9 +22,9 @@
                 id="confirmInput" on-enter="enter" selectAllOnFocus />
             <!-- ENTER BUTTON -->
             <button class="enter-button ghost" on-tap="enter">OK</button>
-            <!-- ERROR MESSAGE -->
-            <div class="error-message">Passwords do not match!</div>
         </div>
+
+        <padlock-notification id="notification"></padlock-notification>
     </template>
 
     <script src="start-view.js"></script>

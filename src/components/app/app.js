@@ -99,8 +99,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             this.decrypting = true;
             this.$.decrypting.show();
             this.collection.fetch({password: password, success: function() {
-                this.$.shutter.errorMessage = "";
-                this.$.shutter.enterLocked = false;
                 this.$.decrypting.hide();
                 this.decrypting = false;
                 setTimeout(function() {
@@ -110,8 +108,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                     this.$.shutter.open = true;
                 }.bind(this), 100);
             }.bind(this), fail: function() {
-                this.$.shutter.errorMessage = "Wrong password!";
-                this.$.shutter.enterLocked = false;
+                this.$.notification.show("Wrong Password!", "error", 2000);
                 this.$.decrypting.hide();
                 this.decrypting = false;
             }.bind(this)});
@@ -234,8 +231,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _saveImportedRecords: function(event, detail) {
             this.collection.add(detail.records);
             this.collection.save();
-            this._alert(detail.records.length + " records imported!");
             this._openView(this.$.listView);
+            this.$.notification.show(detail.records.length + " records imported!", "success", 2000);
             // Auto sync
             if (this.settings.sync_connected && this.settings.sync_auto) {
                 this._synchronize();
@@ -270,7 +267,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             }
 
             // CTRL/CMD + F -> Filter
-            if ((event.ctrlKey || event.metaKey) && event.keyCode === 70 && this._currentView.headerOptions.showFilter) {
+            if ((event.ctrlKey || event.metaKey) && event.keyCode === 70 &&
+                    this._currentView.headerOptions.showFilter) {
                 shortcut = this.$.shutter.focusFilterInput.bind(this.$.shutter);
             }
             // DOWN -> Mark next
@@ -358,6 +356,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                         // ask the user if he wants to update the remote password
                         if (remotePassword !== undefined && this.collection.defaultPassword !== remotePassword) {
                             this.$.updateRemotePasswordDialog.open = true;
+                        } else {
+                            this.$.notification.show("Synchronization successful!", "success", 1000);
                         }
                     }.bind(this),
                     fail: function(e) {
@@ -394,7 +394,10 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             this.collection.save({
                 source: this.remoteSource,
                 password: this.collection.defaultPassword,
-                success: this.$.synchronizing.hide.bind(this.$.synchronizing),
+                success: function() {
+                    this.$.synchronizing.hide();
+                    this.$.notification.show("Remote password updated!", "success", 2000);
+                }.bind(this),
                 fail: function() {
                     this.$.synchronizing.hide();
                     this._alert("Failed to update remote password. Try again later!");

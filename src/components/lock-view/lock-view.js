@@ -5,13 +5,6 @@
 
     Polymer({
         is: "padlock-lock-view",
-        properties: {
-            errorMessage: {
-                type: String,
-                observer: "_errorMessageChanged",
-                notify: true
-            }
-        },
         enter: function() {
             this.errorMessage = "";
             this.$.pwdInput.blur();
@@ -22,9 +15,6 @@
         },
         focusPwdInput: function() {
             this.$.pwdInput.focus();
-        },
-        _errorMessageChanged: function(message) {
-            this.toggleClass("error", !!message);
         }
     });
 

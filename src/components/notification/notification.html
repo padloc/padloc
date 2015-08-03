@@ -1,0 +1,71 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
+
+<dom-module id="padlock-notification">
+
+    <link href="notification.css" rel="import" type="css">
+
+    <template>
+
+        <shape-shifter shape="{{ _icon }}" springy></shape-shifter>
+
+        <div>{{ message }}</div>
+
+    </template>
+
+    <script>
+        /* global Polymer */
+
+        (function(Polymer) {
+            "use strict";
+
+            Polymer({
+                is: "padlock-notification",
+                properties: {
+                    message: String,
+                    type: {
+                        type: String,
+                        value: "success",
+                        observer: "_typeChanged"
+                    }
+                },
+                _icons: {
+                    success: "check",
+                    error: "cancel"
+                },
+                show: function(message, type, duration) {
+                    if (message) {
+                        this.message = message;
+                    }
+
+                    if (type) {
+                        this.type = type;
+                    }
+
+                    this.async(function() {
+                        this._icon = this._icons[this.type];
+                    }, 100);
+
+                    this.toggleClass("showing", true);
+
+                    if (duration) {
+                        this.async(this.hide, duration);
+                    }
+                },
+                hide: function() {
+                    this.toggleClass("showing", false);
+                    this.async(function() {
+                        this._icon = "";
+                    }, 500);
+                },
+                _typeChanged: function(newType, oldType) {
+                    this.toggleClass(oldType, false);
+                    this.toggleClass(newType, true);
+                }
+            });
+        })(Polymer);
+
+    </script>
+
+</dom-module>
+
