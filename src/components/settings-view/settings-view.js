@@ -55,7 +55,7 @@
             this.$.connectDialog.open = false;
             this.set("settings.sync_email", this.$.emailInput.value);
             this.set("settings.sync_device", this.$.deviceNameInput.value);
-            this.requestApiKey();
+            this._requestApiKey();
         },
         _cloudDisconnect: function() {
             this.$.disconnectDialog.open = true;
