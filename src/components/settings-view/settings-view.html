@@ -62,7 +62,7 @@
         <!-- CONFIRM RESET DATA DIALOG -->
         <padlock-dialog id="resetDataDialog">
             <div class="title">Are you sure you want to reset all your data? This action can not be undone! Please enter your master password to confirm.</div>
-            <input is="padlock-input" id="resetConfirmPwd" placeholder="Enter Master Password"/>
+            <input is="padlock-input" id="resetConfirmPwd" placeholder="Enter Master Password" type="password"/>
             <button class="primary" on-tap="_confirmResetData">OK</button>
             <button on-tap="_cancelResetData">Cancel</button>
         </padlock-dialog>
