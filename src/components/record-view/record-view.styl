@@ -33,6 +33,10 @@
         margin-right: 15px;
         flex: 1;
         overflow: ellipsis;
+
+        &.obfuscated {
+            letter-spacing: 0.07em;
+        }
     }
 
     &:not(.marked) > .value:empty:after {
@@ -86,4 +90,16 @@
 
 #clipboardNotification {
     background: $color-green;
+}
+
+button.toggle {
+    position: relative;
+
+    padlock-toggle {
+        position: absolute;
+        right: 10px;
+        top: 0;
+        bottom: 0;
+        margin: auto 0;
+    }
 }

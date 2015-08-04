@@ -110,9 +110,8 @@
         _dismissAlert: function() {
             this.$.alertDialog.open = false;
         },
-        //* Tap handler for the auto sync row. Toggles the auto sync toggle element
-        _toggleAutoSync: function() {
-            this.$.autoSyncToggle.toggle();
+        _toggle: function(e) {
+            e.currentTarget.querySelector("padlock-toggle").toggle();
         },
         _import: function() {
             this.fire("import");

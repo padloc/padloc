@@ -24,8 +24,13 @@
                 <div>Disconnect <span class="email">(<span>{{ settings.sync_email }}</span>)</span></div></button>
             <button class="settings-button" on-tap="_resetRemoteData"
                 hidden$="{{ !settings.sync_connected }}">Reset Remote Data</button>
-            <div class="settings-row" hidden$="{{ !settings.sync_connected }}" on-tap="_toggleAutoSync">
+            <div class="settings-row" hidden$="{{ !settings.sync_connected }}" on-tap="_toggle">
                 <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" notap></padlock-toggle>
+            </div>
+        </div>
+        <div class="section">
+            <div class="settings-row" on-tap="_toggle">
+                <span>Obfuscate Fields</span><padlock-toggle value="{{ settings.obfuscate_fields }}" notap></padlock-toggle>
             </div>
         </div>
         <div class="section">

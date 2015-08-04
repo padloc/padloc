@@ -5,6 +5,7 @@
 <link rel="import" href="../markable-behavior/markable-behavior.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../notification/notification.html">
+<link rel="import" href="../toggle/toggle.html">
 
 <dom-module id="padlock-record-view">
 
@@ -14,8 +15,9 @@
         <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
         <!-- FIELD LIST -->
         <template is="dom-repeat" items="{{ record.fields }}">
-            <div class="field" on-tap="_fieldTapped">
-                <div class="value">{{ item.value }}</div>
+            <div class="field" on-tap="_fieldTapped" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout">
+                <div class="value" hidden$="{{ _isObfuscated(index, _revealedFields.*, settings.obfuscate_fields) }}">{{ item.value }}</div>
+                <div class="value obfuscated" hidden$="{{ !_isObfuscated(index, _revealedFields.*, settings.obfuscate_fields) }}">{{ _obfuscate(item.value) }}</div>
                 <div class="label">{{ item.name }}</div>
             </div>
         </template>
@@ -24,6 +26,10 @@
         <padlock-dialog id="menu">
             <button on-tap="_editName">Edit Name</button>
             <button on-tap="_deleteRecord" id="confirmButton">Delete Record</button>
+            <button class="toggle" on-tap="_toggleObfuscate">
+                <span>Obfuscate Fields</span>
+                <padlock-toggle value="{{ settings.obfuscate_fields }}" notap></padlock-toggle>
+            </button>
         </padlock-dialog>
         <!-- DELETE CONFIRM DIALOG -->
         <padlock-dialog id="confirmDeleteDialog">

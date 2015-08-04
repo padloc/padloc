@@ -9,6 +9,7 @@
         properties: {
             record: Object,
             categories: Object,
+            settings: Object,
             _marked: {
                 type: Number,
                 value: -1,
@@ -17,7 +18,8 @@
             _selectedField: {
                 type: Object,
                 observer: "_selectedFieldChanged"
-            }
+            },
+            _revealedFields: Object
         },
         observers: [
             "_updateTitleText(record.name)"
@@ -30,6 +32,7 @@
         },
         show: function() {
             this._marked = -1;
+            this._revealedFields = {};
             ViewBehavior.show.apply(this, arguments);
         },
         leftHeaderButton: function() {
@@ -159,6 +162,35 @@
         },
         _categoryLabel: function(category) {
             return category || "Add a Category";
+        },
+        _obfuscate: function(value) {
+            var res = "", l = value.length;
+            while (l--) {
+                res += "\u2022";
+            }
+            return res;
+        },
+        _revealField: function(e) {
+            this.set("_revealedFields." + e.model.index, true);
+        },
+        _unrevealField: function(e) {
+            this.set("_revealedFields." + e.model.index, false);
+        },
+        _isObfuscated: function(ind) {
+            return this.settings.obfuscate_fields && !this._revealedFields[ind];
+        },
+        _fieldMouseover: function(e) {
+            if (!platform.isTouch()) {
+                this._revealField(e);
+            }
+        },
+        _fieldMouseout: function(e) {
+            if (!platform.isTouch()) {
+                this._unrevealField(e);
+            }
+        },
+        _toggleObfuscate: function() {
+            this.set("settings.obfuscate_fields", !this.settings.obfuscate_fields);
         }
     });
 

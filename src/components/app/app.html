@@ -25,7 +25,7 @@
             on-menu="_openMainMenu" on-import="_openImportView" on-synchronize="_synchronize"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="_saveRecord" on-back="_recordViewBack" record="{{ _selected }}"
-            on-delete="_deleteRecord" on-categories="_openCategories" categories="{{ categories }}"></padlock-record-view>
+            on-delete="_deleteRecord" on-categories="_openCategories" categories="{{ categories }}" settings="{{ settings }}"></padlock-record-view>
         <!-- Settings VIEW -->
         <padlock-settings-view id="settingsView" class="view" on-back="_settingsBack"
             on-import="_openImportView" on-reset="_reset"
