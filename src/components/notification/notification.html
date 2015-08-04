@@ -46,6 +46,7 @@
                         this._icon = this._icons[this.type];
                     }, 100);
 
+                    this.style.visibility = "visible";
                     this.toggleClass("showing", true);
 
                     if (duration) {
@@ -56,6 +57,7 @@
                     this.toggleClass("showing", false);
                     this.async(function() {
                         this._icon = "";
+                        this.style.visibility = "hidden";
                     }, 500);
                 },
                 _typeChanged: function(newType, oldType) {
