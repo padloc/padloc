@@ -3,7 +3,7 @@
 <dom-module id="padlock-option">
 
     <template>
-        <content></content>
+        <div on-tap="_tap">{{ _label(label, value) }}</div>
     </template>
 
     <script>
@@ -15,9 +15,23 @@
             Polymer({
                 is: "padlock-option",
                 properties: {
-                    selected: Boolean,
-                    value: String,
+                    default: Boolean,
+                    value: {
+                        type: String,
+                        value: ""
+                    },
+                    label: {
+                        type: String,
+                        value: ""
+                    },
                     selectedClass: String
+                },
+                _label: function(label, value) {
+                    return label || value;
+                },
+                _tap: function(e) {
+                    this.fire("tap");
+                    e.stopPropagation();
                 }
             });
 

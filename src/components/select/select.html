@@ -9,7 +9,7 @@
 
     <template>
 
-        <button on-tap="toggleOpen" class$="{{ selected.selectedClass }}">
+        <button on-tap="toggleOpen" class$="{{ _selectedClass(selected) }}">
             <span>{{ _label(selected, label) }}</span>
             <shape-shifter shape="{{ _shape(open) }}" springy></shape-shifter>
         </button>

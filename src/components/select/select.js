@@ -1,6 +1,6 @@
-/* global Polymer, padlock */
+/* global Polymer */
 
-(function(Polymer, platform) {
+(function(Polymer) {
     "use strict";
 
     Polymer({
@@ -19,7 +19,7 @@
             },
             //* The selected element
             selected: {
-                type: Object,
+                type: Number,
                 notify: true,
                 observer: "_selectedChanged"
             },
@@ -35,6 +35,9 @@
         get options() {
             return Polymer.dom(this).querySelectorAll("padlock-option");
         },
+        get selectedOption() {
+            return this.options[this.selected];
+        },
         attached: function() {
             this.async(this._selectDefault.bind(this));
         },
@@ -42,21 +45,18 @@
             var opts = this.options;
             // Initially select the first item with the _selected_ attribute
             for (var i=0; i < opts.length; i++) {
-                if (opts[i].selected) {
-                    this.selected = opts[i];
-                    break;
+                if (opts[i].default) {
+                    this.selected = i;
+                    return;
                 }
             }
+            this.selected = -1;
         },
         _openChanged: function() {
             var options = this.options,
-                prefix = platform.getVendorPrefix().css,
                 // We're assuming all rows have the same height
                 rowHeight = options[0] && options[0].offsetHeight || 50,
                 gutterWidth = 5;
-
-            // Apparently firefox doesnt want a prefix when setting the style directly
-            prefix = prefix == "-moz-" ? "" : prefix;
 
             // Show all options except the selected one by making them opaque
             // and lining them up via a css transform
@@ -64,11 +64,10 @@
                 o = options[i];
 
                 // If we are showing the options, skip the selected one
-                if (!this.open || o != this.selected) {
+                if (!this.open || i != this.selected) {
                     var y = (j + 1) * (rowHeight + gutterWidth);
-                    y = this.openUpwards ? -y : y;
-                    var trans = this.open ? "translate(0px, " + y + "px)" : "";
-                    o.style[prefix + "transform"] = trans;
+                    y = !this.open ? "0" : this.openUpwards ? -y + "px" : y + "px";
+                    this.translate3d("0", y, "0", o);
                     o.style.opacity = this.open ? 1 : 0;
                     j++;
                 }
@@ -78,28 +77,40 @@
         toggleOpen: function() {
             this.open = !this.open;
         },
-        _optionTap: function(event) {
-            this.selected = event.target;
+        _optionTap: function(e) {
+            this.selectElement(e.target);
             this.open = false;
         },
         _selectedChanged: function() {
-            this.value = this.selected && this.selected.value;
+            this.value = this.selectedOption && this.selectedOption.value;
         },
         _valueChanged: function() {
             this.selectValue(this.value);
         },
         //* Selects the first option with the given value
         selectValue: function(value) {
-            this.selected = Array.prototype.filter.call(Polymer.dom(this).children, function(option) {
-                return option.value == value;
-            })[0];
+            var opts = this.options;
+            for (var i = 0; i < opts.length; i++) {
+                if (opts[i].value == value) {
+                    this.selected = i;
+                    return;
+                }
+            }
+            this.selected = -1;
         },
-        _label: function(selected, label) {
-            return selected ? selected.innerHTML : label;
+        selectElement: function(el) {
+            this.selected = this.options.indexOf(el);
+        },
+        _label: function() {
+            var opt = this.selectedOption;
+            return opt && (opt.label || opt.value) || this.label;
         },
         _shape: function(open) {
             return open ? "cancel" : "down";
+        },
+        _selectedClass: function() {
+            return this.selectedOption && this.selectedOption.selectedClass || "";
         }
     });
 
-})(Polymer, padlock.platform);
+})(Polymer);

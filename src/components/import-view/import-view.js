@@ -79,39 +79,28 @@
         _getNameCol: function() {
             this.colNames = this._csvData[0].slice();
             this._nameColOptions = this.colNames;
-            // This is to make sure the option elements are generated right away
-            // so we can select the first one.
-            // Platform.performMicrotaskCheckpoint();
-            // Select the first column by default
-            this.$.nameColSelect.selected = this.$.nameColSelect.options[0];
+            this.$.nameColSelect.selected = -1;
             this.$.nameColDialog.open = true;
         },
         _confirmNameCol: function() {
-            var colName = this.$.nameColSelect.value;
-
-            this._nameColIndex = this.colNames.indexOf(colName);
-            this.$.nameColDialog.open = false;
-            this._getCatCol();
+            this._nameColIndex = this.$.nameColSelect.selected;
+            if (this._nameColIndex != -1) {
+                this.$.nameColDialog.open = false;
+                this._getCatCol();
+            }
         },
         //* Opens the dialog for selecting a column for the category
         _getCatCol: function() {
             var select = this.$.catColSelect;
-
             // One column is already taken by the record name
-            this._catColOptions = util.remove(this.colNames, this._nameColIndex);
-            // The category is optional so we need an option for selecting none of the columns
-            this._catColOptions.push("(none)");
-            // This is to make sure the option elements are generated right away
-            // so we can select the first one.
-            // Platform.performMicrotaskCheckpoint();
-            // Select 'none' by default
-            select.selected = select.options[select.options.length-1];
+            var opts = util.remove(this.colNames, this._nameColIndex);
+            this._catColOptions = opts;
+            select.selected = -1;
             this.$.catColDialog.open = true;
         },
         _confirmCatCol: function() {
             var colName = this.$.catColSelect.value;
-
-            this._catColIndex = colName == "(none)" ? undefined : this.colNames.indexOf(colName);
+            this._catColIndex = this.colNames.indexOf(colName);
             this.$.catColDialog.open = false;
             this._importCsv();
         },

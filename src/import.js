@@ -178,7 +178,7 @@ padlock.import = (function(crypto) {
 
             return {
                 name: row[nameColIndex],
-                category: row[catColIndex],
+                category: row[catColIndex] || "",
                 fields: fields
             };
         });

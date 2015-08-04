@@ -29,9 +29,9 @@
         <padlock-dialog id="editDialog" on-close="_editDialogClosed">
             <div class="title" hidden$="{{ _editing }}">New Category</div>
             <padlock-select id="colorSelect" open-upwards="true">
-                <padlock-option class="color1" selected-class="color1" value="1">Select a color</padlock-option>
-                <padlock-option class="color2" selected-class="color2" value="2">Select a color</padlock-option>
-                <padlock-option class="color3" selected-class="color3" value="3">Select a color</padlock-option>
+                <padlock-option class="color1" selected-class="color1" value="1" label="Select a color"></padlock-option>
+                <padlock-option class="color2" selected-class="color2" value="2" label="Select a color"></padlock-option>
+                <padlock-option class="color3" selected-class="color3" value="3" label="Select a color"></padlock-option>
             </padlock-select>
             <input is="padlock-input" id="nameInput" placeholder="Category Name"/>
             <button class="primary" on-tap="_editEnter">Save</button>

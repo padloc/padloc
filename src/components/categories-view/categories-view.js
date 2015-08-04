@@ -50,20 +50,13 @@
             this.$.editDialog.open = true;
         },
         _editCategory: function(e) {
-            var colorOptions = Polymer.dom(this.$.colorSelect).children,
-                category = e.model.item;
+            var category = e.model.item;
 
             this._editing = category;
             this.$.nameInput.value = category.name;
 
             // Select current color
-            for (var i=0, co; i<colorOptions.length; i++) {
-                co = colorOptions[i];
-                if (parseInt(co.value, 10) == category.color) {
-                    this.$.colorSelect.selected = co;
-                    break;
-                }
-            }
+            this.$.colorSelect.selectValue(category.color.toString());
 
             this.$.editDialog.open = true;
             e.stopPropagation();
