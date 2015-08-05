@@ -12,17 +12,20 @@ padlock.ViewBehavior = (function(platform) {
     return {
         properties: {
             //* Options the header element is going to use to adjust its appearance
-            headerOptions: {
-                type: Object,
-                notifiy: true,
-                value: function() {
-                    return {
-                        show: false,
-                        leftIconShape: "",
-                        rightIconShape: "",
-                        showFilter: false
-                    };
-                }
+            showFilter: {
+                type: Boolean,
+                value: false,
+                notify: true
+            },
+            leftHeaderIcon: {
+                type: String,
+                value: "",
+                notify: true
+            },
+            rightHeaderIcon: {
+                type: String,
+                value: "",
+                notify: true
             },
             inAnimation: String,
             outAnimation: String,

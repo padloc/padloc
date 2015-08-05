@@ -38,14 +38,14 @@
         ],
         //* Updates the icon shapes for the left and right header button
         _updateIcons: function(view, filterActive) {
-            if (view && view.headerOptions.showFilter && filterActive) {
+            if (view && view.showFilter && filterActive) {
                 // In case the filter input is showing, view preferences are overwritten
                 this.$.leftIcon.shape = "";
                 this.$.rightIcon.shape = "cancel";
             } else {
                 // The current view provides the icon shapes it wants
-                this.$.leftIcon.shape = view.headerOptions.leftIconShape;
-                this.$.rightIcon.shape = view.headerOptions.rightIconShape;
+                this.$.leftIcon.shape = view && view.leftHeaderIcon;
+                this.$.rightIcon.shape = view && view.rightHeaderIcon;
             }
         },
         //* The left button was clicked. Delegates to the corresponding view method
@@ -59,7 +59,7 @@
          * delegates to view method otherwise
          */
         _rightClicked: function() {
-            if (this.view && this.view.headerOptions.showFilter && this.filterActive) {
+            if (this.view && this.view.showFilter && this.filterActive) {
                 this.cancelFilter();
             } else if (this.view && this.view.rightHeaderButton) {
                 this.view.rightHeaderButton();

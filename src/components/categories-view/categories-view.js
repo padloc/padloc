@@ -17,9 +17,8 @@
             "_updateHeaderTitle(record.name)"
         ],
         ready: function() {
-            this.headerOptions.show = true;
-            this.headerOptions.leftIconShape = "cancel";
-            this.headerOptions.rightIconShape = "plus";
+            this.leftHeaderIcon = "cancel";
+            this.rightHeaderIcon = "plus";
             this._updateHeaderTitle();
         },
         leftHeaderButton: function() {

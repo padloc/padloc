@@ -16,9 +16,8 @@
         is: "padlock-import-view",
         behaviors: [ViewBehavior],
         ready: function() {
-            this.headerOptions.show = true;
-            this.headerOptions.leftIconShape = "left";
-            this.headerOptions.rightIconShape = "";
+            this.leftHeaderIcon = "left";
+            this.rightHeaderIcon = "";
             this.headerTitle = "Import Records";
         },
         leftHeaderButton: function() {

@@ -268,7 +268,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
 
             // CTRL/CMD + F -> Filter
             if ((event.ctrlKey || event.metaKey) && event.keyCode === 70 &&
-                    this._currentView.headerOptions.showFilter) {
+                    this._currentView.showFilter) {
                 shortcut = this.$.shutter.focusFilterInput.bind(this.$.shutter);
             }
             // DOWN -> Mark next

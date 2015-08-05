@@ -12,9 +12,8 @@
             settings: Object
         },
         ready: function() {
-            this.headerOptions.show = true;
-            this.headerOptions.leftIconShape = "left";
-            this.headerOptions.rightIconShape = "";
+            this.leftHeaderIcon = "left";
+            this.rightHeaderIcon = "";
             this.headerTitle = "Settings";
         },
         leftHeaderButton: function() {

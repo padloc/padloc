@@ -25,9 +25,8 @@
             "_updateTitleText(record.name)"
         ],
         ready: function() {
-            this.headerOptions.show = true;
-            this.headerOptions.leftIconShape = "left";
-            this.headerOptions.rightIconShape = "more";
+            this.leftHeaderIcon = "left";
+            this.rightHeaderIcon = "more";
             this._itemSelector = ".field";
         },
         show: function() {

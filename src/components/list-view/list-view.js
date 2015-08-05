@@ -25,10 +25,9 @@
         ],
         _firstInSection: {},
         ready: function() {
-            this.headerOptions.show = true;
-            this.headerOptions.leftIconShape = "menu";
-            this.headerOptions.rightIconShape = "plus";
-            this.headerOptions.showFilter = true;
+            this.leftHeaderIcon = "menu";
+            this.rightHeaderIcon = "plus";
+            this.showFilter = true;
             this._itemSelector = ".record-item";
         },
         leftHeaderButton: function() {
