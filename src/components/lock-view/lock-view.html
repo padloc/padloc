@@ -1,6 +1,8 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../view/view.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../lock/lock.html">
 
 <dom-module id="padlock-lock-view">
 
@@ -19,6 +21,8 @@
             <!-- ENTER BUTTON -->
             <button class="enter-button ghost" on-tap="enter">OK</button>
         </div>
+
+        <padlock-lock></padlock-lock>
     </template>
 
     <script src="lock-view.js"></script>
