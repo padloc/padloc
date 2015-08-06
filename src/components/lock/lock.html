@@ -1,0 +1,43 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<dom-module id="padlock-lock">
+
+    <link rel="import" href="lock.css" type="css">
+
+    <template>
+
+        <svg width="1000px" height="1000px" viewBox="0 0 1000 1000">
+            <rect x="100" y="632" width="800" height="625"/>
+            <path class="bolt" stroke-width="110" stroke-miterlimit="10"
+                d="M778,688V533.991C778,380.461,653.531,256,500,256c-153.53,0-278,124.461-278,277.991V900"/>
+        </svg>
+
+    </template>
+
+    <script>
+    /* global Polymer */
+
+    (function(Polymer) {
+        "use strict";
+
+        Polymer({
+            is: "padlock-lock",
+            properties: {
+                unlocked: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true
+                },
+                expanded: {
+                    type: Boolean,
+                    value: false,
+                    reflectToAttribute: true
+                }
+            }
+        });
+
+    })(Polymer);
+
+    </script>
+
+</dom-module>

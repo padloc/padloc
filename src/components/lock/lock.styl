@@ -1,0 +1,41 @@
+@import "nib";
+@import "../../styles/config.styl";
+
+@keyframes expand {
+    to { transform: scale(10); fill: $color-grey; stroke: $color-grey; }
+}
+
+:host {
+    display: block;
+    position: relative;
+    width: 300px;
+    height: 300px;
+    transform-origin: center bottom;
+    fill: #fff;
+    stroke: #fff;
+
+    svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+    }
+
+    rect {
+        fill: inherit;
+        stroke: none;
+    }
+
+    .bolt {
+        stroke: inherit;
+        fill: none;
+        transition: transform 0.3s cubic-bezier(0, 1.1, 0.49, 1.1);
+    }
+}
+
+:host([expanded]) {
+    animation: expand 0.5s cubic-bezier(1, -0.05, 0.9, 0.05) both !important;
+}
+
+:host([unlocked]) .bolt {
+    transform: translate3d(0, -100px, 0);
+}
