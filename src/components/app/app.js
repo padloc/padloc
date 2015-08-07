@@ -105,7 +105,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 this._openView(
                     this.$.listView,
                     {animation: "popin", delay: 1500},
-                    {animation: "expand", delay: 500}
+                    {animation: "expand", delay: 500, easing: "cubic-bezier(1, -0.05, 0.9, 0.05)"}
                 );
 
                 this.async(function() {
@@ -132,7 +132,12 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 delete this.remoteSource.password;
             }
 
-            this.$.shutter.open = false;
+            this.$.header.showing = false;
+            this._openView(
+                this.$.lockView,
+                {animation: "contract", easing: "cubic-bezier(0.8, 0, 0.2, 1.2)", delay: 300},
+                {animation: "popout"}
+            );
             setTimeout(this.collection.clear.bind(this.collection), 500);
         },
         //* Change handler for the _selected property; Opens the record view when record is selected

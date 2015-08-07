@@ -49,6 +49,12 @@
     to {opacity: 1;}
 }
 
+@keyframes popout {
+    from {opacity: 1;}
+    80% {opacity: 1; transform: scale(1.05);}
+    to {opacity: 0; transform: scale(0.1);}
+}
+
 :host {
     position: absolute;
     left: 0;
@@ -59,6 +65,5 @@
 }
 
 :host(:not(.showing)) {
-    opacity: 0;
-    z-index: -1000;
+    display: none;
 }

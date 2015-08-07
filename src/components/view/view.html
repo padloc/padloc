@@ -80,6 +80,7 @@ padlock.ViewBehavior = (function(platform) {
             var prefix = platform.getVendorPrefix().css,
                 direction = this._currDirection = opts.direction,
                 duration = opts.duration || this.animationDuration,
+                easing = opts.easing || this.animationEasing,
                 animation = this._currAnimation = opts.animation,
                 // We use fill styles mainly to prevent the animated 'flashing' before an in animation starts
                 // or after an out animation ends. The reason we don't simply use a fill style of 'both' is
@@ -96,7 +97,7 @@ padlock.ViewBehavior = (function(platform) {
             this.getAnimationElement().style[prefix + "animation"] = animation && duration ? [
                 animation,
                 duration + "ms",
-                this.animationEasing,
+                easing,
                 "0ms",
                 fillStyle
             ].join(" ") : "";
