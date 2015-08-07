@@ -55,6 +55,14 @@
     to {opacity: 0; transform: scale(0.1);}
 }
 
+@keyframes expand {
+    to { transform: scale(10); fill: $color-grey; stroke: $color-grey; }
+}
+
+@keyframes contract {
+    from { transform: scale(10); fill: $color-grey; stroke: $color-grey; }
+}
+
 :host {
     position: absolute;
     left: 0;

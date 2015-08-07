@@ -69,27 +69,33 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             document.addEventListener("pause", this._lock.bind(this), false);
         },
         _initView: function(collExists) {
-            // var isTouch = platform.isTouch();
+            var isTouch = platform.isTouch();
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one
-            // this.$.shutter.startMode = !collExists;
-            // if (collExists && !isTouch) {
-            //     setTimeout(this.$.shutter.focusPwdInput.bind(this.$.shutter), 10);
-            // }
+            var view = collExists ? this.$.lockView : this.$.startView;
 
             // open the first view
             // this._openView(this.$.listView, { animation: "" });
-            this._openView(this.$.lockView, { animation: "" });
+            this._openView(view, { animation: "" });
+
+            if (collExists && !isTouch) {
+                this.async(view.focusPwdInput.bind(view), 10);
+            }
         },
         _pwdEnter: function(event, detail) {
             this._unlock(detail.password);
         },
         _newPwd: function(event, detail) {
             this.collection.setPassword(detail.password);
-            this.$.shutter.open = true;
-            setTimeout(function() {
-                this.$.shutter.startMode = false;
-            }.bind(this), 500);
+            this._openView(
+                this.$.listView,
+                {animation: "popin", delay: 1500},
+                {animation: "expand", delay: 500, easing: "cubic-bezier(1, -0.05, 0.9, 0.05)"}
+            );
+
+            this.async(function() {
+                this.$.header.showing = true;
+            }, 1500);
         },
         //* Tries to unlock the current collection with the provided password
         _unlock: function(password) {
@@ -103,7 +109,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 this.$.decrypting.hide();
                 this.decrypting = false;
                 this._openView(
-                    this.$.listView,
+                    this._lastView || this.$.listView,
                     {animation: "popin", delay: 1500},
                     {animation: "expand", delay: 500, easing: "cubic-bezier(1, -0.05, 0.9, 0.05)"}
                 );
@@ -131,6 +137,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             if (this.remoteSource) {
                 delete this.remoteSource.password;
             }
+
+            this._lastView = this._currentView;
 
             this.$.header.showing = false;
             this._openView(
@@ -441,9 +449,12 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             }
         },
         _reset: function() {
-            // this.$.shutter.startMode = true;
-            // this.$.shutter.open = false;
-            // this._openView(this.$.listView, {animation: ""}, {animation: ""});
+            this.$.header.showing = false;
+            this._openView(
+                this.$.startView,
+                {animation: "contract", easing: "cubic-bezier(0.8, 0, 0.2, 1.2)", delay: 300},
+                {animation: "popout"}
+            );
         },
         _recordSelected: function(e) {
             this.$.selector.select(e.detail.record);

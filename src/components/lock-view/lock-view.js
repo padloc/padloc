@@ -14,10 +14,8 @@
             }, 500);
         },
         show: function() {
+            this.$$("padlock-lock").unlocked = false;
             ViewBehavior.show.apply(this, arguments);
-            this.async(function() {
-                this.$$("padlock-lock").unlocked = false;
-            }, 800);
         },
         enter: function() {
             this.$.pwdInput.blur();

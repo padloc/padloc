@@ -7,14 +7,6 @@
     to { transform: translate3d(0, 0, 0); opacity: 1; }
 }
 
-@keyframes expand {
-    to { transform: scale(10); fill: $color-grey; stroke: $color-grey; }
-}
-
-@keyframes contract {
-    from { transform: scale(10); fill: $color-grey; stroke: $color-grey; }
-}
-
 :host {
     display: block;
     background: $color-primary;
@@ -37,19 +29,19 @@
     margin-bottom: 30px;
     color: #fff;
 
-    animation: reveal 0.5s ease 0.25s both;
+    animation: reveal 0.5s ease 0.2s both;
 }
 
 .password-input {
     text-align: center;
     width: 100%;
-    animation: reveal 0.5s ease 0.5s both;
+    animation: reveal 0.5s ease 0.4s both;
 }
 
 .enter-button {
     width: 100%;
     margin-top: 20px;
-    animation: reveal 0.5s ease 0.75s both;
+    animation: reveal 0.5s ease 0.6s both;
 }
 
 padlock-lock {
@@ -58,5 +50,5 @@ padlock-lock {
     right: 0;
     bottom: -50px;
     margin: 0 auto;
-    animation: reveal 0.5s ease 1s both;
+    animation: reveal 0.5s ease 0.8s both;
 }

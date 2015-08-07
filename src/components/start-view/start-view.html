@@ -1,17 +1,21 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../view/view.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../notification/notification.html">
 <link rel="import" href="../lock/lock.html">
 
 <dom-module id="padlock-start-view">
 
+    <link href="../view/view.css" rel="import" type="css">
     <link href="start-view.css" rel="import" type="css">
 
     <template>
+
+        <padlock-lock></padlock-lock>
+
         <!-- WRAPPER (for centering) -->
         <div class="wrapper">
-            <padlock-lock></padlock-lock>
             <!-- HEADER -->
             <div class="header">
                 Padlock
