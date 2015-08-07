@@ -65,8 +65,11 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             document.addEventListener("backbutton", this._back.bind(this), false);
 
             // Lock app when it goes into the background
-            document.addEventListener("resign", this._lock.bind(this), false);
-            document.addEventListener("pause", this._lock.bind(this), false);
+            document.addEventListener("resign", this._pause.bind(this), false);
+            document.addEventListener("pause", this._pause.bind(this), false);
+
+            // Init view when app resumes
+            document.addEventListener("resume", this._initView.bind(this, true), false);
         },
         _initView: function(collExists) {
             var isTouch = platform.isTouch();
@@ -128,6 +131,14 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 this.$.decrypting.hide();
                 this.decrypting = false;
             }.bind(this)});
+        },
+        _pause: function() {
+            this.$.header.showing = false;
+            if (this._currentView) {
+                this._lastView = this._currentView;
+                this._currentView.hide({animation: ""});
+                this._currentView = null;
+            }
         },
         //* Locks the collection and opens the lock view
         _lock: function() {
