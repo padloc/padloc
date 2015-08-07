@@ -14,7 +14,7 @@
             <div class="middle">
                 <!-- FILTER INPUT -->
                 <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString::keyup }}" type="search"
-                    placeholder$="{{ _filterPlaceholder(_filterHasFocus) }}" disabled$="{{ !showFilter }}" has-focus="{{ _filterHasFocus }}"/>
+                    placeholder$="{{ _filterPlaceholder(_filterHasFocus) }}" disabled$="{{ !_view.showFilter }}" has-focus="{{ _filterHasFocus }}"/>
                 <!-- HEADER TITLE -->
                 <div class="title">{{ _title }}</div>
             </div>

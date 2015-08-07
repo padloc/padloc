@@ -1,7 +1,8 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../shutter/shutter.html">
 <link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../header/header.html">
+<link rel="import" href="../lock-view/lock-view.html">
 <link rel="import" href="../list-view/list-view.html">
 <link rel="import" href="../record-view/record-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
@@ -17,8 +18,10 @@
     <link href="app.css" rel="import" type="css">
 
     <template>
-        <padlock-shutter id="shutter" on-newpwd="_newPwd" on-pwdenter="_pwdEnter"
-            current-view="{{ _currentView }}" filter-string="{{ _filterString }}"></padlock-shutter>
+        <padlock-header id="header" view="{{ _currentView }}" filter-string="{{ _filterString }}"></padlock-header>
+        <!-- <padlock&#45;shutter id="shutter" on&#45;newpwd="_newPwd" on&#45;pwdenter="_pwdEnter" -->
+        <!--     current&#45;view="{{ _currentView }}" filter&#45;string="{{ _filterString }}"></padlock&#45;shutter> -->
+        <padlock-lock-view id="lockView" class="view" on-pwdenter="_pwdEnter"></padlock-lock-view>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" records="{{ _records }}" filter-string="{{ _filterString }}"
             categories="{{ categories }}" selected="{{ _selected }}" on-select="_recordSelected" on-add="_addRecord"

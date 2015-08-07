@@ -93,13 +93,13 @@ padlock.ViewBehavior = (function(platform) {
             prefix = prefix == "-moz-" ? "" : prefix;
 
             // Apply the animation the appropriate element
-            this.getAnimationElement().style[prefix + "animation"] = [
+            this.getAnimationElement().style[prefix + "animation"] = animation && duration ? [
                 animation,
                 duration + "ms",
                 this.animationEasing,
                 "0ms",
                 fillStyle
-            ].join(" ");
+            ].join(" ") : "";
 
             // If we are not using an animation or the animation duration is 0,
             // then the animationend event will not be fired. So we have to fire the

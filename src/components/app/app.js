@@ -69,16 +69,17 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             document.addEventListener("pause", this._lock.bind(this), false);
         },
         _initView: function(collExists) {
-            var isTouch = platform.isTouch();
+            // var isTouch = platform.isTouch();
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one
-            this.$.shutter.startMode = !collExists;
-            if (collExists && !isTouch) {
-                setTimeout(this.$.shutter.focusPwdInput.bind(this.$.shutter), 10);
-            }
+            // this.$.shutter.startMode = !collExists;
+            // if (collExists && !isTouch) {
+            //     setTimeout(this.$.shutter.focusPwdInput.bind(this.$.shutter), 10);
+            // }
 
             // open the first view
-            this._openView(this.$.listView, { animation: "" });
+            // this._openView(this.$.listView, { animation: "" });
+            this._openView(this.$.lockView, { animation: "" });
         },
         _pwdEnter: function(event, detail) {
             this._unlock(detail.password);
@@ -101,12 +102,21 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             this.collection.fetch({password: password, success: function() {
                 this.$.decrypting.hide();
                 this.decrypting = false;
-                setTimeout(function() {
+                this._openView(
+                    this.$.listView,
+                    {animation: "popin", delay: 1500},
+                    {animation: "expand", delay: 500}
+                );
+
+                this.async(function() {
+                    this.$.header.showing = true;
+                }, 1500);
+
+                this.async(function() {
                     if (this.settings.sync_connected && this.settings.sync_auto) {
                         this._synchronize();
                     }
-                    this.$.shutter.open = true;
-                }.bind(this), 100);
+                }, 2000);
             }.bind(this), fail: function() {
                 this.$.notification.show("Wrong Password!", "error", 2000);
                 this.$.decrypting.hide();
@@ -129,7 +139,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _selectedChanged: function() {
             if (this._selected) {
                 this._openView(this.$.recordView);
-                this.$.shutter.blurFilterInput();
+                this.$.header.blurFilterInput();
             }
         },
         /**
@@ -155,8 +165,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             // Hide current view (if any)
             if (this._currentView) {
                 // Start the in animation after a small delay
-                setTimeout(view.show.bind(view, inOpts), 100);
-                this._currentView.hide(outOpts);
+                this.async(view.show.bind(view, inOpts), inOpts.delay || 100);
+                this.async(this._currentView.hide.bind(this._currentView, outOpts), outOpts.delay || 0);
             } else {
                 view.show(inOpts);
             }
@@ -243,11 +253,11 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         //* Triggers the headers scrim to match the scrim of the opened dialog
         _dialogOpen: function() {
-            this.$.shutter.scrim = true;
+            this.$.header.scrim = true;
         },
         //* Removes the headers scrim
         _dialogClose: function() {
-            this.$.shutter.scrim = false;
+            this.$.header.scrim = false;
         },
         //* Show an alert dialog with the provided message
         _alert: function(msg) {
@@ -261,15 +271,10 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _keydown: function(event) {
             var shortcut;
 
-            // If the shutter is closed, ignore all shortcuts
-            if (!this.$.shutter.open) {
-                return;
-            }
-
             // CTRL/CMD + F -> Filter
             if ((event.ctrlKey || event.metaKey) && event.keyCode === 70 &&
                     this._currentView.showFilter) {
-                shortcut = this.$.shutter.focusFilterInput.bind(this.$.shutter);
+                shortcut = this.$.header.focusFilterInput.bind(this.$.header);
             }
             // DOWN -> Mark next
             else if (event.keyCode == 40) {
@@ -417,7 +422,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
 
             // If we're in the list view, clear the filter input and restore the full list
             if (this._currentView == this.$.listView) {
-                this.$.shutter.cancelFilter();
+                this.$.header.cancelFilter();
             }
         },
         _saveSettings: function() {
@@ -431,9 +436,9 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             }
         },
         _reset: function() {
-            this.$.shutter.startMode = true;
-            this.$.shutter.open = false;
-            this._openView(this.$.listView, {animation: ""}, {animation: ""});
+            // this.$.shutter.startMode = true;
+            // this.$.shutter.open = false;
+            // this._openView(this.$.listView, {animation: ""}, {animation: ""});
         },
         _recordSelected: function(e) {
             this.$.selector.select(e.detail.record);

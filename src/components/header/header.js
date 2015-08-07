@@ -7,11 +7,6 @@
         is: "padlock-header",
         properties: {
             view: Object,
-            showFilter: {
-                type: Boolean,
-                value: false,
-                reflectToAttribute: true
-            },
             filterString: {
                 type: String,
                 notify: true
@@ -26,6 +21,11 @@
                 value: false,
                 reflectToAttribute: true
             },
+            showing: {
+                type: Boolean,
+                value: false,
+                reflectToAttribute: true
+            },
             _filterHasFocus: {
                 type: Boolean,
                 observer: "_filterHasFocusChanged"
@@ -34,7 +34,8 @@
         },
         observers: [
             "_updateIcons(view, filterActive)",
-            "_updateTitle(view.headerTitle)"
+            "_updateTitle(view.headerTitle)",
+            "_toggleFilter(view.showFilter)"
         ],
         //* Updates the icon shapes for the left and right header button
         _updateIcons: function(view, filterActive) {
@@ -91,6 +92,9 @@
         },
         _updateTitle: function(title) {
             this._title = title || this._title;
+        },
+        _toggleFilter: function(showFilter) {
+            this.toggleClass("show-filter", showFilter);
         }
     });
 

@@ -29,6 +29,7 @@
 :host {
     line-height: 0;
     pointer-events: none;
+    transition: transform 0.5s cubic-bezier(.71, -0.51, 0, 1.38);
 }
 
 :host > div {
@@ -73,7 +74,7 @@
     }
 }
 
-:host([show-filter]) {
+:host(.show-filter) {
     .filter-input {
         animation: filterIn 0.5s ease 0s both;
     }
@@ -94,6 +95,10 @@
     & > div::after {
         opacity: $scrim-opacity;
     }
+}
+
+:host(:not([showing])) {
+    transform: translate3d(0, -100%, 0);
 }
 
 .middle {

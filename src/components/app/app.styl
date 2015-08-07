@@ -83,6 +83,7 @@
 
         input.ghost {
             background: transparent;
+            background: rgba(255, 255, 255, 0.1);
             color: #fff;
             border-top: solid 1px #fff;
             border-bottom: solid 1px #fff;
@@ -132,4 +133,10 @@ padlock-progress#decrypting {
 
 padlock-progress#synchronizing {
     background: $color-green;
+}
+
+padlock-header {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
 }
