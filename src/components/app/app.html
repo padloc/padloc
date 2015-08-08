@@ -9,6 +9,7 @@
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../import-view/import-view.html">
 <link rel="import" href="../categories-view/categories-view.html">
+<link rel="import" href="../generator-view/generator-view.html">
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../progress/progress.html">
@@ -41,6 +42,7 @@
         <!-- CATEGORIES VIEW -->
         <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ _selected }}"
             on-back="_categoriesDone" on-categorychanged="_categoryChanged"></padlock-categories-view>
+        <padlock-generator-view id="generatorView" class="view" on-back="_generatorBack"></padlock-generator-view>
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id="decrypting">decrypting...</padlock-progress>
         <padlock-progress id="synchronizing">synchronizing...</padlock-progress>
@@ -48,6 +50,7 @@
         <padlock-dialog id="mainMenu">
             <button on-tap="_synchronize">Synchronize</button>
             <button on-tap="_openSettings">Settings</button>
+            <button on-tap="_openGenerator">Password Generator</button>
             <button on-tap="_lock">Lock App</button>
         </padlock-dialog>
         <!-- ADD RECORD -->

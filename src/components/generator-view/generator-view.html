@@ -11,7 +11,7 @@
 
     <template>
 
-        <input is="padlock-input" value="{{ value }}" select-all-on-focus>
+        <input id="valueInput" is="padlock-input" value="{{ value }}" select-all-on-focus>
         <padlock-toggle-button label="a-z" value="{{ includeLowerCase }}"></padlock-toggle-button>
         <padlock-toggle-button label="A-Z" value="{{ includeUpperCase }}"></padlock-toggle-button>
         <padlock-toggle-button label="0-9" value="{{ includeNumbers }}"></padlock-toggle-button>
@@ -63,6 +63,11 @@
             observers: [
                 "generate(length, includeLowerCase, includeUpperCase, includeNumbers, includeOther)"
             ],
+            ready: function() {
+                this.leftHeaderIcon = "left";
+                this.rightHeaderIcon = "more";
+                this.headerTitle = "Generate Password";
+            },
             generate: function() {
                 var charSet = "";
                 this.includeLowerCase && (charSet += rand.chars.lower);
@@ -71,6 +76,10 @@
                 this.includeOther && (charSet += rand.chars.other);
 
                 this.value = charSet ? rand.randomString(this.length, charSet) : "";
+            },
+            leftHeaderButton: function() {
+                this.$.valueInput.blur();
+                this.fire("back");
             }
         });
 

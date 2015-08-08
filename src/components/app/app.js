@@ -472,6 +472,13 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _notifyHeaderTitle: function() {
             this.notifyPath("_currentView.headerTitle", this._currentView && this._currentView.headerTitle);
+        },
+        _openGenerator: function() {
+            this.$.mainMenu.open = false;
+            this._openView(this.$.generatorView);
+        },
+        _generatorBack: function() {
+            this._openView(this.$.listView);
         }
     });
 
