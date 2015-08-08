@@ -386,7 +386,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                         if (remotePassword !== undefined && this.collection.defaultPassword !== remotePassword) {
                             this.$.updateRemotePasswordDialog.open = true;
                         } else {
-                            this.$.notification.show("Synchronization successful!", "success", 1000);
+                            this.$.notification.show("Synchronization successful!", "success", 2000);
                         }
                     }.bind(this),
                     fail: function(e) {
