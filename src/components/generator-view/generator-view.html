@@ -1,0 +1,81 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../padlock.html">
+<link rel="import" href="../view/view.html">
+<link rel="import" href="../input/input.html">
+<link rel="import" href="../toggle/toggle.html">
+
+<dom-module id="padlock-generator-view">
+
+    <link rel="import" href="../view/view.css" type="css">
+    <link rel="import" href="generator-view.css" type="css">
+
+    <template>
+
+        <input is="padlock-input" value="{{ value }}" select-all-on-focus>
+        <padlock-toggle-button label="a-z" value="{{ includeLowerCase }}"></padlock-toggle-button>
+        <padlock-toggle-button label="A-Z" value="{{ includeUpperCase }}"></padlock-toggle-button>
+        <padlock-toggle-button label="0-9" value="{{ includeNumbers }}"></padlock-toggle-button>
+        <padlock-toggle-button label="?+-()/%&..." value="{{ includeOther }}"></padlock-toggle-button>
+        <div class="length-wrapper">
+            <input type="range" value="{{ length::change }}" min="5" max="50">
+            <span>{{ length }}</span>
+        </div>
+        <button on-tap="generate">Generate</button>
+
+    </template>
+
+    <script>
+    /* global Polymer, padlock */
+
+    (function(Polymer, ViewBehavior, rand) {
+        "use strict";
+
+        Polymer({
+            is: "padlock-generator-view",
+            behaviors: [ViewBehavior],
+            properties: {
+                value: {
+                    type: String,
+                    value: "",
+                    notify: true
+                },
+                length: {
+                    type: Number,
+                    value: 10
+                },
+                includeLowerCase: {
+                    type: Boolean,
+                    value: true
+                },
+                includeUpperCase: {
+                    type: Boolean,
+                    value: true
+                },
+                includeNumbers: {
+                    type: Boolean,
+                    value: true
+                },
+                includeOther: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+            observers: [
+                "generate(length, includeLowerCase, includeUpperCase, includeNumbers, includeOther)"
+            ],
+            generate: function() {
+                var charSet = "";
+                this.includeLowerCase && (charSet += rand.chars.lower);
+                this.includeUpperCase && (charSet += rand.chars.upper);
+                this.includeNumbers && (charSet += rand.chars.numbers);
+                this.includeOther && (charSet += rand.chars.other);
+
+                this.value = charSet ? rand.randomString(this.length, charSet) : "";
+            }
+        });
+
+    })(Polymer, padlock.ViewBehavior, padlock.rand);
+
+    </script>
+
+</dom-module>

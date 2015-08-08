@@ -8,5 +8,6 @@
     "strict": true,
     "maxlen": 120,
     "newcap": false,
-    "browser": true
+    "browser": true,
+    "expr": true
 }

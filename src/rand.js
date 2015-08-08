@@ -35,6 +35,7 @@ padlock.rand = (function() {
     }
 
     return {
-        randomString: randomString
+        randomString: randomString,
+        chars: chars
     };
 })();

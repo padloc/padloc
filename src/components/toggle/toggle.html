@@ -9,6 +9,74 @@
         <div class="knob"></div>
     </template>
 
-    <script src="toggle.js"></script>
+</dom-module>
+
+<dom-module id="padlock-toggle-button">
+    <link href="toggle-button.css" rel="import" type="css">
+
+    <template>
+
+        <button>
+            <span>{{ label }}</span>
+            <padlock-toggle value="{{ value }}" notap></padlock-toggle>
+        </button>
+
+    </template>
 
 </dom-module>
+
+<script>
+/* global Polymer */
+
+(function(Polymer) {
+    "use strict";
+
+    Polymer({
+        is: "padlock-toggle",
+        properties: {
+            value: {
+                type: Boolean,
+                value: false,
+                notify: true,
+                observer: "_valueChanged"
+            },
+            notap: Boolean
+        },
+        listeners: {
+            tap: "_tap"
+        },
+        _tap: function() {
+            if (!this.notap) {
+                this.toggle();
+            }
+        },
+        toggle: function() {
+            this.value = !this.value;
+        },
+        _valueChanged: function() {
+            this.toggleClass("on", this.value);
+            this.fire("change");
+        }
+    });
+
+    Polymer({
+        is: "padlock-toggle-button",
+        properties: {
+            value: {
+                type: Boolean,
+                value: false,
+                notify: true
+            },
+            label: String
+        },
+        listeners: {
+            tap: "toggle"
+        },
+        toggle: function() {
+            this.$$("padlock-toggle").toggle();
+        }
+    });
+
+})(Polymer);
+
+</script>
