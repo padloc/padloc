@@ -16,7 +16,7 @@
   ],
   "private": true,
   "dependencies": {
-    "shape-shifter": "~1.0.0",
+    "shape-shifter": "~1.0.2",
     "polymer": "Polymer/polymer#^1.0.0"
   }
 }
