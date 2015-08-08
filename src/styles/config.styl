@@ -1,3 +1,5 @@
+@import "nib";
+
 $font-size-default = 18px;
 $font-weight-thin = 100;
 $font-weight-light = 300;
@@ -31,3 +33,96 @@ $cat-color-2 = $color-yellow;
 $cat-color-3 = $color-red;
 
 $scrim-opacity = 0.5;
+
+:host, button, input {
+    font-weight: $font-weight-regular;
+    font-size: $font-size-default;
+    color: $text-color;
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button, a.button {
+    display: inline-block;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    border: none;
+    background: #fff;
+    margin: 0;
+    height: $row-height;
+    line-height: $row-height;
+    padding: 0 15px;
+    cursor: pointer;
+    color: $color-primary;
+    text-align: center;
+}
+
+button.primary {
+    background: $color-primary;
+    color: $text-color-light;
+}
+
+button.negative {
+    background: $color-negative;
+    color: $text-color-light;
+}
+
+button.ghost {
+    background: transparent;
+    color: #fff;
+    font-weight: 700;
+    line-height: 46px;
+    font-size: 120%;
+}
+
+input {
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 400;
+    color: inherit;
+    border-radius: 0;
+    background: #fff;
+    margin: 0;
+    height: $row-height;
+    appearance: none;
+    box-sizing: border-box;
+}
+
+input.ghost {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-top: solid 1px #fff;
+    border-bottom: solid 1px #fff;
+
+    &::-webkit-input-placeholder {
+       color: rgba(255, 255, 255, 0.5);
+    }
+}
+
+strong {
+    font-weight: $font-weight-bold;
+    color: $color-primary;
+}
+
+::-webkit-search-cancel-button {
+    display: none;
+}
+
+*:focus {
+    outline: none;
+}
+
+::placeholder {
+   color: $placeholder-color;
+   font-weight: $font-weight-thin;
+}
+
+[hidden] {
+    display: none !important;
+}
