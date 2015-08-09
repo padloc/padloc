@@ -302,30 +302,24 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             }
             // DOWN -> Mark next
             else if (event.keyCode == 40) {
-                if (this._currentView.markNext) {
-                    shortcut = this._currentView.markNext.bind(this._currentView);
-                }
+                shortcut = this._currentView.markNext && this._currentView.markNext.bind(this._currentView);
             }
             // UP -> Mark previous
             else if (event.keyCode == 38) {
-                if (this._currentView.markPrev) {
-                    shortcut = this._currentView.markPrev.bind(this._currentView);
-                }
+                shortcut = this._currentView.markPrev && this._currentView.markPrev.bind(this._currentView);
             }
             // ENTER -> Select marked
             else if (event.keyCode == 13) {
-                if (this._currentView.selectMarked) {
-                    shortcut = this._currentView.selectMarked.bind(this._currentView);
-                }
+                shortcut = this._currentView.selectMarked && this._currentView.selectMarked.bind(this._currentView);
             }
             // ESCAPE -> Back
             else if (event.keyCode == 27) {
                 shortcut = this._back.bind(this);
             }
             // CTRL/CMD + C -> Copy
-            else if ((event.ctrlKey || event.metaKey) && event.keyCode === 67 &&
-                this._currentView == this.$.recordView) {
-                shortcut = this.$.recordView.copyToClipboard.bind(this.$.recordView);
+            else if ((event.ctrlKey || event.metaKey) && event.keyCode === 67) {
+                shortcut = this._currentView.copyToClipboard &&
+                    this._currentView.copyToClipboard.bind(this._currentView);
             }
 
             // If one of the shortcuts matches, execute it and prevent the default behaviour

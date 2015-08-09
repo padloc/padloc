@@ -24,10 +24,6 @@
         </div>
         <button on-tap="generate">Generate</button>
 
-        <padlock-dialog id="menu">
-            <button on-tap="_copyToClipboard">Copy to Clipboard</button>
-        </padlock-dialog>
-
         <padlock-notification id="notification"></padlock-notification>
 
     </template>
@@ -99,17 +95,16 @@
                 if (this.field) {
                     this.fire("confirm", {field: this.field, value: this.value});
                 } else {
-                    this.$.menu.open = true;
+                    this.copyToClipboard();
                 }
             },
             _fieldChanged: function() {
                 this.leftHeaderIcon = this.field ? "cancel" : "left";
-                this.rightHeaderIcon = this.field ? "check" : "more";
+                this.rightHeaderIcon = this.field ? "check" : "copy";
                 this.headerTitle = this.field && this.field.name || "Generate";
             },
-            _copyToClipboard: function() {
+            copyToClipboard: function() {
                 platform.setClipboard(this.value);
-                this.$.menu.open = false;
                 this.$.notification.show("Copied to clipboard!", "success", 1500);
             }
         });
