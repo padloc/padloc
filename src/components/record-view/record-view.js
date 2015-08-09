@@ -119,7 +119,7 @@
 
             platform.setClipboard(value);
             this._selectedField = null;
-            this.$.notification.show("Copied to clipboard!", "success", 1000);
+            this.$.notification.show("Copied to clipboard!", "success", 1500);
         },
         //* Fills the current value input with a randomized value
         _generateValue: function() {

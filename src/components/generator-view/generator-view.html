@@ -3,6 +3,8 @@
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../toggle/toggle.html">
+<link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../notification/notification.html">
 
 <dom-module id="padlock-generator-view">
 
@@ -22,12 +24,18 @@
         </div>
         <button on-tap="generate">Generate</button>
 
+        <padlock-dialog id="menu">
+            <button on-tap="_copyToClipboard">Copy to Clipboard</button>
+        </padlock-dialog>
+
+        <padlock-notification id="notification"></padlock-notification>
+
     </template>
 
     <script>
     /* global Polymer, padlock */
 
-    (function(Polymer, ViewBehavior, rand) {
+    (function(Polymer, ViewBehavior, rand, platform) {
         "use strict";
 
         Polymer({
@@ -88,16 +96,25 @@
                 this.fire("back");
             },
             rightHeaderButton: function() {
-                this.fire("confirm", {field: this.field, value: this.value});
+                if (this.field) {
+                    this.fire("confirm", {field: this.field, value: this.value});
+                } else {
+                    this.$.menu.open = true;
+                }
             },
             _fieldChanged: function() {
                 this.leftHeaderIcon = this.field ? "cancel" : "left";
                 this.rightHeaderIcon = this.field ? "check" : "more";
-                this.headerTitle = this.field && this.field.name || "Generate Password";
+                this.headerTitle = this.field && this.field.name || "Generate";
+            },
+            _copyToClipboard: function() {
+                platform.setClipboard(this.value);
+                this.$.menu.open = false;
+                this.$.notification.show("Copied to clipboard!", "success", 1500);
             }
         });
 
-    })(Polymer, padlock.ViewBehavior, padlock.rand);
+    })(Polymer, padlock.ViewBehavior, padlock.rand, padlock.platform);
 
     </script>
 
