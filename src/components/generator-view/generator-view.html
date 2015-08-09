@@ -58,15 +58,21 @@
                 includeOther: {
                     type: Boolean,
                     value: false
+                },
+                field: {
+                    type: Boolean,
+                    observer: "_fieldChanged"
                 }
             },
             observers: [
                 "generate(length, includeLowerCase, includeUpperCase, includeNumbers, includeOther)"
             ],
             ready: function() {
-                this.leftHeaderIcon = "left";
-                this.rightHeaderIcon = "more";
-                this.headerTitle = "Generate Password";
+                this._fieldChanged();
+            },
+            show: function() {
+                this.generate();
+                ViewBehavior.show.apply(this, arguments);
             },
             generate: function() {
                 var charSet = "";
@@ -80,6 +86,14 @@
             leftHeaderButton: function() {
                 this.$.valueInput.blur();
                 this.fire("back");
+            },
+            rightHeaderButton: function() {
+                this.fire("confirm", {field: this.field, value: this.value});
+            },
+            _fieldChanged: function() {
+                this.leftHeaderIcon = this.field ? "cancel" : "left";
+                this.rightHeaderIcon = this.field ? "check" : "more";
+                this.headerTitle = this.field && this.field.name || "Generate Password";
             }
         });
 

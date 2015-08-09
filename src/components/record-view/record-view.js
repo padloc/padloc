@@ -122,10 +122,26 @@
             this.$.notification.show("Copied to clipboard!", "success", 1000);
         },
         //* Fills the current value input with a randomized value
-        _randomize: function() {
-            // Choose the right input based on whether we are creating a new field or editing an existing one
-            var input = this._selectedField ? this.$.fieldValueInput : this.$.newValueInput;
-            input.value = rand.randomString(20);
+        _generateValue: function() {
+            var field = this._selectedField ||
+                {name: this.$.newFieldNameInput.value, value: this.$.newValueInput.value};
+            this.$.editFieldDialog.open = false;
+            this.$.addFieldDialog.open = false;
+            this.async(function() {
+                this.fire("generate-value", {field: field});
+            }, 300);
+        },
+        generateConfirm: function(field, value) {
+            if (this.record.fields.indexOf(field) !== -1) {
+                this.$.selector.select(field);
+                this.$.editFieldDialog.open = true;
+                this.$.fieldMenu.open = false;
+                this.$.fieldValueInput.value = value;
+            } else {
+                this.$.newValueInput.value = value;
+                this.$.newFieldNameInput.value = field.name;
+                this.$.addFieldDialog.open = true;
+            }
         },
         selectMarked: function() {
             this.$.selector.select(this.record.fields[this._marked]);
@@ -146,9 +162,6 @@
                 this.$.confirmDeleteDialog.open = false;
             }
             this._marked = this.record ? this.record.fields.indexOf(this._selectedField) : -1;
-        },
-        _fieldName: function(field) {
-            return field && field.name;
         },
         _preventDefault: function(event) {
             event.preventDefault();

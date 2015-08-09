@@ -51,9 +51,9 @@
         </padlock-dialog>
         <!-- EDIT FIELD DIALOG -->
         <padlock-dialog id="editFieldDialog" on-close="_fieldDialogClosed">
-            <div class="title">Edit '<strong>{{ _fieldName(_selectedField) }}</strong>'</div>
+            <div class="title">Edit '<strong>{{ _selectedField.name }}</strong>'</div>
             <input is="padlock-input" id="fieldValueInput" select-all-on-focus placeholder="Enter Content" />
-            <button on-tap="_randomize" on-mousedown="_preventDefault">Randomize</button>
+            <button on-tap="_generateValue">Generate</button>
             <button class="primary" on-tap="_confirmEditField">Save Changes</button>
         </padlock-dialog>
         <!-- ADD FIELD DIALOG -->
@@ -61,7 +61,7 @@
             <div class="title">Add Field</div>
             <input is="padlock-input" id="newFieldNameInput" placeholder="Enter Label" />
             <input is="padlock-input" id="newValueInput" placeholder="Enter Content" />
-            <button on-tap="_randomize" on-mousedown="_preventDefault">Randomize</button>
+            <button on-tap="_generateValue">Generate</button>
             <button class="primary" on-tap="_confirmAddField">Add</button>
         </padlock-dialog>
         <!-- REMOVE FIELD CONFIRM DIALOG -->

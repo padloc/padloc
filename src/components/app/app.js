@@ -473,12 +473,31 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _notifyHeaderTitle: function() {
             this.notifyPath("_currentView.headerTitle", this._currentView && this._currentView.headerTitle);
         },
-        _openGenerator: function() {
+        _notifyHeaderIcons: function() {
+            this.notifyPath("_currentView.leftHeaderIcon", this._currentView && this._currentView.leftHeaderIcon);
+            this.notifyPath("_currentView.rightHeaderIcon", this._currentView && this._currentView.rightHeaderIcon);
+        },
+        _openGenerator: function(e) {
             this.$.mainMenu.open = false;
-            this._openView(this.$.generatorView);
+            this.$.generatorView.field = e.detail.field;
+            if (this.$.generatorView.field) {
+                this._openView(this.$.generatorView, {animation: "slideInFromBottom"}, {animation: "slideOutToBottom"});
+            } else {
+                this._openView(this.$.generatorView);
+            }
         },
         _generatorBack: function() {
-            this._openView(this.$.listView);
+            if (this.$.generatorView.field) {
+                this._openView(this.$.recordView, {animation: "slideInFromBottom"}, {animation: "slideOutToBottom"});
+            } else {
+                this._openView(this.$.listView);
+            }
+        },
+        _generateConfirm: function(e) {
+            this._generatorBack();
+            this.async(function() {
+                this.$.recordView.generateConfirm(e.detail.field, e.detail.value);
+            }, 500);
         }
     });
 
