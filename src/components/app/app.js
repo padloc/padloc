@@ -135,7 +135,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _pause: function() {
             this.$.header.showing = false;
             if (this._currentView) {
-                this._lastView = this._currentView;
+                this._lastView = this._currentView != this.$.lockView ? this._currentView : null;
                 this._currentView.hide({animation: ""});
                 this._currentView = null;
             }
