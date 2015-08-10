@@ -1,7 +1,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../view/view.html">
-<link rel="import" href="../input/input.html">
+<link rel="import" href="../password-input/password-input.html">
 <link rel="import" href="../toggle/toggle.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../notification/notification.html">
@@ -13,7 +13,7 @@
 
     <template>
 
-        <input id="valueInput" is="padlock-input" value="{{ value }}" select-all-on-focus>
+        <padlock-password-input value="{{ value }}" select-all-on-focus></padlock-password-input>
         <padlock-toggle-button label="a-z" value="{{ includeLowerCase }}"></padlock-toggle-button>
         <padlock-toggle-button label="A-Z" value="{{ includeUpperCase }}"></padlock-toggle-button>
         <padlock-toggle-button label="0-9" value="{{ includeNumbers }}"></padlock-toggle-button>
