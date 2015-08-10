@@ -5,6 +5,7 @@
 <link rel="import" href="../password-input/password-input.html">
 <link rel="import" href="../notification/notification.html">
 <link rel="import" href="../lock/lock.html">
+<link rel="import" href="../dialog/dialog.html">
 
 <dom-module id="padlock-start-view">
 
@@ -23,7 +24,7 @@
             </div>
             <!-- NEW PASSWORD INPUT -->
             <padlock-password-input class="ghost pwdinput-first" placeholder="Enter Master Password"
-                id="pwdInput" on-enter="enter" select-all-on-focus /></padlock-password-input>
+                id="pwdInput" on-enter="enter" select-all-on-focus obfuscate></padlock-password-input>
             <!-- CONFIRM PASSWORD INPUT -->
             <input is="padlock-input" class="ghost pwdinput-second" type="password" placeholder="Confirm Master Password"
                 id="confirmInput" on-enter="enter" select-all-on-focus />
@@ -32,6 +33,17 @@
         </div>
 
         <padlock-notification id="notification"></padlock-notification>
+
+        <padlock-dialog id="weakPasswordDialog">
+            <div class="title">
+                The password you entered is weak which makes it easier for attackers to break the encryption
+                used to protect your data. Try to use a longer password or include a variation of uppercase,
+                lowercase and special characters as well as numbers.
+            </div>
+            <button class="primary" on-tap="_weakPasswordRetry">OK</button>
+            <button on-tap="_weakPasswordDismiss">Use Anyway</button>
+        </padlock-dialog>
+
     </template>
 
     <script src="start-view.js"></script>

@@ -216,7 +216,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _confirmAddRecord: function() {
             this.$.addDialog.open = false;
             var record = {
-                name: this.$.addInput.value,
+                name: this.$.addInput.value || "Unnamed",
                 fields: this.settings.default_fields.map(function(field) {
                     return {name: field, value: ""};
                 }),
