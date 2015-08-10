@@ -2,10 +2,9 @@
 @import "nib";
 
 :host {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     height: $row-height;
+    line-height: $row-height;
+    text-align: center;
     color: $text-color-light;
     transition: transform 0.5s cubic-bezier(.71, -0.51, 0, 1.38);
     position: fixed;
@@ -33,13 +32,6 @@
 
 div {
     overflow: ellipsis;
-}
-
-shape-shifter {
-    width: 23px;
-    height: 23px;
-    margin-right: 5px;
-    display: none;
 }
 
 :host(.success) {

@@ -1,13 +1,10 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 
 <dom-module id="padlock-notification">
 
     <link href="notification.css" rel="import" type="css">
 
     <template>
-
-        <shape-shifter shape="{{ _icon }}" springy></shape-shifter>
 
         <div>{{ message }}</div>
 
@@ -29,10 +26,6 @@
                         observer: "_typeChanged"
                     }
                 },
-                _icons: {
-                    success: "check",
-                    error: "cancel"
-                },
                 show: function(message, type, duration) {
                     if (message) {
                         this.message = message;
@@ -41,10 +34,6 @@
                     if (type) {
                         this.type = type;
                     }
-
-                    this.async(function() {
-                        this._icon = this._icons[this.type];
-                    }, 100);
 
                     this.style.visibility = "visible";
                     this.toggleClass("showing", true);
@@ -56,7 +45,6 @@
                 hide: function() {
                     this.toggleClass("showing", false);
                     this.async(function() {
-                        this._icon = "";
                         this.style.visibility = "hidden";
                     }, 500);
                 },
