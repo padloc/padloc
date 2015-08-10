@@ -82,8 +82,8 @@
         },
         //* Opens the edit field dialog for the currently selected field
         _editField: function() {
-            this.$.editFieldDialog.open = true;
             this.$.fieldMenu.open = false;
+            this.$.editFieldDialog.open = true;
         },
         _confirmEditField: function() {
             this.set("_selectedField.value", this.$.fieldValueInput.value);
