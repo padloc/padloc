@@ -14,6 +14,7 @@
             }, 500);
         },
         show: function() {
+            this._clear();
             this.$$("padlock-lock").unlocked = false;
             ViewBehavior.show.apply(this, arguments);
         },
@@ -21,7 +22,7 @@
             this.$.pwdInput.blur();
             this.fire("pwdenter", {password: this.$.pwdInput.value});
         },
-        reset: function() {
+        _clear: function() {
             this.$.pwdInput.value = "";
         },
         focusPwdInput: function() {
