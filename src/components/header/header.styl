@@ -98,7 +98,9 @@
 }
 
 :host([scrim]) {
-    pointer-events: none;
+    & > div {
+        pointer-events: none;
+    }
 
     & > div::after {
         opacity: $scrim-opacity;
