@@ -19,7 +19,7 @@
         <padlock-toggle-button label="0-9" value="{{ includeNumbers }}"></padlock-toggle-button>
         <padlock-toggle-button label="?+-()/%&..." value="{{ includeOther }}"></padlock-toggle-button>
         <div class="length-wrapper">
-            <input type="range" value="{{ length::change }}" min="5" max="50">
+            <input type="range" value="{{ length::input }}" min="5" max="50">
             <span>{{ length }}</span>
         </div>
         <button on-tap="generate">Generate</button>
