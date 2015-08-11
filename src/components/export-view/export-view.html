@@ -1,0 +1,60 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../padlock.html">
+<link rel="import" href="../view/view.html">
+<link rel="import" href="../input/input.html">
+<link rel="import" href="../notification/notification.html">
+
+<dom-module id="padlock-export-view">
+
+    <link rel="import" href="../view/view.css" type="css">
+    <link rel="import" href="export-view.css" type="css">
+
+    <template>
+
+        <textarea is="padlock-textarea" select-all-on-focus></textarea>
+
+        <padlock-notification></padlock-notification>
+
+    </template>
+
+    <script>
+    /* global Polymer, padlock */
+
+    (function(Polymer, ViewBehavior, exp, platform) {
+        "use strict";
+
+        Polymer({
+            is: "padlock-export-view",
+            behaviors: [ViewBehavior],
+            properties: {
+                records: Array
+            },
+            ready: function() {
+                this.headerTitle = "Export";
+                this.leftHeaderIcon = "left";
+                this.rightHeaderIcon = "copy";
+            },
+            leftHeaderButton: function() {
+                this.fire("back");
+            },
+            rightHeaderButton: function() {
+                this.copyToClipboard();
+            },
+            show: function() {
+                this.generateCsv();
+                ViewBehavior.show.apply(this, arguments);
+            },
+            generateCsv: function() {
+                this.$$("textarea").value = exp.generateCsv(this.records);
+            },
+            copyToClipboard: function() {
+                platform.setClipboard(this.$$("textarea").value);
+                this.$$("padlock-notification").show("Copied to clipboard!", "success", 2000);
+            }
+        });
+
+    })(Polymer, padlock.ViewBehavior, padlock.export, padlock.platform);
+
+    </script>
+
+</dom-module>

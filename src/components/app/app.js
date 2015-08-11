@@ -275,6 +275,12 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _importBack: function() {
             this._openView(this.$.listView);
         },
+        _openExportView: function() {
+            this._openView(this.$.exportView);
+        },
+        _exportBack: function() {
+            this._openView(this.$.listView);
+        },
         //* Triggers the headers scrim to match the scrim of the opened dialog
         _dialogOpen: function() {
             this.$.header.scrim = true;

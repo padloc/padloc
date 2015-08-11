@@ -115,6 +115,9 @@
         _import: function() {
             this.fire("import");
         },
+        _export: function() {
+            this.fire("export");
+        },
         _openWebsite: function() {
             window.open("http://padlock.io", "_system");
         },

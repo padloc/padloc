@@ -8,6 +8,7 @@
 <link rel="import" href="../record-view/record-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../import-view/import-view.html">
+<link rel="import" href="../export-view/export-view.html">
 <link rel="import" href="../categories-view/categories-view.html">
 <link rel="import" href="../generator-view/generator-view.html">
 <link rel="import" href="../select/select.html">
@@ -34,11 +35,13 @@
             on-delete="_deleteRecord" on-categories="_openCategories" categories="{{ categories }}" settings="{{ settings }}"></padlock-record-view>
         <!-- Settings VIEW -->
         <padlock-settings-view id="settingsView" class="view" on-back="_settingsBack"
-            on-import="_openImportView" on-reset="_reset"
+            on-import="_openImportView" on-export="_openExportView" on-reset="_reset"
             collection="{{ collection }}" settings="{{ settings }}"></padlock-settings-view>
         <!-- IMPORT VIEW -->
         <padlock-import-view id="importView" class="view" on-import="_saveImportedRecords"
             on-back="_importBack"></padlock-import-view>
+        <!-- EXPORT VIEW -->
+        <padlock-export-view id="exportView" class="view" records="{{ _records }}" on-back="_exportBack"></padlock-export-view>
         <!-- CATEGORIES VIEW -->
         <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ _selected }}"
             on-back="_categoriesDone" on-categorychanged="_categoryChanged"></padlock-categories-view>
