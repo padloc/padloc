@@ -9,3 +9,19 @@ textarea {
     flex: 1;
     margin: 10px;
 }
+
+padlock-select {
+    margin: 10px 10px 0 10px;
+}
+
+padlock-option {
+    &::after {
+        content: "";
+        display: block;
+        width: 100%;
+        position: absolute;
+        top: 100%;
+        height: 5px;
+        background: $color-grey;
+    }
+}

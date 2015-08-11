@@ -3,6 +3,7 @@
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../notification/notification.html">
+<link rel="import" href="../select/select.html">
 
 <dom-module id="padlock-export-view">
 
@@ -11,9 +12,14 @@
 
     <template>
 
-        <textarea is="padlock-textarea" select-all-on-focus></textarea>
+        <padlock-select value="{{ _type }}">
+            <padlock-option value="csv" label="CSV" default></padlock-option>
+            <padlock-option value="encrypted" label="Encrypted"></padlock-option>
+        </padlock-select>
 
-        <padlock-notification></padlock-notification>
+        <textarea is="padlock-textarea" select-all-on-focus value="{{ _exportValue(_type, _csv, _encrypted) }}" nowrap$="{{ !_shouldWrap(_type) }}"></textarea>
+
+        <padlock-notification message="Copied to clipboard!"></padlock-notification>
 
     </template>
 
@@ -27,7 +33,11 @@
             is: "padlock-export-view",
             behaviors: [ViewBehavior],
             properties: {
-                records: Array
+                records: Array,
+                collection: Object,
+                _type: String,
+                _csv: String,
+                _encrypted: String
             },
             ready: function() {
                 this.headerTitle = "Export";
@@ -41,15 +51,28 @@
                 this.copyToClipboard();
             },
             show: function() {
-                this.generateCsv();
+                this._generateCsv();
+                this._extractEncryptedData();
                 ViewBehavior.show.apply(this, arguments);
             },
-            generateCsv: function() {
-                this.$$("textarea").value = exp.generateCsv(this.records);
+            _generateCsv: function() {
+                this._csv = exp.generateCsv(this.records);
+            },
+            _extractEncryptedData: function() {
+                var store = this.collection.store;
+                store.defaultSource.fetch({key: store.getKey(this.collection), success: function(data) {
+                    this._encrypted = JSON.stringify(data);
+                }.bind(this)});
             },
             copyToClipboard: function() {
-                platform.setClipboard(this.$$("textarea").value);
+                platform.setClipboard(this._exportValue());
                 this.$$("padlock-notification").show("Copied to clipboard!", "success", 2000);
+            },
+            _exportValue: function() {
+                return this._type == "encrypted" ? this._encrypted : this._csv;
+            },
+            _shouldWrap: function(type) {
+                return type == "encrypted";
             }
         });
 

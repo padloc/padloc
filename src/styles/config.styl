@@ -127,7 +127,12 @@ textarea {
     border-radius: 0;
     appearance: none;
     color: $text-color-faint;
-    white-space: nowrap;
+}
+
+textarea[nowrap] {
+    white-space: pre;
+    word-wrap: normal;
+    overflow-x: scroll;
 }
 
 strong {

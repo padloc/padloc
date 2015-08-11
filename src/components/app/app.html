@@ -41,7 +41,7 @@
         <padlock-import-view id="importView" class="view" on-import="_saveImportedRecords"
             on-back="_importBack"></padlock-import-view>
         <!-- EXPORT VIEW -->
-        <padlock-export-view id="exportView" class="view" records="{{ _records }}" on-back="_exportBack"></padlock-export-view>
+        <padlock-export-view id="exportView" class="view" records="{{ _records }}" collection="{{ collection }}" on-back="_exportBack"></padlock-export-view>
         <!-- CATEGORIES VIEW -->
         <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ _selected }}"
             on-back="_categoriesDone" on-categorychanged="_categoryChanged"></padlock-categories-view>
