@@ -14,11 +14,7 @@
             },
             selected: Object,
             categories: Object,
-            records: Array,
-            _empty: {
-                type: Boolean,
-                computed: "_isEmpty(records.length)"
-            }
+            records: Array
         },
         observers: [
             "_refresh(filterString)"
@@ -113,8 +109,10 @@
             var section = this._section(record.name);
             return this._firstInSection[section] == record;
         },
-        _isEmpty: function(count) {
-            return !count;
+        _isEmpty: function() {
+            return !this.records.filter(function(rec) {
+                return !rec.removed;
+            }).length;
         },
         _filtered: function() {
             return this.records.filter(this._filter.bind(this)).sort(this._sort.bind(this));
