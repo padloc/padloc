@@ -22,8 +22,6 @@
 
     <template>
         <padlock-header id="header" view="{{ _currentView }}" filter-string="{{ _filterString }}"></padlock-header>
-        <!-- <padlock&#45;shutter id="shutter" on&#45;newpwd="_newPwd" on&#45;pwdenter="_pwdEnter" -->
-        <!--     current&#45;view="{{ _currentView }}" filter&#45;string="{{ _filterString }}"></padlock&#45;shutter> -->
         <padlock-start-view id="startView" class="view" on-newpwd="_newPwd"></padlock-start-view>
         <padlock-lock-view id="lockView" class="view" on-pwdenter="_pwdEnter"></padlock-lock-view>
         <!-- LIST VIEW -->
@@ -38,7 +36,7 @@
             on-import="_openImportView" on-export="_openExportView" on-reset="_reset"
             collection="{{ collection }}" settings="{{ settings }}"></padlock-settings-view>
         <!-- IMPORT VIEW -->
-        <padlock-import-view id="importView" class="view" on-import="_saveImportedRecords"
+        <padlock-import-view id="importView" class="view" on-imported="_imported" collection="{{ collection }}"
             on-back="_importBack"></padlock-import-view>
         <!-- EXPORT VIEW -->
         <padlock-export-view id="exportView" class="view" records="{{ _records }}" collection="{{ collection }}" on-back="_exportBack"></padlock-export-view>

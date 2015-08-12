@@ -1,6 +1,7 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../view/view.html">
+<link rel="import" href="../input/input.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../progress/progress.html">
@@ -13,16 +14,16 @@
         <!-- STYLES -->
         <div class="flex-wrapper">
             <!-- RAW DATA INPUT -->
-            <textarea id="rawInput" is="padlock-textarea" select-all-on-focus nowrap></textarea>
+            <textarea id="rawInput" is="padlock-textarea" select-all-on-focus></textarea>
             <!-- IMPORT BUTTON -->
             <button class="import-button primary" on-tap="_startImport">import</button>
         </div>
         <padlock-progress id="progress">importing...</padlock-progress>
         <!-- PASSWORD DIALOG -->
         <padlock-dialog id="pwdDialog">
-            <div class="title">SecuStore backup detected. Please enter the password for this backup.</div>
-            <input id="pwdInput" type="password" placeholder$="Enter password..." />
-            <button class="primary" on-tap="_importSecuStoreBackup">OK</button>
+            <div class="title">Encrypted backup detected. Please enter the password for this backup.</div>
+            <input is="padlock-input" id="pwdInput" type="password" placeholder$="Enter password..." />
+            <button class="primary" on-tap="_passwordConfirm">OK</button>
         </padlock-dialog>
         <!-- ERROR DIALOG -->
         <padlock-dialog id="errorDialog">

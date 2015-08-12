@@ -262,11 +262,9 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             this._openView(this.$.importView);
         },
         //* Add the records imported with the import view to the collection
-        _saveImportedRecords: function(event, detail) {
-            this.collection.add(detail.records);
-            this.collection.save();
+        _imported: function(event, detail) {
             this._openView(this.$.listView);
-            this.$.notification.show(detail.records.length + " records imported!", "success", 2000);
+            this.$.notification.show(detail.count + " records imported!", "success", 2000);
             // Auto sync
             if (this.settings.sync_connected && this.settings.sync_auto) {
                 this._synchronize();

@@ -10,11 +10,14 @@
         "Gmail,Work,google.com,Martin,j83jaDK\n" +
         "Twitter,,twitter.com,mclovin,dj83$j\n" +
         "\n" +
-        "SecuStore backups are also supported.";
+        "Encrypted Padlock backups are also supported.";
 
     Polymer({
         is: "padlock-import-view",
         behaviors: [ViewBehavior],
+        properties: {
+            collection: Object,
+        },
         ready: function() {
             this.leftHeaderIcon = "left";
             this.rightHeaderIcon = "";
@@ -52,19 +55,41 @@
             }
 
             if (imp.isSecuStoreBackup(rawStr)) {
+                this._type = "secustore";
+                this._requirePassword();
+            } else if (imp.isPadlockBackup(rawStr)) {
+                this._type = "padlock";
                 this._requirePassword();
             } else {
                 this._csvData = imp.parseCsv(rawStr);
                 this._getNameCol();
             }
         },
+        _passwordConfirm: function() {
+            this.$.pwdDialog.open = false;
+            if (this._type == "secustore") {
+                this._importSecuStoreBackup();
+            } else if (this._type == "padlock") {
+                this._importPadlockBackup();
+            }
+        },
+        _importPadlockBackup: function() {
+            this.$.progress.show();
+            imp.importPadlockBackup(this.collection, this.$.rawInput.value, this.$.pwdInput.value, function(records) {
+                this.collection.save();
+                this.fire("imported", {count: records.length});
+            }.bind(this), function() {
+                this.$.errorDialog.open = true;
+            }.bind(this));
+            this.$.progress.hide();
+        },
         //* Starts the import using the raw input and the provided password
         _importSecuStoreBackup: function() {
-            this.$.pwdDialog.open = false;
             this.$.progress.show();
 
-            imp.importSecuStoreBackup(this.$.rawInput.value, this.$.pwdInput.value, function(records) {
-                this.fire("import", {records: records});
+            imp.importSecuStoreBackup(this.collection, this.$.rawInput.value, this.$.pwdInput.value, function(records) {
+                this.collection.save();
+                this.fire("imported", {count: records.length});
             }.bind(this), function() {
                 this.$.errorDialog.open = true;
             }.bind(this));

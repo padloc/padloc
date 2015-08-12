@@ -60,7 +60,7 @@ padlock.Store = (function(crypto) {
                             var records = JSON.parse(pt);
                             coll.add(records);
                             if (opts.success) {
-                                opts.success(coll);
+                                opts.success(records);
                             }
                         }, function(e) {
                             // The decryption failed, probably because the password was incorrect

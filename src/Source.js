@@ -52,3 +52,18 @@ padlock.Source = (function() {
 
     return Source;
 })();
+
+padlock.DisposableSource = (function() {
+    "use strict";
+
+    var DisposableSource = function(data) {
+        this.data = data;
+    };
+
+    DisposableSource.prototype.fetch = function(opts) {
+        opts && opts.success && opts.success(this.data);
+    };
+
+    return DisposableSource;
+
+})();

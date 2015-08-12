@@ -3,7 +3,7 @@
 /**
  * Module for importing data from various formats.
  */
-padlock.import = (function(crypto) {
+padlock.import = (function(crypto, DisposableSource) {
     "use strict";
 
     //* Detects if a string contains a SecuStore backup
@@ -18,14 +18,14 @@ padlock.import = (function(crypto) {
      * @param  {String}   password Password to be used for decryption
      * @return {Array}             A list of records
      */
-    var importSecuStoreBackup = function(rawData, password, success, fail) {
+    var importSecuStoreBackup = function(collection, rawData, password, success, fail) {
         var begin = "#begin",
             end = "#end",
             objJSON, obj;
-        
+
         //Get the JSON code for the data
         objJSON = rawData.substring(rawData.indexOf(begin) + begin.length, rawData.indexOf(end));
-        
+
         try {
             // Try to parse JSON object containing data needed for decryption
             obj = JSON.parse(objJSON);
@@ -64,6 +64,8 @@ padlock.import = (function(crypto) {
                         fields: fields
                     };
                 });
+
+                collection.add(records);
 
                 success(records);
             }, fail);
@@ -184,10 +186,33 @@ padlock.import = (function(crypto) {
         });
     };
 
+    var isPadlockBackup = function(string) {
+        try {
+            var data = JSON.parse(string);
+            return crypto.validateContainer(data);
+        } catch(e) {
+            return false;
+        }
+    };
+
+    var importPadlockBackup = function(collection, data, password, success, fail) {
+        try {
+            data = JSON.parse(data);
+        } catch(e) {
+            fail(e);
+            return;
+        }
+
+        var source = new DisposableSource(data);
+        collection.fetch({source: source, password: password, success: success, fail: fail});
+    };
+
     return {
         isSecuStoreBackup: isSecuStoreBackup,
+        isPadlockBackup: isPadlockBackup,
         importSecuStoreBackup: importSecuStoreBackup,
+        importPadlockBackup: importPadlockBackup,
         parseCsv: parseCsv,
         importTable: importTable
     };
-})(padlock.crypto);
+})(padlock.crypto, padlock.DisposableSource);
