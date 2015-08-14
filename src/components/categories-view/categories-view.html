@@ -13,11 +13,11 @@
         <div class="header">Select a category</div>
 
         <div class="list" hidden$="{{ !_hasCategories(_categoryList.length) }}">
-            <div id="noneButton" on-tap="_selectNone" class="category none" selected$="{{ _isSelected('', record.category) }}">
+            <div id="noneButton" on-tap="_selectNone" class="category" selected$="{{ _isSelected('', record.category) }}">
                 <div class="category-inner">None</div>
             </div>
             <template is="dom-repeat" items="{{ _categoryList }}">
-                <div on-tap="_categoryTapped" class$="{{ _categoryClass(item.color) }}" selected$="{{ _isSelected(item.name, record.category) }}">
+                <div on-tap="_categoryTapped" class="category" selected$="{{ _isSelected(item.name, record.category) }}">
                     <div>{{ item.name }}</div>
                     <shape-shifter shape="more" on-tap="_editCategory"></shape-shifter>
                 </div>
@@ -26,13 +26,8 @@
 
         <button id="newButton" class="new-button" on-tap="_newCategory" hidden$="{{ _hasCategories(_categoryList.length) }}">New Category...</button>
 
-        <padlock-dialog id="editDialog" on-close="_editDialogClosed">
+        <padlock-dialog id="editDialog">
             <div class="title" hidden$="{{ _editing }}">New Category</div>
-            <padlock-select id="colorSelect" open-upwards="true">
-                <padlock-option class="color1" selected-class="color1" value="1" label="Select a color"></padlock-option>
-                <padlock-option class="color2" selected-class="color2" value="2" label="Select a color"></padlock-option>
-                <padlock-option class="color3" selected-class="color3" value="3" label="Select a color"></padlock-option>
-            </padlock-select>
             <input is="padlock-input" id="nameInput" placeholder="Category Name"/>
             <button class="primary" on-tap="_editEnter">Save</button>
             <button hidden$="{{ !_editing }}" on-tap="_removeCategory">Remove</button>

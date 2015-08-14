@@ -3,15 +3,13 @@
 @import "nib";
 
 :host {
-    font-family: "Clear Sans", sans-serif;
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
     top: 0;
     margin: auto;
-    -webkit-tap-highlight-color: transparent;
-    background: $color-grey;
+    background: $color-quaternary;
     overflow: hidden;
     unselectable();
 }
@@ -27,12 +25,8 @@
 }
 
 padlock-progress#decrypting {
-    background: $color-red;
     z-index: 10;
-}
-
-padlock-progress#synchronizing {
-    background: $color-green;
+    background: $color-secondary;
 }
 
 padlock-header {

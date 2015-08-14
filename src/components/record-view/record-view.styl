@@ -11,7 +11,7 @@
 }
 
 .field {
-    background: #ffffff;
+    background: $color-quinary;
     height: $row-height;
     width: 100%;
     padding: 0 15px;
@@ -45,7 +45,7 @@
     }
 
     &.marked {
-        background: $color-blue;
+        background: $color-primary;
         color: #fff;
 
         > .label {
@@ -69,27 +69,10 @@
     cursor: pointer;
     overflow: ellipsis;
 
-    &.color1 {
-        background: $cat-color-1;
+    &.selected {
         color: $text-color-light;
-        font-weight: $font-weight-bold;
+        background: $color-secondary;
     }
-
-    &.color2 {
-        background: $cat-color-2;
-        color: $text-color-light;
-        font-weight: $font-weight-bold;
-    }
-
-    &.color3 {
-        background: $cat-color-3;
-        color: $text-color-light;
-        font-weight: $font-weight-bold;
-    }
-}
-
-#clipboardNotification {
-    background: $color-green;
 }
 
 button.toggle {

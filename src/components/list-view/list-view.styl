@@ -21,7 +21,7 @@
 
     .record-item-inner {
         height: $row-height;
-        background: #ffffff;
+        background: $color-quinary;
         width: 100%;
 
         display: flex;
@@ -46,24 +46,12 @@
         margin-right: 15px;
         font-weight: $font-weight-bold;
         overflow: ellipsis;
-
-        &.color1 {
-            background: $cat-color-1;
-        }
-
-        &.color2 {
-            // background: rgb(35, 172, 243);
-            background: $cat-color-2;
-        }
-
-        &.color3 {
-            background: $cat-color-3;
-        }
+        background: $color-secondary;
     }
 
     &.marked .record-item-inner {
-        background: $color-blue;
-        color: #fff;
+        background: $color-primary;
+        color: $text-color-light;
     }
 }
 
@@ -76,22 +64,8 @@
     margin-bottom: -5px;
     color: $color-primary;
     top: 0;
-    // background: transparentify($color-grey, 0.9);
-    background: $color-grey;
+    background: $color-quaternary;
     position-sticky();
-
-    &.color1 {
-        color: $cat-color-1;
-    }
-
-    &.color2 {
-        // color: rgb(35, 172, 243);
-        color: $cat-color-2;
-    }
-
-    &.color3 {
-        color: $cat-color-3;
-    }
 }
 
 .list {

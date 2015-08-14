@@ -170,7 +170,7 @@
             this.headerTitle = name;
         },
         _categoryClass: function(category) {
-            return this.categories && "category color" + (this.categories.get(category) || "");
+            return category ? "category selected" : "category";
         },
         _categoryLabel: function(category) {
             return category || "Add a Category";

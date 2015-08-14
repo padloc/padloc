@@ -45,55 +45,47 @@
         _newCategory: function() {
             this._editing = null;
             this.$.nameInput.value = "";
-            this.$.colorSelect.selected = Polymer.dom(this.$.colorSelect).children[0];
             this.$.editDialog.open = true;
         },
         _editCategory: function(e) {
             var category = e.model.item;
-
             this._editing = category;
             this.$.nameInput.value = category.name;
-
-            // Select current color
-            this.$.colorSelect.selectValue(category.color.toString());
-
             this.$.editDialog.open = true;
             e.stopPropagation();
         },
         _editEnter: function() {
-            var name = this.$.nameInput.value,
-                color = parseInt(this.$.colorSelect.value, 10);
+            var name = this.$.nameInput.value;
 
             if (name) {
                 this.$.editDialog.open = false;
                 if (this._editing) {
-                    this._doEditCategory(this._editing, name, color);
+                    this._doEditCategory(this._editing, name);
                 } else {
-                    this._doNewCategory(name, color);
+                    this._doNewCategory(name);
                 }
             }
         },
-        _doNewCategory: function(name, color) {
+        _doNewCategory: function(name) {
             if (!this.categories.get(name)) {
-                this.categories.set(name, color);
+                this.categories.set(name, 1);
                 this.categories.save();
                 this._updateCategories();
             }
             this.set("record.category", name);
             this._delayedBack(200);
         },
-        _doEditCategory: function(category, name, color) {
+        _doEditCategory: function(category, name) {
             var oldCat = {
-                name: category.name,
-                color: category.color
+                name: category.name
             };
 
             if (name != category.name) {
                 this.categories.remove(category.name);
             }
-            this.categories.set(name, color);
+            this.categories.set(name);
             this.categories.save();
-            this.fire("categorychanged", {prev: oldCat, curr: {name: name, color: color}});
+            this.fire("categorychanged", {prev: oldCat, curr: {name: name}});
             this._updateCategories();
             if (this.record.category == name) {
                 this._delayedBack(200);
@@ -120,12 +112,6 @@
         _selectNone: function() {
             this.set("record.category", "");
             this._delayedBack();
-        },
-        _editDialogClosed: function() {
-            this.$.colorSelect.open = false;
-        },
-        _categoryClass: function(color) {
-            return "category color" + color;
         },
         _isSelected: function(cat, currentCat) {
             return cat == currentCat;

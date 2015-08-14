@@ -9,14 +9,13 @@
 }
 
 .category {
-    background: #fff;
     line-height: $row-height;
-    color: $text-color-light;
     cursor: pointer;
     margin: 5px 0;
     padding: 0 10px;
     text-align: center;
     position: relative;
+    background: $color-quinary;
 
     shape-shifter {
         position: absolute;
@@ -25,44 +24,9 @@
         padding: 10px;
     }
 
-    &.color1 {
-        color: $cat-color-1;
-    }
-
-    &.color2 {
-        color: $cat-color-2;
-    }
-
-    &.color3 {
-        color: $cat-color-3;
-    }
-
-    &.none {
-        color: $color-primary;
-
-        &[selected] {
-            background: $color-primary;
-        }
-    }
-
     &[selected] {
         color: $text-color-light;
-
-        &.color1 {
-            background: $cat-color-1;
-        }
-
-        &.color2 {
-            background: $cat-color-2;
-        }
-
-        &.color3 {
-            background: $cat-color-3;
-        }
-
-        shape-shifter {
-            color: $text-color-light;
-        }
+        background: $color-secondary;
     }
 }
 
@@ -71,29 +35,8 @@
     margin-top: 5px;
 }
 
-padlock-select {
-    line-height: 0;
-    color: $text-color-light;
-
-    & /deep/ .color1 {
-        background: $cat-color-1;
-    }
-
-    & /deep/ .color2 {
-        background: $cat-color-2;
-    }
-
-    & /deep/ .color3 {
-        background: $cat-color-3;
-    }
-
-    padlock-option {
-        color: transparent;
-    }
-}
-
 .header {
-    background: #fff;
+    background: $color-quinary;
     color: $text-color-faint;
     text-align: center;
     font-size: 16px;
