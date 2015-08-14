@@ -19,6 +19,10 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             _records: {
                 type: Array,
                 value: function() { return []; }
+            },
+            _categories: {
+                type: Array,
+                value: function() { return []; }
             }
         },
         listeners: {
@@ -32,28 +36,20 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         factoryImpl: function() {
             this.init.apply(this, arguments);
         },
-        init: function(collection, settings, categories) {
+        init: function(collection, settings) {
             this.collection = collection;
             this.collection.addEventListener("update", function(e) {
                 e.detail.slice(2).forEach(function(record) {
-                    // Recent changes require that the category property be not undefined
-                    if (!record.removed && !record.category) {
-                        record.category = "";
-                    }
-                    // Add any categories that are not registered yet
-                    if (record.category && !this.categories.get(record.category)) {
-                        this.categories.set(record.category, this.categories.autoColor());
+                    // Add category to list
+                    if (record.category && this._categories.indexOf(record.category) == -1) {
+                        this.push("_categories", record.category);
                     }
                 }.bind(this));
-                this.categories.save();
                 this.splice.apply(this, ["_records"].concat(e.detail));
             }.bind(this));
             this.settings = settings;
-            this.categories = categories;
 
             this.settings.fetch({success: this._notifySettings.bind(this)});
-
-            this.categories.fetch();
 
             this.collection.exists({success: this._initView.bind(this), fail: this._initView.bind(this, false)});
 
@@ -345,15 +341,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _categoryChanged: function(e) {
             this._records.forEach(function(rec, ind) {
-                var equalsOld = rec.category == e.detail.prev.name;
-                var equalsNew = e.detail.curr.name && rec.category == e.detail.curr.name;
-                if (equalsOld || equalsNew) {
-                    if (equalsNew) {
-                        // This is necessary in order to make sure that some computed bindings are updated
-                        this.notifyPath("_records." + ind + ".category", "");
-                    }
-
-                    this.set("_records." + ind + ".category", e.detail.curr.name);
+                if (rec.category == e.detail.previous) {
+                    this.set("_records." + ind + ".category", e.detail.current);
                 }
             }.bind(this));
         },

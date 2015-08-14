@@ -39,10 +39,9 @@
                         "default_fields": ["username", "password"],
                         "obfuscate_fields": false
                     }, source),
-                    categories = new padlock.Categories(null, 3, source),
                     collection = new padlock.Collection("default", store);
 
-                var app = new padlock.App(collection, settings, categories);
+                var app = new padlock.App(collection, settings);
                 document.body.appendChild(app);
             });
         </script>

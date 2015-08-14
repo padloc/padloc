@@ -8,10 +8,9 @@
         is: "padlock-categories-view",
         behaviors: [ViewBehavior],
         properties: {
-            categories: Object,
+            categories: Array,
             record: Object,
             _editing: Object,
-            _categoryList: Array
         },
         observers: [
             "_updateHeaderTitle(record.name)"
@@ -27,15 +26,8 @@
         rightHeaderButton: function() {
             this._newCategory();
         },
-        _updateCategories: function() {
-            this._categoryList = this.categories.asArray();
-        },
-        show: function() {
-            this._updateCategories();
-            ViewBehavior.show.apply(this, arguments);
-        },
         _categoryTapped: function(e) {
-            this.set("record.category", e.model.item.name);
+            this.set("record.category", e.model.item);
             this._delayedBack();
         },
         //* Updates the headerTitle property with the name of the current record
@@ -50,7 +42,7 @@
         _editCategory: function(e) {
             var category = e.model.item;
             this._editing = category;
-            this.$.nameInput.value = category.name;
+            this.$.nameInput.value = category;
             this.$.editDialog.open = true;
             e.stopPropagation();
         },
@@ -66,28 +58,18 @@
                 }
             }
         },
-        _doNewCategory: function(name) {
-            if (!this.categories.get(name)) {
-                this.categories.set(name, 1);
-                this.categories.save();
-                this._updateCategories();
+        _doNewCategory: function(category) {
+            this.set("record.category", category);
+            if (this.categories.indexOf(category) == -1) {
+                this.push("categories", category);
             }
-            this.set("record.category", name);
             this._delayedBack(200);
         },
-        _doEditCategory: function(category, name) {
-            var oldCat = {
-                name: category.name
-            };
-
-            if (name != category.name) {
-                this.categories.remove(category.name);
-            }
-            this.categories.set(name);
-            this.categories.save();
-            this.fire("categorychanged", {prev: oldCat, curr: {name: name}});
-            this._updateCategories();
-            if (this.record.category == name) {
+        _doEditCategory: function(oldName, newName) {
+            var ind = this.categories.indexOf(oldName);
+            this.set("categories." + ind, newName);
+            this.fire("categorychanged", {previous: oldName, current: newName});
+            if (this.record.category == newName) {
                 this._delayedBack(200);
             }
         },
@@ -97,11 +79,10 @@
         },
         _confirmRemove: function() {
             var category = this._editing;
+            var index = this.categories.indexOf(category);
             this.$.confirmRemoveDialog.open = false;
-            this.categories.remove(this._editing.name);
-            this.categories.save();
-            this.fire("categorychanged", {prev: category, curr: {name: ""}});
-            this._updateCategories();
+            this.fire("categorychanged", {previous: category, current: ""});
+            this.splice("categories", index, 1);
             if (!this.record.category) {
                 this._delayedBack(200);
             }

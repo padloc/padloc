@@ -26,11 +26,11 @@
         <padlock-lock-view id="lockView" class="view" on-pwdenter="_pwdEnter"></padlock-lock-view>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" records="{{ _records }}" filter-string="{{ _filterString }}"
-            categories="{{ categories }}" selected="{{ _selected }}" on-select="_recordSelected" on-add="_addRecord"
+            selected="{{ _selected }}" on-select="_recordSelected" on-add="_addRecord"
             on-menu="_openMainMenu" on-import="_openImportView" on-synchronize="_synchronize"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="_saveRecord" on-back="_recordViewBack" record="{{ _selected }}" on-generate-value="_openGenerator"
-            on-delete="_deleteRecord" on-categories="_openCategories" categories="{{ categories }}" settings="{{ settings }}"></padlock-record-view>
+            on-delete="_deleteRecord" on-categories="_openCategories" settings="{{ settings }}"></padlock-record-view>
         <!-- Settings VIEW -->
         <padlock-settings-view id="settingsView" class="view" on-back="_settingsBack"
             on-import="_openImportView" on-export="_openExportView" on-reset="_reset"
@@ -41,7 +41,7 @@
         <!-- EXPORT VIEW -->
         <padlock-export-view id="exportView" class="view" records="{{ _records }}" collection="{{ collection }}" on-back="_exportBack"></padlock-export-view>
         <!-- CATEGORIES VIEW -->
-        <padlock-categories-view id="categoriesView" class="view" categories="{{ categories }}" record="{{ _selected }}"
+        <padlock-categories-view id="categoriesView" class="view" categories="{{ _categories }}" record="{{ _selected }}"
             on-back="_categoriesDone" on-categorychanged="_categoryChanged"></padlock-categories-view>
         <padlock-generator-view id="generatorView" class="view" on-back="_generatorBack" on-confirm="_generateConfirm"></padlock-generator-view>
         <!-- PROGRESS INDICATOR -->

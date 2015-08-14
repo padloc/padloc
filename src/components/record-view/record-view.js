@@ -8,7 +8,6 @@
         behaviors: [ViewBehavior, MarkableBehavior],
         properties: {
             record: Object,
-            categories: Object,
             settings: Object,
             _marked: {
                 type: Number,

@@ -13,7 +13,6 @@
                 value: ""
             },
             selected: Object,
-            categories: Object,
             records: Array
         },
         observers: [
@@ -100,10 +99,6 @@
         },
         _section: function(name) {
             return (name || "").toUpperCase()[0];
-        },
-        _categoryClass: function(category, baseClass) {
-            var colorClass = "color" + (this.categories.get(category) || "");
-            return baseClass + " " + colorClass;
         },
         _showSectionHeader: function(record) {
             var section = this._section(record.name);
