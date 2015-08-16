@@ -31,7 +31,7 @@
             } else if (newPwd != cfmPwd) {
                 this.$.notification.show("Passwords do not match!", "error", 2000);
             } else if (score < 2) {
-                this.$.weakPasswordDialog.open = true;
+                this._promptWeakPassword(newPwd);
             } else {
                 this.fire("newpwd", {password: newPwd});
             }
@@ -39,13 +39,19 @@
         getAnimationElement: function() {
             return this.$$("padlock-lock");
         },
-        _weakPasswordRetry: function() {
-            this.$.weakPasswordDialog.open = false;
-            this.$.pwdInput.focus();
-        },
-        _weakPasswordDismiss: function() {
-            this.$.weakPasswordDialog.open = false;
-            this.fire("newpwd", {password: this.$.pwdInput.value});
+        _promptWeakPassword: function(password) {
+            this.fire("open-form", {
+                components: [
+                    {element: "button", label: "Retry", cancel: true},
+                    {element: "button", label: "Use Anyway", submit: true}
+                ],
+                title: "WARNING: The password you entered is weak which makes it easier for attackers to break " +
+                    "the encryption used to protect your data. Try to use a longer password or include a " +
+                    "variation of uppercase, lowercase and special characters as well as numbers.",
+                submit: function() {
+                    this.fire("newpwd", {password: password});
+                }.bind(this)
+            });
         },
         _clear: function() {
             this.$.pwdInput.value = this.$.confirmInput.value = "";
