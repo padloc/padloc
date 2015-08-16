@@ -37,57 +37,91 @@
             this.fire("back");
         },
         rightHeaderButton: function() {
-            this.$.menu.open = true;
+            this._openRecordMenu();
         },
-        //* Opens the confirm dialog for deleting the current element
+        _openRecordMenu: function() {
+            this.fire("open-form", {
+                components: [
+                    {element: "button", label: "Edit Record Name", submit: true, tap: this._editName.bind(this)},
+                    {element: "button", label: "Delete Record", submit: true, tap: this._deleteRecord.bind(this)},
+                    {element: "button", submit: true, tap: this._toggleObfuscate.bind(this),
+                        label: this.settings.obfuscate_fields ? "Show Field Values" : "Hide Field Values"}
+                ],
+                cancel: this._deselect.bind(this)
+            });
+        },
         _deleteRecord: function() {
-            this.$.menu.open = false;
-            this.$.confirmDeleteDialog.open = true;
+            this.fire("open-form", {
+                title: "Are you sure you want to delete this record?",
+                components: [
+                    {element: "button", label: "Delete", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                submit: this.fire.bind(this, "delete")
+            });
         },
-        _confirmDelete: function() {
-            this.$.confirmDeleteDialog.open = false;
-            this.fire("delete");
-        },
-        _cancelDelete: function() {
-            this.$.confirmDeleteDialog.open = false;
-        },
-        //* Opens the edit name dialog
         _editName: function() {
-            this.$.menu.open = false;
-            this.$.nameInput.value = this.record.name;
-            this.$.editNameDialog.open = true;
-        },
-        _confirmEditName: function() {
-            this.$.editNameDialog.open = false;
-            this.set("record.name", this.$.nameInput.value);
-            this.fire("save");
+            this.fire("open-form", {
+                title: "Edit Name",
+                components: [
+                    {element: "input", placeholder: "Enter Name", name: "name", value: this.record.name},
+                    {element: "button", label: "Change", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                submit: function(data) {
+                    this.set("record.name", data.name);
+                    this.fire("save");
+                }.bind(this)
+            });
         },
         //* Opens the add field dialog
         _addField: function() {
             this.$.selector.deselect();
-            this.$.menu.open = false;
-            this.$.newValueInput.value = "";
-            this.$.newFieldNameInput.value = "";
-            this.$.addFieldDialog.open = true;
+
+            this.fire("open-form", {
+                title: "Add Field",
+                components: [
+                    {element: "input", placeholder: "Enter Label", name: "name"},
+                    {element: "input", placeholder: "Enter Content", name: "value"},
+                    {element: "button", label: "Generate", cancel: true},
+                    {element: "button", label: "Add", submit: true}
+                ],
+                submit: function(data) {
+                    var field = {
+                        name: data.name,
+                        value: data.value
+                    };
+                    this.push("record.fields", field);
+                    this.fire("save");
+                }.bind(this)
+            });
         },
-        _confirmAddField: function() {
-            this.$.addFieldDialog.open = false;
-            var field = {
-                name: this.$.newFieldNameInput.value,
-                value: this.$.newValueInput.value
-            };
-            this.push("record.fields", field);
-            this.fire("save");
+        _openFieldMenu: function() {
+            this.fire("open-form", {
+                components: [
+                    {element: "button", label: "Copy to Clipboard", submit: true, tap: this.copyToClipboard.bind(this)},
+                    {element: "button", label: "Edit", submit: true, tap: this._editField.bind(this)},
+                    {element: "button", label: "Remove", submit: true, tap: this._removeField.bind(this)}
+                ],
+                cancel: this._deselect.bind(this)
+            });
         },
-        //* Opens the edit field dialog for the currently selected field
         _editField: function() {
-            this.$.fieldMenu.open = false;
-            this.$.editFieldDialog.open = true;
-        },
-        _confirmEditField: function() {
-            this.set("_selectedField.value", this.$.fieldValueInput.value);
-            this.$.selector.deselect();
-            this.fire("save");
+            var field = this._selectedField;
+            this.fire("open-form", {
+                title: "Edit '" + field.name + "'",
+                components: [
+                    {element: "input", placeholder: "Enter Content", name: "value"},
+                    {element: "button", label: "Generate", cancel: true},
+                    {element: "button", label: "Save", submit: true}
+                ],
+                submit: function(data) {
+                    this.set("_selectedField.value", data.value);
+                    this.$.selector.deselect();
+                    this.fire("save");
+                }.bind(this),
+                cancel: this._deselect.bind(this)
+            });
         },
         //* Opens the field context menu
         _fieldTapped: function(e) {
@@ -95,18 +129,20 @@
         },
         //* Opens the remove field confirm dialog
         _removeField: function() {
-            this.$.confirmRemoveFieldDialog.open = true;
-            this.$.fieldMenu.open = false;
-        },
-        _confirmRemoveField: function() {
-            var ind = this.record.fields.indexOf(this._selectedField);
-            this.splice("record.fields", ind, 1);
-            this.$.selector.deselect();
-            this.fire("save");
-            this.$.confirmRemoveFieldDialog.open = false;
-        },
-        _cancelRemoveField: function() {
-            this.$.confirmRemoveFieldDialog.open = false;
+            this.fire("open-form", {
+                components: [
+                    {element: "button", label: "Remove", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                submit: function() {
+                    var ind = this.record.fields.indexOf(this._selectedField);
+                    this.splice("record.fields", ind, 1);
+                    this.$.selector.deselect();
+                    this.fire("save");
+                    this.$.confirmRemoveFieldDialog.open = false;
+                }.bind(this),
+                cancel: this._deselect.bind(this)
+            });
         },
         _openCategories: function() {
             this.fire("categories");
@@ -145,25 +181,15 @@
         selectMarked: function() {
             this.$.selector.select(this.record.fields[this._marked]);
         },
-        _fieldDialogClosed: function() {
+        _deselect: function() {
             // If all field-related dialogs are closed, unselect the field
-            if (!this.$.fieldMenu.open && !this.$.confirmRemoveFieldDialog.open && !this.$.editFieldDialog.open) {
-                this.$.selector.deselect();
-            }
+            this.$.selector.deselect();
         },
         _selectedFieldChanged: function() {
             if (this._selectedField) {
-                this.$.fieldValueInput.value = this._selectedField && this._selectedField.value || "";
-                this.$.fieldMenu.open = true;
-            } else {
-                this.$.fieldMenu.open = false;
-                this.$.editFieldDialog.open = false;
-                this.$.confirmDeleteDialog.open = false;
+                this._openFieldMenu();
             }
             this._marked = this.record ? this.record.fields.indexOf(this._selectedField) : -1;
-        },
-        _preventDefault: function(event) {
-            event.preventDefault();
         },
         _updateTitleText: function(name) {
             this.headerTitle = name;
