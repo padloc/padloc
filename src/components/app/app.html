@@ -49,6 +49,14 @@
         <padlock-progress id="decrypting">decrypting...</padlock-progress>
         <padlock-progress id="synchronizing">synchronizing...</padlock-progress>
 
+        <!-- MAIN MENU -->
+        <padlock-dialog id="mainMenu" close-on-tap>
+            <button on-tap="_synchronize">Synchronize</button>
+            <button on-tap="_openSettings">Settings</button>
+            <button on-tap="_openGenerator">Generate Password</button>
+            <button on-tap="_lock">Lock App</button>
+        </padlock-dialog>
+
         <padlock-dialog id="formDialog1" on-dismiss="_formDismiss" on-submit="_formSubmit">
             <div class="title"></div>
             <padlock-dynamic-form on-cancel="_formCancel"></padlock-dynamic-form>

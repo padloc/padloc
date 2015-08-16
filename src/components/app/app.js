@@ -242,12 +242,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             });
         },
         _openMainMenu: function() {
-            this._openForm([
-                {element: "button", submit: true, tap: this._synchronize.bind(this), label: "Synchronize"},
-                {element: "button", submit: true, tap: this._openSettings.bind(this), label: "Settings"},
-                {element: "button", submit: true, tap: this._openGenerator.bind(this), label: "Generate Password"},
-                {element: "button", submit: true, tap: this._lock.bind(this), label: "Lock App"}
-            ]);
+            this.$.mainMenu.open = true;
         },
         _openSettings: function() {
             this._openView(this.$.settingsView);
@@ -487,7 +482,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             var dialog = this.$.formDialog1.isShowing ? this.$.formDialog2 : this.$.formDialog1;
             var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
             var titleEl = Polymer.dom(dialog).querySelector(".title");
-            var delay = this.$.formDialog1.open || this.$.formDialog2.open ? 100 : 0;
             if (this.$.formDialog1.open || this.$.formDialog2.open) {
                 this._formCancel();
             }
@@ -497,18 +491,18 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             this._formCancelCallback = cancelCallback;
             this.async(function() {
                 dialog.open = true;
-            }, delay);
+            }, 50);
         },
         _formSubmit: function(e) {
+            this.$.formDialog1.open = this.$.formDialog2.open = false;
             if (typeof this._formSubmitCallback == "function") {
                 this._formSubmitCallback(e.detail);
             }
-            this.$.formDialog1.open = this.$.formDialog2.open = false;
             this._formSubmitCallback = null;
         },
         _formCancel: function() {
-            this._formDismiss();
             this.$.formDialog1.open = this.$.formDialog2.open = false;
+            this._formDismiss();
         },
         _formDismiss: function() {
             if (typeof this._formCancelCallback == "function") {

@@ -15,7 +15,8 @@
                 type: Boolean,
                 value: false,
                 notify: true
-            }
+            },
+            closeOnTap: Boolean
         },
         listeners: {
             tap: "_dismiss"
@@ -55,7 +56,9 @@
         _innerTap: function(event) {
             // Intercept the tap event to prevent closing the popup if one
             // of the inner elements was tapped.
-            event.stopPropagation();
+            if (!this.closeOnTap) {
+                event.stopPropagation();
+            }
         },
         //* Closes the popup (duh)
         _close: function() {
