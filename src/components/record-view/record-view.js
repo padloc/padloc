@@ -29,7 +29,7 @@
             this._itemSelector = ".field";
         },
         show: function() {
-            this._marked = -1;
+            this._marked = this.record ? this.record.fields.indexOf(this._selectedField) : -1;
             this._revealedFields = {};
             ViewBehavior.show.apply(this, arguments);
         },
@@ -75,15 +75,16 @@
             });
         },
         //* Opens the add field dialog
-        _addField: function() {
+        _addField: function(presets) {
+            presets = presets || {};
             this.$.selector.deselect();
 
             this.fire("open-form", {
                 title: "Add Field",
                 components: [
-                    {element: "input", placeholder: "Enter Label", name: "name"},
-                    {element: "input", placeholder: "Enter Content", name: "value"},
-                    {element: "button", label: "Generate", cancel: true},
+                    {element: "input", placeholder: "Enter Label", name: "name", value: presets.name},
+                    {element: "input", placeholder: "Enter Content", name: "value", value: presets.value},
+                    {element: "button", label: "Generate", cancel: true, tap: this._generateValue.bind(this)},
                     {element: "button", label: "Add", submit: true}
                 ],
                 submit: function(data) {
@@ -106,20 +107,20 @@
                 cancel: this._deselect.bind(this)
             });
         },
-        _editField: function() {
+        _editField: function(presets) {
+            presets = presets || {};
             var field = this._selectedField;
             this.fire("open-form", {
                 title: "Edit '" + field.name + "'",
                 components: [
-                    {element: "input", placeholder: "Enter Content", name: "value"},
-                    {element: "button", label: "Generate", cancel: true},
-                    {element: "button", label: "Save", submit: true}
+                    {element: "input", placeholder: "Enter Content", name: "value", value: presets.value},
+                    {element: "button", label: "Generate", submit: true, tap: this._generateValue.bind(this)},
+                    {element: "button", label: "Save", submit: true, tap: function(data) {
+                        this.set("_selectedField.value", data.value);
+                        this.$.selector.deselect();
+                        this.fire("save");
+                    }.bind(this)}
                 ],
-                submit: function(data) {
-                    this.set("_selectedField.value", data.value);
-                    this.$.selector.deselect();
-                    this.fire("save");
-                }.bind(this),
                 cancel: this._deselect.bind(this)
             });
         },
@@ -139,7 +140,6 @@
                     this.splice("record.fields", ind, 1);
                     this.$.selector.deselect();
                     this.fire("save");
-                    this.$.confirmRemoveFieldDialog.open = false;
                 }.bind(this),
                 cancel: this._deselect.bind(this)
             });
@@ -157,25 +157,17 @@
             this.$.notification.show("Copied to clipboard!", "success", 1500);
         },
         //* Fills the current value input with a randomized value
-        _generateValue: function() {
-            var field = this._selectedField ||
-                {name: this.$.newFieldNameInput.value, value: this.$.newValueInput.value};
-            this.$.editFieldDialog.open = false;
-            this.$.addFieldDialog.open = false;
+        _generateValue: function(values) {
+            var field = this._selectedField || values;
             this.async(function() {
                 this.fire("generate-value", {field: field});
             }, 300);
         },
         generateConfirm: function(field, value) {
-            if (this.record.fields.indexOf(field) !== -1) {
-                this.$.selector.select(field);
-                this.$.editFieldDialog.open = true;
-                this.$.fieldMenu.open = false;
-                this.$.fieldValueInput.value = value;
+            if (this._selectedField) {
+                this._editField({value: value});
             } else {
-                this.$.newValueInput.value = value;
-                this.$.newFieldNameInput.value = field.name;
-                this.$.addFieldDialog.open = true;
+                this._addField({name: field.name, value: value});
             }
         },
         selectMarked: function() {

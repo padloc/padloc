@@ -68,7 +68,7 @@
                     }
 
                     if (typeof component.tap == "function") {
-                        component.tap();
+                        component.tap(this._values());
                     }
                 },
                 _cancel: function() {
@@ -77,14 +77,17 @@
                     }
                     this.fire("cancel");
                 },
-                _submit: function(e) {
-                    var values = Polymer.dom(this.root).querySelectorAll("input").reduce(function(vals, el) {
+                _values: function() {
+                    return Polymer.dom(this.root).querySelectorAll("input").reduce(function(vals, el) {
                         var name = el.getAttribute("name");
                         if (name) {
                             vals[name] = el.value;
                         }
                         return vals;
                     }, {});
+                },
+                _submit: function(e) {
+                    var values = this._values();
 
                     if (typeof this.submitCallback == "function") {
                         this.submitCallback(values);

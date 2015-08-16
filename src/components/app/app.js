@@ -476,7 +476,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             this._generatorBack();
             this.async(function() {
                 this.$.recordView.generateConfirm(e.detail.field, e.detail.value);
-            }, 500);
+            }, 100);
         },
         _openForm: function(components, title, submitCallback, cancelCallback) {
             var dialog = this.$.formDialog1.isShowing ? this.$.formDialog2 : this.$.formDialog1;
