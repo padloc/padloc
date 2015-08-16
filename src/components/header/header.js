@@ -16,11 +16,6 @@
                 value: false,
                 reflectToAttribute: true
             },
-            scrim: {
-                type: Boolean,
-                value: false,
-                reflectToAttribute: true
-            },
             showing: {
                 type: Boolean,
                 value: false,

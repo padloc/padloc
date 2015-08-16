@@ -40,7 +40,6 @@
     position: absolute;
     bottom: 0;
     width: 100%;
-    padding-top: 5px;
     background: $color-primary;
     box-sizing: border-box;
     transition: transform 0.5s $toaster-easing;
@@ -61,9 +60,14 @@
     cursor: default;
     border: none;
     padding: 10px;
+    margin-top: 5px;
     line-height: 25px;
     word-wrap: break-word;
     font-weight: $font-weight-bold;
+
+    &:empty {
+        display: none;
+    }
 }
 
 .inner ::content > input {

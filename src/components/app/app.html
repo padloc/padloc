@@ -1,6 +1,7 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../dynamic-form/dynamic-form.html">
 <link rel="import" href="../header/header.html">
 <link rel="import" href="../lock-view/lock-view.html">
 <link rel="import" href="../start-view/start-view.html">
@@ -47,41 +48,15 @@
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id="decrypting">decrypting...</padlock-progress>
         <padlock-progress id="synchronizing">synchronizing...</padlock-progress>
-        <!-- MAIN MENU -->
-        <padlock-dialog id="mainMenu">
-            <button on-tap="_synchronize">Synchronize</button>
-            <button on-tap="_openSettings">Settings</button>
-            <button on-tap="_openGenerator">Generate Password</button>
-            <button on-tap="_lock">Lock App</button>
+
+        <padlock-dialog id="formDialog1" on-dismiss="_formDismiss" on-submit="_formSubmit">
+            <div class="title"></div>
+            <padlock-dynamic-form on-cancel="_formCancel"></padlock-dynamic-form>
         </padlock-dialog>
-        <!-- ADD RECORD -->
-        <padlock-dialog id="addDialog">
-            <div class="title">Add Record</div>
-            <input is="padlock-input" id="addInput" placeholder="Enter Record Name"/>
-            <button class="primary" on-tap="_confirmAddRecord">Add</button>
-        </padlock-dialog>
-        <!-- ALERT -->
-        <padlock-dialog id="alertDialog">
-            <div class="title" id="alertText"></div>
-            <button on-tap="_dismissAlert">OK</button>
-        </padlock-dialog>
-        <!-- NOT CONNECTED DIALOG -->
-        <padlock-dialog id="notConnectedDialog">
-            <div class="title">You need to be connected to Padlock Cloud to synchronize your data.</div>
-            <button on-tap="_openSettings" class="primary">Settings</button>
-            <button on-tap="_dismissNotConnectedDialog">Cancel</button>
-        </padlock-dialog>
-        <!-- REMOTE PASSWORD DIALOG -->
-        <padlock-dialog id="remotePasswordDialog">
-            <div class="title">It seems your local master password does not match the one used to encrypt the data on Padlock Cloud. Please enter your remote password!</div>
-            <input id="remotePasswordInput" type="password" placeholder="Enter Remote Password"></input>
-            <button class="primary" on-tap="_remotePasswordEntered">OK</button>
-        </padlock-dialog>
-        <!-- UPDATE REMOTE PASSWORD DIALOG -->
-        <padlock-dialog id="updateRemotePasswordDialog">
-            <div class="title">Synchronization successful! Do you want to change the remote password to your local one?</div>
-            <button class="primary" on-tap="_confirmUpdateRemotePassword">Yes</button>
-            <button on-tap="_cancelUpdateRemotePassword">No</button>
+
+        <padlock-dialog id="formDialog2" on-dismiss="_formDismiss" on-submit="_formSubmit">
+            <div class="title"></div>
+            <padlock-dynamic-form on-cancel="_formCancel"></padlock-dynamic-form>
         </padlock-dialog>
 
         <padlock-notification id="notification"></padlock-notification>

@@ -26,8 +26,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             }
         },
         listeners: {
-            open: "_dialogOpen",
-            close: "_dialogClose"
+            "open-form": "_openFormHandler",
+            "alert": "_alertHandler"
         },
         observers: [
             "_saveSettings(settings.*)",
@@ -138,8 +138,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         //* Locks the collection and opens the lock view
         _lock: function() {
-            this.$.mainMenu.open = false;
-
             // Remove the stored password from the remote source if we've created on yet
             if (this.remoteSource) {
                 delete this.remoteSource.password;
@@ -205,14 +203,14 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         //* Opens the dialog for adding a new record
         _addRecord: function() {
-            this.$.addInput.value = "";
-            this.$.addDialog.open = true;
-            // this.$.addInput.focus();
+            this._openForm([
+                {element: "input", placeholder: "Enter Record Name", value: "", name: "name"},
+                {element: "button", label: "Add", submit: true}
+            ], "Add Record", this._confirmAddRecord.bind(this));
         },
-        _confirmAddRecord: function() {
-            this.$.addDialog.open = false;
+        _confirmAddRecord: function(values) {
             var record = {
-                name: this.$.addInput.value || "Unnamed",
+                name: values.name || "Unnamed",
                 fields: this.settings.default_fields.map(function(field) {
                     return {name: field, value: ""};
                 }),
@@ -244,11 +242,14 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             });
         },
         _openMainMenu: function() {
-            this.$.mainMenu.open = true;
+            this._openForm([
+                {element: "button", submit: true, tap: this._synchronize.bind(this), label: "Synchronize"},
+                {element: "button", submit: true, tap: this._openSettings.bind(this), label: "Settings"},
+                {element: "button", submit: true, tap: this._openGenerator.bind(this), label: "Generate Password"},
+                {element: "button", submit: true, tap: this._lock.bind(this), label: "Lock App"}
+            ]);
         },
         _openSettings: function() {
-            this.$.mainMenu.open = false;
-            this.$.notConnectedDialog.open = false;
             this._openView(this.$.settingsView);
         },
         _settingsBack: function() {
@@ -275,21 +276,9 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _exportBack: function() {
             this._openView(this.$.listView);
         },
-        //* Triggers the headers scrim to match the scrim of the opened dialog
-        _dialogOpen: function() {
-            this.$.header.scrim = true;
-        },
-        //* Removes the headers scrim
-        _dialogClose: function() {
-            this.$.header.scrim = false;
-        },
         //* Show an alert dialog with the provided message
         _alert: function(msg) {
-            this.$.alertText.innerHTML = msg;
-            this.$.alertDialog.open = true;
-        },
-        _dismissAlert: function() {
-            this.$.alertDialog.open = false;
+            this._openForm([{element: "button", label: "OK", submit: true}], msg);
         },
         //* Keyboard shortcuts
         _keydown: function(event) {
@@ -350,8 +339,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _synchronize: function(remotePassword) {
             // Ignore the remotePassword argument if it is not a string
             remotePassword = typeof remotePassword === "string" ? remotePassword : undefined;
-            // In case this was called from the menu
-            this.$.mainMenu.open = false;
 
             // Check if the user has connected the client to the cloud already.
             // If not, prompt him to do so
@@ -371,7 +358,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                         // If we explicitly used a differen password for the remote source than for the local source,
                         // ask the user if he wants to update the remote password
                         if (remotePassword !== undefined && this.collection.defaultPassword !== remotePassword) {
-                            this.$.updateRemotePasswordDialog.open = true;
+                            this._promptUpdateRemotePassword();
                         } else {
                             this.$.notification.show("Synchronization successful!", "success", 2000);
                         }
@@ -381,7 +368,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                             // Decryption failed, presumably on the remote data. This means that the local master
                             // password does not match the one that was used for encrypting the remote data so
                             // we need to prompt the user for the correct password.
-                            this.$.remotePasswordDialog.open = true;
+                            this._requireRemotePassword();
                         } else {
                             var msg = e.status == 401 ?
                                 "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
@@ -393,19 +380,33 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                     }.bind(this)
                 });
             } else {
-                this.$.notConnectedDialog.open = true;
+                this._openForm([
+                    {element: "button", label: "Settings", tap: this._openSettings.bind(this), submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ], "You need to be connected to Padlock Cloud to synchronize your data.");
             }
         },
-        _dismissNotConnectedDialog: function() {
-            this.$.notConnectedDialog.open = false;
+        _requireRemotePassword: function() {
+            this._openForm([
+                    {element: "input", name: "password", type: "password", placeholder: "Enter Remote Password"},
+                    {element: "button", label: "OK", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                "It seems your local master password does not match the one used to encrypt " +
+                "the data on Padlock Cloud. Please enter your remote password!", function(vals) {
+                    this._synchronize(vals.password);
+                }.bind(this));
         },
-        _remotePasswordEntered: function() {
-            this.$.remotePasswordDialog.open = false;
-            this._synchronize(this.$.remotePasswordInput.value);
-            this.$.remotePasswordInput.value = "";
+        _promptUpdateRemotePassword: function() {
+            this._openForm([
+                    {element: "button", label: "Yes", submit: true},
+                    {element: "button", label: "No", cancel: true}
+                ],
+                "Synchronization successful! Do you want to change the remote password to your local one?",
+                this._updateRemotePassword.bind(this)
+            );
         },
-        _confirmUpdateRemotePassword: function() {
-            this.$.updateRemotePasswordDialog.open = false;
+        _updateRemotePassword: function() {
             this.$.synchronizing.show();
             this.collection.save({
                 source: this.remoteSource,
@@ -419,9 +420,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                     this._alert("Failed to update remote password. Try again later!");
                 }.bind(this)
             });
-        },
-        _cancelUpdateRemotePassword: function() {
-            this.$.updateRemotePasswordDialog.open = false;
         },
         //* Back method. Chooses the right back method based on the current view
         _back: function() {
@@ -465,8 +463,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             this.notifyPath("_currentView.rightHeaderIcon", this._currentView && this._currentView.rightHeaderIcon);
         },
         _openGenerator: function(e) {
-            this.$.mainMenu.open = false;
-            this.$.generatorView.field = e.detail.field;
+            this.$.generatorView.field = e && e.detail.field;
             if (this.$.generatorView.field) {
                 this._openView(this.$.generatorView, {animation: "slideInFromBottom"}, {animation: "slideOutToBottom"});
             } else {
@@ -485,6 +482,48 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             this.async(function() {
                 this.$.recordView.generateConfirm(e.detail.field, e.detail.value);
             }, 500);
+        },
+        _openForm: function(components, title, submitCallback, cancelCallback) {
+            var dialog = this.$.formDialog1.isShowing ? this.$.formDialog2 : this.$.formDialog1;
+            var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
+            var titleEl = Polymer.dom(dialog).querySelector(".title");
+            var delay = this.$.formDialog1.open || this.$.formDialog2.open ? 100 : 0;
+            if (this.$.formDialog1.open || this.$.formDialog2.open) {
+                this._formCancel();
+            }
+            form.components = components;
+            titleEl.innerHTML = title || "";
+            this._formSubmitCallback = submitCallback;
+            this._formCancelCallback = cancelCallback;
+            this.async(function() {
+                dialog.open = true;
+            }, delay);
+        },
+        _formSubmit: function(e) {
+            if (typeof this._formSubmitCallback == "function") {
+                this._formSubmitCallback(e.detail);
+            }
+            this.$.formDialog1.open = this.$.formDialog2.open = false;
+            this._formSubmitCallback = null;
+        },
+        _formCancel: function() {
+            this._formDismiss();
+            this.$.formDialog1.open = this.$.formDialog2.open = false;
+        },
+        _formDismiss: function() {
+            if (typeof this._formCancelCallback == "function") {
+                this._formCancelCallback();
+            }
+            this._formCancelCallback = null;
+        },
+        _isEmpty: function(str) {
+            return !str;
+        },
+        _openFormHandler: function(e) {
+            this._openForm(e.detail.components, e.detail.title, e.detail.submit, e.detail.cancel);
+        },
+        _alertHandler: function(e) {
+            this._alert(e.detail.message);
         }
     });
 

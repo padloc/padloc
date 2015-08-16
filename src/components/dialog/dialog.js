@@ -10,10 +10,15 @@
                 type: Boolean,
                 value: false,
                 observer: "_openChanged"
+            },
+            isShowing: {
+                type: Boolean,
+                value: false,
+                notify: true
             }
         },
         listeners: {
-            tap: "_close"
+            tap: "_dismiss"
         },
         //* Changed handler for the _open_ property. Shows/hides the dialog
         _openChanged: function() {
@@ -22,9 +27,11 @@
             // set _display: none_.
             if (this.open) {
                 this.style.display = "block";
+                this.isShowing = true;
             } else {
                 this.async(function() {
                     this.style.display = "none";
+                    this.isShowing = false;
                 }, 500);
             }
 
@@ -53,6 +60,10 @@
         //* Closes the popup (duh)
         _close: function() {
             this.open = false;
+        },
+        _dismiss: function() {
+            this._close();
+            this.fire("dismiss");
         }
     });
 
