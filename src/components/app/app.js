@@ -418,15 +418,26 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         //* Back method. Chooses the right back method based on the current view
         _back: function() {
-            this._currentView.back();
             var dialogs = Polymer.dom(this.root).querySelectorAll("padlock-dialog");
-            Array.prototype.forEach.call(dialogs, function(dialog) {
-                dialog.open = false;
+            var dialogsClosed = false;
+            dialogs.forEach(function(dialog) {
+                if (dialog.open) {
+                    dialog.open = false;
+                    var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
+                    if (typeof form.cancelCallback == "function") {
+                        form.cancelCallback();
+                    }
+                    dialogsClosed = true;
+                }
             });
 
-            // If we're in the list view, clear the filter input and restore the full list
-            if (this._currentView == this.$.listView) {
-                this.$.header.cancelFilter();
+            if (!dialogsClosed) {
+                // If we're in the list view, clear the filter input and restore the full list
+                if (this._currentView == this.$.listView) {
+                    this.$.header.cancelFilter();
+                } else {
+                    this._currentView.back();
+                }
             }
         },
         _saveSettings: function() {
