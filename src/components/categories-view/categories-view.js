@@ -9,8 +9,7 @@
         behaviors: [ViewBehavior],
         properties: {
             categories: Array,
-            record: Object,
-            _editing: Object,
+            record: Object
         },
         observers: [
             "_updateHeaderTitle(record.name)"
@@ -35,60 +34,58 @@
             this.headerTitle = this.record && this.record.name || "Categories";
         },
         _newCategory: function() {
-            this._editing = null;
-            this.$.nameInput.value = "";
-            this.$.editDialog.open = true;
+            this.fire("open-form", {
+                title: "New Category",
+                components: [
+                    {element: "input", placeholder: "Category Name", name: "name"},
+                    {element: "button", label: "Create", submit: true}
+                ],
+                submit: function(data) {
+                    this.set("record.category", data.name);
+                    if (this.categories.indexOf(data.name) == -1) {
+                        this.push("categories", data.name);
+                    }
+                    this._delayedBack(200);
+                }.bind(this)
+            });
         },
         _editCategory: function(e) {
             var category = e.model.item;
-            this._editing = category;
-            this.$.nameInput.value = category;
-            this.$.editDialog.open = true;
-            e.stopPropagation();
+            this.fire("open-form", {
+                title: "Edit '" + category + "'",
+                components: [
+                    {element: "input", placeholder: "Category Name", name: "name", value: category},
+                    {element: "button", label: "Save", submit: true},
+                    {element: "button", label: "Remove", cancel: true, tap: this._removeCategory.bind(this, category)}
+                ],
+                submit: function(data) {
+                    var ind = this.categories.indexOf(category);
+                    this.set("categories." + ind, data.name);
+                    this.fire("categorychanged", {previous: category, current: data.name});
+                    if (this.record.category == data.name) {
+                        this._delayedBack(200);
+                    }
+                }.bind(this)
+            });
+            event.stopPropagation();
         },
-        _editEnter: function() {
-            var name = this.$.nameInput.value;
-
-            if (name) {
-                this.$.editDialog.open = false;
-                if (this._editing) {
-                    this._doEditCategory(this._editing, name);
-                } else {
-                    this._doNewCategory(name);
-                }
-            }
-        },
-        _doNewCategory: function(category) {
-            this.set("record.category", category);
-            if (this.categories.indexOf(category) == -1) {
-                this.push("categories", category);
-            }
-            this._delayedBack(200);
-        },
-        _doEditCategory: function(oldName, newName) {
-            var ind = this.categories.indexOf(oldName);
-            this.set("categories." + ind, newName);
-            this.fire("categorychanged", {previous: oldName, current: newName});
-            if (this.record.category == newName) {
-                this._delayedBack(200);
-            }
-        },
-        _removeCategory: function() {
-            this.$.editDialog.open = false;
-            this.$.confirmRemoveDialog.open = true;
-        },
-        _confirmRemove: function() {
-            var category = this._editing;
-            var index = this.categories.indexOf(category);
-            this.$.confirmRemoveDialog.open = false;
-            this.fire("categorychanged", {previous: category, current: ""});
-            this.splice("categories", index, 1);
-            if (!this.record.category) {
-                this._delayedBack(200);
-            }
-        },
-        _cancelRemove: function() {
-            this.$.confirmRemoveDialog.open = false;
+        _removeCategory: function(category) {
+            this.fire("open-form", {
+                title: "Are you sure you want to remove this category? The category will be removed " +
+                    "from all other records as well.",
+                components: [
+                    {element: "button", label: "Remove", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                submit: function() {
+                    var index = this.categories.indexOf(category);
+                    this.fire("categorychanged", {previous: category, current: ""});
+                    this.splice("categories", index, 1);
+                    if (!this.record.category) {
+                        this._delayedBack(200);
+                    }
+                }.bind(this)
+            });
         },
         _selectNone: function() {
             this.set("record.category", "");

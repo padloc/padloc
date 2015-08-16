@@ -26,19 +26,6 @@
 
         <button id="newButton" class="new-button" on-tap="_newCategory" hidden$="{{ _hasCategories(categories.length) }}">New Category...</button>
 
-        <padlock-dialog id="editDialog">
-            <div class="title" hidden$="{{ _editing }}">New Category</div>
-            <input is="padlock-input" id="nameInput" placeholder="Category Name"/>
-            <button class="primary" on-tap="_editEnter">Save</button>
-            <button hidden$="{{ !_editing }}" on-tap="_removeCategory">Remove</button>
-        </padlock-dialog>
-
-        <padlock-dialog id="confirmRemoveDialog">
-            <div class="title">Are you sure you want to remove this category? The category will be removed from all other records as well.</div>
-            <button on-tap="_confirmRemove" class="primary">Remove</button>
-            <button on-tap="_cancelRemove">Cancel</button>
-        </padlock-dialog>
-
     </template>
     <script src="categories-view.js"></script>
 </dom-module>
