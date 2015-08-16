@@ -1,0 +1,90 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../input/input.html">
+
+<dom-module id="padlock-dynamic-form">
+
+    <link href="dynamic-form.css" rel="import" type="css">
+
+    <template>
+
+        <form on-submit="_submit">
+
+            <template is="dom-repeat" items="{{ components }}">
+
+                <template is="dom-if" if="{{ _isInput(item.element) }}">
+                    <input is="padlock-input" value="{{ item.value }}" type$="{{ item.type }}"
+                        placeholder$="{{ item.placeholder }}" class$="{{ _inputClass(item.class) }}" name$="{{ item.name }}">
+                </template>
+
+                <template is="dom-if" if="{{ _isButton(item.element) }}">
+                    <button on-tap="_buttonTap" type$="{{ _buttonType(item.submit) }}" class$="{{ _buttonClass(item.class }}">{{ item.label }}</button>
+                </template>
+
+            </template>
+
+        </form>
+
+    </template>
+
+    <script>
+        /* global Polymer */
+
+        (function(Polymer) {
+            "use strict";
+
+            Polymer({
+                is: "padlock-dynamic-form",
+                properties: {
+                    components: Array
+                },
+                _isInput: function(type) {
+                    return type == "input";
+                },
+                _isButton: function(type) {
+                    return type == "button";
+                },
+                _isTitle: function(type) {
+                    return type == "title";
+                },
+                _inputClass: function(className) {
+                    return className || "";
+                },
+                _hasTitle: function(title) {
+                    return !!title;
+                },
+                _buttonClass: function(className) {
+                    return className || "";
+                },
+                _buttonType: function(submit) {
+                    return submit ? "submit" : "button";
+                },
+                _buttonTap: function(e) {
+                    var component = e.model.item;
+
+                    if (component.cancel) {
+                        this.fire("cancel");
+                    }
+
+                    if (typeof component.tap == "function") {
+                        component.tap();
+                    }
+                },
+                _submit: function(e) {
+                    var values = Polymer.dom(this.root).querySelectorAll("input").reduce(function(vals, el) {
+                        var name = el.getAttribute("name");
+                        if (name) {
+                            vals[name] = el.value;
+                        }
+                        return vals;
+                    }, {});
+                    this.fire("submit", values);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                }
+            });
+        })(Polymer);
+
+    </script>
+
+</dom-module>
