@@ -21,58 +21,63 @@
         },
         //* Opens the change password dialog and resets the corresponding input elements
         _changePassword: function() {
-            this.$.currPwdInput.value = "";
-            this.$.newPwdInput.value = "";
-            this.$.confirmNewPwdInput.value = "";
-            this.$.changePasswordDialog.open = true;
-        },
-        _confirmChangePassword: function() {
-            this.$.changePasswordDialog.open = false;
-            // TODO: Add a better check for the current password
-            if (this.$.currPwdInput.value != this.collection.defaultPassword) {
-                this.$.notification.show("Wrong password!", "error", 2000);
-            } else if (this.$.newPwdInput.value != this.$.confirmNewPwdInput.value) {
-                this.$.notification.show("Password do not match!", "error", 2000);
-            } else {
-                this.collection.setPassword(this.$.newPwdInput.value);
-                this.$.notification.show("Password changed successfully!", "success", 2000);
-            }
-        },
-        _closeChangePasswordErrorDialog: function() {
-            this.$.changePasswordErrorDialog.open = false;
-        },
-        _closeChangePasswordSuccessDialog: function() {
-            this.$.changePasswordSuccessDialog.open = false;
+            this.fire("open-form", {
+                components: [
+                    {element: "input", type: "password", placeholder: "Enter Current Password", name: "currPwd"},
+                    {element: "input", type: "password", placeholder: "Enter New Password", name: "newPwd"},
+                    {element: "input", type: "password", placeholder: "Confirm New Password", name: "confirmPwd"},
+                    {element: "button", label: "Change", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                title: "Change Master Password",
+                submit: function(data) {
+                    // TODO: Add a better check for the current password
+                    if (data.currPwd != this.collection.defaultPassword) {
+                        this.$.notification.show("Wrong password!", "error", 2000);
+                    } else if (data.newPwd != data.confirmPwd) {
+                        this.$.notification.show("Password do not match!", "error", 2000);
+                    } else {
+                        this.collection.setPassword(data.newPwd);
+                        this.$.notification.show("Password changed successfully!", "success", 2000);
+                    }
+                }.bind(this)
+            });
         },
         //* Opens the dialog for connecting to the Padlock Cloud
         _cloudConnect: function() {
-            this.$.emailInput.value = this.settings.sync_email || "";
-            this.$.deviceNameInput.value = this.settings.sync_device || "";
-            this.$.connectDialog.open = true;
-        },
-        _confirmConnect: function() {
-            this.$.connectDialog.open = false;
-            this.set("settings.sync_email", this.$.emailInput.value);
-            this.set("settings.sync_device", this.$.deviceNameInput.value);
-            this._requestApiKey();
+            this.fire("open-form", {
+                components: [
+                    {element: "input", type: "email", placeholder: "Email Address", name: "email"},
+                    {element: "input", placeholder: "Device Name", name: "device"},
+                    {element: "button", label: "Connect", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                title: "Connect to Padlock Cloud",
+                submit: this._requestApiKey.bind(this)
+            });
         },
         _cloudDisconnect: function() {
-            this.$.disconnectDialog.open = true;
-        },
-        _confirmDisconnect: function() {
-            this.$.disconnectDialog.open = false;
-            this.set("settings.sync_connected", false);
-            this.set("settings.sync_key", "");
-        },
-        _cancelDisconnect: function() {
-            this.$.disconnectDialog.close();
+            this.fire("open-form", {
+                components: [
+                    {element: "button", label: "Disconnect", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                title: "Are you sure you want to disconnect from Padlock Cloud?",
+                submit: function() {
+                    this.set("settings.sync_connected", false);
+                    this.set("settings.sync_key", "");
+                }.bind(this)
+            });
         },
         //* Requests an api key from the cloud api with the entered email and device name
-        _requestApiKey: function() {
-            var req = new XMLHttpRequest(),
-                url = this.settings.sync_host + "auth/",
-                email = this.$.emailInput.value,
-                deviceName = this.$.deviceNameInput.value;
+        _requestApiKey: function(data) {
+            var req = new XMLHttpRequest();
+            var url = this.settings.sync_host + "auth/";
+            var email = data.email;
+            var deviceName = data.device;
+
+            this.set("settings.sync_email", email);
+            this.set("settings.sync_device", deviceName);
 
             // Show progress indicator
             this.$.progress.show();
@@ -103,11 +108,7 @@
         },
         //* Shows an alert dialog with a given _message_
         _alert: function(message) {
-            this.$.alertText.innerHTML = message;
-            this.$.alertDialog.open = true;
-        },
-        _dismissAlert: function() {
-            this.$.alertDialog.open = false;
+            this.fire("alert", {message: message});
         },
         _toggle: function(e) {
             e.currentTarget.querySelector("padlock-toggle").toggle();
@@ -135,29 +136,36 @@
             window.open("http://github.com/maklesoft", "_system");
         },
         _resetData: function() {
-            this.$.resetConfirmPwd.value = "";
-            this.$.resetDataDialog.open = true;
-        },
-        _confirmResetData: function() {
-            this.$.resetDataDialog.open = false;
-
-            if (this.$.resetConfirmPwd.value == this.collection.defaultPassword) {
-                this.collection.clear();
-                this.collection.destroy();
-                this.fire("reset");
-            } else {
-                this.$.notification.show("Wrong password!", "error", 2000);
-            }
-        },
-        _cancelResetData: function() {
-            this.$.resetDataDialog.open = false;
+            this.fire("open-form", {
+                components: [
+                    {element: "input", type: "password", placeholder: "Enter Master Password", name: "password"},
+                    {element: "button", label: "Reset", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                title: "Are you sure you want to reset all your data? This action can not be undone! " +
+                    "Please enter your master password to confirm.",
+                submit: function(data) {
+                    if (data.password == this.collection.defaultPassword) {
+                        this.collection.clear();
+                        this.collection.destroy();
+                        this.fire("reset");
+                    } else {
+                        this.$.notification.show("Wrong password!", "error", 2000);
+                    }
+                }.bind(this)
+            });
         },
         _resetRemoteData: function() {
-            this.$.resetRemoteDataDialog.open = true;
+            this.fire("open-form", {
+                components: [
+                    {element: "button", label: "Reset", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                title: "Are you sure you want to reset all your data on Padlock Cloud?",
+                submit: this._requestResetRemoteData.bind(this)
+            });
         },
-        _confirmResetRemoteData: function() {
-            this.$.resetRemoteDataDialog.open = false;
-
+        _requestResetRemoteData: function() {
             var req = new XMLHttpRequest(),
                 email = this.settings.sync_email,
                 url = this.settings.sync_host + email;
@@ -180,9 +188,6 @@
 
             req.open("DELETE", url, true);
             req.send();
-        },
-        _cancelResetRemoteData: function() {
-            this.$.resetRemoteDataDialog.open = false;
         }
     });
 
