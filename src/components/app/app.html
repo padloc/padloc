@@ -57,14 +57,14 @@
             <button on-tap="_lock">Lock App</button>
         </padlock-dialog>
 
-        <padlock-dialog id="formDialog1" on-dismiss="_formDismiss" on-submit="_formSubmit">
+        <padlock-dialog id="formDialog1" on-dismiss="_formDismiss" on-submit="_closeCurrentDialog" on-cancel="_closeCurrentDialog">
             <div class="title"></div>
-            <padlock-dynamic-form on-cancel="_formCancel"></padlock-dynamic-form>
+            <padlock-dynamic-form></padlock-dynamic-form>
         </padlock-dialog>
 
-        <padlock-dialog id="formDialog2" on-dismiss="_formDismiss" on-submit="_formSubmit">
+        <padlock-dialog id="formDialog2" on-dismiss="_formDismiss" on-submit="_closeCurrentDialog" on-cancel="_closeCurrentDialog">
             <div class="title"></div>
-            <padlock-dynamic-form on-cancel="_formCancel"></padlock-dynamic-form>
+            <padlock-dynamic-form></padlock-dynamic-form>
         </padlock-dialog>
 
         <padlock-notification id="notification"></padlock-notification>

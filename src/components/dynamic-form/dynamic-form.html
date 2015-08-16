@@ -35,7 +35,9 @@
             Polymer({
                 is: "padlock-dynamic-form",
                 properties: {
-                    components: Array
+                    components: Array,
+                    submitCallback: Object,
+                    cancelCallback: Object
                 },
                 _isInput: function(type) {
                     return type == "input";
@@ -62,12 +64,18 @@
                     var component = e.model.item;
 
                     if (component.cancel) {
-                        this.fire("cancel");
+                        this._cancel();
                     }
 
                     if (typeof component.tap == "function") {
                         component.tap();
                     }
+                },
+                _cancel: function() {
+                    if (typeof this.cancelCallback == "function") {
+                        this.cancelCallback();
+                    }
+                    this.fire("cancel");
                 },
                 _submit: function(e) {
                     var values = Polymer.dom(this.root).querySelectorAll("input").reduce(function(vals, el) {
@@ -77,6 +85,11 @@
                         }
                         return vals;
                     }, {});
+
+                    if (typeof this.submitCallback == "function") {
+                        this.submitCallback(values);
+                    }
+
                     this.fire("submit", values);
                     e.preventDefault();
                     e.stopPropagation();

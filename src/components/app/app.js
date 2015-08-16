@@ -482,33 +482,23 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             var dialog = this.$.formDialog1.isShowing ? this.$.formDialog2 : this.$.formDialog1;
             var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
             var titleEl = Polymer.dom(dialog).querySelector(".title");
-            if (this.$.formDialog1.open || this.$.formDialog2.open) {
-                this._formCancel();
-            }
-            form.components = components;
+            this.$.formDialog1.open = this.$.formDialog2.open = false;
             titleEl.innerHTML = title || "";
-            this._formSubmitCallback = submitCallback;
-            this._formCancelCallback = cancelCallback;
+            form.components = components;
+            form.submitCallback = submitCallback;
+            form.cancelCallback = cancelCallback;
             this.async(function() {
                 dialog.open = true;
             }, 50);
         },
-        _formSubmit: function(e) {
-            this.$.formDialog1.open = this.$.formDialog2.open = false;
-            if (typeof this._formSubmitCallback == "function") {
-                this._formSubmitCallback(e.detail);
-            }
-            this._formSubmitCallback = null;
+        _closeCurrentDialog: function(e) {
+            e.currentTarget.open = false;
         },
-        _formCancel: function() {
-            this.$.formDialog1.open = this.$.formDialog2.open = false;
-            this._formDismiss();
-        },
-        _formDismiss: function() {
-            if (typeof this._formCancelCallback == "function") {
-                this._formCancelCallback();
+        _formDismiss: function(e) {
+            var form = Polymer.dom(e.target).querySelector("padlock-dynamic-form");
+            if (typeof form.cancelCallback == "function") {
+                form.cancelCallback();
             }
-            this._formCancelCallback = null;
         },
         _isEmpty: function(str) {
             return !str;
