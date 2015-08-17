@@ -1,6 +1,6 @@
 /* global Polymer, padlock, cordova */
 
-(function(Polymer, ViewBehavior, util, imp) {
+(function(Polymer, ViewBehavior, util, imp, platform) {
     "use strict";
 
     var inputPlaceholder =
@@ -20,11 +20,17 @@
         },
         ready: function() {
             this.leftHeaderIcon = "left";
-            this.rightHeaderIcon = "";
+            this.rightHeaderIcon = "copy";
             this.headerTitle = "Import Records";
         },
         leftHeaderButton: function() {
             this.fire("back");
+        },
+        rightHeaderButton: function() {
+            platform.getClipboard(function(text) {
+                this.$.rawInput.value = text;
+                this.$$("padlock-notification").show("Data pasted from clipboard", "success", 1500);
+            }.bind(this));
         },
         show: function() {
             this.$.rawInput.value = inputPlaceholder;
