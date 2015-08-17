@@ -278,22 +278,23 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         //* Keyboard shortcuts
         _keydown: function(event) {
             var shortcut;
+            var dialogsOpen = !!document.querySelectorAll("padlock-dialog.open").length;
 
             // CTRL/CMD + F -> Filter
             if ((event.ctrlKey || event.metaKey) && event.keyCode === 70 &&
-                    this._currentView.showFilter) {
+                    this._currentView.showFilter && !dialogsOpen) {
                 shortcut = this.$.header.focusFilterInput.bind(this.$.header);
             }
             // DOWN -> Mark next
-            else if (event.keyCode == 40) {
+            else if (event.keyCode == 40 && !dialogsOpen) {
                 shortcut = this._currentView.markNext && this._currentView.markNext.bind(this._currentView);
             }
             // UP -> Mark previous
-            else if (event.keyCode == 38) {
+            else if (event.keyCode == 38 && !dialogsOpen) {
                 shortcut = this._currentView.markPrev && this._currentView.markPrev.bind(this._currentView);
             }
             // ENTER -> Select marked
-            else if (event.keyCode == 13) {
+            else if (event.keyCode == 13 && !dialogsOpen) {
                 shortcut = this._currentView.selectMarked && this._currentView.selectMarked.bind(this._currentView);
             }
             // ESCAPE -> Back
