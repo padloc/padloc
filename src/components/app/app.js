@@ -450,7 +450,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 this.notifyPath("settings." + prop, this.settings[prop]);
             }
         },
-        _reset: function() {
+        _openStartView: function() {
             this.$.header.showing = false;
             this._openView(
                 this.$.startView,

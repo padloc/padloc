@@ -23,22 +23,17 @@
         _changePassword: function() {
             this.fire("open-form", {
                 components: [
-                    {element: "input", type: "password", placeholder: "Enter Current Password", name: "currPwd"},
-                    {element: "input", type: "password", placeholder: "Enter New Password", name: "newPwd"},
-                    {element: "input", type: "password", placeholder: "Confirm New Password", name: "confirmPwd"},
-                    {element: "button", label: "Change", submit: true},
+                    {element: "input", type: "password", placeholder: "Enter Current Password", name: "password"},
+                    {element: "button", label: "Enter", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
                 ],
                 title: "Change Master Password",
                 submit: function(data) {
                     // TODO: Add a better check for the current password
-                    if (data.currPwd != this.collection.defaultPassword) {
+                    if (data.password != this.collection.defaultPassword) {
                         this.$.notification.show("Wrong password!", "error", 2000);
-                    } else if (data.newPwd != data.confirmPwd) {
-                        this.$.notification.show("Password do not match!", "error", 2000);
                     } else {
-                        this.collection.setPassword(data.newPwd);
-                        this.$.notification.show("Password changed successfully!", "success", 2000);
+                        this.fire("change-password");
                     }
                 }.bind(this)
             });
