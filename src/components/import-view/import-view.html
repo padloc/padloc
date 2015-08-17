@@ -2,53 +2,24 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../input/input.html">
-<link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../progress/progress.html">
+<link rel="import" href="../notification/notification.html">
 
 <dom-module id="padlock-import-view">
 
     <link href="import-view.css" rel="import" type="css">
 
     <template>
-        <!-- STYLES -->
         <div class="flex-wrapper">
-            <!-- RAW DATA INPUT -->
             <textarea id="rawInput" is="padlock-textarea" select-all-on-focus></textarea>
-            <!-- IMPORT BUTTON -->
             <button class="import-button primary" on-tap="_startImport">import</button>
         </div>
-        <padlock-progress id="progress">importing...</padlock-progress>
-        <!-- PASSWORD DIALOG -->
-        <padlock-dialog id="pwdDialog">
-            <div class="title">Encrypted backup detected. Please enter the password for this backup.</div>
-            <input is="padlock-input" id="pwdInput" type="password" placeholder$="Enter password..." />
-            <button class="primary" on-tap="_passwordConfirm">OK</button>
-        </padlock-dialog>
-        <!-- ERROR DIALOG -->
-        <padlock-dialog id="errorDialog">
-            <div class="title">Password incorrect or data corrupt.</div>
-            <button class="primary" on-tap="_requirePassword">retry</button>
-            <button on-tap="_importCancel">cancel</button>
-        </padlock-dialog>
-        <padlock-dialog id="nameColDialog">
-            <div class="title">Which column would you like to use for record names?</div>
-            <padlock-select id="nameColSelect" open-upwards label="Select a column">
-                <template is="dom-repeat" items="{{ _nameColOptions }}">
-                    <padlock-option value="{{ item }}"></padlock-option>
-                </template>
-            </padlock-select>
-            <button class="primary" on-tap="_confirmNameCol">OK</button>
-        </padlock-dialog>
-        <padlock-dialog id="catColDialog">
-            <div class="title">Which column would you like to use for the category?</div>
-            <padlock-select id="catColSelect" open-upwards label="Select a column (optional)">
-                <template is="dom-repeat" items="{{ _catColOptions }}">
-                    <padlock-option value="{{ item }}"></padlock-option>
-                </template>
-            </padlock-select>
-            <button class="primary" on-tap="_confirmCatCol">OK</button>
-        </padlock-dialog>
+
+        <padlock-notification message="Please enter some data!"></padlock-notification>
+
+        <padlock-progress>importing...</padlock-progress>
+
     </template>
 
     <script src="import-view.js"></script>

@@ -42,97 +42,101 @@
             ViewBehavior.hide.apply(this, arguments);
         },
         //* Shows password dialog
-        _requirePassword: function() {
-            this.$.errorDialog.open = false;
-            this.$.pwdInput.value = "";
-            this.$.pwdDialog.open = true;
+        _requirePassword: function(callback) {
+            this.fire("open-form", {
+                title: "Encrypted backup detected. Please enter the password for this backup.",
+                components: [
+                    {element: "input", type: "password", placeholder: "Enter Password", name: "password"},
+                    {element: "button", label: "Decrypt", submit: true},
+                    {element: "button", label: "Cancel", cancel: true}
+                ],
+                submit: callback
+            });
         },
-        _startImport: function() {
+        _startImport: function(e) {
+            e && e.preventDefault();
             // this.$.nameColDialog.open = true;
             var rawStr = this.$.rawInput.value;
-            if (!rawStr) {
+            if (!rawStr || rawStr == inputPlaceholder) {
+                this.$$("padlock-notification").show("Please enter some data!", "error", 1500);
                 return;
             }
 
             if (imp.isSecuStoreBackup(rawStr)) {
-                this._type = "secustore";
-                this._requirePassword();
+                this._requirePassword(this._importSecuStoreBackup.bind(this));
             } else if (imp.isPadlockBackup(rawStr)) {
-                this._type = "padlock";
-                this._requirePassword();
+                this._requirePassword(this._importPadlockBackup.bind(this));
             } else {
                 this._csvData = imp.parseCsv(rawStr);
                 this._getNameCol();
             }
         },
-        _passwordConfirm: function() {
-            this.$.pwdDialog.open = false;
-            if (this._type == "secustore") {
-                this._importSecuStoreBackup();
-            } else if (this._type == "padlock") {
-                this._importPadlockBackup();
-            }
-        },
-        _importPadlockBackup: function() {
-            this.$.progress.show();
-            imp.importPadlockBackup(this.collection, this.$.rawInput.value, this.$.pwdInput.value, function(records) {
+        _importPadlockBackup: function(data) {
+            this.$$("padlock-progress").show();
+            imp.importPadlockBackup(this.collection, this.$.rawInput.value, data.password, function(records) {
                 this.collection.save();
                 this.fire("imported", {count: records.length});
-            }.bind(this), function() {
-                this.$.errorDialog.open = true;
-            }.bind(this));
-            this.$.progress.hide();
+            }.bind(this), this._promptDecryptionFailed.bind(this));
+            this.$$("padlock-progress").hide();
         },
         //* Starts the import using the raw input and the provided password
-        _importSecuStoreBackup: function() {
-            this.$.progress.show();
+        _importSecuStoreBackup: function(data) {
+            this.$$("padlock-progress").show();
 
-            imp.importSecuStoreBackup(this.collection, this.$.rawInput.value, this.$.pwdInput.value, function(records) {
+            imp.importSecuStoreBackup(this.collection, this.$.rawInput.value, data.password, function(records) {
                 this.collection.save();
                 this.fire("imported", {count: records.length});
-            }.bind(this), function() {
-                this.$.errorDialog.open = true;
-            }.bind(this));
-            this.$.progress.hide();
+            }.bind(this), this._promptDecryptionFailed.bind(this));
+            this.$$("padlock-progress").hide();
         },
-        _importCancel: function() {
-            this.$.errorDialog.open = false;
-            this.fire("back");
+        _promptDecryptionFailed: function() {
+            this.fire("open-form", {
+                title: "Decrypting the data failed. Either the password you entered was incorrect or the " +
+                    "data provided is incomplete or corrupted.",
+                components: [
+                    {element: "button", label: "Retry", submit: true, tap: this._startImport.bind(this)},
+                    {element: "button", label: "Cancel", cancel: true}
+                ]
+            });
         },
         //* Opens a dialog for selecting a column for record names
         _getNameCol: function() {
-            this.colNames = this._csvData[0].slice();
-            this._nameColOptions = this.colNames;
-            this.$.nameColSelect.selected = -1;
-            this.$.nameColDialog.open = true;
+            this._colNames = this._csvData[0].slice();
+            this.fire("open-form", {
+                title: "Which column would you like to use for record names?",
+                components: this._colNames.map(function(col) {
+                    return {element: "button", label: col, submit: true, tap: this._selectNameCol.bind(this, col)};
+                }.bind(this))
+            });
         },
-        _confirmNameCol: function() {
-            this._nameColIndex = this.$.nameColSelect.selected;
-            if (this._nameColIndex != -1) {
-                this.$.nameColDialog.open = false;
-                this._getCatCol();
-            }
+        _selectNameCol: function(colName) {
+            this._nameColIndex = this._colNames.indexOf(colName);
+            this._getCatCol();
         },
         //* Opens the dialog for selecting a column for the category
         _getCatCol: function() {
-            var select = this.$.catColSelect;
             // One column is already taken by the record name
-            var opts = util.remove(this.colNames, this._nameColIndex);
-            this._catColOptions = opts;
-            select.selected = -1;
-            this.$.catColDialog.open = true;
+            var opts = util.remove(this._colNames, this._nameColIndex);
+            var components = [
+                {element: "button", label: "(none)", submit: true, tap: this._selectCatCol.bind(this, null)}
+            ].concat(opts.map(function(col) {
+                return {element: "button", label: col, submit: true, tap: this._selectCatCol.bind(this, col)};
+            }.bind(this)));
+
+            this.fire("open-form", {
+                title: "Which column would you like to use for categories?",
+                components: components
+            });
         },
-        _confirmCatCol: function() {
-            var colName = this.$.catColSelect.value;
-            this._catColIndex = this.colNames.indexOf(colName);
-            this.$.catColDialog.open = false;
-            this._importCsv();
+        _selectCatCol: function(colName) {
+            this._catColIndex = this._colNames.indexOf(colName);
+            this.async(this._importCsv, 100);
         },
         _importCsv: function() {
-            var records = imp.importTable(this._csvData, this._nameColIndex, this._catColIndex);
-
-            this.fire("import", {records: records});
+            var records = imp.importTable(this.collection, this._csvData, this._nameColIndex, this._catColIndex);
+            this.collection.save();
+            this.fire("imported", {count: records.length});
         }
     });
 
-})(Polymer, padlock.ViewBehavior, padlock.util, padlock.import);
+})(Polymer, padlock.ViewBehavior, padlock.util, padlock.import, padlock.platform);

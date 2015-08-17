@@ -44,6 +44,10 @@
     box-sizing: border-box;
     padding-top: 5px;
     transition: transform 0.5s $toaster-easing;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .inner ::content > * {
