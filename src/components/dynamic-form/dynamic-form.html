@@ -12,8 +12,8 @@
             <template is="dom-repeat" items="{{ components }}">
 
                 <template is="dom-if" if="{{ _isInput(item.element) }}">
-                    <input is="padlock-input" value="{{ item.value }}" type$="{{ item.type }}"
-                        placeholder$="{{ item.placeholder }}" class$="{{ _inputClass(item.class) }}" name$="{{ item.name }}">
+                    <input is="padlock-input" value="{{ item.value }}" type$="{{ item.type }}" select-all-on-focus="{{ item.selectAllOnFocus }}"
+                        auto-focus$="{{ item.autofocus }}" placeholder$="{{ item.placeholder }}" class$="{{ _inputClass(item.class) }}" name$="{{ item.name }}">
                 </template>
 
                 <template is="dom-if" if="{{ _isButton(item.element) }}">
@@ -65,6 +65,10 @@
 
                     if (component.cancel) {
                         this._cancel();
+                    }
+
+                    if (component.close) {
+                        this.fire("close");
                     }
 
                     if (typeof component.tap == "function") {

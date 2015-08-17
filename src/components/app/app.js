@@ -204,7 +204,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         //* Opens the dialog for adding a new record
         _addRecord: function() {
             this._openForm([
-                {element: "input", placeholder: "Enter Record Name", value: "", name: "name"},
+                {element: "input", placeholder: "Enter Record Name", value: "", name: "name", autofocus: true},
                 {element: "button", label: "Add", submit: true}
             ], "Add Record", this._confirmAddRecord.bind(this));
         },
@@ -501,6 +501,10 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             form.cancelCallback = cancelCallback;
             this.async(function() {
                 dialog.open = true;
+                var input = form.querySelector("input[auto-focus]");
+                if (input && !platform.isTouch()) {
+                    input.focus();
+                }
             }, 50);
         },
         _closeCurrentDialog: function(e) {

@@ -37,7 +37,7 @@
             this.fire("open-form", {
                 title: "New Category",
                 components: [
-                    {element: "input", placeholder: "Category Name", name: "name"},
+                    {element: "input", placeholder: "Category Name", name: "name", autofocus: true},
                     {element: "button", label: "Create", submit: true}
                 ],
                 submit: function(data) {

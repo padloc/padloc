@@ -64,8 +64,9 @@
             this.fire("open-form", {
                 title: "Edit Name",
                 components: [
-                    {element: "input", placeholder: "Enter Name", name: "name", value: this.record.name},
-                    {element: "button", label: "Change", submit: true},
+                    {element: "input", placeholder: "Enter Name", name: "name",
+                        value: this.record.name, autofocus: true, selectAllOnFocus: true},
+                    {element: "button", label: "Save", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
                 ],
                 submit: function(data) {
@@ -82,10 +83,10 @@
             this.fire("open-form", {
                 title: "Add Field",
                 components: [
-                    {element: "input", placeholder: "Enter Label", name: "name", value: presets.name},
+                    {element: "input", placeholder: "Enter Label", name: "name", value: presets.name, autofocus: true},
                     {element: "input", placeholder: "Enter Content", name: "value", value: presets.value},
                     {element: "button", label: "Generate", cancel: true, tap: this._generateValue.bind(this)},
-                    {element: "button", label: "Add", submit: true}
+                    {element: "button", label: "Save", submit: true}
                 ],
                 submit: function(data) {
                     var field = {
@@ -114,13 +115,14 @@
                 title: "Edit '" + field.name + "'",
                 components: [
                     {element: "input", placeholder: "Enter Content", name: "value",
-                        value: presets.value || field.value},
-                    {element: "button", label: "Generate", submit: true, tap: this._generateValue.bind(this)},
+                        value: presets.value || field.value, autofocus: true, selectAllOnFocus: true},
+                    {element: "button", label: "Generate", close: true, tap: this._generateValue.bind(this)},
                     {element: "button", label: "Save", submit: true, tap: function(data) {
                         this.set("_selectedField.value", data.value);
                         this.$.selector.deselect();
                         this.fire("save");
-                    }.bind(this)}
+                    }.bind(this)},
+                    {element: "button", label: "Cancel", cancel: true}
                 ],
                 cancel: this._deselect.bind(this)
             });
