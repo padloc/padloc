@@ -11,6 +11,7 @@ var gulp = require("gulp"),
     stylish = require("jshint-stylish"),
     Q = require("q"),
     vulcanize = require("gulp-vulcanize"),
+    crisper = require('gulp-crisper'),
     rmdir = require("rimraf"),
     ncp = require("ncp").ncp,
     path = require("path"),
@@ -40,6 +41,7 @@ function build(dest) {
                 "cordova.js"
             ]
         }))
+        .pipe(crisper())
         .pipe(gulp.dest(dest));
 }
 
