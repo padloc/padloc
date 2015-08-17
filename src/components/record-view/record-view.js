@@ -113,7 +113,8 @@
             this.fire("open-form", {
                 title: "Edit '" + field.name + "'",
                 components: [
-                    {element: "input", placeholder: "Enter Content", name: "value", value: presets.value},
+                    {element: "input", placeholder: "Enter Content", name: "value",
+                        value: presets.value || field.value},
                     {element: "button", label: "Generate", submit: true, tap: this._generateValue.bind(this)},
                     {element: "button", label: "Save", submit: true, tap: function(data) {
                         this.set("_selectedField.value", data.value);

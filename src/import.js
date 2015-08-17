@@ -161,11 +161,11 @@ padlock.import = (function(crypto, DisposableSource) {
      *                               no categories will be used
      * @return Array                 An array or records
      */
-    var importTable = function(data, nameColIndex, catColIndex) {
+    var importTable = function(collection, data, nameColIndex, catColIndex) {
         var colNames = data[0];
         nameColIndex = nameColIndex || 0;
 
-        return data.slice(1).map(function(row) {
+        var records = data.slice(1).map(function(row) {
             var fields = [];
 
             for (var i=0; i<row.length; i++) {
@@ -179,11 +179,14 @@ padlock.import = (function(crypto, DisposableSource) {
             }
 
             return {
-                name: row[nameColIndex],
+                name: row[nameColIndex] || "",
                 category: row[catColIndex] || "",
                 fields: fields
             };
         });
+
+        collection.add(records);
+        return records;
     };
 
     var isPadlockBackup = function(string) {
