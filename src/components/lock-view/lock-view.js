@@ -1,6 +1,6 @@
 /* global Polymer, padlock */
 
-(function(Polymer, ViewBehavior) {
+(function(Polymer, ViewBehavior, platform) {
     "use strict";
 
     Polymer({
@@ -9,14 +9,19 @@
         hide: function() {
             this.$$("padlock-lock").unlocked = true;
             var args = arguments;
-            this.async(function() {
-                ViewBehavior.hide.apply(this, args);
-            }, 500);
+            if (!platform.isTouch()) {
+                this.async(function() {
+                    ViewBehavior.hide.apply(this, args);
+                }, 500);
+            }
         },
         show: function() {
             this._clear();
             this.$$("padlock-lock").unlocked = false;
             ViewBehavior.show.apply(this, arguments);
+            this.async(function() {
+                this.$.pwdInput.focus();
+            }, 500);
         },
         enter: function() {
             this.$.pwdInput.blur();
@@ -25,12 +30,9 @@
         _clear: function() {
             this.$.pwdInput.value = "";
         },
-        focusPwdInput: function() {
-            this.$.pwdInput.focus();
-        },
         getAnimationElement: function() {
             return this.$$("padlock-lock");
         }
     });
 
-})(Polymer, padlock.ViewBehavior);
+})(Polymer, padlock.ViewBehavior, padlock.platform);

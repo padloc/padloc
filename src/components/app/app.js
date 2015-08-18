@@ -68,7 +68,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             document.addEventListener("resume", this._initView.bind(this, true), false);
         },
         _initView: function(collExists) {
-            var isTouch = platform.isTouch();
             // If there already is data in the local storage ask for password
             // Otherwise start with choosing a new one
             var view = collExists ? this.$.lockView : this.$.startView;
@@ -76,10 +75,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             // open the first view
             // this._openView(this.$.listView, { animation: "" });
             this._openView(view, { animation: "" });
-
-            if (collExists && !isTouch) {
-                this.async(view.focusPwdInput.bind(view), 10);
-            }
         },
         _pwdEnter: function(event, detail) {
             this._unlock(detail.password);
@@ -310,9 +305,13 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             else if ((event.ctrlKey || event.metaKey) && event.keyCode === 78 && !dialogsOpen) {
                 shortcut = this._currentView.add && this._currentView.add.bind(this._currentView);
             }
-            // CTRL/CMD + N -> New Record
+            // CTRL/CMD + S -> Synchronize
             else if ((event.ctrlKey || event.metaKey) && event.keyCode === 83 && !dialogsOpen) {
                 shortcut = this._synchronize();
+            }
+            // CTRL/CMD + L -> Lock
+            else if ((event.ctrlKey || event.metaKey) && event.keyCode === 76 && !dialogsOpen) {
+                shortcut = this._lock();
             }
             // console.log(event.keyCode);
 
