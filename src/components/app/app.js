@@ -273,7 +273,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         //* Keyboard shortcuts
         _keydown: function(event) {
             var shortcut;
-            var dialogsOpen = !!document.querySelectorAll("padlock-dialog.open").length;
+            var dialogsOpen = !!Polymer.dom(this.root).querySelectorAll("padlock-dialog.open").length;
 
             // CTRL/CMD + F -> Filter
             if ((event.ctrlKey || event.metaKey) && event.keyCode === 70 &&
