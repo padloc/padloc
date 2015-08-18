@@ -52,7 +52,8 @@
             this.fire("open-form", {
                 title: "Encrypted backup detected. Please enter the password for this backup.",
                 components: [
-                    {element: "input", type: "password", placeholder: "Enter Password", name: "password"},
+                    {element: "input", type: "password", placeholder: "Enter Password",
+                        name: "password", autofocus: true},
                     {element: "button", label: "Decrypt", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
                 ],

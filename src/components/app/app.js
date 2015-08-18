@@ -306,6 +306,15 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 shortcut = this._currentView.copyToClipboard &&
                     this._currentView.copyToClipboard.bind(this._currentView);
             }
+            // CTRL/CMD + N -> New Record
+            else if ((event.ctrlKey || event.metaKey) && event.keyCode === 78 && !dialogsOpen) {
+                shortcut = this._currentView.add && this._currentView.add.bind(this._currentView);
+            }
+            // CTRL/CMD + N -> New Record
+            else if ((event.ctrlKey || event.metaKey) && event.keyCode === 83 && !dialogsOpen) {
+                shortcut = this._synchronize();
+            }
+            // console.log(event.keyCode);
 
             // If one of the shortcuts matches, execute it and prevent the default behaviour
             if (shortcut) {
@@ -384,7 +393,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _requireRemotePassword: function() {
             this._openForm([
-                    {element: "input", name: "password", type: "password", placeholder: "Enter Remote Password"},
+                    {element: "input", name: "password", type: "password",
+                        placeholder: "Enter Remote Password", autofocus: true},
                     {element: "button", label: "OK", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
                 ],
@@ -425,7 +435,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 if (dialog.open) {
                     dialog.open = false;
                     var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
-                    if (typeof form.cancelCallback == "function") {
+                    if (form && typeof form.cancelCallback == "function") {
                         form.cancelCallback();
                     }
                     dialogsClosed = true;
@@ -435,7 +445,11 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             if (!dialogsClosed) {
                 // If we're in the list view, clear the filter input and restore the full list
                 if (this._currentView == this.$.listView) {
-                    this.$.header.cancelFilter();
+                    if (this.$.header.filterActive) {
+                        this.$.header.cancelFilter();
+                    } else {
+                        this._openMainMenu();
+                    }
                 } else {
                     this._currentView.back();
                 }

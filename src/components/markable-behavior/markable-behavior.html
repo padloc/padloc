@@ -26,22 +26,14 @@ padlock.MarkableBehavior = (function(Polymer) {
         markNext: function() {
             var length = this._items().length;
             if (length) {
-                if (this._marked === null) {
-                    this._marked = 0;
-                } else {
-                    this._marked = (this._marked + 1 + length) % length;
-                }
+                this._marked = (this._marked + 1 + length) % length;
                 this._revealMarked();
             }
         },
         markPrev: function() {
             var length = this._items().length;
             if (length) {
-                if (this._marked === null) {
-                    this._marked = length - 1;
-                } else {
-                    this._marked = (this._marked - 1 + length) % length;
-                }
+                this._marked = (this._marked - 1 + length) % length;
                 this._revealMarked();
             }
         },

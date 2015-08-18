@@ -23,7 +23,8 @@
         _changePassword: function() {
             this.fire("open-form", {
                 components: [
-                    {element: "input", type: "password", placeholder: "Enter Current Password", name: "password"},
+                    {element: "input", type: "password", placeholder: "Enter Current Password",
+                        name: "password", autofocus: true},
                     {element: "button", label: "Enter", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
                 ],
@@ -42,7 +43,7 @@
         _cloudConnect: function() {
             this.fire("open-form", {
                 components: [
-                    {element: "input", type: "email", placeholder: "Email Address", name: "email"},
+                    {element: "input", type: "email", placeholder: "Email Address", name: "email", autofocus: true},
                     {element: "input", placeholder: "Device Name", name: "device"},
                     {element: "button", label: "Connect", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
@@ -133,7 +134,8 @@
         _resetData: function() {
             this.fire("open-form", {
                 components: [
-                    {element: "input", type: "password", placeholder: "Enter Master Password", name: "password"},
+                    {element: "input", type: "password", placeholder: "Enter Master Password",
+                        name: "password", autofocus: true},
                     {element: "button", label: "Reset", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
                 ],

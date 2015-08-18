@@ -25,6 +25,9 @@
         rightHeaderButton: function() {
             this._newCategory();
         },
+        add: function() {
+            this._newCategory();
+        },
         _categoryTapped: function(e) {
             this.set("record.category", e.model.item);
             this._delayedBack();
@@ -54,7 +57,7 @@
             this.fire("open-form", {
                 title: "Edit '" + category + "'",
                 components: [
-                    {element: "input", placeholder: "Category Name", name: "name", value: category},
+                    {element: "input", placeholder: "Category Name", name: "name", value: category, autofocus: true},
                     {element: "button", label: "Save", submit: true},
                     {element: "button", label: "Remove", cancel: true, tap: this._removeCategory.bind(this, category)}
                 ],

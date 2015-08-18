@@ -29,11 +29,14 @@
             this.fire("menu");
         },
         rightHeaderButton: function() {
-            this.fire("add");
+            this.add();
         },
         show: function() {
             this._marked = -1;
             ViewBehavior.show.apply(this, arguments);
+        },
+        add: function() {
+            this.fire("add");
         },
         _filterBySearchString: function(rec) {
             var fs = this.filterString && this.filterString.toLowerCase(),

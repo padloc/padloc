@@ -33,6 +33,9 @@
             this._revealedFields = {};
             ViewBehavior.show.apply(this, arguments);
         },
+        add: function() {
+            this._addField();
+        },
         leftHeaderButton: function() {
             this.fire("back");
         },
