@@ -9,19 +9,19 @@
         hide: function() {
             this.$$("padlock-lock").unlocked = true;
             var args = arguments;
-            if (!platform.isTouch()) {
-                this.async(function() {
-                    ViewBehavior.hide.apply(this, args);
-                }, 500);
-            }
+            this.async(function() {
+                ViewBehavior.hide.apply(this, args);
+            }, 500);
         },
         show: function() {
             this._clear();
             this.$$("padlock-lock").unlocked = false;
             ViewBehavior.show.apply(this, arguments);
-            this.async(function() {
-                this.$.pwdInput.focus();
-            }, 500);
+            if (!platform.isTouch()) {
+                this.async(function() {
+                    this.$.pwdInput.focus();
+                }, 500);
+            }
         },
         enter: function() {
             this.$.pwdInput.blur();
