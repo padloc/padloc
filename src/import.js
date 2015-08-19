@@ -179,7 +179,7 @@ padlock.import = (function(crypto, DisposableSource) {
             }
 
             return {
-                name: row[nameColIndex] || "",
+                name: row[nameColIndex] || "Unnamed",
                 category: row[catColIndex] || "",
                 fields: fields
             };
