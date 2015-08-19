@@ -51,10 +51,11 @@
 
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu" close-on-tap>
-            <button on-tap="_synchronize">Synchronize</button>
             <button on-tap="_openSettings">Settings</button>
+            <button on-tap="_synchronize">Synchronize</button>
             <button on-tap="_openGenerator">Generate Password</button>
             <button on-tap="_lock">Lock App</button>
+            <button on-tap="_displayShortcuts" hidden$="{{ _isTouch() }}">Shortcuts</button>
         </padlock-dialog>
 
         <padlock-dialog id="formDialog1" on-dismiss="_formDismiss" on-submit="_closeCurrentDialog" on-cancel="_closeCurrentDialog" on-close="_closeCurrentDialog">

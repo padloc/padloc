@@ -537,6 +537,23 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _alertHandler: function(e) {
             this._alert(e.detail.message);
+        },
+        _displayShortcuts: function() {
+            this._openForm(
+                [
+                    {element: "button", label: "[Esc] \u279e Back / Open Menu", submit: true},
+                    {element: "button", label: "[ctrl/cmd] + F \u279e Find Record", submit: true},
+                    {element: "button", label: "[ctrl/cmd] + N \u279e Create New", submit: true},
+                    {element: "button", label: "[ctrl/cmd] + L \u279e Lock App", submit: true},
+                    {element: "button", label: "[ctrl/cmd] + S \u279e Synchronize", submit: true},
+                    {element: "button", label: "[\u2193] \u279e Mark Next Item", submit: true},
+                    {element: "button", label: "[\u2191] \u279e Mark Previous Item", submit: true},
+                    {element: "button", label: "[Enter] \u279e Select Marked Item", submit: true}
+                ]
+            );
+        },
+        _isTouch: function() {
+            return platform.isTouch();
         }
     });
 
