@@ -44,13 +44,6 @@
 
             this.toggleClass("open", this.open);
 
-            // Remove focus from any input elements when closing
-            if (!this.open) {
-                Array.prototype.forEach.call(this.querySelectorAll("input"), function(input) {
-                    input.blur();
-                });
-            }
-
             this.fire(this.open ? "open" : "close");
         },
         _innerTap: function(event) {

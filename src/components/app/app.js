@@ -536,6 +536,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _formDismiss: function(e) {
             var form = Polymer.dom(e.target).querySelector("padlock-dynamic-form");
+            form.blurInputElements();
             if (typeof form.cancelCallback == "function") {
                 form.cancelCallback();
             }
