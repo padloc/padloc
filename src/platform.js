@@ -153,6 +153,11 @@ padlock.platform = (function() {
         }
     };
 
+    var keyboardDisableScroll = function(disable) {
+        typeof cordova != "undefined" && cordova.plugins.Keyboard &&
+            cordova.plugins.Keyboard.disableScroll(disable);
+    };
+
     return {
         getVendorPrefix: getVendorPrefix,
         getTransitionEndEventName: getTransitionEndEventName,
@@ -163,6 +168,7 @@ padlock.platform = (function() {
         isChromeApp: isChromeApp,
         isTouch: isTouch,
         setClipboard: setClipboard,
-        getClipboard: getClipboard
+        getClipboard: getClipboard,
+        keyboardDisableScroll: keyboardDisableScroll
     };
 })();

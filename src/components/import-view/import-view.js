@@ -1,4 +1,4 @@
-/* global Polymer, padlock, cordova */
+/* global Polymer, padlock */
 
 (function(Polymer, ViewBehavior, util, imp, platform) {
     "use strict";
@@ -34,17 +34,11 @@
         },
         show: function() {
             this.$.rawInput.value = inputPlaceholder;
-            if (typeof cordova !== "undefined") {
-                setTimeout(function() {
-                    cordova.plugins.Keyboard.hideKeyboardAccessoryBar(false);
-                }, 10);
-            }
+            platform.keyboardDisableScroll(true);
             ViewBehavior.show.apply(this, arguments);
         },
         hide: function() {
-            if (typeof cordova !== "undefined") {
-                cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-            }
+            platform.keyboardDisableScroll(false);
             ViewBehavior.hide.apply(this, arguments);
         },
         //* Shows password dialog

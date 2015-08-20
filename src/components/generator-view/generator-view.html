@@ -88,7 +88,6 @@
                 this.value = charSet ? rand.randomString(this.length, charSet) : "";
             },
             leftHeaderButton: function() {
-                this.$$("padlock-password-input").blur();
                 this.fire("back");
             },
             rightHeaderButton: function() {

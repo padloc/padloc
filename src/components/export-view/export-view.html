@@ -17,7 +17,8 @@
             <padlock-option value="encrypted" label="Encrypted"></padlock-option>
         </padlock-select>
 
-        <textarea is="padlock-textarea" select-all-on-focus value="{{ _exportValue(_type, _csv, _encrypted) }}" nowrap$="{{ !_shouldWrap(_type) }}"></textarea>
+        <textarea is="padlock-textarea" select-all-on-focus show-accessory-bar
+            value="{{ _exportValue(_type, _csv, _encrypted) }}" nowrap$="{{ !_shouldWrap(_type) }}"></textarea>
 
         <padlock-notification message="Copied to clipboard!"></padlock-notification>
 
@@ -51,9 +52,14 @@
                 this.copyToClipboard();
             },
             show: function() {
+                platform.keyboardDisableScroll(true);
                 this._generateCsv();
                 this._extractEncryptedData();
                 ViewBehavior.show.apply(this, arguments);
+            },
+            hide: function() {
+                platform.keyboardDisableScroll(false);
+                ViewBehavior.hide.apply(this, arguments);
             },
             _generateCsv: function() {
                 this._csv = exp.generateCsv(this.records);

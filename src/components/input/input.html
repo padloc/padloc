@@ -4,10 +4,42 @@
 <script>
 
 /* jshint browser: true */
-/* global Polymer, padlock */
+/* global Polymer, padlock, cordova */
 
 (function(Polymer, platform) {
     "use strict";
+
+    // currently selected input
+    var currentInput;
+
+    var overrideNativeFocus = platform.isIOS();
+    if (overrideNativeFocus) {
+        // On iOS we need to pretty much completely suppress the mousedown event to prevent funky behavior
+        document.addEventListener("mousedown", function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        });
+
+        // Blur current input when tapping anywhere outside an input element
+        Polymer.Gestures.add(document, "tap", function() {
+            currentInput && currentInput.blur();
+        });
+    }
+
+    // Shows/hides the keyboard accessory bar
+    function showAccessoryBar(show) {
+        typeof cordova != "undefined" && cordova.plugins.Keyboard &&
+            cordova.plugins.Keyboard.hideKeyboardAccessoryBar(!show);
+    }
+
+    // Even with the moudown event suppressed, the keyboard still pops up in unwanted situations
+    // sometimes. We want to manually hide the keyboard in these situations.
+    window.addEventListener("native.keyboardshow", function() {
+        if (!currentInput) {
+            cordova.plugins.Keyboard.close();
+        }
+    });
 
     var inputBehavior = {
         properties: {
@@ -16,7 +48,8 @@
                 value: false,
                 notify: true
             },
-            selectAllOnFocus: Boolean
+            selectAllOnFocus: Boolean,
+            showAccessoryBar: Boolean
         },
         hostAttributes: {
             autocorrect: "off",
@@ -28,19 +61,16 @@
             blur: "_blur",
             keydown: "_keydown"
         },
-        ready: function() {
-            // In certain situations we want to handle the focussing
-            // of input elements manually instead of relying on the native
-            // tap-to-focus mechanism.
-            this._overrideNativeFocus = platform.isIOS();
-        },
-        _tap: function() {
-            if (this._overrideNativeFocus && !this.hasFocus) {
+        _tap: function(e) {
+            if (overrideNativeFocus && !this.hasFocus) {
                 this.setSelectionRange(this.value.length, this.value.length);
             }
+            e.stopPropagation();
         },
         _focus: function() {
             this.hasFocus = true;
+
+            showAccessoryBar(this.showAccessoryBar);
 
             if (this.selectAllOnFocus) {
                 // Need to do this asynchronously in some browsers or it won't work
@@ -48,9 +78,14 @@
                     this.setSelectionRange(0, this.value.length);
                 }.bind(this), 10);
             }
+
+            currentInput = this;
         },
         _blur: function() {
             this.hasFocus = false;
+            if (currentInput == this) {
+                currentInput = null;
+            }
         },
         _keydown: function(e) {
             if (e.keyCode == 13) {
