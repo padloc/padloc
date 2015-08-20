@@ -129,6 +129,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _pause: function() {
             this.$.header.showing = false;
+            this._closeAllDialogs();
             if (this._currentView) {
                 this._lastView = this._currentView != this.$.lockView ? this._currentView : null;
                 this._currentView.hide({animation: ""});
@@ -432,18 +433,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         //* Back method. Chooses the right back method based on the current view
         _back: function() {
-            var dialogs = Polymer.dom(this.root).querySelectorAll("padlock-dialog");
-            var dialogsClosed = false;
-            dialogs.forEach(function(dialog) {
-                if (dialog.open) {
-                    dialog.open = false;
-                    var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
-                    if (form && typeof form.cancelCallback == "function") {
-                        form.cancelCallback();
-                    }
-                    dialogsClosed = true;
-                }
-            });
+            var dialogsClosed = this._closeAllDialogs();
 
             if (!dialogsClosed) {
                 // If we're in the list view, clear the filter input and restore the full list
@@ -457,6 +447,23 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                     this._currentView.back();
                 }
             }
+        },
+        _closeAllDialogs: function() {
+            var dialogs = Polymer.dom(this.root).querySelectorAll("padlock-dialog");
+            var dialogsClosed = false;
+
+            dialogs.forEach(function(dialog) {
+                if (dialog.open) {
+                    dialog.open = false;
+                    var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
+                    if (form && typeof form.cancelCallback == "function") {
+                        form.cancelCallback();
+                    }
+                    dialogsClosed = true;
+                }
+            });
+
+            return dialogsClosed;
         },
         _saveSettings: function() {
             if (this.settings.loaded) {
