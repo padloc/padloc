@@ -13,7 +13,7 @@
             <shape-shifter id="leftIcon" shape="menu" on-tap="_leftClicked" springy></shape-shifter>
             <div class="middle">
                 <!-- FILTER INPUT -->
-                <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString::keyup }}" type="search"
+                <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString::keyup }}" type="search" tabindex="-1"
                     placeholder$="{{ _filterPlaceholder(_filterHasFocus) }}" disabled$="{{ !_view.showFilter }}" has-focus="{{ _filterHasFocus }}"/>
                 <!-- HEADER TITLE -->
                 <div class="title">{{ _title }}</div>
