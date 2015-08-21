@@ -27,10 +27,11 @@
             // we need to wait until the transitions have finished before we
             // set _display: none_.
             if (this.open) {
+                this.cancelAsync(this._hideTimeout);
                 this.style.display = "block";
                 this.isShowing = true;
             } else {
-                this.async(function() {
+                this._hideTimeout = this.async(function() {
                     this.style.display = "none";
                     this.isShowing = false;
                 }, 500);
