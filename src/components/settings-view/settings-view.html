@@ -13,30 +13,26 @@
 
     <template>
         <div class="section">
-            <button class="settings-button" on-tap="_import">Import Data</button>
-            <button class="settings-button" on-tap="_export">Export Data</button>
-            <button class="settings-button" on-tap="_resetData">Reset Data</button>
-            <button class="settings-button" on-tap="_changePassword">Change Master Password</button>
+            <button on-tap="_import">Import Data</button>
+            <button on-tap="_export">Export Data</button>
+            <button on-tap="_resetData">Reset Data</button>
+            <button on-tap="_changePassword">Change Master Password</button>
         </div>
         <div class="section">
-            <button class="settings-button" on-tap="_cloudConnect"
+            <button on-tap="_cloudConnect"
                 hidden$="{{ settings.sync_connected }}">Connect To Padlock Cloud</button>
-            <button class="settings-button" on-tap="_cloudDisconnect" hidden$="{{ !settings.sync_connected }}">
+            <button on-tap="_cloudDisconnect" hidden$="{{ !settings.sync_connected }}">
                 <div>Disconnect <span class="email">(<span>{{ settings.sync_email }}</span>)</span></div></button>
-            <button class="settings-button" on-tap="_resetRemoteData"
+            <button on-tap="_resetRemoteData"
                 hidden$="{{ !settings.sync_connected }}">Reset Remote Data</button>
-            <div class="settings-row" hidden$="{{ !settings.sync_connected }}" on-tap="_toggle">
-                <span>Auto Sync</span><padlock-toggle id="autoSyncToggle" value="{{ settings.sync_auto }}" notap></padlock-toggle>
-            </div>
+            <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync" hidden$="{{ !settings.sync_connected }}"></padlock-toggle-button>
         </div>
         <div class="section">
-            <div class="settings-row" on-tap="_toggle">
-                <span>Hide Field Values</span><padlock-toggle value="{{ settings.obfuscate_fields }}" notap></padlock-toggle>
-            </div>
+            <padlock-toggle-button value="{{ settings.obfuscate_fields }}" label="Hide Field Values"></padlock-toggle-button>
         </div>
         <div class="section">
-            <button class="settings-button" on-tap="_openWebsite">Website</button>
-            <button class="settings-button" on-tap="_sendMail">Support</button>
+            <button on-tap="_openWebsite">Website</button>
+            <button on-tap="_sendMail">Support</button>
             <div class="info" on-tap="_openGithub">Developed and maintained by <strong>Martin Kleinschrodt</strong></div>
         </div>
 

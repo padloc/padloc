@@ -106,9 +106,6 @@
         _alert: function(message) {
             this.fire("alert", {message: message});
         },
-        _toggle: function(e) {
-            e.currentTarget.querySelector("padlock-toggle").toggle();
-        },
         _import: function() {
             this.fire("import");
         },

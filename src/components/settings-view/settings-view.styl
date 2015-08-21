@@ -1,5 +1,4 @@
 @import "../../styles/config";
-@import "../../styles/mixins";
 @import "../view/view";
 @import "nib";
 
@@ -9,10 +8,11 @@
     -webkit-overflow-scrolling: touch;
 }
 
-button.settings-button, .button.settings-button {
+button, .button {
     display: block;
     width: 100%;
     box-sizing: border-box;
+    margin-bottom: 5px;
 
     div {
         width: 100%;
@@ -23,23 +23,6 @@ button.settings-button, .button.settings-button {
             line-height: inherit;
         }
     }
-}
-
-.settings-row {
-    height: $row-height;
-    background: #fff;
-    line-height: $row-height;
-    padding: 0 15px;
-    cursor: pointer;
-
-    padlock-toggle {
-        float: right;
-        margin-top: 10px;
-    }
-}
-
-button.settings-button, .button.settings-button, .settings-button, .settings-row {
-    margin-bottom: 5px;
 }
 
 .section {
