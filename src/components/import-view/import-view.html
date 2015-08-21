@@ -4,7 +4,6 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../progress/progress.html">
-<link rel="import" href="../notification/notification.html">
 
 <dom-module id="padlock-import-view">
 
@@ -15,8 +14,6 @@
             <textarea id="rawInput" is="padlock-textarea" select-all-on-focus show-accessory-bar></textarea>
             <button class="import-button primary" on-tap="_startImport">import</button>
         </div>
-
-        <padlock-notification message="Please enter some data!"></padlock-notification>
 
         <padlock-progress>importing...</padlock-progress>
 

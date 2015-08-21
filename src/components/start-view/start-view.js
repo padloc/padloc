@@ -32,9 +32,9 @@
                 score = this.$.pwdInput.score;
 
             if (!newPwd) {
-                this.$.notification.show("Please enter a master password!", "error", 2000);
+                this.fire("notify", {message: "Please enter a master password!", type: "error", duration: 2000});
             } else if (newPwd != cfmPwd) {
-                this.$.notification.show("Passwords do not match!", "error", 2000);
+                this.fire("notify", {message: "Passwords do not match!", type: "error", duration: 2000});
             } else if (score < 2) {
                 this._promptWeakPassword(newPwd);
             } else {

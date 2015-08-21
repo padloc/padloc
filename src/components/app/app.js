@@ -27,7 +27,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         listeners: {
             "open-form": "_openFormHandler",
-            "alert": "_alertHandler"
+            "alert": "_alertHandler",
+            "notify": "_notify"
         },
         observers: [
             "_saveSettings(settings.*)",
@@ -566,6 +567,9 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _isTouch: function() {
             return platform.isTouch();
+        },
+        _notify: function(e) {
+            this.$.notification.show(e.detail.message, e.detail.type, e.detail.duration);
         }
     });
 

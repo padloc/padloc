@@ -32,7 +32,7 @@
                 submit: function(data) {
                     // TODO: Add a better check for the current password
                     if (data.password != this.collection.defaultPassword) {
-                        this.$.notification.show("Wrong password!", "error", 2000);
+                        this.fire("notify", {message: "Wrong password!", type: "error", duration: 2000});
                     } else {
                         this.fire("change-password");
                     }
@@ -144,7 +144,7 @@
                         this.collection.destroy();
                         this.fire("reset");
                     } else {
-                        this.$.notification.show("Wrong password!", "error", 2000);
+                        this.fire("notify", {message: "Wrong password!", type: "error", duration: 2000});
                     }
                 }.bind(this)
             });

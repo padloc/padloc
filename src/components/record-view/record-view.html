@@ -3,7 +3,6 @@
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../markable-behavior/markable-behavior.html">
 <link rel="import" href="../input/input.html">
-<link rel="import" href="../notification/notification.html">
 <link rel="import" href="../toggle/toggle.html">
 
 <dom-module id="padlock-record-view">
@@ -22,8 +21,6 @@
         </template>
 
         <button class="add-button" on-tap="_addField">Add Field</button>
-
-        <padlock-notification id="notification"></padlock-notification>
 
         <array-selector id="selector" items="{{ record.fields }}" selected="{{ _selectedField }}"></array-selector>
 

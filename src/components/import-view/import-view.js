@@ -29,7 +29,7 @@
         rightHeaderButton: function() {
             platform.getClipboard(function(text) {
                 this.$.rawInput.value = text;
-                this.$$("padlock-notification").show("Data pasted from clipboard", "success", 1500);
+                this.fire("notify", {message: "Data pasted from clipboard", type: "success", duration: 1500});
             }.bind(this));
         },
         show: function() {
@@ -59,7 +59,7 @@
             // this.$.nameColDialog.open = true;
             var rawStr = this.$.rawInput.value;
             if (!rawStr || rawStr == inputPlaceholder) {
-                this.$$("padlock-notification").show("Please enter some data!", "error", 1500);
+                this.fire("notify", {message: "Please enter some data!", type: "error", duration: 1500});
                 return;
             }
 

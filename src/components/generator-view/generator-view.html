@@ -4,7 +4,6 @@
 <link rel="import" href="../password-input/password-input.html">
 <link rel="import" href="../toggle/toggle.html">
 <link rel="import" href="../dialog/dialog.html">
-<link rel="import" href="../notification/notification.html">
 
 <dom-module id="padlock-generator-view">
 
@@ -23,8 +22,6 @@
             <span>{{ length }}</span>
         </div>
         <button on-tap="generate">Generate</button>
-
-        <padlock-notification id="notification" message="Copied to clipboard!"></padlock-notification>
 
     </template>
 
@@ -104,7 +101,7 @@
             },
             copyToClipboard: function() {
                 platform.setClipboard(this.value);
-                this.$.notification.show("Copied to clipboard!", "success", 1500);
+                this.fire("notify", {message: "Copied to clipboard!", type: "success", duration: 1500});
             }
         });
 
