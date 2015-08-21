@@ -34,6 +34,41 @@ $row-height = 50px;
 
 $toaster-easing = cubic-bezier(1, -0.3, 0, 1.3);
 
+unselectable() {
+    cursor: default;
+    user-select: none;
+}
+
+position-sticky() {
+    position: -webkit-sticky;
+    position: -moz-sticky;
+    position: -o-sticky;
+    position: -ms-sticky;
+    position: sticky;
+}
+
+tap-highlight() {
+    position: relative;
+
+    &::after {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: currentColor;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    &:active::after {
+        opacity: 0.5;
+        transition: opacity 0.1s;
+    }
+}
+
 :host {
     --shape-shifter-secondary-color: $color-primary;
 }
@@ -67,6 +102,7 @@ button, a.button {
     color: $color-primary;
     text-align: center;
     overflow: ellipsis;
+    tap-highlight();
 }
 
 button.primary {
@@ -91,14 +127,10 @@ input {
     border-radius: 0;
     background: $color-quinary;
     margin: 0;
-    padding: 0;
+    padding: 0 10px;
     height: $row-height;
     appearance: none;
     box-sizing: border-box;
-}
-
-input {
-    padding: 0 10px;
 }
 
 input.ghost, :host(.ghost) > input {
