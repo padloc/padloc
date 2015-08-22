@@ -46,10 +46,6 @@ padlock.Collection = (function(util) {
             var rec = opts && opts.record;
             if (rec) {
                 rec.name = rec.name || "Unnamed";
-                // Filter out fields that have neither a name nor a value
-                rec.fields = rec.fields.filter(function(field) {
-                    return field.name || field.value;
-                });
                 rec.updated = new Date();
             }
             this.store.save(this, opts);

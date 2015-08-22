@@ -92,12 +92,19 @@
                     {element: "button", label: "Save", submit: true}
                 ],
                 submit: function(data) {
-                    var field = {
-                        name: data.name,
-                        value: data.value
-                    };
-                    this.push("record.fields", field);
-                    this.fire("save");
+                    if (!data.name) {
+                        this.fire("notify", {message: "Please enter a field name!", type: "error", duration: 2000});
+                    } else if (this.record.fields.some(function(f) { return f.name == data.name; })) {
+                        this.fire("notify", {message: "A field with this name already exists!",
+                            type: "error", duration: 2000});
+                    } else {
+                        var field = {
+                            name: data.name,
+                            value: data.value
+                        };
+                        this.push("record.fields", field);
+                        this.fire("save");
+                    }
                 }.bind(this)
             });
         },
