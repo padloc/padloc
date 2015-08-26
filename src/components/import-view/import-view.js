@@ -29,7 +29,6 @@
         rightHeaderButton: function() {
             platform.getClipboard(function(text) {
                 this.$.rawInput.value = text;
-                this.fire("notify", {message: "Data pasted from clipboard", type: "success", duration: 1500});
             }.bind(this));
         },
         show: function() {
