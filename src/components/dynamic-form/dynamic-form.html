@@ -17,7 +17,7 @@
                 </template>
 
                 <template is="dom-if" if="{{ _isButton(item.element) }}">
-                    <button on-tap="_buttonTap" type$="{{ _buttonType(item.submit) }}" class$="{{ _buttonClass(item.class }}">{{ item.label }}</button>
+                    <button on-tap="_buttonTap" type="button" class$="{{ _buttonClass(item.class }}">{{ item.label }}</button>
                 </template>
 
             </template>
@@ -57,13 +57,12 @@
                 _buttonClass: function(className) {
                     return className || "";
                 },
-                _buttonType: function(submit) {
-                    return submit ? "submit" : "button";
-                },
                 _buttonTap: function(e) {
                     var component = e.model.item;
 
-                    if (component.cancel) {
+                    if (component.submit) {
+                        this._submit();
+                    } else if (component.cancel) {
                         this._cancel();
                     }
 
@@ -101,9 +100,11 @@
                     }
 
                     this.fire("submit", values);
-                    e.preventDefault();
-                    e.stopPropagation();
-                    e.stopImmediatePropagation();
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        e.stopImmediatePropagation();
+                    }
                 },
                 blurInputElements: function() {
                     // Remove focus from any input elements when closing
