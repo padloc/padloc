@@ -2,8 +2,10 @@
 
 <dom-module id="padlock-option">
 
+    <link rel="import" type="css" href="option.css">
+
     <template>
-        <div on-tap="_tap">{{ _label(label, value) }}</div>
+        <button on-tap="_tap">{{ _label(label, value) }}</button>
     </template>
 
     <script>
