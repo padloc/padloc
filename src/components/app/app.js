@@ -524,6 +524,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             form.components = components;
             form.submitCallback = submitCallback;
             form.cancelCallback = cancelCallback;
+            platform.keyboardDisableScroll(false);
             this.async(function() {
                 dialog.open = true;
                 var input = form.querySelector("input[auto-focus]");
@@ -534,12 +535,20 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _closeCurrentDialog: function(e) {
             e.currentTarget.open = false;
+            // If no dialogs remain open, disable keyboard scroll again
+            if (!Polymer.dom(this.root).querySelectorAll("padlock-dialog.open").length) {
+                platform.keyboardDisableScroll(true);
+            }
         },
         _formDismiss: function(e) {
             var form = Polymer.dom(e.target).querySelector("padlock-dynamic-form");
             form.blurInputElements();
             if (typeof form.cancelCallback == "function") {
                 form.cancelCallback();
+            }
+            // If no dialogs remain open, disable keyboard scroll again
+            if (!Polymer.dom(this.root).querySelectorAll("padlock-dialog.open").length) {
+                platform.keyboardDisableScroll(true);
             }
         },
         _isEmpty: function(str) {

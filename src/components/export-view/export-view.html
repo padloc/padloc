@@ -49,14 +49,9 @@
                 this.copyToClipboard();
             },
             show: function() {
-                platform.keyboardDisableScroll(true);
                 this._generateCsv();
                 this._extractEncryptedData();
                 ViewBehavior.show.apply(this, arguments);
-            },
-            hide: function() {
-                platform.keyboardDisableScroll(false);
-                ViewBehavior.hide.apply(this, arguments);
             },
             _generateCsv: function() {
                 this._csv = exp.generateCsv(this.records);

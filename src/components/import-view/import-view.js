@@ -33,12 +33,7 @@
         },
         show: function() {
             this.$.rawInput.value = inputPlaceholder;
-            platform.keyboardDisableScroll(true);
             ViewBehavior.show.apply(this, arguments);
-        },
-        hide: function() {
-            platform.keyboardDisableScroll(false);
-            ViewBehavior.hide.apply(this, arguments);
         },
         //* Shows password dialog
         _requirePassword: function(callback) {
