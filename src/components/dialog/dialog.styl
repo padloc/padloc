@@ -35,19 +35,23 @@
     pointer-events: none;
 }
 
-.inner {
-    display: block;
+.scroll-container {
     position: absolute;
     bottom: 0;
     width: 100%;
-    background: $color-primary;
-    box-sizing: border-box;
-    padding-top: 5px;
-    transition: transform 0.5s $toaster-easing;
     max-height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    transition: transform 0.5s $toaster-easing;
+}
+
+.inner {
+    background: $color-primary;
+    box-sizing: border-box;
+    margin-top: 60px;
+    padding-top: 5px;
+    overflow: hidden;
 }
 
 .inner ::content > * {
@@ -83,6 +87,6 @@
     background: #fff;
 }
 
-:host(:not(.open)) .inner {
+:host(:not(.open)) .scroll-container {
     transform: translate3d(0, 100%, 0);
 }
