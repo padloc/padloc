@@ -12,8 +12,10 @@
             <template is="dom-repeat" items="{{ components }}">
 
                 <template is="dom-if" if="{{ _isInput(item.element) }}">
-                    <input is="padlock-input" value="{{ item.value }}" type$="{{ item.type }}" select-all-on-focus="{{ item.selectAllOnFocus }}"
-                        auto-focus$="{{ item.autofocus }}" placeholder$="{{ item.placeholder }}" class$="{{ _inputClass(item.class) }}" name$="{{ item.name }}">
+                    <div class="tap-highlight">
+                        <input is="padlock-input" value="{{ item.value }}" type$="{{ item.type }}" select-all-on-focus="{{ item.selectAllOnFocus }}"
+                            auto-focus$="{{ item.autofocus }}" placeholder$="{{ item.placeholder }}" class$="{{ _inputClass(item.class) }}" name$="{{ item.name }}">
+                    </div>
                 </template>
 
                 <template is="dom-if" if="{{ _isButton(item.element) }}">

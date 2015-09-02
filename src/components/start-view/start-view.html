@@ -21,11 +21,15 @@
                 Padlock
             </div>
             <!-- NEW PASSWORD INPUT -->
-            <padlock-password-input class="ghost pwdinput-first" placeholder="Enter Master Password"
-                id="pwdInput" on-enter="enter" select-all-on-focus obfuscate></padlock-password-input>
+            <div class="tap-highlight">
+                <padlock-password-input class="ghost pwdinput-first" placeholder="Enter Master Password"
+                    id="pwdInput" on-enter="enter" select-all-on-focus obfuscate></padlock-password-input>
+            </div>
             <!-- CONFIRM PASSWORD INPUT -->
-            <input is="padlock-input" class="ghost pwdinput-second" type="password" placeholder="Confirm Master Password"
-                id="confirmInput" on-enter="enter" select-all-on-focus />
+            <div class="tap-highlight">
+                <input is="padlock-input" class="ghost pwdinput-second" type="password" placeholder="Confirm Master Password"
+                    id="confirmInput" on-enter="enter" select-all-on-focus />
+            </div>
             <!-- ENTER BUTTON -->
             <button class="enter-button ghost" on-tap="enter">OK</button>
         </div>

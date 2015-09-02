@@ -12,7 +12,9 @@
 
     <template>
 
-        <padlock-password-input value="{{ value }}" select-all-on-focus></padlock-password-input>
+        <div class="tap-highlight">
+            <padlock-password-input value="{{ value }}" select-all-on-focus></padlock-password-input>
+        </div>
         <padlock-toggle-button label="a-z" value="{{ includeLowerCase }}"></padlock-toggle-button>
         <padlock-toggle-button label="A-Z" value="{{ includeUpperCase }}"></padlock-toggle-button>
         <padlock-toggle-button label="0-9" value="{{ includeNumbers }}"></padlock-toggle-button>

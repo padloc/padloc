@@ -20,8 +20,10 @@
                 Padlock
             </div>
             <!-- PASSWORD INPUT -->
-            <input is="padlock-input" class="ghost password-input" type="password" placeholder="Enter Password"
-                on-enter="enter" id="pwdInput" select-all-on-focus />
+            <div class="tap-highlight">
+                <input is="padlock-input" class="ghost password-input" type="password" placeholder="Enter Password"
+                    on-enter="enter" id="pwdInput" select-all-on-focus />
+            </div>
             <!-- ENTER BUTTON -->
             <button class="enter-button ghost" on-tap="enter">OK</button>
         </div>
