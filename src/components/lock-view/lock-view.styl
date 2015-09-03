@@ -12,7 +12,6 @@
     background: $color-primary;
     color: #fff;
     top: 0;
-    min-height: 500px;
 }
 
 .wrapper {
@@ -53,4 +52,14 @@ padlock-lock {
     bottom: -50px;
     margin: 0 auto;
     animation: reveal 0.5s ease 0.8s both;
+}
+
+@media (max-height: 500px) {
+    padlock-lock {
+        height: 0;
+    }
+
+    .wrapper {
+        height: 230px;
+    }
 }
