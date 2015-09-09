@@ -127,14 +127,15 @@
                     {element: "input", placeholder: "Enter Content", name: "value",
                         value: presets.value || field.value, autofocus: true, selectAllOnFocus: true},
                     {element: "button", label: "Generate", close: true, tap: this._generateValue.bind(this)},
-                    {element: "button", label: "Save", submit: true, tap: function(data) {
-                        this.set("_selectedField.value", data.value);
-                        this.$.selector.deselect();
-                        this.fire("save");
-                    }.bind(this)},
+                    {element: "button", label: "Save", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
                 ],
-                cancel: this._deselect.bind(this)
+                cancel: this._deselect.bind(this),
+                submit: function(data) {
+                    this.set("_selectedField.value", data.value);
+                    this.$.selector.deselect();
+                    this.fire("save");
+                }.bind(this)
             });
         },
         //* Opens the field context menu
