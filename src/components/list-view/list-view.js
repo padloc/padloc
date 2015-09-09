@@ -1,7 +1,7 @@
 /* jshint browser: true */
 /* global Polymer, padlock */
 
-(function(Polymer, ViewBehavior, MarkableBehavior) {
+(function(Polymer, ViewBehavior, MarkableBehavior, platform) {
     "use strict";
 
     Polymer({
@@ -24,6 +24,17 @@
             this.rightHeaderIcon = "plus";
             this.showFilter = true;
             this._itemSelector = ".record-item";
+
+            // On iOS the keyboard overlays the web view so we have to add some padding to the bottom to
+            // make sure all records can be scrolled to.
+            if (platform.isIOS()) {
+                window.addEventListener("native.keyboardshow", function(e) {
+                    this.style.paddingBottom = (e.keyboardHeight + 5) + "px";
+                }.bind(this));
+                window.addEventListener("native.keyboardhide", function() {
+                    this.style.paddingBottom = "";
+                }.bind(this));
+            }
         },
         leftHeaderButton: function() {
             this.fire("menu");
@@ -121,4 +132,4 @@
         }
     });
 
-})(Polymer, padlock.ViewBehavior, padlock.MarkableBehavior);
+})(Polymer, padlock.ViewBehavior, padlock.MarkableBehavior, padlock.platform);
