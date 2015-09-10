@@ -163,12 +163,13 @@
         },
         copyToClipboard: function() {
             // If a field has been selected copy that one, otherwise copy the marked one
-            var field = this._selectedField ? this._selectedField : this.record.fields[this._marked],
-                value = field && field.value;
+            var field = this._selectedField ? this._selectedField : this.record.fields[this._marked];
 
-            platform.setClipboard(value);
-            this._selectedField = null;
-            this.fire("notify", {message: "Copied to clipboard!", type: "success", duration: 1500});
+            if (field) {
+                platform.setClipboard(field.value);
+                this._selectedField = null;
+                this.fire("notify", {message: "Copied to clipboard!", type: "success", duration: 1500});
+            }
         },
         //* Fills the current value input with a randomized value
         _generateValue: function(values) {
