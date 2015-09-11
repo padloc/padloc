@@ -44,7 +44,7 @@
             this.fire("open-form", {
                 components: [
                     {element: "input", type: "email", placeholder: "Email Address", name: "email", autofocus: true},
-                    {element: "input", placeholder: "Device Name", name: "device"},
+                    {element: "input", placeholder: "Device Name", name: "device", value: this.settings.sync_device},
                     {element: "button", label: "Connect", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
                 ],
@@ -62,6 +62,7 @@
                 submit: function() {
                     this.set("settings.sync_connected", false);
                     this.set("settings.sync_key", "");
+                    this.set("settings.sync_email", "");
                 }.bind(this)
             });
         },
