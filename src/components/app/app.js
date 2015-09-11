@@ -115,6 +115,11 @@ padlock.App = (function(Polymer, platform, CloudSource) {
 
                 this.async(function() {
                     this.$.header.showing = true;
+
+                    if (this._records.filter(function(rec) { return !rec.removed; }).length > 10 &&
+                            !this.settings.showed_backup_reminder) {
+                        this._showBackupReminder();
+                    }
                 }, 1500);
 
                 this.async(function() {
@@ -579,6 +584,20 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         _notify: function(e) {
             this.$.notification.show(e.detail.message, e.detail.type, e.detail.duration);
+        },
+        _showBackupReminder: function() {
+            this._openForm(
+                [
+                    {element: "button", label: "Export Data", close: true, tap: this._openExportView.bind(this)},
+                    {element: "button", label: "Sync Data", close: true, tap: this._synchronize.bind(this)},
+                    {element: "button", label: "Dismiss", close: true}
+                ],
+                "Have you backed up your data yet? Remember that by default your data is only stored " +
+                "locally and may be lost if you uninstall Padlock, loose your device or accidentally " +
+                "reset your data. You can backup your data by exporting it " +
+                "or synching it with Padlock Cloud."
+            );
+            this.set("settings.showed_backup_reminder", new Date().getTime());
         }
     });
 
