@@ -117,16 +117,13 @@
         },
         _sendMail: function() {
             var url = "mailto:support@padlock.io";
-
-            // window.location = "mailto:..." won't work in packaged chrome apps so we have to use window.open
-            if (platform.isChromeApp()) {
-                window.open(url);
-            } else {
-                window.location = url;
-            }
+            window.open(url, "_system");
         },
         _openGithub: function() {
             window.open("http://github.com/maklesoft", "_system");
+        },
+        _openHomepage: function() {
+            window.open("http://maklesoft.com/", "_system");
         },
         _resetData: function() {
             this.fire("open-form", {
