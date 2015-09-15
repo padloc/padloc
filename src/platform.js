@@ -154,7 +154,7 @@ padlock.platform = (function() {
     };
 
     var keyboardDisableScroll = function(disable) {
-        typeof cordova != "undefined" && cordova.plugins.Keyboard &&
+        typeof cordova != "undefined" && cordova.plugins && cordova.plugins.Keyboard &&
             cordova.plugins.Keyboard.disableScroll(disable);
     };
 
