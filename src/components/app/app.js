@@ -66,7 +66,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             document.addEventListener("pause", this._pause.bind(this), false);
 
             // Init view when app resumes
-            document.addEventListener("resume", this._initView.bind(this, true), false);
+            document.addEventListener("resume", this._resume.bind(this, true), false);
 
             // This is a workaround for a bug in Polymer where tap events sometimes fail to be generated
             // TODO: Remove as soon as this is fixed in Polymer
@@ -136,10 +136,15 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _pause: function() {
             this.$.header.showing = false;
             this._closeAllDialogs();
-            if (this._currentView) {
-                this._lastView = this._currentView != this.$.lockView ? this._currentView : null;
+            if (this._currentView && this._currentView != this.$.lockView && this._currentView != this.$.startView) {
+                this._lastView = this._currentView;
                 this._currentView.hide({animation: ""});
                 this._currentView = null;
+            }
+        },
+        _resume: function() {
+            if (this._currentView != this.$.lockView && this._currentView != this.$.startView) {
+                this._initView(true);
             }
         },
         //* Locks the collection and opens the lock view
