@@ -182,7 +182,7 @@
             if (this._selectedField) {
                 this._editField({value: value});
             } else {
-                this._addField({name: field.name, value: value});
+                this._addField({name: field.name, value: value || field.value});
             }
         },
         selectMarked: function() {

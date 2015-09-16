@@ -515,6 +515,9 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _generatorBack: function() {
             if (this.$.generatorView.field) {
                 this._openView(this.$.recordView, {animation: "slideInFromBottom"}, {animation: "slideOutToBottom"});
+                this.async(function() {
+                    this.$.recordView.generateConfirm(this.$.generatorView.field);
+                }, 100);
             } else {
                 this._openView(this.$.listView);
             }
