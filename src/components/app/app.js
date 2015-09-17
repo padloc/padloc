@@ -62,7 +62,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             document.addEventListener("backbutton", this._back.bind(this), false);
 
             // Lock app when it goes into the background
-            document.addEventListener("resign", this._pause.bind(this), false);
             document.addEventListener("pause", this._pause.bind(this), false);
 
             // Init view when app resumes
