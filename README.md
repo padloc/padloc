@@ -53,12 +53,3 @@ Contributions are more than welcome!
     4. Commit your changes: git commit -m 'Some meaningful commit message'
     5. Push to the branch: git push origin my-feature-branch
     6. Submit a pull request!
-
-## What's next
-
-A couple of things that we are planning for the near future:
-
-- Creating backups
-- Export to CSV (and possibly other open formats)
-- Quick delete in list view
-- End-to-end testing
