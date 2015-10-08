@@ -16,7 +16,7 @@ Now from inside the project folder, install the local requirements:
 
 For the [HTML Imports](http://www.polymer-project.org/platform/html-imports.html) polyfill of Polymer to work, the app has to be served on a local web server. You can use whatever web server you prefer to serve the files. For example:
 
-    pyhon -m SimpleHTTPServer 8000
+    python -m SimpleHTTPServer 8000
 
 ## Compling css files
 
