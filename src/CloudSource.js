@@ -8,6 +8,7 @@ padlock.CloudSource = (function(Source) {
      * This source uses the Padlock cloud api to fetch and store data.
      * @param String host  Base url for AJAX calls
      * @param String email Email for identifying a user
+     * @param String apiKey Api key used for authentication
      */
     var CloudSource = function(host, email, apiKey) {
         this.host = host;

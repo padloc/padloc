@@ -1,6 +1,9 @@
 /* jshint browser: true */
 /* global padlock, chrome, cordova */
 
+/**
+ * Module containing various platform-specific utilities
+ */
 padlock.platform = (function() {
     "use strict";
 
@@ -103,8 +106,11 @@ padlock.platform = (function() {
         return (typeof chrome !== "undefined") && chrome.app && !!chrome.app.runtime;
     };
 
+    // Textarea used for copying/pasting using the dom
     var clipboardTextArea;
 
+    // Set clipboard text using `document.execCommand("cut")`.
+    // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
     var domSetClipboard = function(text) {
         clipboardTextArea = clipboardTextArea || document.createElement("textarea");
         clipboardTextArea.value = text;
@@ -114,7 +120,9 @@ padlock.platform = (function() {
         document.body.removeChild(clipboardTextArea);
     };
 
-    var domGetClipboard = function(cb) {
+    // Get clipboard text using `document.execCommand("paste")`
+    // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
+    var domGetClipboard = function() {
         clipboardTextArea = clipboardTextArea || document.createElement("textarea");
         document.body.appendChild(clipboardTextArea);
         clipboardTextArea.value = "";
@@ -144,6 +152,7 @@ padlock.platform = (function() {
         }
     };
 
+    //* Checks if the current environment supports touch events
     var isTouch = function() {
         try {
             document.createEvent("TouchEvent");
@@ -153,6 +162,8 @@ padlock.platform = (function() {
         }
     };
 
+    //* Disables scrolling the viewport on iOS when virtual keyboard is showing. Does nothing on other
+    //* Platforms so can be safely called independtly of the platform
     var keyboardDisableScroll = function(disable) {
         typeof cordova != "undefined" && cordova.plugins && cordova.plugins.Keyboard &&
             cordova.plugins.Keyboard.disableScroll(disable);

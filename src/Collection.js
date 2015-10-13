@@ -18,6 +18,8 @@ padlock.Collection = (function(util) {
         this.records = [];
         // This is to keep track of all existing records via their uuid.
         this.uuidMap = {};
+        // Helper element for dispatching custom events. This is currently only used for publishing
+        // the `update` event
         this.dispatcher = document.createElement("div");
     };
 
@@ -61,6 +63,11 @@ padlock.Collection = (function(util) {
         destroy: function(opts) {
             this.store.destroy(this, opts);
         },
+        /**
+         * Calls `splice` on the `records` property with the given arguments and fires the `update` event to
+         * notify any subscribers. Always use this method instead of manipulating the `records` array directly
+         * since the `update` event is required by web components to update bindings.
+         */
         splice: function() {
             var rem = Array.prototype.splice.apply(this.records, arguments);
             var e = new CustomEvent("update", {detail: Array.prototype.slice.apply(arguments)});
@@ -99,6 +106,7 @@ padlock.Collection = (function(util) {
                 }
             }.bind(this));
 
+            // add new records to the end of the array
             this.splice.apply(this, [this.records.length, 0].concat(records));
         },
         /**
@@ -109,12 +117,16 @@ padlock.Collection = (function(util) {
          * @param  {Object} rec The record object to be removed
          */
         remove: function(rec) {
+            // remove all properties except uuid
             for (var prop in rec) {
                 if (rec.hasOwnProperty(prop) && prop != "uuid") {
                     delete rec[prop];
                 }
             }
+            // During synchronization removing an item is treated like editing, so we have to set the
+            // `updated` property
             rec.updated = new Date();
+            // The `removed` propery is used to filter out removed items from the list.
             rec.removed = true;
         },
         /**
@@ -122,6 +134,7 @@ padlock.Collection = (function(util) {
          * @param {String} password New password
          */
         setPassword: function(password) {
+            // Setting a new password effectively just means reencrypting the data with the new password
             this.save({password: password});
         },
         /**
@@ -189,6 +202,7 @@ padlock.Collection = (function(util) {
         get defaultPassword() {
             return this.store.defaultSource.password;
         },
+        //* Add event listener to the dispatcher. Usually this will be used for subscribing to the `update` event
         addEventListener: function() {
             this.dispatcher.addEventListener.apply(this.dispatcher, arguments);
         }

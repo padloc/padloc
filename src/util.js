@@ -44,6 +44,7 @@ padlock.util = (function() {
         return target;
     };
 
+    //* Checks whether or not an object is an Array
     var isArray = function(obj) {
         return Object.prototype.toString.call(obj) === "[object Array]";
     };

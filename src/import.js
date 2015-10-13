@@ -162,12 +162,14 @@ padlock.import = (function(crypto, DisposableSource) {
      * @return Array                 An array or records
      */
     var importTable = function(collection, data, nameColIndex, catColIndex) {
+        // Use first row for column names
         var colNames = data[0];
         nameColIndex = nameColIndex || 0;
 
+        // All subsequent rows should contain values
         var records = data.slice(1).map(function(row) {
+            // Construct an array of field object from column names and values
             var fields = [];
-
             for (var i=0; i<row.length; i++) {
                 // Skip name column, category column (if any) and empty fields
                 if (i != nameColIndex && i != catColIndex && row[i]) {
@@ -189,23 +191,40 @@ padlock.import = (function(crypto, DisposableSource) {
         return records;
     };
 
+    /**
+     * Checks if a given string represents a Padlock enrypted backup
+     */
     var isPadlockBackup = function(string) {
         try {
+            // Try to parse string into JS object
             var data = JSON.parse(string);
+            // Check if all expected properties are present on the object
             return crypto.validateContainer(data);
         } catch(e) {
+            // The string is not valid JSON so it can't be a valid Padlock backup
             return false;
         }
     };
 
+    /**
+     * Imports a given Padlock crypto container into a given `Collection`
+     * @params {padlock.Collection} Collection object to import data into
+     * @data {String} String representing a Padlock encrypted backup
+     * @password {String} Password to use for decrypting data
+     * @success {Function} Success callback
+     * @fail {Function} Failure callback
+     */
     var importPadlockBackup = function(collection, data, password, success, fail) {
         try {
+            // Try to parse string to JS object
             data = JSON.parse(data);
         } catch(e) {
+            // Failed to parse as JSON, so unable to restore data
             fail(e);
             return;
         }
 
+        // Use simple container Source to import data into collection
         var source = new DisposableSource(data);
         collection.fetch({source: source, password: password, success: success, fail: fail});
     };

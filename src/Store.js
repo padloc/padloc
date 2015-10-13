@@ -14,6 +14,7 @@ padlock.Store = (function(crypto) {
     };
 
     Store.prototype = {
+        // Constructs the key used for persistent storage based on the collection name
         getKey: function(coll) {
             return "coll_" + coll.name;
         },
@@ -21,15 +22,15 @@ padlock.Store = (function(crypto) {
          * Fetches the data for an array from local storage, decrypts it and populates the collection
          * @param  {Collection} coll     The collection to fetch the data for
          * @param  {Object}     opts     Object containing options for this call. Options may include:
-         * 
+         *
          * - password: Password to be used for decryption. If not provided,
          *                        the stores own _password_ property will be used
          * - success:  Success callback
-         * - fail:     Fail callback. The call will fail if 
+         * - fail:     Fail callback. The call will fail if
          *             a) retrieving the data from the source fails,
          *             b) the encrypted data is corrupted or
          *             c) the provided password is incorrect.
-         * - source:   Source to use for retreiving the data. If not provided, _defaultSource_ is used. 
+         * - source:   Source to use for retreiving the data. If not provided, _defaultSource_ is used.
          */
         fetch: function(coll, opts) {
             opts = opts || {};
@@ -49,7 +50,7 @@ padlock.Store = (function(crypto) {
                         size: data.keySize,
                         iter: data.iter
                     };
-                    
+
                     // Construct a cryptographic key using the password provided by the user and the metadata from
                     // the fetched container. The whole thing happens in a web worker which is why it's asynchronous
                     crypto.cachedWorkerGenKey(password, data.salt, data.keySize, data.iter, function(keyData) {
@@ -81,12 +82,15 @@ padlock.Store = (function(crypto) {
          *
          * - success:  Success callback
          * - fail:     Fail callback
-         * - source:   Source to store the data to. If not provided, _defaultSource_ is used. 
+         * - source:   Source to store the data to. If not provided, _defaultSource_ is used.
          */
         save: function(coll, opts) {
             opts = opts || {};
             opts.key = this.getKey(coll);
+            // Use source specified in options if any, otherwise use the default source
             var source = opts.source || this.defaultSource;
+            // Default `keyOpts` property to empty object. This will be filled with key derivation
+            // parameters later
             source.keyOpts = source.keyOpts || {};
             // Use password argument if provided, otherwise use the password stored in the source object
             var password = source.password = opts.password !== undefined && opts.password !== null ?
@@ -113,7 +117,7 @@ padlock.Store = (function(crypto) {
          * Destroy the collection and delete its data
          * @param {Collection} coll Collection to destroy
          * @param {Object} opts Object containing options for the call. Options may include:
-         * 
+         *
          * - success:  Success callback. Will be passed the collection as only argument
          * - fail:     Fail callback
          * - source:   Source to delete this collection from. If not provided, the stores default source is used.
@@ -132,7 +136,7 @@ padlock.Store = (function(crypto) {
          * - success:  Success callback. Will be passed _true_ or _false_ as only argument,
          *             depending on the outcome.
          * - fail:     Fail callback
-         * - source:   Source to check for the collection. If not provided, _defaultSource_ is used. 
+         * - source:   Source to check for the collection. If not provided, _defaultSource_ is used.
          */
         exists: function(coll, opts) {
             var source = opts.source || this.defaultSource;

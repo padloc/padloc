@@ -4,7 +4,7 @@ padlock.ChromeStorageSource = (function() {
     "use strict";
 
     var storage = typeof chrome !== "undefined" && chrome.storage && chrome.storage.local;
-    
+
     /**
      * Source object using the local storage mechanism provided by the chrome apps api
      */

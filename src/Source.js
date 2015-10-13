@@ -53,14 +53,20 @@ padlock.Source = (function() {
     return Source;
 })();
 
+/**
+ * DisposableSource is just a simple container to hold data so it can be used directly with a `padlock.Collection`
+ * object. This is used when storing data from a Padlock backup for example.
+ */
 padlock.DisposableSource = (function() {
     "use strict";
 
     var DisposableSource = function(data) {
+        // Just store the data object in a property to be retrieved later
         this.data = data;
     };
 
     DisposableSource.prototype.fetch = function(opts) {
+        // Simply call the success method directly with the store data object
         opts && opts.success && opts.success(this.data);
     };
 
