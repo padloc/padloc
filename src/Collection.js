@@ -82,7 +82,7 @@ padlock.Collection = (function(util) {
          * @param {Object}  rec A record object or an array of record objects to be added to the collection
          */
         add: function(rec) {
-            var records = [];
+            var newRecords = [];
 
             rec = util.isArray(rec) ? rec : [rec];
             rec.forEach(function(r) {
@@ -95,19 +95,21 @@ padlock.Collection = (function(util) {
                 r.updated = updated instanceof Date ? updated : new Date(updated);
 
                 // If a record with the same uuid exists but the new one is more
-                // recent, replace the existing one. Otherwise just add it.
+                // recent, replace the existing one in-place. Otherwise add it to
+                // the array of new records to be added
                 var existing = this.uuidMap[r.uuid];
                 if (existing && r.updated > existing.updated) {
+                    // Switch out record in-place in both uuid map and records array
                     this.uuidMap[r.uuid] = r;
-                    records[records.indexOf(existing)] = r;
+                    this.splice(this.records.indexOf(existing), 1, r);
                 } else if (!existing) {
                     this.uuidMap[r.uuid] = r;
-                    records.push(r);
+                    newRecords.push(r);
                 }
             }.bind(this));
 
             // add new records to the end of the array
-            this.splice.apply(this, [this.records.length, 0].concat(records));
+            this.splice.apply(this, [this.records.length, 0].concat(newRecords));
         },
         /**
          * Removes a record from this collection. This does not actually remove the record from
