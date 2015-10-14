@@ -35,6 +35,17 @@
             this.$.rawInput.value = inputPlaceholder;
             ViewBehavior.show.apply(this, arguments);
         },
+        _dataInput: function() {
+            var rawStr = this.$.rawInput.value;
+
+            if (imp.isSecuStoreBackup(rawStr)) {
+                this._type = "secustore";
+            } else if (imp.isPadlockBackup(rawStr)) {
+                this._type = "padlock";
+            } else {
+                this._type = "csv";
+            }
+        },
         //* Shows password dialog
         _requirePassword: function(callback) {
             this.fire("open-form", {
@@ -48,18 +59,16 @@
                 submit: callback
             });
         },
-        _startImport: function(e) {
-            e && e.preventDefault();
-            // this.$.nameColDialog.open = true;
+        _startImport: function() {
             var rawStr = this.$.rawInput.value;
             if (!rawStr || rawStr == inputPlaceholder) {
                 this.fire("notify", {message: "Please enter some data!", type: "error", duration: 1500});
                 return;
             }
 
-            if (imp.isSecuStoreBackup(rawStr)) {
+            if (this._type == "secustore") {
                 this._requirePassword(this._importSecuStoreBackup.bind(this));
-            } else if (imp.isPadlockBackup(rawStr)) {
+            } else if (this._type == "padlock") {
                 this._requirePassword(this._importPadlockBackup.bind(this));
             } else {
                 this._csvData = imp.parseCsv(rawStr);
