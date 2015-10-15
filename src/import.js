@@ -273,7 +273,7 @@ padlock.import = (function(crypto, DisposableSource) {
         return item;
     }
 
-    function importLastPassData(collection, data) {
+    function importLastPassExport(collection, data) {
         var records = parseCsv(data);
 
         // Remove first row as it only contains field names
@@ -284,6 +284,10 @@ padlock.import = (function(crypto, DisposableSource) {
         return records;
     }
 
+    function isLastPassExport(data) {
+        return data.split("\n")[0] == "url,username,password,extra,name,grouping,fav";
+    }
+
     return {
         isSecuStoreBackup: isSecuStoreBackup,
         isPadlockBackup: isPadlockBackup,
@@ -291,6 +295,7 @@ padlock.import = (function(crypto, DisposableSource) {
         importPadlockBackup: importPadlockBackup,
         parseCsv: parseCsv,
         importTable: importTable,
-        importLastPassData: importLastPassData
+        importLastPassExport: importLastPassExport,
+        isLastPassExport: isLastPassExport
     };
 })(padlock.crypto, padlock.DisposableSource);

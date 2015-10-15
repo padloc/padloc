@@ -42,6 +42,8 @@
                 this._type = "secustore";
             } else if (imp.isPadlockBackup(rawStr)) {
                 this._type = "padlock";
+            } else if (imp.isLastPassExport(rawStr)) {
+                this._type = "lastpass";
             } else {
                 this._type = "csv";
             }
@@ -71,7 +73,7 @@
             } else if (this._type == "padlock") {
                 this._requirePassword(this._importPadlockBackup.bind(this));
             } else if (this._type == "lastpass") {
-                this._importLastPassData();
+                this._importLastPassExport();
             } else {
                 this._csvData = imp.parseCsv(rawStr);
                 this._getNameCol();
@@ -95,8 +97,8 @@
             }.bind(this), this._promptDecryptionFailed.bind(this));
             this.$$("padlock-progress").hide();
         },
-        _importLastPassData: function() {
-            var records = imp.importLastPassData(this.collection, this.$.rawInput.value);
+        _importLastPassExport: function() {
+            var records = imp.importLastPassExport(this.collection, this.$.rawInput.value);
             this.collection.save();
             this.fire("imported", {count: records.length});
         },
