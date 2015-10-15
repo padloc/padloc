@@ -229,12 +229,68 @@ padlock.import = (function(crypto, DisposableSource) {
         collection.fetch({source: source, password: password, success: success, fail: fail});
     };
 
+    function lpParseNotes(str) {
+        var lines = str.split("\n");
+        var fields = lines.filter(function(line) { return !!line; }).map(function(line) {
+            var splitInd = line.indexOf(":");
+            return {
+                name: line.substring(0, splitInd),
+                value: line.substring(splitInd + 1)
+            };
+        });
+
+        return fields;
+    }
+
+    function lpParseRow(row) {
+        var nameIndex = 4;
+        var categoryIndex = 5;
+        var urlIndex = 0;
+        var usernameIndex = 1;
+        var passwordIndex = 2;
+        var notesIndex = 3;
+
+        var item = {
+            name: row[nameIndex],
+            category: row[categoryIndex],
+            fields: [
+                {name: "url", value: row[urlIndex]},
+                {name: "username", value: row[usernameIndex]},
+                {name: "password", value: row[passwordIndex]}
+            ]
+        };
+        var notes = row[notesIndex];
+        if (row[urlIndex] == "http://sn") {
+            item.fields.push.apply(item.fields, lpParseNotes(notes));
+            // In case of 'secure notes' we don't want the url and NoteType field
+            item.fields = item.fields.filter(function(f) {
+                return f.name != "url" && f.name != "NoteType";
+            });
+        } else {
+            item.fields.push({name: "Notes", value: notes});
+        }
+
+        return item;
+    }
+
+    function importLastPassData(collection, data) {
+        var records = parseCsv(data);
+
+        // Remove first row as it only contains field names
+        records.shift();
+        records = records.filter(function(row) { return row.length > 1; }).map(lpParseRow);
+
+        collection.add(records);
+        return records;
+    }
+
     return {
         isSecuStoreBackup: isSecuStoreBackup,
         isPadlockBackup: isPadlockBackup,
         importSecuStoreBackup: importSecuStoreBackup,
         importPadlockBackup: importPadlockBackup,
         parseCsv: parseCsv,
-        importTable: importTable
+        importTable: importTable,
+        importLastPassData: importLastPassData
     };
 })(padlock.crypto, padlock.DisposableSource);

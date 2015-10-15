@@ -70,6 +70,8 @@
                 this._requirePassword(this._importSecuStoreBackup.bind(this));
             } else if (this._type == "padlock") {
                 this._requirePassword(this._importPadlockBackup.bind(this));
+            } else if (this._type == "lastpass") {
+                this._importLastPassData();
             } else {
                 this._csvData = imp.parseCsv(rawStr);
                 this._getNameCol();
@@ -92,6 +94,11 @@
                 this.fire("imported", {count: records.length});
             }.bind(this), this._promptDecryptionFailed.bind(this));
             this.$$("padlock-progress").hide();
+        },
+        _importLastPassData: function() {
+            var records = imp.importLastPassData(this.collection, this.$.rawInput.value);
+            this.collection.save();
+            this.fire("imported", {count: records.length});
         },
         _promptDecryptionFailed: function() {
             this.fire("open-form", {
