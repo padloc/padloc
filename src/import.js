@@ -229,12 +229,100 @@ padlock.import = (function(crypto, DisposableSource) {
         collection.fetch({source: source, password: password, success: success, fail: fail});
     };
 
+    /*
+     * Lastpass secure notes are exported by putting non-standard fields into the 'extra' column. Every line
+     * represents a field in the following format:
+     *
+     *     field_name:data
+     *
+     * We're parsing that information to retrieve the individual fields
+     */
+    function lpParseNotes(str) {
+        var lines = str.split("\n");
+        var fields = lines.filter(function(line) { return !!line; }).map(function(line) {
+            var splitInd = line.indexOf(":");
+            return {
+                name: line.substring(0, splitInd),
+                value: line.substring(splitInd + 1)
+            };
+        });
+
+        return fields;
+    }
+
+    /*
+     * Parses a single row in a LastPass CSV file. Apart from extracting the default fields, we also parse
+     * the 'extra' column for 'special notes' and remove any special fields that are not needed outside of
+     * LastPass
+     */
+    function lpParseRow(row) {
+        var nameIndex = 4;
+        var categoryIndex = 5;
+        var urlIndex = 0;
+        var usernameIndex = 1;
+        var passwordIndex = 2;
+        var notesIndex = 3;
+
+        // Create a basic item using the standard fields
+        var item = {
+            name: row[nameIndex],
+            category: row[categoryIndex],
+            fields: [
+                {name: "url", value: row[urlIndex]},
+                {name: "username", value: row[usernameIndex]},
+                {name: "password", value: row[passwordIndex]}
+            ]
+        };
+        var notes = row[notesIndex];
+        if (row[urlIndex] == "http://sn") {
+            // The 'http://sn' url indicates that this line represents a 'secure note', which means
+            // we'll have to parse the 'extra' column to retrieve the individual fields
+            item.fields.push.apply(item.fields, lpParseNotes(notes));
+            // In case of 'secure notes' we don't want the url and NoteType field
+            item.fields = item.fields.filter(function(f) {
+                return f.name != "url" && f.name != "NoteType";
+            });
+        } else {
+            // We've got a regular 'site' item, so the 'extra' column simply contains notes
+            item.fields.push({name: "Notes", value: notes});
+        }
+
+        return item;
+    }
+
+    /**
+     * Imports data from a CSV file exported from LastPass
+     * @param {padlock.Collection} Collection object to import the data into
+     * @param {String} CSV string to parse and import
+     * @returns {Array} An array of record objects
+     */
+    function importLastPassExport(collection, data) {
+        var records = parseCsv(data);
+
+        // Remove first row as it only contains field names
+        records.shift();
+        // Make an array of records by parsing every (non empty) row
+        records = records.filter(function(row) { return row.length > 1; }).map(lpParseRow);
+
+        collection.add(records);
+        return records;
+    }
+
+    /**
+     * Checks if a given string represents a LastPass CSV file
+     */
+    function isLastPassExport(data) {
+        return data.split("\n")[0] == "url,username,password,extra,name,grouping,fav";
+    }
+
     return {
         isSecuStoreBackup: isSecuStoreBackup,
         isPadlockBackup: isPadlockBackup,
         importSecuStoreBackup: importSecuStoreBackup,
         importPadlockBackup: importPadlockBackup,
         parseCsv: parseCsv,
-        importTable: importTable
+        importTable: importTable,
+        importLastPassExport: importLastPassExport,
+        isLastPassExport: isLastPassExport
     };
 })(padlock.crypto, padlock.DisposableSource);
