@@ -36,9 +36,14 @@ padlock.Store = (function(crypto) {
             opts = opts || {};
             var source = opts.source || this.defaultSource;
             // Use password argument if provided, otherwise use the password stored in the source object
-            var password = source.password = opts.password !== undefined && opts.password !== null ?
+            var password = opts.password !== undefined && opts.password !== null ?
                 opts.password : source.password;
             var key = this.getKey(coll);
+
+            // Remember password so the user does not have to reenter it every time we save changes
+            if (opts.rememberPassword) {
+                source.password = password;
+            }
 
             source.fetch({key: key, success: function(data) {
                 // If there is no data, we simply consider the collection to be empty.
@@ -93,8 +98,13 @@ padlock.Store = (function(crypto) {
             // parameters later
             source.keyOpts = source.keyOpts || {};
             // Use password argument if provided, otherwise use the password stored in the source object
-            var password = source.password = opts.password !== undefined && opts.password !== null ?
+            var password = opts.password !== undefined && opts.password !== null ?
                 opts.password : source.password;
+
+            // Remember password so the user does not have to reenter it every time we save changes
+            if (opts.rememberPassword) {
+                source.password = password;
+            }
 
             var pt = JSON.stringify(coll.records),
                 // Take the existing parameters for the key generation from the source kind if they are set.

@@ -132,7 +132,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             // show progress indicator
             this.$.decrypting.show();
             // Attempt to fetch data from storage and decrypt it
-            this.collection.fetch({password: password, success: function() {
+            this.collection.fetch({password: password, rememberPassword: true, success: function() {
                 // Hide progress indicator
                 this.$.decrypting.hide();
                 // We're done decrypting so, reset the `_decrypting` flag
@@ -205,11 +205,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         //* Locks the collection and opens the lock view
         _lock: function() {
-            // Remove the stored password from the remote source if we've created on yet
-            if (this.remoteSource) {
-                delete this.remoteSource.password;
-            }
-
             // Remember current view so we can navigate back to it after unlocking the app again
             // TODO: Does this make sense in case of the record view, since we're trying to remove all
             // data from memory and the record view will be displaying on of the records?

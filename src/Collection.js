@@ -188,7 +188,7 @@ padlock.Collection = (function(util) {
 
             // Update remote source
             var saveRemote = function() {
-                this.save({source: source, success: done, fail: opts.fail});
+                this.save({source: source, success: done, fail: opts.fail, password: opts.remotePassword});
             }.bind(this);
 
             // We're done!
