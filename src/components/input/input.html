@@ -1,12 +1,13 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<script src="../../../bower_components/autosize/dist/autosize.js"></script>
 
 <script>
 
 /* jshint browser: true */
-/* global Polymer, padlock, cordova */
+/* global Polymer, padlock, cordova, autosize */
 
-(function(Polymer, platform) {
+(function(Polymer, platform, autosize) {
     "use strict";
 
     // currently selected input
@@ -95,6 +96,23 @@
         }
     };
 
+    var textAreaBehavior = {
+        properties: {
+            autosize: {
+                type: Boolean,
+                value: false,
+                observer: "_autosizeChanged"
+            }
+        },
+        _autosizeChanged: function() {
+            if (this.autosize) {
+                autosize(this);
+            } else {
+                autosize.destroy(this);
+            }
+        }
+    };
+
     Polymer({
         is: "padlock-input",
         extends: "input",
@@ -104,9 +122,9 @@
     Polymer({
         is: "padlock-textarea",
         extends: "textarea",
-        behaviors: [inputBehavior]
+        behaviors: [inputBehavior, textAreaBehavior]
     });
 
-})(Polymer, padlock.platform);
+})(Polymer, padlock.platform, autosize);
 
 </script>

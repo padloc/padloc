@@ -140,7 +140,8 @@
         },
         //* Opens the field context menu
         _fieldTapped: function(e) {
-            this.$.selector.select(e.model.item);
+            // this.$.selector.select(e.model.item);
+            this._marked = e.model.index;
         },
         //* Opens the remove field confirm dialog
         _removeField: function() {

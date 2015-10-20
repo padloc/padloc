@@ -10,46 +10,103 @@
 
 .field {
     background: $color-quinary;
-    height: $row-height;
     width: 100%;
-    padding: 0 15px;
     margin-top: 5px;
-    cursor: pointer;
-
-    display: flex;
-    align-items: center;
+    font-size: 16px;
     box-sizing: border-box;
+    position: relative;
 
-    > .label {
-        max-width: 100px;
-        text-align: right;
-        color: $color-primary;
-        overflow: ellipsis;
+    .label-wrapper {
+        display: flex;
+        border-bottom: solid 1px alpha($color-primary, 0.4);
+
+        .input-wrapper {
+            flex: 1;
+            color: $color-primary;
+            tap-highlight();
+        }
     }
 
-    > .value {
-        margin-right: 15px;
-        flex: 1;
+    .label {
+        color: $color-primary;
         overflow: ellipsis;
+        margin-bottom: 3px;
+        padding: 10px 0 10px 15px;
+        margin: 0;
+        height: auto;
+        width: 100%;
+    }
+
+    .context-menu {
+        font-size: 0;
+        color: $color-primary;
+
+        > shape-shifter {
+            width: 25px;
+            height: 25px;
+            padding: 8px;
+            tap-highlight();
+
+            &:not(:last-child) {
+                margin-right: -4px;
+            }
+        }
+
+        > button {
+            flex: 1;
+            font-size: $font-size-small;
+            background: transparent;
+            color: $color-quinary;
+            line-height: normal;
+            tap-highlight();
+
+            &:not(:last-child) {
+                border-bottom: solid 1px;
+            }
+        }
+    }
+
+    &:not(.marked) .context-menu {
+        display: none;
+    }
+
+    .value {
+        word-wrap: break-word;
+        width: 100%;
+        padding: 10px 15px;
+        box-sizing: border-box;
+        tap-highlight();
+
+        &:empty:after {
+            content: "(tap to edit)";
+            color: $text-color-faint;
+        }
 
         &.obfuscated:not(:empty) {
             letter-spacing: 0.07em;
         }
     }
 
-    &:not(.marked) > .value:empty:after {
-        content: "(tap to edit)";
-        color: $text-color-faint;
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        bottom: 0;
+        width: 5px;
+        background: $color-primary;
+        transform: translate(-100%, 0);
+        transition: transform 0.3s;
     }
 
     &.marked {
-        background: $color-primary;
-        color: #fff;
-
-        > .label {
-            color: inherit;
-            font-weight: $font-weight-bold;
+        &::before {
+            transform: translate(0, 0);
         }
+        // border-top: solid 2px $color-primary;
+        // border-bottom: solid 2px $color-primary;
     }
 }
 
@@ -62,7 +119,7 @@
     background: #fff;
     color: $text-color-faint;
     text-align: center;
-    font-size: 16px;
+    font-size: $font-size-small;
     padding: 10px;
     cursor: pointer;
     overflow: ellipsis;
