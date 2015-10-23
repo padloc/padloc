@@ -46,27 +46,21 @@
             height: 25px;
             padding: 8px;
             tap-highlight();
-
-            &:not(:last-child) {
-                margin-right: -4px;
-            }
-        }
-
-        > button {
-            flex: 1;
-            font-size: $font-size-small;
-            background: transparent;
-            color: $color-quinary;
-            line-height: normal;
-            tap-highlight();
-
-            &:not(:last-child) {
-                border-bottom: solid 1px;
-            }
         }
     }
 
-    &:not(.marked) .context-menu {
+    .shortcut-hint {
+        position: absolute;
+        font-size: 14px;
+        bottom: 0;
+        right: 0;
+        padding: 11px 10px;
+        color: $text-color-faint;
+        background: alpha($color-quinary, 0.9);
+        pointer-events: none;
+    }
+
+    &:not(.marked) .shortcut-hint {
         display: none;
     }
 
@@ -113,6 +107,7 @@
 .add-button {
     width: 100%;
     margin: 5px 0;
+    font-size: $font-size-small;
 }
 
 .category {

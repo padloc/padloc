@@ -15,8 +15,7 @@
                 observer: "_markedChanged"
             },
             _selectedField: {
-                type: Object,
-                observer: "_selectedFieldChanged"
+                type: Object
             },
             _revealedFields: Object
         },
@@ -80,35 +79,19 @@
         },
         //* Opens the add field dialog
         _addField: function(presets) {
+            this._removeEmptyFields();
+
             presets = presets || {};
             this.$.selector.deselect();
 
-            this.fire("open-form", {
-                title: "Add Field",
-                components: [
-                    {element: "input", placeholder: "Enter Label", name: "name", value: presets.name, autofocus: true},
-                    {element: "input", placeholder: "Enter Content", name: "value", value: presets.value},
-                    {element: "button", label: "Generate", cancel: true, tap: this._generateValue.bind(this)},
-                    {element: "button", label: "Save", submit: true}
-                ],
-                submit: function(data) {
-                    if (!data.name) {
-                        this.fire("notify", {message: "Please enter a field name!", type: "error", duration: 2000});
-                    } else if (this.record.fields.some(function(f) { return f.name == data.name; })) {
-                        this.fire("notify", {message: "A field with this name already exists!",
-                            type: "error", duration: 2000});
-                    } else {
-                        var field = {
-                            name: data.name,
-                            value: data.value
-                        };
-                        this.push("record.fields", field);
-                        this.fire("save");
-                    }
-                }.bind(this)
-            });
+            this.push("record.fields", {name: "", value: ""});
+            this.async(function() {
+                var newNameInput = Polymer.dom(this.root).querySelector(".field:last-of-type .label");
+                newNameInput && newNameInput.focus();
+            }, 100);
         },
-        _openFieldMenu: function() {
+        _openFieldMenu: function(e) {
+            this.$.selector.select(e.model.item);
             this.fire("open-form", {
                 components: [
                     {element: "button", label: "Copy to Clipboard", submit: true, tap: this.copyToClipboard.bind(this)},
@@ -138,10 +121,32 @@
                 }.bind(this)
             });
         },
-        //* Opens the field context menu
-        _fieldTapped: function(e) {
-            // this.$.selector.select(e.model.item);
-            this._marked = e.model.index;
+        _changeHandler: function() {
+            this.fire("save");
+            this.fire("notify", {message: "Record Saved!", type: "success", duration: 1000});
+        },
+        _removeEmptyFields: function() {
+            var focusedInput = Polymer.dom(this.root).querySelector("input:focus, textarea:focus");
+            var focusedIndex = this.$.fieldList.indexForElement(focusedInput);
+            var fieldsRemoved = false;
+            var field;
+
+            // Remove empty fields
+            for (var i=0; i<this.record.fields.length; i++) {
+                field = this.record.fields[i];
+                if (field != this._selectedField && i != focusedIndex && !field.name && !field.value) {
+                    this.splice("record.fields", i, 1);
+                    fieldsRemoved = true;
+                    i--;
+                }
+            }
+
+            if (fieldsRemoved) {
+                this.fire("save");
+            }
+        },
+        _blurHandler: function() {
+            this.async(this._removeEmptyFields, 200);
         },
         //* Opens the remove field confirm dialog
         _removeField: function() {
@@ -187,18 +192,18 @@
             }
         },
         selectMarked: function() {
-            this.$.selector.select(this.record.fields[this._marked]);
+            this._openFieldMenu({model: {item: this.record.fields[this._marked]}});
         },
         _deselect: function() {
+            var selectedIndex = this.record.fields.indexOf(this._selectedField);
+            var selectedValueField = Polymer.dom(this.root).querySelectorAll(".field .value")[selectedIndex];
+            selectedValueField && selectedValueField.focus();
             // If all field-related dialogs are closed, unselect the field
             this.$.selector.deselect();
         },
-        _selectedFieldChanged: function() {
-            if (this._selectedField) {
-                this._openFieldMenu();
-            }
-            this._marked = this.record ? this.record.fields.indexOf(this._selectedField) : -1;
-        },
+        // _selectedFieldChanged: function() {
+        //     this._marked = this.record ? this.record.fields.indexOf(this._selectedField) : -1;
+        // },
         _updateTitleText: function(name) {
             this.headerTitle = name;
         },
@@ -226,10 +231,12 @@
         },
         _fieldMouseover: function(e) {
             if (!platform.isTouch()) {
+                this._marked = e.model.index;
                 this._revealField(e);
             }
         },
         _fieldMouseout: function(e) {
+            this._marked = e.model.index;
             if (!platform.isTouch()) {
                 this._unrevealField(e);
             }

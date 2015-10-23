@@ -19,23 +19,24 @@
 
         <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
 
-        <template is="dom-repeat" items="{{ record.fields }}">
+        <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
             <div class="field" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout">
                 <div class="label-wrapper">
                     <div class="input-wrapper">
-                        <input is="padlock-input" class="label" value="{{ item.name }}" on-focus="_fieldTapped" placeholder="enter label">
+                        <input is="padlock-input" class="label" value="{{ item.name::change }}" on-change="_changeHandler" on-blur="_blurHandler" placeholder="Enter Field Name">
                     </div>
                     <div class="context-menu">
-                        <shape-shifter shape="copy" on-tap="copyToClipboard"></shape-shifter>
-                        <shape-shifter shape="dice"></shape-shifter>
-                        <shape-shifter shape="trash"></shape-shifter>
+                        <shape-shifter shape="more" on-tap="_openFieldMenu"></shape-shifter>
                         <!-- <button>Copy</button> -->
                         <!-- <button>Generate</button> -->
                         <!-- <button>Delete</button> -->
                     </div>
                 </div>
                 <div class="tap-highlight">
-                    <textarea is="padlock-textarea" class="value" value="{{ item.value }}" rows="1" autosize on-focus="_fieldTapped" placeholder="enter value"></textarea>
+                    <textarea is="padlock-textarea" class="value" value="{{ item.value::change }}" on-change="_changeHandler" on-blur="_blurHandler" rows="1" autosize placeholder="Enter Content"></textarea>
+                </div>
+                <div class="shortcut-hint">
+                    [ctrl/cmd] + C &rarr; Copy
                 </div>
                 <!-- <div class="value" hidden$="{{ _isObfuscated(index, _revealedFields.*, settings.obfuscate_fields) }}">{{ item.value }}</div> -->
                 <!-- <div class="value obfuscated" hidden$="{{ !_isObfuscated(index, _revealedFields.*, settings.obfuscate_fields) }}">{{ _obfuscate(item.value) }}</div> -->
