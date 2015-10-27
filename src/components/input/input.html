@@ -63,6 +63,9 @@
             blur: "_blur",
             keydown: "_keydown"
         },
+        selectAll: function() {
+            this.setSelectionRange(0, this.value.length);
+        },
         _tap: function(e) {
             if (overrideNativeFocus && !this.hasFocus) {
                 this.setSelectionRange(this.value.length, this.value.length);
@@ -77,7 +80,7 @@
             if (this.selectAllOnFocus) {
                 // Need to do this asynchronously in some browsers or it won't work
                 setTimeout(function() {
-                    this.setSelectionRange(0, this.value.length);
+                    this.selectAll();
                 }.bind(this), 10);
             }
 

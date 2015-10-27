@@ -69,15 +69,10 @@
         width: 100%;
         padding: 10px 15px;
         box-sizing: border-box;
-        tap-highlight();
 
         &:empty:after {
             content: "(tap to edit)";
             color: $text-color-faint;
-        }
-
-        &.obfuscated:not(:empty) {
-            letter-spacing: 0.07em;
         }
     }
 
@@ -95,13 +90,30 @@
         transition: transform 0.3s;
     }
 
-    &.marked {
-        &::before {
-            transform: translate(0, 0);
-        }
-        // border-top: solid 2px $color-primary;
-        // border-bottom: solid 2px $color-primary;
+    &.marked::before {
+        transform: translate(0, 0);
     }
+
+    .value-wrapper {
+        tap-hightlight();
+        position: relative;
+    }
+
+    .obfuscated {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: $color-quinary;
+        letter-spacing: 0.07em;
+        pointer-events: none;
+        display: none;
+    }
+}
+
+:host(.obfuscate) .field:not(.marked) .obfuscated {
+    display: block;
 }
 
 .add-button {
@@ -123,4 +135,8 @@
         color: $text-color-light;
         background: $color-secondary;
     }
+}
+
+:host(.touch) .shortcut-hint {
+    display: none;
 }

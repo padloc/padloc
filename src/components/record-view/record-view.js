@@ -15,21 +15,22 @@
                 observer: "_markedChanged"
             },
             _selectedField: {
-                type: Object
-            },
-            _revealedFields: Object
+                type: Object,
+                observer: "_selectedFieldChanged"
+            }
         },
         observers: [
-            "_updateTitleText(record.name)"
+            "_updateTitleText(record.name)",
+            "_updateObfuscate(settings.obfuscate_fields)"
         ],
         ready: function() {
             this.leftHeaderIcon = "left";
             this.rightHeaderIcon = "more";
             this._itemSelector = ".field";
+            this.toggleClass("touch", platform.isTouch());
         },
         show: function() {
             this._marked = this.record ? this.record.fields.indexOf(this._selectedField) : -1;
-            this._revealedFields = {};
             ViewBehavior.show.apply(this, arguments);
         },
         add: function() {
@@ -48,8 +49,7 @@
                     {element: "button", label: "Delete Record", submit: true, tap: this._deleteRecord.bind(this)},
                     {element: "button", submit: true, tap: this._toggleObfuscate.bind(this),
                         label: this.settings.obfuscate_fields ? "Show Field Values" : "Hide Field Values"}
-                ],
-                cancel: this._deselect.bind(this)
+                ]
             });
         },
         _deleteRecord: function() {
@@ -78,10 +78,9 @@
             });
         },
         //* Opens the add field dialog
-        _addField: function(presets) {
+        _addField: function() {
             this._removeEmptyFields();
 
-            presets = presets || {};
             this.$.selector.deselect();
 
             this.push("record.fields", {name: "", value: ""});
@@ -92,32 +91,19 @@
         },
         _openFieldMenu: function(e) {
             this.$.selector.select(e.model.item);
+            this._fieldMenuOpen = true;
             this.fire("open-form", {
                 components: [
                     {element: "button", label: "Copy to Clipboard", submit: true, tap: this.copyToClipboard.bind(this)},
-                    {element: "button", label: "Edit", submit: true, tap: this._editField.bind(this)},
+                    {element: "button", label: "Generate", submit: true, tap: this._generateValue.bind(this)},
                     {element: "button", label: "Remove", submit: true, tap: this._removeField.bind(this)}
                 ],
-                cancel: this._deselect.bind(this)
-            });
-        },
-        _editField: function(presets) {
-            presets = presets || {};
-            var field = this._selectedField;
-            this.fire("open-form", {
-                title: "Edit '" + field.name + "'",
-                components: [
-                    {element: "input", placeholder: "Enter Content", name: "value",
-                        value: presets.value || field.value, autofocus: true, selectAllOnFocus: true},
-                    {element: "button", label: "Generate", close: true, tap: this._generateValue.bind(this)},
-                    {element: "button", label: "Save", submit: true},
-                    {element: "button", label: "Cancel", cancel: true}
-                ],
-                cancel: this._deselect.bind(this),
-                submit: function(data) {
-                    this.set("_selectedField.value", data.value);
+                submit: function() {
+                    this._fieldMenuOpen = false;
+                }.bind(this),
+                cancel: function() {
+                    this._fieldMenuOpen = false;
                     this.$.selector.deselect();
-                    this.fire("save");
                 }.bind(this)
             });
         },
@@ -145,7 +131,21 @@
                 this.fire("save");
             }
         },
+        _valueInputForIndex: function(index) {
+            return Polymer.dom(this.root).querySelectorAll(".field .value:not(.obfuscated)")[index];
+        },
+        _valueInputForField: function(field) {
+            var index = this.record.fields.indexOf(field);
+            return this._valueInputForIndex(index);
+        },
+        _focusHandler: function(e) {
+            // this._marked = e.model.index;
+            this.$.selector.select(e.model.item);
+        },
         _blurHandler: function() {
+            if (!this._fieldMenuOpen) {
+                this.$.selector.deselect();
+            }
             this.async(this._removeEmptyFields, 200);
         },
         //* Opens the remove field confirm dialog
@@ -161,7 +161,9 @@
                     this.$.selector.deselect();
                     this.fire("save");
                 }.bind(this),
-                cancel: this._deselect.bind(this)
+                cancel: function() {
+                    this.$.selector.deselect();
+                }.bind(this)
             });
         },
         _openCategories: function() {
@@ -173,37 +175,32 @@
 
             if (field) {
                 platform.setClipboard(field.value);
-                this._selectedField = null;
+                this.$.selector.deselect();
                 this.fire("notify", {message: "Copied to clipboard!", type: "success", duration: 1500});
             }
         },
         //* Fills the current value input with a randomized value
-        _generateValue: function(values) {
-            var field = this._selectedField || values;
+        _generateValue: function() {
+            var field = this._selectedField;
             this.async(function() {
                 this.fire("generate-value", {field: field});
             }, 300);
         },
         generateConfirm: function(field, value) {
-            if (this._selectedField) {
-                this._editField({value: value});
-            } else {
-                this._addField({name: field.name, value: value || field.value});
+            if (value) {
+                this.set("_selectedField.value", value);
             }
-        },
-        selectMarked: function() {
-            this._openFieldMenu({model: {item: this.record.fields[this._marked]}});
+            var valueInput = this._valueInputForField(field);
+            this.async(function() {
+                valueInput && valueInput.selectAll();
+            }, 300);
         },
         _deselect: function() {
-            var selectedIndex = this.record.fields.indexOf(this._selectedField);
-            var selectedValueField = Polymer.dom(this.root).querySelectorAll(".field .value")[selectedIndex];
-            selectedValueField && selectedValueField.focus();
-            // If all field-related dialogs are closed, unselect the field
             this.$.selector.deselect();
         },
-        // _selectedFieldChanged: function() {
-        //     this._marked = this.record ? this.record.fields.indexOf(this._selectedField) : -1;
-        // },
+        _selectedFieldChanged: function() {
+            this._marked = this._selectedField ? this.record.fields.indexOf(this._selectedField) : -1;
+        },
         _updateTitleText: function(name) {
             this.headerTitle = name;
         },
@@ -214,35 +211,23 @@
             return category || "Add a Category";
         },
         _obfuscate: function(value) {
-            var res = "", l = value.length;
-            while (l--) {
-                res += "\u2022";
-            }
-            return res;
-        },
-        _revealField: function(e) {
-            this.set("_revealedFields." + e.model.index, true);
-        },
-        _unrevealField: function(e) {
-            this.set("_revealedFields." + e.model.index, false);
-        },
-        _isObfuscated: function(ind) {
-            return this.settings.obfuscate_fields && !this._revealedFields[ind];
+            return value.replace(/[^\n]/g, "\u2022");
         },
         _fieldMouseover: function(e) {
-            if (!platform.isTouch()) {
+            if (!platform.isTouch() && !this._selectedField) {
                 this._marked = e.model.index;
-                this._revealField(e);
             }
         },
-        _fieldMouseout: function(e) {
-            this._marked = e.model.index;
-            if (!platform.isTouch()) {
-                this._unrevealField(e);
+        _fieldMouseout: function() {
+            if (!platform.isTouch() && !this._selectedField) {
+                this._marked = -1;
             }
         },
         _toggleObfuscate: function() {
             this.set("settings.obfuscate_fields", !this.settings.obfuscate_fields);
+        },
+        _updateObfuscate: function(obfuscate) {
+            this.toggleClass("obfuscate", obfuscate);
         }
     });
 

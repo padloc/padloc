@@ -23,23 +23,21 @@
             <div class="field" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout">
                 <div class="label-wrapper">
                     <div class="input-wrapper">
-                        <input is="padlock-input" class="label" value="{{ item.name::change }}" on-change="_changeHandler" on-blur="_blurHandler" placeholder="Enter Field Name">
+                        <input is="padlock-input" class="label" value="{{ item.name::change }}" on-change="_changeHandler"
+                            on-focus="_focusHandler" on-blur="_blurHandler" placeholder="Enter Field Name">
                     </div>
                     <div class="context-menu">
                         <shape-shifter shape="more" on-tap="_openFieldMenu"></shape-shifter>
-                        <!-- <button>Copy</button> -->
-                        <!-- <button>Generate</button> -->
-                        <!-- <button>Delete</button> -->
                     </div>
                 </div>
-                <div class="tap-highlight">
-                    <textarea is="padlock-textarea" class="value" value="{{ item.value::change }}" on-change="_changeHandler" on-blur="_blurHandler" rows="1" autosize placeholder="Enter Content"></textarea>
+                <div class="value-wrapper">
+                    <textarea is="padlock-textarea" class="value" value="{{ item.value::change }}" on-change="_changeHandler"
+                        on-focus="_focusHandler" on-blur="_blurHandler" rows="1" autosize placeholder="Enter Content"></textarea>
+                    <textarea class="value obfuscated" placeholder="Enter Content">{{ _obfuscate(item.value) }}</textarea>
                 </div>
                 <div class="shortcut-hint">
                     [ctrl/cmd] + C &rarr; Copy
                 </div>
-                <!-- <div class="value" hidden$="{{ _isObfuscated(index, _revealedFields.*, settings.obfuscate_fields) }}">{{ item.value }}</div> -->
-                <!-- <div class="value obfuscated" hidden$="{{ !_isObfuscated(index, _revealedFields.*, settings.obfuscate_fields) }}">{{ _obfuscate(item.value) }}</div> -->
             </div>
         </template>
 
