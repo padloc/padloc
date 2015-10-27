@@ -25,7 +25,7 @@
         ],
         ready: function() {
             this.leftHeaderIcon = "left";
-            this.rightHeaderIcon = "more";
+            this.rightHeaderIcon = "trash";
             this._itemSelector = ".field";
             this.toggleClass("touch", platform.isTouch());
         },
@@ -40,24 +40,14 @@
             this.fire("back");
         },
         rightHeaderButton: function() {
-            this._openRecordMenu();
+            this._deleteRecord();
         },
         titleTapped: function() {
             this._editName();
         },
-        _openRecordMenu: function() {
-            this.fire("open-form", {
-                components: [
-                    {element: "button", label: "Edit Record Name", submit: true, tap: this._editName.bind(this)},
-                    {element: "button", label: "Delete Record", submit: true, tap: this._deleteRecord.bind(this)},
-                    {element: "button", submit: true, tap: this._toggleObfuscate.bind(this),
-                        label: this.settings.obfuscate_fields ? "Show Field Values" : "Hide Field Values"}
-                ]
-            });
-        },
         _deleteRecord: function() {
             this.fire("open-form", {
-                title: "Are you sure you want to delete this record?",
+                title: "Are you sure you want to delete this record? This action can not be undone!",
                 components: [
                     {element: "button", label: "Delete", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
@@ -155,6 +145,7 @@
         //* Opens the remove field confirm dialog
         _removeField: function() {
             this.fire("open-form", {
+                title: "Are you sure you want to remove this field? This action can not be undone!",
                 components: [
                     {element: "button", label: "Remove", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
@@ -227,9 +218,6 @@
             if (!platform.isTouch() && !this._selectedField) {
                 this._marked = -1;
             }
-        },
-        _toggleObfuscate: function() {
-            this.set("settings.obfuscate_fields", !this.settings.obfuscate_fields);
         },
         _updateObfuscate: function(obfuscate) {
             this.toggleClass("obfuscate", obfuscate);
