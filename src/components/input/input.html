@@ -113,6 +113,12 @@
             } else {
                 autosize.destroy(this);
             }
+        },
+        ready: function() {
+            this.async(this.updateSize, 100);
+        },
+        updateSize: function() {
+            this.autosize && autosize.update(this);
         }
     };
 
