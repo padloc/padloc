@@ -42,6 +42,9 @@
         rightHeaderButton: function() {
             this._openRecordMenu();
         },
+        titleTapped: function() {
+            this._editName();
+        },
         _openRecordMenu: function() {
             this.fire("open-form", {
                 components: [
@@ -74,6 +77,7 @@
                 submit: function(data) {
                     this.set("record.name", data.name);
                     this.fire("save");
+                    this.fire("notify", {message: "Changes Saved!", type: "success", duration: 1000});
                 }.bind(this)
             });
         },
@@ -109,7 +113,7 @@
         },
         _changeHandler: function() {
             this.fire("save");
-            this.fire("notify", {message: "Record Saved!", type: "success", duration: 1000});
+            this.fire("notify", {message: "Changes Saved!", type: "success", duration: 1000});
         },
         _removeEmptyFields: function() {
             var focusedInput = Polymer.dom(this.root).querySelector("input:focus, textarea:focus");
@@ -160,6 +164,7 @@
                     this.splice("record.fields", ind, 1);
                     this.$.selector.deselect();
                     this.fire("save");
+                    this.fire("notify", {message: "Changes Saved!", type: "success", duration: 1000});
                 }.bind(this),
                 cancel: function() {
                     this.$.selector.deselect();

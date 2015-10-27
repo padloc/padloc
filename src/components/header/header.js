@@ -61,6 +61,11 @@
                 this.view.rightHeaderButton();
             }
         },
+        _titleTapped: function() {
+            if (this.view && this.view.titleTapped) {
+                this.view.titleTapped();
+            }
+        },
         //* Clears the filter input and resets the filter string
         cancelFilter: function() {
             this.filterString = "";
