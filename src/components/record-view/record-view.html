@@ -41,7 +41,7 @@
             </div>
         </template>
 
-        <button class="add-button" on-tap="_addField">Add Field</button>
+        <button class="add-button" on-tap="_addField" hidden$="{{ !_showAddButton(record.fields.*) }}">Add Field</button>
 
         <array-selector id="selector" items="{{ record.fields }}" selected="{{ _selectedField }}"></array-selector>
 

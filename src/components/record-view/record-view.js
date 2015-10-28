@@ -220,6 +220,10 @@
         },
         _updateObfuscate: function(obfuscate) {
             this.toggleClass("obfuscate", obfuscate);
+        },
+        _showAddButton: function() {
+            var lastField = this.record && this.record.fields[this.record.fields.length-1];
+            return !lastField || lastField.name || lastField.value;
         }
     });
 
