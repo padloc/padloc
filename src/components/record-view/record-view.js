@@ -73,14 +73,17 @@
         },
         //* Opens the add field dialog
         _addField: function() {
-            this._removeEmptyFields();
-
             this.$.selector.deselect();
 
             this.push("record.fields", {name: "", value: ""});
             this.async(function() {
                 var newNameInput = Polymer.dom(this.root).querySelector(".field:last-of-type .label");
                 newNameInput && newNameInput.focus();
+
+                // This is a workaround for ios where for some reason the input looses focus after a moment
+                this.async(function() {
+                    newNameInput && newNameInput.focus();
+                }, 100);
             }, 100);
         },
         _openFieldMenu: function(e) {
