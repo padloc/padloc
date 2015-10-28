@@ -185,14 +185,13 @@
         generateConfirm: function(field, value) {
             if (value) {
                 this.set("_selectedField.value", value);
+                var valueInput = this._valueInputForField(field);
+                this.async(function() {
+                    valueInput && valueInput.selectAll();
+                }, 300);
+            } else {
+                this.$.selector.deselect();
             }
-            var valueInput = this._valueInputForField(field);
-            this.async(function() {
-                valueInput && valueInput.selectAll();
-            }, 300);
-        },
-        _deselect: function() {
-            this.$.selector.deselect();
         },
         _selectedFieldChanged: function() {
             this._marked = this._selectedField ? this.record.fields.indexOf(this._selectedField) : -1;

@@ -633,28 +633,19 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         // Back / cancel handler for generator view. Behaves differently based on where the generator view
         // was openened from
-        _generatorBack: function() {
-            if (this.$.generatorView.field) {
+        _generatorBack: function(e) {
+            if (e.field) {
                 // The value was to be generated for an existing field, meaning the generator was invoked from
                 // the record view but then canceled. Go back to the record view and call the `generateConfirm`
                 // method, but without the value argument, indicating that the generate action was canceled
                 this._openView(this.$.recordView, {animation: "slideInFromBottom"}, {animation: "slideOutToBottom"});
                 this.async(function() {
-                    this.$.recordView.generateConfirm(this.$.generatorView.field);
+                    this.$.recordView.generateConfirm(e.detail.field, e.detail.value);
                 }, 100);
             } else {
                 // The generator view had been opened from the list view, so simply go back there
                 this._openView(this.$.listView);
             }
-        },
-        // Confirmation handler for generator view
-        _generateConfirm: function(e) {
-            this._generatorBack();
-            // The confirm event can only be fired if the value was generated for a specific field so
-            // we can just call the `generateConfirm` method with the generated value.
-            this.async(function() {
-                this.$.recordView.generateConfirm(e.detail.field, e.detail.value);
-            }, 100);
         },
         // Opens a dialog with a dynamic form based on the provided arguments
         _openForm: function(components, title, submitCallback, cancelCallback) {

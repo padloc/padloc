@@ -48,7 +48,7 @@
         <!-- CATEGORIES VIEW -->
         <padlock-categories-view id="categoriesView" class="view" categories="{{ _categories }}" record="{{ _selected }}"
             on-back="_categoriesDone" on-categorychanged="_categoryChanged"></padlock-categories-view>
-        <padlock-generator-view id="generatorView" class="view" on-back="_generatorBack" on-confirm="_generateConfirm"></padlock-generator-view>
+        <padlock-generator-view id="generatorView" class="view" on-back="_generatorBack"></padlock-generator-view>
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id="decrypting">decrypting...</padlock-progress>
         <padlock-progress id="synchronizing">synchronizing...</padlock-progress>
