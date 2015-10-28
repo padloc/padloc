@@ -33,7 +33,7 @@
                 <div class="value-wrapper">
                     <textarea is="padlock-textarea" class="value" value="{{ item.value::change }}" on-change="_changeHandler"
                         on-focus="_focusHandler" on-blur="_blurHandler" rows="1" autosize placeholder="Enter Content"></textarea>
-                    <textarea class="value obfuscated" placeholder="Enter Content">{{ _obfuscate(item.value) }}</textarea>
+                    <textarea class="value obfuscated">{{ _obfuscate(item.value) }}</textarea>
                 </div>
                 <div class="shortcut-hint">
                     [ctrl/cmd] + C &rarr; Copy
