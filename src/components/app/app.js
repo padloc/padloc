@@ -634,7 +634,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         // Back / cancel handler for generator view. Behaves differently based on where the generator view
         // was openened from
         _generatorBack: function(e) {
-            if (e.field) {
+            if (e.detail.field) {
                 // The value was to be generated for an existing field, meaning the generator was invoked from
                 // the record view but then canceled. Go back to the record view and call the `generateConfirm`
                 // method, but without the value argument, indicating that the generate action was canceled
