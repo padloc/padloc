@@ -24,7 +24,7 @@
                 <div class="label-wrapper">
                     <div class="input-wrapper">
                         <input is="padlock-input" class="label" value="{{ item.name::change }}" on-change="_changeHandler"
-                            on-focus="_focusHandler" on-blur="_blurHandler" placeholder="Enter Field Name">
+                            on-focus="_focusHandler" on-blur="_blurHandler" on-enter="_focusValueInput" placeholder="Enter Field Name" show-accessory-bar>
                     </div>
                     <div class="context-menu">
                         <shape-shifter shape="more" on-tap="_openFieldMenu"></shape-shifter>
@@ -32,7 +32,7 @@
                 </div>
                 <div class="value-wrapper">
                     <textarea is="padlock-textarea" class="value" value="{{ item.value::change }}" on-change="_changeHandler"
-                        on-focus="_focusHandler" on-blur="_blurHandler" rows="1" autosize placeholder="Enter Content"></textarea>
+                        on-focus="_focusHandler" on-blur="_blurHandler" rows="1" autosize placeholder="Enter Content" show-accessory-bar></textarea>
                     <textarea class="value obfuscated">{{ _obfuscate(item.value) }}</textarea>
                 </div>
                 <div class="shortcut-hint">

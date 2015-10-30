@@ -228,6 +228,11 @@
         _showAddButton: function() {
             var lastField = this.record && this.record.fields[this.record.fields.length-1];
             return !lastField || lastField.name || lastField.value;
+        },
+        _focusValueInput: function(e) {
+            e.detail.keyboardEvent.preventDefault();
+            var input = this._valueInputForIndex(e.model.index);
+            input && input.focus();
         }
     });
 

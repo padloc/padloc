@@ -94,7 +94,7 @@
         },
         _keydown: function(e) {
             if (e.keyCode == 13) {
-                this.fire("enter");
+                this.fire("enter", {keyboardEvent: e});
             }
         }
     };
