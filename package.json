@@ -14,9 +14,18 @@
     "mkdirp": "^0.5.0",
     "ncp": "^0.6.0",
     "nib": "^1.0.3",
+    "npm-run-all": "^1.2.12",
     "q": "^1.0.1",
     "rimraf": "^2.2.8",
     "yargs": "^1.3.1"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "scripts": {
+    "test": "gulp test",
+    "lint": "gulp lint",
+    "lint:watch": "gulp lint --watch",
+    "css": "gulp stylus",
+    "css:watch": "gulp stylus --watch",
+    "dev": "npm-run-all --parallel *:watch"
+  }
 }
