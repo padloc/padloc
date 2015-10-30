@@ -11,6 +11,7 @@
     "gulp-vulcanize": "^6.0.1",
     "gulp-watch": "^0.6.9",
     "jshint-stylish": "^0.4.0",
+    "live-server": "^0.8.2",
     "mkdirp": "^0.5.0",
     "ncp": "^0.6.0",
     "nib": "^1.0.3",
@@ -18,5 +19,8 @@
     "rimraf": "^2.2.8",
     "yargs": "^1.3.1"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "scripts": {
+    "server": "live-server ."
+  }
 }
