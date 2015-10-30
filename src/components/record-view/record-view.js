@@ -24,6 +24,7 @@
             "_updateObfuscate(settings.obfuscate_fields)"
         ],
         ready: function() {
+            this.adjustScrollHeight = true;
             this.leftHeaderIcon = "left";
             this.rightHeaderIcon = "trash";
             this._itemSelector = ".field";
