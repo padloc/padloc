@@ -67,6 +67,17 @@ padlock.ViewBehavior = (function(platform) {
         _keyboardShown: function(e) {
             if (this.adjustScrollHeight) {
                 this.style.paddingBottom = (e.keyboardHeight + 5) + "px";
+                var focusedInput = Polymer.dom(this.root).querySelector("input:focus, textarea:focus");
+                if (focusedInput) {
+                    var bounds = focusedInput.getBoundingClientRect();
+                    var cBounds = this.getBoundingClientRect();
+                    var bottom = cBounds.bottom - bounds.bottom;
+                    this._ignoreScroll = true;
+                    this.scrollTop += Math.max(0, e.keyboardHeight + 5 - bottom);
+                    this.async(function() {
+                        this._ignoreScroll = false;
+                    }, 100);
+                }
             }
         },
         _keyboardHidden: function() {

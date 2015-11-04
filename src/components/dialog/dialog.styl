@@ -29,12 +29,6 @@
     opacity: $scrim-opacity;
 }
 
-// Failsafe in case the out animation get interrupted and
-// the dialog fails to set 'display: none'
-:host(:not(.open)) {
-    pointer-events: none;
-}
-
 .scroll-container {
     position: absolute;
     bottom: 0;

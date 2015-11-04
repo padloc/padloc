@@ -137,8 +137,10 @@
             return this._valueInputForIndex(index);
         },
         _focusHandler: function(e) {
-            // this._marked = e.model.index;
             this.$.selector.select(e.model.item);
+            if (!platform.isIOS()) {
+                this.async(this._revealMarked, 300);
+            }
         },
         _blurHandler: function() {
             if (!this._fieldMenuOpen) {
