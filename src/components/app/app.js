@@ -154,8 +154,11 @@ padlock.App = (function(Polymer, platform, CloudSource) {
 
                     // If there is more than ten records in the collection and no backup reminder has been
                     // shown, show it.
-                    if (this._records.filter(function(rec) { return !rec.removed; }).length > 10 &&
-                            !this.settings.showed_backup_reminder) {
+                    if (
+                        !this.settings.sync_connected &&
+                        this._records.filter(function(rec) { return !rec.removed; }).length > 10 &&
+                        !this.settings.showed_backup_reminder
+                    ) {
                         this._showBackupReminder();
                     }
                 }, 1500);
