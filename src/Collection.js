@@ -137,7 +137,7 @@ padlock.Collection = (function(util) {
          */
         setPassword: function(password) {
             // Setting a new password effectively just means reencrypting the data with the new password
-            this.save({password: password});
+            this.save({password: password, rememberPassword: true});
         },
         /**
          * Checks whether or not data for the collection exists
