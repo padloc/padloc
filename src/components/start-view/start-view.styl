@@ -16,7 +16,7 @@
 }
 
 .wrapper {
-    height: 450px;
+    height: 350px;
     position: absolute;
     left: 0;
     right: 0;
@@ -40,21 +40,19 @@
     font-weight: 300;
     margin-bottom: 30px;
     font-weight: $font-weight-thin;
-    animation: reveal 0.5s ease 0.20s both;
+    animation: reveal 0.5s ease 0.2s both;
 }
 
-.pwdinput-first {
-    animation: reveal 0.5s ease 0.40s both;
-}
-
-.pwdinput-second {
-    animation: reveal 0.5s ease 0.60s both;
+.pwdinput {
+    animation: reveal 0.5s ease 0.4s both;
 }
 
 .enter-button {
     width: 100%;
     margin-top: 10px;
-    animation reveal 0.5s ease 0.8s both;
+    animation reveal 0.5s ease 0.6s both;
+    font-size: 115%;
+}
 }
 
 padlock-lock {
@@ -63,7 +61,7 @@ padlock-lock {
     right: 0;
     bottom: -50px;
     margin: 0 auto;
-    animation: reveal 0.5s ease 1.25s both;
+    animation: reveal 0.5s ease 0.8s both;
 }
 
 @media (max-height: 500px) {
@@ -72,6 +70,6 @@ padlock-lock {
     }
 
     .wrapper {
-        height: 330px;
+        height: 230px;
     }
 }

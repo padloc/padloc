@@ -6,6 +6,12 @@
     Polymer({
         is: "padlock-start-view",
         behaviors: [ViewBehavior],
+        properties: {
+            changingPwd: {
+                type: Boolean,
+                value: false
+            }
+        },
         hide: function() {
             this.$$("padlock-lock").unlocked = true;
             var args = arguments;
@@ -25,26 +31,22 @@
         },
         enter: function() {
             this.$.pwdInput.blur();
-            this.$.confirmInput.blur();
 
             var newPwd = this.$.pwdInput.value,
-                cfmPwd = this.$.confirmInput.value,
                 score = this.$.pwdInput.score;
 
             if (!newPwd) {
                 this.fire("notify", {message: "Please enter a master password!", type: "error", duration: 2000});
-            } else if (newPwd != cfmPwd) {
-                this.fire("notify", {message: "Passwords do not match!", type: "error", duration: 2000});
             } else if (score < 2) {
-                this._promptWeakPassword(newPwd);
+                this._promptWeakPassword();
             } else {
-                this.fire("newpwd", {password: newPwd});
+                this._confirmPassword();
             }
         },
         getAnimationElement: function() {
             return this.$$("padlock-lock");
         },
-        _promptWeakPassword: function(password) {
+        _promptWeakPassword: function() {
             this.fire("open-form", {
                 components: [
                     {element: "button", label: "Retry", cancel: true},
@@ -53,13 +55,39 @@
                 title: "WARNING: The password you entered is weak which makes it easier for attackers to break " +
                     "the encryption used to protect your data. Try to use a longer password or include a " +
                     "variation of uppercase, lowercase and special characters as well as numbers.",
-                submit: function() {
-                    this.fire("newpwd", {password: password});
+                submit: this._confirmPassword.bind(this)
+            });
+        },
+        _confirmPassword: function() {
+            var newPwd = this.$.pwdInput.value;
+
+            this.fire("open-form", {
+                title: "Remember your master password! Without it, nobody will be able to access your data, " +
+                    "not even we! This is to ensure that your data is as safe as possible but it also means " +
+                    "that if you loose your master password, we won't be able to assist you with recovering your " +
+                    "data. (You will be able to change it later, but only if you know the existing password)",
+                components: [
+                    {element: "input", placeholder: "Repeat Password", type: "password", name: "password"},
+                    {element: "button", label: "Confirm", submit: true},
+                    {element: "button", label: "Change", cancel: true}
+                ],
+                submit: function(data) {
+                    if (newPwd == data.password) {
+                        this.fire("newpwd", {password: newPwd});
+                    } else {
+                        this.fire("notify", {message: "Passwords do not match!", type: "error", duration: 2000});
+                    }
+                }.bind(this),
+                cancel: function() {
+                    this.$.pwdInput.focus();
                 }.bind(this)
             });
         },
         _clear: function() {
-            this.$.pwdInput.value = this.$.confirmInput.value = "";
+            this.$.pwdInput.value = "";
+        },
+        _buttonLabel: function(changingPwd) {
+            return changingPwd ? "Change Password" : "Get Started";
         }
     });
 

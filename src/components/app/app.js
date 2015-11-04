@@ -104,6 +104,9 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _pwdEnter: function(event, detail) {
             this._unlock(detail.password);
         },
+        _changePwd: function() {
+            this._openStartView(true);
+        },
         // Submit handler for start view. A new master password was selected so we have to update it
         _newPwd: function(event, detail) {
             // Update master password
@@ -589,7 +592,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 this.notifyPath("settings." + prop, this.settings[prop]);
             }
         },
-        _openStartView: function() {
+        _openStartView: function(changingPwd) {
+            this.$.startView.changingPwd = (changingPwd === true);
             this.$.header.showing = false;
             this._openView(
                 this.$.startView,

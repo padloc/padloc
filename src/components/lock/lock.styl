@@ -4,26 +4,20 @@
 :host {
     display: block;
     position: relative;
-    width: 300px;
-    height: 300px;
+    width: 240px;
+    height: 240px;
     transform-origin: center bottom;
     fill: #fff;
-    stroke: #fff;
+    stroke: none;
 
     svg {
         width: 100%;
         height: 100%;
         overflow: visible;
-    }
-
-    rect {
-        fill: inherit;
-        stroke: none;
+        position: absolute;
     }
 
     .bolt {
-        stroke: inherit;
-        fill: none;
         transition: transform 0.3s cubic-bezier(0, 1.1, 0.49, 1.1);
     }
 }
