@@ -194,6 +194,7 @@
                 var valueInput = this._valueInputForField(field);
                 this.async(function() {
                     valueInput && valueInput.selectAll();
+                    valueInput && valueInput.updateSize();
                 }, 300);
             } else {
                 this.$.selector.deselect();
