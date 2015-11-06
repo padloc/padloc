@@ -3,12 +3,17 @@
 <link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../select/select.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="../view/view-styles.html">
+<link rel="import" href="categories-view-styles.html">
 
 <dom-module id="padlock-categories-view">
 
-    <link href="categories-view.css" rel="import" type="css">
-
     <template>
+        <style include="shared-styles"></style>
+        <style include="view-styles"></style>
+        <style include="categories-view-styles"></style>
+
         <div class="header">Select a category</div>
 
         <div class="list" hidden$="{{ !_hasCategories(_categoryList.length) }}">

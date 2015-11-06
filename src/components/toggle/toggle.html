@@ -1,20 +1,28 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="toggle-styles.html">
+<link rel="import" href="toggle-button-styles.html">
 
 <dom-module id="padlock-toggle">
 
-    <link href="toggle.css" rel="import" type="css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="toggle-styles"></style>
+
         <div class="knob"></div>
+
     </template>
 
 </dom-module>
 
 <dom-module id="padlock-toggle-button">
-    <link href="toggle-button.css" rel="import" type="css">
 
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="toggle-button-styles"></style>
 
         <button>
             <span>{{ label }}</span>

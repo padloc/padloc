@@ -2,12 +2,18 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../markable-behavior/markable-behavior.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="../view/view-styles.html">
+<link rel="import" href="list-view-styles.html">
 
 <dom-module id="padlock-list-view">
-    <link href="../view/view.css" rel="import" type="css">
-    <link href="list-view.css" rel="import" type="css">
 
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="view-styles"></style>
+        <style include="list-view-styles"></style>
+
         <div class="list">
 
             <template id="list" is="dom-repeat" items="{{ records }}"

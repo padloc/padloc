@@ -11,18 +11,20 @@ var gulp = require("gulp"),
     stylish = require("jshint-stylish"),
     Q = require("q"),
     vulcanize = require("gulp-vulcanize"),
-    crisper = require('gulp-crisper'),
+    crisper = require("gulp-crisper"),
     rmdir = require("rimraf"),
     ncp = require("ncp").ncp,
     path = require("path"),
     mkdirp = require("mkdirp"),
-    insertLines = require("gulp-insert-lines");
+    insertLines = require("gulp-insert-lines"),
+    stylemod = require("gulp-style-modules");
 
 function compileCss() {
     var deferred = Q.defer();
 
     gulp.src("./src/**/*.styl")
         .pipe(stylus({use: [nib()]}))
+        .pipe(stylemod())
         .pipe(gulp.dest("./src"))
         .on("end", function() {
             deferred.resolve();
@@ -64,6 +66,7 @@ gulp.task("stylus", function () {
         watch({glob: "src/**/*.styl"}, function(files) {
             return files
                 .pipe(stylus({use: [nib()]}))
+                .pipe(stylemod())
                 .pipe(gulp.dest("./src"));
         });
     } else {

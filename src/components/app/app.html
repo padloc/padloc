@@ -16,12 +16,16 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../progress/progress.html">
 <link rel="import" href="../notification/notification.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="app-styles.html">
 
 <dom-module id="padlock-app">
 
-    <link href="app.css" rel="import" type="css">
-
     <template>
+
+        <style include="app-styles"></style>
+        <style include="shared-styles"></style>
+
         <padlock-header id="header" view="{{ _currentView }}" filter-string="{{ _filterString }}"></padlock-header>
         <padlock-start-view id="startView" class="view" on-newpwd="_newPwd"></padlock-start-view>
         <padlock-lock-view id="lockView" class="view" on-pwdenter="_pwdEnter"></padlock-lock-view>

@@ -2,12 +2,15 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="option.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="select-styles.html">
 
 <dom-module id="padlock-select">
 
-    <link href="select.css" rel="import" type="css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="select-styles"></style>
 
         <button on-tap="toggleOpen" class$="{{ _selectedClass(selected) }}">
             <span>{{ _label(selected, label) }}</span>

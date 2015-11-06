@@ -4,13 +4,18 @@
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../toggle/toggle.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="../view/view-styles.html">
+<link rel="import" href="settings-view-styles.html">
 
 <dom-module id="padlock-settings-view">
 
-    <link href="../view/view.css" rel="import" type="css">
-    <link href="settings-view.css" rel="import" type="css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="view-styles"></style>
+        <style include="settings-view-styles"></style>
+
         <div class="section">
             <button on-tap="_import">Import Data</button>
             <button on-tap="_export">Export Data</button>
