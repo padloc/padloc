@@ -4,12 +4,18 @@
 <link rel="import" href="../markable-behavior/markable-behavior.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../toggle/toggle.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="../view/view-styles.html">
+<link rel="import" href="record-view-styles.html">
 
 <dom-module id="padlock-record-view">
 
-    <link href="record-view.css" rel="import" type="css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="view-styles"></style>
+        <style include="record-view-styles"></style>
+
         <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
 
         <template is="dom-repeat" items="{{ record.fields }}">

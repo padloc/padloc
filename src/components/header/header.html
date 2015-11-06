@@ -2,12 +2,16 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="header-styles.html">
 
 <dom-module id="padlock-header">
 
-    <link href="header.css" rel="import" type="css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="header-styles"></style>
+
         <div>
             <!-- LEFT BUTTON -->
             <shape-shifter id="leftIcon" shape="menu" on-tap="_leftClicked" springy></shape-shifter>

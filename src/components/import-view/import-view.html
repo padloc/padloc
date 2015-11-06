@@ -4,12 +4,18 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../select/select.html">
 <link rel="import" href="../progress/progress.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="../view/view-styles.html">
+<link rel="import" href="import-view-styles.html">
 
 <dom-module id="padlock-import-view">
 
-    <link href="import-view.css" rel="import" type="css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="view-styles"></style>
+        <style include="import-view-styles"></style>
+
         <div class="flex-wrapper">
 
             <padlock-select value="{{ _type }}">

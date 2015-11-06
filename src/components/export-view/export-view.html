@@ -3,13 +3,17 @@
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../select/select.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="../view/view-styles.html">
+<link rel="import" href="export-view-styles.html">
 
 <dom-module id="padlock-export-view">
 
-    <link rel="import" href="../view/view.css" type="css">
-    <link rel="import" href="export-view.css" type="css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="view-styles"></style>
+        <style include="export-view-styles"></style>
 
         <padlock-select value="{{ _type }}">
             <padlock-option value="csv" label="CSV" default></padlock-option>

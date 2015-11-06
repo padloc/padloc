@@ -1,10 +1,13 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="notification-styles.html">
 
 <dom-module id="padlock-notification">
 
-    <link href="notification.css" rel="import" type="css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="notification-styles"></style>
 
         <div>{{ message }}</div>
 

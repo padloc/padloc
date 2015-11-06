@@ -4,13 +4,17 @@
 <link rel="import" href="../password-input/password-input.html">
 <link rel="import" href="../toggle/toggle.html">
 <link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="../view/view-styles.html">
+<link rel="import" href="generator-view-styles.html">
 
 <dom-module id="padlock-generator-view">
 
-    <link rel="import" href="../view/view.css" type="css">
-    <link rel="import" href="generator-view.css" type="css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="view-styles"></style>
+        <style include="generator-view-styles"></style>
 
         <div class="tap-highlight">
             <padlock-password-input value="{{ value }}" select-all-on-focus></padlock-password-input>
@@ -23,7 +27,7 @@
             <input type="range" value="{{ length::input }}" min="5" max="50">
             <span>{{ length }}</span>
         </div>
-        <button on-tap="generate">Generate</button>
+        <button on-tap="generate">Regenerate</button>
 
     </template>
 

@@ -1,11 +1,16 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="option-styles.html">
 
 <dom-module id="padlock-option">
 
-    <link rel="import" type="css" href="option.css">
-
     <template>
+
+        <style include="shared-styles"></style>
+        <style include="option-styles"></style>
+
         <button on-tap="_tap">{{ _label(label, value) }}</button>
+
     </template>
 
     <script>
