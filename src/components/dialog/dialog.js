@@ -34,7 +34,7 @@
                 this._hideTimeout = this.async(function() {
                     this.style.display = "none";
                     this.isShowing = false;
-                }, 500);
+                }, 250);
             }
 
             // Trigger relayout to make sure all elements have been rendered

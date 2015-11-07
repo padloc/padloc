@@ -11,7 +11,7 @@
     "use strict";
 
     // currently selected input
-    var currentInput;
+    padlock.currentInput = null;
 
     var overrideNativeFocus = platform.isIOS();
     if (overrideNativeFocus) {
@@ -24,7 +24,7 @@
 
         // Blur current input when tapping anywhere outside an input element
         Polymer.Gestures.add(document, "tap", function() {
-            currentInput && currentInput.blur();
+            padlock.currentInput && padlock.currentInput.blur();
         });
     }
 
@@ -37,7 +37,7 @@
     // Even with the moudown event suppressed, the keyboard still pops up in unwanted situations
     // sometimes. We want to manually hide the keyboard in these situations.
     window.addEventListener("native.keyboardshow", function() {
-        if (!currentInput) {
+        if (!padlock.currentInput) {
             cordova.plugins.Keyboard.close();
         }
     });
@@ -84,12 +84,12 @@
                 }.bind(this), 10);
             }
 
-            currentInput = this;
+            padlock.currentInput = this;
         },
         _blur: function() {
             this.hasFocus = false;
-            if (currentInput == this) {
-                currentInput = null;
+            if (padlock.currentInput == this) {
+                padlock.currentInput = null;
             }
         },
         _keydown: function(e) {
