@@ -44,7 +44,8 @@ padlock.ViewBehavior = (function(platform) {
             animationEasing: {
                 type: String,
                 value: "ease"
-            }
+            },
+            adjustScrollHeight: Boolean
         },
         leftHeaderButton: function() {},
         rightHeaderButton: function() {},
@@ -55,6 +56,30 @@ padlock.ViewBehavior = (function(platform) {
                 endEventName = platform.getAnimationEndEventName();
             this.addEventListener(startEventName, this._animationStart.bind(this));
             this.addEventListener(endEventName, this._animationEnd.bind(this));
+
+            // On iOS the keyboard overlays the web view so we have to add some padding to the bottom to
+            // make sure all records can be scrolled to.
+            if (platform.isIOS()) {
+                window.addEventListener("native.keyboardshow", this._keyboardShown.bind(this));
+                window.addEventListener("native.keyboardhide", this._keyboardHidden.bind(this));
+            }
+        },
+        _keyboardShown: function(e) {
+            if (this.adjustScrollHeight) {
+                this.style.paddingBottom = (e.keyboardHeight + 5) + "px";
+                // var focusedInput = Polymer.dom(this.root).querySelector("input:focus, textarea:focus");
+                if (padlock.currentInput) {
+                    var bounds = padlock.currentInput.getBoundingClientRect();
+                    var cBounds = this.getBoundingClientRect();
+                    var bottom = cBounds.bottom - bounds.bottom;
+                    this.scrollTop += Math.max(0, e.keyboardHeight + 5 - bottom);
+                }
+            }
+        },
+        _keyboardHidden: function() {
+            if (this.adjustScrollHeight) {
+                this.style.paddingBottom = "";
+            }
         },
         /**
          * Returns the element that the animation should be applied to. Sometimes

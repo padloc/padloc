@@ -1,5 +1,6 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../markable-behavior/markable-behavior.html">
 <link rel="import" href="../input/input.html">
@@ -18,11 +19,21 @@
 
         <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
 
-        <template is="dom-repeat" items="{{ record.fields }}">
-            <div class="field" on-tap="_fieldTapped" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout">
-                <div class="value" hidden$="{{ _isObfuscated(index, _revealedFields.*, settings.obfuscate_fields) }}">{{ item.value }}</div>
-                <div class="value obfuscated" hidden$="{{ !_isObfuscated(index, _revealedFields.*, settings.obfuscate_fields) }}">{{ _obfuscate(item.value) }}</div>
-                <div class="label">{{ item.name }}</div>
+        <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
+            <div class="field" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout" on-tap="_fieldTapped" selected$="{{ _isEqual(item, _selectedField) }}">
+                <div class="label-wrapper">
+                    <div class="label">{{ item.name }}</div>
+                    <shape-shifter shape="more" class="context-menu"></shape-shifter>
+                </div>
+                <div class="separator"></div>
+                <div class="value-wrapper">
+                    <textarea is="padlock-textarea" class="value" value="{{ item.value::change }}" on-change="_changeHandler" select-all-on-focus
+                        on-focus="_focusHandler" on-blur="_blurHandler" rows="1" autosize placeholder="Enter Content" show-accessory-bar></textarea>
+                    <textarea class="value obfuscated">{{ _obfuscate(item.value) }}</textarea>
+                </div>
+                <div class="shortcut-hint">
+                    [ctrl/cmd] + C &rarr; Copy
+                </div>
             </div>
         </template>
 

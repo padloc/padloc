@@ -18,6 +18,7 @@
   "dependencies": {
     "shape-shifter": "~1.1.0",
     "polymer": "polymer/polymer#~1.2.1",
-    "zxcvbn": "~3.1.0"
+    "zxcvbn": "~3.1.0",
+    "autosize": "~3.0.13"
   }
 }

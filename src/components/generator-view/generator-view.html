@@ -91,11 +91,11 @@
                 this.value = charSet ? rand.randomString(this.length, charSet) : "";
             },
             leftHeaderButton: function() {
-                this.fire("back");
+                this.fire("back", {field: this.field});
             },
             rightHeaderButton: function() {
                 if (this.field) {
-                    this.fire("confirm", {field: this.field, value: this.value});
+                    this.fire("back", {field: this.field, value: this.value});
                 } else {
                     this.copyToClipboard();
                 }

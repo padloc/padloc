@@ -3,7 +3,7 @@
 
 :host {
     position: fixed;
-    z-index: 1;
+    z-index: 10;
     left: 0;
     right: 0;
     top: 0;
@@ -27,12 +27,6 @@
 
 :host(.open) .scrim {
     opacity: $scrim-opacity;
-}
-
-// Failsafe in case the out animation get interrupted and
-// the dialog fails to set 'display: none'
-:host(:not(.open)) {
-    pointer-events: none;
 }
 
 .scroll-container {

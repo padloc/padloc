@@ -1,16 +1,17 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<script src="../../../bower_components/autosize/dist/autosize.js"></script>
 
 <script>
 
 /* jshint browser: true */
-/* global Polymer, padlock, cordova */
+/* global Polymer, padlock, cordova, autosize */
 
-(function(Polymer, platform) {
+(function(Polymer, platform, autosize) {
     "use strict";
 
     // currently selected input
-    var currentInput;
+    padlock.currentInput = null;
 
     var overrideNativeFocus = platform.isIOS();
     if (overrideNativeFocus) {
@@ -23,7 +24,7 @@
 
         // Blur current input when tapping anywhere outside an input element
         Polymer.Gestures.add(document, "tap", function() {
-            currentInput && currentInput.blur();
+            padlock.currentInput && padlock.currentInput.blur();
         });
     }
 
@@ -36,7 +37,7 @@
     // Even with the moudown event suppressed, the keyboard still pops up in unwanted situations
     // sometimes. We want to manually hide the keyboard in these situations.
     window.addEventListener("native.keyboardshow", function() {
-        if (!currentInput) {
+        if (!padlock.currentInput) {
             cordova.plugins.Keyboard.close();
         }
     });
@@ -62,6 +63,9 @@
             blur: "_blur",
             keydown: "_keydown"
         },
+        selectAll: function() {
+            this.setSelectionRange(0, this.value.length);
+        },
         _tap: function(e) {
             if (overrideNativeFocus && !this.hasFocus) {
                 this.setSelectionRange(this.value.length, this.value.length);
@@ -76,22 +80,47 @@
             if (this.selectAllOnFocus) {
                 // Need to do this asynchronously in some browsers or it won't work
                 setTimeout(function() {
-                    this.setSelectionRange(0, this.value.length);
+                    this.selectAll();
                 }.bind(this), 10);
             }
 
-            currentInput = this;
+            padlock.currentInput = this;
         },
         _blur: function() {
             this.hasFocus = false;
-            if (currentInput == this) {
-                currentInput = null;
+            if (padlock.currentInput == this) {
+                padlock.currentInput = null;
             }
         },
         _keydown: function(e) {
             if (e.keyCode == 13) {
-                this.fire("enter");
+                this.fire("enter", {keyboardEvent: e});
+                e.stopPropagation();
+                e.stopImmediatePropagation();
             }
+        }
+    };
+
+    var textAreaBehavior = {
+        properties: {
+            autosize: {
+                type: Boolean,
+                value: false,
+                observer: "_autosizeChanged"
+            }
+        },
+        _autosizeChanged: function() {
+            if (this.autosize) {
+                autosize(this);
+            } else {
+                autosize.destroy(this);
+            }
+        },
+        ready: function() {
+            this.async(this.updateSize, 100);
+        },
+        updateSize: function() {
+            this.autosize && autosize.update(this);
         }
     };
 
@@ -104,9 +133,9 @@
     Polymer({
         is: "padlock-textarea",
         extends: "textarea",
-        behaviors: [inputBehavior]
+        behaviors: [inputBehavior, textAreaBehavior]
     });
 
-})(Polymer, padlock.platform);
+})(Polymer, padlock.platform, autosize);
 
 </script>

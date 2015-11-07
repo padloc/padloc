@@ -1,4 +1,5 @@
 @import "../../styles/config";
+@import "../../styles/mixins";
 @import "nib";
 
 :host {
@@ -10,59 +11,127 @@
 
 .field {
     background: $color-quinary;
-    height: $row-height;
     width: 100%;
-    padding: 0 15px;
     margin-top: 5px;
-    cursor: pointer;
-
-    display: flex;
-    align-items: center;
+    font-size: 16px;
     box-sizing: border-box;
+    position: relative;
+    tap-highlight($color-primary);
 
-    > .label {
-        max-width: 100px;
-        text-align: right;
+    .label-wrapper {
+        position: relative;
+        z-index: 1;
         color: $color-primary;
-        overflow: ellipsis;
+        display: flex;
     }
 
-    > .value {
-        margin-right: 15px;
+    .label {
         flex: 1;
         overflow: ellipsis;
-
-        &.obfuscated:not(:empty) {
-            letter-spacing: 0.07em;
-        }
+        padding: 0 15px;
+        line-height: 41px;
     }
 
-    &:not(.marked) > .value:empty:after {
-        content: "(tap to edit)";
+    .context-menu {
+        width: 25px;
+        height: 25px;
+        padding: 8px;
+        tap-highlight();
+    }
+
+    &:not([selected]) .context-menu {
+        display: none;
+    }
+
+    .separator {
+        height: 1px;
+        background: $color-quaternary;
+        padding: 0 10px;
+        background-clip: content-box;
+    }
+
+    .shortcut-hint {
+        position: absolute;
+        font-size: 14px;
+        top: 0;
+        right: 0;
+        padding: 0 15px;
+        line-height: 41px;
         color: $text-color-faint;
+        background: alpha($color-quinary, 0.9);
+        pointer-events: none;
     }
 
-    &.marked {
-        background: $color-primary;
-        color: #fff;
+    &:not(.marked) .shortcut-hint, &[selected] .shortcut-hint {
+        display: none;
+    }
 
-        > .label {
-            color: inherit;
-            font-weight: $font-weight-bold;
+    .value {
+        word-wrap: break-word;
+        width: 100%;
+        padding: 10px 15px;
+        box-sizing: border-box;
+
+        &:not(:focus) {
+            pointer-events: none;
+        }
+
+        &:empty:after {
+            content: "(tap to edit)";
+            color: $text-color-faint;
         }
     }
+
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 2;
+        bottom: 0;
+        width: 5px;
+        background: $color-primary;
+        transform: translate(-100%, 0);
+        transition: transform 0.3s;
+    }
+
+    &.marked::before {
+        transform: translate(0, 0);
+    }
+
+    .value-wrapper {
+        position: relative;
+    }
+
+    .obfuscated {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: $color-quinary;
+        letter-spacing: 0.07em;
+        pointer-events: none;
+        display: none;
+    }
+}
+
+:host(.obfuscate) .field:not(.marked) .obfuscated:not(:empty) {
+    display: block;
 }
 
 .add-button {
     width: 100%;
     margin: 5px 0;
+    font-size: $font-size-small;
 }
 
 .category {
     background: #fff;
     color: $text-color-faint;
     text-align: center;
-    font-size: 16px;
+    font-size: $font-size-small;
     padding: 10px;
     cursor: pointer;
     overflow: ellipsis;
@@ -71,4 +140,8 @@
         color: $text-color-light;
         background: $color-secondary;
     }
+}
+
+:host(.touch) .shortcut-hint {
+    display: none;
 }
