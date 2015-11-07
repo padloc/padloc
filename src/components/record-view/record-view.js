@@ -114,7 +114,7 @@
         _openFieldMenu: function() {
             this.fire("open-form", {
                 components: [
-                    {element: "button", label: "Copy to Clipboard", submit: true, tap: this.copyToClipboard.bind(this)},
+                    {element: "button", label: "Copy", submit: true, tap: this.copyToClipboard.bind(this)},
                     {element: "button", label: "Edit", submit: true, tap: this._editField.bind(this)},
                     {element: "button", label: "Generate", submit: true, tap: this._generateValue.bind(this)},
                     {element: "button", label: "Remove", submit: true, tap: this._removeField.bind(this)}
