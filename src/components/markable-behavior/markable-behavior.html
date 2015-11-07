@@ -51,8 +51,7 @@ padlock.MarkableBehavior = (function(Polymer) {
         },
         _revealMarked: function() {
             var el = this._items()[this._marked];
-
-            this._scrollIntoView(el);
+            el && this._scrollIntoView(el);
         },
         //* Scrolls a given element in the list into view
         _scrollIntoView: function(el) {
