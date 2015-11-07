@@ -678,7 +678,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 var input = form.querySelector("input[auto-focus]");
                 // Instantly focusing an input look kind of jumpy if a virtual keyboard is shown so only
                 // do the focus if not on a smartphone/tablet
-                if (input && !platform.isTouch()) {
+                if (input && !platform.isIOS()) {
                     input.focus();
                 }
             }, 50);
