@@ -20,7 +20,7 @@
         <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
 
         <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
-            <div class="field" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout" on-tap="_openFieldMenu">
+            <div class="field" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout" on-tap="_fieldTapped">
                 <div class="label">{{ item.name }}</div>
                 <div class="separator"></div>
                 <div class="value-wrapper">

@@ -103,12 +103,15 @@
                 }.bind(this)
             });
         },
-        _openFieldMenu: function(e) {
+        _fieldTapped: function(e) {
             this._noDeselectOnBlur = true;
             this.$.selector.select(e.model.item);
             this.async(function() {
                 this._noDeselectOnBlur = false;
             }, 300);
+            this._openFieldMenu();
+        },
+        _openFieldMenu: function() {
             this.fire("open-form", {
                 components: [
                     {element: "button", label: "Copy to Clipboard", submit: true, tap: this.copyToClipboard.bind(this)},
@@ -233,6 +236,13 @@
             e.detail.keyboardEvent.preventDefault();
             var input = this._valueInputForIndex(e.model.index);
             input && input.focus();
+        },
+        selectMarked: function() {
+            var field = this.record.fields[this._marked];
+            if (field) {
+                this.$.selector.select(field);
+                this._openFieldMenu();
+            }
         }
     });
 
