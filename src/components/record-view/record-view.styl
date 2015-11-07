@@ -18,14 +18,29 @@
     position: relative;
     tap-highlight($color-primary);
 
-    .label {
+    .label-wrapper {
         position: relative;
         z-index: 1;
         color: $color-primary;
+        display: flex;
+    }
+
+    .label {
+        flex: 1;
         overflow: ellipsis;
         padding: 0 15px;
-        pointer-events: none;
         line-height: 41px;
+    }
+
+    .context-menu {
+        width: 25px;
+        height: 25px;
+        padding: 8px;
+        tap-highlight();
+    }
+
+    &:not([selected]) .context-menu {
+        display: none;
     }
 
     .separator {
@@ -47,7 +62,7 @@
         pointer-events: none;
     }
 
-    &:not(.marked) .shortcut-hint {
+    &:not(.marked) .shortcut-hint, &[selected] .shortcut-hint {
         display: none;
     }
 

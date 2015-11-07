@@ -20,8 +20,11 @@
         <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
 
         <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
-            <div class="field" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout" on-tap="_fieldTapped">
-                <div class="label">{{ item.name }}</div>
+            <div class="field" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout" on-tap="_fieldTapped" selected$="{{ _isEqual(item, _selectedField) }}">
+                <div class="label-wrapper">
+                    <div class="label">{{ item.name }}</div>
+                    <shape-shifter shape="more" class="context-menu"></shape-shifter>
+                </div>
                 <div class="separator"></div>
                 <div class="value-wrapper">
                     <textarea is="padlock-textarea" class="value" value="{{ item.value::change }}" on-change="_changeHandler" select-all-on-focus

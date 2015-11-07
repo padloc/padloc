@@ -271,6 +271,9 @@
                 this.$.selector.select(field);
                 this._openFieldMenu();
             }
+        },
+        _isEqual: function(a, b) {
+            return a === b;
         }
     });
 
