@@ -95,6 +95,8 @@
         _keydown: function(e) {
             if (e.keyCode == 13) {
                 this.fire("enter", {keyboardEvent: e});
+                e.stopPropagation();
+                e.stopImmediatePropagation();
             }
         }
     };
