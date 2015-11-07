@@ -15,13 +15,13 @@
         <div>
             <!-- LEFT BUTTON -->
             <shape-shifter id="leftIcon" shape="menu" on-tap="_leftClicked" springy></shape-shifter>
-            <div class="middle">
+            <div class="middle tap-highlight">
                 <!-- FILTER INPUT -->
                 <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString::keyup }}"
                 type="search" tabindex="-1" placeholder$="{{ _filterPlaceholder(_filterHasFocus) }}"
                 disabled$="{{ !_view.showFilter }}" has-focus="{{ _filterHasFocus }}" select-all-on-focus/>
                 <!-- HEADER TITLE -->
-                <div class="title tap-highlight" on-tap="_titleTapped">{{ _title }}</div>
+                <div class="title" on-tap="_titleTapped">{{ _title }}</div>
             </div>
             <!-- RIGHT BUTTON -->
             <shape-shifter id="rightIcon" shape="plus" on-tap="_rightClicked" springy></shape-shifter>

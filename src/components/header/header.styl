@@ -82,7 +82,7 @@
 
 :host(.show-filter[filter-active]) #leftIcon {
     width: 0;
-    padding-left: 0;
+    padding: 0;
 }
 
 :host(:not([showing])) {
@@ -95,17 +95,11 @@
 }
 
 .middle > * {
-    $line-height = 22px;
     display: block;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    // height: 100%;
-    line-height: $line-height;
-    padding: (($row-height - $line-height) / 2) 0;
-
-    box-sizing: border-box;
 }
 
 .filter-input {
@@ -127,4 +121,5 @@
     animation: titleIn 0.5s ease 0s both;
     overflow: ellipsis;
     text-align: center;
+    line-height: $row-height;
 }
