@@ -20,18 +20,11 @@
         <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
 
         <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
-            <div class="field" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout">
-                <div class="label-wrapper">
-                    <div class="input-wrapper">
-                        <input is="padlock-input" class="label" value="{{ item.name::change }}" on-change="_changeHandler"
-                            on-focus="_focusHandler" on-blur="_blurHandler" on-enter="_focusValueInput" placeholder="Enter Field Name" show-accessory-bar>
-                    </div>
-                    <div class="context-menu">
-                        <shape-shifter shape="more" on-tap="_openFieldMenu"></shape-shifter>
-                    </div>
-                </div>
+            <div class="field" on-mouseover="_fieldMouseover" on-mouseout="_fieldMouseout" on-tap="_openFieldMenu">
+                <div class="label">{{ item.name }}</div>
+                <div class="separator"></div>
                 <div class="value-wrapper">
-                    <textarea is="padlock-textarea" class="value" value="{{ item.value::change }}" on-change="_changeHandler"
+                    <textarea is="padlock-textarea" class="value" value="{{ item.value::change }}" on-change="_changeHandler" select-all-on-focus
                         on-focus="_focusHandler" on-blur="_blurHandler" rows="1" autosize placeholder="Enter Content" show-accessory-bar></textarea>
                     <textarea class="value obfuscated">{{ _obfuscate(item.value) }}</textarea>
                 </div>
@@ -41,7 +34,7 @@
             </div>
         </template>
 
-        <button class="add-button" on-tap="_addField" hidden$="{{ !_showAddButton(record.fields.*) }}">Add Field</button>
+        <button class="add-button" on-tap="_addField">Add Field</button>
 
         <array-selector id="selector" items="{{ record.fields }}" selected="{{ _selectedField }}"></array-selector>
 

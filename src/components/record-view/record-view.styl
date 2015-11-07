@@ -1,4 +1,5 @@
 @import "../../styles/config";
+@import "../../styles/mixins";
 @import "nib";
 
 :host {
@@ -15,46 +16,32 @@
     font-size: 16px;
     box-sizing: border-box;
     position: relative;
-
-    .label-wrapper {
-        display: flex;
-        border-bottom: solid 1px $color-quaternary;
-
-        .input-wrapper {
-            flex: 1;
-            color: $color-primary;
-            tap-highlight();
-        }
-    }
+    tap-highlight($color-primary);
 
     .label {
+        position: relative;
+        z-index: 1;
         color: $color-primary;
         overflow: ellipsis;
-        margin-bottom: 3px;
-        padding: 10px 0 10px 15px;
-        margin: 0;
-        height: auto;
-        width: 100%;
+        padding: 0 15px;
+        pointer-events: none;
+        line-height: 41px;
     }
 
-    .context-menu {
-        font-size: 0;
-        color: $color-primary;
-
-        > shape-shifter {
-            width: 25px;
-            height: 25px;
-            padding: 8px;
-            tap-highlight();
-        }
+    .separator {
+        height: 1px;
+        background: $color-quaternary;
+        padding: 0 10px;
+        background-clip: content-box;
     }
 
     .shortcut-hint {
         position: absolute;
         font-size: 14px;
-        bottom: 0;
+        top: 0;
         right: 0;
-        padding: 11px 10px;
+        padding: 0 15px;
+        line-height: 41px;
         color: $text-color-faint;
         background: alpha($color-quinary, 0.9);
         pointer-events: none;
@@ -70,6 +57,10 @@
         padding: 10px 15px;
         box-sizing: border-box;
 
+        &:not(:focus) {
+            pointer-events: none;
+        }
+
         &:empty:after {
             content: "(tap to edit)";
             color: $text-color-faint;
@@ -82,7 +73,7 @@
         position: absolute;
         top: 0;
         left: 0;
-        z-index: 1;
+        z-index: 2;
         bottom: 0;
         width: 5px;
         background: $color-primary;
@@ -95,7 +86,6 @@
     }
 
     .value-wrapper {
-        tap-hightlight();
         position: relative;
     }
 
