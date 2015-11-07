@@ -364,6 +364,11 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         //* Keyboard shortcuts
         _keydown: function(event) {
+            // Don't do anything if we're currently in a input field
+            if (padlock.currentInput) {
+                return;
+            }
+
             var shortcut;
             var dialogsOpen = !!Polymer.dom(this.root).querySelectorAll("padlock-dialog.open").length;
 
