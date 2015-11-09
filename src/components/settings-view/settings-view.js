@@ -73,6 +73,15 @@
             var email = data.email;
             var deviceName = data.device;
 
+            if (!email || !deviceName) {
+                var message = email ? "Please enter a device name!" : "Please enter an email address!";
+                this.fire("notify", {
+                    message: message,
+                    duration: 2000
+                });
+                return;
+            }
+
             this.set("settings.sync_email", email);
             this.set("settings.sync_device", deviceName);
 
