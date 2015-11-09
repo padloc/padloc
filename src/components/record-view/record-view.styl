@@ -16,7 +16,10 @@
     font-size: 16px;
     box-sizing: border-box;
     position: relative;
-    tap-highlight($color-primary);
+
+    &:not([selected]) {
+        tap-highlight($color-primary);
+    }
 
     .label-wrapper {
         position: relative;
