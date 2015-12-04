@@ -1,5 +1,6 @@
 <link rel="import" href="../../padlock.html">
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
 <link rel="import" href="../view/view.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../input/input.html">
@@ -16,29 +17,32 @@
         <style include="view-styles"></style>
         <style include="settings-view-styles"></style>
 
-        <div class="section">
-            <button on-tap="_import">Import Data</button>
-            <button on-tap="_export">Export Data</button>
+        <section>
+            <button on-tap="_openCloudView">
+                <span>Padlock Cloud</span>
+                <shape-shifter shape="right"></shape-shifter>
+            </button>
+            <button on-tap="_import">
+                <span>Import Data</span>
+                <shape-shifter shape="right"></shape-shifter>
+            </button>
+            <button on-tap="_export">
+                <span>Export Data</span>
+                <shape-shifter shape="right"></shape-shifter>
+            </button>
+        </section>
+
+        <section>
             <button on-tap="_resetData">Reset Data</button>
             <button on-tap="_changePassword">Change Master Password</button>
-        </div>
-        <div class="section">
-            <button on-tap="_cloudConnect"
-                hidden$="{{ settings.sync_connected }}">Connect To Padlock Cloud</button>
-            <button on-tap="_cloudDisconnect" hidden$="{{ !settings.sync_connected }}">
-                <div>Disconnect <span class="email">(<span>{{ settings.sync_email }}</span>)</span></div></button>
-            <button on-tap="_resetRemoteData"
-                hidden$="{{ !settings.sync_connected }}">Reset Remote Data</button>
-            <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync" hidden$="{{ !settings.sync_connected }}"></padlock-toggle-button>
-        </div>
-        <div class="section">
             <padlock-toggle-button value="{{ settings.obfuscate_fields }}" label="Hide Field Values"></padlock-toggle-button>
-        </div>
-        <div class="section">
+        </section>
+
+        <section>
             <button on-tap="_openWebsite">Website</button>
             <button on-tap="_sendMail">Support</button>
             <div class="info" on-tap="_openHomepage">Developed and maintained by <strong>MaKleSoft</strong></div>
-        </div>
+        </section>
 
         <!-- PROGRESS INDICATOR -->
         <padlock-progress id="progress">Sending request...</padlock-progress>

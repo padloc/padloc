@@ -21,7 +21,7 @@
         ready: function() {
             this.leftHeaderIcon = "left";
             this.rightHeaderIcon = "copy";
-            this.headerTitle = "Import Records";
+            this.headerTitle = "Import";
         },
         leftHeaderButton: function() {
             this.fire("back");

@@ -1,19 +1,24 @@
 @import "../../styles/config.styl"
 @import "nib"
 
+:host {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .status {
     background: $color-quinary;
     text-align: center;
     font-size: $font-size-small;
     padding: 10px;
-    margin-bottom: 30px;
 
     .not-connected {
         color: $text-color-faint;
     }
 }
 
-button {
+button, padlock-toggle-button {
     display: block;
     width: 100%;
     box-sizing: border-box;

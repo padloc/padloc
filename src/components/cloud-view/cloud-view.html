@@ -14,31 +14,51 @@
         <style include="view-styles"></style>
         <style include="cloud-view-styles"></style>
 
-        <div class="status">
-            <span class="not-connected" hidden$="{{ _isSet(settings.sync_key) }}">Not Connected</span>
-            <span hidden$="{{ !_isSet(settings.sync_key) }}">Connected to <strong>{{ settings.sync_email }}</strong></span>
-            <span hidden$="{{ !_isActivationPending(settings.sync_key, settings.sync_connected) }}">(activation pending)</span>
-        </div>
+        <!-- <div class="status"> -->
+        <!--     <span class="not&#45;connected" hidden$="{{ _isSet(settings.sync_key) }}">Not Connected</span> -->
+        <!--     <span hidden$="{{ !_isSet(settings.sync_key) }}">Connected to <strong>{{ settings.sync_email }}</strong></span> -->
+        <!--     <span hidden$="{{ !_isActivationPending(settings.sync_key, settings.sync_connected) }}">(activation pending)</span> -->
+        <!-- </div> -->
 
-        <div class="note" hidden$="{{ _isSet(settings.sync_key) }}">
-            Padlock Cloud provides a convenient way of synchronizing your data between all of your devices. By
-            securely storing your data in the cloud, it not only allows you to easily access it from anywhere
-            but also acts as a backup in case you should loose your device or accidentally erase your data.
-            Before being sent to our servers, your data is encrypted locally using your master password to make
-            extra sure that nobody can read it - not even we!
-        </div>
-        <button on-tap="_connect" hidden$="{{ _isSet(settings.sync_key) }}">Get Started</button>
+        <!-- <section hidden> -->
+        <!--     <div class="note"> -->
+        <!--         <strong>Subscription expired</strong> &#45; It seems your Padlock Cloud subscription has expired which means that you will be able to download your data from the cloud but not update it or synchronize with any other devices. Renew your subscription now to unlock the full potential of Padlock Cloud! -->
+        <!--     </div> -->
+        <!--     <button>Buy Subscription</button> -->
+        <!-- </section> -->
 
-        <button on-tap="_disconnect" hidden$="{{ !_isSet(settings.sync_key) }}">Disconnect</button>
-        <button on-tap="_synchronize" hidden$="{{ !_isSet(settings.sync_key) }}" disabled$="{{ !settings.sync_connected }}">Synchronize</button>
-        <button on-tap="_resetRemoteData" hidden$="{{ !_isSet(settings.sync_key) }}" disabled$="{{ !settings.sync_connected }}">Reset Remote Data</button>
-        <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync" hidden$="{{ !_isSet(settings.sync_key) }}" disabled$="{{ !settings.sync_connected }}"></padlock-toggle-button>
+        <section hidden$="{{ _isSet(settings.sync_key) }}">
+            <div class="note">
+                Padlock Cloud provides a convenient way of synchronizing your data between all your devices. By
+                securely storing your data in the cloud, it not only allows you to easily access it from anywhere
+                but also acts as a backup in case you should loose your device or accidentally erase your data.
+                Before being sent to our servers, your data is encrypted locally using your master password to make
+                sure that nobody can read it - not even we!
+            </div>
+            <button on-tap="_connect">Get Started</button>
+        </section>
 
-        <!-- <div class="read&#45;only&#45;note">You currently only have read access to your Padlock Cloud data. Buy a Padlock Cloud subscription to be able to -->
-        <!--     update you data in the cloud and synchronize with other devices!</div> -->
-        <!-- <button>Buy Subscription</button> -->
+        <section hidden$="{{ !_isActivationPending(settings.sync_key, settings.sync_connected) }}">
+            <div class="note">
+                <strong>Activation pending</strong> - You are almost done connecting this device!
+                An email was sent to <strong>{{ settings.sync_email }}</strong> with further instructions.
+                Didn't get it? Try again using the button below!
+            </div>
+            <button on-tap="_connect">Try Again</button>
+        </section>
 
-        <padlock-progress>Sending connection request</padlock-progress>
+        <section hidden$="{{ !settings.sync_connected }}">
+            <div class="note">
+                <strong>Connected</strong> - This device is connected to the Padlock Cloud account <strong>{{ settings.sync_email }}</strong>.
+                Connect all your devices with the same account to easily synchronize your data between them!
+            </div>
+            <button on-tap="_synchronize">Synchronize</button>
+            <button on-tap="_resetRemoteData">Reset Data</button>
+            <button on-tap="_disconnect">Disconnect</button>
+            <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync"></padlock-toggle-button>
+        </section>
+
+        <padlock-progress>Connecting...</padlock-progress>
 
     </template>
 
@@ -64,13 +84,13 @@
                 }
             },
             observers: [
-                "_credentialsChanged(settings.sync_email, settings.sync_key, settings.sync_connected)"
+                "_credentialsChanged(settings.sync_email, settings.sync_key)"
             ],
             //* Opens the dialog for connecting to the Padlock Cloud
             _connect: function() {
                 this.fire("open-form", {
                     components: [
-                        {element: "input", type: "email", placeholder: "Email Address", name: "email", autofocus: true},
+                        {element: "input", type: "email", placeholder: "Email Address", name: "email", value: this.settings.sync_email, autofocus: true},
                         {element: "input", placeholder: "Device Name", name: "device", value: this.settings.sync_device},
                         {element: "button", label: "Connect", submit: true},
                         {element: "button", label: "Cancel", cancel: true}
@@ -186,13 +206,15 @@
                 var email = this.settings.sync_email;
                 var key = this.settings.sync_key;
 
-                // console.log("testing credentials ", email, key);
-
                 req.onreadystatechange = function() {
                     if (req.readyState === 4) {
                         var connected = req.status == 200;
                         this.set("settings.sync_connected", connected);
-                        // console.log("result: ", connected);
+
+                        if (connected && this.showing) {
+                            this.fire("notify", {message: "Connection Complete!", duration: 5000});
+                        }
+
                         if (!connected && poll && this.settings.sync_key) {
                             clearTimeout(this._testCredsTimeout);
                             this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 1000);
@@ -221,6 +243,12 @@
             },
             _isSet: function(val) {
                 return !!val;
+            },
+            leftHeaderButton: function() {
+                this.fire("back");
+            },
+            _synchronize: function() {
+                this.fire("synchronize");
             }
         });
 

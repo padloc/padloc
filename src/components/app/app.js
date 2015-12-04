@@ -340,6 +340,9 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         _openImportView: function() {
             this._openView(this.$.importView);
         },
+        _openCloudView: function() {
+            this._openView(this.$.cloudView);
+        },
         //* Add the records imported with the import view to the collection
         _imported: function(event, detail) {
             this._openView(this.$.listView);
@@ -349,14 +352,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 this._synchronize();
             }
         },
-        _importBack: function() {
-            this._openView(this.$.listView);
-        },
         _openExportView: function() {
             this._openView(this.$.exportView);
-        },
-        _exportBack: function() {
-            this._openView(this.$.listView);
         },
         //* Show an alert dialog with the provided message
         _alert: function(msg) {
@@ -487,8 +484,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                             // used for authentication is either wrong or has not been activated yet. Otherwise
                             // we really have no idea what happened so just show a generic error message
                             var msg = e.status == 401 ?
-                                "Authentication failed. Have you completed the connection process for Padlock Cloud? " +
-                                "If the problem persists, try to disconnect and reconnect under settings!" :
+                                "Authentication failed. If the problem persists, try to disconnect and " +
+                                "reconnect under Settings > Padlock Cloud!" :
                                 "An error occurred while synchronizing. Please try again later!";
                             this._alert(msg);
                         }
@@ -498,11 +495,17 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                     }.bind(this)
                 });
             } else {
+                var msg = this.settings.sync_key ?
+                    "It seems you have not completed the connection process for Padlock Cloud yet! Go to " +
+                    "Settings > Padlock Cloud for more information!" :
+                    "You need to be connected to Padlock Cloud to synchronize your data. " +
+                    "Go to Settings > Padlock Cloud for more information!";
                 // User has not connected to Padlock Cloud yet so we're prompting them to do so
                 this._openForm([
-                    {element: "button", label: "Settings", tap: this._openSettings.bind(this), submit: true},
+                    {element: "button", label: "Open Padlock Cloud Settings",
+                        tap: this._openCloudView.bind(this), submit: true},
                     {element: "button", label: "Cancel", cancel: true}
-                ], "You need to be connected to Padlock Cloud to synchronize your data.");
+                ], msg);
             }
         },
         // Prompts for the password to use for the remote source
