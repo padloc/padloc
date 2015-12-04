@@ -1,0 +1,231 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../padlock.html">
+<link rel="import" href="../view/view.html">
+<link rel="import" href="../input/input.html">
+<link rel="import" href="../progress/progress.html">
+<link rel="import" href="../view/view-styles.html">
+<link rel="import" href="cloud-view-styles.html">
+
+<dom-module id="padlock-cloud-view">
+
+    <template>
+
+        <style include="shared-styles"></style>
+        <style include="view-styles"></style>
+        <style include="cloud-view-styles"></style>
+
+        <div class="status">
+            <span class="not-connected" hidden$="{{ _isSet(settings.sync_key) }}">Not Connected</span>
+            <span hidden$="{{ !_isSet(settings.sync_key) }}">Connected to <strong>{{ settings.sync_email }}</strong></span>
+            <span hidden$="{{ !_isActivationPending(settings.sync_key, settings.sync_connected) }}">(activation pending)</span>
+        </div>
+
+        <div class="note" hidden$="{{ _isSet(settings.sync_key) }}">
+            Padlock Cloud provides a convenient way of synchronizing your data between all of your devices. By
+            securely storing your data in the cloud, it not only allows you to easily access it from anywhere
+            but also acts as a backup in case you should loose your device or accidentally erase your data.
+            Before being sent to our servers, your data is encrypted locally using your master password to make
+            extra sure that nobody can read it - not even we!
+        </div>
+        <button on-tap="_connect" hidden$="{{ _isSet(settings.sync_key) }}">Get Started</button>
+
+        <button on-tap="_disconnect" hidden$="{{ !_isSet(settings.sync_key) }}">Disconnect</button>
+        <button on-tap="_synchronize" hidden$="{{ !_isSet(settings.sync_key) }}" disabled$="{{ !settings.sync_connected }}">Synchronize</button>
+        <button on-tap="_resetRemoteData" hidden$="{{ !_isSet(settings.sync_key) }}" disabled$="{{ !settings.sync_connected }}">Reset Remote Data</button>
+        <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync" hidden$="{{ !_isSet(settings.sync_key) }}" disabled$="{{ !settings.sync_connected }}"></padlock-toggle-button>
+
+        <!-- <div class="read&#45;only&#45;note">You currently only have read access to your Padlock Cloud data. Buy a Padlock Cloud subscription to be able to -->
+        <!--     update you data in the cloud and synchronize with other devices!</div> -->
+        <!-- <button>Buy Subscription</button> -->
+
+        <padlock-progress>Sending connection request</padlock-progress>
+
+    </template>
+
+    <script>
+    /* global Polymer, padlock */
+
+    (function(Polymer, ViewBehavior) {
+        "use strict";
+
+        Polymer({
+            is: "padlock-cloud-view",
+            behaviors: [ViewBehavior],
+            ready: function() {
+                this.headerTitle = "Padlock Cloud";
+                this.leftHeaderIcon = "left";
+                this.rightHeaderIcon = "";
+            },
+            properties: {
+                settings: Object,
+                _activated: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+            observers: [
+                "_credentialsChanged(settings.sync_email, settings.sync_key, settings.sync_connected)"
+            ],
+            //* Opens the dialog for connecting to the Padlock Cloud
+            _connect: function() {
+                this.fire("open-form", {
+                    components: [
+                        {element: "input", type: "email", placeholder: "Email Address", name: "email", autofocus: true},
+                        {element: "input", placeholder: "Device Name", name: "device", value: this.settings.sync_device},
+                        {element: "button", label: "Connect", submit: true},
+                        {element: "button", label: "Cancel", cancel: true}
+                    ],
+                    title: "Connect to Padlock Cloud",
+                    submit: this._requestApiKey.bind(this)
+                });
+            },
+            _disconnect: function() {
+                this.fire("open-form", {
+                    components: [
+                        {element: "button", label: "Disconnect", submit: true},
+                        {element: "button", label: "Cancel", cancel: true}
+                    ],
+                    title: "Are you sure you want to disconnect from Padlock Cloud?",
+                    submit: function() {
+                        this.set("settings.sync_connected", false);
+                        this.set("settings.sync_key", "");
+                        this.set("settings.sync_email", "");
+                    }.bind(this)
+                });
+            },
+            //* Requests an api key from the cloud api with the entered email and device name
+            _requestApiKey: function(data) {
+                var req = new XMLHttpRequest();
+                var url = this.settings.sync_host + "auth/";
+                var email = data.email;
+                var deviceName = data.device;
+
+                if (!email || !deviceName) {
+                    var message = email ? "Please enter a device name!" : "Please enter an email address!";
+                    this.fire("notify", {
+                        message: message,
+                        duration: 2000
+                    });
+                    return;
+                }
+
+                this.set("settings.sync_email", email);
+                this.set("settings.sync_device", deviceName);
+
+                // Show progress indicator
+                this.$$("padlock-progress").show();
+
+                req.onreadystatechange = function() {
+                    if (req.readyState === 4) {
+                        // Hide progress indicator
+                        this.$$("padlock-progress").hide();
+                        if (req.status === 200) {
+                            var apiKey = JSON.parse(req.responseText);
+                            // We're getting back the api key directly, but it will valid only
+                            // after the user has visited the activation link in the email he was sent
+                            this.set("settings.sync_connected", false);
+                            this.set("settings.sync_key", apiKey.key);
+                            this._alert("Almost done! An email was sent to " + email + ". Please follow the " +
+                                "instructions to complete the connection process!");
+                        } else {
+                            this._alert("Something went wrong. Please make sure your internet " +
+                                "connection is working and try again!");
+                        }
+                    }
+                }.bind(this);
+
+                req.open("POST", url, true);
+                req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                req.setRequestHeader("Accept", "application/json");
+                req.send("email=" + email + "&device_name=" + deviceName);
+            },
+            _isActivationPending: function() {
+                return this.settings.sync_key && !this.settings.sync_connected;
+            },
+            _resetRemoteData: function() {
+                this.fire("open-form", {
+                    components: [
+                        {element: "button", label: "Reset", submit: true},
+                        {element: "button", label: "Cancel", cancel: true}
+                    ],
+                    title: "Are you sure you want to reset all your data on Padlock Cloud?",
+                    submit: this._requestResetRemoteData.bind(this)
+                });
+            },
+            _requestResetRemoteData: function() {
+                var req = new XMLHttpRequest(),
+                    email = this.settings.sync_email,
+                    url = this.settings.sync_host + email;
+
+                this.$$("padlock-progress").show();
+
+                req.onreadystatechange = function() {
+                    if (req.readyState === 4) {
+                        // Hide progress indicator
+                        this.$$("padlock-progress").hide();
+                        if (req.status === 202) {
+                            this._alert("Almost done! An email was sent to " + email + ". Please follow the " +
+                                "instructions to confirm the reset!");
+                        } else {
+                            this._alert("Something went wrong. Please make sure your internet " +
+                                "connection is working and try again!");
+                        }
+                    }
+                }.bind(this);
+
+                req.open("DELETE", url, true);
+                req.send();
+            },
+            //* Shows an alert dialog with a given _message_
+            _alert: function(message) {
+                this.fire("alert", {message: message});
+            },
+            _testCredentials: function(poll) {
+                var req = new XMLHttpRequest();
+                var url = this.settings.sync_host;
+                var email = this.settings.sync_email;
+                var key = this.settings.sync_key;
+
+                // console.log("testing credentials ", email, key);
+
+                req.onreadystatechange = function() {
+                    if (req.readyState === 4) {
+                        var connected = req.status == 200;
+                        this.set("settings.sync_connected", connected);
+                        // console.log("result: ", connected);
+                        if (!connected && poll && this.settings.sync_key) {
+                            clearTimeout(this._testCredsTimeout);
+                            this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 1000);
+                        }
+                    }
+                }.bind(this);
+
+                req.open("HEAD", url, true);
+                req.setRequestHeader("Authorization", "ApiKey " + email + ":" + key);
+                req.send();
+            },
+            _stopTestCredentials: function() {
+                clearTimeout(this._testCredsTimeout);
+            },
+            _credentialsChanged: function() {
+                if (this.settings.sync_key && !this.settings.sync_connected) {
+                    this._testCredentials(this.showing);
+                }
+            },
+            _showingChanged: function() {
+                if (this.showing && this.settings.sync_key && !this.settings.sync_connected) {
+                    this._testCredentials(true);
+                } else if (!this.showing) {
+                    this._stopTestCredentials();
+                }
+            },
+            _isSet: function(val) {
+                return !!val;
+            }
+        });
+
+    })(Polymer, padlock.ViewBehavior);
+
+    </script>
+
+</dom-module>

@@ -45,7 +45,12 @@ padlock.ViewBehavior = (function(platform) {
                 type: String,
                 value: "ease"
             },
-            adjustScrollHeight: Boolean
+            adjustScrollHeight: Boolean,
+            showing: {
+                type: Boolean,
+                value: false,
+                observer: "_showingChanged"
+            }
         },
         leftHeaderButton: function() {},
         rightHeaderButton: function() {},
@@ -164,6 +169,7 @@ padlock.ViewBehavior = (function(platform) {
             this.startAnimation(opts);
             // Show the element
             this.toggleClass("showing", true);
+            this.showing = true;
         },
         //* Hides the view
         hide: function(opts) {
@@ -172,6 +178,7 @@ padlock.ViewBehavior = (function(platform) {
             var endCallback = opts.endCallback;
             opts.endCallback = function() {
                 this.toggleClass("showing", false);
+                this.showing = false;
                 if (endCallback) {
                     endCallback();
                 }
@@ -196,7 +203,8 @@ padlock.ViewBehavior = (function(platform) {
             if (!dialogClosed) {
                 this.fire("back");
             }
-        }
+        },
+        _showingChanged: function() {}
     };
 
 })(padlock.platform);

@@ -103,7 +103,6 @@ input:not(:focus), textarea:not(:focus) {
 
 strong {
     font-weight: $font-weight-bold;
-    color: $color-primary;
 }
 
 ::-webkit-search-cancel-button {
@@ -120,6 +119,10 @@ strong {
 
 [hidden] {
     display: none !important;
+}
+
+[disabled] {
+    opacity: 0.5;
 }
 
 input[type=range] {
