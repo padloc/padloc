@@ -7,13 +7,15 @@
         is: "padlock-start-view",
         behaviors: [ViewBehavior],
         properties: {
-            changingPwd: {
-                type: Boolean,
-                value: false
+            mode: {
+                type: String,
+                value: "create",
+                reflectToAttribute: true
             }
         },
         hide: function() {
             this.$$("padlock-lock").unlocked = true;
+            this.toggleClass("reveal", false, this.$$(".switch-button"));
             var args = arguments;
             this.async(function() {
                 ViewBehavior.hide.apply(this, args);
@@ -22,6 +24,9 @@
         show: function() {
             this._clear();
             this.$$("padlock-lock").unlocked = false;
+            this.async(function() {
+                this.toggleClass("reveal", true, this.$$(".switch-button"));
+            }, 1000);
             ViewBehavior.show.apply(this, arguments);
             if (!platform.isTouch()) {
                 this.async(function() {
@@ -29,7 +34,7 @@
                 }, 500);
             }
         },
-        enter: function() {
+        _enter: function() {
             this.$.pwdInput.blur();
 
             var newPwd = this.$.pwdInput.value,
@@ -86,8 +91,17 @@
         _clear: function() {
             this.$.pwdInput.value = "";
         },
-        _buttonLabel: function(changingPwd) {
-            return changingPwd ? "Change Password" : "Get Started";
+        _buttonLabel: function(mode) {
+            return this._isChangeMode(mode) ? "Change Password" : "Get Started";
+        },
+        _switchButtonLabel: function(mode) {
+            return mode == "restore-cloud" ? "Get Started Offline" : "Restore From Cloud";
+        },
+        _isChangeMode: function(mode) {
+            return mode == "change-password";
+        },
+        _switchMode: function() {
+            this.mode = this.mode == "restore-cloud" ? "get-started" : "restore-cloud";
         }
     });
 

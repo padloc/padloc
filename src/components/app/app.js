@@ -604,7 +604,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             }
         },
         _openStartView: function(changingPwd) {
-            this.$.startView.changingPwd = (changingPwd === true);
+            this.$.startView.mode = (changingPwd === true) ? "change-password" : "get-started";
             this.$.header.showing = false;
             this._openView(
                 this.$.startView,

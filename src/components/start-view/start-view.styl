@@ -12,11 +12,24 @@
     background-color: $color-primary;
     overflow: hidden;
     top: 0;
-    color: #fff;
+    color: $text-color-light;
+    transition: background-color 1s, color 1s;
 }
 
-.wrapper {
-    height: 350px;
+:host[mode="restore-cloud"] {
+    background-color: $color-quaternary;
+    color: $color-primary;
+
+    .enter-button, input {
+        color: inherit;
+    }
+
+    .switch-button {
+        color: $text-color-light;
+    }
+}
+
+.get-started, .restore-cloud {
     position: absolute;
     left: 0;
     right: 0;
@@ -24,11 +37,38 @@
     bottom: 0;
     margin: auto 0;
     text-align: center;
+    transition: transform 0.7s, opacity 0.7s;
 
     input, padlock-password-input {
         text-align: center;
         width: 100%;
     }
+}
+
+.get-started {
+    height: 350px;
+    color: $text-color-light;
+
+    input, padlock-password-input {
+        background: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.restore-cloud {
+    height: 400px;
+    color: $color-primary;
+
+    .header {
+        font-size: 35px;
+    }
+}
+
+:host[mode="restore-cloud"] .get-started, :host:not([mode="restore-cloud"]) .restore-cloud {
+    transform: translate(0, 50px);
+    opacity: 0;
+    // z-index: -1;
+    pointer-events: none;
+    transition-duration: 0.2s;
 }
 
 .tap-highlight {
@@ -52,6 +92,20 @@
     margin-top: 10px;
     animation reveal 0.5s ease 0.6s both;
     font-size: 115%;
+}
+
+.switch-button {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+    background: transparent;
+    transition: opacity 0.5s ease;
+
+    &:not(.reveal) {
+        opacity: 0;
+    }
 }
 
 padlock-lock {
