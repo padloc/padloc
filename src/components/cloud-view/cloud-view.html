@@ -65,7 +65,7 @@
     <script>
     /* global Polymer, padlock */
 
-    (function(Polymer, ViewBehavior) {
+    (function(Polymer, ViewBehavior, CloudSource) {
         "use strict";
 
         Polymer({
@@ -90,7 +90,8 @@
             _connect: function() {
                 this.fire("open-form", {
                     components: [
-                        {element: "input", type: "email", placeholder: "Email Address", name: "email", value: this.settings.sync_email, autofocus: true},
+                        {element: "input", type: "email", placeholder: "Email Address", name: "email",
+                            value: this.settings.sync_email, autofocus: true},
                         {element: "input", placeholder: "Device Name", name: "device", value: this.settings.sync_device},
                         {element: "button", label: "Connect", submit: true},
                         {element: "button", label: "Cancel", cancel: true}
@@ -115,8 +116,6 @@
             },
             //* Requests an api key from the cloud api with the entered email and device name
             _requestApiKey: function(data) {
-                var req = new XMLHttpRequest();
-                var url = this.settings.sync_host + "auth/";
                 var email = data.email;
                 var deviceName = data.device;
 
@@ -135,29 +134,20 @@
                 // Show progress indicator
                 this.$$("padlock-progress").show();
 
-                req.onreadystatechange = function() {
-                    if (req.readyState === 4) {
-                        // Hide progress indicator
-                        this.$$("padlock-progress").hide();
-                        if (req.status === 200) {
-                            var apiKey = JSON.parse(req.responseText);
-                            // We're getting back the api key directly, but it will valid only
-                            // after the user has visited the activation link in the email he was sent
-                            this.set("settings.sync_connected", false);
-                            this.set("settings.sync_key", apiKey.key);
-                            this._alert("Almost done! An email was sent to " + email + ". Please follow the " +
-                                "instructions to complete the connection process!");
-                        } else {
-                            this._alert("Something went wrong. Please make sure your internet " +
-                                "connection is working and try again!");
-                        }
-                    }
-                }.bind(this);
-
-                req.open("POST", url, true);
-                req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                req.setRequestHeader("Accept", "application/json");
-                req.send("email=" + email + "&device_name=" + deviceName);
+                var cloudSource = new CloudSource(this.settings.sync_host);
+                cloudSource.requestApiKey(email, deviceName, function(apiKey) {
+                    this.$$("padlock-progress").hide();
+                    // We're getting back the api key directly, but it will valid only
+                    // after the user has visited the activation link in the email he was sent
+                    this.set("settings.sync_connected", false);
+                    this.set("settings.sync_key", apiKey.key);
+                    this._alert("Almost done! An email was sent to " + email + ". Please follow the " +
+                        "instructions to complete the connection process!");
+                }.bind(this), function() {
+                    this.$$("padlock-progress").hide();
+                    this._alert("Something went wrong. Please make sure your internet " +
+                        "connection is working and try again!");
+                }.bind(this));
             },
             _isActivationPending: function() {
                 return this.settings.sync_key && !this.settings.sync_connected;
@@ -173,28 +163,18 @@
                 });
             },
             _requestResetRemoteData: function() {
-                var req = new XMLHttpRequest(),
-                    email = this.settings.sync_email,
-                    url = this.settings.sync_host + email;
+                var cloudSource = new CloudSource(this.settings.sync_host, this.settings.sync_email);
 
                 this.$$("padlock-progress").show();
 
-                req.onreadystatechange = function() {
-                    if (req.readyState === 4) {
-                        // Hide progress indicator
-                        this.$$("padlock-progress").hide();
-                        if (req.status === 202) {
-                            this._alert("Almost done! An email was sent to " + email + ". Please follow the " +
-                                "instructions to confirm the reset!");
-                        } else {
-                            this._alert("Something went wrong. Please make sure your internet " +
-                                "connection is working and try again!");
-                        }
-                    }
-                }.bind(this);
-
-                req.open("DELETE", url, true);
-                req.send();
+                cloudSource.requestDataReset(function() {
+                    this.$$("padlock-progress").hide();
+                    this._alert("Almost done! An email was sent to " + this.settings.sync_email +
+                        ". Please follow the instructions to confirm the reset!");
+                }.bind(this), function() {
+                    this._alert("Something went wrong. Please make sure your internet " +
+                        "connection is working and try again!");
+                }.bind(this));
             },
             //* Shows an alert dialog with a given _message_
             _alert: function(message) {
@@ -252,7 +232,7 @@
             }
         });
 
-    })(Polymer, padlock.ViewBehavior);
+    })(Polymer, padlock.ViewBehavior, padlock.CloudSource);
 
     </script>
 

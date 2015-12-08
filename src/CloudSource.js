@@ -65,5 +65,49 @@ padlock.CloudSource = (function(Source) {
         }
     };
 
+    CloudSource.prototype.requestApiKey = function(email, device, success, fail) {
+        var req = new XMLHttpRequest();
+        var url = this.host + "auth/";
+
+        req.onreadystatechange = function() {
+            if (req.readyState === 4) {
+                if (req.status === 200 || req.status === 201) {
+                    try {
+                        var apiKey = JSON.parse(req.responseText);
+                        success && success(apiKey);
+                    } catch(e) {
+                        fail && fail(e);
+                    }
+                } else {
+                    fail && fail(req);
+                }
+            }
+        }.bind(this);
+
+        req.open("POST", url, true);
+        req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+        req.setRequestHeader("Accept", "application/json");
+        req.send("email=" + email + "&device_name=" + device);
+    };
+
+    CloudSource.prototype.requestDataReset = function(success, fail) {
+        var req = new XMLHttpRequest(),
+            email = this.email,
+            url = this.host + email;
+
+        req.onreadystatechange = function() {
+            if (req.readyState === 4) {
+                if (req.status === 202) {
+                    success && success();
+                } else {
+                    fail && fail();
+                }
+            }
+        }.bind(this);
+
+        req.open("DELETE", url, true);
+        req.send();
+    };
+
     return CloudSource;
 })(padlock.Source);
