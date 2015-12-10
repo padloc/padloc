@@ -656,11 +656,12 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             }
         },
         // Opens a dialog with a dynamic form based on the provided arguments
-        _openForm: function(components, title, submitCallback, cancelCallback) {
+        _openForm: function(components, title, submitCallback, cancelCallback, allowDismiss) {
             // We have two dialogs; if the first one is currently showing, we use the second one.
             // That way we get a nice and smooth transition between dialogs in case we close one and
             // instantly open another
             var dialog = this.$.formDialog1.isShowing ? this.$.formDialog2 : this.$.formDialog1;
+            dialog.allowDismiss = allowDismiss === true;
             // Get form and title element associated with the selected form
             var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
             var titleEl = Polymer.dom(dialog).querySelector(".title");
@@ -716,7 +717,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         },
         // Handler for children elements requesting to open a form
         _openFormHandler: function(e) {
-            this._openForm(e.detail.components, e.detail.title, e.detail.submit, e.detail.cancel);
+            this._openForm(e.detail.components, e.detail.title, e.detail.submit, e.detail.cancel,
+                e.detail.allowDismiss);
         },
         // Handler for children elements requesting to open an alert dialog
         _alertHandler: function(e) {
