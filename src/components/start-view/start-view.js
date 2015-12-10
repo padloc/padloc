@@ -121,9 +121,9 @@
                     allowDismiss: false
                 });
                 this._attemptRestore();
-            }.bind(this), function() {
+            }.bind(this), function(e) {
                 this.$$("padlock-progress").hide();
-                this._alertConnectionError();
+                this.fire("error", e);
             }.bind(this));
         },
         _attemptRestore: function() {
@@ -139,20 +139,10 @@
                         this._cancelRestore = false;
                         return;
                     }
-                    switch(e) {
-                        case padlock.ERR_SOURCE_UNAUTHORIZED:
-                            this._attemptRestoreTimeout = setTimeout(this._attemptRestore.bind(this), 1000);
-                            break;
-                        case padlock.ERR_STORE_DECRYPT:
-                            this.fire("alert", {message: "The password you entered was wrong! Please try again!"});
-                            break;
-                        case padlock.ERR_SOURCE_FAILED_CONNECTION:
-                            this.fire("alert", {message: "Failed to connect to Padlock Cloud. Please check your " +
-                                "internet connection and try again!"});
-                            break;
-                        default:
-                            this._alertConnectionError();
-
+                    if (e == padlock.ERR_CLOUD_UNAUTHORIZED) {
+                        this._attemptRestoreTimeout = setTimeout(this._attemptRestore.bind(this), 1000);
+                    } else {
+                        this.fire("error", e);
                     }
                 }.bind(this)
             });
@@ -160,10 +150,6 @@
         _stopAttemptRestore: function() {
             this._cancelRestore = true;
             clearTimeout(this._attemptRestoreTimeout);
-        },
-        _alertConnectionError: function() {
-            this.fire("alert", {message: "An error occured while trying to connect to Padlock Cloud. " +
-                "Please try again later!"});
         },
         _restoreSuccess: function() {
             if (this._cancelRestore) {

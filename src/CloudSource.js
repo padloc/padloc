@@ -4,18 +4,18 @@
 padlock.CloudSource = (function(Source) {
     "use strict";
 
-    padlock.ERR_SOURCE_UNAUTHORIZED = "Not authorized to request from source";
-    padlock.ERR_SOURCE_SERVER_ERROR = "Internal server error";
-    padlock.ERR_SOURCE_FAILED_CONNECTION = "Failed connection";
+    padlock.ERR_CLOUD_UNAUTHORIZED = "Not authorized to request from source";
+    padlock.ERR_CLOUD_SERVER_ERROR = "Internal server error";
+    padlock.ERR_CLOUD_FAILED_CONNECTION = "Failed connection";
 
     function errFromStatus(s) {
         switch(s) {
             case 401:
-                return padlock.ERR_SOURCE_UNAUTHORIZED;
+                return padlock.ERR_CLOUD_UNAUTHORIZED;
             case 0:
-                return padlock.ERR_SOURCE_FAILED_CONNECTION;
+                return padlock.ERR_CLOUD_FAILED_CONNECTION;
             default:
-                return padlock.ERR_SOURCE_SERVER_ERROR;
+                return padlock.ERR_CLOUD_SERVER_ERROR;
         }
     }
 
@@ -91,7 +91,7 @@ padlock.CloudSource = (function(Source) {
                     try {
                         apiKey = JSON.parse(req.responseText);
                     } catch(e) {
-                        fail && fail(padlock.ERR_SOURCE_SERVER_ERROR);
+                        fail && fail(padlock.ERR_CLOUD_SERVER_ERROR);
                         return;
                     }
                     success && success(apiKey);

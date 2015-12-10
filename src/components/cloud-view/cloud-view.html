@@ -141,12 +141,10 @@
                     // after the user has visited the activation link in the email he was sent
                     this.set("settings.sync_connected", false);
                     this.set("settings.sync_key", apiKey.key);
-                    this._alert("Almost done! An email was sent to " + email + ". Please follow the " +
-                        "instructions to complete the connection process!");
-                }.bind(this), function() {
+                    this._alert("Almost done! An email was sent to " + email + " with further instructions.");
+                }.bind(this), function(e) {
                     this.$$("padlock-progress").hide();
-                    this._alert("Something went wrong. Please make sure your internet " +
-                        "connection is working and try again!");
+                    this.fire("error", e);
                 }.bind(this));
             },
             _isActivationPending: function() {
@@ -163,17 +161,17 @@
                 });
             },
             _requestResetRemoteData: function() {
-                var cloudSource = new CloudSource(this.settings.sync_host, this.settings.sync_email);
+                var email = this.settings.sync_email;
+                var cloudSource = new CloudSource(this.settings.sync_host, email);
 
                 this.$$("padlock-progress").show();
 
                 cloudSource.requestDataReset(function() {
                     this.$$("padlock-progress").hide();
-                    this._alert("Almost done! An email was sent to " + this.settings.sync_email +
-                        ". Please follow the instructions to confirm the reset!");
-                }.bind(this), function() {
-                    this._alert("Something went wrong. Please make sure your internet " +
-                        "connection is working and try again!");
+                    this._alert("Almost done! An email was sent to " + email + " with further instructions.");
+                }.bind(this), function(e) {
+                    this.$$("padlock-progress").hide();
+                    this.fire("error", e);
                 }.bind(this));
             },
             //* Shows an alert dialog with a given _message_
@@ -195,10 +193,7 @@
                         clearTimeout(this._testCredsTimeout);
                         this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 1000);
                     }
-                }.bind(this), function() {
-                    this.fire("alert", {msg: "An error occured while trying to connect with Padlock Cloud. " +
-                        "Please try again later!"});
-                });
+                }.bind(this), this.fire.bind(this, "error"));
             },
             _stopTestCredentials: function() {
                 clearTimeout(this._testCredsTimeout);
