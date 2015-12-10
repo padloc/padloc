@@ -4,6 +4,7 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../password-input/password-input.html">
 <link rel="import" href="../lock/lock.html">
+<link rel="import" href="../progress/progress.html">
 <link rel="import" href="../../styles/shared-styles.html">
 <link rel="import" href="../view/view-styles.html">
 <link rel="import" href="start-view-styles.html">
@@ -34,15 +35,17 @@
                 Padlock Cloud
             </div>
             <div class="tap-highlight">
-                <input type="email" placeholder="Enter Email Address" class="ghost" on-enter="_cloudEnter">
+                <input is="padlock-input" id="emailInput" type="email" placeholder="Enter Email Address" class="ghost" on-enter="_cloudEnter">
             </div>
             <div class="tap-highlight">
-                <input type="password" placeholder="Enter Password" class="ghost" on-enter="_cloudEnter">
+                <input is="padlock-input" id="cloudPwdInput" type="password" placeholder="Enter Password" class="ghost" on-enter="_cloudEnter">
             </div>
             <button class="enter-button ghost" on-tap="_cloudEnter" type="button">Restore</button>
         </form>
 
         <button class="switch-button" on-tap="_switchMode" type="button" hidden$="{{ _isChangeMode(mode) }}">{{ _switchButtonLabel(mode) }}</button>
+
+        <padlock-progress>Connecting to Padlock Cloud</padlock-progress>
 
     </template>
 

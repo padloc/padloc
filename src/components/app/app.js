@@ -123,6 +123,19 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 this.$.header.showing = true;
             }, 1500);
         },
+        _restored: function() {
+            // Navigate to list view
+            this._openView(
+                this.$.listView,
+                {animation: "popin", delay: 1500},
+                {animation: "expand", delay: 500, easing: "cubic-bezier(1, -0.05, 0.9, 0.05)"}
+            );
+
+            // Show header with a slight delay
+            this.async(function() {
+                this.$.header.showing = true;
+            }, 1500);
+        },
         //* Tries to unlock the current collection with the provided password
         _unlock: function(password) {
             if (this._decrypting) {
@@ -661,7 +674,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             // That way we get a nice and smooth transition between dialogs in case we close one and
             // instantly open another
             var dialog = this.$.formDialog1.isShowing ? this.$.formDialog2 : this.$.formDialog1;
-            dialog.allowDismiss = allowDismiss === true;
+            dialog.allowDismiss = allowDismiss !== false;
             // Get form and title element associated with the selected form
             var form = Polymer.dom(dialog).querySelector("padlock-dynamic-form");
             var titleEl = Polymer.dom(dialog).querySelector(".title");

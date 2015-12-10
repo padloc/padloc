@@ -1,6 +1,6 @@
 /* global Polymer, padlock */
 
-(function(Polymer, ViewBehavior, platform) {
+(function(Polymer, ViewBehavior, platform, CloudSource) {
     "use strict";
 
     Polymer({
@@ -11,7 +11,8 @@
                 type: String,
                 value: "create",
                 reflectToAttribute: true
-            }
+            },
+            collection: Object
         },
         hide: function() {
             this.$$("padlock-lock").unlocked = true;
@@ -90,6 +91,8 @@
         },
         _clear: function() {
             this.$.pwdInput.value = "";
+            this.$.emailInput.value = "";
+            this.$.cloudPwdInput.value = "";
         },
         _buttonLabel: function(mode) {
             return this._isChangeMode(mode) ? "Change Password" : "Get Started";
@@ -102,7 +105,87 @@
         },
         _switchMode: function() {
             this.mode = this.mode == "restore-cloud" ? "get-started" : "restore-cloud";
+        },
+        _cloudEnter: function() {
+            var cloudSource = new CloudSource(this.settings.sync_host);
+            var email = this.$.emailInput.value;
+            this.$$("padlock-progress").show();
+            cloudSource.requestApiKey(email, "", function(apiKey) {
+                this.$$("padlock-progress").hide();
+                this._credentials = apiKey;
+                this.fire("open-form", {
+                    title: "Almost done! An email was sent to " + email + " with further instructions.",
+                    components: [
+                        {element: "button", label: "Cancel", tap: this._stopAttemptRestore.bind(this), close: true}
+                    ],
+                    allowDismiss: false
+                });
+                this._attemptRestore();
+            }.bind(this), function() {
+                this.$$("padlock-progress").hide();
+                this._alertConnectionError();
+            }.bind(this));
+        },
+        _attemptRestore: function() {
+            var cloudSource = new CloudSource(this.settings.sync_host,
+                this._credentials.email, this._credentials.key);
+
+            this.collection.fetch({
+                source: cloudSource,
+                password: this.$.cloudPwdInput.value,
+                success: this._restoreSuccess.bind(this),
+                fail: function(e) {
+                    if (this._cancelRestore) {
+                        this._cancelRestore = false;
+                        return;
+                    }
+                    switch(e) {
+                        case padlock.ERR_SOURCE_UNAUTHORIZED:
+                            this._attemptRestoreTimeout = setTimeout(this._attemptRestore.bind(this), 1000);
+                            break;
+                        case padlock.ERR_STORE_DECRYPT:
+                            this.fire("alert", {message: "The password you entered was wrong! Please try again!"});
+                            break;
+                        case padlock.ERR_SOURCE_FAILED_CONNECTION:
+                            this.fire("alert", {message: "Failed to connect to Padlock Cloud. Please check your " +
+                                "internet connection and try again!"});
+                            break;
+                        default:
+                            this._alertConnectionError();
+
+                    }
+                }.bind(this)
+            });
+        },
+        _stopAttemptRestore: function() {
+            this._cancelRestore = true;
+            clearTimeout(this._attemptRestoreTimeout);
+        },
+        _alertConnectionError: function() {
+            this.fire("alert", {message: "An error occured while trying to connect to Padlock Cloud. " +
+                "Please try again later!"});
+        },
+        _restoreSuccess: function() {
+            if (this._cancelRestore) {
+                this._cancelRestore = false;
+                return;
+            }
+            this.set("settings.sync_email", this._credentials.email);
+            this.set("settings.sync_key", this._credentials.key);
+            this.set("settings.sync_connected", true);
+            this.collection.save({password: this.$.cloudPwdInput.value, rememberPassword: true});
+
+            this.fire("open-form", {
+                title: "Your data has been successfully restored from Padlock Cloud!",
+                components: [
+                    {element: "button", label: "View My Records", submit: true}
+                ],
+                submit: function() {
+                    this.fire("restore");
+                }.bind(this),
+                allowDismiss: false
+            });
         }
     });
 
-})(Polymer, padlock.ViewBehavior, padlock.platform);
+})(Polymer, padlock.ViewBehavior, padlock.platform, padlock.CloudSource);
