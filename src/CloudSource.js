@@ -109,5 +109,26 @@ padlock.CloudSource = (function(Source) {
         req.send();
     };
 
+    CloudSource.prototype.testCredentials = function(success, fail) {
+        var req = new XMLHttpRequest();
+        var url = this.host;
+
+        req.onreadystatechange = function() {
+            if (req.readyState === 4) {
+                if (req.status == 200) {
+                    success && success(true);
+                } else if (req.status == 401) {
+                    success && success(false);
+                } else {
+                    fail && fail(errFromStatus(req.status));
+                }
+            }
+        };
+
+        req.open("HEAD", url, true);
+        req.setRequestHeader("Authorization", "ApiKey " + this.email + ":" + this.apiKey);
+        req.send();
+    };
+
     return CloudSource;
 })(padlock.Source);

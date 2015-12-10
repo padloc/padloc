@@ -181,30 +181,24 @@
                 this.fire("alert", {message: message});
             },
             _testCredentials: function(poll) {
-                var req = new XMLHttpRequest();
-                var url = this.settings.sync_host;
-                var email = this.settings.sync_email;
-                var key = this.settings.sync_key;
+                var cloudSource = new CloudSource(this.settings.sync_host,
+                    this.settings.sync_email, this.settings.sync_key);
 
-                req.onreadystatechange = function() {
-                    if (req.readyState === 4) {
-                        var connected = req.status == 200;
-                        this.set("settings.sync_connected", connected);
+                cloudSource.testCredentials(function(connected) {
+                    this.set("settings.sync_connected", connected);
 
-                        if (connected && this.showing) {
-                            this.fire("notify", {message: "Connection Complete!", duration: 5000});
-                        }
-
-                        if (!connected && poll && this.settings.sync_key) {
-                            clearTimeout(this._testCredsTimeout);
-                            this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 1000);
-                        }
+                    if (connected && this.showing) {
+                        this.fire("notify", {message: "Connection Complete!", duration: 5000});
                     }
-                }.bind(this);
 
-                req.open("HEAD", url, true);
-                req.setRequestHeader("Authorization", "ApiKey " + email + ":" + key);
-                req.send();
+                    if (!connected && poll && this.settings.sync_key) {
+                        clearTimeout(this._testCredsTimeout);
+                        this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 1000);
+                    }
+                }.bind(this), function() {
+                    this.fire("alert", {msg: "An error occured while trying to connect with Padlock Cloud. " +
+                        "Please try again later!"});
+                });
             },
             _stopTestCredentials: function() {
                 clearTimeout(this._testCredsTimeout);
