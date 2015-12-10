@@ -4,6 +4,21 @@
 padlock.CloudSource = (function(Source) {
     "use strict";
 
+    padlock.ERR_SOURCE_UNAUTHORIZED = "Not authorized to request from source";
+    padlock.ERR_SOURCE_SERVER_ERROR = "Internal server error";
+    padlock.ERR_SOURCE_FAILED_CONNECTION = "Failed connection";
+
+    function errFromStatus(s) {
+        switch(s) {
+            case 401:
+                return padlock.ERR_SOURCE_UNAUTHORIZED;
+            case 0:
+                return padlock.ERR_SOURCE_FAILED_CONNECTION;
+            default:
+                return padlock.ERR_SOURCE_SERVER_ERROR;
+        }
+    }
+
     /**
      * This source uses the Padlock cloud api to fetch and store data.
      * @param String host  Base url for AJAX calls
@@ -27,7 +42,7 @@ padlock.CloudSource = (function(Source) {
                 if (req.status === 200) {
                     this.didFetch(req.responseText, opts);
                 } else if (opts && opts.fail) {
-                    opts.fail(req);
+                    opts.fail(errFromStatus(req.status));
                 }
             }
         }.bind(this);
@@ -48,7 +63,7 @@ padlock.CloudSource = (function(Source) {
                         opts.success();
                     }
                 } else if (opts.fail) {
-                    opts.fail(req);
+                    opts.fail(errFromStatus(req.status));
                 }
             }
         };
@@ -72,14 +87,16 @@ padlock.CloudSource = (function(Source) {
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
                 if (req.status === 200 || req.status === 201) {
+                    var apiKey;
                     try {
-                        var apiKey = JSON.parse(req.responseText);
-                        success && success(apiKey);
+                        apiKey = JSON.parse(req.responseText);
                     } catch(e) {
-                        fail && fail(e);
+                        fail && fail(padlock.ERR_SOURCE_SERVER_ERROR);
+                        return;
                     }
+                    success && success(apiKey);
                 } else {
-                    fail && fail(req);
+                    fail && fail(errFromStatus(req.status));
                 }
             }
         }.bind(this);
@@ -100,7 +117,7 @@ padlock.CloudSource = (function(Source) {
                 if (req.status === 202) {
                     success && success();
                 } else {
-                    fail && fail();
+                    fail && fail(errFromStatus(req.status));
                 }
             }
         }.bind(this);

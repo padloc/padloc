@@ -474,7 +474,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                         }
                     }.bind(this),
                     fail: function(e) {
-                        if (e && e.message && e.message.indexOf("CORRUPT: ccm: tag doesn't match") !== -1) {
+                        if (e == padlock.ERR_STORE_DECRYPT) {
                             // Decryption failed, presumably on the remote data. This means that the local master
                             // password does not match the one that was used for encrypting the remote data so
                             // we need to prompt the user for the correct password.
