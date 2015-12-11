@@ -130,6 +130,8 @@
             var cloudSource = new CloudSource(this.settings.sync_host,
                 this._credentials.email, this._credentials.key);
 
+            this._cancelRestore = false;
+
             this.collection.fetch({
                 source: cloudSource,
                 password: this.$.cloudPwdInput.value,
