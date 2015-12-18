@@ -775,11 +775,21 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                     this._alert("Failed to connect to Padlock Cloud. Please check your " +
                         "internet connection and try again!");
                     break;
+                case padlock.ERR_CLOUD_VERSION_DEPRECATED:
+                    this._openForm(
+                        [{element: "button", label: "Update Now", tap: this._openAppStore.bind(this), submit: true}],
+                        "A newer version of Padlock is available now! You can download it using the button below." +
+                        "Please note that you won't be able to use Padlock Cloud until you install the latest version!"
+                    );
+                    break;
                 case padlock.ERR_CLOUD_SERVER_ERROR:
                     this._alert("There was an error while trying to connect to Padlock Cloud. " +
                         "Please try again later!");
                     break;
             }
+        },
+        _openAppStore: function() {
+            window.open(platform.getAppStoreLink(), "_system");
         }
     });
 

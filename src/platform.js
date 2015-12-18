@@ -80,17 +80,12 @@ padlock.platform = (function() {
         return animationStartEventNames[getVendorPrefix().lowercase];
     };
 
-    // All the devices running iOS
-    var iDevices = ["iPad", "iPhone", "iPod"];
-
     /**
      * Checks the _navigator.platform_ property to see if we are on a device
      * running iOS
      */
     var isIOS = function() {
-        return iDevices.reduce(function(match, dev) {
-            return match || navigator.platform.indexOf(dev) !== -1;
-        }, false);
+        return /ipad|iphone|ipod/i.test(navigator.platform);
     };
 
     /**
@@ -104,6 +99,10 @@ padlock.platform = (function() {
     //* Checks if the app is running as a packaged Chrome app
     var isChromeApp = function() {
         return (typeof chrome !== "undefined") && chrome.app && !!chrome.app.runtime;
+    };
+
+    var isAndroid = function() {
+        return /android/i.test(navigator.userAgent);
     };
 
     // Textarea used for copying/pasting using the dom
@@ -169,6 +168,18 @@ padlock.platform = (function() {
             cordova.plugins.Keyboard.disableScroll(disable);
     };
 
+    var getAppStoreLink = function() {
+        if (isIOS()) {
+            return "https://itunes.apple.com/app/id871710139";
+        } else if (isAndroid()) {
+            return "https://play.google.com/store/apps/details?id=com.maklesoft.padlock";
+        } else if (isChromeApp()) {
+            return "https://chrome.google.com/webstore/detail/padlock/npkoefjfcjbknoeadfkbcdpbapaamcif";
+        } else {
+            return "http://padlock.io";
+        }
+    };
+
     return {
         getVendorPrefix: getVendorPrefix,
         getTransitionEndEventName: getTransitionEndEventName,
@@ -177,9 +188,11 @@ padlock.platform = (function() {
         isIOS: isIOS,
         isIOSStandalone: isIOSStandalone,
         isChromeApp: isChromeApp,
+        isAndroid: isAndroid,
         isTouch: isTouch,
         setClipboard: setClipboard,
         getClipboard: getClipboard,
-        keyboardDisableScroll: keyboardDisableScroll
+        keyboardDisableScroll: keyboardDisableScroll,
+        getAppStoreLink: getAppStoreLink
     };
 })();
