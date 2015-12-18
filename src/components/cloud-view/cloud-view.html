@@ -182,8 +182,8 @@
                 cloudSource.testCredentials(function(connected) {
                     this.set("settings.sync_connected", connected);
 
-                    if (connected && this.showing) {
-                        this.fire("notify", {message: "Connection Complete!", duration: 5000});
+                    if (connected) {
+                        this._connectionSuccess();
                     }
 
                     if (!connected && poll && this.settings.sync_key) {
@@ -215,6 +215,15 @@
             },
             _synchronize: function() {
                 this.fire("synchronize");
+            },
+            _connectionSuccess: function() {
+                this.fire("open-form", {
+                    components: [
+                        {element: "button", label: "Synchronize Now", tap: this._synchronize.bind(this), submit: true}
+                    ],
+                    title: "You have successfully connected to Padlock Cloud! " +
+                        "You can now start synchronizing your data!"
+                });
             }
         });
 
