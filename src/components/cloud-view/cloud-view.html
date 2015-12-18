@@ -92,12 +92,11 @@
                     components: [
                         {element: "input", type: "email", placeholder: "Email Address", name: "email",
                             value: this.settings.sync_email, autofocus: true},
-                        {element: "input", placeholder: "Device Name", name: "device", value: this.settings.sync_device},
                         {element: "button", label: "Connect", submit: true},
                         {element: "button", label: "Cancel", cancel: true}
                     ],
                     title: "Connect to Padlock Cloud",
-                    submit: this._requestApiKey.bind(this)
+                    submit: this._requestAuthToken.bind(this)
                 });
             },
             _disconnect: function() {
@@ -115,12 +114,11 @@
                 });
             },
             //* Requests an api key from the cloud api with the entered email and device name
-            _requestApiKey: function(data) {
+            _requestAuthToken: function(data) {
                 var email = data.email;
-                var deviceName = data.device;
 
-                if (!email || !deviceName) {
-                    var message = email ? "Please enter a device name!" : "Please enter an email address!";
+                if (!email) {
+                    var message = "Please enter an email address!";
                     this.fire("notify", {
                         message: message,
                         duration: 2000
@@ -129,18 +127,17 @@
                 }
 
                 this.set("settings.sync_email", email);
-                this.set("settings.sync_device", deviceName);
 
                 // Show progress indicator
                 this.$$("padlock-progress").show();
 
                 var cloudSource = new CloudSource(this.settings.sync_host);
-                cloudSource.requestApiKey(email, deviceName, function(apiKey) {
+                cloudSource.requestAuthToken(email, true, function(token) {
                     this.$$("padlock-progress").hide();
                     // We're getting back the api key directly, but it will valid only
                     // after the user has visited the activation link in the email he was sent
                     this.set("settings.sync_connected", false);
-                    this.set("settings.sync_key", apiKey.key);
+                    this.set("settings.sync_key", token);
                     this._alert("Almost done! An email was sent to " + email + " with further instructions.");
                 }.bind(this), function(e) {
                     this.$$("padlock-progress").hide();

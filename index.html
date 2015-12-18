@@ -28,7 +28,7 @@
                 var source = (typeof chrome !== "undefined") && chrome.storage ?
                     new padlock.ChromeStorageSource() : new padlock.LocalStorageSource(),
                     store = new padlock.Store(source),
-                    cloudHost = "https://cloud.padlock.io/",
+                    cloudHost = "https://cloud.padlock.io",
                     settings = new padlock.Settings({
                         "sync_host": cloudHost,
                         "sync_email": "",

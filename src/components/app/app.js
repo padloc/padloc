@@ -448,7 +448,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                 this.remoteSource = this.remoteSource || new CloudSource();
                 this.remoteSource.host = this.settings.sync_host;
                 this.remoteSource.email = this.settings.sync_email;
-                this.remoteSource.apiKey = this.settings.sync_key;
+                this.remoteSource.authToken = this.settings.sync_key;
 
                 // Show progress indicator
                 this.$.synchronizing.show();

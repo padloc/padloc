@@ -110,11 +110,15 @@
             var cloudSource = new CloudSource(this.settings.sync_host);
             var email = this.$.emailInput.value;
             this.$$("padlock-progress").show();
-            cloudSource.requestApiKey(email, "", function(apiKey) {
+            cloudSource.requestAuthToken(email, false, function(token) {
                 this.$$("padlock-progress").hide();
-                this._credentials = apiKey;
+                this._credentials = {
+                    email: email,
+                    authToken: token
+                };
                 this.fire("open-form", {
-                    title: "Almost done! An email was sent to " + email + " with further instructions.",
+                    title: "Almost done! An email was sent to " + email + " with further instructions. " +
+                        "Hit 'Cancel' to abort the process.",
                     components: [
                         {element: "button", label: "Cancel", tap: this._stopAttemptRestore.bind(this), close: true}
                     ],
@@ -128,7 +132,7 @@
         },
         _attemptRestore: function() {
             var cloudSource = new CloudSource(this.settings.sync_host,
-                this._credentials.email, this._credentials.key);
+                this._credentials.email, this._credentials.authToken);
 
             this._cancelRestore = false;
 
@@ -159,7 +163,7 @@
                 return;
             }
             this.set("settings.sync_email", this._credentials.email);
-            this.set("settings.sync_key", this._credentials.key);
+            this.set("settings.sync_key", this._credentials.authToken);
             this.set("settings.sync_connected", true);
             this.collection.save({password: this.$.cloudPwdInput.value, rememberPassword: true});
 
