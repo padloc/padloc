@@ -16,7 +16,11 @@
                 value: false,
                 notify: true
             },
-            closeOnTap: Boolean
+            closeOnTap: Boolean,
+            allowDismiss: {
+                type: Boolean,
+                value: true
+            }
         },
         listeners: {
             tap: "_dismiss"
@@ -59,8 +63,10 @@
             this.open = false;
         },
         _dismiss: function() {
-            this._close();
-            this.fire("dismiss");
+            if (this.allowDismiss) {
+                this._close();
+                this.fire("dismiss");
+            }
         }
     });
 

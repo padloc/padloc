@@ -66,13 +66,14 @@ input {
 }
 
 input.ghost, :host(.ghost) > input {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border-top: solid 1px #fff;
-    border-bottom: solid 1px #fff;
+    background: transparent;
+    border-top: solid 1px;
+    border-bottom: solid 1px;
 
     &::-webkit-input-placeholder {
-       color: rgba(255, 255, 255, 0.5);
+       // color: rgba(255, 255, 255, 0.5);
+       color: currentColor;
+       opacity: 0.5;
     }
 }
 
@@ -123,6 +124,7 @@ strong {
 
 [disabled] {
     opacity: 0.5;
+    pointer-events: none;
 }
 
 input[type=range] {

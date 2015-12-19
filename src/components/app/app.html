@@ -28,7 +28,7 @@
         <style include="shared-styles"></style>
 
         <padlock-header id="header" view="{{ _currentView }}" filter-string="{{ _filterString }}"></padlock-header>
-        <padlock-start-view id="startView" class="view" on-newpwd="_newPwd"></padlock-start-view>
+        <padlock-start-view id="startView" class="view" on-newpwd="_newPwd" on-restore="_restored" collection="{{ collection }}" settings="{{ settings }}"></padlock-start-view>
         <padlock-lock-view id="lockView" class="view" on-pwdenter="_pwdEnter"></padlock-lock-view>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" records="{{ _records }}" filter-string="{{ _filterString }}"

@@ -4,6 +4,7 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../password-input/password-input.html">
 <link rel="import" href="../lock/lock.html">
+<link rel="import" href="../progress/progress.html">
 <link rel="import" href="../../styles/shared-styles.html">
 <link rel="import" href="../view/view-styles.html">
 <link rel="import" href="start-view-styles.html">
@@ -18,20 +19,33 @@
 
         <padlock-lock></padlock-lock>
 
-        <!-- WRAPPER (for centering) -->
-        <form class="wrapper">
-            <!-- HEADER -->
+        <form class="get-started">
             <div class="header">
                 Padlock
             </div>
-            <!-- NEW PASSWORD INPUT -->
             <div class="tap-highlight">
                 <padlock-password-input class="ghost pwdinput" placeholder="Enter Master Password"
-                    id="pwdInput" on-enter="enter" select-all-on-focus obfuscate></padlock-password-input>
+                    id="pwdInput" on-enter="_enter" select-all-on-focus obfuscate></padlock-password-input>
             </div>
-            <!-- ENTER BUTTON -->
-            <button class="enter-button ghost" on-tap="enter" type="button">{{ _buttonLabel(changingPwd) }}</button>
+            <button class="enter-button ghost" on-tap="_enter" type="button">{{ _buttonLabel(mode) }}</button>
         </form>
+
+        <form class="restore-cloud">
+            <div class="header">
+                Padlock Cloud
+            </div>
+            <div class="tap-highlight">
+                <input is="padlock-input" id="emailInput" type="email" placeholder="Enter Email Address" class="ghost" on-enter="_cloudEnter">
+            </div>
+            <div class="tap-highlight">
+                <input is="padlock-input" id="cloudPwdInput" type="password" placeholder="Enter Password" class="ghost" on-enter="_cloudEnter">
+            </div>
+            <button class="enter-button ghost" on-tap="_cloudEnter" type="button" id="cloudEnterButton">Restore</button>
+        </form>
+
+        <button class="switch-button" on-tap="_switchMode" type="button" hidden$="{{ _isChangeMode(mode) }}">{{ _switchButtonLabel(mode) }}</button>
+
+        <padlock-progress>Connecting to Padlock Cloud</padlock-progress>
 
     </template>
 
