@@ -13,6 +13,8 @@ padlock.CloudSource = (function(Source) {
         switch(s) {
             case 401:
                 return padlock.ERR_CLOUD_UNAUTHORIZED;
+            case 404:
+                return padlock.ERR_CLOUD_NOT_FOUND;
             case 406:
                 return padlock.ERR_CLOUD_VERSION_DEPRECATED;
             case 0:
@@ -91,7 +93,7 @@ padlock.CloudSource = (function(Source) {
     };
 
     CloudSource.prototype.requestAuthToken = function(email, create, success, fail) {
-        var req = this.prepareRequest("POST", "/auth/", function(req) {
+        var req = this.prepareRequest(create ? "POST" : "PUT", "/auth/", function(req) {
             if (isSuccess(req.status)) {
                 success && success(req.responseText);
             } else {
@@ -100,7 +102,7 @@ padlock.CloudSource = (function(Source) {
         });
 
         req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        req.send("email=" + encodeURIComponent(email) + "&create=" + create);
+        req.send("email=" + encodeURIComponent(email));
     };
 
     CloudSource.prototype.requestDataReset = function(success, fail) {

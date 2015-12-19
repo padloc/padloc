@@ -108,7 +108,13 @@
         },
         _cloudEnter: function() {
             var cloudSource = new CloudSource(this.settings.sync_host);
+
             var email = this.$.emailInput.value;
+            if (!email) {
+                this.fire("notify", {message: "Please enter an email address!", type: "error", duration: 2000});
+                return;
+            }
+
             this.$$("padlock-progress").show();
             cloudSource.requestAuthToken(email, false, function(token) {
                 this.$$("padlock-progress").hide();
@@ -127,7 +133,11 @@
                 this._attemptRestore();
             }.bind(this), function(e) {
                 this.$$("padlock-progress").hide();
-                this.fire("error", e);
+                if (e == padlock.ERR_CLOUD_NOT_FOUND) {
+                    this.fire("alert", {message: "There is no Padlock Cloud account with this email!"});
+                } else {
+                    this.fire("error", e);
+                }
             }.bind(this));
         },
         _attemptRestore: function() {
