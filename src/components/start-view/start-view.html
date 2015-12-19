@@ -40,7 +40,7 @@
             <div class="tap-highlight">
                 <input is="padlock-input" id="cloudPwdInput" type="password" placeholder="Enter Password" class="ghost" on-enter="_cloudEnter">
             </div>
-            <button class="enter-button ghost" on-tap="_cloudEnter" type="button">Restore</button>
+            <button class="enter-button ghost" on-tap="_cloudEnter" type="button" id="cloudEnterButton">Restore</button>
         </form>
 
         <button class="switch-button" on-tap="_switchMode" type="button" hidden$="{{ _isChangeMode(mode) }}">{{ _switchButtonLabel(mode) }}</button>

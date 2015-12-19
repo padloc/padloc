@@ -116,8 +116,10 @@
             }
 
             this.$$("padlock-progress").show();
+            this.$.cloudEnterButton.disabled = true;
             cloudSource.requestAuthToken(email, false, function(token) {
                 this.$$("padlock-progress").hide();
+                this.$.cloudEnterButton.disabled = false;
                 this._credentials = {
                     email: email,
                     authToken: token
@@ -182,9 +184,8 @@
                 components: [
                     {element: "button", label: "View My Records", submit: true}
                 ],
-                submit: function() {
-                    this.fire("restore");
-                }.bind(this),
+                submit: this.fire.bind(this, "restore"),
+                cancel: this.fire.bind(this, "restore"),
                 allowDismiss: false
             });
         }
