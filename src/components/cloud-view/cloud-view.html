@@ -59,9 +59,18 @@
         </section>
 
         <section>
-            <padlock-toggle-button value="{{ settings.sync_custom_host }}" label="Use Custom Server"></padlock-toggle-button>
+            <div class="note">
+                By providing a custom URL, you can synchronize your data with a server other than the official
+                Padlock Cloud server. <strong>WARNING: This is only recommended for advanced users!</strong>
+            </div>
+            <padlock-toggle-button value="{{ settings.sync_custom_host }}" label="Use Custom Server" on-change="_customHostChanged"></padlock-toggle-button>
             <div class="tap-highlight" hidden$="{{ !settings.sync_custom_host }}">
-                <input is="padlock-input" placeholder="Enter Custom URL" value="{{ settings.sync_host_url::change }}">
+                <input is="padlock-input" id="customUrlInput" placeholder="Enter Custom URL" value="{{ settings.sync_host_url::change }}"
+                    pattern="^https://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$" required>
+                <div class="note warning">
+                    <strong>Invalid URL</strong> - Make sure that the URL is of the form <strong>https://myserver.tld:port</strong>.
+                    Note that a <strong>https</strong> connection is strictly required.
+                </div>
             </div>
         <section>
 
@@ -91,7 +100,7 @@
                 }
             },
             observers: [
-                "_credentialsChanged(settings.sync_email, settings.sync_key)"
+                "_customUrlChanged(settings.sync_host_url)"
             ],
             //* Opens the dialog for connecting to the Padlock Cloud
             _connect: function() {
@@ -230,6 +239,23 @@
                     title: "You have successfully connected to Padlock Cloud! " +
                         "You can now start synchronizing your data!"
                 });
+            },
+            _customHostChanged: function() {
+                if (this.settings.sync_custom_host) {
+                    this.fire("open-form", {
+                        components: [
+                            {element: "button", label: "Continue", submit: true},
+                            {element: "button", label: "Cancel", submit: true, tap: function() {
+                                this.set("settings.sync_custom_host", false);
+                            }.bind(this)}
+                        ],
+                        title: "Are you sure you want to use a custom server for synchronization? " +
+                            "This options is only recommended for advanced users!"
+                    });
+                }
+            },
+            _customUrlChanged: function() {
+                this.$.customUrlInput.checkValidity();
             }
         });
 

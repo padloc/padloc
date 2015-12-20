@@ -777,10 +777,9 @@ padlock.App = (function(Polymer, platform) {
                         "Please note that you won't be able to use Padlock Cloud until you install the latest version!"
                     );
                     break;
-                case padlock.ERR_CLOUD_SERVER_ERROR:
+                default:
                     this._alert("There was an error while trying to connect to Padlock Cloud. " +
                         "Please try again later!");
-                    break;
             }
         },
         _openAppStore: function() {

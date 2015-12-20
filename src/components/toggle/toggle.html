@@ -60,10 +60,10 @@
         },
         toggle: function() {
             this.value = !this.value;
+            this.fire("change");
         },
         _valueChanged: function() {
             this.toggleClass("on", this.value);
-            this.fire("change");
         }
     });
 
