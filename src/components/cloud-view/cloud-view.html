@@ -58,6 +58,13 @@
             <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync"></padlock-toggle-button>
         </section>
 
+        <section>
+            <padlock-toggle-button value="{{ settings.sync_custom_host }}" label="Use Custom Server"></padlock-toggle-button>
+            <div class="tap-highlight" hidden$="{{ !settings.sync_custom_host }}">
+                <input is="padlock-input" placeholder="Enter Custom URL" value="{{ settings.sync_host_url::change }}">
+            </div>
+        <section>
+
         <padlock-progress>Connecting...</padlock-progress>
 
     </template>
@@ -131,7 +138,7 @@
                 // Show progress indicator
                 this.$$("padlock-progress").show();
 
-                var cloudSource = new CloudSource(this.settings.sync_host);
+                var cloudSource = new CloudSource(this.settings);
                 cloudSource.requestAuthToken(email, true, function(token) {
                     this.$$("padlock-progress").hide();
                     // We're getting back the api key directly, but it will valid only
@@ -159,7 +166,7 @@
             },
             _requestResetRemoteData: function() {
                 var email = this.settings.sync_email;
-                var cloudSource = new CloudSource(this.settings.sync_host, email);
+                var cloudSource = new CloudSource(this.settings);
 
                 this.$$("padlock-progress").show();
 
@@ -176,8 +183,7 @@
                 this.fire("alert", {message: message});
             },
             _testCredentials: function(poll) {
-                var cloudSource = new CloudSource(this.settings.sync_host,
-                    this.settings.sync_email, this.settings.sync_key);
+                var cloudSource = new CloudSource(this.settings);
 
                 cloudSource.testCredentials(function(connected) {
                     this.set("settings.sync_connected", connected);

@@ -48,7 +48,7 @@ function build(dest) {
             "after": /<head>/i,
             "lineAfter": "<meta http-equiv=\"Content-Security-Policy\"" +
             " content=\"default-src 'self' gap:; style-src 'self'" +
-            " 'unsafe-inline'; connect-src https://cloud.padlock.io\">"
+            " 'unsafe-inline'; connect-src https://*\">"
         }))
         .pipe(crisper())
         .pipe(gulp.dest(dest));
