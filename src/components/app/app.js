@@ -746,7 +746,7 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                     {element: "button", label: "Dismiss", close: true}
                 ],
                 "Have you backed up your data yet? Remember that by default your data is only stored " +
-                "locally and may be lost if you uninstall Padlock, loose your device or accidentally " +
+                "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
                 "reset your data. You can backup your data by exporting it " +
                 "or synching it with Padlock Cloud."
             );
