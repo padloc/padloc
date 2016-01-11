@@ -117,11 +117,11 @@
 
             this.$$("padlock-progress").show();
             this.$.cloudEnterButton.disabled = true;
-            cloudSource.requestAuthToken(email, false, function(token) {
+            cloudSource.requestAuthToken(email, false, function(authToken) {
                 this.$$("padlock-progress").hide();
                 this.$.cloudEnterButton.disabled = false;
                 this.set("settings.sync_email", email);
-                this.set("settings.sync_key", token);
+                this.set("settings.sync_key", authToken.token);
                 this.fire("open-form", {
                     title: "Almost done! An email was sent to " + email + " with further instructions. " +
                         "Hit 'Cancel' to abort the process.",

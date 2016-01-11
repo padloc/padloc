@@ -8,11 +8,15 @@ padlock.CloudSource = (function(Source) {
     padlock.ERR_CLOUD_SERVER_ERROR = "Internal server error";
     padlock.ERR_CLOUD_FAILED_CONNECTION = "Failed connection";
     padlock.ERR_CLOUD_VERSION_DEPRECATED = "Api version deprecated";
+    padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED = "Padlock Cloud subscription required";
+    padlock.ERR_CLOUD_NOT_FOUND = "Account not found";
 
     function errFromStatus(s) {
         switch(s) {
             case 401:
                 return padlock.ERR_CLOUD_UNAUTHORIZED;
+            case 402:
+                return padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED;
             case 404:
                 return padlock.ERR_CLOUD_NOT_FOUND;
             case 406:
@@ -108,7 +112,11 @@ padlock.CloudSource = (function(Source) {
     CloudSource.prototype.requestAuthToken = function(email, create, success, fail) {
         var req = this.prepareRequest(create ? "POST" : "PUT", "/auth/", function(req) {
             if (isSuccess(req.status)) {
-                success && success(req.responseText);
+                try {
+                    success && success(JSON.parse(req.responseText));
+                } catch(e) {
+                    fail(padlock.ERR_CLOUD_SERVER_ERROR);
+                }
             } else {
                 fail && fail(errFromStatus(req.status));
             }

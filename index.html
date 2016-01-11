@@ -19,7 +19,6 @@
         <link rel="import" href="src/padlock.html">
         <link rel="import" href="src/components/app/app.html">
 
-        <!-- This is the ENTRY POINT -->
         <script>
             /* global padlock, chrome */
             window.addEventListener("WebComponentsReady", function() {
@@ -36,6 +35,7 @@
                         "sync_device": "",
                         "sync_connected": false,
                         "sync_auto": true,
+                        "sync_readonly": false,
                         "default_fields": ["username", "password"],
                         "obfuscate_fields": false,
                         "showed_backup_reminder": 0

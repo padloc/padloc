@@ -5,7 +5,7 @@
  * Top-level component for rendering application interface. Requires a `padlock.Collection` and
  * `padlock.Settings` object to be passed into the constructor as dependencies.
  */
-padlock.App = (function(Polymer, platform) {
+padlock.App = (function(Polymer, platform, pay) {
     "use strict";
 
     return Polymer({
@@ -40,7 +40,8 @@ padlock.App = (function(Polymer, platform) {
             "open-form": "_openFormHandler",
             "alert": "_alertHandler",
             "notify": "_notify",
-            "error": "_errorHandler"
+            "error": "_errorHandler",
+            "buy-subscription": "_buySubscription"
         },
         observers: [
             "_saveSettings(settings.*)",
@@ -93,6 +94,36 @@ padlock.App = (function(Polymer, platform) {
             // This is a workaround for a bug in Polymer where tap events sometimes fail to be generated
             // TODO: Remove as soon as this is fixed in Polymer
             document.addEventListener("touchstart", function() {}, false);
+
+            pay.addEventListener("purchased", function() {
+                pay.verifySubscription(this.settings.sync_email);
+            }.bind(this));
+
+            pay.addEventListener("verified", function() {
+                if (!this.settings.sync_connected) {
+
+                }
+                var actions = this.settings.sync_connected ? [
+                    {element: "button", label: "Synchronize Now", tap: this._synchronize.bind(this), submit: true},
+                    {element: "button", label: "Dismiss", cancel: true}
+                ] : [
+                    {element: "button", label: "Connect Now", tap: function() {
+                        this._openCloudView();
+                        this.async(function() {
+                            this.$.cloudView.requestAuthToken({
+                                email: this.settings.sync_email,
+                                create: true
+                            });
+                        }, 100);
+                    }.bind(this), submit: true},
+                    {element: "button", label: "Dismiss", cancel: true}
+                ];
+                this._openForm(
+                    actions,
+                    "Good news! We have just verified you Padlock Cloud subscription. You can now start using it " +
+                    "on this device!"
+                );
+            }.bind(this));
         },
         _initView: function(collExists) {
             // If there already is data in the local storage ask for password
@@ -460,13 +491,19 @@ padlock.App = (function(Polymer, platform) {
                         }
                     }.bind(this),
                     fail: function(e) {
-                        if (e == padlock.ERR_STORE_DECRYPT) {
-                            // Decryption failed, presumably on the remote data. This means that the local master
-                            // password does not match the one that was used for encrypting the remote data so
-                            // we need to prompt the user for the correct password.
-                            this._requireRemotePassword();
-                        } else {
-                            this._handleError(e);
+                        switch(e) {
+                            case padlock.ERR_STORE_DECRYPT:
+                                // Decryption failed, presumably on the remote data. This means that the local master
+                                // password does not match the one that was used for encrypting the remote data so
+                                // we need to prompt the user for the correct password.
+                                this._requireRemotePassword();
+                                break;
+                            case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
+                                this.set("settings.sync_readonly", true);
+                                this._alertReadonly();
+                                break;
+                            default:
+                                this._handleError(e);
                         }
 
                         // Hide progress indicator
@@ -780,9 +817,36 @@ padlock.App = (function(Polymer, platform) {
         _openAppStore: function() {
             window.open(platform.getAppStoreLink(), "_system");
         },
+        _alertReadonly: function() {
+            this._openForm(
+                [
+                    {element: "button", label: "Renew Subscription", submit: true,
+                        tap: this._buySubscription.bind(this)},
+                    {element: "button", label: "Go To Padlock Cloud Settings", submit: true,
+                        tap: this._openCloudView.bind(this)},
+                    {element: "button", label: "Dismiss", cancel: true}
+                ],
+                "It seems your Padlock Cloud subscription has expired which means that you can " +
+                "download your data from the cloud but you won't be able to update it or synchronize with " +
+                "any other devices. Renew your subscription now to unlock the full potential of Padlock Cloud!"
+            );
+        },
+        _buySubscription: function() {
+            var info = pay.getProductInfo();
+            this._openForm(
+                [
+                    {element: "button", label: "Buy Subscription (" + info.price + " / month)", submit: true},
+                    {element: "button", label: "No Thanks", cancel: true}
+                ],
+                info.description,
+                function() {
+                    pay.orderSubscription(this.settings.sync_email);
+                }.bind(this)
+            );
+        },
         _selectMarkedRecord: function() {
             this._currentView.selectMarked && this._currentView.selectMarked();
         }
     });
 
-})(Polymer, padlock.platform);
+})(Polymer, padlock.platform, padlock.pay);
