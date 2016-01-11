@@ -5,7 +5,7 @@
  * Top-level component for rendering application interface. Requires a `padlock.Collection` and
  * `padlock.Settings` object to be passed into the constructor as dependencies.
  */
-padlock.App = (function(Polymer, platform, CloudSource) {
+padlock.App = (function(Polymer, platform) {
     "use strict";
 
     return Polymer({
@@ -70,6 +70,8 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             this.settings = settings;
             // Fetch settings from persistent storage
             this.settings.fetch({success: this._notifySettings.bind(this)});
+
+            this.remoteSource = new padlock.CloudSource(this.settings);
 
             // Check if collection data already exists in persistent storage. If no, that means that means that
             // we are starting with a 'clean slate' and have to set a master password first
@@ -443,13 +445,6 @@ padlock.App = (function(Polymer, platform, CloudSource) {
             // Check if the user has connected the client to the cloud already.
             // If not, prompt him to do so
             if (this.settings.sync_connected) {
-                // Create new cloud source instance (if necessary) and set the required properties with
-                // value from the settings
-                this.remoteSource = this.remoteSource || new CloudSource();
-                this.remoteSource.host = this.settings.sync_host;
-                this.remoteSource.email = this.settings.sync_email;
-                this.remoteSource.authToken = this.settings.sync_key;
-
                 // Show progress indicator
                 this.$.synchronizing.show();
 
@@ -782,10 +777,9 @@ padlock.App = (function(Polymer, platform, CloudSource) {
                         "Please note that you won't be able to use Padlock Cloud until you install the latest version!"
                     );
                     break;
-                case padlock.ERR_CLOUD_SERVER_ERROR:
+                default:
                     this._alert("There was an error while trying to connect to Padlock Cloud. " +
                         "Please try again later!");
-                    break;
             }
         },
         _openAppStore: function() {
@@ -793,4 +787,4 @@ padlock.App = (function(Polymer, platform, CloudSource) {
         }
     });
 
-})(Polymer, padlock.platform, padlock.CloudSource);
+})(Polymer, padlock.platform);

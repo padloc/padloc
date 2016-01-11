@@ -31,14 +31,23 @@ button, padlock-toggle-button {
     padding: 15px;
     margin-bottom: 5px;
     text-align: center;
+
+    &.warning {
+        color: $color-error;
+    }
 }
 
-.email-input-wrapper {
-    margin-top: 30px;
+#customUrlInput {
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
     margin-bottom: 5px;
 
-    input {
-        width: 100%;
-        text-align: center;
+    &:invalid {
+        color: $color-error;
     }
+}
+
+#customUrlInput:valid + .warning {
+    display: none;
 }

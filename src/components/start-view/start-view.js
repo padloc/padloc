@@ -107,7 +107,7 @@
             this.mode = this.mode == "restore-cloud" ? "get-started" : "restore-cloud";
         },
         _cloudEnter: function() {
-            var cloudSource = new CloudSource(this.settings.sync_host);
+            var cloudSource = new CloudSource(this.settings);
 
             var email = this.$.emailInput.value;
             if (!email) {
@@ -120,10 +120,8 @@
             cloudSource.requestAuthToken(email, false, function(token) {
                 this.$$("padlock-progress").hide();
                 this.$.cloudEnterButton.disabled = false;
-                this._credentials = {
-                    email: email,
-                    authToken: token
-                };
+                this.set("settings.sync_email", email);
+                this.set("settings.sync_key", token);
                 this.fire("open-form", {
                     title: "Almost done! An email was sent to " + email + " with further instructions. " +
                         "Hit 'Cancel' to abort the process.",
@@ -143,8 +141,7 @@
             }.bind(this));
         },
         _attemptRestore: function() {
-            var cloudSource = new CloudSource(this.settings.sync_host,
-                this._credentials.email, this._credentials.authToken);
+            var cloudSource = new CloudSource(this.settings);
 
             this._cancelRestore = false;
 
@@ -155,6 +152,8 @@
                 fail: function(e) {
                     if (this._cancelRestore) {
                         this._cancelRestore = false;
+                        this.set("settings.sync_email", "");
+                        this.set("settings.sync_key", "");
                         return;
                     }
                     if (e == padlock.ERR_CLOUD_UNAUTHORIZED) {
@@ -167,6 +166,8 @@
         },
         _stopAttemptRestore: function() {
             this._cancelRestore = true;
+            this.set("settings.sync_email", "");
+            this.set("settings.sync_key", "");
             clearTimeout(this._attemptRestoreTimeout);
         },
         _restoreSuccess: function() {
@@ -174,8 +175,6 @@
                 this._cancelRestore = false;
                 return;
             }
-            this.set("settings.sync_email", this._credentials.email);
-            this.set("settings.sync_key", this._credentials.authToken);
             this.set("settings.sync_connected", true);
             this.collection.save({password: this.$.cloudPwdInput.value, rememberPassword: true});
 

@@ -58,6 +58,22 @@
             <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync"></padlock-toggle-button>
         </section>
 
+        <section>
+            <div class="note">
+                By providing a custom URL, you can synchronize your data with a server other than the official
+                Padlock Cloud server. <strong>WARNING: This is only recommended for advanced users!</strong>
+            </div>
+            <padlock-toggle-button value="{{ settings.sync_custom_host }}" label="Use Custom Server" on-change="_customHostChanged"></padlock-toggle-button>
+            <div class="tap-highlight" hidden$="{{ !settings.sync_custom_host }}">
+                <input is="padlock-input" id="customUrlInput" placeholder="Enter Custom URL" value="{{ settings.sync_host_url::change }}"
+                    pattern="^https://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$" required>
+                <div class="note warning">
+                    <strong>Invalid URL</strong> - Make sure that the URL is of the form <strong>https://myserver.tld:port</strong>.
+                    Note that a <strong>https</strong> connection is strictly required.
+                </div>
+            </div>
+        <section>
+
         <padlock-progress>Connecting...</padlock-progress>
 
     </template>
@@ -84,7 +100,7 @@
                 }
             },
             observers: [
-                "_credentialsChanged(settings.sync_email, settings.sync_key)"
+                "_customUrlChanged(settings.sync_host_url)"
             ],
             //* Opens the dialog for connecting to the Padlock Cloud
             _connect: function() {
@@ -131,7 +147,7 @@
                 // Show progress indicator
                 this.$$("padlock-progress").show();
 
-                var cloudSource = new CloudSource(this.settings.sync_host);
+                var cloudSource = new CloudSource(this.settings);
                 cloudSource.requestAuthToken(email, true, function(token) {
                     this.$$("padlock-progress").hide();
                     // We're getting back the api key directly, but it will valid only
@@ -159,7 +175,7 @@
             },
             _requestResetRemoteData: function() {
                 var email = this.settings.sync_email;
-                var cloudSource = new CloudSource(this.settings.sync_host, email);
+                var cloudSource = new CloudSource(this.settings);
 
                 this.$$("padlock-progress").show();
 
@@ -176,8 +192,7 @@
                 this.fire("alert", {message: message});
             },
             _testCredentials: function(poll) {
-                var cloudSource = new CloudSource(this.settings.sync_host,
-                    this.settings.sync_email, this.settings.sync_key);
+                var cloudSource = new CloudSource(this.settings);
 
                 cloudSource.testCredentials(function(connected) {
                     this.set("settings.sync_connected", connected);
@@ -224,6 +239,23 @@
                     title: "You have successfully connected to Padlock Cloud! " +
                         "You can now start synchronizing your data!"
                 });
+            },
+            _customHostChanged: function() {
+                if (this.settings.sync_custom_host) {
+                    this.fire("open-form", {
+                        components: [
+                            {element: "button", label: "Continue", submit: true},
+                            {element: "button", label: "Cancel", submit: true, tap: function() {
+                                this.set("settings.sync_custom_host", false);
+                            }.bind(this)}
+                        ],
+                        title: "Are you sure you want to use a custom server for synchronization? " +
+                            "This options is only recommended for advanced users!"
+                    });
+                }
+            },
+            _customUrlChanged: function() {
+                this.$.customUrlInput.checkValidity();
             }
         });
 

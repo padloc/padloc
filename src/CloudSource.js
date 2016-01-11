@@ -30,21 +30,18 @@ padlock.CloudSource = (function(Source) {
 
     /**
      * This source uses the Padlock cloud api to fetch and store data.
-     * @param String host  Base url for AJAX calls
-     * @param String email Email for identifying a user
-     * @param String authToken Api key used for authentication
+     * @param Object padlock.Settings object containing information such as remote host and user credentials
      */
-    var CloudSource = function(host, email, authToken) {
-        this.host = host;
-        this.email = email;
-        this.authToken = authToken;
+    var CloudSource = function(settings) {
+        this.settings = settings;
     };
     CloudSource.prototype = Object.create(Source.prototype);
     CloudSource.prototype.constructor = CloudSource;
 
     CloudSource.prototype.prepareRequest = function(method, path, cb) {
         var req = new XMLHttpRequest(),
-            url = this.host + path;
+            host = this.settings.sync_custom_host ? this.settings.sync_host_url : "https://cloud.padlock.io",
+            url = host + path;
 
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
@@ -52,14 +49,19 @@ padlock.CloudSource = (function(Source) {
             }
         };
 
-        req.open(method, url, true);
+        try {
+            req.open(method, url, true);
 
-        req.setRequestHeader("Accept", "application/vnd.padlock;version=1");
-        if (this.email && this.authToken) {
-            req.setRequestHeader("Authorization", "AuthToken " + this.email + ":" + this.authToken);
+            req.setRequestHeader("Accept", "application/vnd.padlock;version=1");
+            if (this.settings.sync_email && this.settings.sync_key) {
+                req.setRequestHeader("Authorization",
+                    "AuthToken " + this.settings.sync_email + ":" + this.settings.sync_key);
+            }
+
+            return req;
+        } catch(e) {
+            return null;
         }
-
-        return req;
     };
 
     CloudSource.prototype.fetch = function(opts) {
@@ -70,6 +72,12 @@ padlock.CloudSource = (function(Source) {
                 opts.fail(errFromStatus(req.status));
             }
         }.bind(this));
+
+        if (!req) {
+            opts && opts.fail(padlock.ERR_CLOUD_FAILED_CONNECTION);
+            return;
+        }
+
         req.send();
     };
 
@@ -81,6 +89,11 @@ padlock.CloudSource = (function(Source) {
                 opts.fail(errFromStatus(req.status));
             }
         }.bind(this));
+
+        if (!req) {
+            opts && opts.fail(padlock.ERR_CLOUD_FAILED_CONNECTION);
+            return;
+        }
 
         req.send(JSON.stringify(opts.data));
     };
@@ -101,6 +114,11 @@ padlock.CloudSource = (function(Source) {
             }
         });
 
+        if (!req) {
+            fail && fail(padlock.ERR_CLOUD_FAILED_CONNECTION);
+            return;
+        }
+
         req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         req.send("email=" + encodeURIComponent(email));
     };
@@ -113,6 +131,11 @@ padlock.CloudSource = (function(Source) {
                 fail && fail(errFromStatus(req.status));
             }
         });
+
+        if (!req) {
+            fail && fail(padlock.ERR_CLOUD_FAILED_CONNECTION);
+            return;
+        }
 
         req.send();
     };
@@ -127,6 +150,11 @@ padlock.CloudSource = (function(Source) {
                 fail && fail(errFromStatus(req.status));
             }
         });
+
+        if (!req) {
+            fail && fail(padlock.ERR_CLOUD_FAILED_CONNECTION);
+            return;
+        }
 
         req.send();
     };
