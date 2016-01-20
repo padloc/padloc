@@ -132,11 +132,26 @@
                 });
                 this._attemptRestore();
             }.bind(this), function(e) {
+                this.$.cloudEnterButton.disabled = false;
                 this.$$("padlock-progress").hide();
-                if (e == padlock.ERR_CLOUD_NOT_FOUND) {
-                    this.fire("alert", {message: "There is no Padlock Cloud account with this email!"});
-                } else {
-                    this.fire("error", e);
+                switch(e) {
+                    case padlock.ERR_CLOUD_NOT_FOUND:
+                    case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
+                        this.fire("open-form", {
+                            components: [
+                                {element: "button", label: "Try Different Email", submit: true, tap: function() {
+                                    this.$.emailInput.value = "";
+                                    this.$.emailInput.focus();
+                                }.bind(this)},
+                                {element: "button", label: "Get Started Offline", submit: true, tap: function() {
+                                    this.mode = "get-started";
+                                }.bind(this)}
+                            ],
+                            title: "There is no existing Padlock Cloud account with this email address!"
+                        });
+                        break;
+                    default:
+                        this.fire("error", e);
                 }
             }.bind(this));
         },
