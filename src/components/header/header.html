@@ -19,7 +19,8 @@
                 <!-- FILTER INPUT -->
                 <input id="filterInput" is="padlock-input" class="filter-input" value="{{ filterString::keyup }}"
                 type="search" tabindex="-1" placeholder$="{{ _filterPlaceholder(_filterHasFocus) }}"
-                disabled$="{{ !_view.showFilter }}" has-focus="{{ _filterHasFocus }}" select-all-on-focus/>
+                disabled$="{{ !_view.showFilter }}" has-focus="{{ _filterHasFocus }}" select-all-on-focus
+                on-enter="_filterEnter"/>
                 <!-- HEADER TITLE -->
                 <div class="title" on-tap="_titleTapped">{{ _title }}</div>
             </div>

@@ -95,6 +95,9 @@
         },
         _toggleFilter: function(showFilter) {
             this.toggleClass("show-filter", showFilter);
+        },
+        _filterEnter: function() {
+            this.fire("filter-enter");
         }
     });
 

@@ -359,11 +359,6 @@ padlock.App = (function(Polymer, platform) {
         },
         //* Keyboard shortcuts
         _keydown: function(event) {
-            // Don't do anything if we're currently in a input field
-            if (padlock.currentInput) {
-                return;
-            }
-
             var shortcut;
             var dialogsOpen = !!Polymer.dom(this.root).querySelectorAll("padlock-dialog.open").length;
 
@@ -382,14 +377,14 @@ padlock.App = (function(Polymer, platform) {
             }
             // ENTER -> Select marked
             else if (event.keyCode == 13 && !dialogsOpen) {
-                shortcut = this._currentView.selectMarked && this._currentView.selectMarked.bind(this._currentView);
+                shortcut = this._selectMarkedRecord.bind(this);
             }
             // ESCAPE -> Back
-            else if (event.keyCode == 27) {
+            else if (event.keyCode == 27 && !padlock.currentInput) {
                 shortcut = this._back.bind(this);
             }
             // CTRL/CMD + C -> Copy
-            else if ((event.ctrlKey || event.metaKey) && event.keyCode === 67) {
+            else if ((event.ctrlKey || event.metaKey) && event.keyCode === 67 && !padlock.currentInput) {
                 shortcut = this._currentView.copyToClipboard &&
                     this._currentView.copyToClipboard.bind(this._currentView);
             }
@@ -784,6 +779,9 @@ padlock.App = (function(Polymer, platform) {
         },
         _openAppStore: function() {
             window.open(platform.getAppStoreLink(), "_system");
+        },
+        _selectMarkedRecord: function() {
+            this._currentView.selectMarked && this._currentView.selectMarked();
         }
     });
 
