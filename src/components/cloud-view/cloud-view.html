@@ -156,6 +156,7 @@
                     // after the user has visited the activation link in the email he was sent
                     this.set("settings.sync_connected", false);
                     this.set("settings.sync_key", authToken.token);
+                    this._testCredentials(true);
                     this._alert("Almost done! An email was sent to " + email + " with further instructions.");
                 }.bind(this), function(e) {
                     this.$$("padlock-progress").hide();
@@ -232,11 +233,6 @@
             },
             _stopTestCredentials: function() {
                 clearTimeout(this._testCredsTimeout);
-            },
-            _credentialsChanged: function() {
-                if (this.settings.sync_key && !this.settings.sync_connected) {
-                    this._testCredentials(this.showing);
-                }
             },
             _showingChanged: function() {
                 if (this.showing && this.settings.sync_key && !this.settings.sync_connected) {
