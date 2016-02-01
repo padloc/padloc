@@ -218,10 +218,12 @@
         generateConfirm: function(field, value) {
             if (value) {
                 this.set("_selectedField.value", value);
+                this.fire("save");
                 var valueInput = this._valueInputForField(field);
                 this.async(function() {
                     valueInput && valueInput.focus();
                     valueInput && valueInput.updateSize();
+                    this.fire("notify", {message: "Changes Saved!", type: "success", duration: 1000});
                 }, 300);
             } else {
                 // If no value is provided the generation process is considered canceled
