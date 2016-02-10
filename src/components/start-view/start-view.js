@@ -147,7 +147,8 @@
                                     this.mode = "get-started";
                                 }.bind(this)}
                             ],
-                            title: "There is no existing Padlock Cloud account with this email address!"
+                            title: "There is no existing Padlock Cloud account with this email address! " +
+                                "Create an offline account first, then connect to Padlock Cloud later!"
                         });
                         break;
                     default:
