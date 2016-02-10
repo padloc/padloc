@@ -14,12 +14,6 @@
         <style include="view-styles"></style>
         <style include="cloud-view-styles"></style>
 
-        <!-- <div class="status"> -->
-        <!--     <span class="not&#45;connected" hidden$="{{ _isSet(settings.sync_key) }}">Not Connected</span> -->
-        <!--     <span hidden$="{{ !_isSet(settings.sync_key) }}">Connected to <strong>{{ settings.sync_email }}</strong></span> -->
-        <!--     <span hidden$="{{ !_isActivationPending(settings.sync_key, settings.sync_connected) }}">(activation pending)</span> -->
-        <!-- </div> -->
-
         <section hidden$="{{ _isSet(settings.sync_key) }}">
             <div class="note">
                 Padlock Cloud provides a convenient way of synchronising your data between all your devices. By
@@ -164,21 +158,15 @@
                         data.create = true;
                         this.requestAuthToken(data);
                     } else if (e == padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED) {
-                        if (pay.hasSubscription()) {
-                            pay.verifySubscription();
-                            this.fire("alert",
-                                {message: "Please wait a moment while we verify you Padlock Cloud subscription!"});
-                        } else {
-                            this.fire("open-form", {
-                                title: "No existing Padlock Cloud account was found. In order to create a new one, " +
-                                    "you need a Padlock Cloud subscription.",
-                                components: [
-                                    {element: "button", label: "Continue", submit: true},
-                                    {element: "button", label: "Cancel", cancel: true}
-                                ],
-                                submit: this._buySubscription.bind(this)
-                            });
-                        }
+                        this.fire("open-form", {
+                            title: "No existing Padlock Cloud account was found. In order to create a new one, " +
+                                "you need a Padlock Cloud subscription.",
+                            components: [
+                                {element: "button", label: "Continue", submit: true},
+                                {element: "button", label: "Cancel", cancel: true}
+                            ],
+                            submit: this._buySubscription.bind(this)
+                        });
                     } else {
                         this.fire("error", e);
                     }
