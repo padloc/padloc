@@ -22,7 +22,7 @@
                 Before being sent to our servers, your data is encrypted locally using your master password to make
                 sure that nobody can read it - not even we!
             </div>
-            <button on-tap="_connect">Get Started</button>
+            <button on-tap="connect">Get Started</button>
         </section>
 
         <section hidden$="{{ !_isActivationPending(settings.sync_key, settings.sync_connected) }}">
@@ -31,7 +31,7 @@
                 An email was sent to <strong>{{ settings.sync_email }}</strong> with further instructions.
                 Didn't get it? Try again using the button below!
             </div>
-            <button on-tap="_connect">Try Again</button>
+            <button on-tap="connect">Try Again</button>
         </section>
 
         <section hidden$="{{ !settings.sync_connected }}">
@@ -95,7 +95,7 @@
                 "_customUrlChanged(settings.sync_host_url)"
             ],
             //* Opens the dialog for connecting to the Padlock Cloud
-            _connect: function() {
+            connect: function() {
                 this.set("settings.sync_key", "");
                 this.fire("open-form", {
                     components: [

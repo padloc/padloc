@@ -746,14 +746,15 @@ padlock.App = (function(Polymer, platform, pay) {
         _showBackupReminder: function() {
             this._openForm(
                 [
+                    {element: "button", label: "Connect To Padlock Cloud", close: true,
+                        tap: this._connectToCloud.bind(this)},
                     {element: "button", label: "Export Data", close: true, tap: this._openExportView.bind(this)},
-                    {element: "button", label: "Sync Data", close: true, tap: this._synchronize.bind(this)},
                     {element: "button", label: "Dismiss", close: true}
                 ],
                 "Have you backed up your data yet? Remember that by default your data is only stored " +
                 "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
-                "reset your data. You can backup your data by exporting it " +
-                "or synching it with Padlock Cloud."
+                "reset your data. Padlock Cloud is a great way to back up your data online and synchronize " +
+                "with other devices. Alternatively, you can export your data and store it somewhere safe."
             );
             this.set("settings.showed_backup_reminder", new Date().getTime());
         },
@@ -840,21 +841,19 @@ padlock.App = (function(Polymer, platform, pay) {
                 {element: "button", label: "Synchronize Now", tap: this._synchronize.bind(this), submit: true},
                 {element: "button", label: "Dismiss", cancel: true}
             ] : [
-                {element: "button", label: "Connect Now", tap: function() {
-                    this._openCloudView();
-                    this.async(function() {
-                        this.$.cloudView.requestAuthToken({
-                            email: this.settings.sync_email,
-                            create: true
-                        });
-                    }, 100);
-                }.bind(this), submit: true},
+                {element: "button", label: "Connect Now", tap: this._connectToCloud.bind(this), submit: true},
                 {element: "button", label: "Dismiss", cancel: true}
             ];
             this._openForm(
                 actions,
                 "Your purchase was successful! You can now start using Padlock Cloud on this device!"
             );
+        },
+        _connectToCloud: function() {
+            if (this._currentView != this.$.cloudView) {
+                this._openCloudView();
+            }
+            this.async(this.$.cloudView.connect.bind(this.$.cloudView), 100);
         }
     });
 
