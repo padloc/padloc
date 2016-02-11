@@ -41,7 +41,7 @@ padlock.pay = (function() {
             }
         };
 
-        req.open("POST", "http://192.168.3.151:3000/validatereceipt/", true);
+        req.open("POST", "https://cloud.padlock.io/validatereceipt/", true);
         req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         req.send(
             "email=" + encodeURIComponent(account) +
