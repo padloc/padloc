@@ -24,6 +24,7 @@ padlock.pay = (function() {
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
                 if (req.status.toString()[0] == "2") {
+                    store.get(monthlyId).finish();
                     success();
                 } else {
                     try {
