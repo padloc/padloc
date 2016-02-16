@@ -27,19 +27,9 @@
                 var source = (typeof chrome !== "undefined") && chrome.storage ?
                     new padlock.ChromeStorageSource() : new padlock.LocalStorageSource(),
                     store = new padlock.Store(source),
-                    settings = new padlock.Settings({
-                        "sync_host_url": "https://cloud.padlock.io",
-                        "sync_custom_host": false,
-                        "sync_email": "",
-                        "sync_key": "",
-                        "sync_device": "",
-                        "sync_connected": false,
-                        "sync_auto": true,
-                        "sync_readonly": false,
-                        "default_fields": ["username", "password"],
-                        "obfuscate_fields": false,
-                        "showed_backup_reminder": 0
-                    }, source),
+                    settings = new padlock.Settings(source, {
+                        // "sync_require_subscription": true
+                    }),
                     collection = new padlock.Collection("default", store);
 
                 var app = new padlock.App(collection, settings);
