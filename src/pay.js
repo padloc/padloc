@@ -17,15 +17,18 @@ padlock.pay = (function() {
         });
     });
 
+    // Validation function for purchase receipts
     function validate(email, success, fail, product) {
         var req = new XMLHttpRequest();
 
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
                 if (req.status.toString()[0] == "2") {
+                    // Request was successful. Finish purchase and call success callback
                     store.get(monthlyId).finish();
                     success();
                 } else {
+                    // Handle error
                     try {
                         var resp = JSON.parse(req.responseText);
                         if (resp.error == "invalid_receipt") {
@@ -40,15 +43,21 @@ padlock.pay = (function() {
             }
         };
 
-        req.open("POST", "https://cloud.padlock.io/validatereceipt/", true);
-        req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-        req.send(
-            "email=" + encodeURIComponent(account) +
-            "&type=" + encodeURIComponent(product.transaction.type) +
-            "&receipt=" + encodeURIComponent(product.transaction.transactionReceipt)
-        );
+        try {
+            // send receipt data to padlock cloud server
+            req.open("POST", "https://cloud.padlock.io/validatereceipt/", true);
+            req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            req.send(
+                "email=" + encodeURIComponent(account) +
+                "&type=" + encodeURIComponent(product.transaction.type) +
+                "&receipt=" + encodeURIComponent(product.transaction.transactionReceipt)
+            );
+        } catch(e) {
+            fail(padlock.ERR_PAY_SERVER_ERROR);
+        }
     }
 
+    // checks if a user has an active subscription
     function hasSubscription(cb) {
         refresh(function() {
             var product = store.get(monthlyId);
@@ -56,6 +65,7 @@ padlock.pay = (function() {
         });
     }
 
+    // Verifies the current purchase
     function verifySubscription(email, success, fail) {
         // store.refresh();
         account = email;
@@ -65,6 +75,7 @@ padlock.pay = (function() {
         });
     }
 
+    // Initiates a purchase
     function orderSubscription(email, success, fail) {
         refresh(function() {
             store.once(monthlyId, "approved", function() {
@@ -74,20 +85,14 @@ padlock.pay = (function() {
         });
     }
 
+    // Fetches the product info for the padlock cloud subscription
     function getProductInfo(cb) {
-        if (typeof store === "undefined") {
-            return {
-                description: "Padlock Cloud provides a convenient way of synchronising your " +
-                    "data between all your devices by securely storing it in the cloud.",
-                price: "$2.49"
-            };
-        }
-
         refresh(function() {
             cb(store.get(monthlyId));
         });
     }
 
+    // Calls `store.refresh` if that hasn't happened yet. Otherwise does nothing.
     function refresh(cb) {
         if (refreshed) {
             cb();
