@@ -815,7 +815,9 @@ padlock.App = (function(Polymer, platform, pay) {
             );
         },
         _buySubscription: function() {
+            this.$.connecting.show();
             pay.getProductInfo(function(info) {
+                this.$.connecting.hide();
                 this._openForm(
                     [
                         {element: "button", label: "Buy Subscription (" + info.price + " / month)", submit: true},
