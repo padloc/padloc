@@ -94,9 +94,6 @@ padlock.App = (function(Polymer, platform, pay) {
             // This is a workaround for a bug in Polymer where tap events sometimes fail to be generated
             // TODO: Remove as soon as this is fixed in Polymer
             document.addEventListener("touchstart", function() {}, false);
-
-            pay.addEventListener("verified", function() {
-            }.bind(this));
         },
         _initView: function(collExists) {
             // If there already is data in the local storage ask for password

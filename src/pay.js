@@ -6,7 +6,6 @@ padlock.pay = (function() {
     padlock.ERR_PAY_INVALID_RECEIPT;
 
     var monthlyId = "padlock_cloud_monthly";
-    var dispatcher = document.createElement("div");
     var account;
     var refreshed = false;
 
@@ -51,10 +50,6 @@ padlock.pay = (function() {
     }
 
     function hasSubscription(cb) {
-        if (typeof store === "undefined") {
-            return cb(false);
-        }
-
         refresh(function() {
             var product = store.get(monthlyId);
             cb(product.state == store.OWNED || product.state == store.APPROVED);
@@ -62,10 +57,6 @@ padlock.pay = (function() {
     }
 
     function verifySubscription(email, success, fail) {
-        if (typeof store === "undefined") {
-            dispatcher.dispatchEvent(new CustomEvent("verified"));
-            return;
-        }
         // store.refresh();
         account = email;
         store.validator = validate.bind(null, email, success, fail);
@@ -75,10 +66,6 @@ padlock.pay = (function() {
     }
 
     function orderSubscription(email, success, fail) {
-        if (typeof store === "undefined") {
-            dispatcher.dispatchEvent(new CustomEvent("purchased"));
-            return;
-        }
         refresh(function() {
             store.once(monthlyId, "approved", function() {
                 verifySubscription(email, success, fail);
@@ -118,8 +105,6 @@ padlock.pay = (function() {
         hasSubscription: hasSubscription,
         verifySubscription: verifySubscription,
         getProductInfo: getProductInfo,
-        addEventListener: dispatcher.addEventListener.bind(dispatcher),
-        removeEventListenert: dispatcher.removeEventListener.bind(dispatcher),
         refresh: refresh
     };
 })();
