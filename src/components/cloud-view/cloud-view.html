@@ -32,6 +32,7 @@
                 Didn't get it? Try again using the button below!
             </div>
             <button on-tap="connect">Try Again</button>
+            <button on-tap="_cancelConnect">Cancel</button>
         </section>
 
         <section hidden$="{{ !settings.sync_connected }}">
@@ -72,7 +73,7 @@
     <script>
     /* global Polymer, padlock */
 
-    (function(Polymer, ViewBehavior, CloudSource, pay) {
+    (function(Polymer, ViewBehavior, CloudSource) {
         "use strict";
 
         Polymer({
@@ -266,6 +267,10 @@
             },
             _buySubscription: function() {
                 this.fire("buy-subscription");
+            },
+            _cancelConnect: function() {
+                this.set("settings.sync_key", "");
+                this._stopTestCredentials();
             }
         });
 
