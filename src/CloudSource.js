@@ -62,6 +62,10 @@ padlock.CloudSource = (function(Source) {
                     "AuthToken " + this.settings.sync_email + ":" + this.settings.sync_key);
             }
 
+            if (this.settings.sync_require_subscription === false) {
+                req.setRequestHeader("Require-Subscription", "NO");
+            }
+
             return req;
         } catch(e) {
             return null;
