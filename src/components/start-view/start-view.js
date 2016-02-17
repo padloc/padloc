@@ -122,14 +122,7 @@
                 this.$.cloudEnterButton.disabled = false;
                 this.set("settings.sync_email", email);
                 this.set("settings.sync_key", authToken.token);
-                this.fire("open-form", {
-                    title: "Almost done! An email was sent to " + email + " with further instructions. " +
-                        "Hit 'Cancel' to abort the process.",
-                    components: [
-                        {element: "button", label: "Cancel", tap: this._stopAttemptRestore.bind(this), close: true}
-                    ],
-                    allowDismiss: false
-                });
+                this._promptConnecting();
                 this._attemptRestore();
             }.bind(this), function(e) {
                 this.$.cloudEnterButton.disabled = false;
@@ -202,6 +195,29 @@
                 submit: this.fire.bind(this, "restore"),
                 cancel: this.fire.bind(this, "restore"),
                 allowDismiss: false
+            });
+        },
+        _promptConnecting: function() {
+            this.fire("open-form", {
+                title: "Almost done! An email was sent to " + this.settings.sync_email +
+                    " with further instructions. Hit 'Cancel' to abort the process.",
+                components: [
+                    {element: "button", label: "Cancel", tap: this._cancelConnect.bind(this), close: true}
+                ],
+                allowDismiss: false
+            });
+        },
+        _cancelConnect: function() {
+            this.fire("open-form", {
+                title: "Are you sure you want to cancel the connection process?",
+                components: [
+                    {element: "button", label: "Yes", tap: this._stopAttemptRestore.bind(this), close: true},
+                    {element: "button", label: "No", tap: this._promptConnecting.bind(this), close: true}
+                ],
+                submit: function() {
+                    this.set("settings.sync_key", "");
+                    this._stopTestCredentials();
+                }
             });
         }
     });
