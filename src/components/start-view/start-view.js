@@ -117,26 +117,35 @@
 
             this.$$("padlock-progress").show();
             this.$.cloudEnterButton.disabled = true;
-            cloudSource.requestAuthToken(email, false, function(token) {
+            cloudSource.requestAuthToken(email, false, function(authToken) {
                 this.$$("padlock-progress").hide();
                 this.$.cloudEnterButton.disabled = false;
                 this.set("settings.sync_email", email);
-                this.set("settings.sync_key", token);
-                this.fire("open-form", {
-                    title: "Almost done! An email was sent to " + email + " with further instructions. " +
-                        "Hit 'Cancel' to abort the process.",
-                    components: [
-                        {element: "button", label: "Cancel", tap: this._stopAttemptRestore.bind(this), close: true}
-                    ],
-                    allowDismiss: false
-                });
+                this.set("settings.sync_key", authToken.token);
+                this._promptConnecting();
                 this._attemptRestore();
             }.bind(this), function(e) {
+                this.$.cloudEnterButton.disabled = false;
                 this.$$("padlock-progress").hide();
-                if (e == padlock.ERR_CLOUD_NOT_FOUND) {
-                    this.fire("alert", {message: "There is no Padlock Cloud account with this email!"});
-                } else {
-                    this.fire("error", e);
+                switch(e) {
+                    case padlock.ERR_CLOUD_NOT_FOUND:
+                    case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
+                        this.fire("open-form", {
+                            components: [
+                                {element: "button", label: "Try Different Email", submit: true, tap: function() {
+                                    this.$.emailInput.value = "";
+                                    this.$.emailInput.focus();
+                                }.bind(this)},
+                                {element: "button", label: "Get Started Offline", submit: true, tap: function() {
+                                    this.mode = "get-started";
+                                }.bind(this)}
+                            ],
+                            title: "There is no existing Padlock Cloud account with this email address! " +
+                                "Create an offline account first, then connect to Padlock Cloud later!"
+                        });
+                        break;
+                    default:
+                        this.fire("error", e);
                 }
             }.bind(this));
         },
@@ -186,6 +195,29 @@
                 submit: this.fire.bind(this, "restore"),
                 cancel: this.fire.bind(this, "restore"),
                 allowDismiss: false
+            });
+        },
+        _promptConnecting: function() {
+            this.fire("open-form", {
+                title: "Almost done! An email was sent to " + this.settings.sync_email +
+                    " with further instructions. Hit 'Cancel' to abort the process.",
+                components: [
+                    {element: "button", label: "Cancel", tap: this._cancelConnect.bind(this), close: true}
+                ],
+                allowDismiss: false
+            });
+        },
+        _cancelConnect: function() {
+            this.fire("open-form", {
+                title: "Are you sure you want to cancel the connection process?",
+                components: [
+                    {element: "button", label: "Yes", tap: this._stopAttemptRestore.bind(this), close: true},
+                    {element: "button", label: "No", tap: this._promptConnecting.bind(this), close: true}
+                ],
+                submit: function() {
+                    this.set("settings.sync_key", "");
+                    this._stopTestCredentials();
+                }
             });
         }
     });

@@ -5,7 +5,7 @@
  * Top-level component for rendering application interface. Requires a `padlock.Collection` and
  * `padlock.Settings` object to be passed into the constructor as dependencies.
  */
-padlock.App = (function(Polymer, platform) {
+padlock.App = (function(Polymer, platform, pay) {
     "use strict";
 
     return Polymer({
@@ -40,7 +40,8 @@ padlock.App = (function(Polymer, platform) {
             "open-form": "_openFormHandler",
             "alert": "_alertHandler",
             "notify": "_notify",
-            "error": "_errorHandler"
+            "error": "_errorHandler",
+            "buy-subscription": "_buySubscription"
         },
         observers: [
             "_saveSettings(settings.*)",
@@ -144,38 +145,42 @@ padlock.App = (function(Polymer, platform) {
             // show progress indicator
             this.$.decrypting.show();
             // Attempt to fetch data from storage and decrypt it
-            this.collection.fetch({password: password, rememberPassword: true, success: function() {
-                // Hide progress indicator
-                this.$.decrypting.hide();
-                // We're done decrypting so, reset the `_decrypting` flag
-                this._decrypting = false;
-                // Show either the last view shown before locking the screen or default to the list view
-                this._popinOpen(this._lastView || this.$.listView);
-                // After a short delay, trigger synchronization if auto-sync is enabled
-                this.async(function() {
-                    // If there is more than ten records in the collection and no backup reminder has been
-                    // shown, show it.
-                    if (
-                        !this.settings.sync_connected &&
-                        this._records.filter(function(rec) { return !rec.removed; }).length > 10 &&
-                        !this.settings.showed_backup_reminder
-                    ) {
-                        this._showBackupReminder();
-                    }
+            this.collection.fetch({password: password, rememberPassword: true,
+                success: this._unlockSuccess.bind(this), fail: this._unlockFail.bind(this)});
+        },
+        _unlockSuccess: function() {
+            // Hide progress indicator
+            this.$.decrypting.hide();
+            // We're done decrypting so, reset the `_decrypting` flag
+            this._decrypting = false;
+            // Show either the last view shown before locking the screen or default to the list view
+            this._popinOpen(this._lastView || this.$.listView);
 
-                    if (this.settings.sync_connected && this.settings.sync_auto) {
-                        this._synchronize();
-                    }
-                }, 2000);
-            }.bind(this), fail: function() {
-                // Fetching/decrypting the data failed. This can have multiple reasons but by far the most
-                // likely is that the password was incorrect, so that is what we tell the user.
-                this.$.notification.show("Wrong Password!", "error", 2000);
-                // Hide progress indicator
-                this.$.decrypting.hide();
-                // We're done decrypting so, reset the `_decrypting` flag
-                this._decrypting = false;
-            }.bind(this)});
+            // After a short delay, trigger synchronization if auto-sync is enabled
+            this.async(function() {
+                // If there is more than ten records in the collection and no backup reminder has been
+                // shown, show it.
+                if (
+                    !this.settings.sync_connected &&
+                    this._records.filter(function(rec) { return !rec.removed; }).length > 10 &&
+                    !this.settings.showed_backup_reminder
+                ) {
+                    this._showBackupReminder();
+                }
+
+                if (this.settings.sync_connected && this.settings.sync_auto) {
+                    this._synchronize();
+                }
+            }, 2000);
+        },
+        _unlockFail: function() {
+            // Fetching/decrypting the data failed. This can have multiple reasons but by far the most
+            // likely is that the password was incorrect, so that is what we tell the user.
+            this.$.notification.show("Wrong Password!", "error", 2000);
+            // Hide progress indicator
+            this.$.decrypting.hide();
+            // We're done decrypting so, reset the `_decrypting` flag
+            this._decrypting = false;
         },
         // Handler for cordova `pause` event. Usually triggered when the app goes into the background.
         // Hides the header, closes all dialogs and unless we're currently on the lock or start view, hide
@@ -449,6 +454,7 @@ padlock.App = (function(Polymer, platform) {
                     // the case, provide that password explicitly
                     remotePassword: remotePassword,
                     success: function() {
+                        this.set("settings.sync_readonly", false);
                         this.$.synchronizing.hide();
 
                         // If we explicitly used a different password for the remote source than for the local source,
@@ -460,13 +466,19 @@ padlock.App = (function(Polymer, platform) {
                         }
                     }.bind(this),
                     fail: function(e) {
-                        if (e == padlock.ERR_STORE_DECRYPT) {
-                            // Decryption failed, presumably on the remote data. This means that the local master
-                            // password does not match the one that was used for encrypting the remote data so
-                            // we need to prompt the user for the correct password.
-                            this._requireRemotePassword();
-                        } else {
-                            this._handleError(e);
+                        switch(e) {
+                            case padlock.ERR_STORE_DECRYPT:
+                                // Decryption failed, presumably on the remote data. This means that the local master
+                                // password does not match the one that was used for encrypting the remote data so
+                                // we need to prompt the user for the correct password.
+                                this._requireRemotePassword();
+                                break;
+                            case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
+                                this.set("settings.sync_readonly", true);
+                                this._alertReadonly();
+                                break;
+                            default:
+                                this._handleError(e);
                         }
 
                         // Hide progress indicator
@@ -731,14 +743,15 @@ padlock.App = (function(Polymer, platform) {
         _showBackupReminder: function() {
             this._openForm(
                 [
+                    {element: "button", label: "Connect To Padlock Cloud", close: true,
+                        tap: this._connectToCloud.bind(this)},
                     {element: "button", label: "Export Data", close: true, tap: this._openExportView.bind(this)},
-                    {element: "button", label: "Sync Data", close: true, tap: this._synchronize.bind(this)},
                     {element: "button", label: "Dismiss", close: true}
                 ],
                 "Have you backed up your data yet? Remember that by default your data is only stored " +
                 "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
-                "reset your data. You can backup your data by exporting it " +
-                "or synching it with Padlock Cloud."
+                "reset your data. Padlock Cloud is a great way to back up your data online and synchronize " +
+                "with other devices. Alternatively, you can export your data and store it somewhere safe."
             );
             this.set("settings.showed_backup_reminder", new Date().getTime());
         },
@@ -772,6 +785,13 @@ padlock.App = (function(Polymer, platform) {
                         "Please note that you won't be able to use Padlock Cloud until you install the latest version!"
                     );
                     break;
+                case padlock.ERR_PAY_INVALID_RECEIPT:
+                    this._openForm([
+                        {element: "button", label: "Try Again",
+                            tap: this._buySubscription.bind(this), submit: true},
+                        {element: "button", label: "Dismiss", cancel: true}
+                    ], "We were unable to verify your purchase. Please try again!");
+                    break;
                 default:
                     this._alert("There was an error while trying to connect to Padlock Cloud. " +
                         "Please try again later!");
@@ -780,9 +800,60 @@ padlock.App = (function(Polymer, platform) {
         _openAppStore: function() {
             window.open(platform.getAppStoreLink(), "_system");
         },
+        _alertReadonly: function() {
+            this._openForm(
+                [
+                    {element: "button", label: "Renew Subscription", submit: true,
+                        tap: this._buySubscription.bind(this)},
+                    {element: "button", label: "Go To Padlock Cloud Settings", submit: true,
+                        tap: this._openCloudView.bind(this)},
+                    {element: "button", label: "Dismiss", cancel: true}
+                ],
+                "It seems your Padlock Cloud subscription has expired which means that you can " +
+                "download your data from the cloud but you won't be able to update it or synchronize with " +
+                "any other devices. Renew your subscription now to unlock the full potential of Padlock Cloud!"
+            );
+        },
+        _buySubscription: function() {
+            this.$.connecting.show();
+            pay.getProductInfo(function(info) {
+                this.$.connecting.hide();
+                this._openForm(
+                    [
+                        {element: "button", label: "Buy Subscription (" + info.price + " / month)", submit: true},
+                        {element: "button", label: "No Thanks", cancel: true}
+                    ],
+                    info.description,
+                    function() {
+                        pay.orderSubscription(this.settings.sync_email,
+                            this._subscriptionVerified.bind(this), this._handleError.bind(this));
+                    }.bind(this)
+                );
+            }.bind(this));
+        },
         _selectMarkedRecord: function() {
             this._currentView.selectMarked && this._currentView.selectMarked();
+        },
+        _subscriptionVerified: function() {
+            this.set("settings.sync_readonly", false);
+            var actions = this.settings.sync_connected ? [
+                {element: "button", label: "Synchronize Now", tap: this._synchronize.bind(this), submit: true},
+                {element: "button", label: "Dismiss", cancel: true}
+            ] : [
+                {element: "button", label: "Connect Now", tap: this._connectToCloud.bind(this), submit: true},
+                {element: "button", label: "Dismiss", cancel: true}
+            ];
+            this._openForm(
+                actions,
+                "Your purchase was successful! You can now start using Padlock Cloud on this device!"
+            );
+        },
+        _connectToCloud: function() {
+            if (this._currentView != this.$.cloudView) {
+                this._openCloudView();
+            }
+            this.async(this.$.cloudView.connect.bind(this.$.cloudView), 100);
         }
     });
 
-})(Polymer, padlock.platform);
+})(Polymer, padlock.platform, padlock.pay);

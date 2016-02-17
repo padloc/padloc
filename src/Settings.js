@@ -11,19 +11,33 @@ padlock.Settings = (function(util) {
      *                        properties on the _Settings_ object directly
      * @param Source source   Source to use for persistency
      */
-    var Settings = function(properties, source) {
-        // The `properties` object contains a map of default properties which is also used to extract
-        // values from the `Settings` object in the `raw` method. Properties that are not included in this
-        // map are not saved to persistent storage.
-        this.properties = properties;
+    var Settings = function(source, defaults) {
         // Copy over default values onto `Settings` Object directly
-        util.mixin(this, properties);
+        util.mixin(this, this.properties);
+        util.mixin(this, defaults, true);
         this.source = source;
         // Flag used to indicate if the settings have been loaded from persistent storage initially
         this.loaded = false;
     };
 
     Settings.prototype = {
+        // The `properties` object contains a map of default properties which is also used to extract
+        // values from the `Settings` object in the `raw` method. Properties that are not included in this
+        // map are not saved to persistent storage.
+        properties: {
+            "sync_host_url": "https://cloud.padlock.io",
+            "sync_custom_host": false,
+            "sync_email": "",
+            "sync_key": "",
+            "sync_device": "",
+            "sync_connected": false,
+            "sync_auto": true,
+            "sync_readonly": false,
+            "default_fields": ["username", "password"],
+            "obfuscate_fields": false,
+            "showed_backup_reminder": 0,
+            "sync_require_subscription": false
+        },
         //* Fetches the settings from the _Source_
         fetch: function(opts) {
             opts = opts || {};

@@ -35,10 +35,12 @@
                 Padlock Cloud
             </div>
             <div class="tap-highlight">
-                <input is="padlock-input" id="emailInput" type="email" placeholder="Enter Email Address" class="ghost" on-enter="_cloudEnter">
+                <input is="padlock-input" id="emailInput" type="email" placeholder="Enter Email Address"
+                    class="ghost" on-enter="_cloudEnter">
             </div>
             <div class="tap-highlight">
-                <input is="padlock-input" id="cloudPwdInput" type="password" placeholder="Enter Password" class="ghost" on-enter="_cloudEnter">
+                <input is="padlock-input" id="cloudPwdInput" type="password" placeholder="Enter Password"
+                    class="ghost" on-enter="_cloudEnter" select-all-on-focus>
             </div>
             <button class="enter-button ghost" on-tap="_cloudEnter" type="button" id="cloudEnterButton">Restore</button>
         </form>
