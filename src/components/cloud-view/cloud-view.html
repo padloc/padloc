@@ -269,8 +269,17 @@
                 this.fire("buy-subscription");
             },
             _cancelConnect: function() {
-                this.set("settings.sync_key", "");
-                this._stopTestCredentials();
+                this.fire("open-form", {
+                    title: "Are you sure you want to cancel the connection process?",
+                    components: [
+                        {element: "button", label: "Yes", submit: true},
+                        {element: "button", label: "No", cancel: true}
+                    ],
+                    submit: function() {
+                        this.set("settings.sync_key", "");
+                        this._stopTestCredentials();
+                    }.bind(this)
+                });
             }
         });
 

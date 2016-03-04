@@ -213,11 +213,7 @@
                 components: [
                     {element: "button", label: "Yes", tap: this._stopAttemptRestore.bind(this), close: true},
                     {element: "button", label: "No", tap: this._promptConnecting.bind(this), close: true}
-                ],
-                submit: function() {
-                    this.set("settings.sync_key", "");
-                    this._stopTestCredentials();
-                }
+                ]
             });
         }
     });
