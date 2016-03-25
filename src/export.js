@@ -1,9 +1,9 @@
-/* global padlock */
+/* global padlock, Papa */
 
 /**
  * Module for exporting padlock data to CSV or Padlock encrypted container format
  */
-padlock.export = (function() {
+padlock.export = (function(Papa) {
     "use strict";
 
     /**
@@ -66,21 +66,16 @@ padlock.export = (function() {
      * @param {Array} table two-dimensional array containing a first row of field names and a number of
      * subsequent rows containing field values
      */
-    function tableToCsv(table) {
-        return table.map(function(row) {
-            return row.map(JSON.stringify).join(",");
-        }).join("\r\n");
-    }
 
     /**
      * Generates a CSV string from an array of Padlock records
      * @param {Array} records Array of Padlock records
      */
     function generateCsv(records) {
-        return tableToCsv(recordsToTable(records));
+        return Papa.unparse(recordsToTable(records));
     }
 
     return {
         generateCsv: generateCsv
     };
-})();
+})(Papa);
