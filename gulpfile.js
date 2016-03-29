@@ -6,7 +6,7 @@ var gulp = require("gulp"),
     nib = require("nib"),
     watch = require("gulp-watch"),
     argv = require("yargs").argv,
-    qunit = require("gulp-qunit"),
+    // qunit = require("gulp-qunit"),
     jshint = require("gulp-jshint"),
     stylish = require("jshint-stylish"),
     Q = require("q"),
@@ -73,11 +73,11 @@ gulp.task("stylus", function () {
         return compileCss();
     }
 });
-
-gulp.task("test", function() {
-    return gulp.src("./test/runner.html")
-        .pipe(qunit());
-});
+//
+// gulp.task("test", function() {
+//     return gulp.src("./test/runner.html")
+//         .pipe(qunit());
+// });
 
 gulp.task("lint", function () {
     if (argv.watch) {
