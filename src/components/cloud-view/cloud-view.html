@@ -58,7 +58,7 @@
             <padlock-toggle-button value="{{ settings.sync_custom_host }}" label="Use Custom Server" on-change="_customHostChanged"></padlock-toggle-button>
             <div class="tap-highlight" hidden$="{{ !settings.sync_custom_host }}">
                 <input is="padlock-input" id="customUrlInput" placeholder="Enter Custom URL" value="{{ settings.sync_host_url::change }}"
-                    pattern="^https://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?$" required>
+                    pattern="^https://[^\s/$.?#].[^\s]*$" required>
                 <div class="note warning">
                     <strong>Invalid URL</strong> - Make sure that the URL is of the form <strong>https://myserver.tld:port</strong>.
                     Note that a <strong>https</strong> connection is strictly required.
