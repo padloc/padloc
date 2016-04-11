@@ -66,8 +66,8 @@
                     {element: "button", label: "Reset", submit: true},
                     {element: "button", label: "Cancel", cancel: true}
                 ],
-                title: "Are you sure you want to reset all your data? This action can not be undone! " +
-                    "Please enter your master password to confirm.",
+                title: "Are you sure you want to reset Padlock and delete all your data from this device? " +
+                    "This action can not be undone! Please enter your master password to confirm.",
                 submit: function(data) {
                     if (data.password == this.collection.defaultPassword) {
                         this.set("settings.sync_connected", false);
