@@ -7,6 +7,11 @@
 (function() {
     "use strict";
 
+    var ERR_CRYPTO_INVALID_CONTAINER = "Invalid container";
+    var ERR_CRYPTO_INVALID_KEY_PARAMS = "Invalid key params";
+    var ERR_CRYPTO_DECRYPTION_FAILED = "Decryption failed";
+    var ERR_CRYPTO_ENCRYPTION_FAILED = "Encryption failed";
+
     // Whether or not the script was loaded in the context of a web worker instance
     // Perhaps there is a more reliable way to detect this?
     var isWorker = !!self.importScripts;
@@ -28,6 +33,8 @@
         var keySizes = [128, 192, 256];
         // Available authentication tag sizes
         var atSizes = [64, 96, 128];
+        // Maximum number of pbkdf2 iterations
+        var maxIter = 1000000;
 
         // Various default parameters
         var defaults = {
@@ -79,6 +86,16 @@
          * Key object containing the actual _key_ (base64 encoded) along with the used _salt_ and _iter_ations used
          */
         function genKey(passphrase, salt, size, iter) {
+            if (
+                typeof passphrase !== "string" ||
+                typeof salt !== "string" ||
+                typeof size !== "number" ||
+                keySizes.indexOf(size) === -1 ||
+                typeof iter !== "number" ||
+                iter > maxIter
+            ) {
+                throw ERR_CRYPTO_INVALID_KEY_PARAMS;
+            }
             salt = toBits(salt);
             var p = sjcl.misc.cachedPbkdf2(passphrase, {iter: iter, salt: salt});
             p.key = fromBits(p.key.slice(0, size/32));
@@ -111,9 +128,17 @@
          * A _crypto.container_ containing the value to be decrypted
          */
         function decrypt(keyData, cont) {
+            if (!validateContainer(cont)) {
+                throw ERR_CRYPTO_INVALID_CONTAINER;
+            }
             var aes = new sjcl.cipher.aes(toBits(keyData.key));
-            var pt = sjcl.mode[cont.mode].decrypt(aes, toBits(cont.ct), toBits(cont.iv), cont.adata, cont.ts);
-            return sjcl.codec.utf8String.fromBits(pt);
+            try {
+                var pt = sjcl.mode[cont.mode].decrypt(aes, toBits(cont.ct), toBits(cont.iv),
+                    cont.adata, cont.ts);
+                return sjcl.codec.utf8String.fromBits(pt);
+            } catch(e) {
+                throw ERR_CRYPTO_DECRYPTION_FAILED;
+            }
         }
 
         /**
@@ -131,7 +156,11 @@
             cont.keySize = keyData.size;
             var aes = new sjcl.cipher.aes(sjcl.codec.base64.toBits(keyData.key));
             var pt = sjcl.codec.utf8String.toBits(value);
-            var ct = sjcl.mode[cont.mode].encrypt(aes, pt, toBits(cont.iv), cont.adata, cont.ts);
+            try {
+                var ct = sjcl.mode[cont.mode].encrypt(aes, pt, toBits(cont.iv), cont.adata, cont.ts);
+            } catch(e) {
+                throw ERR_CRYPTO_ENCRYPTION_FAILED;
+            }
             cont.ct = fromBits(ct);
             return cont;
         }
@@ -154,7 +183,7 @@
 
             worker.addEventListener("error", function(e) {
                 if (fail) {
-                    fail(e);
+                    fail(e.message.replace("Uncaught ", ""));
                     // Prevent default behaviour of error event (i.e. recover)
                     e.preventDefault();
                 }
@@ -176,21 +205,21 @@
          * Same as _genKey_, but uses a web worker for the heavy lifting. Therefore the call is asynchronous.
          * The result will be passed as the single argument to the _callback_ function
          */
-        function workerGenKey(passphrase, salt, size, iter, callback) {
-            return workerDo("genKey", [passphrase, salt, size, iter], callback);
+        function workerGenKey(passphrase, salt, size, iter, success, fail) {
+            return workerDo("genKey", [passphrase, salt, size, iter], success, fail);
         }
 
         //* Same as _workerGenKey_, but fetches the data from cache if possible
-        function cachedWorkerGenKey(passphrase, salt, size, iter, callback) {
+        function cachedWorkerGenKey(passphrase, salt, size, iter, success, fail) {
             var prop = Array.prototype.slice.call(arguments, 0, -1).join("_"),
                 cached = keyCache[prop];
             if (cached) {
-                callback(cached);
+                success(cached);
             } else {
                 workerGenKey(passphrase, salt, size, iter, function(keyData) {
                     keyCache[prop] = keyData;
-                    callback(keyData);
-                });
+                    success(keyData);
+                }, fail);
             }
         }
 
@@ -217,6 +246,7 @@
             return cont.cipher in ciphers && // valid cipher
                 cont.mode.toUpperCase() in modes && // exiting mode
                 keySizes.indexOf(cont.keySize) !== -1, // valid key size
+                cont.iter <= maxIter && // sane pbkdf2 iteration count
                 typeof cont.iv == "string" && // valid initialisation vector
                 typeof cont.salt == "string" && //valid salt
                 typeof cont.iter == "number" && // valid PBKDF2 iteration count
@@ -269,6 +299,10 @@
     } else {
         // The script was not loaded in the context of a web worker so we're assuming it was loaded in a script tag
         padlock.crypto = modFunc(sjcl);
+        padlock.ERR_CRYPTO_INVALID_CONTAINER = ERR_CRYPTO_INVALID_CONTAINER;
+        padlock.ERR_CRYPTO_INVALID_KEY_PARAMS = ERR_CRYPTO_INVALID_KEY_PARAMS;
+        padlock.ERR_CRYPTO_DECRYPTION_FAILED = ERR_CRYPTO_DECRYPTION_FAILED;
+        padlock.ERR_CRYPTO_ENCRYPTION_FAILED = ERR_CRYPTO_ENCRYPTION_FAILED;
     }
 
 })();

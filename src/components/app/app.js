@@ -76,7 +76,13 @@ padlock.App = (function(Polymer, platform, pay) {
 
             // Check if collection data already exists in persistent storage. If no, that means that means that
             // we are starting with a 'clean slate' and have to set a master password first
-            this.collection.exists({success: this._initView.bind(this), fail: this._initView.bind(this, false)});
+            this.collection.exists({success: this._initView.bind(this), fail: function() {
+                this._alert("Padlock found existing data stored on the device but failed to read it. " +
+                    "This may be due to someone medling with your device storage or some sort of failure " +
+                    "on the OS level. You may proceed by creating a new store but note that this will " +
+                    "overwrite the existing data.");
+                this._initView(false);
+            }.bind(this)});
 
             // If we want to capture all keydown events, we have to add the listener
             // directly to the document
@@ -467,7 +473,16 @@ padlock.App = (function(Polymer, platform, pay) {
                     }.bind(this),
                     fail: function(e) {
                         switch(e) {
-                            case padlock.ERR_STORE_DECRYPT:
+                            case padlock.ERR_SOURCE_INVALID_JSON:
+                            case padlock.ERR_CRYPTO_INVALID_KEY_PARAMS:
+                            case padlock.ERR_CRYPTO_INVALID_CONTAINER:
+                                this._alert("The data received from Padlock Cloud seems to be corrupt and " +
+                                    "cannot be decrypted. This might be due to a network error but could " +
+                                    "also be the result of someone trying to compromise your connection to " +
+                                    "Padlock Cloud. If the problem persists, please notify " +
+                                    "Padlock support!");
+                                break;
+                            case padlock.ERR_CRYPTO_DECRYPTION_FAILED:
                                 // Decryption failed, presumably on the remote data. This means that the local master
                                 // password does not match the one that was used for encrypting the remote data so
                                 // we need to prompt the user for the correct password.
@@ -771,7 +786,7 @@ padlock.App = (function(Polymer, platform, pay) {
                         "via Settings > Padlock Cloud!"
                     );
                     break;
-                case padlock.ERR_STORE_DECRYPT:
+                case padlock.ERR_CRYPTO_DECRYPTION_FAILED:
                     this._alert("The password you entered was wrong! Please try again!");
                     break;
                 case padlock.ERR_CLOUD_FAILED_CONNECTION:
