@@ -3,9 +3,6 @@
 padlock.Store = (function(crypto) {
     "use strict";
 
-    padlock.ERR_STORE_DECRYPT = "Decryption failed";
-    padlock.ERR_STORE_ENCRYPT = "Encryption failed";
-
     /**
      * The _Store_ acts as a proxy between the persistence layer (e.g. _LocalStorageSource_)
      * and a _Collection_ object it mainly handles encryption and decryption of data
@@ -71,13 +68,8 @@ padlock.Store = (function(crypto) {
                             if (opts.success) {
                                 opts.success(records);
                             }
-                        }, function() {
-                            // The decryption failed, probably because the password was incorrect
-                            if (opts.fail) {
-                                opts.fail(padlock.ERR_STORE_DECRYPT);
-                            }
-                        });
-                    });
+                        }, opts.fail);
+                    }, opts.fail);
                 } else if (opts.success) {
                     opts.success(coll);
                 }
@@ -123,10 +115,8 @@ padlock.Store = (function(crypto) {
                 crypto.workerEncrypt(keyData, pt, function(c) {
                     opts.data = c;
                     source.save(opts);
-                }, function() {
-                    opts.fail && opts.fail(padlock.ERR_STORE_ENCRYPT);
-                });
-            }.bind(this));
+                }, opts.fail);
+            }, opts.fail);
         },
         /**
          * Destroy the collection and delete its data
