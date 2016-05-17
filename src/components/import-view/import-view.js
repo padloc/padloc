@@ -44,6 +44,8 @@
                 this._type = "padlock";
             } else if (imp.isLastPassExport(rawStr)) {
                 this._type = "lastpass";
+            } else if (imp.isKeePassXML(rawStr)) {
+                this._type = "keepassx";
             } else {
                 this._type = "csv";
             }
@@ -74,6 +76,8 @@
                 this._requirePassword(this._importPadlockBackup.bind(this));
             } else if (this._type == "lastpass") {
                 this._importLastPassExport();
+            } else if (this._type == "keepassx") {
+                this._importKeePassXML();
             } else {
                 this._csvData = imp.parseCsv(rawStr);
                 this._getNameCol();
@@ -99,6 +103,11 @@
         },
         _importLastPassExport: function() {
             var records = imp.importLastPassExport(this.collection, this.$.rawInput.value);
+            this.collection.save();
+            this.fire("imported", {count: records.length});
+        },
+        _importKeePassXML: function() {
+            var records = imp.importKeePassXML(this.collection, this.$.rawInput.value);
             this.collection.save();
             this.fire("imported", {count: records.length});
         },

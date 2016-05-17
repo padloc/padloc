@@ -250,6 +250,69 @@ padlock.import = (function(crypto, DisposableSource, Papa) {
         return data.split("\n")[0] == "url,username,password,extra,name,grouping,fav";
     }
 
+    /**
+     * Checks if a given string represents a KeePassX exported XML file
+     */
+    function isKeePassXML(xmldata) {
+        return xmldata.split("\n")[0] == "<!DOCTYPE KEEPASSX_DATABASE>";
+    }
+
+    /**
+     * Imports data from the XML file exported by KeePassX
+     */
+     function importKeePassXML(xmldata) {
+
+         // parse the xmldata string into actual XML format
+         parser = new DOMParser();
+         xmlDoc = parser.parseFromString(xmldata,"text/xml");
+
+         // initialize list of all records in this XML file
+         var records = [];
+
+         // get all the "groups" (aka categories) from xmlDoc and loop through them
+         var groups = xmlDoc.getElementsByTagName("group");
+         for (group = 0; group < groups.length; group++) {
+             var category = groups[group].getElementsByTagName("title")[0];
+             var category = category.childNodes[0].nodeValue;
+
+             // get all the entries (records) within this category and loop through them
+             var entries = groups[group].getElementsByTagName("entry");
+             for (entry = 0; entry < entries.length; entry++) {
+                 var name = entries[entry].getElementsByTagName("title")[0];
+                 var username = entries[entry].getElementsByTagName("username")[0];
+                 var password = entries[entry].getElementsByTagName("password")[0];
+                 var url = entries[entry].getElementsByTagName("url")[0];
+                 var notes = entries[entry].getElementsByTagName("comment")[0];
+
+                 // row will have name,username,password,url,notes or empty spaces if any of these fields are empty
+                 var row = [name,username,password,url,notes];
+                 for (field=0; field < 5; field++) {
+                     if (row[field].hasChildNodes()) {
+                         row[field] = row[field].childNodes[0].nodeValue;
+                     } else {
+                         row[field] = "";
+                     }
+                 }
+
+                 // create a record from the above info and add to records
+                 var record = {
+             		name: row[0],
+             		category: category,
+             		fields: [
+                 		{name: "url", value: row[3]},
+                 		{name: "username", value: row[1]},
+                 		{name: "password", value: row[2]},
+                 		{name: "notes", value: row[4]}
+             		]
+         		};
+         		records.push(record);
+             }
+         }
+
+         collection.add(records);
+         return records;
+     }
+
     return {
         isSecuStoreBackup: isSecuStoreBackup,
         isPadlockBackup: isPadlockBackup,
@@ -258,6 +321,8 @@ padlock.import = (function(crypto, DisposableSource, Papa) {
         parseCsv: parseCsv,
         importTable: importTable,
         importLastPassExport: importLastPassExport,
-        isLastPassExport: isLastPassExport
+        isLastPassExport: isLastPassExport,
+        isKeePassXML: isKeePassXML,
+        importKeePassXML: importKeePassXML,
     };
 })(padlock.crypto, padlock.DisposableSource, Papa);
