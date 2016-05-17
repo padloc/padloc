@@ -1,0 +1,54 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="slider-styles.html">
+
+<dom-module id="padlock-slider">
+    <template>
+
+        <style include="shared-styles"></style>
+        <style include="slider-styles"></style>
+
+        <span class="label" hidden$="{{ !_hasLabel(label) }}">{{ label }}</span>
+        <input type="range" value="{{ value::input }}" min="{{ min }}" max="{{ max }}" step="{{ step }}">
+        <span class="value-display">{{ value }}{{ unit }}</span>
+
+    </template>
+    <script>
+        /* global Polymer */
+        (function(Polymer) {
+            "use strict";
+
+            Polymer({
+                is: "padlock-slider",
+                properties: {
+                    min: {
+                        type: Number,
+                        value: 1
+                    },
+                    max: {
+                        type: Number,
+                        value: 10
+                    },
+                    value: {
+                        type: Number,
+                        notify: true
+                    },
+                    unit: {
+                        type: String,
+                        value: ""
+                    },
+                    step: {
+                        type: Number,
+                        value: 1
+                    },
+                    label: {
+                        type: String,
+                        value: ""
+                    }
+                },
+                _hasLabel: function(label) {
+                    return !!label;
+                }
+            });
+        })(Polymer);
+    </script>
+</dom-module>

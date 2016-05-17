@@ -188,34 +188,18 @@ padlock.App = (function(Polymer, platform, pay) {
             // We're done decrypting so, reset the `_decrypting` flag
             this._decrypting = false;
         },
-        // Handler for cordova `pause` event. Usually triggered when the app goes into the background.
-        // Hides the header, closes all dialogs and unless we're currently on the lock or start view, hide
-        // the current view. This is meant to achive two things:
-        //
-        // 1. To access the data, the master password has to be entered again. This prevents other people from
-        // picking up the devise and snooping through the users data
-        // 2. Any sensitive data currently displayed on the screen is hidden so it is not visible when browsing
-        // apps using multitasking / app switcher.
-        // TODO: #2 currently fails in iOS 9
+        // Handler for cordova `pause` event. Records the current time for auto locking when resuming
         _pause: function() {
-            // Hide header
-            this.$.header.showing = false;
-            // Close all currently opened dialogs
-            this._closeAllDialogs();
-            // If not currently on the lock or start view, navigate to lock view while remembering the current view
-            // so we can navigate back to it later
-            if (this._currentView && this._currentView != this.$.lockView && this._currentView != this.$.startView) {
-                this._lastView = this._currentView;
-                this._currentView.hide({animation: ""});
-                this._currentView = null;
-            }
+            this._pausedAt = new Date();
         },
-        // Handler for cordova `resume` event. Calls the `_initView` method which in this case will show
-        // the lock screen for reauthentication (unless we're already in the lock or start view in which
-        // case we do nothing
+        // Handler for cordova `resume` event. If auto lock is enabled and the specified time has passed
+        // since the app was paused, locks the app
         _resume: function() {
-            if (this._currentView != this.$.lockView && this._currentView != this.$.startView) {
-                this._initView(true);
+            if (
+                this.settings.auto_lock &&
+                new Date().getTime() - this._pausedAt.getTime() > this.settings.auto_lock_delay * 1000
+            ) {
+                this._lock();
             }
         },
         //* Locks the collection and opens the lock view
@@ -225,14 +209,19 @@ padlock.App = (function(Polymer, platform, pay) {
             // data from memory and the record view will be displaying on of the records?
             this._lastView = this._currentView;
 
+            // Close all currently opened dialogs
+            this._closeAllDialogs();
+
             // Hide header
             this.$.header.showing = false;
-            // Navigate to lock view
-            this._openView(
-                this.$.lockView,
-                {animation: "contract", easing: "cubic-bezier(0.8, 0, 0.2, 1.2)", delay: 300},
-                {animation: "popout"}
-            );
+            if (this._currentView !== this.$.lockView) {
+                // Navigate to lock view
+                this._openView(
+                    this.$.lockView,
+                    {animation: "contract", easing: "cubic-bezier(0.8, 0, 0.2, 1.2)", delay: 300},
+                    {animation: "popout"}
+                );
+            }
             // Wait for a bit for the animation to finish, then clear the collection data from memory
             setTimeout(this.collection.clear.bind(this.collection), 500);
         },
