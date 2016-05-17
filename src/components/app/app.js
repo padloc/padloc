@@ -45,7 +45,8 @@ padlock.App = (function(Polymer, platform, pay) {
         },
         observers: [
             "_saveSettings(settings.*)",
-            "_notifyHeaderTitle(_selected.name)"
+            "_notifyHeaderTitle(_selected.name)",
+            "_autoLockChanged(settings.auto_lock, settings.auto_lock_delay)"
         ],
         // This is called by the constructor with the same arguments passed into the constructor
         factoryImpl: function() {
@@ -84,6 +85,11 @@ padlock.App = (function(Polymer, platform, pay) {
                 this._initView(false);
             }.bind(this)});
 
+            document.addEventListener("touchstart", this._autoLockChanged.bind(this), false);
+            document.addEventListener("keydown", this._autoLockChanged.bind(this), false);
+            document.addEventListener("mousemove",
+                this.debounce.bind(this, "resetautolock", this._autoLockChanged, 50), false);
+
             // If we want to capture all keydown events, we have to add the listener
             // directly to the document
             document.addEventListener("keydown", this._keydown.bind(this), false);
@@ -96,10 +102,22 @@ padlock.App = (function(Polymer, platform, pay) {
 
             // Init view when app resumes
             document.addEventListener("resume", this._resume.bind(this, true), false);
+        },
+        _autoLockChanged: function() {
+            if (this._lockTimeout) {
+                clearTimeout(this._lockTimeout);
+            }
+            if (this._lockNotificationTimeout) {
+                clearTimeout(this._lockNotificationTimeout);
+            }
 
-            // This is a workaround for a bug in Polymer where tap events sometimes fail to be generated
-            // TODO: Remove as soon as this is fixed in Polymer
-            document.addEventListener("touchstart", function() {}, false);
+            if (this.settings.auto_lock) {
+                this._lockTimeout = setTimeout(this._lock.bind(this, true),
+                    this.settings.auto_lock_delay * 1000);
+                this._lockNotificationTimeout = setTimeout(function() {
+                    this.$.notification.show("Auto-lock in 10 seconds", "warning", 3000);
+                }.bind(this), (this.settings.auto_lock_delay - 10) * 1000);
+            }
         },
         _initView: function(collExists) {
             // If there already is data in the local storage ask for password
@@ -160,7 +178,9 @@ padlock.App = (function(Polymer, platform, pay) {
             // We're done decrypting so, reset the `_decrypting` flag
             this._decrypting = false;
             // Show either the last view shown before locking the screen or default to the list view
-            this._popinOpen(this._lastView || this.$.listView);
+            this._popinOpen(this.$.listView);
+
+            this._autoLockChanged();
 
             // After a short delay, trigger synchronization if auto-sync is enabled
             this.async(function() {
@@ -188,51 +208,43 @@ padlock.App = (function(Polymer, platform, pay) {
             // We're done decrypting so, reset the `_decrypting` flag
             this._decrypting = false;
         },
-        // Handler for cordova `pause` event. Usually triggered when the app goes into the background.
-        // Hides the header, closes all dialogs and unless we're currently on the lock or start view, hide
-        // the current view. This is meant to achive two things:
-        //
-        // 1. To access the data, the master password has to be entered again. This prevents other people from
-        // picking up the devise and snooping through the users data
-        // 2. Any sensitive data currently displayed on the screen is hidden so it is not visible when browsing
-        // apps using multitasking / app switcher.
-        // TODO: #2 currently fails in iOS 9
+        // Handler for cordova `pause` event. Records the current time for auto locking when resuming
         _pause: function() {
-            // Hide header
-            this.$.header.showing = false;
-            // Close all currently opened dialogs
-            this._closeAllDialogs();
-            // If not currently on the lock or start view, navigate to lock view while remembering the current view
-            // so we can navigate back to it later
-            if (this._currentView && this._currentView != this.$.lockView && this._currentView != this.$.startView) {
-                this._lastView = this._currentView;
-                this._currentView.hide({animation: ""});
-                this._currentView = null;
-            }
+            this._pausedAt = new Date();
         },
-        // Handler for cordova `resume` event. Calls the `_initView` method which in this case will show
-        // the lock screen for reauthentication (unless we're already in the lock or start view in which
-        // case we do nothing
+        // Handler for cordova `resume` event. If auto lock is enabled and the specified time has passed
+        // since the app was paused, locks the app
         _resume: function() {
-            if (this._currentView != this.$.lockView && this._currentView != this.$.startView) {
-                this._initView(true);
+            this._autoLockChanged();
+            if (
+                this.settings.auto_lock &&
+                new Date().getTime() - this._pausedAt.getTime() > this.settings.auto_lock_delay * 1000
+            ) {
+                this._lock(true);
             }
         },
         //* Locks the collection and opens the lock view
-        _lock: function() {
-            // Remember current view so we can navigate back to it after unlocking the app again
-            // TODO: Does this make sense in case of the record view, since we're trying to remove all
-            // data from memory and the record view will be displaying on of the records?
-            this._lastView = this._currentView;
+        _lock: function(auto) {
+            // Close all currently opened dialogs
+            this._closeAllDialogs();
 
             // Hide header
             this.$.header.showing = false;
-            // Navigate to lock view
-            this._openView(
-                this.$.lockView,
-                {animation: "contract", easing: "cubic-bezier(0.8, 0, 0.2, 1.2)", delay: 300},
-                {animation: "popout"}
-            );
+            if (this._currentView !== this.$.lockView && this._currentView !== this.$.startView) {
+                // Navigate to lock view
+                this._openView(
+                    this.$.lockView,
+                    {animation: "contract", easing: "cubic-bezier(0.8, 0, 0.2, 1.2)", delay: 300},
+                    {animation: "popout"}
+                );
+
+                if (auto === true) {
+                    this.async(function() {
+                        this._alert("Padlock was automatically locked after " +
+                            this.settings.auto_lock_delay + " seconds of inactivity.");
+                    }, 1000);
+                }
+            }
             // Wait for a bit for the animation to finish, then clear the collection data from memory
             setTimeout(this.collection.clear.bind(this.collection), 500);
         },

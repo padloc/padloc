@@ -4,6 +4,7 @@
 <link rel="import" href="../password-input/password-input.html">
 <link rel="import" href="../toggle/toggle.html">
 <link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../slider/slider.html">
 <link rel="import" href="../../styles/shared-styles.html">
 <link rel="import" href="../view/view-styles.html">
 <link rel="import" href="generator-view-styles.html">
@@ -23,10 +24,7 @@
         <padlock-toggle-button label="A-Z" value="{{ includeUpperCase }}"></padlock-toggle-button>
         <padlock-toggle-button label="0-9" value="{{ includeNumbers }}"></padlock-toggle-button>
         <padlock-toggle-button label="?+-()/%&..." value="{{ includeOther }}"></padlock-toggle-button>
-        <div class="length-wrapper">
-            <input type="range" value="{{ length::input }}" min="5" max="50">
-            <span>{{ length }}</span>
-        </div>
+        <padlock-slider min="5" max="50" value="{{ length }}"></padlock-slider>
         <button on-tap="generate">Regenerate</button>
 
     </template>

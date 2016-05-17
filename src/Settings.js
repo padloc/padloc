@@ -25,6 +25,8 @@ padlock.Settings = (function(util) {
         // values from the `Settings` object in the `raw` method. Properties that are not included in this
         // map are not saved to persistent storage.
         properties: {
+            "auto_lock": true,
+            "auto_lock_delay": 60,
             "sync_host_url": "https://cloud.padlock.io",
             "sync_custom_host": false,
             "sync_email": "",
