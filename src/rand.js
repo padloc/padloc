@@ -21,20 +21,17 @@ padlock.rand = (function() {
         hexa: chars.numbers + "abcdef"
     };
 
-    //* Returns a random item from an array of a random char from a string
-    function randomItem(choices) {
-        return choices[Math.floor(Math.random()*choices.length)];
-    }
-
     //* Creates a random string with a given _length_ comprised of given set or characters
     function randomString(length, charSet) {
         length = length || 32;
         charSet = charSet || charSets.full;
-        var rndm = "";
-        while (rndm.length < length) {
-            rndm += randomItem(charSet);
+        var rnd = new Uint8Array(length);
+        var str = "";
+        window.crypto.getRandomValues(rnd);
+        for (var i=0; i<length; i++) {
+            str += charSet[Math.floor(rnd[i] * charSet.length / 256)];
         }
-        return rndm;
+        return str;
     }
 
     return {
