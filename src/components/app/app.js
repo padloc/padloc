@@ -241,7 +241,8 @@ padlock.App = (function(Polymer, platform, pay) {
                 if (auto === true) {
                     this.async(function() {
                         this._alert("Padlock was automatically locked after " +
-                            this.settings.auto_lock_delay + " seconds of inactivity.");
+                            this.settings.auto_lock_delay + " seconds of inactivity. " +
+                            "You can change this behavior from the settings page.");
                     }, 1000);
                 }
             }
