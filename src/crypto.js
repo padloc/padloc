@@ -158,11 +158,11 @@
             var pt = sjcl.codec.utf8String.toBits(value);
             try {
                 var ct = sjcl.mode[cont.mode].encrypt(aes, pt, toBits(cont.iv), cont.adata, cont.ts);
+                cont.ct = fromBits(ct);
+                return cont;
             } catch(e) {
                 throw ERR_CRYPTO_ENCRYPTION_FAILED;
             }
-            cont.ct = fromBits(ct);
-            return cont;
         }
 
         //* Spawns a worker instance using this same script and returns it.
