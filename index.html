@@ -20,14 +20,13 @@
         <link rel="import" href="src/components/app/app.html">
 
         <script>
-            /* global padlock, chrome */
+            /* global padlock */
             window.addEventListener("WebComponentsReady", function() {
                 "use strict";
 
-                var source = (typeof chrome !== "undefined") && chrome.storage ?
-                    new padlock.ChromeStorageSource() : new padlock.LocalStorageSource(),
+                var source = new padlock.LocalSource(),
                     store = new padlock.Store(source),
-                    settings = new padlock.Settings(source, {
+                    settings = new padlock.Settings(store, {
                         // "sync_require_subscription": true
                     }),
                     collection = new padlock.Collection("default", store);
