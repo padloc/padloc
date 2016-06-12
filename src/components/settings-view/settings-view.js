@@ -46,17 +46,18 @@
             this.fire("export");
         },
         _openWebsite: function() {
-            window.open("http://padlock.io", "_system");
+            window.open("https://padlock.io", "_system");
         },
         _sendMail: function() {
             var url = "mailto:support@padlock.io";
             window.open(url, "_system");
         },
         _openGithub: function() {
-            window.open("http://github.com/maklesoft", "_system");
+            window.open("https://github.com/maklesoft", "_system");
         },
         _openHomepage: function() {
-            window.open("http://maklesoft.com/", "_system");
+            // window.open("http://maklesoft.com/", "_system");
+            this._openGithub();
         },
         _resetData: function() {
             this.fire("open-form", {
