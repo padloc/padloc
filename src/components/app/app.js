@@ -693,7 +693,7 @@ padlock.App = (function(Polymer, platform, pay) {
             // Close both forms
             this.$.formDialog1.open = this.$.formDialog2.open = false;
             // Update title
-            titleEl.innerHTML = title || "";
+            titleEl.textContent = title || "";
             // Update components property, which causes the dynamic form elements to be rendered
             form.components = components;
             // Update callbacks
