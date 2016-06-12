@@ -24,6 +24,19 @@ padlock.Collection = (function(util) {
     };
 
     Collection.prototype = {
+        get storeKey() {
+            return "coll_" + this.name;
+        },
+        parse: function(data) {
+            var records;
+            try {
+                var records = JSON.parse(data);
+                this.add(records);
+            } catch(e) {}
+        },
+        toString: function() {
+            return JSON.stringify(this.records);
+        },
         /**
          * Fetches the data for this collection
          * @param {Object} opts Object containing options for the call. Options may include:
@@ -34,7 +47,12 @@ padlock.Collection = (function(util) {
          * - source:   Source to to be used. If not provided, the stores default source is used.
          */
         fetch: function(opts) {
-            this.store.fetch(this, opts);
+            var success = opts.success;
+            opts.success = function(data) {
+                this.parse(data);
+                success();
+            }.bind(this);
+            this.store.fetch(this.storeKey, opts);
         },
         /**
          * Saves the collections contents
@@ -50,7 +68,7 @@ padlock.Collection = (function(util) {
                 rec.name = rec.name || "Unnamed";
                 rec.updated = new Date();
             }
-            this.store.save(this, opts);
+            this.store.save(this.storeKey, this.toString(), opts);
         },
         /**
          * Destroy the collection and delete its data
@@ -61,7 +79,7 @@ padlock.Collection = (function(util) {
          * - source:   Source to delete this collection from. If not provided, the stores default source is used.
          */
         destroy: function(opts) {
-            this.store.destroy(this, opts);
+            this.store.destroy(this.storeKey, opts);
         },
         /**
          * Calls `splice` on the `records` property with the given arguments and fires the `update` event to
@@ -149,7 +167,7 @@ padlock.Collection = (function(util) {
          * - source:   Source to check for the collection. If not provided, _defaultSource_ is used.
          */
         exists: function(opts) {
-            this.store.exists(this, opts);
+            this.store.exists(this.storeKey, opts);
         },
         /**
          * Empties the collection and removes the stored password

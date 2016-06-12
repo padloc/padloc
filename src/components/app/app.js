@@ -70,8 +70,6 @@ padlock.App = (function(Polymer, platform, pay) {
             }.bind(this));
 
             this.settings = settings;
-            // Fetch settings from persistent storage
-            this.settings.fetch({success: this._notifySettings.bind(this)});
 
             this.remoteSource = new padlock.CloudSource(this.settings);
 
@@ -170,7 +168,15 @@ padlock.App = (function(Polymer, platform, pay) {
             this.$.decrypting.show();
             // Attempt to fetch data from storage and decrypt it
             this.collection.fetch({password: password, rememberPassword: true,
-                success: this._unlockSuccess.bind(this), fail: this._unlockFail.bind(this)});
+                success: function() {
+                    // Fetch settings from persistent storage
+                    this.settings.fetch({success: function() {
+                        this._notifySettings();
+                        this._unlockSuccess();
+                    }.bind(this), fail: function(e) {
+                        console.log("failed to load settings!", e);
+                    }});
+                }.bind(this), fail: this._unlockFail.bind(this)});
         },
         _unlockSuccess: function() {
             // Hide progress indicator

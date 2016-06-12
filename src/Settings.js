@@ -1,7 +1,9 @@
 /* global padlock */
 
-padlock.Settings = (function(util) {
+padlock.Settings = (function(util, LocalSource) {
     "use strict";
+
+    var storeKey = "settings_encrypted";
 
     /**
      * Object for storing settings. Setting properties are stored on the object directly while the `properties`
@@ -11,11 +13,11 @@ padlock.Settings = (function(util) {
      *                        properties on the _Settings_ object directly
      * @param Source source   Source to use for persistency
      */
-    var Settings = function(source, defaults) {
+    var Settings = function(store, defaults) {
         // Copy over default values onto `Settings` Object directly
         util.mixin(this, this.properties);
         util.mixin(this, defaults, true);
-        this.source = source;
+        this.store = store;
         // Flag used to indicate if the settings have been loaded from persistent storage initially
         this.loaded = false;
     };
@@ -40,28 +42,14 @@ padlock.Settings = (function(util) {
             "showed_backup_reminder": 0,
             "sync_require_subscription": false
         },
-        //* Fetches the settings from the _Source_
-        fetch: function(opts) {
-            opts = opts || {};
-            var success = opts.success;
-            opts.success = function(data) {
-                // Copy over setting values
-                util.mixin(this, data, true);
-                // Update loaded flag to indicate that data has been loaded from persistent storage at least once
-                this.loaded = true;
-                if (success) {
-                    success();
-                }
-            }.bind(this);
-            opts.key = "settings";
-            this.source.fetch(opts);
-        },
-        //* Saves the existing settings to the _Source_
-        save: function(opts) {
-            opts = opts || {};
-            opts.key = "settings";
-            opts.data = this.raw();
-            this.source.save(opts);
+        parse: function(data) {
+            try {
+                data = JSON.parse(data);
+            } catch(e) {
+                data = {};
+            }
+            // Copy over setting values
+            util.mixin(this, data, true);
         },
         //* Returns a raw JS object containing the current settings
         raw: function() {
@@ -71,8 +59,54 @@ padlock.Settings = (function(util) {
                 obj[prop] = this[prop];
             }
             return obj;
+        },
+        toString: function() {
+            return JSON.stringify(this.raw());
+        },
+        //* Fetches the settings
+        fetch: function(opts) {
+            opts = opts || {};
+            var success = opts.success;
+            opts.success = function(data) {
+                this.parse(data);
+                // Update loaded flag to indicate that data has been loaded from persistent storage at least once
+                this.loaded = true;
+                if (success) {
+                    success();
+                }
+            }.bind(this);
+            opts.key = "settings";
+            this.store.fetch(storeKey, opts);
+        },
+        //* Saves the existing settings
+        save: function(opts) {
+            this.store.save(storeKey, this.toString(), opts);
         }
     };
 
+    var legacySource = new LocalSource();
+    /** Fetches any old, unencrypted settings data and then deletes it */
+    function fetchLegacy(settings, cb) {
+        legacySource.fetch({
+            key: "settings",
+            success: function(data) {
+                if (data) {
+                    util.mixin(settings, data, true);
+                }
+                legacySource.destroy({key: "settings"});
+                cb();
+            },
+            fail: function() {
+                cb();
+            }
+        });
+    }
+
+    // Fetch and delete any legacy data before doing the actual fetch
+    var fetch = Settings.prototype.fetch;
+    Settings.prototype.fetch = function() {
+        fetchLegacy(this, fetch.apply.bind(fetch, this, arguments));
+    }
+
     return Settings;
-})(padlock.util);
+})(padlock.util, padlock.LocalSource);

@@ -8,14 +8,18 @@
 <script src="util.js"></script>
 <script src="rand.js"></script>
 <script src="crypto.js"></script>
+<script src="platform.js"></script>
 <script src="pay.js"></script>
 <script src="Source.js"></script>
 <script src="LocalStorageSource.js"></script>
 <script src="ChromeStorageSource.js"></script>
+<script>
+    padlock.LocalSource = padlock.platform.isChromeApp() ?
+        padlock.ChromeStorageSource : padlock.LocalStorageSource;
+</script>
 <script src="CloudSource.js"></script>
 <script src="Store.js"></script>
 <script src="Collection.js"></script>
 <script src="Settings.js"></script>
 <script src="import.js"></script>
 <script src="export.js"></script>
-<script src="platform.js"></script>
