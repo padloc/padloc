@@ -826,6 +826,9 @@ padlock.App = (function(Polymer, platform, pay) {
                         {element: "button", label: "Dismiss", cancel: true}
                     ], "We were unable to verify your purchase. Please try again!");
                     break;
+                case padlock.ERR_CLOUD_LIMIT_EXCEEDED:
+                    this._alert("Padlock Cloud is over capacity right now. Please try again in a few minutes!");
+                    break;
                 default:
                     this._alert("There was an error while trying to connect to Padlock Cloud. " +
                         "Please try again later!");

@@ -10,6 +10,7 @@ padlock.CloudSource = (function(Source) {
     padlock.ERR_CLOUD_VERSION_DEPRECATED = "Api version deprecated";
     padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED = "Padlock Cloud subscription required";
     padlock.ERR_CLOUD_NOT_FOUND = "Account not found";
+    padlock.ERR_CLOUD_LIMIT_EXCEEDED = "Rate limit exceeded";
 
     function errFromStatus(s) {
         switch(s) {
@@ -21,6 +22,8 @@ padlock.CloudSource = (function(Source) {
                 return padlock.ERR_CLOUD_NOT_FOUND;
             case 406:
                 return padlock.ERR_CLOUD_VERSION_DEPRECATED;
+            case 429:
+                return padlock.ERR_CLOUD_LIMIT_EXCEEDED;
             case 0:
                 return padlock.ERR_CLOUD_FAILED_CONNECTION;
             default:

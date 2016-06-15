@@ -155,21 +155,28 @@
                     this._alert("Almost done! An email was sent to " + email + " with further instructions.");
                 }.bind(this), function(e) {
                     this.$$("padlock-progress").hide();
-                    if (e == padlock.ERR_CLOUD_NOT_FOUND) {
-                        data.create = true;
-                        this.requestAuthToken(data);
-                    } else if (e == padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED) {
-                        this.fire("open-form", {
-                            title: "No existing Padlock Cloud account was found. In order to create a new one, " +
-                                "you need a Padlock Cloud subscription.",
-                            components: [
-                                {element: "button", label: "Continue", submit: true},
-                                {element: "button", label: "Cancel", cancel: true}
-                            ],
-                            submit: this._buySubscription.bind(this)
-                        });
-                    } else {
-                        this.fire("error", e);
+                    switch(e) {
+                        case padlock.ERR_CLOUD_NOT_FOUND:
+                            data.create = true;
+                            this.requestAuthToken(data);
+                            break;
+                        case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
+                            this.fire("open-form", {
+                                title: "No existing Padlock Cloud account was found. In order to create a new one, " +
+                                    "you need a Padlock Cloud subscription.",
+                                components: [
+                                    {element: "button", label: "Continue", submit: true},
+                                    {element: "button", label: "Cancel", cancel: true}
+                                ],
+                                submit: this._buySubscription.bind(this)
+                            });
+                            break;
+                        case padlock.ERR_CLOUD_LIMIT_EXCEEDED:
+                            this._alert("For security reasons only one connection request is allowed per " +
+                                "minute. Please wait a little before trying again!");
+                            break;
+                        default:
+                            this.fire("error", e);
                     }
                 }.bind(this));
             },
@@ -196,8 +203,13 @@
                     this.$$("padlock-progress").hide();
                     this._alert("Almost done! An email was sent to " + email + " with further instructions.");
                 }.bind(this), function(e) {
-                    this.$$("padlock-progress").hide();
-                    this.fire("error", e);
+                    if (e === padlock.ERR_CLOUD_LIMIT_EXCEEDED) {
+                        this._alert("For security reasons only one deletion request is allowed per " +
+                            "minute. Please wait a little before trying again!");
+                    } else {
+                        this.$$("padlock-progress").hide();
+                        this.fire("error", e);
+                    }
                 }.bind(this));
             },
             //* Shows an alert dialog with a given _message_
