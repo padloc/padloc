@@ -30,6 +30,7 @@
                 <strong>Activation pending</strong> - You are almost done connecting this device!
                 An email was sent to <strong>{{ settings.sync_email }}</strong> with further instructions.
                 Didn't get it? Try again using the button below!
+                <div class="conn-id">Connection ID: {{ settings.sync_id }}</div>
             </div>
             <button on-tap="connect">Try Again</button>
             <button on-tap="_cancelConnect">Cancel</button>
@@ -39,6 +40,7 @@
             <div class="note" hidden$="{{ settings.sync_readonly }}">
                 <strong>Connected</strong> - This device is connected to the Padlock Cloud account <strong>{{ settings.sync_email }}</strong>.
                 Connect all your devices with the same account to easily synchronize your data between them!
+                <div class="conn-id">Connection ID: {{ settings.sync_id }}</div>
             </div>
             <div class="note" hidden$="{{ !settings.sync_readonly }}">
                 <strong>Subscription expired</strong> - It seems your Padlock Cloud subscription for the account <strong>{{ settings.sync_email }}</strong> has expired which means that you can download your data from the cloud but you won't be able to update it or synchronize with any other devices. Renew your subscription now to unlock the full potential of Padlock Cloud!
@@ -151,6 +153,7 @@
                     // after the user has visited the activation link in the email he was sent
                     this.set("settings.sync_connected", false);
                     this.set("settings.sync_key", authToken.token);
+                    this.set("settings.sync_id", authToken.id);
                     this._testCredentials(true);
                     this._alert("Almost done! An email was sent to " + email + " with further instructions.");
                 }.bind(this), function(e) {

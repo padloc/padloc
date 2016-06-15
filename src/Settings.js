@@ -40,7 +40,8 @@ padlock.Settings = (function(util, LocalSource) {
             "default_fields": ["username", "password"],
             "obfuscate_fields": false,
             "showed_backup_reminder": 0,
-            "sync_require_subscription": false
+            "sync_require_subscription": false,
+            "sync_id": ""
         },
         parse: function(data) {
             try {
