@@ -173,9 +173,12 @@ padlock.App = (function(Polymer, platform, pay) {
                     this.settings.fetch({success: function() {
                         this._notifySettings();
                         this._unlockSuccess();
-                    }.bind(this), fail: function(e) {
-                        console.log("failed to load settings!", e);
-                    }});
+                    }.bind(this), fail: function() {
+                        // Something went wrong with fetching the settings, so we'll have to start
+                        // with a clean slate
+                        this.settings.save();
+                        this._unlockSuccess();
+                    }.bind(this)});
                 }.bind(this), fail: this._unlockFail.bind(this)});
         },
         _unlockSuccess: function() {
