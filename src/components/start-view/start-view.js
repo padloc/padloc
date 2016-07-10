@@ -71,11 +71,10 @@
                 title: "Remember your master password! Without it, nobody will be able to access your data, " +
                     "not even we! This is to ensure that your data is as safe as possible but it also means " +
                     "that if you lose your master password, we won't be able to assist you with recovering your " +
-                    "data. (You will be able to change it later, but only if you know the existing password)",
+                    "data.",
                 components: [
                     {element: "input", placeholder: "Repeat Password", type: "password", name: "password"},
-                    {element: "button", label: "Confirm", submit: true},
-                    {element: "button", label: "Change", cancel: true}
+                    {element: "button", label: "Confirm", submit: true}
                 ],
                 submit: function(data) {
                     if (newPwd == data.password) {
@@ -83,9 +82,6 @@
                     } else {
                         this.fire("notify", {message: "Passwords do not match!", type: "error", duration: 2000});
                     }
-                }.bind(this),
-                cancel: function() {
-                    this.$.pwdInput.focus();
                 }.bind(this)
             });
         },
