@@ -34,7 +34,7 @@
 
         <section>
             <padlock-toggle-button value="{{ settings.auto_lock }}" label="Auto Lock"></padlock-toggle-button>
-            <padlock-slider min="30" max="300" value="{{ settings.auto_lock_delay }}" step="30" unit="s"
+            <padlock-slider min="1" max="10" value="{{ settings.auto_lock_delay }}" step="1" unit=" min"
                 label="After" hidden$="{{ !settings.auto_lock }}"></padlock-slider>
         </section>
 

@@ -118,10 +118,10 @@ padlock.App = (function(Polymer, platform, pay) {
                 this._currentView !== this.$.startView
             ) {
                 this._lockTimeout = setTimeout(this._lock.bind(this, true),
-                    this.settings.auto_lock_delay * 1000);
+                    this.settings.auto_lock_delay * 60 * 1000);
                 this._lockNotificationTimeout = setTimeout(function() {
                     this.$.notification.show("Auto-lock in 10 seconds", "warning", 3000);
-                }.bind(this), (this.settings.auto_lock_delay - 10) * 1000);
+                }.bind(this), (this.settings.auto_lock_delay) * 50 * 1000);
             }
         },
         _initView: function(collExists) {
@@ -253,9 +253,10 @@ padlock.App = (function(Polymer, platform, pay) {
                 );
 
                 if (auto === true) {
+                    var delay = this.settings.auto_lock_delay;
                     this.async(function() {
                         this._alert("Padlock was automatically locked after " +
-                            this.settings.auto_lock_delay + " seconds of inactivity. " +
+                            delay + " " + (delay > 1 ? "minutes" : "minute") + " of inactivity. " +
                             "You can change this behavior from the settings page.");
                     }, 1000);
                 }

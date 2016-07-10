@@ -28,7 +28,8 @@ padlock.Settings = (function(util, LocalSource) {
         // map are not saved to persistent storage.
         properties: {
             "auto_lock": true,
-            "auto_lock_delay": 60,
+            // Auto lock delay in minutes
+            "auto_lock_delay": 1,
             "sync_host_url": "https://cloud.padlock.io",
             "sync_custom_host": false,
             "sync_email": "",
