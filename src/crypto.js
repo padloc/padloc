@@ -1,5 +1,5 @@
 /* jshint worker: true, browser: true */
-/* global padlock, sjcl */
+/* global padlock, sjcl, importScripts */
 
 /**
  * Cyptrographic module for encrypting and decrypting content
@@ -254,10 +254,6 @@
                 typeof cont.adata == "string" && // valid authorisation data
                 atSizes.indexOf(cont.ts) !== -1; // valid authorisation tag length
         }
-
-        // Do a dummy encryption call as a workaround for https://github.com/bitwiseshiftleft/sjcl/issues/280
-        // TODO: Remove once underlying issue is fixed in sjcl
-        encrypt(genKey("", "", 256, 1), "");
 
         return {
             ciphers: ciphers,
