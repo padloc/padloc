@@ -46,7 +46,7 @@ padlock.App = (function(Polymer, platform, pay) {
         observers: [
             "_saveSettings(settings.*)",
             "_notifyHeaderTitle(_selected.name)",
-            "_autoLockChanged(settings.auto_lock, settings.auto_lock_delay)"
+            "_autoLockChanged(settings.auto_lock, settings.auto_lock_delay, _currentView)"
         ],
         // This is called by the constructor with the same arguments passed into the constructor
         factoryImpl: function() {
@@ -101,15 +101,22 @@ padlock.App = (function(Polymer, platform, pay) {
             // Init view when app resumes
             document.addEventListener("resume", this._resume.bind(this, true), false);
         },
-        _autoLockChanged: function() {
+        _cancelAutoLock: function() {
             if (this._lockTimeout) {
                 clearTimeout(this._lockTimeout);
             }
             if (this._lockNotificationTimeout) {
                 clearTimeout(this._lockNotificationTimeout);
             }
+        },
+        _autoLockChanged: function() {
+            this._cancelAutoLock();
 
-            if (this.settings.auto_lock) {
+            if (
+                this.settings.auto_lock &&
+                this._currentView !== this.$.lockView &&
+                this._currentView !== this.$.startView
+            ) {
                 this._lockTimeout = setTimeout(this._lock.bind(this, true),
                     this.settings.auto_lock_delay * 1000);
                 this._lockNotificationTimeout = setTimeout(function() {
@@ -188,8 +195,6 @@ padlock.App = (function(Polymer, platform, pay) {
             this._decrypting = false;
             // Show either the last view shown before locking the screen or default to the list view
             this._popinOpen(this.$.listView);
-
-            this._autoLockChanged();
 
             // After a short delay, trigger synchronization if auto-sync is enabled
             this.async(function() {
