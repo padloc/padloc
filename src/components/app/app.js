@@ -621,7 +621,9 @@ padlock.App = (function(Polymer, platform, pay) {
             // Only save if the the data has actually been loaded from persistent storage yet. This check is
             // to prevent settings data being overwritten with default values on app startup
             if (this.settings.loaded) {
-                this.settings.save();
+                this.debounce("save_settings", function() {
+                    this.settings.save();
+                }, 500);
             }
         },
         // Notify observers of changes to every existing settings property. This is used as a catch-all
