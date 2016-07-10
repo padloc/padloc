@@ -702,10 +702,18 @@ padlock.App = (function(Polymer, platform, pay) {
             // Update components property, which causes the dynamic form elements to be rendered
             form.components = components;
             // Update callbacks
-            form.submitCallback = submitCallback;
-            form.cancelCallback = cancelCallback;
-            // This is a little tweak to improve alignment of the keyboard on iOS
-            platform.keyboardDisableScroll(false);
+            form.submitCallback = function() {
+                if (typeof submitCallback === 'function') {
+                    submitCallback.apply(null, arguments);
+                }
+                dialog.open = false;
+            }
+            form.cancelCallback = function() {
+                if (typeof cancelCallback === 'function') {
+                    cancelCallback.apply(null, arguments);
+                }
+                dialog.open = false;
+            }
             // Open the dialog asynchrously and focus first first input with the `auto-focus` attribute (if any)
             this.async(function() {
                 dialog.open = true;
@@ -720,6 +728,16 @@ padlock.App = (function(Polymer, platform, pay) {
         // Closes the dialog from which the event was sent
         _closeCurrentDialog: function(e) {
             e.currentTarget.open = false;
+        },
+        _formDialogOpened: function() {
+            // This is a little tweak to improve alignment of the keyboard on iOS
+            platform.keyboardDisableScroll(false);
+        },
+        _formDialogClosed: function(e) {
+            // Fetch form element of current target
+            var form = Polymer.dom(e.target).querySelector("padlock-dynamic-form");
+            // Blur all input elements
+            form.blurInputElements();
             // If no dialogs remain open, disable keyboard scroll again
             if (!Polymer.dom(this.root).querySelectorAll("padlock-dialog.open").length) {
                 platform.keyboardDisableScroll(true);
@@ -727,18 +745,11 @@ padlock.App = (function(Polymer, platform, pay) {
         },
         // Handler for when a form dialog gets dismissed (by clicking outside of it). Does some cleanup work
         // and calls the form cancel callback
-        _formDismiss: function(e) {
-            // Fetch form element of current target
+        _formDialogDismissed: function(e) {
             var form = Polymer.dom(e.target).querySelector("padlock-dynamic-form");
-            // Blur all input elements
-            form.blurInputElements();
             // Call cancel callback if there is one
             if (typeof form.cancelCallback == "function") {
                 form.cancelCallback();
-            }
-            // If no dialogs remain open, disable keyboard scroll again
-            if (!Polymer.dom(this.root).querySelectorAll("padlock-dialog.open").length) {
-                platform.keyboardDisableScroll(true);
             }
         },
         // Simple function for identifying an empty string. Mainly used in declaratative data bindings
