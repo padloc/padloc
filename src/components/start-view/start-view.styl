@@ -8,7 +8,8 @@
 }
 
 :host {
-    display: block;
+    display: flex;
+    flex-direction: column;
     background-color: $color-primary;
     overflow: hidden;
     top: 0;
@@ -29,13 +30,19 @@
     }
 }
 
+.form-wrapper {
+    flex: 1;
+    position: relative;
+    margin-top: 70px;
+}
+
 .get-started, .restore-cloud {
     position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     text-align: center;
     transition: transform 0.7s, opacity 0.7s;
 
@@ -46,7 +53,6 @@
 }
 
 .get-started {
-    height: 350px;
     color: $text-color-light;
 
     input, padlock-password-input {
@@ -55,7 +61,6 @@
 }
 
 .restore-cloud {
-    height: 400px;
     color: $color-primary;
 
     .header {
@@ -66,7 +71,6 @@
 :host[mode="restore-cloud"] .get-started, :host:not([mode="restore-cloud"]) .restore-cloud {
     transform: translate(0, 50px);
     opacity: 0;
-    // z-index: -1;
     pointer-events: none;
     transition-duration: 0.2s;
 }
@@ -109,12 +113,11 @@
 }
 
 padlock-lock {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -50px;
-    margin: 0 auto;
     animation: reveal 0.5s ease 0.8s both;
+}
+
+.lock-wrapper {
+    align-self: center;
 }
 
 padlock-progress {
@@ -127,7 +130,19 @@ padlock-progress {
         height: 0;
     }
 
-    .wrapper {
-        height: 230px;
+    :host .switch-button {
+        color: $text-color-light;
+    }
+
+    :host[mode="restore-cloud"] .switch-button {
+        color: $color-primary;
+    }
+
+    .switch-button {
+        color: $color-primary;
+    }
+
+    .form-wrapper {
+        margin-top: 0;
     }
 }

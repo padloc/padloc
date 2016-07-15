@@ -15,10 +15,8 @@
         <style include="view-styles"></style>
         <style include="lock-view-styles"></style>
 
-        <padlock-lock></padlock-lock>
-
         <!-- WRAPPER (for centering) -->
-        <form class="wrapper">
+        <div class="wrapper">
             <!-- HEADER -->
             <div class="header">
                 Padlock
@@ -30,7 +28,9 @@
             </div>
             <!-- ENTER BUTTON -->
             <button class="enter-button ghost" on-tap="enter" type="button">Unlock</button>
-        </form>
+        </div>
+
+        <padlock-lock></padlock-lock>
 
     </template>
 
