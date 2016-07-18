@@ -1,4 +1,5 @@
 @import "../../styles/config";
+@import "../../styles/mixins";
 @import "nib";
 
 @keyframes reveal {
@@ -13,6 +14,7 @@
     background: $color-primary;
     color: #fff;
     top: 0;
+    text-shadow();
 }
 
 .wrapper {
@@ -26,7 +28,7 @@
 
 .header {
     font-size: 50px;
-    font-weight: $font-weight-thin;
+    font-weight: 300;
     margin-bottom: 30px;
 
     animation: reveal 0.5s ease 0.2s both;
@@ -44,10 +46,10 @@
     font-size: 120%;
     animation: reveal 0.5s ease 0.6s both;
 }
-//
-// .header, .enter-button {
-//     text-shadow: rgba(0,0,0,0.2) 1px 1px;
-// }
+
+.header, .enter-button {
+    text-shadow: rgba(0,0,0,0.2) 1px 1px;
+}
 
 padlock-lock {
     align-self: center;

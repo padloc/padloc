@@ -60,11 +60,11 @@
 
         <!-- MAIN MENU -->
         <padlock-dialog id="mainMenu" close-on-tap>
-            <button on-tap="_openSettings">Settings</button>
-            <button on-tap="_synchronize">Synchronize</button>
-            <button on-tap="_openGenerator">Generate Password</button>
-            <button on-tap="_lock">Lock App</button>
-            <button on-tap="_displayShortcuts" hidden$="{{ _isTouch() }}">Shortcuts</button>
+            <button class="ghost" on-tap="_openSettings">Settings</button>
+            <button class="ghost" on-tap="_synchronize">Synchronize</button>
+            <button class="ghost" on-tap="_openGenerator">Generate Password</button>
+            <button class="ghost" on-tap="_lock">Lock App</button>
+            <button class="ghost" on-tap="_displayShortcuts" hidden$="{{ _isTouch() }}">Shortcuts</button>
         </padlock-dialog>
 
         <padlock-dialog id="formDialog1" on-dismiss="_formDialogDismissed" on-open="_formDialogOpened" on-close="_formDialogClosed" on-form-close="_closeCurrentDialog">

@@ -1,4 +1,5 @@
 @import "../../styles/config";
+@import "../../styles/mixins";
 @import "nib";
 
 :host {
@@ -66,19 +67,16 @@
     word-wrap: break-word;
     font-weight: $font-weight-bold;
     margin-bottom: 5px;
+    text-shadow();
 
     &:empty {
         display: none;
     }
 }
 
-.inner ::content > input {
-    cursor: text;
-}
-
-.inner ::content > button.primary {
-    color: $color-primary;
-    background: #fff;
+.inner ::content > button {
+    border-top: solid 1px;
+    border-bottom: solid 1px;
 }
 
 :host(:not(.open)) .scroll-container {

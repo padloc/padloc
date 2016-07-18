@@ -17,13 +17,13 @@
                 <template is="dom-if" if="{{ _isInput(item.element) }}">
                     <div class="tap-highlight">
                         <input is="padlock-input" value="{{ item.value }}" type$="{{ item.type }}" select-all-on-focus="{{ item.selectAllOnFocus }}"
-                            autocomplete="off" auto-focus$="{{ item.autofocus }}" placeholder$="{{ item.placeholder }}" class$="{{ _inputClass(item.class) }}"
+                            autocomplete="off" auto-focus$="{{ item.autofocus }}" placeholder$="{{ item.placeholder }}" class="ghost"
                             on-enter="_submit" name$="{{ item.name }}">
                     </div>
                 </template>
 
                 <template is="dom-if" if="{{ _isButton(item.element) }}">
-                    <button on-tap="_buttonTap" type="button" class$="{{ _buttonClass(item.class }}">{{ item.label }}</button>
+                    <button on-tap="_buttonTap" type="button" class="ghost">{{ item.label }}</button>
                 </template>
 
             </template>

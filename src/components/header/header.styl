@@ -30,6 +30,8 @@
     line-height: 0;
     pointer-events: none;
     transition: transform 0.5s $toaster-easing;
+    font-weight: $font-weight-bold;
+    text-shadow();
 
     &::before {
         content: "";
@@ -52,7 +54,7 @@
     position: relative;
     width: 100%;
     pointer-events: auto;
-
+    border-bottom: solid 2px $shadow-color;
     display: flex;
 
     shape-shifter {
@@ -105,11 +107,13 @@
 .filter-input {
     background: transparent;
     color: $text-color-light;
+    font-weight: $font-weight-bold;
+    text-shadow();
 
     animation: filterOut 0.5s ease 0s both;
 
     &::-webkit-input-placeholder {
-        color: $placeholder-color-light;
+        color: $text-color-light;
     }
 
     &:not(:focus)::-webkit-input-placeholder {

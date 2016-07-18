@@ -169,6 +169,9 @@ padlock.App = (function(Polymer, platform, pay) {
                 return;
             }
 
+            var t1= performance.now();
+            console.log("unlocking collection...");
+
             // set flag to indicate that decryption is in process
             this._decrypting = true;
             // show progress indicator
@@ -176,8 +179,12 @@ padlock.App = (function(Polymer, platform, pay) {
             // Attempt to fetch data from storage and decrypt it
             this.collection.fetch({password: password, rememberPassword: true,
                 success: function() {
+                    var t2 = performance.now();
+                    console.log("collection unlocked " + (t2 - t1));
                     // Fetch settings from persistent storage
                     this.settings.fetch({success: function() {
+                        var t3 = performance.now();
+                        console.log("settings unlocked " + (t3 - t2));
                         this._notifySettings();
                         this._unlockSuccess();
                     }.bind(this), fail: function() {
