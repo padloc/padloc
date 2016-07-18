@@ -67,12 +67,12 @@
             <button on-tap="_displayShortcuts" hidden$="{{ _isTouch() }}">Shortcuts</button>
         </padlock-dialog>
 
-        <padlock-dialog id="formDialog1" on-dismiss="_formDialogDismissed" on-open="_formDialogOpened" on-close="_formDialogClosed">
+        <padlock-dialog id="formDialog1" on-dismiss="_formDialogDismissed" on-open="_formDialogOpened" on-close="_formDialogClosed" on-form-close="_closeCurrentDialog">
             <div class="title"></div>
             <padlock-dynamic-form></padlock-dynamic-form>
         </padlock-dialog>
 
-        <padlock-dialog id="formDialog2" on-dismiss="_formDialogDismissed" on-open="_formDialogOpened" on-close="_formDialogClosed">
+        <padlock-dialog id="formDialog2" on-dismiss="_formDialogDismissed" on-open="_formDialogOpened" on-close="_formDialogClosed" on-form-close="_closeCurrentDialog">
             <div class="title"></div>
             <padlock-dynamic-form></padlock-dynamic-form>
         </padlock-dialog>

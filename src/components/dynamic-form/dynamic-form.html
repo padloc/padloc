@@ -74,7 +74,7 @@
 
                     if (component.close) {
                         this.blurInputElements();
-                        this.fire("close");
+                        this.fire("form-close");
                     }
 
                     if (typeof component.tap == "function") {
@@ -86,7 +86,7 @@
                     if (typeof this.cancelCallback == "function") {
                         this.cancelCallback();
                     }
-                    this.fire("cancel");
+                    this.fire("form-cancel");
                 },
                 _values: function() {
                     return Polymer.dom(this.root).querySelectorAll("input").reduce(function(vals, el) {
@@ -105,7 +105,7 @@
                         this.submitCallback(values);
                     }
 
-                    this.fire("submit", values);
+                    this.fire("form-submit", values);
 
                     if (e) {
                         e.preventDefault();
