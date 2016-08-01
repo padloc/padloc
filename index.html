@@ -29,9 +29,10 @@
                     settings = new padlock.Settings(store, {
                         // "sync_require_subscription": true
                     }),
-                    collection = new padlock.Collection("default", store);
+                    collection = new padlock.Collection("default", store),
+                    announcements = new padlock.Announcements("https://padlock.io/announcements.json", store);
 
-                var app = new padlock.App(collection, settings);
+                var app = new padlock.App(collection, settings, announcements);
                 document.body.appendChild(app);
             });
         </script>
