@@ -26,7 +26,7 @@
             tap: "_dismiss"
         },
         //* Changed handler for the _open_ property. Shows/hides the dialog
-        _openChanged: function() {
+        _openChanged: function(curr, prev) {
             // Set _display: block_ if we're showing. If we're hiding
             // we need to wait until the transitions have finished before we
             // set _display: none_.
@@ -48,8 +48,10 @@
             // jshint expr: false
 
             this.toggleClass("open", this.open);
-
-            this.fire(this.open ? "open" : "close");
+            
+            if (prev !== undefined) {
+                this.fire(this.open ? "open" : "close");
+            }
         },
         _innerTap: function(event) {
             // Intercept the tap event to prevent closing the popup if one
