@@ -899,7 +899,7 @@ padlock.App = (function(Polymer, platform, pay) {
                     ],
                     info.description,
                     function() {
-                        pay.orderSubscription(this.settings.sync_email,
+                        pay.orderSubscription(this.settings.sync_host, this.settings.sync_email,
                             this._subscriptionVerified.bind(this), this._handleError.bind(this));
                     }.bind(this)
                 );

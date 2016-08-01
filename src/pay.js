@@ -18,7 +18,7 @@ padlock.pay = (function() {
     });
 
     // Validation function for purchase receipts
-    function validate(email, success, fail, product) {
+    function validate(server, email, success, fail, product) {
         var req = new XMLHttpRequest();
 
         req.onreadystatechange = function() {
@@ -45,7 +45,7 @@ padlock.pay = (function() {
 
         try {
             // send receipt data to padlock cloud server
-            req.open("POST", "https://cloud.padlock.io/validatereceipt/", true);
+            req.open("POST", server + "/validatereceipt/", true);
             req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             req.send(
                 "email=" + encodeURIComponent(account) +
@@ -66,20 +66,20 @@ padlock.pay = (function() {
     }
 
     // Verifies the current purchase
-    function verifySubscription(email, success, fail) {
+    function verifySubscription(server, email, success, fail) {
         // store.refresh();
         account = email;
-        store.validator = validate.bind(null, email, success, fail);
+        store.validator = validate.bind(null, server, email, success, fail);
         refresh(function() {
             store.get(monthlyId).verify();
         });
     }
 
     // Initiates a purchase
-    function orderSubscription(email, success, fail) {
+    function orderSubscription(server, email, success, fail) {
         refresh(function() {
             store.once(monthlyId, "approved", function() {
-                verifySubscription(email, success, fail);
+                verifySubscription(server, email, success, fail);
             });
             store.order(monthlyId);
         });
