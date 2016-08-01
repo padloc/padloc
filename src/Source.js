@@ -18,14 +18,11 @@ padlock.Source = (function() {
             try {
                 // Try to parse data
                 var data = rawData ? JSON.parse(rawData) : null;
-                if (opts && opts.success) {
-                    opts.success(data);
-                }
             } catch (e) {
-                if (opts && opts.fail) {
-                    opts.fail(padlock.ERR_SOURCE_INVALID_JSON);
-                }
+                opts && opts.fail && opts.fail(padlock.ERR_SOURCE_INVALID_JSON);
             }
+
+            opts && opts.success && opts.success(data);
         },
         /**
          * Fetches data
