@@ -53,7 +53,7 @@ padlock.App = (function(Polymer, platform, pay) {
             this.init.apply(this, arguments);
         },
         //* Initialize application with a `padlock.Collection` and `padlock.Settings` object
-        init: function(collection, settings) {
+        init: function(collection, settings, announcements) {
             this.collection = collection;
             // Wire up the collection object with the `_records` binding proxy by subscribing to the `update`
             // event
@@ -70,6 +70,8 @@ padlock.App = (function(Polymer, platform, pay) {
             }.bind(this));
 
             this.settings = settings;
+
+            this.announcements = announcements;
 
             this.remoteSource = new padlock.CloudSource(this.settings);
 
@@ -132,6 +134,12 @@ padlock.App = (function(Polymer, platform, pay) {
             // open the first view
             // this._openView(this.$.listView, { animation: "" });
             this._openView(view, { animation: "" });
+
+            // Fetch and display announcements from Padlock Server
+            this.announcements.fetch(function(aa) {
+                this._currentAnnouncements = aa;
+                this._displayNextAnnouncement();
+            }.bind(this));
         },
         // Enter handler for lock view; triggers unlock attempt
         _pwdEnter: function(event, detail) {
@@ -919,6 +927,23 @@ padlock.App = (function(Polymer, platform, pay) {
                 this._openCloudView();
             }
             this.async(this.$.cloudView.connect.bind(this.$.cloudView), 100);
+        },
+        _displayNextAnnouncement: function() {
+            var a = this._currentAnnouncements[0];
+            var dismissed = function() {
+                this.announcements.markRead(a);
+                this._currentAnnouncements.splice(0, 1);
+                this._displayNextAnnouncement();
+            }.bind(this);
+
+            if (a) {
+                var els = a.link ? [{element: "button", label: "Learn More", tap: function() {
+                        window.open(a.link, "_system");
+                    }}] : [];
+                els.push({element: "button", label: "Dismiss", submit: true});
+
+                this._openForm(els, a.text, dismissed, dismissed, true);
+            }
         }
     });
 
