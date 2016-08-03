@@ -46,6 +46,10 @@
                 navigator.splashscreen.hide();
                 cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
                 cordova.plugins.Keyboard.disableScroll(true);
+                // Replace window.open method with the inappbrowser equivalent
+                if (cordova.InAppBrowser) {
+                    window.open = cordova.InAppBrowser.open;
+                }
             });
         </script>
 
