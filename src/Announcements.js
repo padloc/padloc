@@ -17,20 +17,20 @@ padlock.Announcements = (function() {
                 cb(JSON.parse(data || "{}"));
             }
         });
-    }
+    };
 
     Announcements.prototype.saveRead = function(read) {
         this.source.save({
             key: sourceKey,
             data: JSON.stringify(read)
         });
-    }
+    };
 
     Announcements.prototype.parseAndFilter = function(str, cb) {
         var now = new Date();
         try {
             var aa = JSON.parse(str);
-        } catch(e) {
+        } catch (e) {
             return;
         }
 
@@ -41,7 +41,7 @@ padlock.Announcements = (function() {
                 return !read[a.id] && from <= now && until >= now;
             }));
         }.bind(this));
-    }
+    };
 
     Announcements.prototype.fetch = function(cb) {
         var req = new XMLHttpRequest();
@@ -58,7 +58,7 @@ padlock.Announcements = (function() {
             req.setRequestHeader("Accept", "application/json");
             req.send();
             return req;
-        } catch(e) {
+        } catch (e) {
             return null;
         }
     };
@@ -68,7 +68,7 @@ padlock.Announcements = (function() {
             read[a.id] = true;
             this.saveRead(read);
         }.bind(this));
-    }
+    };
 
     return Announcements;
 })(padlock.Source);

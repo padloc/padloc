@@ -8,10 +8,8 @@ padlock.Settings = (function(util, LocalSource) {
     /**
      * Object for storing settings. Setting properties are stored on the object directly while the `properties`
      * member holds a map of setting names and default values.
-     * @param Object settings Object containing predefined setings with default values.
-     *                        Any properties of this object will also be made available as
-     *                        properties on the _Settings_ object directly
-     * @param Source source   Source to use for persistency
+     * @param {padlock.Store} store - Store object used to save settings
+     * @param {Object} defaults - Default settings
      */
     var Settings = function(store, defaults) {
         // Copy over default values onto `Settings` Object directly
@@ -47,7 +45,7 @@ padlock.Settings = (function(util, LocalSource) {
         parse: function(data) {
             try {
                 data = JSON.parse(data);
-            } catch(e) {
+            } catch (e) {
                 data = {};
             }
             // Copy over setting values
@@ -87,7 +85,8 @@ padlock.Settings = (function(util, LocalSource) {
     };
 
     var legacySource = new LocalSource();
-    /** Fetches any old, unencrypted settings data and then deletes it */
+
+    // Fetches any old, unencrypted settings data and then deletes it
     function fetchLegacy(settings, cb) {
         legacySource.fetch({
             key: "settings",
@@ -108,7 +107,7 @@ padlock.Settings = (function(util, LocalSource) {
     var fetch = Settings.prototype.fetch;
     Settings.prototype.fetch = function() {
         fetchLegacy(this, fetch.apply.bind(fetch, this, arguments));
-    }
+    };
 
     return Settings;
 })(padlock.util, padlock.LocalSource);

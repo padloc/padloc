@@ -28,11 +28,13 @@ padlock.Collection = (function(util) {
             return "coll_" + this.name;
         },
         parse: function(data) {
-            var records;
             try {
                 var records = JSON.parse(data);
                 this.add(records);
-            } catch(e) {}
+                return records;
+            } catch(e) {
+                return [];
+            }
         },
         toString: function() {
             return JSON.stringify(this.records);

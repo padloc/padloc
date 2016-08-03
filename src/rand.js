@@ -1,4 +1,4 @@
-/* global padlock */
+/* global padlock, Uint8Array */
 
 /**
  * Module for generating random strings

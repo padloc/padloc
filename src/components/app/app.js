@@ -177,9 +177,6 @@ padlock.App = (function(Polymer, platform, pay) {
                 return;
             }
 
-            var t1= performance.now();
-            console.log("unlocking collection...");
-
             // set flag to indicate that decryption is in process
             this._decrypting = true;
             // show progress indicator
@@ -187,12 +184,8 @@ padlock.App = (function(Polymer, platform, pay) {
             // Attempt to fetch data from storage and decrypt it
             this.collection.fetch({password: password, rememberPassword: true,
                 success: function() {
-                    var t2 = performance.now();
-                    console.log("collection unlocked " + (t2 - t1));
                     // Fetch settings from persistent storage
                     this.settings.fetch({success: function() {
-                        var t3 = performance.now();
-                        console.log("settings unlocked " + (t3 - t2));
                         this._notifySettings();
                         this._unlockSuccess();
                     }.bind(this), fail: function() {
@@ -288,9 +281,7 @@ padlock.App = (function(Polymer, platform, pay) {
                 this.$.header.blurFilterInput();
             }
         },
-        /**
-         * Opens the provided _view_
-         */
+        // Opens the provided _view_
         _openView: function(view, inOpts, outOpts) {
             var views = Polymer.dom(this.root).querySelectorAll(".view"),
                 // Choose left or right animation based on the order the views
@@ -301,11 +292,11 @@ padlock.App = (function(Polymer, platform, pay) {
             // and a left-to-right animation when animating 'back'
             inOpts = inOpts || {};
             if (!("animation" in inOpts)) {
-                inOpts.animation = back ? "slideInFromLeft": "slideInFromRight";
+                inOpts.animation = back ? "slideInFromLeft" : "slideInFromRight";
             }
             outOpts = outOpts || {};
             if (!("animation" in outOpts)) {
-                outOpts.animation = back ? "slideOutToRight": "slideOutToLeft";
+                outOpts.animation = back ? "slideOutToRight" : "slideOutToLeft";
             }
 
             // Hide current view (if any)
@@ -515,7 +506,7 @@ padlock.App = (function(Polymer, platform, pay) {
                         }
                     }.bind(this),
                     fail: function(e) {
-                        switch(e) {
+                        switch (e) {
                             case padlock.ERR_SOURCE_INVALID_JSON:
                             case padlock.ERR_CRYPTO_INVALID_KEY_PARAMS:
                             case padlock.ERR_CRYPTO_INVALID_CONTAINER:
@@ -560,19 +551,20 @@ padlock.App = (function(Polymer, platform, pay) {
         // Prompts for the password to use for the remote source
         _requireRemotePassword: function() {
             this._openForm([
-                    {element: "input", name: "password", type: "password",
-                        placeholder: "Enter Remote Password", autofocus: true},
-                    {element: "button", label: "OK", submit: true},
-                    {element: "button", label: "Cancel", cancel: true}
-                ],
-                "It seems your local master password does not match the one used to encrypt " +
-                "the data on Padlock Cloud. Please enter your remote password!", function(vals) {
-                    this._synchronize(vals.password);
-                }.bind(this));
+                {element: "input", name: "password", type: "password",
+                    placeholder: "Enter Remote Password", autofocus: true},
+                {element: "button", label: "OK", submit: true},
+                {element: "button", label: "Cancel", cancel: true}
+            ],
+            "It seems your local master password does not match the one used to encrypt " +
+            "the data on Padlock Cloud. Please enter your remote password!", function(vals) {
+                this._synchronize(vals.password);
+            }.bind(this));
         },
         // Asks if the user wants to update the remote password with the local one
         _promptUpdateRemotePassword: function() {
-            this._openForm([
+            this._openForm(
+                [
                     {element: "button", label: "Yes", submit: true},
                     {element: "button", label: "No", cancel: true}
                 ],
@@ -724,17 +716,17 @@ padlock.App = (function(Polymer, platform, pay) {
             form.components = components;
             // Update callbacks
             form.submitCallback = function() {
-                if (typeof submitCallback === 'function') {
+                if (typeof submitCallback === "function") {
                     submitCallback.apply(null, arguments);
                 }
                 dialog.open = false;
-            }
+            };
             form.cancelCallback = function() {
-                if (typeof cancelCallback === 'function') {
+                if (typeof cancelCallback === "function") {
                     cancelCallback.apply(null, arguments);
                 }
                 dialog.open = false;
-            }
+            };
             // Open the dialog asynchrously and focus first first input with the `auto-focus` attribute (if any)
             this.async(function() {
                 dialog.open = true;
@@ -830,7 +822,7 @@ padlock.App = (function(Polymer, platform, pay) {
             this._handleError(e.detail);
         },
         _handleError: function(e) {
-            switch(e) {
+            switch (e) {
                 case padlock.ERR_CLOUD_UNAUTHORIZED:
                     this.set("settings.sync_connected", false);
                     this.set("settings.sync_key", "");
@@ -938,8 +930,8 @@ padlock.App = (function(Polymer, platform, pay) {
 
             if (a) {
                 var els = a.link ? [{element: "button", label: "Learn More", tap: function() {
-                        window.open(a.link, "_system");
-                    }}] : [];
+                    window.open(a.link, "_system");
+                }}] : [];
                 els.push({element: "button", label: "Dismiss", submit: true});
 
                 this._openForm(els, a.text, dismissed, dismissed, true);

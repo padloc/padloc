@@ -2,8 +2,8 @@
 padlock.pay = (function() {
     "use strict";
 
-    padlock.ERR_PAY_SERVER_ERROR;
-    padlock.ERR_PAY_INVALID_RECEIPT;
+    padlock.ERR_PAY_SERVER_ERROR = "Padlock Pay Server Error";
+    padlock.ERR_PAY_INVALID_RECEIPT = "Padlock Pay Invalid Receipt";
 
     var monthlyId = "padlock_cloud_monthly";
     var account;

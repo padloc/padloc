@@ -16,7 +16,7 @@
         is: "padlock-import-view",
         behaviors: [ViewBehavior],
         properties: {
-            collection: Object,
+            collection: Object
         },
         ready: function() {
             this.leftHeaderIcon = "left";

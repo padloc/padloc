@@ -44,11 +44,12 @@
             // Trigger relayout to make sure all elements have been rendered
             // when applying the transition
             // jshint expr: true
+            // eslint-disable-next-line no-unused-expressions
             this.offsetLeft;
             // jshint expr: false
 
             this.toggleClass("open", this.open);
-            
+
             if (prev !== undefined) {
                 this.fire(this.open ? "open" : "close");
             }

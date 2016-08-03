@@ -88,7 +88,7 @@
             }
         },
         _filterPlaceholder: function(hasFocus) {
-           return hasFocus ? "type to search..." : "tap to search...";
+            return hasFocus ? "type to search..." : "tap to search...";
         },
         _updateTitle: function(title) {
             this._title = title || this._title;
