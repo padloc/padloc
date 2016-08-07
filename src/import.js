@@ -30,7 +30,7 @@ padlock.import = (function(crypto, DisposableSource, Papa) {
             // Try to parse JSON object containing data needed for decryption
             obj = JSON.parse(objJSON);
         } catch(e) {
-            fail(e);
+            fail && fail(e);
             return;
         }
 
@@ -67,7 +67,7 @@ padlock.import = (function(crypto, DisposableSource, Papa) {
 
                 collection.add(records);
 
-                success(records);
+                success && success(records);
             }, fail);
         });
     };
@@ -155,7 +155,7 @@ padlock.import = (function(crypto, DisposableSource, Papa) {
             data = JSON.parse(data);
         } catch(e) {
             // Failed to parse as JSON, so unable to restore data
-            fail(e);
+            fail && fail(e);
             return;
         }
 
