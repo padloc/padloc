@@ -30,17 +30,13 @@ You can also use the `--watch` flag to tell the gulp task to watch all `.styl` f
 
 ## Linting
 
-Any pull request need to pass our linting rules, which are defined in the `.jshintrc` file. To lint all JS files, run the corresponding gulp task
+Any pull request need to pass our linting rules, which are defined in the `.eslintrc.json` file. To lint all files, run
 
-    gulp lint
-
-Again, you can use the `--watch` flag to let the task watch all JS (and HTML) files and relint any JavaScript that might have changed.
+    gulp eslit
 
 ## Testing
 
-We maintain tests for the core modules in the `test` directory. Before you submit a pull request, make sure to run the tests first. Again, there is a gulp task for this.
-
-    gulp test
+To run the tests, open `test/runner.html` in your browser.
 
 ## Contributing
 Contributions are more than welcome!
