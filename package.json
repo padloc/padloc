@@ -1,22 +1,24 @@
 {
   "name": "Padlock",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "main": "tools.js",
   "devDependencies": {
+    "eslint-plugin-html": "^1.5.1",
     "gulp": "^3.9.1",
-    "gulp-crisper": "0.0.5",
+    "gulp-crisper": "1.1.0",
+    "gulp-eslint": "^3.0.1",
     "gulp-insert-lines": "0.0.4",
-    "gulp-jshint": "^1.8.4",
+    "gulp-jshint": "^2.0.1",
     "gulp-style-modules": "^0.1.0",
-    "gulp-stylus": "^1.3.0",
-    "gulp-vulcanize": "^6.0.1",
-    "gulp-watch": "^0.6.9",
-    "jshint-stylish": "^0.4.0",
-    "mkdirp": "^0.5.0",
-    "ncp": "^0.6.0",
-    "nib": "^1.0.3",
-    "q": "^1.0.1",
-    "rimraf": "^2.2.8",
-    "yargs": "^1.3.1"
+    "gulp-stylus": "^2.5.0",
+    "gulp-vulcanize": "^6.1.0",
+    "gulp-watch": "^4.3.9",
+    "mkdirp": "^0.5.1",
+    "ncp": "^2.0.0",
+    "nib": "^1.1.0",
+    "q": "^1.4.1",
+    "rimraf": "^2.5.4",
+    "yargs": "^4.8.1"
   },
   "dependencies": {}
 }
