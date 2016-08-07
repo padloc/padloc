@@ -240,7 +240,7 @@ padlock.App = (function(Polymer, platform, pay) {
             this._autoLockChanged();
             if (
                 this.settings.auto_lock &&
-                new Date().getTime() - this._pausedAt.getTime() > this.settings.auto_lock_delay * 1000
+                new Date().getTime() - this._pausedAt.getTime() > this.settings.auto_lock_delay * 60 * 1000
             ) {
                 this._lock(true);
             }
