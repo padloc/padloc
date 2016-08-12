@@ -829,7 +829,7 @@ padlock.App = (function(Polymer, platform, pay) {
                     this.set("settings.sync_email", "");
                     this._openForm(
                         [{element: "button", label: "Open Padlock Cloud Settings",
-                            tap: this._openCloudView.bind(this)}],
+                            tap: this._openCloudView.bind(this), submit: true}],
                         "It seems you have been disconnected from Padlock Cloud. Please reconnect " +
                         "via Settings > Padlock Cloud!"
                     );
@@ -891,7 +891,7 @@ padlock.App = (function(Polymer, platform, pay) {
                     ],
                     info.description,
                     function() {
-                        pay.orderSubscription(this.settings.sync_host, this.settings.sync_email,
+                        pay.orderSubscription(this.settings.sync_host_url, this.settings.sync_email,
                             this._subscriptionVerified.bind(this), this._handleError.bind(this));
                     }.bind(this)
                 );
