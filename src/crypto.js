@@ -183,7 +183,7 @@
 
             worker.addEventListener("error", function(e) {
                 if (fail) {
-                    fail(e.message.replace("Uncaught ", ""));
+                    fail(e.message && e.message.replace("Uncaught ", ""));
                     // Prevent default behaviour of error event (i.e. recover)
                     e.preventDefault();
                 }
