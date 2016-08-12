@@ -176,5 +176,7 @@ padlock.CloudSource = (function(Source) {
         req.send();
     };
 
+    CloudSource.errFromStatus = errFromStatus;
+
     return CloudSource;
 })(padlock.Source);

@@ -6,7 +6,6 @@ padlock.pay = (function() {
     padlock.ERR_PAY_INVALID_RECEIPT = "Padlock Pay Invalid Receipt";
 
     var monthlyId = "padlock_cloud_monthly";
-    var account;
     var refreshed = false;
 
     document.addEventListener("deviceready", function() {
@@ -34,10 +33,10 @@ padlock.pay = (function() {
                         if (resp.error == "invalid_receipt") {
                             fail(padlock.ERR_PAY_INVALID_RECEIPT);
                         } else {
-                            fail(padlock.ERR_PAY_SERVER_ERROR);
+                            fail(padlock.CloudSource.errFromStatus(req.status));
                         }
-                    } catch(e) {
-                        fail(padlock.ERR_PAY_SERVER_ERROR);
+                    } catch (e) {
+                        fail(padlock.CloudSource.errFromStatus(req.status));
                     }
                 }
             }
@@ -46,9 +45,10 @@ padlock.pay = (function() {
         try {
             // send receipt data to padlock cloud server
             req.open("POST", server + "/validatereceipt/", true);
+            req.setRequestHeader("Accept", "application/vnd.padlock;version=1");
             req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             req.send(
-                "email=" + encodeURIComponent(account) +
+                "email=" + encodeURIComponent(email) +
                 "&type=" + encodeURIComponent(product.transaction.type) +
                 "&receipt=" + encodeURIComponent(product.transaction.transactionReceipt)
             );
@@ -67,8 +67,6 @@ padlock.pay = (function() {
 
     // Verifies the current purchase
     function verifySubscription(server, email, success, fail) {
-        // store.refresh();
-        account = email;
         store.validator = validate.bind(null, server, email, success, fail);
         refresh(function() {
             store.get(monthlyId).verify();
