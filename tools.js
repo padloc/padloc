@@ -16,10 +16,12 @@ var path = require("path"),
     insertLines = require("gulp-insert-lines"),
     stylemod = require("gulp-style-modules");
 
+var projectRoot = path.resolve(__dirname);
+
 function compileCss() {
     var deferred = Q.defer();
 
-    gulp.src("./src/**/*.styl")
+    gulp.src("./src/**/*.styl", {cwd: projectRoot})
         .pipe(stylus({use: [nib()]}))
         .pipe(stylemod())
         .pipe(gulp.dest("./src"))
@@ -31,7 +33,7 @@ function compileCss() {
 }
 
 function runEslint(files) {
-    gulp.src(files || "src/**/*.{js,html}")
+    gulp.src(files || "src/**/*.{js,html}", {cwd: projectRoot})
         .pipe(eslint())
         .pipe(eslint.format())
         .pipe(eslint.results(function(results) {
@@ -41,7 +43,7 @@ function runEslint(files) {
 
 function build(dest) {
     dest = dest || "build";
-    return gulp.src("index.html")
+    return gulp.src("index.html", {cwd: projectRoot})
         .pipe(vulcanize({
             inlineScripts: true,
             inlineCss: true,
@@ -63,10 +65,8 @@ function build(dest) {
 function deploy(dest) {
     dest = dest || "deploy";
     console.log("Deploying app to " + path.resolve(process.cwd(), dest));
-    Q(function() {
-        console.log("Cleaning up existing target folder...");
-        return Q.nfcall(rmdir, dest);
-    })
+    console.log("Cleaning up existing target folder...");
+    Q.nfcall(rmdir, dest)
     .then(function() {
         console.log("Creating target folder structure...");
         return Q.all([
@@ -85,13 +85,13 @@ function deploy(dest) {
     .then(function() {
         console.log("Copying assets...");
         return Q.all([
-            Q.nfcall(ncp, "background.js", path.join(dest, "background.js")),
-            Q.nfcall(ncp, "cordova.js", path.join(dest, "cordova.js")),
-            Q.nfcall(ncp, "overrides.css", path.join(dest, "overrides.css")),
-            Q.nfcall(ncp, "manifest.json", path.join(dest, "manifest.json")),
-            Q.nfcall(ncp, path.join("src", "crypto.js"), path.join(dest, "src", "crypto.js")),
-            Q.nfcall(ncp, path.join("lib", "sjcl.js"), path.join(dest, "lib", "sjcl.js")),
-            Q.nfcall(ncp, "assets", path.join(dest, "assets"))
+            Q.nfcall(ncp, path.resolve(projectRoot, "background.js"), path.resolve(dest, "background.js")),
+            Q.nfcall(ncp, path.resolve(projectRoot, "cordova.js"), path.resolve(dest, "cordova.js")),
+            Q.nfcall(ncp, path.resolve(projectRoot, "overrides.css"), path.resolve(dest, "overrides.css")),
+            Q.nfcall(ncp, path.resolve(projectRoot, "manifest.json"), path.resolve(dest, "manifest.json")),
+            Q.nfcall(ncp, path.resolve(projectRoot, "src/crypto.js"), path.resolve(dest, "src/crypto.js")),
+            Q.nfcall(ncp, path.resolve(projectRoot, "lib/sjcl.js"), path.resolve(dest, "lib/sjcl.js")),
+            Q.nfcall(ncp, path.resolve(projectRoot, "assets"), path.resolve(dest, "assets")),
         ]);
     })
     .then(function() {
