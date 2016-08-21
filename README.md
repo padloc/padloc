@@ -32,7 +32,7 @@ You can also use the `--watch` flag to tell the gulp task to watch all `.styl` f
 
 Any pull request need to pass our linting rules, which are defined in the `.eslintrc.json` file. To lint all files, run
 
-    gulp eslit
+    gulp eslint
 
 ## Testing
 
