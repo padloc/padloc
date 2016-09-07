@@ -32,7 +32,7 @@
         <padlock-lock-view id="lockView" class="view" on-pwdenter="_pwdEnter"></padlock-lock-view>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" records="{{ _records }}" filter-string="{{ _filterString }}"
-            selected="{{ _selected }}" on-select="_recordSelected" on-add="_addRecord"
+            selected="{{ _selected }}" on-select="_recordSelected" on-add="_addRecord" on-back="_listViewBack"
             on-menu="_openMainMenu" on-import="_openImportView" on-synchronize="_synchronize"></padlock-list-view>
         <!-- RECORD VIEW -->
         <padlock-record-view id="recordView" class="view" on-save="_saveRecord" on-back="_recordViewBack" record="{{ _selected }}" on-generate-value="_openGenerator"

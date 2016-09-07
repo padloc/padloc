@@ -104,6 +104,7 @@ padlock.App = (function(Polymer, platform, pay) {
             document.addEventListener("resume", this._resume.bind(this, true), false);
         },
         _cancelAutoLock: function() {
+            this._pausedAt = null;
             if (this._lockTimeout) {
                 clearTimeout(this._lockTimeout);
             }
@@ -240,6 +241,7 @@ padlock.App = (function(Polymer, platform, pay) {
             this._autoLockChanged();
             if (
                 this.settings.auto_lock &&
+                this._pausedAt &&
                 new Date().getTime() - this._pausedAt.getTime() > this.settings.auto_lock_delay * 60 * 1000
             ) {
                 this._lock(true);
@@ -593,18 +595,25 @@ padlock.App = (function(Polymer, platform, pay) {
         //* Back method. Chooses the right back method based on the current view
         _back: function() {
             var dialogsClosed = this._closeAllDialogs();
+            var cw = this._currentView;
 
             if (!dialogsClosed) {
-                // If we're in the list view, clear the filter input and restore the full list
-                if (this._currentView == this.$.listView) {
-                    if (this.$.header.filterActive) {
-                        this.$.header.cancelFilter();
-                    } else {
-                        this._openMainMenu();
-                    }
+                if (
+                    (cw == this.$.listView || cw == this.$.lockView || cw == this.$.startView) &&
+                    navigator.Backbutton
+                ) {
+                    this._pause();
+                    navigator.Backbutton.goBack();
                 } else {
-                    this._currentView.back();
+                    cw.back();
                 }
+            }
+        },
+        _listViewBack: function() {
+            if (this.$.header.filterActive) {
+                this.$.header.cancelFilter();
+            } else {
+                this._openMainMenu();
             }
         },
         /**

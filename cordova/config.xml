@@ -87,4 +87,5 @@
     <plugin name="cordova-plugin-whitelist" spec="~1.2.2" />
     <plugin name="cordova-plugin-statusbar" spec="~2.1.3" />
     <engine name="ios" spec="~4.2.0" />
+    <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
 </widget>
