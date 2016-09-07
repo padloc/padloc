@@ -24,7 +24,7 @@ function compileCss() {
     gulp.src("./src/**/*.styl", {cwd: projectRoot})
         .pipe(stylus({use: [nib()]}))
         .pipe(stylemod())
-        .pipe(gulp.dest("./src"))
+        .pipe(gulp.dest("./src", {cwd: projectRoot}))
         .on("end", function() {
             deferred.resolve();
         });
