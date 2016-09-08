@@ -118,6 +118,7 @@
                 this.$.cloudEnterButton.disabled = false;
                 this.set("settings.sync_email", email);
                 this.set("settings.sync_key", authToken.token);
+                this.set("settings.sync_id", authToken.id);
                 this._promptConnecting();
                 this._attemptRestore();
             }.bind(this), function(e) {
@@ -159,6 +160,7 @@
                         this._cancelRestore = false;
                         this.set("settings.sync_email", "");
                         this.set("settings.sync_key", "");
+                        this.set("settings.sync_id", "");
                         return;
                     }
                     if (e == padlock.ERR_CLOUD_UNAUTHORIZED) {
@@ -173,6 +175,7 @@
             this._cancelRestore = true;
             this.set("settings.sync_email", "");
             this.set("settings.sync_key", "");
+            this.set("settings.sync_id", "");
             clearTimeout(this._attemptRestoreTimeout);
         },
         _restoreSuccess: function() {
@@ -196,7 +199,8 @@
         _promptConnecting: function() {
             this.fire("open-form", {
                 title: "Almost done! An email was sent to " + this.settings.sync_email +
-                    " with further instructions. Hit 'Cancel' to abort the process.",
+                    " with further instructions. Hit 'Cancel' to abort the process. (Connection ID: " +
+                    this.settings.sync_id + ")",
                 components: [
                     {element: "button", label: "Cancel", tap: this._cancelConnect.bind(this), close: true}
                 ],
