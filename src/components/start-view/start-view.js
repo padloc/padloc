@@ -119,12 +119,14 @@
                 this.set("settings.sync_email", email);
                 this.set("settings.sync_key", authToken.token);
                 this.set("settings.sync_id", authToken.id);
+                this.notifyPath("settings.sync_sub_status");
+                this.notifyPath("settings.sync_trial_end");
                 this._promptConnecting();
                 this._attemptRestore();
             }.bind(this), function(e) {
                 this.$.cloudEnterButton.disabled = false;
                 this.$$("padlock-progress").hide();
-                switch(e) {
+                switch (typeof e === "string" ? e : e.error) {
                     case padlock.ERR_CLOUD_NOT_FOUND:
                     case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
                         this.fire("open-form", {
@@ -163,7 +165,7 @@
                         this.set("settings.sync_id", "");
                         return;
                     }
-                    if (e == padlock.ERR_CLOUD_UNAUTHORIZED) {
+                    if (e.error == padlock.ERR_CLOUD_INVALID_AUTH_TOKEN) {
                         this._attemptRestoreTimeout = setTimeout(this._attemptRestore.bind(this), 1000);
                     } else {
                         this.fire("error", e);

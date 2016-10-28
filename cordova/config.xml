@@ -70,9 +70,6 @@
         <splash height="1242" src="res/ios/splash/splash-2208x1242.png" width="2208" />
     </platform>
     <plugin name="com.verso.cordova.clipboard" spec="https://github.com/VersoSolutions/CordovaClipboard.git" />
-    <plugin name="cc.fovea.cordova.purchase" spec="https://github.com/j3k0/cordova-plugin-purchase.git">
-        <variable name="BILLING_KEY" value="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlX8cOgzEEOPmPOwneWjNutvBCYCjDsAlX0Q8Ulf3biZKb2V1BIg72sx" />
-    </plugin>
     <plugin name="com.wongatech.cordova-disable-nsurl-cache" spec="https://github.com/MaKleSoft/cordova-disable-nsurl-cache.git" />
     <preference name="xwalkVersion" value="19+" />
     <preference name="xwalkCommandLine" value="--disable-pull-to-refresh-effect" />
