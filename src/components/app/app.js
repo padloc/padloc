@@ -837,6 +837,7 @@ padlock.App = (function(Polymer, platform) {
         _handleError: function(e) {
             switch (typeof e === "string" ? e : e.error) {
                 case padlock.ERR_CLOUD_INVALID_AUTH_TOKEN:
+                case padlock.ERR_CLOUD_EXPIRED_AUTH_TOKEN:
                     this.set("settings.sync_connected", false);
                     this.set("settings.sync_key", "");
                     this.set("settings.sync_email", "");

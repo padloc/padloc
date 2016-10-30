@@ -5,7 +5,7 @@ padlock.CloudSource = (function(Source) {
     "use strict";
 
     padlock.ERR_CLOUD_INVALID_AUTH_TOKEN = "invalid_auth_token";
-    padlock.ERR_CLOUD_EXPIRED_AUTH_TOKEN = "expired__auth_token";
+    padlock.ERR_CLOUD_EXPIRED_AUTH_TOKEN = "expired_auth_token";
     padlock.ERR_CLOUD_SERVER_ERROR = "internal_server_error";
     padlock.ERR_CLOUD_VERSION_DEPRECATED = "deprecated_api_version";
     padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED = "subscription_required";
