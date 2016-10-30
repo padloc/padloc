@@ -144,23 +144,6 @@ padlock.CloudSource = (function(Source) {
         req.send("email=" + encodeURIComponent(email));
     };
 
-    CloudSource.prototype.requestDataReset = function(success, fail) {
-        var req = this.prepareRequest("DELETE", "/store/", function(req) {
-            if (isSuccess(req.status)) {
-                success && success();
-            } else {
-                fail && fail(errFromReq(req));
-            }
-        });
-
-        if (!req) {
-            fail && fail(padlock.ERR_CLOUD_FAILED_CONNECTION);
-            return;
-        }
-
-        req.send();
-    };
-
     CloudSource.prototype.testCredentials = function(success, fail) {
         var req = this.prepareRequest("HEAD", "/store/", function() {
             if (isSuccess(req.status)) {

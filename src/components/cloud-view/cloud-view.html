@@ -55,9 +55,9 @@
                 or synchronize changes between devices. Get a subscription now to regain full access
                 to Padlock Cloud!
             </div>
-            <button on-tap="_manageSubscriptions" hidden$="{{ !_isInactive(settings.sync_sub_status) }}">Manage Subscriptions</button>
+            <button on-tap="_openDashboard" hidden$="{{ !_isInactive(settings.sync_sub_status) }}">Manage Subscriptions</button>
             <button on-tap="_synchronize">Synchronize</button>
-            <button on-tap="_resetRemoteData">Reset Data</button>
+            <button on-tap="_openDashboard">Manage Account</button>
             <button on-tap="_disconnect">Disconnect</button>
             <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync"></padlock-toggle-button>
         </section>
@@ -196,35 +196,6 @@
             _isInactive: function(s) {
                 return s && s != "active" && s != "trialing";
             },
-            _resetRemoteData: function() {
-                this.fire("open-form", {
-                    components: [
-                        {element: "button", label: "Reset", submit: true},
-                        {element: "button", label: "Cancel", cancel: true}
-                    ],
-                    title: "Are you sure you want to reset all your data on Padlock Cloud?",
-                    submit: this._requestResetRemoteData.bind(this)
-                });
-            },
-            _requestResetRemoteData: function() {
-                var email = this.settings.sync_email;
-                var cloudSource = new CloudSource(this.settings);
-
-                this.$$("padlock-progress").show();
-
-                cloudSource.requestDataReset(function() {
-                    this.$$("padlock-progress").hide();
-                    this._alert("Almost done! An email was sent to " + email + " with further instructions.");
-                }.bind(this), function(e) {
-                    if (e.error === padlock.ERR_CLOUD_LIMIT_EXCEEDED) {
-                        this._alert("For security reasons only one deletion request is allowed per " +
-                            "minute. Please wait a little before trying again!");
-                    } else {
-                        this.$$("padlock-progress").hide();
-                        this.fire("error", e);
-                    }
-                }.bind(this));
-            },
             //* Shows an alert dialog with a given _message_
             _alert: function(message) {
                 this.fire("alert", {message: message});
@@ -307,7 +278,7 @@
                     }.bind(this)
                 });
             },
-            _manageSubscriptions: function() {
+            _openDashboard: function() {
                 window.open(this.settings["sync_host_url"] + "/dashboard/", "_system");
             },
             _remainingTrialDays: function(trialEnd) {
