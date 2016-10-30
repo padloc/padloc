@@ -55,7 +55,7 @@
                 or synchronize changes between devices. Get a subscription now to regain full access
                 to Padlock Cloud!
             </div>
-            <button on-tap="_manageSubscriptions">Manage Subscriptions</button>
+            <button on-tap="_manageSubscriptions" hidden$="{{ !_isInactive(settings.sync_sub_status) }}">Manage Subscriptions</button>
             <button on-tap="_synchronize">Synchronize</button>
             <button on-tap="_resetRemoteData">Reset Data</button>
             <button on-tap="_disconnect">Disconnect</button>
@@ -166,8 +166,6 @@
                     this.set("settings.sync_id", authToken.id);
                     this._testCredentials(true);
                     this._alert("Almost done! An email was sent to " + email + " with further instructions.");
-                    this.notifyPath("settings.sync_sub_status");
-                    this.notifyPath("settings.sync_trial_end");
                 }.bind(this), function(e) {
                     this.$$("padlock-progress").hide();
                     switch (typeof e === "string" ? e : e.error) {
@@ -196,7 +194,7 @@
                 return s == "active";
             },
             _isInactive: function(s) {
-                return s != "active" && s != "trialing";
+                return s && s != "active" && s != "trialing";
             },
             _resetRemoteData: function() {
                 this.fire("open-form", {
@@ -238,7 +236,11 @@
                     this.set("settings.sync_connected", connected);
 
                     if (connected) {
-                        this._connectionSuccess();
+                        this.notifyPath("settings.sync_sub_status", this.settings.sync_sub_status);
+                        this.notifyPath("settings.sync_trial_end", this.settings.sync_trial_end);
+                        if (poll) {
+                            this._connectionSuccess();
+                        }
                     }
 
                     if (!connected && poll && this.settings.sync_key) {
@@ -251,8 +253,8 @@
                 clearTimeout(this._testCredsTimeout);
             },
             _showingChanged: function() {
-                if (this.showing && this.settings.sync_key && !this.settings.sync_connected) {
-                    this._testCredentials(true);
+                if (this.showing && this.settings.sync_key) {
+                    this._testCredentials(!this.settings.sync_connected);
                 } else if (!this.showing) {
                     this._stopTestCredentials();
                 }

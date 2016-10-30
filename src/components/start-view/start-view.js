@@ -119,8 +119,6 @@
                 this.set("settings.sync_email", email);
                 this.set("settings.sync_key", authToken.token);
                 this.set("settings.sync_id", authToken.id);
-                this.notifyPath("settings.sync_sub_status");
-                this.notifyPath("settings.sync_trial_end");
                 this._promptConnecting();
                 this._attemptRestore();
             }.bind(this), function(e) {
@@ -186,6 +184,8 @@
                 return;
             }
             this.set("settings.sync_connected", true);
+            this.notifyPath("settings.sync_sub_status", this.settings.sync_sub_status);
+            this.notifyPath("settings.sync_trial_end", this.settings.sync_trial_end);
             this.collection.save({password: this.$.cloudPwdInput.value, rememberPassword: true});
 
             this.fire("open-form", {

@@ -52,13 +52,9 @@ padlock.CloudSource = (function(Source) {
 
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
-                var subStatus = req.getResponseHeader("X-Sub-Status");
-                if (subStatus) {
-                    this.settings["sync_sub_status"] = subStatus;
-                }
+                this.settings["sync_sub_status"] = req.getResponseHeader("X-Sub-Status");
                 try {
-                    this.settings["sync_trial_end"] =
-                        parseInt(req.getResponseHeader("X-Sub-Trial-End"), 10);
+                    this.settings["sync_trial_end"] = parseInt(req.getResponseHeader("X-Sub-Trial-End"), 10);
                 } catch (e) {
                     //
                 }
