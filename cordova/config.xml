@@ -19,8 +19,6 @@
     <preference name="StatusBarOverlaysWebView" value="true" />
     <preference name="StatusBarStyle" value="lightcontent" />
     <hook src="scripts/build-www.js" type="before_prepare" />
-    <hook src="scripts/insert-billing-key.js" type="before_prepare" />
-    <hook src="scripts/remove-billing-key.js" type="after_prepare" />
     <platform name="android">
         <icon density="ldpi" src="res/android/icon/app-icon-ldpi.png" />
         <icon density="mdpi" src="res/android/icon/app-icon-mdpi.png" />
