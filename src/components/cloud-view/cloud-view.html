@@ -245,7 +245,7 @@
 
                     if (!connected && poll && this.settings.sync_key) {
                         clearTimeout(this._testCredsTimeout);
-                        this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 1000);
+                        this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 3000);
                     }
                 }.bind(this), this.fire.bind(this, "error"));
             },

@@ -164,7 +164,7 @@
                         return;
                     }
                     if (e.error == padlock.ERR_CLOUD_INVALID_AUTH_TOKEN) {
-                        this._attemptRestoreTimeout = setTimeout(this._attemptRestore.bind(this), 1000);
+                        this._attemptRestoreTimeout = setTimeout(this._attemptRestore.bind(this), 3000);
                     } else {
                         this.fire("error", e);
                     }
