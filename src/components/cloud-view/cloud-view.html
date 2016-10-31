@@ -118,7 +118,7 @@
                         {element: "button", label: "Cancel", cancel: true}
                     ],
                     title: "Connect to Padlock Cloud",
-                    submit: this.requestAuthToken.bind(this)
+                    submit: this._connectEnter.bind(this)
                 });
             },
             _disconnect: function() {
@@ -136,20 +136,24 @@
                     }.bind(this)
                 });
             },
-            //* Requests an api key from the cloud api with the entered email and device name
-            requestAuthToken: function(data) {
+            _connectEnter: function(data, inputs) {
                 var email = data.email;
-                var create = data.create;
 
-                if (!email) {
-                    var message = "Please enter an email address!";
-                    this.fire("notify", {
-                        message: message,
-                        duration: 2000
+                if (!email || !inputs.email.checkValidity()) {
+                    this.fire("open-form", {
+                        components: [
+                            {element: "button", label: "Try Again", submit: true},
+                        ],
+                        title: email ? inputs.email.validationMessage : "Please enter an email address!",
+                        submit: this.connect.bind(this)
                     });
                     return;
                 }
 
+                this._requestAuthToken(email);
+            },
+            //* Requests an api key from the cloud api with the entered email and device name
+            _requestAuthToken: function(email, create) {
                 this.set("settings.sync_email", email);
                 this.set("settings.sync_key", "");
 
@@ -170,8 +174,7 @@
                     this.$$("padlock-progress").hide();
                     switch (typeof e === "string" ? e : e.error) {
                         case padlock.ERR_CLOUD_NOT_FOUND:
-                            data.create = true;
-                            this.requestAuthToken(data);
+                            this._requestAuthToken(email, true);
                             break;
                         case padlock.ERR_CLOUD_LIMIT_EXCEEDED:
                             this._alert("For security reasons only a limited amount of connection request " +

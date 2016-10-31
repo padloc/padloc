@@ -103,13 +103,17 @@
             this.mode = this.mode == "restore-cloud" ? "get-started" : "restore-cloud";
         },
         _cloudEnter: function() {
-            var cloudSource = new CloudSource(this.settings);
+            var input = this.$.emailInput;
+            var email = input.value;
 
-            var email = this.$.emailInput.value;
-            if (!email) {
-                this.fire("notify", {message: "Please enter an email address!", type: "error", duration: 2000});
+            if (!email || !input.checkValidity()) {
+                this.fire("alert", {
+                    message: email ? input.validationMessage : "Please enter an email address!"
+                });
                 return;
             }
+
+            var cloudSource = new CloudSource(this.settings);
 
             this.$$("padlock-progress").show();
             this.$.cloudEnterButton.disabled = true;
