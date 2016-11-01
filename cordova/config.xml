@@ -83,4 +83,7 @@
     <engine name="ios" spec="~4.2.0" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
     <engine name="android" spec="~5.2.2" />
+    <plugin name="cordova-plugin-customurlscheme" spec="~4.2.0">
+        <variable name="URL_SCHEME" value="padlock" />
+    </plugin>
 </widget>
