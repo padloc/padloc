@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.maklesoft.padlock" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.maklesoft.padlock" version="1.1.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Padlock</name>
     <description>
     </description>
@@ -19,8 +19,6 @@
     <preference name="StatusBarOverlaysWebView" value="true" />
     <preference name="StatusBarStyle" value="lightcontent" />
     <hook src="scripts/build-www.js" type="before_prepare" />
-    <hook src="scripts/insert-billing-key.js" type="before_prepare" />
-    <hook src="scripts/remove-billing-key.js" type="after_prepare" />
     <platform name="android">
         <icon density="ldpi" src="res/android/icon/app-icon-ldpi.png" />
         <icon density="mdpi" src="res/android/icon/app-icon-mdpi.png" />
@@ -70,9 +68,6 @@
         <splash height="1242" src="res/ios/splash/splash-2208x1242.png" width="2208" />
     </platform>
     <plugin name="com.verso.cordova.clipboard" spec="https://github.com/VersoSolutions/CordovaClipboard.git" />
-    <plugin name="cc.fovea.cordova.purchase" spec="https://github.com/j3k0/cordova-plugin-purchase.git">
-        <variable name="BILLING_KEY" value="MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlX8cOgzEEOPmPOwneWjNutvBCYCjDsAlX0Q8Ulf3biZKb2V1BIg72sx" />
-    </plugin>
     <plugin name="com.wongatech.cordova-disable-nsurl-cache" spec="https://github.com/MaKleSoft/cordova-disable-nsurl-cache.git" />
     <preference name="xwalkVersion" value="19+" />
     <preference name="xwalkCommandLine" value="--disable-pull-to-refresh-effect" />
@@ -88,4 +83,7 @@
     <engine name="ios" spec="~4.2.0" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
     <engine name="android" spec="~5.2.2" />
+    <plugin name="cordova-plugin-customurlscheme" spec="~4.2.0">
+        <variable name="URL_SCHEME" value="padlock" />
+    </plugin>
 </widget>

@@ -103,13 +103,17 @@
             this.mode = this.mode == "restore-cloud" ? "get-started" : "restore-cloud";
         },
         _cloudEnter: function() {
-            var cloudSource = new CloudSource(this.settings);
+            var input = this.$.emailInput;
+            var email = input.value;
 
-            var email = this.$.emailInput.value;
-            if (!email) {
-                this.fire("notify", {message: "Please enter an email address!", type: "error", duration: 2000});
+            if (!email || !input.checkValidity()) {
+                this.fire("alert", {
+                    message: email ? input.validationMessage : "Please enter an email address!"
+                });
                 return;
             }
+
+            var cloudSource = new CloudSource(this.settings);
 
             this.$$("padlock-progress").show();
             this.$.cloudEnterButton.disabled = true;
@@ -124,7 +128,7 @@
             }.bind(this), function(e) {
                 this.$.cloudEnterButton.disabled = false;
                 this.$$("padlock-progress").hide();
-                switch(e) {
+                switch (typeof e === "string" ? e : e.error) {
                     case padlock.ERR_CLOUD_NOT_FOUND:
                     case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
                         this.fire("open-form", {
@@ -163,8 +167,8 @@
                         this.set("settings.sync_id", "");
                         return;
                     }
-                    if (e == padlock.ERR_CLOUD_UNAUTHORIZED) {
-                        this._attemptRestoreTimeout = setTimeout(this._attemptRestore.bind(this), 1000);
+                    if (e.error == padlock.ERR_CLOUD_INVALID_AUTH_TOKEN) {
+                        this._attemptRestoreTimeout = setTimeout(this._attemptRestore.bind(this), 3000);
                     } else {
                         this.fire("error", e);
                     }
@@ -184,6 +188,8 @@
                 return;
             }
             this.set("settings.sync_connected", true);
+            this.notifyPath("settings.sync_sub_status", this.settings.sync_sub_status);
+            this.notifyPath("settings.sync_trial_end", this.settings.sync_trial_end);
             this.collection.save({password: this.$.cloudPwdInput.value, rememberPassword: true});
 
             this.fire("open-form", {

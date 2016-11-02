@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Padlock",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "A minimalist open source password manager.",
     "author": "Martin Kleinschrodt",
     "app": {

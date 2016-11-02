@@ -37,17 +37,27 @@
         </section>
 
         <section hidden$="{{ !settings.sync_connected }}">
-            <div class="note" hidden$="{{ settings.sync_readonly }}">
+            <div class="note">
                 <strong>Connected</strong> - This device is connected to the Padlock Cloud account <strong>{{ settings.sync_email }}</strong>.
                 Connect all your devices with the same account to easily synchronize your data between them!
                 <div class="conn-id">Connection ID: {{ settings.sync_id }}</div>
             </div>
-            <div class="note" hidden$="{{ !settings.sync_readonly }}">
-                <strong>Subscription expired</strong> - It seems your Padlock Cloud subscription for the account <strong>{{ settings.sync_email }}</strong> has expired which means that you can download your data from the cloud but you won't be able to update it or synchronize with any other devices. Renew your subscription now to unlock the full potential of Padlock Cloud!
+            <div class="note" hidden$="{{ !_isTrialing(settings.sync_sub_status) }}">
+                <strong>Your trial period ends in {{ _remainingTrialDays(settings.sync_trial_end) }} days.</strong>
+                After this period, your access will be read-only, which means you will be able to access
+                your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize
+                changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!
             </div>
-            <button hidden$="{{ !settings.sync_readonly }}" on-tap="_buySubscription">Renew Subscription</button>
+            <div class="note" hidden$="{{ !_isInactive(settings.sync_sub_status) }}">
+                <strong>Read-Only</strong> -
+                You currently don't have an active subscription! This means you can access
+                your existing data on Padlock Cloud but you won't be able to upload any new data
+                or synchronize changes between devices. Get a subscription now to regain full access
+                to Padlock Cloud!
+            </div>
+            <button on-tap="_openDashboard" hidden$="{{ !_isInactive(settings.sync_sub_status) }}">Manage Subscriptions</button>
             <button on-tap="_synchronize">Synchronize</button>
-            <button on-tap="_resetRemoteData">Reset Data</button>
+            <button on-tap="_openDashboard">Manage Account</button>
             <button on-tap="_disconnect">Disconnect</button>
             <padlock-toggle-button value="{{ settings.sync_auto }}" label="Auto Sync"></padlock-toggle-button>
         </section>
@@ -108,7 +118,7 @@
                         {element: "button", label: "Cancel", cancel: true}
                     ],
                     title: "Connect to Padlock Cloud",
-                    submit: this.requestAuthToken.bind(this)
+                    submit: this._connectEnter.bind(this)
                 });
             },
             _disconnect: function() {
@@ -126,20 +136,24 @@
                     }.bind(this)
                 });
             },
-            //* Requests an api key from the cloud api with the entered email and device name
-            requestAuthToken: function(data) {
+            _connectEnter: function(data, inputs) {
                 var email = data.email;
-                var create = data.create;
 
-                if (!email) {
-                    var message = "Please enter an email address!";
-                    this.fire("notify", {
-                        message: message,
-                        duration: 2000
+                if (!email || !inputs.email.checkValidity()) {
+                    this.fire("open-form", {
+                        components: [
+                            {element: "button", label: "Try Again", submit: true},
+                        ],
+                        title: email ? inputs.email.validationMessage : "Please enter an email address!",
+                        submit: this.connect.bind(this)
                     });
                     return;
                 }
 
+                this._requestAuthToken(email);
+            },
+            //* Requests an api key from the cloud api with the entered email and device name
+            _requestAuthToken: function(email, create) {
                 this.set("settings.sync_email", email);
                 this.set("settings.sync_key", "");
 
@@ -158,62 +172,32 @@
                     this._alert("Almost done! An email was sent to " + email + " with further instructions.");
                 }.bind(this), function(e) {
                     this.$$("padlock-progress").hide();
-                    switch(e) {
+                    switch (typeof e === "string" ? e : e.error) {
                         case padlock.ERR_CLOUD_NOT_FOUND:
-                            data.create = true;
-                            this.requestAuthToken(data);
-                            break;
-                        case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
-                            this.fire("open-form", {
-                                title: "No existing Padlock Cloud account was found. In order to create a new one, " +
-                                    "you need a Padlock Cloud subscription.",
-                                components: [
-                                    {element: "button", label: "Continue", submit: true},
-                                    {element: "button", label: "Cancel", cancel: true}
-                                ],
-                                submit: this._buySubscription.bind(this)
-                            });
+                            this._requestAuthToken(email, true);
                             break;
                         case padlock.ERR_CLOUD_LIMIT_EXCEEDED:
-                            this._alert("For security reasons only one connection request is allowed per " +
-                                "minute. Please wait a little before trying again!");
+                            this._alert("For security reasons only a limited amount of connection request " +
+                                "are allowed at a time. Please wait a little before trying again!");
                             break;
                         default:
                             this.fire("error", e);
                     }
+                    this.notifyPath("settings.sync_sub_status");
+                    this.notifyPath("settings.sync_trial_end");
                 }.bind(this));
             },
             _isActivationPending: function() {
                 return this.settings.sync_key && !this.settings.sync_connected;
             },
-            _resetRemoteData: function() {
-                this.fire("open-form", {
-                    components: [
-                        {element: "button", label: "Reset", submit: true},
-                        {element: "button", label: "Cancel", cancel: true}
-                    ],
-                    title: "Are you sure you want to reset all your data on Padlock Cloud?",
-                    submit: this._requestResetRemoteData.bind(this)
-                });
+            _isTrialing: function(s) {
+                return s == "trialing";
             },
-            _requestResetRemoteData: function() {
-                var email = this.settings.sync_email;
-                var cloudSource = new CloudSource(this.settings);
-
-                this.$$("padlock-progress").show();
-
-                cloudSource.requestDataReset(function() {
-                    this.$$("padlock-progress").hide();
-                    this._alert("Almost done! An email was sent to " + email + " with further instructions.");
-                }.bind(this), function(e) {
-                    if (e === padlock.ERR_CLOUD_LIMIT_EXCEEDED) {
-                        this._alert("For security reasons only one deletion request is allowed per " +
-                            "minute. Please wait a little before trying again!");
-                    } else {
-                        this.$$("padlock-progress").hide();
-                        this.fire("error", e);
-                    }
-                }.bind(this));
+            _isActive: function(s) {
+                return s == "active";
+            },
+            _isInactive: function(s) {
+                return s && s != "active" && s != "trialing";
             },
             //* Shows an alert dialog with a given _message_
             _alert: function(message) {
@@ -226,12 +210,16 @@
                     this.set("settings.sync_connected", connected);
 
                     if (connected) {
-                        this._connectionSuccess();
+                        this.notifyPath("settings.sync_sub_status", this.settings.sync_sub_status);
+                        this.notifyPath("settings.sync_trial_end", this.settings.sync_trial_end);
+                        if (poll) {
+                            this._connectionSuccess();
+                        }
                     }
 
                     if (!connected && poll && this.settings.sync_key) {
                         clearTimeout(this._testCredsTimeout);
-                        this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 1000);
+                        this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 3000);
                     }
                 }.bind(this), this.fire.bind(this, "error"));
             },
@@ -239,8 +227,8 @@
                 clearTimeout(this._testCredsTimeout);
             },
             _showingChanged: function() {
-                if (this.showing && this.settings.sync_key && !this.settings.sync_connected) {
-                    this._testCredentials(true);
+                if (this.showing && this.settings.sync_key) {
+                    this._testCredentials(!this.settings.sync_connected);
                 } else if (!this.showing) {
                     this._stopTestCredentials();
                 }
@@ -280,9 +268,6 @@
             _customUrlChanged: function() {
                 this.$.customUrlInput.checkValidity();
             },
-            _buySubscription: function() {
-                this.fire("buy-subscription");
-            },
             _cancelConnect: function() {
                 this.fire("open-form", {
                     title: "Are you sure you want to cancel the connection process?",
@@ -295,11 +280,18 @@
                         this._stopTestCredentials();
                     }.bind(this)
                 });
+            },
+            _openDashboard: function() {
+                window.open(this.settings["sync_host_url"] + "/dashboard/", "_system");
+            },
+            _remainingTrialDays: function(trialEnd) {
+                var now = new Date().getTime() / 1000;
+                trialEnd = trialEnd ? parseInt(trialEnd, 10) : now;
+                return Math.ceil((trialEnd - now) / 60 / 60 / 24);
             }
         });
 
-    })(Polymer, padlock.ViewBehavior, padlock.CloudSource, padlock.pay);
-
+    })(Polymer, padlock.ViewBehavior, padlock.CloudSource);
     </script>
 
 </dom-module>

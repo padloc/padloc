@@ -4,30 +4,28 @@
 padlock.CloudSource = (function(Source) {
     "use strict";
 
-    padlock.ERR_CLOUD_UNAUTHORIZED = "Not authorized to request from source";
-    padlock.ERR_CLOUD_SERVER_ERROR = "Internal server error";
-    padlock.ERR_CLOUD_FAILED_CONNECTION = "Failed connection";
-    padlock.ERR_CLOUD_VERSION_DEPRECATED = "Api version deprecated";
-    padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED = "Padlock Cloud subscription required";
-    padlock.ERR_CLOUD_NOT_FOUND = "Account not found";
-    padlock.ERR_CLOUD_LIMIT_EXCEEDED = "Rate limit exceeded";
+    padlock.ERR_CLOUD_INVALID_AUTH_TOKEN = "invalid_auth_token";
+    padlock.ERR_CLOUD_EXPIRED_AUTH_TOKEN = "expired_auth_token";
+    padlock.ERR_CLOUD_SERVER_ERROR = "internal_server_error";
+    padlock.ERR_CLOUD_VERSION_DEPRECATED = "deprecated_api_version";
+    padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED = "subscription_required";
+    padlock.ERR_CLOUD_NOT_FOUND = "account_not_found";
+    padlock.ERR_CLOUD_LIMIT_EXCEEDED = "rate_limit_exceeded";
+    padlock.ERR_CLOUD_FAILED_CONNECTION = "failed_connection";
+    padlock.ERR_CLOUD_UNKNOWN = "unknown_error";
 
-    function errFromStatus(s) {
-        switch(s) {
-            case 401:
-                return padlock.ERR_CLOUD_UNAUTHORIZED;
-            case 402:
-                return padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED;
-            case 404:
-                return padlock.ERR_CLOUD_NOT_FOUND;
-            case 406:
-                return padlock.ERR_CLOUD_VERSION_DEPRECATED;
-            case 429:
-                return padlock.ERR_CLOUD_LIMIT_EXCEEDED;
-            case 0:
-                return padlock.ERR_CLOUD_FAILED_CONNECTION;
-            default:
-                return padlock.ERR_CLOUD_SERVER_ERROR;
+    function errFromReq(req) {
+        if (req.status == 0) {
+            return { error: padlock.ERR_CLOUD_FAILED_CONNECTION };
+        } else {
+            try {
+                return JSON.parse(req.responseText);
+            } catch (e) {
+                return {
+                    error: "unknown_error",
+                    message: req.responseText
+                };
+            }
         }
     }
 
@@ -54,9 +52,15 @@ padlock.CloudSource = (function(Source) {
 
         req.onreadystatechange = function() {
             if (req.readyState === 4) {
+                this.settings["sync_sub_status"] = req.getResponseHeader("X-Sub-Status");
+                try {
+                    this.settings["sync_trial_end"] = parseInt(req.getResponseHeader("X-Sub-Trial-End"), 10);
+                } catch (e) {
+                    //
+                }
                 cb(req);
             }
-        };
+        }.bind(this);
 
         try {
             req.open(method, url, true);
@@ -67,9 +71,7 @@ padlock.CloudSource = (function(Source) {
                     "AuthToken " + this.settings.sync_email + ":" + this.settings.sync_key);
             }
 
-            if (this.settings.sync_require_subscription === false) {
-                req.setRequestHeader("Require-Subscription", "NO");
-            }
+            req.setRequestHeader("X-Client-Version", padlock.version);
 
             return req;
         } catch(e) {
@@ -82,7 +84,7 @@ padlock.CloudSource = (function(Source) {
             if (isSuccess(req.status)) {
                 this.didFetch(req.responseText, opts);
             } else if (opts && opts.fail) {
-                opts.fail(errFromStatus(req.status));
+                opts.fail(errFromReq(req));
             }
         }.bind(this));
 
@@ -96,15 +98,17 @@ padlock.CloudSource = (function(Source) {
 
     CloudSource.prototype.save = function(opts) {
         var req = this.prepareRequest("PUT", "/store/", function(req) {
-            if (isSuccess(req.status)) {
-                this.didFetch(req.responseText, opts);
+            if (isSuccess(req.status) && opts && opts.success) {
+                opts.success();
             } else if (opts && opts.fail) {
-                opts.fail(errFromStatus(req.status));
+                opts.fail(errFromReq(req));
             }
         }.bind(this));
 
         if (!req) {
-            opts && opts.fail(padlock.ERR_CLOUD_FAILED_CONNECTION);
+            opts && opts.fail({
+                error: padlock.ERR_CLOUD_FAILED_CONNECTION
+            });
             return;
         }
 
@@ -127,7 +131,7 @@ padlock.CloudSource = (function(Source) {
                     fail(padlock.ERR_CLOUD_SERVER_ERROR);
                 }
             } else {
-                fail && fail(errFromStatus(req.status));
+                fail && fail(errFromReq(req));
             }
         });
 
@@ -140,23 +144,6 @@ padlock.CloudSource = (function(Source) {
         req.send("email=" + encodeURIComponent(email));
     };
 
-    CloudSource.prototype.requestDataReset = function(success, fail) {
-        var req = this.prepareRequest("DELETE", "/store/", function(req) {
-            if (isSuccess(req.status)) {
-                success && success();
-            } else {
-                fail && fail(errFromStatus(req.status));
-            }
-        });
-
-        if (!req) {
-            fail && fail(padlock.ERR_CLOUD_FAILED_CONNECTION);
-            return;
-        }
-
-        req.send();
-    };
-
     CloudSource.prototype.testCredentials = function(success, fail) {
         var req = this.prepareRequest("HEAD", "/store/", function() {
             if (isSuccess(req.status)) {
@@ -164,7 +151,7 @@ padlock.CloudSource = (function(Source) {
             } else if (req.status == 401) {
                 success && success(false);
             } else {
-                fail && fail(errFromStatus(req.status));
+                fail && fail(errFromReq(req));
             }
         });
 
@@ -175,8 +162,6 @@ padlock.CloudSource = (function(Source) {
 
         req.send();
     };
-
-    CloudSource.errFromStatus = errFromStatus;
 
     return CloudSource;
 })(padlock.Source);

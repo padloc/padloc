@@ -5,7 +5,7 @@
  * Top-level component for rendering application interface. Requires a `padlock.Collection` and
  * `padlock.Settings` object to be passed into the constructor as dependencies.
  */
-padlock.App = (function(Polymer, platform, pay) {
+padlock.App = (function(Polymer, platform) {
     "use strict";
 
     return Polymer({
@@ -506,9 +506,12 @@ padlock.App = (function(Polymer, platform, pay) {
                         } else {
                             this.$.notification.show("Synchronization successful!", "success", 2000);
                         }
+                        // Some settings might have been updated during the request
+                        this._notifySettings();
                     }.bind(this),
                     fail: function(e) {
-                        switch (e) {
+                        var err = typeof e === "string" ? e : e.error;
+                        switch (err) {
                             case padlock.ERR_SOURCE_INVALID_JSON:
                             case padlock.ERR_CRYPTO_INVALID_KEY_PARAMS:
                             case padlock.ERR_CRYPTO_INVALID_CONTAINER:
@@ -525,8 +528,7 @@ padlock.App = (function(Polymer, platform, pay) {
                                 this._requireRemotePassword();
                                 break;
                             case padlock.ERR_CLOUD_SUBSCRIPTION_REQUIRED:
-                                this.set("settings.sync_readonly", true);
-                                this._alertReadonly();
+                                this._alertSubscriptionRequired();
                                 break;
                             default:
                                 this._handleError(e);
@@ -534,6 +536,8 @@ padlock.App = (function(Polymer, platform, pay) {
 
                         // Hide progress indicator
                         this.$.synchronizing.hide();
+                        // Some settings might have been updated during the request
+                        this._notifySettings();
                     }.bind(this)
                 });
             } else {
@@ -831,8 +835,9 @@ padlock.App = (function(Polymer, platform, pay) {
             this._handleError(e.detail);
         },
         _handleError: function(e) {
-            switch (e) {
-                case padlock.ERR_CLOUD_UNAUTHORIZED:
+            switch (typeof e === "string" ? e : e.error) {
+                case padlock.ERR_CLOUD_INVALID_AUTH_TOKEN:
+                case padlock.ERR_CLOUD_EXPIRED_AUTH_TOKEN:
                     this.set("settings.sync_connected", false);
                     this.set("settings.sync_key", "");
                     this.set("settings.sync_email", "");
@@ -857,13 +862,6 @@ padlock.App = (function(Polymer, platform, pay) {
                         "Please note that you won't be able to use Padlock Cloud until you install the latest version!"
                     );
                     break;
-                case padlock.ERR_PAY_INVALID_RECEIPT:
-                    this._openForm([
-                        {element: "button", label: "Try Again",
-                            tap: this._buySubscription.bind(this), submit: true},
-                        {element: "button", label: "Dismiss", cancel: true}
-                    ], "We were unable to verify your purchase. Please try again!");
-                    break;
                 case padlock.ERR_CLOUD_LIMIT_EXCEEDED:
                     this._alert("Padlock Cloud is over capacity right now. Please try again in a few minutes!");
                     break;
@@ -875,36 +873,17 @@ padlock.App = (function(Polymer, platform, pay) {
         _openAppStore: function() {
             window.open(platform.getAppStoreLink(), "_system");
         },
-        _alertReadonly: function() {
+        _alertSubscriptionRequired: function() {
             this._openForm(
                 [
-                    {element: "button", label: "Renew Subscription", submit: true,
-                        tap: this._buySubscription.bind(this)},
                     {element: "button", label: "Go To Padlock Cloud Settings", submit: true,
                         tap: this._openCloudView.bind(this)},
-                    {element: "button", label: "Dismiss", cancel: true}
                 ],
-                "It seems your Padlock Cloud subscription has expired which means that you can " +
-                "download your data from the cloud but you won't be able to update it or synchronize with " +
-                "any other devices. Renew your subscription now to unlock the full potential of Padlock Cloud!"
+                "You currently don't have an active subscription which means you can access " +
+                "your existing data on Padlock Cloud but you won't be able to upload any new data " +
+                "or synchronize changes between devices. Get a subscription now to regain full access " +
+                "to Padlock Cloud!"
             );
-        },
-        _buySubscription: function() {
-            this.$.connecting.show();
-            pay.getProductInfo(function(info) {
-                this.$.connecting.hide();
-                this._openForm(
-                    [
-                        {element: "button", label: "Buy Subscription (" + info.price + " / month)", submit: true},
-                        {element: "button", label: "No Thanks", cancel: true}
-                    ],
-                    info.description,
-                    function() {
-                        pay.orderSubscription(this.settings.sync_host_url, this.settings.sync_email,
-                            this._subscriptionVerified.bind(this), this._handleError.bind(this));
-                    }.bind(this)
-                );
-            }.bind(this));
         },
         _selectMarkedRecord: function() {
             this._currentView.selectMarked && this._currentView.selectMarked();
@@ -948,4 +927,4 @@ padlock.App = (function(Polymer, platform, pay) {
         }
     });
 
-})(Polymer, padlock.platform, padlock.pay);
+})(Polymer, padlock.platform);

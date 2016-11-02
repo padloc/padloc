@@ -97,12 +97,22 @@
                         return vals;
                     }, {});
                 },
+                _inputs: function() {
+                    return Polymer.dom(this.root).querySelectorAll("input").reduce(function(els, el) {
+                        var name = el.getAttribute("name");
+                        if (name) {
+                            els[name] = el;
+                        }
+                        return els;
+                    }, {});
+                },
                 _submit: function(e) {
                     this.blurInputElements();
                     var values = this._values();
+                    var inputs = this._inputs();
 
                     if (typeof this.submitCallback == "function") {
-                        this.submitCallback(values);
+                        this.submitCallback(values, inputs);
                     }
 
                     this.fire("form-submit", values);
