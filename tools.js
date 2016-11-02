@@ -71,7 +71,7 @@ function deploy(dest) {
         console.log("Creating target folder structure...");
         return Q.all([
             Q.nfcall(mkdirp, path.join(dest, "src")),
-            Q.nfcall(mkdirp, path.join(dest, "lib"))
+            Q.nfcall(mkdirp, path.join(dest, "bower_components/sjcl"))
         ]);
     })
     .then(function() {
@@ -90,7 +90,8 @@ function deploy(dest) {
             Q.nfcall(ncp, path.resolve(projectRoot, "overrides.css"), path.resolve(dest, "overrides.css")),
             Q.nfcall(ncp, path.resolve(projectRoot, "manifest.json"), path.resolve(dest, "manifest.json")),
             Q.nfcall(ncp, path.resolve(projectRoot, "src/crypto.js"), path.resolve(dest, "src/crypto.js")),
-            Q.nfcall(ncp, path.resolve(projectRoot, "lib/sjcl.js"), path.resolve(dest, "lib/sjcl.js")),
+            Q.nfcall(ncp, path.resolve(projectRoot, "bower_components/sjcl/sjcl.js"),
+                path.resolve(dest, "bower_components/sjcl/sjcl.js")),
             Q.nfcall(ncp, path.resolve(projectRoot, "assets"), path.resolve(dest, "assets")),
         ]);
     })

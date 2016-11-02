@@ -278,7 +278,7 @@
         // We're in a web worker! Let's create an interface for calling some of the modules methods
 
         // Load the sjcl dependency.
-        importScripts("../lib/sjcl.js");
+        importScripts("../bower_components/sjcl/sjcl.js");
         // Create the module (Inject the dependy manually)
         var crypto = modFunc(sjcl);
 
