@@ -1,8 +1,8 @@
 {
-  "name": "Padlock",
-  "version": "1.0.0",
-  "main": "tools.js",
+  "name": "padlock",
+  "version": "1.2.0",
   "devDependencies": {
+    "electron-builder": "^7.18.0",
     "eslint-plugin-html": "^1.5.1",
     "gulp": "^3.9.1",
     "gulp-crisper": "1.1.0",
@@ -20,5 +20,15 @@
     "rimraf": "^2.5.4",
     "yargs": "^4.8.1"
   },
-  "dependencies": {}
+  "build": {
+    "appId": "com.maklesoft.padlock"
+  },
+  "directories": {
+    "buildResources": "electron/build",
+    "app": "electron"
+  },
+  "scripts": {
+    "pack": "build --dir",
+    "dist": "build"
+  }
 }

@@ -1,18 +1,14 @@
 {
-  "name": "Padlock",
-  "version": "1.0.0",
+  "name": "padlock",
+  "version": "1.2.0",
   "homepage": "http://padlock.io",
   "authors": [
     "Martin Kleinschrodt <martin@maklesoft.com>"
   ],
   "main": "index.html",
-  "license": "GPL",
+  "license": "GPL-3.0",
   "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
+    "bower_components"
   ],
   "private": true,
   "dependencies": {

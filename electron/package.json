@@ -1,0 +1,13 @@
+{
+  "name": "padlock",
+  "productName": "Padlock",
+  "version": "1.2.0",
+  "description": "A minimalist password manager",
+  "main": "main.js",
+  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+  "license": "GPL-3.0",
+  "homepage": "https://padlock.io/",
+  "devDependencies": {
+    "electron": "^1.4.5"
+  }
+}
