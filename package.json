@@ -14,20 +14,13 @@
     "gulp-crisper": "1.1.0",
     "gulp-eslint": "^3.0.1",
     "gulp-insert-lines": "0.0.4",
-    "gulp-jshint": "^2.0.1",
     "gulp-style-modules": "^0.1.0",
     "gulp-stylus": "^2.5.0",
     "gulp-vulcanize": "^6.1.0",
     "gulp-watch": "^4.3.9",
-    "mkdirp": "^0.5.1",
-    "ncp": "^2.0.0",
     "nib": "^1.1.0",
-    "q": "^1.4.1",
     "rimraf": "^2.5.4",
     "yargs": "^4.8.1"
   },
-  "scripts": {
-    "pack": "build --dir",
-    "dist": "build"
-  }
+  "dependencies": {}
 }
