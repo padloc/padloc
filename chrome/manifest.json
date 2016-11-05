@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Padlock",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "A minimalist open source password manager.",
     "author": "Martin Kleinschrodt",
     "app": {
@@ -16,11 +16,11 @@
         "*://cloud.padlock.io/*"
     ],
     "icons": {
-        "16": "assets/icon16.png",
-        "48": "assets/icon48.png",
-        "128": "assets/icon128.png",
-        "256": "assets/icon256.png",
-        "512": "assets/icon512.png",
-        "1024": "assets/icon1024.png"
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png",
+        "256": "icons/icon256.png",
+        "512": "icons/icon512.png",
+        "1024": "icons/icon1024.png"
     }
 }
