@@ -20,7 +20,7 @@ function createWindow() {
 
     // and load the index.html of the app.
     win.loadURL(url.format({
-        pathname: path.join(__dirname, "app", "index.html"),
+        pathname: path.join(__dirname, "index.html"),
         protocol: "file:",
         slashes: true
     }));
@@ -28,14 +28,11 @@ function createWindow() {
     // Open the DevTools.
     // win.webContents.openDevTools();
 
-    // Emitted when the window is closed.
     win.on("closed", () => {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
         win = null;
     });
 
+    // Open links in browser
     win.webContents.on("new-window", function(e, url) {
         e.preventDefault();
         shell.openExternal(url);
@@ -50,4 +47,10 @@ app.on("ready", createWindow);
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
     app.quit();
+});
+
+app.on("activate", () => {
+    if (win === null) {
+        createWindow();
+    }
 });

@@ -7,7 +7,7 @@ const nib = require("nib");
 const watch = require("gulp-watch");
 const { argv } = require("yargs");
 const stylemod = require("gulp-style-modules");
-const { buildChrome, compileCss } = require("./lib/build.js");
+const { buildChrome, buildMac, compileCss } = require("./lib/build.js");
 const { eslint } = require("./lib/lint.js");
 
 gulp.task("stylus", function() {
@@ -31,6 +31,10 @@ gulp.task("build", () => {
 
     if (argv.chrome) {
         promises.push(buildChrome());
+    }
+
+    if (argv.mac) {
+        promises.push(buildMac());
     }
 
     return Promise.all(promises);
