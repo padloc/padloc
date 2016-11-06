@@ -12,6 +12,10 @@
                 if (typeof require !== "undefined") {
                     delete window.module;
                     window.electron = require("electron");
+                    electron.ipcRenderer.on("auto-update", function(_, type) {
+                        const evt = new CustomEvent(type, { detail: Array.prototype.slice.call(arguments, 3) });
+                        window.dispatchEvent(evt);
+                    });
                 }
             })();
         </script>

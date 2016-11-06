@@ -102,6 +102,10 @@ padlock.App = (function(Polymer, platform) {
 
             // Init view when app resumes
             document.addEventListener("resume", this._resume.bind(this, true), false);
+
+            window.addEventListener("update-downloaded", function(e) {
+                this._updateDownloaded.apply(this, e.detail);
+            }.bind(this));
         },
         _cancelAutoLock: function() {
             this._pausedAt = null;
@@ -926,6 +930,9 @@ padlock.App = (function(Polymer, platform) {
 
                 this._openForm(els, a.text, dismissed, dismissed, true);
             }
+        },
+        _updateDownloaded: function() {
+            this._alert("New update available! Restart the app to install!");
         }
     });
 
