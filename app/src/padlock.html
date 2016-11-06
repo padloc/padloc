@@ -1,7 +1,7 @@
 <script>
     /* global window, padlock */
     window.padlock = {
-        version: "1.1.0"
+        version: ""
     };
 </script>
 <script src="../bower_components/sjcl/sjcl.js"></script>
@@ -11,6 +11,12 @@
 <script src="rand.js"></script>
 <script src="crypto.js"></script>
 <script src="platform.js"></script>
+<script>
+    /* global padlock */
+    padlock.platform.getAppVersion(function(version) {
+        padlock.version = version;
+    });
+</script>
 <script src="Source.js"></script>
 <script src="LocalStorageSource.js"></script>
 <script src="ChromeStorageSource.js"></script>

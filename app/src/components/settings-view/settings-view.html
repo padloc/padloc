@@ -47,7 +47,10 @@
         <section>
             <button on-tap="_openWebsite">Website</button>
             <button on-tap="_sendMail">Support</button>
-            <div class="info" on-tap="_openHomepage">Developed and maintained by <strong>MaKleSoft</strong></div>
+            <div class="info" on-tap="_openHomepage">
+                <strong>Padlock {{ settings.version }}</strong><br>
+                Developed and maintained by <strong>MaKleSoft</strong>
+            </div>
         </section>
 
         <!-- PROGRESS INDICATOR -->

@@ -187,6 +187,8 @@ padlock.App = (function(Polymer, platform) {
                 success: function() {
                     // Fetch settings from persistent storage
                     this.settings.fetch({success: function() {
+                        // Write version to settings
+                        this.set("settings.version", padlock.version);
                         this._notifySettings();
                         this._unlockSuccess();
                     }.bind(this), fail: function() {

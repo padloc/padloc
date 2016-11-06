@@ -86,4 +86,5 @@
     <plugin name="cordova-plugin-customurlscheme" spec="~4.2.0">
         <variable name="URL_SCHEME" value="padlock" />
     </plugin>
+    <plugin name="cordova-plugin-app-version" spec="~0.1.9" />
 </widget>
