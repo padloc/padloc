@@ -2,9 +2,9 @@
 
 "use strict";
 
-var tools = require("../../tools.js");
+var { build } = require("../../lib/build");
 var path = require("path");
 
 module.exports = function(context) {
-    tools.deploy(path.resolve(context.opts.projectRoot, "www"));
+    build(path.resolve(context.opts.projectRoot, "www"));
 };
