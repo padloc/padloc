@@ -7,7 +7,7 @@ const nib = require("nib");
 const watch = require("gulp-watch");
 const { argv } = require("yargs");
 const stylemod = require("gulp-style-modules");
-const { buildChrome, buildMac, compileCss } = require("./lib/build.js");
+const { buildChrome, buildElectron, compileCss } = require("./lib/build.js");
 const { eslint } = require("./lib/lint.js");
 
 gulp.task("stylus", function() {
@@ -28,13 +28,14 @@ gulp.task("eslint", eslint);
 // Deploy a minified/built version of the app to a given destination folder
 gulp.task("build", () => {
     let promises = [];
+    const { mac, win, chrome } = argv;
 
-    if (argv.chrome) {
+    if (chrome) {
         promises.push(buildChrome());
     }
 
-    if (argv.mac) {
-        promises.push(buildMac());
+    if (mac || win) {
+        promises.push(buildElectron({ mac, win }));
     }
 
     return Promise.all(promises);
