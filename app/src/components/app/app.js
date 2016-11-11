@@ -169,6 +169,7 @@ padlock.App = (function(Polymer, platform) {
         _newPwd: function(event, detail) {
             // Update master password
             this.collection.setPassword(detail.password);
+            this.settings.save();
             // Navigate to list view
             this._popinOpen(this.$.listView);
         },
@@ -932,6 +933,13 @@ padlock.App = (function(Polymer, platform) {
         },
         _updateDownloaded: function() {
             this._alert("New update available! Restart the app to install!");
+        },
+        _resetData: function() {
+            this.settings.reset();
+            this._notifySettings();
+            this.collection.clear();
+            this.collection.destroy();
+            this._openStartView();
         }
     });
 

@@ -83,6 +83,11 @@ padlock.Settings = (function(util, LocalSource) {
         //* Saves the existing settings
         save: function(opts) {
             this.store.save(storeKey, this.toString(), opts);
+        },
+        reset: function() {
+            for (var prop in this.properties) {
+                this[prop] = this.properties[prop];
+            }
         }
     };
 
