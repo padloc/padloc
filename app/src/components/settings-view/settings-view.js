@@ -85,6 +85,9 @@
         },
         _openCloudView: function() {
             this.fire("open-cloud-view");
+        },
+        _version: function() {
+            return padlock.version;
         }
     });
 
