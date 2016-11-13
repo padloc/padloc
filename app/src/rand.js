@@ -25,17 +25,22 @@ padlock.rand = (function() {
     function randomString(length, charSet) {
         length = length || 32;
         charSet = charSet || charSets.full;
-        var rnd = new Uint8Array(length);
+        var rnd = new Uint8Array(1);
         var str = "";
-        window.crypto.getRandomValues(rnd);
-        for (var i=0; i<length; i++) {
-            str += charSet[Math.floor(rnd[i] * charSet.length / 256)];
+        while (str.length < length) {
+            window.crypto.getRandomValues(rnd);
+            // Prevent modulo bias by rejecting values larger than the highest muliple of `charSet.length`
+            if (rnd[0] > 255 - 256 % charSet.length) {
+                continue;
+            }
+            str += charSet[rnd[0] % charSet.length];
         }
         return str;
     }
 
     return {
         randomString: randomString,
-        chars: chars
+        chars: chars,
+        charSets: charSets
     };
 })();
