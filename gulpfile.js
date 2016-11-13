@@ -28,14 +28,14 @@ gulp.task("eslint", eslint);
 // Deploy a minified/built version of the app to a given destination folder
 gulp.task("build", () => {
     let promises = [];
-    const { mac, win, chrome } = argv;
+    const { mac, win, linux, chrome, release } = argv;
 
     if (chrome) {
         promises.push(buildChrome());
     }
 
-    if (mac || win) {
-        promises.push(buildElectron({ mac, win }));
+    if (mac || win || linux) {
+        promises.push(buildElectron({ mac, win, linux, release }));
     }
 
     return Promise.all(promises);

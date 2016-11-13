@@ -1,21 +1,21 @@
 "use strict";
 
-// Handle Squirrel events for Windows immediately on start
-if (require("electron-squirrel-startup")) { return; }
-
-const {app, shell, BrowserWindow, autoUpdater} = require("electron");
+const {app, shell, BrowserWindow} = require("electron");
+const {autoUpdater} = require("electron-auto-updater");
 const path = require("path");
 const url = require("url");
 const os = require("os");
 
 let win;
 
-const updateUrl = `https://download.padlock.io/update/${os.platform()}_${os.arch()}/${app.getVersion()}`;
-autoUpdater.setFeedURL(updateUrl);
+if (os.platform() == "darwin") {
+    const updateUrl = `https://download.padlock.io/update/${os.platform()}_${os.arch()}/${app.getVersion()}`;
+    autoUpdater.setFeedURL(updateUrl);
+}
 
 function handleAutoUpdateEvent() {
     if (win) {
-        win.webContents.send("auto-update", ...arguments, updateUrl);
+        win.webContents.send("auto-update", ...arguments);
     }
 }
 

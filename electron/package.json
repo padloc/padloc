@@ -1,6 +1,6 @@
 {
   "main": "main.js",
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-auto-updater": "^0.5.1"
   }
 }

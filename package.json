@@ -1,14 +1,18 @@
 {
   "name": "padlock",
-  "version": "1.2.0-alpha.2",
+  "version": "1.2.0-alpha.3",
   "description": "A minimalist password manager",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
   "homepage": "https://padlock.io/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maklesoft/padlock.git"
+  },
   "devDependencies": {
     "archiver": "^1.2.0",
-    "electron": "^1.4.5",
-    "electron-builder": "^7.18.0",
+    "electron": "^1.4.6",
+    "electron-builder": "^8.5.2",
     "eslint-plugin-html": "^1.5.1",
     "fs-extra": "^1.0.0",
     "gulp": "^3.9.1",
