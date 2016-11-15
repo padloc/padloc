@@ -72,6 +72,7 @@ padlock.CloudSource = (function(Source) {
             }
 
             req.setRequestHeader("X-Client-Version", padlock.version);
+            req.setRequestHeader("X-Client-Platform", padlock.platform.getPlatformName());
 
             return req;
         } catch(e) {
