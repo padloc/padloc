@@ -940,6 +940,9 @@ padlock.App = (function(Polymer, platform) {
             this.collection.clear();
             this.collection.destroy();
             this._openStartView();
+            this.async(function() {
+                this._alert("Data deleted and app reset succesfully!");
+            }, 1000);
         }
     });
 

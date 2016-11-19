@@ -29,7 +29,7 @@
 
         <padlock-header id="header" view="{{ _currentView }}" filter-string="{{ _filterString }}" on-filter-enter="_selectMarkedRecord"></padlock-header>
         <padlock-start-view id="startView" class="view" on-newpwd="_newPwd" on-restore="_restored" collection="{{ collection }}" settings="{{ settings }}"></padlock-start-view>
-        <padlock-lock-view id="lockView" class="view" on-pwdenter="_pwdEnter"></padlock-lock-view>
+        <padlock-lock-view id="lockView" class="view" on-pwdenter="_pwdEnter" on-reset-app="_resetData"></padlock-lock-view>
         <!-- LIST VIEW -->
         <padlock-list-view id="listView" class="view" records="{{ _records }}" filter-string="{{ _filterString }}"
             selected="{{ _selected }}" on-select="_recordSelected" on-add="_addRecord" on-back="_listViewBack"
