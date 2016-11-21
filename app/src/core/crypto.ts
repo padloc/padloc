@@ -1,9 +1,9 @@
 import * as sjcl from "sjcl";
 
-export const ERR_CRYPTO_INVALID_CONTAINER = "Invalid container";
-export const ERR_CRYPTO_INVALID_KEY_PARAMS = "Invalid key params";
-export const ERR_CRYPTO_DECRYPTION_FAILED = "Decryption failed";
-export const ERR_CRYPTO_ENCRYPTION_FAILED = "Encryption failed";
+export const ERR_INVALID_CONTAINER_DATA = "Invalid container data";
+export const ERR_INVALID_KEY_PARAMS = "Invalid key params";
+export const ERR_DECRYPTION_FAILED = "Decryption failed";
+export const ERR_ENCRYPTION_FAILED = "Encryption failed";
 
 // Available cipher algorithms
 type Cipher = "aes";
@@ -33,13 +33,13 @@ function randBase64(): string {
     return bitsToBase64(sjcl.random.randomWords(4, 0));
 }
 
-interface KeyParams {
+export interface KeyParams {
     keySize: KeySize;
     salt: string;
     iter: number;
 }
 
-interface CipherParams {
+export interface CipherParams {
     cipher: Cipher;
     mode: Mode;
     iv: string;
@@ -56,7 +56,7 @@ export function clearKeyCache() {
 
 function genKey(passphrase: string, params: KeyParams): string {
     if (params.iter > pbkdf2MaxIter) {
-        throw ERR_CRYPTO_INVALID_KEY_PARAMS;
+        throw ERR_INVALID_KEY_PARAMS;
     }
 
     let key = keyCache.get(params);
@@ -84,7 +84,7 @@ function decrypt(key: string, ct: string, params: CipherParams): string {
         );
         return bitsToUtf8(pt);
     } catch(e) {
-        throw ERR_CRYPTO_DECRYPTION_FAILED;
+        throw ERR_DECRYPTION_FAILED;
     }
 }
 
@@ -95,7 +95,7 @@ function encrypt(key: string, pt: string, params: CipherParams): string {
         var ct = mode.encrypt(cipher, utf8ToBits(pt), base64ToBits(params.iv), params.adata, params.ts);
         return bitsToBase64(ct);
     } catch(e) {
-        throw ERR_CRYPTO_ENCRYPTION_FAILED;
+        throw ERR_ENCRYPTION_FAILED;
     }
 }
 
@@ -114,18 +114,71 @@ export class Container implements KeyParams, CipherParams {
         readonly ts = 64,
     ) {
         this.salt = randBase64();
-        this.iv = randBase64();
-        this.adata = randBase64();
     }
 
     setData(passphrase: string, data: string) {
         var key = genKey(passphrase, this);
+        this.iv = randBase64();
+        this.adata = randBase64();
         this.ct = encrypt(key, data, this);
     }
 
     getData(passphrase: string): string {
         var key = genKey(passphrase, this);
         return decrypt(key, this.ct, this);
+    }
+
+    raw(): Object {
+        return {
+            cipher: this.cipher,
+            mode: this.mode,
+            keySize: this.keySize,
+            iter: this.iter,
+            ts: this.ts,
+            salt: this.salt,
+            iv: this.iv,
+            adata: this.adata,
+            ct: this.ct
+        };
+    }
+
+    toJSON(): string {
+        return JSON.stringify(this.raw());
+    }
+
+    static fromJSON(json: string): Container {
+        let raw: any;
+        try {
+            raw = JSON.parse(json);
+        } catch (e) {
+            throw {
+                error: ERR_INVALID_CONTAINER_DATA,
+                message: e.toString()
+            };
+        }
+
+        if (!Container.validateRaw(raw)) {
+            throw { error: ERR_INVALID_CONTAINER_DATA };
+        }
+
+        let cont = new Container(raw.cipher, raw.mode, raw.keySize, raw.iter, raw.ts);
+        Object.assign(cont, { salt: raw.salt, iv: raw.iv, adata: raw.adata, ct: raw.ct });
+
+        return cont;
+    }
+
+    static validateRaw(obj: any) {
+        return typeof obj == "object" &&
+            ["aes"].includes(obj.cipher) && // valid cipher
+            ["ccm", "ocb2"].includes(obj.mode) && // exiting mode
+            [128, 192, 256].includes(obj.keySize) &&
+            typeof obj.iter == "number" && // valid PBKDF2 iteration count
+            obj.iter <= pbkdf2MaxIter && // sane pbkdf2 iteration count
+            typeof obj.iv == "string" && // valid initialisation vector
+            typeof obj.salt == "string" && //valid salt
+            typeof obj.ct == "string" && // valid cipher text
+            typeof obj.adata == "string" && // valid authorisation data
+            [64, 96, 128].includes(obj.ts); // valid authorisation tag length
     }
 
 }

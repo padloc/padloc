@@ -9,25 +9,25 @@ export const ERR_NOT_FOUND = "account_not_found";
 export const ERR_LIMIT_EXCEEDED = "rate_limit_exceeded";
 
 export interface Source {
-    fetch(key: string): Promise<string>;
-    save(key: string, data: string): Promise<void>;
-    clear(key: string): Promise<void>;
+    get(): Promise<string>;
+    set(data: string): Promise<void>;
+    clear(): Promise<void>;
 }
 
 export class MemorySource implements Source {
 
     private data: string;
 
-    fetch(key) {
+    get() {
         return Promise.resolve(this.data);
     }
 
-    save(key, data) {
+    set(data) {
         this.data = data;
         return Promise.resolve();
     }
 
-    clear(key) {
+    clear() {
         this.data = "";
         return Promise.resolve();
     }
@@ -36,17 +36,19 @@ export class MemorySource implements Source {
 
 export class LocalStorageSource implements Source {
 
-    fetch(key) {
-        return Promise.resolve(localStorage.getItem(key));
+    constructor(private key: string) {}
+
+    get() {
+        return Promise.resolve(localStorage.getItem(this.key));
     };
 
-    save(key, data) {
-        localStorage.setItem(key, data);
+    set(data) {
+        localStorage.setItem(this.key, data);
         return Promise.resolve();
     };
 
-    clear(key) {
-        localStorage.removeItem(key);
+    clear() {
+        localStorage.removeItem(this.key);
         return Promise.resolve();
     };
 
@@ -58,7 +60,7 @@ interface CloudAuthToken {
     id: string;
 }
 
-interface Settings {
+interface SyncParams {
     sync_host_url?: string;
     sync_custom_host?: boolean;
     sync_email?: string;
@@ -71,11 +73,11 @@ interface Settings {
 
 export class CloudSource implements Source {
 
-    constructor(public settings: Settings) {}
+    constructor(public syncParams: SyncParams) {}
 
     request(method: Method, path: string, data?: string, headers?: Map<string, string>): Promise<string> {
-        let host = this.settings.sync_custom_host ?
-            this.settings.sync_host_url : "https://cloud.padlock.io";
+        let host = this.syncParams.sync_custom_host ?
+            this.syncParams.sync_host_url : "https://cloud.padlock.io";
 
         // Remove any trailing slashes
         host = host.replace(/\/+$/, "");
@@ -84,9 +86,9 @@ export class CloudSource implements Source {
         headers = headers || new Map<string, string>();
 
         headers.set("Accept", "application/vnd.padlock;version=1");
-        if (this.settings.sync_email && this.settings.sync_key) {
+        if (this.syncParams.sync_email && this.syncParams.sync_key) {
             headers.set("Authorization",
-                "AuthToken " + this.settings.sync_email + ":" + this.settings.sync_key);
+                "AuthToken " + this.syncParams.sync_email + ":" + this.syncParams.sync_key);
         }
 
         // headers.set("X-Client-Version", padlock.version);
@@ -94,9 +96,9 @@ export class CloudSource implements Source {
 
         return request(method, url, data, headers)
             .then((req) => {
-                this.settings["sync_sub_status"] = req.getResponseHeader("X-Sub-Status");
+                this.syncParams["sync_sub_status"] = req.getResponseHeader("X-Sub-Status");
                 try {
-                    this.settings["sync_trial_end"] = parseInt(req.getResponseHeader("X-Sub-Trial-End"), 10);
+                    this.syncParams["sync_trial_end"] = parseInt(req.getResponseHeader("X-Sub-Trial-End"), 10);
                 } catch (e) {
                     //
                 }
@@ -104,15 +106,15 @@ export class CloudSource implements Source {
             });
     }
 
-    fetch(key) {
+    get() {
         return this.request("GET", "/store/");
     }
 
-    save(key, data) {
+    set(data) {
         return this.request("PUT", "/store/", data).then(() => {});
     }
 
-    clear(key) {
+    clear() {
         return Promise.reject("Not Implemented");
     }
 
@@ -126,7 +128,7 @@ export class CloudSource implements Source {
     };
 
     testCredentials(): Promise<boolean> {
-        return this.fetch("")
+        return this.get()
             .then(
                 () => true,
                 (err: ErrorResponse) => {
