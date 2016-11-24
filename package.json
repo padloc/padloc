@@ -20,5 +20,8 @@
     "rimraf": "^2.5.4",
     "yargs": "^4.8.1"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "scripts": {
+    "postinstall": "bower install"
+  }
 }
