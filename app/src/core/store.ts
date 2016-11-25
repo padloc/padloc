@@ -12,16 +12,15 @@ export class Store {
     }
 
     get(password?: string, rememberPassword = false, source?: Source): Promise<string> {
-        // Use password argument if provided, otherwise use the password stored in the source object
-        password = password || this.passwords.get(source);
+        const src: Source = source || this.defaultSource;
+        const pwd: string = password || this.passwords.get(src) || "";
 
         // Remember password so the user does not have to reenter it every time we set changes
         if (rememberPassword) {
-            this.passwords.set(source, password);
+            this.passwords.set(src, pwd);
         }
 
-        source = source || this.defaultSource;
-        return source.get()
+        return src.get()
             .then((data) => {
                 if (data == "") {
                     return "";
@@ -31,29 +30,27 @@ export class Store {
 
                 // Save container for later; we'll need to remember the encryption parameters in order
                 // to set to the same source
-                this.containers.set(source, cont);
+                this.containers.set(src, cont);
 
-                return cont.getData(password);
+                return cont.getData(pwd);
             });
     }
 
     set(data: string, password?: string, rememberPassword = false, source?: Source): Promise<void> {
+        const src: Source = source || this.defaultSource;
+        const pwd: string = password || this.passwords.get(src) || "";
 
         // Reuse container if possible
-        let cont = this.containers.get(source) || new Container();
-
-        // Use password argument if provided, otherwise use the password stored in the source object
-        password = password || this.passwords.get(source);
+        let cont = this.containers.get(src) || new Container();
 
         // Remember password so the user does not have to reenter it every time we set changes
         if (rememberPassword) {
-            this.passwords.set(source, password);
+            this.passwords.set(src, pwd);
         }
 
-        cont.setData(password, data);
+        cont.setData(pwd, data);
 
-        source = source || this.defaultSource;
-        return source.set(cont.toJSON());
+        return src.set(cont.toJSON());
     }
 
     clear(source?: Source): Promise<void> {

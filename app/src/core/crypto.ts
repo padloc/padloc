@@ -6,16 +6,16 @@ export const ERR_DECRYPTION_FAILED = "Decryption failed";
 export const ERR_ENCRYPTION_FAILED = "Encryption failed";
 
 // Available cipher algorithms
-type Cipher = "aes";
+export type Cipher = "aes";
 
 // Available cipher modes
-type Mode = "ccm" | "ocb2";
+export type Mode = "ccm" | "ocb2";
 
 // Available key sizes
-type KeySize = 128 | 192 | 256;
+export type KeySize = 128 | 192 | 256;
 
 // Available authentication tag sizes
-type AtSize = 64 | 96 | 128;
+export type AtSize = 64 | 96 | 128;
 
 // Maximum number of pbkdf2 iterations
 const pbkdf2MaxIter = 1e6;
@@ -44,7 +44,7 @@ export interface CipherParams {
     mode: Mode;
     iv: string;
     adata: string;
-    ts: number;
+    ts: AtSize;
 }
 
 // Cache object for calculated keys
@@ -111,7 +111,7 @@ export class Container implements KeyParams, CipherParams {
         readonly mode: Mode = "ccm",
         readonly keySize: KeySize = 256,
         readonly iter = 1e4,
-        readonly ts = 64,
+        readonly ts: AtSize = 64
     ) {
         this.salt = randBase64();
     }
