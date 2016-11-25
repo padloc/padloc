@@ -1,6 +1,5 @@
 import { uuid, compareProperty } from "./util";
 import { Source } from "./source";
-import { Store } from "./store";
 
 const compareCategory = compareProperty("category");
 const compareName = compareProperty("name");
@@ -64,38 +63,30 @@ export class Record {
 export class Collection {
 
     private _records: Map<string, Record>;
-    private dispatcher: EventTarget;
+    // private dispatcher: EventTarget;
 
-    constructor(private store: Store) {
-        this.store = store;
+    constructor() {
         this._records = new Map<string, Record>();
         // Helper element for dispatching custom events. This is currently only used for publishing
         // the `update` event
-        this.dispatcher = document.createElement("div");
+        // this.dispatcher = document.createElement("div");
     }
 
     get records(): Array<Record> {
         return Array.from(this._records.values()).filter(rec => !rec.removed).sort(Record.compare);
     }
 
-    fetch(password?: string, rememberPassword?: boolean, source?: Source): Promise<void> {
-        return this.store.get(password, rememberPassword, source)
+    fetch(source: Source): Promise<void> {
+        return source.get()
             .then(data => {
                 let records = JSON.parse(data).map(Record.fromRaw);
                 this.add(records);
             });
     }
 
-    save(password?: string, rememberPassword?: boolean, source?: Source): Promise<void> {
-        return this.store.set(this.toJSON(), password, rememberPassword, source);
+    save(source: Source): Promise<void> {
+        return source.set(this.toJSON());
     }
-
-    // splice(start: number, deleteCount?: number, ...items: Record) {
-    //     var rem = this.records.splice(start, deleteCount, ...items);
-    //     var e = new CustomEvent("update", {detail: [start, deleteCount, ...items]});
-    //     this.dispatcher.dispatchEvent(e);
-    //     return rem;
-    // }
 
     add(rec: Record | Array<Record>) {
         let records = Array.isArray(rec) ? rec : [rec];
@@ -115,12 +106,7 @@ export class Collection {
         this._records.clear();
     }
 
-    sync(source: Source, password?: string): Promise<void> {
-        return this.fetch(password, false, source)
-            .then(() => this.save(password, false, source));
-    }
-
-    addEventListener(type: string, listener: () => {} ): void {
-        this.dispatcher.addEventListener(type, listener);
-    }
+    // addEventListener(type: string, listener: () => {} ): void {
+    //     this.dispatcher.addEventListener(type, listener);
+    // }
 }

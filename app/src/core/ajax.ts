@@ -2,7 +2,7 @@ export const ERR_FAILED_CONNECTION = "failed_connection";
 export const ERR_UNEXPECTED_REDIRECT = "unexpected_redirect";
 export const ERR_UNKNOWN = "unknown_error";
 
-export type Method = "GET" | "POST" | "PUT";
+export type Method = "GET" | "POST" | "PUT" | "DELETE";
 
 export interface ErrorResponse {
     error: string;
