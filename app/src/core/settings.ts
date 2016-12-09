@@ -1,5 +1,4 @@
 import { Source } from "./source";
-import { Store } from "./store";
 
 const defaults = {
     autoLock: true,
@@ -49,7 +48,7 @@ export class Settings {
     showedBackupReminder: number;
     version: string;
 
-    constructor(private store: Store, private source: Source) {
+    constructor() {
         // Set defaults
         this.reset();
         // Flag used to indicate if the settings have been loaded from persistent storage initially
@@ -81,8 +80,8 @@ export class Settings {
         return JSON.stringify(this.raw());
     }
 
-    fetch(password?: string, rememberPassword?: boolean): Promise<void> {
-        return this.store.get(password, rememberPassword, this.source)
+    fetch(source: Source): Promise<void> {
+        return source.get()
             .then(json => {
                 this.loadJSON(json);
                 // Update loaded flag to indicate that data has been loaded from persistent storage at least once
@@ -90,8 +89,8 @@ export class Settings {
             });
     }
 
-    save(password?: string, rememberPassword?: boolean): Promise<void> {
-        return this.store.set(this.toJSON(), password, rememberPassword, this.source);
+    save(source: Source): Promise<void> {
+        return source.set(this.toJSON());
     }
 
     reset(): void {

@@ -37,6 +37,7 @@ export interface KeyParams {
     keySize: KeySize;
     salt: string;
     iter: number;
+    password: string;
 }
 
 export interface CipherParams {
@@ -47,32 +48,19 @@ export interface CipherParams {
     ts: AtSize;
 }
 
-// Cache object for calculated keys
-let keyCache = new Map<KeyParams, string>();
-//* Clears the cache for generating keys
-export function clearKeyCache() {
-    keyCache.clear();
-}
-
-function genKey(passphrase: string, params: KeyParams): string {
+function genKey(params: KeyParams): string {
     if (params.iter > pbkdf2MaxIter) {
         throw ERR_INVALID_KEY_PARAMS;
     }
 
-    let key = keyCache.get(params);
+    let k = sjcl.misc.pbkdf2(
+        utf8ToBits(params.password),
+        base64ToBits(params.salt),
+        params.iter,
+        params.keySize
+    );
 
-    if (!key) {
-        let k = sjcl.misc.pbkdf2(
-            utf8ToBits(passphrase),
-            base64ToBits(params.salt),
-            params.iter,
-            params.keySize
-        );
-        key = bitsToBase64(k);
-        keyCache.set(params, key);
-    }
-
-    return key;
+    return bitsToBase64(k);
 }
 
 function decrypt(key: string, ct: string, params: CipherParams): string {
@@ -101,10 +89,13 @@ function encrypt(key: string, pt: string, params: CipherParams): string {
 
 export class Container implements KeyParams, CipherParams {
 
+    password: string;
     salt: string;
     iv: string;
     adata: string;
     ct: string;
+
+    private keyCache: Map<string, string>;
 
     constructor(
         readonly cipher: Cipher = "aes",
@@ -114,21 +105,37 @@ export class Container implements KeyParams, CipherParams {
         readonly ts: AtSize = 64
     ) {
         this.salt = randBase64();
+        this.keyCache = new Map<string, string>();
     }
 
-    setData(passphrase: string, data: string) {
-        var key = genKey(passphrase, this);
+    private genKey(): string {
+        let raw = this.raw();
+        raw.password = this.password;
+        let keyCacheKey = JSON.stringify(raw);
+
+        let key = this.keyCache.get(keyCacheKey);
+
+        if (!key) {
+            key = genKey(this);
+            this.keyCache.set(keyCacheKey, key);
+        }
+
+        return key;
+    }
+
+    set(data: string) {
+        let key = this.genKey();
         this.iv = randBase64();
         this.adata = randBase64();
         this.ct = encrypt(key, data, this);
     }
 
-    getData(passphrase: string): string {
-        var key = genKey(passphrase, this);
+    get(): string {
+        var key = this.genKey();
         return decrypt(key, this.ct, this);
     }
 
-    raw(): Object {
+    raw(): any {
         return {
             cipher: this.cipher,
             mode: this.mode,
@@ -144,6 +151,12 @@ export class Container implements KeyParams, CipherParams {
 
     toJSON(): string {
         return JSON.stringify(this.raw());
+    }
+
+    clear(): void {
+        this.password = "";
+        this.ct = "";
+        this.keyCache.clear();
     }
 
     static fromJSON(json: string): Container {

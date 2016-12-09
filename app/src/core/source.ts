@@ -1,6 +1,6 @@
 import { request, Method, ErrorResponse } from "./ajax";
 import { Settings } from "./settings";
-import { Container, clearKeyCache } from "./crypto";
+import { Container } from "./crypto";
 
 export const ERR_INVALID_AUTH_TOKEN = "invalid_auth_token";
 export const ERR_EXPIRED_AUTH_TOKEN = "expired_auth_token";
@@ -9,7 +9,6 @@ export const ERR_VERSION_DEPRECATED = "deprecated_api_version";
 export const ERR_SUBSCRIPTION_REQUIRED = "subscription_required";
 export const ERR_NOT_FOUND = "account_not_found";
 export const ERR_LIMIT_EXCEEDED = "rate_limit_exceeded";
-export const ERR_NO_PASSWORD_SET = "no_password_set";
 
 export interface Source {
     get(): Promise<string>;
@@ -19,7 +18,7 @@ export interface Source {
 
 export class MemorySource implements Source {
 
-    private data: string;
+    constructor(private data = "") {}
 
     get(): Promise<string> {
         return Promise.resolve(this.data);
@@ -39,10 +38,10 @@ export class MemorySource implements Source {
 
 export class LocalStorageSource implements Source {
 
-    constructor(private key: string) {}
+    constructor(public key: string) {}
 
     get(): Promise<string> {
-        return Promise.resolve(localStorage.getItem(this.key));
+        return Promise.resolve(localStorage.getItem(this.key) || "");
     };
 
     set(data: string): Promise<void> {
@@ -153,17 +152,12 @@ export class CloudSource extends AjaxSource {
 export class EncryptedSource implements Source {
 
     private container?: Container;
+
     public password: string;
 
-    constructor(private source: Source, password?: string) {
-        this.password = password || this.password;
-    }
+    constructor(private source: Source) {}
 
     get(): Promise<string> {
-        if (!this.password) {
-            return Promise.reject(ERR_NO_PASSWORD_SET);
-        }
-
         return this.source.get()
             .then(data => {
                 if (data == "") {
@@ -171,28 +165,27 @@ export class EncryptedSource implements Source {
                 }
 
                 let cont = this.container = Container.fromJSON(data);
+                cont.password = this.password;
 
-                return cont.getData(this.password);
+                return cont.get();
             });
     }
 
     set(data: string): Promise<void> {
-        if (!this.password) {
-            return Promise.reject(ERR_NO_PASSWORD_SET);
-        }
-
         // Reuse container if possible
         let cont = this.container = this.container || new Container();
-
-        cont.setData(this.password, data);
+        cont.password = this.password;
+        cont.set(data);
 
         return this.source.set(cont.toJSON());
     }
 
     clear(): Promise<void> {
         this.password = "";
+        if (this.container) {
+            this.container.clear();
+        }
         delete this.container;
-        clearKeyCache();
         return this.source.clear();
     }
 
