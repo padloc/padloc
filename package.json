@@ -10,7 +10,14 @@
     "url": "git+https://github.com/maklesoft/padlock.git"
   },
   "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/core-js": "^0.9.35",
+    "@types/mocha": "^2.2.33",
+    "@types/sjcl": "^1.0.27",
     "archiver": "^1.2.0",
+    "browserify": "^13.1.1",
+    "chai": "^3.5.0",
+    "core-js": "^2.4.1",
     "electron": "^1.4.6",
     "electron-builder": "^8.5.3",
     "eslint-plugin-html": "^1.5.1",
@@ -23,9 +30,15 @@
     "gulp-stylus": "^2.5.0",
     "gulp-vulcanize": "^6.1.0",
     "gulp-watch": "^4.3.9",
+    "mocha": "^3.2.0",
     "nib": "^1.1.0",
     "rimraf": "^2.5.4",
+    "st": "^1.2.0",
+    "sjcl": "^1.0.6",
+    "tsify": "^2.0.3",
+    "typescript": "^2.0.10",
+    "vinyl-source-stream": "^1.1.0",
+    "watchify": "^3.7.0",
     "yargs": "^4.8.1"
-  },
-  "dependencies": {}
+  }
 }
