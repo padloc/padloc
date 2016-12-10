@@ -98,11 +98,11 @@ export class Container implements KeyParams, CipherParams {
     private keyCache: Map<string, string>;
 
     constructor(
-        readonly cipher: Cipher = "aes",
-        readonly mode: Mode = "ccm",
-        readonly keySize: KeySize = 256,
-        readonly iter = 1e4,
-        readonly ts: AtSize = 64
+        public cipher: Cipher = "aes",
+        public mode: Mode = "ccm",
+        public keySize: KeySize = 256,
+        public iter = 1e4,
+        public ts: AtSize = 64
     ) {
         this.salt = randBase64();
         this.keyCache = new Map<string, string>();
