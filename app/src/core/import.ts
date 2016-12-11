@@ -80,6 +80,10 @@ export function fromTable(data: string[][], nameColIndex = 0, catColIndex?: numb
     return records;
 }
 
+export function fromCSV(data: string, nameColIndex?: number, catColIndex?: number): Record[] {
+    return fromTable(parse(data).data, nameColIndex, catColIndex);
+}
+
 /**
  * Checks if a given string represents a Padlock enrypted backup
  */
