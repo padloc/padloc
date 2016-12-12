@@ -38,7 +38,7 @@
     "sjcl": "^1.0.6",
     "st": "^1.2.0",
     "tsify": "^2.0.3",
-    "typescript": "^2.0.10",
+    "typescript": "^2.1.4",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.7.0",
     "yargs": "^4.8.1"
