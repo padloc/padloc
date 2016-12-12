@@ -76,12 +76,10 @@ export class Collection {
         return Array.from(this._records.values()).filter(rec => !rec.removed).sort(Record.compare);
     }
 
-    fetch(source: Source): Promise<void> {
-        return source.get()
-            .then(data => {
-                let records = JSON.parse(data).map(Record.fromRaw);
-                this.add(records);
-            });
+    async fetch(source: Source): Promise<void> {
+        let data = await source.get();
+        let records = JSON.parse(data).map(Record.fromRaw);
+        this.add(records);
     }
 
     save(source: Source): Promise<void> {
@@ -193,13 +191,11 @@ export class Settings {
         return JSON.stringify(this.raw());
     }
 
-    fetch(source: Source): Promise<void> {
-        return source.get()
-            .then(json => {
-                this.loadJSON(json);
-                // Update loaded flag to indicate that data has been loaded from persistent storage at least once
-                this.loaded = true;
-            });
+    async fetch(source: Source): Promise<void> {
+        let json = await source.get();
+        this.loadJSON(json);
+        // Update loaded flag to indicate that data has been loaded from persistent storage at least once
+        this.loaded = true;
     }
 
     save(source: Source): Promise<void> {

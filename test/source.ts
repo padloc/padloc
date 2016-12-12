@@ -3,15 +3,17 @@
 import { assert } from "chai";
 import { MemorySource, LocalStorageSource, EncryptedSource } from "../app/src/core/source";
 
-function testSource(source) {
-    return source.get()
-        .then(data => assert.equal(data, ""))
-        .then(() => source.set("test"))
-        .then(() => source.get())
-        .then(data => assert.equal(data, "test"))
-        .then(() => source.clear())
-        .then(() => source.get())
-        .then(data => assert.equal(data, ""));
+async function testSource(source) {
+    let data = await source.get();
+    console.log(data);
+    assert.equal(data, "");
+    await source.set("test");
+    data = await source.get();
+    console.log(data);
+    assert.equal(data, "test");
+    await source.clear();
+    data = await source.get();
+    assert.equal(data, "");
 }
 
 suite("source", () => {

@@ -1,4 +1,4 @@
-import { request, Method, ErrorResponse } from "./ajax";
+import { request, Method } from "./ajax";
 import { Settings } from "./settings";
 import { Container } from "./crypto";
 
@@ -20,18 +20,16 @@ export class MemorySource implements Source {
 
     constructor(private data = "") {}
 
-    get(): Promise<string> {
-        return Promise.resolve(this.data);
+    async get(): Promise<string> {
+        return this.data;
     }
 
-    set(data: string): Promise<void> {
+    async set(data: string): Promise<void> {
         this.data = data;
-        return Promise.resolve();
     }
 
-    clear(): Promise<void> {
+    async clear(): Promise<void> {
         this.data = "";
-        return Promise.resolve();
     }
 
 }
@@ -40,18 +38,16 @@ export class LocalStorageSource implements Source {
 
     constructor(public key: string) {}
 
-    get(): Promise<string> {
-        return Promise.resolve(localStorage.getItem(this.key) || "");
+    async get(): Promise<string> {
+        return localStorage.getItem(this.key) || "";
     };
 
-    set(data: string): Promise<void> {
+    async set(data: string): Promise<void> {
         localStorage.setItem(this.key, data);
-        return Promise.resolve();
     };
 
-    clear(): Promise<void> {
+    async clear(): Promise<void> {
         localStorage.removeItem(this.key);
-        return Promise.resolve();
     };
 
 }
@@ -97,7 +93,7 @@ export class CloudSource extends AjaxSource {
         this.url = this.urlForPath("store");
     }
 
-    request(method: Method, url: string, data?: string, headers?: Map<string, string>): Promise<XMLHttpRequest> {
+    async request(method: Method, url: string, data?: string, headers?: Map<string, string>): Promise<XMLHttpRequest> {
 
         headers = headers || new Map<string, string>();
 
@@ -110,41 +106,38 @@ export class CloudSource extends AjaxSource {
         // headers.set("X-Client-Version", padlock.version);
         // headers.set("X-Client-Platform", padlock.platform.getPlatformName());
 
-        return super.request(method, url, data, headers)
-            .then(req => {
-                this.settings.syncSubStatus = req.getResponseHeader("X-Sub-Status") || "";
-                try {
-                    this.settings.syncTrialEnd =
-                        parseInt(req.getResponseHeader("X-Sub-Trial-End") || "0", 10);
-                } catch (e) {
-                    //
-                }
-                return req;
-            });
+        let req = await super.request(method, url, data, headers)
+        this.settings.syncSubStatus = req.getResponseHeader("X-Sub-Status") || "";
+        try {
+            this.settings.syncTrialEnd =
+                parseInt(req.getResponseHeader("X-Sub-Trial-End") || "0", 10);
+        } catch (e) {
+            //
+        }
+        return req;
     }
 
-    requestAuthToken(email: string, create = false): Promise<CloudAuthToken> {
-        return this.request(
+    async requestAuthToken(email: string, create = false): Promise<CloudAuthToken> {
+        let res = await this.request(
             create ? "POST" : "PUT",
             this.urlForPath("auth"),
             "email=" + encodeURIComponent(email),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
-        )
-        .then(res => <CloudAuthToken>JSON.parse(res.responseText));
+        );
+        return <CloudAuthToken>JSON.parse(res.responseText);
     };
 
-    testCredentials(): Promise<boolean> {
-        return this.get()
-            .then(
-                () => true,
-                (err: ErrorResponse) => {
-                    if (err.error === ERR_INVALID_AUTH_TOKEN) {
-                        return false;
-                    } else {
-                        throw err;
-                    }
-                }
-            );
+    async testCredentials(): Promise<boolean> {
+        try {
+            await this.get();
+            return true;
+        } catch (err) {
+            if (err.error === ERR_INVALID_AUTH_TOKEN) {
+                return false;
+            } else {
+                throw err;
+            }
+        }
     }
 
 }
@@ -157,21 +150,19 @@ export class EncryptedSource implements Source {
 
     constructor(private source: Source) {}
 
-    get(): Promise<string> {
-        return this.source.get()
-            .then(data => {
-                if (data == "") {
-                    return "";
-                }
+    async get(): Promise<string> {
+        let data = await this.source.get();
+        if (data == "") {
+            return "";
+        }
 
-                let cont = this.container = Container.fromJSON(data);
-                cont.password = this.password;
+        let cont = this.container = Container.fromJSON(data);
+        cont.password = this.password;
 
-                return cont.get();
-            });
+        return await cont.get();
     }
 
-    set(data: string): Promise<void> {
+    async set(data: string): Promise<void> {
         // Reuse container if possible
         let cont = this.container = this.container || new Container();
         cont.password = this.password;
