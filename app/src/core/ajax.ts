@@ -15,7 +15,8 @@ function errorFromRequest(req: XMLHttpRequest): ErrorResponse | null {
         return { error: ERR_FAILED_CONNECTION };
     case "3":
         return { error: ERR_UNEXPECTED_REDIRECT };
-    case "4", "5":
+    case "4":
+    case "5":
         try {
             return JSON.parse(req.responseText);
         } catch (e) {
