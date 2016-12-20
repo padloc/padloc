@@ -1,14 +1,6 @@
-import { request, Method } from "./ajax";
-import { Settings } from "./settings";
+import { request, Method, AjaxError } from "./ajax";
+import { Settings } from "./data";
 import { Container } from "./crypto";
-
-export const ERR_INVALID_AUTH_TOKEN = "invalid_auth_token";
-export const ERR_EXPIRED_AUTH_TOKEN = "expired_auth_token";
-export const ERR_SERVER_ERROR = "internal_server_error";
-export const ERR_VERSION_DEPRECATED = "deprecated_api_version";
-export const ERR_SUBSCRIPTION_REQUIRED = "subscription_required";
-export const ERR_NOT_FOUND = "account_not_found";
-export const ERR_LIMIT_EXCEEDED = "rate_limit_exceeded";
 
 export interface Source {
     get(): Promise<string>;
@@ -78,14 +70,29 @@ export interface CloudAuthToken {
     email: string;
     token: string;
     id: string;
+    // Activation url returned by server. Only used for testing
+    actUrl?: string;
+}
+
+export class CloudError {
+    constructor(
+        public code:
+            "invalid_auth_token" |
+            "expired_auth_token" |
+            "internal_server_error" |
+            "deprecated_api_version" |
+            "subscription_required" |
+            "account_not_found" |
+            "rate_limit_exceeded" |
+            "json_error",
+        public message?: string
+    ) {};
 }
 
 export class CloudSource extends AjaxSource {
 
     urlForPath(path: string) {
-        let url = this.settings.syncHostUrl + "/" + path + "/";
-        // Replace duplicate slashes
-        return url.replace(/\/\//g, "/");
+        return this.settings.syncHostUrl + "/" + path + "/";
     }
 
     constructor(public settings: Settings) {
@@ -106,7 +113,23 @@ export class CloudSource extends AjaxSource {
         // headers.set("X-Client-Version", padlock.version);
         // headers.set("X-Client-Platform", padlock.platform.getPlatformName());
 
-        let req = await super.request(method, url, data, headers)
+        let req: XMLHttpRequest;
+        try {
+            req = await super.request(method, url, data, headers);
+        } catch (e) {
+            const err = <AjaxError>e;
+            if (err.code === "client_error" || err.code === "server_error") {
+                try {
+                    const parsedErr = JSON.parse(err.request.responseText);
+                    throw new CloudError(parsedErr.error, parsedErr.message);
+                } catch (e) {
+                    throw new CloudError("json_error");
+                }
+            } else {
+                throw err;
+            }
+        }
+
         this.settings.syncSubStatus = req.getResponseHeader("X-Sub-Status") || "";
         try {
             this.settings.syncTrialEnd =
@@ -118,21 +141,32 @@ export class CloudSource extends AjaxSource {
     }
 
     async requestAuthToken(email: string, create = false): Promise<CloudAuthToken> {
-        let res = await this.request(
+        const req = await this.request(
             create ? "POST" : "PUT",
             this.urlForPath("auth"),
             "email=" + encodeURIComponent(email),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
-        return <CloudAuthToken>JSON.parse(res.responseText);
+
+        let authToken: CloudAuthToken;
+        try {
+            authToken = <CloudAuthToken>JSON.parse(req.responseText);
+        } catch (e) {
+            throw new CloudError("json_error");
+        }
+        authToken.actUrl = req.getResponseHeader("X-Test-Act-Url") || undefined;
+        this.settings.syncEmail = authToken.email;
+        this.settings.syncToken = authToken.token;
+        return authToken;
     };
 
     async testCredentials(): Promise<boolean> {
         try {
             await this.get();
             return true;
-        } catch (err) {
-            if (err.error === ERR_INVALID_AUTH_TOKEN) {
+        } catch (e) {
+            const err = <AjaxError|CloudError>e;
+            if (err.code === "invalid_auth_token") {
                 return false;
             } else {
                 throw err;

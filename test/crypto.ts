@@ -1,7 +1,8 @@
 /// <reference path="../node_modules/@types/mocha/index.d.ts" />
 
 import { assert } from "chai";
-import { Container, ERR_DECRYPTION_FAILED } from "../app/src/core/crypto";
+import { assertError } from "./helpers";
+import { Container, CryptoError } from "../app/src/core/crypto";
 
 suite("crypto", () => {
     test("encrypt/decrypt", () => {
@@ -13,10 +14,8 @@ suite("crypto", () => {
         let data = cont.get();
         assert.equal(data, "secret");
 
-        assert.throws(() => {
-            cont.password = "notmypassword";
-            cont.get();
-        }, ERR_DECRYPTION_FAILED);
+        cont.password = "notmypassword";
+        assertError(() => cont.get(), "decryption_failed");
     });
 
     test("fromJSON/toJSON", () => {
@@ -63,7 +62,7 @@ suite("crypto", () => {
         ];
 
         for (let json of invalid) {
-            assert.throws(() => Container.fromJSON(json));
+            assertError(() => Container.fromJSON(json), "invalid_container_data");
         }
     });
 });

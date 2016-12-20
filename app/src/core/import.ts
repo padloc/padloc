@@ -21,20 +21,24 @@ export function fromSecuStore(rawData: string, password: string): Record[] {
 
     // Create a crypto container and initialize it with the parameters from the
     // obtained object
-    let cont = new Container();
-    Object.assign(cont, {
-        salt: obj.salt,
+    const cont = Container.fromRaw({
+        version: undefined,
+        cipher: "aes",
+        mode: "ccm",
+        ts: 64,
         iv: obj.data.iv,
         adata: decodeURIComponent(obj.data.adata),
-        ct: obj.data.ct,
+        keySize: 256,
+        salt: obj.salt,
         iter: 1000,
-        password: password
+        ct: obj.data.ct
     });
+    cont.password = password;
 
     const data = JSON.parse(cont.get());
 
     // Convert the _items_ array of the SecuStore Set object into an array of Padlock records
-    let records = data.items.map(item => {
+    let records = data.items.map((item: any) => {
         let fields = item.template.containsPassword ?
             // Passwords are a separate property in SecuStore but will be treated as
             // regular fields in Padlock
@@ -74,7 +78,7 @@ export function fromTable(data: string[][], nameColIndex = 0, catColIndex?: numb
             }
         }
 
-        return new Record(row[nameColIndex], fields, row[catColIndex]);
+        return new Record(row[nameColIndex], fields, catColIndex && row[catColIndex] || "");
     });
 
     return records;

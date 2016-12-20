@@ -1,30 +1,26 @@
-export const ERR_FAILED_CONNECTION = "failed_connection";
-export const ERR_UNEXPECTED_REDIRECT = "unexpected_redirect";
-export const ERR_UNKNOWN = "unknown_error";
+export class AjaxError {
+    constructor(
+        public code:
+            "failed_connection" |
+            "unexpected_redirect" |
+            "client_error" |
+            "server_error",
+        public request: XMLHttpRequest
+    ) {};
+}
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE";
 
-export interface ErrorResponse {
-    error: string;
-    message?: string;
-}
-
-function errorFromRequest(req: XMLHttpRequest): ErrorResponse | null {
+function errorFromRequest(req: XMLHttpRequest): AjaxError | null {
     switch (req.status.toString()[0]) {
     case "0":
-        return { error: ERR_FAILED_CONNECTION };
+        return new AjaxError("failed_connection", req);
     case "3":
-        return { error: ERR_UNEXPECTED_REDIRECT };
+        return new AjaxError("unexpected_redirect", req);
     case "4":
+        return new AjaxError("client_error", req);
     case "5":
-        try {
-            return JSON.parse(req.responseText);
-        } catch (e) {
-            return {
-                error: ERR_UNKNOWN,
-                message: req.responseText
-            };
-        }
+        return new AjaxError("server_error", req);
     default:
         return null
     }
@@ -51,12 +47,8 @@ export function request(method: Method, url: string, body?: string, headers?: Ma
                 headers.forEach((value, key) => req.setRequestHeader(key, value));
             }
             req.send(body);
-
         } catch(e) {
-            reject({
-                error: ERR_FAILED_CONNECTION,
-                message: e.toString()
-            });
+            reject(new AjaxError("failed_connection", req));
         }
     });
 }

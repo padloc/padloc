@@ -1,9 +1,14 @@
 import * as sjcl from "sjcl";
 
-export const ERR_INVALID_CONTAINER_DATA = "Invalid container data";
-export const ERR_INVALID_KEY_PARAMS = "Invalid key params";
-export const ERR_DECRYPTION_FAILED = "Decryption failed";
-export const ERR_ENCRYPTION_FAILED = "Encryption failed";
+export class CryptoError {
+    constructor(
+        public code:
+            "invalid_container_data" |
+            "invalid_key_params" |
+            "decryption_failed" |
+            "encryption_failed"
+    ) {};
+}
 
 // Available cipher algorithms
 export type Cipher = "aes";
@@ -33,10 +38,13 @@ function randBase64(): string {
     return bitsToBase64(sjcl.random.randomWords(4, 0));
 }
 
-export interface KeyParams {
+interface Pbkdf2Params {
     keySize: KeySize;
     salt: string;
     iter: number;
+}
+
+export interface KeyParams extends Pbkdf2Params {
     password: string;
 }
 
@@ -50,7 +58,7 @@ export interface CipherParams {
 
 function genKey(params: KeyParams): string {
     if (params.iter > pbkdf2MaxIter) {
-        throw ERR_INVALID_KEY_PARAMS;
+        throw new CryptoError("invalid_key_params");
     }
 
     let k = sjcl.misc.pbkdf2(
@@ -68,11 +76,11 @@ function decrypt(key: string, ct: string, params: CipherParams): string {
         const cipher = new sjcl.cipher[params.cipher](base64ToBits(key));
         const pt = sjcl.mode[params.mode].decrypt(
             cipher, base64ToBits(ct), base64ToBits(params.iv),
-            params.adata, params.ts
+            base64ToBits(params.adata), params.ts
         );
         return bitsToUtf8(pt);
     } catch(e) {
-        throw ERR_DECRYPTION_FAILED;
+        throw new CryptoError("decryption_failed");
     }
 }
 
@@ -80,12 +88,25 @@ function encrypt(key: string, pt: string, params: CipherParams): string {
     try {
         const cipher = new sjcl.cipher[params.cipher](base64ToBits(key));
         const mode = sjcl.mode[params.mode];
-        var ct = mode.encrypt(cipher, utf8ToBits(pt), base64ToBits(params.iv), params.adata, params.ts);
+        var ct = mode.encrypt(cipher, utf8ToBits(pt), base64ToBits(params.iv),
+                              base64ToBits(params.adata), params.ts);
         return bitsToBase64(ct);
     } catch(e) {
-        throw ERR_ENCRYPTION_FAILED;
+        throw new CryptoError("decryption_failed");
     }
 }
+
+interface RawContainerV0 extends Pbkdf2Params, CipherParams {
+    version: undefined;
+    ct: string;
+}
+
+interface RawContainerV1 extends Pbkdf2Params, CipherParams  {
+    version: 1;
+    ct: string;
+}
+
+type RawContainer = RawContainerV0 | RawContainerV1;
 
 export class Container implements KeyParams, CipherParams {
 
@@ -109,7 +130,7 @@ export class Container implements KeyParams, CipherParams {
     }
 
     private genKey(): string {
-        let raw = this.raw();
+        let raw = this.raw() as any;
         raw.password = this.password;
         let keyCacheKey = JSON.stringify(raw);
 
@@ -135,8 +156,9 @@ export class Container implements KeyParams, CipherParams {
         return decrypt(key, this.ct, this);
     }
 
-    raw(): any {
+    raw(): RawContainer {
         return {
+            version: 1,
             cipher: this.cipher,
             mode: this.mode,
             keySize: this.keySize,
@@ -159,19 +181,20 @@ export class Container implements KeyParams, CipherParams {
         this.keyCache.clear();
     }
 
-    static fromJSON(json: string): Container {
-        let raw: any;
-        try {
-            raw = JSON.parse(json);
-        } catch (e) {
-            throw {
-                error: ERR_INVALID_CONTAINER_DATA,
-                message: e.toString()
-            };
+    static fromRaw(raw: RawContainer): Container {
+        if (!Container.validateRaw(raw)) {
+            throw new CryptoError("invalid_container_data");
         }
 
-        if (!Container.validateRaw(raw)) {
-            throw { error: ERR_INVALID_CONTAINER_DATA };
+        if (raw.version === undefined) {
+            // Legacy versions of Padlock had a bug where the base64-encoded
+            // `adata` value was not converted to a BitArray before being
+            // passed to `sjcl.mode.ccm.encrypt/decrypt` and the raw string was
+            // passed instead. This went unnoticed as the functions in question
+            // quietly accepted the string and simply treated it as an array.
+            // So in order to successfully decrypt legacy containers we have to
+            // perfom this conversion first.
+            raw.adata = bitsToBase64(raw.adata as any as sjcl.BitArray);
         }
 
         let cont = new Container(raw.cipher, raw.mode, raw.keySize, raw.iter, raw.ts);
@@ -180,8 +203,20 @@ export class Container implements KeyParams, CipherParams {
         return cont;
     }
 
-    static validateRaw(obj: any) {
+    static fromJSON(json: string): Container {
+        let raw: RawContainer;
+        try {
+            raw = JSON.parse(json);
+        } catch (e) {
+            throw new CryptoError("invalid_container_data");
+        }
+
+        return Container.fromRaw(raw);
+    }
+
+    static validateRaw(obj: RawContainer) {
         return typeof obj == "object" &&
+            [undefined, 1].includes(obj.version) && // has a valid version
             ["aes"].includes(obj.cipher) && // valid cipher
             ["ccm", "ocb2"].includes(obj.mode) && // exiting mode
             [128, 192, 256].includes(obj.keySize) &&
