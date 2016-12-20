@@ -119,12 +119,13 @@ export class CloudSource extends AjaxSource {
         } catch (e) {
             const err = <AjaxError>e;
             if (err.code === "client_error" || err.code === "server_error") {
+                let parsedErr;
                 try {
-                    const parsedErr = JSON.parse(err.request.responseText);
-                    throw new CloudError(parsedErr.error, parsedErr.message);
+                    parsedErr = JSON.parse(err.request.responseText);
                 } catch (e) {
                     throw new CloudError("json_error");
                 }
+                throw new CloudError(parsedErr.error, parsedErr.message);
             } else {
                 throw err;
             }
