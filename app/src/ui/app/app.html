@@ -1,0 +1,42 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/config.html">
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../list-view/list-view.html">
+
+<link href="../../styles/fonts.css" rel="stylesheet" type="text/css">
+
+<dom-module id="padlock-app">
+    <template>
+        <style include="config shared">
+            :host {
+                display: block;
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                top: 0;
+                margin: auto;
+                background: var(--color-quaternary);
+                overflow: hidden;
+            }
+
+            padlock-progress#decrypting {
+                z-index: 10;
+                background: var(--color-secondary);
+            }
+
+            padlock-header {
+                position: absolute;
+                z-index: 1;
+                width: 100%;
+            }
+
+            padlock-list-view {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+
+        <padlock-list-view records="[[ collection.records ]]"></padlock-list-view>
+    </template>
+</dom-module>
