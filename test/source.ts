@@ -5,9 +5,9 @@ import { asyncAssertError as assertError } from "./helpers";
 import { Settings } from "../app/src/core/data";
 import { request } from "../app/src/core/ajax";
 import { randomString } from "../app/src/core/util";
-import { MemorySource, LocalStorageSource, EncryptedSource, CloudSource } from "../app/src/core/source";
+import { Source, MemorySource, LocalStorageSource, EncryptedSource, CloudSource } from "../app/src/core/source";
 
-async function testSource(source, testClear = true) {
+async function testSource(source: Source, testClear = true) {
     let data = await source.get();
     assert.equal(data, "", "Initial data should be empty");
     await source.set("test");
@@ -44,7 +44,7 @@ suite("source", () => {
 
         await assertError(() => source.get(), "invalid_auth_token");
 
-        await request("GET", authToken.actUrl);
+        await request("GET", authToken.actUrl!);
 
         const isActive = await source.testCredentials();
         assert(isActive);

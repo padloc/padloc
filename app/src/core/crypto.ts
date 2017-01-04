@@ -38,7 +38,7 @@ function randBase64(): string {
     return bitsToBase64(sjcl.random.randomWords(4, 0));
 }
 
-interface Pbkdf2Params {
+export interface Pbkdf2Params {
     keySize: KeySize;
     salt: string;
     iter: number;
@@ -96,17 +96,17 @@ function encrypt(key: string, pt: string, params: CipherParams): string {
     }
 }
 
-interface RawContainerV0 extends Pbkdf2Params, CipherParams {
+export interface RawContainerV0 extends Pbkdf2Params, CipherParams {
     version: undefined;
     ct: string;
 }
 
-interface RawContainerV1 extends Pbkdf2Params, CipherParams  {
+export interface RawContainerV1 extends Pbkdf2Params, CipherParams  {
     version: 1;
     ct: string;
 }
 
-type RawContainer = RawContainerV0 | RawContainerV1;
+export type RawContainer = RawContainerV0 | RawContainerV1;
 
 export class Container implements KeyParams, CipherParams {
 

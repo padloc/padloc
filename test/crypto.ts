@@ -2,7 +2,7 @@
 
 import { assert } from "chai";
 import { assertError } from "./helpers";
-import { Container, CryptoError } from "../app/src/core/crypto";
+import { Container } from "../app/src/core/crypto";
 
 suite("crypto", () => {
     test("encrypt/decrypt", () => {
