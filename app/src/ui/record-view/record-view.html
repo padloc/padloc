@@ -1,0 +1,32 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="record-view-styles.html">
+
+<dom-module id="pl-record-view">
+
+    <template>
+
+        <style include="shared pl-record-view-styles"></style>
+
+        <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
+
+        <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
+            <div class="field">
+                <div class="label-wrapper">
+                    <div class="label">{{ item.name }}</div>
+                </div>
+                <div class="separator"></div>
+                <div class="value-wrapper">
+                    <textarea class="value" value="{{ item.value::change }}" placeholder="Enter Content"></textarea>
+                </div>
+                <div class="shortcut-hint">
+                    [ctrl/cmd] + C &rarr; Copy
+                </div>
+            </div>
+        </template>
+
+        <button class="add-button" on-tap="_addField">Add Field</button>
+
+    </template>
+
+</dom-module>

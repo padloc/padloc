@@ -5,6 +5,8 @@ import { Collection, Record } from "../../core/data";
 import { LocalStorageSource, EncryptedSource } from "../../core/source";
 
 import "../list-view/list-view";
+import "../record-view/record-view";
+import { RecordView } from "../record-view/record-view";
 
 export class App extends Polymer.Element {
     static is = "pl-app";
@@ -19,9 +21,15 @@ export class App extends Polymer.Element {
         this.localSource.password = "password";
     }
 
-    ready() {
+    get recordView(): RecordView {
+        return this.root.querySelector("pl-record-view") as RecordView;
+    }
+
+    async ready() {
         super.ready();
-        this.fetch();
+        await this.fetch();
+        this.recordView.record = this.collection.records[0];
+        this.recordView.style.display = "block";
     }
 
     addRecord(name: string) {
@@ -39,4 +47,4 @@ export class App extends Polymer.Element {
     }
 }
 
-window.customElements.define(PadlockApp.is, PadlockApp);
+window.customElements.define(App.is, App);
