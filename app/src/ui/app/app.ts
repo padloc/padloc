@@ -6,8 +6,8 @@ import { LocalStorageSource, EncryptedSource } from "../../core/source";
 
 import "../list-view/list-view";
 
-export class PadlockApp extends Polymer.Element {
-    static is = "padlock-app";
+export class App extends Polymer.Element {
+    static is = "pl-app";
 
     private collection: Collection;
     private localSource: EncryptedSource;

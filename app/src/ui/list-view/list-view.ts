@@ -4,7 +4,7 @@
 import { Record } from "../../core/data";
 
 export class ListView extends Polymer.Element {
-    static is = "padlock-list-view";
+    static is = "pl-list-view";
 
     static config = {
         properties: {

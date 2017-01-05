@@ -5,7 +5,7 @@
 
 <link href="../../styles/fonts.css" rel="stylesheet" type="text/css">
 
-<dom-module id="padlock-app">
+<dom-module id="pl-app">
     <template>
         <style include="config shared">
             :host {
@@ -20,23 +20,26 @@
                 overflow: hidden;
             }
 
-            padlock-progress#decrypting {
+            pl-progress#decrypting {
                 z-index: 10;
                 background: var(--color-secondary);
             }
 
-            padlock-header {
+            pl-header {
                 position: absolute;
                 z-index: 1;
                 width: 100%;
             }
 
-            padlock-list-view {
+            pl-list-view, pl-record-view {
                 width: 100%;
                 height: 100%;
+                display: none;
             }
         </style>
 
-        <padlock-list-view records="[[ collection.records ]]"></padlock-list-view>
+        <pl-list-view records="[[ collection.records ]]"></pl-list-view>
+        <pl-record-view></pl-record-view>
+
     </template>
 </dom-module>
