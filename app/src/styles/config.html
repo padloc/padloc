@@ -30,7 +30,8 @@
                 --color-yellow: #ffe85c;
                 --color-red: #ff8283;
 
-                --shadow-color: alpha(darken($color-primary, 30%), 80%);
+                --shadow-color: rgba(0,158,241,0.8);
+;
 
                 --placeholder-color: $text-color-faint;
                 --placeholder-color-light: $color-quaternary;
@@ -59,28 +60,29 @@
                     position: relative;
                     cursor: pointer;
 
-                    /* &::after { */
-                    /*     content: ""; */
-                    /*     display: block; */
-                    /*     position: absolute; */
-                    /*     top: 0; */
-                    /*     left: 0; */
-                    /*     width: 100%; */
-                    /*     height: 100%; */
-                    /*     background: currentColor; */
-                    /*     opacity: 0; */
-                    /*     transition: opacity 0.3s; */
-                    /*     pointer-events: none; */
-                    /* } */
-                    /*  */
-                    /* &:active::after { */
-                    /*     opacity: 0.3; */
-                    /*     transition: opacity 0.1s; */
-                    /* } */
+                };
+
+                --tap-highlight-after {
+                    content: "";
+                    display: block;
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: currentColor;
+                    opacity: 0;
+                    transition: opacity 0.3s;
+                    pointer-events: none;
+                };
+
+                --tap-highlight-active-after {
+                    opacity: 0.3;
+                    transition: opacity 0.1s;
                 };
 
                 --text-shadow: {
-                    text-shadow: $shadow-color 1px 1px;
+                    text-shadow: var(--shadow-color) 1px 1px;
                 };
             }
 

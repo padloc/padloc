@@ -13,10 +13,11 @@
   "private": true,
   "dependencies": {
     "shape-shifter": "~2.0.0",
-    "polymer": "polymer/polymer#~1.2.1",
+    "polymer": "Polymer/polymer#2.0-preview",
     "zxcvbn": "~3.1.0",
     "autosize": "~3.0.13",
     "papaparse": "~4.1.2",
-    "sjcl": "^1.0.6"
+    "sjcl": "^1.0.6",
+    "webcomponentsjs": "^0.7.23"
   }
 }

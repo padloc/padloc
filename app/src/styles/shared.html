@@ -1,9 +1,19 @@
+<link rel="stylesheet" href="fonts.css">
+
 <dom-module id="shared">
     <template>
         <style>
 
             .tap-highlight {
                 @apply(--tap-highlight);
+            }
+
+            .tap-highlight::after {
+                @apply(--tap-highlight-after);
+            }
+
+            .tap-highlight:active::after {
+                @apply(--tap-highlight-active-after);
             }
 
             :host, :root, button, input {
@@ -164,6 +174,20 @@
 
             section {
                 margin: 30px 0;
+            }
+
+            header {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: var(--row-height);
+                background: var(--color-primary);
+                font-size: var(--font-size-default);
+                color: var(--color-quinary);
+                border-bottom: solid 2px var(--shadow-color);
+                @apply(--text-shadow);
             }
         </style>
     </template>

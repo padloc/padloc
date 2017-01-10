@@ -1,11 +1,28 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../icon/icon.html">
 <link rel="import" href="list-view-styles.html">
 
 <dom-module id="pl-list-view">
     <template>
 
-        <style include="shared pl-list-view-styles"></style>
+        <style include="shared pl-list-view-styles">
+
+            header input {
+                flex: 1;
+                background: transparent;
+                text-align: center;
+                @apply(--text-shadow);
+            }
+
+        </style>
+
+        <header>
+            <pl-icon icon="menu"></pl-icon>
+            <input placeholder="Type to search..."></input>
+            <pl-icon icon="add"></pl-icon>
+        </header>
 
         <div class="list">
 

@@ -1,0 +1,45 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared.html">
+
+<style>
+@font-face {
+    font-family: 'FontAwesome';
+    src: url('../../../assets/fonts/fontawesome-webfont.eot?v=4.7.0');
+    src: url('../../../assets/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'), url('../../../assets/fonts/fontawesome-webfont.woff2?v=4.7.0') format('woff2'), url('../../../assets/fonts/fontawesome-webfont.woff?v=4.7.0') format('woff'), url('../../../assets/fonts/fontawesome-webfont.ttf?v=4.7.0') format('truetype'), url('../../../assets/fonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+</style>
+
+<dom-module id="pl-icon">
+    <template>
+
+        <style include="shared">
+            :host {
+                display: inline-block;
+                width: var(--row-height);
+                height: var(--row-height);
+                line-height: var(--row-height);
+                text-align: center;
+                line-height: var(--row-height);
+                font-family: "FontAwesome";
+            }
+
+            :host([icon="add"]):before {
+                content: "\f067";
+            }
+
+            :host([icon="menu"]):before {
+                content: "\f0c9";
+            }
+        </style>
+
+    </template>
+
+    <script>
+        /* global Polymer */
+        "use strict";
+        Polymer({is: "pl-icon"});
+    </script>
+
+</dom-module>

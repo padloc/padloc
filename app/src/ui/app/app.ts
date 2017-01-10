@@ -28,8 +28,6 @@ export class App extends Polymer.Element {
     async ready() {
         super.ready();
         await this.fetch();
-        this.recordView.record = this.collection.records[0];
-        this.recordView.style.display = "block";
     }
 
     addRecord(name: string) {
