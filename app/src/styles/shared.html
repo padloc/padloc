@@ -83,11 +83,12 @@
                 border-bottom: solid 1px;
                 text-shadow();
 
-                &::-webkit-input-placeholder {
-                    color: currentColor;
-                    opacity: 0.5;
-                    text-shadow();
-                }
+            }
+
+            input.ghost::-webkit-input-placeholder {
+                color: currentColor;
+                opacity: 0.5;
+                text-shadow();
             }
 
             textarea {
@@ -183,11 +184,27 @@
                 left: 0;
                 right: 0;
                 height: var(--row-height);
+                line-height: var(--row-height);
                 background: var(--color-primary);
                 font-size: var(--font-size-default);
+                text-align: center;
                 color: var(--color-quinary);
                 border-bottom: solid 2px var(--shadow-color);
+                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 2px;
                 @apply(--text-shadow);
+            }
+
+            header > pl-icon {
+                height: var(--row-height);
+                width: var(--row-height);
+            }
+
+            header > div {
+                flex: 1;
+            }
+
+            .spacer {
+                flex: 1;
             }
         </style>
     </template>

@@ -5,8 +5,6 @@ import { Collection, Record } from "../../core/data";
 import { LocalStorageSource, EncryptedSource } from "../../core/source";
 
 import "../list-view/list-view";
-import "../record-view/record-view";
-import { RecordView } from "../record-view/record-view";
 
 export class App extends Polymer.Element {
     static is = "pl-app";
@@ -19,10 +17,6 @@ export class App extends Polymer.Element {
         this.collection = new Collection();
         this.localSource = new EncryptedSource(new LocalStorageSource("default_coll"));
         this.localSource.password = "password";
-    }
-
-    get recordView(): RecordView {
-        return this.root.querySelector("pl-record-view") as RecordView;
     }
 
     async ready() {

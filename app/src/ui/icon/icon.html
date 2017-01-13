@@ -17,20 +17,38 @@
         <style include="shared">
             :host {
                 display: inline-block;
-                width: var(--row-height);
-                height: var(--row-height);
-                line-height: var(--row-height);
+                line-height: inherit;
                 text-align: center;
-                line-height: var(--row-height);
                 font-family: "FontAwesome";
+                color: inherit;
             }
 
-            :host([icon="add"]):before {
+            :host([icon="add"])::before {
                 content: "\f067";
             }
 
-            :host([icon="menu"]):before {
+            :host([icon="menu"])::before {
                 content: "\f0c9";
+            }
+
+            :host([icon="close"])::before {
+                content: "\f00d";
+            }
+
+            :host([icon="more"])::before {
+                content: "\f142";
+            }
+
+            :host([icon="delete"])::before {
+                content: "\f014";
+            }
+
+            :host([icon="copy"])::before {
+                content: "\f24d";
+            }
+
+            :host([icon="edit"])::before {
+                content: "\f040";
             }
         </style>
 

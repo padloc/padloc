@@ -1,0 +1,60 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../icon/icon.html">
+<link rel="import" href="record-styles.html">
+
+<dom-module id="pl-record">
+    <template>
+
+        <style include="shared pl-record-styles">
+            :host {
+                display: none;
+                padding: 10px;
+            }
+
+            .record-inner {
+                width: auto;
+                position: absolute;
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+            }
+
+            .scrim {
+                background: var(--color-quinary);
+                opacity: 0.8;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            }
+        </style>
+
+        <div class="scrim" on-click="close"></div>
+
+        <div class="record-inner">
+
+            <div class="record-header">
+                <div class="record-name">{{ record.name }}</div>
+                <div class="record-category">{{ record.category }}</div>
+                <div class="spacer"></div>
+                <pl-icon icon="delete"></pl-icon>
+                <pl-icon icon="close" on-click="close"></pl-icon>
+            </div>
+
+            <div class="record-fields">
+                <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
+                    <div class="record-field">
+                        <div class="record-field-label">{{ item.name }}</div>
+                        <div class="record-field-value">{{ item.value }}</div>
+                    </div>
+                </template>
+            </div>
+
+        </div>
+
+    </template>
+
+</dom-module>
