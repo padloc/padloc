@@ -1,0 +1,81 @@
+<dom-module id="pl-record-styles">
+    <template>
+        <style>
+            .record {
+                display: block;
+                cursor: pointer;
+                padding: var(--gutter-width) var(--gutter-width) 0 0;
+                vertical-align: top;
+                box-sizing: border-box;
+            }
+
+            .record-inner {
+                background: var(--color-quinary);
+                width: 100%;
+                box-sizing: border-box;
+                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 1px;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+
+            .record-header {
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                border-bottom: solid 1px var(--color-primary);
+                color: var(--color-primary);
+                font-weight: bold;
+            }
+
+            .record-header > pl-icon {
+                width: 30px;
+            }
+
+            .record-name {
+                overflow: ellipsis;
+            }
+
+            .record-fields {
+                padding: 10px;
+            }
+
+            .record-field {
+                display: flex;
+                cursor: pointer;
+            }
+
+            .record-field:hover::after {
+                font-family: FontAwesome;
+                font-size: 90%;
+                color: var(--color-primary);
+                content: "\f24d";
+                display: inline-block;
+                margin-top: 3px;
+                margin-left: 10px;
+            }
+
+            .record-field-label {
+                margin-right: 5px;
+            }
+
+            .record-field-label::after {
+                content: ":";
+            }
+
+            .record-category {
+                font-size: 13px;
+                color: var(--text-color-light);
+                max-width: 80px;
+                border-radius: 4px;
+                font-weight: var(--font-weight-bold);
+                background: var(--color-secondary);
+                padding: 1px 4px;
+                margin: 0 10px;
+            }
+
+            .record-category:empty {
+                display: none;
+            }
+        </style>
+    </template>
+</dom-module>
