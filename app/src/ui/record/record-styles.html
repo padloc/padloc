@@ -4,44 +4,36 @@
             .record {
                 display: block;
                 cursor: pointer;
-                padding: var(--gutter-width) var(--gutter-width) 0 0;
                 vertical-align: top;
                 box-sizing: border-box;
+                padding: 20px;
             }
 
             .record-inner {
                 background: var(--color-quinary);
                 width: 100%;
                 box-sizing: border-box;
-                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 1px;
-                border-radius: 4px;
                 overflow: hidden;
             }
 
             .record-header {
                 display: flex;
                 align-items: center;
-                padding: 10px;
-                border-bottom: solid 1px var(--color-primary);
-                color: var(--color-primary);
-                font-weight: bold;
+                margin-bottom: 15px;
             }
 
             .record-header > pl-icon {
-                width: 30px;
+                margin-left: 20px;
             }
 
             .record-name {
                 overflow: ellipsis;
             }
 
-            .record-fields {
-                padding: 10px;
-            }
-
             .record-field {
                 display: flex;
                 cursor: pointer;
+                font-size: var(--font-size-small);
             }
 
             .record-field:hover::after {

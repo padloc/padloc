@@ -6,10 +6,7 @@
                 overflow-x: hidden;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
-                font-size: 0;
                 padding-top: var(--row-height);
-                padding-bottom: var(--gutter-width);
-                padding-left: var(--gutter-width);
                 box-sizing: border-box;
                 display: block;
             }
@@ -35,76 +32,33 @@
                 display: none;
             }
 
-            .record {
-                display: inline-block;
+            .list {
+                display: flex;
+                flex-wrap: wrap;
             }
 
-            .record.marked .record-inner {
-                background: var(--color-primary);
+            .record {
+                display: inline-block;
+                flex: 1;
+                min-width: 250px;
+            }
+
+            .record-header {
+                font-size: 20px;
+            }
+
+            .record:nth-child(3n+0) {
+                background: var(--color-secondary);
                 color: var(--text-color-light);
             }
 
-            .record, .section-header, .empty {
-                font-size: var(--font-size-small);
+            .record:nth-child(3n+1) {
+                background: var(--color-quinary);
             }
 
-            .section-header {
-                padding: 5px 15px;
-                margin-bottom: -5px;
-                color: var(--color-primary);
-                top: 0;
-                background: var(--color-quaternary);
-                @apply(--position-sticky);
-                @apply(--text-shadow);
-            }
-
-            .list {
-                min-height: 100%;
-            }
-
-            .empty {
-                position: absolute;
-                height: 210px;
-                left: 0;
-                right: 0;
-                top: 0;
-                bottom: 0;
-                margin: auto;
-                text-align: center;
-            }
-
-            .empty > button {
-                width: 100%;
-                margin-top: 15px;
-            }
-
-            @media (min-width: 700px) {
-                :host {
-                    padding-left: var(--gutter-width);
-                }
-
-                .record {
-                    display: inline-block;
-                    padding-right: var(--gutter-width);
-                }
-            }
-
-            @media (min-width: 700px) and (max-width: 1000px) {
-                .record {
-                    width: 50%;
-                }
-            }
-
-            @media (min-width: 1000px) and (max-width: 1300px) {
-                .record {
-                    width: 33.33%;
-                }
-            }
-
-            @media (min-width: 1300px) {
-                .record {
-                    width: 25%;
-                }
+            .record:nth-child(3n+2) {
+                background: var(--color-primary);
+                color: var(--text-color-light);
             }
         </style>
     </template>

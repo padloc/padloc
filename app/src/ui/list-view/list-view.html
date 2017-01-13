@@ -20,24 +20,22 @@
 
             <template id="list" is="dom-repeat" items="[[ records ]]" observe="name category removed" delay="100">
                 <div class="record" on-click="_recordTapped">
-                    <div class="record-inner">
-                        <div class="record-header">
-                            <div class="record-name">{{ item.name }}</div>
-                            <div class="record-category">{{ item.category }}</div>
-                            <div class="spacer"></div>
-                            <pl-icon icon="delete"></pl-icon>
-                            <pl-icon icon="edit"></pl-icon>
-                        </div>
+                    <div class="record-header">
+                        <div class="record-name">{{ item.name }}</div>
+                        <div class="spacer"></div>
+                        <pl-icon icon="delete"></pl-icon>
+                        <pl-icon icon="edit"></pl-icon>
+                    </div>
 
-                        <div class="record-fields">
-                            <template is="dom-repeat" items="{{ item.fields }}" id="fieldList">
-                                <div class="record-field">
-                                    <div class="record-field-label">{{ item.name }}</div>
-                                    <div class="record-field-value">{{ _obfuscate(item.value) }}</div>
-                                </div>
-                            </template>
-                        </div>
+                    <div class="record-category">{{ item.category }}</div>
 
+                    <div class="record-fields">
+                        <template is="dom-repeat" items="{{ item.fields }}" id="fieldList">
+                            <div class="record-field">
+                                <div class="record-field-label">{{ item.name }}</div>
+                                <div class="record-field-value">{{ _obfuscate(item.value) }}</div>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </template>
