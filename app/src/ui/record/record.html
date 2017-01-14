@@ -1,24 +1,76 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../icon/icon.html">
-<link rel="import" href="record-styles.html">
 
 <dom-module id="pl-record">
     <template>
 
-        <style include="shared pl-record-styles">
+        <style include="shared">
             :host {
-                display: none;
-                padding: 10px;
+                display: block;
+                cursor: pointer;
+                vertical-align: top;
+                box-sizing: border-box;
+                padding: 20px 30px;
             }
 
-            .record-inner {
-                width: auto;
+            .header {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+                font-size: 24px;
+                font-weight: 300;
+            }
+
+            .header > pl-icon {
+                margin-left: 20px;
+            }
+
+            .name {
+                overflow: ellipsis;
+            }
+
+            .body {
+                position: relative;
+            }
+
+            .field {
+                display: flex;
+                cursor: pointer;
+                font-size: var(--font-size-small);
+                line-height: 25px;
+            }
+
+            .field:hover::after {
+                font-family: FontAwesome;
+                font-size: 90%;
+                color: var(--color-primary);
+                content: "\f24d";
+                display: inline-block;
+                margin-top: 3px;
+                margin-left: 10px;
+            }
+
+            .field-label {
+                margin-right: 5px;
+            }
+
+            .field-label::after {
+                content: ":";
+            }
+
+            .category {
+                font-size: 12px;
+                max-width: 80px;
+                border: solid 1px;
+                border-radius: 2px;
+                padding: 2px 4px;
                 position: absolute;
-                top: 10px;
-                left: 10px;
-                right: 10px;
-                bottom: 10px;
+                right: 0;
+            }
+
+            .category:empty {
+                display: none;
             }
 
             .scrim {
@@ -29,30 +81,27 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
+                display: none;
             }
         </style>
 
         <div class="scrim" on-click="close"></div>
 
-        <div class="record-inner">
+        <div class="header">
+            <div class="name">{{ record.name }}</div>
+            <div class="spacer"></div>
+            <pl-icon icon="delete"></pl-icon>
+            <pl-icon icon="edit"></pl-icon>
+        </div>
 
-            <div class="record-header">
-                <div class="record-name">{{ record.name }}</div>
-                <div class="record-category">{{ record.category }}</div>
-                <div class="spacer"></div>
-                <pl-icon icon="delete"></pl-icon>
-                <pl-icon icon="close" on-click="close"></pl-icon>
-            </div>
-
-            <div class="record-fields">
-                <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
-                    <div class="record-field">
-                        <div class="record-field-label">{{ item.name }}</div>
-                        <div class="record-field-value">{{ item.value }}</div>
-                    </div>
-                </template>
-            </div>
-
+        <div class="body">
+            <div class="category">{{ record.category }}</div>
+            <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
+                <div class="field">
+                    <div class="field-label">{{ item.name }}</div>
+                    <div class="field-value">{{ _obfuscate(item.value) }}</div>
+                </div>
+            </template>
         </div>
 
     </template>

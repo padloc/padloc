@@ -2,13 +2,12 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../record/record.html">
-<link rel="import" href="../record/record-styles.html">
 <link rel="import" href="list-view-styles.html">
 
 <dom-module id="pl-list-view">
     <template>
 
-        <style include="shared pl-record-styles pl-list-view-styles"></style>
+        <style include="shared pl-list-view-styles"></style>
 
         <header>
             <pl-icon icon="menu"></pl-icon>
@@ -19,25 +18,7 @@
         <div class="list">
 
             <template id="list" is="dom-repeat" items="[[ records ]]" observe="name category removed" delay="100">
-                <div class="record" on-click="_recordTapped">
-                    <div class="record-header">
-                        <div class="record-name">{{ item.name }}</div>
-                        <div class="spacer"></div>
-                        <pl-icon icon="delete"></pl-icon>
-                        <pl-icon icon="edit"></pl-icon>
-                    </div>
-
-                    <div class="record-category">{{ item.category }}</div>
-
-                    <div class="record-fields">
-                        <template is="dom-repeat" items="{{ item.fields }}" id="fieldList">
-                            <div class="record-field">
-                                <div class="record-field-label">{{ item.name }}</div>
-                                <div class="record-field-value">{{ _obfuscate(item.value) }}</div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
+                <pl-record record="[[ item ]]"></pl-record>
             </template>
 
             <div class="empty" hidden$="{{ !_isEmpty(records.*) }}">
@@ -47,8 +28,6 @@
             </div>
 
         </div>
-
-        <pl-record></pl-record>
 
     </template>
 

@@ -29,11 +29,6 @@ export class ListView extends Polymer.Element {
         this.recordElement.record = item;
         this.recordElement.open = true;
     }
-
-    // Replaces all non-newline characters in a given string with dots
-    _obfuscate(value: string) {
-        return value.replace(/[^\n]/g, "\u2022");
-    }
 }
 
 window.customElements.define(ListView.is, ListView);

@@ -23,40 +23,27 @@
                 color: inherit;
             }
 
-            pl-record {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                display: none;
-            }
-
             .list {
                 display: flex;
                 flex-wrap: wrap;
             }
 
-            .record {
+            pl-record {
                 display: inline-block;
                 flex: 1;
                 min-width: 250px;
             }
 
-            .record-header {
-                font-size: 20px;
-            }
-
-            .record:nth-child(3n+0) {
+            pl-record:nth-child(3n+1) {
                 background: var(--color-secondary);
                 color: var(--text-color-light);
             }
 
-            .record:nth-child(3n+1) {
+            pl-record:nth-child(3n+2) {
                 background: var(--color-quinary);
             }
 
-            .record:nth-child(3n+2) {
+            pl-record:nth-child(3n+0) {
                 background: var(--color-primary);
                 color: var(--text-color-light);
             }
