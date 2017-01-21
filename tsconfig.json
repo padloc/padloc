@@ -13,15 +13,21 @@
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
         "lib": ["es2017", "dom"],
-        "outDir": "./lib",
+        "outDir": "./app/lib",
         "declaration": true,
         "sourceMap": true,
-        "pretty": true
+        "pretty": true,
+        "experimentalDecorators": true,
+        "typeRoots": [
+            "./typings",
+            "./node_modules/@types"
+        ]
     },
     "include": [
-        "app/src/**/*.ts"
+        "app/src/**/*.ts",
+        "typings/*"
     ],
     "exclude": [
-      "node_modules"
+        "node_modules/**/*.ts"
     ]
 }
