@@ -7,15 +7,18 @@
 
         <style include="shared">
             :host {
-                display: block;
+                display: flex;
                 cursor: pointer;
                 vertical-align: top;
                 box-sizing: border-box;
-                padding: 20px 30px;
+                flex-direction: row;
+            }
+
+            :host > * {
+                background: inherit;
             }
 
             .header {
-                display: flex;
                 align-items: center;
                 margin-bottom: 15px;
                 font-size: 24px;
@@ -28,10 +31,41 @@
 
             .name {
                 overflow: ellipsis;
+                padding: 10px 15px;
+            }
+
+            .name::before {
+                font-family: FontAwesome;
+                content: "\f054";
+                position: absolute;
+                right: 0;
+                padding: 0 10px;
+                line-height: 26px;
+                font-size: 14px;
             }
 
             .body {
+                flex: 1;
                 position: relative;
+            }
+
+            .tools {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .tools > pl-icon {
+                font-size: 20px;
+                width: 44px;
+                flex: 1;
+            }
+
+            .tools > pl-icon:nth-child(1) {
+                background: rgba(0, 0, 0, 0.15);
+            }
+
+            .tools > pl-icon:nth-child(2) {
+                background: rgba(0, 0, 0, 0.25);
             }
 
             .field {
@@ -39,17 +73,26 @@
                 cursor: pointer;
                 font-size: var(--font-size-small);
                 line-height: 25px;
+                padding: 5px 15px;
             }
 
-            .field:hover::after {
-                font-family: FontAwesome;
-                font-size: 90%;
-                color: var(--color-primary);
-                content: "\f24d";
-                display: inline-block;
-                margin-top: 3px;
-                margin-left: 10px;
+            .field:nth-child(1) {
+                background: rgba(0,0,0,0.1);
             }
+
+            .field:nth-child(2) {
+                background: rgba(0,0,0,0.2);
+            }
+
+            /* .field:hover::after { */
+            /*     font-family: FontAwesome; */
+            /*     font-size: 90%; */
+            /*     color: var(--color-primary); */
+            /*     content: "\f24d"; */
+            /*     display: inline-block; */
+            /*     margin-top: 3px; */
+            /*     margin-left: 10px; */
+            /* } */
 
             .field-label {
                 margin-right: 5px;
@@ -85,24 +128,25 @@
             }
         </style>
 
-        <div class="scrim" on-click="close"></div>
-
-        <div class="header">
-            <div class="name">{{ record.name }}</div>
-            <div class="spacer"></div>
-            <pl-icon icon="delete"></pl-icon>
-            <pl-icon icon="edit"></pl-icon>
-        </div>
+        <!-- <div class="scrim" on&#45;click="close"></div> -->
 
         <div class="body">
-            <div class="category">{{ record.category }}</div>
-            <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
-                <div class="field">
-                    <div class="field-label">{{ item.name }}</div>
-                    <div class="field-value">{{ _obfuscate(item.value) }}</div>
-                </div>
-            </template>
+            <div class="name tap">{{ record.name }}</div>
+            <div class="fields">
+                <template is="dom-repeat" items="{{ _limit(record.fields) }}" id="fieldList">
+                    <div class="field tap">
+                        <div class="field-label">{{ item.name }}</div>
+                        <div class="field-value">{{ _obfuscate(item.value) }}</div>
+                    </div>
+                </template>
+            </div>
         </div>
+
+        <!-- <div class="tools"> -->
+        <!--     <pl&#45;icon icon="edit" class="tap"></pl&#45;icon> -->
+        <!--     <pl&#45;icon icon="delete" class="tap"></pl&#45;icon> -->
+        <!--     <!&#45;&#45; <div class="category">{{ record.category }}</div> &#45;&#45;> -->
+        <!-- </div> -->
 
     </template>
 

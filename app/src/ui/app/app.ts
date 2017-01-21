@@ -5,6 +5,7 @@ import { Collection, Record } from "../../core/data";
 import { LocalStorageSource, EncryptedSource } from "../../core/source";
 
 import "../list-view/list-view";
+import "../record/record";
 
 export class App extends Polymer.Element {
     static is = "pl-app";

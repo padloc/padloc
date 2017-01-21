@@ -2,20 +2,26 @@
     <template>
         <style>
             :host {
-                --gutter-width: 10px;
+                --gutter-width: 2px;
                 overflow-x: hidden;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
                 padding-top: var(--row-height);
                 box-sizing: border-box;
                 display: block;
+                height: 100%;
+                width: calc(100% + 2px);
+            }
+
+            header > div {
+                flex: 1;
             }
 
             header input {
-                flex: 1;
                 background: transparent;
                 text-align: center;
                 color: inherit;
+                width: 100%;
                 @apply(--text-shadow);
             }
 
@@ -29,23 +35,50 @@
             }
 
             pl-record {
-                display: inline-block;
                 flex: 1;
                 min-width: 250px;
+                position: relative;
+                color: var(--text-color-light);
             }
 
-            pl-record:nth-child(3n+1) {
+            pl-record.odd {
                 background: var(--color-secondary);
-                color: var(--text-color-light);
             }
+            /*  */
+            /* pl-record:nth-of-type(2n+2) { */
+            /*     background: var(--color-quinary); */
+            /* } */
 
-            pl-record:nth-child(3n+2) {
-                background: var(--color-quinary);
-            }
-
-            pl-record:nth-child(3n+0) {
+            pl-record.even {
                 background: var(--color-primary);
-                color: var(--text-color-light);
+            }
+
+            pl-record.ripple::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto;
+                width: 100px;
+                height: 100px;
+                background: var(--color-quinary);
+                opacity: 0.5;
+                border-radius: 100%;
+            }
+
+            .category {
+                min-width: 100%;
+                padding: 7px 15px;
+                font-size: var(--font-size-small);
+                background: var(--color-secondary);
+                color: var(--color-primary);
+                font-weight: bold;
+            }
+
+            pl-record, .category {
+                margin: var(--gutter-width) var(--gutter-width) 0 0;
             }
         </style>
     </template>

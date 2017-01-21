@@ -29,6 +29,10 @@ export class RecordElement extends Polymer.Element {
         this.style.display = this.open ? "block" : "none";
     }
 
+    _limit(arr: any[]) {
+        return arr ? arr.slice(0, 2) : [];
+    }
+
     close() {
         this.open = false;
     }
