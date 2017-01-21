@@ -4,18 +4,6 @@
     <template>
         <style>
 
-            .tap-highlight {
-                @apply(--tap-highlight);
-            }
-
-            .tap-highlight::after {
-                @apply(--tap-highlight-after);
-            }
-
-            .tap-highlight:active::after {
-                @apply(--tap-highlight-active-after);
-            }
-
             :host, :root, button, input {
                 font-family: var(--font-family), var(--font-family-fallback);
                 font-weight: var(--font-weight-regular);
@@ -45,7 +33,6 @@
                 color: var(--color-primary);
                 text-align: center;
                 overflow: ellipsis;
-                @apply(--tap-highlight);
             }
 
             button.primary {
@@ -206,6 +193,22 @@
 
             .spacer {
                 flex: 1;
+            }
+
+            .tap {
+                @apply(--tap-highlight);
+            }
+
+            .tap::after {
+                @apply(--tap-highlight-after);
+            }
+
+            .tap:hover::after {
+                @apply(--tap-highlight-hover-after);
+            }
+
+            .tap:active::after {
+                @apply(--tap-highlight-active-after);
             }
         </style>
     </template>

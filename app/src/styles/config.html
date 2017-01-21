@@ -59,10 +59,9 @@
                 --tap-highlight: {
                     position: relative;
                     cursor: pointer;
-
                 };
 
-                --tap-highlight-after {
+                --tap-highlight-after: {
                     content: "";
                     display: block;
                     position: absolute;
@@ -76,7 +75,11 @@
                     pointer-events: none;
                 };
 
-                --tap-highlight-active-after {
+                --tap-highlight-hover-after: {
+                    opacity: 0.2;
+                };
+
+                --tap-highlight-active-after: {
                     opacity: 0.3;
                     transition: opacity 0.1s;
                 };
