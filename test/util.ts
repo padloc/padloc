@@ -6,7 +6,7 @@ import { randomString, charSets } from "../app/src/core/util";
 suite("util", function() {
     test("randomString", function() {
 
-        this.retries(2);
+        // (<any>this).retries(2);
 
         var charSet = charSets.full;
         var strings = {};
