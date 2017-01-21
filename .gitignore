@@ -8,11 +8,4 @@ cordova/platforms
 cordova/plugins
 cordova/www
 
-# stylus-generated css files
-app/src/components/**/*.css
-app/src/styles/mixins.css
-app/src/styles/config.css
-
-# generated html modules
-app/src/**/*-styles.html
-
+app/lib
