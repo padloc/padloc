@@ -9,3 +9,4 @@ cordova/plugins
 cordova/www
 
 app/lib
+tests.js
