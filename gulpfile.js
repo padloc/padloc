@@ -5,7 +5,6 @@ const gulp = require("gulp");
 const { argv } = require("yargs");
 const { buildChrome, buildElectron, compile } = require("./lib/build");
 const { eslint } = require("./lib/lint");
-const { test } = require("./lib/test");
 const http = require("http");
 const st = require("st");
 
@@ -30,8 +29,6 @@ gulp.task("build", () => {
 gulp.task("compile", () => {
     return compile(argv.watch);
 });
-
-gulp.task("test", test);
 
 gulp.task("serve", function() {
     var port = argv.port || 8080;
