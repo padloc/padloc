@@ -17,41 +17,54 @@
         <style include="shared">
             :host {
                 display: inline-block;
-                line-height: inherit;
                 text-align: center;
                 font-family: "FontAwesome";
                 color: inherit;
                 font-size: inherit;
+                position: relative;
             }
 
-            :host([icon="add"])::before {
+            div {
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                margin: auto;
+                height: 0;
+                line-height: 0;
+            }
+
+            :host([icon="add"]) > div::before {
                 content: "\f067";
             }
 
-            :host([icon="menu"])::before {
+            :host([icon="menu"]) > div::before {
                 content: "\f0c9";
             }
 
-            :host([icon="close"])::before {
+            :host([icon="close"]) > div::before {
                 content: "\f00d";
             }
 
-            :host([icon="more"])::before {
+            :host([icon="more"]) > div::before {
                 content: "\f142";
             }
 
-            :host([icon="delete"])::before {
+            :host([icon="delete"]) > div::before {
                 content: "\f014";
             }
 
-            :host([icon="copy"])::before {
+            :host([icon="copy"]) > div::before {
                 content: "\f24d";
             }
 
-            :host([icon="edit"])::before {
+            :host([icon="edit"]) > div::before {
                 content: "\f040";
             }
         </style>
+
+        <div></div>
 
     </template>
 
