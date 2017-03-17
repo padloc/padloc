@@ -25,10 +25,6 @@ export class ListView extends Polymer.Element {
         return !this.records.length;
     }
 
-    _isFirstInCategory(i: number) {
-        const prev = this.records[i - 1];
-        const curr = this.records[i];
-        return !prev && curr && curr.category || prev && curr && prev.category !== curr.category;
     }
 
     _recordTapped({model: {item}}: {model: {item: Record}}) {

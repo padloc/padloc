@@ -36,7 +36,7 @@ export class Record {
     }
 
     static compare(a: Record, b: Record): number {
-        return compareCategory(a, b) || compareName(a, b) || compareUuid(a, b);
+        return compareName(a, b) || compareCategory(a, b) || compareUuid(a, b);
     }
 
     remove(): void {

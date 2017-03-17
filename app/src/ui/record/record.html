@@ -19,29 +19,18 @@
             }
 
             .header {
+                display: flex;
                 align-items: center;
-                margin-bottom: 15px;
-                font-size: 24px;
-                font-weight: 300;
-            }
-
-            .header > pl-icon {
-                margin-left: 20px;
             }
 
             .name {
+                flex: 1;
                 overflow: ellipsis;
                 padding: 10px 15px;
             }
 
-            .name::before {
-                font-family: FontAwesome;
-                content: "\f054";
-                position: absolute;
-                right: 0;
-                padding: 0 10px;
-                line-height: 26px;
-                font-size: 14px;
+            .header > pl-icon {
+                font-size: 80%;
             }
 
             .body {
@@ -108,8 +97,6 @@
                 border: solid 1px;
                 border-radius: 2px;
                 padding: 2px 4px;
-                position: absolute;
-                right: 0;
             }
 
             .category:empty {
@@ -131,7 +118,11 @@
         <!-- <div class="scrim" on&#45;click="close"></div> -->
 
         <div class="body">
-            <div class="name tap">{{ record.name }}</div>
+            <div class="header tap">
+                <div class="name">{{ record.name }}</div>
+                <div class="category">{{ record.category }}</div>
+                <pl-icon icon="forward"></pl-icon>
+            </div>
             <div class="fields">
                 <template is="dom-repeat" items="{{ _limit(record.fields) }}" id="fieldList">
                     <div class="field tap">

@@ -20,10 +20,7 @@
         <div class="list">
 
             <template is="dom-repeat" items="[[ records ]]" observe="name category removed" delay="100">
-                <template is="dom-if" if="[[ _isFirstInCategory(index) ]]">
-                    <div class="category">[[ item.category ]]</div>
-                </template>
-                <pl-record record="[[ item ]]" class="[[ _recordClass(index, _recordsPerRow) ]]"></pl-record>
+                <pl-record record="[[ item ]]" class$="[[ _recordClass(index, _recordsPerRow) ]]"></pl-record>
             </template>
 
             <div class="empty" hidden$="{{ !_isEmpty(records.*) }}">

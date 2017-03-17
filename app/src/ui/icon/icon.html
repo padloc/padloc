@@ -22,6 +22,8 @@
                 color: inherit;
                 font-size: inherit;
                 position: relative;
+                height: 40px;
+                width: 40px;
             }
 
             div {
@@ -61,6 +63,10 @@
 
             :host([icon="edit"]) > div::before {
                 content: "\f040";
+            }
+
+            :host([icon="forward"]) > div::before {
+                content: "\f054";
             }
         </style>
 
