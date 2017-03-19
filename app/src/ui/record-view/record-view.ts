@@ -7,10 +7,8 @@ export class RecordView extends Polymer.Element {
 
     static is = "pl-record-view";
 
-    static config = {
-        properties: {
-            record: Object,
-        }
+    static properties = {
+        record: Object
     }
 
     record: Record;

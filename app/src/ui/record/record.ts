@@ -7,15 +7,13 @@ export class RecordElement extends Polymer.Element {
 
     static is = "pl-record";
 
-    static config = {
-        properties: {
-            record: Object,
-            open: {
-                type: Boolean,
-                observer: "_openChanged"
-            }
+    static properties = {
+        record: Object,
+        open: {
+            type: Boolean,
+            observer: "_openChanged"
         }
-    }
+    };
 
     record: Record;
     open: boolean;
