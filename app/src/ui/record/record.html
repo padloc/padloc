@@ -65,14 +65,6 @@
                 padding: 5px 15px;
             }
 
-            .field:nth-child(1) {
-                background: rgba(0,0,0,0.1);
-            }
-
-            .field:nth-child(2) {
-                background: rgba(0,0,0,0.2);
-            }
-
             /* .field:hover::after { */
             /*     font-family: FontAwesome; */
             /*     font-size: 90%; */
@@ -117,13 +109,13 @@
 
         <!-- <div class="scrim" on&#45;click="close"></div> -->
 
-        <div class="body">
+        <div class="body tiles">
             <div class="header tap">
                 <div class="name">{{ record.name }}</div>
                 <div class="category">{{ record.category }}</div>
                 <pl-icon icon="forward"></pl-icon>
             </div>
-            <div class="fields">
+            <div class="fields tiles">
                 <template is="dom-repeat" items="{{ _limit(record.fields) }}" id="fieldList">
                     <div class="field tap">
                         <div class="field-label">{{ item.name }}</div>

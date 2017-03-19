@@ -1,31 +1,112 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../../styles/shared.html">
-<link rel="import" href="record-view-styles.html">
+<link rel="import" href="../icon/icon.html">
 
 <dom-module id="pl-record-view">
-
     <template>
 
-        <style include="shared pl-record-view-styles"></style>
+        <style include="shared">
+            :host {
+                display: flex;
+                box-sizing: border-box;
+                flex-direction: row;
+                background: var(--color-primary);
+                padding-top: var(--row-height);
+                color: var(--text-color-light);
+                overflow: auto;
 
-        <div class$="{{ _categoryClass(record.category) }}" on-tap="_openCategories">{{ _categoryLabel(record.category) }}</div>
+                --paper-input-container-color: var(--color-quaternary);
+                --paper-input-container-focus-color: currentColor;
+                --paper-input-container-input-color: currentColor;
 
-        <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
-            <div class="field">
-                <div class="label-wrapper">
-                    <div class="label">{{ item.name }}</div>
-                </div>
-                <div class="separator"></div>
-                <div class="value-wrapper">
-                    <textarea class="value" value="{{ item.value::change }}" placeholder="Enter Content"></textarea>
-                </div>
-                <div class="shortcut-hint">
-                    [ctrl/cmd] + C &rarr; Copy
-                </div>
+                --paper-input-container-label-floating: {
+                    font-weight: bold;
+                };
+
+                --paper-input-container-underline: {
+                    display: none;
+                };
+
+                --paper-input-container-underline-focus: {
+                    display: none;
+                };
+            }
+
+            paper-textarea {
+                padding: 10px 15px 5px 15px;
+            }
+
+            header > div {
+                padding: 0 15px;
+                flex: 1;
+                display: flex;
+            }
+
+            main {
+                flex: 1;
+                position: relative;
+            }
+
+            .name {
+                flex: 1;
+            }
+
+            .category {
+                font-size: 14px;
+                max-width: 80px;
+                border: solid 1px;
+                border-radius: 2px;
+                padding: 2px 4px;
+                align-self: center;
+                line-height: 18px;
+            }
+
+            .category:empty {
+                display: none;
+            }
+
+            .field {
+                display: flex;
+            }
+
+            .field-input {
+                flex: 1;
+            }
+
+            .field-buttons {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .field-buttons > pl-icon {
+                flex: 1;
+            }
+
+        </style>
+
+        <header class="tiles">
+            <pl-icon icon="backward" class="tap"></pl-icon>
+            <div>
+                <div class="name">{{ record.name }}</div>
+                <div class="category">{{ record.category }}</div>
             </div>
-        </template>
+            <pl-icon icon="delete" class="tap"></pl-icon>
+        </header>
 
-        <button class="add-button" on-tap="_addField">Add Field</button>
+        <main>
+            <div class="fields tiles">
+                <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
+                    <div class="field tiles">
+                        <paper-textarea label="{{ item.name }}:" value="{{ item.value }}" class="field-input tap" always-float-label></paper-textarea>
+                        <div class="field-buttons tiles">
+                            <pl-icon icon="copy" class="tap"></pl-icon>
+                            <pl-icon icon="delete" class="tap"></pl-icon>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </main>
 
     </template>
 

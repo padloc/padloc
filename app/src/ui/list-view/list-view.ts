@@ -4,16 +4,18 @@
 import { Record } from "../../core/data";
 
 import "../record/record";
-import { RecordElement } from "../record/record";
+import "../record-view/record-view";
+import { RecordView } from "../record-view/record-view";
 
 export class ListView extends Polymer.Element {
     static is = "pl-list-view";
 
-    static config = {
-        properties: {
-            records: Array
+    static properties = {
+        records: {
+            type: Array,
+            observer: "_recordsChanged"
         }
-    }
+    };
 
     _nCols: number;
 
@@ -23,8 +25,9 @@ export class ListView extends Polymer.Element {
         this._resized();
         window.addEventListener("resize", this._resized.bind(this));
     }
-    get recordElement(): RecordElement {
-        return this.root.querySelector("pl-record") as RecordElement;
+
+    get recordView(): RecordView {
+        return this.root.querySelector("pl-record-view") as RecordView;
     }
 
     _isEmpty() {
@@ -41,10 +44,14 @@ export class ListView extends Polymer.Element {
         return i % 2 ? "odd" : "even";
     }
 
-    _recordTapped({model: {item}}: {model: {item: Record}}) {
-        this.recordElement.record = item;
-        this.recordElement.open = true;
+    _recordsChanged() {
+        this.recordView.record = this.records[0];
     }
+
+    // _recordTapped({model: {item}}: {model: {item: Record}}) {
+    //     this.recordView.record = item;
+    //     this.recordView.open = true;
+    // }
 
     _resized() {
         const width = this.offsetWidth;

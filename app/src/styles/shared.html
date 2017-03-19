@@ -175,20 +175,14 @@
                 line-height: var(--row-height);
                 background: var(--color-primary);
                 font-size: var(--font-size-default);
-                text-align: center;
                 color: var(--color-quinary);
-                border-bottom: solid 2px var(--color-quinary);
-                /* box-shadow: rgba(0, 0, 0, 0.3) 0 1px 2px; */
+                box-shadow: rgba(0, 0, 0, 0.15) 0 1px 2px;
                 @apply(--text-shadow);
             }
 
             header > pl-icon {
                 height: var(--row-height);
                 width: var(--row-height);
-            }
-
-            header > div {
-                flex: 1;
             }
 
             .spacer {
@@ -210,6 +204,51 @@
             .tap:active::after {
                 @apply(--tap-highlight-active-after);
             }
+
+            .tiles > * {
+                overflow: hidden;
+            }
+
+            .tiles > *:nth-child(6n + 1) {
+                /* box-shadow: rgba(0, 0, 0, 0.15) 1px 1px 2px; */
+            }
+
+            .tiles > *:nth-child(6n + 2) {
+                background: rgba(0,0,0,0.1);
+                box-shadow: inset rgba(0, 0, 0, 0.15) 1px 1px 2px;
+            }
+
+            .tiles > *:nth-child(6n + 3) {
+                background: rgba(0,0,0,0.2);
+                box-shadow: inset rgba(0, 0, 0, 0.15) 1px 1px 2px;
+            }
+
+            .tiles > *:nth-child(6n + 4) {
+                background: rgba(0,0,0,0.3);
+                box-shadow: inset rgba(0, 0, 0, 0.15) 1px 1px 2px, inset rgba(0, 0, 0, 0.15) -1px -1px 2px;
+            }
+
+            .tiles > *:nth-child(6n + 5) {
+                background: rgba(0,0,0,0.2);
+                box-shadow: inset rgba(0, 0, 0, 0.15) -1px -1px 2px;
+            }
+
+            .tiles > *:nth-child(6n + 6) {
+                background: rgba(0,0,0,0.1);
+                box-shadow: inset rgba(0, 0, 0, 0.15) -1px -1px 2px;
+            }
+            /*  */
+            /* .tiles > *:nth-child(5) { */
+            /*     background: rgba(0,0,0,0.4); */
+            /* } */
+            /*  */
+            /* .tiles > *:nth-child(6) { */
+            /*     background: rgba(0,0,0,0.5); */
+            /* } */
+            /*  */
+            /* .tiles > *:nth-child(7) { */
+            /*     background: rgba(0,0,0,0.6); */
+            /* } */
         </style>
     </template>
 </dom-module>

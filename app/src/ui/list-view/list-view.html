@@ -2,6 +2,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../record/record.html">
+<link rel="import" href="../record-view/record-view.html">
 <link rel="import" href="list-view-styles.html">
 
 <dom-module id="pl-list-view">
@@ -9,7 +10,7 @@
 
         <style include="shared pl-list-view-styles"></style>
 
-        <header>
+        <header class="tiles">
             <pl-icon icon="menu" class="tap"></pl-icon>
             <div class="tap">
                 <input placeholder="Type to search..."></input>
@@ -30,6 +31,8 @@
             </div>
 
         </div>
+
+        <pl-record-view style="display:none"></pl-record-view>
 
     </template>
 
