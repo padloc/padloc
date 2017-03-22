@@ -2,19 +2,16 @@
 <link rel="import" href="../../styles/config.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../list-view/list-view.html">
+<link rel="import" href="../record-view/record-view.html">
 
 <dom-module id="pl-app">
     <template>
         <style include="config shared">
             :host {
                 display: block;
-                position: absolute;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                top: 0;
                 margin: auto;
                 overflow: hidden;
+                @apply(--fullbleed);
             }
 
             pl-progress#decrypting {
@@ -29,7 +26,9 @@
             }
         </style>
 
-        <pl-list-view records="[[ collection.records ]]"></pl-list-view>
+        <pl-list-view records="[[ collection.records ]]" selected="{{ _selectedRecord }}"></pl-list-view>
+
+        <pl-record-view record="{{ _selectedRecord }}"></pl-record-view>
 
     </template>
 </dom-module>

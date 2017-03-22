@@ -15,6 +15,7 @@
                 padding-top: var(--row-height);
                 color: var(--text-color-light);
                 overflow: auto;
+                @apply(--fullbleed);
 
                 --paper-input-container-color: var(--color-quaternary);
                 --paper-input-container-focus-color: currentColor;
@@ -33,12 +34,15 @@
                 };
             }
 
+            :host([dark]) {
+                background: var(--color-secondary);
+            }
+
             paper-textarea {
                 padding: 10px 15px 5px 15px;
             }
 
             header > div {
-                padding: 0 15px;
                 flex: 1;
                 display: flex;
             }
@@ -50,6 +54,7 @@
 
             .name {
                 flex: 1;
+                padding: 0 15px;
             }
 
             .category {
@@ -60,6 +65,7 @@
                 padding: 2px 4px;
                 align-self: center;
                 line-height: 18px;
+                margin-right: 15px;
             }
 
             .category:empty {
@@ -74,6 +80,10 @@
                 flex: 1;
             }
 
+            .field-inputs {
+                display: flex;
+            }
+
             .field-buttons {
                 display: flex;
                 flex-direction: column;
@@ -86,23 +96,35 @@
         </style>
 
         <header class="tiles">
-            <pl-icon icon="backward" class="tap"></pl-icon>
-            <div>
-                <div class="name">{{ record.name }}</div>
-                <div class="category">{{ record.category }}</div>
+            <pl-icon icon="backward" class="tap" on-click="close"></pl-icon>
+            <div class="tap">
+                <div class="name">{{ record.record.name }}</div>
+                <div class="category tap">{{ record.record.category }}</div>
             </div>
-            <pl-icon icon="delete" class="tap"></pl-icon>
+            <pl-icon icon="more" class="tap"></pl-icon>
         </header>
 
         <main>
             <div class="fields tiles">
-                <template is="dom-repeat" items="{{ record.fields }}" id="fieldList">
+                <template is="dom-repeat" items="{{ _fields(record.fields) }}" id="fieldList">
                     <div class="field tiles">
-                        <paper-textarea label="{{ item.name }}:" value="{{ item.value }}" class="field-input tap" always-float-label></paper-textarea>
-                        <div class="field-buttons tiles">
-                            <pl-icon icon="copy" class="tap"></pl-icon>
-                            <pl-icon icon="delete" class="tap"></pl-icon>
-                        </div>
+                        <template is="dom-if" if="{{ !item.draft }}">
+                            <paper-textarea label="{{ item.name }}:" value="{{ item.value }}" class="field-input tap" always-float-label></paper-textarea>
+                            <div class="field-buttons tiles">
+                                <pl-icon icon="copy" class="tap"></pl-icon>
+                                <pl-icon icon="more" class="tap"></pl-icon>
+                            </div>
+                        </template>
+                        <template is="dom-if" if="{{ item.draft }}">
+                            <div class="field-input tiles">
+                                <paper-input label="New Field Name" class="tap"></paper-input>
+                                <paper-textarea label="New Field Content" class="tap"></paper-textarea>
+                            </div>
+                            <div class="field-buttons tiles">
+                                <pl-icon icon="copy" class="tap"></pl-icon>
+                                <pl-icon icon="more" class="tap"></pl-icon>
+                            </div>
+                        </template>
                     </div>
                 </template>
             </div>

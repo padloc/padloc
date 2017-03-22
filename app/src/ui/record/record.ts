@@ -8,6 +8,11 @@ export class RecordElement extends Polymer.Element {
     static is = "pl-record";
 
     static properties = {
+        dark: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
         record: Object,
         open: {
             type: Boolean,
@@ -15,6 +20,7 @@ export class RecordElement extends Polymer.Element {
         }
     };
 
+    dark: Boolean;
     record: Record;
     open: boolean;
 

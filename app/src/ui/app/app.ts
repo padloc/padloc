@@ -3,15 +3,27 @@
 
 import { Collection, Record } from "../../core/data";
 import { LocalStorageSource, EncryptedSource } from "../../core/source";
+import { ListView } from "../list-view/list-view";
+import { RecordView } from "../record-view/record-view";
+import { RecordElement } from "../record/record";
 
 import "../list-view/list-view";
-import "../record/record";
+import "../record-view/record-view";
+
 
 export class App extends Polymer.Element {
     static is = "pl-app";
 
+    static properties = {
+        _selectedRecord: {
+            type: Object,
+            observer: "_selectedRecordChanged"
+        }
+    };
+
     private collection: Collection;
     private localSource: EncryptedSource;
+    private _selectedRecord: RecordElement;
 
     constructor() {
         super();
@@ -20,9 +32,22 @@ export class App extends Polymer.Element {
         this.localSource.password = "password";
     }
 
+    get listView(): ListView {
+        return this.root.querySelector("pl-list-view") as ListView;
+    }
+
+    get recordView(): RecordView {
+        return this.root.querySelector("pl-record-view") as RecordView;
+    }
+
     async ready() {
         super.ready();
         await this.fetch();
+    }
+
+    _selectedRecordChanged() {
+        this.recordView.open = !!this._selectedRecord;
+        this.listView.style.display = this._selectedRecord ? "none" : "";
     }
 
     addRecord(name: string) {

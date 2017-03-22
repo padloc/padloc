@@ -38,7 +38,6 @@
             button.primary {
                 background: var(--color-primary);
                 color: var(--text-color-light);
-                text-shadow();
             }
 
             button.ghost {
@@ -46,7 +45,6 @@
                 color: var(--text-color-light);
                 font-weight: var(--font-weight-bold);
                 line-height: 46px;
-                text-shadow();
             }
 
             input {
@@ -75,7 +73,6 @@
             input.ghost::-webkit-input-placeholder {
                 color: currentColor;
                 opacity: 0.5;
-                text-shadow();
             }
 
             textarea {
@@ -173,11 +170,10 @@
                 right: 0;
                 height: var(--row-height);
                 line-height: var(--row-height);
-                background: var(--color-primary);
+                background: inherit;
                 font-size: var(--font-size-default);
                 color: var(--color-quinary);
-                box-shadow: rgba(0, 0, 0, 0.15) 0 1px 2px;
-                @apply(--text-shadow);
+                box-shadow: rgba(0, 0, 0, 0.5) 0 1px 2px;
             }
 
             header > pl-icon {
@@ -209,31 +205,31 @@
                 overflow: hidden;
             }
 
-            .tiles > *:nth-child(6n + 1) {
+            .tiles > :not(dom-repeat):nth-child(6n + 1) {
                 /* box-shadow: rgba(0, 0, 0, 0.15) 1px 1px 2px; */
             }
 
-            .tiles > *:nth-child(6n + 2) {
+            .tiles > :not(dom-repeat):nth-child(6n + 2) {
                 background: rgba(0,0,0,0.1);
                 box-shadow: inset rgba(0, 0, 0, 0.15) 1px 1px 2px;
             }
 
-            .tiles > *:nth-child(6n + 3) {
+            .tiles > :not(dom-repeat):nth-child(6n + 3) {
                 background: rgba(0,0,0,0.2);
                 box-shadow: inset rgba(0, 0, 0, 0.15) 1px 1px 2px;
             }
 
-            .tiles > *:nth-child(6n + 4) {
+            .tiles > :not(dom-repeat):nth-child(6n + 4) {
                 background: rgba(0,0,0,0.3);
                 box-shadow: inset rgba(0, 0, 0, 0.15) 1px 1px 2px, inset rgba(0, 0, 0, 0.15) -1px -1px 2px;
             }
 
-            .tiles > *:nth-child(6n + 5) {
+            .tiles > :not(dom-repeat):nth-child(6n + 5) {
                 background: rgba(0,0,0,0.2);
                 box-shadow: inset rgba(0, 0, 0, 0.15) -1px -1px 2px;
             }
 
-            .tiles > *:nth-child(6n + 6) {
+            .tiles > :not(dom-repeat):nth-child(6n + 6) {
                 background: rgba(0,0,0,0.1);
                 box-shadow: inset rgba(0, 0, 0, 0.15) -1px -1px 2px;
             }
@@ -249,6 +245,16 @@
             /* .tiles > *:nth-child(7) { */
             /*     background: rgba(0,0,0,0.6); */
             /* } */
+
+            :root {
+                --fullbleed: {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                };
+            }
         </style>
     </template>
 </dom-module>

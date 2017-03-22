@@ -3,6 +3,7 @@
         <style>
             :host {
                 --gutter-width: 2px;
+                @apply(--fullbleed);
                 overflow-x: hidden;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
@@ -23,7 +24,6 @@
                 text-align: center;
                 color: inherit;
                 width: 100%;
-                @apply(--text-shadow);
             }
 
             header input::-webkit-input-placeholder {
@@ -64,14 +64,6 @@
                 background: var(--color-quinary);
                 opacity: 0.5;
                 border-radius: 100%;
-            }
-
-            pl-record-view {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
             }
         </style>
     </template>

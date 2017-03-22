@@ -2,7 +2,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../record/record.html">
-<link rel="import" href="../record-view/record-view.html">
 <link rel="import" href="list-view-styles.html">
 
 <dom-module id="pl-list-view">
@@ -21,18 +20,10 @@
         <div class="list">
 
             <template is="dom-repeat" items="[[ records ]]" observe="name category removed" delay="100">
-                <pl-record record="[[ item ]]" class$="[[ _recordClass(index, _recordsPerRow) ]]"></pl-record>
+                <pl-record record="[[ item ]]" dark="[[ _isDark(index, _nCols) ]]" on-click="_recordTapped"></pl-record>
             </template>
 
-            <div class="empty" hidden$="{{ !_isEmpty(records.*) }}">
-                <button on-tap="_import">Import Data</button>
-                <button on-tap="_synchronize">Synchronize</button>
-                <button on-tap="rightHeaderButton">Create Record</button>
-            </div>
-
         </div>
-
-        <pl-record-view style="display:none"></pl-record-view>
 
     </template>
 
