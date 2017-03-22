@@ -1,0 +1,102 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared.html">
+
+<dom-module id="pl-dialog">
+
+    <template>
+        <style include="shared">
+
+            :host {
+                position: fixed;
+                z-index: 10;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                background-color: transparent;
+                display: none;
+                color: var(--text-color-light);
+            }
+
+            .scrim {
+                content: "";
+                display: block;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                background: var(--color-quinary);
+                opacity: 0;
+                transition: opacity 0.4s;
+            }
+
+            :host(.open) .scrim {
+                opacity: 0.8;
+            }
+
+            .scroll-container {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                max-height: 100%;
+                overflow-x: hidden;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                transition: transform 0.4s;
+            }
+
+            .inner {
+                display: flex;
+                flex-direction: column;
+                background: var(--color-primary);
+                box-sizing: border-box;
+                margin-top: 60px;
+                overflow: hidden;
+                box-shadow: rgba(0, 0, 0, 0.4) 0 -1px 4px;
+            }
+
+            /* .inner ::slotted(*) { */
+            /*     text-align: center; */
+            /*     cursor: pointer; */
+            /*     width: 100%; */
+            /*     box-sizing: border-box; */
+            /*     margin-bottom: 5px; */
+            /* } */
+            /*  */
+            /* .inner ::content > .title { */
+            /*     background: transparent; */
+            /*     color: $text-color-light; */
+            /*     cursor: default; */
+            /*     border: none; */
+            /*     padding: 10px; */
+            /*     line-height: 25px; */
+            /*     word-wrap: break-word; */
+            /*     font-weight: $font-weight-bold; */
+            /*     margin-bottom: 5px; */
+            /*     text-shadow(); */
+            /*  */
+            /*     &:empty { */
+            /*         display: none; */
+            /*     } */
+            /* } */
+            /*  */
+            /* .inner ::content > button { */
+            /*     border-top: solid 1px; */
+            /*     border-bottom: solid 1px; */
+            /* } */
+
+            :host(:not(.open)) .scroll-container {
+                transform: translate3d(0, 100%, 0);
+            }
+        </style>
+
+        <div class="scrim" on-click="_dismiss"></div>
+        <div class="scroll-container">
+            <div class="inner" on-tap="_innerTap">
+                <slot></slot>
+            </div>
+        </div>
+    </template>
+
+</dom-module>

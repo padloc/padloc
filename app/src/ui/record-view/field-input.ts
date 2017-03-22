@@ -87,7 +87,7 @@ export class FieldInput extends Polymer.Element {
 
     _fireEditEvent() {
         const opts = { bubbles: true, composed: true } as CustomEventInit;
-        this.dispatchEvent(new CustomEvent('field-change', opts));
+        this.dispatchEvent(new CustomEvent("field-change", opts));
     }
 
     _confirmEdit() {

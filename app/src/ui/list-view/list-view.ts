@@ -52,6 +52,10 @@ export class ListView extends Polymer.Element {
         const recMinWidth = 250;
         this._nCols = Math.floor(width / recMinWidth);
     }
+
+    _openMenu() {
+        this.dispatchEvent(new CustomEvent("open-menu"));
+    }
 }
 
 window.customElements.define(ListView.is, ListView);

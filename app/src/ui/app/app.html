@@ -1,6 +1,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../styles/config.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../list-view/list-view.html">
 <link rel="import" href="../record-view/record-view.html">
 
@@ -26,9 +27,18 @@
             }
         </style>
 
-        <pl-list-view records="[[ collection.records ]]" selected="{{ _selectedRecord }}"></pl-list-view>
+        <pl-list-view records="[[ collection.records ]]" selected="{{ _selectedRecord }}"
+            on-open-menu="openMainMenu"></pl-list-view>
 
         <pl-record-view record="{{ _selectedRecord }}" on-field-change="save"></pl-record-view>
+
+        <pl-dialog id="mainMenu" class="tiles">
+            <button class="tap" on-click="_openSettings">Settings</button>
+            <button class="tap" on-click="_synchronize">Synchronize</button>
+            <button class="tap" on-click="_openGenerator">Generate Password</button>
+            <button class="tap" on-click="_lock">Lock App</button>
+            <button class="tap" on-click="_displayShortcuts" hidden$="{{ _isTouch() }}">Shortcuts</button>
+        </pl-dialog>
 
     </template>
 </dom-module>
