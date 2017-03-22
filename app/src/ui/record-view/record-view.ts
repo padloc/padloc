@@ -5,6 +5,8 @@
 
 import { RecordElement } from "../record/record";
 
+import "./field-input";
+
 export class RecordView extends Polymer.Element {
 
     static is = "pl-record-view";

@@ -1,0 +1,87 @@
+<script src="../../../bower_components/autosize/dist/autosize.js"></script>
+
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../icon/icon.html">
+
+<dom-module id="pl-field-input">
+    <template>
+
+        <style include="shared">
+            :host {
+                display: block;
+                color: inherit;
+                font-size: var(--font-size-small);
+            }
+
+            .container {
+                display: flex;
+            }
+
+            .input-container {
+                position: relative;
+                flex: 1;
+                margin: 10px 15px;
+                overflow: visible;
+            }
+
+            input {
+                position: absolute;
+                z-index: 1;
+                top: 10px;
+                background: transparent;
+                transform-origin: 0 0;
+                padding: 0;
+                height: 40px;
+                transition: transform 0.2s;
+                font-size: var(--font-size-small);
+                width: 100%;
+            }
+
+            textarea {
+                background: transparent;
+                border: none;
+                margin-top: 30px;
+                width: 100%;
+                transition: opacity 0.2s, transform 0.2s;
+            }
+
+            .field-buttons {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .field-buttons > pl-icon {
+                flex: 1;
+            }
+
+            :host(:not(.editing-name)) input {
+                transform: translate(0, -10px) scale(0.8);
+            }
+
+            :host(.editing-name) textarea {
+                opacity: 0.5;
+                transform: translate(0, 20px);
+            }
+        </style>
+
+        <div class="container">
+            <div class="input-container">
+                <input value="[[ field.name ]]" placeholder="Enter Field Name"
+                    on-focus="_nameInputFocused" on-blur="_nameInputBlurred" on-keypress="_keypress"></input>
+                <textarea value="[[ field.value ]]" rows="1"
+                    on-focus="_valueInputFocused" on-blur="_valueInputBlurred"></textarea>
+            </div>
+            <div class="field-buttons tiles" hidden$="{{ _editing }}">
+                <pl-icon icon="copy" class="tap"></pl-icon>
+                <pl-icon icon="more" class="tap"></pl-icon>
+            </div>
+            <div class="field-buttons tiles" hidden$="{{ !_editing }}">
+                <pl-icon icon="check" class="tap" on-click="_confirmEdit"></pl-icon>
+                <pl-icon icon="cancel" class="tap" on-click="_cancelEdit"></pl-icon>
+            </div>
+        </div>
+
+    </template>
+
+</dom-module>

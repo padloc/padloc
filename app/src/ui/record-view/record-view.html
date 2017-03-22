@@ -1,7 +1,7 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/paper-input/paper-textarea.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../icon/icon.html">
+<link rel="import" href="field-input.html">
 
 <dom-module id="pl-record-view">
     <template>
@@ -16,30 +16,10 @@
                 color: var(--text-color-light);
                 overflow: auto;
                 @apply(--fullbleed);
-
-                --paper-input-container-color: var(--color-quaternary);
-                --paper-input-container-focus-color: currentColor;
-                --paper-input-container-input-color: currentColor;
-
-                --paper-input-container-label-floating: {
-                    font-weight: bold;
-                };
-
-                --paper-input-container-underline: {
-                    display: none;
-                };
-
-                --paper-input-container-underline-focus: {
-                    display: none;
-                };
             }
 
             :host([dark]) {
                 background: var(--color-secondary);
-            }
-
-            paper-textarea {
-                padding: 10px 15px 5px 15px;
             }
 
             header > div {
@@ -72,27 +52,6 @@
                 display: none;
             }
 
-            .field {
-                display: flex;
-            }
-
-            .field-input {
-                flex: 1;
-            }
-
-            .field-inputs {
-                display: flex;
-            }
-
-            .field-buttons {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .field-buttons > pl-icon {
-                flex: 1;
-            }
-
         </style>
 
         <header class="tiles">
@@ -107,25 +66,7 @@
         <main>
             <div class="fields tiles">
                 <template is="dom-repeat" items="{{ _fields(record.fields) }}" id="fieldList">
-                    <div class="field tiles">
-                        <template is="dom-if" if="{{ !item.draft }}">
-                            <paper-textarea label="{{ item.name }}:" value="{{ item.value }}" class="field-input tap" always-float-label></paper-textarea>
-                            <div class="field-buttons tiles">
-                                <pl-icon icon="copy" class="tap"></pl-icon>
-                                <pl-icon icon="more" class="tap"></pl-icon>
-                            </div>
-                        </template>
-                        <template is="dom-if" if="{{ item.draft }}">
-                            <div class="field-input tiles">
-                                <paper-input label="New Field Name" class="tap"></paper-input>
-                                <paper-textarea label="New Field Content" class="tap"></paper-textarea>
-                            </div>
-                            <div class="field-buttons tiles">
-                                <pl-icon icon="copy" class="tap"></pl-icon>
-                                <pl-icon icon="more" class="tap"></pl-icon>
-                            </div>
-                        </template>
-                    </div>
+                    <pl-field-input field="{{ item }}"></pl-field-input>
                 </template>
             </div>
         </main>

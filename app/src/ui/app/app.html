@@ -28,7 +28,7 @@
 
         <pl-list-view records="[[ collection.records ]]" selected="{{ _selectedRecord }}"></pl-list-view>
 
-        <pl-record-view record="{{ _selectedRecord }}"></pl-record-view>
+        <pl-record-view record="{{ _selectedRecord }}" on-field-change="save"></pl-record-view>
 
     </template>
 </dom-module>
