@@ -16,6 +16,7 @@
 
             .container {
                 display: flex;
+                min-height: 120px;
             }
 
             .input-container {
@@ -27,7 +28,7 @@
 
             input {
                 position: absolute;
-                z-index: 1;
+                z-index: 0;
                 top: 10px;
                 background: transparent;
                 transform-origin: 0 0;
@@ -36,6 +37,7 @@
                 transition: transform 0.2s;
                 font-size: var(--font-size-small);
                 width: 100%;
+                font-weight: bold;
             }
 
             textarea {
@@ -49,10 +51,6 @@
             .field-buttons {
                 display: flex;
                 flex-direction: column;
-            }
-
-            .field-buttons > pl-icon {
-                flex: 1;
             }
 
             :host(:not(.editing-name)) input {
@@ -73,12 +71,16 @@
                     on-focus="_valueInputFocused" on-blur="_valueInputBlurred"></textarea>
             </div>
             <div class="field-buttons tiles" hidden$="{{ _editing }}">
-                <pl-icon icon="copy" class="tap"></pl-icon>
-                <pl-icon icon="more" class="tap"></pl-icon>
+                <pl-icon icon="copy" class="tap" on-click="_copy"></pl-icon>
+                <pl-icon icon="delete" class="tap" on-click="_delete"></pl-icon>
+                <pl-icon icon="generate" class="tap" on-click="_generate"></pl-icon>
+                <div class="spacer"></div>
             </div>
             <div class="field-buttons tiles" hidden$="{{ !_editing }}">
                 <pl-icon icon="check" class="tap" on-click="_confirmEdit"></pl-icon>
                 <pl-icon icon="cancel" class="tap" on-click="_cancelEdit"></pl-icon>
+                <pl-icon icon="generate" class="tap" on-click="_generate" hidden$="{{ !_editingValue }}"></pl-icon>
+                <div class="spacer"></div>
             </div>
         </div>
 
