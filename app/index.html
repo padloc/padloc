@@ -6,16 +6,12 @@
 
         <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 
+        <script src="src/padlock.js"></script>
+
         <link rel="import" href="src/ui/app/app.html">
-        <link rel="import" href="src/ui/list-view/list-view.html">
 
     </head>
     <body>
-        <script src="lib/padlock.js"></script>
-        <script>
-            "use strict";
-            const app = window.app = document.createElement("pl-app");
-            document.body.appendChild(app);
-        </script>
+        <pl-app></pl-app>
     </body>
 </html>

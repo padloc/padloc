@@ -56,36 +56,6 @@
                 box-shadow: rgba(0, 0, 0, 0.4) 0 -1px 4px;
             }
 
-            /* .inner ::slotted(*) { */
-            /*     text-align: center; */
-            /*     cursor: pointer; */
-            /*     width: 100%; */
-            /*     box-sizing: border-box; */
-            /*     margin-bottom: 5px; */
-            /* } */
-            /*  */
-            /* .inner ::content > .title { */
-            /*     background: transparent; */
-            /*     color: $text-color-light; */
-            /*     cursor: default; */
-            /*     border: none; */
-            /*     padding: 10px; */
-            /*     line-height: 25px; */
-            /*     word-wrap: break-word; */
-            /*     font-weight: $font-weight-bold; */
-            /*     margin-bottom: 5px; */
-            /*     text-shadow(); */
-            /*  */
-            /*     &:empty { */
-            /*         display: none; */
-            /*     } */
-            /* } */
-            /*  */
-            /* .inner ::content > button { */
-            /*     border-top: solid 1px; */
-            /*     border-bottom: solid 1px; */
-            /* } */
-
             :host(:not(.open)) .scroll-container {
                 transform: translate3d(0, 100%, 0);
             }
@@ -98,5 +68,7 @@
             </div>
         </div>
     </template>
+
+    <script src="dialog.js"></script>
 
 </dom-module>

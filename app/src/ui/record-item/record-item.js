@@ -1,13 +1,10 @@
-/// <reference path="../../../../typings/dom.d.ts" />
-/// <reference path="../../../../typings/polymer.d.ts" />
+(() => {
 
-import { Record } from "../../core/data";
+class RecordItem extends Polymer.Element {
 
-export class RecordElement extends Polymer.Element {
+    static get is() { return "pl-record-item"; }
 
-    static is = "pl-record";
-
-    static properties = {
+    static get properties() { return {
         dark: {
             type: Boolean,
             value: false,
@@ -18,14 +15,10 @@ export class RecordElement extends Polymer.Element {
             type: Boolean,
             observer: "_openChanged"
         }
-    };
-
-    dark: Boolean;
-    record: Record;
-    open: boolean;
+    }; }
 
     // Replaces all non-newline characters in a given string with dots
-    _obfuscate(value: string) {
+    _obfuscate(value) {
         return value.replace(/[^\n]/g, "\u2022");
     }
 
@@ -33,7 +26,7 @@ export class RecordElement extends Polymer.Element {
         this.style.display = this.open ? "block" : "none";
     }
 
-    _limit(arr: any[]) {
+    _limit(arr) {
         return arr ? arr.slice(0, 2) : [];
     }
 
@@ -43,4 +36,6 @@ export class RecordElement extends Polymer.Element {
 
 }
 
-window.customElements.define(RecordElement.is, RecordElement);
+window.customElements.define(RecordItem.is, RecordItem);
+
+})();
