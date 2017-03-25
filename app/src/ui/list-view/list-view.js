@@ -12,6 +12,7 @@ class ListView extends Polymer.Element {
     }; }
 
     connectedCallback() {
+        super.connectedCallback();
         this._resized();
         window.addEventListener("resize", this._resized.bind(this));
     }

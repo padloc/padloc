@@ -9,8 +9,8 @@
 
         <pl-dialog open="{{ open }}" prevent-dismiss class="tiles">
             <div class="message">{{ message }}</div>
-            <button on-click="_confirm">{{ confirmLabel }}</button>
-            <button on-click="_cancel">{{ cancelLabel }}</button>
+            <button class="tap" on-click="_confirm">{{ confirmLabel }}</button>
+            <button class="tap" on-click="_cancel">{{ cancelLabel }}</button>
         </pl-dialog>
     </template>
 

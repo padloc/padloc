@@ -30,9 +30,17 @@ class RecordView extends Polymer.Element {
         });
     }
 
-    _fields() {
-        if (!this.record) { return []; }
-        return this.record.fields.concat([{draft: true}]);
+    _fieldClass(index) {
+        return "tiles-" + (Math.floor(index % 6) + 1);
+    }
+
+    _newFieldEnter() {
+        const newField = this.$.newField.field;
+        if (newField.name && newField.value) {
+            this.push("record.fields", newField);
+        }
+        this.$.newField.field = { name: "", value: "" };
+        console.log("new field enter");
     }
 
     close() {

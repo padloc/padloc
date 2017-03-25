@@ -72,6 +72,9 @@
                         on-field-delete="_deleteField"></pl-record-field>
                 </template>
             </div>
+            <pl-record-field id="newField" draft
+                class$="{{ _fieldClass(record.fields.length) }}"
+                on-field-edit-end="_newFieldEnter"></pl-record-field>
         </main>
 
         <pl-dialog-confirm></pl-dialog-confirm>

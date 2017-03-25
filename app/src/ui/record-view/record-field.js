@@ -19,7 +19,14 @@ class RecordField extends Polymer.Element {
             type: Boolean,
             value: false
         },
-        field: Object
+        draft: {
+            type: Boolean,
+            value: false
+        },
+        field: {
+            type: Object,
+            value: () => { return { name: "", value: "" }; }
+        }
     }; }
 
     get nameInput() {
@@ -31,6 +38,7 @@ class RecordField extends Polymer.Element {
     }
 
     connectedCallback() {
+        super.connectedCallback();
         autosize(this.valueInput);
     }
 
@@ -38,13 +46,17 @@ class RecordField extends Polymer.Element {
         return this._editingName || this._editingValue;
     }
 
-    _editingChanged() {
+    _editingChanged(curr, prev) {
         if (!this._editing) {
             this.notifyPath("field.name");
             this.notifyPath("field.value");
             setTimeout(() => {
                 autosize.update(this.valueInput);
             }, 200);
+        }
+
+        if (prev !== undefined) {
+            this.dispatchEvent(new CustomEvent(this._editing ? "field-edit-start" : "field-edit-end"));
         }
     }
 
@@ -61,7 +73,11 @@ class RecordField extends Polymer.Element {
     }
 
     _valueInputFocused() {
-        this._editingValue = true;
+        if (this.field.name) {
+            this._editingValue = true;
+        } else {
+            this.nameInput.focus();
+        }
     }
 
     _valueInputBlurred() {
@@ -70,9 +86,11 @@ class RecordField extends Polymer.Element {
         }, 300);
     }
 
-    _keypress(e) {
-        if (e.charCode === 13) {
+    _keyup(e) {
+        if (e.keyCode === 13 && e.target !== this.valueInput) {
             this._confirmEdit();
+        } else if (e.keyCode == 27) {
+            this._cancelEdit();
         }
     }
 
@@ -81,15 +99,13 @@ class RecordField extends Polymer.Element {
     }
 
     _confirmEdit() {
-        if (this._editingName) {
+        if (this._editingName && this.nameInput.value) {
             this.field && (this.field.name = this.nameInput.value);
-            this._editingName = false;
             this.valueInput.focus();
             this._fireEditEvent();
         } else if (this._editingValue) {
             this.field && (this.field.name = this.nameInput.value);
             this.field && (this.field.value = this.valueInput.value);
-            this._editingValue = false;
             this._fireEditEvent();
         }
     }
@@ -105,6 +121,14 @@ class RecordField extends Polymer.Element {
         this.dispatchEvent(new CustomEvent("field-delete", { bubbles: true, composed: true }));
     }
 
+    _valuePlaceholder() {
+        return this.draft ? "" : "Empty Field";
+    }
+
+    edit() {
+        const input = this.field && this.field.name ? this.valueInput : this.nameInput;
+        input.focus();
+    }
 }
 
 window.customElements.define(RecordField.is, RecordField);
