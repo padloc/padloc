@@ -1,7 +1,8 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../dialog/dialog-confirm.html">
 <link rel="import" href="../icon/icon.html">
-<link rel="import" href="field-input.html">
+<link rel="import" href="record-field.html">
 
 <dom-module id="pl-record-view">
     <template>
@@ -57,19 +58,23 @@
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="close"></pl-icon>
             <div class="tap">
-                <div class="name">{{ record.record.name }}</div>
-                <div class="category tap">{{ record.record.category }}</div>
+                <div class="name">{{ record.name }}</div>
+                <div class="category tap">{{ record.category }}</div>
             </div>
             <pl-icon icon="more" class="tap"></pl-icon>
         </header>
 
         <main>
             <div class="fields tiles">
-                <template is="dom-repeat" items="{{ _fields(record.fields) }}" id="fieldList">
-                    <pl-field-input field="{{ item }}"></pl-field-input>
+                <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
+                    <pl-record-field field="{{ item }}"
+                        on-field-change="_fireChangedEvent"
+                        on-field-delete="_deleteField"></pl-record-field>
                 </template>
             </div>
         </main>
+
+        <pl-dialog-confirm></pl-dialog-confirm>
 
     </template>
 

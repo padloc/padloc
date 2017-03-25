@@ -11,6 +11,7 @@ class App extends Polymer.Element {
     static get properties() { return {
         _selectedRecord: {
             type: Object,
+            value: null,
             observer: "_selectedRecordChanged"
         }
     }; }
@@ -40,8 +41,13 @@ class App extends Polymer.Element {
     }
 
     _selectedRecordChanged() {
-        this.recordView.open = !!this._selectedRecord;
+        this.recordView.dark = this._selectedRecord && this._selectedRecord.dark;
         this.listView.style.display = this._selectedRecord ? "none" : "";
+        this.recordView.style.display = this._selectedRecord ? "" : "none";
+    }
+
+    _closeRecordView() {
+        this._selectedRecord = null;
     }
 
     addRecord(name) {

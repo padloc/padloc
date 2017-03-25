@@ -1,9 +1,9 @@
 /* global autosize */
 (() => {
 
-class FieldInput extends Polymer.Element {
+class RecordField extends Polymer.Element {
 
-    static get is() { return "pl-field-input"; }
+    static get is() { return "pl-record-field"; }
 
     static get properties() { return {
         _editing: {
@@ -77,7 +77,7 @@ class FieldInput extends Polymer.Element {
     }
 
     _fireEditEvent() {
-        this.dispatchEvent(new CustomEvent("field-change", { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent("field-change"));
     }
 
     _confirmEdit() {
@@ -101,8 +101,12 @@ class FieldInput extends Polymer.Element {
         this._editingValue = false;
     }
 
+    _delete() {
+        this.dispatchEvent(new CustomEvent("field-delete", { bubbles: true, composed: true }));
+    }
+
 }
 
-window.customElements.define(FieldInput.is, FieldInput);
+window.customElements.define(RecordField.is, RecordField);
 
 })();

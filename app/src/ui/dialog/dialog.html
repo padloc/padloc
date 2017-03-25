@@ -59,6 +59,11 @@
             :host(:not(.open)) .scroll-container {
                 transform: translate3d(0, 100%, 0);
             }
+
+            ::slotted(.message) {
+                padding: 15px;
+                text-align: center;
+            }
         </style>
 
         <div class="scrim" on-click="_dismiss"></div>

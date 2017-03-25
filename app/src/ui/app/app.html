@@ -30,7 +30,10 @@
         <pl-list-view records="[[ collection.records ]]" selected="{{ _selectedRecord }}"
             on-open-menu="openMainMenu"></pl-list-view>
 
-        <pl-record-view record="{{ _selectedRecord }}" on-field-change="save"></pl-record-view>
+        <pl-record-view record="{{ _selectedRecord.record }}"
+            on-record-change="save"
+            on-record-close="_closeRecordView"
+        ></pl-record-view>
 
         <pl-dialog id="mainMenu" class="tiles">
             <button class="tap" on-click="_openSettings">Settings</button>

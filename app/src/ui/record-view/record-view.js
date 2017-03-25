@@ -10,31 +10,33 @@ class RecordView extends Polymer.Element {
             value: false,
             reflectToAttribute: true
         },
-        open: {
-            type: Boolean,
-            value: false,
-            observer: "_openChanged"
-        },
         record: {
             type: Object,
             notify: true
         }
     }; }
 
-    _fields() {
-        if (!this.record) { return []; }
-        let fields = this.record.record.fields;
-        return fields.concat([{draft: true}]);
+    _fireChangedEvent() {
+        this.dispatchEvent(new CustomEvent("record-change", { bubbles: true, composed: true }));
     }
 
-    _openChanged() {
-        this.dark = this.record ? this.record.dark : false;
-        this.style.display = this.open ? "" : "none";
+    _deleteField(e) {
+        const confirmDialog = this.root.querySelector("pl-dialog-confirm");
+        confirmDialog.confirm("Are you sure you want to delete this field?", "Delete").then((confirmed) => {
+            if (confirmed) {
+                this.splice("record.fields", e.model.index, 1);
+                this._fireChangedEvent();
+            }
+        });
+    }
+
+    _fields() {
+        if (!this.record) { return []; }
+        return this.record.fields.concat([{draft: true}]);
     }
 
     close() {
-        this.open = false;
-        this.record = null;
+        this.dispatchEvent(new CustomEvent("record-close"));
     }
 
 }
