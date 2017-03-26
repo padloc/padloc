@@ -18,7 +18,7 @@ class Dialog extends Polymer.Element {
         closeOnTap: Boolean,
         preventDismiss: {
             type: Boolean,
-            value: true
+            value: false
         }
     }; }
 

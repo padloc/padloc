@@ -31,7 +31,6 @@
                 padding: 0 15px;
                 cursor: pointer;
                 text-align: center;
-                overflow: ellipsis;
                 background: transparent;
             }
 
@@ -42,12 +41,13 @@
                 font-weight: 400;
                 color: inherit;
                 border-radius: 0;
-                background: var(--color-quinary);
+                background: transparent;
                 margin: 0;
                 padding: 0 10px;
                 height: var(--row-height);
                 appearance: none;
                 box-sizing: border-box;
+                text-overflow: ellipsis;
             }
 
             textarea {
@@ -220,6 +220,12 @@
             /* .tiles > *:nth-child(7) { */
             /*     background: rgba(0,0,0,0.6); */
             /* } */
+
+            .ellipsis {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
 
             :root {
                 --fullbleed: {

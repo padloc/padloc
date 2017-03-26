@@ -16,7 +16,7 @@ class RecordView extends Polymer.Element {
         }
     }; }
 
-    _fireChangedEvent() {
+    _fireChangeEvent() {
         this.dispatchEvent(new CustomEvent("record-change", { bubbles: true, composed: true }));
     }
 
@@ -25,7 +25,7 @@ class RecordView extends Polymer.Element {
         confirmDialog.confirm("Are you sure you want to delete this field?", "Delete").then((confirmed) => {
             if (confirmed) {
                 this.splice("record.fields", e.model.index, 1);
-                this._fireChangedEvent();
+                this._fireChangeEvent();
             }
         });
     }

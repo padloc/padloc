@@ -35,6 +35,7 @@
 
             .name {
                 flex: 1;
+                width: 0;
                 padding: 0 15px;
             }
 
@@ -58,8 +59,8 @@
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="close"></pl-icon>
             <div class="tap">
-                <div class="name">{{ record.name }}</div>
-                <div class="category tap">{{ record.category }}</div>
+                <input class="name" value="{{ record.name::input }}" on-change="_fireChangeEvent"></input>
+                <div class="category ellipsis tap">{{ record.category }}</div>
             </div>
             <pl-icon icon="more" class="tap"></pl-icon>
         </header>
@@ -68,7 +69,7 @@
             <div class="fields tiles">
                 <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
                     <pl-record-field field="{{ item }}"
-                        on-field-change="_fireChangedEvent"
+                        on-field-change="_fireChangeEvent"
                         on-field-delete="_deleteField"></pl-record-field>
                 </template>
             </div>
