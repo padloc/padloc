@@ -13,7 +13,6 @@
                 overflow-x: hidden;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
-                padding-top: var(--row-height);
                 box-sizing: border-box;
                 display: block;
                 height: 100%;
@@ -36,25 +35,16 @@
                 color: inherit;
             }
 
-            .list {
-                display: flex;
+            ul {
                 flex-wrap: wrap;
+                list-style: none;
+                padding: 0;
+                margin: 0;
             }
 
-            pl-record-item {
+            li {
                 flex: 1;
                 min-width: 250px;
-                position: relative;
-                color: var(--text-color-light);
-                /* box-shadow: inset rgba(0, 0, 0, 0.15) 1px 1px 2px; */
-            }
-
-            pl-record-item.even {
-                background: var(--color-secondary);
-            }
-
-            pl-record-item.odd {
-                background: var(--color-primary);
             }
 
             pl-record-item.ripple::before {
@@ -81,13 +71,17 @@
             <pl-icon icon="add" class="tap"></pl-icon>
         </header>
 
-        <div class="list">
+        <main>
 
-            <template is="dom-repeat" items="[[ records ]]" observe="name category removed" delay="100">
-                <pl-record-item record="[[ item ]]" dark="[[ _isDark(index, _nCols) ]]" on-click="_recordTapped"></pl-record-item>
-            </template>
+            <ul>
+                <template is="dom-repeat" items="[[ records ]]" observe="name category removed" delay="100">
+                    <li>
+                        <pl-record-item record="[[ item ]]" dark="[[ _isDark(index, _nCols) ]]" on-click="_recordTapped"></pl-record-item>
+                    </li>
+                </template>
+            </ul>
 
-        </div>
+        </main>
 
     </template>
 

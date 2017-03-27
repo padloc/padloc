@@ -13,6 +13,8 @@
                 box-sizing: border-box;
                 flex-direction: row;
                 background: var(--color-primary);
+                color: var(--text-color-light);
+                min-height: 114px;
             }
 
             :host([dark]) {
@@ -39,6 +41,8 @@
             }
 
             .body {
+                display: flex;
+                flex-direction: column;
                 flex: 1;
                 position: relative;
             }
@@ -63,6 +67,7 @@
             }
 
             .field {
+                flex: 1;
                 display: flex;
                 cursor: pointer;
                 font-size: var(--font-size-small);
@@ -120,14 +125,12 @@
                 <div class="category ellipsis">{{ record.category }}</div>
                 <pl-icon icon="forward"></pl-icon>
             </div>
-            <div class="fields tiles">
-                <template is="dom-repeat" items="{{ _limit(record.fields) }}" id="fieldList">
-                    <div class="field tap">
-                        <div class="field-label">{{ item.name }}</div>
-                        <div class="field-value">{{ _obfuscate(item.value) }}</div>
-                    </div>
-                </template>
-            </div>
+            <template is="dom-repeat" items="{{ _limit(record.fields) }}" id="fieldList">
+                <div class="field tap">
+                    <div class="field-label">{{ item.name }}</div>
+                    <div class="field-value">{{ _obfuscate(item.value) }}</div>
+                </div>
+            </template>
         </div>
 
         <!-- <div class="tools"> -->

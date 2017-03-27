@@ -34,13 +34,17 @@ class RecordView extends Polymer.Element {
         return "tiles-" + (Math.floor(index % 6) + 1);
     }
 
+    _spacerClass(nFields) {
+        return "spacer " + this._fieldClass(nFields + 1);
+    }
+
     _newFieldEnter() {
         const newField = this.$.newField.field;
         if (newField.name && newField.value) {
             this.push("record.fields", newField);
         }
         this.$.newField.field = { name: "", value: "" };
-        console.log("new field enter");
+        this._fireChangeEvent();
     }
 
     close() {

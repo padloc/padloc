@@ -9,11 +9,8 @@
 
         <style include="shared">
             :host {
-                display: flex;
                 box-sizing: border-box;
-                flex-direction: row;
                 background: var(--color-primary);
-                padding-top: var(--row-height);
                 color: var(--text-color-light);
                 overflow: auto;
                 @apply(--fullbleed);
@@ -26,11 +23,6 @@
             header > div {
                 flex: 1;
                 display: flex;
-            }
-
-            main {
-                flex: 1;
-                position: relative;
             }
 
             .name {
@@ -76,6 +68,7 @@
             <pl-record-field id="newField" draft
                 class$="{{ _fieldClass(record.fields.length) }}"
                 on-field-edit-end="_newFieldEnter"></pl-record-field>
+            <div class$="{{ _spacerClass(record.fields.length) }}"></div>
         </main>
 
         <pl-dialog-confirm></pl-dialog-confirm>
