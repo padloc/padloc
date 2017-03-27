@@ -258,7 +258,7 @@ class Collection {
         // this.dispatcher = document.createElement("div");
     }
     get records() {
-        return Array.from(this._records.values()).filter(rec => !rec.removed).sort(Record.compare);
+        return Array.from(this._records.values());
     }
     fetch(source) {
         return __awaiter(this, void 0, void 0, function* () {

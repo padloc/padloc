@@ -66,7 +66,7 @@
         <header class="tiles">
             <pl-icon icon="menu" class="tap" on-click="_openMenu"></pl-icon>
             <div class="tap">
-                <input placeholder="Type to search..."></input>
+                <input placeholder="Type to search..." value="{{ _filterString::input }}"></input>
             </div>
             <pl-icon icon="add" class="tap"></pl-icon>
         </header>
@@ -74,7 +74,9 @@
         <main>
 
             <ul>
-                <template is="dom-repeat" items="[[ records ]]" observe="name category removed" delay="100">
+                <template is="dom-repeat" items="[[ records ]]" initialCount="20"
+                        filter="{{ _computeFilter(_filterString) }}" sort="_sortRecords"
+                        observe="name category removed" delay="100">
                     <li>
                         <pl-record-item record="[[ item ]]" dark="[[ _isDark(index, _nCols) ]]" on-click="_recordTapped"></pl-record-item>
                     </li>

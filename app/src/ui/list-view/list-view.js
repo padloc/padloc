@@ -1,9 +1,28 @@
 (() => {
 
+const Record = padlock.data.Record;
+
+function filterByString(fs, rec) {
+    const words = fs.toLowerCase().split(" ");
+
+    // For the record to be a match, each word in the filter string has to appear
+    // in either the category or the record name.
+    for (var i = 0, match = true; i < words.length && match; i++) {
+        match = rec.category && rec.category.toLowerCase().search(words[i]) != -1 ||
+            rec.name.toLowerCase().search(words[i]) != -1;
+    }
+
+    return !!match;
+}
+
 class ListView extends Polymer.Element {
     static get is() { return "pl-list-view"; }
 
     static get properties() { return {
+        _filterString: {
+            type: String,
+            value: ""
+        },
         records: Array,
         selected: {
             type: Object,
@@ -15,6 +34,16 @@ class ListView extends Polymer.Element {
         super.connectedCallback();
         this._resized();
         window.addEventListener("resize", this._resized.bind(this));
+    }
+
+    _computeFilter(filterString) {
+        return (record) => {
+            return !record.removed && filterByString(filterString, record);
+        };
+    }
+
+    _sortRecords(a, b) {
+        return Record.compare(a, b);
     }
 
     _isEmpty() {

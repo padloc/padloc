@@ -73,7 +73,7 @@ export class Collection {
     }
 
     get records(): Array<Record> {
-        return Array.from(this._records.values()).filter(rec => !rec.removed).sort(Record.compare);
+        return Array.from(this._records.values());
     }
 
     async fetch(source: Source): Promise<void> {
