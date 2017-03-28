@@ -12,6 +12,7 @@
                 display: block;
                 margin: auto;
                 overflow: hidden;
+                background: var(--color-primary);
                 @apply(--fullbleed);
             }
 
@@ -27,13 +28,15 @@
             }
         </style>
 
-        <pl-list-view records="[[ collection.records ]]" selected="{{ _selectedRecord }}"
-            on-open-menu="openMainMenu"></pl-list-view>
+        <pl-list-view id="listView" records="[[ collection.records ]]" selected="{{ _selectedRecord }}"
+            on-open-menu="openMainMenu"
+            on-record-new="_newRecord"
+            on-record-select="_openRecord"></pl-list-view>
 
-        <pl-record-view record="{{ _selectedRecord }}"
-            on-record-change="save"
-            on-record-close="_closeRecordView"
-        ></pl-record-view>
+        <pl-record-view id="recordView" record="{{ _selectedRecord }}"
+            on-record-change="_recordChange"
+            on-record-close="_closeRecord"
+            on-record-create="_createRecord"></pl-record-view>
 
         <pl-dialog id="mainMenu" class="tiles">
             <button class="tap" on-click="_openSettings">Settings</button>

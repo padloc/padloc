@@ -48,13 +48,16 @@
 
         </style>
 
-        <header class="tiles">
-            <pl-icon icon="backward" class="tap" on-click="close"></pl-icon>
-            <div class="tap">
-                <input class="name" value="{{ record.name::input }}" on-change="_fireChangeEvent"></input>
+        <header>
+            <pl-icon icon="backward" class="tiles-1 tap" on-click="close" hidden$="{{ draft }}"></pl-icon>
+            <pl-icon icon="cancel" class="tiles-1 tap" on-click="close" hidden$="{{ !draft }}"></pl-icon>
+            <div class="tiles-2 tap">
+                <input id="nameInput" class="name" value="{{ record.name::input }}"
+                    placeholder="Enter Record Name" on-change="_fireChangeEvent"></input>
                 <div class="category ellipsis tap">{{ record.category }}</div>
             </div>
-            <pl-icon icon="more" class="tap"></pl-icon>
+            <pl-icon icon="more" class="tiles-3 tap" hidden$="{{ draft }}"></pl-icon>
+            <pl-icon icon="check" class="tiles-3 tap" on-click="_createRecord" hidden$="{{ !draft }}"></pl-icon>
         </header>
 
         <main>

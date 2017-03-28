@@ -40,12 +40,19 @@
                 list-style: none;
                 padding: 0;
                 margin: 0;
-                box-shadow: rgba(0, 0, 0, 0.15) 1px 1px 2px;
             }
 
             li {
-                flex: 1;
+                flex: 1 0 auto;
                 min-width: 250px;
+            }
+
+            main {
+                background: rgba(0, 0, 0, 0.3);
+            }
+
+            pl-record-item {
+                box-shadow: rgba(0, 0, 0, 0.3) 1px 1px 1px;
             }
 
             pl-record-item.ripple::before {
@@ -69,17 +76,19 @@
             <div class="tap">
                 <input placeholder="Type to search..." value="{{ _filterString::input }}"></input>
             </div>
-            <pl-icon icon="add" class="tap"></pl-icon>
+            <pl-icon icon="add" class="tap" on-click="_newRecord"></pl-icon>
         </header>
 
         <main>
 
             <ul>
-                <template is="dom-repeat" items="[[ records ]]" initialCount="20"
+                <template is="dom-repeat" items="[[ _paddedRecords(records, _nCols) ]]" initialCount="20"
                         filter="{{ _computeFilter(_filterString) }}" sort="_sortRecords"
                         observe="name category removed" delay="100">
                     <li>
-                        <pl-record-item record="[[ item ]]" dark="[[ _isDark(index, _nCols) ]]" on-click="_recordTapped"></pl-record-item>
+                        <template is="dom-if" if="{{ !item.padding }}">
+                            <pl-record-item record="[[ item ]]" dark="[[ _isDark(index, _nCols) ]]" on-click="_recordTapped"></pl-record-item>
+                        </template>
                     </li>
                 </template>
             </ul>

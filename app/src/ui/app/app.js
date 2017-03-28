@@ -8,14 +8,6 @@ const EncryptedSource = padlock.source.EncryptedSource;
 class App extends Polymer.Element {
     static get is() { return "pl-app"; }
 
-    static get properties() { return {
-        _selectedRecord: {
-            type: Object,
-            value: null,
-            observer: "_selectedRecordChanged"
-        }
-    }; }
-
     constructor() {
         super();
         this.collection = new Collection();
@@ -23,36 +15,44 @@ class App extends Polymer.Element {
         this.localSource.password = "password";
     }
 
-    get mainMenu() {
-        return this.root.querySelector("#mainMenu");
-    }
-
-    get listView() {
-        return this.root.querySelector("pl-list-view");
-    }
-
-    get recordView() {
-        return this.root.querySelector("pl-record-view");
-    }
-
     ready() {
         super.ready();
+        this.$.recordView.style.display = "none";
         this.fetch();
     }
 
-    _selectedRecordChanged() {
-        // this.recordView.dark = this._selectedRecord && this._selectedRecord.dark;
-        this.listView.style.display = this._selectedRecord ? "none" : "";
-        this.recordView.style.display = this._selectedRecord ? "" : "none";
+    _openRecord(e) {
+        this.$.recordView.draft = false;
+        this.$.recordView.record = e.detail.record;
+        this.$.listView.style.display = "none";
+        this.$.recordView.style.display = "";
     }
 
-    _closeRecordView() {
-        this._selectedRecord = null;
+    _closeRecord() {
+        this.$.recordView.record = null;
+        this.$.listView.style.display = "";
+        this.$.recordView.style.display = "none";
     }
 
-    addRecord(name) {
-        this.collection.add(new Record(name));
+    _newRecord() {
+        this.$.recordView.draft = true;
+        this.$.recordView.record = new Record();
+        this.$.listView.style.display = "none";
+        this.$.recordView.style.display = "block";
+        this.$.recordView.edit();
+    }
+
+    _recordChange(e) {
+        const record = e.detail.record;
+        record.updated = new Date();
+        this.save();
+    }
+
+    _createRecord(e) {
+        this.collection.add(e.detail.record);
         this.notifyPath("collection.records");
+        this.save();
+        this._closeRecord();
     }
 
     save() {
@@ -66,7 +66,7 @@ class App extends Polymer.Element {
     }
 
     openMainMenu() {
-        this.mainMenu.open = true;
+        this.$.mainMenu.open = true;
     }
 }
 

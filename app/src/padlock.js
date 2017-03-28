@@ -214,7 +214,7 @@ const compareCategory = util_1.compareProperty("category");
 const compareName = util_1.compareProperty("name");
 const compareUuid = util_1.compareProperty("uuid");
 class Record {
-    constructor(name = "Unnamed", fields, category, id, updated, removed = false) {
+    constructor(name = "", fields, category, id, updated, removed = false) {
         this.name = name;
         this.fields = fields || new Array();
         this.category = category || "";

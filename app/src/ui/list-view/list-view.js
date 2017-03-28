@@ -24,21 +24,19 @@ class ListView extends Polymer.Element {
             value: ""
         },
         records: Array,
-        selected: {
-            type: Object,
-            notify: true
-        }
     }; }
 
     connectedCallback() {
         super.connectedCallback();
-        this._resized();
+        setTimeout(() => {
+            this._resized();
+        }, 100);
         window.addEventListener("resize", this._resized.bind(this));
     }
 
     _computeFilter(filterString) {
         return (record) => {
-            return !record.removed && filterByString(filterString, record);
+            return record.padding || !record.removed && filterByString(filterString, record);
         };
     }
 
@@ -57,11 +55,11 @@ class ListView extends Polymer.Element {
             i++;
         }
 
-        return !!(i % 2);
+        return !(i % 2);
     }
 
     _recordTapped(e) {
-        this.selected = e.model.item;
+        this.dispatchEvent(new CustomEvent("record-select", { detail: { record: e.model.item } }));
     }
 
     _resized() {
@@ -72,6 +70,18 @@ class ListView extends Polymer.Element {
 
     _openMenu() {
         this.dispatchEvent(new CustomEvent("open-menu"));
+    }
+
+    _newRecord() {
+        this.dispatchEvent(new CustomEvent("record-new"));
+    }
+
+    _paddedRecords() {
+        const records = this.records.slice();
+        while (records.length % this._nCols) {
+            records.push({ padding: true });
+        }
+        return records;
     }
 }
 

@@ -93,9 +93,26 @@
     </template>
 
     <script>
-        /* global Polymer */
-        "use strict";
-        Polymer({is: "pl-icon"});
+/* global Polymer */
+
+(() => {
+
+class PlIcon extends Polymer.Element {
+
+    static get is() { return "pl-icon"; }
+
+    static get properties() { return {
+        icon: {
+            type: String,
+            reflectToAttribute: true
+        }
+    }; }
+
+}
+
+window.customElements.define(PlIcon.is, PlIcon);
+
+})();
     </script>
 
 </dom-module>

@@ -10,6 +10,10 @@ class RecordView extends Polymer.Element {
             value: false,
             reflectToAttribute: true
         },
+        draft: {
+            type: Boolean,
+            value: false
+        },
         record: {
             type: Object,
             notify: true
@@ -17,7 +21,7 @@ class RecordView extends Polymer.Element {
     }; }
 
     _fireChangeEvent() {
-        this.dispatchEvent(new CustomEvent("record-change", { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent("record-change", { detail: { record: this.record } }));
     }
 
     _deleteField(e) {
@@ -47,8 +51,18 @@ class RecordView extends Polymer.Element {
         this._fireChangeEvent();
     }
 
+    _createRecord() {
+        if (this.draft) {
+            this.dispatchEvent(new CustomEvent("record-create", { detail: { record: this.record } }));
+        }
+    }
+
     close() {
         this.dispatchEvent(new CustomEvent("record-close"));
+    }
+
+    edit() {
+        this.$.nameInput.focus();
     }
 
 }

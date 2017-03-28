@@ -19,7 +19,7 @@ export class Record {
     updated: Date;
     removed: boolean;
 
-    constructor(name = "Unnamed", fields?: Array<Field>, category?: string,
+    constructor(name = "", fields?: Array<Field>, category?: string,
                 id?: string, updated?: Date, removed = false) {
         this.name = name;
         this.fields = fields || new Array<Field>();
