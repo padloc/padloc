@@ -16,7 +16,6 @@
                 box-sizing: border-box;
                 display: block;
                 height: 100%;
-                width: calc(100% + 2px);
                 background: var(--color-primary);
             }
 
@@ -36,10 +35,12 @@
             }
 
             ul {
+                display: flex;
                 flex-wrap: wrap;
                 list-style: none;
                 padding: 0;
                 margin: 0;
+                box-shadow: rgba(0, 0, 0, 0.15) 1px 1px 2px;
             }
 
             li {

@@ -61,7 +61,7 @@ class ListView extends Polymer.Element {
     }
 
     _recordTapped(e) {
-        this.selected = e.target;
+        this.selected = e.model.item;
     }
 
     _resized() {

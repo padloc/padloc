@@ -19,15 +19,11 @@ class RecordItem extends Polymer.Element {
 
     // Replaces all non-newline characters in a given string with dots
     _obfuscate(value) {
-        return value.replace(/[^\n]/g, "\u2022");
+        return value ? value.replace(/[^\n]/g, "\u2022") : "";
     }
 
     _openChanged() {
         this.style.display = this.open ? "block" : "none";
-    }
-
-    _limit(arr) {
-        return arr ? arr.slice(0, 2) : [];
     }
 
     close() {

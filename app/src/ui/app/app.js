@@ -41,7 +41,7 @@ class App extends Polymer.Element {
     }
 
     _selectedRecordChanged() {
-        this.recordView.dark = this._selectedRecord && this._selectedRecord.dark;
+        // this.recordView.dark = this._selectedRecord && this._selectedRecord.dark;
         this.listView.style.display = this._selectedRecord ? "none" : "";
         this.recordView.style.display = this._selectedRecord ? "" : "none";
     }
