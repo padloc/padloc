@@ -107,9 +107,9 @@
                     </template>
                 </div>
             </div>
-            <div class="fields tiles tiles-2">
+            <div class="fields">
                 <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
-                    <pl-record-field field="{{ item }}"
+                    <pl-record-field class$="{{ _fieldClass(index) }}" field="{{ item }}"
                         on-field-change="_fireChangeEvent"
                         on-field-delete="_deleteField"></pl-record-field>
                 </template>
