@@ -5,6 +5,7 @@
             :root, :host {
                 --font-family: "Clear Sans";
                 --font-family-fallback: sans-serif;
+                --font-family-mono: "Inconsolata";
 
                 --font-size-tiny: 14px;
                 --font-size-small: 16px;
@@ -87,6 +88,20 @@
                 --text-shadow: {
                     text-shadow: var(--shadow-color) 1px 1px;
                 };
+
+                --fullbleed: {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                };
+
+                --ellipsis: {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
             }
 
         </style>

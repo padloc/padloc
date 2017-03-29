@@ -190,7 +190,7 @@
             }
 
             .tiles > :nth-child(6n + 1), .tiles-1 {
-                /* box-shadow: rgba(0, 0, 0, 0.15) 1px 1px 1px; */
+                box-shadow: inset rgba(0, 0, 0, 0.15) 1px 1px 1px;
             }
 
             .tiles > :nth-child(6n + 2), .tiles-2 {
@@ -231,19 +231,7 @@
             /* } */
 
             .ellipsis {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            :root {
-                --fullbleed: {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                };
+                @apply(--ellipsis);
             }
         </style>
     </template>

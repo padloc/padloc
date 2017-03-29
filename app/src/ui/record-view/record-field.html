@@ -39,9 +39,12 @@
             }
 
             textarea {
+                font-family: var(--font-family-mono);
+                font-size: 110%;
+                line-height: 1.3;
                 background: transparent;
                 border: none;
-                margin-top: 30px;
+                margin: 30px 0 5px 0;
                 width: 100%;
                 transition: opacity 0.2s, transform 0.2s;
             }
@@ -66,6 +69,7 @@
                 <input value="[[ field.name ]]" placeholder="Enter New Field Name"
                     on-focus="_nameInputFocused" on-blur="_nameInputBlurred" on-keyup="_keyup"></input>
                 <textarea value="[[ field.value ]]" rows="1" placeholder="{{ _valuePlaceholder(draft) }}"
+                    autocomplete="off" spellcheck="false"
                     on-focus="_valueInputFocused" on-blur="_valueInputBlurred" on-keyup="_keyup"></textarea>
             </div>
             <template is="dom-if" if="{{ !draft }}">

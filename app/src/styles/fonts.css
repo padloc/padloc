@@ -22,3 +22,9 @@
   font-weight: 700;
   src: local('Clear Sans Bold'), local('ClearSans-Bold'), url(../../assets/fonts/ClearSans-Bold.woff) format('woff');
 }
+@font-face {
+  font-family: 'Inconsolata';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Inconsolata Regular'), local('Inconsolata-Regular'), url(../../assets/fonts/Inconsolata-Regular.ttf) format('truetype');
+}
