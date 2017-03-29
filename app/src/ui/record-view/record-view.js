@@ -78,6 +78,11 @@ class RecordView extends Polymer.Element {
         this._fireChangeEvent();
     }
 
+    _showCategoryList() {
+        this.set("record.category", "");
+        this.$.categoryInput.focus();
+    }
+
     close() {
         this.dispatchEvent(new CustomEvent("record-close"));
     }

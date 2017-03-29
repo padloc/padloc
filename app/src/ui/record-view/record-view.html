@@ -98,8 +98,8 @@
         <main>
             <div class="category tap tiles-1">
                 <pl-icon icon="category"></pl-icon>
-                <input value="{{ record.category::input }}" placeholder="No Category" on-change="_fireChangeEvent">
-                <pl-icon icon="dropdown" class="tap"></pl-icon>
+                <input id="categoryInput" value="{{ record.category::input }}" placeholder="No Category" on-change="_fireChangeEvent">
+                <pl-icon icon="dropdown" class="tap" on-click="_showCategoryList"></pl-icon>
                 <div id="categoryList" class="tiles">
                     <div></div>
                     <template is="dom-repeat" items="{{ categories }}" filter="{{ _categoryFilter(record.category) }}">
