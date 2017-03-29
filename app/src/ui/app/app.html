@@ -36,7 +36,8 @@
         <pl-record-view id="recordView" record="{{ _selectedRecord }}"
             on-record-change="_recordChange"
             on-record-close="_closeRecord"
-            on-record-create="_createRecord"></pl-record-view>
+            on-record-create="_createRecord"
+            on-record-delete="_deleteRecord"></pl-record-view>
 
         <pl-dialog id="mainMenu" class="tiles">
             <button class="tap" on-click="_openSettings">Settings</button>

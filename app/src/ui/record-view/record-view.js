@@ -25,8 +25,7 @@ class RecordView extends Polymer.Element {
     }
 
     _deleteField(e) {
-        const confirmDialog = this.root.querySelector("pl-dialog-confirm");
-        confirmDialog.confirm("Are you sure you want to delete this field?", "Delete").then((confirmed) => {
+        this.$.confirmDialog.confirm("Are you sure you want to delete this field?", "Delete").then((confirmed) => {
             if (confirmed) {
                 this.splice("record.fields", e.model.index, 1);
                 this._fireChangeEvent();
@@ -52,9 +51,15 @@ class RecordView extends Polymer.Element {
     }
 
     _createRecord() {
-        if (this.draft) {
-            this.dispatchEvent(new CustomEvent("record-create", { detail: { record: this.record } }));
-        }
+        this.dispatchEvent(new CustomEvent("record-create", { detail: { record: this.record } }));
+    }
+
+    _deleteRecord() {
+        this.$.confirmDialog.confirm("Are you sure you want to delete this record?", "Delete").then((confirmed) => {
+            if (confirmed) {
+                this.dispatchEvent(new CustomEvent("record-delete", { detail: { record: this.record } }));
+            }
+        });
     }
 
     close() {

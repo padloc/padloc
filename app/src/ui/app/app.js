@@ -55,6 +55,13 @@ class App extends Polymer.Element {
         this._closeRecord();
     }
 
+    _deleteRecord(e) {
+        e.detail.record.remove();
+        this.save();
+        this.notifyPath("collection.records");
+        this._closeRecord();
+    }
+
     save() {
         this.collection.save(this.localSource);
     }

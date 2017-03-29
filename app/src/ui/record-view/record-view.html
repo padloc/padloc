@@ -56,7 +56,7 @@
                     placeholder="Enter Record Name" on-change="_fireChangeEvent"></input>
                 <div class="category ellipsis tap">{{ record.category }}</div>
             </div>
-            <pl-icon icon="more" class="tiles-3 tap" hidden$="{{ draft }}"></pl-icon>
+            <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord" hidden$="{{ draft }}"></pl-icon>
             <pl-icon icon="check" class="tiles-3 tap" on-click="_createRecord" hidden$="{{ !draft }}"></pl-icon>
         </header>
 
@@ -74,7 +74,7 @@
             <div class$="{{ _spacerClass(record.fields.length) }}"></div>
         </main>
 
-        <pl-dialog-confirm></pl-dialog-confirm>
+        <pl-dialog-confirm id="confirmDialog"></pl-dialog-confirm>
 
     </template>
 
