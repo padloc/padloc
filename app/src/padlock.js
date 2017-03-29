@@ -260,6 +260,11 @@ class Collection {
     get records() {
         return Array.from(this._records.values());
     }
+    get categories() {
+        const categories = new Set(this.records.map(r => r.category));
+        categories.delete("");
+        return [...categories];
+    }
     fetch(source) {
         return __awaiter(this, void 0, void 0, function* () {
             let data = yield source.get();

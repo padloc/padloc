@@ -5,6 +5,7 @@ class RecordView extends Polymer.Element {
     static get is() { return "pl-record-view"; }
 
     static get properties() { return {
+        categories: Array,
         dark: {
             type: Boolean,
             value: false,
@@ -60,6 +61,20 @@ class RecordView extends Polymer.Element {
                 this.dispatchEvent(new CustomEvent("record-delete", { detail: { record: this.record } }));
             }
         });
+    }
+
+    _categoryFilter(currCat) {
+        return currCat ? (cat) => {
+            return cat && cat !== currCat && cat.toLowerCase().startsWith(currCat.toLowerCase());
+        } : null;
+    }
+
+    _catOptMousedown(e) {
+        e.preventDefault();
+    }
+
+    _selectCategory(e) {
+        this.set("record.category", e.model.item);
     }
 
     close() {

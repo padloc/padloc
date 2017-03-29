@@ -76,6 +76,12 @@ export class Collection {
         return Array.from(this._records.values());
     }
 
+    get categories(): string[] {
+        const categories = new Set(this.records.map(r => r.category));
+        categories.delete("");
+        return [...categories];
+    }
+
     async fetch(source: Source): Promise<void> {
         let data = await source.get();
         let records = JSON.parse(data).map(Record.fromRaw);

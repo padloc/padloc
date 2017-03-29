@@ -33,7 +33,7 @@
             on-record-new="_newRecord"
             on-record-select="_openRecord"></pl-list-view>
 
-        <pl-record-view id="recordView" record="{{ _selectedRecord }}"
+        <pl-record-view id="recordView" record="{{ _selectedRecord }}" categories="[[ collection.categories ]]"
             on-record-change="_recordChange"
             on-record-close="_closeRecord"
             on-record-create="_createRecord"
