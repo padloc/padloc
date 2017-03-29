@@ -46,11 +46,13 @@ class App extends Polymer.Element {
         const record = e.detail.record;
         record.updated = new Date();
         this.save();
+        this.notifyPath("collection.categories");
     }
 
     _createRecord(e) {
         this.collection.add(e.detail.record);
         this.notifyPath("collection.records");
+        this.notifyPath("collection.categories");
         this.save();
         this._closeRecord();
     }

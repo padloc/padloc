@@ -75,6 +75,7 @@ class RecordView extends Polymer.Element {
 
     _selectCategory(e) {
         this.set("record.category", e.model.item);
+        this._fireChangeEvent();
     }
 
     close() {
