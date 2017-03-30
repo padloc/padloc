@@ -4,7 +4,7 @@
     <template>
         <style>
 
-            :host, :root, button, input {
+            :host, html, button, input {
                 font-family: var(--font-family), var(--font-family-fallback);
                 font-weight: var(--font-weight-regular);
                 font-size: var(--font-size-default);
@@ -170,19 +170,19 @@
             }
 
             .tap {
-                @apply(--tap-highlight);
+                @apply --tap-highlight;
             }
 
             .tap::after {
-                @apply(--tap-highlight-after);
+                @apply --tap-highlight-after;
             }
 
             .tap:hover::after {
-                @apply(--tap-highlight-hover-after);
+                @apply --tap-highlight-hover-after;
             }
 
             .tap:active::after {
-                @apply(--tap-highlight-active-after);
+                @apply --tap-highlight-active-after;
             }
 
             .tiles > *, .tiles-1, .tiles-2, .tiles-3, .tiles-4, .tiles-5, .tiles-6 {
@@ -221,7 +221,7 @@
             }
 
             .ellipsis {
-                @apply(--ellipsis);
+                @apply --ellipsis;
             }
         </style>
     </template>
