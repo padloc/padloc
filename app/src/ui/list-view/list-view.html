@@ -16,7 +16,6 @@
                 box-sizing: border-box;
                 display: block;
                 height: 100%;
-                background: var(--color-primary);
             }
 
             header > div {
@@ -24,19 +23,11 @@
             }
 
             header input {
-                background: transparent;
-                text-align: center;
-                color: inherit;
                 width: 100%;
-            }
-
-            header input::-webkit-input-placeholder {
-                color: inherit;
+                padding-left: 15px;
             }
 
             ul {
-                display: flex;
-                flex-wrap: wrap;
                 list-style: none;
                 padding: 0;
                 margin: 0;
@@ -46,48 +37,27 @@
                 flex: 1 0 auto;
                 min-width: 250px;
             }
-
-            main {
-                background: rgba(0, 0, 0, 0.3);
-            }
-
-            pl-record-item {
-                box-shadow: rgba(0, 0, 0, 0.3) 1px 1px 1px;
-            }
-
-            pl-record-item.ripple::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                margin: auto;
-                width: 100px;
-                height: 100px;
-                background: var(--color-quinary);
-                opacity: 0.5;
-                border-radius: 100%;
-            }
         </style>
 
         <header class="tiles">
-            <pl-icon icon="menu" class="tap" on-click="_openMenu"></pl-icon>
             <div class="tap">
                 <input placeholder="Type to search..." value="{{ _filterString::input }}"></input>
             </div>
             <pl-icon icon="add" class="tap" on-click="_newRecord"></pl-icon>
+            <pl-icon icon="cloud" class="tap" on-click="_newRecord"></pl-icon>
+            <pl-icon icon="lock" class="tap" on-click="_openMenu"></pl-icon>
+            <pl-icon icon="settings" class="tap" on-click="_newRecord"></pl-icon>
         </header>
 
-        <main>
+        <main class="tiles-2">
 
-            <ul>
+            <ul class="tiles">
                 <template is="dom-repeat" items="[[ _paddedRecords(records, _nCols) ]]" initialCount="20"
                         filter="{{ _computeFilter(_filterString) }}" sort="_sortRecords"
                         observe="name category removed" delay="100">
                     <li>
                         <template is="dom-if" if="{{ !item.padding }}">
-                            <pl-record-item record="[[ item ]]" dark="[[ _isDark(index, _nCols) ]]" on-click="_recordTapped"></pl-record-item>
+                            <pl-record-item record="[[ item ]]" on-click="_recordTapped"></pl-record-item>
                         </template>
                     </li>
                 </template>

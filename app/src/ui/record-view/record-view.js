@@ -6,11 +6,6 @@ class RecordView extends Polymer.Element {
 
     static get properties() { return {
         categories: Array,
-        dark: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
         draft: {
             type: Boolean,
             value: false
@@ -39,7 +34,7 @@ class RecordView extends Polymer.Element {
     }
 
     _spacerClass(nFields) {
-        return "spacer " + this._fieldClass(nFields + 2);
+        return "spacer " + this._fieldClass(nFields + 1);
     }
 
     _newFieldEnter() {

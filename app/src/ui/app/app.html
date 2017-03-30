@@ -12,13 +12,17 @@
                 display: block;
                 margin: auto;
                 overflow: hidden;
-                background: var(--color-primary);
+                background: var(--color-background);
                 @apply(--fullbleed);
             }
 
-            pl-progress#decrypting {
-                z-index: 10;
-                background: var(--color-secondary);
+            :host(.dark) {
+                --color-background: #555;
+            }
+
+            :host(.light) {
+                --color-background: #ffffff;
+                --color-foreground: #000000;
             }
 
             pl-header {

@@ -10,14 +10,8 @@
         <style include="shared">
             :host {
                 box-sizing: border-box;
-                background: var(--color-primary);
-                color: var(--text-color-light);
                 overflow: auto;
                 @apply(--fullbleed);
-            }
-
-            :host([dark]) {
-                background: var(--color-secondary);
             }
 
             header > div {
@@ -65,7 +59,7 @@
                 display: none;
                 top: 100%;
                 left: 0;
-                background: inherit;
+                background: var(--color-background);
                 width: 100%;
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
                 max-height: 200px;

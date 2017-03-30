@@ -12,13 +12,6 @@
                 vertical-align: top;
                 box-sizing: border-box;
                 flex-direction: row;
-                background: var(--color-primary);
-                color: var(--text-color-light);
-                min-height: 114px;
-            }
-
-            :host([dark]) {
-                background: var(--color-secondary);
             }
 
             :host > * {
@@ -76,15 +69,9 @@
                 padding: 5px 15px;
             }
 
-            /* .field:hover::after { */
-            /*     font-family: FontAwesome; */
-            /*     font-size: 90%; */
-            /*     color: var(--color-primary); */
-            /*     content: "\f24d"; */
-            /*     display: inline-block; */
-            /*     margin-top: 3px; */
-            /*     margin-left: 10px; */
-            /* } */
+            .header, .field {
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+            }
 
             .field-label {
                 margin-right: 5px;
@@ -113,42 +100,21 @@
             .category:empty {
                 display: none;
             }
-
-            .scrim {
-                background: var(--color-quinary);
-                opacity: 0.8;
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                display: none;
-            }
         </style>
 
-        <!-- <div class="scrim" on&#45;click="close"></div> -->
-
-        <div class="body tiles">
+        <div class="body">
             <div class="header tap">
                 <div class="name">{{ record.name }}</div>
                 <div class="category ellipsis">{{ record.category }}</div>
                 <pl-icon icon="forward"></pl-icon>
             </div>
-            <div class="field tap">
-                <div class="field-label">{{ record.fields.0.name }}</div>
-                <div class="field-value">{{ _obfuscate(record.fields.0.value) }}</div>
-            </div>
-            <div class="field tap">
-                <div class="field-label">{{ record.fields.1.name }}</div>
-                <div class="field-value">{{ _obfuscate(record.fields.1.value) }}</div>
-            </div>
+            <template is="dom-repeat" items="{{ record.fields }}">
+                <div class="field tap">
+                    <div class="field-label">{{ item.name }}</div>
+                    <div class="field-value">{{ _obfuscate(item.value) }}</div>
+                </div>
+            </template>
         </div>
-
-        <!-- <div class="tools"> -->
-        <!--     <pl&#45;icon icon="edit" class="tap"></pl&#45;icon> -->
-        <!--     <pl&#45;icon icon="delete" class="tap"></pl&#45;icon> -->
-        <!--     <!&#45;&#45; <div class="category">{{ record.category }}</div> &#45;&#45;> -->
-        <!-- </div> -->
 
     </template>
 
