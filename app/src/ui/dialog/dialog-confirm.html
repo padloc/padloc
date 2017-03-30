@@ -7,10 +7,10 @@
     <template>
         <style include="shared"></style>
 
-        <pl-dialog open="{{ open }}" prevent-dismiss class="tiles">
-            <div class="message">{{ message }}</div>
-            <button class="tap" on-click="_confirm">{{ confirmLabel }}</button>
-            <button class="tap" on-click="_cancel">{{ cancelLabel }}</button>
+        <pl-dialog open="{{ open }}" prevent-dismiss>
+            <div class="message tiles-1">{{ message }}</div>
+            <button class="tap tiles-2" on-click="_confirm">{{ confirmLabel }}</button>
+            <button class="tap tiles-3" on-click="_cancel">{{ cancelLabel }}</button>
         </pl-dialog>
     </template>
 
