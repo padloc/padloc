@@ -67,10 +67,10 @@
 
         <div class="container">
             <div class="input-container">
-                <input value="[[ field.name ]]" placeholder="Enter New Field Name"
+                <input id="nameInput" value="[[ field.name ]]" placeholder="Enter New Field Name"
                     on-focus="_nameInputFocused" on-blur="_nameInputBlurred" on-keyup="_keyup"></input>
-                <textarea value="[[ field.value ]]" rows="1" placeholder="{{ _valuePlaceholder(draft) }}"
-                    autocomplete="off" spellcheck="false"
+                <textarea id="valueInput" value="[[ field.value ]]" rows="1"
+                    placeholder="{{ _valuePlaceholder(draft) }}" autocomplete="off" spellcheck="false"
                     on-focus="_valueInputFocused" on-blur="_valueInputBlurred" on-keyup="_keyup"></textarea>
             </div>
             <template is="dom-if" if="{{ !draft }}">

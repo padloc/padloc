@@ -33,17 +33,9 @@ class RecordField extends Polymer.Element {
         }
     }; }
 
-    get nameInput() {
-        return this.root.querySelector("input");
-    }
-
-    get valueInput() {
-        return this.root.querySelector("textarea");
-    }
-
     connectedCallback() {
         super.connectedCallback();
-        autosize(this.valueInput);
+        autosize(this.$.valueInput);
     }
 
     _computeEditing() {
@@ -55,7 +47,7 @@ class RecordField extends Polymer.Element {
             this.notifyPath("field.name");
             this.notifyPath("field.value");
             setTimeout(() => {
-                autosize.update(this.valueInput);
+                autosize.update(this.$.valueInput);
             }, 200);
         }
 
@@ -80,7 +72,7 @@ class RecordField extends Polymer.Element {
         if (this.field.name) {
             this._editingValue = true;
         } else {
-            this.nameInput.focus();
+            this.$.nameInput.focus();
         }
     }
 
@@ -91,7 +83,7 @@ class RecordField extends Polymer.Element {
     }
 
     _keyup(e) {
-        if (e.keyCode === 13 && e.target !== this.valueInput) {
+        if (e.keyCode === 13 && e.target !== this.$.valueInput) {
             this._confirmEdit();
         } else if (e.keyCode == 27) {
             this._cancelEdit();
@@ -103,24 +95,24 @@ class RecordField extends Polymer.Element {
     }
 
     _confirmEdit() {
-        if (this._editingName && this.nameInput.value) {
-            this.field && (this.field.name = this.nameInput.value);
-            this.valueInput.focus();
+        if (this._editingName && this.$.nameInput.value) {
+            this.field && (this.field.name = this.$.nameInput.value);
+            this.$.valueInput.focus();
             this._fireEditEvent();
         } else if (this._editingValue) {
-            this.field && (this.field.name = this.nameInput.value);
-            this.field && (this.field.value = this.valueInput.value);
+            this.field && (this.field.name = this.$.nameInput.value);
+            this.field && (this.field.value = this.$.valueInput.value);
             this._fireEditEvent();
         }
     }
 
     _cancelEdit() {
-        this.nameInput.blur();
-        this.valueInput.blur();
+        this.$.nameInput.blur();
+        this.$.valueInput.blur();
         this._editingName = false;
         this._editingValue = false;
         if (this.draft) {
-            this.nameInput.value = this.valueInput.value = "";
+            this.$.nameInput.value = this.$.valueInput.value = "";
         }
     }
 
@@ -141,8 +133,8 @@ class RecordField extends Polymer.Element {
 
     _generatorConfirm() {
         this._showGenerator = false;
-        this.valueInput.value = this.$.generator.value;
-        this.valueInput.focus();
+        this.$.valueInput.value = this.$.generator.value;
+        this.$.valueInput.focus();
     }
 
     _generatorCancel() {
@@ -150,7 +142,7 @@ class RecordField extends Polymer.Element {
     }
 
     edit() {
-        const input = this.field && this.field.name ? this.valueInput : this.nameInput;
+        const input = this.field && this.field.name ? this.$.valueInput : this.$.nameInput;
         input.focus();
     }
 }
