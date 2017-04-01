@@ -41,8 +41,8 @@ class RecordView extends Polymer.Element {
         const newField = this.$.newField.field;
         if (newField.name && newField.value) {
             this.push("record.fields", newField);
+            this.$.newField.field = { name: "", value: "" };
         }
-        this.$.newField.field = { name: "", value: "" };
         this._fireChangeEvent();
     }
 

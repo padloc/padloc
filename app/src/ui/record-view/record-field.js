@@ -19,6 +19,10 @@ class RecordField extends Polymer.Element {
             type: Boolean,
             value: false
         },
+        _showGenerator: {
+            type: Boolean,
+            value: false
+        },
         draft: {
             type: Boolean,
             value: false
@@ -47,7 +51,7 @@ class RecordField extends Polymer.Element {
     }
 
     _editingChanged(curr, prev) {
-        if (!this._editing) {
+        if (!this._editing && !this.draft) {
             this.notifyPath("field.name");
             this.notifyPath("field.value");
             setTimeout(() => {
@@ -115,6 +119,9 @@ class RecordField extends Polymer.Element {
         this.valueInput.blur();
         this._editingName = false;
         this._editingValue = false;
+        if (this.draft) {
+            this.nameInput.value = this.valueInput.value = "";
+        }
     }
 
     _delete() {
@@ -123,6 +130,23 @@ class RecordField extends Polymer.Element {
 
     _valuePlaceholder() {
         return this.draft ? "" : "Empty Field";
+    }
+
+    _toggleGenerator() {
+        this._showGenerator = !this._showGenerator;
+        if (this._showGenerator) {
+            this.$.generator.generate();
+        }
+    }
+
+    _generatorConfirm() {
+        this._showGenerator = false;
+        this.valueInput.value = this.$.generator.value;
+        this.valueInput.focus();
+    }
+
+    _generatorCancel() {
+        this._showGenerator = false;
     }
 
     edit() {

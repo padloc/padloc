@@ -1,0 +1,136 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared.html">
+
+<dom-module id="pl-slider">
+    <template>
+
+        <style include="shared">
+            :host {
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                font-size: inherit;
+                --track-color: var(--slider-track-color, var(--color-foreground));
+                --knob-color: var(--slider-knob-color, var(--color-foreground));
+                --track-size: var(--slider-track-size, 4px);
+                --knob-size: var(--slider-knob-size, 30px);
+            }
+
+            input[type=range] {
+                -webkit-appearance: none;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                flex: 1;
+                height: auto;
+                min-height: var(--knob-size);
+            }
+
+            input[type=range]:focus {
+                outline: none;
+            }
+
+            input[type=range]::-webkit-slider-runnable-track {
+                width: 100%;
+                height: var(--track-size);
+                cursor: pointer;
+                background: var(--color-foreground);
+                border-radius: var(--track-size);
+            }
+
+            input[type=range]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                height: var(--knob-size);
+                width: var(--knob-size);
+                margin-top: calc(0.5 * var(--track-size) - 0.5 * var(--knob-size));
+                position: relative;
+                border-radius: 100%;
+                background: var(--color-foreground);
+                cursor: pointer;
+                border: none;
+                box-sizing: border-box;
+                background-clip: content-box;
+            }
+
+            label {
+                margin-right: 10px;
+            }
+
+            label:empty {
+                display: none;
+            }
+
+            .value-display {
+                margin-left: 10px;
+            }
+
+            :host([hide-value]) .value-display {
+                display: none;
+            }
+
+        </style>
+
+        <label>{{ label }}</label>
+        <input type="range" value="{{ _strValue::input }}" min="{{ min }}" max="{{ max }}" step="{{ step }}">
+        <span class="value-display">{{ value }}{{ unit }}</span>
+
+    </template>
+    <script>
+(() => {
+
+class Slider extends Polymer.Element {
+
+    static get is() { return "pl-slider"; }
+
+    static get properties() { return {
+        min: {
+            type: Number,
+            value: 1
+        },
+        max: {
+            type: Number,
+            value: 10
+        },
+        value: {
+            type: Number,
+            observer: "_valueChanged",
+            notify: true
+        },
+        unit: {
+            type: String,
+            value: ""
+        },
+        step: {
+            type: Number,
+            value: 1
+        },
+        label: {
+            type: String,
+            value: ""
+        },
+        hideValue: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
+        _strValue: {
+            type: String,
+            observer: "_strValueChanged"
+        }
+    }; }
+
+    _strValueChanged() {
+        this.value = parseFloat(this._strValue, 10);
+    }
+
+    _valueChanged() {
+        this._strValue = this.value.toString();
+    }
+
+}
+
+window.customElements.define(Slider.is, Slider);
+
+})();
+    </script>
+</dom-module>

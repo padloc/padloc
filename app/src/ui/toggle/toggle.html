@@ -11,9 +11,9 @@
                 --width: var(--toggle-width, 50px);
                 --height: var(--toggle-height, 30px);
                 --gutter-width: var(--toggle-gutter-width, 2px);
-                --color-off: var(--toggle-color-off, var(--color-quaternary));
-                --color-on: var(--toggle-color-on, var(--color-primary));
-                --color-knob: var(--toggle-color-knob, var(--color-secondary));
+                --color-off: var(--toggle-color-off, var(--color-foreground));
+                --color-on: var(--toggle-color-on, var(--color-foreground));
+                --color-knob: var(--toggle-color-knob, var(--color-background));
 
                 display: inline-block;
                 width: var(--width);
@@ -30,10 +30,10 @@
                 height: var(--size);
                 width: var(--size);
                 margin: var(--gutter-width);
-                background: var(--color-knob); 
+                background: var(--color-knob);
                 border-radius: var(--size);
 
-                transition: transform 0.5s cubic-bezier(1, -0.5, 0, 1.5) -0.2s;
+                transition: transform 0.5s cubic-bezier(1, -0.5, 0, 1.5) -0.2s, opacity 0.5s;
             }
 
             :host([active]) {
@@ -43,6 +43,10 @@
             :host([active]) .knob {
                 --dx: calc(var(--width) - var(--height));
                 transform: translate(var(--dx), 0);
+            }
+
+            :host(:not([active])) .knob {
+                opacity: 0.5;
             }
         </style>
 
