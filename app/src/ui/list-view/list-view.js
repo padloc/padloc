@@ -26,46 +26,22 @@ class ListView extends Polymer.Element {
         records: Array,
     }; }
 
-    connectedCallback() {
-        super.connectedCallback();
-        setTimeout(() => {
-            this._resized();
-        }, 100);
-        window.addEventListener("resize", this._resized.bind(this));
+    _filterAndSort() {
+        return this.records
+            .filter((r) => !r.removed && filterByString(this._filterString, r))
+            .sort((a, b) => Record.compare(a, b));
     }
 
-    _computeFilter(filterString) {
-        return (record) => {
-            return record.padding || !record.removed && filterByString(filterString, record);
-        };
-    }
-
-    _sortRecords(a, b) {
-        return Record.compare(a, b);
+    _itemClass(index) {
+        return "tiles-" + (Math.floor((index + 1) % 8) + 1);
     }
 
     _isEmpty() {
         return !this.records.length;
     }
 
-    _isDark(i) {
-        const nRow = Math.floor(i / this._nCols);
-
-        if (!(this._nCols % 2) && nRow % 2) {
-            i++;
-        }
-
-        return !(i % 2);
-    }
-
     _recordTapped(e) {
         this.dispatchEvent(new CustomEvent("record-select", { detail: { record: e.model.item } }));
-    }
-
-    _resized() {
-        const width = this.offsetWidth;
-        const recMinWidth = 250;
-        this._nCols = Math.floor(width / recMinWidth);
     }
 
     _openMenu() {
@@ -76,13 +52,18 @@ class ListView extends Polymer.Element {
         this.dispatchEvent(new CustomEvent("record-new"));
     }
 
-    _paddedRecords() {
-        const records = this.records.slice();
-        while (records.length % this._nCols) {
-            records.push({ padding: true });
-        }
-        return records;
+    _filterActive() {
+        return this._filterString !== "";
     }
+
+    _clearFilter() {
+        this.set("_filterString", "");
+    }
+
+    _limit(items) {
+        return items.slice(0, 50);
+    }
+
 }
 
 window.customElements.define(ListView.is, ListView);

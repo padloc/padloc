@@ -1,4 +1,5 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../record-item/record-item.html">
@@ -14,7 +15,8 @@
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
                 box-sizing: border-box;
-                display: block;
+                display: flex;
+                flex-direction: column;
                 height: 100%;
             }
 
@@ -27,41 +29,37 @@
                 padding-left: 15px;
             }
 
-            ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
+            header input:not(:focus) ~ pl-icon[icon="cancel"] {
+                display: none;
             }
 
-            li {
-                flex: 1 0 auto;
-                min-width: 250px;
+            header input:focus ~ pl-icon:not([icon="cancel"]) {
+                display: none;
+            }
+
+            iron-list {
+                height: 100%;
             }
         </style>
 
-        <header class="tiles">
+        <header>
             <div class="tap">
-                <input placeholder="Type to search..." value="{{ _filterString::input }}"></input>
+                <input class="tiles-1" placeholder="Type to search..." value="{{ _filterString::input }}"></input>
             </div>
-            <pl-icon icon="add" class="tap" on-click="_newRecord"></pl-icon>
-            <pl-icon icon="cloud" class="tap" on-click="_newRecord"></pl-icon>
-            <pl-icon icon="lock" class="tap" on-click="_openMenu"></pl-icon>
-            <pl-icon icon="settings" class="tap" on-click="_newRecord"></pl-icon>
+            <pl-icon icon="add" class="tiles-2 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="cloud" class="tiles-3 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="lock" class="tiles-4 tap" on-click="_openMenu" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="settings" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="cancel" class="tiles-2 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
 
-        <main class="tiles-2">
+        <main>
 
-            <ul class="tiles">
-                <template is="dom-repeat" items="[[ _paddedRecords(records, _nCols) ]]" initialCount="20"
-                        filter="{{ _computeFilter(_filterString) }}" sort="_sortRecords"
-                        observe="name category removed" delay="100">
-                    <li>
-                        <template is="dom-if" if="{{ !item.padding }}">
-                            <pl-record-item record="[[ item ]]" on-click="_recordTapped"></pl-record-item>
-                        </template>
-                    </li>
+            <iron-list items="[[ _filterAndSort(records, _filterString) ]]">
+                <template>
+                    <pl-record-item record="[[ item ]]" on-click="_recordTapped" class$="[[ _itemClass(index) ]]"></pl-record-item>
                 </template>
-            </ul>
+            </iron-list>
 
         </main>
 
