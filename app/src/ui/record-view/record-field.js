@@ -19,9 +19,10 @@ class RecordField extends Polymer.Element {
             type: Boolean,
             value: false
         },
-        _showGenerator: {
+        showGenerator: {
             type: Boolean,
-            value: false
+            value: false,
+            observer: "_showGeneratorChanged"
         },
         draft: {
             type: Boolean,
@@ -59,6 +60,7 @@ class RecordField extends Polymer.Element {
     _nameInputFocused() {
         this.classList.add("editing-name");
         this._editingName = true;
+        this.showGenerator = false;
     }
 
     _nameInputBlurred() {
@@ -125,20 +127,24 @@ class RecordField extends Polymer.Element {
     }
 
     _toggleGenerator() {
-        this._showGenerator = !this._showGenerator;
-        if (this._showGenerator) {
+        this.showGenerator = !this.showGenerator;
+        if (this.showGenerator) {
             this.$.generator.generate();
         }
     }
 
     _generatorConfirm() {
-        this._showGenerator = false;
+        this.showGenerator = false;
         this.$.valueInput.value = this.$.generator.value;
         this.$.valueInput.focus();
     }
 
     _generatorCancel() {
-        this._showGenerator = false;
+        this.showGenerator = false;
+    }
+
+    _showGeneratorChanged() {
+        this.dispatchEvent(new CustomEvent(this.showGenerator ? "generator-show" : "generator-hide"));
     }
 
     edit() {

@@ -78,6 +78,14 @@ class RecordView extends Polymer.Element {
         this.$.categoryInput.focus();
     }
 
+    _closeOtherGenerators(e) {
+        for (const field of this.root.querySelectorAll("pl-record-field")) {
+            if (field !== e.target) {
+                field.showGenerator = false;
+            }
+        }
+    }
+
     close() {
         this.dispatchEvent(new CustomEvent("record-close"));
     }
