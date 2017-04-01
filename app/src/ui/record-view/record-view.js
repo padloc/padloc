@@ -30,11 +30,11 @@ class RecordView extends Polymer.Element {
     }
 
     _fieldClass(index) {
-        return "tiles-" + (Math.floor((index + 1) % 6) + 1);
+        return "tiles-" + (Math.floor((index + 1) % 8) + 1);
     }
 
     _spacerClass(nFields) {
-        return "spacer " + this._fieldClass(nFields + 1);
+        return this._fieldClass(nFields + 1);
     }
 
     _newFieldEnter() {

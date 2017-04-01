@@ -12,15 +12,13 @@
                 box-sizing: border-box;
                 overflow: auto;
                 @apply --fullbleed;
+                display: flex;
+                flex-direction: column;
             }
 
             header > div {
                 flex: 1;
                 display: flex;
-            }
-
-            main {
-                background: inherit;
             }
 
             .name {
@@ -76,6 +74,12 @@
                 display: block;
             }
 
+            .padding {
+                position: fixed;
+                height: 100%;
+                width: 100%;
+            }
+
         </style>
 
         <header>
@@ -111,7 +115,7 @@
             <pl-record-field id="newField" draft
                 class$="{{ _fieldClass(record.fields.length) }}"
                 on-field-edit-end="_newFieldEnter"></pl-record-field>
-            <div class$="{{ _spacerClass(record.fields.length) }}"></div>
+            <div class$="padding {{ _spacerClass(record.fields.length) }}"></div>
         </main>
 
         <pl-dialog-confirm id="confirmDialog"></pl-dialog-confirm>
