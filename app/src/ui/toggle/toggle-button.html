@@ -1,0 +1,65 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="toggle.html">
+
+<dom-module id="pl-toggle-button">
+    <template>
+
+        <style include="shared">
+            :host {
+                display: inline-block;
+                font-size: inherit;
+            }
+
+            button {
+                height: auto;
+                padding: 0;
+                line-height: normal;
+            }
+
+            button > * {
+                vertical-align: middle;
+            }
+
+            pl-toggle {
+                display: inline-block;
+                pointer-events: none;
+            }
+        </style>
+
+        <button on-click="toggle">
+            <pl-toggle id="toggle" active="{{ active }}"></pl-toggle>
+            <span>[[ label ]]</span>
+        </button>
+
+    </template>
+
+    <script>
+(() => {
+
+class ToggleButton extends Polymer.Element {
+
+    static get is() { return "pl-toggle-button"; }
+
+    static get properties() { return {
+        active: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
+        label: {
+            type: String,
+            value: ""
+        }
+    }; }
+
+    toggle() {
+        this.$.toggle.toggle();
+    }
+}
+
+window.customElements.define(ToggleButton.is, ToggleButton);
+
+})();
+    </script>
+</dom-module>

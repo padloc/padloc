@@ -2,7 +2,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../slider/slider.html">
-<link rel="import" href="../toggle/toggle.html">
+<link rel="import" href="../toggle/toggle-button.html">
 
 <dom-module id="pl-generator">
 
@@ -16,7 +16,7 @@
                 flex-direction: row;
             }
 
-            pl-toggle {
+            pl-toggle-button {
                 --toggle-height: 25px;
                 --toggle-width: 35px;
             }
@@ -70,14 +70,10 @@
                 {{ value }}
             </div>
             <div class="charsets">
-                <pl-toggle active="{{ lower }}"></pl-toggle>
-                <label>a-z</label>
-                <pl-toggle active="{{ upper }}"></pl-toggle>
-                <label>A-Z</label>
-                <pl-toggle active="{{ numbers }}"></pl-toggle>
-                <label>0-9</label>
-                <pl-toggle active="{{ other }}"></pl-toggle>
-                <label>?()/%...</label>
+                <pl-toggle-button label="a-z" active="{{ lower }}"></pl-toggle-button>
+                <pl-toggle-button label="A-Z" active="{{ upper }}"></pl-toggle-button>
+                <pl-toggle-button label="0-9" active="{{ numbers }}"></pl-toggle-button>
+                <pl-toggle-button label="?()/%..." active="{{ other }}"></pl-toggle-button>
             </div>
             <div>
                 <pl-slider min="5" max="50" value="{{ length }}" hide-value></pl-slider>
