@@ -33,20 +33,6 @@ suite("data", () => {
         rec.remove();
 
         assert(rec.removed);
-        assert.equal(rec.fields.length, 0);
-        assert(!coll.records.includes(rec));
-    });
-
-    test("record ordering", function() {
-        let rec1 = new Record("a", [], "a");
-        let rec2 = new Record("b", [], "a");
-        let rec3 = new Record("a", [], "b");
-        let rec4 = new Record("b", [], "b");
-        let coll = new Collection();
-
-        coll.add([rec2, rec3, rec1, rec4]);
-
-        assert.deepEqual(coll.records, [rec1, rec2, rec3, rec4]);
     });
 
     test("save/fetch collection", async function() {

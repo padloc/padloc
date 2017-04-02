@@ -77,7 +77,7 @@ class App extends Polymer.Element {
     lock() {
         this.collection.clear();
         this.localSource.password = "";
-        this.$.startView.clear();
+        this.$.startView.reset();
         this.$.pages.select("startView");
     }
 

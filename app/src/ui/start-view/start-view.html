@@ -23,7 +23,7 @@
             }
 
             .hero {
-                margin: -50px 0 50px 0;
+                margin: -50px 0 40px 0;
             }
 
             .hero svg {
@@ -87,11 +87,11 @@
         </div>
 
         <div class="tap tiles-2">
-            <input id="passwordInput" type="password" placeholder="Enter Password">
+            <input id="passwordInput" type="password" placeholder$="[[ _inputPlaceholder(_hasData) ]]">
         </div>
 
         <button on-click="_enter" type="button" class="tap tiles-3">
-            <div class="enter-label">Unlock</div>
+            <div class="enter-label">[[ _enterButtonLabel(_hasData) ]]</div>
             <paper-spinner-lite active="[[ loading ]]" class="enter-spinner"></paper-spinner-lite>
             <pl-icon icon="check" class="enter-icon-success"></pl-icon>
             <pl-icon icon="cancel" class="enter-icon-fail"></pl-icon>
@@ -129,30 +129,61 @@ class StartView extends Polymer.Element {
         },
         localSource: {
             type: Object
+        },
+        _hasData: {
+            type: Boolean
         }
     }; }
 
-    _enter() {
-        this.loading = true;
-        this.localSource.password = this.$.passwordInput.value;
-        return this.collection.fetch(this.localSource).then(() => {
-            this.loading = false;
-            this.success = true;
-            this.dispatchEvent(new CustomEvent("unlock"));
-        }, (e) => {
-            if (e.code === "decryption_failed") {
-                this.loading = false;
-                this.fail = true;
-                setTimeout(() => this.fail = false, 1000);
-            } else {
-                throw e;
-            }
-        });
+    ready() {
+        super.ready();
+        this.reset();
     }
 
-    clear() {
+    reset() {
         this.loading = this.success = this.fail = false;
         this.$.passwordInput.value = "";
+        this._checkHasData();
+    }
+
+    _checkHasData() {
+        this.localSource.hasData().then((has) => this._hasData = has);
+    }
+
+    _enter() {
+        this.localSource.password = this.$.passwordInput.value;
+
+        if (this._hasData) {
+            this.loading = true;
+            return this.collection.fetch(this.localSource).then(() => {
+                this.loading = false;
+                this.success = true;
+                this.dispatchEvent(new CustomEvent("unlock"));
+            }, (e) => {
+                if (e.code === "decryption_failed") {
+                    this.loading = false;
+                    this.fail = true;
+                    setTimeout(() => this.fail = false, 1000);
+                } else {
+                    throw e;
+                }
+            });
+        } else {
+            this.loading = true;
+            this.collection.save(this.localSource).then(() => {
+                this.loading = false;
+                this.success = true;
+                this.dispatchEvent(new CustomEvent("unlock"));
+            });
+        }
+    }
+
+    _enterButtonLabel() {
+        return this._hasData ? "Unlock" : "Get Started";
+    }
+
+    _inputPlaceholder() {
+        return this._hasData ? "Enter Password" : "Enter Master Password";
     }
 
 }

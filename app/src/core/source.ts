@@ -206,6 +206,11 @@ export class EncryptedSource implements Source {
         return this.source.set(cont.toJSON());
     }
 
+    async hasData(): Promise<boolean> {
+        const data = await this.source.get();
+        return data !== "";
+    }
+
     clear(): Promise<void> {
         this.password = "";
         if (this.container) {

@@ -23,10 +23,14 @@ async function testSource(source: Source, testClear = true) {
 suite("source", () => {
     test("MemorySource", () => testSource(new MemorySource()));
     test("LocalStorageSource", () => testSource(new LocalStorageSource("test")));
-    test("EncryptedSource", () => {
+    test("EncryptedSource", async () => {
         const source = new EncryptedSource(new MemorySource());
         source.password = "secret";
-        return testSource(source);
+        await testSource(source);
+        source.clear();
+        assert(!(await source.hasData()), "hasData for empty source should return with `false`");
+        await source.set("test");
+        assert(await source.hasData(), "hasData for empty source should return with `true`");
     });
 
     test("CloudSource", async () => {
