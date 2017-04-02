@@ -5,6 +5,7 @@
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../list-view/list-view.html">
 <link rel="import" href="../record-view/record-view.html">
+<link rel="import" href="../start-view/start-view.html">
 
 <dom-module id="pl-app">
     <template>
@@ -34,6 +35,8 @@
         </style>
 
         <iron-pages id="pages" attr-for-selected="id" selected="{{ _currentView }}">
+
+            <pl-start-view id="startView"></pl-start-view>
 
             <pl-list-view id="listView"
                 records="[[ collection.records ]]"

@@ -12,7 +12,7 @@ class App extends Polymer.Element {
     static get properties() { return {
         _currentView: {
             type: "string",
-            value: "listView"
+            value: "startView"
         },
         _selectedRecord: {
             type: Object,

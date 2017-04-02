@@ -1,0 +1,79 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared.html">
+
+<dom-module id="pl-start-view">
+
+    <template>
+
+        <style include="shared">
+            :host {
+                display: flex;
+                flex-direction: column;
+                text-align: center;
+                color: rgba(0, 0, 0, 0.3);
+                @apply --fullbleed;
+            }
+
+            .hero {
+                margin: -50px 0 50px 0;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .hero svg {
+                margin: 0 auto;
+                width: 150px
+                height: 150px;
+                fill: currentColor;
+            }
+
+            input {
+                width: 100%;
+                box-sizing: border-box;
+                text-align: center;
+            }
+
+            input::-webkit-input-placeholder {
+                color: inherit;
+            }
+
+            button {
+                font-weight: bold;
+            }
+        </style>
+
+        <div class="spacer"></div>
+
+        <div class="hero">
+
+            <svg viewBox="0 0 1024 1024">
+                <path fill-rule="evenodd" d="M512,1024 C794.76979,1024 1024,794.76979 1024,512 C1024,229.230208 794.76979,0 512,0 C229.230208,0 0,229.230208 0,512 C0,794.76979 229.230208,1024 512,1024 Z M207.118136,565.656492 C164.221592,569.187739 130.517117,605.121117 130.517117,648.928404 L130.517116,726.934457 C205.720352,859.86443 348.360646,949.58173 511.948656,949.58173 C676.154,949.58173 819.25323,859.18602 894.2287,725.427699 L894.2287,725.427701 L894.2287,648.928404 C894.2287,605.116498 860.5198,569.187653 817.62768,565.656515 L817.62768,495.345774 C817.62768,326.723911 680.96204,190.019145 512.372907,190.019145 C343.784375,190.019145 207.118136,326.724178 207.118136,495.345774 L207.118136,565.656492 Z M332.442985,565.371711 L692.30283,565.371711 L692.30283,495.345774 C692.30283,395.930883 611.739007,315.343993 512.372907,315.343993 C413.007342,315.343993 332.442985,395.931219 332.442985,495.345774 L332.442985,565.371711 Z"></path>
+            </svg>
+
+        </div>
+
+        <div class="tap tiles-2">
+            <input id="passwordInput" type="password" placeholder="Enter Password">
+        </div>
+
+        <button on-click="enter" type="button" class="tap tiles-3">Unlock</button>
+
+        <div class="spacer tiles-4"></div>
+
+    </template>
+
+    <script>
+(() => {
+
+class StartView extends Polymer.Element {
+
+    static get is() { return "pl-start-view"; }
+
+}
+
+window.customElements.define(StartView.is, StartView);
+
+})();
+    </script>
+
+</dom-module>
