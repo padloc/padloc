@@ -84,4 +84,24 @@ field2:value2",name2,category2,0`;
         compareRecords(records, expected);
     });
 
+    test("from Padlock", () => {
+        const data = `{"adata":"o85jAehnFjbW+9lkcGkhiQ==","cipher":"AES","ct":"1NFGbGobAMRoigGTC9wAEoTPiLvN633HQC1zO3MHr8Gh7mo/clInWxsp7WS3r7f1Djwkyjm7l2Z3LUzPqGGP3FJa936dBRJT1lTGyGLanvt0UJUvB8aft5onINaEOb5Js3eqqEet2ZoVauhk4xq/gJwWYGGW3yd2BQCynPJ7oQp7wiS2YKj5/4Httymba+VGZ2BT9F8bQWwT70Ozudw+XJoju5TR6uJgfHHqNcv9EzIMemccKW2KyU81u4cNVKXfmpyCbrjDVjUBcZiMSTEjL2kffbWGsonT3W3NbtJXyzT1sNK2DMJKaIvldp4mJeSYhW3gsG202HjD4D9x2J7msYSNs6+MRDABSp5WVeSStNu9/ut5xDYSNO8OxDafjPcwnFTrdSbZStbnkCEA4GUDRtwD+NsaLbphQoqjv/DAJG5tG7qEADOHyySL6ErXGHooBOPyqEVA/7ffNf905tpCgRya6r5Fb8HZPOQ0XJAqEIBMUeeZVLvh/ShzdFvFh7YP4tQtaUR1XN4=","iter":10000,"iv":"GJyHEBL515SEBPzFERloeQ==","keySize":256,"mode":"ccm","salt":"mhw9R9OBEZZwocNkkPxXlg==","ts":64}`;
+
+        const expected = [
+            {name: "record1", category: "category1", fields: [
+                { name: "username", value: "username1" },
+                { name: "password", value: "password1" }
+            ]},
+            {name: "record2", category: "", fields: [
+                { name: "password", value: "password2" }
+            ]}
+        ].map(Record.fromRaw);
+
+        assert(imp.isFromPadlock(data));
+
+        const records = imp.fromPadlock(data, "password");
+
+        compareRecords(records, expected);
+    });
+
 });
