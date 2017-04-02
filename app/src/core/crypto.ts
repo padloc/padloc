@@ -92,7 +92,7 @@ function encrypt(key: string, pt: string, params: CipherParams): string {
                               base64ToBits(params.adata), params.ts);
         return bitsToBase64(ct);
     } catch(e) {
-        throw new CryptoError("decryption_failed");
+        throw new CryptoError("encryption_failed");
     }
 }
 
@@ -207,6 +207,8 @@ export class Container implements KeyParams, CipherParams {
         let raw: RawContainer;
         try {
             raw = JSON.parse(json);
+            raw.cipher = raw.cipher.toLowerCase() as Cipher;
+            raw.mode = raw.mode.toLowerCase() as Mode;
         } catch (e) {
             throw new CryptoError("invalid_container_data");
         }
