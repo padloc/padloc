@@ -24,12 +24,6 @@ class App extends Polymer.Element {
         super();
         this.collection = new Collection();
         this.localSource = new EncryptedSource(new LocalStorageSource("default_coll"));
-        this.localSource.password = "password";
-    }
-
-    ready() {
-        super.ready();
-        this.fetch();
     }
 
     _closeRecord() {
@@ -73,14 +67,22 @@ class App extends Polymer.Element {
         }
     }
 
-    save() {
-        this.collection.save(this.localSource);
+    _unlocked() {
+        this.notifyPath("collection.records");
+        setTimeout(() => {
+            this.$.pages.select("listView");
+        }, 500);
     }
 
-    fetch() {
-        return this.collection.fetch(this.localSource).then(() => {
-            this.notifyPath("collection.records");
-        });
+    lock() {
+        this.collection.clear();
+        this.localSource.password = "";
+        this.$.startView.clear();
+        this.$.pages.select("startView");
+    }
+
+    save() {
+        this.collection.save(this.localSource);
     }
 
     openMainMenu() {

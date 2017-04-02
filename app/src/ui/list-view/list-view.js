@@ -94,6 +94,10 @@ class ListView extends Polymer.Element {
         this.$.list.notifyResize();
     }
 
+    _lock() {
+        this.dispatchEvent(new CustomEvent("lock"));
+    }
+
 }
 
 window.customElements.define(ListView.is, ListView);

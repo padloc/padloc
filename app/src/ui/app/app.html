@@ -36,13 +36,17 @@
 
         <iron-pages id="pages" attr-for-selected="id" selected="{{ _currentView }}">
 
-            <pl-start-view id="startView"></pl-start-view>
+            <pl-start-view id="startView"
+                collection="[[ collection ]]"
+                local-source="[[ localSource ]]"
+                on-unlock="_unlocked"></pl-start-view>
 
             <pl-list-view id="listView"
                 records="[[ collection.records ]]"
                 selected-record="{{ _selectedRecord }}"
                 on-open-menu="openMainMenu"
-                on-record-new="_newRecord"></pl-list-view>
+                on-record-new="_newRecord"
+                on-lock="lock"></pl-list-view>
 
             <pl-record-view id="recordView"
                 record="[[ _selectedRecord ]]"

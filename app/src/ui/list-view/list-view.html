@@ -70,7 +70,7 @@
             </div>
             <pl-icon icon="add" class="tiles-2 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cloud" class="tiles-3 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="lock" class="tiles-4 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="lock" class="tiles-4 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="settings" class="tiles-5 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cancel" class="tiles-2 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>

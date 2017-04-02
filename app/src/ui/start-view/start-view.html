@@ -1,11 +1,19 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../icon/icon.html">
 
 <dom-module id="pl-start-view">
 
     <template>
 
         <style include="shared">
+            @keyframes rumble {
+                25% {transform: translate(2%, 0);}
+                50% {transform: translate(-2%, -1%);}
+                75% {transform: translate(2%, 1%);}
+            }
+
             :host {
                 display: flex;
                 flex-direction: column;
@@ -16,13 +24,11 @@
 
             .hero {
                 margin: -50px 0 50px 0;
-                position: relative;
-                overflow: hidden;
             }
 
             .hero svg {
                 margin: 0 auto;
-                width: 150px
+                width: 150px;
                 height: 150px;
                 fill: currentColor;
             }
@@ -39,6 +45,34 @@
 
             button {
                 font-weight: bold;
+                position: relative;
+            }
+
+            button > * {
+                @apply --absolute-center;
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+            }
+
+            :host([loading]) .enter-label, :host([success]) .enter-label, :host([fail]) .enter-label,
+            :host(:not([loading])) .enter-spinner,
+            :host(:not([success])) .enter-icon-success,
+            :host(:not([fail])) .enter-icon-fail {
+                opacity: 0.5;
+                transform: scale(0);
+            }
+
+            :host([fail]) .hero svg {
+                animation: rumble 0.2s;
+            }
+
+            button pl-icon {
+                font-size: 120%;
+            }
+
+            paper-spinner-lite {
+                line-height: normal;
+                --paper-spinner-color: currentColor;
+                --paper-spinner-stroke-width: 2px;
             }
         </style>
 
@@ -56,7 +90,12 @@
             <input id="passwordInput" type="password" placeholder="Enter Password">
         </div>
 
-        <button on-click="enter" type="button" class="tap tiles-3">Unlock</button>
+        <button on-click="_enter" type="button" class="tap tiles-3">
+            <div class="enter-label">Unlock</div>
+            <paper-spinner-lite active="[[ loading ]]" class="enter-spinner"></paper-spinner-lite>
+            <pl-icon icon="check" class="enter-icon-success"></pl-icon>
+            <pl-icon icon="cancel" class="enter-icon-fail"></pl-icon>
+        </button>
 
         <div class="spacer tiles-4"></div>
 
@@ -68,6 +107,53 @@
 class StartView extends Polymer.Element {
 
     static get is() { return "pl-start-view"; }
+
+    static get properties() { return {
+        loading: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
+        success: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
+        fail: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
+        collection: {
+            type: Object
+        },
+        localSource: {
+            type: Object
+        }
+    }; }
+
+    _enter() {
+        this.loading = true;
+        this.localSource.password = this.$.passwordInput.value;
+        return this.collection.fetch(this.localSource).then(() => {
+            this.loading = false;
+            this.success = true;
+            this.dispatchEvent(new CustomEvent("unlock"));
+        }, (e) => {
+            if (e.code === "decryption_failed") {
+                this.loading = false;
+                this.fail = true;
+                setTimeout(() => this.fail = false, 1000);
+            } else {
+                throw e;
+            }
+        });
+    }
+
+    clear() {
+        this.loading = this.success = this.fail = false;
+        this.$.passwordInput.value = "";
+    }
 
 }
 
