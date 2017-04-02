@@ -20,6 +20,7 @@
     "sjcl": "^1.0.6",
     "webcomponentsjs": "^0.7.23",
     "paper-input": "PolymerElements/paper-input#2.0-preview",
-    "iron-list": "polymerelements/iron-list#2.0-preview"
+    "iron-list": "polymerelements/iron-list#2.0-preview",
+    "iron-pages": "polymerelements/iron-pages#2.0-preview"
   }
 }

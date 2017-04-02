@@ -46,6 +46,22 @@
             iron-list {
                 flex: 1;
             }
+
+            pl-record-item {
+                @apply --tap-highlight;
+            }
+
+            pl-record-item::after {
+                @apply --tap-highlight-after;
+            }
+
+            pl-record-item:focus::after {
+                @apply --tap-highlight-hover-after;
+            }
+
+            pl-record-item.selected::after {
+                @apply --tap-highlight-active-after;
+            }
         </style>
 
         <header>
@@ -53,17 +69,19 @@
                 <input class="tiles-1" placeholder="Type to search..." value="{{ _filterString::input }}"></input>
             </div>
             <pl-icon icon="add" class="tiles-2 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="cloud" class="tiles-3 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="lock" class="tiles-4 tap" on-click="_openMenu" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="settings" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="cloud" class="tiles-3 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="lock" class="tiles-4 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="settings" class="tiles-5 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cancel" class="tiles-2 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
 
         <main>
 
-            <iron-list items="[[ _filterAndSort(records, _filterString) ]]">
+            <iron-list id="list" selection-enabled items="[[ _filterAndSort(records, _filterString) ]]" selected-item="{{ selectedRecord }}">
                 <template>
-                    <pl-record-item record="[[ item ]]" on-click="_recordTapped" class$="[[ _itemClass(index) ]]"></pl-record-item>
+                    <div>
+                        <pl-record-item record="[[ item ]]" class$="[[ _itemClass(index, selected) ]]" tabindex$="[[ tabIndex ]]"></pl-record-item>
+                    </div>
                 </template>
             </iron-list>
 

@@ -24,7 +24,32 @@ class ListView extends Polymer.Element {
             value: ""
         },
         records: Array,
+        selectedRecord: {
+            type: Object,
+            observer: "_selectedRecordChanged",
+            notify: true
+        }
     }; }
+
+    ready() {
+        super.ready();
+        window.addEventListener("keydown", (e) => {
+            switch (e.keyCode) {
+                case 40: // ARROW_DOWN
+                    this.$.list._focusPhysicalItem(this.$.list.firstVisibleIndex);
+                    break;
+                case 38: // ARROW_UP
+                    this.$.list._focusPhysicalItem(this.$.list.lastVisibleIndex);
+                    break;
+            }
+        });
+        this.$.list.addEventListener("keydown", (e) => e.stopPropagation());
+    }
+
+    deselect() {
+        this.$.list.clearSelection();
+        this.$.list.notifyResize();
+    }
 
     _filterAndSort() {
         return this.records
@@ -32,8 +57,9 @@ class ListView extends Polymer.Element {
             .sort((a, b) => Record.compare(a, b));
     }
 
-    _itemClass(index) {
-        return "tiles-" + (Math.floor((index + 1) % 8) + 1);
+    _itemClass(index, selected) {
+        let cl = "tiles-" + (Math.floor((index + 1) % 8) + 1);
+        return selected ? cl + " selected" : cl;
     }
 
     _isEmpty() {
@@ -62,6 +88,10 @@ class ListView extends Polymer.Element {
 
     _limit(items) {
         return items.slice(0, 50);
+    }
+
+    _selectedRecordChanged() {
+        this.$.list.notifyResize();
     }
 
 }

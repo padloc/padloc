@@ -1,4 +1,5 @@
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../styles/config.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../dialog/dialog.html">
@@ -32,16 +33,23 @@
             }
         </style>
 
-        <pl-list-view id="listView" records="[[ collection.records ]]" selected="{{ _selectedRecord }}"
-            on-open-menu="openMainMenu"
-            on-record-new="_newRecord"
-            on-record-select="_openRecord"></pl-list-view>
+        <iron-pages id="pages" attr-for-selected="id" selected="{{ _currentView }}">
 
-        <pl-record-view id="recordView" record="{{ _selectedRecord }}" categories="[[ collection.categories ]]"
-            on-record-change="_recordChange"
-            on-record-close="_closeRecord"
-            on-record-create="_createRecord"
-            on-record-delete="_deleteRecord"></pl-record-view>
+            <pl-list-view id="listView"
+                records="[[ collection.records ]]"
+                selected-record="{{ _selectedRecord }}"
+                on-open-menu="openMainMenu"
+                on-record-new="_newRecord"></pl-list-view>
+
+            <pl-record-view id="recordView"
+                record="[[ _selectedRecord ]]"
+                categories="[[ collection.categories ]]"
+                on-record-change="_recordChange"
+                on-record-close="_closeRecord"
+                on-record-create="_createRecord"
+                on-record-delete="_deleteRecord"></pl-record-view>
+
+        </iron-pages>
 
         <pl-dialog id="mainMenu" class="tiles">
             <button class="tap" on-click="_openSettings">Settings</button>

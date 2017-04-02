@@ -13,6 +13,10 @@ class RecordItem extends Polymer.Element {
         return value ? value.replace(/[^\n]/g, "\u2022") : "";
     }
 
+    _fieldTapped(e) {
+        e.stopPropagation();
+    }
+
 }
 
 window.customElements.define(RecordItem.is, RecordItem);

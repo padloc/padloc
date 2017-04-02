@@ -6,7 +6,19 @@ const LocalStorageSource = padlock.source.LocalStorageSource;
 const EncryptedSource = padlock.source.EncryptedSource;
 
 class App extends Polymer.Element {
+
     static get is() { return "pl-app"; }
+
+    static get properties() { return {
+        _currentView: {
+            type: "string",
+            value: "listView"
+        },
+        _selectedRecord: {
+            type: Object,
+            observer: "_selectedRecordChanged"
+        }
+    }; }
 
     constructor() {
         super();
@@ -17,28 +29,18 @@ class App extends Polymer.Element {
 
     ready() {
         super.ready();
-        this.$.recordView.style.display = "none";
         this.fetch();
     }
 
-    _openRecord(e) {
-        this.$.recordView.draft = false;
-        this.$.recordView.record = e.detail.record;
-        this.$.listView.style.display = "none";
-        this.$.recordView.style.display = "";
-    }
-
     _closeRecord() {
-        this.$.recordView.record = null;
-        this.$.listView.style.display = "";
-        this.$.recordView.style.display = "none";
+        this.$.listView.deselect();
+        this.$.pages.select("listView");
     }
 
     _newRecord() {
         this.$.recordView.draft = true;
         this.$.recordView.record = new Record();
-        this.$.listView.style.display = "none";
-        this.$.recordView.style.display = "block";
+        this.$.pages.select("recordView");
         this.$.recordView.edit();
     }
 
@@ -62,6 +64,13 @@ class App extends Polymer.Element {
         this.save();
         this.notifyPath("collection.records");
         this._closeRecord();
+    }
+
+    _selectedRecordChanged() {
+        if (this._selectedRecord) {
+            this.$.recordView.draft = false;
+            this.$.pages.select("recordView");
+        }
     }
 
     save() {
