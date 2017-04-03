@@ -47,6 +47,17 @@
                 flex: 1;
             }
 
+            .empty {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .empty-message {
+                padding: 15px;
+                text-align: center;
+            }
+
             pl-record-item {
                 @apply --tap-highlight;
             }
@@ -62,13 +73,33 @@
             pl-record-item.selected::after {
                 @apply --tap-highlight-active-after;
             }
+
+            header pl-icon[arrow] {
+                position: relative;
+                overflow: hidden;
+            }
+
+            header pl-icon[arrow]::before {
+                content: "";
+                display: block;
+                width: 15px;
+                height: 15px;
+                position: absolute;
+                bottom: -7px;
+                left: 0;
+                right: 0;
+                margin: 0 auto;
+                transform: rotate(45deg);
+                background: rgba(0, 0, 0, 0.1);
+                pointer-events: none;
+            }
         </style>
 
         <header>
             <div class="tap">
                 <input class="tiles-1" placeholder="Type to search..." value="{{ _filterString::input }}"></input>
             </div>
-            <pl-icon icon="add" class="tiles-2 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-2 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cloud" class="tiles-3 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="lock" class="tiles-4 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="settings" class="tiles-5 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
@@ -77,13 +108,22 @@
 
         <main>
 
-            <iron-list id="list" selection-enabled items="[[ _filterAndSort(records, _filterString) ]]" selected-item="{{ selectedRecord }}">
+            <iron-list id="list" selection-enabled hidden$="[[ _isEmpty(records.length) ]]"
+                items="[[ _filterAndSort(records, _filterString) ]]"
+                selected-item="{{ selectedRecord }}">
                 <template>
                     <div>
                         <pl-record-item record="[[ item ]]" class$="[[ _itemClass(index, selected) ]]" tabindex$="[[ tabIndex ]]"></pl-record-item>
                     </div>
                 </template>
             </iron-list>
+
+            <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty tiles tiles-3">
+                <div class="empty-message">
+                    You don't have any data yet! Start by creating your first record!
+                </div>
+                <div class="spacer"></div>
+            </div>
 
         </main>
 

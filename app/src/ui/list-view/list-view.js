@@ -63,7 +63,7 @@ class ListView extends Polymer.Element {
     }
 
     _isEmpty() {
-        return !this.records.length;
+        return !this.records.filter((r) => !r.removed).length;
     }
 
     _recordTapped(e) {
