@@ -98,7 +98,7 @@ function encrypt(key, pt, params) {
         return bitsToBase64(ct);
     }
     catch (e) {
-        throw new CryptoError("decryption_failed");
+        throw new CryptoError("encryption_failed");
     }
 }
 class Container {
@@ -176,6 +176,8 @@ class Container {
         let raw;
         try {
             raw = JSON.parse(json);
+            raw.cipher = raw.cipher.toLowerCase();
+            raw.mode = raw.mode.toLowerCase();
         }
         catch (e) {
             throw new CryptoError("invalid_container_data");
@@ -1002,6 +1004,12 @@ class EncryptedSource {
             cont.password = this.password;
             cont.set(data);
             return this.source.set(cont.toJSON());
+        });
+    }
+    hasData() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield this.source.get();
+            return data !== "";
         });
     }
     clear() {

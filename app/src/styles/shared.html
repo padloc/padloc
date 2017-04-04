@@ -4,13 +4,14 @@
     <template>
         <style>
 
-            :host, html, button, input {
+            :host, html, button, input, textarea {
                 font-family: var(--font-family), var(--font-family-fallback);
                 font-weight: var(--font-weight-regular);
                 font-size: var(--font-size-default);
                 color: var(--color-foreground);
                 -webkit-font-smoothing: antialiased;
                 -webkit-tap-highlight-color: transparent;
+                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
             }
 
             a {
@@ -69,6 +70,7 @@
                 white-space: pre;
                 word-wrap: normal;
                 overflow-x: scroll;
+                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
             }
 
             input:not(:focus), textarea:not(:focus) {
@@ -88,8 +90,9 @@
             }
 
             ::-webkit-input-placeholder {
-               color: var(--color-foreground);
-               opacity: 0.6;
+                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
+                color: var(--color-foreground);
+                opacity: 0.6;
             }
 
             [hidden] {
