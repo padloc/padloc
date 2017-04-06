@@ -46,6 +46,10 @@ class ListView extends Polymer.Element {
         this.$.list.addEventListener("keydown", (e) => e.stopPropagation());
     }
 
+    select(record) {
+        this.$.list.selectItem(record);
+    }
+
     deselect() {
         this.$.list.clearSelection();
         this.$.list.notifyResize();

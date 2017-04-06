@@ -47,8 +47,7 @@ class Dialog extends Polymer.Element {
 
         this.classList.toggle("open", this.open);
 
-        // const opts = { bubbles: true, composed: true } as CustomEventInit;
-        // this.dispatchEvent(new CustomEvent(this.open ? "dialog-open" : "dialog-close", opts));
+        this.dispatchEvent(new CustomEvent(this.open ? "dialog-open" : "dialog-close"));
     }
 
     //* Closes the popup (duh)
@@ -58,6 +57,7 @@ class Dialog extends Polymer.Element {
 
     _dismiss() {
         if (!this.preventDismiss) {
+            this.dispatchEvent(new CustomEvent("dialog-dismiss"));
             this._close();
         }
     }

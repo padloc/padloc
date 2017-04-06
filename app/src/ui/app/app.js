@@ -32,9 +32,10 @@ class App extends Polymer.Element {
     }
 
     _newRecord() {
-        this.$.recordView.draft = true;
-        this.$.recordView.record = new Record();
-        this.$.pages.select("recordView");
+        const record = new Record();
+        this.collection.add(record);
+        this.notifyPath("collection.records");
+        this.$.listView.select(record);
         this.$.recordView.edit();
     }
 
@@ -43,14 +44,6 @@ class App extends Polymer.Element {
         record.updated = new Date();
         this.save();
         this.notifyPath("collection.categories");
-    }
-
-    _createRecord(e) {
-        this.collection.add(e.detail.record);
-        this.notifyPath("collection.records");
-        this.notifyPath("collection.categories");
-        this.save();
-        this._closeRecord();
     }
 
     _deleteRecord(e) {
@@ -62,7 +55,6 @@ class App extends Polymer.Element {
 
     _selectedRecordChanged() {
         if (this._selectedRecord) {
-            this.$.recordView.draft = false;
             this.$.pages.select("recordView");
         }
     }

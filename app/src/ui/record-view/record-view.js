@@ -6,10 +6,6 @@ class RecordView extends Polymer.Element {
 
     static get properties() { return {
         categories: Array,
-        draft: {
-            type: Boolean,
-            value: false
-        },
         record: {
             type: Object,
             notify: true
@@ -44,10 +40,6 @@ class RecordView extends Polymer.Element {
             this.$.newField.field = { name: "", value: "" };
         }
         this._fireChangeEvent();
-    }
-
-    _createRecord() {
-        this.dispatchEvent(new CustomEvent("record-create", { detail: { record: this.record } }));
     }
 
     _deleteRecord() {
@@ -87,6 +79,10 @@ class RecordView extends Polymer.Element {
     }
 
     close() {
+        if (!this.record.name) {
+            this.$.alertDialog.alert("Please enter a record name!").then(() => this.edit());
+            return;
+        }
         this.dispatchEvent(new CustomEvent("record-close"));
     }
 

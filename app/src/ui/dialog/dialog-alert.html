@@ -1,0 +1,56 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="dialog.html">
+
+<dom-module id="pl-dialog-alert">
+
+    <template>
+        <style include="shared"></style>
+
+        <pl-dialog open="{{ open }}" on-dialog-close="_dialogClosed">
+            <div class="message tiles-1">{{ message }}</div>
+            <button class="tap tiles-2" on-click="_dismiss">{{ buttonLabel }}</button>
+        </pl-dialog>
+    </template>
+
+    <script>
+(() => {
+
+const defaultButtonLabel = "OK";
+
+class DialogAlert extends Polymer.Element {
+
+    static get is() { return "pl-dialog-alert"; }
+
+    static get properties() { return {
+        buttonLabel: { type: String, value: defaultButtonLabel },
+        message: { type: String, value: "" },
+        open: { type: Boolean, value: false }
+    }; }
+
+    _dialogClosed() {
+        typeof this._resolve === "function" && this._resolve();
+        this._resolve = null;
+    }
+
+    _dismiss() {
+        this.open = false;
+    }
+
+    alert(message, buttonLabel) {
+        this.message = message || this.message;
+        this.buttonLabel = buttonLabel || this.buttonLabel || defaultButtonLabel;
+        this.open = true;
+
+        return new Promise((resolve) => {
+            this._resolve = resolve;
+        });
+    }
+}
+
+window.customElements.define(DialogAlert.is, DialogAlert);
+
+})();
+    </script>
+
+</dom-module>
