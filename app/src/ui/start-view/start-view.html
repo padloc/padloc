@@ -2,6 +2,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
+<link rel="import" href="../input/input.html">
 
 <dom-module id="pl-start-view">
 
@@ -32,13 +33,11 @@
                 fill: currentColor;
             }
 
-            input {
-                width: 100%;
-                box-sizing: border-box;
+            pl-input {
                 text-align: center;
             }
 
-            input::-webkit-input-placeholder {
+            pl-input::-webkit-input-placeholder {
                 color: inherit;
             }
 
@@ -97,9 +96,7 @@
 
         </div>
 
-        <div class="tap tiles-2">
-            <input id="passwordInput" type="password" placeholder$="[[ _inputPlaceholder(_hasData) ]]">
-        </div>
+        <pl-input id="passwordInput" type="password" placeholder="[[ _inputPlaceholder(_hasData) ]]" class="tap tiles-2"></pl-input>
 
         <button on-click="_enter" type="button" class="tap tiles-3">
             <div class="enter-label">[[ _enterButtonLabel(_hasData) ]]</div>

@@ -2,6 +2,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
+<link rel="import" href="../input/input.html">
 <link rel="import" href="../record-item/record-item.html">
 
 <dom-module id="pl-list-view">
@@ -20,21 +21,9 @@
                 height: 100%;
             }
 
-            header > div {
+            header > pl-input {
                 flex: 1;
-            }
-
-            header input {
-                width: 100%;
                 padding-left: 15px;
-            }
-
-            header input:not(:focus) ~ pl-icon[icon="cancel"] {
-                display: none;
-            }
-
-            header input:focus ~ pl-icon:not([icon="cancel"]) {
-                display: none;
             }
 
             main {
@@ -96,11 +85,9 @@
         </style>
 
         <header>
-            <div class="tap">
-                <input class="tiles-1" placeholder="Type to search..." value="{{ _filterString::input }}"></input>
-            </div>
+            <pl-input class="tiles-1" placeholder="Type to search..." value="{{ _filterString }}"></pl-input>
             <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-2 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="cloud" class="tiles-3 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="cloud" class="tiles-3 tap" on-click="_openCloudView" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="lock" class="tiles-4 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="settings" class="tiles-5 tap" on-click="_openSettings" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cancel" class="tiles-2 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>

@@ -3,6 +3,7 @@
 <link rel="import" href="../dialog/dialog-alert.html">
 <link rel="import" href="../dialog/dialog-confirm.html">
 <link rel="import" href="../icon/icon.html">
+<link rel="import" href="../input/input.html">
 <link rel="import" href="record-field.html">
 
 <dom-module id="pl-record-view">
@@ -17,12 +18,7 @@
                 flex-direction: column;
             }
 
-            header > div {
-                flex: 1;
-                display: flex;
-            }
-
-            .name {
+            header > pl-input {
                 flex: 1;
                 width: 0;
                 padding: 0 15px;
@@ -35,7 +31,7 @@
                 overflow: visible;
             }
 
-            .category > input {
+            .category > pl-input {
                 font-size: var(--font-size-small);
                 flex: 1;
                 height: auto;
@@ -71,7 +67,7 @@
                 padding: 10px 15px;
             }
 
-            .category > input:focus ~ #categoryList {
+            .category > pl-input[focused] ~ #categoryList {
                 display: block;
             }
 
@@ -85,17 +81,16 @@
 
         <header>
             <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
-            <div class="tiles-2 tap">
-                <input id="nameInput" class="name" value="{{ record.name::input }}"
-                    placeholder="Enter Record Name" on-change="_fireChangeEvent"></input>
-            </div>
+            <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}"
+                placeholder="Enter Record Name" on-change="_fireChangeEvent"></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
         <main>
             <div class="category tap tiles-1">
                 <pl-icon icon="category"></pl-icon>
-                <input id="categoryInput" value="{{ record.category::input }}" placeholder="No Category" on-change="_fireChangeEvent">
+                <pl-input id="categoryInput" value="{{ record.category }}" placeholder="No Category"
+                    on-change="_fireChangeEvent"></pl-input>
                 <pl-icon icon="dropdown" class="tap" on-click="_showCategoryList"></pl-icon>
                 <div id="categoryList" class="tiles">
                     <div></div>

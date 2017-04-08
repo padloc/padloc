@@ -51,6 +51,7 @@
 
             input {
                 border: none;
+                appearance: none;
                 font-family: inherit;
                 font-size: inherit;
                 font-weight: 400;
@@ -58,11 +59,7 @@
                 border-radius: 0;
                 background: transparent;
                 margin: 0;
-                padding: 0 10px;
-                height: var(--row-height);
-                appearance: none;
-                box-sizing: border-box;
-                text-overflow: ellipsis;
+                padding: 0;
             }
 
             textarea {
@@ -71,7 +68,7 @@
                 font-size: inherit;
                 color: inherit;
                 border: none;
-                background: #fff;
+                background: transparent;
                 margin: 0;
                 display: block;
                 padding: 0;
@@ -85,10 +82,6 @@
                 word-wrap: normal;
                 overflow-x: scroll;
                 text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
-            }
-
-            input:not(:focus), textarea:not(:focus) {
-                cursor: pointer;
             }
 
             strong {

@@ -1,4 +1,3 @@
-/* global autosize */
 (() => {
 
 class RecordField extends padlock.BaseElement {
@@ -34,11 +33,6 @@ class RecordField extends padlock.BaseElement {
         }
     }; }
 
-    connectedCallback() {
-        super.connectedCallback();
-        autosize(this.$.valueInput);
-    }
-
     _computeEditing() {
         return this._editingName || this._editingValue;
     }
@@ -47,9 +41,6 @@ class RecordField extends padlock.BaseElement {
         if (!this._editing && !this.draft) {
             this.notifyPath("field.name");
             this.notifyPath("field.value");
-            setTimeout(() => {
-                autosize.update(this.$.valueInput);
-            }, 200);
         }
 
         if (prev !== undefined) {
@@ -82,14 +73,6 @@ class RecordField extends padlock.BaseElement {
         setTimeout(() => {
             this._editingValue = false;
         }, 300);
-    }
-
-    _keyup(e) {
-        if (e.keyCode === 13 && e.target !== this.$.valueInput) {
-            this._confirmEdit();
-        } else if (e.keyCode == 27) {
-            this._cancelEdit();
-        }
     }
 
     _fireEditEvent() {
