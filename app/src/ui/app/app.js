@@ -2,6 +2,7 @@
 
 const Collection = padlock.data.Collection;
 const Record = padlock.data.Record;
+const Settings = padlock.data.Settings;
 const LocalStorageSource = padlock.source.LocalStorageSource;
 const EncryptedSource = padlock.source.EncryptedSource;
 
@@ -10,6 +11,10 @@ class App extends Polymer.Element {
     static get is() { return "pl-app"; }
 
     static get properties() { return {
+        collection: Object,
+        localSource: Object,
+        settings: Object,
+        settingsSource: Object,
         _currentView: {
             type: "string",
             value: "startView"
@@ -20,10 +25,16 @@ class App extends Polymer.Element {
         }
     }; }
 
+    static get observers() { return [
+        "_saveSettings(settings.*)"
+    ]; }
+
     constructor() {
         super();
         this.collection = new Collection();
-        this.localSource = new EncryptedSource(new LocalStorageSource("default_coll"));
+        this.localSource = new EncryptedSource(new LocalStorageSource("coll_default"));
+        this.settings = new Settings();
+        this.settingsSource = new EncryptedSource(new LocalStorageSource("settings_encrypted"));
     }
 
     _closeRecord() {
@@ -66,9 +77,24 @@ class App extends Polymer.Element {
         }, 500);
     }
 
+    _openSettings() {
+        this.$.pages.select("settingsView");
+    }
+
+    _settingsBack() {
+        this.$.pages.select("listView");
+    }
+
+    _saveSettings() {
+        if (this.settings.loaded) {
+            this.settings.save(this.settingsSource);
+        }
+    }
+
     lock() {
         this.collection.clear();
-        this.localSource.password = "";
+        this.settings.clear();
+        this.localSource.password = this.settingsSource.password = "";
         this.$.startView.reset();
         this.$.pages.select("startView");
     }

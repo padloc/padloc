@@ -5,6 +5,7 @@
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../list-view/list-view.html">
 <link rel="import" href="../record-view/record-view.html">
+<link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../start-view/start-view.html">
 
 <dom-module id="pl-app">
@@ -38,7 +39,9 @@
 
             <pl-start-view id="startView"
                 collection="[[ collection ]]"
+                settings="{{ settings }}"
                 local-source="[[ localSource ]]"
+                settings-source="[[ settingsSource ]]"
                 on-unlock="_unlocked"></pl-start-view>
 
             <pl-list-view id="listView"
@@ -46,7 +49,8 @@
                 selected-record="{{ _selectedRecord }}"
                 on-open-menu="openMainMenu"
                 on-record-new="_newRecord"
-                on-lock="lock"></pl-list-view>
+                on-lock="lock"
+                on-open-settings="_openSettings"></pl-list-view>
 
             <pl-record-view id="recordView"
                 record="[[ _selectedRecord ]]"
@@ -55,6 +59,10 @@
                 on-record-close="_closeRecord"
                 on-record-create="_createRecord"
                 on-record-delete="_deleteRecord"></pl-record-view>
+
+            <pl-settings-view id="settingsView"
+                settings="{{ settings }}"
+                on-settings-back="_settingsBack"></pl-settings-view>
 
         </iron-pages>
 

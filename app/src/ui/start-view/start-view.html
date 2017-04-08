@@ -135,12 +135,13 @@ class StartView extends Polymer.Element {
             value: false,
             reflectToAttribute: true
         },
-        collection: {
-            type: Object
+        collection: Object,
+        localSource: Object,
+        settings: {
+            type: Object,
+            notify: true
         },
-        localSource: {
-            type: Object
-        },
+        settingsSource: Object,
         _hasData: {
             type: Boolean
         }
@@ -166,11 +167,7 @@ class StartView extends Polymer.Element {
 
         if (this._hasData) {
             this.loading = true;
-            return this.collection.fetch(this.localSource).then(() => {
-                this.loading = false;
-                this.success = true;
-                this.dispatchEvent(new CustomEvent("unlock"));
-            }, (e) => {
+            this.collection.fetch(this.localSource).then(() => this._loadSettings(), (e) => {
                 if (e.code === "decryption_failed") {
                     this.loading = false;
                     this.fail = true;
@@ -181,12 +178,22 @@ class StartView extends Polymer.Element {
             });
         } else {
             this.loading = true;
-            this.collection.save(this.localSource).then(() => {
-                this.loading = false;
-                this.success = true;
-                this.dispatchEvent(new CustomEvent("unlock"));
-            });
+            this.collection.save(this.localSource).then(() => this._loadSettings());
         }
+    }
+
+    _loadSettings() {
+        this.settingsSource.password = this.localSource.password;
+        this.settings.fetch(this.settingsSource)
+            .catch(() => this.settings.save(this.settingsSource))
+            .then(() => this._decryptSuccess());
+    }
+
+    _decryptSuccess() {
+        this.loading = false;
+        this.success = true;
+        this.notifyPath("settings");
+        this.dispatchEvent(new CustomEvent("unlock"));
     }
 
     _enterButtonLabel() {
