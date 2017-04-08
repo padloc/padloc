@@ -1,5 +1,5 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
 
 <dom-module id="pl-record-item">
@@ -104,8 +104,8 @@
                 <div class="category ellipsis">{{ record.category }}</div>
                 <pl-icon icon="forward"></pl-icon>
             </div>
-            <template is="dom-repeat" items="{{ record.fields }}">
                 <div class="field tap" on-click="_fieldTapped">
+            <template is="dom-repeat" items="[[ record.fields ]]" mutable-data>
                     <div class="field-label">{{ item.name }}</div>
                     <div class="field-value">{{ _obfuscate(item.value) }}</div>
                 </div>

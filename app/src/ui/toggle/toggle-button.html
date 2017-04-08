@@ -1,5 +1,5 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
 <link rel="import" href="toggle.html">
 
 <dom-module id="pl-toggle-button">
@@ -51,7 +51,7 @@
     <script>
 (() => {
 
-class ToggleButton extends Polymer.Element {
+class ToggleButton extends padlock.BaseElement {
 
     static get is() { return "pl-toggle-button"; }
 

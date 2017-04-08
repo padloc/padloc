@@ -1,6 +1,6 @@
 (() => {
 
-class Dialog extends Polymer.Element {
+class Dialog extends padlock.BaseElement {
 
     static get is() { return "pl-dialog"; }
 

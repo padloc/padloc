@@ -1,7 +1,7 @@
 /* global autosize */
 (() => {
 
-class RecordField extends Polymer.Element {
+class RecordField extends padlock.BaseElement {
 
     static get is() { return "pl-record-field"; }
 

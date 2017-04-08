@@ -1,5 +1,5 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
 <link rel="import" href="dialog.html">
 
 <dom-module id="pl-dialog-confirm">
@@ -21,7 +21,7 @@ const defaultMessage = "Are you sure you want to do this?";
 const defaultConfirmLabel = "Confirm";
 const defaultCancelLabel = "Cancel";
 
-class DialogConfirm extends Polymer.Element {
+class DialogConfirm extends padlock.BaseElement {
 
     static get is() { return "pl-dialog-confirm"; }
 

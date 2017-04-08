@@ -1,6 +1,6 @@
 (() => {
 
-class RecordView extends Polymer.Element {
+class RecordView extends padlock.BaseElement {
 
     static get is() { return "pl-record-view"; }
 

@@ -15,7 +15,7 @@ function filterByString(fs, rec) {
     return !!match;
 }
 
-class ListView extends Polymer.Element {
+class ListView extends padlock.BaseElement {
     static get is() { return "pl-list-view"; }
 
     static get properties() { return {

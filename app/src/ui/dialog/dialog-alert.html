@@ -1,5 +1,5 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
 <link rel="import" href="dialog.html">
 
 <dom-module id="pl-dialog-alert">
@@ -18,7 +18,7 @@
 
 const defaultButtonLabel = "OK";
 
-class DialogAlert extends Polymer.Element {
+class DialogAlert extends padlock.BaseElement {
 
     static get is() { return "pl-dialog-alert"; }
 

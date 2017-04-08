@@ -6,7 +6,7 @@ const Settings = padlock.data.Settings;
 const LocalStorageSource = padlock.source.LocalStorageSource;
 const EncryptedSource = padlock.source.EncryptedSource;
 
-class App extends Polymer.Element {
+class App extends padlock.BaseElement {
 
     static get is() { return "pl-app"; }
 

@@ -1,5 +1,5 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
 
 <dom-module id="pl-slider">
     <template>
@@ -78,7 +78,7 @@
     <script>
 (() => {
 
-class Slider extends Polymer.Element {
+class Slider extends padlock.BaseElement {
 
     static get is() { return "pl-slider"; }
 

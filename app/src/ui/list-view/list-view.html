@@ -1,6 +1,6 @@
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../record-item/record-item.html">
 
@@ -102,14 +102,17 @@
             <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-2 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cloud" class="tiles-3 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="lock" class="tiles-4 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="settings" class="tiles-5 tap" on-click="" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="settings" class="tiles-5 tap" on-click="_openSettings" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cancel" class="tiles-2 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
 
         <main>
 
-            <iron-list id="list" selection-enabled hidden$="[[ _isEmpty(records.length) ]]"
+            <iron-list id="list"
+                mutable-data
+                hidden$="[[ _isEmpty(records.length) ]]"
                 items="[[ _filterAndSort(records, _filterString) ]]"
+                selection-enabled
                 selected-item="{{ selectedRecord }}">
                 <template>
                     <div>
