@@ -9,16 +9,30 @@
             :host {
                 display: inline-block;
                 font-size: inherit;
+                height: var(--row-height);
+                padding: 0 15px;
             }
 
             button {
-                height: auto;
+                display: flex;
+                width: 100%;
+                align-items: center;
+                height: 100%;
                 padding: 0;
                 line-height: normal;
+                text-align: left;
             }
 
-            button > * {
-                vertical-align: middle;
+            button > div {
+                flex: 1;
+            }
+
+            :host(:not([reverse])) button > div {
+                padding-left: 0.5em;
+            }
+
+            :host([reverse]) button {
+                flex-direction: row-reverse;
             }
 
             pl-toggle {
@@ -29,7 +43,7 @@
 
         <button on-click="toggle">
             <pl-toggle id="toggle" active="{{ active }}"></pl-toggle>
-            <span>[[ label ]]</span>
+            <div>[[ label ]]</div>
         </button>
 
     </template>
@@ -45,11 +59,17 @@ class ToggleButton extends Polymer.Element {
         active: {
             type: Boolean,
             value: false,
+            notify: true,
             reflectToAttribute: true
         },
         label: {
             type: String,
             value: ""
+        },
+        reverse: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
         }
     }; }
 

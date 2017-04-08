@@ -1,0 +1,142 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../icon/icon.html">
+<link rel="import" href="../slider/slider.html">
+<link rel="import" href="../toggle/toggle-button.html">
+
+<dom-module id="pl-settings-view">
+
+    <template>
+
+        <style include="shared">
+            :host {
+                @apply --fullbleed;
+                display: flex;
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            button > pl-icon {
+                position: absolute;
+            }
+
+            pl-toggle-button {
+                display: block;
+            }
+
+            .info {
+                display: block;
+                font-size: 15px;
+                text-align: center;
+                cursor: pointer;
+                line-height: normal;
+                padding: 10px 15px;
+                height: auto;
+            }
+        </style>
+
+        <header class="tiles">
+            <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
+            <div class="title">Settings</div>
+            <pl-icon icon="cloud" class="tap" on-click=""></pl-icon>
+            <pl-icon icon="import" class="tap" on-click=""></pl-icon>
+            <pl-icon icon="export" class="tap" on-click=""></pl-icon>
+        </header>
+
+        <main>
+            <section class="tiles tiles-2">
+                <button on-click="_openCloudView" class="tap arrow">Padlock Cloud</button>
+                <button on-click="_import" class="tap arrow">Import Data</button>
+                <button on-click="_export" class="tap arrow">Export Data</button>
+            </section>
+
+            <section class="tiles tiles-2">
+                <pl-toggle-button active="{{ settings.autoLock }}" label="Auto Lock" class="tap" reverse></pl-toggle-button>
+                <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit=" min"
+                    label="After" hidden$="{{ !settings.autoLock }}" class="tap"></pl-slider>
+            </section>
+
+            <section class="tiles tiles-2">
+                <button on-click="_resetData" class="tap">Reset App</button>
+                <button on-click="_changePassword" class="tap">Change Master Password</button>
+                <pl-toggle-button active="{{ settings.obfuscateFields }}" label="Hide Field Values" class="tap" reverse></pl-toggle-button>
+            </section>
+
+            <section class="tiles tiles-2">
+                <button on-click="_openWebsite" class="tap">Website</button>
+                <button on-click="_sendMail" class="tap">Support</button>
+                <button class="info tap" on-click="_openHomepage">
+                    <strong>Padlock {{ _version() }}</strong><br>
+                    Developed and maintained by <strong>MaKleSoft</strong>
+                </button>
+            </section>
+        </main>
+
+    </template>
+
+    <script>
+(() => {
+
+class SettingsView extends padlock.BaseElement {
+
+    static get is() { return "pl-settings-view"; }
+
+    static get properties() { return {
+        settings: {
+            type: Object,
+            notify: true
+        }
+    }; }
+
+    _back() {
+        this.dispatchEvent(new CustomEvent("settings-back"));
+    }
+
+    //* Opens the change password dialog and resets the corresponding input elements
+    _changePassword() {
+        this.notifyPath("settings");
+    }
+
+    _import() {
+        this.fire("import");
+    }
+
+    _export() {
+        this.fire("export");
+    }
+
+    _openWebsite() {
+        window.open("https://padlock.io", "_system");
+    }
+
+    _sendMail() {
+        window.open("mailto:support@padlock.io", "_system");
+    }
+
+    _openGithub() {
+        window.open("https://github.com/maklesoft/padlock/", "_system");
+    }
+
+    _resetData() {
+    }
+
+    _openCloudView() {
+        this.fire("open-cloud-view");
+    }
+
+    _version() {
+        return padlock.version;
+    }
+
+}
+
+window.customElements.define(SettingsView.is, SettingsView);
+
+})();
+    </script>
+
+</dom-module>

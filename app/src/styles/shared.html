@@ -35,6 +35,20 @@
                 background: transparent;
             }
 
+            button.arrow, a.button.arrow {
+                padding-right: 30px;
+            }
+
+            button.arrow::before, a.button.arrow::before {
+                font-family: "FontAwesome";
+                content: "\f054";
+                display: block;
+                position: absolute;
+                top: 0;
+                right: 15px;
+                bottom: 0;
+            }
+
             input {
                 border: none;
                 font-family: inherit;
@@ -105,7 +119,7 @@
             }
 
             section {
-                margin: 30px 0;
+                margin: 15px 0;
             }
 
             header {
@@ -117,6 +131,12 @@
                 position: relative;
                 z-index: 1;
                 box-shadow: rgba(0, 0, 0, 0.15) 0 1px 1px;
+            }
+
+            header > .title {
+                padding: 0 15px;
+                flex: 1;
+                text-align: center;
             }
 
             header > pl-icon {
