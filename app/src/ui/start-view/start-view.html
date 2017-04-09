@@ -1,8 +1,7 @@
-<link rel="import" href="../../../bower_components/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
-<link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../loading-button/loading-button.html">
 
 <dom-module id="pl-start-view">
 
@@ -41,36 +40,12 @@
                 color: inherit;
             }
 
-            button {
+            #enterButton {
                 font-weight: bold;
-                position: relative;
-            }
-
-            button > * {
-                @apply --absolute-center;
-                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-            }
-
-            :host([loading]) .enter-label, :host([success]) .enter-label, :host([fail]) .enter-label,
-            :host(:not([loading])) .enter-spinner,
-            :host(:not([success])) .enter-icon-success,
-            :host(:not([fail])) .enter-icon-fail {
-                opacity: 0.5;
-                transform: scale(0);
             }
 
             :host([fail]) .hero svg {
                 animation: rumble 0.2s;
-            }
-
-            button pl-icon {
-                font-size: 120%;
-            }
-
-            paper-spinner-lite {
-                line-height: normal;
-                --paper-spinner-color: currentColor;
-                --paper-spinner-stroke-width: 2px;
             }
         </style>
 
@@ -99,12 +74,7 @@
         <pl-input id="passwordInput" type="password" placeholder="[[ _inputPlaceholder(_hasData) ]]" class="tap tiles-2"
             on-enter="_enter"></pl-input>
 
-        <button on-click="_enter" type="button" class="tap tiles-3">
-            <div class="enter-label">[[ _enterButtonLabel(_hasData) ]]</div>
-            <paper-spinner-lite active="[[ loading ]]" class="enter-spinner"></paper-spinner-lite>
-            <pl-icon icon="check" class="enter-icon-success"></pl-icon>
-            <pl-icon icon="cancel" class="enter-icon-fail"></pl-icon>
-        </button>
+        <pl-loading-button id="enterButton" on-click="_enter" class="tap tiles-3" label="[[ _enterButtonLabel(_hasData) ]]"></pl-loading-button>
 
         <div class="spacer tiles-4"></div>
 
@@ -118,21 +88,6 @@ class StartView extends padlock.BaseElement {
     static get is() { return "pl-start-view"; }
 
     static get properties() { return {
-        loading: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
-        success: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
-        fail: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
         collection: Object,
         localSource: Object,
         settings: {
@@ -151,8 +106,8 @@ class StartView extends padlock.BaseElement {
     }
 
     reset() {
-        this.loading = this.success = this.fail = false;
         this.$.passwordInput.value = "";
+        this.$.enterButton.stop();
         this._checkHasData();
     }
 
@@ -164,18 +119,16 @@ class StartView extends padlock.BaseElement {
         this.localSource.password = this.$.passwordInput.value;
 
         if (this._hasData) {
-            this.loading = true;
+            this.$.enterButton.start();
             this.collection.fetch(this.localSource).then(() => this._loadSettings(), (e) => {
                 if (e.code === "decryption_failed") {
-                    this.loading = false;
-                    this.fail = true;
-                    setTimeout(() => this.fail = false, 1000);
+                    this.$.enterButton.fail();
                 } else {
                     throw e;
                 }
             });
         } else {
-            this.loading = true;
+            this.$.enterButton.start();
             this.collection.save(this.localSource).then(() => this._loadSettings());
         }
     }
@@ -188,8 +141,7 @@ class StartView extends padlock.BaseElement {
     }
 
     _decryptSuccess() {
-        this.loading = false;
-        this.success = true;
+        this.$.enterButton.success();
         this.notifyPath("settings");
         this.dispatchEvent(new CustomEvent("unlock"));
     }
