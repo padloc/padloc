@@ -33,7 +33,10 @@
         </template>
 
         <template is="dom-if" if="[[ !multiline ]]">
-            <input id="input" value="{{ value::input }}" type$="[[ type ]]" placeholder$="[[ placeholder ]]"
+            <input id="input" value="{{ value::input }}"
+                autocomplete="off" spellcheck="false"
+                type$="[[ type ]]" placeholder$="[[ placeholder ]]"
+                required$="[[ required ]]" pattern$="[[ pattern ]]"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keyup="_keyup">
         </template>
 
@@ -56,13 +59,28 @@ class PlInput extends padlock.BaseElement {
             reflectToAttribute: true,
             readonly: true
         },
+        invalid: {
+            type: Boolean,
+            value: false,
+            notifiy: true,
+            reflectToAttribute: true,
+            readonly: true
+        },
         multiline: {
             type: Boolean,
             value: false,
             reflectToAttribute: true
         },
+        pattern: {
+            type: String,
+            value: ""
+        },
         placeholder: {
             type: String,
+            value: ""
+        },
+        required: {
+            type: Boolean,
             value: ""
         },
         type: {
@@ -72,7 +90,8 @@ class PlInput extends padlock.BaseElement {
         value: {
             type: String,
             value: "",
-            notify: true
+            notify: true,
+            observer: "_valueChanged"
         }
     }; }
 
@@ -84,6 +103,7 @@ class PlInput extends padlock.BaseElement {
         if (this.multiline && this.inputElement) {
             autosize(this.inputElement);
         }
+        this._valueChanged();
     }
 
     _focused() {
@@ -105,6 +125,10 @@ class PlInput extends padlock.BaseElement {
         } else if (e.keyCode == 27) {
             this.dispatchEvent(new CustomEvent("escape"));
         }
+    }
+
+    _valueChanged() {
+        this.invalid = this.inputElement && !this.inputElement.checkValidity();
     }
 
     focus() {
