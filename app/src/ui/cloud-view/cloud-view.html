@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../input/input.html">
 
 <dom-module id="pl-cloud-view">
@@ -64,8 +65,8 @@
                     Before being sent to our servers, your data is encrypted locally using your master password to make
                     sure that nobody can read it - not even we!
                 </div>
-                <pl-input id="emailInput" type="email" placeholder="Enter Email Adress"></pl-input>
-                <button class="tap" on-click="connect">Get Started</button>
+                <pl-input id="emailInput" type="email" placeholder="Enter Email Adress" required></pl-input>
+                <button class="tap" on-click="_connect">Get Started</button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !_isActivationPending(settings.syncKey, settings.syncConnected) ]]">
@@ -75,7 +76,6 @@
                     Didn't get it? Try again using the button below!
                     <div class="conn-id">Connection ID: {{ settings.syncId }}</div>
                 </div>
-                <button class="tap" on-click="connect">Try Again</button>
                 <button class="tap" on-click="_cancelConnect">Cancel</button>
             </section>
 
@@ -130,7 +130,7 @@
     <script>
 (() => {
 
-class CloudView extends padlock.BaseElement {
+class CloudView extends padlock.DialogMixin(padlock.BaseElement) {
 
     static get is() { return "pl-cloud-view"; }
 
@@ -145,56 +145,31 @@ class CloudView extends padlock.BaseElement {
         }
     }; }
 
-    //* Opens the dialog for connecting to the Padlock Cloud
-    connect() {
-        this.set("settings.syncKey", "");
-        this.fire("open-form", {
-            components: [
-                {element: "input", type: "email", placeholder: "Email Address", name: "email",
-                    value: this.settings.syncEmail, autofocus: true},
-                {element: "button", label: "Connect", submit: true},
-                {element: "button", label: "Cancel", cancel: true}
-            ],
-            title: "Connect to Padlock Cloud",
-            submit: this._connectEnter.bind(this)
-        });
-    }
+    static get observers() { return [
+        "_customHostChanged(settings.syncCustomHost)"
+    ]; }
 
     _back() {
         this.dispatchEvent(new CustomEvent("cloud-back"));
     }
 
     _disconnect() {
-        this.fire("open-form", {
-            components: [
-                {element: "button", label: "Disconnect", submit: true},
-                {element: "button", label: "Cancel", cancel: true}
-            ],
-            title: "Are you sure you want to disconnect from Padlock Cloud?",
-            submit: function() {
+        this.confirm("Are you sure you want to disconnect from Padlock Cloud?", "Disconnect").then((confirmed) => {
+            if (confirmed) {
                 this.set("settings.syncConnected", false);
                 this.set("settings.syncKey", "");
                 this.set("settings.syncEmail", "");
                 this.set("settings.syncReadonly", false);
-            }.bind(this)
+            }
         });
     }
 
-    _connectEnter(data, inputs) {
-        var email = data.email;
-
-        if (!email || !inputs.email.checkValidity()) {
-            this.fire("open-form", {
-                components: [
-                    {element: "button", label: "Try Again", submit: true},
-                ],
-                title: email ? inputs.email.validationMessage : "Please enter an email address!",
-                submit: this.connect.bind(this)
-            });
-            return;
+    _connect() {
+        if (this.$.emailInput.invalid) {
+            this.alert(this.$.emailInput.validationMessage || "Please enter a valid email address!");
+        } else {
+            this._requestAuthToken(this.$.emailInput.value.toLowerCase());
         }
-
-        this._requestAuthToken(email);
     }
 
     //* Requests an api key from the cloud api with the entered email and device name
@@ -202,35 +177,32 @@ class CloudView extends padlock.BaseElement {
         this.set("settings.syncEmail", email);
         this.set("settings.syncKey", "");
 
-        // Show progress indicator
-        this.$$("padlock-progress").show();
-
-        var cloudSource = new CloudSource(this.settings);
-        cloudSource.requestAuthToken(email, create, function(authToken) {
-            this.$$("padlock-progress").hide();
-            // We're getting back the api key directly, but it will valid only
-            // after the user has visited the activation link in the email he was sent
-            this.set("settings.syncConnected", false);
-            this.set("settings.syncKey", authToken.token);
-            this.set("settings.syncId", authToken.id);
-            this._testCredentials(true);
-            this._alert("Almost done! An email was sent to " + email + " with further instructions.");
-        }.bind(this), function(e) {
-            this.$$("padlock-progress").hide();
-            switch (typeof e === "string" ? e : e.error) {
-                case padlock.ERR_CLOUD_NOT_FOUND:
-                    this._requestAuthToken(email, true);
-                    break;
-                case padlock.ERR_CLOUD_LIMIT_EXCEEDED:
-                    this._alert("For security reasons only a limited amount of connection request " +
-                        "are allowed at a time. Please wait a little before trying again!");
-                    break;
-                default:
-                    this.fire("error", e);
-            }
-            this.notifyPath("settings.syncSubStatus");
-            this.notifyPath("settings.sync_trial_end");
-        }.bind(this));
+        var cloudSource = new padlock.source.CloudSource(this.settings);
+        cloudSource.requestAuthToken(email, create)
+            .then((authToken) => {
+                // We're getting back the api key directly, but it will valid only
+                // after the user has visited the activation link in the email he was sent
+                this.set("settings.syncConnected", false);
+                this.set("settings.syncKey", authToken.token);
+                this.set("settings.syncId", authToken.id);
+                this._testCredentials(true);
+                this.alert("Almost done! An email was sent to " + email + " with further instructions.");
+            })
+            .catch((e) => {
+                switch (typeof e === "string" ? e : e.code) {
+                    case "account_not_found":
+                        this._requestAuthToken(email, true);
+                        break;
+                    case "rate_limit_exceeded":
+                        this.alert("For security reasons only a limited amount of connection request " +
+                            "are allowed at a time. Please wait a little before trying again!");
+                        break;
+                    default:
+                        throw e;
+                }
+                this.notifyPath("settings.syncSubStatus");
+                this.notifyPath("settings.sync_trial_end");
+            });
     }
 
     _isActivationPending() {
@@ -249,15 +221,9 @@ class CloudView extends padlock.BaseElement {
         return s && s != "active" && s != "trialing";
     }
 
-    //* Shows an alert dialog with a given _message_
-    _alert(message) {
-        this.fire("alert", {message: message});
-    }
-
     _testCredentials(poll) {
-        var cloudSource = new CloudSource(this.settings);
-
-        cloudSource.testCredentials(function(connected) {
+        var cloudSource = new padlock.source.CloudSource(this.settings);
+        cloudSource.testCredentials().then((connected) => {
             this.set("settings.syncConnected", connected);
 
             if (connected) {
@@ -272,27 +238,15 @@ class CloudView extends padlock.BaseElement {
                 clearTimeout(this._testCredsTimeout);
                 this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 3000);
             }
-        }.bind(this), this.fire.bind(this, "error"));
+        });
     }
 
     _stopTestCredentials() {
         clearTimeout(this._testCredsTimeout);
     }
 
-    _showingChanged() {
-        if (this.showing && this.settings.syncKey) {
-            this._testCredentials(!this.settings.syncConnected);
-        } else if (!this.showing) {
-            this._stopTestCredentials();
-        }
-    }
-
     _isSet(val) {
         return !!val;
-    }
-
-    leftHeaderButton() {
-        this.fire("back");
     }
 
     _synchronize() {
@@ -300,42 +254,28 @@ class CloudView extends padlock.BaseElement {
     }
 
     _connectionSuccess() {
-        this.fire("open-form", {
-            components: [
-                {element: "button", label: "Synchronize Now", tap: this._synchronize.bind(this), submit: true}
-            ],
-            title: "You have successfully connected to Padlock Cloud! " +
-                "You can now start synchronizing your data!"
-        });
+        this.confirm("You successfully paired this device with Padlock Cloud!", "Synchonize Now", "Dismiss")
+            .then((confirmed) => {
+                if (confirmed) {
+                    this._synchronize();
+                }
+            });
     }
 
     _customHostChanged() {
         if (this.settings.syncCustomHost) {
-            this.fire("open-form", {
-                components: [
-                    {element: "button", label: "Continue", submit: true},
-                    {element: "button", label: "Cancel", submit: true, tap: () => {
+            this.confirm("Are you sure you want to use a custom server for synchronization? " +
+                "This option is only recommended for advanced users!", "Continue").then((confirmed) => {
+                    if (!confirmed) {
                         this.set("settings.syncCustomHost", false);
-                    }}
-                ],
-                title: "Are you sure you want to use a custom server for synchronization? " +
-                    "This options is only recommended for advanced users!"
-            });
+                    }
+                });
         }
     }
 
     _cancelConnect() {
-        this.fire("open-form", {
-            title: "Are you sure you want to cancel the connection process?",
-            components: [
-                {element: "button", label: "Yes", submit: true},
-                {element: "button", label: "No", cancel: true}
-            ],
-            submit: function() {
-                this.set("settings.syncKey", "");
-                this._stopTestCredentials();
-            }.bind(this)
-        });
+        this.set("settings.syncKey", "");
+        this._stopTestCredentials();
     }
 
     _openDashboard() {

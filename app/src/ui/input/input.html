@@ -32,7 +32,7 @@
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keyup="_keyup"></textarea>
         </template>
 
-        <template is="dom-if" if="[[ !multiline ]]">
+        <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
             <input id="input" value="{{ value::input }}"
                 autocomplete="off" spellcheck="false"
                 type$="[[ type ]]" placeholder$="[[ placeholder ]]"
@@ -73,7 +73,7 @@ class PlInput extends padlock.BaseElement {
         },
         pattern: {
             type: String,
-            value: ""
+            value: null
         },
         placeholder: {
             type: String,

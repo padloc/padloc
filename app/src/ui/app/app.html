@@ -1,7 +1,7 @@
 <link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
-<link rel="import" href="../../styles/config.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../cloud-view/cloud-view.html">
 <link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../list-view/list-view.html">
 <link rel="import" href="../record-view/record-view.html">
@@ -50,7 +50,8 @@
                 on-open-menu="openMainMenu"
                 on-record-new="_newRecord"
                 on-lock="lock"
-                on-open-settings="_openSettings"></pl-list-view>
+                on-open-settings="_openSettings"
+                on-open-cloud-view="_openCloudView"></pl-list-view>
 
             <pl-record-view id="recordView"
                 record="[[ _selectedRecord ]]"
@@ -63,6 +64,10 @@
             <pl-settings-view id="settingsView"
                 settings="{{ settings }}"
                 on-settings-back="_settingsBack"></pl-settings-view>
+
+            <pl-cloud-view id="cloudView"
+                settings="{{ settings }}"
+                on-cloud-back="_cloudViewBack"></pl-cloud-view>
 
         </iron-pages>
 

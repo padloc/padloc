@@ -106,6 +106,10 @@ class ListView extends padlock.BaseElement {
         this.dispatchEvent(new CustomEvent("open-settings"));
     }
 
+    _openCloudView() {
+        this.dispatchEvent(new CustomEvent("open-cloud-view"));
+    }
+
 }
 
 window.customElements.define(ListView.is, ListView);

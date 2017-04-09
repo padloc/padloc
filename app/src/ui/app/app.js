@@ -91,6 +91,14 @@ class App extends padlock.BaseElement {
         }
     }
 
+    _openCloudView() {
+        this.$.pages.select("cloudView");
+    }
+
+    _cloudViewBack() {
+        this.$.pages.select("settingsView");
+    }
+
     lock() {
         this.collection.clear();
         this.settings.clear();

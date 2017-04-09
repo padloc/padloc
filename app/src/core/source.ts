@@ -155,7 +155,9 @@ export class CloudSource extends AjaxSource {
         } catch (e) {
             throw new CloudError("json_error");
         }
-        authToken.actUrl = req.getResponseHeader("X-Test-Act-Url") || undefined;
+        try {
+            authToken.actUrl = req.getResponseHeader("X-Test-Act-Url") || undefined;
+        } catch (e) {}
         this.settings.syncEmail = authToken.email;
         this.settings.syncToken = authToken.token;
         return authToken;
