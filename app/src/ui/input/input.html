@@ -106,12 +106,16 @@ class PlInput extends padlock.BaseElement {
         this._valueChanged();
     }
 
-    _focused() {
+    _focused(e) {
+        e.stopPropagation();
         this.focused = true;
+        this.dispatchEvent(new CustomEvent("focus"));
     }
 
-    _blurred() {
+    _blurred(e) {
+        e.stopPropagation();
         this.focused = false;
+        this.dispatchEvent(new CustomEvent("blur"));
     }
 
     _changeHandler(e) {
