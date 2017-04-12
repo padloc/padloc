@@ -2,6 +2,7 @@
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../loading-button/loading-button.html">
 
 <dom-module id="pl-cloud-view">
 
@@ -57,7 +58,7 @@
 
         <main>
 
-            <section class="tiles tiles-2" hidden$="[[ _isSet(settings.syncKey) ]]">
+            <section class="tiles tiles-2" hidden$="[[ _isSet(settings.syncToken) ]]">
                 <div class="note">
                     Padlock Cloud provides a convenient way of synchronising your data between all your devices. By
                     securely storing your data in the cloud, it not only allows you to easily access it from anywhere
@@ -69,7 +70,7 @@
                 <button class="tap" on-click="_connect">Get Started</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !_isActivationPending(settings.syncKey, settings.syncConnected) ]]">
+            <section class="tiles tiles-2" hidden$="[[ !_isActivationPending(settings.syncToken, settings.syncConnected) ]]">
                 <div class="note">
                     <strong>Activation pending</strong> - You are almost done connecting this device!
                     An email was sent to <strong>{{ settings.syncEmail }}</strong> with further instructions.
@@ -79,27 +80,34 @@
                 <button class="tap" on-click="_cancelConnect">Cancel</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !settings.syncConnected ]]">
+            <section class="tiles tiles-2" hidden$="[[ !_isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="note">
-                    <strong>Connected</strong> - This device is connected to the Padlock Cloud account <strong>{{ settings.syncEmail }}</strong>.
-                    Connect all your devices with the same account to easily synchronize your data between them!
-                    <div class="conn-id">Connection ID: {{ settings.syncId }}</div>
-                </div>
-                <div class="note" hidden$="[[ !_isTrialing(settings.syncSubStatus) ]]">
-                    <strong>Your trial period ends in {{ _remainingTrialDays(settings.sync_trial_end) }} days.</strong>
+                    <strong>Your trial period ends in {{ _remainingTrialDays(settings.syncTrialEnd) }} days.</strong>
                     After this period, your access will be read-only, which means you will be able to access
                     your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize
                     changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!
                 </div>
-                <div class="note" hidden$="[[ !_isInactive(settings.syncSubStatus) ]]">
+                <button class="tap" on-click="_openDashboard">Manage Subscriptions</button>
+            </section>
+
+            <section class="tiles tiles-2" hidden$="[[ !_isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="note">
                     <strong>Read-Only</strong> -
                     You currently don't have an active subscription! This means you can access
                     your existing data on Padlock Cloud but you won't be able to upload any new data
                     or synchronize changes between devices. Get a subscription now to regain full access
                     to Padlock Cloud!
                 </div>
-                <button class="tap" on-click="_openDashboard" hidden$="[[ !_isInactive(settings.syncSubStatus) ]]">Manage Subscriptions</button>
-                <button class="tap" on-click="_synchronize">Synchronize</button>
+                <button class="tap" on-click="_openDashboard">Manage Subscriptions</button>
+            </section>
+
+            <section class="tiles tiles-2" hidden$="[[ !settings.syncConnected ]]">
+                <div class="note">
+                    <strong>Connected</strong> - This device is connected to the Padlock Cloud account <strong>{{ settings.syncEmail }}</strong>.
+                    Connect all your devices with the same account to easily synchronize your data between them!
+                    <div class="conn-id">Connection ID: {{ settings.syncId }}</div>
+                </div>
+                <pl-loading-button id="syncButton" class="tap" on-click="_synchronize" label="Synchronize"></pl-loading-button>
                 <button class="tap" on-click="_openDashboard">Manage Account</button>
                 <button class="tap" on-click="_disconnect">Disconnect</button>
                 <pl-toggle-button active="{{ settings.syncAuto }}" label="Auto Sync" reverse class="tap"></pl-toggle-button>
@@ -135,6 +143,8 @@ class CloudView extends padlock.DialogMixin(padlock.BaseElement) {
     static get is() { return "pl-cloud-view"; }
 
     static get properties() { return {
+        cloudSource: Object,
+        collection: Object,
         settings: {
             type: Object,
             notify: true
@@ -145,10 +155,6 @@ class CloudView extends padlock.DialogMixin(padlock.BaseElement) {
         }
     }; }
 
-    static get observers() { return [
-        "_customHostChanged(settings.syncCustomHost)"
-    ]; }
-
     _back() {
         this.dispatchEvent(new CustomEvent("cloud-back"));
     }
@@ -156,10 +162,11 @@ class CloudView extends padlock.DialogMixin(padlock.BaseElement) {
     _disconnect() {
         this.confirm("Are you sure you want to disconnect from Padlock Cloud?", "Disconnect").then((confirmed) => {
             if (confirmed) {
-                this.set("settings.syncConnected", false);
-                this.set("settings.syncKey", "");
-                this.set("settings.syncEmail", "");
-                this.set("settings.syncReadonly", false);
+                this.settings.syncConnected = false;
+                this.settings.syncToken = "";
+                this.settings.syncEmail = "";
+                this.settings.syncReadonly = false;
+                this.notifyPath("settings");
             }
         });
     }
@@ -174,17 +181,18 @@ class CloudView extends padlock.DialogMixin(padlock.BaseElement) {
 
     //* Requests an api key from the cloud api with the entered email and device name
     _requestAuthToken(email, create) {
-        this.set("settings.syncEmail", email);
-        this.set("settings.syncKey", "");
+        this.settings.email = email;
+        this.settings.syncToken = "";
+        this.notifyPath("settings");
 
-        var cloudSource = new padlock.source.CloudSource(this.settings);
-        cloudSource.requestAuthToken(email, create)
+        this.cloudSource.source.requestAuthToken(email, create)
             .then((authToken) => {
                 // We're getting back the api key directly, but it will valid only
                 // after the user has visited the activation link in the email he was sent
-                this.set("settings.syncConnected", false);
-                this.set("settings.syncKey", authToken.token);
-                this.set("settings.syncId", authToken.id);
+                this.settings.syncConnected = false;
+                this.settings.syncToken = authToken.token;
+                this.settings.syncId = authToken.id;
+                this.notifyPath("settings");
                 this._testCredentials(true);
                 this.alert("Almost done! An email was sent to " + email + " with further instructions.");
             })
@@ -200,44 +208,40 @@ class CloudView extends padlock.DialogMixin(padlock.BaseElement) {
                     default:
                         throw e;
                 }
-                this.notifyPath("settings.syncSubStatus");
-                this.notifyPath("settings.sync_trial_end");
+                this.notifyPath("settings");
             });
     }
 
     _isActivationPending() {
-        return this.settings.syncKey && !this.settings.syncConnected;
+        return this.settings.syncToken && !this.settings.syncConnected;
     }
 
-    _isTrialing(s) {
-        return s == "trialing";
+    _isTrialing(connected, s) {
+        return connected && s == "trialing";
     }
 
-    _isActive(s) {
-        return s == "active";
-    }
-
-    _isInactive(s) {
-        return s && s != "active" && s != "trialing";
+    _isInactive(connected, s) {
+        return connected && s && s != "active" && s != "trialing";
     }
 
     _testCredentials(poll) {
-        var cloudSource = new padlock.source.CloudSource(this.settings);
-        cloudSource.testCredentials().then((connected) => {
-            this.set("settings.syncConnected", connected);
+        this.cloudSource.source.testCredentials().then((connected) => {
+            this.settings.syncConnected = connected;
 
             if (connected) {
-                this.notifyPath("settings.syncSubStatus", this.settings.syncSubStatus);
-                this.notifyPath("settings.sync_trial_end", this.settings.sync_trial_end);
                 if (poll) {
                     this._connectionSuccess();
                 }
+            } else {
+                if (poll) {
+                    clearTimeout(this._testCredsTimeout);
+                    this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 3000);
+                } else {
+                    this.settings.syncToken = "";
+                }
             }
 
-            if (!connected && poll && this.settings.syncKey) {
-                clearTimeout(this._testCredsTimeout);
-                this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 3000);
-            }
+            this.notifyPath("settings");
         });
     }
 
@@ -250,7 +254,16 @@ class CloudView extends padlock.DialogMixin(padlock.BaseElement) {
     }
 
     _synchronize() {
-        this.fire("synchronize");
+        this.$.syncButton.start();
+        this.collection.fetch(this.cloudSource)
+            .then(() => this.collection.save(this.cloudSource))
+            .catch((e) => {
+                if (e.code !== "subscription_required") {
+                    this.$.syncButton.fail();
+                    throw e;
+                }
+            })
+            .then(() => this.$.syncButton.success());
     }
 
     _connectionSuccess() {
@@ -274,12 +287,12 @@ class CloudView extends padlock.DialogMixin(padlock.BaseElement) {
     }
 
     _cancelConnect() {
-        this.set("settings.syncKey", "");
+        this.set("settings.syncToken", "");
         this._stopTestCredentials();
     }
 
     _openDashboard() {
-        window.open(this.settings["syncHostUrl"] + "/dashboard/", "_system");
+        window.open(this.settings.syncHostUrl + "/dashboard/", "_system");
     }
 
     _remainingTrialDays(trialEnd) {

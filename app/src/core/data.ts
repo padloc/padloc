@@ -63,13 +63,9 @@ export class Record {
 export class Collection {
 
     private _records: Map<string, Record>;
-    // private dispatcher: EventTarget;
 
     constructor() {
         this._records = new Map<string, Record>();
-        // Helper element for dispatching custom events. This is currently only used for publishing
-        // the `update` event
-        // this.dispatcher = document.createElement("div");
     }
 
     get records(): Array<Record> {
@@ -84,8 +80,10 @@ export class Collection {
 
     async fetch(source: Source): Promise<void> {
         let data = await source.get();
-        let records = JSON.parse(data).map(Record.fromRaw);
-        this.add(records);
+        if (data) {
+            let records = JSON.parse(data).map(Record.fromRaw);
+            this.add(records);
+        }
     }
 
     save(source: Source): Promise<void> {
@@ -110,9 +108,6 @@ export class Collection {
         this._records.clear();
     }
 
-    // addEventListener(type: string, listener: () => {} ): void {
-    //     this.dispatcher.addEventListener(type, listener);
-    // }
 }
 
 
@@ -125,7 +120,7 @@ export class Settings {
         syncHostUrl: "https://cloud.padlock.io",
         syncCustomHost: false,
         syncEmail: "",
-        syncKey: "",
+        syncToken: "",
         syncDevice: "",
         syncConnected: false,
         syncAuto: true,

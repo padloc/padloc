@@ -46,7 +46,11 @@ export class LocalStorageSource implements Source {
 
 export class AjaxSource implements Source {
 
-    constructor(public url: string) {}
+    constructor(private _url: string) {}
+
+    get url() {
+        return this._url;
+    }
 
     request(method: Method, url: string, data?: string, headers?: Map<string, string>): Promise<XMLHttpRequest> {
         return request(method, url, data, headers);
@@ -97,7 +101,10 @@ export class CloudSource extends AjaxSource {
 
     constructor(public settings: Settings) {
         super("");
-        this.url = this.urlForPath("store");
+    }
+
+    get url() {
+        return this.urlForPath("store");
     }
 
     async request(method: Method, url: string, data?: string, headers?: Map<string, string>): Promise<XMLHttpRequest> {
@@ -185,7 +192,7 @@ export class EncryptedSource implements Source {
 
     public password: string;
 
-    constructor(private source: Source) {}
+    constructor(public source: Source) {}
 
     async get(): Promise<string> {
         let data = await this.source.get();

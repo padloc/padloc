@@ -5,6 +5,7 @@ const Record = padlock.data.Record;
 const Settings = padlock.data.Settings;
 const LocalStorageSource = padlock.source.LocalStorageSource;
 const EncryptedSource = padlock.source.EncryptedSource;
+const CloudSource = padlock.source.CloudSource;
 
 class App extends padlock.BaseElement {
 
@@ -15,6 +16,7 @@ class App extends padlock.BaseElement {
         localSource: Object,
         settings: Object,
         settingsSource: Object,
+        cloudSource: Object,
         _currentView: {
             type: "string",
             value: "startView"
@@ -35,6 +37,7 @@ class App extends padlock.BaseElement {
         this.localSource = new EncryptedSource(new LocalStorageSource("coll_default"));
         this.settings = new Settings();
         this.settingsSource = new EncryptedSource(new LocalStorageSource("settings_encrypted"));
+        this.cloudSource = new EncryptedSource(new CloudSource(this.settings));
     }
 
     _closeRecord() {
@@ -71,6 +74,7 @@ class App extends padlock.BaseElement {
     }
 
     _unlocked() {
+        this.cloudSource.password = this.localSource.password;
         this.notifyPath("collection.records");
         setTimeout(() => {
             this.$.pages.select("listView");
@@ -102,7 +106,7 @@ class App extends padlock.BaseElement {
     lock() {
         this.collection.clear();
         this.settings.clear();
-        this.localSource.password = this.settingsSource.password = "";
+        this.localSource.password = this.settingsSource.password = this.cloudSource = "";
         this.$.startView.reset();
         this.$.pages.select("startView");
     }
