@@ -17,6 +17,15 @@ class RecordItem extends padlock.BaseElement {
         e.stopPropagation();
     }
 
+    _fieldMouseDown(e) {
+        e.stopPropagation();
+    }
+
+    _moreFieldsLabel() {
+        const n = this.record.fields.length - 2;
+        return n < 1 ? "" : n == 1 ? "1 more field" : (n + " more fields");
+    }
+
 }
 
 window.customElements.define(RecordItem.is, RecordItem);

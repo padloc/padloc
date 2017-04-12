@@ -1,88 +1,113 @@
-<dom-module id="config">
-    <template>
-        <style>
+<link rel="import" href="../../bower_components/polymer/polymer.html">
 
-            :root, :host {
-                --font-family: "Clear Sans";
-                --font-family-fallback: sans-serif;
-                --font-family-mono: "Inconsolata";
+<custom-style>
+    <style is="custom-style">
 
-                --font-size-tiny: 14px;
-                --font-size-small: 16px;
-                --font-size-default: 18px;
-                --font-weight-thin: 100;
-                --font-weight-light: 300;
-                --font-weight-regular: 400;
-                --font-weight-bold: 700;
+        body {
+            --font-family: "Clear Sans";
+            --font-family-fallback: sans-serif;
+            --font-family-mono: "Inconsolata";
 
-                --color-background: #59c6ff;
-                --color-foreground: #ffffff;
+            --font-size-tiny: 14px;
+            --font-size-small: 16px;
+            --font-size-default: 18px;
+            --font-weight-thin: 100;
+            --font-weight-light: 300;
+            --font-weight-regular: 400;
+            --font-weight-bold: 700;
 
-                --row-height: 50px;
+            --color-primary: #59c6ff;
+            --color-secondary: #444;
+            --color-tertiary: #ffffff;
 
-                --toaster-easing: cubic-bezier(1, -0.3, 0, 1.3);
+            --color-background: var(--color-tertiary);
+            --color-foreground: var(--color-secondary);
+            --color-highlight: var(--color-primary);
 
-                --unselectable: {
-                    cursor: default;
-                    user-select: none;
-                };
+            --row-height: 50px;
 
-                --position-sticky: {
-                    position: -webkit-sticky;
-                    position: -moz-sticky;
-                    position: -o-sticky;
-                    position: -ms-sticky;
-                    position: sticky;
-                };
+            --toaster-easing: cubic-bezier(1, -0.3, 0, 1.3);
 
-                --tap-highlight: {
-                    position: relative;
-                    cursor: pointer;
-                };
+            --unselectable: {
+                cursor: default;
+                user-select: none;
+            };
 
-                --tap-highlight-after: {
-                    content: "";
-                    display: block;
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: currentColor;
-                    opacity: 0;
-                    transition: opacity 0.3s;
-                    pointer-events: none;
-                };
+            --position-sticky: {
+                position: -webkit-sticky;
+                position: -moz-sticky;
+                position: -o-sticky;
+                position: -ms-sticky;
+                position: sticky;
+            };
 
-                --tap-highlight-hover-after: {
-                    opacity: 0.15;
-                };
+            --tap-highlight: {
+                position: relative;
+                cursor: pointer;
+            };
 
-                --tap-highlight-active-after: {
-                    opacity: 0.3;
-                    transition: opacity 0.1s;
-                };
+            --tap-highlight-after: {
+                content: "";
+                display: block;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: currentColor;
+                opacity: 0;
+                transition: opacity 0.3s;
+                pointer-events: none;
+            };
 
-                --fullbleed: {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                };
+            --tap-highlight-hover-after: {
+                opacity: 0.15;
+            };
 
-                --ellipsis: {
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                };
+            --tap-highlight-active-after: {
+                opacity: 0.3;
+                transition: opacity 0.1s;
+            };
 
-                --absolute-center: {
-                    @apply --fullbleed;
-                    margin: auto;
-                };
-            }
+            --fullbleed: {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+            };
 
-        </style>
-    </template>
-</dom-module>
+            --ellipsis: {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            };
+
+            --absolute-center: {
+                @apply --fullbleed;
+                margin: auto;
+            };
+
+            --shade-1: {
+            };
+
+            --shade-2: {
+                background: rgba(0, 0, 0, 0.05);
+            };
+
+            --shade-3: {
+                background: rgba(0, 0, 0, 0.1);
+            };
+
+            --shade-4: {
+                background: rgba(0, 0, 0, 0.15);
+            };
+
+            --shade-5: {
+                background: rgba(0, 0, 0, 0.2);
+            };
+
+        }
+
+    </style>
+</custom-style>

@@ -26,6 +26,35 @@
                 padding-left: 15px;
             }
 
+            header {
+                --color-background: var(--color-primary);
+                --color-foreground: var(--color-tertiary);
+                --color-highlight: var(--color-secondary);
+                color: var(--color-foreground);
+                background: var(--color-background);
+                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
+            }
+
+            header pl-icon[arrow] {
+                position: relative;
+                overflow: hidden;
+            }
+
+            header pl-icon[arrow]::before {
+                content: "";
+                display: block;
+                width: 15px;
+                height: 15px;
+                position: absolute;
+                bottom: -7px;
+                left: 0;
+                right: 0;
+                margin: 0 auto;
+                transform: rotate(45deg);
+                background: rgba(0, 0, 0, 0.1);
+                pointer-events: none;
+            }
+
             main {
                 display: flex;
                 flex-direction: column;
@@ -59,38 +88,18 @@
                 @apply --tap-highlight-hover-after;
             }
 
-            pl-record-item.selected::after {
+            pl-record-item[selected]::after {
                 @apply --tap-highlight-active-after;
-            }
-
-            header pl-icon[arrow] {
-                position: relative;
-                overflow: hidden;
-            }
-
-            header pl-icon[arrow]::before {
-                content: "";
-                display: block;
-                width: 15px;
-                height: 15px;
-                position: absolute;
-                bottom: -7px;
-                left: 0;
-                right: 0;
-                margin: 0 auto;
-                transform: rotate(45deg);
-                background: rgba(0, 0, 0, 0.1);
-                pointer-events: none;
             }
         </style>
 
         <header>
-            <pl-input class="tiles-1" placeholder="Type to search..." value="{{ _filterString }}" on-escape="_clearFilter"></pl-input>
-            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-2 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="lock" class="tiles-1 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="settings" class="tiles-2 tap" on-click="_openSettings" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cloud" class="tiles-3 tap" on-click="_openCloudView" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="lock" class="tiles-4 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="settings" class="tiles-5 tap" on-click="_openSettings" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="cancel" class="tiles-2 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
+            <pl-input class="tiles-4" placeholder="Type to search..." value="{{ _filterString }}" on-escape="_clearFilter"></pl-input>
+            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
 
         <main>
@@ -103,7 +112,7 @@
                 selected-item="{{ selectedRecord }}">
                 <template>
                     <div>
-                        <pl-record-item record="[[ item ]]" class$="[[ _itemClass(index, selected) ]]" tabindex$="[[ tabIndex ]]"></pl-record-item>
+                        <pl-record-item record="[[ item ]]" selected$="[[ selected ]]" tabindex$="[[ tabIndex ]]"></pl-record-item>
                     </div>
                 </template>
             </iron-list>

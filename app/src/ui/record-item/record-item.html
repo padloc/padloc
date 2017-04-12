@@ -7,7 +7,6 @@
 
         <style include="shared">
             :host {
-                display: flex;
                 cursor: pointer;
                 vertical-align: top;
                 box-sizing: border-box;
@@ -17,12 +16,12 @@
             .header {
                 display: flex;
                 align-items: center;
+                font-weight: bold;
+                font-size: var(--font-size-small);
             }
 
             .name {
-                flex: 1;
-                padding: 10px 15px;
-                width: 0;
+                padding: 10px 10px 10px 15px;
                 @apply --ellipsis;
             }
 
@@ -35,6 +34,13 @@
                 flex-direction: column;
                 flex: 1;
                 position: relative;
+            }
+
+            .body::after {
+                display: block;
+                content: "";
+                height: 3px;
+                @apply --shade-4;
             }
 
             .tools {
@@ -57,22 +63,17 @@
             }
 
             .field {
-                flex: 1;
                 display: flex;
                 cursor: pointer;
                 font-size: var(--font-size-small);
-                line-height: 25px;
-                padding: 5px 15px;
-            }
-
-            .header, .field {
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                line-height: 35px;
+                height: 35px;
+                padding: 0 15px;
             }
 
             .field-label {
                 margin-right: 5px;
                 font-size: var(--font-size-tiny);
-                font-weight: bold;
             }
 
             .field-label:not(:empty)::after {
@@ -83,6 +84,15 @@
                 flex: 1;
                 width: 0;
                 @apply --ellipsis;
+            }
+
+            .field pl-icon {
+                height: auto;
+                width: 18px;
+            }
+
+            .field:not(:hover) pl-icon {
+                display: none;
             }
 
             .category {
@@ -96,20 +106,44 @@
             .category:empty {
                 display: none;
             }
+
+            .header .more-fields {
+                flex: 1;
+                font-size: 12px;
+                text-align: right;
+                padding-right: 15px;
+                font-weight: normal;
+            }
+
+            .header .more-fields:not(:empty) {
+                min-width: 50px;
+            }
+
+            .header .more-fields:not(:empty):after {
+                font-family: "FontAwesome";
+                content: "\f054";
+                display: inline-block;
+                margin-left: 3px;
+                font-size: 80%;
+            }
         </style>
 
-        <div class="body">
+        <div class="body tiles">
             <div class="header tap">
-                <div class="name">{{ record.name }}</div>
-                <div class="category ellipsis">{{ record.category }}</div>
-                <pl-icon icon="forward"></pl-icon>
+                <div class="name">[[ record.name ]]</div>
+                <div class="category ellipsis">[[ record.category ]]</div>
+                <div class="more-fields">[[ _moreFieldsLabel(record.fields.length) ]]</div>
             </div>
-                <div class="field tap" on-click="_fieldTapped">
-            <template is="dom-repeat" items="[[ record.fields ]]" mutable-data>
-                    <div class="field-label">{{ item.name }}</div>
-                    <div class="field-value">{{ _obfuscate(item.value) }}</div>
-                </div>
-            </template>
+            <div class="field" on-click="_fieldTapped" on-mousedown="_fieldMouseDown">
+                <div class="field-label">[[ record.fields.0.name ]]</div>
+                <div class="field-value">[[ _obfuscate(record.fields.0.value) ]]</div>
+                <pl-icon icon="copy"></pl-icon>
+            </div>
+            <div class="field" on-click="_fieldTapped" on-mousedown="_fieldMouseDown">
+                <div class="field-label">[[ record.fields.1.name ]]</div>
+                <div class="field-value">[[ _obfuscate(record.fields.1.value) ]]</div>
+                <pl-icon icon="copy"></pl-icon>
+            </div>
         </div>
 
     </template>

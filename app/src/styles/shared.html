@@ -3,16 +3,15 @@
 
 <dom-module id="shared">
     <template>
-        <style include="config">
+        <style>
 
             :host, html, button, input, textarea {
                 font-family: var(--font-family), var(--font-family-fallback);
                 font-weight: var(--font-weight-regular);
                 font-size: var(--font-size-default);
-                color: var(--color-foreground);
+                text-shadow: inherit;
                 -webkit-font-smoothing: antialiased;
                 -webkit-tap-highlight-color: transparent;
-                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
             }
 
             a {
@@ -55,7 +54,7 @@
                 appearance: none;
                 font-family: inherit;
                 font-size: inherit;
-                font-weight: 400;
+                font-weight: inherit;
                 color: inherit;
                 border-radius: 0;
                 background: transparent;
@@ -82,7 +81,6 @@
                 white-space: pre;
                 word-wrap: normal;
                 overflow-x: scroll;
-                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
             }
 
             strong {
@@ -98,8 +96,8 @@
             }
 
             ::-webkit-input-placeholder {
-                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
-                color: var(--color-foreground);
+                text-shadow: inherit;
+                color: inherit;
                 opacity: 0.6;
             }
 
@@ -167,34 +165,35 @@
             }
 
             .tiles > :nth-child(8n + 1), .tiles-1 {
+                @apply --shade-1;
             }
 
             .tiles > :nth-child(8n + 2), .tiles-2 {
-                background: rgba(0,0,0,0.1);
+                @apply --shade-2;
             }
 
             .tiles > :nth-child(8n + 3), .tiles-3 {
-                background: rgba(0,0,0,0.2);
+                @apply --shade-3;
             }
 
             .tiles > :nth-child(8n + 4), .tiles-4 {
-                background: rgba(0,0,0,0.3);
+                @apply --shade-4;
             }
 
             .tiles > :nth-child(8n + 5), .tiles-5 {
-                background: rgba(0,0,0,0.4);
+                @apply --shade-5;
             }
 
             .tiles > :nth-child(8n + 6), .tiles-6 {
-                background: rgba(0,0,0,0.3);
+                @apply --shade-4;
             }
 
             .tiles > :nth-child(8n + 7), .tiles-7 {
-                background: rgba(0,0,0,0.2);
+                @apply --shade-3;
             }
 
             .tiles > :nth-child(8n + 8), .tiles-8 {
-                background: rgba(0,0,0,0.1);
+                @apply --shade-1;
             }
 
             .ellipsis {

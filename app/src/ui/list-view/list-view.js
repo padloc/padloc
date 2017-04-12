@@ -61,11 +61,6 @@ class ListView extends padlock.BaseElement {
             .sort((a, b) => Record.compare(a, b));
     }
 
-    _itemClass(index, selected) {
-        let cl = "tiles-" + (Math.floor((index + 1) % 8) + 1);
-        return selected ? cl + " selected" : cl;
-    }
-
     _isEmpty() {
         return !this.records.filter((r) => !r.removed).length;
     }
