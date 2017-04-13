@@ -48,25 +48,25 @@
         </header>
 
         <main>
-            <section class="tiles tiles-2">
+            <section class="tiles tiles-3">
                 <button on-click="_openCloudView" class="tap arrow">Padlock Cloud</button>
                 <button on-click="_import" class="tap arrow">Import Data</button>
                 <button on-click="_export" class="tap arrow">Export Data</button>
             </section>
 
-            <section class="tiles tiles-2">
+            <section class="tiles tiles-3">
+                <pl-toggle-button active="{{ settings.obfuscateFields }}" label="Hide Field Values" class="tap" reverse></pl-toggle-button>
                 <pl-toggle-button active="{{ settings.autoLock }}" label="Auto Lock" class="tap" reverse></pl-toggle-button>
                 <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit=" min"
-                    label="After" hidden$="{{ !settings.autoLock }}" class="tap"></pl-slider>
+                    label="After" hidden$="{{ !settings.autoLock }}"></pl-slider>
             </section>
 
-            <section class="tiles tiles-2">
+            <section class="tiles tiles-3">
                 <button on-click="_resetData" class="tap">Reset App</button>
                 <button on-click="_changePassword" class="tap">Change Master Password</button>
-                <pl-toggle-button active="{{ settings.obfuscateFields }}" label="Hide Field Values" class="tap" reverse></pl-toggle-button>
             </section>
 
-            <section class="tiles tiles-2">
+            <section class="tiles tiles-3">
                 <button on-click="_openWebsite" class="tap">Website</button>
                 <button on-click="_sendMail" class="tap">Support</button>
                 <button class="info tap" on-click="_openHomepage">

@@ -8,12 +8,12 @@
         <style include="shared"></style>
         <style>
             :host {
-                --width: var(--toggle-width, 50px);
+                --width: var(--toggle-width, 45px);
                 --height: var(--toggle-height, 30px);
                 --gutter-width: var(--toggle-gutter-width, 2px);
-                --color-off: var(--toggle-color-off, var(--color-foreground));
-                --color-on: var(--toggle-color-on, var(--color-primary));
-                --color-knob: var(--toggle-color-knob, var(--color-background));
+                --color-off: var(--toggle-color-off, var(--color-background));
+                --color-on: var(--toggle-color-on, var(--color-highlight));
+                --color-knob: var(--toggle-color-knob, var(--color-foreground));
 
                 display: inline-block;
                 width: var(--width);
@@ -33,16 +33,17 @@
                 background: var(--color-knob);
                 border-radius: var(--size);
 
-                transition: transform 0.5s cubic-bezier(1, -0.5, 0, 1.5) -0.2s, opacity 0.5s;
+                transition: transform 0.5s cubic-bezier(1, -0.5, 0, 1.5) -0.2s, background 0.5s, opacity 0.5s;
             }
 
-            :host([active]) {
-                background: var(--color-on);
+            :host(:not([active])) .knob {
+                opacity: 0.8;
             }
 
             :host([active]) .knob {
                 --dx: calc(var(--width) - var(--height));
                 transform: translate(var(--dx), 0);
+                background: var(--color-on);
             }
         </style>
 

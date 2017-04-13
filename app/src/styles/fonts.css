@@ -28,3 +28,14 @@
   font-weight: 400;
   src: local('Inconsolata Regular'), local('Inconsolata-Regular'), url(../../assets/fonts/Inconsolata-Regular.ttf) format('truetype');
 }
+
+@font-face {
+    font-family: 'Padlock';
+    src: url('../../assets/fonts/Padlock.eot');
+    src: url('../../assets/fonts/Padlock.eot?#iefix') format('embedded-opentype'),
+         url('../../assets/fonts/Padlock.woff') format('woff'),
+         url('../../assets/fonts/Padlock.ttf') format('truetype'),
+         url('../../assets/fonts/Padlock.svg#Padlock') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}

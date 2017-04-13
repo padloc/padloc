@@ -94,7 +94,7 @@
         </style>
 
         <header>
-            <pl-icon icon="lock" class="tiles-1 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="logo" class="tiles-1 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="settings" class="tiles-2 tap" on-click="_openSettings" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cloud" class="tiles-3 tap" on-click="_openCloudView" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-input class="tiles-4" placeholder="Type to search..." value="{{ _filterString }}" on-escape="_clearFilter"></pl-input>
@@ -117,7 +117,7 @@
                 </template>
             </iron-list>
 
-            <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty tiles tiles-3">
+            <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty tiles">
                 <div class="empty-message">
                     You don't have any data yet! Start by creating your first record!
                 </div>
