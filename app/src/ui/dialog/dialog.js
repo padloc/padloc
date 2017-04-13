@@ -8,6 +8,7 @@ class Dialog extends padlock.BaseElement {
         open: {
             type: Boolean,
             value: false,
+            notify: true,
             observer: "_openChanged"
         },
         isShowing: {
