@@ -106,7 +106,7 @@ class App extends padlock.BaseElement {
     lock() {
         this.collection.clear();
         this.settings.clear();
-        this.localSource.password = this.settingsSource.password = this.cloudSource = "";
+        this.localSource.password = this.settingsSource.password = this.cloudSource.password = "";
         this.$.startView.reset();
         this.$.pages.select("startView");
     }
