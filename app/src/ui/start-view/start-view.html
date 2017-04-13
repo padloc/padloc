@@ -9,9 +9,9 @@
 
         <style include="shared">
             @keyframes rumble {
-                25% {transform: translate(2%, 0);}
-                50% {transform: translate(-2%, -1%);}
-                75% {transform: translate(2%, 1%);}
+                25% {transform: translate(5px, 0);}
+                50% {transform: translate(-5px, -3px);}
+                75% {transform: translate(5px, 2px);}
             }
 
             :host {
@@ -49,14 +49,14 @@
                 font-weight: bold;
             }
 
-            :host([fail]) .hero svg {
+            .hero.rumble {
                 animation: rumble 0.2s;
             }
         </style>
 
         <div class="spacer"></div>
 
-        <pl-icon icon="logo" class="hero"></pl-icon>
+        <pl-icon id="logo" icon="logo" class="hero"></pl-icon>
 
         <pl-input id="passwordInput" type="password" placeholder="[[ _inputPlaceholder(_hasData) ]]" class="tap tiles-3"
             on-enter="_enter"></pl-input>
@@ -110,6 +110,9 @@ class StartView extends padlock.BaseElement {
             this.collection.fetch(this.localSource).then(() => this._loadSettings(), (e) => {
                 if (e.code === "decryption_failed") {
                     this.$.enterButton.fail();
+                    this.$.logo.classList.remove("rumble");
+                    this.offsetLeft;
+                    this.$.logo.classList.add("rumble");
                 } else {
                     throw e;
                 }
