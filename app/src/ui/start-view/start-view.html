@@ -19,7 +19,6 @@
                 --color-foreground: var(--color-tertiary);
                 --color-highlight: var(--color-secondary);
                 color: var(--color-foreground);
-                background: var(--color-background);
                 display: flex;
                 flex-direction: column;
                 text-align: center;
@@ -28,12 +27,20 @@
                 z-index: 100;
             }
 
+            .shutter {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background: var(--color-background);
+                transition: transform 0.5s cubic-bezier(1, 0, 0.2, 1);
+            }
+
             .hero {
                 display: block;
                 height: 150px;
                 font-size: 150px;
                 width: auto;
-                margin: -50px 0 40px 0;
+                margin-bottom: 40px;
                 position: relative;
                 z-index: 1;
             }
@@ -53,18 +60,38 @@
             .hero.rumble {
                 animation: rumble 0.2s;
             }
+
+            :host([open]) {
+                pointer-events: none;
+            }
+
+            :host([open]) .shutter.top {
+                transform: translateY(-100%);
+            }
+
+            :host([open]) .shutter.bottom {
+                transform: translateY(100%);
+            }
         </style>
 
-        <div class="spacer"></div>
+        <div class="shutter top">
 
-        <pl-icon id="logo" icon="logo" class="hero"></pl-icon>
+            <div class="spacer"></div>
 
-        <pl-input id="passwordInput" type="password" placeholder="[[ _inputPlaceholder(_hasData) ]]" class="tap tiles-3"
-            on-enter="_enter"></pl-input>
+            <pl-icon id="logo" icon="logo" class="hero"></pl-icon>
 
-        <pl-loading-button id="enterButton" on-click="_enter" class="tap tiles-4" label="[[ _enterButtonLabel(_hasData) ]]"></pl-loading-button>
+        </div>
 
-        <div class="spacer tiles-5"></div>
+        <div class="shutter bottom">
+
+            <pl-input id="passwordInput" type="password" placeholder="[[ _inputPlaceholder(_hasData) ]]" class="tap tiles-3"
+                on-enter="_enter"></pl-input>
+
+            <pl-loading-button id="enterButton" on-click="_enter" class="tap tiles-4" label="[[ _enterButtonLabel(_hasData) ]]"></pl-loading-button>
+
+            <div class="spacer tiles-5"></div>
+
+        </div>
 
     </template>
 
@@ -78,6 +105,11 @@ class StartView extends padlock.BaseElement {
     static get properties() { return {
         collection: Object,
         localSource: Object,
+        open: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
         settings: {
             type: Object,
             notify: true

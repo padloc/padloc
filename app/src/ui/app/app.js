@@ -82,7 +82,7 @@ class App extends padlock.BaseElement {
         this.cloudSource.password = this.localSource.password;
         this.notifyPath("collection.records");
         setTimeout(() => {
-            this.$.startView.style.display = "none";
+            this.$.startView.open = true;
         }, 500);
     }
 
@@ -116,11 +116,11 @@ class App extends padlock.BaseElement {
 
     lock() {
         this.collection.clear();
-        this.notifyPath("collection");
         this.settings.clear();
         this.localSource.password = this.settingsSource.password = this.cloudSource.password = "";
         this.$.startView.reset();
-        this.$.startView.style.display = "";
+        this.$.startView.open = false;
+        setTimeout(() => this.notifyPath("collection"), 500);
     }
 
     save() {
