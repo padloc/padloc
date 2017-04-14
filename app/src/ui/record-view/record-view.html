@@ -12,9 +12,10 @@
             :host {
                 box-sizing: border-box;
                 overflow: auto;
-                @apply --fullbleed;
                 display: flex;
                 flex-direction: column;
+                position: relative;
+                @apply --fullbleed;
             }
 
             header > pl-input {
@@ -76,6 +77,11 @@
                 width: 100%;
             }
 
+            @media (min-width: 700px) {
+                pl-icon[icon=backward] {
+                    display: none;
+                }
+            }
         </style>
 
         <header>

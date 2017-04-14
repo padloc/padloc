@@ -105,6 +105,10 @@ class ListView extends padlock.BaseElement {
         this.dispatchEvent(new CustomEvent("open-cloud-view"));
     }
 
+    _focusFilterInput() {
+        this.$.filterInput.focus();
+    }
+
 }
 
 window.customElements.define(ListView.is, ListView);

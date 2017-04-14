@@ -19,7 +19,8 @@ class App extends padlock.BaseElement {
         cloudSource: Object,
         _currentView: {
             type: "string",
-            value: "startView"
+            value: "placeholderView",
+            observer: "_currentViewChanged"
         },
         _selectedRecord: {
             type: Object,
@@ -42,7 +43,7 @@ class App extends padlock.BaseElement {
 
     _closeRecord() {
         this.$.listView.deselect();
-        this.$.pages.select("listView");
+        this.$.pages.select("placeholderView");
     }
 
     _newRecord() {
@@ -70,6 +71,10 @@ class App extends padlock.BaseElement {
     _selectedRecordChanged() {
         if (this._selectedRecord) {
             this.$.pages.select("recordView");
+        } else {
+            if (this._currentView == "recordView") {
+                this.$.pages.select("placeholderView");
+            }
         }
     }
 
@@ -77,16 +82,17 @@ class App extends padlock.BaseElement {
         this.cloudSource.password = this.localSource.password;
         this.notifyPath("collection.records");
         setTimeout(() => {
-            this.$.pages.select("listView");
+            this.$.startView.style.display = "none";
         }, 500);
     }
 
     _openSettings() {
         this.$.pages.select("settingsView");
+        this.$.listView.deselect();
     }
 
     _settingsBack() {
-        this.$.pages.select("listView");
+        this.$.pages.select("placeholderView");
     }
 
     _saveSettings() {
@@ -97,26 +103,28 @@ class App extends padlock.BaseElement {
 
     _openCloudView() {
         this.$.pages.select("cloudView");
+        this.$.listView.deselect();
     }
 
     _cloudViewBack() {
-        this.$.pages.select("settingsView");
+        this.$.pages.select("placeholderView");
+    }
+
+    _currentViewChanged() {
+        this.$.pages.classList.toggle("showing", this._currentView !== "placeholderView");
     }
 
     lock() {
         this.collection.clear();
+        this.notifyPath("collection");
         this.settings.clear();
         this.localSource.password = this.settingsSource.password = this.cloudSource.password = "";
         this.$.startView.reset();
-        this.$.pages.select("startView");
+        this.$.startView.style.display = "";
     }
 
     save() {
         this.collection.save(this.localSource);
-    }
-
-    openMainMenu() {
-        this.$.mainMenu.open = true;
     }
 }
 

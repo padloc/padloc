@@ -37,36 +37,35 @@
                 padding: 10px 15px;
                 height: auto;
             }
+
+            @media (min-width: 700px) {
+                pl-icon[icon=backward] {
+                    display: none;
+                }
+            }
         </style>
 
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
             <div class="title">Settings</div>
-            <pl-icon icon="cloud" class="tap" on-click=""></pl-icon>
-            <pl-icon icon="import" class="tap" on-click=""></pl-icon>
-            <pl-icon icon="export" class="tap" on-click=""></pl-icon>
         </header>
 
         <main>
-            <section class="tiles tiles-3">
-                <button on-click="_openCloudView" class="tap arrow">Padlock Cloud</button>
-                <button on-click="_import" class="tap arrow">Import Data</button>
-                <button on-click="_export" class="tap arrow">Export Data</button>
-            </section>
-
-            <section class="tiles tiles-3">
+            <section class="tiles tiles-2">
                 <pl-toggle-button active="{{ settings.obfuscateFields }}" label="Hide Field Values" class="tap" reverse></pl-toggle-button>
                 <pl-toggle-button active="{{ settings.autoLock }}" label="Auto Lock" class="tap" reverse></pl-toggle-button>
                 <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit=" min"
                     label="After" hidden$="{{ !settings.autoLock }}"></pl-slider>
             </section>
 
-            <section class="tiles tiles-3">
+            <section class="tiles tiles-2">
+                <button on-click="_import" class="tap arrow">Import Data</button>
+                <button on-click="_export" class="tap arrow">Export Data</button>
                 <button on-click="_resetData" class="tap">Reset App</button>
                 <button on-click="_changePassword" class="tap">Change Master Password</button>
             </section>
 
-            <section class="tiles tiles-3">
+            <section class="tiles tiles-2">
                 <button on-click="_openWebsite" class="tap">Website</button>
                 <button on-click="_sendMail" class="tap">Support</button>
                 <button class="info tap" on-click="_openHomepage">
@@ -122,10 +121,6 @@ class SettingsView extends padlock.BaseElement {
     }
 
     _resetData() {
-    }
-
-    _openCloudView() {
-        this.fire("open-cloud-view");
     }
 
     _version() {

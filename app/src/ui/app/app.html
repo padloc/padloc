@@ -2,7 +2,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../cloud-view/cloud-view.html">
-<link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../icon/icon.html">
 <link rel="import" href="../list-view/list-view.html">
 <link rel="import" href="../record-view/record-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
@@ -12,47 +12,77 @@
     <template>
         <style include="shared">
             :host {
-                display: block;
-                margin: auto;
+                display: flex;
                 overflow: hidden;
                 background: var(--color-background);
                 color: var(--color-foreground);
                 @apply --fullbleed;
             }
 
-            :host(.dark) {
-                --color-background: #555;
+            #listView {
+                width: 350px;
             }
 
-            :host(.light) {
-                --color-background: #ffffff;
-                --color-foreground: #000000;
+            #pages {
+                position: relative;
+                flex: 1;
+                box-shadow: rgba(0, 0, 0, 0.15) -1px 0 1px;
+                background: var(--color-background);
             }
 
-            pl-header {
-                position: absolute;
-                z-index: 1;
-                width: 100%;
+            #placeholderView {
+                @apply --fullbleed;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                color: var(--color-background);
+            }
+
+            .placeholder-icon {
+                display: block;
+                font-size: 150px;
+                width: 150px;
+            }
+
+            @media (max-width: 700px) {
+                pl-list-view {
+                    flex: 1;
+                }
+
+                #pages {
+                    @apply --fullbleed;
+                    z-index: 1;
+                    transition: transform 0.5s cubic-bezier(0.6, 0, 0.2, 1);
+                }
+
+                #pages:not(.showing) {
+                    transform: translateX(100%);
+                }
             }
         </style>
 
+        <pl-start-view id="startView"
+            collection="[[ collection ]]"
+            settings="{{ settings }}"
+            local-source="[[ localSource ]]"
+            settings-source="[[ settingsSource ]]"
+            on-unlock="_unlocked"></pl-start-view>
+
+        <pl-list-view id="listView"
+            records="[[ collection.records ]]"
+            selected-record="{{ _selectedRecord }}"
+            on-open-menu="openMainMenu"
+            on-record-new="_newRecord"
+            on-lock="lock"
+            on-open-settings="_openSettings"
+            on-open-cloud-view="_openCloudView"></pl-list-view>
+
         <iron-pages id="pages" attr-for-selected="id" selected="{{ _currentView }}">
 
-            <pl-start-view id="startView"
-                collection="[[ collection ]]"
-                settings="{{ settings }}"
-                local-source="[[ localSource ]]"
-                settings-source="[[ settingsSource ]]"
-                on-unlock="_unlocked"></pl-start-view>
-
-            <pl-list-view id="listView"
-                records="[[ collection.records ]]"
-                selected-record="{{ _selectedRecord }}"
-                on-open-menu="openMainMenu"
-                on-record-new="_newRecord"
-                on-lock="lock"
-                on-open-settings="_openSettings"
-                on-open-cloud-view="_openCloudView"></pl-list-view>
+            <div id="placeholderView" class="tiles-2">
+                <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
+            </div>
 
             <pl-record-view id="recordView"
                 record="[[ _selectedRecord ]]"
@@ -73,14 +103,6 @@
                 on-cloud-back="_cloudViewBack"></pl-cloud-view>
 
         </iron-pages>
-
-        <pl-dialog id="mainMenu" class="tiles">
-            <button class="tap" on-click="_openSettings">Settings</button>
-            <button class="tap" on-click="_synchronize">Synchronize</button>
-            <button class="tap" on-click="_openGenerator">Generate Password</button>
-            <button class="tap" on-click="_lock">Lock App</button>
-            <button class="tap" on-click="_displayShortcuts" hidden$="{{ _isTouch() }}">Shortcuts</button>
-        </pl-dialog>
 
     </template>
 

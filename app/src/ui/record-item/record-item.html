@@ -7,6 +7,7 @@
 
         <style include="shared">
             :host {
+                display: block;
                 cursor: pointer;
                 vertical-align: top;
                 box-sizing: border-box;
@@ -18,15 +19,12 @@
                 align-items: center;
                 font-weight: bold;
                 font-size: var(--font-size-small);
+                height: 40px;
             }
 
             .name {
-                padding: 10px 10px 10px 15px;
+                padding: 0 15px;
                 @apply --ellipsis;
-            }
-
-            .header > pl-icon {
-                font-size: 80%;
             }
 
             .body {
@@ -43,32 +41,13 @@
                 @apply --shade-4;
             }
 
-            .tools {
-                display: flex;
-                flex-direction: column;
-            }
-
-            .tools > pl-icon {
-                font-size: 20px;
-                width: 44px;
-                flex: 1;
-            }
-
-            .tools > pl-icon:nth-child(1) {
-                background: rgba(0, 0, 0, 0.15);
-            }
-
-            .tools > pl-icon:nth-child(2) {
-                background: rgba(0, 0, 0, 0.25);
-            }
-
             .field {
                 display: flex;
                 cursor: pointer;
                 font-size: var(--font-size-small);
                 line-height: 35px;
                 height: 35px;
-                padding: 0 15px;
+                padding-left: 15px;
             }
 
             .field-label {
@@ -86,13 +65,14 @@
                 @apply --ellipsis;
             }
 
-            .field pl-icon {
-                height: auto;
-                width: 18px;
+            .field-value:empty + pl-icon {
+                display: none;
             }
 
-            .field:not(:hover) pl-icon {
-                display: none;
+            .field pl-icon {
+                width: 35px;
+                height: 35px;
+                opacity: 0.5;
             }
 
             .category {
@@ -129,20 +109,20 @@
         </style>
 
         <div class="body tiles">
-            <div class="header tap">
+            <div class="header">
                 <div class="name">[[ record.name ]]</div>
                 <div class="category ellipsis">[[ record.category ]]</div>
                 <div class="more-fields">[[ _moreFieldsLabel(record.fields.length) ]]</div>
             </div>
-            <div class="field" on-click="_fieldTapped" on-mousedown="_fieldMouseDown">
+            <div class="field" on-mousedown="_fieldMouseDown">
                 <div class="field-label">[[ record.fields.0.name ]]</div>
                 <div class="field-value">[[ _obfuscate(record.fields.0.value) ]]</div>
-                <pl-icon icon="copy"></pl-icon>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField"></pl-icon>
             </div>
-            <div class="field" on-click="_fieldTapped" on-mousedown="_fieldMouseDown">
+            <div class="field" on-mousedown="_fieldMouseDown">
                 <div class="field-label">[[ record.fields.1.name ]]</div>
                 <div class="field-value">[[ _obfuscate(record.fields.1.value) ]]</div>
-                <pl-icon icon="copy"></pl-icon>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField"></pl-icon>
             </div>
         </div>
 

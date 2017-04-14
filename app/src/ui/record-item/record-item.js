@@ -13,7 +13,7 @@ class RecordItem extends padlock.BaseElement {
         return value ? value.replace(/[^\n]/g, "\u2022") : "";
     }
 
-    _fieldTapped(e) {
+    _copyField(e) {
         e.stopPropagation();
     }
 

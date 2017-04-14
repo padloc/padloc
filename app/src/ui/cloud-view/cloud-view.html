@@ -45,15 +45,19 @@
             #customUrlInput:not([invalid]) + .warning {
                 display: none;
             }
+
+            @media (min-width: 700px) {
+                pl-icon[icon=backward] {
+                    display: none;
+                }
+            }
         </style>
 
 
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
-            <div class="title">Settings</div>
-            <pl-icon icon="cloud" class="tap" on-click=""></pl-icon>
-            <pl-icon icon="import" class="tap" on-click=""></pl-icon>
-            <pl-icon icon="export" class="tap" on-click=""></pl-icon>
+            <div class="title">Padlock Cloud</div>
+            <pl-icon icon="refresh" class="tap" on-click=""></pl-icon>
         </header>
 
         <main>

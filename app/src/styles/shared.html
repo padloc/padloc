@@ -128,10 +128,9 @@
             header > .title {
                 padding: 0 15px;
                 flex: 1;
-                text-align: center;
             }
 
-            header > pl-icon {
+            header pl-icon {
                 height: var(--row-height);
                 width: var(--row-height);
                 font-size: 110%;
@@ -141,8 +140,9 @@
                 flex: 1;
                 position: relative;
                 box-sizing: border-box;
-                overflow: auto;
-                --webkit-overflow-scrolling: touch;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
             }
 
             .spacer {

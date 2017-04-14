@@ -11,7 +11,6 @@
         <style include="shared">
             :host {
                 --gutter-width: 2px;
-                @apply --fullbleed;
                 overflow-x: hidden;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
@@ -21,9 +20,14 @@
                 height: 100%;
             }
 
-            header > pl-input {
+            .filter-input-wrapper {
                 flex: 1;
-                padding-left: 15px;
+                display: flex;
+            }
+
+            .filter-input-wrapper pl-input {
+                padding-left: 0;
+                flex: 1;
             }
 
             header {
@@ -51,7 +55,7 @@
                 right: 0;
                 margin: 0 auto;
                 transform: rotate(45deg);
-                background: rgba(0, 0, 0, 0.1);
+                background: var(--color-foreground);
                 pointer-events: none;
             }
 
@@ -77,19 +81,28 @@
             }
 
             pl-record-item {
-                @apply --tap-highlight;
+                transition: color 0.3s;
             }
 
-            pl-record-item::after {
-                @apply --tap-highlight-after;
+            pl-record-item::before {
+                content: "";
+                display: block;
+                @apply --fullbleed;
+                background: var(--color-highlight);
+                transition: transform 0.2s cubic-bezier(0.6, 0, 0.2, 1);
+                transform: translateX(-100%);
             }
 
-            pl-record-item:focus::after {
-                @apply --tap-highlight-hover-after;
+            pl-record-item:focus::before, pl-record-item:hover::before {
+                transform: translateX(calc(-100% + 5px));
             }
 
-            pl-record-item[selected]::after {
-                @apply --tap-highlight-active-after;
+            pl-record-item[selected] {
+                color: var(--color-background);
+            }
+
+            pl-record-item[selected]::before {
+                transform: none;
             }
         </style>
 
@@ -97,7 +110,10 @@
             <pl-icon icon="logo" class="tiles-1 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="settings" class="tiles-2 tap" on-click="_openSettings" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cloud" class="tiles-3 tap" on-click="_openCloudView" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-input class="tiles-4" placeholder="Type to search..." value="{{ _filterString }}" on-escape="_clearFilter"></pl-input>
+            <div class="filter-input-wrapper tiles-4 tap">
+                <pl-icon icon="search" on-click="_focusFilterInput"></pl-icon>
+                <pl-input id="filterInput" placeholder="" value="{{ _filterString }}" on-escape="_clearFilter"></pl-input>
+            </div>
             <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
