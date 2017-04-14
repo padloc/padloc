@@ -51,7 +51,7 @@ class App extends padlock.BaseElement {
         this.collection.add(record);
         this.notifyPath("collection.records");
         this.$.listView.select(record);
-        this.$.recordView.edit();
+        setTimeout(() => this.$.recordView.edit(), 500);
     }
 
     _recordChange(e) {

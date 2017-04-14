@@ -252,12 +252,8 @@ class Record {
 }
 exports.Record = Record;
 class Collection {
-    // private dispatcher: EventTarget;
     constructor() {
         this._records = new Map();
-        // Helper element for dispatching custom events. This is currently only used for publishing
-        // the `update` event
-        // this.dispatcher = document.createElement("div");
     }
     get records() {
         return Array.from(this._records.values());
@@ -270,8 +266,10 @@ class Collection {
     fetch(source) {
         return __awaiter(this, void 0, void 0, function* () {
             let data = yield source.get();
-            let records = JSON.parse(data).map(Record.fromRaw);
-            this.add(records);
+            if (data) {
+                let records = JSON.parse(data).map(Record.fromRaw);
+                this.add(records);
+            }
         });
     }
     save(source) {
@@ -346,7 +344,7 @@ Settings.defaults = {
     syncHostUrl: "https://cloud.padlock.io",
     syncCustomHost: false,
     syncEmail: "",
-    syncKey: "",
+    syncToken: "",
     syncDevice: "",
     syncConnected: false,
     syncAuto: true,
@@ -872,8 +870,11 @@ class LocalStorageSource {
 }
 exports.LocalStorageSource = LocalStorageSource;
 class AjaxSource {
-    constructor(url) {
-        this.url = url;
+    constructor(_url) {
+        this._url = _url;
+    }
+    get url() {
+        return this._url;
     }
     request(method, url, data, headers) {
         return ajax_1.request(method, url, data, headers);
@@ -901,10 +902,12 @@ class CloudSource extends AjaxSource {
     constructor(settings) {
         super("");
         this.settings = settings;
-        this.url = this.urlForPath("store");
     }
     urlForPath(path) {
         return this.settings.syncHostUrl + "/" + path + "/";
+    }
+    get url() {
+        return this.urlForPath("store");
     }
     request(method, url, data, headers) {
         const _super = name => super[name];
@@ -956,7 +959,10 @@ class CloudSource extends AjaxSource {
             catch (e) {
                 throw new CloudError("json_error");
             }
-            authToken.actUrl = req.getResponseHeader("X-Test-Act-Url") || undefined;
+            try {
+                authToken.actUrl = req.getResponseHeader("X-Test-Act-Url") || undefined;
+            }
+            catch (e) { }
             this.settings.syncEmail = authToken.email;
             this.settings.syncToken = authToken.token;
             return authToken;
