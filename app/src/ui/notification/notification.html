@@ -1,0 +1,124 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+
+<dom-module id="pl-notification">
+
+    <template>
+
+        <style include="shared">
+            :host {
+                height: 40px;
+                line-height: 40px;
+                text-align: center;
+                background: var(--color-background);
+                color: var(--color-foreground);
+                transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3);
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 10;
+                pointer-events: none;
+                transform: translateY(100%);
+            }
+
+            :host::after {
+                content: "";
+                display: block;
+                width: 100%;
+                height: 100%;
+                background: inherit;
+                position: absolute;
+                top: 100%;
+                left: 0;
+            }
+
+            :host(.showing) {
+                transform: none;
+            }
+
+            div {
+                @apply --ellipsis;
+            }
+
+            :host(.success), :host(.info) {
+                background: var(--color-highlight);
+                color: var(--color-background);
+            }
+
+            :host(.error), :host(.warning) {
+                background: var(--color-foreground);
+                color: var(--color-background);
+            }
+        </style>
+
+        <div>{{ message }}</div>
+
+    </template>
+
+    <script>
+(() => {
+
+class Notification extends padlock.BaseElement {
+
+    static get is() { return "pl-notification"; }
+
+    static get properties() { return {
+        message: String,
+        type: {
+            type: String,
+            value: "info",
+            observer: "_typeChanged"
+        }
+    }; }
+
+    show(message, type, duration) {
+        if (message) {
+            this.message = message;
+        }
+
+        if (type) {
+            this.type = type;
+        }
+
+        this.classList.add("showing");
+
+        if (duration) {
+            setTimeout(() => this.hide(), duration);
+        }
+    }
+
+    hide() {
+        this.classList.remove("showing");
+    }
+
+    _typeChanged(newType, oldType) {
+        this.classList.remove(oldType);
+        this.classList.add(newType);
+    }
+}
+
+window.customElements.define(Notification.is, Notification);
+
+let notificationSingleton;
+
+padlock.NotificationMixin = (baseClass) => {
+    return class NotificationMixin extends baseClass {
+
+        notify(message, type, duration) {
+            if (!notificationSingleton) {
+                notificationSingleton = document.createElement("pl-notification");
+                document.body.appendChild(notificationSingleton);
+            }
+
+            setTimeout(() => notificationSingleton.show(message, type, duration), 10);
+        }
+
+    };
+};
+
+})();
+    </script>
+
+</dom-module>
+

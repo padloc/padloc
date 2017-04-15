@@ -1,6 +1,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
+<link rel="import" href="../notification/notification.html">
 
 <dom-module id="pl-record-item">
     <template>
@@ -114,20 +115,61 @@
                 <div class="category ellipsis">[[ record.category ]]</div>
                 <div class="more-fields">[[ _moreFieldsLabel(record.fields.length) ]]</div>
             </div>
-            <div class="field" on-mousedown="_fieldMouseDown">
+            <div class="field">
                 <div class="field-label">[[ record.fields.0.name ]]</div>
                 <div class="field-value">[[ _obfuscate(record.fields.0.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField"></pl-icon>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField1"></pl-icon>
             </div>
-            <div class="field" on-mousedown="_fieldMouseDown">
+            <div class="field">
                 <div class="field-label">[[ record.fields.1.name ]]</div>
                 <div class="field-value">[[ _obfuscate(record.fields.1.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField"></pl-icon>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField2"></pl-icon>
             </div>
         </div>
 
     </template>
 
-    <script src="record-item.js"></script>
+    <script>
+(() => {
+
+class RecordItem extends padlock.NotificationMixin(padlock.BaseElement) {
+
+    static get is() { return "pl-record-item"; }
+
+    static get properties() { return {
+        record: Object
+    }; }
+
+    // Replaces all non-newline characters in a given string with dots
+    _obfuscate(value) {
+        return value ? value.replace(/[^\n]/g, "\u2022") : "";
+    }
+
+    _copyToClipboard(value) {
+        padlock.platform.setClipboard(value)
+            .then(() => this.notify("Value copied to clipboard!", "success", 1500));
+    }
+
+    _copyField1(e) {
+        e.stopPropagation();
+        this._copyToClipboard(this.record.fields[0].value);
+    }
+
+    _copyField2(e) {
+        e.stopPropagation();
+        this._copyToClipboard(this.record.fields[1].value);
+    }
+
+    _moreFieldsLabel() {
+        const n = this.record.fields.length - 2;
+        return n < 1 ? "" : n == 1 ? "1 more field" : (n + " more fields");
+    }
+
+}
+
+window.customElements.define(RecordItem.is, RecordItem);
+
+})();
+    </script>
 
 </dom-module>
