@@ -7,7 +7,7 @@ const LocalStorageSource = padlock.source.LocalStorageSource;
 const EncryptedSource = padlock.source.EncryptedSource;
 const CloudSource = padlock.source.CloudSource;
 
-class App extends padlock.BaseElement {
+class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElement)) {
 
     static get is() { return "pl-app"; }
 
@@ -29,7 +29,8 @@ class App extends padlock.BaseElement {
     }; }
 
     static get observers() { return [
-        "_saveSettings(settings.*)"
+        "_saveSettings(settings.*)",
+        "_autoLockChanged(settings.autoLock, settings.autoLockDelay)"
     ]; }
 
     constructor() {
@@ -39,6 +40,11 @@ class App extends padlock.BaseElement {
         this.settings = new Settings();
         this.settingsSource = new EncryptedSource(new LocalStorageSource("settings_encrypted"));
         this.cloudSource = new EncryptedSource(new CloudSource(this.settings));
+
+        const moved = () => this._autoLockChanged();
+        document.addEventListener("touchstart", moved, false);
+        document.addEventListener("keydown", moved, false);
+        document.addEventListener("mousemove", padlock.util.debounce(moved, 50), false);
     }
 
     _closeRecord() {
@@ -83,6 +89,7 @@ class App extends padlock.BaseElement {
         this.notifyPath("collection.records");
         setTimeout(() => {
             this.$.startView.open = true;
+            this._autoLockChanged();
         }, 500);
     }
 
@@ -114,12 +121,42 @@ class App extends padlock.BaseElement {
         this.$.pages.classList.toggle("showing", this._currentView !== "placeholderView");
     }
 
+    _cancelAutoLock() {
+        this._pausedAt = null;
+        if (this._lockTimeout) {
+            clearTimeout(this._lockTimeout);
+        }
+        if (this._lockNotificationTimeout) {
+            clearTimeout(this._lockNotificationTimeout);
+        }
+    }
+
+    _autoLockChanged() {
+        this._cancelAutoLock();
+
+        if (this.settings.autoLock && this.$.startView.open) {
+            this._lockTimeout = setTimeout(() => {
+                const delay = this.settings.autoLockDelay;
+                this.lock();
+                setTimeout(() => {
+                    this.alert(`Padlock was automatically locked after
+                        ${delay} ${delay > 1 ? "minutes" : "minute"}
+                        of inactivity. You can change this behavior from the settings page.`);
+                }, 1000);
+            }, this.settings.autoLockDelay * 60 * 1000);
+            this._lockNotificationTimeout = setTimeout(() => {
+                this.notify("Auto-lock in 10 seconds", "info", 3000);
+            }, this.settings.autoLockDelay * 50 * 1000);
+        }
+    }
+
     lock() {
         this.collection.clear();
         this.settings.clear();
         this.localSource.password = this.settingsSource.password = this.cloudSource.password = "";
         this.$.startView.reset();
         this.$.startView.open = false;
+        this._autoLockChanged();
         setTimeout(() => this.notifyPath("collection"), 500);
     }
 

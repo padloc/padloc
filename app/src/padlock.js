@@ -1071,6 +1071,14 @@ function compareProperty(p) {
     return (a, b) => a[p] > b[p] ? 1 : a[p] < b[p] ? -1 : 0;
 }
 exports.compareProperty = compareProperty;
+function debounce(fn, delay) {
+    let timeout;
+    return function (...args) {
+        clearTimeout(timeout);
+        timeout = window.setTimeout(() => fn(args), delay);
+    };
+}
+exports.debounce = debounce;
 
 },{}],10:[function(require,module,exports){
 var asn1 = exports;
