@@ -28,13 +28,13 @@
 
         <template is="dom-if" if="[[ multiline ]]" on-dom-change="_domChange">
             <textarea id="input" value="{{ value::input }}" placeholder$="[[ placeholder ]]"
-                rows="1" autocomplete="off" spellcheck="false"
+                rows="1" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keyup="_keyup"></textarea>
         </template>
 
         <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
             <input id="input" value="{{ value::input }}"
-                autocomplete="off" spellcheck="false"
+                autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
                 type$="[[ type ]]" placeholder$="[[ placeholder ]]"
                 required$="[[ required ]]" pattern$="[[ pattern ]]"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keyup="_keyup">
