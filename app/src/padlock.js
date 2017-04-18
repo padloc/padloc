@@ -904,7 +904,9 @@ class CloudSource extends AjaxSource {
         this.settings = settings;
     }
     urlForPath(path) {
-        return this.settings.syncHostUrl + "/" + path + "/";
+        // Remove trailing slashes
+        const host = this.settings.syncHostUrl.replace(/\/+$/, "");
+        return `${host}/${path}/`;
     }
     get url() {
         return this.urlForPath("store");

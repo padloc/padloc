@@ -96,7 +96,9 @@ export class CloudError {
 export class CloudSource extends AjaxSource {
 
     urlForPath(path: string) {
-        return this.settings.syncHostUrl + "/" + path + "/";
+        // Remove trailing slashes
+        const host = this.settings.syncHostUrl.replace(/\/+$/, "");
+        return `${host}/${path}/`;
     }
 
     constructor(public settings: Settings) {
