@@ -96,12 +96,14 @@
 
             <pl-settings-view id="settingsView"
                 settings="{{ settings }}"
-                on-settings-back="_settingsBack"></pl-settings-view>
+                local-source="[[ localSource ]]"
+                on-settings-back="_settingsBack"
+                on-reset-data="_resetData"></pl-settings-view>
 
             <pl-cloud-view id="cloudView"
                 settings="{{ settings }}"
                 cloud-source="[[ cloudSource ]]"
-                collection="[[ collection ]]"
+                collection="{{ collection }}"
                 on-cloud-back="_cloudViewBack"></pl-cloud-view>
 
         </iron-pages>

@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../slider/slider.html">
 <link rel="import" href="../toggle/toggle-button.html">
@@ -80,11 +81,12 @@
     <script>
 (() => {
 
-class SettingsView extends padlock.BaseElement {
+class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
 
     static get is() { return "pl-settings-view"; }
 
     static get properties() { return {
+        localSource: Object,
         settings: {
             type: Object,
             notify: true
@@ -121,6 +123,21 @@ class SettingsView extends padlock.BaseElement {
     }
 
     _resetData() {
+        this.prompt("Are you sure you want to delete all your data and reset the app? Enter your master " +
+            "password to continue!", "Enter Master Password", "password", "Reset App")
+            .then((pwd) => {
+                if (pwd === null) {
+                    return;
+                }
+
+                if (pwd !== this.localSource.password) {
+                    this.alert("You entered the wrong master password! Please try again!")
+                        .then(() => this._resetData());
+                    return;
+                }
+
+                this.dispatchEvent(new CustomEvent("reset-data"));
+            });
     }
 
     _version() {

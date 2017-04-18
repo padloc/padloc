@@ -64,7 +64,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         const record = e.detail.record;
         record.updated = new Date();
         this.save();
-        this.notifyPath("collection.categories");
+        this.notifyPath("collection");
     }
 
     _deleteRecord(e) {
@@ -148,6 +148,12 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
                 this.notify("Auto-lock in 10 seconds", "info", 3000);
             }, this.settings.autoLockDelay * 50 * 1000);
         }
+    }
+
+    _resetData() {
+        this.localSource.clear();
+        this.settingsSource.clear();
+        this.lock();
     }
 
     lock() {
