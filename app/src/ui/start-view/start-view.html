@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../loading-button/loading-button.html">
 
@@ -98,7 +99,7 @@
     <script>
 (() => {
 
-class StartView extends padlock.BaseElement {
+class StartView extends padlock.DialogMixin(padlock.BaseElement) {
 
     static get is() { return "pl-start-view"; }
 
@@ -129,6 +130,7 @@ class StartView extends padlock.BaseElement {
         this.$.passwordInput.value = "";
         this.$.enterButton.stop();
         this._checkHasData();
+        this._failCount = 0;
     }
 
     _checkHasData() {
@@ -146,6 +148,23 @@ class StartView extends padlock.BaseElement {
                     this.$.logo.classList.remove("rumble");
                     this.offsetLeft;
                     this.$.logo.classList.add("rumble");
+                    this._failCount++;
+                    if (this._failCount > 2) {
+                        this.prompt(
+                            "Forgot your master password? You can start over by resetting the app. " +
+                            "WARNING: This will delete all your data!",
+                            "Type 'RESET' to confirm", "text", "Reset App"
+                        ).then((value) => {
+                            if (value == null) {
+                                return;
+                            }
+                            if (value.toUpperCase() === "RESET") {
+                                this.dispatchEvent(new CustomEvent("reset-data"));
+                            } else {
+                                this.alert("You didn't type 'RESET'. Refusing to reset the app.");
+                            }
+                        });
+                    }
                 } else {
                     throw e;
                 }

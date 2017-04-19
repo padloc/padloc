@@ -160,6 +160,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.localSource.clear();
         this.settingsSource.clear();
         this.lock();
+        setTimeout(() => this.alert("App reset successfully. Off to a fresh start!"), 500);
     }
 
     lock() {
