@@ -65,6 +65,9 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         record.updated = new Date();
         this.save();
         this.notifyPath("collection");
+        if (this.settings.syncAuto && this.settings.syncConnected) {
+            this._debouncedSynchronize();
+        }
     }
 
     _deleteRecord(e) {
@@ -72,6 +75,9 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.save();
         this.notifyPath("collection.records");
         this._closeRecord();
+        if (this.settings.syncAuto && this.settings.syncConnected) {
+            this.$.cloudView.synchronize();
+        }
     }
 
     _selectedRecordChanged() {

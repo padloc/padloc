@@ -58,7 +58,7 @@
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
             <div class="title">Padlock Cloud</div>
-            <pl-icon icon="refresh" class="tap" on-click="_synchronize"></pl-icon>
+            <pl-icon icon="refresh" class="tap" on-click="synchronize"></pl-icon>
         </header>
 
         <main>
@@ -112,7 +112,7 @@
                     Connect all your devices with the same account to easily synchronize your data between them!
                     <div class="conn-id">Connection ID: {{ settings.syncId }}</div>
                 </div>
-                <pl-loading-button id="syncButton" class="tap" on-click="_synchronize" label="Synchronize"></pl-loading-button>
+                <pl-loading-button id="syncButton" class="tap" on-click="synchronize" label="Synchronize"></pl-loading-button>
                 <button class="tap" on-click="_openDashboard">Manage Account</button>
                 <button class="tap" on-click="_disconnect">Disconnect</button>
                 <pl-toggle-button active="{{ settings.syncAuto }}" label="Auto Sync" reverse class="tap"></pl-toggle-button>
@@ -163,6 +163,34 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
             value: false
         }
     }; }
+
+    synchronize() {
+        if (!this.settings.syncConnected) {
+            this.alert("You have to be connected to a Padlock Cloud account to synchronize your data!")
+                .then(() => this.$.emailInput.focus());
+            return Promise.reject();
+        }
+
+        if (this._chainedSync) {
+            // There is already a chained sync promise, so just return that one
+            return this._chainedSync;
+        }
+
+        if (this._currentSync) {
+            // There is already a synchronization in process. wait for the current sync to finish
+            // before starting a new one.
+            const chained = this._chainedSync = this._currentSync
+                .then(() => {
+                    this._chainedSync = null;
+                    return this.synchronize();
+                });
+            return chained;
+        }
+
+        const sync = this._currentSync = this._synchronize()
+            .then(() => this._currentSync = null, () => this._currentSync = null);
+        return sync;
+    }
 
     _back() {
         this.dispatchEvent(new CustomEvent("cloud-back"));
@@ -267,12 +295,6 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
     }
 
     _synchronize() {
-        if (!this.settings.syncConnected) {
-            this.alert("You have to be connected to a Padlock Cloud account to synchronize your data!")
-                .then(() => this.$.emailInput.focus());
-            return;
-        }
-
         this.$.syncButton.start();
         return this.collection.fetch(this.cloudSource)
             .then(() => this.collection.save(this.localSource))
@@ -281,17 +303,16 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
                 this.notifyPath("collection");
                 this.notifyPath("settings");
                 this.$.syncButton.success();
-                this.notify("Synchronized successfully!", "success", 1500);
 
                 if (this.localSource.password !== this.cloudSource.password) {
-                    this.confirm(
+                    return this.confirm(
                         "Do you want to change your Padlock Cloud master password to your local one?",
                         "Yes", "No"
                     ).then((confirm) => {
                         if (confirm) {
                             this.$.syncButton.start();
                             this.cloudSource.password = this.localSource.password;
-                            this.collection.save(this.cloudSource)
+                            return this.collection.save(this.cloudSource)
                                 .then(() => {
                                     this.$.syncButton.success();
                                     this.alert("Padlock Cloud master password updated successfully!");
@@ -360,7 +381,7 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
                                 }
 
                                 this.cloudSource.password = pwd;
-                                this._synchronize();
+                                this.synchronize();
                             });
                         break;
                     case "subscription_required":
@@ -379,7 +400,7 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
         this.confirm("You successfully paired this device with Padlock Cloud!", "Synchonize Now", "Dismiss")
             .then((confirmed) => {
                 if (confirmed) {
-                    this._synchronize();
+                    this.synchronize();
                 }
             });
     }
