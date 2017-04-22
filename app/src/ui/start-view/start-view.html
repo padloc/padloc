@@ -19,13 +19,18 @@
                 --color-background: var(--color-primary);
                 --color-foreground: var(--color-tertiary);
                 --color-highlight: var(--color-secondary);
+                @apply --fullbleed;
                 color: var(--color-foreground);
                 display: flex;
-                flex-direction: column;
+                z-index: 5;
                 text-align: center;
                 text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
+            }
+
+            main {
                 @apply --fullbleed;
-                z-index: 5;
+                display: flex;
+                flex-direction: column;
             }
 
             .shutter {
@@ -54,7 +59,22 @@
                 color: inherit;
             }
 
-            #enterButton {
+            .input-wrapper {
+                position: relative;
+            }
+
+            .input-wrapper pl-icon {
+                position: absolute;
+                width: var(--row-height);
+                height: var(--row-height);
+                top: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto 0;
+                opacity: 0.8;
+            }
+
+            .enter-button {
                 font-weight: bold;
             }
 
@@ -75,24 +95,56 @@
             }
         </style>
 
-        <div class="shutter top">
+        <main hidden$="[[ !_hasData ]]">
+            <div class="shutter top">
 
-            <div class="spacer"></div>
+                <div class="spacer"></div>
 
-            <pl-icon id="logo" icon="logo" class="hero"></pl-icon>
+                <pl-icon id="logo" icon="logo" class="hero"></pl-icon>
 
-        </div>
+            </div>
 
-        <div class="shutter bottom">
+            <div class="shutter bottom">
 
-            <pl-input id="passwordInput" type="password" placeholder="[[ _inputPlaceholder(_hasData) ]]" class="tap tiles-3"
-                on-enter="_enter"></pl-input>
+                <pl-input id="passwordInput" type="password" placeholder="Enter Master Password" class="tap tiles-3"
+                    on-enter="_unlock"></pl-input>
 
-            <pl-loading-button id="enterButton" on-click="_enter" class="tap tiles-4" label="[[ _enterButtonLabel(_hasData) ]]"></pl-loading-button>
+                <pl-loading-button id="enterButton" on-click="_unlock" class="tap tiles-4 enter-button" label="Unlock"></pl-loading-button>
 
-            <div class="spacer tiles-5"></div>
+                <div class="spacer tiles-5"></div>
 
-        </div>
+            </div>
+        </main>
+
+        <main hidden$="[[ _hasData ]]">
+            <div class="shutter top">
+
+                <div class="spacer"></div>
+
+                <pl-icon icon="logo" class="hero"></pl-icon>
+
+            </div>
+
+            <div class="shutter bottom">
+
+                <div class="tap tiles-2 input-wrapper">
+                    <pl-input id="emailInput" type="email" placeholder="Enter Email (Optional)"
+                        on-focus="_emailInputFocused" on-enter="_getStarted"></pl-input>
+                    <pl-icon icon="info" on-click="_showEmailInfo"></pl-icon>
+                </div>
+
+                <div class="tap tiles-3 input-wrapper">
+                    <pl-input id="newPasswordInput" type="password" placeholder="Enter Master Password"
+                        on-focus="_newPasswordInputFocused" on-enter="_getStarted"></pl-input>
+                    <pl-icon icon="info" on-click="_showPasswordInfo"></pl-icon>
+                </div>
+
+                <pl-loading-button id="getStartedButton" on-click="_getStarted" class="tap tiles-4 enter-button" label="Get Started"></pl-loading-button>
+
+                <div class="spacer tiles-5"></div>
+
+            </div>
+        </main>
 
     </template>
 
@@ -128,21 +180,52 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
 
     reset() {
         this.$.passwordInput.value = "";
+        this.$.emailInput.value = "";
+        this.$.newPasswordInput.value = "";
         this.$.enterButton.stop();
+        this.$.getStartedButton.stop();
         this._checkHasData();
         this._failCount = 0;
+        this._hasEmailInputFocused = this._hasNewPasswordInputFocused = false;
     }
 
     _checkHasData() {
         this.localSource.hasData().then((has) => this._hasData = has);
     }
 
-    _enter() {
-        this.localSource.password = this.$.passwordInput.value;
+    _getStarted() {
+        if (this.$.emailInput.value && this.$.emailInput.invalid) {
+            this.alert(this.$.emailInput.validationMessage || "Please enter a valid email address!");
+            return;
+        }
+        this.settings.syncEmail = this.$.emailInput.value;
+        this.localSource.password = this.settingsSource.password = this.$.newPasswordInput.value;
+        this.$.getStartedButton.start();
+        Promise.all([
+            this.collection.save(this.localSource),
+            this.settings.save(this.settingsSource)
+        ]).then(() => {
+            this.notifyPath("settings");
+            this.$.getStartedButton.success();
+            this.dispatchEvent(new CustomEvent("get-started"));
+        });
+    }
 
-        if (this._hasData) {
-            this.$.enterButton.start();
-            this.collection.fetch(this.localSource).then(() => this._loadSettings(), (e) => {
+    _unlock() {
+        this.localSource.password = this.settingsSource.password = this.$.passwordInput.value;
+
+        this.$.enterButton.start();
+        this.collection.fetch(this.localSource)
+            .then(() => {
+                return this.settings.fetch(this.settingsSource)
+                    .catch(() => this.settings.save(this.settingsSource));
+            })
+            .then(() => {
+                this.$.enterButton.success();
+                this.notifyPath("settings");
+                this.dispatchEvent(new CustomEvent("unlock"));
+            })
+            .catch((e) => {
                 if (e.code === "decryption_failed") {
                     this.$.enterButton.fail();
                     this.$.logo.classList.remove("rumble");
@@ -169,31 +252,37 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
                     throw e;
                 }
             });
-        } else {
-            this.$.enterButton.start();
-            this.collection.save(this.localSource).then(() => this._loadSettings());
+    }
+
+    _showEmailInfo() {
+        this.alert("Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
+            "you to easily and securely store your data online and synchronize it between all your devices. " +
+            "Don't worry, we'll only use it as a method of authentication and won't send you any spam!")
+            .then(() => this.$.emailInput.focus());
+    }
+
+    _showPasswordInfo() {
+        this.alert("You master password is a single passphrase that is used to encrypt everything you " +
+            "store in Padlock and the only way to access your data. Without your master password, no " +
+            "one will be able to read your data - not even we! So make sure you don't forget it, because " +
+            "we won't be able to help you recover it in case you do.")
+            .then(() => this.$.newPasswordInput.focus());
+    }
+
+    _emailInputFocused() {
+        if (!this._hasEmailInputFocused) {
+            this._showEmailInfo();
+            this.$.emailInput.blur();
         }
+        this._hasEmailInputFocused = true;
     }
 
-    _loadSettings() {
-        this.settingsSource.password = this.localSource.password;
-        this.settings.fetch(this.settingsSource)
-            .catch(() => this.settings.save(this.settingsSource))
-            .then(() => this._decryptSuccess());
-    }
-
-    _decryptSuccess() {
-        this.$.enterButton.success();
-        this.notifyPath("settings");
-        this.dispatchEvent(new CustomEvent("unlock"));
-    }
-
-    _enterButtonLabel() {
-        return this._hasData ? "Unlock" : "Get Started";
-    }
-
-    _inputPlaceholder() {
-        return this._hasData ? "Enter Password" : "Enter Master Password";
+    _newPasswordInputFocused() {
+        if (!this._hasNewPasswordInputFocused) {
+            this._showPasswordInfo();
+            this.$.newPasswordInput.blur();
+        }
+        this._hasNewPasswordInputFocused = true;
     }
 
 }
