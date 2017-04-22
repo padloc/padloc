@@ -224,7 +224,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
                 "variation of uppercase, lowercase and special characters as well as numbers.",
                 "Use Anyway", "Try Again").then((confirm) => {
                     if (confirm) {
-                        this._initializeData();
+                        this._confirmPassword();
                     } else {
                         this.$.newPasswordInput.focus();
                     }
@@ -232,7 +232,21 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
             return;
         }
 
-        this._initializeData();
+        this._confirmPassword();
+    }
+
+    _confirmPassword() {
+        this.prompt("Remember your master password! Without it, nobody will be able to access your data, " +
+            "not even we! This is to ensure that your data is as safe as possible but it also means " +
+            "that if you lose your master password, we won't be able to assist you with recovering your " +
+            "data.", "password", "Repeat Master Password", "Confirm").then((pwd) => {
+                if (pwd === this.$.newPasswordInput.value) {
+                    this._initializeData();
+                } else {
+                    this.alert("You failed to repeat the password correctly. Try again!")
+                        .then(() => this.$.newPasswordInput.focus());
+                }
+            });
     }
 
     _initializeData() {
@@ -300,7 +314,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
     }
 
     _showPasswordInfo() {
-        this.alert("You master password is a single passphrase that is used to encrypt everything you " +
+        this.alert("Your master password is a single passphrase that is used to encrypt everything you " +
             "store in Padlock and the only way to access your data. Without your master password, no " +
             "one will be able to read your data - not even we! So make sure you don't forget it, because " +
             "we won't be able to help you recover it in case you do.")
