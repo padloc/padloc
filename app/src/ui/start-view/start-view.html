@@ -74,6 +74,14 @@
                 opacity: 0.8;
             }
 
+            .strength-meter {
+                position: absolute;
+                right: 10px;
+                bottom: 5px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
             .enter-button {
                 font-weight: bold;
             }
@@ -135,8 +143,9 @@
 
                 <div class="tap tiles-3 input-wrapper">
                     <pl-input id="newPasswordInput" type="password" placeholder="Enter Master Password"
-                        on-focus="_newPasswordInputFocused" on-enter="_getStarted"></pl-input>
-                    <pl-icon icon="info" on-click="_showPasswordInfo"></pl-icon>
+                        on-focus="_newPasswordInputFocused" on-enter="_getStarted" value="{{ newPwd }}"></pl-input>
+                    <div class="strength-meter" hidden$="[[ !_hasValue(newPwd) ]]">strength: [[ _passwordStrength(newPwd) ]]</div>
+                    <pl-icon icon="info" on-click="_showPasswordInfo" hidden$="[[ _hasValue(newPwd) ]]"></pl-icon>
                 </div>
 
                 <pl-loading-button id="getStartedButton" on-click="_getStarted" class="tap tiles-4 enter-button" label="Get Started"></pl-loading-button>
@@ -148,7 +157,10 @@
 
     </template>
 
+    <script src="../../../bower_components/zxcvbn/lib/zxcvbn.js"></script>
+
     <script>
+/* global zxcvbn */
 (() => {
 
 class StartView extends padlock.DialogMixin(padlock.BaseElement) {
@@ -283,6 +295,15 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
             this.$.newPasswordInput.blur();
         }
         this._hasNewPasswordInputFocused = true;
+    }
+
+    _passwordStrength(pwd) {
+        const score = pwd ? zxcvbn(pwd).score : -1;
+        return score === -1 ? "" : score < 2 ? "weak" : score < 4 ? "medium" : "strong";
+    }
+
+    _hasValue(val) {
+        return !!val;
     }
 
 }
