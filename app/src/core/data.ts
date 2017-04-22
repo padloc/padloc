@@ -199,8 +199,9 @@ export class Settings {
         this.loaded = true;
     }
 
-    save(source: Source): Promise<void> {
-        return source.set(this.toJSON());
+    async save(source: Source): Promise<void> {
+        await source.set(this.toJSON());
+        this.loaded = true;
     }
 
     clear(): void {

@@ -331,7 +331,10 @@ class Settings {
         });
     }
     save(source) {
-        return source.set(this.toJSON());
+        return __awaiter(this, void 0, void 0, function* () {
+            yield source.set(this.toJSON());
+            this.loaded = true;
+        });
     }
     clear() {
         Object.assign(this, Settings.defaults);
