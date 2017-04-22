@@ -210,6 +210,32 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
             this.alert(this.$.emailInput.validationMessage || "Please enter a valid email address!");
             return;
         }
+
+        const pwd = this.$.newPasswordInput.value;
+
+        if (!pwd) {
+            this.alert("Please enter a master password!").then(() => this.$.newPasswordInput.focus());
+            return;
+        }
+
+        if (zxcvbn(pwd).score < 2) {
+            this.confirm("WARNING: The password you entered is weak which makes it easier for attackers to break " +
+                "the encryption used to protect your data. Try to use a longer password or include a " +
+                "variation of uppercase, lowercase and special characters as well as numbers.",
+                "Use Anyway", "Try Again").then((confirm) => {
+                    if (confirm) {
+                        this._initializeData();
+                    } else {
+                        this.$.newPasswordInput.focus();
+                    }
+                });
+            return;
+        }
+
+        this._initializeData();
+    }
+
+    _initializeData() {
         this.settings.syncEmail = this.$.emailInput.value;
         this.localSource.password = this.settingsSource.password = this.$.newPasswordInput.value;
         this.$.getStartedButton.start();
