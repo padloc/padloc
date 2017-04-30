@@ -63,7 +63,7 @@
 
         <main>
 
-            <section class="tiles tiles-2" hidden$="[[ _isSet(settings.syncToken) ]]">
+            <section class="tiles tiles-2" hidden$="[[ settings.syncConnected ]]">
                 <div class="note">
                     Padlock Cloud provides a convenient way of synchronising your data between all your devices. By
                     securely storing your data in the cloud, it not only allows you to easily access it from anywhere
@@ -71,18 +71,8 @@
                     Before being sent to our servers, your data is encrypted locally using your master password to make
                     sure that nobody can read it - not even we!
                 </div>
-                <pl-input id="emailInput" type="email" placeholder="Enter Email Adress" required on-enter="_connect"></pl-input>
+                <pl-input id="emailInput" type="email" placeholder="Enter Email Adress" value="[[ settings.syncEmail ]]" required on-enter="_connect"></pl-input>
                 <pl-loading-button id="connectButton" class="tap" label="Get Started" on-click="_connect"></pl-loading-button>
-            </section>
-
-            <section class="tiles tiles-2" hidden$="[[ !_isActivationPending(settings.syncToken, settings.syncConnected) ]]">
-                <div class="note">
-                    <strong>Activation pending</strong> - You are almost done connecting this device!
-                    An email was sent to <strong>{{ settings.syncEmail }}</strong> with further instructions.
-                    Didn't get it? Try again using the button below!
-                    <div class="conn-id">Connection ID: {{ settings.syncId }}</div>
-                </div>
-                <button class="tap" on-click="_cancelConnect">Cancel</button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !_isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
@@ -157,10 +147,6 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
         settings: {
             type: Object,
             notify: true
-        },
-        _activated: {
-            type: Boolean,
-            value: false
         }
     }; }
 
@@ -232,8 +218,7 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
                 this.settings.syncId = authToken.id;
                 this.notifyPath("settings");
                 this.$.connectButton.success();
-                this._testCredentials(true);
-                this.alert("Almost done! An email was sent to " + email + " with further instructions.");
+                this._promptCheckEmail();
             })
             .catch((e) => {
                 switch (typeof e === "string" ? e : e.code) {
@@ -253,41 +238,12 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
             });
     }
 
-    _isActivationPending() {
-        return this.settings.syncToken && !this.settings.syncConnected;
-    }
-
     _isTrialing(connected, s) {
         return connected && s == "trialing";
     }
 
     _isInactive(connected, s) {
         return connected && s && s != "active" && s != "trialing";
-    }
-
-    _testCredentials(poll) {
-        this.cloudSource.source.testCredentials().then((connected) => {
-            this.settings.syncConnected = connected;
-
-            if (connected) {
-                if (poll) {
-                    this._connectionSuccess();
-                }
-            } else {
-                if (poll) {
-                    clearTimeout(this._testCredsTimeout);
-                    this._testCredsTimeout = setTimeout(this._testCredentials.bind(this, true), 3000);
-                } else {
-                    this.settings.syncToken = "";
-                }
-            }
-
-            this.notifyPath("settings");
-        });
-    }
-
-    _stopTestCredentials() {
-        clearTimeout(this._testCredsTimeout);
     }
 
     _isSet(val) {
@@ -418,7 +374,6 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
 
     _cancelConnect() {
         this.set("settings.syncToken", "");
-        this._stopTestCredentials();
     }
 
     _openDashboard() {
@@ -429,6 +384,28 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
         var now = new Date().getTime() / 1000;
         trialEnd = trialEnd ? parseInt(trialEnd, 10) : now;
         return Math.ceil((trialEnd - now) / 60 / 60 / 24);
+    }
+
+    _promptCheckEmail(failed) {
+        let text = failed ? "It doesn't look like you've completed the connection process yet!" : "Almost done!";
+        text += ` An email was sent to ${this.settings.syncEmail}. Please follow the instructions and
+            then return here to complete the process! (Connection ID: ${this.settings.syncId})`;
+        this.confirm(text, "Verify Connection", "Cancel").then((confirmed) => {
+            if (confirmed) {
+                this.cloudSource.source.testCredentials().then((connected) => {
+                    this.settings.syncConnected = connected;
+                    this.notifyPath("settings");
+                    if (connected) {
+                        this._connectionSuccess();
+                    } else {
+                        this._promptCheckEmail(true);
+                    }
+                });
+            } else {
+                this.set("settings.syncToken", "");
+                this.notifyPath("settings");
+            }
+        });
     }
 
 }
