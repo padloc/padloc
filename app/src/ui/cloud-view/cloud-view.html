@@ -71,8 +71,8 @@
                     Before being sent to our servers, your data is encrypted locally using your master password to make
                     sure that nobody can read it - not even we!
                 </div>
-                <pl-input id="emailInput" type="email" placeholder="Enter Email Adress" value="[[ settings.syncEmail ]]" required on-enter="_connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" label="Get Started" on-click="_connect"></pl-loading-button>
+                <pl-input id="emailInput" type="email" placeholder="Enter Email Adress" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
+                <pl-loading-button id="connectButton" class="tap" label="Get Started" on-click="connect"></pl-loading-button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !_isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
@@ -194,7 +194,7 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
         });
     }
 
-    _connect() {
+    connect() {
         if (this.$.emailInput.invalid) {
             this.alert(this.$.emailInput.validationMessage || "Please enter a valid email address!");
         } else {

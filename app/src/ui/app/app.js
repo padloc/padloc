@@ -99,6 +99,19 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         }, 500);
     }
 
+    _getStarted() {
+        this._unlocked();
+        if (this.settings.syncEmail) {
+            this.confirm("Would you like to pair this device with Padlock Cloud now?", "Yes", "Maybe Later")
+                .then((confirm) => {
+                    if (confirm) {
+                        this.$.pages.select("cloudView");
+                        this.$.cloudView.connect();
+                    }
+                });
+        }
+    }
+
     _openSettings() {
         this.$.pages.select("settingsView");
         this.$.listView.deselect();
