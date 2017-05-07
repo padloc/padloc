@@ -198,7 +198,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
         this.$.getStartedButton.stop();
         this._checkHasData();
         this._failCount = 0;
-        this._hasEmailInputFocused = this._hasNewPasswordInputFocused = false;
+        this._hasEmailInputShown = this._hasPasswordInfoShown = false;
     }
 
     _checkHasData() {
@@ -307,6 +307,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
     }
 
     _showEmailInfo() {
+        this._hasEmailInputShown = true;
         this.alert("Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
             "you to easily and securely store your data online and synchronize it between all your devices. " +
             "Don't worry, we'll only use it as a method of authentication and won't send you any spam!")
@@ -314,6 +315,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
     }
 
     _showPasswordInfo() {
+        this._hasPasswordInfoShown = true;
         this.alert("Your master password is a single passphrase that is used to encrypt everything you " +
             "store in Padlock and the only way to access your data. Without your master password, no " +
             "one will be able to read your data - not even we! So make sure you don't forget it, because " +
@@ -322,19 +324,17 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
     }
 
     _emailInputFocused() {
-        if (!this._hasEmailInputFocused) {
+        if (!this._hasEmailInputShown) {
             this._showEmailInfo();
             this.$.emailInput.blur();
         }
-        this._hasEmailInputFocused = true;
     }
 
     _newPasswordInputFocused() {
-        if (!this._hasNewPasswordInputFocused) {
+        if (!this._hasPasswordInfoShown) {
             this._showPasswordInfo();
             this.$.newPasswordInput.blur();
         }
-        this._hasNewPasswordInputFocused = true;
     }
 
     _passwordStrength(pwd) {

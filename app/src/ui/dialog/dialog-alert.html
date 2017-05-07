@@ -31,6 +31,7 @@ class DialogAlert extends padlock.BaseElement {
     _dialogClosed() {
         typeof this._resolve === "function" && this._resolve();
         this._resolve = null;
+        window.removeEventListener("keydown", this._keydownHandler);
     }
 
     _dismiss() {
@@ -38,6 +39,15 @@ class DialogAlert extends padlock.BaseElement {
     }
 
     alert(message, buttonLabel) {
+        this._keydownHandler = (e) => {
+            if (e.keyCode === 13 || e.keyCode == 27) {
+                this._dismiss();
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
+        window.addEventListener("keyup", this._keydownHandler);
+
         this.message = message || this.message;
         this.buttonLabel = buttonLabel || this.buttonLabel || defaultButtonLabel;
         this.open = true;
