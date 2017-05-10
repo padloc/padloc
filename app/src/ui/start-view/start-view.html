@@ -137,7 +137,7 @@
 
                 <div class="tap tiles-2 input-wrapper">
                     <pl-input id="emailInput" type="email" placeholder="Enter Email (Optional)"
-                        on-focus="_emailInputFocused" on-enter="_getStarted"></pl-input>
+                        on-focus="_emailInputFocused" on-enter="_emailEnter"></pl-input>
                     <pl-icon icon="info" on-click="_showEmailInfo"></pl-icon>
                 </div>
 
@@ -259,6 +259,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
         ]).then(() => {
             this.notifyPath("settings");
             this.$.getStartedButton.success();
+            this.$.newPasswordInput.blur();
             this.dispatchEvent(new CustomEvent("get-started"));
         });
     }
@@ -274,6 +275,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
             })
             .then(() => {
                 this.$.enterButton.success();
+                this.$.passwordInput.blur();
                 this.notifyPath("settings");
                 this.dispatchEvent(new CustomEvent("unlock"));
             })
@@ -344,6 +346,10 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
 
     _hasValue(val) {
         return !!val;
+    }
+
+    _emailEnter() {
+        this.$.newPasswordInput.focus();
     }
 
 }
