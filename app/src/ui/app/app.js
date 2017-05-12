@@ -45,6 +45,13 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         document.addEventListener("touchstart", moved, false);
         document.addEventListener("keydown", moved, false);
         document.addEventListener("mousemove", padlock.util.debounce(moved, 50), false);
+
+        // If we want to capture all keydown events, we have to add the listener
+        // directly to the document
+        document.addEventListener("keydown", this._keydown.bind(this), false);
+
+        // Listen for android back button
+        document.addEventListener("backbutton", this._back.bind(this), false);
     }
 
     _closeRecord() {
@@ -174,6 +181,46 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.settingsSource.clear();
         this.lock();
         setTimeout(() => this.alert("App reset successfully. Off to a fresh start!"), 500);
+    }
+
+    //* Keyboard shortcuts
+    _keydown(event) {
+        let shortcut;
+        const control = event.ctrlKey || event.metaKey;
+
+        // ESCAPE -> Back
+        if (event.key === "Escape") {
+            shortcut = () => this._back();
+        }
+        // CTRL/CMD + F -> Filter
+        else if (control && event.key === "f") {
+            shortcut = () => this.$.listView.focusFilterInput();
+        }
+        // CTRL/CMD + N -> New Record
+        else if (control && event.key === "n") {
+            shortcut = () => this._newRecord();
+        }
+
+        // If one of the shortcuts matches, execute it and prevent the default behaviour
+        if (shortcut) {
+            shortcut();
+            event.preventDefault();
+        }
+    }
+
+    _back() {
+        switch (this._currentView) {
+            case "recordView":
+                this._closeRecord();
+                break;
+            case "settingsView":
+                this._settingsBack();
+                break;
+            case "cloudView":
+                this._cloudViewBack();
+                break;
+        }
+
     }
 
     lock() {

@@ -140,6 +140,18 @@ class RecordItem extends padlock.NotificationMixin(padlock.BaseElement) {
         record: Object
     }; }
 
+    ready() {
+        super.ready();
+        // For some reason the keydown event doesn't bubble if a record item has focus so we have to
+        // re-dispatch it
+        this.addEventListener("keydown", (e) => {
+            if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+                document.dispatchEvent(new KeyboardEvent("keydown", e));
+                e.preventDefault();
+            }
+        });
+    }
+
     // Replaces all non-newline characters in a given string with dots
     _obfuscate(value) {
         return value ? value.replace(/[^\n]/g, "\u2022") : "";

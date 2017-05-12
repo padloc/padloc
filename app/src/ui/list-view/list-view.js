@@ -34,11 +34,11 @@ class ListView extends padlock.BaseElement {
     ready() {
         super.ready();
         window.addEventListener("keydown", (e) => {
-            switch (e.keyCode) {
-                case 40: // ARROW_DOWN
+            switch (e.key) {
+                case "ArrowDown":
                     this.$.list._focusPhysicalItem(this.$.list.firstVisibleIndex);
                     break;
-                case 38: // ARROW_UP
+                case "ArrowUp":
                     this.$.list._focusPhysicalItem(this.$.list.lastVisibleIndex);
                     break;
             }
@@ -63,10 +63,6 @@ class ListView extends padlock.BaseElement {
 
     _isEmpty() {
         return !this.records.filter((r) => !r.removed).length;
-    }
-
-    _recordTapped(e) {
-        this.dispatchEvent(new CustomEvent("record-select", { detail: { record: e.model.item } }));
     }
 
     _openMenu() {
@@ -105,7 +101,7 @@ class ListView extends padlock.BaseElement {
         this.dispatchEvent(new CustomEvent("open-cloud-view"));
     }
 
-    _focusFilterInput() {
+    focusFilterInput() {
         this.$.filterInput.focus();
     }
 

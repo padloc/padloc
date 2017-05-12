@@ -29,7 +29,7 @@
         <template is="dom-if" if="[[ multiline ]]" on-dom-change="_domChange">
             <textarea id="input" value="{{ value::input }}" placeholder$="[[ placeholder ]]"
                 rows="1" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
-                on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keyup="_keyup"></textarea>
+                on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"></textarea>
         </template>
 
         <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
@@ -37,7 +37,7 @@
                 autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
                 type$="[[ type ]]" placeholder$="[[ placeholder ]]"
                 required$="[[ required ]]" pattern$="[[ pattern ]]"
-                on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keyup="_keyup">
+                on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown">
         </template>
 
     </template>
@@ -123,11 +123,15 @@ class PlInput extends padlock.BaseElement {
         this.dispatchEvent(new CustomEvent("change"));
     }
 
-    _keyup(e) {
-        if (e.keyCode === 13) {
+    _keydown(e) {
+        if (e.key === "Enter") {
             this.dispatchEvent(new CustomEvent("enter"));
-        } else if (e.keyCode == 27) {
+            e.preventDefault();
+            e.stopPropagation();
+        } else if (e.key === "Escape") {
             this.dispatchEvent(new CustomEvent("escape"));
+            e.preventDefault();
+            e.stopPropagation();
         }
     }
 
