@@ -2,7 +2,14 @@
   "name": "Padlock",
   "version": "1.0.0",
   "main": "tools.js",
+  "scripts": {
+    "bower": "bower install",
+    "gulp": "gulp",
+    "stylus": "gulp stylus",
+    "deploy": "gulp deploy"
+  },
   "devDependencies": {
+    "bower": "^1.8.0",
     "eslint-plugin-html": "^1.5.1",
     "gulp": "^3.9.1",
     "gulp-crisper": "1.1.0",
