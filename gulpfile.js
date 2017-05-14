@@ -23,7 +23,7 @@ gulp.task("stylus", function() {
 });
 
 gulp.task("eslint", function() {
-    tools.eslint();
+    tools.runEslint();
 });
 
 // Deploy a minified/built version of the app to a given destination folder
