@@ -34,6 +34,7 @@
     "mocha": "^3.2.0",
     "nib": "^1.1.0",
     "papaparse": "^4.1.2",
+    "polymer-bundler": "^2.0.0-pre.6",
     "rimraf": "^2.5.4",
     "sjcl": "^1.0.6",
     "st": "^1.2.0",
