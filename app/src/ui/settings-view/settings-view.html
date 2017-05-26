@@ -99,15 +99,41 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
 
     //* Opens the change password dialog and resets the corresponding input elements
     _changePassword() {
-        this.notifyPath("settings");
+        let newPwd;
+        return this.prompt("Are you sure you want to change your master password? Enter your current password " +
+            "to continue", "Enter Current Password", "password", "Confirm")
+            .then((pwd) => {
+                if (pwd !== this.localSource.password) {
+                    this.alert("You entered the wrong master password!");
+                    return Promise.reject();
+                }
+                return this.prompt("Now choose a new master password!", "Enter New Password", "password", "Confirm");
+            })
+            .then((pwd) => {
+                if (pwd === null) {
+                    return Promise.reject();
+                }
+                newPwd = pwd;
+                return this.prompt("Confirm your new master password!", "Confirm New Password", "password",
+                    "Confirm & Change");
+            })
+            .then((pwd) => {
+                if (pwd === null) {
+                    return null;
+                }
+
+                if (pwd !== newPwd) {
+                    return this.alert("You failed to confirm the new password. Please try again!");
+                }
+
+                this.dispatchEvent(new CustomEvent("change-password", {detail: pwd}));
+            });
     }
 
     _import() {
-        this.fire("import");
     }
 
     _export() {
-        this.fire("export");
     }
 
     _openWebsite() {

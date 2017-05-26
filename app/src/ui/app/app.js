@@ -220,7 +220,14 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
                 this._cloudViewBack();
                 break;
         }
+    }
 
+    _changePassword(e) {
+        this.localSource.password = this.settingsSource.password = e.detail;
+        Promise.all([
+            this.collection.save(this.localSource),
+            this.settings.save(this.settingsSource)
+        ]).then(() => this.alert("Master password changed successfully."));
     }
 
     lock() {
