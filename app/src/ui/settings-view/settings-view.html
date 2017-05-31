@@ -39,6 +39,27 @@
                 height: auto;
             }
 
+            .export-header {
+                text-align: center;
+                font-weight: bold;
+                line-height: var(--row-height);
+            }
+
+            .export-row {
+                display: flex;
+                align-items: center;
+            }
+
+            .export-row-label {
+                padding: 0 15px;
+                flex: 1;
+            }
+
+            .export-row pl-icon {
+                width: 50px;
+                height: 50px;
+            }
+
             @media (min-width: 700px) {
                 pl-icon[icon=backward] {
                     display: none;
@@ -60,10 +81,22 @@
             </section>
 
             <section class="tiles tiles-2">
-                <button on-click="_import" class="tap arrow">Import Data</button>
-                <button on-click="_export" class="tap arrow">Export Data</button>
                 <button on-click="_resetData" class="tap">Reset App</button>
                 <button on-click="_changePassword" class="tap">Change Master Password</button>
+            </section>
+
+            <section class="tiles tiles-2">
+                <div class="export-header">Export</div>
+                <div class="export-row tiles">
+                    <div class="export-row-label">As CSV (not recommended)</div>
+                    <pl-icon icon="download" class="tap" on-click="_downloadCSV"></pl-icon>
+                    <pl-icon icon="copy" class="tap" on-click="_copyCSV"></pl-icon>
+                </div>
+                <div class="export-row tiles">
+                    <div class="export-row-label">As Encrypted File</div>
+                    <pl-icon icon="download" class="tap" on-click="_downloadEncrypted"></pl-icon>
+                    <pl-icon icon="copy" class="tap" on-click="_copyEncrypted"></pl-icon>
+                </div>
             </section>
 
             <section class="tiles tiles-2">
@@ -79,7 +112,12 @@
     </template>
 
     <script>
+/* global zxcvbn */
 (() => {
+
+const exportCSVWarning = "WARNING: Exporting to CSV format will save your data without encyryption of any " +
+    "kind which means it can be read by anyone. We strongly recommend exporting your data as " +
+    "a secure, encrypted file, instead! Are you sure you want to proceed?";
 
 class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
 
@@ -90,7 +128,8 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
         settings: {
             type: Object,
             notify: true
-        }
+        },
+        collection: Object
     }; }
 
     _back() {
@@ -130,12 +169,6 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
             });
     }
 
-    _import() {
-    }
-
-    _export() {
-    }
-
     _openWebsite() {
         window.open("https://padlock.io", "_system");
     }
@@ -170,6 +203,75 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
         return padlock.version;
     }
 
+    _downloadCSV() {
+        this.confirm(exportCSVWarning, "Download", "Cancel")
+            .then((confirm) => {
+                if (confirm) {
+                    const csv = padlock.exp.toCSV(this.collection.records);
+                    const a = document.createElement("a");
+                    a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
+                    a.download = "padlock.csv";
+                    a.click();
+                }
+            });
+    }
+
+    _copyCSV() {
+        this.confirm(exportCSVWarning, "Copy to Clipboard", "Cancel")
+            .then((confirm) => {
+                if (confirm) {
+                    padlock.platform.setClipboard(padlock.exp.toCSV(this.collection.records))
+                        .then(() => this.alert("Your data has successfully been copied to the system " +
+                            "clipboard. You can now paste it into the spreadsheet program of your choice."));
+                }
+            });
+    }
+
+    _getEncryptedData() {
+        return this.prompt("Please choose a password to protect your data. This may be the same as your master " +
+            " password or something else, but make sure it is sufficiently strong!",
+            "Enter Password", "password", "Confirm", "Cancel")
+            .then((pwd) => {
+                if (!pwd) {
+                    if (pwd === "") {
+                        this.alert("Please enter a password!");
+                    }
+                    return Promise.reject();
+                }
+                if (zxcvbn(pwd).score < 2) {
+                    return this.confirm("WARNING: The password you entered is weak which makes it easier for " +
+                        "attackers to break the encryption used to protect your data. Try to use a longer " +
+                        "password or include a variation of uppercase, lowercase and special characters as " +
+                        "well as numbers.", "Use Anyway", "Try Again").then((confirm) => {
+                            if (!confirm) {
+                                return Promise.reject();
+                            }
+
+                            return padlock.exp.toPadlock(this.collection.records, pwd);
+                        });
+                } else {
+                    return padlock.exp.toPadlock(this.collection.records, pwd);
+                }
+            });
+    }
+
+    _downloadEncrypted() {
+        this._getEncryptedData()
+            .then((data) => {
+                const a = document.createElement("a");
+                a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
+                a.download = "padlock.csv";
+                a.click();
+            });
+    }
+
+    _copyEncrypted() {
+        this._getEncryptedData()
+            .then((data) => {
+                padlock.platform.setClipboard(data)
+                    .then(() => this.alert("Your data has successfully been copied to the system clipboard."));
+            });
+    }
 }
 
 window.customElements.define(SettingsView.is, SettingsView);
