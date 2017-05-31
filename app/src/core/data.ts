@@ -64,8 +64,12 @@ export class Collection {
 
     private _records: Map<string, Record>;
 
-    constructor() {
+    constructor(records?:Record[]) {
         this._records = new Map<string, Record>();
+
+        if (records) {
+            this.add(records);
+        }
     }
 
     get records(): Array<Record> {

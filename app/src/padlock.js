@@ -252,8 +252,11 @@ class Record {
 }
 exports.Record = Record;
 class Collection {
-    constructor() {
+    constructor(records) {
         this._records = new Map();
+        if (records) {
+            this.add(records);
+        }
     }
     get records() {
         return Array.from(this._records.values());
@@ -364,7 +367,17 @@ exports.Settings = Settings;
 
 },{"./util":9}],4:[function(require,module,exports){
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments)).next());
+    });
+};
 const papaparse_1 = require("papaparse");
+const data_1 = require("./data");
+const source_1 = require("./source");
 function recordsToTable(records) {
     // Array of column names
     let cols = ["name", "category"];
@@ -413,8 +426,19 @@ function toCSV(records) {
     return papaparse_1.unparse(recordsToTable(records));
 }
 exports.toCSV = toCSV;
+function toPadlock(records, password) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const coll = new data_1.Collection(records);
+        const memSource = new source_1.MemorySource();
+        const encSource = new source_1.EncryptedSource(memSource);
+        encSource.password = password;
+        yield coll.save(encSource);
+        return yield memSource.get();
+    });
+}
+exports.toPadlock = toPadlock;
 
-},{"papaparse":106}],5:[function(require,module,exports){
+},{"./data":3,"./source":8,"papaparse":106}],5:[function(require,module,exports){
 "use strict";
 const papaparse_1 = require("papaparse");
 const data_1 = require("./data");
