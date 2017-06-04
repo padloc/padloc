@@ -443,6 +443,13 @@ exports.toPadlock = toPadlock;
 const papaparse_1 = require("papaparse");
 const data_1 = require("./data");
 const crypto_1 = require("./crypto");
+class ImportError {
+    constructor(code) {
+        this.code = code;
+    }
+    ;
+}
+exports.ImportError = ImportError;
 //* Detects if a string contains a SecuStore backup
 function isFromSecuStore(data) {
     return data.indexOf("SecuStore") != -1 &&
@@ -517,7 +524,11 @@ function fromTable(data, nameColIndex = 0, catColIndex) {
 }
 exports.fromTable = fromTable;
 function fromCSV(data, nameColIndex, catColIndex) {
-    return fromTable(papaparse_1.parse(data).data, nameColIndex, catColIndex);
+    const parsed = papaparse_1.parse(data);
+    if (parsed.errors.length) {
+        throw new ImportError("invalid_csv");
+    }
+    return fromTable(parsed.data, nameColIndex, catColIndex);
 }
 exports.fromCSV = fromCSV;
 /**

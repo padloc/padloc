@@ -116,11 +116,10 @@
                         <pl-icon icon="upload" class="tap"></pl-icon>
                     </label>
                 </div>
-                <!-- <div class="section&#45;row tiles"> -->
-                <!--     <div class="section&#45;row&#45;label">As Encrypted File</div> -->
-                <!--     <pl&#45;icon icon="download" class="tap" on&#45;click="_downloadEncrypted"></pl&#45;icon> -->
-                <!--     <pl&#45;icon icon="copy" class="tap" on&#45;click="_copyEncrypted"></pl&#45;icon> -->
-                <!-- </div> -->
+                <div class="section-row tiles">
+                    <div class="section-row-label">Or Paste From Clipboard</div>
+                    <pl-icon icon="copy" class="tap" on-click="_importFromClipboard"></pl-icon>
+                </div>
             </section>
 
             <section class="tiles tiles-2">
@@ -304,10 +303,38 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
         const file = this.$.importFile.files[0];
         const reader = new FileReader();
         reader.onload = () => {
-            this._importString(reader.result);
+            this._importString(reader.result)
+                .catch((e) => {
+                    switch (e.code) {
+                        case "decryption_failed":
+                            this.alert("Failed to open file. Did you enter the correct password?");
+                            break;
+                        case "invalid_csv":
+                            this.alert("Failed to recognize file format.");
+                            break;
+                        default:
+                            this.alert("Failed to open file.");
+                            throw e;
+                    }
+                });
             this.$.importFile.value = "";
         };
         reader.readAsText(file);
+    }
+
+    _importFromClipboard() {
+        padlock.platform.getClipboard()
+            .then((str) => this._importString(str))
+                .catch((e) => {
+                    switch (e.code) {
+                        case "decryption_failed":
+                            this.alert("Failed to decrypt data. Did you enter the correct password?");
+                            break;
+                        default:
+                            this.alert("No supported data found in clipboard. Please make sure to copy " +
+                                "you data to the clipboard first (e.g. via ctrl + C).");
+                    }
+                });
     }
 
     _importString(rawStr) {
@@ -337,19 +364,6 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
                 this.collection.save(this.localSource);
                 this.notifyPath("collection");
                 this.alert(`Successfully imported ${records.length} records.`);
-            })
-            .catch((e) => {
-                switch (e.code) {
-                    case "decryption_failed":
-                        this.alert("Failed to open file. Did you enter the correct password?");
-                        break;
-                    case "invalid_csv":
-                        this.alert("Failed to recognize file format.");
-                        break;
-                    default:
-                        this.alert("Failed to open file.");
-                        throw e;
-                }
             });
     }
 

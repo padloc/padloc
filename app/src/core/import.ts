@@ -93,7 +93,6 @@ export function fromTable(data: string[][], nameColIndex = 0, catColIndex?: numb
 export function fromCSV(data: string, nameColIndex?: number, catColIndex?: number): Record[] {
     const parsed = parse(data);
     if (parsed.errors.length) {
-        console.log(parsed);
         throw new ImportError("invalid_csv");
     }
     return fromTable(parsed.data, nameColIndex, catColIndex);
