@@ -2,6 +2,12 @@ import { parse } from "papaparse";
 import { Record, Field } from "./data";
 import { Container } from "./crypto";
 
+export class ImportError {
+    constructor(
+        public code: "invalid_csv"
+    ) {};
+}
+
 //* Detects if a string contains a SecuStore backup
 export function isFromSecuStore(data: string): boolean {
     return data.indexOf("SecuStore") != -1 &&
@@ -85,7 +91,12 @@ export function fromTable(data: string[][], nameColIndex = 0, catColIndex?: numb
 }
 
 export function fromCSV(data: string, nameColIndex?: number, catColIndex?: number): Record[] {
-    return fromTable(parse(data).data, nameColIndex, catColIndex);
+    const parsed = parse(data);
+    if (parsed.errors.length) {
+        console.log(parsed);
+        throw new ImportError("invalid_csv");
+    }
+    return fromTable(parsed.data, nameColIndex, catColIndex);
 }
 
 /**

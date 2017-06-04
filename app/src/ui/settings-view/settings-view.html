@@ -39,25 +39,33 @@
                 height: auto;
             }
 
-            .export-header {
+            .section-header {
                 text-align: center;
                 font-weight: bold;
                 line-height: var(--row-height);
             }
 
-            .export-row {
+            .section-row {
                 display: flex;
                 align-items: center;
             }
 
-            .export-row-label {
+            .section-row-label {
                 padding: 0 15px;
                 flex: 1;
             }
 
-            .export-row pl-icon {
+            .section-row pl-icon {
                 width: 50px;
                 height: 50px;
+            }
+
+            input[type="file"] {
+                display: none;
+            }
+
+            label {
+                line-height: 0;
             }
 
             @media (min-width: 700px) {
@@ -74,7 +82,7 @@
 
         <main>
             <section class="tiles tiles-2">
-                <pl-toggle-button active="{{ settings.obfuscateFields }}" label="Hide Field Values" class="tap" reverse></pl-toggle-button>
+                <!-- <pl&#45;toggle&#45;button active="{{ settings.obfuscateFields }}" label="Hide Field Values" class="tap" reverse></pl&#45;toggle&#45;button> -->
                 <pl-toggle-button active="{{ settings.autoLock }}" label="Auto Lock" class="tap" reverse></pl-toggle-button>
                 <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit=" min"
                     label="After" hidden$="{{ !settings.autoLock }}"></pl-slider>
@@ -86,17 +94,33 @@
             </section>
 
             <section class="tiles tiles-2">
-                <div class="export-header">Export</div>
-                <div class="export-row tiles">
-                    <div class="export-row-label">As CSV (not recommended)</div>
+                <div class="section-header">Export</div>
+                <div class="section-row tiles">
+                    <div class="section-row-label">As CSV (not recommended)</div>
                     <pl-icon icon="download" class="tap" on-click="_downloadCSV"></pl-icon>
                     <pl-icon icon="copy" class="tap" on-click="_copyCSV"></pl-icon>
                 </div>
-                <div class="export-row tiles">
-                    <div class="export-row-label">As Encrypted File</div>
+                <div class="section-row tiles">
+                    <div class="section-row-label">As Encrypted File</div>
                     <pl-icon icon="download" class="tap" on-click="_downloadEncrypted"></pl-icon>
                     <pl-icon icon="copy" class="tap" on-click="_copyEncrypted"></pl-icon>
                 </div>
+            </section>
+
+            <section class="tiles tiles-2">
+                <div class="section-header">Import</div>
+                <div class="section-row">
+                    <div class="section-row-label">Select a File</div>
+                    <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.padlock">
+                    <label for="importFile" class="tiles-2">
+                        <pl-icon icon="upload" class="tap"></pl-icon>
+                    </label>
+                </div>
+                <!-- <div class="section&#45;row tiles"> -->
+                <!--     <div class="section&#45;row&#45;label">As Encrypted File</div> -->
+                <!--     <pl&#45;icon icon="download" class="tap" on&#45;click="_downloadEncrypted"></pl&#45;icon> -->
+                <!--     <pl&#45;icon icon="copy" class="tap" on&#45;click="_copyEncrypted"></pl&#45;icon> -->
+                <!-- </div> -->
             </section>
 
             <section class="tiles tiles-2">
@@ -129,7 +153,10 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
             type: Object,
             notify: true
         },
-        collection: Object
+        collection: {
+            type: Object,
+            notify: true
+        }
     }; }
 
     _back() {
@@ -260,7 +287,7 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
             .then((data) => {
                 const a = document.createElement("a");
                 a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
-                a.download = "padlock.csv";
+                a.download = "exported.padlock";
                 a.click();
             });
     }
@@ -272,6 +299,60 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
                     .then(() => this.alert("Your data has successfully been copied to the system clipboard."));
             });
     }
+
+    _importFile() {
+        const file = this.$.importFile.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            this._importString(reader.result);
+            this.$.importFile.value = "";
+        };
+        reader.readAsText(file);
+    }
+
+    _importString(rawStr) {
+        const imp = padlock.imp;
+        const isPadlock = imp.isFromPadlock(rawStr);
+        const isSecuStore = imp.isFromSecuStore(rawStr);
+        const isLastPass = imp.isFromLastPass(rawStr);
+        return Promise.resolve()
+            .then(() => {
+                if (isPadlock || isSecuStore) {
+                    return this.prompt("This file is protected by a password.",
+                        "Enter Password", "password", "Confirm", "Cancel");
+                }
+            })
+            .then((pwd) => {
+                if (pwd === null) {
+                    return;
+                }
+
+                return isPadlock ? padlock.imp.fromPadlock(rawStr, pwd) :
+                    isSecuStore ? imp.fromSecuStore(rawStr, pwd) :
+                    isLastPass ? imp.fromLastPass(rawStr) :
+                    imp.fromCSV(rawStr);
+            })
+            .then((records) => {
+                this.collection.add(records);
+                this.collection.save(this.localSource);
+                this.notifyPath("collection");
+                this.alert(`Successfully imported ${records.length} records.`);
+            })
+            .catch((e) => {
+                switch (e.code) {
+                    case "decryption_failed":
+                        this.alert("Failed to open file. Did you enter the correct password?");
+                        break;
+                    case "invalid_csv":
+                        this.alert("Failed to recognize file format.");
+                        break;
+                    default:
+                        this.alert("Failed to open file.");
+                        throw e;
+                }
+            });
+    }
+
 }
 
 window.customElements.define(SettingsView.is, SettingsView);
