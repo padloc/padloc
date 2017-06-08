@@ -66,11 +66,18 @@
         <splash height="1334" src="res/ios/splash/splash-750x1334.png" width="750" />
         <splash height="2208" src="res/ios/splash/splash-1242x2208.png" width="1242" />
         <splash height="1242" src="res/ios/splash/splash-2208x1242.png" width="2208" />
+        <config-file parent="UIStatusBarHidden" platform="ios" target="*-Info.plist">
+            <true />
+        </config-file>
+        <config-file parent="UIViewControllerBasedStatusBarAppearance" platform="ios" target="*-Info.plist">
+            <false />
+        </config-file>
     </platform>
     <engine name="android" spec="^6.2.3" />
     <engine name="ios" spec="~4.4.0" />
     <plugin name="com.verso.cordova.clipboard" spec="https://github.com/VersoSolutions/CordovaClipboard.git" />
     <plugin name="com.wongatech.cordova-disable-nsurl-cache" spec="https://github.com/MaKleSoft/cordova-disable-nsurl-cache.git" />
+    <plugin name="cordova-custom-config" spec="^3.2.0" />
     <plugin name="cordova-plugin-app-version" spec="~0.1.9" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
     <plugin name="cordova-plugin-crosswalk-webview" spec="^2.3.0">
