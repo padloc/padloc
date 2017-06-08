@@ -97,28 +97,28 @@
                 <div class="section-header">Export</div>
                 <div class="section-row tiles">
                     <div class="section-row-label">As CSV (not recommended)</div>
-                    <pl-icon icon="download" class="tap" on-click="_downloadCSV"></pl-icon>
                     <pl-icon icon="copy" class="tap" on-click="_copyCSV"></pl-icon>
+                    <pl-icon icon="download" class="tap" on-click="_downloadCSV" hidden$="[[ _isMobile() ]]"></pl-icon>
                 </div>
                 <div class="section-row tiles">
                     <div class="section-row-label">As Encrypted File</div>
-                    <pl-icon icon="download" class="tap" on-click="_downloadEncrypted"></pl-icon>
                     <pl-icon icon="copy" class="tap" on-click="_copyEncrypted"></pl-icon>
+                    <pl-icon icon="download" class="tap" on-click="_downloadEncrypted" hidden$="[[ _isMobile() ]]"></pl-icon>
                 </div>
             </section>
 
             <section class="tiles tiles-2">
                 <div class="section-header">Import</div>
-                <div class="section-row">
+                <div class="section-row tiles">
+                    <div class="section-row-label">Paste From Clipboard</div>
+                    <pl-icon icon="copy" class="tap" on-click="_importFromClipboard"></pl-icon>
+                </div>
+                <div class="section-row" hidden$="[[ _isMobile() ]]">
                     <div class="section-row-label">Select a File</div>
                     <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.padlock">
                     <label for="importFile" class="tiles-2">
                         <pl-icon icon="upload" class="tap"></pl-icon>
                     </label>
-                </div>
-                <div class="section-row tiles">
-                    <div class="section-row-label">Or Paste From Clipboard</div>
-                    <pl-icon icon="copy" class="tap" on-click="_importFromClipboard"></pl-icon>
                 </div>
             </section>
 
@@ -365,6 +365,10 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
                 this.notifyPath("collection");
                 this.alert(`Successfully imported ${records.length} records.`);
             });
+    }
+
+    _isMobile() {
+        return padlock.platform.isIOS() || padlock.platform.isAndroid();
     }
 
 }
