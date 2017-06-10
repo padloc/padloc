@@ -66,9 +66,19 @@ export function fromSecuStore(rawData: string, password: string): Record[] {
  * @param  Integer  catColIndex  Index of the column containing the record categories. If left empty
  *                               no categories will be used
  */
-export function fromTable(data: string[][], nameColIndex = 0, catColIndex?: number): Record[] {
+export function fromTable(data: string[][], nameColIndex?: number, catColIndex?: number): Record[] {
     // Use first row for column names
     const colNames = data[0];
+
+    if (nameColIndex === undefined) {
+        const i = colNames.indexOf("name");
+        nameColIndex = i !== -1 ? i : 0;
+    }
+
+    if (catColIndex === undefined) {
+        catColIndex = colNames.indexOf("category");
+    }
+
 
     // All subsequent rows should contain values
     let records = data.slice(1).map(function(row) {
@@ -84,10 +94,14 @@ export function fromTable(data: string[][], nameColIndex = 0, catColIndex?: numb
             }
         }
 
-        return new Record(row[nameColIndex], fields, catColIndex && row[catColIndex] || "");
+        return new Record(row[nameColIndex || 0], fields, row[catColIndex || -1] || "");
     });
 
     return records;
+}
+
+export function isCSV(data: string): Boolean {
+    return parse(data).errors.length === 0;
 }
 
 export function fromCSV(data: string, nameColIndex?: number, catColIndex?: number): Record[] {

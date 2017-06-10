@@ -502,9 +502,16 @@ exports.fromSecuStore = fromSecuStore;
  * @param  Integer  catColIndex  Index of the column containing the record categories. If left empty
  *                               no categories will be used
  */
-function fromTable(data, nameColIndex = 0, catColIndex) {
+function fromTable(data, nameColIndex, catColIndex) {
     // Use first row for column names
     const colNames = data[0];
+    if (nameColIndex === undefined) {
+        const i = colNames.indexOf("name");
+        nameColIndex = i !== -1 ? i : 0;
+    }
+    if (catColIndex === undefined) {
+        catColIndex = colNames.indexOf("category");
+    }
     // All subsequent rows should contain values
     let records = data.slice(1).map(function (row) {
         // Construct an array of field object from column names and values
@@ -518,11 +525,15 @@ function fromTable(data, nameColIndex = 0, catColIndex) {
                 });
             }
         }
-        return new data_1.Record(row[nameColIndex], fields, catColIndex && row[catColIndex] || "");
+        return new data_1.Record(row[nameColIndex || 0], fields, row[catColIndex || -1] || "");
     });
     return records;
 }
 exports.fromTable = fromTable;
+function isCSV(data) {
+    return papaparse_1.parse(data).errors.length === 0;
+}
+exports.isCSV = isCSV;
 function fromCSV(data, nameColIndex, catColIndex) {
     const parsed = papaparse_1.parse(data);
     if (parsed.errors.length) {

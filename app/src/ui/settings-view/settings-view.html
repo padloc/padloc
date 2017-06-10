@@ -115,7 +115,7 @@
                 </div>
                 <div class="section-row" hidden$="[[ _isMobile() ]]">
                     <div class="section-row-label">Select a File</div>
-                    <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.padlock">
+                    <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.padlock,.set">
                     <label for="importFile" class="tiles-2">
                         <pl-icon icon="upload" class="tap"></pl-icon>
                     </label>
@@ -342,6 +342,7 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
         const isPadlock = imp.isFromPadlock(rawStr);
         const isSecuStore = imp.isFromSecuStore(rawStr);
         const isLastPass = imp.isFromLastPass(rawStr);
+        const isCSV = imp.isCSV(rawStr);
         return Promise.resolve()
             .then(() => {
                 if (isPadlock || isSecuStore) {
@@ -354,16 +355,35 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
                     return;
                 }
 
-                return isPadlock ? padlock.imp.fromPadlock(rawStr, pwd) :
-                    isSecuStore ? imp.fromSecuStore(rawStr, pwd) :
-                    isLastPass ? imp.fromLastPass(rawStr) :
-                    imp.fromCSV(rawStr);
+                if (isPadlock) {
+                    return imp.fromPadlock(rawStr, pwd);
+                } else if (isSecuStore) {
+                    return imp.fromSecuStore(rawStr, pwd);
+                } else if (isLastPass) {
+                    return imp.fromLastPass(rawStr);
+                } else if (isCSV) {
+                    return this.confirm("The data you want to import seems to be in CSV format. Before you continue, " +
+                        "please make sure that the data is structured according to Padlocks specific requirements!",
+                        "Continue", "Review Import Guidelines")
+                        .then((confirm) => {
+                            if (confirm) {
+                                return imp.fromCSV(rawStr);
+                            } else {
+                                window.open("https://padlock.io/howto/import/#importing-from-csv", "_system");
+                            }
+                        });
+
+                } else {
+                    throw new imp.ImportError("invalid_csv");
+                }
             })
             .then((records) => {
-                this.collection.add(records);
-                this.collection.save(this.localSource);
-                this.notifyPath("collection");
-                this.alert(`Successfully imported ${records.length} records.`);
+                if (records) {
+                    this.collection.add(records);
+                    this.collection.save(this.localSource);
+                    this.notifyPath("collection");
+                    this.alert(`Successfully imported ${records.length} records.`);
+                }
             });
     }
 
