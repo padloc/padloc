@@ -1,6 +1,0 @@
-{
-  "main": "main.js",
-  "dependencies": {
-    "electron-auto-updater": "^0.5.2"
-  }
-}

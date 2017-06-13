@@ -1,28 +1,44 @@
 "use strict";
 
-const {app, shell, BrowserWindow, Menu} = require("electron");
-const {autoUpdater} = require("electron-auto-updater");
+const { app, shell, BrowserWindow, Menu, dialog } = require("electron");
+const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const url = require("url");
 const os = require("os");
 
 let win;
 
-if (os.platform() == "darwin") {
-    const updateUrl = `https://download.padlock.io/update/${os.platform()}_${os.arch()}/${app.getVersion()}`;
-    autoUpdater.setFeedURL(updateUrl);
-}
+autoUpdater.autoDownload = false;
 
-function handleAutoUpdateEvent() {
-    if (win) {
-        win.webContents.send("auto-update", ...arguments);
-    }
-}
+autoUpdater.on("update-available", (updateInfo) => {
+    dialog.showMessageBox({
+        type: "info",
+        title: `Update Available (Version ${updateInfo.version})`,
+        message: "A new version of Padlock is available! Do you want to install it now?",
+        buttons: ["Download & Install", "Later"]
+    }, (buttonIndex) => {
+        if (buttonIndex === 0) {
+            autoUpdater.downloadUpdate();
+            dialog.showMessageBox({
+                title: "Downloading Update...",
+                type: "info",
+                message: "The new version is being downloaded. You'll be notified when it is ready to be installed!"
+            });
+        }
+    });
+});
 
-for (let evt of ["update-available", "update-downloaded", "error",
-        "checking-for-update", "update-not-available"]) {
-    autoUpdater.addListener(evt, handleAutoUpdateEvent.bind(null, evt));
-}
+autoUpdater.on("update-downloaded", (updateInfo) => {
+    dialog.showMessageBox({
+        title: "Install Update",
+        message: `Padlock version ${updateInfo.version} has been downloaded and is ready to be installed!`,
+        buttons: ["Quit & Install", "Cancel"]
+    }, (buttonIndex) => {
+        if (buttonIndex === 0) {
+            autoUpdater.quitAndInstall();
+        }
+    });
+});
 
 function createWindow() {
     // Create the browser window.
