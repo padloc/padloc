@@ -1,0 +1,63 @@
+<link rel="import" href="../../padlock.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/shape-shifter/shape-shifter.html">
+<link rel="import" href="../view/view.html">
+<link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../input/input.html">
+<link rel="import" href="../toggle/toggle.html">
+<link rel="import" href="../../styles/shared-styles.html">
+<link rel="import" href="../view/view-styles.html">
+<link rel="import" href="settings-view-styles.html">
+
+<dom-module id="padlock-settings-view">
+
+    <template>
+
+        <style include="shared-styles"></style>
+        <style include="view-styles"></style>
+        <style include="settings-view-styles"></style>
+
+        <section>
+            <button on-tap="_openCloudView">
+                <span>Padlock Cloud</span>
+                <shape-shifter shape="right"></shape-shifter>
+            </button>
+            <button on-tap="_import">
+                <span>Import Data</span>
+                <shape-shifter shape="right"></shape-shifter>
+            </button>
+            <button on-tap="_export">
+                <span>Export Data</span>
+                <shape-shifter shape="right"></shape-shifter>
+            </button>
+        </section>
+
+        <section>
+            <padlock-toggle-button value="{{ settings.auto_lock }}" label="Auto Lock"></padlock-toggle-button>
+            <padlock-slider min="1" max="10" value="{{ settings.auto_lock_delay }}" step="1" unit=" min"
+                label="After" hidden$="{{ !settings.auto_lock }}"></padlock-slider>
+        </section>
+
+        <section>
+            <button on-tap="_resetData">Reset App</button>
+            <button on-tap="_changePassword">Change Master Password</button>
+            <padlock-toggle-button value="{{ settings.obfuscate_fields }}" label="Hide Field Values"></padlock-toggle-button>
+        </section>
+
+        <section>
+            <button on-tap="_openWebsite">Website</button>
+            <button on-tap="_sendMail">Support</button>
+            <div class="info" on-tap="_openHomepage">
+                <strong>Padlock {{ _version() }}</strong><br>
+                Developed and maintained by <strong>MaKleSoft</strong>
+            </div>
+        </section>
+
+        <!-- PROGRESS INDICATOR -->
+        <padlock-progress id="progress">Sending request...</padlock-progress>
+
+    </template>
+
+    <script src="settings-view.js"></script>
+
+</dom-module>

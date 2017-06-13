@@ -1,0 +1,28 @@
+<script>
+    /* global window, padlock */
+    window.padlock = {
+        version: ""
+    };
+</script>
+<script src="../bower_components/sjcl/sjcl.js"></script>
+<script src="../bower_components/zxcvbn/lib/zxcvbn.js"></script>
+<script src="../bower_components/papaparse/papaparse.js"></script>
+<script src="util.js"></script>
+<script src="rand.js"></script>
+<script src="crypto.js"></script>
+<script src="platform.js"></script>
+<script src="version.js"></script>
+<script src="Source.js"></script>
+<script src="LocalStorageSource.js"></script>
+<script src="ChromeStorageSource.js"></script>
+<script>
+    padlock.LocalSource = padlock.platform.isChromeApp() ?
+        padlock.ChromeStorageSource : padlock.LocalStorageSource;
+</script>
+<script src="CloudSource.js"></script>
+<script src="Store.js"></script>
+<script src="Collection.js"></script>
+<script src="Settings.js"></script>
+<script src="Announcements.js"></script>
+<script src="import.js"></script>
+<script src="export.js"></script>

@@ -1,13 +1,14 @@
 /* eslint-env node */
 "use strict";
 
-var gulp = require("gulp"),
-    stylus = require("gulp-stylus"),
-    nib = require("nib"),
-    watch = require("gulp-watch"),
-    argv = require("yargs").argv,
-    stylemod = require("gulp-style-modules"),
-    tools = require("./tools.js");
+const gulp = require("gulp");
+const stylus = require("gulp-stylus");
+const nib = require("nib");
+const watch = require("gulp-watch");
+const { argv } = require("yargs");
+const stylemod = require("gulp-style-modules");
+const { buildChrome, buildElectron, compileCss } = require("./lib/build.js");
+const { eslint } = require("./lib/lint.js");
 
 gulp.task("stylus", function() {
     if (argv.watch) {
@@ -18,15 +19,24 @@ gulp.task("stylus", function() {
                 .pipe(gulp.dest("./src"));
         });
     } else {
-        return tools.compileCss();
+        return compileCss();
     }
 });
 
-gulp.task("eslint", function() {
-    tools.eslint();
-});
+gulp.task("eslint", eslint);
 
 // Deploy a minified/built version of the app to a given destination folder
-gulp.task("deploy", function() {
-    tools.deploy(argv.dest);
+gulp.task("build", () => {
+    let promises = [];
+    const { mac, win, linux, chrome, release } = argv;
+
+    if (chrome) {
+        promises.push(buildChrome());
+    }
+
+    if (mac || win || linux) {
+        promises.push(buildElectron({ mac, win, linux, release }));
+    }
+
+    return Promise.all(promises);
 });
