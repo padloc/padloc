@@ -23,7 +23,8 @@
     "core-js": "^2.4.1",
     "electron": "^1.6.10",
     "electron-builder": "^18.8.1",
-    "eslint-plugin-html": "^1.5.1",
+    "eslint": "^4.0.0",
+    "eslint-plugin-html": "^1.7.0",
     "fs-extra": "^1.0.0",
     "gulp": "^3.9.1",
     "gulp-crisper": "1.1.0",
@@ -51,9 +52,14 @@
   },
   "main": "main.js",
   "scripts": {
-    "bower": "bower install",
+    "bower": "bower",
+    "bower-install": "pushd app && bower install && popd app",
+    "eslint": "eslint",
+    "lint": "eslint app/**/*.{js,html}",
     "gulp": "gulp",
-    "stylus": "gulp stylus",
-    "deploy": "gulp deploy"
+    "compile": "gulp compile",
+    "build": "gulp build",
+    "serve": "gulp serve",
+    "dev": "gulp --watch"
   }
 }
