@@ -1,0 +1,43 @@
+<link rel="import" href="../base/base.html">
+<link rel="import" href="dialog-alert.html">
+<link rel="import" href="dialog-confirm.html">
+<link rel="import" href="dialog-prompt.html">
+
+<script>
+(() => {
+
+let alertDialog, confirmDialog, promptDialog;
+
+padlock.DialogMixin = (superClass) => {
+
+    return class DialogMixin extends superClass {
+
+        alert(message, buttonLabel) {
+            if (!alertDialog) {
+                alertDialog = document.createElement("pl-dialog-alert");
+                document.body.appendChild(alertDialog);
+            }
+            return alertDialog.alert(message, buttonLabel);
+        }
+
+        confirm(message, confirmLabel, cancelLabel) {
+            if (!confirmDialog) {
+                confirmDialog = document.createElement("pl-dialog-confirm");
+                document.body.appendChild(confirmDialog);
+            }
+            return confirmDialog.confirm(message, confirmLabel, cancelLabel);
+        }
+
+        prompt(message, type, confirmLabel, cancelLabel) {
+            if (!promptDialog) {
+                promptDialog = document.createElement("pl-dialog-prompt");
+                document.body.appendChild(promptDialog);
+            }
+            return promptDialog.prompt(message, type, confirmLabel, cancelLabel);
+        }
+
+    };
+};
+
+})();
+</script>

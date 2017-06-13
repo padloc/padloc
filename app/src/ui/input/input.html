@@ -1,0 +1,156 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+
+<dom-module id="pl-input">
+    <template>
+        <style include="shared">
+            :host {
+                display: block;
+                position: relative;
+            }
+
+            :host(:not([multiline])) {
+                padding: 0 10px;
+                height: var(--row-height);
+            }
+
+            input {
+                height: 100%;
+                box-sizing: border-box;
+                text-overflow: ellipsis;
+            }
+
+            input, textarea {
+                text-align: inherit;
+                width: 100%;
+            }
+        </style>
+
+        <template is="dom-if" if="[[ multiline ]]" on-dom-change="_domChange">
+            <textarea id="input" value="{{ value::input }}" placeholder$="[[ placeholder ]]"
+                rows="1" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
+                on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"></textarea>
+        </template>
+
+        <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
+            <input id="input" value="{{ value::input }}"
+                autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
+                type$="[[ type ]]" placeholder$="[[ placeholder ]]"
+                required$="[[ required ]]" pattern$="[[ pattern ]]"
+                on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown">
+        </template>
+
+    </template>
+
+    <script src="../../../bower_components/autosize/dist/autosize.js"></script>
+    <script>
+/* global autosize */
+(() => {
+
+class PlInput extends padlock.BaseElement {
+
+    static get is() { return "pl-input"; }
+
+    static get properties() { return {
+        focused: {
+            type: Boolean,
+            value: false,
+            notify: true,
+            reflectToAttribute: true,
+            readonly: true
+        },
+        invalid: {
+            type: Boolean,
+            value: false,
+            notifiy: true,
+            reflectToAttribute: true,
+            readonly: true
+        },
+        multiline: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
+        pattern: {
+            type: String,
+            value: null
+        },
+        placeholder: {
+            type: String,
+            value: ""
+        },
+        required: {
+            type: Boolean,
+            value: ""
+        },
+        type: {
+            type: String,
+            value: "text"
+        },
+        value: {
+            type: String,
+            value: "",
+            notify: true,
+            observer: "_valueChanged"
+        }
+    }; }
+
+    get inputElement() {
+        return this.root.querySelector(this.multiline ? "textarea" : "input");
+    }
+
+    _domChange() {
+        if (this.multiline && this.inputElement) {
+            autosize(this.inputElement);
+        }
+        this._valueChanged();
+    }
+
+    _focused(e) {
+        e.stopPropagation();
+        this.focused = true;
+        this.dispatchEvent(new CustomEvent("focus"));
+    }
+
+    _blurred(e) {
+        e.stopPropagation();
+        this.focused = false;
+        this.dispatchEvent(new CustomEvent("blur"));
+    }
+
+    _changeHandler(e) {
+        e.stopPropagation();
+        this.dispatchEvent(new CustomEvent("change"));
+    }
+
+    _keydown(e) {
+        if (e.key === "Enter") {
+            this.dispatchEvent(new CustomEvent("enter"));
+            e.preventDefault();
+            e.stopPropagation();
+        } else if (e.key === "Escape") {
+            this.dispatchEvent(new CustomEvent("escape"));
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }
+
+    _valueChanged() {
+        this.invalid = this.inputElement && !this.inputElement.checkValidity();
+    }
+
+    focus() {
+        this.inputElement.focus();
+    }
+
+    blur() {
+        this.inputElement.blur();
+    }
+
+}
+
+window.customElements.define(PlInput.is, PlInput);
+
+})();
+    </script>
+</dom-module>

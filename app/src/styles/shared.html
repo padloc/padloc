@@ -1,0 +1,205 @@
+<link rel="stylesheet" href="fonts.css">
+<link rel="import" href="config.html">
+
+<dom-module id="shared">
+    <template>
+        <style>
+
+            :host, html, button, input, textarea {
+                font-family: var(--font-family), var(--font-family-fallback);
+                font-weight: var(--font-weight-regular);
+                font-size: var(--font-size-default);
+                text-shadow: inherit;
+                -webkit-font-smoothing: antialiased;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+
+            button, a.button {
+                display: inline-block;
+                color: inherit;
+                font-family: inherit;
+                font-size: inherit;
+                font-weight: inherit;
+                border: none;
+                margin: 0;
+                height: var(--row-height);
+                line-height: var(--row-height);
+                padding: 0 15px;
+                cursor: pointer;
+                text-align: center;
+                background: transparent;
+            }
+
+            button.arrow, a.button.arrow {
+                padding-right: 30px;
+            }
+
+            button.arrow::before, a.button.arrow::before {
+                font-family: "FontAwesome";
+                content: "\f054";
+                display: block;
+                position: absolute;
+                top: 0;
+                right: 15px;
+                bottom: 0;
+            }
+
+            input {
+                border: none;
+                appearance: none;
+                font-family: inherit;
+                font-size: inherit;
+                font-weight: inherit;
+                color: inherit;
+                border-radius: 0;
+                background: transparent;
+                margin: 0;
+                padding: 0;
+            }
+
+            textarea {
+                font-weight: inherit;
+                font-family: inherit;
+                font-size: inherit;
+                color: inherit;
+                border: none;
+                background: transparent;
+                margin: 0;
+                display: block;
+                padding: 0;
+                border-radius: 0;
+                appearance: none;
+                resize: none;
+            }
+
+            textarea[nowrap] {
+                white-space: pre;
+                word-wrap: normal;
+                overflow-x: scroll;
+            }
+
+            strong {
+                font-weight: var(--font-weight-bold);
+            }
+
+            ::-webkit-search-cancel-button {
+                display: none;
+            }
+
+            *:focus {
+                outline: none;
+            }
+
+            ::-webkit-input-placeholder {
+                text-shadow: inherit;
+                color: inherit;
+                opacity: 0.6;
+            }
+
+            [hidden] {
+                display: none !important;
+            }
+
+            [disabled] {
+                opacity: 0.5;
+                pointer-events: none;
+            }
+
+            section {
+                margin: 15px 0;
+            }
+
+            header {
+                display: flex;
+                height: var(--row-height);
+                line-height: var(--row-height);
+                background: var(--color-background);
+                font-size: var(--font-size-default);
+                position: relative;
+                z-index: 1;
+                box-shadow: rgba(0, 0, 0, 0.15) 0 1px 1px;
+            }
+
+            header > .title {
+                padding: 0 15px;
+                flex: 1;
+            }
+
+            header pl-icon {
+                height: var(--row-height);
+                width: var(--row-height);
+                font-size: 110%;
+            }
+
+            main {
+                flex: 1;
+                position: relative;
+                box-sizing: border-box;
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .spacer {
+                flex: 1;
+            }
+
+            .tap {
+                @apply --tap-highlight;
+            }
+
+            .tap::after {
+                @apply --tap-highlight-after;
+            }
+
+            .tap:hover::after {
+                @apply --tap-highlight-hover-after;
+            }
+
+            .tap:active::after {
+                @apply --tap-highlight-active-after;
+            }
+
+            .tiles > :nth-child(8n + 1), .tiles-1 {
+                @apply --shade-1;
+            }
+
+            .tiles > :nth-child(8n + 2), .tiles-2 {
+                @apply --shade-2;
+            }
+
+            .tiles > :nth-child(8n + 3), .tiles-3 {
+                @apply --shade-3;
+            }
+
+            .tiles > :nth-child(8n + 4), .tiles-4 {
+                @apply --shade-4;
+            }
+
+            .tiles > :nth-child(8n + 5), .tiles-5 {
+                @apply --shade-5;
+            }
+
+            .tiles > :nth-child(8n + 6), .tiles-6 {
+                @apply --shade-4;
+            }
+
+            .tiles > :nth-child(8n + 7), .tiles-7 {
+                @apply --shade-3;
+            }
+
+            .tiles > :nth-child(8n + 8), .tiles-8 {
+                @apply --shade-1;
+            }
+
+            .ellipsis {
+                @apply --ellipsis;
+            }
+        </style>
+    </template>
+</dom-module>

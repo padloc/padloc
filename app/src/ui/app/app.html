@@ -1,0 +1,119 @@
+<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../cloud-view/cloud-view.html">
+<link rel="import" href="../dialog/dialog-mixin.html">
+<link rel="import" href="../icon/icon.html">
+<link rel="import" href="../list-view/list-view.html">
+<link rel="import" href="../notification/notification.html">
+<link rel="import" href="../record-view/record-view.html">
+<link rel="import" href="../settings-view/settings-view.html">
+<link rel="import" href="../start-view/start-view.html">
+
+<dom-module id="pl-app">
+    <template>
+        <style include="shared">
+            :host {
+                display: flex;
+                overflow: hidden;
+                background: var(--color-background);
+                color: var(--color-foreground);
+                @apply --fullbleed;
+            }
+
+            #listView {
+                width: 350px;
+            }
+
+            #pages {
+                position: relative;
+                flex: 1;
+                box-shadow: rgba(0, 0, 0, 0.15) -1px 0 1px;
+                background: var(--color-background);
+            }
+
+            #placeholderView {
+                @apply --fullbleed;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                color: var(--color-background);
+            }
+
+            .placeholder-icon {
+                display: block;
+                font-size: 150px;
+                width: 150px;
+            }
+
+            @media (max-width: 700px) {
+                pl-list-view {
+                    flex: 1;
+                }
+
+                #pages {
+                    @apply --fullbleed;
+                    z-index: 1;
+                    transition: transform 0.5s cubic-bezier(0.6, 0, 0.2, 1);
+                }
+
+                #pages:not(.showing) {
+                    transform: translateX(100%);
+                }
+            }
+        </style>
+
+        <pl-start-view id="startView"
+            collection="[[ collection ]]"
+            settings="{{ settings }}"
+            local-source="[[ localSource ]]"
+            settings-source="[[ settingsSource ]]"
+            on-unlock="_unlocked"
+            on-get-started="_getStarted"
+            on-reset-data="_resetData"></pl-start-view>
+
+        <pl-list-view id="listView"
+            records="[[ collection.records ]]"
+            selected-record="{{ _selectedRecord }}"
+            on-open-menu="openMainMenu"
+            on-record-new="_newRecord"
+            on-lock="lock"
+            on-open-settings="_openSettings"
+            on-open-cloud-view="_openCloudView"></pl-list-view>
+
+        <iron-pages id="pages" attr-for-selected="id" selected="{{ _currentView }}">
+
+            <div id="placeholderView" class="tiles-2">
+                <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
+            </div>
+
+            <pl-record-view id="recordView"
+                record="[[ _selectedRecord ]]"
+                categories="[[ collection.categories ]]"
+                on-record-change="_recordChange"
+                on-record-close="_closeRecord"
+                on-record-create="_createRecord"
+                on-record-delete="_deleteRecord"></pl-record-view>
+
+            <pl-settings-view id="settingsView"
+                settings="{{ settings }}"
+                collection="{{ collection }}"
+                local-source="[[ localSource ]]"
+                on-settings-back="_settingsBack"
+                on-reset-data="_resetData"
+                on-change-password="_changePassword"></pl-settings-view>
+
+            <pl-cloud-view id="cloudView"
+                settings="{{ settings }}"
+                cloud-source="[[ cloudSource ]]"
+                collection="{{ collection }}"
+                local-source="[[ localSource ]]"
+                on-cloud-back="_cloudViewBack"></pl-cloud-view>
+
+        </iron-pages>
+
+    </template>
+
+    <script src="app.js"></script>
+</dom-module>

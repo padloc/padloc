@@ -4,72 +4,12 @@
         <title>Padlock</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 
-        <script>
-            /* global require, electron */
-            (function() {
-                "use strict";
-
-                if (typeof require !== "undefined") {
-                    delete window.module;
-                    window.electron = require("electron");
-                    electron.ipcRenderer.on("auto-update", function(_, type) {
-                        const evt = new CustomEvent(type, { detail: Array.prototype.slice.call(arguments, 3) });
-                        window.dispatchEvent(evt);
-                    });
-                }
-            })();
-        </script>
-
-        <!-- Load blue background right from the start to avoid white 'flash' -->
-        <style>
-            html { background: #59c6ff; }
-        </style>
-
-        <!-- Fonts -->
-        <link href="src/styles/fonts.css" rel="stylesheet" type="text/css">
-
-        <!-- Overrides for platform-specific styling -->
-        <link href="overrides.css" rel="stylesheet" type="text/css">
-
         <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 
-        <!-- Load the cordova api if available -->
-        <script src="cordova.js"></script>
-
-        <link rel="import" href="src/padlock.html">
-        <link rel="import" href="src/components/app/app.html">
-
-        <script>
-            /* global padlock */
-            window.addEventListener("WebComponentsReady", function() {
-                "use strict";
-
-                var source = new padlock.LocalSource(),
-                    store = new padlock.Store(source),
-                    settings = new padlock.Settings(store),
-                    collection = new padlock.Collection("default", store),
-                    announcements = new padlock.Announcements("https://padlock.io/announcements.json", store);
-
-                var app = new padlock.App(collection, settings, announcements);
-                document.body.appendChild(app);
-            });
-        </script>
-
-        <script>
-            /* global cordova */
-            document.addEventListener("deviceready", function() {
-                "use strict";
-                navigator.splashscreen.hide();
-                cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-                cordova.plugins.Keyboard.disableScroll(true);
-                // Replace window.open method with the inappbrowser equivalent
-                if (cordova.InAppBrowser) {
-                    window.open = cordova.InAppBrowser.open;
-                }
-            });
-        </script>
+        <link rel="import" href="src/ui/app/app.html">
 
     </head>
     <body>
+        <pl-app></pl-app>
     </body>
 </html>

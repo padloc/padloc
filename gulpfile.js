@@ -2,26 +2,11 @@
 "use strict";
 
 const gulp = require("gulp");
-const stylus = require("gulp-stylus");
-const nib = require("nib");
-const watch = require("gulp-watch");
 const { argv } = require("yargs");
-const stylemod = require("gulp-style-modules");
-const { buildChrome, buildElectron, compileCss } = require("./lib/build.js");
-const { eslint } = require("./lib/lint.js");
-
-gulp.task("stylus", function() {
-    if (argv.watch) {
-        watch({glob: "src/**/*.styl"}, function(files) {
-            return files
-                .pipe(stylus({use: [nib()]}))
-                .pipe(stylemod())
-                .pipe(gulp.dest("./src"));
-        });
-    } else {
-        return compileCss();
-    }
-});
+const { buildChrome, buildElectron, compile } = require("./lib/build");
+const { eslint } = require("./lib/lint");
+const http = require("http");
+const st = require("st");
 
 gulp.task("eslint", eslint);
 
@@ -40,3 +25,16 @@ gulp.task("build", () => {
 
     return Promise.all(promises);
 });
+
+gulp.task("compile", () => {
+    return compile(argv.watch);
+});
+
+gulp.task("serve", function() {
+    var port = argv.port || 8080;
+    http.createServer(
+        st({ path: "", cache: false, index: "index.html" })
+    ).listen(port);
+});
+
+gulp.task("default", ["compile", "serve"]);

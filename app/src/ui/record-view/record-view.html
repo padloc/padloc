@@ -1,0 +1,128 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../dialog/dialog-mixin.html">
+<link rel="import" href="../icon/icon.html">
+<link rel="import" href="../input/input.html">
+<link rel="import" href="record-field.html">
+
+<dom-module id="pl-record-view">
+    <template>
+
+        <style include="shared">
+            :host {
+                box-sizing: border-box;
+                overflow: auto;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                @apply --fullbleed;
+            }
+
+            header > pl-input {
+                flex: 1;
+                width: 0;
+                padding: 0 15px;
+            }
+
+            .category {
+                display: flex;
+                align-items: center;
+                position: relative;
+                overflow: visible;
+            }
+
+            .category > pl-input {
+                font-size: var(--font-size-small);
+                flex: 1;
+                height: auto;
+                padding: 10px;
+            }
+
+            .category > pl-icon {
+                font-size: 90%;
+            }
+
+            pl-icon[icon="category"] {
+                width: 15px;
+                margin-left: 15px;
+            }
+
+            #categoryList {
+                position: absolute;
+                z-index: 1;
+                display: none;
+                top: 100%;
+                left: 0;
+                background: var(--color-background);
+                width: 100%;
+                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
+                max-height: 200px;
+                overflow: auto;
+                background: var(--color-background);
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .category-option {
+                font-size: var(--font-size-small);
+                padding: 10px 15px;
+            }
+
+            .category > pl-input[focused] ~ #categoryList {
+                display: block;
+            }
+
+            .padding {
+                position: fixed;
+                height: 100%;
+                width: 100%;
+            }
+
+            @media (min-width: 700px) {
+                pl-icon[icon=backward] {
+                    display: none;
+                }
+            }
+        </style>
+
+        <header>
+            <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
+            <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}"
+                placeholder="Enter Record Name" on-change="_fireChangeEvent"></pl-input>
+            <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
+        </header>
+
+        <main>
+            <div class="category tap tiles-1">
+                <pl-icon icon="category"></pl-icon>
+                <pl-input id="categoryInput" value="{{ record.category }}" placeholder="No Category"
+                    on-change="_fireChangeEvent"></pl-input>
+                <pl-icon icon="dropdown" class="tap" on-click="_showCategoryList"></pl-icon>
+                <div id="categoryList" class="tiles">
+                    <div></div>
+                    <template is="dom-repeat" items="{{ categories }}" filter="{{ _categoryFilter(record.category) }}">
+                        <div class="category-option tap" on-click="_selectCategory" on-mousedown="_catOptMousedown">{{ item }}</div>
+                    </template>
+                </div>
+            </div>
+            <div class="fields">
+                <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
+                    <pl-record-field class$="{{ _fieldClass(index) }}" field="{{ item }}"
+                        on-field-change="_fireChangeEvent"
+                        on-field-delete="_deleteField"
+                        on-field-edit-start="_closeOtherGenerators"
+                        on-generator-show="_closeOtherGenerators"></pl-record-field>
+                </template>
+            </div>
+            <pl-record-field id="newField" draft
+                class$="{{ _fieldClass(record.fields.length) }}"
+                on-field-edit-end="_newFieldEnter"
+                on-field-edit-start="_closeOtherGenerators"
+                on-generator-show="_closeOtherGenerators"></pl-record-field>
+            <div class$="padding {{ _spacerClass(record.fields.length) }}"></div>
+        </main>
+
+    </template>
+
+    <script src="record-view.js"></script>
+
+</dom-module>

@@ -1,0 +1,149 @@
+<link rel="import" href="../../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../icon/icon.html">
+<link rel="import" href="../input/input.html">
+<link rel="import" href="../record-item/record-item.html">
+
+<dom-module id="pl-list-view">
+    <template>
+
+        <style include="shared">
+            :host {
+                --gutter-width: 2px;
+                overflow-x: hidden;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+            }
+
+            .filter-input-wrapper {
+                flex: 1;
+                display: flex;
+            }
+
+            .filter-input-wrapper pl-input {
+                padding-left: 0;
+                flex: 1;
+            }
+
+            header {
+                --color-background: var(--color-primary);
+                --color-foreground: var(--color-tertiary);
+                --color-highlight: var(--color-secondary);
+                color: var(--color-foreground);
+                background: var(--color-background);
+                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
+            }
+
+            header pl-icon[arrow] {
+                position: relative;
+                overflow: hidden;
+            }
+
+            header pl-icon[arrow]::before {
+                content: "";
+                display: block;
+                width: 15px;
+                height: 15px;
+                position: absolute;
+                bottom: -7px;
+                left: 0;
+                right: 0;
+                margin: 0 auto;
+                transform: rotate(45deg);
+                background: var(--color-foreground);
+                pointer-events: none;
+            }
+
+            main {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            iron-list {
+                flex: 1;
+            }
+
+            .empty {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .empty-message {
+                padding: 15px;
+                text-align: center;
+            }
+
+            pl-record-item {
+                transition: color 0.3s;
+            }
+
+            pl-record-item::before {
+                content: "";
+                display: block;
+                @apply --fullbleed;
+                background: var(--color-highlight);
+                transition: transform 0.2s cubic-bezier(0.6, 0, 0.2, 1);
+                transform: translateX(-100%);
+            }
+
+            pl-record-item:focus::before, pl-record-item:hover::before {
+                transform: translateX(calc(-100% + 7px));
+            }
+
+            pl-record-item[selected] {
+                color: var(--color-background);
+            }
+
+            pl-record-item[selected]::before {
+                transform: none;
+            }
+        </style>
+
+        <header>
+            <pl-icon icon="logo" class="tiles-1 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="settings" class="tiles-2 tap" on-click="_openSettings" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="cloud" class="tiles-3 tap" on-click="_openCloudView" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <div class="filter-input-wrapper tiles-4 tap">
+                <pl-icon icon="search" on-click="focusFilterInput"></pl-icon>
+                <pl-input id="filterInput" placeholder="" value="{{ _filterString }}" on-escape="_clearFilter"></pl-input>
+            </div>
+            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
+        </header>
+
+        <main>
+
+            <iron-list id="list"
+                mutable-data
+                hidden$="[[ _isEmpty(records.length) ]]"
+                items="[[ _filterAndSort(records, _filterString) ]]"
+                selection-enabled
+                selected-item="{{ selectedRecord }}">
+                <template>
+                    <div>
+                        <pl-record-item record="[[ item ]]" selected$="[[ selected ]]" tabindex$="[[ tabIndex ]]"></pl-record-item>
+                    </div>
+                </template>
+            </iron-list>
+
+            <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty tiles">
+                <div class="empty-message">
+                    You don't have any data yet! Start by creating your first record!
+                </div>
+                <div class="spacer"></div>
+            </div>
+
+        </main>
+
+    </template>
+
+    <script src="list-view.js"></script>
+
+</dom-module>

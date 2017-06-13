@@ -1,1 +1,0 @@
-// Placeholder file for cordova.js

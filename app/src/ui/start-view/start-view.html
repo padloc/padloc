@@ -1,0 +1,362 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../dialog/dialog-mixin.html">
+<link rel="import" href="../input/input.html">
+<link rel="import" href="../loading-button/loading-button.html">
+
+<dom-module id="pl-start-view">
+
+    <template>
+
+        <style include="shared">
+            @keyframes rumble {
+                25% {transform: translate(5px, 0);}
+                50% {transform: translate(-5px, -3px);}
+                75% {transform: translate(5px, 2px);}
+            }
+
+            :host {
+                --color-background: var(--color-primary);
+                --color-foreground: var(--color-tertiary);
+                --color-highlight: var(--color-secondary);
+                @apply --fullbleed;
+                color: var(--color-foreground);
+                display: flex;
+                z-index: 5;
+                text-align: center;
+                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
+            }
+
+            main {
+                @apply --fullbleed;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .shutter {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                background: var(--color-background);
+                transition: transform 0.5s cubic-bezier(1, 0, 0.2, 1);
+            }
+
+            .hero {
+                display: block;
+                height: 150px;
+                font-size: 150px;
+                width: auto;
+                margin-bottom: 40px;
+                position: relative;
+                z-index: 1;
+            }
+
+            pl-input {
+                text-align: center;
+            }
+
+            pl-input::-webkit-input-placeholder {
+                color: inherit;
+            }
+
+            .input-wrapper {
+                position: relative;
+            }
+
+            .input-wrapper pl-icon {
+                position: absolute;
+                width: var(--row-height);
+                height: var(--row-height);
+                top: 0;
+                right: 0;
+                bottom: 0;
+                margin: auto 0;
+                opacity: 0.8;
+            }
+
+            .strength-meter {
+                position: absolute;
+                right: 10px;
+                bottom: 5px;
+                font-size: 12px;
+                font-weight: bold;
+            }
+
+            .enter-button {
+                font-weight: bold;
+            }
+
+            .hero.rumble {
+                animation: rumble 0.2s;
+            }
+
+            :host([open]) {
+                pointer-events: none;
+            }
+
+            :host([open]) .shutter.top {
+                transform: translateY(-100%);
+            }
+
+            :host([open]) .shutter.bottom {
+                transform: translateY(100%);
+            }
+        </style>
+
+        <main hidden$="[[ !_hasData ]]">
+            <div class="shutter top">
+
+                <div class="spacer"></div>
+
+                <pl-icon id="logo" icon="logo" class="hero"></pl-icon>
+
+            </div>
+
+            <div class="shutter bottom">
+
+                <pl-input id="passwordInput" type="password" placeholder="Enter Master Password" class="tap tiles-3"
+                    on-enter="_unlock"></pl-input>
+
+                <pl-loading-button id="enterButton" on-click="_unlock" class="tap tiles-4 enter-button" label="Unlock"></pl-loading-button>
+
+                <div class="spacer tiles-5"></div>
+
+            </div>
+        </main>
+
+        <main hidden$="[[ _hasData ]]">
+            <div class="shutter top">
+
+                <div class="spacer"></div>
+
+                <pl-icon icon="logo" class="hero"></pl-icon>
+
+            </div>
+
+            <div class="shutter bottom">
+
+                <div class="tap tiles-2 input-wrapper">
+                    <pl-input id="emailInput" type="email" placeholder="Enter Email (Optional)"
+                        on-focus="_emailInputFocused" on-enter="_emailEnter"></pl-input>
+                    <pl-icon icon="info" on-click="_showEmailInfo"></pl-icon>
+                </div>
+
+                <div class="tap tiles-3 input-wrapper">
+                    <pl-input id="newPasswordInput" type="password" placeholder="Enter Master Password"
+                        on-focus="_newPasswordInputFocused" on-enter="_getStarted" value="{{ newPwd }}"></pl-input>
+                    <div class="strength-meter" hidden$="[[ !_hasValue(newPwd) ]]">strength: [[ _passwordStrength(newPwd) ]]</div>
+                    <pl-icon icon="info" on-click="_showPasswordInfo" hidden$="[[ _hasValue(newPwd) ]]"></pl-icon>
+                </div>
+
+                <pl-loading-button id="getStartedButton" on-click="_getStarted" class="tap tiles-4 enter-button" label="Get Started"></pl-loading-button>
+
+                <div class="spacer tiles-5"></div>
+
+            </div>
+        </main>
+
+    </template>
+
+    <script src="../../../bower_components/zxcvbn/lib/zxcvbn.js"></script>
+
+    <script>
+/* global zxcvbn */
+(() => {
+
+class StartView extends padlock.DialogMixin(padlock.BaseElement) {
+
+    static get is() { return "pl-start-view"; }
+
+    static get properties() { return {
+        collection: Object,
+        localSource: Object,
+        open: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
+        settings: {
+            type: Object,
+            notify: true
+        },
+        settingsSource: Object,
+        _hasData: {
+            type: Boolean
+        }
+    }; }
+
+    ready() {
+        super.ready();
+        this.reset();
+    }
+
+    reset() {
+        this.$.passwordInput.value = "";
+        this.$.emailInput.value = "";
+        this.$.newPasswordInput.value = "";
+        this.$.enterButton.stop();
+        this.$.getStartedButton.stop();
+        this._checkHasData();
+        this._failCount = 0;
+        this._hasEmailInputShown = this._hasPasswordInfoShown = false;
+    }
+
+    _checkHasData() {
+        this.localSource.hasData().then((has) => this._hasData = has);
+    }
+
+    _getStarted() {
+        if (this.$.emailInput.value && this.$.emailInput.invalid) {
+            this.alert(this.$.emailInput.validationMessage || "Please enter a valid email address!");
+            return;
+        }
+
+        const pwd = this.$.newPasswordInput.value;
+
+        if (!pwd) {
+            this.alert("Please enter a master password!").then(() => this.$.newPasswordInput.focus());
+            return;
+        }
+
+        if (zxcvbn(pwd).score < 2) {
+            this.confirm("WARNING: The password you entered is weak which makes it easier for attackers to break " +
+                "the encryption used to protect your data. Try to use a longer password or include a " +
+                "variation of uppercase, lowercase and special characters as well as numbers.",
+                "Use Anyway", "Try Again").then((confirm) => {
+                    if (confirm) {
+                        this._confirmPassword();
+                    } else {
+                        this.$.newPasswordInput.focus();
+                    }
+                });
+            return;
+        }
+
+        this._confirmPassword();
+    }
+
+    _confirmPassword() {
+        this.prompt("Remember your master password! Without it, nobody will be able to access your data, " +
+            "not even we! This is to ensure that your data is as safe as possible but it also means " +
+            "that if you lose your master password, we won't be able to assist you with recovering your " +
+            "data.", "password", "Repeat Master Password", "Confirm").then((pwd) => {
+                if (pwd === this.$.newPasswordInput.value) {
+                    this._initializeData();
+                } else {
+                    this.alert("You failed to repeat the password correctly. Try again!")
+                        .then(() => this.$.newPasswordInput.focus());
+                }
+            });
+    }
+
+    _initializeData() {
+        this.settings.syncEmail = this.$.emailInput.value;
+        this.localSource.password = this.settingsSource.password = this.$.newPasswordInput.value;
+        this.$.getStartedButton.start();
+        Promise.all([
+            this.collection.save(this.localSource),
+            this.settings.save(this.settingsSource)
+        ]).then(() => {
+            this.notifyPath("settings");
+            this.$.getStartedButton.success();
+            this.$.newPasswordInput.blur();
+            this.dispatchEvent(new CustomEvent("get-started"));
+        });
+    }
+
+    _unlock() {
+        this.localSource.password = this.settingsSource.password = this.$.passwordInput.value;
+
+        this.$.enterButton.start();
+        this.collection.fetch(this.localSource)
+            .then(() => {
+                return this.settings.fetch(this.settingsSource)
+                    .catch(() => this.settings.save(this.settingsSource));
+            })
+            .then(() => {
+                this.$.enterButton.success();
+                this.$.passwordInput.blur();
+                this.notifyPath("settings");
+                this.dispatchEvent(new CustomEvent("unlock"));
+            })
+            .catch((e) => {
+                if (e.code === "decryption_failed") {
+                    this.$.enterButton.fail();
+                    this.$.logo.classList.remove("rumble");
+                    this.offsetLeft;
+                    this.$.logo.classList.add("rumble");
+                    this._failCount++;
+                    if (this._failCount > 2) {
+                        this.prompt(
+                            "Forgot your master password? You can start over by resetting the app. " +
+                            "WARNING: This will delete all your data!",
+                            "Type 'RESET' to confirm", "text", "Reset App"
+                        ).then((value) => {
+                            if (value == null) {
+                                return;
+                            }
+                            if (value.toUpperCase() === "RESET") {
+                                this.dispatchEvent(new CustomEvent("reset-data"));
+                            } else {
+                                this.alert("You didn't type 'RESET'. Refusing to reset the app.");
+                            }
+                        });
+                    }
+                } else {
+                    throw e;
+                }
+            });
+    }
+
+    _showEmailInfo() {
+        this._hasEmailInputShown = true;
+        this.alert("Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
+            "you to easily and securely store your data online and synchronize it between all your devices. " +
+            "Don't worry, we'll only use it as a method of authentication and won't send you any spam!")
+            .then(() => this.$.emailInput.focus());
+    }
+
+    _showPasswordInfo() {
+        this._hasPasswordInfoShown = true;
+        this.alert("Your master password is a single passphrase that is used to encrypt everything you " +
+            "store in Padlock and the only way to access your data. Without your master password, no " +
+            "one will be able to read your data - not even we! So make sure you don't forget it, because " +
+            "we won't be able to help you recover it in case you do.")
+            .then(() => this.$.newPasswordInput.focus());
+    }
+
+    _emailInputFocused() {
+        if (!this._hasEmailInputShown) {
+            this._showEmailInfo();
+            this.$.emailInput.blur();
+        }
+    }
+
+    _newPasswordInputFocused() {
+        if (!this._hasPasswordInfoShown) {
+            this._showPasswordInfo();
+            this.$.newPasswordInput.blur();
+        }
+    }
+
+    _passwordStrength(pwd) {
+        const score = pwd ? zxcvbn(pwd).score : -1;
+        return score === -1 ? "" : score < 2 ? "weak" : score < 4 ? "medium" : "strong";
+    }
+
+    _hasValue(val) {
+        return !!val;
+    }
+
+    _emailEnter() {
+        this.$.newPasswordInput.focus();
+    }
+
+}
+
+window.customElements.define(StartView.is, StartView);
+
+})();
+    </script>
+
+</dom-module>

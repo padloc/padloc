@@ -1,0 +1,78 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../input/input.html">
+<link rel="import" href="dialog.html">
+
+<dom-module id="pl-dialog-prompt">
+
+    <template>
+        <style include="shared">
+            pl-input {
+                text-align: center;
+            }
+        </style>
+
+        <pl-dialog open="{{ open }}" prevent-dismiss>
+            <div class="message tiles-1">[[ message ]]</div>
+            <pl-input class="tiles-2" id="input" type="[[ type ]]" placeholder="[[ placeholder ]]" on-enter="_confirm"></pl-input>
+            <button class="tap tiles-3" on-click="_confirm">[[ confirmLabel ]]</button>
+            <button class="tap tiles-4" on-click="_dismiss">[[ dismissLabel ]]</button>
+        </pl-dialog>
+    </template>
+
+    <script>
+(() => {
+
+const defaultConfirmLabel = "OK";
+const defaultCancelLabel = "Cancel";
+const defaultType = "text";
+const defaultPlaceholder = "";
+
+class DialogPrompt extends padlock.BaseElement {
+
+    static get is() { return "pl-dialog-prompt"; }
+
+    static get properties() { return {
+        confirmLabel: { type: String, value: defaultConfirmLabel },
+        dismissLabel: { type: String, value: defaultCancelLabel },
+        message: { type: String, value: "" },
+        open: { type: Boolean, value: false },
+        placeholder: { type: String, value: ""},
+        type: { type: String, value: defaultType }
+    }; }
+
+    _confirm() {
+        typeof this._resolve === "function" && this._resolve(this.$.input.value);
+        this._resolve = null;
+        this.open = false;
+    }
+
+    _dismiss() {
+        typeof this._resolve === "function" && this._resolve(null);
+        this._resolve = null;
+        this.open = false;
+    }
+
+    prompt(message, placeholder, type, confirmLabel, cancelLabel) {
+        this.message = message || this.message;
+        this.type = type || this.type || defaultType;
+        this.placeholder = placeholder || this.placeholder || defaultPlaceholder;
+        this.confirmLabel = confirmLabel || this.confirmLabel || defaultConfirmLabel;
+        this.cancelLabel = cancelLabel || this.cancelLabel || defaultCancelLabel;
+        this.$.input.value = "";
+        this.open = true;
+
+        setTimeout(() => this.$.input.focus(), 100);
+
+        return new Promise((resolve) => {
+            this._resolve = resolve;
+        });
+    }
+}
+
+window.customElements.define(DialogPrompt.is, DialogPrompt);
+
+})();
+    </script>
+
+</dom-module>

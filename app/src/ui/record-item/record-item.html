@@ -1,0 +1,187 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../icon/icon.html">
+<link rel="import" href="../notification/notification.html">
+
+<dom-module id="pl-record-item">
+    <template>
+
+        <style include="shared">
+            :host {
+                display: block;
+                cursor: pointer;
+                vertical-align: top;
+                box-sizing: border-box;
+                flex-direction: row;
+            }
+
+            .header {
+                display: flex;
+                align-items: center;
+                font-weight: bold;
+                font-size: var(--font-size-small);
+                height: 40px;
+            }
+
+            .name {
+                padding: 0 15px;
+                @apply --ellipsis;
+            }
+
+            .body {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                position: relative;
+            }
+
+            .body::after {
+                display: block;
+                content: "";
+                height: 3px;
+                @apply --shade-4;
+            }
+
+            .field {
+                display: flex;
+                cursor: pointer;
+                font-size: var(--font-size-small);
+                line-height: 35px;
+                height: 35px;
+                padding-left: 15px;
+            }
+
+            .field-label {
+                margin-right: 5px;
+                font-size: var(--font-size-tiny);
+            }
+
+            .field-label:not(:empty)::after {
+                content: ":";
+            }
+
+            .field-value {
+                flex: 1;
+                width: 0;
+                @apply --ellipsis;
+            }
+
+            .field-value:empty + pl-icon {
+                display: none;
+            }
+
+            .field pl-icon {
+                width: 35px;
+                height: 35px;
+                opacity: 0.5;
+            }
+
+            .category {
+                font-size: 12px;
+                max-width: 80px;
+                border: solid 1px;
+                border-radius: 2px;
+                padding: 2px 4px;
+            }
+
+            .category:empty {
+                display: none;
+            }
+
+            .header .more-fields {
+                flex: 1;
+                font-size: 12px;
+                text-align: right;
+                padding-right: 15px;
+                font-weight: normal;
+            }
+
+            .header .more-fields:not(:empty) {
+                min-width: 50px;
+            }
+
+            .header .more-fields:not(:empty):after {
+                font-family: "FontAwesome";
+                content: "\f054";
+                display: inline-block;
+                margin-left: 3px;
+                font-size: 80%;
+            }
+        </style>
+
+        <div class="body tiles">
+            <div class="header">
+                <div class="name">[[ record.name ]]</div>
+                <div class="category ellipsis">[[ record.category ]]</div>
+                <div class="more-fields">[[ _moreFieldsLabel(record.fields.length) ]]</div>
+            </div>
+            <div class="field">
+                <div class="field-label">[[ record.fields.0.name ]]</div>
+                <div class="field-value">[[ _obfuscate(record.fields.0.value) ]]</div>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField1"></pl-icon>
+            </div>
+            <div class="field">
+                <div class="field-label">[[ record.fields.1.name ]]</div>
+                <div class="field-value">[[ _obfuscate(record.fields.1.value) ]]</div>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField2"></pl-icon>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+(() => {
+
+class RecordItem extends padlock.NotificationMixin(padlock.BaseElement) {
+
+    static get is() { return "pl-record-item"; }
+
+    static get properties() { return {
+        record: Object
+    }; }
+
+    ready() {
+        super.ready();
+        // For some reason the keydown event doesn't bubble if a record item has focus so we have to
+        // re-dispatch it
+        this.addEventListener("keydown", (e) => {
+            if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+                document.dispatchEvent(new KeyboardEvent("keydown", e));
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Replaces all non-newline characters in a given string with dots
+    _obfuscate(value) {
+        return value ? value.replace(/[^\n]/g, "\u2022") : "";
+    }
+
+    _copyToClipboard(value) {
+        padlock.platform.setClipboard(value)
+            .then(() => this.notify("Value copied to clipboard!", "success", 1500));
+    }
+
+    _copyField1(e) {
+        e.stopPropagation();
+        this._copyToClipboard(this.record.fields[0].value);
+    }
+
+    _copyField2(e) {
+        e.stopPropagation();
+        this._copyToClipboard(this.record.fields[1].value);
+    }
+
+    _moreFieldsLabel() {
+        const n = this.record.fields.length - 2;
+        return n < 1 ? "" : n == 1 ? "1 more field" : (n + " more fields");
+    }
+
+}
+
+window.customElements.define(RecordItem.is, RecordItem);
+
+})();
+    </script>
+
+</dom-module>

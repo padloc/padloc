@@ -1,0 +1,160 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../icon/icon.html">
+<link rel="import" href="../slider/slider.html">
+<link rel="import" href="../toggle/toggle-button.html">
+
+<dom-module id="pl-generator">
+
+    <template>
+        <style include="shared">
+            :host {
+                display: block;
+                font-size: var(--font-size-tiny);
+                text-align: right;
+                display: flex;
+                flex-direction: row;
+            }
+
+            pl-toggle-button {
+                height: auto;
+                padding: 0;
+                margin: 0 0 5px 5px;
+
+                --toggle-height: 25px;
+                --toggle-width: 35px;
+            }
+
+            pl-slider {
+                padding: 0;
+                margin-top: 5px;
+                display: inline-block;
+                width: 100%;
+                box-sizing: border-box;
+                max-width: 280px;
+                --slider-track-size: 3px;
+                --slider-knob-size: 25px;
+            }
+
+            .charsets > * {
+                vertical-align: middle;
+            }
+
+            .header {
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            .header::before {
+                font-family: "FontAwesome";
+                content: "\f0e7";
+            }
+
+            .value {
+                font-family: var(--font-family-mono);
+                margin-bottom: 10px;
+                font-size: var(--font-size-default);
+                word-break: break-all;
+            }
+
+            .main {
+                flex: 1;
+                padding: 10px 15px;
+            }
+
+            .confirm {
+                display: flex;
+                flex-direction: column;
+            }
+        </style>
+
+        <div class="main">
+            <div class="header">
+                Generate Random String
+            </div>
+            <div class="value">
+                {{ value }}
+            </div>
+            <div class="charsets">
+                <pl-toggle-button label="a-z" active="{{ lower }}"></pl-toggle-button>
+                <pl-toggle-button label="A-Z" active="{{ upper }}"></pl-toggle-button>
+                <pl-toggle-button label="0-9" active="{{ numbers }}"></pl-toggle-button>
+                <pl-toggle-button label="?()/%..." active="{{ other }}"></pl-toggle-button>
+            </div>
+            <div>
+                <pl-slider min="5" max="50" value="{{ length }}" hide-value></pl-slider>
+            </div>
+        </div>
+        <div class="confirm tiles">
+            <pl-icon icon="check" class="tap" on-click="_confirm"></pl-icon>
+            <pl-icon icon="cancel" class="tap" on-click="_cancel"></pl-icon>
+            <pl-icon icon="refresh" class="tap" on-click="generate"></pl-icon>
+            <div class="spacer"></div>
+        </div>
+
+    </template>
+
+    <script>
+(function() {
+
+class Generator extends padlock.BaseElement {
+
+    static get is() { return "pl-generator"; }
+
+    static get properties() { return {
+        value: {
+            type: String,
+            value: "",
+            notify: true
+        },
+        length: {
+            type: Number,
+            value: 10
+        },
+        lower: {
+            type: Boolean,
+            value: true
+        },
+        upper: {
+            type: Boolean,
+            value: true
+        },
+        numbers: {
+            type: Boolean,
+            value: true
+        },
+        other: {
+            type: Boolean,
+            value: false
+        }
+    }; }
+
+    static get observers() { return [
+        "generate(length, lower, upper, numbers, other)"
+    ]; }
+
+    generate() {
+        var charSet = "";
+        this.lower && (charSet += padlock.util.chars.lower);
+        this.upper && (charSet += padlock.util.chars.upper);
+        this.numbers && (charSet += padlock.util.chars.numbers);
+        this.other && (charSet += padlock.util.chars.other);
+
+        this.value = charSet ? padlock.util.randomString(this.length, charSet) : "";
+    }
+
+    _confirm() {
+        this.dispatchEvent(new CustomEvent("generator-confirm"));
+    }
+
+    _cancel() {
+        this.dispatchEvent(new CustomEvent("generator-cancel"));
+    }
+}
+
+window.customElements.define(Generator.is, Generator);
+
+})();
+    </script>
+
+</dom-module>

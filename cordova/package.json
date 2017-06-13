@@ -1,0 +1,53 @@
+{
+    "name": "com.maklesoft.padlock",
+    "version": "1.2.0-alpha.1",
+    "displayName": "Padlock",
+    "cordova": {
+        "platforms": [
+            "android",
+            "ios"
+        ],
+        "plugins": {
+            "com.verso.cordova.clipboard": {},
+            "com.wongatech.cordova-disable-nsurl-cache": {},
+            "cordova-plugin-app-version": {},
+            "cordova-plugin-backbutton": {},
+            "cordova-plugin-customurlscheme": {
+                "URL_SCHEME": "padlock"
+            },
+            "cordova-plugin-inappbrowser": {},
+            "cordova-plugin-privacyscreen": {},
+            "cordova-plugin-splashscreen": {},
+            "cordova-plugin-statusbar": {},
+            "cordova-plugin-whitelist": {},
+            "cordova-plugin-wkwebview-engine": {},
+            "ionic-plugin-keyboard": {},
+            "cordova-plugin-crosswalk-webview": {
+                "XWALK_VERSION": "23+",
+                "XWALK_LITEVERSION": "xwalk_core_library_canary:17+",
+                "XWALK_COMMANDLINE": "--disable-pull-to-refresh-effect",
+                "XWALK_MODE": "embedded",
+                "XWALK_MULTIPLEAPK": "true"
+            },
+            "cordova-custom-config": {}
+        }
+    },
+    "dependencies": {
+        "com.verso.cordova.clipboard": "https://github.com/VersoSolutions/CordovaClipboard.git",
+        "com.wongatech.cordova-disable-nsurl-cache": "https://github.com/MaKleSoft/cordova-disable-nsurl-cache.git",
+        "cordova-android": "^6.2.3",
+        "cordova-custom-config": "^3.2.0",
+        "cordova-ios": "~4.4.0",
+        "cordova-plugin-app-version": "~0.1.9",
+        "cordova-plugin-backbutton": "~0.3.0",
+        "cordova-plugin-crosswalk-webview": "^2.3.0",
+        "cordova-plugin-customurlscheme": "~4.2.0",
+        "cordova-plugin-inappbrowser": "~1.4.0",
+        "cordova-plugin-privacyscreen": "~0.3.1",
+        "cordova-plugin-splashscreen": "~3.2.2",
+        "cordova-plugin-statusbar": "~2.1.3",
+        "cordova-plugin-whitelist": "~1.2.2",
+        "cordova-plugin-wkwebview-engine": "https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git",
+        "ionic-plugin-keyboard": "~2.2.1"
+    }
+}
