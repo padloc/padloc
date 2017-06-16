@@ -330,7 +330,7 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
                         this.prompt("It seems that your Padlock Cloud account uses a different master " +
                             "password than then one you are using on this device. Please provide the " +
                             "correct master password for your Padlock Cloud account!",
-                            "Enter Master Password", "password", "Submit")
+                        "Enter Master Password", "password", "Submit")
                             .then((pwd) => {
                                 if (pwd === null) {
                                     return;
@@ -365,10 +365,10 @@ class CloudView extends padlock.DialogMixin(padlock.NotificationMixin(padlock.Ba
         if (this.settings.syncCustomHost) {
             this.confirm("Are you sure you want to use a custom server for synchronization? " +
                 "This option is only recommended for advanced users!", "Continue").then((confirmed) => {
-                    if (!confirmed) {
-                        this.set("settings.syncCustomHost", false);
-                    }
-                });
+                if (!confirmed) {
+                    this.set("settings.syncCustomHost", false);
+                }
+            });
         }
     }
 

@@ -23,7 +23,7 @@
     "electron": "^1.6.10",
     "electron-builder": "^18.8.1",
     "eslint": "^4.0.0",
-    "eslint-plugin-html": "^1.7.0",
+    "eslint-plugin-html": "^3.0.0",
     "fs-extra": "^1.0.0",
     "gulp": "^3.9.1",
     "gulp-insert-lines": "0.0.4",
@@ -46,6 +46,7 @@
     "bower-install": "pushd app && bower install && popd app",
     "compile": "gulp compile --silent",
     "debug": "gulp --silent --watch",
+    "lint": "eslint app/**/*.{js,html}",
     "test": "npm run compile && mocha --ui tdd",
     "start": "gulp build --electron && electron dist/electron",
     "postinstall": "npm run bower-install && npm run compile"
