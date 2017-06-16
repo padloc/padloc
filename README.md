@@ -3,7 +3,7 @@ A minimal open source password manager.
 
 **If you just want to use the app, we recommend downloading one of the [official releases](https://github.com/maklesoft/padlock/releases).**
 
-However, if you want to get your hands dirty and contribute or build the app from source read on!
+However, if you want to get your hands dirty and contribute or build your own version from source, read on!
 
 ## Getting Started
 
