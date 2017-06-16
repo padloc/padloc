@@ -1,40 +1,58 @@
 # Padlock
-A minimal open source password manager built with [Polymer](http://www.polymer-project.org/).
+A minimal open source password manager.
 
-## Dev Setup
+**If you just want to use the app, we recommend downloading one of the [official releases](https://github.com/maklesoft/padlock/releases).**
 
-Install these if you haven't yet:
+However, if you want to get your hands dirty and contribute or build the app from source read on!
 
-- [Node.js and npm](http://nodejs.org/)
+## Getting Started
 
-Now from inside the project folder, install the local requirements:
-
+1. First, you'll need [Node.js and npm](http://nodejs.org/). Install it if you haven't yet.
+2. Clone or download the source code. E.g.:
+    ```sh
+    git clone git@github.com:MaKleSoft/padlock.git
+    ```
+3. Install the local dependencies.
+    ```sh
+    cd padlock
     npm install
-    npm run bower
+    ```
 
-For the [HTML Imports](http://www.polymer-project.org/platform/html-imports.html) polyfill of Polymer to work, the app has to be served on a local web server. You can use whatever web server you prefer to serve the files. For example:
+## Start The App
 
-    python -m SimpleHTTPServer 8000
+```sh
+npm run start
+```
 
-## Compling css files
+## Compiling TypeScript files
 
-Padlock uses the [Stylus](http://learnboost.github.io/stylus/) as a CSS preprocessor. Most style sheets are maintained as `.styl` files and compiled locally. To compile all `.styl` files to CSS, run the corresponding gulp task
+The core logic (everything under `app/src/core`) is implement in TypeScript, which needs to be compiled to
+JavaScript before running the app. This happens automatically when you run `npm install`. You can also run the
+compilation step individually in case you want to make any changes to the core:
 
-    npm run stylus
+```sh
+npm run compile
+```
 
-You can also use the `--watch` flag to tell the gulp task to watch all `.styl` files and recompile them whenever any of them changes.
+## Debugging
 
-    npm run stylus --watch
+The recommended way to debug is to serve the app on a local webserver since this does not require any
+major build steps. To do this, run
 
-## Linting
+```sh
+npm run debug
+```
 
-Any pull request need to pass our linting rules, which are defined in the `.eslintrc.json` file. To lint all files, run
-
-    npm run gulp eslint
+This command will also automatically watch changes to any TypeScript files and automatically recompile the
+core if necessary.
 
 ## Testing
 
-To run the tests, open `test/runner.html` in your browser.
+To run tests:
+
+```sh
+npm run test
+```
 
 ## Contributing
 Contributions are more than welcome!

@@ -4,22 +4,19 @@
 const gulp = require("gulp");
 const { argv } = require("yargs");
 const { buildChrome, buildElectron, compile } = require("./lib/build");
-const { eslint } = require("./lib/lint");
 const http = require("http");
 const st = require("st");
-
-gulp.task("eslint", eslint);
 
 // Deploy a minified/built version of the app to a given destination folder
 gulp.task("build", () => {
     let promises = [];
-    const { mac, win, linux, chrome, release } = argv;
+    const { mac, win, linux, electron, chrome, release } = argv;
 
     if (chrome) {
         promises.push(buildChrome());
     }
 
-    if (mac || win || linux) {
+    if (electron || mac || win || linux) {
         promises.push(buildElectron({ mac, win, linux, release }));
     }
 
@@ -32,6 +29,8 @@ gulp.task("compile", () => {
 
 gulp.task("serve", function() {
     var port = argv.port || 8080;
+    console.log("Serving the app on a local server on port 8080. " +
+        "To view it, open your web browser and navigate to http://localhost:8080/app/");
     http.createServer(
         st({ path: "", cache: false, index: "index.html" })
     ).listen(port);
