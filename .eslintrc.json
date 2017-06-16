@@ -28,7 +28,7 @@
         "no-console": ["error", { "allow": ["warn", "error"] }],
         "no-loop-func": "error",
         "no-multi-spaces": "error",
-        "no-multiple-empty-lines": ["error", {"max": 1, "maxBOF": 0, "maxEOF": 0}],
+        "no-multiple-empty-lines": ["error", {"max": 1, "maxBOF": 1, "maxEOF": 0}],
         "no-spaced-func": "error",
         "no-trailing-spaces": "error",
         "no-undef": "error",

@@ -1,6 +1,5 @@
 {
   "name": "padlock",
-  "productName": "Padlock",
   "version": "2.0.0-alpha.1",
   "description": "A minimalist password manager",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
@@ -17,23 +16,18 @@
     "@types/papaparse": "^4.1.28",
     "@types/sjcl": "^1.0.27",
     "archiver": "^1.2.0",
+    "bower": "^1.8.0",
     "browserify": "^13.1.1",
-    "chai": "^3.5.0",
+    "chai": "^4.0.2",
     "core-js": "^2.4.1",
     "electron": "^1.6.10",
     "electron-builder": "^18.8.1",
-    "eslint-plugin-html": "^1.5.1",
+    "eslint": "^4.0.0",
+    "eslint-plugin-html": "^3.0.0",
     "fs-extra": "^1.0.0",
     "gulp": "^3.9.1",
-    "gulp-crisper": "1.1.0",
-    "gulp-eslint": "^3.0.1",
     "gulp-insert-lines": "0.0.4",
-    "gulp-style-modules": "^0.1.0",
-    "gulp-stylus": "^2.5.0",
-    "gulp-vulcanize": "^6.1.0",
-    "gulp-watch": "^4.3.9",
-    "mocha": "^3.2.0",
-    "nib": "^1.1.0",
+    "mocha": "^3.4.2",
     "papaparse": "^4.1.2",
     "polymer-bundler": "^2.0.0-pre.6",
     "rimraf": "^2.5.4",
@@ -48,5 +42,13 @@
   "dependencies": {
     "electron-updater": "^2.1.2"
   },
-  "main": "main.js"
+  "scripts": {
+    "bower-install": "pushd app && bower install && popd app",
+    "compile": "gulp compile --silent",
+    "debug": "gulp --silent --watch",
+    "lint": "eslint app/**/*.{js,html}",
+    "test": "npm run lint && npm run compile && mocha --ui tdd",
+    "start": "gulp build --electron && electron dist/electron",
+    "postinstall": "npm run bower-install && npm run compile"
+  }
 }
