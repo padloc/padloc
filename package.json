@@ -48,7 +48,7 @@
     "debug": "gulp --silent --watch",
     "lint": "eslint app/**/*.{js,html}",
     "test": "npm run lint && npm run compile && mocha --ui tdd",
-    "start": "gulp build --electron && electron dist/electron",
+    "start": "gulp build --electron --silent && electron dist/electron",
     "postinstall": "npm run bower-install && npm run compile"
   }
 }
