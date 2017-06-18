@@ -78,6 +78,39 @@ padlock-cloud --test &! npm run test
 
 Details on how to install Padlock Cloud can be found [here](https://github.com/maklesoft/padlock-cloud#how-to-installbuild).
 
+## Building for Desktop
+
+To create a production build of the app for OSX, Windows or Linux, run:
+
+```sh
+npm run build:[platform]
+```
+
+Where platform is one of `mac`, `win`, or `linux`. E.g: To build the app for OSX:
+
+``sh
+npm run build:mac
+```
+
+This will generate a set of distrution-ready files under the `dist` directory.
+
+## Building for Mobile
+
+Apache Cordova is used to distribute Padlock on iOS and Android. The `cordova` subdirector contains a
+Cordova project with all appropriate configuration files and resources. The Cordova cli can be used to
+build and run the app on iOS and Android devices or emulators. All Cordova commands need to be run from
+the `cordova` subdirectory. E.g.:
+
+```sh
+cd cordova
+cordova run ios
+```
+
+See the [Apache Cordova documentation](http://cordova.apache.org/docs/en/latest/) for details.
+
+**Note:** In order to build the app for Android, you'll need to install and setup the Android SDK.
+Building for iOS is only possible on OSX and requires XCode.
+
 ## Contributing
 Contributions are more than welcome!
 
