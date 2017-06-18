@@ -21,7 +21,13 @@ However, if you want to get your hands dirty and contribute or build your own ve
 ## Start The App
 
 ```sh
-npm run start
+npm run app
+```
+
+You can also run the app in debug mode:
+
+```sh
+npm run app -- --debug
 ```
 
 ## Compiling TypeScript files
@@ -34,25 +40,43 @@ compilation step individually in case you want to make any changes to the core:
 npm run compile
 ```
 
-## Debugging
-
-The recommended way to debug is to serve the app on a local webserver since this does not require any
-major build steps. To do this, run
+To watch files and compile automatically:
 
 ```sh
-npm run debug
+npm run compile -- --watch
 ```
 
-This command will also automatically watch changes to any TypeScript files and automatically recompile the
-core if necessary.
+## Testing / Linting
 
-## Testing
+To lint JavaScript files:
+
+```
+npm run lint
+```
 
 To run tests:
 
 ```sh
 npm run test
 ```
+
+**Note:** The `npm run test` command uses headless Chrome to run tests. This means you'll need to have
+Google Chrome 59 or higher installed to run tests.
+
+Alternatively, you can also run the tests in "visual mode":
+
+```sh
+npm run app -- --test
+```
+
+**Another Note:** For synchronization-related tests to pass, you need to have a padlock-cloud server running
+in test mode. E.g.:
+
+```sh
+padlock-cloud --test &! npm run test
+```
+
+Details on how to install Padlock Cloud can be found [here](https://github.com/maklesoft/padlock-cloud#how-to-installbuild).
 
 ## Contributing
 Contributions are more than welcome!
