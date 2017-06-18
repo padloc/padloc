@@ -54,6 +54,9 @@
     "lint": "eslint app/**/*.{js,html}",
     "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
     "app": "electron . --noupdate",
+    "build:mac": "gulp build --mac --silent",
+    "build:win": "gulp build --win --silent",
+    "build:linux": "gulp build --linux --silent",
     "postinstall": "npm run bower-install && npm run compile"
   }
 }
