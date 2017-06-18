@@ -60,8 +60,8 @@ To run tests:
 npm run test
 ```
 
-**Note:** The `npm run test` command uses headless Chrome to run tests. This means you'll need to have
-Google Chrome 59 or higher installed to run tests.
+**Note:** The `npm run test` command uses headless Chrome, which means need to have
+Google Chrome 59 or higher installed.
 
 Alternatively, you can also run the tests in "visual mode":
 
@@ -88,7 +88,7 @@ npm run build:[platform]
 
 Where platform is one of `mac`, `win`, or `linux`. E.g: To build the app for OSX:
 
-``sh
+```sh
 npm run build:mac
 ```
 
@@ -96,7 +96,7 @@ This will generate a set of distrution-ready files under the `dist` directory.
 
 ## Building for Mobile
 
-Apache Cordova is used to distribute Padlock on iOS and Android. The `cordova` subdirector contains a
+Apache Cordova is used to distribute Padlock on iOS and Android. The `cordova` subdirectory contains a
 Cordova project with all appropriate configuration files and resources. The Cordova cli can be used to
 build and run the app on iOS and Android devices or emulators. All Cordova commands need to be run from
 the `cordova` subdirectory. E.g.:
