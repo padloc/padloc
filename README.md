@@ -118,7 +118,7 @@ Contributions are more than welcome!
 - If you want to contribute directly by committing changes, please follow the usual steps:
     1. Fork the repo
     2. Create your feature branch: git checkout -b my-feature-branch
-    3. Make sure to lint your code before you commit! (`gulp lint`)
-    4. Commit your changes: git commit -m 'Some meaningful commit message'
-    5. Push to the branch: git push origin my-feature-branch
+    3. Make sure to lint and test your code before you commit! (`npm run lint && npm run test`)
+    4. Commit your changes: `git commit -m 'Some meaningful commit message'`
+    5. Push to the branch: `git push origin my-feature-branch`
     6. Submit a pull request!
