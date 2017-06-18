@@ -49,8 +49,8 @@ suite("util", function() {
         for (var char in count) {
             var dev = count[char] / avg - 1;
             assert(
-                Math.abs(dev) < 0.05,
-                "Deviation of each char count from expected average should be less than 5%; " +
+                Math.abs(dev) < 0.1,
+                "Deviation of each char count from expected average should be less than 10%; " +
                 "Got " + dev + " for " + char
             );
         }

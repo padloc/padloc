@@ -10,13 +10,13 @@ const st = require("st");
 // Deploy a minified/built version of the app to a given destination folder
 gulp.task("build", () => {
     let promises = [];
-    const { mac, win, linux, electron, chrome, release } = argv;
+    const { mac, win, linux, chrome, release } = argv;
 
     if (chrome) {
         promises.push(buildChrome());
     }
 
-    if (electron || mac || win || linux) {
+    if (mac || win || linux) {
         promises.push(buildElectron({ mac, win, linux, release }));
     }
 

@@ -9,6 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/maklesoft/padlock.git"
   },
+  "main": "main.js",
   "devDependencies": {
     "@types/chai": "^3.4.34",
     "@types/core-js": "^0.9.35",
@@ -27,6 +28,10 @@
     "fs-extra": "^1.0.0",
     "gulp": "^3.9.1",
     "gulp-insert-lines": "0.0.4",
+    "karma": "^1.7.0",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^2.1.1",
+    "karma-mocha": "^1.3.0",
     "mocha": "^3.4.2",
     "papaparse": "^4.1.2",
     "polymer-bundler": "^2.0.0-pre.6",
@@ -40,15 +45,15 @@
     "yargs": "^4.8.1"
   },
   "dependencies": {
-    "electron-updater": "^2.1.2"
+    "electron-updater": "^2.1.2",
+    "yargs": "^4.8.1"
   },
   "scripts": {
     "bower-install": "pushd app && bower install && popd app",
     "compile": "gulp compile --silent",
-    "debug": "gulp --silent --watch",
     "lint": "eslint app/**/*.{js,html}",
-    "test": "npm run lint && npm run compile && mocha --ui tdd",
-    "start": "gulp build --electron --silent && electron dist/electron",
+    "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
+    "app": "electron . --noupdate",
     "postinstall": "npm run bower-install && npm run compile"
   }
 }
