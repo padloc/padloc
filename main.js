@@ -5,6 +5,7 @@ const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const url = require("url");
 const os = require("os");
+const { debug, noupdate, test } = require("yargs").argv;
 
 let win;
 
@@ -49,13 +50,15 @@ function createWindow() {
 
     // and load the index.html of the app.
     win.loadURL(url.format({
-        pathname: path.join(__dirname, "index.html"),
+        pathname: path.resolve(__dirname, test ? "test/index.html" : "app/index.html"),
         protocol: "file:",
         slashes: true
     }));
 
-    // Open the DevTools.
-    // win.webContents.openDevTools();
+    if (debug) {
+        // Open the DevTools.
+        win.webContents.openDevTools();
+    }
 
     win.on("closed", () => {
         win = null;
@@ -68,7 +71,9 @@ function createWindow() {
     });
 
     win.webContents.on("did-frame-finish-load", function() {
-        autoUpdater.checkForUpdates();
+        if (!noupdate) {
+            autoUpdater.checkForUpdates();
+        }
     });
 }
 
