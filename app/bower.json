@@ -12,8 +12,7 @@
   ],
   "private": true,
   "dependencies": {
-    "shape-shifter": "~2.0.0",
-    "polymer": "Polymer/polymer#2.0.0-rc.2",
+    "polymer": "Polymer/polymer#^2.0.0",
     "zxcvbn": "~3.1.0",
     "autosize": "~3.0.13",
     "papaparse": "~4.1.2",
