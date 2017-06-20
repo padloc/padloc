@@ -266,6 +266,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
 
     _unlock() {
         this.localSource.password = this.settingsSource.password = this.$.passwordInput.value;
+        this.$.passwordInput.blur();
 
         this.$.enterButton.start();
         this.collection.fetch(this.localSource)
@@ -275,7 +276,6 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
             })
             .then(() => {
                 this.$.enterButton.success();
-                this.$.passwordInput.blur();
                 this.notifyPath("settings");
                 this.dispatchEvent(new CustomEvent("unlock"));
             })
@@ -301,6 +301,8 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
                                 this.alert("You didn't type 'RESET'. Refusing to reset the app.");
                             }
                         });
+                    } else {
+                        this.$.passwordInput.focus();
                     }
                 } else {
                     throw e;
