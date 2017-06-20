@@ -66,9 +66,9 @@
 
         <div class="container">
             <div class="input-container">
-                <pl-input id="nameInput" value="[[ field.name ]]" placeholder="Enter New Field Name"
+                <pl-input id="nameInput" value="[[ field.name ]]" placeholder="Enter New Field Name" select-on-focus
                     on-focus="_nameInputFocused" on-blur="_nameInputBlurred" on-enter="_confirmEdit" on-escape="_cancelEdit"></pl-input>
-                <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ _valuePlaceholder(draft) ]]"
+                <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ _valuePlaceholder(draft) ]]" select-on-focus
                     on-focus="_valueInputFocused" on-blur="_valueInputBlurred" on-escape="_cancelEdit"></pl-input>
             </div>
             <template is="dom-if" if="{{ !draft }}">

@@ -87,6 +87,10 @@ class PlInput extends padlock.BaseElement {
             type: String,
             value: "text"
         },
+        selectOnFocus: {
+            type: Boolean,
+            value: false
+        },
         value: {
             type: String,
             value: "",
@@ -110,6 +114,10 @@ class PlInput extends padlock.BaseElement {
         e.stopPropagation();
         this.focused = true;
         this.dispatchEvent(new CustomEvent("focus"));
+
+        if (this.selectOnFocus) {
+            setTimeout(() => this.selectAll(), 10);
+        }
     }
 
     _blurred(e) {
@@ -145,6 +153,10 @@ class PlInput extends padlock.BaseElement {
 
     blur() {
         this.inputElement.blur();
+    }
+
+    selectAll() {
+        this.inputElement.setSelectionRange(0, this.value.length);
     }
 
 }

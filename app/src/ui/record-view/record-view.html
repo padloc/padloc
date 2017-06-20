@@ -87,7 +87,7 @@
         <header>
             <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
             <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}"
-                placeholder="Enter Record Name" on-change="_fireChangeEvent"></pl-input>
+                placeholder="Enter Record Name" select-on-focus on-change="_fireChangeEvent"></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
@@ -95,7 +95,7 @@
             <div class="category tap tiles-1">
                 <pl-icon icon="category"></pl-icon>
                 <pl-input id="categoryInput" value="{{ record.category }}" placeholder="No Category"
-                    on-change="_fireChangeEvent"></pl-input>
+                    select-on-focus on-change="_fireChangeEvent"></pl-input>
                 <pl-icon icon="dropdown" class="tap" on-click="_showCategoryList"></pl-icon>
                 <div id="categoryList" class="tiles">
                     <div></div>

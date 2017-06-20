@@ -115,7 +115,7 @@
             <div class="shutter bottom">
 
                 <pl-input id="passwordInput" type="password" placeholder="Enter Master Password" class="tap tiles-3"
-                    on-enter="_unlock"></pl-input>
+                    select-on-focus on-enter="_unlock"></pl-input>
 
                 <pl-loading-button id="enterButton" on-click="_unlock" class="tap tiles-4 enter-button" label="Unlock"></pl-loading-button>
 
@@ -136,13 +136,13 @@
             <div class="shutter bottom">
 
                 <div class="tap tiles-2 input-wrapper">
-                    <pl-input id="emailInput" type="email" placeholder="Enter Email (Optional)"
+                    <pl-input id="emailInput" type="email" placeholder="Enter Email (Optional)" select-on-focus
                         on-focus="_emailInputFocused" on-enter="_emailEnter"></pl-input>
                     <pl-icon icon="info" on-click="_showEmailInfo"></pl-icon>
                 </div>
 
                 <div class="tap tiles-3 input-wrapper">
-                    <pl-input id="newPasswordInput" type="password" placeholder="Enter Master Password"
+                    <pl-input id="newPasswordInput" type="password" placeholder="Enter Master Password" select-on-focus
                         on-focus="_newPasswordInputFocused" on-enter="_getStarted" value="{{ newPwd }}"></pl-input>
                     <div class="strength-meter" hidden$="[[ !_hasValue(newPwd) ]]">strength: [[ _passwordStrength(newPwd) ]]</div>
                     <pl-icon icon="info" on-click="_showPasswordInfo" hidden$="[[ _hasValue(newPwd) ]]"></pl-icon>
