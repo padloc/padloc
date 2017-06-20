@@ -41,6 +41,8 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.settingsSource = new EncryptedSource(new LocalStorageSource("settings_encrypted"));
         this.cloudSource = new EncryptedSource(new CloudSource(this.settings));
 
+        this._debouncedSynchronize = padlock.util.debounce(() => this.$.cloudView.synchronize(), 1000);
+
         const moved = () => this._autoLockChanged();
         document.addEventListener("touchstart", moved, false);
         document.addEventListener("keydown", moved, false);
@@ -83,7 +85,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.notifyPath("collection.records");
         this._closeRecord();
         if (this.settings.syncAuto && this.settings.syncConnected) {
-            this.$.cloudView.synchronize();
+            this._debouncedSynchronize();
         }
     }
 
