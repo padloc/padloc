@@ -62,7 +62,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _newRecord() {
-        const record = new Record();
+        const record = new Record("New Record");
         this.collection.add(record);
         this.notifyPath("collection.records");
         this.$.listView.select(record);
