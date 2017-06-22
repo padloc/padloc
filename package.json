@@ -22,7 +22,7 @@
     "chai": "^4.0.2",
     "core-js": "^2.4.1",
     "electron": "^1.6.10",
-    "electron-builder": "^18.8.1",
+    "electron-builder": "^19.7.1",
     "eslint": "^4.0.0",
     "eslint-plugin-html": "^3.0.0",
     "fs-extra": "^1.0.0",
