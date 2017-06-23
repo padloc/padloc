@@ -41,10 +41,10 @@
     "tsify": "^2.0.3",
     "typescript": "^2.1.4",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.7.0",
-    "yargs": "^4.8.1"
+    "watchify": "^3.7.0"
   },
   "dependencies": {
+    "electron-store": "^1.1.0",
     "electron-updater": "^2.1.2",
     "yargs": "^4.8.1"
   },
@@ -53,7 +53,7 @@
     "compile": "gulp compile --silent",
     "lint": "eslint app/**/*.{js,html}",
     "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
-    "app": "electron . --noupdate",
+    "app": "electron .",
     "build:mac": "gulp build --mac --silent",
     "build:win": "gulp build --win --silent",
     "build:linux": "gulp build --linux --silent",
