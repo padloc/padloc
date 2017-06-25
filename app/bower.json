@@ -12,13 +12,13 @@
   ],
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#^2.0.0",
+    "polymer": "^2.0.1",
     "zxcvbn": "~3.1.0",
     "autosize": "~3.0.13",
     "papaparse": "~4.1.2",
     "sjcl": "^1.0.6",
-    "iron-list": "polymerelements/iron-list",
-    "iron-pages": "polymerelements/iron-pages",
-    "paper-spinner": "polymerelements/paper-spinner"
+    "iron-list": "^2.0.2",
+    "iron-pages": "^2.0.0",
+    "paper-spinner": "^2.0.0"
   }
 }
