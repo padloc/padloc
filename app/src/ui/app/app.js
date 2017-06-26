@@ -64,7 +64,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     _newRecord() {
         const record = new Record("New Record");
         this.collection.add(record);
-        this.notifyPath("collection.records");
+        this.notifyPath("collection");
         this.$.listView.select(record);
         setTimeout(() => this.$.recordView.edit(), 500);
     }
@@ -80,10 +80,10 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _deleteRecord(e) {
+        this._closeRecord();
         e.detail.record.remove();
         this.save();
-        this.notifyPath("collection.records");
-        this._closeRecord();
+        this.notifyPath("collection");
         if (this.settings.syncAuto && this.settings.syncConnected) {
             this._debouncedSynchronize();
         }
@@ -101,7 +101,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
 
     _unlocked() {
         this.cloudSource.password = this.localSource.password;
-        this.notifyPath("collection.records");
+        this.notifyPath("collection");
         setTimeout(() => {
             this.$.startView.open = true;
             this._autoLockChanged();

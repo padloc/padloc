@@ -26,7 +26,6 @@ class ListView extends padlock.BaseElement {
         records: Array,
         selectedRecord: {
             type: Object,
-            observer: "_selectedRecordChanged",
             notify: true
         }
     }; }
@@ -36,10 +35,10 @@ class ListView extends padlock.BaseElement {
         window.addEventListener("keydown", (e) => {
             switch (e.key) {
                 case "ArrowDown":
-                    this.$.list._focusPhysicalItem(this.$.list.firstVisibleIndex);
+                    this.$.list.focusItem(this.$.list.firstVisibleIndex);
                     break;
                 case "ArrowUp":
-                    this.$.list._focusPhysicalItem(this.$.list.lastVisibleIndex);
+                    this.$.list.focusItem(this.$.list.lastVisibleIndex);
                     break;
             }
         });
@@ -83,10 +82,6 @@ class ListView extends padlock.BaseElement {
 
     _limit(items) {
         return items.slice(0, 50);
-    }
-
-    _selectedRecordChanged() {
-        this.$.list.notifyResize();
     }
 
     _lock() {
