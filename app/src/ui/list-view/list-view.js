@@ -23,7 +23,10 @@ class ListView extends padlock.BaseElement {
             type: String,
             value: ""
         },
-        records: Array,
+        records: {
+            type: Array,
+            observer: "_recordsChanged"
+        },
         selectedRecord: {
             type: Object,
             notify: true
@@ -94,6 +97,14 @@ class ListView extends padlock.BaseElement {
 
     _openCloudView() {
         this.dispatchEvent(new CustomEvent("open-cloud-view"));
+    }
+
+    _recordsChanged() {
+        const l = this.$.list;
+        const i = l.items.indexOf(this.selectedRecord);
+        if (i !== -1 && (i < l.firstVisibleIndex || i > l.lastVisibleIndex)) {
+            l.scrollToItem(this.selectedRecord);
+        }
     }
 
     focusFilterInput() {
