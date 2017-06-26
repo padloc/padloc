@@ -12,7 +12,12 @@ const settings = new ElectronStore({
     name: "settings",
     defaults: {
         autoDownloadUpdates: false,
-        allowPrerelease: autoUpdater.allowPrerelease
+        allowPrerelease: autoUpdater.allowPrerelease,
+        windowBounds: {
+            width: 800,
+            height: 600
+        },
+        fullscreen: false
     }
 });
 
@@ -94,10 +99,14 @@ function checkForUpdates(manual) {
 function createWindow() {
     // Create the browser window.
     win = new BrowserWindow({
-        width: 800,
-        height: 600,
+        width: settings.get("windowBounds.width"),
+        height: settings.get("windowBounds.height"),
+        x: settings.get("windowBounds.x"),
+        y: settings.get("windowBounds.y"),
+        fullscreen: settings.get("fullscreen"),
         backgroundColor: "#59c6ff",
-        show: false
+        show: false,
+        fullscreenable: true
     });
 
     // and load the index.html of the app.
@@ -111,6 +120,11 @@ function createWindow() {
         // Open the DevTools.
         win.webContents.openDevTools();
     }
+
+    win.on("close", () => {
+        settings.set("windowBounds", win.getBounds());
+        settings.set("fullscreen", win.isFullScreen());
+    });
 
     win.on("closed", () => {
         win = null;
