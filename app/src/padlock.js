@@ -212,9 +212,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const util_1 = require("./util");
-const compareCategory = util_1.compareProperty("category");
-const compareName = util_1.compareProperty("name");
-const compareUuid = util_1.compareProperty("uuid");
+function compareProperty(p) {
+    return (a, b) => {
+        const x = typeof a[p] === "string" ? a[p].toLowerCase() : a[p];
+        const y = typeof b[p] === "string" ? b[p].toLowerCase() : b[p];
+        return x > y ? 1 : x < y ? -1 : 0;
+    };
+}
+const compareCategory = compareProperty("category");
+const compareName = compareProperty("name");
+const compareUuid = compareProperty("uuid");
 class Record {
     constructor(name = "", fields, category, id, updated, removed = false) {
         this.name = name;
@@ -1118,10 +1125,6 @@ function randomString(length = 32, charSet = exports.charSets.full) {
     return str;
 }
 exports.randomString = randomString;
-function compareProperty(p) {
-    return (a, b) => a[p] > b[p] ? 1 : a[p] < b[p] ? -1 : 0;
-}
-exports.compareProperty = compareProperty;
 function debounce(fn, delay) {
     let timeout;
     return function (...args) {

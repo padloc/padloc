@@ -1,6 +1,14 @@
-import { uuid, compareProperty } from "./util";
+import { uuid } from "./util";
 import { Source } from "./source";
 
+
+function compareProperty(p: string): (a: Object, b: Object) => number {
+    return (a, b) => {
+        const x = typeof a[p] === "string" ? a[p].toLowerCase() : a[p];
+        const y = typeof b[p] === "string" ? b[p].toLowerCase() : b[p];
+        return x > y ? 1 : x < y ? -1 : 0;
+    };
+}
 const compareCategory = compareProperty("category");
 const compareName = compareProperty("name");
 const compareUuid = compareProperty("uuid");

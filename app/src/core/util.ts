@@ -36,10 +36,6 @@ export function randomString(length = 32, charSet = charSets.full) {
     return str;
 }
 
-export function compareProperty(p: string): (a: Object, b: Object) => number {
-    return (a, b) => a[p] > b[p] ? 1 : a[p] < b[p] ? -1 : 0;
-}
-
 export function debounce(fn: (...args: any[]) => any, delay: number) {
     let timeout: number;
 
