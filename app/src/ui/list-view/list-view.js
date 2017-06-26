@@ -54,7 +54,6 @@ class ListView extends padlock.BaseElement {
 
     deselect() {
         this.$.list.clearSelection();
-        this.$.list.notifyResize();
     }
 
     _filterAndSort() {
