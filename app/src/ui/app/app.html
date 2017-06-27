@@ -82,14 +82,13 @@
             on-open-settings="_openSettings"
             on-open-cloud-view="_openCloudView"></pl-list-view>
 
-        <iron-pages id="pages" attr-for-selected="id" selected="{{ _currentView }}">
+        <iron-pages id="pages" attr-for-selected="id">
 
             <div id="placeholderView" class="tiles-2">
                 <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
             </div>
 
             <pl-record-view id="recordView"
-                record="[[ _selectedRecord ]]"
                 categories="[[ collection.categories ]]"
                 on-record-change="_recordChange"
                 on-record-close="_closeRecord"

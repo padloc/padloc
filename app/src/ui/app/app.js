@@ -46,7 +46,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         const moved = () => this._autoLockChanged();
         document.addEventListener("touchstart", moved, false);
         document.addEventListener("keydown", moved, false);
-        document.addEventListener("mousemove", padlock.util.debounce(moved, 50), false);
+        document.addEventListener("mousemove", padlock.util.debounce(moved, 300), false);
 
         // If we want to capture all keydown events, we have to add the listener
         // directly to the document
@@ -56,9 +56,12 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         document.addEventListener("backbutton", this._back.bind(this), false);
     }
 
+    get _isNarrow() {
+        return this.offsetWidth < 700;
+    }
+
     _closeRecord() {
         this.$.listView.deselect();
-        this.$.pages.select("placeholderView");
     }
 
     _newRecord() {
@@ -90,13 +93,17 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _selectedRecordChanged() {
-        if (this._selectedRecord) {
-            this.$.pages.select("recordView");
-        } else {
-            if (this._currentView == "recordView") {
-                this.$.pages.select("placeholderView");
+        clearTimeout(this._selectedRecordChangedTimeout);
+        this._selectedRecordChangedTimeout = setTimeout(() => {
+            if (this._selectedRecord) {
+                setTimeout(() => this._currentView = "recordView");
+                setTimeout(() => this.$.recordView.record = this._selectedRecord, this._isNarrow ? 50 : 0);
+            } else {
+                if (this._currentView == "recordView") {
+                    this._currentView = "placeholderView";
+                }
             }
-        }
+        }, 10);
     }
 
     _unlocked() {
@@ -114,7 +121,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
             this.confirm("Would you like to pair this device with Padlock Cloud now?", "Yes", "Maybe Later")
                 .then((confirm) => {
                     if (confirm) {
-                        this.$.pages.select("cloudView");
+                        this._currentView = "cloudView";
                         this.$.cloudView.connect();
                     }
                 });
@@ -122,12 +129,12 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _openSettings() {
-        this.$.pages.select("settingsView");
+        this._currentView = "settingsView";
         this.$.listView.deselect();
     }
 
     _settingsBack() {
-        this.$.pages.select("placeholderView");
+        this._currentView = "placeholderView";
     }
 
     _saveSettings() {
@@ -137,16 +144,20 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _openCloudView() {
-        this.$.pages.select("cloudView");
+        this._currentView = "cloudView";
         this.$.listView.deselect();
     }
 
     _cloudViewBack() {
-        this.$.pages.select("placeholderView");
+        this._currentView = "placeholderView";
     }
 
     _currentViewChanged() {
         this.$.pages.classList.toggle("showing", this._currentView !== "placeholderView");
+        clearTimeout(this._switchPagesTimeout);
+        // If we're in narrow layout, wait for animation to finish before switching to placeholder view
+        this._switchPagesTimeout = setTimeout(() => this.$.pages.select(this._currentView),
+            this._currentView === "placeholderView" && this._isNarrow ? 300 : 0);
     }
 
     _cancelAutoLock() {
