@@ -24,14 +24,17 @@ class ListView extends padlock.BaseElement {
             value: ""
         },
         records: {
-            type: Array,
-            observer: "_recordsChanged"
+            type: Array
         },
         selectedRecord: {
             type: Object,
             notify: true
         }
     }; }
+
+    static get observers() { return [
+        "_scrollToSelected(records, selectedRecord)"
+    ]; }
 
     ready() {
         super.ready();
@@ -98,7 +101,7 @@ class ListView extends padlock.BaseElement {
         this.dispatchEvent(new CustomEvent("open-cloud-view"));
     }
 
-    _recordsChanged() {
+    _scrollToSelected() {
         const l = this.$.list;
         const i = l.items.indexOf(this.selectedRecord);
         if (i !== -1 && (i < l.firstVisibleIndex || i > l.lastVisibleIndex)) {
