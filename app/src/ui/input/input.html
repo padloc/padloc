@@ -132,7 +132,7 @@ class PlInput extends padlock.BaseElement {
     }
 
     _keydown(e) {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !this.multiline) {
             this.dispatchEvent(new CustomEvent("enter"));
             e.preventDefault();
             e.stopPropagation();
