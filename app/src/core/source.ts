@@ -1,4 +1,5 @@
 import { request, Method, AjaxError } from "./ajax";
+import { readFile, writeFile } from "./file";
 import { Settings } from "./data";
 import { Container } from "./crypto";
 
@@ -229,6 +230,24 @@ export class EncryptedSource implements Source {
         }
         delete this.container;
         return this.source.clear();
+    }
+
+}
+
+export class FileSource implements Source {
+
+    constructor(private filePath: string) {}
+
+    get(): Promise<string> {
+        return readFile(this.filePath);
+    }
+
+    set(data: string): Promise<void> {
+        return writeFile(this.filePath, data);
+    }
+
+    clear(): Promise<void> {
+        return writeFile(this.filePath, "");
     }
 
 }

@@ -6,6 +6,7 @@ import * as data from "./data";
 import * as imp from "./import";
 import * as exp from "./export";
 import * as platform from "./platform";
+import * as file from "./file";
 
 export {
     util,
@@ -15,5 +16,6 @@ export {
     ajax,
     imp,
     exp,
-    platform
+    platform,
+    file
 }

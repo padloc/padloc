@@ -30,19 +30,22 @@
             },
             "cordova-custom-config": {},
             "cordova-plugin-wkwebview-engine": {},
-            "cordova-plugin-migrate-localstorage": {}
+            "cordova-plugin-migrate-localstorage": {},
+            "cordova-plugin-file": {}
         }
     },
     "dependencies": {
         "com.verso.cordova.clipboard": "https://github.com/VersoSolutions/CordovaClipboard.git",
         "com.wongatech.cordova-disable-nsurl-cache": "https://github.com/MaKleSoft/cordova-disable-nsurl-cache.git",
         "cordova-android": "^6.2.3",
-        "cordova-custom-config": "^3.2.0",
+        "cordova-custom-config": "^3.3.0",
         "cordova-ios": "~4.4.0",
         "cordova-plugin-app-version": "~0.1.9",
         "cordova-plugin-backbutton": "~0.3.0",
+        "cordova-plugin-compat": "^1.1.0",
         "cordova-plugin-crosswalk-webview": "^2.3.0",
         "cordova-plugin-customurlscheme": "~4.2.0",
+        "cordova-plugin-file": "^4.3.3",
         "cordova-plugin-inappbrowser": "~1.4.0",
         "cordova-plugin-migrate-localstorage": "0.0.1",
         "cordova-plugin-privacyscreen": "~0.3.1",
