@@ -1015,10 +1015,6 @@ function getPlatformName() {
     }
 }
 exports.getPlatformName = getPlatformName;
-function getElectronSettings() {
-    return isElectron() && electron.remote.getGlobal("settings").get();
-}
-exports.getElectronSettings = getElectronSettings;
 
 },{}],9:[function(require,module,exports){
 "use strict";
