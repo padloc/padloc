@@ -1,7 +1,8 @@
 import { request, Method, AjaxError } from "./ajax";
-import { readFile, writeFile } from "./file";
+import { FileManager, HTML5FileManager, CordovaFileManager } from "./file";
 import { Settings } from "./data";
 import { Container } from "./crypto";
+import { isCordova } from "./platform";
 
 export interface Source {
     get(): Promise<string>;
@@ -236,18 +237,22 @@ export class EncryptedSource implements Source {
 
 export class FileSource implements Source {
 
-    constructor(private filePath: string) {}
+    private fileManager: FileManager;
+
+    constructor(private filePath: string) {
+        this.fileManager = isCordova() ? new CordovaFileManager() : new HTML5FileManager();
+    }
 
     get(): Promise<string> {
-        return readFile(this.filePath);
+        return this.fileManager.read(this.filePath);
     }
 
     set(data: string): Promise<void> {
-        return writeFile(this.filePath, data);
+        return this.fileManager.write(this.filePath, data);
     }
 
     clear(): Promise<void> {
-        return writeFile(this.filePath, "");
+        return this.fileManager.write(this.filePath, "");
     }
 
 }
