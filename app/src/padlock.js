@@ -532,6 +532,50 @@ class CordovaFileManager extends HTML5FileManager {
     }
 }
 exports.CordovaFileManager = CordovaFileManager;
+const nodeFs = window.require && window.require("fs");
+const nodePath = window.require && window.require("path");
+const electron = window.require && window.require("electron");
+class NodeFileManager {
+    constructor() {
+        this.basePath = electron.remote.app.getPath("userData");
+        if (!nodeFs) {
+            throw "Node fileystem not supported!";
+        }
+    }
+    resolvePath(path) {
+        return nodePath.resolve(this.basePath, path);
+    }
+    read(path) {
+        return new Promise((resolve, reject) => {
+            nodeFs.readFile(this.resolvePath(path), "utf8", (err, content) => {
+                if (err) {
+                    if (err.code === "ENOENT") {
+                        resolve("");
+                    }
+                    else {
+                        reject(err);
+                    }
+                }
+                else {
+                    resolve(content);
+                }
+            });
+        });
+    }
+    write(path, content) {
+        return new Promise((resolve, reject) => {
+            nodeFs.writeFile(this.resolvePath(path), content, "utf8", (err) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
+}
+exports.NodeFileManager = NodeFileManager;
 
 },{}],6:[function(require,module,exports){
 "use strict";
@@ -1199,7 +1243,8 @@ exports.EncryptedSource = EncryptedSource;
 class FileSource {
     constructor(filePath) {
         this.filePath = filePath;
-        this.fileManager = platform_1.isCordova() ? new file_1.CordovaFileManager() : new file_1.HTML5FileManager();
+        this.fileManager = platform_1.isElectron() ? new file_1.NodeFileManager() :
+            platform_1.isCordova() ? new file_1.CordovaFileManager() : new file_1.HTML5FileManager();
     }
     get() {
         return this.fileManager.read(this.filePath);

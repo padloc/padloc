@@ -3,7 +3,7 @@ declare interface Window {
   requestFileSystem: any;
   webkitRequestFileSystem: any;
   PERSISTENT: number;
-  isCordova: boolean;
+  require: (m: String) => any;
 }
 
 declare interface Navigator {

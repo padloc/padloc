@@ -1,8 +1,8 @@
 import { request, Method, AjaxError } from "./ajax";
-import { FileManager, HTML5FileManager, CordovaFileManager } from "./file";
+import { FileManager, HTML5FileManager, CordovaFileManager, NodeFileManager } from "./file";
 import { Settings } from "./data";
 import { Container } from "./crypto";
-import { isCordova } from "./platform";
+import { isCordova, isElectron } from "./platform";
 
 export interface Source {
     get(): Promise<string>;
@@ -240,7 +240,8 @@ export class FileSource implements Source {
     private fileManager: FileManager;
 
     constructor(private filePath: string) {
-        this.fileManager = isCordova() ? new CordovaFileManager() : new HTML5FileManager();
+        this.fileManager = isElectron() ? new NodeFileManager() :
+            isCordova() ? new CordovaFileManager() : new HTML5FileManager();
     }
 
     get(): Promise<string> {

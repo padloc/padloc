@@ -22,7 +22,7 @@ export interface FileManager {
     write(path: string, content: string): Promise<void>
 }
 
-export class HTML5FileManager {
+export class HTML5FileManager implements FileManager {
 
     protected get fs(): Promise<any> {
         return requestQuota(1024 * 1024 * 10)
@@ -86,5 +86,52 @@ const cordovaReady = new Promise<void>((resolve) => {
 export class CordovaFileManager extends HTML5FileManager {
     protected get fs(): Promise<any> {
         return cordovaReady.then(() => requestFileSystem(0));
+    }
+}
+
+const nodeFs = window.require && window.require("fs");
+const nodePath = window.require && window.require("path");
+const electron = window.require && window.require("electron");
+
+export class NodeFileManager implements FileManager {
+
+    public basePath = electron.remote.app.getPath("userData");
+
+    constructor() {
+        if (!nodeFs) {
+            throw "Node fileystem not supported!";
+        }
+    }
+
+    resolvePath(path: string): string {
+        return nodePath.resolve(this.basePath, path);
+    }
+
+    read(path: string): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            nodeFs.readFile(this.resolvePath(path), "utf8", (err: {code: string}, content: string) => {
+                if (err) {
+                    if (err.code === "ENOENT") {
+                        resolve("");
+                    } else {
+                        reject(err);
+                    }
+                } else {
+                    resolve(content);
+                }
+            });
+        });
+    }
+
+    write(path: string, content: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            nodeFs.writeFile(this.resolvePath(path), content, "utf8", (err: {code: string}) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
     }
 }
