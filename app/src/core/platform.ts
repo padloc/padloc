@@ -1,6 +1,8 @@
 declare var cordova: any;
 declare var chrome: any;
-declare var electron: any;
+
+const nodeRequire = window.require;
+const electron = nodeRequire && nodeRequire("electron");
 
 let vPrefix: {
     lowercase: string,
@@ -179,8 +181,16 @@ export function getAppStoreLink(): string {
     }
 }
 
+export function hasNode(): Boolean {
+    return !!nodeRequire;
+}
+
+export function isElectron(): Boolean {
+    return !!electron;
+}
+
 export async function getAppVersion(): Promise<string> {
-    if (typeof electron !== "undefined") {
+    if (isElectron()) {
         return electron.remote.app.getVersion();
     } else if (isCordova() && cordova.getAppVersion) {
         return await new Promise<string>((resolve, reject) => {
@@ -194,8 +204,8 @@ export async function getAppVersion(): Promise<string> {
 }
 
 export function getPlatformName(): string {
-    if (typeof require !== "undefined" && require("os")) {
-        return require("os").platform();
+    if (isElectron()) {
+        return nodeRequire("os").platform();
     } else if (isIOS()) {
         return "ios";
     } else if (isAndroid()) {
