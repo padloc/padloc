@@ -250,7 +250,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
             this.confirm("WARNING: The password you entered is weak which makes it easier for attackers to break " +
                 "the encryption used to protect your data. Try to use a longer password or include a " +
                 "variation of uppercase, lowercase and special characters as well as numbers.",
-            "Use Anyway", "Try Again").then((confirm) => {
+            "Use Anyway", "Choose Different Password").then((confirm) => {
                 if (confirm) {
                     this._confirmPassword();
                 } else {
@@ -267,7 +267,7 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
         this.prompt("Remember your master password! Without it, nobody will be able to access your data, " +
             "not even we! This is to ensure that your data is as safe as possible but it also means " +
             "that if you lose your master password, we won't be able to assist you with recovering your " +
-            "data.", "password", "Repeat Master Password", "Confirm").then((pwd) => {
+            "data.", "Repeat Master Password", "password", "Confirm").then((pwd) => {
             if (pwd === this.$.newPasswordInput.value) {
                 this._initializeData();
             } else {
