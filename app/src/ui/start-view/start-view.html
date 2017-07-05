@@ -185,6 +185,12 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
         }
     }; }
 
+    constructor() {
+        super();
+        this._failCount = 0;
+        this._legacyDataTransfered = this._transferLegacyData();
+    }
+
     ready() {
         super.ready();
         this.reset();
@@ -201,8 +207,30 @@ class StartView extends padlock.DialogMixin(padlock.BaseElement) {
         this._hasEmailInputShown = this._hasPasswordInfoShown = false;
     }
 
+    _transferLegacyData() {
+        // transfer legacy data from LocalStorageSource to FileSource
+        function transfer(lsName, fileName) {
+            const lsSource = new padlock.source.LocalStorageSource(lsName);
+            return lsSource.get().then((data) => {
+                if (data) {
+                    return Promise.all([
+                        new padlock.source.FileSource(fileName).set(data),
+                        lsSource.clear()
+                    ]);
+                }
+            });
+        }
+
+        return Promise.all([
+            transfer("coll_default", "data.pls"),
+            transfer("settings_encrypted", "settings.pls")
+        ]);
+    }
+
     _checkHasData() {
-        this.localSource.hasData().then((has) => this._hasData = has);
+        this._legacyDataTransfered
+            .then(() => this.localSource.hasData())
+            .then((has) => this._hasData = has);
     }
 
     _getStarted() {

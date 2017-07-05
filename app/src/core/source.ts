@@ -1,6 +1,8 @@
 import { request, Method, AjaxError } from "./ajax";
+import { FileManager, HTML5FileManager, CordovaFileManager, NodeFileManager } from "./file";
 import { Settings } from "./data";
 import { Container } from "./crypto";
+import { isCordova, isElectron } from "./platform";
 
 export interface Source {
     get(): Promise<string>;
@@ -229,6 +231,29 @@ export class EncryptedSource implements Source {
         }
         delete this.container;
         return this.source.clear();
+    }
+
+}
+
+export class FileSource implements Source {
+
+    private fileManager: FileManager;
+
+    constructor(private filePath: string) {
+        this.fileManager = isElectron() ? new NodeFileManager() :
+            isCordova() ? new CordovaFileManager() : new HTML5FileManager();
+    }
+
+    get(): Promise<string> {
+        return this.fileManager.read(this.filePath);
+    }
+
+    set(data: string): Promise<void> {
+        return this.fileManager.write(this.filePath, data);
+    }
+
+    clear(): Promise<void> {
+        return this.fileManager.write(this.filePath, "");
     }
 
 }
