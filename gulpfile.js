@@ -6,7 +6,7 @@ const { argv } = require("yargs");
 const { buildChrome, buildElectron, compile } = require("./lib/build");
 const http = require("http");
 const st = require("st");
-const { updateLanguageFiles } = require("./lib/locale");
+const { updateLanguageFiles, buildTranslationsFile } = require("./lib/locale");
 
 // Deploy a minified/built version of the app to a given destination folder
 gulp.task("build", () => {
@@ -37,9 +37,15 @@ gulp.task("serve", function() {
     ).listen(port);
 });
 
-gulp.task("update-langfiles", function() {
-    const { funcname, targetdir, srcroot, lang } = argv;
-    return updateLanguageFiles(srcroot, targetdir, lang, funcname);
+const supportedLanguages = ["en", "de", "es"];
+
+gulp.task("update-langfiles", () => {
+    return updateLanguageFiles("./index.html", "resources/translations/", supportedLanguages, "$l");
+});
+
+gulp.task("build-transfile", () => {
+    return buildTranslationsFile("resources/translations/",
+        "app/src/ui/locale/translations.js", supportedLanguages);
 });
 
 gulp.task("default", ["compile", "serve"]);
