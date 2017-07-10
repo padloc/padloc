@@ -1,0 +1,445 @@
+- o: 'Your trial period ends in {0} days.'
+  t: 'Ihre kostenlose Testphase ended in {0} Tagen'
+- o: Manage Subscriptions
+  t: Abonnement Verwalten
+- o: Read-Only
+  t: Nur Lesezugriff
+- o: Connected
+  t: Verbunden
+- o: 'Connection ID: {0}'
+  t: Verbindungsnummer
+- o: Synchronize
+  t: Synchronisieren
+- o: Manage Account
+  t: Konto Verwalten
+- o: Disconnect
+  t: Verbindung Trennen
+- o: Auto Sync
+  t: Automatisch Synchronisieren
+- o: Use Custom Server
+  t: Eigenen Server Verwenden
+- o: Enter Custom URL
+  t: URL des Servers
+- o: >-
+    Make sure that the URL is of the form https://myserver.tld:port. Note that a
+    https connection is required.
+  t: >-
+    Die URL muss von der Form https://myserver.tld:port. Eine sichere Verbindung
+    über https ist erforderlich.
+- o: Enter New Field Name
+  t: Neuen Feldnamen Eingeben
+- o: Enter Record Name
+  t: Namen Eingeben
+- o: No Category
+  t: Ohne Kategory
+- o: Settings
+  t: Einstellugen
+- o: Auto Lock
+  t: Automatisch Sperren
+- o: ' min'
+  t: ' Min'
+- o: After
+  t: Nach
+- o: Reset App
+  t: App Zurücksetzen
+- o: Change Master Password
+  t: Master Passwort Ändern
+- o: Export
+  t: Exportieren
+- o: As CSV (not recommended)
+  t: Als CSV (nicht empfohlen)
+- o: As Encrypted File
+  t: Als Verschlüsselte Datei
+- o: Import
+  t: Importieren
+- o: Paste From Clipboard
+  t: Aus Der Zwischenablage
+- o: Select a File
+  t: Datei Auswählen
+- o: Website
+  t: Webseite
+- o: Support
+  t: Hilfe
+- o: Developed and maintained by
+  t: Entwickelt durch
+- o: Enter Master Password
+  t: Passwort Eingeben
+- o: Unlock
+  t: Entsperren
+- o: Enter Email (Optional)
+  t: Email Eingeben (Optional)
+- o: 'strength: {0}'
+  t: 'Sicherheit: {0}'
+- o: Get Started
+  t: Starten
+- o: OK
+  t: OK
+- o: Are you sure you want to do this?
+  t: Sind Sie sicher dass Sie dies tun möchten?
+- o: Confirm
+  t: Bestätigen
+- o: Cancel
+  t: Abbrechen
+- o: >-
+    You have to be connected to a Padlock Cloud account to synchronize your
+    data!
+  t: >-
+    Sie müssen mit Padlock Cloud verbunden sein um Ihre Daten zu
+    synchronisieren!
+- o: Are you sure you want to disconnect from Padlock Cloud?
+  t: 'Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?'
+- o: Please enter a valid email address!
+  t: Bitte geben Sie eine gültige Emailadresse ein!
+- o: >-
+    For security reasons only a limited amount of connection request are allowed
+    at a time. Please wait a little before trying again!
+  t: >-
+    Aus Sicherheitsgründen ist nur eine begrenzte Anzahl an Verbindungsanfragen
+    innerhalb eines bestimmten Zeitraums erlaubt. Bitte warten Sie eine Weile
+    und versuchen es dann erneut!
+- o: Something went wrong. Please try again later!
+  t: Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!
+- o: Do you want to change your Padlock Cloud master password to your local one?
+  t: >-
+    Wollen Sie Ihr Master Password auf Padlock Cloud auf Ihr lokales Password
+    ändern?
+- o: 'Yes'
+  t: Ja
+- o: 'No'
+  t: Nein
+- o: Padlock Cloud master password updated successfully!
+  t: Ihr Password auf Padlock Cloud wurde erfolgreich geändert!
+- o: Failed to update Padlock Cloud master password. Please try again later!
+  t: >-
+    Die Änderung Ihres Passwort auf Padlock Cloud ist fehlgeschlagen. Bitte
+    versuchen Sie es später erneut!
+- o: >-
+    There was a problem authenticating with Padlock Cloud. Please complete the
+    connection process again!
+  t: >-
+    Es ist ein Fehler bei der Authentifizierung mit Padlock Cloud aufgetreten.
+    Bitte Verbinden Sie Ihr Gerät erneut!
+- o: >-
+    A newer version of Padlock is available now! You can download it using the
+    button below. Please note that you won't be able to use Padlock Cloud until
+    you install the latest version!
+  t: >-
+    Eine aktuellere Version von Padlock ist nun verfügbar! Bitte installieren
+    Sie diese um Padlock Cloud weiterhin nutzen zu können!
+- o: Update Now
+  t: Jetzt Updaten
+- o: Dismiss
+  t: Abbrechen
+- o: It seems Padlock Cloud is over capacity right now. Please try again later!
+  t: >-
+    Es scheint dass die Padlock Cloud server gerade nicht erreichbar sind.
+    Versuchen Sie es später noch einmal!
+- o: >-
+    The data received from Padlock Cloud seems to be corrupt and cannot be
+    decrypted. This might be due to a network error but could also be the result
+    of someone trying to compromise your connection to Padlock Cloud. If the
+    problem persists, please notify Padlock support!
+  t: >-
+    Die von Padlock Cloud erhaltenen Daten scheinen beschädigt zu sein und
+    können nicht entschlüsselt werden. Falls das Problem weiterbesteht, wenden
+    Sie sich bitte an die Kundenhilfe!
+- o: >-
+    It seems that your Padlock Cloud account uses a different master password
+    than then one you are using on this device. Please provide the correct
+    master password for your Padlock Cloud account!
+  t: >-
+    Es scheint dass Ihre Daten auf Padlock Cloud mit einem anderen Passwort
+    geschützt sind als Ihre lokalen Daten. Bitte geben dass Passwort für Ihre
+    Padlock Cloud Daten ein!
+- o: Submit
+  t: Senden
+- o: >-
+    You currently don't have an active subscription which means you can access
+    your existing data on Padlock Cloud but you won't be able to upload any new
+    data or synchronize changes between devices. Get a subscription now to
+    regain full access to Padlock Cloud!
+  t: >-
+    Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar
+    weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können,
+    aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
+    synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen
+    Zugriff auf Padlock Cloud zu erhalten!
+- o: You successfully paired this device with Padlock Cloud!
+  t: Sie haben dieses Gerät erfolgreiche mit Padlock Cloud verbunden!
+- o: Synchonize Now
+  t: Jetzt Synchronisieren
+- o: >-
+    Are you sure you want to use a custom server for synchronization? This
+    option is only recommended for advanced users!
+  t: >-
+    Sind Sie sicher, dass Sie einen eigenen Server zur Synchronisation verwenden
+    möchten? Dies ist nur für fortgeschrittene Nutzer zu empfehlen!
+- o: Continue
+  t: Fortfahren
+- o: It doesn't look like you've completed the connection process yet!
+  t: >-
+    Es scheint als hätten Sie den Verbindungsvorgang zu Padlock Cloud noch nicht
+    vollendet!
+- o: Almost done!
+  t: Fast fertig!
+- o: >-
+    An email was sent to {0}. Please follow the instructions and then return
+    here to complete the process! (Connection ID: {1})
+  t: >-
+    Eine Email wurde an {0} gesendet. Bitte folgen Sie die darin enthaltenen
+    Anweisungen und kehren danach hierhin zurück um den Vorgang abzuschließen.
+- o: Verify Connection
+  t: Vorgang Abschließen
+- o: >-
+    Padlock Cloud provides a convenient way of synchronising your data between
+    all your devices. By securely storing your data in the cloud, it not only
+    allows you to easily access it from anywhere but also acts as a backup in
+    case you should lose your device or accidentally erase your data. Before
+    being sent to our servers, your data is encrypted locally using your master
+    password to make sure that nobody can read it - not even we!
+  t: >-
+    Padlock Cloud ist der einfachste und bequemste Weg, Ihre Daten zwischen all
+    Ihren Geräten zu synchronisieren. Das sichere Speichern Ihrer Daten in der
+    \"Cloud\" erlaubt Ihnen nicht nur, auf Ihre Daten von überall aus
+    zuzugreifen, sonder dient außerdem als Absicherung im Falle eines
+    Datenverlustes. Ihre Daten werden stets lokal verschlüsselt bevor sie an
+    unsere Server gesendet werden um sicher zu stellen, dass niemand sie lesen
+    kann - nicht einmal wir!
+- o: >-
+    After this period, your access will be read-only, which means you will be
+    able to access your existing data on Padlock Cloud but you won't be able to
+    upload any new data or synchronize changes between devices. Get a
+    subscription now to get unlimited access to Padlock Cloud!
+  t: >-
+    Nach dieser Zeitspanne ist Ihr Zugriff auf das Lesen Ihrer Daten beschränkt.
+    Dies bedeutet, dass Sie zwar weiterhin Ihre Daten herunterladen, jedoch
+    weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
+    synchronisieren können. Erwerben Sie jetzt ein Abonnement um um vollen
+    Zugriff auf Padlock Cloud zu erhalten!
+- o: >-
+    You currently don't have an active subscription! This means you can access
+    your existing data on Padlock Cloud but you won't be able to upload any new
+    data or synchronize changes between devices. Get a subscription now to
+    regain full access to Padlock Cloud!
+  t: >-
+    Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar
+    weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können,
+    aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
+    synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen
+    Zugriff auf Padlock Cloud zu erhalten!
+- o: >-
+    This device is connected to the Padlock Cloud account {0}. Connect all your
+    devices with the same account to easily synchronize your data between them!
+  t: >-
+    Dieses Gerät ist mit dem Padlock Cloud Konto {0} verbunden. Verbinden Sie
+    all Ihre Geräte mit dem selben Konto um Ihre Daten auf einfache Weise
+    zwischen ihnen zu synchronisieren!
+- o: Value copied to clipboard!
+  t: Daten in Zwischenablage kopiert!
+- o: '{0} more {1}'
+  t: '{0} weitere {1}'
+- o: field
+  t: Feld
+- o: fields
+  t: Felder
+- o: Empty Field
+  t: Leeres Feld
+- o: Are you sure you want to delete this field?
+  t: 'Sind Sie sicher, dass Sie dieses Feld löschen wollen?'
+- o: Delete
+  t: Löschen
+- o: Are you sure you want to delete this record?
+  t: 'Sind Sie sicher, dass Sie diesen Eintrag löschen wollen?'
+- o: Please enter a record name!
+  t: Bitte geben Sie einen Namen ein!
+- o: >-
+    WARNING: Exporting to CSV format will save your data without encyryption of
+    any kind which means it can be read by anyone. We strongly recommend
+    exporting your data as a secure, encrypted file, instead! Are you sure you
+    want to proceed?
+  t: >-
+    WARNUNG: Das Exportieren als CSV speichert Ihre Daten unverschlüsselt ab,
+    was sie leicht für andere lesbar macht! Es wird dringend geraten, Ihre Daten
+    stattdessen als sichere, verschlüsselte Datei abzuspeichern! Sind Sie sicher
+    dass Sie fortfahren möchten?
+- o: >-
+    Are you sure you want to change your master password? Enter your current
+    password to continue!
+  t: >-
+    Sind Sie sicher, dass Sie Ihr Master Passwort ändern wollen? Geben Sie Ihr
+    jetziges Passwort ein um fortzufahren!
+- o: Enter Current Password
+  t: Jetziges Passwort Eingeben
+- o: You entered the wrong master password!
+  t: Sie haben das falsche Passwort eingegeben!
+- o: Now choose a new master password!
+  t: Wählen Sie ein neues Master Passwort aus!
+- o: Enter New Password
+  t: Neues Passwort Eingeben
+- o: Confirm your new master password!
+  t: Bestätigen Sie Ihr neues Passwort!
+- o: Confirm New Password
+  t: Neues Passwort Bestätigen
+- o: Confirm & Change
+  t: Bestätigen & Ändern
+- o: You failed to confirm the new password. Please try again!
+  t: >-
+    Sie haben das neue Passwort nicht korrekt wiederholt. Bitte versuchen Sie es
+    erneut!
+- o: >-
+    Are you sure you want to delete all your data and reset the app? Enter your
+    master password to continue!
+  t: >-
+    Sind Sie sicher dass Sie all Ihre Daten löschen und die App zurücksetzen
+    wollen? Geben Sie Ihr Master Passwort ein um fortzufahren!
+- o: You entered the wrong master password! Please try again!
+  t: >-
+    Sie haben das falsche Master Passwort eigegeben! Bitte versuchen Sie es
+    erneut!
+- o: Download
+  t: Herunterladen
+- o: >-
+    Your data has successfully been copied to the system clipboard. You can now
+    paste it into the spreadsheet program of your choice.
+  t: >-
+    Ihre Daten wurden erfolgreich in die Zwischenablage kopiert. Sie können sie
+    nun in ein Tabellenprogramm Ihrer Wahl kopieren.
+- o: >-
+    Please choose a password to protect your data. This may be the same as your
+    master password or something else, but make sure it is sufficiently strong!
+  t: >-
+    Bitte wählen Sie ein Passwort um Ihre Daten zu schützen. Dies kann das
+    gleiche wie Ihr Master Passwort sein, sollte aber auf jeden Fall hinreichend
+    stark sein.
+- o: Enter Password
+  t: Passwort Eingeben
+- o: Please enter a password!
+  t: Bitten geben Sie ein Passwort ein!
+- o: >-
+    WARNING: The password you entered is weak which makes it easier for
+    attackers to break the encryption used to protect your data. Try to use a
+    longer password or include a variation of uppercase, lowercase and special
+    characters as well as numbers.
+  t: >-
+    WARNUNG: Das Passwort dass Sie eingegeben haben ist schwach. Dies macht es
+    einfacher für Angreifer, die zum Schutz Ihrer Daten verwendete
+    Verschlüsselung zu brechen. Versuchen Sie, ein längeres Passwort mit einer
+    Variation von Groß-, und Kleinbuchstaben sowie Sonderzeichen und Zahlen zu
+    verwenden!
+- o: Use Anyway
+  t: Trotzdem Verwenden
+- o: Try Again
+  t: Erneut Versuchen
+- o: Your data has successfully been copied to the system clipboard.
+  t: Ihre Daten wurden erfolgreich in die Zwischenablage kopiert.
+- o: Failed to open file. Did you enter the correct password?
+  t: >-
+    Datei konnte nicht geöffnet werden. Haben Sie das richtige Passwort
+    eingegeben?
+- o: Failed to recognize file format.
+  t: Dateiformat konnte nicht erkannt werden.
+- o: Failed to open file.
+  t: Datei konnte nicht geöffnet werden.
+- o: Failed to decrypt data. Did you enter the correct password?
+  t: >-
+    Datei konnte nicht entschlüsselt werden. Haben Sie das richtige Passwort
+    eingegeben?
+- o: >-
+    No supported data found in clipboard. Please make sure to copy you data to
+    the clipboard first (e.g. via ctrl + C).
+  t: >-
+    Es konnte keine für den Import unterstützten Daten in der Zwischenablage
+    gefunden werden.
+- o: This file is protected by a password.
+  t: Diese Datei ist mit einem Passwort geschützt.
+- o: >-
+    The data you want to import seems to be in CSV format. Before you continue,
+    please make sure that the data is structured according to Padlocks specific
+    requirements!
+  t: >-
+    Die Daten die Sie importen wollen scheinen im CSV format zu sein. Bevor Sie
+    fortfahren, stellen Sie sicher dass die Daten entsprechend Padlocks
+    Vorraussetzungen formatiert sind!
+- o: Review Import Guidelines
+  t: Tips zum Import Nachlesen
+- o: 'Successfully imported {0} records.'
+  t: 'Es wurden erfolgreich {0} Einträge importiert.'
+- o: Choose Different Password
+  t: Anderes Password Wählen
+- o: >-
+    Remember your master password! Without it, nobody will be able to access
+    your data, not even we! This is to ensure that your data is as safe as
+    possible but it also means that if you lose your master password, we won't
+    be able to assist you with recovering your data.
+  t: >-
+    Gehen Sie sicher, dass Sie Ihr Master Passwort nicht vergessen! Ohne Ihr
+    Passwort, niemand kann auf Ihre Daten zugreifen, nicht einmal wir! Dies ist
+    essentiell für die Sicherung Ihrer Daten aber bedeutet auch, dass wir Ihnen
+    nicht helfen können, sollten Sie Ihr Passwort vergessen!
+- o: Repeat Master Password
+  t: Master Passwort Wiederholen
+- o: You failed to repeat the password correctly. Try again!
+  t: >-
+    Sie haben das password nicht korrekt wiederholt. Versuchen Sie es noch
+    einmal!
+- o: >-
+    Forgot your master password? You can start over by resetting the app.
+    WARNING: This will delete all your data!
+  t: >-
+    Haben Sie Ihr Master Passwort vergessen? Sie können die App zurücksetzen um
+    von vorne zu beginnen. WARNUNG: Dadurch werden all Ihre Daten gelöscht!
+- o: Type 'RESET' to confirm
+  t: Geben Sie "RESET" zum Bestätigen
+- o: You didn't type 'RESET'. Refusing to reset the app.
+  t: Sie haben nicht "RESET" eingegeben. Die App wird nicht zurückgesetzt.
+- o: >-
+    Padlock uses your email address to connect to the Padlock Cloud service,
+    which allows you to easily and securely store your data online and
+    synchronize it between all your devices. Don't worry, we'll only use it as a
+    method of authentication and won't send you any spam!
+  t: >-
+    Padlock verwendet Ihre Emailadresse um sich mit dem Padlock Cloud Service zu
+    verbinden, welcher es Ihnen ermöglicht, Ihre Daten schnell und einfach
+    online zu speichern und zwischen all Ihren Geräten zu synchronisieren. Keine
+    Sorge, wir verwenden Ihre Email nur zu Authentifizierungszwecken und
+    keinesfalls zum versenden von Werbung oder dergleichen.
+- o: >-
+    Your master password is a single passphrase that is used to encrypt
+    everything you store in Padlock and the only way to access your data.
+    Without your master password, no one will be able to read your data - not
+    even we! So make sure you don't forget it, because we won't be able to help
+    you recover it in case you do.
+  t: >-
+    Ihr Master Passwort ist der Schlüssel, mit dem all Ihre Daten in Padlock
+    geschützt werden. Ohne Ihr Master Passwort wird niemand auf Ihre Daten
+    zugreifen können, nicht einmal wir! Gehen Sie sicher, dass Sie es nicht
+    vergessen, denn in diesem Fall werden wir ihnen nicht helfen können, Zugang
+    zu Ihren Daten zurück zu gewinnen!
+- o: weak
+  t: schwach
+- o: medium
+  t: mittel
+- o: strong
+  t: stark
+- o: New Record
+  t: Neuer Eintrag
+- o: Would you like to pair this device with Padlock Cloud now?
+  t: Möchten sie diese Gerät nun mit Padlock Cloud verbinden?
+- o: Maybe Later
+  t: Vielleicht Später
+- o: >-
+    Padlock was automatically locked after {0} {1} of inactivity. You can change
+    this behavior from the settings page.
+  t: >-
+    Padlock wurde nach {0} {1} Inaktivität automatisch gesperrt. Dieses
+    Verhalten kann bei Bedarf in den Einstellungen der App angepasst werden.
+- o: minutes
+  t: Minuten
+- o: minute
+  t: Minute
+- o: Auto-lock in 10 seconds
+  t: Automatische Sperrung in 10 Sekunden
+- o: App reset successfully. Off to a fresh start!
+  t: Die App wurde erfolgreich zurückgesetzt.
+- o: Master password changed successfully.
+  t: Ihr Masterpassword wurde erfolgreich geändert.
