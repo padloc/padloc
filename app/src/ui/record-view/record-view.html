@@ -3,6 +3,7 @@
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="record-field.html">
 
 <dom-module id="pl-record-view">
@@ -87,14 +88,14 @@
         <header>
             <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
             <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}"
-                placeholder="Enter Record Name" select-on-focus on-change="_fireChangeEvent"></pl-input>
+                placeholder="[[ $l('Enter Record Name') ]]" select-on-focus on-change="_fireChangeEvent"></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
         <main>
             <div class="category tap tiles-1">
                 <pl-icon icon="category"></pl-icon>
-                <pl-input id="categoryInput" value="{{ record.category }}" placeholder="No Category"
+                <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]"
                     select-on-focus on-change="_fireChangeEvent"></pl-input>
                 <pl-icon icon="dropdown" class="tap" on-click="_showCategoryList"></pl-icon>
                 <div id="categoryList" class="tiles">

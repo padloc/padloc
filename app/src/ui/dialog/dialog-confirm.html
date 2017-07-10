@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="dialog.html">
 
 <dom-module id="pl-dialog-confirm">
@@ -17,9 +18,9 @@
     <script>
 (() => {
 
-const defaultMessage = "Are you sure you want to do this?";
-const defaultConfirmLabel = "Confirm";
-const defaultCancelLabel = "Cancel";
+const defaultMessage = $l("Are you sure you want to do this?");
+const defaultConfirmLabel = $l("Confirm");
+const defaultCancelLabel = $l("Cancel");
 
 class DialogConfirm extends padlock.BaseElement {
 

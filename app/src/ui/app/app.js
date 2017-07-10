@@ -65,7 +65,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _newRecord() {
-        const record = new Record("New Record");
+        const record = new Record($l("New Record"));
         this.collection.add(record);
         this.notifyPath("collection");
         this.$.listView.select(record);
@@ -118,7 +118,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     _getStarted() {
         this._unlocked();
         if (this.settings.syncEmail) {
-            this.confirm("Would you like to pair this device with Padlock Cloud now?", "Yes", "Maybe Later")
+            this.confirm($l("Would you like to pair this device with Padlock Cloud now?"), $l("Yes"), $l("Maybe Later"))
                 .then((confirm) => {
                     if (confirm) {
                         this._currentView = "cloudView";
@@ -178,13 +178,13 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
                 const delay = this.settings.autoLockDelay;
                 this.lock();
                 setTimeout(() => {
-                    this.alert(`Padlock was automatically locked after
-                        ${delay} ${delay > 1 ? "minutes" : "minute"}
-                        of inactivity. You can change this behavior from the settings page.`);
+                    this.alert($l("Padlock was automatically locked after {0} {1} " +
+                    "of inactivity. You can change this behavior from the settings page.",
+                    delay, delay > 1 ? $l("minutes") : $l("minute")));
                 }, 1000);
             }, this.settings.autoLockDelay * 60 * 1000);
             this._lockNotificationTimeout = setTimeout(() => {
-                this.notify("Auto-lock in 10 seconds", "info", 3000);
+                this.notify($l("Auto-lock in 10 seconds"), "info", 3000);
             }, this.settings.autoLockDelay * 50 * 1000);
         }
     }
@@ -193,7 +193,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.localSource.clear();
         this.settingsSource.clear();
         this.lock();
-        setTimeout(() => this.alert("App reset successfully. Off to a fresh start!"), 500);
+        setTimeout(() => this.alert($l("App reset successfully. Off to a fresh start!")), 500);
     }
 
     //* Keyboard shortcuts
@@ -240,7 +240,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         Promise.all([
             this.collection.save(this.localSource),
             this.settings.save(this.settingsSource)
-        ]).then(() => this.alert("Master password changed successfully."));
+        ]).then(() => this.alert($l("Master password changed successfully.")));
     }
 
     lock() {

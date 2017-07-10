@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="dialog.html">
 
 <dom-module id="pl-dialog-alert">
@@ -16,7 +17,7 @@
     <script>
 (() => {
 
-const defaultButtonLabel = "OK";
+const defaultButtonLabel = $l("OK");
 
 class DialogAlert extends padlock.BaseElement {
 

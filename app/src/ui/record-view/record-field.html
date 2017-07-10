@@ -3,6 +3,7 @@
 <link rel="import" href="../generator/generator.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
 
 <dom-module id="pl-record-field">
@@ -66,7 +67,7 @@
 
         <div class="container">
             <div class="input-container">
-                <pl-input id="nameInput" value="[[ field.name ]]" placeholder="Enter New Field Name" select-on-focus
+                <pl-input id="nameInput" value="[[ field.name ]]" placeholder="[[ $l('Enter New Field Name') ]]" select-on-focus
                     on-focus="_nameInputFocused" on-blur="_nameInputBlurred" on-enter="_confirmEdit" on-escape="_cancelEdit"></pl-input>
                 <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ _valuePlaceholder(draft) ]]" select-on-focus
                     on-focus="_valueInputFocused" on-blur="_valueInputBlurred" on-escape="_cancelEdit"></pl-input>
@@ -101,7 +102,7 @@
     <script>
 (() => {
 
-class RecordField extends padlock.NotificationMixin(padlock.BaseElement) {
+class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.BaseElement)) {
 
     static get is() { return "pl-record-field"; }
 
@@ -207,7 +208,7 @@ class RecordField extends padlock.NotificationMixin(padlock.BaseElement) {
     }
 
     _valuePlaceholder() {
-        return this.draft ? "" : "Empty Field";
+        return this.draft ? "" : $l("Empty Field");
     }
 
     _toggleGenerator() {
@@ -233,7 +234,7 @@ class RecordField extends padlock.NotificationMixin(padlock.BaseElement) {
 
     _copy() {
         padlock.platform.setClipboard(this.field.value)
-            .then(() => this.notify("Value copied to clipboard!", "success", 1500));
+            .then(() => this.notify($l("Value copied to clipboard!"), "success", 1500));
     }
 
     edit() {

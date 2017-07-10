@@ -15,7 +15,7 @@ function filterByString(fs, rec) {
     return !!match;
 }
 
-class ListView extends padlock.BaseElement {
+class ListView extends padlock.LocaleMixin(padlock.BaseElement) {
     static get is() { return "pl-list-view"; }
 
     static get properties() { return {
