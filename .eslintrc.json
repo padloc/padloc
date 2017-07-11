@@ -11,16 +11,19 @@
     "plugins": [
         "html"
     ],
+    "globals": {
+        "Polymer": true,
+        "padlock": true,
+        "$l": true
+    },
     "rules": {
-        "brace-style": ["warn", "1tbs", {
-            "allowSingleLine": true
-        }],
+        "brace-style": "off",
         "camelcase": "error",
         "comma-spacing": "warn",
         "comma-style": "error",
         "curly": "error",
         "eol-last": "warn",
-        "indent": ["error", 4, {"SwitchCase": 1}],
+        "indent": ["error", 4, {"SwitchCase": 1, "outerIIFEBody": 0}],
         "key-spacing": "warn",
         "keyword-spacing": "warn",
         "linebreak-style": "error",
@@ -33,7 +36,7 @@
         "no-trailing-spaces": "error",
         "no-undef": "error",
         "no-unsafe-finally": "error",
-        "no-unused-expressions": ["error", {"allowShortCircuit": true, "allowTernary": true}],
+        "no-unused-expressions": "off",
         "no-use-before-define": "warn",
         "no-whitespace-before-property": "error",
         "operator-linebreak": ["error", "after"],
@@ -46,7 +49,7 @@
         "space-infix-ops": "warn",
         "space-unary-ops": "error",
         "spaced-comment": "warn",
-        "strict": "error",
+        "strict": "off",
         "wrap-iife": ["error", "inside"]
     }
 }
