@@ -24,6 +24,10 @@ const settings = new ElectronStore({
 let win;
 let updateOnQuit = false;
 
+if (debug || test) {
+    app.setPath("userData", path.join(app.getPath("temp"), app.getName()));
+}
+
 function updateReady(updateInfo) {
     dialog.showMessageBox({
         message: "Install Update",
