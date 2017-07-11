@@ -70,8 +70,8 @@
                 <div class="note">
                     [[ _generalInfoText() ]]
                 </div>
-                <pl-input id="emailInput" type="email" placeholder="Enter Email Adress" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" label="Get Started" on-click="connect"></pl-loading-button>
+                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
+                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Get Started') ]]" on-click="connect"></pl-loading-button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !_isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
@@ -104,8 +104,8 @@
 
             <section class="tiles tiles-2">
                 <div class="note">
-                    $l("By providing a custom URL, you can synchronize your data with a server other than the official Padlock Cloud server.")
-                    <strong>$l("WARNING: This is only recommended for advanced users!")</strong>
+                    [[ $l("By providing a custom URL you can synchronize your data with a server other than the official Padlock Cloud server.") ]]
+                    <strong>[[ $l("WARNING: This is only recommended for advanced users!") ]]</strong>
                 </div>
                 <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
                     on-change="_customHostChanged" class="tap"></pl-toggle-button>
@@ -114,7 +114,7 @@
                         value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
                         required></pl-input>
                     <div class="note warning">
-                        <strong>$l("Invalid URL")</strong> -
+                        <strong>[[ $l("Invalid URL") ]]</strong> -
                         [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
                     </div>
                 </div>

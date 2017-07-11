@@ -1,3 +1,7 @@
+- o: Enter Email Address
+  t: Emailadresse Eingeben
+- o: Get Started
+  t: Starten
 - o: 'Your trial period ends in {0} days.'
   t: 'Ihre kostenlose Testphase ended in {0} Tagen'
 - o: Manage Subscriptions
@@ -16,16 +20,30 @@
   t: Verbindung Trennen
 - o: Auto Sync
   t: Automatisch Synchronisieren
+- o: >-
+    By providing a custom URL you can synchronize your data with a server other
+    than the official Padlock Cloud server.
+  t: >-
+    Indem Sie eine eigene URL angeben, können Sie Ihre Daten mit einem anderen
+    Server als den offiziellen Padlock Cloud server synchronisieren.
+- o: 'WARNING: This is only recommended for advanced users!'
+  t: 'WARNUNG: Dies ist nur for fortgeschrittene Nutzer empfohlen!'
 - o: Use Custom Server
   t: Eigenen Server Verwenden
 - o: Enter Custom URL
   t: URL des Servers
+- o: Invalid URL
+  t: Ungültige URL
 - o: >-
     Make sure that the URL is of the form https://myserver.tld:port. Note that a
     https connection is required.
   t: >-
     Die URL muss von der Form https://myserver.tld:port. Eine sichere Verbindung
     über https ist erforderlich.
+- o: You don't have any data yet! Start by creating your first record!
+  t: >-
+    Es sind noch keine Einträge vorhanden. Fangen Sie an, indem Sie Ihren ersten
+    Eintrag erstellen!
 - o: Enter New Field Name
   t: Neuen Feldnamen Eingeben
 - o: Enter Record Name
@@ -70,8 +88,6 @@
   t: Email Eingeben (Optional)
 - o: 'strength: {0}'
   t: 'Sicherheit: {0}'
-- o: Get Started
-  t: Starten
 - o: OK
   t: OK
 - o: Are you sure you want to do this?
@@ -188,6 +204,7 @@
   t: >-
     Eine Email wurde an {0} gesendet. Bitte folgen Sie die darin enthaltenen
     Anweisungen und kehren danach hierhin zurück um den Vorgang abzuschließen.
+    (Verbindungs-ID: {1})
 - o: Verify Connection
   t: Vorgang Abschließen
 - o: >-
@@ -200,11 +217,10 @@
   t: >-
     Padlock Cloud ist der einfachste und bequemste Weg, Ihre Daten zwischen all
     Ihren Geräten zu synchronisieren. Das sichere Speichern Ihrer Daten in der
-    \"Cloud\" erlaubt Ihnen nicht nur, auf Ihre Daten von überall aus
-    zuzugreifen, sonder dient außerdem als Absicherung im Falle eines
-    Datenverlustes. Ihre Daten werden stets lokal verschlüsselt bevor sie an
-    unsere Server gesendet werden um sicher zu stellen, dass niemand sie lesen
-    kann - nicht einmal wir!
+    "Cloud" erlaubt Ihnen nicht nur, auf Ihre Daten von überall aus zuzugreifen,
+    sondern dient außerdem als Absicherung im Falle eines Datenverlustes. Ihre
+    Daten werden stets lokal verschlüsselt bevor sie an unsere Server gesendet
+    werden um sicher zu stellen, dass niemand sie lesen kann - nicht einmal wir!
 - o: >-
     After this period, your access will be read-only, which means you will be
     able to access your existing data on Padlock Cloud but you won't be able to
@@ -298,6 +314,8 @@
     erneut!
 - o: Download
   t: Herunterladen
+- o: Copy to Clipboard
+  t: In Zwischenablage Kopieren
 - o: >-
     Your data has successfully been copied to the system clipboard. You can now
     paste it into the spreadsheet program of your choice.
@@ -373,7 +391,7 @@
     be able to assist you with recovering your data.
   t: >-
     Gehen Sie sicher, dass Sie Ihr Master Passwort nicht vergessen! Ohne Ihr
-    Passwort, niemand kann auf Ihre Daten zugreifen, nicht einmal wir! Dies ist
+    Passwort kann niemand auf Ihre Daten zugreifen, nicht einmal wir! Dies ist
     essentiell für die Sicherung Ihrer Daten aber bedeutet auch, dass wir Ihnen
     nicht helfen können, sollten Sie Ihr Passwort vergessen!
 - o: Repeat Master Password
@@ -389,7 +407,7 @@
     Haben Sie Ihr Master Passwort vergessen? Sie können die App zurücksetzen um
     von vorne zu beginnen. WARNUNG: Dadurch werden all Ihre Daten gelöscht!
 - o: Type 'RESET' to confirm
-  t: Geben Sie "RESET" zum Bestätigen
+  t: '"RESET" zum Bestätigen Eingeben'
 - o: You didn't type 'RESET'. Refusing to reset the app.
   t: Sie haben nicht "RESET" eingegeben. Die App wird nicht zurückgesetzt.
 - o: >-

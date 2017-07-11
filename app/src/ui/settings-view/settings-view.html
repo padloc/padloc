@@ -145,7 +145,7 @@ const exportCSVWarning = $l(
     "a secure, encrypted file, instead! Are you sure you want to proceed?"
 );
 
-class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
+class SettingsView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElement)) {
 
     static get is() { return "pl-settings-view"; }
 
@@ -247,7 +247,7 @@ class SettingsView extends padlock.DialogMixin(padlock.BaseElement) {
     }
 
     _copyCSV() {
-        this.confirm(exportCSVWarning, "Copy to Clipboard", "Cancel")
+        this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"))
             .then((confirm) => {
                 if (confirm) {
                     padlock.platform.setClipboard(padlock.exp.toCSV(this.collection.records))

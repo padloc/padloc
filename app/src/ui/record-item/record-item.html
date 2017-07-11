@@ -175,7 +175,7 @@ class RecordItem extends padlock.NotificationMixin(padlock.BaseElement) {
 
     _moreFieldsLabel() {
         const n = this.record.fields.length - 2;
-        if (!n) {
+        if (n < 1) {
             return "";
         }
         return $l("{0} more {1}", n, n == 1 ? $l("field") : $l("fields"));
