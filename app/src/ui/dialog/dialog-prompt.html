@@ -1,6 +1,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="dialog.html">
 
 <dom-module id="pl-dialog-prompt">
@@ -23,8 +24,8 @@
     <script>
 (() => {
 
-const defaultConfirmLabel = "OK";
-const defaultCancelLabel = "Cancel";
+const defaultConfirmLabel = $l("OK");
+const defaultCancelLabel = $l("Cancel");
 const defaultType = "text";
 const defaultPlaceholder = "";
 

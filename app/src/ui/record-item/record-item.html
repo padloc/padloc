@@ -1,6 +1,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
 
 <dom-module id="pl-record-item">
@@ -159,7 +160,7 @@ class RecordItem extends padlock.NotificationMixin(padlock.BaseElement) {
 
     _copyToClipboard(value) {
         padlock.platform.setClipboard(value)
-            .then(() => this.notify("Value copied to clipboard!", "success", 1500));
+            .then(() => this.notify($l("Value copied to clipboard!"), "success", 1500));
     }
 
     _copyField1(e) {
@@ -174,7 +175,10 @@ class RecordItem extends padlock.NotificationMixin(padlock.BaseElement) {
 
     _moreFieldsLabel() {
         const n = this.record.fields.length - 2;
-        return n < 1 ? "" : n == 1 ? "1 more field" : (n + " more fields");
+        if (n < 1) {
+            return "";
+        }
+        return $l("{0} more {1}", n, n == 1 ? $l("field") : $l("fields"));
     }
 
 }

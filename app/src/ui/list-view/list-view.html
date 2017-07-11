@@ -3,6 +3,7 @@
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="../record-item/record-item.html">
 
 <dom-module id="pl-list-view">
@@ -139,7 +140,7 @@
 
             <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty tiles">
                 <div class="empty-message">
-                    You don't have any data yet! Start by creating your first record!
+                    [[ $l("You don't have any data yet! Start by creating your first record!") ]]
                 </div>
                 <div class="spacer"></div>
             </div>

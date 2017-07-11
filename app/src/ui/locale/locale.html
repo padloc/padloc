@@ -1,0 +1,53 @@
+<link rel="import" href="../base/base.html">
+
+<script>
+(() => {
+
+const locale = navigator.language || navigator.browserLanguage || "en";
+let translations, language;
+
+function resolveLanguage(locale) {
+    const localeParts = locale.toLowerCase().split("-");
+
+    while (localeParts.length) {
+        const l = localeParts.join("-");
+        if (translations[l]) {
+            return l;
+        }
+
+        localeParts.pop();
+    }
+}
+
+function localize(msg, ...fmtArgs) {
+    const lang = translations[language];
+    let res = lang && lang[msg] || msg;
+
+    for (let i = 0; i < fmtArgs.length; i++) {
+        res = res.replace(new RegExp(`\\{${i}\\}`, "g"), fmtArgs[i]);
+    }
+
+    return res;
+}
+
+localize.loadTranslations = (t) => {
+    translations = t;
+    language = resolveLanguage(locale);
+};
+
+padlock.LocaleMixin = (superClass) => {
+
+    return class LocaleMixin extends superClass {
+
+        $l() {
+            return localize.apply(null, arguments);
+        }
+
+    };
+};
+
+window.$l = localize;
+
+})();
+</script>
+<script src="translations.js"></script>

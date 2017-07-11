@@ -1,6 +1,6 @@
 (() => {
 
-class RecordView extends padlock.DialogMixin(padlock.BaseElement) {
+class RecordView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElement)) {
 
     static get is() { return "pl-record-view"; }
 
@@ -17,7 +17,7 @@ class RecordView extends padlock.DialogMixin(padlock.BaseElement) {
     }
 
     _deleteField(e) {
-        this.confirm("Are you sure you want to delete this field?", "Delete").then((confirmed) => {
+        this.confirm($l("Are you sure you want to delete this field?"), $l("Delete")).then((confirmed) => {
             if (confirmed) {
                 this.splice("record.fields", e.model.index, 1);
                 this._fireChangeEvent();
@@ -43,7 +43,7 @@ class RecordView extends padlock.DialogMixin(padlock.BaseElement) {
     }
 
     _deleteRecord() {
-        this.confirm("Are you sure you want to delete this record?", "Delete").then((confirmed) => {
+        this.confirm($l("Are you sure you want to delete this record?"), $l("Delete")).then((confirmed) => {
             if (confirmed) {
                 this.dispatchEvent(new CustomEvent("record-delete", { detail: { record: this.record } }));
             }
@@ -80,7 +80,7 @@ class RecordView extends padlock.DialogMixin(padlock.BaseElement) {
 
     close() {
         if (!this.record.name) {
-            this.alert("Please enter a record name!").then(() => this.edit());
+            this.alert($l("Please enter a record name!")).then(() => this.edit());
             return;
         }
         this.dispatchEvent(new CustomEvent("record-close"));
