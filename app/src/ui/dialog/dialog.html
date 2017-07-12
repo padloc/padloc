@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../input/input.html">
 
 <dom-module id="pl-dialog">
 
@@ -131,6 +132,9 @@ class Dialog extends padlock.BaseElement {
             if (this._hideTimeout) {
                 clearTimeout(this._hideTimeout);
                 this._hideTimeout = null;
+            }
+            if (padlock.Input.activeInput) {
+                padlock.Input.activeInput.blur();
             }
             this.style.display = "";
             this.isShowing = true;
