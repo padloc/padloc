@@ -156,7 +156,11 @@ class PlInput extends padlock.BaseElement {
     }
 
     selectAll() {
-        this.inputElement.setSelectionRange(0, this.value.length);
+        try {
+            this.inputElement.setSelectionRange(0, this.value.length);
+        } catch (e) {
+            this.inputElement.select();
+        }
     }
 
 }
