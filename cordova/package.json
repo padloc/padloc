@@ -17,7 +17,6 @@
             },
             "cordova-plugin-inappbrowser": {},
             "cordova-plugin-privacyscreen": {},
-            "cordova-plugin-splashscreen": {},
             "cordova-plugin-statusbar": {},
             "cordova-plugin-whitelist": {},
             "ionic-plugin-keyboard": {},
@@ -29,9 +28,10 @@
                 "XWALK_MULTIPLEAPK": "true"
             },
             "cordova-custom-config": {},
+            "cordova-plugin-file": {},
             "cordova-plugin-wkwebview-engine": {},
-            "cordova-plugin-migrate-localstorage": {},
-            "cordova-plugin-file": {}
+            "cordova-plugin-splashscreen": {},
+            "cordova-plugin-migrate-localstorage": {}
         }
     },
     "dependencies": {
@@ -39,7 +39,7 @@
         "com.wongatech.cordova-disable-nsurl-cache": "https://github.com/MaKleSoft/cordova-disable-nsurl-cache.git",
         "cordova-android": "^6.2.3",
         "cordova-custom-config": "^3.3.0",
-        "cordova-ios": "~4.4.0",
+        "cordova-ios": "^4.4.0",
         "cordova-plugin-app-version": "~0.1.9",
         "cordova-plugin-backbutton": "~0.3.0",
         "cordova-plugin-compat": "^1.1.0",
@@ -47,9 +47,9 @@
         "cordova-plugin-customurlscheme": "~4.2.0",
         "cordova-plugin-file": "^4.3.3",
         "cordova-plugin-inappbrowser": "~1.4.0",
-        "cordova-plugin-migrate-localstorage": "0.0.1",
+        "cordova-plugin-migrate-localstorage": "0.0.2",
         "cordova-plugin-privacyscreen": "~0.3.1",
-        "cordova-plugin-splashscreen": "~3.2.2",
+        "cordova-plugin-splashscreen": "^4.0.3",
         "cordova-plugin-statusbar": "~2.1.3",
         "cordova-plugin-whitelist": "~1.2.2",
         "cordova-plugin-wkwebview-engine": "https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git",
