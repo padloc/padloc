@@ -16,6 +16,7 @@
     <preference name="FadeSplashScreen" value="false" />
     <preference name="ShowSplashScreenSpinner" value="false" />
     <preference name="AutoHideSplashScreen" value="true" />
+    <preference name="SplashScreenDelay" value="1" />
     <preference name="StatusBarOverlaysWebView" value="true" />
     <preference name="StatusBarStyle" value="lightcontent" />
     <hook src="scripts/build-www.js" type="before_prepare" />
@@ -94,7 +95,7 @@
     <plugin name="cordova-plugin-inappbrowser" spec="~1.4.0" />
     <plugin name="cordova-plugin-migrate-localstorage" spec="0.0.1" />
     <plugin name="cordova-plugin-privacyscreen" spec="~0.3.1" />
-    <plugin name="cordova-plugin-splashscreen" spec="~3.2.2" />
+    <plugin name="cordova-plugin-splashscreen" spec="^4.0.3" />
     <plugin name="cordova-plugin-statusbar" spec="~2.1.3" />
     <plugin name="cordova-plugin-whitelist" spec="~1.2.2" />
     <plugin name="cordova-plugin-wkwebview-engine" spec="https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git" />
