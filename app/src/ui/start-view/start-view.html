@@ -28,6 +28,10 @@
                 text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
             }
 
+            :host(:not(.ready)) {
+                background: var(--color-primary);
+            }
+
             main {
                 @apply --fullbleed;
                 display: flex;
@@ -177,7 +181,7 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
         localSource: Object,
         open: {
             type: Boolean,
-            value: false,
+            value: true,
             reflectToAttribute: true
         },
         settings: {
@@ -197,12 +201,14 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
     constructor() {
         super();
         this._failCount = 0;
-        this._legacyDataTransfered = this._transferLegacyData();
     }
 
     ready() {
         super.ready();
-        this.reset();
+        this._transferLegacyData()
+            .then(() => this.reset())
+            .then(() => this.open = false)
+            .then(() => setTimeout(() => this.classList.add("ready"), 500));
     }
 
     reset() {
@@ -211,9 +217,9 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
         this.$.newPasswordInput.value = "";
         this.$.enterButton.stop();
         this.$.getStartedButton.stop();
-        this._checkHasData();
         this._failCount = 0;
         this._hasEmailInputShown = this._hasPasswordInfoShown = false;
+        return this._checkHasData();
     }
 
     _transferLegacyData() {
@@ -237,8 +243,7 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _checkHasData() {
-        this._legacyDataTransfered
-            .then(() => this.localSource.hasData())
+        return this.localSource.hasData()
             .then((has) => this._hasData = has);
     }
 

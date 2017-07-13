@@ -109,7 +109,6 @@ function createWindow() {
         y: settings.get("windowBounds.y"),
         fullscreen: settings.get("fullscreen"),
         backgroundColor: "#59c6ff",
-        show: false,
         fullscreenable: true
     });
 
@@ -140,7 +139,6 @@ function createWindow() {
         shell.openExternal(url);
     });
 
-    win.once("ready-to-show", () => win.show());
 }
 
 function createApplicationMenu() {
