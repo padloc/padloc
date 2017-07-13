@@ -14,11 +14,21 @@
     <template>
         <style include="shared">
             :host {
+                overflow: hidden;
+                color: var(--color-foreground);
+                background: var(--color-background);
+                @apply --fullbleed;
+            }
+
+            #main {
+                @apply --fullbleed;
                 display: flex;
                 overflow: hidden;
-                background: var(--color-background);
-                color: var(--color-foreground);
-                @apply --fullbleed;
+                transition: transform 0.5s cubic-bezier(1, 0, 0.2, 1);
+            }
+
+            #main:not(.active) {
+                transform: scale(0.8);
             }
 
             #listView {
@@ -48,7 +58,7 @@
             }
 
             @media (max-width: 700px) {
-                pl-list-view {
+                #listView {
                     flex: 1;
                 }
 
@@ -73,44 +83,48 @@
             on-get-started="_getStarted"
             on-reset-data="_resetData"></pl-start-view>
 
-        <pl-list-view id="listView"
-            records="[[ collection.records ]]"
-            selected-record="{{ _selectedRecord }}"
-            on-open-menu="openMainMenu"
-            on-record-new="_newRecord"
-            on-lock="lock"
-            on-open-settings="_openSettings"
-            on-open-cloud-view="_openCloudView"></pl-list-view>
+        <div id="main">
 
-        <iron-pages id="pages" attr-for-selected="id">
+            <pl-list-view id="listView"
+                records="[[ collection.records ]]"
+                selected-record="{{ _selectedRecord }}"
+                on-open-menu="openMainMenu"
+                on-record-new="_newRecord"
+                on-lock="lock"
+                on-open-settings="_openSettings"
+                on-open-cloud-view="_openCloudView"></pl-list-view>
 
-            <div id="placeholderView" class="tiles-2">
-                <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
-            </div>
+            <iron-pages id="pages" attr-for-selected="id">
 
-            <pl-record-view id="recordView"
-                categories="[[ collection.categories ]]"
-                on-record-change="_recordChange"
-                on-record-close="_closeRecord"
-                on-record-create="_createRecord"
-                on-record-delete="_deleteRecord"></pl-record-view>
+                <div id="placeholderView" class="tiles-2">
+                    <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
+                </div>
 
-            <pl-settings-view id="settingsView"
-                settings="{{ settings }}"
-                collection="{{ collection }}"
-                local-source="[[ localSource ]]"
-                on-settings-back="_settingsBack"
-                on-reset-data="_resetData"
-                on-change-password="_changePassword"></pl-settings-view>
+                <pl-record-view id="recordView"
+                    categories="[[ collection.categories ]]"
+                    on-record-change="_recordChange"
+                    on-record-close="_closeRecord"
+                    on-record-create="_createRecord"
+                    on-record-delete="_deleteRecord"></pl-record-view>
 
-            <pl-cloud-view id="cloudView"
-                settings="{{ settings }}"
-                cloud-source="[[ cloudSource ]]"
-                collection="{{ collection }}"
-                local-source="[[ localSource ]]"
-                on-cloud-back="_cloudViewBack"></pl-cloud-view>
+                <pl-settings-view id="settingsView"
+                    settings="{{ settings }}"
+                    collection="{{ collection }}"
+                    local-source="[[ localSource ]]"
+                    on-settings-back="_settingsBack"
+                    on-reset-data="_resetData"
+                    on-change-password="_changePassword"></pl-settings-view>
 
-        </iron-pages>
+                <pl-cloud-view id="cloudView"
+                    settings="{{ settings }}"
+                    cloud-source="[[ cloudSource ]]"
+                    collection="{{ collection }}"
+                    local-source="[[ localSource ]]"
+                    on-cloud-back="_cloudViewBack"></pl-cloud-view>
+
+            </iron-pages>
+
+        </div>
 
     </template>
 

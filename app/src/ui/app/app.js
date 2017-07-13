@@ -111,6 +111,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.notifyPath("collection");
         setTimeout(() => {
             this.$.startView.open = true;
+            this.$.main.classList.add("active");
             this._autoLockChanged();
         }, 500);
     }
@@ -249,6 +250,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.localSource.password = this.settingsSource.password = this.cloudSource.password = "";
         this.$.startView.reset();
         this.$.startView.open = false;
+        this.$.main.classList.remove("active");
         this._autoLockChanged();
         setTimeout(() => this.notifyPath("collection"), 500);
     }
