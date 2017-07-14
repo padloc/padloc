@@ -4,6 +4,13 @@
 <dom-module id="shared">
     <template>
         <style>
+            :host {
+                user-select: none;
+            }
+
+            input, textarea {
+                user-select: auto;
+            }
 
             :host, html, button, input, textarea {
                 font-family: var(--font-family), var(--font-family-fallback);
