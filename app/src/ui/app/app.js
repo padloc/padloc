@@ -154,7 +154,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _currentViewChanged() {
-        this.$.pages.classList.toggle("showing", this._currentView !== "placeholderView");
+        this.$.main.classList.toggle("showing-pages", this._currentView !== "placeholderView");
         clearTimeout(this._switchPagesTimeout);
         // If we're in narrow layout, wait for animation to finish before switching to placeholder view
         this._switchPagesTimeout = setTimeout(() => this.$.pages.select(this._currentView),
