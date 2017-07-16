@@ -232,11 +232,7 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
                 this.settings.syncId = authToken.id;
                 this.notifyPath("settings");
                 this.$.connectButton.success();
-                this.alert($l(
-                    "Almost done! An email was sent to {0}. Check your inbox and follow the " +
-                    "instructions to complete the process!",
-                    this.settings.syncEmail
-                ));
+                this.alert(this._activationPendingText());
             })
             .catch((e) => {
                 switch (typeof e === "string" ? e : e.code) {
@@ -496,8 +492,8 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
 
     _activationPendingText() {
         return $l(
-            "You are almost done connecting this device! An email was sent to {0} with further " +
-            "instructions. Didn't get it? Try again using the button below!",
+            "You are almost done connecting this device. An email was sent to {0}. Check your " +
+            "inbox and follow the instructions to complete the process!",
             this.settings.syncEmail
         );
     }

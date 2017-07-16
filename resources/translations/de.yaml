@@ -2,6 +2,12 @@
   t: Emailadresse Eingeben
 - o: Get Started
   t: Starten
+- o: Activation pending
+  t: Warte auf Aktivierung
+- o: 'Connection ID: {0}'
+  t: 'Verbindungsnummer: {0}'
+- o: Cancel
+  t: Abbrechen
 - o: 'Your trial period ends in {0} days.'
   t: 'Ihre kostenlose Testphase ended in {0} Tagen'
 - o: Manage Subscriptions
@@ -10,8 +16,6 @@
   t: Nur Lesezugriff
 - o: Connected
   t: Verbunden
-- o: 'Connection ID: {0}'
-  t: Verbindungsnummer
 - o: Synchronize
   t: Synchronisieren
 - o: Manage Account
@@ -94,8 +98,6 @@
   t: Sind Sie sicher dass Sie dies tun möchten?
 - o: Confirm
   t: Bestätigen
-- o: Cancel
-  t: Abbrechen
 - o: >-
     You have to be connected to a Padlock Cloud account to synchronize your
     data!
@@ -192,21 +194,6 @@
     möchten? Dies ist nur für fortgeschrittene Nutzer zu empfehlen!
 - o: Continue
   t: Fortfahren
-- o: It doesn't look like you've completed the connection process yet!
-  t: >-
-    Es scheint als hätten Sie den Verbindungsvorgang zu Padlock Cloud noch nicht
-    vollendet!
-- o: Almost done!
-  t: Fast fertig!
-- o: >-
-    An email was sent to {0}. Please follow the instructions and then return
-    here to complete the process! (Connection ID: {1})
-  t: >-
-    Eine Email wurde an {0} gesendet. Bitte folgen Sie die darin enthaltenen
-    Anweisungen und kehren danach hierhin zurück um den Vorgang abzuschließen.
-    (Verbindungs-ID: {1})
-- o: Verify Connection
-  t: Vorgang Abschließen
 - o: >-
     Padlock Cloud provides a convenient way of synchronising your data between
     all your devices. By securely storing your data in the cloud, it not only
@@ -250,6 +237,13 @@
     Dieses Gerät ist mit dem Padlock Cloud Konto {0} verbunden. Verbinden Sie
     all Ihre Geräte mit dem selben Konto um Ihre Daten auf einfache Weise
     zwischen ihnen zu synchronisieren!
+- o: >-
+    You are almost done connecting this device. An email was sent to {0}. Check
+    your inbox and follow the instructions to complete the process!
+  t: >-
+    Der Verbindungsvorgang ist fast abgeschlossen. Es wurde eine Email an {0}
+    gesendet. Prüfen Sie Ihr Postfach und folgen Sie den Anweisungen um den
+    Vorgang abzuschließen!
 - o: Value copied to clipboard!
   t: Daten in Zwischenablage kopiert!
 - o: '{0} more {1}'
