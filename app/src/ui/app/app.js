@@ -59,6 +59,9 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
 
         // Listen for android back button
         document.addEventListener("backbutton", this._back.bind(this), false);
+
+        document.addEventListener("dialog-open", () => this.classList.add("dialog-open"));
+        document.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
     }
 
     get _isNarrow() {
@@ -114,10 +117,8 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     _unlocked() {
         this.cloudSource.password = this.localSource.password;
         this.notifyPath("collection");
-        setTimeout(() => {
-            this.locked = false;
-            this.$.startView.open = true;
-        }, 500);
+        this.locked = false;
+        this.$.startView.open = true;
     }
 
     _getStarted() {

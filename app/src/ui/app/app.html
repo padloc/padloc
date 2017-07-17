@@ -16,7 +16,7 @@
             :host {
                 overflow: hidden;
                 color: var(--color-foreground);
-                background: #eee;
+                background: transparent;
                 @apply --fullbleed;
             }
 
@@ -26,12 +26,11 @@
                 overflow: hidden;
             }
 
-            #main {
-                box-shadow: rgba(0, 0, 0, 0.1) 0 0 1px;
-                transition: transform 0.5s cubic-bezier(0.6, 0, 0.2, 1);
+            :host, #main, #pages, #listView {
+                transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
-            #main:not(.active) {
+            #main:not(.active), :host(.dialog-open) {
                 transform: scale(0.95);
             }
 
@@ -73,10 +72,6 @@
                 #pages {
                     @apply --fullbleed;
                     z-index: 1;
-                }
-
-                #pages, #listView {
-                    transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
                 }
 
                 :not(.showing-pages) #pages {
