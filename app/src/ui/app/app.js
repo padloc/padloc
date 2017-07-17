@@ -17,8 +17,13 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         settings: Object,
         settingsSource: Object,
         cloudSource: Object,
+        locked: {
+            type: Boolean,
+            value: true,
+            observer: "_lockedChanged"
+        },
         _currentView: {
-            type: "string",
+            type: String,
             value: "placeholderView",
             observer: "_currentViewChanged"
         },
@@ -30,7 +35,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
 
     static get observers() { return [
         "_saveSettings(settings.*)",
-        "_autoLockChanged(settings.autoLock, settings.autoLockDelay)"
+        "_autoLockChanged(settings.autoLock, settings.autoLockDelay, locked)"
     ]; }
 
     constructor() {
@@ -110,9 +115,8 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.cloudSource.password = this.localSource.password;
         this.notifyPath("collection");
         setTimeout(() => {
+            this.locked = false;
             this.$.startView.open = true;
-            this.$.main.classList.add("active");
-            this._autoLockChanged();
         }, 500);
     }
 
@@ -174,7 +178,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
     _autoLockChanged() {
         this._cancelAutoLock();
 
-        if (this.settings.autoLock && this.$.startView.open) {
+        if (this.settings.autoLock && !this.locked) {
             this._lockTimeout = setTimeout(() => {
                 const delay = this.settings.autoLockDelay;
                 this.lock();
@@ -244,14 +248,18 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         ]).then(() => this.alert($l("Master password changed successfully.")));
     }
 
+    _lockedChanged() {
+        this.$.main.classList.toggle("active", !this.locked);
+        this._autoLockChanged();
+    }
+
     lock() {
         this.collection.clear();
         this.settings.clear();
         this.localSource.password = this.settingsSource.password = this.cloudSource.password = "";
         this.$.startView.reset();
+        this.locked = true;
         this.$.startView.open = false;
-        this.$.main.classList.remove("active");
-        this._autoLockChanged();
         setTimeout(() => this.notifyPath("collection"), 500);
     }
 
