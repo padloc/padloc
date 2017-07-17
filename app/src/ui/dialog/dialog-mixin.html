@@ -7,6 +7,7 @@
 (() => {
 
 let alertDialog, confirmDialog, promptDialog;
+let lastDialogPromise = Promise.resolve();
 
 padlock.DialogMixin = (superClass) => {
 
@@ -17,7 +18,9 @@ padlock.DialogMixin = (superClass) => {
                 alertDialog = document.createElement("pl-dialog-alert");
                 document.body.appendChild(alertDialog);
             }
-            return alertDialog.alert(message, buttonLabel);
+            lastDialogPromise = lastDialogPromise
+                .then(() => alertDialog.alert(message, buttonLabel));
+            return lastDialogPromise;
         }
 
         confirm(message, confirmLabel, cancelLabel) {
@@ -25,7 +28,9 @@ padlock.DialogMixin = (superClass) => {
                 confirmDialog = document.createElement("pl-dialog-confirm");
                 document.body.appendChild(confirmDialog);
             }
-            return confirmDialog.confirm(message, confirmLabel, cancelLabel);
+            lastDialogPromise = lastDialogPromise
+                .then(() => confirmDialog.confirm(message, confirmLabel, cancelLabel));
+            return lastDialogPromise;
         }
 
         prompt(message, type, confirmLabel, cancelLabel) {
@@ -33,7 +38,9 @@ padlock.DialogMixin = (superClass) => {
                 promptDialog = document.createElement("pl-dialog-prompt");
                 document.body.appendChild(promptDialog);
             }
-            return promptDialog.prompt(message, type, confirmLabel, cancelLabel);
+            lastDialogPromise = lastDialogPromise
+                .then(() => promptDialog.prompt(message, type, confirmLabel, cancelLabel));
+            return lastDialogPromise;
         }
 
     };
