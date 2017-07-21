@@ -57,10 +57,6 @@
                 font-size: var(--font-size-tiny);
             }
 
-            .field-label:not(:empty)::after {
-                content: ":";
-            }
-
             .field-value {
                 flex: 1;
                 width: 0;
@@ -85,10 +81,6 @@
                 padding: 2px 4px;
             }
 
-            .category:empty {
-                display: none;
-            }
-
             .header .more-fields {
                 flex: 1;
                 font-size: 12px;
@@ -97,11 +89,7 @@
                 font-weight: normal;
             }
 
-            .header .more-fields:not(:empty) {
-                min-width: 50px;
-            }
-
-            .header .more-fields:not(:empty):after {
+            .header .more-fields::after {
                 font-family: "FontAwesome";
                 content: "\f054";
                 display: inline-block;
@@ -113,18 +101,18 @@
         <div class="body tiles">
             <div class="header">
                 <div class="name">[[ record.name ]]</div>
-                <div class="category ellipsis">[[ record.category ]]</div>
-                <div class="more-fields">[[ _moreFieldsLabel(record.fields.length) ]]</div>
+                <div class="category ellipsis" hidden$="[[ !_isSet(record.category) ]]">[[ record.category ]]</div>
+                <div class="more-fields" hidden$="[[ !_hasMoreFields(record.fields.length) ]]">[[ _moreFieldsLabel(record.fields.length) ]]</div>
             </div>
             <div class="field">
-                <div class="field-label">[[ record.fields.0.name ]]</div>
+                <div class="field-label">[[ _fieldLabel(record.fields.0.name) ]]</div>
                 <div class="field-value">[[ _obfuscate(record.fields.0.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField1"></pl-icon>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField1" hidden$="[[ !_isSet(record.fields.0.value) ]]"></pl-icon>
             </div>
             <div class="field">
-                <div class="field-label">[[ record.fields.1.name ]]</div>
+                <div class="field-label">[[ _fieldLabel(record.fields.1.name) ]]</div>
                 <div class="field-value">[[ _obfuscate(record.fields.1.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField2"></pl-icon>
+                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField2" hidden$="[[ !_isSet(record.fields.1.value) ]]"></pl-icon>
             </div>
         </div>
 
@@ -179,6 +167,18 @@ class RecordItem extends padlock.NotificationMixin(padlock.BaseElement) {
             return "";
         }
         return $l("{0} more {1}", n, n == 1 ? $l("field") : $l("fields"));
+    }
+
+    _fieldLabel(value) {
+        return value ? value + ":" : "";
+    }
+
+    _isSet(value) {
+        return !!value;
+    }
+
+    _hasMoreFields() {
+        return this.record.fields.length > 2;
     }
 
 }
