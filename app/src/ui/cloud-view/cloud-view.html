@@ -50,6 +50,17 @@
                 display: none;
             }
 
+            pl-icon[icon=refresh][spin] {
+                background: transparent;
+                pointer-events: none;
+                animation: spin 1s infinite;
+                transform-origin: center 49%;
+            }
+
+            pl-icon[spin]::after, pl-icon[spin]::before {
+                display: none;
+            }
+
             @media (min-width: 700px) {
                 pl-icon[icon=backward] {
                     display: none;
@@ -61,7 +72,7 @@
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
             <div class="title">Padlock Cloud</div>
-            <pl-icon icon="refresh" class="tap" on-click="synchronize"></pl-icon>
+            <pl-icon icon="refresh" class="tap" on-click="synchronize" spin$="[[ isSynching ]]"></pl-icon>
         </header>
 
         <main>
@@ -144,6 +155,11 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
         cloudSource: Object,
         collection: {
             type: Object,
+            notify: true
+        },
+        isSynching: {
+            type: Boolean,
+            value: false,
             notify: true
         },
         localSource: Object,
@@ -265,7 +281,9 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
     }
 
     _synchronize() {
+        this.isSynching = true;
         this.$.syncButton.start();
+
         return this.collection.fetch(this.cloudSource)
             .then(() => this.collection.save(this.localSource))
             .then(() => this.collection.save(this.cloudSource))
@@ -285,20 +303,25 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
                             return this.collection.save(this.cloudSource)
                                 .then(() => {
                                     this.$.syncButton.success();
+                                    this.isSynching = false;
                                     this.alert($l("Padlock Cloud master password updated successfully!"));
                                 })
                                 .catch(() => {
                                     this.$.syncButton.fail();
+                                    this.isSynching = false;
                                     this.alert($l("Failed to update Padlock Cloud " +
                                         "master password. Please try again later!"));
                                 });
                         }
                     });
                 }
+
+                this.isSynching = false;
             })
             .catch((e) => {
                 this.notifyPath("settings");
                 this.$.syncButton.fail();
+                this.isSynching = false;
                 this._handleCloudError(e);
             });
     }

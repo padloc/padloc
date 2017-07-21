@@ -6,10 +6,12 @@
         <style>
             :host {
                 user-select: none;
+                -webkit-user-select: none;
             }
 
             input, textarea {
                 user-select: auto;
+                -webkit-user-select: auto;
             }
 
             :host, html, button, input, textarea {
@@ -140,7 +142,7 @@
             header pl-icon {
                 height: var(--row-height);
                 width: var(--row-height);
-                font-size: 110%;
+                font-size: 120%;
             }
 
             main {
@@ -201,11 +203,15 @@
             }
 
             .tiles > :nth-child(8n + 8), .tiles-8 {
-                @apply --shade-1;
+                @apply --shade-2;
             }
 
             .ellipsis {
                 @apply --ellipsis;
+            }
+
+            @keyframes spin {
+                to { transform: rotate(360deg); }
             }
         </style>
     </template>

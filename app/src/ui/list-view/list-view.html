@@ -110,12 +110,30 @@
             pl-record-item[selected]::before {
                 transform: translate3d(100%, 0, 0);
             }
+
+            .cloud-icon-wrapper {
+                position: relative;
+            }
+
+            .syncing-icon {
+                position: absolute;
+                font-size: 55%;
+                top: 1px;
+                left: 0px;
+                color: var(--color-highlight);
+                text-shadow: none;
+                animation: spin 1s infinite;
+                transform-origin: center 49%;
+            }
         </style>
 
         <header>
             <pl-icon icon="logo" class="tiles-1 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="settings" class="tiles-2 tap" on-click="_openSettings" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="cloud" class="tiles-3 tap" on-click="_openCloudView" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <div class="cloud-icon-wrapper tiles-3 tap" on-click="_openCloudView" hidden$="{{ _filterActive(_filterString) }}">
+                <pl-icon icon="cloud"></pl-icon>
+                <pl-icon icon="refresh" class="syncing-icon" hidden$="[[ !isSynching ]]"></pl-icon>
+            </div>
             <div class="filter-input-wrapper tiles-4 tap">
                 <pl-icon icon="search" on-click="focusFilterInput"></pl-icon>
                 <pl-input id="filterInput" placeholder="" value="{{ _filterString }}" on-escape="_clearFilter"></pl-input>

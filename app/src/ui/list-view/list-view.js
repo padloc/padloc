@@ -29,6 +29,10 @@ class ListView extends padlock.LocaleMixin(padlock.BaseElement) {
         selectedRecord: {
             type: Object,
             notify: true
+        },
+        isSynching: {
+            type: Boolean,
+            value: false
         }
     }; }
 

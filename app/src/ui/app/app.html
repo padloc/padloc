@@ -98,7 +98,8 @@
                 on-record-new="_newRecord"
                 on-lock="lock"
                 on-open-settings="_openSettings"
-                on-open-cloud-view="_openCloudView"></pl-list-view>
+                on-open-cloud-view="_openCloudView"
+                is-synching="{{ _isSynching }}"></pl-list-view>
 
             <iron-pages id="pages" attr-for-selected="id">
 
@@ -126,7 +127,8 @@
                     cloud-source="[[ cloudSource ]]"
                     collection="{{ collection }}"
                     local-source="[[ localSource ]]"
-                    on-cloud-back="_cloudViewBack"></pl-cloud-view>
+                    on-cloud-back="_cloudViewBack"
+                    is-synching="{{ _isSynching }}"></pl-cloud-view>
 
             </iron-pages>
 
