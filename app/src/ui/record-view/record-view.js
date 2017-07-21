@@ -39,7 +39,8 @@ class RecordView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseEle
             this.push("record.fields", newField);
             this.$.newField.field = { name: "", value: "" };
         }
-        this._fireChangeEvent();
+
+        setTimeout(() => this._fireChangeEvent(), 500);
     }
 
     _deleteRecord() {
