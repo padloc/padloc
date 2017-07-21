@@ -17,7 +17,7 @@
     "autosize": "~3.0.13",
     "papaparse": "~4.1.2",
     "sjcl": "^1.0.6",
-    "iron-list": "^2.0.2",
+    "iron-list": "https://github.com/MaKleSoft/iron-list.git#custom-fixes",
     "iron-pages": "^2.0.0",
     "paper-spinner": "^2.0.0"
   }
