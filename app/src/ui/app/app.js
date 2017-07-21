@@ -119,6 +119,9 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         this.notifyPath("collection");
         this.locked = false;
         this.$.startView.open = true;
+        if (this.settings.syncAuto && this.settings.syncConnected) {
+            this._debouncedSynchronize();
+        }
     }
 
     _getStarted() {
