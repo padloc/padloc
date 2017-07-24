@@ -28,10 +28,10 @@
             pl-slider {
                 padding: 0;
                 margin-top: 5px;
-                display: inline-block;
                 width: 100%;
                 box-sizing: border-box;
                 max-width: 280px;
+                float: right;
                 --slider-track-size: 3px;
                 --slider-knob-size: 25px;
             }
@@ -82,7 +82,7 @@
                 <pl-toggle-button label="?()/%..." active="{{ other }}"></pl-toggle-button>
             </div>
             <div>
-                <pl-slider min="5" max="50" value="{{ length }}" hide-value></pl-slider>
+                <pl-slider min="5" max="50" value="{{ length }}"></pl-slider>
             </div>
         </div>
         <div class="confirm tiles">
