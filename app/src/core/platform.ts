@@ -216,3 +216,11 @@ export function getPlatformName(): string {
         return "";
     }
 }
+
+export function checkForUpdates(): void {
+    if (isElectron()) {
+        electron.ipcRenderer.send("check-updates");
+    } else {
+        window.open(getAppStoreLink(), "_system");
+    }
+}

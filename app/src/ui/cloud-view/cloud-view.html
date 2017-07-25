@@ -345,10 +345,10 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
                     "button below. Please note that you won't be able to use Padlock Cloud until " +
                     "you install the latest version!"),
                     $l("Update Now"),
-                    $l("Dismiss")
+                    $l("Cancel")
                 ).then((confirm) => {
                     if (confirm) {
-                        window.open(padlock.platform.getAppStoreLink(), "_system");
+                        padlock.platform.checkForUpdates();
                     }
                 });
                 break;
@@ -383,6 +383,18 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
 
                         this.cloudSource.password = pwd;
                         this.synchronize();
+                    });
+                break;
+            case "unsupported_container_version":
+                this.confirm($l(
+                    "It seems the data stored on Padlock Cloud was saved with a newer version of Padlock " +
+                    "and can not be opened with the version you are currently running. Please install the " +
+                    "latest version of Padlock on this device!"
+                ), $l("Check For Updates"), $l("Cancel")).
+                    then((confirmed) => {
+                        if (confirmed) {
+                            padlock.platform.checkForUpdates();
+                        }
                     });
                 break;
             case "subscription_required":

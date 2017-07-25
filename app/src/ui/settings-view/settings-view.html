@@ -315,6 +315,18 @@ class SettingsView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseE
                         case "decryption_failed":
                             this.alert($l("Failed to open file. Did you enter the correct password?"));
                             break;
+                        case "unsupported_container_version":
+                            this.confirm($l(
+                                "It seems the data you are trying to import was exported from a " +
+                                "newer version of Padlock and can not be opened with the version you are " +
+                                "currently running."
+                            ), $l("Check For Updates"), $l("Cancel"))
+                                .then((confirmed) => {
+                                    if (confirmed) {
+                                        padlock.platform.checkForUpdates();
+                                    }
+                                });
+                            break;
                         case "invalid_csv":
                             this.alert($l("Failed to recognize file format."));
                             break;

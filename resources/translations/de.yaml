@@ -146,8 +146,6 @@
     Sie diese um Padlock Cloud weiterhin nutzen zu können!
 - o: Update Now
   t: Jetzt Updaten
-- o: Dismiss
-  t: Abbrechen
 - o: It seems Padlock Cloud is over capacity right now. Please try again later!
   t: >-
     Es scheint dass die Padlock Cloud server gerade nicht erreichbar sind.
@@ -172,6 +170,17 @@
 - o: Submit
   t: Senden
 - o: >-
+    It seems the data stored on Padlock Cloud was saved with a newer version of
+    Padlock and can not be opened with the version you are currently running.
+    Please install the latest version of Padlock on this device!
+  t: >-
+    Die auf Padlock Cloud liegeneden daten scheinen mit einer neueren Version
+    von Padlock gespeichert worden zu sein und können deshalb nicht geöffnet
+    werden. Bitte installieren Sie die neueste Version von Padlock auf diesem
+    Gerät!
+- o: Check For Updates
+  t: Auf Updates Prüfen
+- o: >-
     You currently don't have an active subscription which means you can access
     your existing data on Padlock Cloud but you won't be able to upload any new
     data or synchronize changes between devices. Get a subscription now to
@@ -186,6 +195,8 @@
   t: Sie haben dieses Gerät erfolgreiche mit Padlock Cloud verbunden!
 - o: Synchonize Now
   t: Jetzt Synchronisieren
+- o: Dismiss
+  t: Abbrechen
 - o: >-
     Are you sure you want to use a custom server for synchronization? This
     option is only recommended for advanced users!
@@ -348,6 +359,12 @@
   t: >-
     Datei konnte nicht geöffnet werden. Haben Sie das richtige Passwort
     eingegeben?
+- o: >-
+    It seems the data you are trying to import was exported from a newer version
+    of Padlock and can not be opened with the version you are currently running.
+  t: >-
+    Die zu importierenden Daten wurden scheinbar mit einer neueren Version von
+    Padlock Cloud exporortiert und können deshalb nicht geöffnet werden.
 - o: Failed to recognize file format.
   t: Dateiformat konnte nicht erkannt werden.
 - o: Failed to open file.
@@ -394,16 +411,34 @@
   t: >-
     Sie haben das password nicht korrekt wiederholt. Versuchen Sie es noch
     einmal!
+- o: Type 'RESET' to confirm
+  t: '"RESET" zum Bestätigen Eingeben'
+- o: You didn't type 'RESET'. Refusing to reset the app.
+  t: Sie haben nicht "RESET" eingegeben. Die App wird nicht zurückgesetzt.
 - o: >-
     Forgot your master password? You can start over by resetting the app.
     WARNING: This will delete all your data!
   t: >-
     Haben Sie Ihr Master Passwort vergessen? Sie können die App zurücksetzen um
     von vorne zu beginnen. WARNUNG: Dadurch werden all Ihre Daten gelöscht!
-- o: Type 'RESET' to confirm
-  t: '"RESET" zum Bestätigen Eingeben'
-- o: You didn't type 'RESET'. Refusing to reset the app.
-  t: Sie haben nicht "RESET" eingegeben. Die App wird nicht zurückgesetzt.
+- o: >-
+    It seems the data stored on this device was saved with a newer version of
+    Padlock and can not be opened with the version you are currently running.
+    Please install the latest version of Padlock or reset the data to start
+    over!
+  t: >-
+    Die auf diesem Gerät gespeicherten Daten scheinen von einer neueren Version
+    von Padlock zu stammen und können deshalb nicht geöffnet werden. Bitte
+    installieren Sie die neueste Version von Padlock oder setzen Sie die Daten
+    zurück um von vorne zu beginnen.
+- o: Reset Data
+  t: Daten Zurücksetzen
+- o: >-
+    Are you sure you want to reset the app? WARNING: This will delete all your
+    data!
+  t: >-
+    Sind Sie sicher, dass Sie die App zurücksetzen wollen? Dabei werden all Ihre
+    Daten gelöscht!
 - o: >-
     Padlock uses your email address to connect to the Padlock Cloud service,
     which allows you to easily and securely store your data online and

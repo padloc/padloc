@@ -311,6 +311,20 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
         });
     }
 
+    _promptResetData(message) {
+        this.prompt(message, $l("Type 'RESET' to confirm"), "text", $l("Reset App"))
+            .then((value) => {
+                if (value == null) {
+                    return;
+                }
+                if (value.toUpperCase() === "RESET") {
+                    this.dispatchEvent(new CustomEvent("reset-data"));
+                } else {
+                    this.alert($l("You didn't type 'RESET'. Refusing to reset the app."));
+                }
+            });
+    }
+
     _unlock() {
         this.localSource.password = this.settingsSource.password = this.$.passwordInput.value;
         this.$.passwordInput.blur();
@@ -327,33 +341,42 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
                 this.dispatchEvent(new CustomEvent("unlock"));
             })
             .catch((e) => {
-                if (e.code === "decryption_failed") {
-                    this.$.enterButton.fail();
-                    this.$.logo.classList.remove("rumble");
-                    this.offsetLeft;
-                    this.$.logo.classList.add("rumble");
-                    this._failCount++;
-                    if (this._failCount > 2) {
-                        this.prompt($l(
-                            "Forgot your master password? You can start over by resetting the app. " +
-                            "WARNING: This will delete all your data!"
-                        ),
-                        $l("Type 'RESET' to confirm"), "text", $l("Reset App")
-                        ).then((value) => {
-                            if (value == null) {
-                                return;
-                            }
-                            if (value.toUpperCase() === "RESET") {
-                                this.dispatchEvent(new CustomEvent("reset-data"));
-                            } else {
-                                this.alert($l("You didn't type 'RESET'. Refusing to reset the app."));
-                            }
-                        });
-                    } else {
-                        this.$.passwordInput.focus();
-                    }
-                } else {
-                    throw e;
+                switch (e.code) {
+                    case "decryption_failed":
+                        this.$.enterButton.fail();
+                        this.$.logo.classList.remove("rumble");
+                        this.offsetLeft;
+                        this.$.logo.classList.add("rumble");
+                        this._failCount++;
+                        if (this._failCount > 2) {
+                            this._promptResetData($l(
+                                "Forgot your master password? You can start over by resetting the app. " +
+                                "WARNING: This will delete all your data!"
+                            ));
+                        } else {
+                            this.$.passwordInput.focus();
+                        }
+                        break;
+                    case "unsupported_container_version":
+                        this.$.enterButton.fail();
+                        this.confirm($l(
+                            "It seems the data stored on this device was saved with a newer version " +
+                            "of Padlock and can not be opened with the version you are currently running. " +
+                            "Please install the latest version of Padlock or reset the data to start over!"
+                        ), $l("Check For Updates"), $l("Reset Data"))
+                            .then((confirmed) => {
+                                if (confirmed) {
+                                    padlock.platform.checkForUpdates();
+                                } else {
+                                    this._promptResetData($l(
+                                        "Are you sure you want to reset the app? " +
+                                        "WARNING: This will delete all your data!"
+                                    ));
+                                }
+                            });
+                        break;
+                    default:
+                        throw e;
                 }
             });
     }

@@ -4,6 +4,7 @@ export class CryptoError {
     constructor(
         public code:
             "invalid_container_data" |
+            "unsupported_container_version" |
             "invalid_key_params" |
             "decryption_failed" |
             "encryption_failed"
@@ -186,15 +187,21 @@ export class Container implements KeyParams, CipherParams {
             throw new CryptoError("invalid_container_data");
         }
 
-        if (raw.version === undefined) {
-            // Legacy versions of Padlock had a bug where the base64-encoded
-            // `adata` value was not converted to a BitArray before being
-            // passed to `sjcl.mode.ccm.encrypt/decrypt` and the raw string was
-            // passed instead. This went unnoticed as the functions in question
-            // quietly accepted the string and simply treated it as an array.
-            // So in order to successfully decrypt legacy containers we have to
-            // perfom this conversion first.
-            raw.adata = bitsToBase64(raw.adata as any as sjcl.BitArray);
+        switch(raw.version) {
+            case undefined: 
+                // Legacy versions of Padlock had a bug where the base64-encoded
+                // `adata` value was not converted to a BitArray before being
+                // passed to `sjcl.mode.ccm.encrypt/decrypt` and the raw string was
+                // passed instead. This went unnoticed as the functions in question
+                // quietly accepted the string and simply treated it as an array.
+                // So in order to successfully decrypt legacy containers we have to
+                // perfom this conversion first.
+                raw.adata = bitsToBase64(raw.adata as any as sjcl.BitArray);
+                break;
+            case 1:
+                break;
+            default:
+                throw new CryptoError("unsupported_container_version");
         }
 
         let cont = new Container(raw.cipher, raw.mode, raw.keySize, raw.iter, raw.ts);
@@ -218,7 +225,7 @@ export class Container implements KeyParams, CipherParams {
 
     static validateRaw(obj: RawContainer) {
         return typeof obj == "object" &&
-            [undefined, 1].includes(obj.version) && // has a valid version
+            (obj.version === undefined || typeof obj.version === "number") && // has a valid version
             ["aes"].includes(obj.cipher) && // valid cipher
             ["ccm", "ocb2"].includes(obj.mode) && // exiting mode
             [128, 192, 256].includes(obj.keySize) &&

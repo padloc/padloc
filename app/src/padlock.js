@@ -158,15 +158,21 @@ class Container {
         if (!Container.validateRaw(raw)) {
             throw new CryptoError("invalid_container_data");
         }
-        if (raw.version === undefined) {
-            // Legacy versions of Padlock had a bug where the base64-encoded
-            // `adata` value was not converted to a BitArray before being
-            // passed to `sjcl.mode.ccm.encrypt/decrypt` and the raw string was
-            // passed instead. This went unnoticed as the functions in question
-            // quietly accepted the string and simply treated it as an array.
-            // So in order to successfully decrypt legacy containers we have to
-            // perfom this conversion first.
-            raw.adata = bitsToBase64(raw.adata);
+        switch (raw.version) {
+            case undefined:
+                // Legacy versions of Padlock had a bug where the base64-encoded
+                // `adata` value was not converted to a BitArray before being
+                // passed to `sjcl.mode.ccm.encrypt/decrypt` and the raw string was
+                // passed instead. This went unnoticed as the functions in question
+                // quietly accepted the string and simply treated it as an array.
+                // So in order to successfully decrypt legacy containers we have to
+                // perfom this conversion first.
+                raw.adata = bitsToBase64(raw.adata);
+                break;
+            case 1:
+                break;
+            default:
+                throw new CryptoError("unsupported_container_version");
         }
         let cont = new Container(raw.cipher, raw.mode, raw.keySize, raw.iter, raw.ts);
         Object.assign(cont, { salt: raw.salt, iv: raw.iv, adata: raw.adata, ct: raw.ct });
@@ -186,7 +192,7 @@ class Container {
     }
     static validateRaw(obj) {
         return typeof obj == "object" &&
-            [undefined, 1].includes(obj.version) &&
+            (obj.version === undefined || typeof obj.version === "number") &&
             ["aes"].includes(obj.cipher) &&
             ["ccm", "ocb2"].includes(obj.mode) &&
             [128, 192, 256].includes(obj.keySize) &&
@@ -1015,6 +1021,15 @@ function getPlatformName() {
     }
 }
 exports.getPlatformName = getPlatformName;
+function checkForUpdates() {
+    if (isElectron()) {
+        electron.ipcRenderer.send("check-updates");
+    }
+    else {
+        window.open(getAppStoreLink(), "_system");
+    }
+}
+exports.checkForUpdates = checkForUpdates;
 
 },{}],9:[function(require,module,exports){
 "use strict";

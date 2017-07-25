@@ -1,6 +1,6 @@
 "use strict";
 
-const { app, shell, BrowserWindow, Menu, dialog } = require("electron");
+const { app, shell, BrowserWindow, Menu, dialog, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const url = require("url");
@@ -238,3 +238,5 @@ app.on("before-quit", (e) => {
         autoUpdater.quitAndInstall();
     }
 });
+
+ipcMain.on("check-updates", () => checkForUpdates(true));
