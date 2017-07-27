@@ -44,3 +44,7 @@ export function debounce(fn: (...args: any[]) => any, delay: number) {
         timeout = window.setTimeout(() => fn(args), delay);
     };
 }
+
+export function wait(dt: number): Promise<void> {
+    return new Promise<void>((resolve) => setTimeout(resolve, dt));
+}
