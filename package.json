@@ -37,7 +37,7 @@
     "mocha": "^3.4.2",
     "papaparse": "^4.1.2",
     "polymer-analyzer": "^2.2.0",
-    "polymer-bundler": "^2.0.0-pre.6",
+    "polymer-bundler": "^2.3.1",
     "rimraf": "^2.5.4",
     "sjcl": "^1.0.6",
     "st": "^1.2.0",
