@@ -6,6 +6,8 @@
 <script>
 (() => {
 
+const { wait } = padlock.util;
+
 let alertDialog, confirmDialog, promptDialog;
 let lastDialogPromise = Promise.resolve();
 
@@ -19,7 +21,8 @@ padlock.DialogMixin = (superClass) => {
                 document.body.appendChild(alertDialog);
             }
             lastDialogPromise = lastDialogPromise
-                .then(() => alertDialog.alert(message, buttonLabel));
+                .then(() => alertDialog.alert(message, buttonLabel))
+                .then(() => wait(500));
             return lastDialogPromise;
         }
 
@@ -29,7 +32,8 @@ padlock.DialogMixin = (superClass) => {
                 document.body.appendChild(confirmDialog);
             }
             lastDialogPromise = lastDialogPromise
-                .then(() => confirmDialog.confirm(message, confirmLabel, cancelLabel));
+                .then(() => confirmDialog.confirm(message, confirmLabel, cancelLabel))
+                .then(() => wait(500));
             return lastDialogPromise;
         }
 
@@ -39,7 +43,8 @@ padlock.DialogMixin = (superClass) => {
                 document.body.appendChild(promptDialog);
             }
             lastDialogPromise = lastDialogPromise
-                .then(() => promptDialog.prompt(message, type, confirmLabel, cancelLabel));
+                .then(() => promptDialog.prompt(message, type, confirmLabel, cancelLabel))
+                .then(() => wait(500));
             return lastDialogPromise;
         }
 
