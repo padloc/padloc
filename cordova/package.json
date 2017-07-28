@@ -8,8 +8,6 @@
             "ios"
         ],
         "plugins": {
-            "com.verso.cordova.clipboard": {},
-            "com.wongatech.cordova-disable-nsurl-cache": {},
             "cordova-plugin-app-version": {},
             "cordova-plugin-backbutton": {},
             "cordova-plugin-customurlscheme": {
@@ -31,13 +29,13 @@
             "cordova-plugin-file": {},
             "cordova-plugin-wkwebview-engine": {},
             "cordova-plugin-splashscreen": {},
-            "cordova-plugin-migrate-localstorage": {}
+            "cordova-plugin-migrate-localstorage": {},
+            "cordova-clipboard": {}
         }
     },
     "dependencies": {
-        "com.verso.cordova.clipboard": "https://github.com/VersoSolutions/CordovaClipboard.git",
-        "com.wongatech.cordova-disable-nsurl-cache": "https://github.com/MaKleSoft/cordova-disable-nsurl-cache.git",
         "cordova-android": "^6.2.3",
+        "cordova-clipboard": "^1.0.0",
         "cordova-custom-config": "^3.3.0",
         "cordova-ios": "^4.4.0",
         "cordova-plugin-app-version": "~0.1.9",

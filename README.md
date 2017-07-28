@@ -99,10 +99,13 @@ This will generate a set of distrution-ready files under the `dist` directory.
 Apache Cordova is used to distribute Padlock on iOS and Android. The `cordova` subdirectory contains a
 Cordova project with all appropriate configuration files and resources. The Cordova cli can be used to
 build and run the app on iOS and Android devices or emulators. All Cordova commands need to be run from
-the `cordova` subdirectory. E.g.:
+the `cordova` subdirectory. Before running any commands like `cordova build`, make sure to run
+`cordova prepare` once (after the first time you can omit it). For example, to run the app on an iOS device
+or emulator:
 
 ```sh
 cd cordova
+cordova prepare
 cordova run ios
 ```
 
