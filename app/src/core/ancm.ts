@@ -1,5 +1,7 @@
 import { request } from "./ajax";
 import { Source } from "./source";
+import { resolveLanguage } from "./util";
+import { getLocale } from "./platform";
 
 export interface Announcement {
     id: string
@@ -8,7 +10,6 @@ export interface Announcement {
     link: string
     text: string
 }
-
 
 export class Announcements {
 
@@ -30,10 +31,18 @@ export class Announcements {
 
         return aa
             .map((a: any) => {
+                let text;
+                if (typeof a.text === "string") {
+                    text = a.text;
+                } else {
+                    const lang = resolveLanguage(getLocale(), a.text);
+                    text = a.text[lang];
+                }
+
                 return {
                     id: a.id,
                     link: a.link,
-                    text: a.text,
+                    text: text,
                     from: a.from ? new Date(a.from) : new Date(0),
                     until: a.until ? new Date(a.until) : new Date(1e13)
                 };

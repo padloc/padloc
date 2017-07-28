@@ -98,6 +98,10 @@
   t: Sind Sie sicher dass Sie dies tun möchten?
 - o: Confirm
   t: Bestätigen
+- o: Learn More
+  t: Mehr Erfahren
+- o: Dismiss
+  t: OK
 - o: >-
     You have to be connected to a Padlock Cloud account to synchronize your
     data!
@@ -195,8 +199,6 @@
   t: Sie haben dieses Gerät erfolgreiche mit Padlock Cloud verbunden!
 - o: Synchonize Now
   t: Jetzt Synchronisieren
-- o: Dismiss
-  t: Abbrechen
 - o: >-
     Are you sure you want to use a custom server for synchronization? This
     option is only recommended for advanced users!

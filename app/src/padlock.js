@@ -61,6 +61,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 const ajax_1 = require("./ajax");
+const util_1 = require("./util");
+const platform_1 = require("./platform");
 class Announcements {
     constructor(url, source) {
         this.url = url;
@@ -84,10 +86,18 @@ class Announcements {
             const read = yield this.fetchRead();
             return aa
                 .map((a) => {
+                let text;
+                if (typeof a.text === "string") {
+                    text = a.text;
+                }
+                else {
+                    const lang = util_1.resolveLanguage(platform_1.getLocale(), a.text);
+                    text = a.text[lang];
+                }
                 return {
                     id: a.id,
                     link: a.link,
-                    text: a.text,
+                    text: text,
                     from: a.from ? new Date(a.from) : new Date(0),
                     until: a.until ? new Date(a.until) : new Date(1e13)
                 };
@@ -111,7 +121,7 @@ class Announcements {
 }
 exports.Announcements = Announcements;
 
-},{"./ajax":1}],3:[function(require,module,exports){
+},{"./ajax":1,"./platform":9,"./util":11}],3:[function(require,module,exports){
 "use strict";
 const sjcl = require("sjcl");
 class CryptoError {
@@ -1093,6 +1103,12 @@ function checkForUpdates() {
     }
 }
 exports.checkForUpdates = checkForUpdates;
+function getLocale() {
+    // TODO: Is there a more reliable way to get the system locale,
+    // e.g. through `electron.remote.app.getLocale()`?
+    return navigator.language || "en";
+}
+exports.getLocale = getLocale;
 
 },{}],10:[function(require,module,exports){
 "use strict";
@@ -1382,6 +1398,18 @@ function wait(dt) {
     return new Promise((resolve) => setTimeout(resolve, dt));
 }
 exports.wait = wait;
+function resolveLanguage(locale, supportedLanguages) {
+    const localeParts = locale.toLowerCase().split("-");
+    while (localeParts.length) {
+        const l = localeParts.join("-");
+        if (supportedLanguages[l]) {
+            return l;
+        }
+        localeParts.pop();
+    }
+    return Object.keys(supportedLanguages)[0];
+}
+exports.resolveLanguage = resolveLanguage;
 
 },{}],12:[function(require,module,exports){
 var asn1 = exports;
