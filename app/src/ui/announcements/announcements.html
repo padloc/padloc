@@ -1,5 +1,4 @@
 <link rel="import" href="../base/base.html">
-<link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../locale/locale.html">
 
 <script>
@@ -8,43 +7,43 @@
 const { Announcements } = padlock.ancm;
 const { FileSource } = padlock.source;
 
-class PlAnnouncements extends padlock.DialogMixin(padlock.BaseElement) {
+padlock.AnnouncementsMixin = (superClass) => {
 
-    static get is() { return "pl-announcements"; }
+    return class AnnouncementsMixin extends superClass {
 
-    constructor() {
-        super();
-        this._announcements = new Announcements(
-            "https://padlock.io/announcements.json",
-            new FileSource("read_announcements.json")
-        );
-    }
-
-    ready() {
-        super.ready();
-        padlock.util.wait(1000)
-            .then(() => this._announcements.fetch())
-            .then((aa) => aa.forEach((a) => this._displayAnnouncement(a)));
-    }
-
-    _displayAnnouncement(a) {
-        if (a.link) {
-            this.confirm(a.text, $l("Learn More"), $l("Dismiss"))
-                .then((confirmed) => {
-                    if (confirmed) {
-                        window.open(a.link, "_system");
-                    }
-                    this._announcements.markRead(a);
-                });
-        } else {
-            this.alert(a.text)
-                .then(() => this._announcements.markRead(a));
+        ready() {
+            super.ready();
+            this._announcements = new Announcements(
+                "ancm.json",
+                new FileSource("read_announcements.json"),
+                this.settings
+            );
         }
-    }
 
-}
+        checkAnnouncements() {
+            padlock.util.wait(1000)
+                .then(() => this._announcements.fetch())
+                .then((aa) => aa.forEach((a) => this._displayAnnouncement(a)));
+        }
 
-window.customElements.define(PlAnnouncements.is, PlAnnouncements);
+        _displayAnnouncement(a) {
+            if (a.link) {
+                this.confirm(a.text, $l("Learn More"), $l("Dismiss"))
+                    .then((confirmed) => {
+                        if (confirmed) {
+                            window.open(a.link, "_system");
+                        }
+                        this._announcements.markRead(a);
+                    });
+            } else {
+                this.alert(a.text)
+                    .then(() => this._announcements.markRead(a));
+            }
+        }
+
+    };
+
+};
 
 })();
 </script>

@@ -1,7 +1,9 @@
 import { request } from "./ajax";
 import { Source } from "./source";
 import { resolveLanguage } from "./util";
-import { getLocale } from "./platform";
+import { getLocale, getPlatformName } from "./platform";
+import { Settings } from "./data";
+import { satisfies } from "semver";
 
 export interface Announcement {
     id: string
@@ -9,11 +11,14 @@ export interface Announcement {
     until: Date
     link: string
     text: string
+    platform?: string[]
+    subStatus?: string[]
+    version?: string
 }
 
 export class Announcements {
 
-    constructor(public url: string, public source: Source) {}
+    constructor(public url: string, public source: Source, public settings: Settings) {}
 
     private async fetchRead(): Promise<any> {
         const data = await this.source.get();
@@ -44,10 +49,21 @@ export class Announcements {
                     link: a.link,
                     text: text,
                     from: a.from ? new Date(a.from) : new Date(0),
-                    until: a.until ? new Date(a.until) : new Date(1e13)
+                    until: a.until ? new Date(a.until) : new Date(1e13),
+                    platform: a.platform,
+                    subStatus: a.subStatus,
+                    version: a.version
                 };
             })
-            .filter((a: Announcement) => !read[a.id] && a.from <= now && a.until >= now);
+            .filter((a: Announcement) => {
+                return (
+                    !read[a.id] && a.from <= now &&
+                    a.until >= now &&
+                    (!a.platform || a.platform.includes(getPlatformName())) &&
+                    (!a.subStatus || a.subStatus.includes(this.settings.syncSubStatus)) &&
+                    (!a.version || satisfies(this.settings.version, a.version))
+                );
+            });
     }
 
     async fetch(): Promise<Announcement[]> {
