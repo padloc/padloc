@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
@@ -104,7 +105,7 @@
                 <pl-icon id="dropDownButton" icon="dropdown" class="tap" on-click="_showCategoryList"></pl-icon>
                 <div id="categoryList" class="tiles">
                     <div></div>
-                    <template is="dom-repeat" items="{{ categories }}" filter="{{ _categoryFilter(record.category) }}">
+                    <template is="dom-repeat" items="{{ collection.categories }}" filter="{{ _categoryFilter(record.category) }}">
                         <div class="category-option tap" on-click="_selectCategory" on-mousedown="_catOptMousedown">{{ item }}</div>
                     </template>
                 </div>

@@ -1,6 +1,7 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
+<link rel="import" href="../data/data.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../loading-button/loading-button.html">
 <link rel="import" href="../locale/locale.html">
@@ -172,23 +173,18 @@
 /* global zxcvbn */
 (() => {
 
-class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElement)) {
+const { DataMixin, LocaleMixin, DialogMixin, BaseElement } = padlock;
+
+class StartView extends LocaleMixin(DialogMixin(DataMixin(BaseElement))) {
 
     static get is() { return "pl-start-view"; }
 
     static get properties() { return {
-        collection: Object,
-        localSource: Object,
         open: {
             type: Boolean,
             value: true,
             reflectToAttribute: true
         },
-        settings: {
-            type: Object,
-            notify: true
-        },
-        settingsSource: Object,
         _hasData: {
             type: Boolean
         },
@@ -205,7 +201,7 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
 
     ready() {
         super.ready();
-        this._transferLegacyData()
+        this.dataReady()
             .then(() => this.reset())
             .then(() => this.open = false)
             .then(() => setTimeout(() => this.classList.add("ready"), 500));
@@ -222,28 +218,8 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
         return this._checkHasData();
     }
 
-    _transferLegacyData() {
-        // transfer legacy data from LocalStorageSource to FileSource
-        function transfer(lsName, fileName) {
-            const lsSource = new padlock.source.LocalStorageSource(lsName);
-            return lsSource.get().then((data) => {
-                if (data) {
-                    return Promise.all([
-                        new padlock.source.FileSource(fileName).set(data),
-                        lsSource.clear()
-                    ]);
-                }
-            });
-        }
-
-        return Promise.all([
-            transfer("coll_default", "data.pls"),
-            transfer("settings_encrypted", "settings.pls")
-        ]);
-    }
-
     _checkHasData() {
-        return this.localSource.hasData()
+        return this.hasData()
             .then((has) => this._hasData = has);
     }
 
@@ -297,18 +273,12 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _initializeData() {
-        this.settings.syncEmail = this.$.emailInput.value;
-        this.localSource.password = this.settingsSource.password = this.$.newPasswordInput.value;
         this.$.getStartedButton.start();
-        Promise.all([
-            this.collection.save(this.localSource),
-            this.settings.save(this.settingsSource)
-        ]).then(() => {
-            this.notifyPath("settings");
-            this.$.getStartedButton.success();
-            this.$.newPasswordInput.blur();
-            this.dispatchEvent(new CustomEvent("get-started"));
-        });
+        this.initData(this.$.newPasswordInput.value, this.$.emailInput.value)
+            .then(() => {
+                this.$.getStartedButton.success();
+                this.$.newPasswordInput.blur();
+            });
     }
 
     _promptResetData(message) {
@@ -318,7 +288,7 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
                     return;
                 }
                 if (value.toUpperCase() === "RESET") {
-                    this.dispatchEvent(new CustomEvent("reset-data"));
+                    this.resetData();
                 } else {
                     this.alert($l("You didn't type 'RESET'. Refusing to reset the app."));
                 }
@@ -326,20 +296,12 @@ class StartView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElem
     }
 
     _unlock() {
-        this.localSource.password = this.settingsSource.password = this.$.passwordInput.value;
+        const password = this.$.passwordInput.value;
         this.$.passwordInput.blur();
-
         this.$.enterButton.start();
-        this.collection.fetch(this.localSource)
-            .then(() => {
-                return this.settings.fetch(this.settingsSource)
-                    .catch(() => this.settings.save(this.settingsSource));
-            })
-            .then(() => {
-                this.$.enterButton.success();
-                this.notifyPath("settings");
-                this.dispatchEvent(new CustomEvent("unlock"));
-            })
+
+        this.loadData(password)
+            .then(() => this.$.enterButton.success())
             .catch((e) => {
                 switch (e.code) {
                     case "decryption_failed":

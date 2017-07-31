@@ -138,7 +138,7 @@
                 <pl-icon icon="search" on-click="focusFilterInput"></pl-icon>
                 <pl-input id="filterInput" placeholder="" value="{{ _filterString }}" on-escape="_clearFilter"></pl-input>
             </div>
-            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="add" arrow$="[[ _isEmpty(collection.records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
 
@@ -146,8 +146,8 @@
 
             <iron-list id="list"
                 mutable-data
-                hidden$="[[ _isEmpty(records.length) ]]"
-                items="[[ _filterAndSort(records, _filterString) ]]"
+                hidden$="[[ _isEmpty(collection.records.length) ]]"
+                items="[[ _filterAndSort(collection.records, _filterString) ]]"
                 selection-enabled
                 selected-item="{{ selectedRecord }}">
                 <template>
@@ -157,7 +157,7 @@
                 </template>
             </iron-list>
 
-            <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty tiles">
+            <div hidden$="[[ !_isEmpty(collection.records.length) ]]" class="empty tiles">
                 <div class="empty-message">
                     [[ $l("You don't have any data yet! Start by creating your first record!") ]]
                 </div>

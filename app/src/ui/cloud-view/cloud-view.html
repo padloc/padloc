@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
@@ -116,10 +117,12 @@
                     [[ _connectedInfoText(settings.syncEmail) ]]
                     <div class="conn-id">[[ $l("Connection ID: {0}", settings.syncId) ]]</div>
                 </div>
-                <pl-loading-button id="syncButton" class="tap" on-click="synchronize" label="[[ $l('Synchronize') ]]"></pl-loading-button>
+                <pl-loading-button id="syncButton" class="tap" on-click="synchronize"
+                    label="[[ $l('Synchronize') ]]"></pl-loading-button>
                 <button class="tap" on-click="_openDashboard">[[ $l("Manage Account") ]]</button>
                 <button class="tap" on-click="_disconnect">[[ $l("Disconnect") ]]</button>
-                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Auto Sync') ]]" reverse class="tap"></pl-toggle-button>
+                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Auto Sync') ]]"
+                    reverse class="tap" on-change="settingChanged"></pl-toggle-button>
             </section>
 
             <section class="tiles tiles-2">
@@ -128,11 +131,11 @@
                     <strong>[[ $l("WARNING: This is only recommended for advanced users!") ]]</strong>
                 </div>
                 <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
-                    on-change="_customHostChanged" class="tap"></pl-toggle-button>
+                    on-change="_customHostChanged" class="tap" on-change="settingChanged"></pl-toggle-button>
                 <div class="tap tiles" hidden$="[[ !settings.syncCustomHost ]]">
                     <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
                         value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
-                        required></pl-input>
+                        required on-change="settingChanged"></pl-input>
                     <div class="note warning">
                         <strong>[[ $l("Invalid URL") ]]</strong> -
                         [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
@@ -147,24 +150,16 @@
     <script>
 (() => {
 
-class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.NotificationMixin(padlock.BaseElement))) {
+const { LocaleMixin, DialogMixin, NotificationMixin, DataMixin, BaseElement } = padlock;
+
+class CloudView extends LocaleMixin(DialogMixin(NotificationMixin(DataMixin(BaseElement)))) {
 
     static get is() { return "pl-cloud-view"; }
 
     static get properties() { return {
-        cloudSource: Object,
-        collection: {
-            type: Object,
-            notify: true
-        },
         isSynching: {
             type: Boolean,
             value: false,
-            notify: true
-        },
-        localSource: Object,
-        settings: {
-            type: Object,
             notify: true
         },
         _remainingTrialDays: {
@@ -219,7 +214,7 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
                 this.settings.syncToken = "";
                 this.settings.syncEmail = "";
                 this.settings.syncReadonly = false;
-                this.notifyPath("settings");
+                this.dispatch("settings-changed");
             }
         });
     }
@@ -237,7 +232,7 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
         this.$.connectButton.start();
         this.settings.email = email;
         this.settings.syncToken = "";
-        this.notifyPath("settings");
+        this.dispatch("settings-changed");
 
         this.cloudSource.source.requestAuthToken(email, create)
             .then((authToken) => {
@@ -246,7 +241,7 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
                 this.settings.syncConnected = false;
                 this.settings.syncToken = authToken.token;
                 this.settings.syncId = authToken.id;
-                this.notifyPath("settings");
+                this.dispatch("settings-changed");
                 this.$.connectButton.success();
                 this.alert(this._activationPendingText());
             })
@@ -264,7 +259,7 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
                         this.$.connectButton.fail();
                         this.alert($l("Something went wrong. Please try again later!"));
                 }
-                this.notifyPath("settings");
+                this.dispatch("settings-changed");
             });
     }
 
@@ -288,8 +283,8 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
             .then(() => this.collection.save(this.localSource))
             .then(() => this.collection.save(this.cloudSource))
             .then(() => {
-                this.notifyPath("collection");
-                this.notifyPath("settings");
+                this.dispatch("data-synchronized");
+                this.dispatch("settings-changed");
                 this.$.syncButton.success();
 
                 if (this.localSource.password !== this.cloudSource.password) {
@@ -319,7 +314,7 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
                 this.isSynching = false;
             })
             .catch((e) => {
-                this.notifyPath("settings");
+                this.dispatch("settings-changed");
                 this.$.syncButton.fail();
                 this.isSynching = false;
                 this._handleCloudError(e);
@@ -335,7 +330,7 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
                 this.settings.syncToken = "";
                 this.settings.syncEmail = "";
                 this.settings.syncReadonly = false;
-                this.notifyPath("settings");
+                this.dispatch("settings-changed");
                 this.alert($l("There was a problem authenticating with Padlock Cloud. Please " +
                     "complete the connection process again!"));
                 break;
@@ -459,7 +454,7 @@ class CloudView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.Notifica
             .then((connected) => {
                 this._testCredsPromise = null;
                 this.settings.syncConnected = connected;
-                this.notifyPath("settings");
+                this.dispatch("settings-changed");
 
                 if (connected) {
                     this._connectionSuccess();

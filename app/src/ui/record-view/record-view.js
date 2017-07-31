@@ -1,19 +1,28 @@
 (() => {
 
-class RecordView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseElement)) {
+const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
+
+class RecordView extends LocaleMixin(DialogMixin(DataMixin(BaseElement))) {
 
     static get is() { return "pl-record-view"; }
 
     static get properties() { return {
-        categories: Array,
         record: {
             type: Object,
             notify: true
         }
     }; }
 
+    recordCreated(record) {
+        setTimeout(() => {
+            if (record === this.record) {
+                this.edit();
+            }
+        }, 500);
+    }
+
     _fireChangeEvent() {
-        this.dispatchEvent(new CustomEvent("record-change", { detail: { record: this.record } }));
+        this.dispatch("record-changed", this.record);
     }
 
     _deleteField(e) {
@@ -46,7 +55,7 @@ class RecordView extends padlock.LocaleMixin(padlock.DialogMixin(padlock.BaseEle
     _deleteRecord() {
         this.confirm($l("Are you sure you want to delete this record?"), $l("Delete")).then((confirmed) => {
             if (confirmed) {
-                this.dispatchEvent(new CustomEvent("record-delete", { detail: { record: this.record } }));
+                this.deleteRecord(this.record);
             }
         });
     }

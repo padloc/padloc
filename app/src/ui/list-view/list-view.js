@@ -1,6 +1,7 @@
 (() => {
 
 const Record = padlock.data.Record;
+const { LocaleMixin, DataMixin, BaseElement } = padlock;
 
 function filterByString(fs, rec) {
     const words = fs.toLowerCase().split(" ");
@@ -15,16 +16,14 @@ function filterByString(fs, rec) {
     return !!match;
 }
 
-class ListView extends padlock.LocaleMixin(padlock.BaseElement) {
+class ListView extends LocaleMixin(DataMixin(BaseElement)) {
+
     static get is() { return "pl-list-view"; }
 
     static get properties() { return {
         _filterString: {
             type: String,
             value: ""
-        },
-        records: {
-            type: Array
         },
         selectedRecord: {
             type: Object,
@@ -37,7 +36,7 @@ class ListView extends padlock.LocaleMixin(padlock.BaseElement) {
     }; }
 
     static get observers() { return [
-        "_scrollToSelected(records, selectedRecord)"
+        "_scrollToSelected(collection.records, selectedRecord)"
     ]; }
 
     ready() {
@@ -63,14 +62,18 @@ class ListView extends padlock.LocaleMixin(padlock.BaseElement) {
         this.$.list.clearSelection();
     }
 
+    recordCreated(record) {
+        this.select(record);
+    }
+
     _filterAndSort() {
-        return this.records
+        return this.collection.records
             .filter((r) => !r.removed && filterByString(this._filterString, r))
             .sort((a, b) => Record.compare(a, b));
     }
 
     _isEmpty() {
-        return !this.records.filter((r) => !r.removed).length;
+        return !this.collection.records.filter((r) => !r.removed).length;
     }
 
     _openMenu() {
@@ -78,7 +81,7 @@ class ListView extends padlock.LocaleMixin(padlock.BaseElement) {
     }
 
     _newRecord() {
-        this.dispatchEvent(new CustomEvent("record-new"));
+        this.createRecord();
     }
 
     _filterActive() {
@@ -89,12 +92,8 @@ class ListView extends padlock.LocaleMixin(padlock.BaseElement) {
         this.set("_filterString", "");
     }
 
-    _limit(items) {
-        return items.slice(0, 50);
-    }
-
     _lock() {
-        this.dispatchEvent(new CustomEvent("lock"));
+        this.unloadData();
     }
 
     _openSettings() {

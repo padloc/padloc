@@ -1,0 +1,244 @@
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../locale/locale.html">
+
+<script>
+(() => {
+
+const { Collection, Record, Settings } = padlock.data;
+const { FileSource, EncryptedSource, CloudSource } = padlock.source;
+
+const collection = new Collection();
+const localSource = new EncryptedSource(new FileSource("data.pls"));
+const settings = new Settings();
+const settingsSource = new EncryptedSource(new FileSource("settings.pls"));
+const cloudSource = new EncryptedSource(new CloudSource(settings));
+
+const dispatcher = document.createElement("div");
+
+// transfer legacy data from LocalStorageSource to FileSource
+function transferData(lsName, fileName) {
+    const lsSource = new padlock.source.LocalStorageSource(lsName);
+    return lsSource.get().then((data) => {
+        if (data) {
+            return Promise.all([
+                new padlock.source.FileSource(fileName).set(data),
+                lsSource.clear()
+            ]);
+        }
+    });
+}
+
+const legacyDataTransfered = Promise.all([
+    transferData("coll_default", "data.pls"),
+    transferData("settings_encrypted", "settings.pls")
+]);
+
+dispatcher.addEventListener("record-changed", (e) => {
+    const record = e.detail;
+    record.updated = new Date();
+    collection.save(localSource);
+});
+
+const debouncedSaveSettings = padlock.util.debounce(() => settings.save(settingsSource), 500);
+
+dispatcher.addEventListener("settings-changed", () => {
+    if (settings.loaded) {
+        debouncedSaveSettings();
+    }
+});
+
+padlock.DataMixin = (superClass) => {
+
+    return class DataMixin extends superClass {
+
+        static get properties() { return {
+            collection: {
+                type: Object,
+                value: collection,
+                notify: true
+            },
+            settings: {
+                type: Object,
+                value: settings,
+                notify: true
+            },
+            localSource: {
+                type: Object,
+                value: localSource
+            },
+            settingsSource: {
+                type: Object,
+                value: settingsSource
+            },
+            cloudSource: {
+                type: Object,
+                value: cloudSource
+            }
+        }; }
+
+        constructor() {
+            super();
+            dispatcher.addEventListener("record-created", (e) => this._recordCreated(e));
+            dispatcher.addEventListener("record-deleted", (e) => this._recordDeleted(e));
+            dispatcher.addEventListener("record-changed", (e) => this._recordChanged(e));
+            dispatcher.addEventListener("records-added", (e) => this._recordsAdded(e));
+            dispatcher.addEventListener("data-initialized", (e) => this._dataInitialized(e));
+            dispatcher.addEventListener("data-loaded", (e) => this._dataLoaded(e));
+            dispatcher.addEventListener("data-unloaded", (e) => this._dataUnloaded(e));
+            dispatcher.addEventListener("data-reset", (e) => this._dataReset(e));
+            dispatcher.addEventListener("settings-changed", (e) => this._settingsChanged(e));
+        }
+
+        dispatch(name, detail) {
+            dispatcher.dispatchEvent(new CustomEvent(name, { detail: detail }));
+        }
+
+        dataReady() {
+            return legacyDataTransfered;
+        }
+
+        hasData() {
+            return localSource.hasData();
+        }
+
+        initData(password, email) {
+            settings.syncEmail = email;
+            return this.setPassword(password).then(() => this.dispatch("data-initialized"));
+        }
+
+        loadData(password) {
+            localSource.password = settingsSource.password = cloudSource.password = password;
+            return collection.fetch(localSource)
+                .then(() => {
+                    // Load saved settings. If there is a problem, ignore silently and reset settings
+                    return settings.fetch(settingsSource)
+                        .catch(() => settings.save(settingsSource));
+                })
+                .then(() => {
+                    this.dispatch("data-loaded");
+                });
+        }
+
+        createRecord(name) {
+            const record = new Record(name || $l("New Record"));
+            this.addRecords([record]);
+            this.dispatch("record-created", record);
+            return record;
+        }
+
+        deleteRecord(record) {
+            record.remove();
+            this.saveCollection();
+            this.dispatch("record-deleted", record);
+        }
+
+        addRecords(records) {
+            this.collection.add(records);
+            this.saveCollection();
+            this.dispatch("records-added", records);
+        }
+
+        saveCollection() {
+            collection.save(localSource);
+        }
+
+        saveSettings() {
+            if (settings.loaded) {
+                settings.save(settingsSource);
+            }
+        }
+
+        resetData() {
+            this.localSource.clear();
+            this.settingsSource.clear();
+            this.dispatch("data-reset");
+        }
+
+        checkPassword(password) {
+            return password === localSource.password;
+        }
+
+        setPassword(password) {
+            localSource.password = settingsSource.password = cloudSource.password = password;
+            return Promise.all([
+                collection.save(localSource),
+                settings.save(settingsSource)
+            ]);
+        }
+
+        unloadData() {
+            collection.clear();
+            settings.clear();
+            localSource.password = settingsSource.password = cloudSource.password = "";
+            this.dispatch("data-unloaded");
+        }
+
+        settingChanged() {
+            this.dispatch("settings-changed");
+        }
+
+        _saveCall(funcName, ...args) {
+            const fn = this[funcName];
+            if (typeof fn === "function") {
+                return fn.apply(this, args);
+            }
+        }
+
+        _dataInitialized() {
+            this.notifyPath("settings");
+            this.notifyPath("collection");
+            this._saveCall("dataInitialized");
+        }
+
+        _dataLoaded() {
+            this.notifyPath("settings");
+            this.notifyPath("collection");
+            this._saveCall("dataLoaded");
+        }
+
+        _dataUnloaded() {
+            this._saveCall("dataUnloaded");
+            // Add short timeout before notifying of changes to give lock animation
+            // TODO: Move this delay somewhere more appropriate (separation of concerns)
+            setTimeout(() => {
+                this.notifyPath("settings");
+                this.notifyPath("collection");
+            }, 500);
+        }
+
+        _dataReset() {
+            this._dataUnloaded();
+            this._saveCall("dataReset");
+        }
+
+        _recordCreated(e) {
+            this.notifyPath("collection");
+            this._saveCall("recordCreated", e.detail);
+        }
+
+        _recordDeleted(e) {
+            this.notifyPath("collection");
+            this._saveCall("recordDeleted", e.detail);
+        }
+
+        _recordChanged(e) {
+            this.notifyPath("collection");
+            this._saveCall("recordChanged", e.detail);
+        }
+
+        _recordsAdded(e) {
+            this.notifyPath("collection");
+            this._saveCall("recordsAdded", e.detail);
+        }
+
+        _settingsChanged() {
+            this.notifyPath("settings");
+            this._saveCall("settingsChanged");
+        }
+
+    };
+
+};
+
+})();
+</script>

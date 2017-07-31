@@ -75,7 +75,7 @@
         </style>
 
         <label>{{ label }}</label>
-        <input type="range" value="{{ _strValue::input }}" min="{{ min }}" max="{{ max }}" step="{{ step }}">
+        <input type="range" value="{{ _strValue::input }}" min="{{ min }}" max="{{ max }}" step="{{ step }}" on-change="_inputChange">
         <span class="value-display">{{ value }}{{ unit }}</span>
 
     </template>
@@ -129,6 +129,10 @@ class Slider extends padlock.BaseElement {
 
     _valueChanged() {
         this._strValue = this.value.toString();
+    }
+
+    _inputChange() {
+        this.dispatchEvent(new CustomEvent("change", { bubbles: true, composed: true }));
     }
 
 }
