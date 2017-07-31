@@ -7,6 +7,7 @@ import * as imp from "./import";
 import * as exp from "./export";
 import * as platform from "./platform";
 import * as file from "./file";
+import * as ancm from "./ancm";
 
 export {
     util,
@@ -17,5 +18,6 @@ export {
     imp,
     exp,
     platform,
-    file
+    file,
+    ancm
 }

@@ -224,3 +224,9 @@ export function checkForUpdates(): void {
         window.open(getAppStoreLink(), "_system");
     }
 }
+
+export function getLocale(): string {
+    // TODO: Is there a more reliable way to get the system locale,
+    // e.g. through `electron.remote.app.getLocale()`?
+    return navigator.language || "en";
+}

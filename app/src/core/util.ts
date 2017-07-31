@@ -44,3 +44,22 @@ export function debounce(fn: (...args: any[]) => any, delay: number) {
         timeout = window.setTimeout(() => fn(args), delay);
     };
 }
+
+export function wait(dt: number): Promise<void> {
+    return new Promise<void>((resolve) => setTimeout(resolve, dt));
+}
+
+export function resolveLanguage(locale: string, supportedLanguages: { [lang: string]: any }): string {
+    const localeParts = locale.toLowerCase().split("-");
+
+    while (localeParts.length) {
+        const l = localeParts.join("-");
+        if (supportedLanguages[l]) {
+            return l;
+        }
+
+        localeParts.pop();
+    }
+
+    return Object.keys(supportedLanguages)[0];
+}

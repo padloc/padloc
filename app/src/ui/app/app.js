@@ -1,13 +1,10 @@
 (() => {
 
-const Collection = padlock.data.Collection;
-const Record = padlock.data.Record;
-const Settings = padlock.data.Settings;
-const FileSource = padlock.source.FileSource;
-const EncryptedSource = padlock.source.EncryptedSource;
-const CloudSource = padlock.source.CloudSource;
+const { Collection, Record, Settings } = padlock.data;
+const { FileSource, EncryptedSource, CloudSource } = padlock.source;
+const { NotificationMixin, DialogMixin, AnnouncementsMixin, BaseElement } = padlock;
 
-class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElement)) {
+class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(BaseElement))) {
 
     static get is() { return "pl-app"; }
 
@@ -122,6 +119,7 @@ class App extends padlock.NotificationMixin(padlock.DialogMixin(padlock.BaseElem
         if (this.settings.syncAuto && this.settings.syncConnected) {
             this._debouncedSynchronize();
         }
+        this.checkAnnouncements();
     }
 
     _getStarted() {

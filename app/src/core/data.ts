@@ -1,4 +1,5 @@
 import { uuid } from "./util";
+import { getAppVersion } from "./platform";
 import { Source } from "./source";
 
 
@@ -207,6 +208,7 @@ export class Settings {
     async fetch(source: Source): Promise<void> {
         let json = await source.get();
         this.loadJSON(json);
+        this.version = await getAppVersion();
         // Update loaded flag to indicate that data has been loaded from persistent storage at least once
         this.loaded = true;
     }

@@ -3,21 +3,10 @@
 <script>
 (() => {
 
-const locale = navigator.language || navigator.browserLanguage || "en";
+const { resolveLanguage } = padlock.util;
+const { getLocale } = padlock.platform;
+
 let translations, language;
-
-function resolveLanguage(locale) {
-    const localeParts = locale.toLowerCase().split("-");
-
-    while (localeParts.length) {
-        const l = localeParts.join("-");
-        if (translations[l]) {
-            return l;
-        }
-
-        localeParts.pop();
-    }
-}
 
 function localize(msg, ...fmtArgs) {
     const lang = translations[language];
@@ -32,7 +21,7 @@ function localize(msg, ...fmtArgs) {
 
 localize.loadTranslations = (t) => {
     translations = t;
-    language = resolveLanguage(locale);
+    language = resolveLanguage(getLocale(), translations);
 };
 
 padlock.LocaleMixin = (superClass) => {

@@ -6,41 +6,47 @@
 <script>
 (() => {
 
-let alertDialog, confirmDialog, promptDialog;
+const { wait } = padlock.util;
+
+const dialogElements = {};
+
 let lastDialogPromise = Promise.resolve();
+
+function getDialog(elName) {
+    let el = dialogElements[elName];
+
+    if (!el) {
+        dialogElements[elName] = el = document.createElement(elName);
+        document.body.appendChild(el);
+    }
+
+    return el;
+}
+
+function lineUpDialog(fn) {
+    const promise = lastDialogPromise.then(fn);
+
+    lastDialogPromise = promise.then(() => wait(500));
+    return promise;
+}
 
 padlock.DialogMixin = (superClass) => {
 
     return class DialogMixin extends superClass {
 
         alert(message, buttonLabel) {
-            if (!alertDialog) {
-                alertDialog = document.createElement("pl-dialog-alert");
-                document.body.appendChild(alertDialog);
-            }
-            lastDialogPromise = lastDialogPromise
-                .then(() => alertDialog.alert(message, buttonLabel));
-            return lastDialogPromise;
+            const dialog = getDialog("pl-dialog-alert");
+            return lineUpDialog(() => dialog.alert(message, buttonLabel));
         }
 
         confirm(message, confirmLabel, cancelLabel) {
-            if (!confirmDialog) {
-                confirmDialog = document.createElement("pl-dialog-confirm");
-                document.body.appendChild(confirmDialog);
-            }
-            lastDialogPromise = lastDialogPromise
-                .then(() => confirmDialog.confirm(message, confirmLabel, cancelLabel));
-            return lastDialogPromise;
+            const dialog = getDialog("pl-dialog-confirm");
+            return lineUpDialog(() => dialog.confirm(message, confirmLabel, cancelLabel));
         }
 
-        prompt(message, type, confirmLabel, cancelLabel) {
-            if (!promptDialog) {
-                promptDialog = document.createElement("pl-dialog-prompt");
-                document.body.appendChild(promptDialog);
-            }
-            lastDialogPromise = lastDialogPromise
-                .then(() => promptDialog.prompt(message, type, confirmLabel, cancelLabel));
-            return lastDialogPromise;
+        prompt(message, placeholder, type, confirmLabel, cancelLabel) {
+            const dialog = getDialog("pl-dialog-prompt");
+            return lineUpDialog(() => dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel));
         }
 
     };
