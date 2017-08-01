@@ -68,7 +68,6 @@ class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(DataMixin(Bas
     }
 
     dataInitialized() {
-        this.dataLoaded();
         if (this.settings.syncEmail) {
             this.confirm($l("Would you like to pair this device with Padlock Cloud now?"), $l("Yes"), $l("Maybe Later"))
                 .then((confirm) => {

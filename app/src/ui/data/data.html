@@ -1,3 +1,4 @@
+<link rel="import" href="../../../bower_components/polymer/lib/mixins/mutable-data.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../locale/locale.html">
 
@@ -6,6 +7,7 @@
 
 const { Collection, Record, Settings } = padlock.data;
 const { FileSource, EncryptedSource, CloudSource } = padlock.source;
+const { MutableData } = Polymer;
 
 const collection = new Collection();
 const localSource = new EncryptedSource(new FileSource("data.pls"));
@@ -49,7 +51,7 @@ dispatcher.addEventListener("settings-changed", () => {
 
 padlock.DataMixin = (superClass) => {
 
-    return class DataMixin extends superClass {
+    return class DataMixin extends MutableData(superClass) {
 
         static get properties() { return {
             collection: {
@@ -185,8 +187,7 @@ padlock.DataMixin = (superClass) => {
         }
 
         _dataInitialized() {
-            this.notifyPath("settings");
-            this.notifyPath("collection");
+            this._dataLoaded();
             this._saveCall("dataInitialized");
         }
 
@@ -212,7 +213,6 @@ padlock.DataMixin = (superClass) => {
         }
 
         _recordCreated(e) {
-            this.notifyPath("collection");
             this._saveCall("recordCreated", e.detail);
         }
 
