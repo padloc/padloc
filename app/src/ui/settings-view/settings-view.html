@@ -398,6 +398,10 @@ class SettingsView extends LocaleMixin(DialogMixin(DataMixin(BaseElement))) {
         return padlock.platform.isIOS() || padlock.platform.isAndroid();
     }
 
+    _openHomepage() {
+        window.open("https://github.com/maklesoft/", "_system");
+    }
+
 }
 
 window.customElements.define(SettingsView.is, SettingsView);
