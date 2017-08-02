@@ -6,14 +6,13 @@
 (() => {
 
 const { Collection, Record, Settings } = padlock.data;
-const { FileSource, EncryptedSource, CloudSource } = padlock.source;
+const { FileSource, EncryptedSource } = padlock.source;
 const { MutableData } = Polymer;
 
 const collection = new Collection();
 const localSource = new EncryptedSource(new FileSource("data.pls"));
 const settings = new Settings();
 const settingsSource = new EncryptedSource(new FileSource("settings.pls"));
-const cloudSource = new EncryptedSource(new CloudSource(settings));
 
 const dispatcher = document.createElement("div");
 
@@ -35,13 +34,13 @@ const legacyDataTransfered = Promise.all([
     transferData("settings_encrypted", "settings.pls")
 ]);
 
+const debouncedSaveSettings = padlock.util.debounce(() => settings.save(settingsSource), 500);
+
 dispatcher.addEventListener("record-changed", (e) => {
     const record = e.detail;
     record.updated = new Date();
     collection.save(localSource);
 });
-
-const debouncedSaveSettings = padlock.util.debounce(() => settings.save(settingsSource), 500);
 
 dispatcher.addEventListener("settings-changed", () => {
     if (settings.loaded) {
@@ -63,32 +62,28 @@ padlock.DataMixin = (superClass) => {
                 type: Object,
                 value: settings,
                 notify: true
-            },
-            localSource: {
-                type: Object,
-                value: localSource
-            },
-            settingsSource: {
-                type: Object,
-                value: settingsSource
-            },
-            cloudSource: {
-                type: Object,
-                value: cloudSource
             }
         }; }
 
         constructor() {
             super();
-            dispatcher.addEventListener("record-created", (e) => this._recordCreated(e));
-            dispatcher.addEventListener("record-deleted", (e) => this._recordDeleted(e));
-            dispatcher.addEventListener("record-changed", (e) => this._recordChanged(e));
-            dispatcher.addEventListener("records-added", (e) => this._recordsAdded(e));
-            dispatcher.addEventListener("data-initialized", (e) => this._dataInitialized(e));
-            dispatcher.addEventListener("data-loaded", (e) => this._dataLoaded(e));
-            dispatcher.addEventListener("data-unloaded", (e) => this._dataUnloaded(e));
-            dispatcher.addEventListener("data-reset", (e) => this._dataReset(e));
-            dispatcher.addEventListener("settings-changed", (e) => this._settingsChanged(e));
+            this.listen("record-created", (e) => this._recordCreated(e));
+            this.listen("record-deleted", (e) => this._recordDeleted(e));
+            this.listen("record-changed", (e) => this._recordChanged(e));
+            this.listen("records-added", (e) => this._recordsAdded(e));
+            this.listen("data-initialized", (e) => this._dataInitialized(e));
+            this.listen("data-loaded", (e) => this._dataLoaded(e));
+            this.listen("data-unloaded", (e) => this._dataUnloaded(e));
+            this.listen("data-reset", (e) => this._dataReset(e));
+            this.listen("settings-changed", (e) => this._settingsChanged(e));
+        }
+
+        get password() {
+            return localSource.password;
+        }
+
+        listen(name, fn) {
+            dispatcher.addEventListener(name, fn);
         }
 
         dispatch(name, detail) {
@@ -109,7 +104,7 @@ padlock.DataMixin = (superClass) => {
         }
 
         loadData(password) {
-            localSource.password = settingsSource.password = cloudSource.password = password;
+            localSource.password = settingsSource.password = password;
             return collection.fetch(localSource)
                 .then(() => {
                     // Load saved settings. If there is a problem, ignore silently and reset settings
@@ -151,8 +146,8 @@ padlock.DataMixin = (superClass) => {
         }
 
         resetData() {
-            this.localSource.clear();
-            this.settingsSource.clear();
+            localSource.clear();
+            settingsSource.clear();
             this.dispatch("data-reset");
         }
 
@@ -161,7 +156,7 @@ padlock.DataMixin = (superClass) => {
         }
 
         setPassword(password) {
-            localSource.password = settingsSource.password = cloudSource.password = password;
+            localSource.password = settingsSource.password = password;
             return Promise.all([
                 collection.save(localSource),
                 settings.save(settingsSource)
@@ -171,7 +166,7 @@ padlock.DataMixin = (superClass) => {
         unloadData() {
             collection.clear();
             settings.clear();
-            localSource.password = settingsSource.password = cloudSource.password = "";
+            localSource.password = settingsSource.password = "";
             this.dispatch("data-unloaded");
         }
 
@@ -179,7 +174,7 @@ padlock.DataMixin = (superClass) => {
             this.dispatch("settings-changed");
         }
 
-        _saveCall(funcName, ...args) {
+        saveCall(funcName, ...args) {
             const fn = this[funcName];
             if (typeof fn === "function") {
                 return fn.apply(this, args);
@@ -188,17 +183,17 @@ padlock.DataMixin = (superClass) => {
 
         _dataInitialized() {
             this._dataLoaded();
-            this._saveCall("dataInitialized");
+            this.saveCall("dataInitialized");
         }
 
         _dataLoaded() {
             this.notifyPath("settings");
             this.notifyPath("collection");
-            this._saveCall("dataLoaded");
+            this.saveCall("dataLoaded");
         }
 
         _dataUnloaded() {
-            this._saveCall("dataUnloaded");
+            this.saveCall("dataUnloaded");
             // Add short timeout before notifying of changes to give lock animation
             // TODO: Move this delay somewhere more appropriate (separation of concerns)
             setTimeout(() => {
@@ -209,36 +204,41 @@ padlock.DataMixin = (superClass) => {
 
         _dataReset() {
             this._dataUnloaded();
-            this._saveCall("dataReset");
+            this.saveCall("dataReset");
         }
 
         _recordCreated(e) {
-            this._saveCall("recordCreated", e.detail);
+            this.saveCall("recordCreated", e.detail);
         }
 
         _recordDeleted(e) {
             this.notifyPath("collection");
-            this._saveCall("recordDeleted", e.detail);
+            this.saveCall("recordDeleted", e.detail);
         }
 
         _recordChanged(e) {
             this.notifyPath("collection");
-            this._saveCall("recordChanged", e.detail);
+            this.saveCall("recordChanged", e.detail);
         }
 
         _recordsAdded(e) {
             this.notifyPath("collection");
-            this._saveCall("recordsAdded", e.detail);
+            this.saveCall("recordsAdded", e.detail);
         }
 
         _settingsChanged() {
             this.notifyPath("settings");
-            this._saveCall("settingsChanged");
+            this.saveCall("settingsChanged");
         }
 
     };
 
 };
+
+Object.assign(padlock.DataMixin, {
+    collection,
+    settings
+});
 
 })();
 </script>

@@ -1,8 +1,8 @@
 (() => {
 
-const { NotificationMixin, DialogMixin, AnnouncementsMixin, DataMixin, BaseElement } = padlock;
+const { NotificationMixin, DialogMixin, AnnouncementsMixin, DataMixin, SyncMixin, BaseElement } = padlock;
 
-class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(DataMixin(BaseElement)))) {
+class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(SyncMixin(DataMixin(BaseElement))))) {
 
     static get is() { return "pl-app"; }
 
@@ -30,7 +30,7 @@ class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(DataMixin(Bas
     constructor() {
         super();
 
-        this._debouncedSynchronize = padlock.util.debounce(() => this.$.cloudView.synchronize(), 1000);
+        this._debouncedSynchronize = padlock.util.debounce(() => this.synchronize(), 1000);
 
         const moved = () => this._autoLockChanged();
         document.addEventListener("touchstart", moved, false);
@@ -73,7 +73,7 @@ class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(DataMixin(Bas
                 .then((confirm) => {
                     if (confirm) {
                         this._currentView = "cloudView";
-                        this.$.cloudView.connect();
+                        this.connectCloud(this.settings.syncEmail);
                     }
                 });
         }

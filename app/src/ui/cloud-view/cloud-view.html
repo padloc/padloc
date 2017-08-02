@@ -7,6 +7,7 @@
 <link rel="import" href="../loading-button/loading-button.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
+<link rel="import" href="../sync/sync.html">
 <link rel="import" href="../toggle/toggle-button.html">
 
 <dom-module id="pl-cloud-view">
@@ -78,32 +79,32 @@
 
         <main>
 
-            <section class="tiles tiles-2" hidden$="[[ _isSet(settings.syncToken) ]]">
+            <section class="tiles tiles-2" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
                 <div class="note">
                     [[ _generalInfoText() ]]
                 </div>
-                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Get Started') ]]" on-click="connect"></pl-loading-button>
+                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="_connect"></pl-input>
+                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Get Started') ]]" on-click="_connect"></pl-loading-button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !_isActivationPending(settings.syncToken, settings.syncConnected) ]]">
+            <section class="tiles tiles-2" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
                 <div class="note">
                     <strong>[[ $l("Activation pending") ]]</strong> -
                     [[ _activationPendingText(settings.syncEmail) ]]
                     <div class="conn-id">[[ $l("Connection ID: {0}", settings.syncId) ]]</div>
                 </div>
-                <button class="tap" on-click="_cancelConnect">[[ $l("Cancel") ]]</button>
+                <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !_isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="tiles tiles-2" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="note">
-                    <strong>[[ $l("Your trial period ends in {0} days.", _remainingTrialDays) ]]</strong> -
+                    <strong>[[ $l("Your trial period ends in {0} days.", remainingTrialDays) ]]</strong> -
                     [[ _trialInfoText() ]]
                 </div>
                 <button class="tap" on-click="_openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !_isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="tiles tiles-2" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="note">
                     <strong>[[ $l("Read-Only") ]]</strong> -
                     [[ _readOnlyInfoText() ]]
@@ -150,54 +151,36 @@
     <script>
 (() => {
 
-const { LocaleMixin, DialogMixin, NotificationMixin, DataMixin, BaseElement } = padlock;
+const { LocaleMixin, DialogMixin, NotificationMixin, DataMixin, SyncMixin, BaseElement } = padlock;
 
-class CloudView extends LocaleMixin(DialogMixin(NotificationMixin(DataMixin(BaseElement)))) {
+class CloudView extends LocaleMixin(DialogMixin(NotificationMixin(SyncMixin(DataMixin(BaseElement))))) {
 
     static get is() { return "pl-cloud-view"; }
-
-    static get properties() { return {
-        isSynching: {
-            type: Boolean,
-            value: false,
-            notify: true
-        },
-        _remainingTrialDays: {
-            type: Number,
-            computed: "_computeRemainingTrialDays(settings.syncTrialEnd)"
-        }
-    }; }
 
     static get observers() { return [
         "_credentialsChanged(settings.syncToken, settings.syncConnected)"
     ]; }
 
-    synchronize() {
-        if (!this.settings.syncConnected) {
-            this.alert($l("You have to be connected to a Padlock Cloud account to synchronize your data!"))
-                .then(() => this.$.emailInput.focus());
-            return Promise.reject();
-        }
+    syncStart() {
+        this.$.syncButton.start();
+    }
 
-        if (this._chainedSync) {
-            // There is already a chained sync promise, so just return that one
-            return this._chainedSync;
-        }
+    syncSuccess() {
+        this.$.syncButton.success();
+    }
 
-        if (this._currentSync) {
-            // There is already a synchronization in process. wait for the current sync to finish
-            // before starting a new one.
-            const chained = this._chainedSync = this._currentSync
-                .then(() => {
-                    this._chainedSync = null;
-                    return this.synchronize();
-                });
-            return chained;
-        }
+    syncFail() {
+        this.$.syncButton.fail();
+    }
 
-        const sync = this._currentSync = this._synchronize()
-            .then(() => this._currentSync = null, () => this._currentSync = null);
-        return sync;
+    _credentialsChanged() {
+        if (this.isActivationPending()) {
+            // Wait 1 minute, then poll every 10 seconds
+            setTimeout(() => this.testCredentials(10000), 60000);
+            // Also test on first focus event since there is a chance the user is just returning
+            // from his email client / web browsers
+            window.addEventListener("focus", () => this.testCredentials(), { once: true });
+        }
     }
 
     _back() {
@@ -210,211 +193,20 @@ class CloudView extends LocaleMixin(DialogMixin(NotificationMixin(DataMixin(Base
             $l("Disconnect")
         ).then((confirmed) => {
             if (confirmed) {
-                this.settings.syncConnected = false;
-                this.settings.syncToken = "";
-                this.settings.syncEmail = "";
-                this.settings.syncReadonly = false;
-                this.dispatch("settings-changed");
+                this.disconnectCloud();
             }
         });
     }
 
-    connect() {
+    _connect() {
         if (this.$.emailInput.invalid) {
             this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
         } else {
-            this._requestAuthToken(this.$.emailInput.value.toLowerCase());
+            this.$.syncButton.start();
+            this.connectCloud(this.$.emailInput.value)
+                .then(() => this.$.connectButton.success())
+                .catch(() => this.$.connectButton.fail());
         }
-    }
-
-    //* Requests an api key from the cloud api with the entered email and device name
-    _requestAuthToken(email, create) {
-        this.$.connectButton.start();
-        this.settings.email = email;
-        this.settings.syncToken = "";
-        this.dispatch("settings-changed");
-
-        this.cloudSource.source.requestAuthToken(email, create)
-            .then((authToken) => {
-                // We're getting back the api key directly, but it will valid only
-                // after the user has visited the activation link in the email he was sent
-                this.settings.syncConnected = false;
-                this.settings.syncToken = authToken.token;
-                this.settings.syncId = authToken.id;
-                this.dispatch("settings-changed");
-                this.$.connectButton.success();
-                this.alert(this._activationPendingText());
-            })
-            .catch((e) => {
-                switch (typeof e === "string" ? e : e.code) {
-                    case "account_not_found":
-                        this._requestAuthToken(email, true);
-                        break;
-                    case "rate_limit_exceeded":
-                        this.$.connectButton.fail();
-                        this.alert($l("For security reasons only a limited amount of connection request " +
-                            "are allowed at a time. Please wait a little before trying again!"));
-                        break;
-                    default:
-                        this.$.connectButton.fail();
-                        this.alert($l("Something went wrong. Please try again later!"));
-                }
-                this.dispatch("settings-changed");
-            });
-    }
-
-    _isTrialing(connected, s) {
-        return connected && s == "trialing";
-    }
-
-    _isInactive(connected, s) {
-        return connected && s && s != "active" && s != "trialing";
-    }
-
-    _isSet(val) {
-        return !!val;
-    }
-
-    _synchronize() {
-        this.isSynching = true;
-        this.$.syncButton.start();
-
-        return this.collection.fetch(this.cloudSource)
-            .then(() => this.collection.save(this.localSource))
-            .then(() => this.collection.save(this.cloudSource))
-            .then(() => {
-                this.dispatch("data-synchronized");
-                this.dispatch("settings-changed");
-                this.$.syncButton.success();
-
-                if (this.localSource.password !== this.cloudSource.password) {
-                    return this.confirm(
-                        $l("Do you want to change your Padlock Cloud master password to your local one?"),
-                        $l("Yes"), $l("No")
-                    ).then((confirm) => {
-                        if (confirm) {
-                            this.$.syncButton.start();
-                            this.cloudSource.password = this.localSource.password;
-                            return this.collection.save(this.cloudSource)
-                                .then(() => {
-                                    this.$.syncButton.success();
-                                    this.isSynching = false;
-                                    this.alert($l("Padlock Cloud master password updated successfully!"));
-                                })
-                                .catch(() => {
-                                    this.$.syncButton.fail();
-                                    this.isSynching = false;
-                                    this.alert($l("Failed to update Padlock Cloud " +
-                                        "master password. Please try again later!"));
-                                });
-                        }
-                    });
-                }
-
-                this.isSynching = false;
-            })
-            .catch((e) => {
-                this.dispatch("settings-changed");
-                this.$.syncButton.fail();
-                this.isSynching = false;
-                this._handleCloudError(e);
-            });
-    }
-
-    _handleCloudError(e) {
-        switch (e.code) {
-            case "account_not_found":
-            case "invalid_auth_token":
-            case "expired_auth_token":
-                this.settings.syncConnected = false;
-                this.settings.syncToken = "";
-                this.settings.syncEmail = "";
-                this.settings.syncReadonly = false;
-                this.dispatch("settings-changed");
-                this.alert($l("There was a problem authenticating with Padlock Cloud. Please " +
-                    "complete the connection process again!"));
-                break;
-            case "deprecated_api_version":
-                this.confirm(
-                    $l("A newer version of Padlock is available now! You can download it using the " +
-                    "button below. Please note that you won't be able to use Padlock Cloud until " +
-                    "you install the latest version!"),
-                    $l("Update Now"),
-                    $l("Cancel")
-                ).then((confirm) => {
-                    if (confirm) {
-                        padlock.platform.checkForUpdates();
-                    }
-                });
-                break;
-            case "rate_limit_exceeded":
-                this.alert($l("It seems Padlock Cloud is over capacity right now. Please try again later!"));
-                break;
-            case "json_error":
-            case "invalid_container_data":
-            case "invalid_key_params":
-                this.alert($l(
-                    "The data received from Padlock Cloud seems to be corrupt and " +
-                    "cannot be decrypted. This might be due to a network error but could " +
-                    "also be the result of someone trying to compromise your connection to " +
-                    "Padlock Cloud. If the problem persists, please notify " +
-                    "Padlock support!"
-                ));
-                break;
-            case "decryption_failed":
-            case "encryption_failed":
-                // Decryption failed. This means that the local master
-                // password does not match the one that was used for encrypting the remote data so
-                // we need to prompt the user for the correct password.
-                this.prompt(
-                    $l("It seems that your Padlock Cloud account uses a different master " +
-                    "password than then one you are using on this device. Please provide the " +
-                    "correct master password for your Padlock Cloud account!"),
-                    $l("Enter Master Password"), "password", $l("Submit"))
-                    .then((pwd) => {
-                        if (pwd === null) {
-                            return;
-                        }
-
-                        this.cloudSource.password = pwd;
-                        this.synchronize();
-                    });
-                break;
-            case "unsupported_container_version":
-                this.confirm($l(
-                    "It seems the data stored on Padlock Cloud was saved with a newer version of Padlock " +
-                    "and can not be opened with the version you are currently running. Please install the " +
-                    "latest version of Padlock on this device!"
-                ), $l("Check For Updates"), $l("Cancel")).
-                    then((confirmed) => {
-                        if (confirmed) {
-                            padlock.platform.checkForUpdates();
-                        }
-                    });
-                break;
-            case "subscription_required":
-                this.alert($l(
-                    "You currently don't have an active subscription which means you can access " +
-                    "your existing data on Padlock Cloud but you won't be able to upload any new data " +
-                    "or synchronize changes between devices. Get a subscription now to regain full access " +
-                    "to Padlock Cloud!"
-                ));
-                break;
-            default:
-                this.alert($l("Something went wrong. Please try again later!"));
-        }
-    }
-
-    _connectionSuccess() {
-        this.confirm(
-            $l("You successfully paired this device with Padlock Cloud!"),
-            $l("Synchonize Now"), $l("Dismiss")
-        )
-            .then((confirmed) => {
-                if (confirmed) {
-                    this.synchronize();
-                }
-            });
     }
 
     _customHostChanged() {
@@ -431,57 +223,8 @@ class CloudView extends LocaleMixin(DialogMixin(NotificationMixin(DataMixin(Base
         }
     }
 
-    _cancelConnect() {
-        this.set("settings.syncToken", "");
-    }
-
     _openDashboard() {
         window.open(this.settings.syncHostUrl + "/dashboard/", "_system");
-    }
-
-    _computeRemainingTrialDays(trialEnd) {
-        var now = new Date().getTime() / 1000;
-        trialEnd = trialEnd ? parseInt(trialEnd, 10) : now;
-        return Math.ceil((trialEnd - now) / 60 / 60 / 24);
-    }
-
-    _testCredentials(pollInterval) {
-        if (this._testCredsPromise || !this._isActivationPending()) {
-            return;
-        }
-
-        this._testCredsPromise = this.cloudSource.source.testCredentials()
-            .then((connected) => {
-                this._testCredsPromise = null;
-                this.settings.syncConnected = connected;
-                this.dispatch("settings-changed");
-
-                if (connected) {
-                    this._connectionSuccess();
-                }
-
-                if (!connected && pollInterval) {
-                    setTimeout(() => this._testCredentials(pollInterval), pollInterval);
-                }
-            })
-            .catch((e) => {
-                this._testCredsPromise = null;
-                this._handleCloudError(e);
-            });
-    }
-
-    _credentialsChanged() {
-        if (this._isActivationPending()) {
-            // Wait 1 minute, then poll every 10 seconds
-            setTimeout(() => this._testCredentials(10000), 60000);
-            // Also test on first focus event since there is a chance the user is just returning
-            // from his email client / web browsers
-            window.addEventListener("focus", () => this._testCredentials(), { once: true });
-        }
-    }
-
-    _isActivationPending() {
-        return this.settings.syncToken && !this.settings.syncConnected;
     }
 
     _generalInfoText() {
