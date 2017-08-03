@@ -35,11 +35,12 @@ const legacyDataTransfered = Promise.all([
 ]);
 
 const debouncedSaveSettings = padlock.util.debounce(() => settings.save(settingsSource), 500);
+const debouncedSaveCollection = padlock.util.debounce(() => collection.save(localSource), 500);
 
 dispatcher.addEventListener("record-changed", (e) => {
     const record = e.detail;
     record.updated = new Date();
-    collection.save(localSource);
+    debouncedSaveCollection();
 });
 
 dispatcher.addEventListener("settings-changed", () => {
@@ -136,7 +137,7 @@ padlock.DataMixin = (superClass) => {
         }
 
         saveCollection() {
-            collection.save(localSource);
+            debouncedSaveCollection();
         }
 
         saveSettings() {
