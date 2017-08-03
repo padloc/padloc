@@ -1,7 +1,7 @@
 (() => {
 
 const { NotificationMixin, DialogMixin, AnnouncementsMixin, DataMixin,
-    SyncMixin, AutoSyncMixin, BaseElement } = padlock;
+    SyncMixin, AutoSyncMixin, AutoLockMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 
 class App extends applyMixins(
@@ -9,6 +9,7 @@ class App extends applyMixins(
     DataMixin,
     SyncMixin,
     AutoSyncMixin,
+    AutoLockMixin,
     DialogMixin,
     AnnouncementsMixin,
     NotificationMixin
@@ -33,17 +34,8 @@ class App extends applyMixins(
         }
     }; }
 
-    static get observers() { return [
-        "_autoLockChanged(settings.autoLock, settings.autoLockDelay, locked)"
-    ]; }
-
     constructor() {
         super();
-
-        const moved = () => this._autoLockChanged();
-        document.addEventListener("touchstart", moved, false);
-        document.addEventListener("keydown", moved, false);
-        document.addEventListener("mousemove", padlock.util.debounce(moved, 300), false);
 
         // If we want to capture all keydown events, we have to add the listener
         // directly to the document
@@ -138,35 +130,6 @@ class App extends applyMixins(
             this._currentView === "placeholderView" && this._isNarrow ? 300 : 0);
     }
 
-    _cancelAutoLock() {
-        this._pausedAt = null;
-        if (this._lockTimeout) {
-            clearTimeout(this._lockTimeout);
-        }
-        if (this._lockNotificationTimeout) {
-            clearTimeout(this._lockNotificationTimeout);
-        }
-    }
-
-    _autoLockChanged() {
-        this._cancelAutoLock();
-
-        if (this.settings.autoLock && !this.locked) {
-            this._lockTimeout = setTimeout(() => {
-                const delay = this.settings.autoLockDelay;
-                this.unloadData();
-                setTimeout(() => {
-                    this.alert($l("Padlock was automatically locked after {0} {1} " +
-                    "of inactivity. You can change this behavior from the settings page.",
-                    delay, delay > 1 ? $l("minutes") : $l("minute")));
-                }, 1000);
-            }, this.settings.autoLockDelay * 60 * 1000);
-            this._lockNotificationTimeout = setTimeout(() => {
-                this.notify($l("Auto-lock in 10 seconds"), "info", 3000);
-            }, this.settings.autoLockDelay * 50 * 1000);
-        }
-    }
-
     //* Keyboard shortcuts
     _keydown(event) {
         let shortcut;
@@ -208,7 +171,6 @@ class App extends applyMixins(
 
     _lockedChanged() {
         this.$.main.classList.toggle("active", !this.locked);
-        this._autoLockChanged();
     }
 }
 
