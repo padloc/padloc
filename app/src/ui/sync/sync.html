@@ -174,19 +174,16 @@ padlock.SyncMixin = (superClass) => {
         }
 
         _syncStart() {
-            console.log("sync start");
             this.set("isSynching", true);
             this.saveCall("syncStart");
         }
 
         _syncSuccess() {
-            console.log("syncsuccess");
             this.set("isSynching", false);
             this.saveCall("syncSuccess");
         }
 
         _syncFail() {
-            console.log("sync fail");
             this.set("isSynching", false);
             this.saveCall("syncFail");
         }

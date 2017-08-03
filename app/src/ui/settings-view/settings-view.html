@@ -147,8 +147,14 @@ const exportCSVWarning = $l(
 );
 
 const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
+const { applyMixins } = padlock.util;
 
-class SettingsView extends LocaleMixin(DialogMixin(DataMixin(BaseElement))) {
+class SettingsView extends applyMixins(
+    BaseElement,
+    DataMixin,
+    LocaleMixin,
+    DialogMixin
+) {
 
     static get is() { return "pl-settings-view"; }
 

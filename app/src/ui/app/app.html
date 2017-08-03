@@ -11,6 +11,7 @@
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../start-view/start-view.html">
 <link rel="import" href="../sync/sync.html">
+<link rel="import" href="./auto-sync.html">
 
 <dom-module id="pl-app">
     <template>
@@ -90,8 +91,7 @@
                 selected-record="{{ _selectedRecord }}"
                 on-open-menu="openMainMenu"
                 on-open-settings="_openSettings"
-                on-open-cloud-view="_openCloudView"
-                is-synching="{{ _isSynching }}"></pl-list-view>
+                on-open-cloud-view="_openCloudView"></pl-list-view>
 
             <iron-pages id="pages" attr-for-selected="id">
 
@@ -106,8 +106,7 @@
                     on-settings-back="_settingsBack"></pl-settings-view>
 
                 <pl-cloud-view id="cloudView"
-                    on-cloud-back="_cloudViewBack"
-                    is-synching="{{ _isSynching }}"></pl-cloud-view>
+                    on-cloud-back="_cloudViewBack"></pl-cloud-view>
 
             </iron-pages>
 

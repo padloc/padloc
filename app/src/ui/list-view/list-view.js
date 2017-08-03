@@ -1,7 +1,8 @@
 (() => {
 
 const Record = padlock.data.Record;
-const { LocaleMixin, DataMixin, BaseElement } = padlock;
+const { LocaleMixin, DataMixin, SyncMixin, BaseElement } = padlock;
+const { applyMixins } = padlock.util;
 
 function filterByString(fs, rec) {
     const words = fs.toLowerCase().split(" ");
@@ -16,7 +17,12 @@ function filterByString(fs, rec) {
     return !!match;
 }
 
-class ListView extends LocaleMixin(DataMixin(BaseElement)) {
+class ListView extends applyMixins(
+    BaseElement,
+    LocaleMixin,
+    SyncMixin,
+    DataMixin
+) {
 
     static get is() { return "pl-list-view"; }
 
@@ -28,10 +34,6 @@ class ListView extends LocaleMixin(DataMixin(BaseElement)) {
         selectedRecord: {
             type: Object,
             notify: true
-        },
-        isSynching: {
-            type: Boolean,
-            value: false
         }
     }; }
 

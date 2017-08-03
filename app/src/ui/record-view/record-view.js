@@ -1,8 +1,14 @@
 (() => {
 
 const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
+const { applyMixins } = padlock.util;
 
-class RecordView extends LocaleMixin(DialogMixin(DataMixin(BaseElement))) {
+class RecordView extends applyMixins(
+    BaseElement,
+    DataMixin,
+    LocaleMixin,
+    DialogMixin
+) {
 
     static get is() { return "pl-record-view"; }
 

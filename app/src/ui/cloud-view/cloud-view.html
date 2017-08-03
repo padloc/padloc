@@ -152,8 +152,16 @@
 (() => {
 
 const { LocaleMixin, DialogMixin, NotificationMixin, DataMixin, SyncMixin, BaseElement } = padlock;
+const { applyMixins } = padlock.util;
 
-class CloudView extends LocaleMixin(DialogMixin(NotificationMixin(SyncMixin(DataMixin(BaseElement))))) {
+class CloudView extends applyMixins(
+    BaseElement,
+    DataMixin,
+    SyncMixin,
+    LocaleMixin,
+    DialogMixin,
+    NotificationMixin
+) {
 
     static get is() { return "pl-cloud-view"; }
 

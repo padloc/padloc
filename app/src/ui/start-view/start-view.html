@@ -174,8 +174,14 @@
 (() => {
 
 const { DataMixin, LocaleMixin, DialogMixin, BaseElement } = padlock;
+const { applyMixins } = padlock.util;
 
-class StartView extends LocaleMixin(DialogMixin(DataMixin(BaseElement))) {
+class StartView extends applyMixins(
+    BaseElement,
+    DataMixin,
+    LocaleMixin,
+    DialogMixin
+) {
 
     static get is() { return "pl-start-view"; }
 

@@ -1,8 +1,18 @@
 (() => {
 
-const { NotificationMixin, DialogMixin, AnnouncementsMixin, DataMixin, SyncMixin, BaseElement } = padlock;
+const { NotificationMixin, DialogMixin, AnnouncementsMixin, DataMixin,
+    SyncMixin, AutoSyncMixin, BaseElement } = padlock;
+const { applyMixins } = padlock.util;
 
-class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(SyncMixin(DataMixin(BaseElement))))) {
+class App extends applyMixins(
+    BaseElement,
+    DataMixin,
+    SyncMixin,
+    AutoSyncMixin,
+    DialogMixin,
+    AnnouncementsMixin,
+    NotificationMixin
+) {
 
     static get is() { return "pl-app"; }
 
@@ -30,8 +40,6 @@ class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(SyncMixin(Dat
     constructor() {
         super();
 
-        this._debouncedSynchronize = padlock.util.debounce(() => this.synchronize(), 1000);
-
         const moved = () => this._autoLockChanged();
         document.addEventListener("touchstart", moved, false);
         document.addEventListener("keydown", moved, false);
@@ -52,18 +60,9 @@ class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(SyncMixin(Dat
         return this.offsetWidth < 700;
     }
 
-    recordChanged() {
-        if (this.settings.syncAuto && this.settings.syncConnected) {
-            this._debouncedSynchronize();
-        }
-    }
-
     recordDeleted(record) {
         if (record === this._selectedRecord) {
             this.$.listView.deselect();
-        }
-        if (this.settings.syncAuto && this.settings.syncConnected) {
-            this._debouncedSynchronize();
         }
     }
 
@@ -82,9 +81,6 @@ class App extends AnnouncementsMixin(NotificationMixin(DialogMixin(SyncMixin(Dat
     dataLoaded() {
         this.locked = false;
         this.$.startView.open = true;
-        if (this.settings.syncAuto && this.settings.syncConnected) {
-            this._debouncedSynchronize();
-        }
         this.checkAnnouncements();
     }
 

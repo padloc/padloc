@@ -124,8 +124,13 @@
 
 const { NotificationMixin, BaseElement } = padlock;
 const { MutableData } = Polymer;
+const { applyMixins } = padlock.util;
 
-class RecordItem extends NotificationMixin(MutableData(BaseElement)) {
+class RecordItem extends applyMixins(
+    BaseElement,
+    MutableData,
+    NotificationMixin
+) {
 
     static get is() { return "pl-record-item"; }
 
