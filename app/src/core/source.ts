@@ -99,7 +99,9 @@ export class CloudSource extends AjaxSource {
 
     urlForPath(path: string) {
         // Remove trailing slashes
-        const host = this.settings.syncHostUrl.replace(/\/+$/, "");
+        const host = this.settings.syncCustomHost ?
+            this.settings.syncHostUrl.replace(/\/+$/, "") :
+            "https://cloud.padlock.io";
         return `${host}/${path}/`;
     }
 
