@@ -92,14 +92,14 @@
   t: Email Eingeben (Optional)
 - o: 'strength: {0}'
   t: 'Sicherheit: {0}'
+- o: New Record
+  t: Neuer Eintrag
 - o: OK
   t: OK
 - o: Are you sure you want to do this?
   t: Sind Sie sicher dass Sie dies tun möchten?
 - o: Confirm
   t: Bestätigen
-- o: Learn More
-  t: Mehr Erfahren
 - o: Dismiss
   t: OK
 - o: >-
@@ -108,19 +108,66 @@
   t: >-
     Sie müssen mit Padlock Cloud verbunden sein um Ihre Daten zu
     synchronisieren!
-- o: Are you sure you want to disconnect from Padlock Cloud?
-  t: 'Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?'
-- o: Please enter a valid email address!
-  t: Bitte geben Sie eine gültige Emailadresse ein!
-- o: >-
-    For security reasons only a limited amount of connection request are allowed
-    at a time. Please wait a little before trying again!
+- o: Padlock Cloud master password updated successfully!
+  t: Ihr Password auf Padlock Cloud wurde erfolgreich geändert!
+- o: Failed to update Padlock Cloud master password. Please try again later!
   t: >-
-    Aus Sicherheitsgründen ist nur eine begrenzte Anzahl an Verbindungsanfragen
-    innerhalb eines bestimmten Zeitraums erlaubt. Bitte warten Sie eine Weile
-    und versuchen es dann erneut!
-- o: Something went wrong. Please try again later!
-  t: Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!
+    Die Änderung Ihres Passwort auf Padlock Cloud ist fehlgeschlagen. Bitte
+    versuchen Sie es später erneut!
+- o: You successfully paired this device with Padlock Cloud!
+  t: Sie haben dieses Gerät erfolgreiche mit Padlock Cloud verbunden!
+- o: Synchonize Now
+  t: Jetzt Synchronisieren
+- o: >-
+    You are almost done connecting this device. An email was sent to {0}. Check
+    your inbox and follow the instructions to complete the process!
+  t: >-
+    Der Verbindungsvorgang ist fast abgeschlossen. Es wurde eine Email an {0}
+    gesendet. Prüfen Sie Ihr Postfach und folgen Sie den Anweisungen um den
+    Vorgang abzuschließen!
+- o: >-
+    After this period, your access will be read-only, which means you will be
+    able to access your existing data on Padlock Cloud but you won't be able to
+    upload any new data or synchronize changes between devices. Get a
+    subscription now to get unlimited access to Padlock Cloud!
+  t: >-
+    Nach dieser Zeitspanne ist Ihr Zugriff auf das Lesen Ihrer Daten beschränkt.
+    Dies bedeutet, dass Sie zwar weiterhin Ihre Daten herunterladen, jedoch
+    weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
+    synchronisieren können. Erwerben Sie jetzt ein Abonnement um um vollen
+    Zugriff auf Padlock Cloud zu erhalten!
+- o: >-
+    Padlock Cloud provides a convenient way of synchronising your data between
+    all your devices. By securely storing your data in the cloud, it not only
+    allows you to easily access it from anywhere but also acts as a backup in
+    case you should lose your device or accidentally erase your data. Before
+    being sent to our servers, your data is encrypted locally using your master
+    password to make sure that nobody can read it - not even we!
+  t: >-
+    Padlock Cloud ist der einfachste und bequemste Weg, Ihre Daten zwischen all
+    Ihren Geräten zu synchronisieren. Das sichere Speichern Ihrer Daten in der
+    "Cloud" erlaubt Ihnen nicht nur, auf Ihre Daten von überall aus zuzugreifen,
+    sondern dient außerdem als Absicherung im Falle eines Datenverlustes. Ihre
+    Daten werden stets lokal verschlüsselt bevor sie an unsere Server gesendet
+    werden um sicher zu stellen, dass niemand sie lesen kann - nicht einmal wir!
+- o: >-
+    You currently don't have an active subscription! This means you can access
+    your existing data on Padlock Cloud but you won't be able to upload any new
+    data or synchronize changes between devices. Get a subscription now to
+    regain full access to Padlock Cloud!
+  t: >-
+    Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar
+    weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können,
+    aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
+    synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen
+    Zugriff auf Padlock Cloud zu erhalten!
+- o: >-
+    This device is connected to the Padlock Cloud account {0}. Connect all your
+    devices with the same account to easily synchronize your data between them!
+  t: >-
+    Dieses Gerät ist mit dem Padlock Cloud Konto {0} verbunden. Verbinden Sie
+    all Ihre Geräte mit dem selben Konto um Ihre Daten auf einfache Weise
+    zwischen ihnen zu synchronisieren!
 - o: Do you want to change your Padlock Cloud master password to your local one?
   t: >-
     Wollen Sie Ihr Master Password auf Padlock Cloud auf Ihr lokales Password
@@ -129,12 +176,13 @@
   t: Ja
 - o: 'No'
   t: Nein
-- o: Padlock Cloud master password updated successfully!
-  t: Ihr Password auf Padlock Cloud wurde erfolgreich geändert!
-- o: Failed to update Padlock Cloud master password. Please try again later!
+- o: >-
+    For security reasons only a limited amount of connection request are allowed
+    at a time. Please wait a little before trying again!
   t: >-
-    Die Änderung Ihres Passwort auf Padlock Cloud ist fehlgeschlagen. Bitte
-    versuchen Sie es später erneut!
+    Aus Sicherheitsgründen ist nur eine begrenzte Anzahl an Verbindungsanfragen
+    innerhalb eines bestimmten Zeitraums erlaubt. Bitte warten Sie eine Weile
+    und versuchen es dann erneut!
 - o: >-
     There was a problem authenticating with Padlock Cloud. Please complete the
     connection process again!
@@ -195,10 +243,12 @@
     aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
     synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen
     Zugriff auf Padlock Cloud zu erhalten!
-- o: You successfully paired this device with Padlock Cloud!
-  t: Sie haben dieses Gerät erfolgreiche mit Padlock Cloud verbunden!
-- o: Synchonize Now
-  t: Jetzt Synchronisieren
+- o: Something went wrong. Please try again later!
+  t: Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!
+- o: Are you sure you want to disconnect from Padlock Cloud?
+  t: 'Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?'
+- o: Please enter a valid email address!
+  t: Bitte geben Sie eine gültige Emailadresse ein!
 - o: >-
     Are you sure you want to use a custom server for synchronization? This
     option is only recommended for advanced users!
@@ -207,56 +257,6 @@
     möchten? Dies ist nur für fortgeschrittene Nutzer zu empfehlen!
 - o: Continue
   t: Fortfahren
-- o: >-
-    Padlock Cloud provides a convenient way of synchronising your data between
-    all your devices. By securely storing your data in the cloud, it not only
-    allows you to easily access it from anywhere but also acts as a backup in
-    case you should lose your device or accidentally erase your data. Before
-    being sent to our servers, your data is encrypted locally using your master
-    password to make sure that nobody can read it - not even we!
-  t: >-
-    Padlock Cloud ist der einfachste und bequemste Weg, Ihre Daten zwischen all
-    Ihren Geräten zu synchronisieren. Das sichere Speichern Ihrer Daten in der
-    "Cloud" erlaubt Ihnen nicht nur, auf Ihre Daten von überall aus zuzugreifen,
-    sondern dient außerdem als Absicherung im Falle eines Datenverlustes. Ihre
-    Daten werden stets lokal verschlüsselt bevor sie an unsere Server gesendet
-    werden um sicher zu stellen, dass niemand sie lesen kann - nicht einmal wir!
-- o: >-
-    After this period, your access will be read-only, which means you will be
-    able to access your existing data on Padlock Cloud but you won't be able to
-    upload any new data or synchronize changes between devices. Get a
-    subscription now to get unlimited access to Padlock Cloud!
-  t: >-
-    Nach dieser Zeitspanne ist Ihr Zugriff auf das Lesen Ihrer Daten beschränkt.
-    Dies bedeutet, dass Sie zwar weiterhin Ihre Daten herunterladen, jedoch
-    weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
-    synchronisieren können. Erwerben Sie jetzt ein Abonnement um um vollen
-    Zugriff auf Padlock Cloud zu erhalten!
-- o: >-
-    You currently don't have an active subscription! This means you can access
-    your existing data on Padlock Cloud but you won't be able to upload any new
-    data or synchronize changes between devices. Get a subscription now to
-    regain full access to Padlock Cloud!
-  t: >-
-    Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar
-    weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können,
-    aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
-    synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen
-    Zugriff auf Padlock Cloud zu erhalten!
-- o: >-
-    This device is connected to the Padlock Cloud account {0}. Connect all your
-    devices with the same account to easily synchronize your data between them!
-  t: >-
-    Dieses Gerät ist mit dem Padlock Cloud Konto {0} verbunden. Verbinden Sie
-    all Ihre Geräte mit dem selben Konto um Ihre Daten auf einfache Weise
-    zwischen ihnen zu synchronisieren!
-- o: >-
-    You are almost done connecting this device. An email was sent to {0}. Check
-    your inbox and follow the instructions to complete the process!
-  t: >-
-    Der Verbindungsvorgang ist fast abgeschlossen. Es wurde eine Email an {0}
-    gesendet. Prüfen Sie Ihr Postfach und folgen Sie den Anweisungen um den
-    Vorgang abzuschließen!
 - o: Value copied to clipboard!
   t: Daten in Zwischenablage kopiert!
 - o: '{0} more {1}'
@@ -309,6 +309,8 @@
   t: >-
     Sie haben das neue Passwort nicht korrekt wiederholt. Bitte versuchen Sie es
     erneut!
+- o: Master password changed successfully.
+  t: Ihr Masterpassword wurde erfolgreich geändert.
 - o: >-
     Are you sure you want to delete all your data and reset the app? Enter your
     master password to continue!
@@ -470,12 +472,8 @@
   t: mittel
 - o: strong
   t: stark
-- o: New Record
-  t: Neuer Eintrag
-- o: Would you like to pair this device with Padlock Cloud now?
-  t: Möchten sie diese Gerät nun mit Padlock Cloud verbinden?
-- o: Maybe Later
-  t: Vielleicht Später
+- o: Learn More
+  t: Mehr Erfahren
 - o: >-
     Padlock was automatically locked after {0} {1} of inactivity. You can change
     this behavior from the settings page.
@@ -488,7 +486,43 @@
   t: Minute
 - o: Auto-lock in 10 seconds
   t: Automatische Sperrung in 10 Sekunden
+- o: >-
+    Have you backed up your data yet? Remember that by default your data is only
+    stored locally and may be lost if you uninstall Padlock, lose your device or
+    accidentally delete the app. Padlock Cloud is a great way to back up your
+    data online and synchronize with other devices. Alternatively, you can
+    export your data and store it somewhere safe.
+  t: >-
+    Haben Sie bereits eine Sicherung Ihrer Daten erstellt? Denken Sie daran, dass
+    Ihre Daten standartmäßig nur lokal auf Ihrem Gerät gespeichert werden und
+    verloren gehen können, sollten Sie Ihr Gerät verlieren oder versehentlich die
+    Applikation entfernen. Padlock Cloud bietet eine gute Möglichkeit, Ihre Daten
+    online zu sichern und mit anderen Geräten zu synchronisieren. Alternativ können
+    Sie Ihre Daten auch exportieren und and einem sicheren Ort speichern.
+- o: Sync With Padlock Cloud
+  t: Mit Padlock Cloud Synchronisieren
+- o: Export Data
+  t: Daten Exportieren
+- o: Do Nothing
+  t: Nichts Tun
+- o: >-
+    The last time you synced your data with Padlock Cloud was {0} days ago! You
+    should synchronize regularly to keep all your devices up-to-date and to make
+    sure you always have a recent backup in the cloud.
+  t: >-
+    Sie haben vor {0} Tagen das letzte mal Ihre Daten mit Padlock Cloud synchronisiert.
+    Es wird empfohlen, Ihre Daten regelmäßig zu sychronisieren, um all Ihre Geräte
+    auf dem neuesten Stand zu halten und um sicher zu stellen, dass immer eine
+    aktuelle Sicherung in der Cloud vorliegt.
+- o: Synchronize Now
+  t: Jetzt Synchronisieren
+- o: Turn On Auto Sync
+  t: Auto-Sync Aktivieren
+- o: 'Your Padlock Cloud trial period ends in {0} days!'
+  t: 'Ihre Padlock Cloud Testphase ended in {0} Tagen!'
+- o: Would you like to pair this device with Padlock Cloud now?
+  t: Möchten sie diese Gerät nun mit Padlock Cloud verbinden?
+- o: Maybe Later
+  t: Vielleicht Später
 - o: App reset successfully. Off to a fresh start!
   t: Die App wurde erfolgreich zurückgesetzt.
-- o: Master password changed successfully.
-  t: Ihr Masterpassword wurde erfolgreich geändert.
