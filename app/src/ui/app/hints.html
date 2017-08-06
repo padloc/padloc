@@ -17,6 +17,11 @@ const metaLoaded = metaSource.get().then((data) => {
     }
 });
 const saveMeta = () => metaSource.set(JSON.stringify(meta));
+const day = 1000 * 60 * 60 * 24;
+
+function daysPassed(date) {
+    return (new Date().getTime() - date) / day;
+}
 
 padlock.HintsMixin = (superClass) => {
 
@@ -29,24 +34,22 @@ padlock.HintsMixin = (superClass) => {
                     meta.firstLaunch = new Date().getTime();
                 }
 
-                meta.mostRecentLaunch = new Date().getTime();
+                meta.lastLaunch = new Date().getTime();
                 meta.launchCount++;
 
                 saveMeta();
             });
 
-            this.listen("data-loaded", () => metaLoaded.then(() => wait(1000)).then(() => this._hintBackup()));
+            this.listen("data-loaded", () => metaLoaded.then(() => wait(1000)).then(() => this._remindBackup()));
+            this.listen("data-loaded", () => metaLoaded.then(() => wait(1000)).then(() => this._remindSync()));
+            this.listen("sync-success", () => metaLoaded.then(() => {
+                meta.lastSync = new Date().getTime();
+                saveMeta();
+            }));
         }
 
-        _hintBackup() {
-            const lbr = meta.lastBackupReminder;
-            // Whether last back reminder was more than a week ago
-            const weekPassed = lbr && (new Date().getTime() - lbr) > 1000 * 60 * 60 * 24 * 7;
-
-            if (
-                (weekPassed || !lbr && meta.launchCount > 3) &&
-                !this.settings.syncConnected
-            ) {
+        _remindBackup() {
+            if (daysPassed(meta.lastBackupReminder || meta.firstLaunch) > 7 && !this.settings.syncConnected) {
                 this.choose($l(
                     "Have you backed up your data yet? Remember that by default your data is only stored " +
                     "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
@@ -66,6 +69,34 @@ padlock.HintsMixin = (superClass) => {
 
                 meta.lastBackupReminder = new Date().getTime();
                 saveMeta();
+            }
+        }
+
+        _remindSync() {
+            const daysSinceLastSync = daysPassed(meta.lastSync || meta.firstLaunch);
+            if (
+                this.settings.syncConnected &&
+                daysSinceLastSync > 7 &&
+                daysPassed(meta.lastSyncReminder || meta.firstLaunch) > 7
+            ) {
+                this.choose($l(
+                    "The last time you synced your data with Padlock Cloud was {0} days ago! You should " +
+                    "synchronize regularly to keep all your devices up-to-date and to make sure you always " +
+                    "have a recent backup in the cloud.",
+                    Math.floor(daysSinceLastSync)
+                ), [$l("Synchronize Now"), $l("Turn On Auto Sync"), $l("Do Nothing")])
+                    .then((choice) => {
+                        switch (choice) {
+                            case 0:
+                                this.synchronize();
+                                break;
+                            case 1:
+                                this.settings.syncAuto = true;
+                                this.dispatch("settings-changed");
+                                this.synchronize();
+                                break;
+                        }
+                    });
             }
         }
 
