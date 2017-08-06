@@ -1,0 +1,77 @@
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../locale/locale.html">
+
+<script>
+(() => {
+
+const { FileSource } = padlock.source;
+const { wait } = padlock.util;
+
+const metaSource = new FileSource("hints.json");
+let meta;
+const metaLoaded = metaSource.get().then((data) => {
+    try {
+        meta = JSON.parse(data);
+    } catch (e) {
+        meta = {};
+    }
+});
+const saveMeta = () => metaSource.set(JSON.stringify(meta));
+
+padlock.HintsMixin = (superClass) => {
+
+    return class HintsMixin extends superClass {
+
+        constructor() {
+            super();
+            metaLoaded.then(() => {
+                if (!meta.firstLaunch) {
+                    meta.firstLaunch = new Date().getTime();
+                }
+
+                meta.mostRecentLaunch = new Date().getTime();
+                meta.launchCount++;
+
+                saveMeta();
+            });
+
+            this.listen("data-loaded", () => metaLoaded.then(() => wait(1000)).then(() => this._hintBackup()));
+        }
+
+        _hintBackup() {
+            const lbr = meta.lastBackupReminder;
+            // Whether last back reminder was more than a week ago
+            const weekPassed = lbr && (new Date().getTime() - lbr) > 1000 * 60 * 60 * 24 * 7;
+
+            if (
+                (weekPassed || !lbr && meta.launchCount > 3) &&
+                !this.settings.syncConnected
+            ) {
+                this.choose($l(
+                    "Have you backed up your data yet? Remember that by default your data is only stored " +
+                    "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
+                    "reset your data. Padlock Cloud is a great way to back up your data online and synchronize " +
+                    "with other devices. Alternatively, you can export your data and store it somewhere safe."
+                ), [$l("Sync With Padlock Cloud"), $l("Export Data"), $l("Do Nothing")])
+                    .then((choice) => {
+                        switch (choice) {
+                            case 0:
+                                this._openCloudView();
+                                break;
+                            case 1:
+                                this._openSettings();
+                                break;
+                        }
+                    });
+
+                meta.lastBackupReminder = new Date().getTime();
+                saveMeta();
+            }
+        }
+
+    };
+
+};
+
+})();
+</script>

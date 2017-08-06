@@ -1,7 +1,7 @@
 (() => {
 
 const { NotificationMixin, DialogMixin, AnnouncementsMixin, DataMixin,
-    SyncMixin, AutoSyncMixin, AutoLockMixin, BaseElement } = padlock;
+    SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 
 class App extends applyMixins(
@@ -12,7 +12,8 @@ class App extends applyMixins(
     AutoLockMixin,
     DialogMixin,
     AnnouncementsMixin,
-    NotificationMixin
+    NotificationMixin,
+    HintsMixin
 ) {
 
     static get is() { return "pl-app"; }
