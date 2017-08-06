@@ -1,0 +1,59 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../locale/locale.html">
+<link rel="import" href="dialog.html">
+
+<dom-module id="pl-dialog-options">
+
+    <template>
+        <style include="shared"></style>
+
+        <pl-dialog open="{{ open }}" prevent-dismiss>
+            <div class="message tiles-1">[[ message ]]</div>
+            <template is="dom-repeat" items="[[ options ]]">
+                <button class$="[[ _buttonClass(index) ]]" on-click="_selectOption">[[ item ]]</button>
+            </template>
+        </pl-dialog>
+    </template>
+
+    <script>
+(() => {
+
+class DialogOptions extends padlock.BaseElement {
+
+    static get is() { return "pl-dialog-options"; }
+
+    static get properties() { return {
+        message: { type: String, value: "" },
+        open: { type: Boolean, value: false },
+        options: { type: Array, value: [$l("Dismiss")] }
+    }; }
+
+    choose(message, options) {
+        this.message = message || this.message || "";
+        this.options = options || this.options;
+        this.open = true;
+
+        return new Promise((resolve) => {
+            this._resolve = resolve;
+        });
+    }
+
+    _selectOption(e) {
+        this.open = false;
+        typeof (this._resolve === "function") && this._resolve(this.options.indexOf(e.model.item));
+        this._resolve = null;
+    }
+
+    _buttonClass(index) {
+        return "tap tiles-" + (Math.floor((index + 1) % 8) + 1);
+    }
+
+}
+
+window.customElements.define(DialogOptions.is, DialogOptions);
+
+})();
+    </script>
+
+</dom-module>
