@@ -42,6 +42,7 @@ padlock.HintsMixin = (superClass) => {
 
             this.listen("data-loaded", () => metaLoaded.then(() => wait(1000)).then(() => this._remindBackup()));
             this.listen("data-loaded", () => metaLoaded.then(() => wait(1000)).then(() => this._remindSync()));
+            this.listen("data-loaded", () => metaLoaded.then(() => wait(1000)).then(() => this._remindTrialEnds()));
             this.listen("sync-success", () => metaLoaded.then(() => {
                 meta.lastSync = new Date().getTime();
                 saveMeta();
@@ -98,6 +99,30 @@ padlock.HintsMixin = (superClass) => {
                         }
                     });
             }
+        }
+
+        _remindTrialEnds() {
+            if (
+                this.settings.syncSubStatus === "trialing" &&
+                this.remainingTrialDays <= 7 &&
+                (!meta.lastTrialEndsReminder || daysPassed(meta.lastTrialEndsReminder) > 1)
+            ) {
+                this.confirm(
+                    $l("Your Padlock Cloud trial period ends in {0} days!", this.remainingTrialDays) +
+                    " " + this.trialInfoText(),
+                    $l("Manage Subscriptions"),
+                    $l("Dismiss")
+                )
+                    .then((confirmed) => {
+                        if (confirmed) {
+                            this.openDashboard();
+                        }
+                    });
+
+                meta.lastTrialEndsReminder = new Date().getTime();
+                saveMeta();
+            }
+
         }
 
     };

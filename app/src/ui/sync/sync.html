@@ -140,6 +140,54 @@ padlock.SyncMixin = (superClass) => {
                 });
         }
 
+        openDashboard() {
+            window.open(this.settings.syncHostUrl + "/dashboard/", "_system");
+        }
+
+        activationPendingText() {
+            return $l(
+                "You are almost done connecting this device. An email was sent to {0}. Check your " +
+                "inbox and follow the instructions to complete the process!",
+                this.settings.syncEmail
+            );
+        }
+
+        trialInfoText() {
+            return $l(
+                "After this period, your access will be read-only, which means you will be able to access " +
+                "your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize " +
+                "changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!"
+            );
+        }
+
+        generalInfoText() {
+            return $l(
+                "Padlock Cloud provides a convenient way of synchronising your data between " +
+                "all your devices. By securely storing your data in the cloud, it not only allows you " +
+                "to easily access it from anywhere but also acts as a backup in case you should lose " +
+                "your device or accidentally erase your data. Before being sent to our servers, " +
+                "your data is encrypted locally using your master password to make sure that nobody " +
+                "can read it - not even we!"
+            );
+        }
+
+        readOnlyInfoText() {
+            return $l(
+                "You currently don't have an active subscription! This means you can access " +
+                "your existing data on Padlock Cloud but you won't be able to upload any new data " +
+                "or synchronize changes between devices. Get a subscription now to regain full access " +
+                "to Padlock Cloud!"
+            );
+        }
+
+        connectedInfoText() {
+            return $l(
+                "This device is connected to the Padlock Cloud account {0}. Connect all your devices " +
+                "with the same account to easily synchronize your data between them!",
+                this.settings.syncEmail
+            );
+        }
+
         _synchronize() {
             this.dispatch("sync-start");
 
@@ -202,7 +250,7 @@ padlock.SyncMixin = (superClass) => {
                     this.settings.syncToken = authToken.token;
                     this.settings.syncId = authToken.id;
                     this.dispatch("settings-changed");
-                    this.alert(this._activationPendingText());
+                    this.alert(this.activationPendingText());
                 })
                 .catch((e) => {
                     this.dispatch("settings-changed");
