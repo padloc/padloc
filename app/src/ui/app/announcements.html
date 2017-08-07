@@ -15,7 +15,7 @@ padlock.AnnouncementsMixin = (superClass) => {
             super.ready();
             this._announcements = new Announcements(
                 "ancm.json",
-                new FileSource("read_announcements.json"),
+                new FileSource("read-announcements.json"),
                 this.settings
             );
         }

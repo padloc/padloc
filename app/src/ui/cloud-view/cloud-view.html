@@ -81,7 +81,7 @@
 
             <section class="tiles tiles-2" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
                 <div class="note">
-                    [[ _generalInfoText() ]]
+                    [[ generalInfoText() ]]
                 </div>
                 <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="_connect"></pl-input>
                 <pl-loading-button id="connectButton" class="tap" label="[[ $l('Get Started') ]]" on-click="_connect"></pl-loading-button>
@@ -90,7 +90,7 @@
             <section class="tiles tiles-2" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
                 <div class="note">
                     <strong>[[ $l("Activation pending") ]]</strong> -
-                    [[ _activationPendingText(settings.syncEmail) ]]
+                    [[ activationPendingText(settings.syncEmail) ]]
                     <div class="conn-id">[[ $l("Connection ID: {0}", settings.syncId) ]]</div>
                 </div>
                 <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
@@ -99,28 +99,28 @@
             <section class="tiles tiles-2" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="note">
                     <strong>[[ $l("Your trial period ends in {0} days.", remainingTrialDays) ]]</strong> -
-                    [[ _trialInfoText() ]]
+                    [[ trialInfoText() ]]
                 </div>
-                <button class="tap" on-click="_openDashboard">[[ $l("Manage Subscriptions") ]]</button>
+                <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="note">
                     <strong>[[ $l("Read-Only") ]]</strong> -
-                    [[ _readOnlyInfoText() ]]
+                    [[ readOnlyInfoText() ]]
                 </div>
-                <button class="tap" on-click="_openDashboard">[[ $l("Manage Subscriptions") ]]</button>
+                <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !settings.syncConnected ]]">
                 <div class="note">
                     <strong>[[ $l("Connected") ]]</strong> -
-                    [[ _connectedInfoText(settings.syncEmail) ]]
+                    [[ connectedInfoText(settings.syncEmail) ]]
                     <div class="conn-id">[[ $l("Connection ID: {0}", settings.syncId) ]]</div>
                 </div>
                 <pl-loading-button id="syncButton" class="tap" on-click="synchronize"
                     label="[[ $l('Synchronize') ]]"></pl-loading-button>
-                <button class="tap" on-click="_openDashboard">[[ $l("Manage Account") ]]</button>
+                <button class="tap" on-click="openDashboard">[[ $l("Manage Account") ]]</button>
                 <button class="tap" on-click="_disconnect">[[ $l("Disconnect") ]]</button>
                 <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Auto Sync') ]]"
                     reverse class="tap" on-change="settingChanged"></pl-toggle-button>
@@ -210,7 +210,7 @@ class CloudView extends applyMixins(
         if (this.$.emailInput.invalid) {
             this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
         } else {
-            this.$.syncButton.start();
+            this.$.connectButton.start();
             this.connectCloud(this.$.emailInput.value)
                 .then(() => this.$.connectButton.success())
                 .catch(() => this.$.connectButton.fail());
@@ -229,54 +229,6 @@ class CloudView extends applyMixins(
                     }
                 });
         }
-    }
-
-    _openDashboard() {
-        window.open(this.settings.syncHostUrl + "/dashboard/", "_system");
-    }
-
-    _generalInfoText() {
-        return $l(
-            "Padlock Cloud provides a convenient way of synchronising your data between " +
-            "all your devices. By securely storing your data in the cloud, it not only allows you " +
-            "to easily access it from anywhere but also acts as a backup in case you should lose " +
-            "your device or accidentally erase your data. Before being sent to our servers, " +
-            "your data is encrypted locally using your master password to make sure that nobody " +
-            "can read it - not even we!"
-        );
-    }
-
-    _trialInfoText() {
-        return $l(
-            "After this period, your access will be read-only, which means you will be able to access " +
-            "your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize " +
-            "changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!"
-        );
-    }
-
-    _readOnlyInfoText() {
-        return $l(
-            "You currently don't have an active subscription! This means you can access " +
-            "your existing data on Padlock Cloud but you won't be able to upload any new data " +
-            "or synchronize changes between devices. Get a subscription now to regain full access " +
-            "to Padlock Cloud!"
-        );
-    }
-
-    _connectedInfoText() {
-        return $l(
-            "This device is connected to the Padlock Cloud account {0}. Connect all your devices " +
-            "with the same account to easily synchronize your data between them!",
-            this.settings.syncEmail
-        );
-    }
-
-    _activationPendingText() {
-        return $l(
-            "You are almost done connecting this device. An email was sent to {0}. Check your " +
-            "inbox and follow the instructions to complete the process!",
-            this.settings.syncEmail
-        );
     }
 
 }

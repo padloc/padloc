@@ -1,0 +1,144 @@
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../locale/locale.html">
+
+<script>
+(() => {
+
+const { FileSource } = padlock.source;
+const { wait } = padlock.util;
+
+const statsSource = new FileSource("stats.json");
+let stats;
+const statsLoaded = statsSource.get().then((data) => {
+    try {
+        stats = JSON.parse(data);
+    } catch (e) {
+        stats = {};
+    }
+});
+const saveStats = () => statsSource.set(JSON.stringify(stats));
+const day = 1000 * 60 * 60 * 24;
+
+function daysPassed(date) {
+    return (new Date().getTime() - date) / day;
+}
+
+padlock.HintsMixin = (superClass) => {
+
+    return class HintsMixin extends superClass {
+
+        constructor() {
+            super();
+            statsLoaded.then(() => {
+                if (!stats.firstLaunch) {
+                    stats.firstLaunch = new Date().getTime();
+                }
+
+                stats.lastLaunch = new Date().getTime();
+                stats.launchCount++;
+
+                saveStats();
+            });
+
+            this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindBackup()));
+            this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindSync()));
+            this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindTrialEnds()));
+            this.listen("sync-success", () => statsLoaded.then(() => {
+                stats.lastSync = new Date().getTime();
+                saveStats();
+            }));
+            this.listen("data-exported", () => statsLoaded.then(() => {
+                stats.lastExport = new Date().getTime();
+                saveStats();
+            }));
+        }
+
+        _remindBackup() {
+            if (
+                daysPassed(stats.lastExport || stats.firstLaunch) > 7 &&
+                daysPassed(stats.lastBackupReminder || stats.firstLaunch) > 7 &&
+                !this.settings.syncConnected
+            ) {
+                this.choose($l(
+                    "Have you backed up your data yet? Remember that by default your data is only stored " +
+                    "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
+                    "reset your data. Padlock Cloud is a great way to back up your data online and synchronize " +
+                    "with other devices. Alternatively, you can export your data and store it somewhere safe."
+                ), [$l("Sync With Padlock Cloud"), $l("Export Data"), $l("Do Nothing")])
+                    .then((choice) => {
+                        switch (choice) {
+                            case 0:
+                                this._openCloudView();
+                                break;
+                            case 1:
+                                this._openSettings();
+                                break;
+                        }
+                    });
+
+                stats.lastBackupReminder = new Date().getTime();
+                saveStats();
+            }
+        }
+
+        _remindSync() {
+            const daysSinceLastSync = daysPassed(stats.lastSync || stats.firstLaunch);
+            if (
+                this.settings.syncConnected &&
+                daysSinceLastSync > 7 &&
+                daysPassed(stats.lastSyncReminder || stats.firstLaunch) > 7
+            ) {
+                this.choose($l(
+                    "The last time you synced your data with Padlock Cloud was {0} days ago! You should " +
+                    "synchronize regularly to keep all your devices up-to-date and to make sure you always " +
+                    "have a recent backup in the cloud.",
+                    Math.floor(daysSinceLastSync)
+                ), [$l("Synchronize Now"), $l("Turn On Auto Sync"), $l("Do Nothing")])
+                    .then((choice) => {
+                        switch (choice) {
+                            case 0:
+                                this.synchronize();
+                                break;
+                            case 1:
+                                this.settings.syncAuto = true;
+                                this.dispatch("settings-changed");
+                                this.synchronize();
+                                break;
+                        }
+                    });
+
+                stats.lastSyncReminder = new Date().getTime();
+                saveStats();
+            }
+        }
+
+        _remindTrialEnds() {
+            if (
+                this.settings.syncSubStatus === "trialing" &&
+                this.remainingTrialDays <= 7 &&
+                (!stats.lastTrialEndsReminder || daysPassed(stats.lastTrialEndsReminder) > 1)
+            ) {
+                this.confirm(
+                    $l("Your Padlock Cloud trial period ends in {0} days!", this.remainingTrialDays) +
+                    " " + this.trialInfoText(),
+                    $l("Manage Subscriptions"),
+                    $l("Dismiss")
+                )
+                    .then((confirmed) => {
+                        if (confirmed) {
+                            this.openDashboard();
+                        }
+                    });
+
+                stats.lastTrialEndsReminder = new Date().getTime();
+                saveStats();
+            }
+
+        }
+
+    };
+
+};
+
+})();
+</script>

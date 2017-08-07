@@ -2,6 +2,7 @@
 <link rel="import" href="dialog-alert.html">
 <link rel="import" href="dialog-confirm.html">
 <link rel="import" href="dialog-prompt.html">
+<link rel="import" href="dialog-options.html">
 
 <script>
 (() => {
@@ -47,6 +48,11 @@ padlock.DialogMixin = (superClass) => {
         prompt(message, placeholder, type, confirmLabel, cancelLabel) {
             const dialog = getDialog("pl-dialog-prompt");
             return lineUpDialog(() => dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel));
+        }
+
+        choose(message, options) {
+            const dialog = getDialog("pl-dialog-options");
+            return lineUpDialog(() => dialog.choose(message, options));
         }
 
     };

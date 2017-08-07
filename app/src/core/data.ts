@@ -141,7 +141,6 @@ export class Settings {
         syncTrialEnd: 0,
         defaultFields: ["username", "password"],
         obfuscateFields: false,
-        showedBackupReminder: 0,
         syncRequireSubscription: false,
         syncId: "",
         version: ""
