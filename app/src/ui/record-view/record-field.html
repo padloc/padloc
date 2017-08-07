@@ -145,6 +145,10 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
             this.notifyPath("field.value");
         }
 
+        if (this._editing) {
+            this.showGenerator = false;
+        }
+
         if (prev !== undefined) {
             this.dispatchEvent(new CustomEvent(this._editing ? "field-edit-start" : "field-edit-end"));
         }
@@ -153,7 +157,6 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     _nameInputFocused() {
         this.classList.add("editing-name");
         this._editingName = true;
-        this.showGenerator = false;
     }
 
     _nameInputBlurred() {
