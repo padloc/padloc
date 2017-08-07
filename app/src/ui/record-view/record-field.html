@@ -220,8 +220,8 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
 
     _generatorConfirm() {
         this.showGenerator = false;
-        this.$.valueInput.value = this.$.generator.value;
-        this.$.valueInput.focus();
+        this.set("field.value", this.$.generator.value);
+        this._fireEditEvent();
     }
 
     _generatorCancel() {
