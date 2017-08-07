@@ -166,6 +166,9 @@ class PlInput extends padlock.BaseElement {
 
     _valueChanged() {
         this.invalid = this.inputElement && !this.inputElement.checkValidity();
+        if (this.multiline) {
+            autosize.update(this.inputElement);
+        }
     }
 
     focus() {
