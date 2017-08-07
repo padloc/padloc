@@ -236,6 +236,7 @@ class SettingsView extends applyMixins(
                     a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
                     a.download = "padlock.csv";
                     a.click();
+                    this.dispatch("data-exported");
                 }
             });
     }
@@ -247,6 +248,7 @@ class SettingsView extends applyMixins(
                     padlock.platform.setClipboard(padlock.exp.toCSV(this.collection.records))
                         .then(() => this.alert($l("Your data has successfully been copied to the system " +
                             "clipboard. You can now paste it into the spreadsheet program of your choice.")));
+                    this.dispatch("data-exported");
                 }
             });
     }
@@ -288,6 +290,7 @@ class SettingsView extends applyMixins(
                 a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
                 a.download = "padlock-export.pls";
                 a.click();
+                this.dispatch("data-exported");
             });
     }
 
@@ -296,6 +299,7 @@ class SettingsView extends applyMixins(
             .then((data) => {
                 padlock.platform.setClipboard(data)
                     .then(() => this.alert($l("Your data has successfully been copied to the system clipboard.")));
+                this.dispatch("data-exported");
             });
     }
 
