@@ -199,7 +199,7 @@ padlock.SyncMixin = (superClass) => {
                 .then(() => this.saveCollection())
                 .then(() => this.collection.save(cloudSource))
                 .then(() => {
-                    this.dispatch("data-synchronized");
+                    this.dispatch("records-changed");
                     this.dispatch("settings-changed");
                     this.dispatch("sync-success");
 

@@ -71,7 +71,7 @@ padlock.DataMixin = (superClass) => {
             this.listen("record-created", (e) => this._recordCreated(e));
             this.listen("record-deleted", (e) => this._recordDeleted(e));
             this.listen("record-changed", (e) => this._recordChanged(e));
-            this.listen("records-added", (e) => this._recordsAdded(e));
+            this.listen("records-changed", (e) => this._recordsChanged(e));
             this.listen("data-initialized", (e) => this._dataInitialized(e));
             this.listen("data-loaded", (e) => this._dataLoaded(e));
             this.listen("data-unloaded", (e) => this._dataUnloaded(e));
@@ -133,7 +133,7 @@ padlock.DataMixin = (superClass) => {
         addRecords(records) {
             this.collection.add(records);
             this.saveCollection();
-            this.dispatch("records-added", records);
+            this.dispatch("records-changed", records);
         }
 
         saveCollection() {
@@ -222,9 +222,9 @@ padlock.DataMixin = (superClass) => {
             this.saveCall("recordChanged", e.detail);
         }
 
-        _recordsAdded(e) {
+        _recordsChanged(e) {
             this.notifyPath("collection");
-            this.saveCall("recordsAdded", e.detail);
+            this.saveCall("recordsChanged", e.detail);
         }
 
         _settingsChanged() {
