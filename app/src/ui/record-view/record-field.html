@@ -110,8 +110,7 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     static get properties() { return {
         _editing: {
             type: Boolean,
-            computed: "_computeEditing(_editingName, _editingValue)",
-            observer: "_editingChanged"
+            computed: "_computeEditing(_editingName, _editingValue)"
         },
         _editingName: {
             type: Boolean,
@@ -136,14 +135,16 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
         }
     }; }
 
+    static get observers() { return [
+        "_editingChanged(_editing, showGenerator)"
+    ]; }
+
     _computeEditing() {
         return this._editingName || this._editingValue;
     }
 
-    _editingChanged(curr, prev) {
-        if (this._editing) {
-            this.showGenerator = false;
-        } else {
+    _editingChanged() {
+        if (!this._editing) {
             if (this.draft) {
                 this.field && (this.field.name = this.$.nameInput.value);
                 this.field && (this.field.value = this.$.valueInput.value);
@@ -153,7 +154,7 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
             }
         }
 
-        if (prev !== undefined) {
+        if (!this.showGenerator) {
             this.dispatchEvent(new CustomEvent(this._editing ? "field-edit-start" : "field-edit-end"));
         }
     }
@@ -161,6 +162,7 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     _nameInputFocused() {
         this.classList.add("editing-name");
         this._editingName = true;
+        this.showGenerator = false;
     }
 
     _nameInputBlurred() {
@@ -173,6 +175,7 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     _valueInputFocused() {
         if (this.$.nameInput.value) {
             this._editingValue = true;
+            this.showGenerator = false;
         } else {
             this.$.nameInput.focus();
         }
@@ -226,8 +229,9 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     }
 
     _generatorConfirm() {
-        this.showGenerator = false;
+        this.set("field.name", this.$.nameInput.value);
         this.set("field.value", this.$.generator.value);
+        this.showGenerator = false;
         this._fireEditEvent();
     }
 
