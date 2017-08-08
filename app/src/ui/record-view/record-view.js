@@ -16,12 +16,16 @@ class RecordView extends applyMixins(
         record: {
             type: Object,
             notify: true
+        },
+        _catListShowing: {
+            type: Boolean,
+            value: false
         }
     }; }
 
     recordCreated(record) {
         setTimeout(() => {
-            if (record === this.record) {
+            if (record === this.record && !padlock.platform.isTouch()) {
                 this.edit();
             }
         }, 500);
@@ -49,6 +53,10 @@ class RecordView extends applyMixins(
     }
 
     _newFieldEnter() {
+        if (!this.record) {
+            return;
+        }
+
         const newField = this.$.newField.field;
         if (newField.name && newField.value) {
             this.push("record.fields", newField);
@@ -75,18 +83,22 @@ class RecordView extends applyMixins(
         } : null;
     }
 
-    _catOptMousedown(e) {
-        e.preventDefault();
-    }
-
     _selectCategory(e) {
         this.set("record.category", e.model.item);
         this._fireChangeEvent();
     }
 
     _showCategoryList() {
-        this.set("record.category", "");
-        this.$.categoryInput.focus();
+        this._catListShowing = true;
+    }
+
+    _hideCategoryList() {
+        setTimeout(() => this._catListShowing = false, 100);
+    }
+
+    _showFullCategoryList() {
+        this.$.categoryInput.value = "";
+        setTimeout(() => this.$.categoryInput.focus(), 100);
     }
 
     _closeOtherGenerators(e) {
