@@ -117,7 +117,7 @@
                 </div>
                 <div class="section-row" hidden$="[[ _isMobile() ]]">
                     <div class="section-row-label">[[ $l("Select a File") ]]</div>
-                    <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.pls,.set">
+                    <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.csv,.pls,.set">
                     <label for="importFile" class="tiles-2">
                         <pl-icon icon="upload" class="tap"></pl-icon>
                     </label>
@@ -378,17 +378,21 @@ class SettingsView extends applyMixins(
                 } else if (isLastPass) {
                     return imp.fromLastPass(rawStr);
                 } else if (isCSV) {
-                    return this.confirm($l(
+                    return this.choose($l(
                         "The data you want to import seems to be in CSV format. Before you continue, " +
                         "please make sure that the data is structured according to Padlocks specific " +
                         "requirements!"
-                    ),
-                    $l("Continue"), $l("Review Import Guidelines"))
-                        .then((confirm) => {
-                            if (confirm) {
-                                return imp.fromCSV(rawStr);
-                            } else {
-                                window.open("https://padlock.io/howto/import/#importing-from-csv", "_system");
+                    ), [$l("Review Import Guidelines"), $l("Continue"), $l("Cancel")])
+                        .then((choice) => {
+                            switch (choice) {
+                                case 0:
+                                    window.open("https://padlock.io/howto/import/#importing-from-csv", "_system");
+                                    // Reopen dialog for when the user comes back from the web page
+                                    return this._importString(rawStr);
+                                case 1:
+                                    return imp.fromCSV(rawStr);
+                                case 2:
+                                    return;
                             }
                         });
 
