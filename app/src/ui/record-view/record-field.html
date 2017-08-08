@@ -47,6 +47,7 @@
                 font-size: 110%;
                 line-height: 1.3;
                 margin: 30px 0 5px 0;
+                min-height: 65px;
                 transition: opacity 0.2s, transform 0.2s;
             }
 
@@ -70,7 +71,7 @@
                 <pl-input id="nameInput" value="[[ field.name ]]" placeholder="[[ $l('Enter New Field Name') ]]" select-on-focus
                     on-focus="_nameInputFocused" on-blur="_nameInputBlurred" on-enter="_confirmEdit" on-escape="_cancelEdit"></pl-input>
                 <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ _valuePlaceholder(draft) ]]" select-on-focus
-                    on-focus="_valueInputFocused" on-blur="_valueInputBlurred" on-escape="_cancelEdit"></pl-input>
+                    on-focus="_valueInputFocused" on-blur="_valueInputBlurred" on-escape="_cancelEdit" on-mousedown="_valueInputMouseDown"></pl-input>
             </div>
             <template is="dom-if" if="{{ !draft }}">
                 <div class="field-buttons tiles" hidden$="{{ _editing }}">
@@ -140,9 +141,16 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     }
 
     _editingChanged(curr, prev) {
-        if (!this._editing && !this.draft) {
-            this.notifyPath("field.name");
-            this.notifyPath("field.value");
+        if (this._editing) {
+            this.showGenerator = false;
+        } else {
+            if (this.draft) {
+                this.field && (this.field.name = this.$.nameInput.value);
+                this.field && (this.field.value = this.$.valueInput.value);
+            } else {
+                this.notifyPath("field.name");
+                this.notifyPath("field.value");
+            }
         }
 
         if (prev !== undefined) {
@@ -153,7 +161,6 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     _nameInputFocused() {
         this.classList.add("editing-name");
         this._editingName = true;
-        this.showGenerator = false;
     }
 
     _nameInputBlurred() {
@@ -164,7 +171,7 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     }
 
     _valueInputFocused() {
-        if (this.field.name) {
+        if (this.$.nameInput.value) {
             this._editingValue = true;
         } else {
             this.$.nameInput.focus();
@@ -208,7 +215,7 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     }
 
     _valuePlaceholder() {
-        return this.draft ? "" : $l("Empty Field");
+        return this.draft ? $l("Enter Content") : $l("Empty Field");
     }
 
     _toggleGenerator() {
@@ -220,8 +227,8 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
 
     _generatorConfirm() {
         this.showGenerator = false;
-        this.$.valueInput.value = this.$.generator.value;
-        this.$.valueInput.focus();
+        this.set("field.value", this.$.generator.value);
+        this._fireEditEvent();
     }
 
     _generatorCancel() {
@@ -235,6 +242,14 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     _copy() {
         padlock.platform.setClipboard(this.field.value)
             .then(() => this.notify($l("Value copied to clipboard!"), "success", 1500));
+    }
+
+    _valueInputMouseDown(e) {
+        // Prevent focusing value input if name input is still empty; Focus name input instead
+        if (!this.$.nameInput.value) {
+            e.preventDefault();
+            this.$.nameInput.focus();
+        }
     }
 
     edit() {

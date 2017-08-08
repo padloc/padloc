@@ -52,8 +52,11 @@ class RecordView extends applyMixins(
         const newField = this.$.newField.field;
         if (newField.name && newField.value) {
             this.push("record.fields", newField);
-            this.$.newField.field = { name: "", value: "" };
+            if (!padlock.platform.isTouch()) {
+                this.$.newField.edit();
+            }
         }
+        this.$.newField.field = { name: "", value: "" };
 
         setTimeout(() => this._fireChangeEvent(), 500);
     }
