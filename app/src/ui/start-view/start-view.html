@@ -350,22 +350,32 @@ class StartView extends applyMixins(
     }
 
     _showEmailInfo() {
+        this.$.emailInput.blur();
+        padlock.util.wait(100)
+            .then(() => {
+                return this.alert($l(
+                    "Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
+                    "you to easily and securely store your data online and synchronize it between all your devices. " +
+                    "Don't worry, we'll only use it as a method of authentication and won't send you any spam!"
+                ));
+            })
+            .then(() => this.$.emailInput.focus());
         this._hasEmailInputShown = true;
-        this.alert($l(
-            "Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
-            "you to easily and securely store your data online and synchronize it between all your devices. " +
-            "Don't worry, we'll only use it as a method of authentication and won't send you any spam!"
-        )).then(() => this.$.emailInput.focus());
     }
 
     _showPasswordInfo() {
+        this.$.newPasswordInput.blur();
+        padlock.util.wait(100)
+            .then(() => {
+                return this.alert($l(
+                    "Your master password is a single passphrase that is used to encrypt everything you " +
+                    "store in Padlock and the only way to access your data. Without your master password, no " +
+                    "one will be able to read your data - not even we! So make sure you don't forget it, because " +
+                    "we won't be able to help you recover it in case you do."
+                ));
+            })
+            .then(() => this.$.newPasswordInput.focus());
         this._hasPasswordInfoShown = true;
-        this.alert($l(
-            "Your master password is a single passphrase that is used to encrypt everything you " +
-            "store in Padlock and the only way to access your data. Without your master password, no " +
-            "one will be able to read your data - not even we! So make sure you don't forget it, because " +
-            "we won't be able to help you recover it in case you do."
-        )).then(() => this.$.newPasswordInput.focus());
     }
 
     _emailInputFocused() {
