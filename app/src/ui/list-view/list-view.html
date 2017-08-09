@@ -63,16 +63,6 @@
                 pointer-events: none;
             }
 
-            main {
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-            }
-
-            iron-list {
-                flex: 1;
-            }
-
             .empty {
                 flex: 1;
                 display: flex;
@@ -144,12 +134,13 @@
             <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
 
-        <main>
+        <main id="main">
 
             <iron-list id="list"
                 mutable-data
+                scroll-target="main"
                 hidden$="[[ _isEmpty(collection.records.length) ]]"
-                items="[[ _filterAndSort(collection.records, _filterString) ]]"
+                items="[[ records ]]"
                 selection-enabled
                 selected-item="{{ selectedRecord }}">
                 <template>
