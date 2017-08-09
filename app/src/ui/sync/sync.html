@@ -27,6 +27,7 @@ padlock.SyncMixin = (superClass) => {
 
         constructor() {
             super();
+            this.listen("data-unloaded", () => cloudSource.password = "");
             this.listen("sync-start", () => this._syncStart());
             this.listen("sync-success", () => this._syncSuccess());
             this.listen("sync-fail", () => this._syncFail());
