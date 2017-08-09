@@ -33,8 +33,7 @@ class ListView extends applyMixins(
         },
         records: {
             type: Array,
-            computed: " _filterAndSort(collection.records, _filterString)",
-            observer: "_recordsChanged"
+            computed: " _filterAndSort(collection.records, _filterString)"
         },
         selectedRecord: {
             type: Object,
@@ -43,6 +42,7 @@ class ListView extends applyMixins(
     }; }
 
     static get observers() { return [
+        "_fixScroll(records)",
         "_scrollToSelected(records, selectedRecord)"
     ]; }
 
@@ -119,7 +119,7 @@ class ListView extends applyMixins(
         }
     }
 
-    _recordsChanged() {
+    _fixScroll() {
         // Workaround for list losing scrollability on iOS after resetting filter
         if (padlock.platform.isIOS()) {
             this.$.main.style.overflow = "hidden";
