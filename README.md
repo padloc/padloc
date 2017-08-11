@@ -94,6 +94,12 @@ npm run build:mac
 
 This will generate a set of distrution-ready files under the `dist` directory.
 
+**Note:** In order to build the app for Linux, you'll need to install icnsutils and graphicsmagick.
+
+```sh
+sudo apt install graphicsmagick icnsutils
+```
+
 ## Building for Mobile
 
 Apache Cordova is used to distribute Padlock on iOS and Android. The `cordova` subdirectory contains a
