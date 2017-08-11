@@ -64,6 +64,6 @@ export function resolveLanguage(locale: string, supportedLanguages: { [lang: str
     return Object.keys(supportedLanguages)[0];
 }
 
-export function applyMixins(baseClass, ...mixins) {
+export function applyMixins(baseClass: any, ...mixins: ((cls: any) => any)[]): any {
     return mixins.reduce((cls, mixin) => mixin(cls), baseClass);
 }
