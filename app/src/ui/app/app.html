@@ -40,12 +40,12 @@
             }
 
             #listView {
-                width: 350px;
+                flex: 1;
             }
 
             #pages {
                 position: relative;
-                flex: 1;
+                flex: 1.62; /* Golden Ratio ;) */
                 box-shadow: rgba(0, 0, 0, 0.15) -1px 0 1px;
                 background: var(--color-background);
             }
@@ -65,11 +65,13 @@
                 width: 150px;
             }
 
-            @media (max-width: 700px) {
-                #listView {
+            @media (max-width: 800px) {
+                #pages {
                     flex: 1;
                 }
+            }
 
+            @media (max-width: 600px) {
                 .showing-pages #listView {
                     transform: scale(0.95);
                 }
