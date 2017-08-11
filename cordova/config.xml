@@ -8,7 +8,6 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
-    <preference name="Fullscreen" value="true" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="KeyboardDisplayRequiresUserAction" value="false" />
     <preference name="HideKeyboardFormAccessoryBar" value="true" />
@@ -42,6 +41,7 @@
         <splash density="port-xxxhdpi" src="res/android/splash/splash-xxxhdpi.png" />
     </platform>
     <platform name="ios">
+        <preference name="Fullscreen" value="true" />
         <icon height="120" src="res/ios/icon/app-icon-120.png" width="120" />
         <icon height="180" src="res/ios/icon/app-icon-180.png" width="180" />
         <icon height="76" src="res/ios/icon/app-icon-76.png" width="76" />
