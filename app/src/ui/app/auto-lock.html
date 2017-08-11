@@ -10,10 +10,10 @@ padlock.AutoLockMixin = (superClass) => {
         constructor() {
             super();
 
-            const moved = () => this._autoLockChanged();
-            document.addEventListener("touchstart", moved, false);
-            document.addEventListener("keydown", moved, false);
-            document.addEventListener("mousemove", padlock.util.debounce(moved, 300), false);
+            const moved = padlock.util.debounce(() => this._autoLockChanged(), 300);
+            document.addEventListener("touchstart", moved, { passive: true });
+            document.addEventListener("keydown", moved);
+            document.addEventListener("mousemove", moved);
         }
 
         static get observers() { return [
