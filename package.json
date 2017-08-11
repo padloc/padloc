@@ -54,7 +54,7 @@
     "yargs": "^4.8.1"
   },
   "scripts": {
-    "bower-install": "pushd app && bower install && popd app",
+    "bower-install": "pushd app && bower install && popd",
     "compile": "gulp compile --silent",
     "lint": "eslint app/**/*.{js,html}",
     "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
