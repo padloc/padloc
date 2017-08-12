@@ -83,7 +83,8 @@ function checkForUpdates(manual) {
     autoUpdater.autoDownload = settings.get("autoDownloadUpdates");
     autoUpdater.allowPrerelease = settings.get("allowPrerelease");
 
-    autoUpdater.checkForUpdates().then((result) => {
+    const check = autoUpdater.checkForUpdates();
+    check && check.then((result) => {
         if (result.fileInfo) {
             updateAvailable(result.versionInfo);
         } else if (manual) {
