@@ -217,8 +217,12 @@ padlock.SyncMixin = (superClass) => {
                 })
                 .catch((e) => {
                     this.dispatch("settings-changed");
-                    this.dispatch("sync-fail");
-                    this._handleCloudError(e);
+                    if (this._handleCloudError(e)) {
+                        this.dispatch("records-changed");
+                        this.dispatch("sync-success");
+                    } else {
+                        this.dispatch("sync-fail");
+                    }
                 });
         }
 
@@ -287,7 +291,7 @@ padlock.SyncMixin = (superClass) => {
                     this.dispatch("settings-changed");
                     this.alert($l("There was a problem authenticating with Padlock Cloud. Please " +
                         "complete the connection process again!"));
-                    break;
+                    return false;
                 case "deprecated_api_version":
                     this.confirm(
                         $l("A newer version of Padlock is available now! You can download it using the " +
@@ -300,10 +304,10 @@ padlock.SyncMixin = (superClass) => {
                             padlock.platform.checkForUpdates();
                         }
                     });
-                    break;
+                    return false;
                 case "rate_limit_exceeded":
                     this.alert($l("It seems Padlock Cloud is over capacity right now. Please try again later!"));
-                    break;
+                    return false;
                 case "json_error":
                 case "invalid_container_data":
                 case "invalid_key_params":
@@ -314,7 +318,7 @@ padlock.SyncMixin = (superClass) => {
                         "Padlock Cloud. If the problem persists, please notify " +
                         "Padlock support!"
                     ));
-                    break;
+                    return false;
                 case "decryption_failed":
                 case "encryption_failed":
                     // Decryption failed. This means that the local master
@@ -333,7 +337,7 @@ padlock.SyncMixin = (superClass) => {
                             cloudSource.password = pwd;
                             this.synchronize();
                         });
-                    break;
+                    return false;
                 case "unsupported_container_version":
                     this.confirm($l(
                         "It seems the data stored on Padlock Cloud was saved with a newer version of Padlock " +
@@ -345,7 +349,7 @@ padlock.SyncMixin = (superClass) => {
                                 padlock.platform.checkForUpdates();
                             }
                         });
-                    break;
+                    return false;
                 case "subscription_required":
                     this.alert($l(
                         "You currently don't have an active subscription which means you can access " +
@@ -353,9 +357,10 @@ padlock.SyncMixin = (superClass) => {
                         "or synchronize changes between devices. Get a subscription now to regain full access " +
                         "to Padlock Cloud!"
                     ));
-                    break;
+                    return true;
                 default:
                     this.alert($l("Something went wrong. Please try again later!"));
+                    return false;
             }
         }
 
