@@ -276,7 +276,7 @@ padlock.SyncMixin = (superClass) => {
         _computeRemainingTrialDays(trialEnd) {
             var now = new Date().getTime() / 1000;
             trialEnd = trialEnd ? parseInt(trialEnd, 10) : now;
-            return Math.ceil((trialEnd - now) / 60 / 60 / 24);
+            return Math.max(0, Math.ceil((trialEnd - now) / 60 / 60 / 24));
         }
 
         _handleCloudError(e) {
