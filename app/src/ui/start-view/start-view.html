@@ -281,10 +281,15 @@ class StartView extends applyMixins(
 
     _initializeData() {
         this.$.getStartedButton.start();
+        if (this._initializing) {
+            return;
+        }
+        this._initializing = true;
         this.initData(this.$.newPasswordInput.value, this.$.emailInput.value)
             .then(() => {
                 this.$.getStartedButton.success();
                 this.$.newPasswordInput.blur();
+                this._initializing = false;
             });
     }
 
@@ -307,8 +312,16 @@ class StartView extends applyMixins(
         this.$.passwordInput.blur();
         this.$.enterButton.start();
 
+        if (this._unlocking) {
+            return;
+        }
+        this._unlocking = true;
+
         this.loadData(password)
-            .then(() => this.$.enterButton.success())
+            .then(() => {
+                this.$.enterButton.success();
+                this._unlocking = false;
+            })
             .catch((e) => {
                 switch (e.code) {
                     case "decryption_failed":
@@ -347,6 +360,7 @@ class StartView extends applyMixins(
                     default:
                         throw e;
                 }
+                this._unlocking = false;
             });
     }
 
