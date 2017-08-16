@@ -1,4 +1,9 @@
 import * as sjcl from "sjcl";
+import { isCordova, hasNode } from "./platform";
+
+declare var pbkdf2: undefined |
+    ((pass: string, salt: string, opts: { iterations: number, keySize: number }) => Promise<string>);
+const nodeCrypto = hasNode() && window.require("crypto");
 
 export class CryptoError {
     constructor(
@@ -23,8 +28,10 @@ export type KeySize = 128 | 192 | 256;
 // Available authentication tag sizes
 export type AtSize = 64 | 96 | 128;
 
+// Default number of pbkdf2 iterations
+const PBKDF2_DEFAULT_ITER = 1e5;
 // Maximum number of pbkdf2 iterations
-const pbkdf2MaxIter = 1e6;
+const PBKDF2_MAX_ITER = 1e7;
 
 // Shorthands for codec functions
 const bitsToBase64 = sjcl.codec.base64.fromBits;
@@ -57,19 +64,47 @@ export interface CipherParams {
     ts: AtSize;
 }
 
-function genKey(params: KeyParams): string {
-    if (params.iter > pbkdf2MaxIter) {
+function genKey(params: KeyParams): Promise<string> {
+    if (params.iter > PBKDF2_MAX_ITER) {
         throw new CryptoError("invalid_key_params");
     }
 
-    let k = sjcl.misc.pbkdf2(
-        utf8ToBits(params.password),
-        base64ToBits(params.salt),
-        params.iter,
-        params.keySize
-    );
+    if (isCordova() && typeof pbkdf2 === "function") {
+        return pbkdf2(
+            params.password,
+            params.salt,
+            {
+                iterations: params.iter,
+                keySize: params.keySize
+            }
+        );
+    } else if (nodeCrypto) {
+        return new Promise((resolve, reject) => {
+            nodeCrypto.pbkdf2(
+                params.password,
+                new Buffer(params.salt, "base64"),
+                params.iter,
+                params.keySize / 8,
+                "sha256",
+                (e: Error, key: string) => {
+                    if (e) {
+                        reject(e);
+                    } else {
+                        resolve(new Buffer(key).toString("base64"));
+                    }
+                }
+            );
+        });
+    } else {
+        let k = sjcl.misc.pbkdf2(
+            utf8ToBits(params.password),
+            base64ToBits(params.salt),
+            params.iter,
+            params.keySize
+        );
 
-    return bitsToBase64(k);
+        return Promise.resolve(bitsToBase64(k));
+    }
 }
 
 function decrypt(key: string, ct: string, params: CipherParams): string {
@@ -123,37 +158,35 @@ export class Container implements KeyParams, CipherParams {
         public cipher: Cipher = "aes",
         public mode: Mode = "ccm",
         public keySize: KeySize = 256,
-        public iter = 1e4,
+        public iter = PBKDF2_DEFAULT_ITER,
         public ts: AtSize = 64
     ) {
         this.salt = randBase64();
         this.keyCache = new Map<string, string>();
     }
 
-    private genKey(): string {
-        let raw = this.raw() as any;
-        raw.password = this.password;
-        let keyCacheKey = JSON.stringify(raw);
+    private async genKey(): Promise<string> {
+        const p = JSON.stringify([this.password, this.salt, this.iter, this.keySize]);
 
-        let key = this.keyCache.get(keyCacheKey);
+        let key = this.keyCache.get(p);
 
         if (!key) {
-            key = genKey(this);
-            this.keyCache.set(keyCacheKey, key);
+            key = await genKey(this);
+            this.keyCache.set(p, key);
         }
 
         return key;
     }
 
-    set(data: string) {
-        let key = this.genKey();
+    async set(data: string): Promise<void> {
+        const key = await this.genKey();
         this.iv = randBase64();
         this.adata = randBase64();
         this.ct = encrypt(key, data, this);
     }
 
-    get(): string {
-        var key = this.genKey();
+    async get(): Promise<string> {
+        const key = await this.genKey();
         return decrypt(key, this.ct, this);
     }
 
@@ -230,7 +263,7 @@ export class Container implements KeyParams, CipherParams {
             ["ccm", "ocb2"].includes(obj.mode) && // exiting mode
             [128, 192, 256].includes(obj.keySize) &&
             typeof obj.iter == "number" && // valid PBKDF2 iteration count
-            obj.iter <= pbkdf2MaxIter && // sane pbkdf2 iteration count
+            obj.iter <= PBKDF2_MAX_ITER && // sane pbkdf2 iteration count
             typeof obj.iv == "string" && // valid initialisation vector
             typeof obj.salt == "string" && //valid salt
             typeof obj.ct == "string" && // valid cipher text

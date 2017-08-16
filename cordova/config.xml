@@ -100,4 +100,5 @@
     <plugin name="cordova-plugin-whitelist" spec="~1.2.2" />
     <plugin name="cordova-plugin-wkwebview-engine" spec="https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git" />
     <plugin name="ionic-plugin-keyboard" spec="~2.2.1" />
+    <plugin name="cordova-plugin-pbkdf2" spec="^0.1.0" />
 </widget>

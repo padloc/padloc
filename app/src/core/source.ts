@@ -216,7 +216,7 @@ export class EncryptedSource implements Source {
         // Reuse container if possible
         let cont = this.container = this.container || new Container();
         cont.password = this.password;
-        cont.set(data);
+        await cont.set(data);
 
         return this.source.set(cont.toJSON());
     }
