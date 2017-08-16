@@ -28,10 +28,12 @@ export type KeySize = 128 | 192 | 256;
 // Available authentication tag sizes
 export type AtSize = 64 | 96 | 128;
 
+// Minimum number of pbkdf2 iterations
+const PBKDF2_ITER_MIN = 1e5;
 // Default number of pbkdf2 iterations
-const PBKDF2_DEFAULT_ITER = 1e5;
+const PBKDF2_ITER_DEFAULT = 1e5;
 // Maximum number of pbkdf2 iterations
-const PBKDF2_MAX_ITER = 1e7;
+const PBKDF2_ITER_MAX = 1e7;
 
 // Shorthands for codec functions
 const bitsToBase64 = sjcl.codec.base64.fromBits;
@@ -65,7 +67,7 @@ export interface CipherParams {
 }
 
 function genKey(params: KeyParams): Promise<string> {
-    if (params.iter > PBKDF2_MAX_ITER) {
+    if (params.iter > PBKDF2_ITER_MAX) {
         throw new CryptoError("invalid_key_params");
     }
 
@@ -158,7 +160,7 @@ export class Container implements KeyParams, CipherParams {
         public cipher: Cipher = "aes",
         public mode: Mode = "ccm",
         public keySize: KeySize = 256,
-        public iter = PBKDF2_DEFAULT_ITER,
+        public iter = PBKDF2_ITER_DEFAULT,
         public ts: AtSize = 64
     ) {
         this.salt = randBase64();
@@ -179,6 +181,8 @@ export class Container implements KeyParams, CipherParams {
     }
 
     async set(data: string): Promise<void> {
+        // Make sure minium number of iterations is used
+        this.iter = Math.max(this.iter, PBKDF2_ITER_MIN);
         const key = await this.genKey();
         this.iv = randBase64();
         this.adata = randBase64();
@@ -263,7 +267,7 @@ export class Container implements KeyParams, CipherParams {
             ["ccm", "ocb2"].includes(obj.mode) && // exiting mode
             [128, 192, 256].includes(obj.keySize) &&
             typeof obj.iter == "number" && // valid PBKDF2 iteration count
-            obj.iter <= PBKDF2_MAX_ITER && // sane pbkdf2 iteration count
+            obj.iter <= PBKDF2_ITER_MAX && // sane pbkdf2 iteration count
             typeof obj.iv == "string" && // valid initialisation vector
             typeof obj.salt == "string" && //valid salt
             typeof obj.ct == "string" && // valid cipher text
