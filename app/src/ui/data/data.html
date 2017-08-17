@@ -106,15 +106,12 @@ padlock.DataMixin = (superClass) => {
 
         loadData(password) {
             localSource.password = settingsSource.password = password;
-            return collection.fetch(localSource)
-                .then(() => {
-                    // Load saved settings. If there is a problem, ignore silently and reset settings
-                    return settings.fetch(settingsSource)
-                        .catch(() => settings.save(settingsSource));
-                })
-                .then(() => {
-                    this.dispatch("data-loaded");
-                });
+            return Promise.all([
+                collection.fetch(localSource),
+                // We silently ignore failure to load settings since they don't contain any
+                // critical data and should not prevent the app from loading if corrupted
+                settings.fetch(settingsSource).catch()
+            ]).then(() => this.dispatch("data-loaded"));
         }
 
         createRecord(name) {

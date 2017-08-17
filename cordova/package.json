@@ -30,7 +30,8 @@
             "cordova-plugin-wkwebview-engine": {},
             "cordova-plugin-splashscreen": {},
             "cordova-plugin-migrate-localstorage": {},
-            "cordova-clipboard": {}
+            "cordova-clipboard": {},
+            "cordova-plugin-pbkdf2": {}
         }
     },
     "dependencies": {
@@ -46,6 +47,7 @@
         "cordova-plugin-file": "^4.3.3",
         "cordova-plugin-inappbrowser": "~1.4.0",
         "cordova-plugin-migrate-localstorage": "0.0.2",
+        "cordova-plugin-pbkdf2": "^0.1.0",
         "cordova-plugin-privacyscreen": "~0.3.1",
         "cordova-plugin-splashscreen": "^4.0.3",
         "cordova-plugin-statusbar": "~2.1.3",

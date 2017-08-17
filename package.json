@@ -41,7 +41,7 @@
     "polymer-bundler": "^2.3.1",
     "rimraf": "^2.5.4",
     "semver": "^5.4.1",
-    "sjcl": "^1.0.6",
+    "sjcl": "^1.0.7",
     "st": "^1.2.0",
     "tsify": "^2.0.3",
     "typescript": "^2.1.4",

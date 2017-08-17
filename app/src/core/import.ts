@@ -15,7 +15,7 @@ export function isFromSecuStore(data: string): boolean {
         data.indexOf("#end") != -1;
 };
 
-export function fromSecuStore(rawData: string, password: string): Record[] {
+export async function fromSecuStore(rawData: string, password: string): Promise<Record[]> {
     const begin = "#begin";
     const end = "#end";
 
@@ -41,7 +41,7 @@ export function fromSecuStore(rawData: string, password: string): Record[] {
     });
     cont.password = password;
 
-    const data = JSON.parse(cont.get());
+    const data = JSON.parse(await cont.get());
 
     // Convert the _items_ array of the SecuStore Set object into an array of Padlock records
     let records = data.items.map((item: any) => {
@@ -124,10 +124,10 @@ export function isFromPadlock(data: string): boolean {
     }
 }
 
-export function fromPadlock(data: string, password: string): Record[] {
+export async function fromPadlock(data: string, password: string): Promise<Record[]> {
     let cont = Container.fromJSON(data);
     cont.password = password;
-    return JSON.parse(cont.get()).map(Record.fromRaw);
+    return JSON.parse(await cont.get()).map(Record.fromRaw);
 }
 
 /*
