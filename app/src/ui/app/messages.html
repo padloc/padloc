@@ -4,40 +4,41 @@
 <script>
 (() => {
 
-const { Announcements } = padlock.ancm;
+const { Messages } = padlock.messages;
 const { FileSource } = padlock.source;
 
-padlock.AnnouncementsMixin = (superClass) => {
+padlock.MessagesMixin = (superClass) => {
 
-    return class AnnouncementsMixin extends superClass {
+    return class MessagesMixin extends superClass {
 
         ready() {
             super.ready();
-            this._announcements = new Announcements(
-                "ancm.json",
-                new FileSource("read-announcements.json"),
+            this._messages = new Messages(
+                "https://padlock.io/messages.json",
+                new FileSource("read-messages.json"),
                 this.settings
             );
+            this.listen("data-loaded", () => this.checkMessages());
         }
 
-        checkAnnouncements() {
+        checkMessages() {
             padlock.util.wait(1000)
-                .then(() => this._announcements.fetch())
-                .then((aa) => aa.forEach((a) => this._displayAnnouncement(a)));
+                .then(() => this._messages.fetch())
+                .then((aa) => aa.forEach((a) => this._displayMessage(a)));
         }
 
-        _displayAnnouncement(a) {
+        _displayMessage(a) {
             if (a.link) {
                 this.confirm(a.text, $l("Learn More"), $l("Dismiss"))
                     .then((confirmed) => {
                         if (confirmed) {
                             window.open(a.link, "_system");
                         }
-                        this._announcements.markRead(a);
+                        this._messages.markRead(a);
                     });
             } else {
                 this.alert(a.text)
-                    .then(() => this._announcements.markRead(a));
+                    .then(() => this._messages.markRead(a));
             }
         }
 

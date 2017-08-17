@@ -1,6 +1,6 @@
 (() => {
 
-const { NotificationMixin, DialogMixin, AnnouncementsMixin, DataMixin,
+const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 
@@ -11,7 +11,7 @@ class App extends applyMixins(
     AutoSyncMixin,
     AutoLockMixin,
     DialogMixin,
-    AnnouncementsMixin,
+    MessagesMixin,
     NotificationMixin,
     HintsMixin
 ) {
@@ -74,7 +74,6 @@ class App extends applyMixins(
     dataLoaded() {
         this.locked = false;
         this.$.startView.open = true;
-        this.checkAnnouncements();
     }
 
     dataUnloaded() {

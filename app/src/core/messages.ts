@@ -5,7 +5,7 @@ import { getLocale, getPlatformName } from "./platform";
 import { Settings } from "./data";
 import { satisfies } from "semver";
 
-export interface Announcement {
+export interface Message {
     id: string
     from: Date
     until: Date
@@ -16,7 +16,7 @@ export interface Announcement {
     version?: string
 }
 
-export class Announcements {
+export class Messages {
 
     constructor(public url: string, public source: Source, public settings: Settings) {}
 
@@ -29,7 +29,7 @@ export class Announcements {
         await this.source.set(JSON.stringify(read));
     }
 
-    private async parseAndFilter(data: string): Promise<Announcement[]> {
+    private async parseAndFilter(data: string): Promise<Message[]> {
         const now = new Date();
         const aa = JSON.parse(data);
         const read = await this.fetchRead();
@@ -55,7 +55,7 @@ export class Announcements {
                     version: a.version
                 };
             })
-            .filter((a: Announcement) => {
+            .filter((a: Message) => {
                 return (
                     !read[a.id] && a.from <= now &&
                     a.until >= now &&
@@ -66,13 +66,13 @@ export class Announcements {
             });
     }
 
-    async fetch(): Promise<Announcement[]> {
+    async fetch(): Promise<Message[]> {
         const req = await request("GET", this.url, undefined,
             new Map<string, string>([["Accept", "application/json"]]));
         return this.parseAndFilter(req.responseText);
     }
 
-    async markRead(a: Announcement): Promise<void> {
+    async markRead(a: Message): Promise<void> {
         const read = await this.fetchRead();
         read[a.id] = true;
         await this.saveRead(read);
