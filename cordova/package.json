@@ -25,19 +25,19 @@
                 "XWALK_MODE": "embedded",
                 "XWALK_MULTIPLEAPK": "true"
             },
-            "cordova-custom-config": {},
             "cordova-plugin-file": {},
             "cordova-plugin-wkwebview-engine": {},
             "cordova-plugin-splashscreen": {},
             "cordova-plugin-migrate-localstorage": {},
             "cordova-clipboard": {},
-            "cordova-plugin-pbkdf2": {}
+            "cordova-plugin-pbkdf2": {},
+            "cordova-custom-config": {}
         }
     },
     "dependencies": {
         "cordova-android": "^6.2.3",
         "cordova-clipboard": "^1.0.0",
-        "cordova-custom-config": "^3.3.0",
+        "cordova-custom-config": "^4.0.2",
         "cordova-ios": "^4.4.0",
         "cordova-plugin-app-version": "~0.1.9",
         "cordova-plugin-backbutton": "~0.3.0",

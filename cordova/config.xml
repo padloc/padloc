@@ -19,6 +19,7 @@
     <preference name="StatusBarOverlaysWebView" value="true" />
     <preference name="StatusBarStyle" value="lightcontent" />
     <preference name="BackupWebStorage" value="local" />
+    <preference name="cordova-custom-config-autorestore" value="true" />
     <hook src="scripts/build-www.js" type="before_prepare" />
     <platform name="android">
         <icon density="ldpi" src="res/android/icon/app-icon-ldpi.png" />
@@ -74,11 +75,27 @@
         <config-file parent="UIViewControllerBasedStatusBarAppearance" platform="ios" target="*-Info.plist">
             <false />
         </config-file>
+        <config-file parent="UIRequiresFullScreen" platform="ios" target="*-Info.plist">
+            <false />
+        </config-file>
+        <config-file mode="replace" parent="UISupportedInterfaceOrientations" platform="ios" target="*-Info.plist">
+            <array>
+                <string>UIInterfaceOrientationPortrait</string>
+            </array>
+        </config-file>
+        <config-file mode="replace" parent="UISupportedInterfaceOrientations~ipad" platform="ios" target="*-Info.plist">
+            <array>
+                <string>UIInterfaceOrientationPortrait</string>
+                <string>UIInterfaceOrientationLandscapeLeft</string>
+                <string>UIInterfaceOrientationPortraitUpsideDown</string>
+                <string>UIInterfaceOrientationLandscapeRight</string>
+            </array>
+        </config-file>
     </platform>
     <engine name="android" spec="^6.2.3" />
     <engine name="ios" spec="^4.4.0" />
     <plugin name="cordova-clipboard" spec="^1.0.0" />
-    <plugin name="cordova-custom-config" spec="^3.3.0" />
+    <plugin name="cordova-custom-config" spec="^4.0.2" />
     <plugin name="cordova-plugin-app-version" spec="~0.1.9" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
     <plugin name="cordova-plugin-crosswalk-webview" spec="^2.3.0">
@@ -94,11 +111,11 @@
     <plugin name="cordova-plugin-file" spec="^4.3.3" />
     <plugin name="cordova-plugin-inappbrowser" spec="~1.4.0" />
     <plugin name="cordova-plugin-migrate-localstorage" spec="0.0.2" />
+    <plugin name="cordova-plugin-pbkdf2" spec="^0.1.0" />
     <plugin name="cordova-plugin-privacyscreen" spec="~0.3.1" />
     <plugin name="cordova-plugin-splashscreen" spec="^4.0.3" />
     <plugin name="cordova-plugin-statusbar" spec="~2.1.3" />
     <plugin name="cordova-plugin-whitelist" spec="~1.2.2" />
     <plugin name="cordova-plugin-wkwebview-engine" spec="https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git" />
     <plugin name="ionic-plugin-keyboard" spec="~2.2.1" />
-    <plugin name="cordova-plugin-pbkdf2" spec="^0.1.0" />
 </widget>
