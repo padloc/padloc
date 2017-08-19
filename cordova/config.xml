@@ -18,7 +18,7 @@
     <preference name="SplashScreenDelay" value="1" />
     <preference name="StatusBarOverlaysWebView" value="true" />
     <preference name="StatusBarStyle" value="lightcontent" />
-    <preference name="BackupWebStorage" value="local" />
+    <preference name="BackupWebStorage" value="cloud" />
     <preference name="cordova-custom-config-autorestore" value="true" />
     <hook src="scripts/build-www.js" type="before_prepare" />
     <platform name="android">
