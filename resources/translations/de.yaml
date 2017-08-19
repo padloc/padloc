@@ -143,7 +143,7 @@
     case you should lose your device or accidentally delete the app. Before
     being sent to our servers, your data is encrypted locally using your master
     password to make sure that nobody can read it - not even we!
-- t: >-
+  t: >-
     Padlock Cloud ist der einfachste und bequemste Weg, Ihre Daten zwischen all
     Ihren Geräten zu synchronisieren. Das sichere Speichern Ihrer Daten in der
     "Cloud" erlaubt Ihnen nicht nur, auf Ihre Daten von überall aus zuzugreifen,
@@ -245,10 +245,10 @@
     Zugriff auf Padlock Cloud zu erhalten!
 - o: Something went wrong. Please try again later!
   t: Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!
-- o: Are you sure you want to disconnect from Padlock Cloud?
-  t: 'Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?'
 - o: Please enter a valid email address!
   t: Bitte geben Sie eine gültige Emailadresse ein!
+- o: Are you sure you want to disconnect from Padlock Cloud?
+  t: 'Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?'
 - o: >-
     Are you sure you want to use a custom server for synchronization? This
     option is only recommended for advanced users!
@@ -265,6 +265,8 @@
   t: Feld
 - o: fields
   t: Felder
+- o: Cannot lock app while sync is in progress!
+  t: App kann nicht gesperrt werden solange Synchronisierung im Gange ist!
 - o: Enter Content
   t: Inhalt Eingeben
 - o: Empty Field
@@ -474,8 +476,6 @@
   t: mittel
 - o: strong
   t: stark
-- o: Learn More
-  t: Mehr Erfahren
 - o: >-
     Padlock was automatically locked after {0} {1} of inactivity. You can change
     this behavior from the settings page.
@@ -523,6 +523,8 @@
   t: Auto-Sync Aktivieren
 - o: 'Your Padlock Cloud trial period ends in {0} days!'
   t: 'Ihre Padlock Cloud Testphase ended in {0} Tagen!'
+- o: Learn More
+  t: Mehr Erfahren
 - o: Would you like to pair this device with Padlock Cloud now?
   t: Möchten sie diese Gerät nun mit Padlock Cloud verbinden?
 - o: Maybe Later
