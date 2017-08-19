@@ -66,8 +66,19 @@ export interface CipherParams {
     ts: AtSize;
 }
 
+function validateKeyParams(params: any) {
+    return [128, 192, 256].includes(params.keySize) &&
+        typeof params.iter == "number" && // valid PBKDF2 iteration count
+        params.iter <= PBKDF2_ITER_MAX && // sane pbkdf2 iteration count
+        typeof params.salt == "string";//valid salt
+}
+
 function genKey(params: KeyParams): Promise<string> {
-    if (params.iter > PBKDF2_ITER_MAX) {
+    if (
+        !params.password ||
+        typeof params.password !== "string" ||
+        !validateKeyParams(params)
+    ) {
         throw new CryptoError("invalid_key_params");
     }
 
@@ -263,13 +274,10 @@ export class Container implements KeyParams, CipherParams {
     static validateRaw(obj: RawContainer) {
         return typeof obj == "object" &&
             (obj.version === undefined || typeof obj.version === "number") && // has a valid version
+            validateKeyParams(obj) &&
             ["aes"].includes(obj.cipher) && // valid cipher
             ["ccm", "ocb2"].includes(obj.mode) && // exiting mode
-            [128, 192, 256].includes(obj.keySize) &&
-            typeof obj.iter == "number" && // valid PBKDF2 iteration count
-            obj.iter <= PBKDF2_ITER_MAX && // sane pbkdf2 iteration count
             typeof obj.iv == "string" && // valid initialisation vector
-            typeof obj.salt == "string" && //valid salt
             typeof obj.ct == "string" && // valid cipher text
             typeof obj.adata == "string" && // valid authorisation data
             [64, 96, 128].includes(obj.ts); // valid authorisation tag length
