@@ -83,8 +83,8 @@
                 <div class="note">
                     [[ generalInfoText() ]]
                 </div>
-                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="_connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Get Started') ]]" on-click="_connect"></pl-loading-button>
+                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
+                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Get Started') ]]" on-click="connect"></pl-loading-button>
             </section>
 
             <section class="tiles tiles-2" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
@@ -181,6 +181,17 @@ class CloudView extends applyMixins(
         this.$.syncButton.fail();
     }
 
+    connect() {
+        if (this.$.emailInput.invalid) {
+            this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
+        } else {
+            this.$.connectButton.start();
+            this.connectCloud(this.$.emailInput.value)
+                .then(() => this.$.connectButton.success())
+                .catch(() => this.$.connectButton.fail());
+        }
+    }
+
     _credentialsChanged() {
         if (this.isActivationPending()) {
             // Wait 1 minute, then poll every 10 seconds
@@ -204,17 +215,6 @@ class CloudView extends applyMixins(
                 this.disconnectCloud();
             }
         });
-    }
-
-    _connect() {
-        if (this.$.emailInput.invalid) {
-            this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
-        } else {
-            this.$.connectButton.start();
-            this.connectCloud(this.$.emailInput.value)
-                .then(() => this.$.connectButton.success())
-                .catch(() => this.$.connectButton.fail());
-        }
     }
 
     _customHostChanged() {

@@ -65,7 +65,7 @@ class App extends applyMixins(
                 .then((confirm) => {
                     if (confirm) {
                         this._currentView = "cloudView";
-                        this.connectCloud(this.settings.syncEmail);
+                        this.$.cloudView.connect();
                     }
                 });
         }
