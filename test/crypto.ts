@@ -1,33 +1,33 @@
 /// <reference path="../node_modules/@types/mocha/index.d.ts" />
 
 import { assert } from "chai";
-import { assertError } from "./helpers";
+import { assertError, asyncAssertError } from "./helpers";
 import { Container } from "../app/src/core/crypto";
 
 suite("crypto", () => {
-    test("encrypt/decrypt", () => {
+    test("encrypt/decrypt", async () => {
         let cont = new Container();
 
         cont.password = "password";
-        cont.set("secret");
+        await cont.set("secret");
 
-        let data = cont.get();
+        let data = await cont.get();
         assert.equal(data, "secret");
 
         cont.password = "notmypassword";
-        assertError(() => cont.get(), "decryption_failed");
+        return asyncAssertError(() => cont.get(), "decryption_failed");
     });
 
-    test("fromJSON/toJSON", () => {
+    test("fromJSON/toJSON", async () => {
         let cont = new Container();
         cont.password = "password";
-        cont.set("secret");
+        await cont.set("secret");
 
         let json = cont.toJSON();
         let cont2 = Container.fromJSON(json);
         cont2.password = "password";
 
-        let data = cont.get();
+        let data = await cont.get();
         assert.equal(data, "secret");
 
         let invalid = [

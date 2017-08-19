@@ -27,14 +27,16 @@ suite("source", () => {
         const source = new EncryptedSource(new MemorySource());
         source.password = "secret";
         await testSource(source);
-        source.clear();
+        await source.clear();
         assert(!(await source.hasData()), "hasData for empty source should return with `false`");
+        source.password = "secret";
         await source.set("test");
-        assert(await source.hasData(), "hasData for empty source should return with `true`");
+        assert(await source.hasData(), "hasData for non-empty source should return with `true`");
     });
 
     test("CloudSource", async () => {
         const settings = new Settings();
+        settings.syncCustomHost = true;
         settings.syncHostUrl = "http://127.0.0.1:3000";
         const source = new CloudSource(settings);
 

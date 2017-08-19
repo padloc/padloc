@@ -66,6 +66,7 @@ suite("data", () => {
         s1.syncHostUrl = "asdf";
 
         await s1.save(source);
+        await s1.fetch(source);
         await s2.fetch(source);
 
         assert.deepEqual(s1.raw(), s2.raw());
