@@ -19,14 +19,18 @@ const dispatcher = document.createElement("div");
 // transfer legacy data from LocalStorageSource to FileSource
 function transferData(lsName, fileName) {
     const lsSource = new padlock.source.LocalStorageSource(lsName);
-    return lsSource.get().then((data) => {
-        if (data) {
-            return Promise.all([
-                new padlock.source.FileSource(fileName).set(data),
-                lsSource.clear()
-            ]);
-        }
-    });
+    const fileSource = new padlock.source.FileSource(fileName);
+    return Promise.all([lsSource.get(), fileSource.get()])
+        .then((data) => {
+            // Only transfer if there is existing localstorage data but no
+            // existing data in file storage
+            if (data[0] && !data[1]) {
+                return Promise.all([
+                    fileSource.set(data[0]),
+                    lsSource.clear()
+                ]);
+            }
+        });
 }
 
 const legacyDataTransfered = Promise.all([
