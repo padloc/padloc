@@ -1,7 +1,7 @@
 (() => {
 
 const Record = padlock.data.Record;
-const { LocaleMixin, DataMixin, SyncMixin, BaseElement } = padlock;
+const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin } = padlock;
 const { applyMixins } = padlock.util;
 
 function filterByString(fs, rec) {
@@ -21,7 +21,8 @@ class ListView extends applyMixins(
     BaseElement,
     LocaleMixin,
     SyncMixin,
-    DataMixin
+    DataMixin,
+    DialogMixin
 ) {
 
     static get is() { return "pl-list-view"; }
@@ -100,7 +101,11 @@ class ListView extends applyMixins(
     }
 
     _lock() {
-        this.unloadData();
+        if (this.isSynching) {
+            this.alert($l("Cannot lock app while sync is in progress!"));
+        } else {
+            this.unloadData();
+        }
     }
 
     _openSettings() {
