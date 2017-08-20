@@ -59,6 +59,7 @@
         <icon height="50" src="res/ios/icon/app-icon-50.png" width="50" />
         <icon height="100" src="res/ios/icon/app-icon-100.png" width="100" />
         <icon height="167" src="res/ios/icon/app-icon-167.png" width="167" />
+        <splash src="res/ios/splash/Default@2x~universal~anyany.png" />
         <splash height="480" src="res/ios/splash/splash-320x480.png" width="320" />
         <splash height="960" src="res/ios/splash/splash-640x960.png" width="640" />
         <splash height="1024" src="res/ios/splash/splash-768x1024.png" width="768" />
