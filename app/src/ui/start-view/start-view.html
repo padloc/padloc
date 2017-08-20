@@ -309,6 +309,12 @@ class StartView extends applyMixins(
 
     _unlock() {
         const password = this.$.passwordInput.value;
+
+        if (!password) {
+            this.alert($l("Please enter your password!")).then(() => this.$.passwordInput.focus());
+            return;
+        }
+
         this.$.passwordInput.blur();
         this.$.enterButton.start();
 

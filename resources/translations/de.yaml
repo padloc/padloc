@@ -423,6 +423,8 @@
   t: '"RESET" zum Bestätigen Eingeben'
 - o: You didn't type 'RESET'. Refusing to reset the app.
   t: Sie haben nicht "RESET" eingegeben. Die App wird nicht zurückgesetzt.
+- o: Please enter your password!
+  t: Bitte geben Sie Ihr Passwort ein!
 - o: >-
     Forgot your master password? You can start over by resetting the app.
     WARNING: This will delete all your data!
