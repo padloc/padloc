@@ -4,6 +4,10 @@ const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 
+const cordovaReady = new Promise((resolve) => {
+    document.addEventListener("deviceready", resolve);
+});
+
 class App extends applyMixins(
     BaseElement,
     DataMixin,
@@ -51,6 +55,11 @@ class App extends applyMixins(
 
     get _isNarrow() {
         return this.offsetWidth < 700;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        cordovaReady.then(() => navigator.splashscreen.hide());
     }
 
     recordDeleted(record) {
