@@ -1,6 +1,6 @@
 {
   "name": "padlock",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "homepage": "http://padlock.io",
   "authors": [
     "Martin Kleinschrodt <martin@maklesoft.com>"
@@ -12,11 +12,9 @@
   ],
   "private": true,
   "dependencies": {
-    "polymer": "^2.0.1",
+    "polymer": "^2.0.2",
     "zxcvbn": "~3.1.0",
     "autosize": "~3.0.13",
-    "papaparse": "~4.1.2",
-    "sjcl": "^1.0.6",
     "iron-list": "https://github.com/MaKleSoft/iron-list.git#custom-fixes",
     "iron-pages": "^2.0.0",
     "paper-spinner": "^2.0.0"
