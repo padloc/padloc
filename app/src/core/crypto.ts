@@ -29,9 +29,9 @@ export type KeySize = 128 | 192 | 256;
 export type AtSize = 64 | 96 | 128;
 
 // Minimum number of pbkdf2 iterations
-const PBKDF2_ITER_MIN = 1e5;
+const PBKDF2_ITER_MIN = 1e4;
 // Default number of pbkdf2 iterations
-const PBKDF2_ITER_DEFAULT = 1e5;
+const PBKDF2_ITER_DEFAULT = 5e4;
 // Maximum number of pbkdf2 iterations
 const PBKDF2_ITER_MAX = 1e7;
 
