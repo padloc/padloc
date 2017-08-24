@@ -187,7 +187,7 @@
 (() => {
 
 const { DataMixin, LocaleMixin, DialogMixin, BaseElement } = padlock;
-const { applyMixins } = padlock.util;
+const { applyMixins, wait } = padlock.util;
 
 class StartView extends applyMixins(
     BaseElement,
@@ -382,7 +382,7 @@ class StartView extends applyMixins(
 
     _showEmailInfo() {
         this.$.emailInput.blur();
-        padlock.util.wait(100)
+        wait(100)
             .then(() => {
                 return this.alert($l(
                     "Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
@@ -396,7 +396,7 @@ class StartView extends applyMixins(
 
     _showPasswordInfo() {
         this.$.newPasswordInput.blur();
-        padlock.util.wait(100)
+        wait(100)
             .then(() => {
                 return this.alert($l(
                     "Your master password is a single passphrase that is used to encrypt everything you " +
