@@ -48,9 +48,9 @@ class DialogConfirm extends padlock.BaseElement {
     }
 
     confirm(message, confirmLabel, cancelLabel) {
-        this.message = message || this.message || defaultMessage;
-        this.confirmLabel = confirmLabel || this.confirmLabel || defaultConfirmLabel;
-        this.cancelLabel = cancelLabel || this.cancelLabel || defaultCancelLabel;
+        this.message = message || defaultMessage;
+        this.confirmLabel = confirmLabel || defaultConfirmLabel;
+        this.cancelLabel = cancelLabel || defaultCancelLabel;
         this.open = true;
 
         return new Promise((resolve) => {

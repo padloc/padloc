@@ -39,8 +39,8 @@ class DialogAlert extends padlock.BaseElement {
     }
 
     alert(message, buttonLabel) {
-        this.message = message || this.message;
-        this.buttonLabel = buttonLabel || this.buttonLabel || defaultButtonLabel;
+        this.message = message;
+        this.buttonLabel = buttonLabel || defaultButtonLabel;
         this.open = true;
 
         return new Promise((resolve) => {
