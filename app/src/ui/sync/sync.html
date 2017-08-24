@@ -34,7 +34,7 @@ padlock.SyncMixin = (superClass) => {
         }
 
         connectCloud(email) {
-            return this._requestAuthToken(email);
+            return this._requestAuthToken(email.toLowerCase());
         }
 
         cancelConnect() {
