@@ -5,10 +5,11 @@ const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const url = require("url");
 const os = require("os");
+const uuid = require("uuid/v4");
 const { debug, test } = require("yargs").argv;
 const ElectronStore = require("electron-store");
 
-const settings = new ElectronStore({
+const settings = global.settings = new ElectronStore({
     name: "settings",
     defaults: {
         autoDownloadUpdates: false,
@@ -20,6 +21,10 @@ const settings = new ElectronStore({
         fullscreen: false
     }
 });
+
+if (!settings.get("uuid")) {
+    settings.set("uuid", uuid());
+}
 
 let win;
 let updateOnQuit = false;
