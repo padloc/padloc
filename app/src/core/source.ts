@@ -123,8 +123,8 @@ export class CloudSource extends AjaxSource {
                 "AuthToken " + this.settings.syncEmail + ":" + this.settings.syncToken);
         }
 
-        // headers.set("X-Client-Version", padlock.version);
-        // headers.set("X-Client-Platform", padlock.platform.getPlatformName());
+        headers.set("X-Client-Version", this.settings.version);
+        headers.set("X-Client-Platform", await getPlatformName());
 
         let req: XMLHttpRequest;
         try {
