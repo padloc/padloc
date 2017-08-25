@@ -109,6 +109,7 @@
     <plugin name="cordova-plugin-customurlscheme" spec="~4.2.0">
         <variable name="URL_SCHEME" value="padlock" />
     </plugin>
+    <plugin name="cordova-plugin-device" spec="^1.1.6" />
     <plugin name="cordova-plugin-file" spec="^4.3.3" />
     <plugin name="cordova-plugin-inappbrowser" spec="~1.4.0" />
     <plugin name="cordova-plugin-migrate-localstorage" spec="0.0.2" />

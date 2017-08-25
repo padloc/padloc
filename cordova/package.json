@@ -31,7 +31,8 @@
             "cordova-plugin-migrate-localstorage": {},
             "cordova-clipboard": {},
             "cordova-custom-config": {},
-            "cordova-plugin-pbkdf2": {}
+            "cordova-plugin-pbkdf2": {},
+            "cordova-plugin-device": {}
         }
     },
     "dependencies": {
@@ -44,6 +45,7 @@
         "cordova-plugin-compat": "^1.1.0",
         "cordova-plugin-crosswalk-webview": "^2.3.0",
         "cordova-plugin-customurlscheme": "~4.2.0",
+        "cordova-plugin-device": "^1.1.6",
         "cordova-plugin-file": "^4.3.3",
         "cordova-plugin-inappbrowser": "~1.4.0",
         "cordova-plugin-migrate-localstorage": "0.0.2",
