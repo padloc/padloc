@@ -148,6 +148,7 @@ const exportCSVWarning = $l(
 
 const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
+const { isCordova } = padlock.platform;
 
 class SettingsView extends applyMixins(
     BaseElement,
@@ -409,7 +410,7 @@ class SettingsView extends applyMixins(
     }
 
     _isMobile() {
-        return padlock.platform.isIOS() || padlock.platform.isAndroid();
+        return isCordova();
     }
 
     _openHomepage() {

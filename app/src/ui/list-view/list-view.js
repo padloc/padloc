@@ -126,10 +126,12 @@ class ListView extends applyMixins(
 
     _fixScroll() {
         // Workaround for list losing scrollability on iOS after resetting filter
-        if (padlock.platform.isIOS()) {
-            this.$.main.style.overflow = "hidden";
-            setTimeout(() => this.$.main.style.overflow = "auto", 100);
-        }
+        padlock.platform.isIOS().then((yes) => {
+            if (yes) {
+                this.$.main.style.overflow = "hidden";
+                setTimeout(() => this.$.main.style.overflow = "auto", 100);
+            }
+        });
     }
 
     focusFilterInput() {
