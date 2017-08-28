@@ -110,11 +110,11 @@ padlock.SyncMixin = (superClass) => {
         }
 
         testCredentials(pollInterval) {
-            if (this._testCredsPromise || !this.isActivationPending()) {
-                return;
+            if (!this.isActivationPending()) {
+                return Promise.reject();
             }
 
-            this._testCredsPromise = cloudSource.source.testCredentials()
+            this._testCredsPromise = this._testCredsPromise || cloudSource.source.testCredentials()
                 .then((connected) => {
                     this._testCredsPromise = null;
                     this.settings.syncConnected = connected;
@@ -139,6 +139,8 @@ padlock.SyncMixin = (superClass) => {
                     this._testCredsPromise = null;
                     this._handleCloudError(e);
                 });
+
+            return this._testCredsPromise;
         }
 
         openDashboard() {
@@ -255,7 +257,6 @@ padlock.SyncMixin = (superClass) => {
                     this.settings.syncToken = authToken.token;
                     this.settings.syncId = authToken.id;
                     this.dispatch("settings-changed");
-                    this.alert(this.activationPendingText());
                 })
                 .catch((e) => {
                     this.dispatch("settings-changed");

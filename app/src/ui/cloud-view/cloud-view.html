@@ -74,7 +74,7 @@
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
             <div class="title">Padlock Cloud</div>
-            <pl-icon icon="refresh" class="tap" on-click="synchronize" spin$="[[ isSynching ]]"></pl-icon>
+            <pl-icon icon="refresh" class="tap" on-click="_refresh" spin$="[[ isSynching ]]"></pl-icon>
         </header>
 
         <main>
@@ -91,8 +91,8 @@
                 <div class="note">
                     <strong>[[ $l("Activation pending") ]]</strong> -
                     [[ activationPendingText(settings.syncEmail) ]]
-                    <div class="conn-id">[[ $l("Connection ID: {0}", settings.syncId) ]]</div>
                 </div>
+                <pl-loading-button id="refreshButton" label="[[ $l('Refresh') ]]" on-click="_refresh"></pl-loading-button>
                 <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
             </section>
 
@@ -116,7 +116,6 @@
                 <div class="note">
                     <strong>[[ $l("Connected") ]]</strong> -
                     [[ connectedInfoText(settings.syncEmail) ]]
-                    <div class="conn-id">[[ $l("Connection ID: {0}", settings.syncId) ]]</div>
                 </div>
                 <pl-loading-button id="syncButton" class="tap" on-click="synchronize"
                     label="[[ $l('Synchronize') ]]"></pl-loading-button>
@@ -187,7 +186,10 @@ class CloudView extends applyMixins(
         } else {
             this.$.connectButton.start();
             this.connectCloud(this.$.emailInput.value)
-                .then(() => this.$.connectButton.success())
+                .then(() => {
+                    this.$.connectButton.success();
+                    return this.alert(this.activationPendingText());
+                })
                 .catch(() => this.$.connectButton.fail());
         }
     }
@@ -228,6 +230,23 @@ class CloudView extends applyMixins(
                         this.set("settings.syncCustomHost", false);
                     }
                 });
+        }
+    }
+
+    _refresh() {
+        if (this.isActivationPending()) {
+            this.$.refreshButton.start();
+            this.testCredentials()
+                .then((connected) => {
+                    if (connected) {
+                        this.$.refreshButton.success();
+                    } else {
+                        this.$.refreshButton.fail();
+                    }
+                })
+                .catch(() => this.$.refreshButton.fail());
+        } else {
+            this.synchronize();
         }
     }
 
