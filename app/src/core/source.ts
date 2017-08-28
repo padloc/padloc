@@ -2,7 +2,7 @@ import { request, Method, AjaxError } from "./ajax";
 import { FileManager, HTML5FileManager, CordovaFileManager, NodeFileManager } from "./file";
 import { Settings } from "./data";
 import { Container } from "./crypto";
-import { isCordova, isElectron } from "./platform";
+import { isCordova, isElectron, getDeviceInfo } from "./platform";
 
 export interface Source {
     get(): Promise<string>;
@@ -123,8 +123,14 @@ export class CloudSource extends AjaxSource {
                 "AuthToken " + this.settings.syncEmail + ":" + this.settings.syncToken);
         }
 
-        headers.set("X-Client-Version", this.settings.version);
-        headers.set("X-Client-Platform", await getPlatformName());
+        const { uuid, platform, osVersion, appVersion, manufacturer, model, hostName } = await getDeviceInfo();
+        headers.set("X-Device-App-Version", appVersion || "");
+        headers.set("X-Device-Platform", platform || "");
+        headers.set("X-Device-UUID", uuid || "");
+        headers.set("X-Device-Manufacturer", manufacturer || "");
+        headers.set("X-Device-OS-Version", osVersion || "");
+        headers.set("X-Device-Model", model || "");
+        headers.set("X-Device-Hostname", hostName || "");
 
         let req: XMLHttpRequest;
         try {

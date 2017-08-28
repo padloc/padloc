@@ -172,6 +172,7 @@ export interface DeviceInfo {
     platform: string,
     osVersion: string,
     uuid: string,
+    appVersion: string,
     manufacturer?: string,
     model?: string,
     hostName?: string
@@ -181,6 +182,7 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
     const info: DeviceInfo = {
         platform: await getPlatformName(),
         osVersion: await getOSVersion(),
+        appVersion: await getAppVersion(),
         uuid: await getDeviceUUID()
     };
 
