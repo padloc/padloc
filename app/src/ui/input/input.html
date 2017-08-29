@@ -25,6 +25,17 @@
                 width: 100%;
                 min-height: inherit;
             }
+
+            ::-webkit-search-cancel-button {
+                display: none;
+            }
+
+            ::-webkit-input-placeholder {
+                text-shadow: inherit;
+                color: inherit;
+                opacity: 0.5;
+                @apply --pl-input-placeholder;
+            }
         </style>
 
         <template is="dom-if" if="[[ multiline ]]" on-dom-change="_domChange">

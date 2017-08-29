@@ -41,12 +41,16 @@
                 --color-highlight: var(--color-secondary);
                 color: var(--color-foreground);
                 background: var(--color-background);
-                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
+                box-shadow: rgb(64, 143, 184) 0 2px 0;
+            }
+
+            header pl-icon[icon=logo] {
+                font-size: 140%;
             }
 
             header pl-icon[arrow] {
                 position: relative;
-                overflow: hidden;
             }
 
             header pl-icon[arrow]::before {
@@ -55,7 +59,7 @@
                 width: 15px;
                 height: 15px;
                 position: absolute;
-                bottom: -7px;
+                bottom: -10px;
                 left: 0;
                 right: 0;
                 margin: 0 auto;

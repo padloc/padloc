@@ -37,7 +37,7 @@
                 display: flex;
                 z-index: 5;
                 text-align: center;
-                text-shadow: rgba(0, 0, 0, 0.2) 1px 1px 0;
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
             }
 
             main {
@@ -72,10 +72,9 @@
 
             pl-input {
                 text-align: center;
-            }
-
-            pl-input::-webkit-input-placeholder {
-                color: inherit;
+                --pl-input-placeholder: {
+                    opacity: 0.8;
+                };
             }
 
             .input-wrapper {
