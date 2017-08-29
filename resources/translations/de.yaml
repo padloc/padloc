@@ -4,8 +4,8 @@
   t: Starten
 - o: Activation pending
   t: Warte auf Aktivierung
-- o: 'Connection ID: {0}'
-  t: 'Verbindungsnummer: {0}'
+- o: Refresh
+  t: Aktualisieren
 - o: Cancel
   t: Abbrechen
 - o: 'Your trial period ends in {0} days.'
