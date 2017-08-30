@@ -147,7 +147,7 @@ const exportCSVWarning = $l(
 );
 
 const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
-const { applyMixins } = padlock.util;
+const { applyMixins, wait } = padlock.util;
 const { isCordova } = padlock.platform;
 
 class SettingsView extends applyMixins(
@@ -286,6 +286,7 @@ class SettingsView extends applyMixins(
 
     _downloadEncrypted() {
         this._getEncryptedData()
+            .then(() => wait(500))
             .then((data) => {
                 const a = document.createElement("a");
                 a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
