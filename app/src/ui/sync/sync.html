@@ -309,7 +309,6 @@ padlock.SyncMixin = (superClass) => {
                 case "rate_limit_exceeded":
                     this.alert($l("It seems Padlock Cloud is over capacity right now. Please try again later!"));
                     return false;
-                case "json_error":
                 case "invalid_container_data":
                 case "invalid_key_params":
                     this.alert($l(
