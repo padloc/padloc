@@ -49,6 +49,10 @@ export async function isAndroid(): Promise<boolean> {
     return (await getPlatformName()).toLowerCase() === "android";
 }
 
+export async function isChromeOS(): Promise<boolean> {
+    return (await getPlatformName()).toLowerCase() === "chromeos";
+}
+
 //* Checks if the current environment supports touch events
 export function isTouch() {
     try {
@@ -122,11 +126,24 @@ export async function getAppVersion(): Promise<string> {
 
 export async function getPlatformName(): Promise<string> {
     if (isElectron()) {
-        return nodeRequire("os").platform();
+        const platform = nodeRequire("os").platform();
+        return {
+            darwin: "MacOS",
+            win32: "Windows",
+            linux: "Linux"
+        }[platform] || platform;
     } else if (isCordova()) {
         return device.platform;
     } else if (isChromeApp()) {
-        return "chrome";
+        const info = await new Promise<{os: string}>((r) => chrome.runtime.getPlatformInfo(r));
+        return {
+            cros: "ChromeOS",
+            win: "Windows (Chrome)",
+            linux: "Linux (Chrome)",
+            android: "Android (Chrome)",
+            mac: "MacOS (Chrome)",
+            openbsd: "OpenBSD (Chrome)"
+        }[info.os] || info.os;
     } else {
         return "";
     }

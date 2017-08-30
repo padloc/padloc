@@ -2,7 +2,10 @@ import { request, Method, AjaxError } from "./ajax";
 import { FileManager, HTML5FileManager, CordovaFileManager, NodeFileManager } from "./file";
 import { Settings } from "./data";
 import { Container } from "./crypto";
-import { isCordova, isElectron, getDeviceInfo } from "./platform";
+import { isCordova, isElectron, getDeviceInfo, isChromeApp } from "./platform";
+
+declare var chrome: any;
+const chromeLocalStorage = typeof chrome !== "undefined" && chrome.storage && chrome.storage.local;
 
 export interface Source {
     get(): Promise<string>;
@@ -28,7 +31,7 @@ export class MemorySource implements Source {
 
 }
 
-export class LocalStorageSource implements Source {
+export class HTML5LocalStorageSource implements Source {
 
     constructor(public key: string) {}
 
@@ -45,6 +48,34 @@ export class LocalStorageSource implements Source {
     };
 
 }
+
+export class ChromeLocalStorageSource implements Source {
+
+    constructor(public key: string) {}
+
+    get(): Promise<string> {
+        return new Promise((resolve) => {
+            chromeLocalStorage.get(this.key, (data: any) => {
+                resolve(data[this.key] || "");
+            });
+        });
+    };
+
+    set(data: string): Promise<void> {
+        const obj = {
+            [this.key]: data
+        };
+
+        return new Promise<void>((resolve) => chromeLocalStorage.set(obj, resolve));
+    }
+
+    clear(): Promise<void> {
+        return new Promise<void>((resolve) => chromeLocalStorage.remove(this.key, resolve));
+    }
+
+}
+
+export const LocalStorageSource = isChromeApp() ? ChromeLocalStorageSource : HTML5LocalStorageSource;
 
 export class AjaxSource implements Source {
 

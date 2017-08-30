@@ -271,7 +271,7 @@ class SettingsView extends applyMixins(
                         "attackers to break the encryption used to protect your data. Try to use a longer " +
                         "password or include a variation of uppercase, lowercase and special characters as " +
                         "well as numbers."
-                    ), $l("Use Anyway"), $l("Try Again")).then((confirm) => {
+                    ), $l("Use Anyway"), $l("Choose Different Password")).then((confirm) => {
                         if (!confirm) {
                             return Promise.reject();
                         }
