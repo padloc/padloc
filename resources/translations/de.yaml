@@ -359,8 +359,8 @@
     verwenden!
 - o: Use Anyway
   t: Trotzdem Verwenden
-- o: Try Again
-  t: Erneut Versuchen
+- o: Choose Different Password
+  t: Anderes Password Wählen
 - o: Your data has successfully been copied to the system clipboard.
   t: Ihre Daten wurden erfolgreich in die Zwischenablage kopiert.
 - o: Failed to open file. Did you enter the correct password?
@@ -401,8 +401,6 @@
   t: Tips zum Import Nachlesen
 - o: 'Successfully imported {0} records.'
   t: 'Es wurden erfolgreich {0} Einträge importiert.'
-- o: Choose Different Password
-  t: Anderes Password Wählen
 - o: >-
     Remember your master password! Without it, nobody will be able to access
     your data, not even we! This is to ensure that your data is as safe as
@@ -525,6 +523,19 @@
   t: Auto-Sync Aktivieren
 - o: 'Your Padlock Cloud trial period ends in {0} days!'
   t: 'Ihre Padlock Cloud Testphase ended in {0} Tagen!'
+- o: >-
+    In August 2016, Google announced that they will be discontinuing Chrome Apps
+    for all operating systems other than ChromeOS. This means that by early
+    2018, you will no longer be able to load this app! Don't worry though,
+    because Padlock is now available as a native app for Windows, MacOS and
+    Linux! Head over to our website to find out how to switch now!
+  t: >-
+    Im August 2016 kündigte Google an, die Unterstützung von Chrome Apps auf
+    sämtlichen Betriebssystemen außer ChromeOS einzustellen. Dies bedeutet, dass
+    diese App ab dem Frühjar 2018 nicht mehr verfügbar sein wird! Aber keine
+    Sorge, denn Padlock ist jetzt auch als native app für Windows, MacOS und
+    Linux verfügbar! Besuchen sie unsere Webseite um zu erfahren, wie Sie
+    einfach wechseln können!
 - o: Learn More
   t: Mehr Erfahren
 - o: Would you like to pair this device with Padlock Cloud now?
