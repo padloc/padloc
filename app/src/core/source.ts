@@ -55,8 +55,12 @@ export class ChromeLocalStorageSource implements Source {
 
     get(): Promise<string> {
         return new Promise((resolve) => {
-            chromeLocalStorage.get(this.key, (data: any) => {
-                resolve(data[this.key] || "");
+            chromeLocalStorage.get(this.key, (obj: any) => {
+                let data = obj[this.key];
+                if (typeof data === "object") {
+                    data = JSON.stringify(data);
+                }
+                resolve(data || "");
             });
         });
     };
