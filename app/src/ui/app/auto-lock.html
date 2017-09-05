@@ -14,11 +14,18 @@ padlock.AutoLockMixin = (superClass) => {
             document.addEventListener("touchstart", moved, { passive: true });
             document.addEventListener("keydown", moved);
             document.addEventListener("mousemove", moved);
+
+            document.addEventListener("pause", () => this._pause());
+            document.addEventListener("resume", () => this._resume());
         }
 
         static get observers() { return [
             "_autoLockChanged(settings.autoLock, settings.autoLockDelay, locked, isSynching)"
         ]; }
+
+        get lockDelay() {
+            return this.settings.autoLockDelay * 60 * 1000;
+        }
 
         _cancelAutoLock() {
             this._pausedAt = null;
@@ -30,22 +37,46 @@ padlock.AutoLockMixin = (superClass) => {
             }
         }
 
+        // Handler for cordova `pause` event. Records the current time for auto locking when resuming
+        _pause() {
+            this._pausedAt = new Date();
+        }
+
+        // Handler for cordova `resume` event. If auto lock is enabled and the specified time has passed
+        // since the app was paused, locks the app
+        _resume() {
+            if (
+                this.settings.autoLock &&
+                !this.locked &&
+                !this.isSynching &&
+                this._pausedAt &&
+                new Date().getTime() - this._pausedAt.getTime() > this.lockDelay
+            ) {
+                this._doLock();
+            }
+            this._autoLockChanged();
+        }
+
+        _doLock() {
+            const minutes = this.settings.autoLockDelay;
+            this.unloadData();
+            setTimeout(() => {
+                this.alert($l("Padlock was automatically locked after {0} {1} " +
+                "of inactivity. You can change this behavior from the settings page.",
+                minutes, minutes > 1 ? $l("minutes") : $l("minute")));
+            }, 1000);
+        }
+
         _autoLockChanged() {
             this._cancelAutoLock();
 
             if (this.settings.autoLock && !this.locked && !this.isSynching) {
-                this._lockTimeout = setTimeout(() => {
-                    const delay = this.settings.autoLockDelay;
-                    this.unloadData();
-                    setTimeout(() => {
-                        this.alert($l("Padlock was automatically locked after {0} {1} " +
-                        "of inactivity. You can change this behavior from the settings page.",
-                        delay, delay > 1 ? $l("minutes") : $l("minute")));
-                    }, 1000);
-                }, this.settings.autoLockDelay * 60 * 1000);
+                this._lockTimeout = setTimeout(() => this._doLock(), this.lockDelay);
                 this._lockNotificationTimeout = setTimeout(() => {
-                    this.notify($l("Auto-lock in 10 seconds"), "info", 3000);
-                }, this.settings.autoLockDelay * 50 * 1000);
+                    if (!this.locked && !this._pausedAt) {
+                        this.notify($l("Auto-lock in 10 seconds"), "info", 3000);
+                    }
+                }, this.lockDelay - 10000);
             }
         }
 
