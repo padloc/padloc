@@ -43,6 +43,7 @@
     </platform>
     <platform name="ios">
         <preference name="Fullscreen" value="true" />
+        <preference name="deployment-target" value="10.0" />
         <icon height="120" src="res/ios/icon/app-icon-120.png" width="120" />
         <icon height="180" src="res/ios/icon/app-icon-180.png" width="180" />
         <icon height="76" src="res/ios/icon/app-icon-76.png" width="76" />
