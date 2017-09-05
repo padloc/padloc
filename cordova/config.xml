@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.maklesoft.padlock" version="2.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.maklesoft.padlock" version="2.0.2" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Padlock</name>
     <description>
     </description>
@@ -20,6 +20,7 @@
     <preference name="StatusBarStyle" value="lightcontent" />
     <preference name="BackupWebStorage" value="cloud" />
     <preference name="cordova-custom-config-autorestore" value="true" />
+    <preference name="xwalkVersion" value="xwalk_core_library:23.53.589.4" />
     <hook src="scripts/build-www.js" type="before_prepare" />
     <platform name="android">
         <icon density="ldpi" src="res/android/icon/app-icon-ldpi.png" />
