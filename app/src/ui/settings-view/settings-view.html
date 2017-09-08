@@ -147,7 +147,7 @@ const exportCSVWarning = $l(
 );
 
 const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
-const { applyMixins, wait } = padlock.util;
+const { applyMixins } = padlock.util;
 const { isCordova } = padlock.platform;
 
 class SettingsView extends applyMixins(
@@ -232,12 +232,14 @@ class SettingsView extends applyMixins(
         this.confirm(exportCSVWarning, $l("Download"), $l("Cancel"))
             .then((confirm) => {
                 if (confirm) {
-                    const csv = padlock.exp.toCSV(this.collection.records);
-                    const a = document.createElement("a");
-                    a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
-                    a.download = "padlock.csv";
-                    a.click();
-                    this.dispatch("data-exported");
+                    setTimeout(() => {
+                        const csv = padlock.exp.toCSV(this.collection.records);
+                        const a = document.createElement("a");
+                        a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
+                        a.download = "padlock.csv";
+                        a.click();
+                        this.dispatch("data-exported");
+                    }, 500);
                 }
             });
     }
@@ -286,13 +288,14 @@ class SettingsView extends applyMixins(
 
     _downloadEncrypted() {
         this._getEncryptedData()
-            .then(() => wait(500))
             .then((data) => {
                 const a = document.createElement("a");
                 a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
                 a.download = "padlock-export.pls";
-                a.click();
-                this.dispatch("data-exported");
+                setTimeout(() => {
+                    a.click();
+                    this.dispatch("data-exported");
+                }, 500);
             });
     }
 
