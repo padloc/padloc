@@ -1,6 +1,6 @@
 {
   "name": "padlock",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A minimalist password manager",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
