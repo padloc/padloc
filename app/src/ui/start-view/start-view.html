@@ -187,6 +187,7 @@
 
 const { DataMixin, LocaleMixin, DialogMixin, BaseElement } = padlock;
 const { applyMixins, wait } = padlock.util;
+const { isTouch } = padlock.platform;
 
 class StartView extends applyMixins(
     BaseElement,
@@ -220,7 +221,13 @@ class StartView extends applyMixins(
     ready() {
         super.ready();
         this.dataReady()
-            .then(() => this.reset());
+            .then(() => this.reset())
+            .then(() => wait(500))
+            .then(() => {
+                if (!isTouch() && this._hasData) {
+                    this.$.passwordInput.focus();
+                }
+            });
     }
 
     reset() {
