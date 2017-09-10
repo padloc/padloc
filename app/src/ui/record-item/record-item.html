@@ -218,6 +218,12 @@ class RecordItem extends applyMixins(
         return this.record.fields.length > 2;
     }
 
+    _categoryClicked(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        this.dispatchEvent(new CustomEvent("search-category", { detail: this.record.category }));
+    }
+
 }
 
 window.customElements.define(RecordItem.is, RecordItem);

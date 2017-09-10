@@ -197,7 +197,8 @@
                             <span class="float-right">[[ _sectionHeader(item) ]]</span>
                             <span>[[ _sectionHeader(item) ]]</span>
                         </div>
-                        <pl-record-item record="[[ item ]]" selected$="[[ selected ]]" tabindex$="[[ tabIndex ]]"></pl-record-item>
+                        <pl-record-item record="[[ item ]]" selected$="[[ selected ]]" tabindex$="[[ tabIndex ]]"
+                            on-search-category="_searchCategory"></pl-record-item>
                         <div class="section-separator" hidden$="[[ !_lastInSection(records, index) ]]"></div>
                     </div>
                 </template>

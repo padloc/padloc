@@ -146,12 +146,20 @@ class ListView extends applyMixins(
         const prev = records[index - 1];
         const curr = records[index];
 
+        if (!curr) {
+            return false;
+        }
+
         return !prev || this._sectionHeader(prev) !== this._sectionHeader(curr);
     }
 
     _lastInSection(records, index) {
         const curr = records[index];
         const next = records[index + 1];
+
+        if (!curr) {
+            return false;
+        }
 
         return !next || this._sectionHeader(next) !== this._sectionHeader(curr);
     }
@@ -172,6 +180,10 @@ class ListView extends applyMixins(
                 const record = this.records.find((r) => this._sectionHeader(r) === sections[i]);
                 this.$.list.scrollToItem(record);
             });
+    }
+
+    _searchCategory(e) {
+        this._filterString = e.detail;
     }
 
     focusFilterInput() {
