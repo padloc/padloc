@@ -16,11 +16,13 @@
                 box-sizing: border-box;
                 flex-direction: row;
                 background: var(--color-background);
+                font-weight: bold;
+                position: relative;
             }
 
             .header {
-                height: 60px;
-                line-height: 60px;
+                height: var(--row-height);
+                line-height: var(--row-height);
                 position: relative;
             }
 
@@ -53,16 +55,9 @@
             }
 
             .name {
-                padding: 0 5px;
+                font-size: var(--font-size-small);
                 flex: 1;
                 @apply --ellipsis;
-            }
-
-            .body {
-                display: flex;
-                flex-direction: column;
-                flex: 1;
-                position: relative;
             }
 
             .fields {
@@ -82,7 +77,6 @@
                 height: 35px;
                 padding: 0 10px;
                 text-align: center;
-                font-weight: bold;
                 position: relative;
             }
 
@@ -105,19 +99,12 @@
                 content: "\f00c\ ";
             }
 
-            :host(:not(.touch)) .field:hover .field-label {
-                display: none;
-            }
-
-            .field-value {
-                display: none;
-            }
-
-            :host(:not(.touch)) .field:hover .field-value {
-                display: block;
+            :host(:not(.touch)) .field:hover .field-label, :host(:not(.touch)) .field:hover .field-value {
+                transform: translateY(-100%);
             }
 
             .field-label, .field-value {
+                transition: transform 0.2s ease;
                 padding: 0 5px;
                 @apply --ellipsis;
             }
@@ -138,53 +125,36 @@
                 font-size: 90%;
             }
 
-            .header .more-fields {
-                flex: 1;
-                font-size: 12px;
-                text-align: right;
-                padding-right: 15px;
-                font-weight: normal;
-            }
-
-            .header .more-fields::after {
-                font-family: "FontAwesome";
-                content: "\f054";
-                display: inline-block;
-                margin-left: 3px;
-                font-size: 80%;
-            }
-
             .separator {
-                background: rgba(0, 0, 0, 0.3);
+                background: rgba(0, 0, 0, 0.2) !important;
                 height: 1px;
             }
         </style>
 
-        <div class="body tiles">
-
-            <div class="header">
-                <div class="name">[[ record.name ]]</div>
-                <div class="category ellipsis" hidden$="[[ !_isSet(record.category) ]]">[[ record.category ]]</div>
-            </div>
-
-            <div class="fields tiles">
-
-                <template is="dom-repeat" items="[[ record.fields ]]">
-
-                    <div class="field" on-click="_copyField">
-                        <div class="label-value">
-                            <div class="field-label">[[ item.name ]]</div>
-                            <div class="field-value">[[ item.value ]]</div>
-                        </div>
-                        <div class="copied-message">[[ $l("copied") ]]</div>
-                    </div>
-
-                </template>
-
-            </div>
-
-            <div class="separator"></div>
+        <div class="header">
+            <div class="name">[[ record.name ]]</div>
+            <div class="category ellipsis"
+                hidden$="[[ !_isSet(record.category) ]]"
+                on-click="_categoryClicked">[[ record.category ]]</div>
         </div>
+
+        <div class="fields tiles-2 tiles">
+
+            <template is="dom-repeat" items="[[ record.fields ]]" mutable-data>
+
+                <div class="field" on-click="_copyField">
+                    <div class="label-value">
+                        <div class="field-label">[[ item.name ]]</div>
+                        <div class="field-value">[[ item.value ]]</div>
+                    </div>
+                    <div class="copied-message">[[ $l("copied") ]]</div>
+                </div>
+
+            </template>
+
+        </div>
+
+        <div class="separator"></div>
 
     </template>
 
