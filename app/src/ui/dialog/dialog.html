@@ -45,11 +45,10 @@
                 position: relative;
                 z-index: 1;
                 transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                display: flex;
-                flex-direction: column;
                 background: var(--color-background);
                 box-sizing: border-box;
-                overflow: hidden;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
                 box-shadow: rgba(0, 0, 0, 0.15) 0 0 4px;
             }
 
@@ -61,6 +60,12 @@
             .inner ::slotted(.message) {
                 padding: 15px;
                 text-align: center;
+            }
+
+            .inner ::slotted(*) {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
             }
 
             @media (min-width: 400px) {

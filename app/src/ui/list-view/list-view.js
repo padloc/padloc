@@ -3,6 +3,7 @@
 const Record = padlock.data.Record;
 const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin } = padlock;
 const { applyMixins } = padlock.util;
+const { isTouch } = padlock.platform;
 
 function filterByString(fs, rec) {
     const words = fs.toLowerCase().split(" ");
@@ -28,6 +29,10 @@ class ListView extends applyMixins(
     static get is() { return "pl-list-view"; }
 
     static get properties() { return {
+        _currentSection: {
+            type: String,
+            value: ""
+        },
         _filterString: {
             type: String,
             value: ""
@@ -44,11 +49,13 @@ class ListView extends applyMixins(
 
     static get observers() { return [
         "_fixScroll(records)",
-        "_scrollToSelected(records, selectedRecord)"
+        "_scrollToSelected(records, selectedRecord)",
+        "_updateCurrentSection(records)"
     ]; }
 
     ready() {
         super.ready();
+        this.classList.toggle("touch", isTouch());
         window.addEventListener("keydown", (e) => {
             switch (e.key) {
                 case "ArrowDown":
@@ -60,6 +67,7 @@ class ListView extends applyMixins(
             }
         });
         this.$.list.addEventListener("keydown", (e) => e.stopPropagation());
+        this.$.main.addEventListener("scroll", () => this._updateCurrentSection());
     }
 
     select(record) {
@@ -132,6 +140,38 @@ class ListView extends applyMixins(
                 setTimeout(() => this.$.main.style.overflow = "auto", 100);
             }
         });
+    }
+
+    _firstInSection(records, index) {
+        const prev = records[index - 1];
+        const curr = records[index];
+
+        return !prev || this._sectionHeader(prev) !== this._sectionHeader(curr);
+    }
+
+    _lastInSection(records, index) {
+        const curr = records[index];
+        const next = records[index + 1];
+
+        return !next || this._sectionHeader(next) !== this._sectionHeader(curr);
+    }
+
+    _sectionHeader(record) {
+        return record.name[0].toUpperCase();
+    }
+
+    _updateCurrentSection() {
+        const record = this.records[this.$.list.firstVisibleIndex];
+        this._currentSection = record && this._sectionHeader(record);
+    }
+
+    _selectSection() {
+        const sections = Array.from(this.records.reduce((s, r) => s.add(this._sectionHeader(r)), new Set()));
+        this.choose("", sections)
+            .then((i) => {
+                const record = this.records.find((r) => this._sectionHeader(r) === sections[i]);
+                this.$.list.scrollToItem(record);
+            });
     }
 
     focusFilterInput() {
