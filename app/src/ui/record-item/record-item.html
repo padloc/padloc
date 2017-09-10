@@ -15,18 +15,46 @@
                 vertical-align: top;
                 box-sizing: border-box;
                 flex-direction: row;
+                background: var(--color-background);
             }
 
             .header {
+                height: 60px;
+                line-height: 60px;
+                position: relative;
+            }
+
+            .header::before {
+                content: "";
+                display: block;
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                top: 0;
+                right: 100%;
+                transition: transform 0.3s linear;
+                transform: translate3d(0, 0, 0);
+                @apply --shade-4;
+            }
+
+            .header.holding::before {
+                transform: translate3d(100%, 0, 0);
+            }
+
+            .header.holding .title, .header:not(.holding) .hold-to-copy {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            .header {
+                padding: 0 15px;
                 display: flex;
                 align-items: center;
-                font-weight: bold;
-                font-size: var(--font-size-small);
-                height: 40px;
             }
 
             .name {
-                padding: 0 15px;
+                padding: 0 5px;
+                flex: 1;
                 @apply --ellipsis;
             }
 
@@ -37,49 +65,77 @@
                 position: relative;
             }
 
-            .body::after {
-                display: block;
-                content: "";
-                height: 2px;
-                @apply --shade-5;
+            .fields {
+                display: flex;
+                overflow: auto;
+                -webkit-touch-overflow: scroll;
             }
 
             .field {
-                display: flex;
+                width: 0;
+                min-width: 150px;
+                box-sizing: border-box;
+                flex: 1;
                 cursor: pointer;
-                font-size: var(--font-size-small);
+                font-size: var(--font-size-tiny);
                 line-height: 35px;
                 height: 35px;
-                padding-left: 15px;
+                padding: 0 10px;
+                text-align: center;
+                font-weight: bold;
+                position: relative;
             }
 
-            .field-label {
-                margin-right: 5px;
-                font-size: var(--font-size-tiny);
+            .field > * {
+                @apply --fullbleed;
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
             }
 
-            .field-value {
-                flex: 1;
-                width: 0;
-                @apply --ellipsis;
+            .field:not(.copied) .copied-message, .field.copied .label-value {
+                opacity: 0;
+                transform: scale(0);
             }
 
-            .field-value:empty + pl-icon {
+            .copied-message {
+                color: #4ca8d9;
+            }
+
+            .copied-message::before {
+                font-family: "FontAwesome";
+                content: "\f00c\ ";
+            }
+
+            :host(:not(.touch)) .field:hover .field-label {
                 display: none;
             }
 
-            .field pl-icon {
-                width: 35px;
-                height: 35px;
-                opacity: 0.5;
+            .field-value {
+                display: none;
+            }
+
+            :host(:not(.touch)) .field:hover .field-value {
+                display: block;
+            }
+
+            .field-label, .field-value {
+                padding: 0 5px;
+                @apply --ellipsis;
             }
 
             .category {
-                font-size: 12px;
+                font-size: var(--font-size-tiny);
                 max-width: 80px;
                 border: solid 1px;
                 border-radius: 2px;
                 padding: 2px 4px;
+                margin-left: 15px;
+                line-height: normal;
+            }
+
+            .category::before {
+                font-family: "FontAwesome";
+                content: "\f02b\ ";
+                font-size: 90%;
             }
 
             .header .more-fields {
@@ -97,24 +153,37 @@
                 margin-left: 3px;
                 font-size: 80%;
             }
+
+            .separator {
+                background: rgba(0, 0, 0, 0.3);
+                height: 1px;
+            }
         </style>
 
         <div class="body tiles">
+
             <div class="header">
                 <div class="name">[[ record.name ]]</div>
                 <div class="category ellipsis" hidden$="[[ !_isSet(record.category) ]]">[[ record.category ]]</div>
-                <div class="more-fields" hidden$="[[ !_hasMoreFields(record.fields.length) ]]">[[ _moreFieldsLabel(record.fields.length) ]]</div>
             </div>
-            <div class="field">
-                <div class="field-label">[[ _fieldLabel(record.fields.0.name) ]]</div>
-                <div class="field-value">[[ _obfuscate(record.fields.0.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField1" hidden$="[[ !_isSet(record.fields.0.value) ]]"></pl-icon>
+
+            <div class="fields tiles">
+
+                <template is="dom-repeat" items="[[ record.fields ]]">
+
+                    <div class="field" on-click="_copyField">
+                        <div class="label-value">
+                            <div class="field-label">[[ item.name ]]</div>
+                            <div class="field-value">[[ item.value ]]</div>
+                        </div>
+                        <div class="copied-message">[[ $l("copied") ]]</div>
+                    </div>
+
+                </template>
+
             </div>
-            <div class="field">
-                <div class="field-label">[[ _fieldLabel(record.fields.1.name) ]]</div>
-                <div class="field-value">[[ _obfuscate(record.fields.1.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField2" hidden$="[[ !_isSet(record.fields.1.value) ]]"></pl-icon>
-            </div>
+
+            <div class="separator"></div>
         </div>
 
     </template>
@@ -122,14 +191,16 @@
     <script>
 (() => {
 
-const { NotificationMixin, BaseElement } = padlock;
+const { NotificationMixin, LocaleMixin, BaseElement } = padlock;
 const { MutableData } = Polymer;
 const { applyMixins } = padlock.util;
+const { isTouch, setClipboard } = padlock.platform;
 
 class RecordItem extends applyMixins(
     BaseElement,
     MutableData,
-    NotificationMixin
+    NotificationMixin,
+    LocaleMixin
 ) {
 
     static get is() { return "pl-record-item"; }
@@ -148,6 +219,7 @@ class RecordItem extends applyMixins(
                 e.preventDefault();
             }
         });
+        this.classList.toggle("touch", isTouch());
     }
 
     // Replaces all non-newline characters in a given string with dots
@@ -155,27 +227,13 @@ class RecordItem extends applyMixins(
         return value ? value.replace(/[^\n]/g, "\u2022") : "";
     }
 
-    _copyToClipboard(value) {
-        padlock.platform.setClipboard(value)
-            .then(() => this.notify($l("Value copied to clipboard!"), "success", 1500));
-    }
-
-    _copyField1(e) {
+    _copyField(e) {
         e.stopPropagation();
-        this._copyToClipboard(this.record.fields[0].value);
-    }
-
-    _copyField2(e) {
-        e.stopPropagation();
-        this._copyToClipboard(this.record.fields[1].value);
-    }
-
-    _moreFieldsLabel() {
-        const n = this.record.fields.length - 2;
-        if (n < 1) {
-            return "";
-        }
-        return $l("{0} more {1}", n, n == 1 ? $l("field") : $l("fields"));
+        e.preventDefault();
+        setClipboard(e.model.item.value);
+        const field = this.root.querySelectorAll(".field")[e.model.index];
+        field.classList.add("copied");
+        setTimeout(() => field.classList.remove("copied"), 1000);
     }
 
     _fieldLabel(value) {
