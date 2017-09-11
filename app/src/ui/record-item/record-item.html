@@ -19,6 +19,8 @@
                 position: relative;
                 transition: color 0.2s;
                 margin-top: 10px;
+                border-top: solid 1px rgba(0, 0, 0, 0.5);
+                border-bottom: solid 2px rgba(0, 0, 0, 0.8);
             }
 
             .header {
@@ -36,21 +38,14 @@
             }
 
             .fields {
-                display: flex;
-                overflow: auto;
-                -webkit-touch-overflow: scroll;
+                position: relative;
             }
 
             .field {
-                width: 0;
-                min-width: 150px;
-                box-sizing: border-box;
-                flex: 1;
                 cursor: pointer;
                 font-size: var(--font-size-tiny);
                 line-height: 35px;
                 height: 35px;
-                padding: 0 10px;
                 text-align: center;
                 position: relative;
             }
@@ -81,7 +76,7 @@
 
             .field-label, .field-value {
                 transition: transform 0.2s ease;
-                padding: 0 5px;
+                padding: 0 15px;
                 @apply --ellipsis;
             }
 
@@ -106,18 +101,6 @@
                 font-size: 90%;
             }
 
-            .border-top {
-                background: currentColor;
-                opacity: 0.5;
-                height: 1px;
-            }
-
-            .border-bottom {
-                background: currentColor;
-                opacity: 0.8;
-                height: 2px;
-            }
-
             .fields-placeholder {
                 opacity: 0.5;
             }
@@ -135,7 +118,7 @@
                 transform: translate3d(0, 0, 0);
             }
 
-            :host([selected]) {
+            :host([selected]), :host([selected]) .copied-message {
                 color: var(--color-background);
             }
 
