@@ -24,38 +24,13 @@
                 height: var(--row-height);
                 line-height: var(--row-height);
                 position: relative;
-            }
-
-            .header::before {
-                content: "";
-                display: block;
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                right: 100%;
-                transition: transform 0.3s linear;
-                transform: translate3d(0, 0, 0);
-                @apply --shade-4;
-            }
-
-            .header.holding::before {
-                transform: translate3d(100%, 0, 0);
-            }
-
-            .header.holding .title, .header:not(.holding) .hold-to-copy {
-                transform: scale(0.5);
-                opacity: 0;
-            }
-
-            .header {
-                padding: 0 15px;
                 display: flex;
                 align-items: center;
             }
 
             .name {
-                font-size: var(--font-size-small);
+                padding-left: 15px;
+                font-weight: normal;
                 flex: 1;
                 @apply --ellipsis;
             }
@@ -110,12 +85,12 @@
             }
 
             .category {
-                font-size: var(--font-size-tiny);
+                font-size: 12px;
                 max-width: 80px;
                 border: solid 1px;
-                border-radius: 2px;
+                border-radius: 4px;
                 padding: 2px 4px;
-                margin-left: 15px;
+                margin: 0 15px;
                 line-height: normal;
             }
 
@@ -125,15 +100,24 @@
                 font-size: 90%;
             }
 
-            .separator {
-                background: rgba(0, 0, 0, 0.2) !important;
+            .border-top {
+                background: currentColor;
+                opacity: 0.5;
                 height: 1px;
+            }
+
+            .border-bottom {
+                background: currentColor;
+                opacity: 0.9;
+                height: 2px;
             }
 
             .fields-placeholder {
                 opacity: 0.5;
             }
         </style>
+
+        <div class="border-top"></div>
 
         <div class="header">
             <div class="name">[[ record.name ]]</div>
@@ -160,7 +144,7 @@
 
         </div>
 
-        <div class="separator"></div>
+        <div class="border-bottom"></div>
 
     </template>
 

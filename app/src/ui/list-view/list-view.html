@@ -83,6 +83,7 @@
             pl-record-item {
                 transition: color 0.2s;
                 position: relative;
+                margin-top: 10px;
             }
 
             pl-record-item::before {
@@ -125,40 +126,43 @@
                 transform-origin: center 49%;
             }
 
-            .section-header {
-                font-size: var(--font-size-tiny);
-                font-weight: bold;
+            .current-section {
                 height: 35px;
                 line-height: 35px;
-                border-bottom: solid 2px;
-            }
-
-            .current-section {
-                border: none;
+                padding: 0 15px;
                 position: absolute;
                 top: 52px;
                 width: 100%;
                 box-sizing: border-box;
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
                 cursor: pointer;
                 z-index: 1;
                 background: var(--color-foreground);
                 color: var(--color-background);
             }
 
+            .current-section pl-icon {
+                float: right;
+                height: 35px;
+                width: 10px;
+            }
+
             .section-separator {
                 height: 15px;
             }
 
-            .float-right {
-                float: right;
-            }
-
-            .section-header span {
-                padding: 0 15px;
-            }
-
-            .section-header pl-icon {
-                height: 35px;
+            .section-header {
+                margin-bottom: 15px;
+                width: 20px;
+                height: 30px;
+                line-height: 30px;
+                background: var(--color-foreground);
+                color: var(--color-background);
+                border-radius: 0 30px 30px 0;
+                padding-left: 15px;
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
             }
         </style>
 
@@ -177,9 +181,9 @@
             <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
 
-        <div class="section-header current-section" on-click="_selectSection" hidden$="[[ _isEmpty(records.length) ]]">
+        <div class="current-section" on-click="_selectSection" hidden$="[[ _isEmpty(records.length) ]]">
             <pl-icon icon="dropdown" class="float-right"></pl-icon>
-            <span>[[ _currentSection ]]</span>
+            <div>[[ _currentSection ]]</div>
         </div>
 
         <main id="main">
@@ -194,8 +198,7 @@
                 <template>
                     <div>
                         <div class="section-header" hidden$="[[ !_firstInSection(records, index) ]]">
-                            <span class="float-right">[[ _sectionHeader(item) ]]</span>
-                            <span>[[ _sectionHeader(item) ]]</span>
+                            [[ _sectionHeader(item) ]]
                         </div>
                         <pl-record-item record="[[ item ]]" selected$="[[ selected ]]" tabindex$="[[ tabIndex ]]"
                             on-search-category="_searchCategory"></pl-record-item>
