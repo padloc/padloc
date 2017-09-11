@@ -43,7 +43,7 @@
                 color: var(--color-foreground);
                 background: var(--color-background);
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-                box-shadow: rgb(64, 143, 184) 0 2px 0;
+                border-bottom: solid 2px rgb(64, 143, 184);
             }
 
             header pl-icon[icon=logo] {
@@ -99,14 +99,11 @@
                 height: 35px;
                 line-height: 35px;
                 padding: 0 15px;
-                position: absolute;
-                top: 52px;
                 width: 100%;
                 box-sizing: border-box;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
                 cursor: pointer;
-                z-index: 1;
                 background: var(--color-foreground);
                 color: var(--color-background);
             }
@@ -132,6 +129,10 @@
                 padding-left: 15px;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
+            }
+
+            iron-list {
+                margin-top: -35px;
             }
         </style>
 

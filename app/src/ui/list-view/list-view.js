@@ -3,7 +3,6 @@
 const Record = padlock.data.Record;
 const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin } = padlock;
 const { applyMixins } = padlock.util;
-const { isTouch } = padlock.platform;
 
 function filterByString(fs, rec) {
     const words = fs.toLowerCase().split(" ");
@@ -55,7 +54,6 @@ class ListView extends applyMixins(
 
     ready() {
         super.ready();
-        this.classList.toggle("touch", isTouch());
         window.addEventListener("keydown", (e) => {
             switch (e.key) {
                 case "ArrowDown":
