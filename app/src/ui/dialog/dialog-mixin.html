@@ -1,4 +1,5 @@
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../generator/generator.html">
 <link rel="import" href="dialog-alert.html">
 <link rel="import" href="dialog-confirm.html">
 <link rel="import" href="dialog-prompt.html">
@@ -53,6 +54,11 @@ padlock.DialogMixin = (superClass) => {
         choose(message, options) {
             const dialog = getDialog("pl-dialog-options");
             return lineUpDialog(() => dialog.choose(message, options));
+        }
+
+        generate() {
+            const dialog = getDialog("pl-generator");
+            return lineUpDialog(() => dialog.generate());
         }
 
     };

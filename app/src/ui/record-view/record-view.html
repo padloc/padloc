@@ -126,15 +126,12 @@
                     <pl-record-field class$="{{ _fieldClass(index) }}" field="{{ item }}"
                         on-field-change="_fireChangeEvent"
                         on-field-delete="_deleteField"
-                        on-field-edit-start="_fieldEditStart"
-                        on-generator-show="_closeOtherGenerators"></pl-record-field>
+                        on-field-edit-start="_hideCategoryList"></pl-record-field>
                 </template>
             </div>
             <pl-record-field id="newField" draft
                 class$="{{ _fieldClass(record.fields.length) }}"
-                on-field-edit-end="_newFieldEnter"
-                on-field-edit-start="_closeOtherGenerators"
-                on-generator-show="_closeOtherGenerators"></pl-record-field>
+                on-field-edit-end="_newFieldEnter"></pl-record-field>
             <div class$="padding {{ _spacerClass(record.fields.length) }}"></div>
         </main>
 

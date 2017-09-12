@@ -1,6 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
-<link rel="import" href="../generator/generator.html">
+<link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../locale/locale.html">
@@ -77,7 +77,7 @@
                 <div class="field-buttons tiles" hidden$="{{ _editing }}">
                     <pl-icon icon="copy" class="tap" on-click="_copy"></pl-icon>
                     <pl-icon icon="delete" class="tap" on-click="_delete"></pl-icon>
-                    <pl-icon icon="generate" class="tap" on-click="_toggleGenerator"></pl-icon>
+                    <pl-icon icon="generate" class="tap" on-click="_showGenerator"></pl-icon>
                     <div class="spacer"></div>
                 </div>
             </template>
@@ -90,20 +90,25 @@
             <div class="field-buttons tiles" hidden$="{{ !_editing }}">
                 <pl-icon icon="check" class="tap" on-click="_confirmEdit"></pl-icon>
                 <pl-icon icon="cancel" class="tap" on-click="_cancelEdit"></pl-icon>
-                <pl-icon icon="generate" class="tap" on-click="_toggleGenerator" hidden$="{{ !_editingValue }}"></pl-icon>
+                <pl-icon icon="generate" class="tap" on-click="_showGenerator"></pl-icon>
                 <div class="spacer"></div>
             </div>
         </div>
-
-        <pl-generator id="generator" class="tiles-4" hidden$="[[ !showGenerator ]]"
-            on-generator-confirm="_generatorConfirm" on-generator-cancel="_generatorCancel"></pl-generator>
 
     </template>
 
     <script>
 (() => {
 
-class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.BaseElement)) {
+const { applyMixins } = padlock.util;
+const { BaseElement, NotificationMixin, LocaleMixin, DialogMixin } = padlock;
+
+class RecordField extends applyMixins(
+    BaseElement,
+    NotificationMixin,
+    LocaleMixin,
+    DialogMixin
+) {
 
     static get is() { return "pl-record-field"; }
 
@@ -120,7 +125,7 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
             type: Boolean,
             value: false
         },
-        showGenerator: {
+        _generatorShowing: {
             type: Boolean,
             value: false,
             observer: "_showGeneratorChanged"
@@ -136,7 +141,7 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     }; }
 
     static get observers() { return [
-        "_editingChanged(_editing, showGenerator)"
+        "_editingChanged(_editing, _generatorShowing)"
     ]; }
 
     _computeEditing() {
@@ -154,7 +159,7 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
             }
         }
 
-        if (!this.showGenerator) {
+        if (!this._generatorShowing) {
             this.dispatchEvent(new CustomEvent(this._editing ? "field-edit-start" : "field-edit-end"));
         }
     }
@@ -162,7 +167,6 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     _nameInputFocused() {
         this.classList.add("editing-name");
         this._editingName = true;
-        this.showGenerator = false;
     }
 
     _nameInputBlurred() {
@@ -175,7 +179,6 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
     _valueInputFocused() {
         if (this.$.nameInput.value) {
             this._editingValue = true;
-            this.showGenerator = false;
         } else {
             this.$.nameInput.focus();
         }
@@ -221,26 +224,16 @@ class RecordField extends padlock.LocaleMixin(padlock.NotificationMixin(padlock.
         return this.draft ? $l("Enter Content") : $l("Empty Field");
     }
 
-    _toggleGenerator() {
-        this.showGenerator = !this.showGenerator;
-        if (this.showGenerator) {
-            this.$.generator.generate();
-        }
-    }
-
-    _generatorConfirm() {
-        this.set("field.name", this.$.nameInput.value);
-        this.set("field.value", this.$.generator.value);
-        this.showGenerator = false;
-        this._fireEditEvent();
-    }
-
-    _generatorCancel() {
-        this.showGenerator = false;
-    }
-
-    _showGeneratorChanged() {
-        this.dispatchEvent(new CustomEvent(this.showGenerator ? "generator-show" : "generator-hide"));
+    _showGenerator() {
+        this._generatorShowing = true;
+        this.generate()
+            .then((value) => {
+                if (value) {
+                    this.set("field.value", value);
+                    this._fireEditEvent();
+                }
+                this._generatorShowing = false;
+            });
     }
 
     _copy() {

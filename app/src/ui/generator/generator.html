@@ -1,6 +1,8 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../dialog/dialog.html">
 <link rel="import" href="../icon/icon.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="../slider/slider.html">
 <link rel="import" href="../toggle/toggle-button.html">
 
@@ -8,96 +10,73 @@
 
     <template>
         <style include="shared">
-            :host {
-                display: block;
-                font-size: var(--font-size-tiny);
-                text-align: right;
+            .charsets {
                 display: flex;
-                flex-direction: row;
-            }
-
-            pl-toggle-button {
-                height: auto;
-                padding: 0;
-                margin: 0 0 5px 5px;
-
-                --toggle-height: 25px;
-                --toggle-width: 35px;
-            }
-
-            pl-slider {
-                padding: 0;
-                margin-top: 5px;
-                width: 100%;
-                box-sizing: border-box;
-                max-width: 280px;
-                float: right;
-                --slider-track-size: 3px;
-                --slider-knob-size: 25px;
             }
 
             .charsets > * {
-                vertical-align: middle;
+                flex: 1;
+            }
+
+            .generate-button {
+                padding: 15px;
             }
 
             .header {
                 font-weight: bold;
-                margin-bottom: 5px;
+                text-align: center;
+                margin-bottom: 15px;
             }
 
-            .header::before {
+            .header::before, .header::after {
                 font-family: "FontAwesome";
-                content: "\f0e7";
+                content: "\ \f0e7\ ";
             }
 
             .value {
                 font-family: var(--font-family-mono);
-                margin-bottom: 10px;
-                font-size: var(--font-size-default);
                 word-break: break-all;
+                text-align: center;
+                font-size: 130%;
             }
 
-            .main {
-                flex: 1;
-                padding: 10px 15px;
+            pl-toggle-button {
+                display: block;
             }
 
-            .confirm {
+            pl-slider {
                 display: flex;
-                flex-direction: column;
+                height: var(--row-height);
+            }
+
+            .confirm-button {
+                font-weight: bold;
             }
         </style>
 
-        <div class="main">
-            <div class="header">
-                Generate Random String
+        <pl-dialog id="dialog" on-dialog-dismiss="_dismiss">
+            <div class="generate-button tap" on-click="_generate">
+                <div class="header">[[ $l("Generate Random Value") ]]</div>
+                <div class="value tiles-1">
+                    {{ value }}
+                </div>
             </div>
-            <div class="value">
-                {{ value }}
-            </div>
-            <div class="charsets">
-                <pl-toggle-button label="a-z" active="{{ lower }}"></pl-toggle-button>
-                <pl-toggle-button label="A-Z" active="{{ upper }}"></pl-toggle-button>
-                <pl-toggle-button label="0-9" active="{{ numbers }}"></pl-toggle-button>
-                <pl-toggle-button label="?()/%..." active="{{ other }}"></pl-toggle-button>
-            </div>
-            <div>
-                <pl-slider min="5" max="50" value="{{ length }}"></pl-slider>
-            </div>
-        </div>
-        <div class="confirm tiles">
-            <pl-icon icon="check" class="tap" on-click="_confirm"></pl-icon>
-            <pl-icon icon="cancel" class="tap" on-click="_cancel"></pl-icon>
-            <pl-icon icon="refresh" class="tap" on-click="generate"></pl-icon>
-            <div class="spacer"></div>
-        </div>
+            <pl-toggle-button label="a-z" active="{{ lower }}" class="tap tiles-2" reverse></pl-toggle-button>
+            <pl-toggle-button label="A-Z" active="{{ upper }}" class="tap tiles-3" reverse></pl-toggle-button>
+            <pl-toggle-button label="0-9" active="{{ numbers }}" class="tap tiles-4" reverse></pl-toggle-button>
+            <pl-toggle-button label="?()/%..." active="{{ other }}" class="tap tiles-5" reverse></pl-toggle-button>
+            <pl-slider label="[[ $l('length') ]]" min="5" max="50" value="{{ length }}" class="tap tiles-6"></pl-slider>
+            <button class="tiles-7 confirm-button tap" on-click="_confirm">[[ $l("Confirm") ]]</button>
+        </pl-dialog>
 
     </template>
 
     <script>
 (function() {
 
-class Generator extends padlock.BaseElement {
+const { BaseElement, LocaleMixin } = padlock;
+
+class Generator extends LocaleMixin(BaseElement) {
 
     static get is() { return "pl-generator"; }
 
@@ -130,10 +109,18 @@ class Generator extends padlock.BaseElement {
     }; }
 
     static get observers() { return [
-        "generate(length, lower, upper, numbers, other)"
+        "_generate(length, lower, upper, numbers, other)"
     ]; }
 
     generate() {
+        this._generate();
+        this.$.dialog.open = true;
+        return new Promise((resolve) => {
+            this._resolve = resolve;
+        });
+    }
+
+    _generate() {
         var charSet = "";
         this.lower && (charSet += padlock.util.chars.lower);
         this.upper && (charSet += padlock.util.chars.upper);
@@ -144,12 +131,14 @@ class Generator extends padlock.BaseElement {
     }
 
     _confirm() {
-        this.dispatchEvent(new CustomEvent("generator-confirm"));
+        typeof this._resolve === "function" && this._resolve(this.value);
+        this.$.dialog.open = false;
     }
 
-    _cancel() {
-        this.dispatchEvent(new CustomEvent("generator-cancel"));
+    _dismiss() {
+        typeof this._resolve === "function" && this._resolve(undefined);
     }
+
 }
 
 window.customElements.define(Generator.is, Generator);

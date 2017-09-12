@@ -108,19 +108,6 @@ class RecordView extends applyMixins(
         }
     }
 
-    _closeOtherGenerators(e) {
-        for (const field of this.root.querySelectorAll("pl-record-field")) {
-            if (field !== e.target) {
-                field.showGenerator = false;
-            }
-        }
-    }
-
-    _fieldEditStart(e) {
-        this._closeOtherGenerators(e);
-        this._hideCategoryList();
-    }
-
     _dropDownIcon() {
         return this._catListShowing && !this.record.category ? "dropup" : "dropdown";
     }
