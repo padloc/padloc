@@ -27,15 +27,11 @@
                 box-sizing: border-box;
             }
 
-            .note {
-                font-size: var(--font-size-tiny);
-                padding: 15px;
-                text-align: center;
-            }
-
-            .conn-id {
-                margin-top: 10px;
+            .account {
+                font-size: var(--font-size-default);
                 font-weight: bold;
+                margin-bottom: 10px;
+                overflow-wrap: break-word;
             }
 
             #emailInput {
@@ -79,16 +75,16 @@
 
         <main>
 
-            <section class="tiles tiles-2" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
-                <div class="note">
+            <section class="tiles" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
+                <div class="info">
                     [[ generalInfoText() ]]
                 </div>
                 <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Get Started') ]]" on-click="connect"></pl-loading-button>
+                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Pair Device') ]]" on-click="connect"></pl-loading-button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
-                <div class="note">
+            <section class="tiles" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
+                <div class="info">
                     <strong>[[ $l("Activation pending") ]]</strong> -
                     [[ activationPendingText(settings.syncEmail) ]]
                 </div>
@@ -96,37 +92,41 @@
                 <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
-                <div class="note">
+            <section class="tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="info">
                     <strong>[[ $l("Your trial period ends in {0} days.", remainingTrialDays) ]]</strong> -
                     [[ trialInfoText() ]]
                 </div>
                 <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
-                <div class="note">
+            <section class="tiles" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="info">
                     <strong>[[ $l("Read-Only") ]]</strong> -
                     [[ readOnlyInfoText() ]]
                 </div>
                 <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
-            <section class="tiles tiles-2" hidden$="[[ !settings.syncConnected ]]">
-                <div class="note">
-                    <strong>[[ $l("Connected") ]]</strong> -
-                    [[ connectedInfoText(settings.syncEmail) ]]
+            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
+                <div class="info">
+                    <div class="account">[[ settings.syncEmail ]]</div>
+                    <div>[[ connectedInfoText(settings.syncEmail) ]]</div>
                 </div>
                 <pl-loading-button id="syncButton" class="tap" on-click="synchronize"
                     label="[[ $l('Synchronize') ]]"></pl-loading-button>
                 <button class="tap" on-click="openDashboard">[[ $l("Manage Account") ]]</button>
                 <button class="tap" on-click="_disconnect">[[ $l("Disconnect") ]]</button>
-                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Auto Sync') ]]"
+            </section>
+
+            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
+                <div class="info">[[ $l("Enable Auto Sync to tell Padlock to automatically synchronize your data with your Padlock Cloud account every time you make a change!") ]]</div>
+                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]"
                     reverse class="tap" on-change="settingChanged"></pl-toggle-button>
             </section>
 
-            <section class="tiles tiles-2">
-                <div class="note">
+            <section class="tiles">
+                <div class="info">
                     [[ $l("By providing a custom URL you can synchronize your data with a server other than the official Padlock Cloud server.") ]]
                     <strong>[[ $l("WARNING: This is only recommended for advanced users!") ]]</strong>
                 </div>
@@ -136,7 +136,7 @@
                     <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
                         value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
                         required on-change="settingChanged"></pl-input>
-                    <div class="note warning">
+                    <div class="info warning">
                         <strong>[[ $l("Invalid URL") ]]</strong> -
                         [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
                     </div>

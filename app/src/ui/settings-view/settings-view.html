@@ -31,16 +31,6 @@
                 display: block;
             }
 
-            .info {
-                display: block;
-                font-size: 15px;
-                text-align: center;
-                cursor: pointer;
-                line-height: normal;
-                padding: 10px 15px;
-                height: auto;
-            }
-
             .section-header {
                 text-align: center;
                 font-weight: bold;
@@ -83,22 +73,23 @@
         </header>
 
         <main>
-            <section class="tiles tiles-2">
-                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Auto Lock') ]]" class="tap"
+            <section class="tiles">
+                <div class="info">
+                    You can tell Padlock to automatically lock the app after a
+                    certain period of inactivity. This is useful for preventing
+                    other people from seeing your data in case you leave your device
+                    unattended for a while.
+                </div>
+                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Enable Auto Lock') ]]" class="tap"
                     reverse on-change="settingChanged"></pl-toggle-button>
                 <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
 
-            <section class="tiles tiles-2">
-                <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
-                <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
-            </section>
-
-            <section class="tiles tiles-2">
+            <section class="tiles">
                 <div class="section-header">[[ $l("Export") ]]</div>
                 <div class="section-row tiles">
-                    <div class="section-row-label">[[ $l("As CSV (not recommended)") ]]</div>
+                    <div class="section-row-label">[[ $l("As CSV") ]]</div>
                     <pl-icon icon="copy" class="tap" on-click="_copyCSV"></pl-icon>
                     <pl-icon icon="download" class="tap" on-click="_downloadCSV" hidden$="[[ _isMobile() ]]"></pl-icon>
                 </div>
@@ -109,7 +100,7 @@
                 </div>
             </section>
 
-            <section class="tiles tiles-2">
+            <section class="tiles">
                 <div class="section-header">[[ $l("Import") ]]</div>
                 <div class="section-row tiles">
                     <div class="section-row-label">[[ $l("Paste From Clipboard") ]]</div>
@@ -124,10 +115,25 @@
                 </div>
             </section>
 
-            <section class="tiles tiles-2">
+            <section class="tiles">
+                <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
+            </section>
+
+            <section class="tiles">
+                <div class="info">
+                    Want to start fresh? Reseting Padlock will delete all your locally stored data and settings and
+                    will restore the app to the state it was when you first launched it.
+                </div>
+                <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
+            </section>
+
+            <section class="tiles">
                 <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
                 <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
-                <button class="info tap" on-click="_openHomepage">
+            </section>
+
+            <section>
+                <button class="info tap" on-click="_openSource">
                     <strong>Padlock {{ settings.version }}</strong><br>
                     [[ $l("Developed and maintained by") ]] <strong>MaKleSoft</strong>
                 </button>
@@ -417,8 +423,8 @@ class SettingsView extends applyMixins(
         return isCordova();
     }
 
-    _openHomepage() {
-        window.open("https://github.com/maklesoft/", "_system");
+    _openSource() {
+        window.open("https://github.com/maklesoft/padlock/", "_system");
     }
 
 }

@@ -121,6 +121,18 @@
 
             section {
                 margin: 15px 0;
+                border-top: solid 1px rgba(0, 0, 0, 0.1);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+            }
+
+            section > .info {
+                display: block;
+                font-size: 15px;
+                text-align: center;
+                cursor: pointer;
+                line-height: normal;
+                padding: 15px;
+                height: auto;
             }
 
             header {
@@ -137,6 +149,7 @@
             header > .title {
                 padding: 0 15px;
                 flex: 1;
+                @apply --ellipsis;
             }
 
             header pl-icon {
