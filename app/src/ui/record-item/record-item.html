@@ -15,106 +15,145 @@
                 vertical-align: top;
                 box-sizing: border-box;
                 flex-direction: row;
+                background: var(--color-background);
+                position: relative;
+                transition: color 0.2s ease 0.1s;
+                margin-top: 10px;
+                border-top: solid 1px rgba(0, 0, 0, 0.1);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.2);
             }
 
             .header {
+                height: var(--row-height);
+                line-height: var(--row-height);
+                position: relative;
                 display: flex;
                 align-items: center;
-                font-weight: bold;
-                font-size: var(--font-size-small);
-                height: 40px;
             }
 
             .name {
+                padding-left: 15px;
+                flex: 1;
+                @apply --ellipsis;
+            }
+
+            .fields {
+                position: relative;
+            }
+
+            .field {
+                cursor: pointer;
+                font-size: var(--font-size-tiny);
+                line-height: 35px;
+                height: 35px;
+                text-align: center;
+                position: relative;
+            }
+
+            .field > * {
+                @apply --fullbleed;
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+            }
+
+            .field:not(.copied) .copied-message, .field.copied .label-value {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            .copied-message {
+                font-weight: bold;
+                color: #4ca8d9;
+            }
+
+            .copied-message::before {
+                font-family: "FontAwesome";
+                content: "\f00c\ ";
+            }
+
+            :host(:not(.touch)) .field:hover .field-label, :host(:not(.touch)) .field:hover .field-value {
+                transform: translateY(-100%);
+            }
+
+            .field-label, .field-value {
+                transition: transform 0.2s ease;
                 padding: 0 15px;
                 @apply --ellipsis;
             }
 
-            .body {
-                display: flex;
-                flex-direction: column;
-                flex: 1;
-                position: relative;
-            }
-
-            .body::after {
-                display: block;
-                content: "";
-                height: 2px;
-                @apply --shade-5;
-            }
-
-            .field {
-                display: flex;
-                cursor: pointer;
-                font-size: var(--font-size-small);
-                line-height: 35px;
-                height: 35px;
-                padding-left: 15px;
-            }
-
             .field-label {
-                margin-right: 5px;
-                font-size: var(--font-size-tiny);
-            }
-
-            .field-value {
-                flex: 1;
-                width: 0;
-                @apply --ellipsis;
-            }
-
-            .field-value:empty + pl-icon {
-                display: none;
-            }
-
-            .field pl-icon {
-                width: 35px;
-                height: 35px;
-                opacity: 0.5;
+                font-weight: bold;
             }
 
             .category {
                 font-size: 12px;
                 max-width: 80px;
                 border: solid 1px;
-                border-radius: 2px;
+                border-radius: 4px;
                 padding: 2px 4px;
+                margin: 0 15px;
+                line-height: normal;
+                font-weight: bold;
             }
 
-            .header .more-fields {
-                flex: 1;
-                font-size: 12px;
-                text-align: right;
-                padding-right: 15px;
-                font-weight: normal;
-            }
-
-            .header .more-fields::after {
+            .category::before {
                 font-family: "FontAwesome";
-                content: "\f054";
-                display: inline-block;
-                margin-left: 3px;
-                font-size: 80%;
+                content: "\f02b\ ";
+                font-size: 90%;
+            }
+
+            .fields-placeholder {
+                opacity: 0.5;
+            }
+
+            .slider {
+                content: "";
+                display: block;
+                background: var(--color-highlight);
+                transition: transform 0.2s cubic-bezier(0.6, 0, 0.2, 1);
+                @apply --fullbleed;
+                transform: scale(0, 1);
+                transform-origin: 0 0;
+            }
+
+            :host([selected]), :host([selected]) .copied-message {
+                color: var(--color-background);
+            }
+
+            :host(:not(.touch):focus:not([selected])) {
+                border-color: var(--color-highlight);
+                color: #4ca8d9;
+            }
+
+            :host([selected]) .slider {
+                transform: scale(1, 1);
             }
         </style>
 
-        <div class="body tiles">
-            <div class="header">
-                <div class="name">[[ record.name ]]</div>
-                <div class="category ellipsis" hidden$="[[ !_isSet(record.category) ]]">[[ record.category ]]</div>
-                <div class="more-fields" hidden$="[[ !_hasMoreFields(record.fields.length) ]]">[[ _moreFieldsLabel(record.fields.length) ]]</div>
-            </div>
-            <div class="field">
-                <div class="field-label">[[ _fieldLabel(record.fields.0.name) ]]</div>
-                <div class="field-value">[[ _obfuscate(record.fields.0.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField1" hidden$="[[ !_isSet(record.fields.0.value) ]]"></pl-icon>
-            </div>
-            <div class="field">
-                <div class="field-label">[[ _fieldLabel(record.fields.1.name) ]]</div>
-                <div class="field-value">[[ _obfuscate(record.fields.1.value) ]]</div>
-                <pl-icon icon="copy" class="tiles-2 tap" on-click="_copyField2" hidden$="[[ !_isSet(record.fields.1.value) ]]"></pl-icon>
-            </div>
+        <div class="slider"></div>
+
+        <div class="header">
+            <div class="name">[[ record.name ]]</div>
+            <div class="category ellipsis"
+                hidden$="[[ !_isSet(record.category) ]]"
+                on-click="_categoryClicked">[[ record.category ]]</div>
+        </div>
+
+        <div class="fields tiles-2 tiles">
+
+            <template is="dom-repeat" items="[[ record.fields ]]" mutable-data>
+
+                <div class="field" on-click="_copyField">
+                    <div class="label-value">
+                        <div class="field-label">[[ item.name ]]</div>
+                        <div class="field-value">[[ item.value ]]</div>
+                    </div>
+                    <div class="copied-message">[[ $l("copied") ]]</div>
+                </div>
+
+            </template>
+
+            <div class="field fields-placeholder" hidden$="[[ _hasFields(record.fields.length) ]]">[[ $l("No Fields") ]]</div>
+
         </div>
 
     </template>
@@ -122,14 +161,16 @@
     <script>
 (() => {
 
-const { NotificationMixin, BaseElement } = padlock;
+const { NotificationMixin, LocaleMixin, BaseElement } = padlock;
 const { MutableData } = Polymer;
 const { applyMixins } = padlock.util;
+const { isTouch, setClipboard } = padlock.platform;
 
 class RecordItem extends applyMixins(
     BaseElement,
     MutableData,
-    NotificationMixin
+    NotificationMixin,
+    LocaleMixin
 ) {
 
     static get is() { return "pl-record-item"; }
@@ -148,6 +189,7 @@ class RecordItem extends applyMixins(
                 e.preventDefault();
             }
         });
+        this.classList.toggle("touch", isTouch());
     }
 
     // Replaces all non-newline characters in a given string with dots
@@ -155,27 +197,13 @@ class RecordItem extends applyMixins(
         return value ? value.replace(/[^\n]/g, "\u2022") : "";
     }
 
-    _copyToClipboard(value) {
-        padlock.platform.setClipboard(value)
-            .then(() => this.notify($l("Value copied to clipboard!"), "success", 1500));
-    }
-
-    _copyField1(e) {
+    _copyField(e) {
         e.stopPropagation();
-        this._copyToClipboard(this.record.fields[0].value);
-    }
-
-    _copyField2(e) {
-        e.stopPropagation();
-        this._copyToClipboard(this.record.fields[1].value);
-    }
-
-    _moreFieldsLabel() {
-        const n = this.record.fields.length - 2;
-        if (n < 1) {
-            return "";
-        }
-        return $l("{0} more {1}", n, n == 1 ? $l("field") : $l("fields"));
+        e.preventDefault();
+        setClipboard(e.model.item.value);
+        const field = this.root.querySelectorAll(".field")[e.model.index];
+        field.classList.add("copied");
+        setTimeout(() => field.classList.remove("copied"), 1000);
     }
 
     _fieldLabel(value) {
@@ -186,8 +214,14 @@ class RecordItem extends applyMixins(
         return !!value;
     }
 
-    _hasMoreFields() {
-        return this.record.fields.length > 2;
+    _hasFields() {
+        return !!this.record.fields.length;
+    }
+
+    _categoryClicked(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        this.dispatchEvent(new CustomEvent("search-category", { detail: this.record.category }));
     }
 
 }

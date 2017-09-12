@@ -23,6 +23,7 @@
                 flex-direction: column;
                 height: 100%;
                 background: var(--color-background);
+                position: relative;
             }
 
             .filter-input-wrapper {
@@ -42,7 +43,7 @@
                 color: var(--color-foreground);
                 background: var(--color-background);
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-                box-shadow: rgb(64, 143, 184) 0 2px 0;
+                border-bottom: solid 2px rgb(64, 143, 184);
             }
 
             header pl-icon[icon=logo] {
@@ -79,35 +80,6 @@
                 text-align: center;
             }
 
-            pl-record-item {
-                transition: color 0.2s;
-            }
-
-            pl-record-item::before {
-                content: "";
-                display: block;
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                right: 100%;
-                background: var(--color-highlight);
-                transition: transform 0.2s cubic-bezier(0.6, 0, 0.2, 1);
-                transform: translate3d(0, 0, 0);
-            }
-
-            pl-record-item[selected] {
-                color: var(--color-background);
-            }
-
-            pl-record-item:focus:not([selected])::before {
-                transform: translate3d(7px, 0, 0);
-            }
-
-            pl-record-item[selected]::before {
-                transform: translate3d(100%, 0, 0);
-            }
-
             .cloud-icon-wrapper {
                 position: relative;
             }
@@ -122,6 +94,46 @@
                 animation: spin 1s infinite;
                 transform-origin: center 49%;
             }
+
+            .current-section {
+                height: 35px;
+                line-height: 35px;
+                padding: 0 15px;
+                width: 100%;
+                box-sizing: border-box;
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
+                cursor: pointer;
+                background: var(--color-foreground);
+                color: var(--color-background);
+            }
+
+            .current-section pl-icon {
+                float: right;
+                height: 35px;
+                width: 10px;
+            }
+
+            .section-separator {
+                height: 15px;
+            }
+
+            .section-header {
+                margin-bottom: 15px;
+                width: 20px;
+                height: 30px;
+                line-height: 30px;
+                background: var(--color-foreground);
+                color: var(--color-background);
+                border-radius: 0 30px 30px 0;
+                padding-left: 15px;
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
+            }
+
+            iron-list {
+                margin-top: -35px;
+            }
         </style>
 
         <header>
@@ -135,27 +147,37 @@
                 <pl-icon icon="search" on-click="focusFilterInput"></pl-icon>
                 <pl-input id="filterInput" placeholder="" value="{{ _filterString }}" on-escape="_clearFilter"></pl-input>
             </div>
-            <pl-icon icon="add" arrow$="[[ _isEmpty(collection.records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
             <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
+
+        <div class="current-section" on-click="_selectSection" hidden$="[[ _isEmpty(records.length) ]]">
+            <pl-icon icon="dropdown" class="float-right"></pl-icon>
+            <div>[[ _currentSection ]]</div>
+        </div>
 
         <main id="main">
 
             <iron-list id="list"
                 mutable-data
                 scroll-target="main"
-                hidden$="[[ _isEmpty(collection.records.length) ]]"
+                hidden$="[[ _isEmpty(records.length) ]]"
                 items="[[ records ]]"
                 selection-enabled
                 selected-item="{{ selectedRecord }}">
                 <template>
                     <div>
-                        <pl-record-item record="[[ item ]]" selected$="[[ selected ]]" tabindex$="[[ tabIndex ]]"></pl-record-item>
+                        <div class="section-header" hidden$="[[ !_firstInSection(records, index) ]]">
+                            [[ _sectionHeader(item) ]]
+                        </div>
+                        <pl-record-item record="[[ item ]]" selected$="[[ selected ]]" tabindex$="[[ tabIndex ]]"
+                            on-search-category="_searchCategory"></pl-record-item>
+                        <div class="section-separator" hidden$="[[ !_lastInSection(records, index) ]]"></div>
                     </div>
                 </template>
             </iron-list>
 
-            <div hidden$="[[ !_isEmpty(collection.records.length) ]]" class="empty tiles">
+            <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty tiles">
                 <div class="empty-message">
                     [[ $l("You don't have any data yet! Start by creating your first record!") ]]
                 </div>

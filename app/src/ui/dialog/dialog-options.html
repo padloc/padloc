@@ -9,7 +9,7 @@
         <style include="shared"></style>
 
         <pl-dialog open="{{ open }}" prevent-dismiss>
-            <div class="message tiles-1">[[ message ]]</div>
+            <div class="message tiles-1" hidden$="[[ !_hasMessage(message) ]]">[[ message ]]</div>
             <template is="dom-repeat" items="[[ options ]]">
                 <button class$="[[ _buttonClass(index) ]]" on-click="_selectOption">[[ item ]]</button>
             </template>
@@ -47,6 +47,10 @@ class DialogOptions extends padlock.BaseElement {
 
     _buttonClass(index) {
         return "tap tiles-" + (Math.floor((index + 1) % 8) + 1);
+    }
+
+    _hasMessage(message) {
+        return !!message;
     }
 
 }
