@@ -17,10 +17,10 @@
                 flex-direction: row;
                 background: var(--color-background);
                 position: relative;
-                transition: color 0.2s;
+                transition: color 0.2s ease 0.1s;
                 margin-top: 10px;
-                border-top: solid 1px rgba(0, 0, 0, 0.5);
-                border-bottom: solid 2px rgba(0, 0, 0, 0.8);
+                border-top: solid 1px rgba(0, 0, 0, 0.1);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.2);
             }
 
             .header {
@@ -108,32 +108,28 @@
             .slider {
                 content: "";
                 display: block;
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                top: 0;
-                right: 100%;
                 background: var(--color-highlight);
                 transition: transform 0.2s cubic-bezier(0.6, 0, 0.2, 1);
-                transform: translate3d(0, 0, 0);
+                @apply --fullbleed;
+                transform: scale(0, 1);
+                transform-origin: 0 0;
             }
 
             :host([selected]), :host([selected]) .copied-message {
                 color: var(--color-background);
             }
 
-            :host(:not(.touch):focus:not([selected])) .slider {
-                transform: translate3d(7px, 0, 0);
+            :host(:not(.touch):focus:not([selected])) {
+                border-color: var(--color-highlight);
+                color: #4ca8d9;
             }
 
             :host([selected]) .slider {
-                transform: translate3d(100%, 0, 0);
+                transform: scale(1, 1);
             }
         </style>
 
         <div class="slider"></div>
-
-        <div class="border-top"></div>
 
         <div class="header">
             <div class="name">[[ record.name ]]</div>
@@ -159,8 +155,6 @@
             <div class="field fields-placeholder" hidden$="[[ _hasFields(record.fields.length) ]]">[[ $l("No Fields") ]]</div>
 
         </div>
-
-        <div class="border-bottom"></div>
 
     </template>
 
