@@ -49,18 +49,35 @@
                 margin-left: 15px;
             }
 
-            #categoryList {
+            .categories {
                 position: absolute;
                 z-index: 1;
-                top: 100%;
+                top: 40px;
                 left: 0;
-                background: var(--color-background);
-                width: 100%;
+                right: 0;
+                bottom: 0;
+                background: rgba(255, 255, 255, 0.8);
+                overflow: hidden;
+                transition: opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+            }
+
+            .categories-inner {
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
-                max-height: 200px;
+                max-height: 100%;
                 overflow: auto;
-                background: var(--color-background);
+                background: var(--color-foreground);
+                color: var(--color-background);
                 -webkit-overflow-scrolling: touch;
+                transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+            }
+
+            .categories:not([showing]) {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .categories:not([showing]) .categories-inner {
+                transform: translateY(-100%);
             }
 
             .category-option {
@@ -83,7 +100,7 @@
 
         <header>
             <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
-            <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}"
+            <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}" on-focus="_hideCategoryList"
                 placeholder="[[ $l('Enter Record Name') ]]" select-on-focus on-change="_fireChangeEvent"></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
@@ -93,9 +110,11 @@
                 <pl-icon icon="category"></pl-icon>
                 <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]"
                     select-on-focus on-change="_fireChangeEvent"
-                    on-focus="_showCategoryList" on-blur="_hideCategoryList"></pl-input>
-                <pl-icon id="dropDownButton" icon="dropdown" class="tap" on-click="_showFullCategoryList"></pl-icon>
-                <div id="categoryList" class="tiles" hidden$="[[ !_catListShowing ]]">
+                    on-focus="_showCategoryList"></pl-input>
+                <pl-icon icon="[[ _dropDownIcon(_catListShowing, record.category) ]]" class="tap" on-click="_toggleCategoryList"></pl-icon>
+            </div>
+            <div class="categories tiles" showing$="[[ _catListShowing ]]" on-click="_hideCategoryList">
+                <div class="categories-inner tiles">
                     <div></div>
                     <template is="dom-repeat" items="{{ collection.categories }}" filter="{{ _categoryFilter(record.category) }}">
                         <div class="category-option tap" on-click="_selectCategory">{{ item }}</div>
@@ -107,7 +126,7 @@
                     <pl-record-field class$="{{ _fieldClass(index) }}" field="{{ item }}"
                         on-field-change="_fireChangeEvent"
                         on-field-delete="_deleteField"
-                        on-field-edit-start="_closeOtherGenerators"
+                        on-field-edit-start="_fieldEditStart"
                         on-generator-show="_closeOtherGenerators"></pl-record-field>
                 </template>
             </div>

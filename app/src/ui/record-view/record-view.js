@@ -84,8 +84,10 @@ class RecordView extends applyMixins(
     }
 
     _selectCategory(e) {
-        this.set("record.category", e.model.item);
-        this._fireChangeEvent();
+        setTimeout(() => {
+            this.set("record.category", e.model.item);
+            this._fireChangeEvent();
+        }, 300);
     }
 
     _showCategoryList() {
@@ -93,12 +95,17 @@ class RecordView extends applyMixins(
     }
 
     _hideCategoryList() {
-        setTimeout(() => this._catListShowing = false, 100);
+        this._catListShowing = false;
     }
 
-    _showFullCategoryList() {
-        this.$.categoryInput.value = "";
-        setTimeout(() => this.$.categoryInput.focus(), 100);
+    _toggleCategoryList() {
+        if (!this._catListShowing || this.record.category) {
+            this.$.categoryInput.value = "";
+            this._catListShowing = true;
+            this.$.categoryInput.focus();
+        } else {
+            this._catListShowing = false;
+        }
     }
 
     _closeOtherGenerators(e) {
@@ -107,6 +114,15 @@ class RecordView extends applyMixins(
                 field.showGenerator = false;
             }
         }
+    }
+
+    _fieldEditStart(e) {
+        this._closeOtherGenerators(e);
+        this._hideCategoryList();
+    }
+
+    _dropDownIcon() {
+        return this._catListShowing && !this.record.category ? "dropup" : "dropdown";
     }
 
     close() {
