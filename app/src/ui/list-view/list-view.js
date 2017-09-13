@@ -38,7 +38,8 @@ class ListView extends applyMixins(
         },
         records: {
             type: Array,
-            computed: " _filterAndSort(collection.records, _filterString)"
+            computed: " _filterAndSort(collection.records, _filterString)",
+            observer: "_recordsObserver"
         },
         selectedRecord: {
             type: Object,
@@ -182,6 +183,38 @@ class ListView extends applyMixins(
 
     _searchCategory(e) {
         this._filterString = e.detail;
+    }
+
+    _recordsObserver(curr, prev) {
+        const prevLength = prev && prev.length || 0;
+        const currLength = curr && curr.length || 0;
+        // If more than on record was added or removed, do the slide in animation
+        if (Math.abs(prevLength - currLength) > 1) {
+            this.$.list.style.opacity = 0;
+            // Wait a little to make sure all list items have been rendered
+            setTimeout(() => {
+                this.$.list.style.opacity = 1;
+                this._animateRecords();
+            }, 100);
+        }
+    }
+
+    _animateRecords() {
+        const duration = 600;
+        const dt = 100;
+        const first = this.$.list.firstVisibleIndex;
+        const last = this.$.list.lastVisibleIndex + 1;
+        const items = Array.from(this.root.querySelectorAll("pl-record-item"));
+
+        for (let i = first; last && i <= last; i++) {
+            const delay = dt * (i - first);
+            const item = items.find((item) => this.$.list.modelForElement(item).index === i);
+            if (item) {
+                item.style.animation = "";
+                item.offsetLeft;
+                item.style.animation = `slideIn ${duration}ms ease ${delay}ms both`;
+            }
+        }
     }
 
     focusFilterInput() {

@@ -13,6 +13,11 @@
     <template>
 
         <style include="shared">
+            @keyframes slideIn {
+                from { transform: translate(0, 50px); opacity: 0; }
+                to { opacity: 1; }
+            }
+
             :host {
                 --gutter-width: 2px;
                 overflow-x: hidden;
