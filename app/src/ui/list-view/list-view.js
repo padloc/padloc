@@ -201,13 +201,13 @@ class ListView extends applyMixins(
 
     _animateRecords() {
         const duration = 600;
-        const dt = 100;
+        const dt = 80;
         const first = this.$.list.firstVisibleIndex;
         const last = this.$.list.lastVisibleIndex + 1;
         const items = Array.from(this.root.querySelectorAll("pl-record-item"));
 
         for (let i = first; last && i <= last; i++) {
-            const delay = dt * (i - first);
+            const delay = Math.min(dt * (i - first), 2000);
             const item = items.find((item) => this.$.list.modelForElement(item).index === i);
             if (item) {
                 item.style.animation = "";

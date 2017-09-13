@@ -15,13 +15,18 @@ class RecordView extends applyMixins(
     static get properties() { return {
         record: {
             type: Object,
-            notify: true
+            notify: true,
+            observer: "_recordObserver"
         },
         _catListShowing: {
             type: Boolean,
             value: false
         }
     }; }
+
+    static get observers() { return [
+        "_setBackground(record.fields.length)"
+    ]; }
 
     recordCreated(record) {
         setTimeout(() => {
@@ -48,8 +53,9 @@ class RecordView extends applyMixins(
         return "tiles-" + (Math.floor((index + 1) % 8) + 1);
     }
 
-    _spacerClass(nFields) {
-        return this._fieldClass(nFields + 1);
+    _setBackground(nFields) {
+        const shade = nFields === 0 ? 2 : 4 - Math.abs(4 - (nFields % 8));
+        this.style.background = `var(--shade-${shade + 1}-color)`;
     }
 
     _newFieldEnter() {
@@ -60,10 +66,14 @@ class RecordView extends applyMixins(
         const newField = this.$.newField.field;
         if (newField.name && newField.value) {
             this.push("record.fields", newField);
+            this.$.newFieldWrapper.style.animation = "";
+            this.$.newFieldWrapper.offsetLeft;
+            this.$.newFieldWrapper.style.animation = "slideIn 500ms ease 0s both";
             if (!padlock.platform.isTouch()) {
                 this.$.newField.edit();
             }
         }
+
         this.$.newField.field = { name: "", value: "" };
 
         setTimeout(() => this._fireChangeEvent(), 500);
@@ -110,6 +120,27 @@ class RecordView extends applyMixins(
 
     _dropDownIcon() {
         return this._catListShowing && !this.record.category ? "dropup" : "dropdown";
+    }
+
+    _recordObserver() {
+        this.$.header.style.visibility = this.$.main.style.visibility = "hidden";
+        setTimeout(() => {
+            this.$.header.style.visibility = this.$.main.style.visibility = "";
+            this._animateFields();
+        }, 100);
+    }
+
+    _animateFields() {
+        const duration = 500;
+        const dt = 50;
+        const fields = Array.from(this.root.querySelectorAll(".animate"));
+
+        for (const [i, f] of fields.entries()) {
+            const delay = dt * i;
+            f.style.animation = "";
+            f.offsetLeft;
+            f.style.animation = `slideIn ${duration}ms ease ${delay}ms both`;
+        }
     }
 
     close() {

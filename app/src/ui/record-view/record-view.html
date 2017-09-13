@@ -11,6 +11,11 @@
     <template>
 
         <style include="shared">
+            @keyframes slideIn {
+                from { transform: translate(0, 50px); opacity: 0; }
+                to { opacity: 1; }
+            }
+
             :host {
                 box-sizing: border-box;
                 overflow: auto;
@@ -18,6 +23,7 @@
                 flex-direction: column;
                 position: relative;
                 @apply --fullbleed;
+                transition: background 0.5s;
             }
 
             header > pl-input {
@@ -85,10 +91,8 @@
                 padding: 10px 15px;
             }
 
-            .padding {
-                position: fixed;
-                height: 100%;
-                width: 100%;
+            .animate {
+                background: var(--color-background);
             }
 
             @media (min-width: 600px) {
@@ -98,22 +102,22 @@
             }
         </style>
 
-        <header>
+        <header class="animate" id="header">
             <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
             <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}" on-focus="_hideCategoryList"
                 placeholder="[[ $l('Enter Record Name') ]]" select-on-focus on-change="_fireChangeEvent"></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
-        <main>
-            <div class="category tap tiles-1">
+        <main id="main">
+            <div class="category animate tap tiles-1">
                 <pl-icon icon="category"></pl-icon>
                 <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]"
                     select-on-focus on-change="_fireChangeEvent"
                     on-focus="_showCategoryList"></pl-input>
                 <pl-icon icon="[[ _dropDownIcon(_catListShowing, record.category) ]]" class="tap" on-click="_toggleCategoryList"></pl-icon>
             </div>
-            <div class="categories tiles" showing$="[[ _catListShowing ]]" on-click="_hideCategoryList">
+            <div class="categories" showing$="[[ _catListShowing ]]" on-click="_hideCategoryList">
                 <div class="categories-inner tiles">
                     <div></div>
                     <template is="dom-repeat" items="{{ collection.categories }}" filter="{{ _categoryFilter(record.category) }}">
@@ -123,16 +127,19 @@
             </div>
             <div class="fields">
                 <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
-                    <pl-record-field class$="{{ _fieldClass(index) }}" field="{{ item }}"
-                        on-field-change="_fireChangeEvent"
-                        on-field-delete="_deleteField"
-                        on-field-edit-start="_hideCategoryList"></pl-record-field>
+                    <div class="animate">
+                        <pl-record-field class$="{{ _fieldClass(index) }}" field="{{ item }}"
+                            on-field-change="_fireChangeEvent"
+                            on-field-delete="_deleteField"
+                            on-field-edit-start="_hideCategoryList"></pl-record-field>
+                    </div>
                 </template>
             </div>
-            <pl-record-field id="newField" draft
-                class$="{{ _fieldClass(record.fields.length) }}"
-                on-field-edit-end="_newFieldEnter"></pl-record-field>
-            <div class$="padding {{ _spacerClass(record.fields.length) }}"></div>
+            <div class="animate" id="newFieldWrapper">
+                <pl-record-field id="newField" draft
+                    class$="{{ _fieldClass(record.fields.length) }}"
+                    on-field-edit-end="_newFieldEnter"></pl-record-field>
+            </div>
         </main>
 
     </template>
