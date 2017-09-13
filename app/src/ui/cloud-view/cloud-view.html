@@ -1,4 +1,5 @@
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../animation/animation.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
@@ -150,7 +151,7 @@
     <script>
 (() => {
 
-const { LocaleMixin, DialogMixin, NotificationMixin, DataMixin, SyncMixin, BaseElement } = padlock;
+const { LocaleMixin, DialogMixin, NotificationMixin, DataMixin, SyncMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 
 class CloudView extends applyMixins(
@@ -159,7 +160,8 @@ class CloudView extends applyMixins(
     SyncMixin,
     LocaleMixin,
     DialogMixin,
-    NotificationMixin
+    NotificationMixin,
+    AnimationMixin
 ) {
 
     static get is() { return "pl-cloud-view"; }
@@ -167,6 +169,10 @@ class CloudView extends applyMixins(
     static get observers() { return [
         "_credentialsChanged(settings.syncToken, settings.syncConnected)"
     ]; }
+
+    get animated() {
+        return this.root.querySelectorAll("header, section:not([hidden])");
+    }
 
     syncStart() {
         this.$.syncButton.start();

@@ -1,0 +1,60 @@
+<link rel="import" href="../base/base.html">
+
+<script>
+(() => {
+
+padlock.AnimationMixin = (superClass) => {
+
+    return class AnimationMixin extends superClass {
+
+        static get properties() { return {
+            autoAnimate: {
+                type: Boolean,
+                value: true
+            },
+            animationOptions: {
+                type: Object,
+                value: () => {
+                    return {
+                        animation: "slideIn",
+                        duration: 500,
+                        easing: "ease",
+                        delay: 0,
+                        dt: 100
+                    };
+                }
+            }
+        }; }
+
+        get animated() {
+            return this.root.querySelectorAll(".animate");
+        }
+
+        connectedCallback() {
+            super.connectedCallback();
+
+            if (this.autoAnimate) {
+                this.animateCascade(this.animated);
+            }
+        }
+
+        animateElement(el, opts = {}) {
+            const { animation, duration, easing, delay } = Object.assign({}, this.animationOptions, opts);
+            el.style.animation = "";
+            el.offsetLeft;
+            el.style.animation = `${animation} ${duration}ms ${easing} ${delay}ms both`;
+        }
+
+        animateCascade(els, opts = {}) {
+            const { dt } = Object.assign({}, this.animationOptions, opts);
+
+            for (const [i, e] of els.entries()) {
+                this.animateElement(e, Object.assign(opts, { delay: i * dt }));
+            }
+        }
+
+    };
+};
+
+})();
+</script>
