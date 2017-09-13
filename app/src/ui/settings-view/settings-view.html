@@ -74,12 +74,7 @@
 
         <main>
             <section class="tiles">
-                <div class="info">
-                    You can tell Padlock to automatically lock the app after a
-                    certain period of inactivity. This is useful for preventing
-                    other people from seeing your data in case you leave your device
-                    unattended for a while.
-                </div>
+                <div class="info">[[ _autoLockInfo() ]]</div>
                 <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Enable Auto Lock') ]]" class="tap"
                     reverse on-change="settingChanged"></pl-toggle-button>
                 <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
@@ -120,10 +115,7 @@
             </section>
 
             <section class="tiles">
-                <div class="info">
-                    Want to start fresh? Reseting Padlock will delete all your locally stored data and settings and
-                    will restore the app to the state it was when you first launched it.
-                </div>
+                <div class="info">[[ _resetDataInfo() ]]</div>
                 <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
             </section>
 
@@ -425,6 +417,20 @@ class SettingsView extends applyMixins(
 
     _openSource() {
         window.open("https://github.com/maklesoft/padlock/", "_system");
+    }
+
+    _autoLockInfo() {
+        return this.$l(
+            "Tell Padlock to automatically lock the app after a certain period of " +
+            "inactivity in case you leave your device unattended for a while."
+        );
+    }
+
+    _resetDataInfo() {
+        return this.$l(
+            "Want to start fresh? Reseting Padlock will delete all your locally stored data and settings " +
+            "and will restore the app to the state it was when you first launched it."
+        );
     }
 
 }

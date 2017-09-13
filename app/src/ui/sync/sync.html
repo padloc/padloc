@@ -137,6 +137,7 @@ padlock.SyncMixin = (superClass) => {
                 })
                 .catch((e) => {
                     this._testCredsPromise = null;
+                    this.cancelConnect();
                     this._handleCloudError(e);
                 });
 
@@ -176,10 +177,10 @@ padlock.SyncMixin = (superClass) => {
 
         readOnlyInfoText() {
             return $l(
-                "You currently don't have an active subscription! This means you can access " +
+                "You currently don't have an active subscription which means you can still access " +
                 "your existing data on Padlock Cloud but you won't be able to upload any new data " +
-                "or synchronize changes between devices. Get a subscription now to regain full access " +
-                "to Padlock Cloud!"
+                "or synchronize changes between devices. Get a subscription now to take full advantage " +
+                "of Padlock Cloud!"
             );
         }
 
@@ -188,6 +189,13 @@ padlock.SyncMixin = (superClass) => {
                 "This device is connected to the Padlock Cloud account {0}. Connect all your devices " +
                 "with the same account to easily synchronize your data between them!",
                 this.settings.syncEmail
+            );
+        }
+
+        autoSyncInfoText() {
+            return $l(
+                "Enable Auto Sync to automatically synchronize your data with " +
+                "your Padlock Cloud account every time you make a change!"
             );
         }
 
