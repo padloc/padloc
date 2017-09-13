@@ -167,12 +167,9 @@ class CloudView extends applyMixins(
     static get is() { return "pl-cloud-view"; }
 
     static get observers() { return [
-        "_credentialsChanged(settings.syncToken, settings.syncConnected)"
+        "_credentialsChanged(settings.syncToken, settings.syncConnected)",
+        "_animateSections(settings.syncToken, settings.syncConnected, settings.syncSubStatus)"
     ]; }
-
-    get animated() {
-        return this.root.querySelectorAll("header, section:not([hidden])");
-    }
 
     syncStart() {
         this.$.syncButton.start();
@@ -254,6 +251,10 @@ class CloudView extends applyMixins(
         } else {
             this.synchronize();
         }
+    }
+
+    _animateSections() {
+        this.animateCascade(this.root.querySelectorAll("section:not([hidden])"));
     }
 
 }

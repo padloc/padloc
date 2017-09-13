@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../animation/animation.html">
 <link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
@@ -97,14 +98,14 @@
             }
         </style>
 
-        <header class="animate" id="header">
+        <header>
             <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
             <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}" on-focus="_hideCategoryList"
                 placeholder="[[ $l('Enter Record Name') ]]" select-on-focus on-change="_fireChangeEvent"></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
-        <main id="main">
+        <main id="main" style="visibility: hidden">
             <div class="category animate tap tiles-1">
                 <pl-icon icon="category"></pl-icon>
                 <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]"

@@ -1,18 +1,23 @@
 (() => {
 
-const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
+const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 
 class RecordView extends applyMixins(
     BaseElement,
     DataMixin,
     LocaleMixin,
-    DialogMixin
+    DialogMixin,
+    AnimationMixin
 ) {
 
     static get is() { return "pl-record-view"; }
 
     static get properties() { return {
+        animationOptions: {
+            type: Object,
+            value: { clear: true }
+        },
         record: {
             type: Object,
             notify: true,
@@ -66,9 +71,7 @@ class RecordView extends applyMixins(
         const newField = this.$.newField.field;
         if (newField.name && newField.value) {
             this.push("record.fields", newField);
-            this.$.newFieldWrapper.style.animation = "";
-            this.$.newFieldWrapper.offsetLeft;
-            this.$.newFieldWrapper.style.animation = "slideIn 500ms ease 0s both";
+            this.animateElement(this.$.newFieldWrapper);
             if (!padlock.platform.isTouch()) {
                 this.$.newField.edit();
             }
@@ -123,24 +126,11 @@ class RecordView extends applyMixins(
     }
 
     _recordObserver() {
-        this.$.header.style.visibility = this.$.main.style.visibility = "hidden";
+        this.$.main.style.visibility = "hidden";
         setTimeout(() => {
-            this.$.header.style.visibility = this.$.main.style.visibility = "";
-            this._animateFields();
+            this.$.main.style.visibility = "";
+            this.animateCascade(this.root.querySelectorAll(".animate"));
         }, 100);
-    }
-
-    _animateFields() {
-        const duration = 500;
-        const dt = 50;
-        const fields = Array.from(this.root.querySelectorAll(".animate"));
-
-        for (const [i, f] of fields.entries()) {
-            const delay = dt * i;
-            f.style.animation = "";
-            f.offsetLeft;
-            f.style.animation = `slideIn ${duration}ms ease ${delay}ms both`;
-        }
     }
 
     close() {

@@ -159,8 +159,9 @@ class SettingsView extends applyMixins(
 
     static get is() { return "pl-settings-view"; }
 
-    get animated() {
-        return this.root.querySelectorAll("header, section");
+    connectedCallback() {
+        super.connectedCallback();
+        this.animateCascade(this.root.querySelectorAll("section"));
     }
 
     _back() {

@@ -1,7 +1,7 @@
 (() => {
 
 const Record = padlock.data.Record;
-const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin } = padlock;
+const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin, AnimationMixin } = padlock;
 const { applyMixins } = padlock.util;
 
 function filterByString(fs, rec) {
@@ -22,7 +22,8 @@ class ListView extends applyMixins(
     LocaleMixin,
     SyncMixin,
     DataMixin,
-    DialogMixin
+    DialogMixin,
+    AnimationMixin
 ) {
 
     static get is() { return "pl-list-view"; }
@@ -35,6 +36,10 @@ class ListView extends applyMixins(
         _filterString: {
             type: String,
             value: ""
+        },
+        animationOptions: {
+            type: Object,
+            value: { clear: true }
         },
         records: {
             type: Array,
@@ -200,21 +205,16 @@ class ListView extends applyMixins(
     }
 
     _animateRecords() {
-        const duration = 600;
-        const dt = 80;
         const first = this.$.list.firstVisibleIndex;
         const last = this.$.list.lastVisibleIndex + 1;
-        const items = Array.from(this.root.querySelectorAll("pl-record-item"));
+        const elements = Array.from(this.root.querySelectorAll("pl-record-item"));
+        const m4e = (e) => this.$.list.modelForElement(e);
 
-        for (let i = first; last && i <= last; i++) {
-            const delay = Math.min(dt * (i - first), 2000);
-            const item = items.find((item) => this.$.list.modelForElement(item).index === i);
-            if (item) {
-                item.style.animation = "";
-                item.offsetLeft;
-                item.style.animation = `slideIn ${duration}ms ease ${delay}ms both`;
-            }
-        }
+        const animated = elements
+            .filter((el) => m4e(el).index >= first && m4e(el).index <= last)
+            .sort((a, b) => m4e(a).index - m4e(b).index);
+
+        this.animateCascade(animated);
     }
 
     focusFilterInput() {
