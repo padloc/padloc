@@ -74,6 +74,10 @@ class ListView extends applyMixins(
         this.$.main.addEventListener("scroll", () => this._updateCurrentSection());
     }
 
+    dataUnloaded() {
+        this._clearFilter();
+    }
+
     select(record) {
         this.$.list.selectItem(record);
     }
