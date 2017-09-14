@@ -1,7 +1,7 @@
 (() => {
 
 const Record = padlock.data.Record;
-const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin } = padlock;
+const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin, AnimationMixin } = padlock;
 const { applyMixins } = padlock.util;
 
 function filterByString(fs, rec) {
@@ -22,7 +22,8 @@ class ListView extends applyMixins(
     LocaleMixin,
     SyncMixin,
     DataMixin,
-    DialogMixin
+    DialogMixin,
+    AnimationMixin
 ) {
 
     static get is() { return "pl-list-view"; }
@@ -36,9 +37,14 @@ class ListView extends applyMixins(
             type: String,
             value: ""
         },
+        animationOptions: {
+            type: Object,
+            value: { clear: true }
+        },
         records: {
             type: Array,
-            computed: " _filterAndSort(collection.records, _filterString)"
+            computed: " _filterAndSort(collection.records, _filterString)",
+            observer: "_recordsObserver"
         },
         selectedRecord: {
             type: Object,
@@ -182,6 +188,33 @@ class ListView extends applyMixins(
 
     _searchCategory(e) {
         this._filterString = e.detail;
+    }
+
+    _recordsObserver(curr, prev) {
+        const prevLength = prev && prev.length || 0;
+        const currLength = curr && curr.length || 0;
+        // If more than on record was added or removed, do the slide in animation
+        if (!prevLength || Math.abs(prevLength - currLength) > 1) {
+            this.$.list.style.opacity = 0;
+            // Wait a little to make sure all list items have been rendered
+            setTimeout(() => {
+                this.$.list.style.opacity = 1;
+                this._animateRecords();
+            }, 100);
+        }
+    }
+
+    _animateRecords() {
+        const first = this.$.list.firstVisibleIndex;
+        const last = this.$.list.lastVisibleIndex + 1;
+        const elements = Array.from(this.root.querySelectorAll("pl-record-item"));
+        const m4e = (e) => this.$.list.modelForElement(e);
+
+        const animated = elements
+            .filter((el) => m4e(el).index >= first && m4e(el).index <= last)
+            .sort((a, b) => m4e(a).index - m4e(b).index);
+
+        this.animateCascade(animated);
     }
 
     focusFilterInput() {

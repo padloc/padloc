@@ -1,27 +1,40 @@
 (() => {
 
-const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
+const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 
 class RecordView extends applyMixins(
     BaseElement,
     DataMixin,
     LocaleMixin,
-    DialogMixin
+    DialogMixin,
+    AnimationMixin
 ) {
 
     static get is() { return "pl-record-view"; }
 
     static get properties() { return {
+        animationOptions: {
+            type: Object,
+            value: {
+                clear: true,
+                fullDuration: 800
+            }
+        },
         record: {
             type: Object,
-            notify: true
+            notify: true,
+            observer: "_recordObserver"
         },
         _catListShowing: {
             type: Boolean,
             value: false
         }
     }; }
+
+    static get observers() { return [
+        "_setBackground(record.fields.length)"
+    ]; }
 
     recordCreated(record) {
         setTimeout(() => {
@@ -48,8 +61,9 @@ class RecordView extends applyMixins(
         return "tiles-" + (Math.floor((index + 1) % 8) + 1);
     }
 
-    _spacerClass(nFields) {
-        return this._fieldClass(nFields + 1);
+    _setBackground(nFields) {
+        const shade = 4 - Math.abs(4 - (nFields + 2 % 8));
+        this.style.background = `var(--shade-${shade + 1}-color)`;
     }
 
     _newFieldEnter() {
@@ -60,10 +74,12 @@ class RecordView extends applyMixins(
         const newField = this.$.newField.field;
         if (newField.name && newField.value) {
             this.push("record.fields", newField);
+            this.animateElement(this.$.newFieldWrapper);
             if (!padlock.platform.isTouch()) {
                 this.$.newField.edit();
             }
         }
+
         this.$.newField.field = { name: "", value: "" };
 
         setTimeout(() => this._fireChangeEvent(), 500);
@@ -110,6 +126,14 @@ class RecordView extends applyMixins(
 
     _dropDownIcon() {
         return this._catListShowing && !this.record.category ? "dropup" : "dropdown";
+    }
+
+    _recordObserver() {
+        this.$.main.style.visibility = "hidden";
+        setTimeout(() => {
+            this.$.main.style.visibility = "";
+            this.animateCascade(this.root.querySelectorAll(".animate"));
+        }, 100);
     }
 
     close() {

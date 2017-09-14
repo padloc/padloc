@@ -1,4 +1,5 @@
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../animation/animation.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
@@ -144,7 +145,7 @@ const exportCSVWarning = $l(
     "a secure, encrypted file, instead! Are you sure you want to proceed?"
 );
 
-const { LocaleMixin, DialogMixin, DataMixin, BaseElement } = padlock;
+const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 const { isCordova } = padlock.platform;
 
@@ -152,10 +153,16 @@ class SettingsView extends applyMixins(
     BaseElement,
     DataMixin,
     LocaleMixin,
-    DialogMixin
+    DialogMixin,
+    AnimationMixin
 ) {
 
     static get is() { return "pl-settings-view"; }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.animateCascade(this.root.querySelectorAll("section"));
+    }
 
     _back() {
         this.dispatchEvent(new CustomEvent("settings-back"));
