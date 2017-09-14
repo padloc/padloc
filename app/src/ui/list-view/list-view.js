@@ -194,7 +194,7 @@ class ListView extends applyMixins(
         const prevLength = prev && prev.length || 0;
         const currLength = curr && curr.length || 0;
         // If more than on record was added or removed, do the slide in animation
-        if (Math.abs(prevLength - currLength) > 1) {
+        if (!prevLength || Math.abs(prevLength - currLength) > 1) {
             this.$.list.style.opacity = 0;
             // Wait a little to make sure all list items have been rendered
             setTimeout(() => {
