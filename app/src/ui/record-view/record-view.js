@@ -38,7 +38,7 @@ class RecordView extends applyMixins(
 
     recordCreated(record) {
         setTimeout(() => {
-            if (record === this.record && !padlock.platform.isTouch()) {
+            if (record === this.record) {
                 this.edit();
             }
         }, 500);
