@@ -136,7 +136,9 @@ class ListView extends applyMixins(
         const l = this.$.list;
         const i = l.items.indexOf(this.selectedRecord);
         if (i !== -1 && (i < l.firstVisibleIndex || i > l.lastVisibleIndex)) {
-            l.scrollToItem(this.selectedRecord);
+            // Scroll to item before the selected one so that selected
+            // item is more towards the middle of the list
+            l.scrollToIndex(Math.max(i - 1, 0));
         }
     }
 
