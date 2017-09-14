@@ -183,11 +183,13 @@ class ListView extends applyMixins(
 
     _selectSection() {
         const sections = Array.from(this.records.reduce((s, r) => s.add(this._sectionHeader(r)), new Set()));
-        this.choose("", sections)
-            .then((i) => {
-                const record = this.records.find((r) => this._sectionHeader(r) === sections[i]);
-                this.$.list.scrollToItem(record);
-            });
+        if (sections.length) {
+            this.choose("", sections)
+                .then((i) => {
+                    const record = this.records.find((r) => this._sectionHeader(r) === sections[i]);
+                    this.$.list.scrollToItem(record);
+                });
+        }
     }
 
     _searchCategory(e) {
