@@ -9,7 +9,8 @@ const defaults = {
     easing: "ease",
     delay: 0,
     fill: "both",
-    dt: 100,
+    initialDelay: 0,
+    fullDuration: 1000,
     clear: false
 };
 
@@ -37,10 +38,12 @@ padlock.AnimationMixin = (superClass) => {
         }
 
         animateCascade(els, opts = {}) {
-            const { dt } = Object.assign({}, defaults, this.animationOptions, opts);
+            const { fullDuration, duration, initialDelay } =
+                Object.assign({}, defaults, this.animationOptions, opts);
+            const dt = Math.floor((fullDuration - duration) / els.length);
 
             for (const [i, e] of els.entries()) {
-                this.animateElement(e, Object.assign(opts, { delay: i * dt }));
+                this.animateElement(e, Object.assign(opts, { delay: initialDelay + i * dt }));
             }
         }
 
