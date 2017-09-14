@@ -59,7 +59,7 @@ class RecordView extends applyMixins(
     }
 
     _setBackground(nFields) {
-        const shade = nFields === 0 ? 2 : 4 - Math.abs(4 - (nFields % 8));
+        const shade = 4 - Math.abs(4 - (nFields + 2 % 8));
         this.style.background = `var(--shade-${shade + 1}-color)`;
     }
 
