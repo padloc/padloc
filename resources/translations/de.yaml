@@ -1,9 +1,15 @@
+- o: Generate Random Value
+  t: Zufälligen Wert Generieren
+- o: length
+  t: Länge
+- o: Confirm
+  t: Bestätigen
 - o: Enter Email Address
   t: Emailadresse Eingeben
-- o: Get Started
-  t: Starten
-- o: Activation pending
-  t: Warte auf Aktivierung
+- o: Pair Device
+  t: Gerät Verbinden
+- o: 'Check your email:'
+  t: 'Überprüfen Sie Ihr Postfach:' 
 - o: Refresh
   t: Aktualisieren
 - o: Cancel
@@ -14,16 +20,16 @@
   t: Abonnement Verwalten
 - o: Read-Only
   t: Nur Lesezugriff
-- o: Connected
-  t: Verbunden
+- o: 'Paired with:'
+  t: 'Verbunden mit:'
 - o: Synchronize
   t: Synchronisieren
 - o: Manage Account
   t: Konto Verwalten
-- o: Disconnect
+- o: Unpair
   t: Verbindung Trennen
-- o: Auto Sync
-  t: Automatisch Synchronisieren
+- o: Enable Auto Sync
+  t: Auto Sync Aktivieren
 - o: >-
     By providing a custom URL you can synchronize your data with a server other
     than the official Padlock Cloud server.
@@ -44,32 +50,34 @@
   t: >-
     Die URL muss von der Form https://myserver.tld:port. Eine sichere Verbindung
     über https ist erforderlich.
+- o: No Fields
+  t: Keine Felder
+- o: copied
+  t: kopiert
 - o: You don't have any data yet! Start by creating your first record!
   t: >-
     Es sind noch keine Einträge vorhanden. Fangen Sie an, indem Sie Ihren ersten
     Eintrag erstellen!
 - o: Enter New Field Name
   t: Neuen Feldnamen Eingeben
+- o: Enter Content
+  t: Inhalt Eingeben
 - o: Enter Record Name
   t: Namen Eingeben
 - o: No Category
   t: Ohne Kategory
 - o: Settings
   t: Einstellugen
-- o: Auto Lock
-  t: Automatisch Sperren
+- o: Enable Auto Lock
+  t: Auto Lock Aktivieren
 - o: ' min'
   t: ' Min'
 - o: After
   t: Nach
-- o: Reset App
-  t: App Zurücksetzen
-- o: Change Master Password
-  t: Master Passwort Ändern
 - o: Export
   t: Exportieren
-- o: As CSV (not recommended)
-  t: Als CSV (nicht empfohlen)
+- o: As CSV
+  t: Als CSV
 - o: As Encrypted File
   t: Als Verschlüsselte Datei
 - o: Import
@@ -78,6 +86,10 @@
   t: Aus Der Zwischenablage
 - o: Select a File
   t: Datei Auswählen
+- o: Change Master Password
+  t: Master Passwort Ändern
+- o: Reset App
+  t: App Zurücksetzen
 - o: Website
   t: Webseite
 - o: Support
@@ -92,14 +104,14 @@
   t: Email Eingeben (Optional)
 - o: 'strength: {0}'
   t: 'Sicherheit: {0}'
+- o: Get Started
+  t: Starten
 - o: New Record
   t: Neuer Eintrag
 - o: OK
   t: OK
 - o: Are you sure you want to do this?
   t: Sind Sie sicher dass Sie dies tun möchten?
-- o: Confirm
-  t: Bestätigen
 - o: Dismiss
   t: OK
 - o: >-
@@ -151,16 +163,16 @@
     Daten werden stets lokal verschlüsselt bevor sie an unsere Server gesendet
     werden um sicher zu stellen, dass niemand sie lesen kann - nicht einmal wir!
 - o: >-
-    You currently don't have an active subscription! This means you can access
-    your existing data on Padlock Cloud but you won't be able to upload any new
-    data or synchronize changes between devices. Get a subscription now to
-    regain full access to Padlock Cloud!
+    You currently don't have an active subscription which means you can still
+    access your existing data on Padlock Cloud but you won't be able to upload
+    any new data or synchronize changes between devices. Get a subscription now
+    to take full advantage of Padlock Cloud!
   t: >-
     Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar
     weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können,
     aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
-    synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen
-    Zugriff auf Padlock Cloud zu erhalten!
+    synchronisieren können. Erwerben Sie jetzt ein Abonnement um Padlock Cloud
+    uneingeschränkt nutzen zu können!
 - o: >-
     This device is connected to the Padlock Cloud account {0}. Connect all your
     devices with the same account to easily synchronize your data between them!
@@ -168,6 +180,12 @@
     Dieses Gerät ist mit dem Padlock Cloud Konto {0} verbunden. Verbinden Sie
     all Ihre Geräte mit dem selben Konto um Ihre Daten auf einfache Weise
     zwischen ihnen zu synchronisieren!
+- o: >-
+    Enable Auto Sync to automatically synchronize your data with your Padlock
+    Cloud account every time you make a change!
+  t: >-
+    Aktivieren Sie Auto Sync um automatisch Ihre Daten mit Ihrem Padlock Cloud
+    Account zu synchronisieren, sobald Sie Änderungen vornehmen!
 - o: Do you want to change your Padlock Cloud master password to your local one?
   t: >-
     Wollen Sie Ihr Master Password auf Padlock Cloud auf Ihr lokales Password
@@ -249,6 +267,8 @@
   t: Bitte geben Sie eine gültige Emailadresse ein!
 - o: Are you sure you want to disconnect from Padlock Cloud?
   t: 'Sind Sie sicher, dass Sie dieses Gerät von Padlock Cloud trennen möchten?'
+- o: Disconnect
+  t: Verbindung Trennen
 - o: >-
     Are you sure you want to use a custom server for synchronization? This
     option is only recommended for advanced users!
@@ -257,20 +277,10 @@
     möchten? Dies ist nur für fortgeschrittene Nutzer zu empfehlen!
 - o: Continue
   t: Fortfahren
-- o: Value copied to clipboard!
-  t: Daten in Zwischenablage kopiert!
-- o: '{0} more {1}'
-  t: '{0} weitere {1}'
-- o: field
-  t: Feld
-- o: fields
-  t: Felder
 - o: Cannot lock app while sync is in progress!
   t: App kann nicht gesperrt werden solange Synchronisierung im Gange ist!
-- o: Enter Content
-  t: Inhalt Eingeben
-- o: Empty Field
-  t: Leeres Feld
+- o: Value copied to clipboard!
+  t: Daten in Zwischenablage kopiert!
 - o: Are you sure you want to delete this field?
   t: 'Sind Sie sicher, dass Sie dieses Feld löschen wollen?'
 - o: Delete
@@ -401,6 +411,19 @@
   t: Tips zum Import Nachlesen
 - o: 'Successfully imported {0} records.'
   t: 'Es wurden erfolgreich {0} Einträge importiert.'
+- o: >-
+    Tell Padlock to automatically lock the app after a certain period of
+    inactivity in case you leave your device unattended for a while.
+  t: >-
+    Falls Sie Ihr Gerät einmal unbeaufsichtigt lassen kann Padlock nach einer
+    bestimmten Zeit ohne Interaktion automatisch die App zu sperren.
+- o: >-
+    Want to start fresh? Reseting Padlock will delete all your locally stored
+    data and settings and will restore the app to the state it was when you
+    first launched it.
+  t: >-
+    Hier können Sie Ihre Daten und Einstellungen zurücksetzen und den
+    ursprünglichen Zustand der App wiederherstellen.
 - o: >-
     Remember your master password! Without it, nobody will be able to access
     your data, not even we! This is to ensure that your data is as safe as
