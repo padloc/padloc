@@ -70,7 +70,7 @@
             <div class="input-container">
                 <pl-input id="nameInput" value="[[ field.name ]]" placeholder="[[ $l('Enter New Field Name') ]]" select-on-focus
                     on-focus="_nameInputFocused" on-blur="_nameInputBlurred" on-enter="_confirmEdit" on-escape="_cancelEdit"></pl-input>
-                <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ _valuePlaceholder(draft) ]]" select-on-focus
+                <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ $l('Enter Content') ]]" select-on-focus
                     on-focus="_valueInputFocused" on-blur="_valueInputBlurred" on-escape="_cancelEdit" on-mousedown="_valueInputMouseDown"></pl-input>
             </div>
             <template is="dom-if" if="{{ !draft }}">
@@ -217,10 +217,6 @@ class RecordField extends applyMixins(
 
     _delete() {
         this.dispatchEvent(new CustomEvent("field-delete", { bubbles: true, composed: true }));
-    }
-
-    _valuePlaceholder() {
-        return this.draft ? $l("Enter Content") : $l("Empty Field");
     }
 
     _showGenerator() {
