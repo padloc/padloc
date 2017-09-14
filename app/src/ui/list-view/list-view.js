@@ -198,6 +198,7 @@ class ListView extends applyMixins(
             this.$.list.style.opacity = 0;
             // Wait a little to make sure all list items have been rendered
             setTimeout(() => {
+                this.$.list.scrollToIndex(0);
                 this.$.list.style.opacity = 1;
                 this._animateRecords();
             }, 100);
