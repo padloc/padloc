@@ -16,7 +16,10 @@ class RecordView extends applyMixins(
     static get properties() { return {
         animationOptions: {
             type: Object,
-            value: { clear: true }
+            value: {
+                clear: true,
+                fullDuration: 800
+            }
         },
         record: {
             type: Object,
