@@ -101,6 +101,20 @@ export async function getAppStoreLink(): Promise<string> {
     }
 }
 
+export async function getReviewLink(rating:number): Promise<string> {
+    if (await isIOS()) {
+        return "https://itunes.apple.com/app/id871710139?action=write-review";
+    } else if (await isAndroid()) {
+        return "https://play.google.com/store/apps/details?id=com.maklesoft.padlock";
+    } else if (await isChromeApp()) {
+        return "https://chrome.google.com/webstore/detail/padlock/npkoefjfcjbknoeadfkbcdpbapaamcif/reviews";
+    } else {
+        const version = await getAppVersion();
+        const platform = await getPlatformName();
+        return `https://padlock.io/feedback/?r=${rating}&p=${encodeURIComponent(platform)}&v=${version}`;
+    }
+}
+
 export function hasNode(): Boolean {
     return !!nodeRequire;
 }

@@ -6,7 +6,7 @@
 
 const { FileSource } = padlock.source;
 const { wait } = padlock.util;
-const { isChromeApp, isChromeOS } = padlock.platform;
+const { isChromeApp, isChromeOS, getReviewLink } = padlock.platform;
 
 const statsSource = new FileSource("stats.json");
 let stats;
@@ -44,6 +44,7 @@ padlock.HintsMixin = (superClass) => {
             this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindBackup()));
             this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindSync()));
             this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindTrialEnds()));
+            this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._askFeedback()));
             this.listen("sync-success", () => statsLoaded.then(() => {
                 stats.lastSync = new Date().getTime();
                 saveStats();
@@ -161,6 +162,74 @@ padlock.HintsMixin = (superClass) => {
                         });
                 }
             });
+        }
+
+        _askFeedback() {
+            if (
+                stats.launchCount > 10 &&
+                !stats.dontAskFeeback &&
+                !stats.lastAskedFeedback
+            ) {
+                this.choose($l(
+                    "Hey there! Sorry to bother you - just wanted to ask how you are liking Padlock so far?"
+                ), [
+                    $l("Love it!") + " \u2665",
+                    $l("It's ok..."),
+                    $l("Hate it.")
+                ])
+                    .then((rating) => {
+                        stats.lastAskedFeedback = new Date().getTime();
+                        stats.lastRating = rating;
+                        stats.lastRatedVersion = this.settings.version;
+                        saveStats();
+
+                        switch (rating) {
+                            case 0:
+                                this.choose($l(
+                                    "So glad to hear you like our app! Would you mind taking a second to " +
+                                    "let others know what you think about Padlock?"
+                                ), [
+                                    $l("Sure!"),
+                                    $l("No thanks")
+                                ])
+                                    .then((choice) => {
+                                        switch (choice) {
+                                            case 0:
+                                                this._sendFeedback(rating);
+                                                stats.lastReviewed = new Date().getTime();
+                                                break;
+                                            case 1:
+                                                stats.dontAskFeedback = true;
+                                                break;
+                                        }
+
+                                        saveStats();
+                                    });
+                                break;
+                            case 1:
+                            case 2:
+                                this.choose($l(
+                                    "Your opinion as a user is very important to us and we're always " +
+                                    "looking for feedback and suggestions on how to improve Padlock. " +
+                                    "Would you mind taking a second to let us know what you think about " +
+                                    "the app?"
+                                ), [
+                                    $l("Sure!"),
+                                    $l("No thanks")
+                                ])
+                                    .then((choice) => {
+                                        if (choice === 0) {
+                                            this._sendFeedback(rating);
+                                        }
+                                    });
+                                break;
+                        }
+                    });
+            }
+        }
+
+        _sendFeedback(rating) {
+            getReviewLink(rating).then((link) => window.open(link, "_system"));
         }
 
     };
