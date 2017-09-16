@@ -26,13 +26,13 @@
                 "XWALK_MULTIPLEAPK": "true"
             },
             "cordova-plugin-file": {},
-            "cordova-plugin-wkwebview-engine": {},
             "cordova-plugin-splashscreen": {},
             "cordova-plugin-migrate-localstorage": {},
             "cordova-clipboard": {},
             "cordova-custom-config": {},
             "cordova-plugin-pbkdf2": {},
-            "cordova-plugin-device": {}
+            "cordova-plugin-device": {},
+            "cordova-plugin-wkwebview-engine": {}
         }
     },
     "dependencies": {
@@ -54,7 +54,7 @@
         "cordova-plugin-splashscreen": "^4.0.3",
         "cordova-plugin-statusbar": "~2.1.3",
         "cordova-plugin-whitelist": "~1.2.2",
-        "cordova-plugin-wkwebview-engine": "https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git",
+        "cordova-plugin-wkwebview-engine": "git+https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git",
         "ionic-plugin-keyboard": "~2.2.1"
     }
 }
