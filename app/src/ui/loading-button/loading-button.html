@@ -40,7 +40,8 @@
             }
         </style>
 
-        <button type="button" class$="[[ _buttonClass(_loading, _success, _fail) ]]">
+        <button type="button" class$="[[ _buttonClass(_loading, _success, _fail) ]]"
+            tabindex$="[[ _tabIndex(noTab) ]]">
             <div class="label">[[ label ]]</div>
             <paper-spinner-lite active="[[ _loading ]]" class="spinner"></paper-spinner-lite>
             <pl-icon icon="check" class="icon-success"></pl-icon>
@@ -72,6 +73,10 @@ class LoadingButton extends padlock.BaseElement {
         label: {
             type: String,
             value: ""
+        },
+        noTab: {
+            type: Boolean,
+            value: false
         }
     }; }
 
@@ -94,6 +99,10 @@ class LoadingButton extends padlock.BaseElement {
         this._loading = this._success = false;
         this._fail = true;
         setTimeout(() => this.stop(), 1000);
+    }
+
+    _tabIndex(noTab) {
+        return noTab ? "-1" : "";
     }
 
     _buttonClass() {

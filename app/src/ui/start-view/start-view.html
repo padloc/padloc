@@ -125,11 +125,11 @@
             <div class="shutter bottom">
 
                 <pl-input id="passwordInput" type="password" class="tap tiles-3"
-                    select-on-focus on-enter="_unlock"
+                    select-on-focus on-enter="_unlock" no-tab="[[ open ]]"
                     placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
 
                 <pl-loading-button id="enterButton" on-click="_unlock" class="tap tiles-4 enter-button"
-                    label="[[ $l('Unlock') ]]"></pl-loading-button>
+                    label="[[ $l('Unlock') ]]" no-tab="[[ open ]]"></pl-loading-button>
 
                 <div class="spacer tiles-5"></div>
 
@@ -148,21 +148,22 @@
             <div class="shutter bottom">
 
                 <div class="tap tiles-2 input-wrapper">
-                    <pl-input id="emailInput" type="email" select-on-focus
+                    <pl-input id="emailInput" type="email" select-on-focus no-tab="[[ open ]]"
                         on-focus="_emailInputFocused" on-enter="_emailEnter"
                         placeholder="[[ $l('Enter Email (Optional)') ]]"></pl-input>
                     <pl-icon icon="info" on-click="_showEmailInfo"></pl-icon>
                 </div>
 
                 <div class="tap tiles-3 input-wrapper">
-                    <pl-input id="newPasswordInput" type="password" select-on-focus
+                    <pl-input id="newPasswordInput" type="password" select-on-focus no-tab="[[ open ]]"
                         on-focus="_newPasswordInputFocused" on-enter="_getStarted" value="{{ newPwd }}"
                         placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
                     <div class="strength-meter" hidden$="[[ !_hasValue(newPwd) ]]">[[ $l('strength: {0}', _pwdStrength) ]]</div>
                     <pl-icon icon="info" on-click="_showPasswordInfo" hidden$="[[ _hasValue(newPwd) ]]"></pl-icon>
                 </div>
 
-                <pl-loading-button id="getStartedButton" on-click="_getStarted" class="tap tiles-4 enter-button" label="[[ $l('Get Started') ]]"></pl-loading-button>
+                <pl-loading-button id="getStartedButton" on-click="_getStarted" no-tab="[[ open ]]"
+                    class="tap tiles-4 enter-button" label="[[ $l('Get Started') ]]"></pl-loading-button>
 
                 <div class="spacer tiles-5"></div>
 

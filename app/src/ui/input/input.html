@@ -42,11 +42,11 @@
             <textarea id="input" value="{{ value::input }}" placeholder$="[[ placeholder ]]"
                 rows="1" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"
-                on-touchend="_stopPropagation"></textarea>
+                on-touchend="_stopPropagation" tabindex$="[[ _tabIndex(noTab) ]]"></textarea>
         </template>
 
         <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
-            <input id="input" value="{{ value::input }}"
+            <input id="input" value="{{ value::input }}" tabindex$="[[ _tabIndex(noTab) ]]"
                 autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
                 type$="[[ type ]]" placeholder$="[[ placeholder ]]"
                 required$="[[ required ]]" pattern$="[[ pattern ]]"
@@ -103,6 +103,10 @@ class PlInput extends padlock.BaseElement {
         placeholder: {
             type: String,
             value: ""
+        },
+        noTab: {
+            type: Boolean,
+            value: false
         },
         required: {
             type: Boolean,
@@ -181,6 +185,10 @@ class PlInput extends padlock.BaseElement {
         if (this.multiline) {
             autosize.update(this.inputElement);
         }
+    }
+
+    _tabIndex(noTab) {
+        return noTab ? "-1" : "";
     }
 
     focus() {
