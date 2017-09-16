@@ -13,6 +13,12 @@
     <template>
 
         <style include="shared">
+            @keyframes beat {
+                0% { transform: scale(1); }
+                5% { transform: scale(1.4); }
+                15% { transform: scale(1); }
+            }
+
             :host {
                 @apply --fullbleed;
                 display: flex;
@@ -59,6 +65,17 @@
 
             label {
                 line-height: 0;
+            }
+
+            .padlock-heart {
+                display: inline-block;
+                margin: 0 5px;
+                animation: beat 5s infinite;
+            }
+
+            .padlock-heart::before {
+                font-family: "FontAwesome";
+                content: "\f004";
             }
 
             @media (min-width: 600px) {
@@ -120,16 +137,19 @@
                 <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
             </section>
 
-            <section class="tiles">
-                <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
-                <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
+            <section>
+                <button on-click="_promptReview" class="tap">
+                    <span>[[ $l("I") ]]</span><div class="padlock-heart"></div><span>Padlock</span>
+                </button>
             </section>
 
-            <section>
+            <section class="tiles">
                 <button class="info tap" on-click="_openSource">
                     <strong>Padlock {{ settings.version }}</strong><br>
                     [[ $l("Developed and maintained by") ]] <strong>MaKleSoft</strong>
                 </button>
+                <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
+                <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
             </section>
         </main>
 
@@ -147,7 +167,7 @@ const exportCSVWarning = $l(
 
 const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { isCordova } = padlock.platform;
+const { isCordova, getReviewLink } = padlock.platform;
 
 class SettingsView extends applyMixins(
     BaseElement,
@@ -438,6 +458,18 @@ class SettingsView extends applyMixins(
             "Want to start fresh? Reseting Padlock will delete all your locally stored data and settings " +
             "and will restore the app to the state it was when you first launched it."
         );
+    }
+
+    _promptReview() {
+        this.choose($l(
+            "So glad to hear you like our app! Would you mind taking a second to " +
+            "let others know what you think about Padlock?"
+        ), [$l("Sure!"), $l("No thanks")])
+            .then((choice) => {
+                if (choice === 0) {
+                    getReviewLink(0).then((link) => window.open(link, "_system"));
+                }
+            });
     }
 
 }
