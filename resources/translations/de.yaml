@@ -9,7 +9,7 @@
 - o: Pair Device
   t: Gerät Verbinden
 - o: 'Check your email:'
-  t: 'Überprüfen Sie Ihr Postfach:' 
+  t: 'Überprüfen Sie Ihr Postfach:'
 - o: Refresh
   t: Aktualisieren
 - o: Cancel
@@ -90,12 +90,14 @@
   t: Master Passwort Ändern
 - o: Reset App
   t: App Zurücksetzen
+- o: I
+  t: Ich
+- o: Developed and maintained by
+  t: Entwickelt durch
 - o: Website
   t: Webseite
 - o: Support
   t: Hilfe
-- o: Developed and maintained by
-  t: Entwickelt durch
 - o: Enter Master Password
   t: Passwort Eingeben
 - o: Unlock
@@ -425,6 +427,16 @@
     Hier können Sie Ihre Daten und Einstellungen zurücksetzen und den
     ursprünglichen Zustand der App wiederherstellen.
 - o: >-
+    So glad to hear you like our app! Would you mind taking a second to let
+    others know what you think about Padlock?
+  t: >-
+    Schön zu hören, dass Ihnen unsere App gefällt! Würden Sie sich einen Moment
+    Zeit nehmen, Ihre Meinung an andere weiter zu geben?
+- o: Sure!
+  t: Gerne!
+- o: No thanks
+  t: Nein danke
+- o: >-
     Remember your master password! Without it, nobody will be able to access
     your data, not even we! This is to ensure that your data is as safe as
     possible but it also means that if you lose your master password, we won't
@@ -567,6 +579,32 @@
     einfach wechseln können!
 - o: Learn More
   t: Mehr Erfahren
+- o: >-
+    Hey there! Sorry to bother you, but we'd love to know how you are liking
+    Padlock so far!
+  t: >-
+    Hallo! Entschuldigen Sie die Störung, aber wir würden gerne wissen, wie
+    Ihnen Padlock bisher gefällt!
+- o: I Love it!
+  t: Finde es super!
+- o: 'It''s not bad, but...'
+  t: 'Nicht schlecht, aber...'
+- o: Hate it.
+  t: Mag es garnicht.
+- o: Rate Padlock
+  t: Padlock Bewerten
+- o: No Thanks
+  t: Nein Danke
+- o: >-
+    Your opinion as a user is very important to us and we're always looking for
+    feedback and suggestions on how to improve Padlock. Would you mind taking a
+    second to let us know what you think about the app?
+  t: >-
+    Ihre Meinung als Nutzer ist uns sehr wichtig und wir sind immer auf der Suche
+    nach Feedback und Verbessungsvorschlägen. Würden Sie sich einen Moment Zeit
+    nehmen, um uns Ihre Meinung zu Padlock mitzuteilen?
+- o: Send Feedback
+  t: Feedback Senden
 - o: Would you like to pair this device with Padlock Cloud now?
   t: Möchten sie diese Gerät nun mit Padlock Cloud verbinden?
 - o: Maybe Later

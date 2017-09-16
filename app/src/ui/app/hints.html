@@ -166,15 +166,15 @@ padlock.HintsMixin = (superClass) => {
 
         _askFeedback() {
             if (
-                stats.launchCount > 10 &&
+                stats.launchCount > 20 &&
                 !stats.dontAskFeeback &&
                 !stats.lastAskedFeedback
             ) {
                 this.choose($l(
-                    "Hey there! Sorry to bother you - just wanted to ask how you are liking Padlock so far?"
+                    "Hey there! Sorry to bother you, but we'd love to know how you are liking Padlock so far!"
                 ), [
-                    $l("Love it!") + " \u2665",
-                    $l("It's ok..."),
+                    $l("I Love it!") + " \u2665",
+                    $l("It's not bad, but..."),
                     $l("Hate it.")
                 ])
                     .then((rating) => {
@@ -189,8 +189,8 @@ padlock.HintsMixin = (superClass) => {
                                     "So glad to hear you like our app! Would you mind taking a second to " +
                                     "let others know what you think about Padlock?"
                                 ), [
-                                    $l("Sure!"),
-                                    $l("No thanks")
+                                    $l("Rate Padlock"),
+                                    $l("No Thanks")
                                 ])
                                     .then((choice) => {
                                         switch (choice) {
@@ -214,8 +214,8 @@ padlock.HintsMixin = (superClass) => {
                                     "Would you mind taking a second to let us know what you think about " +
                                     "the app?"
                                 ), [
-                                    $l("Sure!"),
-                                    $l("No thanks")
+                                    $l("Send Feedback"),
+                                    $l("No Thanks")
                                 ])
                                     .then((choice) => {
                                         if (choice === 0) {
