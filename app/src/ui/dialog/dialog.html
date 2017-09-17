@@ -17,6 +17,10 @@
                  -webkit-overflow-scrolling: touch;
             }
 
+            :host(:not(.open)) {
+                pointer-events: none;
+            }
+
             .outer {
                 min-height: 100%;
                 display: flex;
@@ -31,7 +35,6 @@
                 background: var(--color-background);
                 opacity: 0;
                 @apply --fullbleed;
-                position: fixed;
                 transition: opacity 300ms;
                 transform: translate3d(0, 0, 0);
             }
@@ -89,9 +92,9 @@
             }
         </style>
 
-        <div class="scrim"></div>
-
         <div class="outer" on-click="dismiss">
+            <div class="scrim"></div>
+
             <div class="inner" on-click="_preventDismiss">
                 <slot></slot>
             </div>
