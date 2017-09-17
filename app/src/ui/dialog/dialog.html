@@ -33,15 +33,15 @@
             .scrim {
                 display: block;
                 background: var(--color-background);
-                opacity: 0;
+                filter: opacity(0);
                 @apply --fullbleed;
-                transition: opacity 300ms;
+                transition: filter 300ms;
                 transform: translate3d(0, 0, 0);
             }
 
             :host(.open) .scrim {
-                transition: opacity 700ms;
-                opacity: 0.8;
+                transition: filter 700ms;
+                filter: opacity(80%);
             }
 
             .inner {

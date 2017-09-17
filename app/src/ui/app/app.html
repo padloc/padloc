@@ -31,7 +31,16 @@
                 overflow: hidden;
             }
 
-            :host, #main, #pages, #listView {
+            :host {
+                transform: translate3d(0, 0, 0);
+                transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+            }
+
+            :host(.dialog-open) {
+                transition-duration: 0.75s;
+            }
+
+            #main, #pages, #listView {
                 transform: translate3d(0, 0, 0);
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
