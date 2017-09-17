@@ -10,14 +10,14 @@
 
         <pl-dialog open="{{ open }}" prevent-dismiss>
             <template is="dom-if" if="[[ _hasMessage(message) ]]" restamp>
-                <div>
+                <section>
                     <div class="message tiles-1">[[ message ]]</div>
-                </div>
+                </section>
             </template>
             <template is="dom-repeat" items="[[ options ]]">
-                <div>
+                <section>
                     <button class$="[[ _buttonClass(index) ]]" on-click="_selectOption">[[ item ]]</button>
-                </div>
+                </section>
             </template>
         </pl-dialog>
     </template>

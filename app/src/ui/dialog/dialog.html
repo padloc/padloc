@@ -57,12 +57,9 @@
                 transition: transform 300ms, opacity 300ms;
             }
 
-            .inner ::slotted(.message) {
-                padding: 15px;
-                text-align: center;
-            }
-
-            .inner ::slotted(div) {
+            .inner ::slotted(section) {
+                margin: 0 !important;
+                border: none;
                 --color-background: var(--color-primary);
                 --color-foreground: var(--color-tertiary);
                 --color-highlight: var(--color-secondary);
@@ -72,11 +69,11 @@
                 overflow: hidden;
             }
 
-            .inner ::slotted(div:first-of-type) {
+            .inner ::slotted(section:first-of-type) {
                 border-radius: 8px 8px 0 0;
             }
 
-            .inner ::slotted(div:last-of-type) {
+            .inner ::slotted(section:last-of-type) {
                 border-radius: 0 0 8px 8px;
                 border-bottom: solid 2px rgb(64, 143, 184);
             }
@@ -166,12 +163,12 @@ class Dialog extends padlock.AnimationMixin(padlock.BaseElement) {
             }
             this.style.display = "";
             this.isShowing = true;
-            this.animateCascade(Array.from(this.children));
+            this.animateCascade(this.querySelectorAll("section"));
         } else {
             this._hideTimeout = window.setTimeout(() => {
                 this.style.display = "none";
                 this.isShowing = false;
-            }, 250);
+            }, 300);
         }
 
         this.classList.toggle("open", this.open);

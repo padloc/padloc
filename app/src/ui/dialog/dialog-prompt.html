@@ -14,18 +14,18 @@
         </style>
 
         <pl-dialog open="{{ open }}" prevent-dismiss>
-            <div>
+            <section>
                 <div class="message tiles-1">[[ message ]]</div>
-            </div>
-            <div>
+            </section>
+            <section>
                 <pl-input class="tiles-2" id="input" type="[[ type ]]" placeholder="[[ placeholder ]]" on-enter="_confirm"></pl-input>
-            </div>
-            <div>
+            </section>
+            <section>
                 <button class="tap tiles-3" on-click="_confirm">[[ confirmLabel ]]</button>
-            </div>
-            <div>
+            </section>
+            <section>
                 <button class="tap tiles-4" on-click="_dismiss">[[ dismissLabel ]]</button>
-            </div>
+            </section>
         </pl-dialog>
     </template>
 
