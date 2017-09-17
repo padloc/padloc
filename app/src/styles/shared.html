@@ -167,6 +167,17 @@
                 -webkit-overflow-scrolling: touch;
             }
 
+            pl-dialog .message {
+                padding: 15px;
+                text-align: center;
+            }
+
+            pl-dialog button {
+                width: 100%;
+                box-sizing: border-box;
+                font-weight: bold;
+            }
+
             .spacer {
                 flex: 1;
             }
@@ -229,6 +240,11 @@
 
             @keyframes slideIn {
                 from { transform: translate(0, 50px); opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            @keyframes swoosh {
+                from { transform: translate3d(0, 200px, 0); opacity: 0; }
                 to { opacity: 1; }
             }
 

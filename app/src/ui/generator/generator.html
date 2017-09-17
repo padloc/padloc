@@ -61,12 +61,24 @@
                     {{ value }}
                 </div>
             </div>
-            <pl-toggle-button label="a-z" active="{{ lower }}" class="tap tiles-2" reverse></pl-toggle-button>
-            <pl-toggle-button label="A-Z" active="{{ upper }}" class="tap tiles-3" reverse></pl-toggle-button>
-            <pl-toggle-button label="0-9" active="{{ numbers }}" class="tap tiles-4" reverse></pl-toggle-button>
-            <pl-toggle-button label="?()/%..." active="{{ other }}" class="tap tiles-5" reverse></pl-toggle-button>
-            <pl-slider label="[[ $l('length') ]]" min="5" max="50" value="{{ length }}" class="tap tiles-6"></pl-slider>
-            <button class="tiles-7 confirm-button tap" on-click="_confirm">[[ $l("Confirm") ]]</button>
+            <div>
+                <pl-toggle-button label="a-z" active="{{ lower }}" class="tap tiles-2" reverse></pl-toggle-button>
+            </div>
+            <div>
+                <pl-toggle-button label="A-Z" active="{{ upper }}" class="tap tiles-3" reverse></pl-toggle-button>
+            </div>
+            <div>
+                <pl-toggle-button label="0-9" active="{{ numbers }}" class="tap tiles-4" reverse></pl-toggle-button>
+            </div>
+            <div>
+                <pl-toggle-button label="?()/%..." active="{{ other }}" class="tap tiles-5" reverse></pl-toggle-button>
+            </div>
+            <div>
+                <pl-slider label="[[ $l('length') ]]" min="5" max="50" value="{{ length }}" class="tap tiles-6"></pl-slider>
+            </div>
+            <div>
+                <button class="tiles-7 confirm-button tap" on-click="_confirm">[[ $l("Confirm") ]]</button>
+            </div>
         </pl-dialog>
 
     </template>

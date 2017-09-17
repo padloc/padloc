@@ -9,8 +9,12 @@
         <style include="shared"></style>
 
         <pl-dialog id="dialog" open="{{ open }}" on-dialog-close="_dialogClosed">
-            <div class="message tiles-1">{{ message }}</div>
-            <button class="tap tiles-2" on-click="_dismiss">{{ buttonLabel }}</button>
+            <div>
+                <div class="message tiles-1">{{ message }}</div>
+            </div>
+            <div>
+                <button class="tap tiles-2" on-click="_dismiss">{{ buttonLabel }}</button>
+            </div>
         </pl-dialog>
     </template>
 

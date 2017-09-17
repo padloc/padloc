@@ -1,4 +1,5 @@
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../animation/animation.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../input/input.html">
 
@@ -8,53 +9,52 @@
         <style include="shared">
 
             :host {
+                display: block;
+                @apply --fullbleed;
                 position: fixed;
                 z-index: 10;
-                left: 0;
-                right: 0;
-                top: 0;
-                bottom: 0;
-                background-color: transparent;
+                overflow: auto;
+                 -webkit-overflow-scrolling: touch;
+            }
+
+            .outer {
+                min-height: 100%;
                 display: flex;
+                position: relative;
                 flex-direction: column;
                 align-items: center;
-                justify-content: flex-end;
+                justify-content: center;
             }
 
             .scrim {
-                content: "";
                 display: block;
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 0;
-                bottom: 0;
                 background: var(--color-background);
                 opacity: 0;
-                transition: opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+                @apply --fullbleed;
+                position: fixed;
+                transition: opacity 300ms;
+                transform: translate3d(0, 0, 0);
             }
 
             :host(.open) .scrim {
+                transition: opacity 700ms;
                 opacity: 0.8;
             }
 
             .inner {
                 width: 100%;
-                max-width: 400px;
-                max-height: 100%;
-                position: relative;
-                z-index: 1;
-                transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                background: var(--color-background);
                 box-sizing: border-box;
-                overflow: auto;
-                -webkit-overflow-scrolling: touch;
-                box-shadow: rgba(0, 0, 0, 0.15) 0 0 4px;
+                max-width: 400px;
+                z-index: 1;
+                overflow: visible;
+                padding: 15px;
+                transform: translate3d(0, 0, 0);
             }
 
             :host(:not(.open)) .inner {
                 opacity: 0;
                 transform: translate3d(0, 50%, 0);
+                transition: transform 300ms, opacity 300ms;
             }
 
             .inner ::slotted(.message) {
@@ -62,10 +62,23 @@
                 text-align: center;
             }
 
-            .inner ::slotted(*) {
-                display: block;
-                width: 100%;
-                box-sizing: border-box;
+            .inner ::slotted(div) {
+                --color-background: var(--color-primary);
+                --color-foreground: var(--color-tertiary);
+                --color-highlight: var(--color-secondary);
+                background: var(--color-background);
+                color: var(--color-foreground);
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
+                overflow: hidden;
+            }
+
+            .inner ::slotted(div:first-of-type) {
+                border-radius: 8px 8px 0 0;
+            }
+
+            .inner ::slotted(div:last-of-type) {
+                border-radius: 0 0 8px 8px;
+                border-bottom: solid 2px rgb(64, 143, 184);
             }
 
             @media (min-width: 400px) {
@@ -75,25 +88,35 @@
 
                 .inner {
                     margin-top: 0;
-                    border: solid 1px rgba(0, 0, 0, 0.2);
                 }
             }
         </style>
 
-        <div class="scrim" on-click="dismiss"></div>
-        <div class="inner" on-tap="_innerTap">
-            <slot></slot>
+        <div class="scrim"></div>
+
+        <div class="outer" on-click="dismiss">
+            <div class="inner" on-click="_preventDismiss">
+                <slot></slot>
+            </div>
         </div>
     </template>
 
     <script>
 (() => {
 
-class Dialog extends padlock.BaseElement {
+class Dialog extends padlock.AnimationMixin(padlock.BaseElement) {
 
     static get is() { return "pl-dialog"; }
 
     static get properties() { return {
+        animationOptions: {
+            type: Object,
+            value: {
+                animation: "slideIn",
+                duration: 500,
+                fullDuration: 700
+            }
+        },
         open: {
             type: Boolean,
             value: false,
@@ -144,6 +167,7 @@ class Dialog extends padlock.BaseElement {
             }
             this.style.display = "";
             this.isShowing = true;
+            this.animateCascade(Array.from(this.children));
         } else {
             this._hideTimeout = window.setTimeout(() => {
                 this.style.display = "none";
@@ -151,16 +175,16 @@ class Dialog extends padlock.BaseElement {
             }, 250);
         }
 
-        // Trigger relayout to make sure all elements have been rendered
-        // when applying the transition
-        this.offsetLeft;
-
         this.classList.toggle("open", this.open);
 
         this.dispatchEvent(new CustomEvent(
             this.open ? "dialog-open" : "dialog-close",
             { bubbles: true, composed: true }
         ));
+    }
+
+    _preventDismiss(e) {
+        e.stopPropagation();
     }
 
     dismiss() {

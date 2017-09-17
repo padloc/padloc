@@ -32,11 +32,12 @@
             }
 
             :host, #main, #pages, #listView {
+                transform: translate3d(0, 0, 0);
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
             #main:not(.active), :host(.dialog-open) {
-                transform: scale(0.95);
+                transform: translate3d(0, 0, 0) scale(0.95);
             }
 
             #listView {
@@ -73,7 +74,7 @@
 
             @media (max-width: 600px) {
                 .showing-pages #listView {
-                    transform: scale(0.95);
+                    transform: translate3d(0, 0, 0) scale(0.95);
                 }
 
                 #pages {
@@ -83,7 +84,7 @@
                 }
 
                 :not(.showing-pages) #pages {
-                    transform: translateX(100%);
+                    transform: translate3d(100%, 0, 0);
                 }
             }
         </style>
