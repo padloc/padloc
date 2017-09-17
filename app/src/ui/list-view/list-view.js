@@ -185,8 +185,8 @@ class ListView extends applyMixins(
 
     _selectSection() {
         const sections = Array.from(this.records.reduce((s, r) => s.add(this._sectionHeader(r)), new Set()));
-        if (sections.length) {
-            this.choose("", sections)
+        if (sections.length > 1) {
+            this.$.sectionSelector.choose("", sections)
                 .then((i) => {
                     const record = this.records.find((r) => this._sectionHeader(r) === sections[i]);
                     this.$.list.scrollToItem(record);
@@ -224,6 +224,10 @@ class ListView extends applyMixins(
             .sort((a, b) => m4e(a).index - m4e(b).index);
 
         this.animateCascade(animated);
+    }
+
+    _stopPropagation(e) {
+        e.stopPropagation();
     }
 
     focusFilterInput() {

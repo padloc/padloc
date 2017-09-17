@@ -135,6 +135,11 @@
             iron-list {
                 margin-top: -35px;
             }
+
+            #sectionSelector {
+                --row-height: 40px;
+                --font-size-default: var(--font-size-small);
+            }
         </style>
 
         <header>
@@ -152,7 +157,7 @@
             <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
         </header>
 
-        <div class="current-section" on-click="_selectSection" hidden$="[[ _isEmpty(records.length) ]]">
+        <div class="current-section tap" on-click="_selectSection" hidden$="[[ _isEmpty(records.length) ]]">
             <pl-icon icon="dropdown" class="float-right"></pl-icon>
             <div>[[ _currentSection ]]</div>
         </div>
@@ -186,6 +191,9 @@
             </div>
 
         </main>
+
+        <pl-dialog-options id="sectionSelector" on-dialog-open="_stopPropagation"
+            on-dialog-close="_stopPropagation"></pl-dialog-options>
 
     </template>
 
