@@ -35,16 +35,21 @@ padlock.AnimationMixin = (superClass) => {
             if (clear) {
                 el.clearAnimation = setTimeout(() => el.style.animation = "", delay + duration);
             }
+
+            return new Promise((resolve) => setTimeout(resolve, delay + duration));
         }
 
         animateCascade(els, opts = {}) {
             const { fullDuration, duration, initialDelay } =
                 Object.assign({}, defaults, this.animationOptions, opts);
-            const dt = Math.floor((fullDuration - duration) / els.length);
+            const dt = Math.max(30, Math.floor((fullDuration - duration) / els.length));
 
+            const promises = [];
             for (const [i, e] of els.entries()) {
-                this.animateElement(e, Object.assign(opts, { delay: initialDelay + i * dt }));
+                promises.push(this.animateElement(e, Object.assign(opts, { delay: initialDelay + i * dt })));
             }
+
+            return Promise.all(promises);
         }
 
     };

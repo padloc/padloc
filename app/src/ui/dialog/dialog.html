@@ -164,15 +164,21 @@ class Dialog extends padlock.AnimationMixin(padlock.BaseElement) {
             if (padlock.Input.activeInput) {
                 padlock.Input.activeInput.blur();
             }
+            this.style.overflow = "hidden";
+            this.animateCascade(this.querySelectorAll("section"))
+                .then(() => this.style.overflow = "");
             this.style.display = "";
             this.isShowing = true;
-            this.animateCascade(this.querySelectorAll("section"));
+
         } else {
+            this.style.overflow = "hidden";
             this._hideTimeout = window.setTimeout(() => {
                 this.style.display = "none";
                 this.isShowing = false;
             }, 300);
         }
+
+        this.offsetLeft;
 
         this.classList.toggle("open", this.open);
 
