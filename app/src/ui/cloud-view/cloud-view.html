@@ -76,13 +76,13 @@
 
         <main>
 
-            <section class="tiles" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
+            <section class="tiles box" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
                 <div class="info">[[ generalInfoText() ]]</div>
                 <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
                 <pl-loading-button id="connectButton" class="tap" label="[[ $l('Pair Device') ]]" on-click="connect"></pl-loading-button>
             </section>
 
-            <section class="tiles" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
+            <section class="tiles box" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
                 <div class="info">
                     <div>[[ $l("Check your email:") ]]</div>
                     <div class="account">[[ settings.syncEmail ]]</div>
@@ -92,7 +92,7 @@
                 <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
             </section>
 
-            <section class="tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="tiles box" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <strong>[[ $l("Your trial period ends in {0} days.", remainingTrialDays) ]]</strong> -
                     [[ trialInfoText() ]]
@@ -100,7 +100,7 @@
                 <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
-            <section class="tiles" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="tiles box" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <strong>[[ $l("Read-Only") ]]</strong> -
                     [[ readOnlyInfoText() ]]
@@ -108,7 +108,7 @@
                 <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
             </section>
 
-            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
+            <section class="tiles box" hidden$="[[ !settings.syncConnected ]]">
                 <div class="info">
                     <div>[[ $l("Paired with:") ]]</div>
                     <div class="account">[[ settings.syncEmail ]]</div>
@@ -120,13 +120,13 @@
                 <button class="tap" on-click="_disconnect">[[ $l("Unpair") ]]</button>
             </section>
 
-            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
+            <section class="tiles box" hidden$="[[ !settings.syncConnected ]]">
                 <div class="info">[[ autoSyncInfoText() ]]</div>
                 <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]"
                     reverse class="tap" on-change="settingChanged"></pl-toggle-button>
             </section>
 
-            <section class="tiles">
+            <section class="tiles box">
                 <div class="info">
                     [[ $l("By providing a custom URL you can synchronize your data with a server other than the official Padlock Cloud server.") ]]
                     <div class="warning">[[ $l("WARNING: This is only recommended for advanced users!") ]]</div>
