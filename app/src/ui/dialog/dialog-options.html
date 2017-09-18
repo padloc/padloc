@@ -35,7 +35,7 @@ class DialogOptions extends padlock.BaseElement {
         this.message = message || "";
         this.options = options || this.options;
 
-        this.open = true;
+        setTimeout(() => this.open = true, 50);
 
         return new Promise((resolve) => {
             this._resolve = resolve;
