@@ -106,16 +106,17 @@
         </header>
 
         <main id="main" style="visibility: hidden">
-            <div class="category animate tap tiles-1">
+            <div class="category animate tap tiles-1" on-click="_categoryClicked">
                 <pl-icon icon="category"></pl-icon>
                 <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]" select-on-focus
                     on-change="_setEdited" on-focus="_categoryInputFocused" on-blur="_debouncedFinishEditing"></pl-input>
-                <pl-icon icon="[[ _dropDownIcon(_catListShowing, record.category) ]]" class="tap" on-click="_toggleCategoryList"></pl-icon>
+                <pl-icon icon="[[ _dropDownIcon(_showCatList, _catCount) ]]" class="tap" on-click="_toggleCategoryList"></pl-icon>
             </div>
-            <div class="categories" showing$="[[ _catListShowing ]]" on-click="_hideCategoryList">
+            <div class="categories" showing$="[[ _catListShowing(_showCatList, _catCount) ]]" on-click="_hideCategoryList">
                 <div class="categories-inner tiles">
                     <div></div>
-                    <template is="dom-repeat" items="{{ collection.categories }}" filter="{{ _categoryFilter(record.category) }}">
+                    <template is="dom-repeat" items="{{ collection.categories }}"
+                        filter="{{ _categoryFilter(record.category) }}" rendered-item-count="{{ _catCount }}">
                         <div class="category-option tap" on-click="_selectCategory">{{ item }}</div>
                     </template>
                 </div>

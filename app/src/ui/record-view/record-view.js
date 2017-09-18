@@ -26,9 +26,13 @@ class RecordView extends applyMixins(
             notify: true,
             observer: "_recordObserver"
         },
-        _catListShowing: {
+        _showCatList: {
             type: Boolean,
             value: false
+        },
+        _catCount: {
+            type: Number,
+            value: 0
         },
         _edited: {
             type: Boolean,
@@ -46,6 +50,14 @@ class RecordView extends applyMixins(
                 this.edit();
             }
         }, 500);
+    }
+
+    _catListShowing() {
+        return this._showCatList && !!this._catCount;
+    }
+
+    _categoryClicked() {
+        this.$.categoryInput.focus();
     }
 
     _setEdited() {
@@ -142,25 +154,27 @@ class RecordView extends applyMixins(
     }
 
     _showCategoryList() {
-        this._catListShowing = true;
+        this._showCatList = true;
     }
 
     _hideCategoryList() {
-        this._catListShowing = false;
+        this._showCatList = false;
     }
 
-    _toggleCategoryList() {
-        if (!this._catListShowing || this.record.category) {
+    _toggleCategoryList(e) {
+        e.stopPropagation();
+
+        if (!this._showCatList || this.record.category) {
             this.$.categoryInput.value = "";
-            this._catListShowing = true;
+            this._showCatList = true;
             this.$.categoryInput.focus();
         } else {
-            this._catListShowing = false;
+            this._showCatList = false;
         }
     }
 
     _dropDownIcon() {
-        return this._catListShowing && !this.record.category ? "dropup" : "dropdown";
+        return this._catListShowing() && this.record && !this.record.category ? "dropup" : "dropdown";
     }
 
     _recordObserver() {
