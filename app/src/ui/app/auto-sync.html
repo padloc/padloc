@@ -15,7 +15,7 @@ padlock.AutoSyncMixin = (superClass) => {
                     debouncedSynchronize();
                 }
             };
-            this.listen("record-changed", autoSync);
+            this.listen("record-finished-editing", autoSync);
             this.listen("record-deleted", autoSync);
             this.listen("data-loaded", autoSync);
         }

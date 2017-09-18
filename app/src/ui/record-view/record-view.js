@@ -29,6 +29,10 @@ class RecordView extends applyMixins(
         _catListShowing: {
             type: Boolean,
             value: false
+        },
+        _edited: {
+            type: Boolean,
+            value: false
         }
     }; }
 
@@ -44,17 +48,41 @@ class RecordView extends applyMixins(
         }, 500);
     }
 
-    _fireChangeEvent() {
+    _setEdited() {
+        console.log("set edited");
         this.dispatch("record-changed", this.record);
+        this._edited = true;
+    }
+
+    _debouncedFinishEditing() {
+        console.log("debounce change", this._edited);
+        this._deferFinishEditing();
+        this._changeTimeout = setTimeout(() => {
+            if (this._edited) {
+                console.log("firing change event", this._edited);
+                this.dispatch("record-finished-editing", this.record);
+                this._edited = false;
+            }
+        }, 500);
+    }
+
+    _deferFinishEditing() {
+        console.log("defer change");
+        clearTimeout(this._changeTimeout);
     }
 
     _deleteField(e) {
         this.confirm($l("Are you sure you want to delete this field?"), $l("Delete")).then((confirmed) => {
             if (confirmed) {
                 this.splice("record.fields", e.model.index, 1);
-                this._fireChangeEvent();
+                this._setEdited();
             }
         });
+    }
+
+    _inputFocused() {
+        this._deferFinishEditing();
+        this._hideCategoryList();
     }
 
     _fieldClass(index) {
@@ -78,11 +106,12 @@ class RecordView extends applyMixins(
             if (!padlock.platform.isTouch()) {
                 setTimeout(() => this.$.newField.edit(), 10);
             }
+            this._setEdited();
         }
 
         this.$.newField.field = { name: "", value: "" };
 
-        setTimeout(() => this._fireChangeEvent(), 500);
+        this._debouncedFinishEditing();
     }
 
     _deleteRecord() {
@@ -102,8 +131,14 @@ class RecordView extends applyMixins(
     _selectCategory(e) {
         setTimeout(() => {
             this.set("record.category", e.model.item);
-            this._fireChangeEvent();
+            this._setEdited();
+            this.$.categoryInput.focus();
         }, 300);
+    }
+
+    _categoryInputFocused() {
+        this._deferFinishEditing();
+        this._showCategoryList();
     }
 
     _showCategoryList() {

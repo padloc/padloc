@@ -98,17 +98,18 @@
 
         <header>
             <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
-            <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}" on-focus="_hideCategoryList"
-                placeholder="[[ $l('Enter Record Name') ]]" select-on-focus on-change="_fireChangeEvent"></pl-input>
+            <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}"
+                placeholder="[[ $l('Enter Record Name') ]]" select-on-focus
+                on-change="_setEdited" on-focus="_inputFocused" on-blur="_debouncedFinishEditing"
+            ></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
         <main id="main" style="visibility: hidden">
             <div class="category animate tap tiles-1">
                 <pl-icon icon="category"></pl-icon>
-                <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]"
-                    select-on-focus on-change="_fireChangeEvent"
-                    on-focus="_showCategoryList"></pl-input>
+                <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]" select-on-focus
+                    on-change="_setEdited" on-focus="_categoryInputFocused" on-blur="_debouncedFinishEditing"></pl-input>
                 <pl-icon icon="[[ _dropDownIcon(_catListShowing, record.category) ]]" class="tap" on-click="_toggleCategoryList"></pl-icon>
             </div>
             <div class="categories" showing$="[[ _catListShowing ]]" on-click="_hideCategoryList">
@@ -123,15 +124,17 @@
                 <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
                     <div class="animate">
                         <pl-record-field class$="{{ _fieldClass(index) }}" field="{{ item }}"
-                            on-field-change="_fireChangeEvent"
+                            on-field-change="_setEdited"
                             on-field-delete="_deleteField"
-                            on-field-edit-start="_hideCategoryList"></pl-record-field>
+                            on-field-edit-start="_inputFocused"
+                            on-field-edit-end="_debouncedFinishEditing"></pl-record-field>
                     </div>
                 </template>
             </div>
             <div class="animate" id="newFieldWrapper">
                 <pl-record-field id="newField" draft
                     class$="{{ _fieldClass(record.fields.length) }}"
+                    on-field-edit-start="_inputFocused"
                     on-field-edit-end="_newFieldEnter"></pl-record-field>
             </div>
         </main>
