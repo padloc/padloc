@@ -167,9 +167,17 @@ class CloudView extends applyMixins(
     static get is() { return "pl-cloud-view"; }
 
     static get observers() { return [
-        "_credentialsChanged(settings.syncToken, settings.syncConnected)",
-        "_animateSections(settings.syncToken, settings.syncConnected, settings.syncSubStatus)"
+        "_credentialsChanged(settings.syncToken, settings.syncConnected)"
     ]; }
+
+    ready() {
+        super.ready();
+        this.listen("data-loaded", () => this._animateSections());
+        this.listen("sync-connect-start", () => this._animateSections());
+        this.listen("sync-connect-cancel", () => this._animateSections());
+        this.listen("sync-connect-success", () => this._animateSections());
+        this.listen("sync-disconnect", () => this._animateSections());
+    }
 
     syncStart() {
         this.$.syncButton.start();

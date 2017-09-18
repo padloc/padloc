@@ -34,12 +34,14 @@ padlock.SyncMixin = (superClass) => {
         }
 
         connectCloud(email) {
-            return this._requestAuthToken(email.toLowerCase());
+            return this._requestAuthToken(email.toLowerCase())
+                .then(() => this.dispatch("sync-connect-start"));
         }
 
         cancelConnect() {
             this.settings.syncToken = "";
             this.dispatch("settings-changed");
+            this.dispatch("sync-connect-cancel");
         }
 
         disconnectCloud() {
@@ -48,6 +50,7 @@ padlock.SyncMixin = (superClass) => {
             this.settings.syncEmail = "";
             this.settings.syncReadonly = false;
             this.dispatch("settings-changed");
+            this.dispatch("sync-disconnect");
         }
 
         synchronize() {
@@ -121,6 +124,8 @@ padlock.SyncMixin = (superClass) => {
                     this.dispatch("settings-changed");
 
                     if (connected) {
+                        this.dispatch("sync-connect-success");
+
                         this.confirm(
                             $l("You successfully paired this device with Padlock Cloud!"),
                             $l("Synchonize Now"), $l("Dismiss")
