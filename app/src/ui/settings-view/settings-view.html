@@ -464,7 +464,7 @@ class SettingsView extends applyMixins(
         this.choose($l(
             "So glad to hear you like our app! Would you mind taking a second to " +
             "let others know what you think about Padlock?"
-        ), [$l("Sure!"), $l("No thanks")])
+        ), [$l("Rate Padlock"), $l("No Thanks")])
             .then((choice) => {
                 if (choice === 0) {
                     getReviewLink(0).then((link) => window.open(link, "_system"));
