@@ -76,7 +76,7 @@ class RecordView extends applyMixins(
             this.push("record.fields", newField);
             this.animateElement(this.$.newFieldWrapper);
             if (!padlock.platform.isTouch()) {
-                this.$.newField.edit();
+                setTimeout(() => this.$.newField.edit(), 10);
             }
         }
 
