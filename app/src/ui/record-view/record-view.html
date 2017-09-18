@@ -38,7 +38,7 @@
                 font-size: var(--font-size-small);
                 flex: 1;
                 height: auto;
-                padding: 10px;
+                padding-bottom: 2px;
             }
 
             .category > pl-icon {
@@ -66,8 +66,10 @@
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
                 max-height: 100%;
                 @apply --scroll;
-                background: var(--color-foreground);
+                background: var(--color-highlight);
                 color: var(--color-background);
+                border-bottom: solid 2px rgb(64, 143, 184);
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
                 transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
