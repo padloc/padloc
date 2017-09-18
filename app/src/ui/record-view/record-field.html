@@ -56,6 +56,10 @@
                 flex-direction: column;
             }
 
+            .field-button {
+                cursor: pointer;
+            }
+
             :host(:not(.editing-name)) #nameInput {
                 transform: translate(0, -10px) scale(0.8);
             }
@@ -75,22 +79,22 @@
             </div>
             <template is="dom-if" if="{{ !draft }}">
                 <div class="field-buttons tiles" hidden$="{{ _editing }}">
-                    <pl-icon icon="copy" class="tap" on-click="_copy"></pl-icon>
-                    <pl-icon icon="delete" class="tap" on-click="_delete"></pl-icon>
-                    <pl-icon icon="generate" class="tap" on-click="_showGenerator"></pl-icon>
+                    <pl-icon icon="copy" class="field-button tap" on-click="_copy"></pl-icon>
+                    <pl-icon icon="delete" class="field-button" on-click="_delete"></pl-icon>
+                    <pl-icon icon="generate" class="field-button" on-click="_showGenerator"></pl-icon>
                     <div class="spacer"></div>
                 </div>
             </template>
             <template is="dom-if" if="{{ draft }}">
                 <div class="field-buttons tiles" hidden$="{{ _editing }}">
-                    <pl-icon icon="add" class="tap" on-click="edit"></pl-icon>
+                    <pl-icon icon="add" class="field-button tap" on-click="edit"></pl-icon>
                     <div class="spacer"></div>
                 </div>
             </template>
             <div class="field-buttons tiles" hidden$="{{ !_editing }}">
-                <pl-icon icon="check" class="tap" on-click="_confirmEdit"></pl-icon>
-                <pl-icon icon="cancel" class="tap" on-click="_cancelEdit"></pl-icon>
-                <pl-icon icon="generate" class="tap" on-click="_showGenerator"></pl-icon>
+                <pl-icon icon="check" class="field-button tap" on-click="_confirmEdit"></pl-icon>
+                <pl-icon icon="cancel" class="field-button tap" on-click="_cancelEdit"></pl-icon>
+                <pl-icon icon="generate" class="field-button" on-click="_showGenerator"></pl-icon>
                 <div class="spacer"></div>
             </div>
         </div>
