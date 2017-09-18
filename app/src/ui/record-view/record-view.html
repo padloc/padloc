@@ -14,7 +14,6 @@
         <style include="shared">
             :host {
                 box-sizing: border-box;
-                overflow: auto;
                 display: flex;
                 flex-direction: column;
                 position: relative;
@@ -66,10 +65,9 @@
             .categories-inner {
                 box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
                 max-height: 100%;
-                overflow: auto;
+                @apply --scroll;
                 background: var(--color-foreground);
                 color: var(--color-background);
-                -webkit-overflow-scrolling: touch;
                 transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
             }
 

@@ -110,6 +110,10 @@
                 opacity: 0.6;
             }
 
+            ::-webkit-scrollbar {
+                display: none;
+            }
+
             [hidden] {
                 display: none !important;
             }
@@ -161,9 +165,8 @@
                 flex: 1;
                 position: relative;
                 box-sizing: border-box;
-                overflow-y: auto;
+                @apply --scroll;
                 overflow-x: hidden;
-                -webkit-overflow-scrolling: touch;
             }
 
             pl-dialog .message {
