@@ -61,17 +61,14 @@ class RecordView extends applyMixins(
     }
 
     _setEdited() {
-        console.log("set edited");
         this.dispatch("record-changed", this.record);
         this._edited = true;
     }
 
     _debouncedFinishEditing() {
-        console.log("debounce change", this._edited);
         this._deferFinishEditing();
         this._changeTimeout = setTimeout(() => {
             if (this._edited) {
-                console.log("firing change event", this._edited);
                 this.dispatch("record-finished-editing", this.record);
                 this._edited = false;
             }
@@ -79,7 +76,6 @@ class RecordView extends applyMixins(
     }
 
     _deferFinishEditing() {
-        console.log("defer change");
         clearTimeout(this._changeTimeout);
     }
 
