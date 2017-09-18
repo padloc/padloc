@@ -91,7 +91,7 @@
         </header>
 
         <main>
-            <section class="tiles box">
+            <section class="tiles">
                 <div class="info">[[ _autoLockInfo() ]]</div>
                 <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Enable Auto Lock') ]]" class="tap"
                     reverse on-change="settingChanged"></pl-toggle-button>
@@ -99,7 +99,7 @@
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
 
-            <section class="tiles box">
+            <section class="tiles">
                 <div class="section-header">[[ $l("Export") ]]</div>
                 <div class="section-row tiles">
                     <div class="section-row-label">[[ $l("As CSV") ]]</div>
@@ -113,7 +113,7 @@
                 </div>
             </section>
 
-            <section class="tiles box">
+            <section class="tiles">
                 <div class="section-header">[[ $l("Import") ]]</div>
                 <div class="section-row tiles">
                     <div class="section-row-label">[[ $l("Paste From Clipboard") ]]</div>
@@ -128,22 +128,22 @@
                 </div>
             </section>
 
-            <section class="tiles box">
+            <section class="tiles">
                 <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
             </section>
 
-            <section class="tiles box">
+            <section class="tiles">
                 <div class="info">[[ _resetDataInfo() ]]</div>
                 <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
             </section>
 
-            <section class="box">
+            <section>
                 <button on-click="_promptReview" class="tap">
                     <span>[[ $l("I") ]]</span><div class="padlock-heart"></div><span>Padlock</span>
                 </button>
             </section>
 
-            <section class="tiles box">
+            <section class="tiles">
                 <button class="info tap" on-click="_openSource">
                     <strong>Padlock {{ settings.version }}</strong><br>
                     [[ $l("Developed and maintained by") ]] <strong>MaKleSoft</strong>

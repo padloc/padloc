@@ -9,15 +9,9 @@
         <style include="shared"></style>
 
         <pl-dialog open="{{ open }}" prevent-dismiss>
-            <section>
-                <div class="message tiles-1">{{ message }}</div>
-            </section>
-            <section>
-                <button class="tap tiles-2" on-click="_confirm">{{ confirmLabel }}</button>
-            </section>
-            <section>
-                <button class="tap tiles-3" on-click="_cancel">{{ cancelLabel }}</button>
-            </section>
+            <div class="message tiles-1">{{ message }}</div>
+            <button class="tap tiles-2" on-click="_confirm">{{ confirmLabel }}</button>
+            <button class="tap tiles-3" on-click="_cancel">{{ cancelLabel }}</button>
         </pl-dialog>
     </template>
 

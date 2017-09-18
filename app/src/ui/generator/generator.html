@@ -55,30 +55,18 @@
         </style>
 
         <pl-dialog id="dialog" on-dialog-dismiss="_dismiss">
-            <section class="generate-button tap" on-click="_generate">
+            <div class="generate-button tap" on-click="_generate">
                 <div class="header">[[ $l("Generate Random Value") ]]</div>
                 <div class="value tiles-1">
                     {{ value }}
                 </div>
-            </section>
-            <section>
-                <pl-toggle-button label="a-z" active="{{ lower }}" class="tap tiles-2" reverse></pl-toggle-button>
-            </section>
-            <section>
-                <pl-toggle-button label="A-Z" active="{{ upper }}" class="tap tiles-3" reverse></pl-toggle-button>
-            </section>
-            <section>
-                <pl-toggle-button label="0-9" active="{{ numbers }}" class="tap tiles-4" reverse></pl-toggle-button>
-            </section>
-            <section>
-                <pl-toggle-button label="?()/%..." active="{{ other }}" class="tap tiles-5" reverse></pl-toggle-button>
-            </section>
-            <section>
-                <pl-slider label="[[ $l('length') ]]" min="5" max="50" value="{{ length }}" class="tap tiles-6"></pl-slider>
-            </section>
-            <section>
-                <button class="tiles-7 confirm-button tap" on-click="_confirm">[[ $l("Confirm") ]]</button>
-            </section>
+            </div>
+            <pl-toggle-button label="a-z" active="{{ lower }}" class="tap tiles-2" reverse></pl-toggle-button>
+            <pl-toggle-button label="A-Z" active="{{ upper }}" class="tap tiles-3" reverse></pl-toggle-button>
+            <pl-toggle-button label="0-9" active="{{ numbers }}" class="tap tiles-4" reverse></pl-toggle-button>
+            <pl-toggle-button label="?()/%..." active="{{ other }}" class="tap tiles-5" reverse></pl-toggle-button>
+            <pl-slider label="[[ $l('length') ]]" min="5" max="50" value="{{ length }}" class="tap tiles-6"></pl-slider>
+            <button class="tiles-7 confirm-button tap" on-click="_confirm">[[ $l("Confirm") ]]</button>
         </pl-dialog>
 
     </template>

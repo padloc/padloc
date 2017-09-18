@@ -10,14 +10,10 @@
 
         <pl-dialog open="{{ open }}" prevent-dismiss>
             <template is="dom-if" if="[[ _hasMessage(message) ]]" restamp>
-                <section>
-                    <div class="message tiles-1">[[ message ]]</div>
-                </section>
+                <div class="message tiles-1">[[ message ]]</div>
             </template>
             <template is="dom-repeat" items="[[ options ]]">
-                <section>
-                    <button class$="[[ _buttonClass(index) ]]" on-click="_selectOption">[[ item ]]</button>
-                </section>
+                <button class$="[[ _buttonClass(index) ]]" on-click="_selectOption">[[ item ]]</button>
             </template>
         </pl-dialog>
     </template>
@@ -39,7 +35,7 @@ class DialogOptions extends padlock.BaseElement {
         this.message = message || "";
         this.options = options || this.options;
 
-        setTimeout(() => this.open = true, 100);
+        this.open = true;
 
         return new Promise((resolve) => {
             this._resolve = resolve;
