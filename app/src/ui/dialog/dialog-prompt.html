@@ -24,6 +24,8 @@
     <script>
 (() => {
 
+const { isTouch } = padlock.platform;
+
 const defaultConfirmLabel = $l("OK");
 const defaultCancelLabel = $l("Cancel");
 const defaultType = "text";
@@ -63,7 +65,9 @@ class DialogPrompt extends padlock.BaseElement {
         this.$.input.value = "";
         this.open = true;
 
-        setTimeout(() => this.$.input.focus(), 100);
+        if (!isTouch()) {
+            setTimeout(() => this.$.input.focus(), 100);
+        }
 
         return new Promise((resolve) => {
             this._resolve = resolve;
