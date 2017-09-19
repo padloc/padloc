@@ -281,6 +281,8 @@
   t: Fortfahren
 - o: Cannot lock app while sync is in progress!
   t: App kann nicht gesperrt werden solange Synchronisierung im Gange ist!
+- o: Please enter a field name first!
+  t: Bitte geben Sie zuerst einen Feldnamen ein!
 - o: Value copied to clipboard!
   t: Daten in Zwischenablage kopiert!
 - o: Are you sure you want to delete this field?
@@ -432,10 +434,10 @@
   t: >-
     Schön zu hören, dass Ihnen unsere App gefällt! Würden Sie sich einen Moment
     Zeit nehmen, Ihre Meinung an andere weiter zu geben?
-- o: Sure!
-  t: Gerne!
-- o: No thanks
-  t: Nein danke
+- o: Rate Padlock
+  t: Padlock Bewerten
+- o: No Thanks
+  t: Nein Danke
 - o: >-
     Remember your master password! Without it, nobody will be able to access
     your data, not even we! This is to ensure that your data is as safe as
@@ -591,18 +593,14 @@
   t: 'Nicht schlecht, aber...'
 - o: Hate it.
   t: Mag es garnicht.
-- o: Rate Padlock
-  t: Padlock Bewerten
-- o: No Thanks
-  t: Nein Danke
 - o: >-
     Your opinion as a user is very important to us and we're always looking for
     feedback and suggestions on how to improve Padlock. Would you mind taking a
     second to let us know what you think about the app?
   t: >-
-    Ihre Meinung als Nutzer ist uns sehr wichtig und wir sind immer auf der Suche
-    nach Feedback und Verbessungsvorschlägen. Würden Sie sich einen Moment Zeit
-    nehmen, um uns Ihre Meinung zu Padlock mitzuteilen?
+    Ihre Meinung als Nutzer ist uns sehr wichtig und wir sind immer auf der
+    Suche nach Feedback und Verbessungsvorschlägen. Würden Sie sich einen Moment
+    Zeit nehmen, um uns Ihre Meinung zu Padlock mitzuteilen?
 - o: Send Feedback
   t: Feedback Senden
 - o: Would you like to pair this device with Padlock Cloud now?
