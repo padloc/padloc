@@ -225,7 +225,7 @@ padlock.SyncMixin = (superClass) => {
                             $l("Yes"), $l("No")
                         ).then((confirm) => {
                             if (confirm) {
-                                this.setRemotePassword(this.localSource.password);
+                                this.setRemotePassword(this.password);
                             }
                         });
                     }
