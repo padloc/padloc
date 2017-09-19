@@ -258,10 +258,12 @@ class SettingsView extends applyMixins(
             .then((confirm) => {
                 if (confirm) {
                     setTimeout(() => {
+                        const date = new Date().toISOString().substr(0, 10);
+                        const fileName = `padlock-export-${date}.csv`;
                         const csv = padlock.exp.toCSV(this.collection.records);
                         const a = document.createElement("a");
                         a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
-                        a.download = "padlock.csv";
+                        a.download = fileName;
                         a.click();
                         this.dispatch("data-exported");
                     }, 500);
@@ -315,8 +317,10 @@ class SettingsView extends applyMixins(
         this._getEncryptedData()
             .then((data) => {
                 const a = document.createElement("a");
+                const date = new Date().toISOString().substr(0, 10);
+                const fileName = `padlock-export-${date}.pls`;
                 a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
-                a.download = "padlock-export.pls";
+                a.download = fileName;
                 setTimeout(() => {
                     a.click();
                     this.dispatch("data-exported");
