@@ -195,11 +195,15 @@ export class CloudSource extends AjaxSource {
         return req;
     }
 
-    async requestAuthToken(email: string, create = false): Promise<CloudAuthToken> {
+    async authenticate(email: string, create = false, authType = "api"): Promise<CloudAuthToken> {
+        const params = new URLSearchParams();
+        params.set("email", email);
+        params.set("type", authType);
+
         const req = await this.request(
             create ? "POST" : "PUT",
             this.urlForPath("auth"),
-            "email=" + encodeURIComponent(email),
+            params.toString(),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
 
@@ -209,13 +213,24 @@ export class CloudSource extends AjaxSource {
         } catch (e) {
             throw new CloudError("json_error");
         }
-        try {
-            authToken.actUrl = req.getResponseHeader("X-Test-Act-Url") || undefined;
-        } catch (e) {}
+        return authToken;
+    }
+
+    async requestAuthToken(email: string, create = false): Promise<CloudAuthToken> {
+        const authToken = await this.authenticate(email, create, "api");
         this.settings.syncEmail = authToken.email;
         this.settings.syncToken = authToken.token;
         return authToken;
-    };
+    }
+
+    async getLoginUrl() {
+        if (!this.settings.syncConnected) {
+            throw new CloudError("invalid_auth_token", "Need to be authenticated to get a login link.");
+        }
+
+        const authToken = await this.authenticate(this.settings.syncEmail, false, "web");
+        return authToken.actUrl;
+    }
 
     async testCredentials(): Promise<boolean> {
         try {
