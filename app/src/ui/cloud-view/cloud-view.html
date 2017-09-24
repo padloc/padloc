@@ -132,7 +132,7 @@
                     <div class="warning">[[ $l("WARNING: This is only recommended for advanced users!") ]]</div>
                 </div>
                 <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
-                    on-change="_customHostChanged" class="tap" on-change="settingChanged"></pl-toggle-button>
+                    on-change="_customHostChanged" class="tap"></pl-toggle-button>
                 <div class="tap tiles" hidden$="[[ !settings.syncCustomHost ]]">
                     <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
                         value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
@@ -239,8 +239,11 @@ class CloudView extends applyMixins(
                 .then((confirmed) => {
                     if (!confirmed) {
                         this.set("settings.syncCustomHost", false);
+                        this.settingChanged();
                     }
                 });
+        } else {
+            this.settingChanged();
         }
     }
 
