@@ -128,6 +128,7 @@ export class Settings {
 
     static defaults = {
         autoLock: true,
+        peekValuesOnHover: true,
         // Auto lock delay in minutes
         autoLockDelay: 1,
         syncHostUrl: "https://cloud.padlock.io",
@@ -145,7 +146,7 @@ export class Settings {
         syncId: "",
         version: ""
     };
-
+    
     loaded: boolean;
 
     // Auto lock settings
@@ -153,6 +154,8 @@ export class Settings {
     // Auto lock delay in minutes
     autoLockDelay: number;
 
+    peekValuesOnHover: boolean;
+    
     // Synchronization settings
     syncHostUrl: string;
     syncCustomHost: boolean;
