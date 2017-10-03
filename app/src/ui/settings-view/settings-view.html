@@ -100,6 +100,12 @@
             </section>
 
             <section class="tiles">
+                <div class="info">[[ _peekOnHoverInfo() ]]</div>
+                <pl-toggle-button active="{{ settings.peekValuesOnHover }}" label="[[ $l('Peek values on hover') ]]" class="tap"
+                    reverse on-change="settingChanged"></pl-toggle-button>
+            </section>
+
+            <section class="tiles">
                 <div class="section-header">[[ $l("Export") ]]</div>
                 <div class="section-row tiles">
                     <div class="section-row-label">[[ $l("As CSV") ]]</div>
@@ -454,6 +460,13 @@ class SettingsView extends applyMixins(
         return this.$l(
             "Tell Padlock to automatically lock the app after a certain period of " +
             "inactivity in case you leave your device unattended for a while."
+        );
+    }
+
+    _peekOnHoverInfo() {
+        return this.$l(
+            "If enabled, you can peek field values when mouse is over field " +
+            "on the item list."
         );
     }
 

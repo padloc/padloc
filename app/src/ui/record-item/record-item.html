@@ -70,7 +70,7 @@
                 content: "\f00c\ ";
             }
 
-            :host(:not(.touch)) .field:hover .field-label, :host(:not(.touch)) .field:hover .field-value {
+            :host(:not(.touch).can-peek) .field:hover .field-label, :host(:not(.touch).can-peek) .field:hover .field-value {
                 transform: translateY(-100%);
             }
 
@@ -161,13 +161,14 @@
     <script>
 (() => {
 
-const { NotificationMixin, LocaleMixin, BaseElement } = padlock;
+const { NotificationMixin, LocaleMixin, DataMixin, BaseElement } = padlock;
 const { MutableData } = Polymer;
 const { applyMixins } = padlock.util;
 const { isTouch, setClipboard } = padlock.platform;
 
 class RecordItem extends applyMixins(
     BaseElement,
+    DataMixin,
     MutableData,
     NotificationMixin,
     LocaleMixin
@@ -189,12 +190,20 @@ class RecordItem extends applyMixins(
                 e.preventDefault();
             }
         });
+
         this.classList.toggle("touch", isTouch());
+
+        this._togglePeek();
+        this.listen("settings-changed", () => this._togglePeek());
     }
 
     // Replaces all non-newline characters in a given string with dots
     _obfuscate(value) {
         return value ? value.replace(/[^\n]/g, "\u2022") : "";
+    }
+
+    _canPeekValue() {
+        return this.settings.peekValuesOnHover;
     }
 
     _copyField(e) {
@@ -224,6 +233,10 @@ class RecordItem extends applyMixins(
         this.dispatchEvent(new CustomEvent("search-category", { detail: this.record.category }));
     }
 
+    _togglePeek() {
+        const canPeek = this._canPeekValue();
+        this.classList.toggle("can-peek", canPeek);
+    }
 }
 
 window.customElements.define(RecordItem.is, RecordItem);
