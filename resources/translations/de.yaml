@@ -609,3 +609,7 @@
   t: Vielleicht Später
 - o: App reset successfully. Off to a fresh start!
   t: Die App wurde erfolgreich zurückgesetzt.
+- o: If enabled, you can peek field values when mouse is over field on the item list.
+  t: Wenn aktiviert, können Sie Feldwerte sehen, wenn die Maus über Feld auf der Positionsliste ist.
+- o: Peek values on hover
+  t: Spähen-Werte auf Hover
