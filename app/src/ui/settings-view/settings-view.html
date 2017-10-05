@@ -100,8 +100,8 @@
             </section>
 
             <section class="tiles">
-                <div class="info">[[ _peekOnHoverInfo() ]]</div>
-                <pl-toggle-button active="{{ settings.peekValuesOnHover }}" label="[[ $l('Peek values on hover') ]]" class="tap"
+                <div class="info">[[ _peekValuesInfo() ]]</div>
+                <pl-toggle-button active="{{ settings.peekValues }}" label="[[ $l('Peek values on hover') ]]" class="tap"
                     reverse on-change="settingChanged"></pl-toggle-button>
             </section>
 
@@ -463,7 +463,7 @@ class SettingsView extends applyMixins(
         );
     }
 
-    _peekOnHoverInfo() {
+    _peekValuesInfo() {
         return this.$l(
             "If enabled, you can peek field values when mouse is over field " +
             "on the item list."
