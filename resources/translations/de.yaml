@@ -74,6 +74,8 @@
   t: ' Min'
 - o: After
   t: Nach
+- o: Peek Values
+  t: Schneller Blick
 - o: Export
   t: Exportieren
 - o: As CSV
@@ -279,6 +281,8 @@
     möchten? Dies ist nur für fortgeschrittene Nutzer zu empfehlen!
 - o: Continue
   t: Fortfahren
+- o: Click To Copy
+  t: Zum Kopieren Klicken
 - o: Cannot lock app while sync is in progress!
   t: App kann nicht gesperrt werden solange Synchronisierung im Gange ist!
 - o: Please enter a field name first!
@@ -421,6 +425,13 @@
   t: >-
     Falls Sie Ihr Gerät einmal unbeaufsichtigt lassen kann Padlock nach einer
     bestimmten Zeit ohne Interaktion automatisch die App zu sperren.
+- o: >-
+    If enabled allows peeking at field values in the record list by moving the
+    mouse cursor over the corresponding field.
+  t: >-
+    Wenn diese Option aktiviert ist können Sie in der Listenansicht einen
+    schnellen Blick auf Feldinhalte werfen indem Sie Ihre Maus über das
+    entsprechende Feld bewegen.
 - o: >-
     Want to start fresh? Reseting Padlock will delete all your locally stored
     data and settings and will restore the app to the state it was when you
@@ -609,7 +620,3 @@
   t: Vielleicht Später
 - o: App reset successfully. Off to a fresh start!
   t: Die App wurde erfolgreich zurückgesetzt.
-- o: If enabled, you can peek field values when mouse is over field on the item list.
-  t: Wenn aktiviert, können Sie Feldwerte sehen, wenn die Maus über Feld auf der Positionsliste ist.
-- o: Peek values on hover
-  t: Spähen-Werte auf Hover
