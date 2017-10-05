@@ -99,7 +99,7 @@
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
 
-            <section class="tiles">
+            <section class="tiles" hidden$="[[ _isTouch() ]]">
                 <div class="info">[[ _peekValuesInfo() ]]</div>
                 <pl-toggle-button active="{{ settings.peekValues }}" label="[[ $l('Peek Values') ]]" class="tap"
                     reverse on-change="settingChanged"></pl-toggle-button>
@@ -173,7 +173,7 @@ const exportCSVWarning = $l(
 
 const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { isCordova, getReviewLink } = padlock.platform;
+const { isCordova, getReviewLink, isTouch } = padlock.platform;
 
 class SettingsView extends applyMixins(
     BaseElement,
@@ -450,6 +450,10 @@ class SettingsView extends applyMixins(
 
     _isMobile() {
         return isCordova();
+    }
+
+    _isTouch() {
+        return isTouch();
     }
 
     _openSource() {
