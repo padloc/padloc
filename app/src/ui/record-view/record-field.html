@@ -75,7 +75,7 @@
                 <pl-input id="nameInput" value="[[ field.name ]]" placeholder="[[ $l('Enter New Field Name') ]]" select-on-focus
                     focused="{{ _editingName }}" on-enter="_focusValueInput" on-escape="_cancelEdit"></pl-input>
                 <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ $l('Enter Content') ]]" select-on-focus
-                    focused="{{ _editingValue }}" on-escape="_cancelEdit" on-mousedown="_valueInputMouseDown"></pl-input>
+                    focused="{{ _editingValue }}" on-focus="_valueInputFocus" on-escape="_cancelEdit" on-mousedown="_valueInputMouseDown"></pl-input>
             </div>
 
             <template is="dom-if" if="[[ !draft ]]">
@@ -160,11 +160,19 @@ class RecordField extends applyMixins(
             (this.field.name !== this.$.nameInput.value || this.field.value !== this.$.valueInput.value)
         ) {
             this.field.name = this.$.nameInput.value;
-            this.field.value = this.$.valueInput.value;
+            this.field.value = this.$.valueInput.value;            
             this.dispatchEvent(new CustomEvent("field-change"));
         }
 
+        if (!this._editing) {
+            this._maskInputValue();
+        }
+
         this.dispatchEvent(new CustomEvent(this._editing ? "field-edit-start" : "field-edit-end"));
+    }
+
+    _valueInputFocus() {        
+        this.$.valueInput.value = this.field.value;
     }
 
     _focusValueInput() {
@@ -217,6 +225,15 @@ class RecordField extends applyMixins(
     edit() {
         const input = this.field && this.field.name ? this.$.valueInput : this.$.nameInput;
         input.focus();
+    }
+
+    _maskInputValue() {
+        //mask only if target value is not empty
+        if (this.field.value !== "")  {
+            this.$.valueInput.value = "*****";
+        } else {
+            this.$.valueInput.value = "";
+        }
     }
 }
 
