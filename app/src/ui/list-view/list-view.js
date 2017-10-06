@@ -72,8 +72,6 @@ class ListView extends applyMixins(
         });
         this.$.list.addEventListener("keydown", (e) => e.stopPropagation());
         this.$.main.addEventListener("scroll", () => this._updateCurrentSection());
-
-        this.$.filterInput.selectOnFocus = true;
     }
 
     dataUnloaded() {
