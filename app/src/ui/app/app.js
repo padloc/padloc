@@ -104,6 +104,7 @@ class App extends applyMixins(
         clearTimeout(this._selectedRecordChangedTimeout);
         this._selectedRecordChangedTimeout = setTimeout(() => {
             if (this._selectedRecord) {
+                this.$.recordView.finishEditing();
                 this.$.recordView.record = this._selectedRecord;
                 this._currentView = "recordView";
             } else {

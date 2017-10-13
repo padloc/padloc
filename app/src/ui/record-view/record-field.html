@@ -218,6 +218,12 @@ class RecordField extends applyMixins(
         const input = this.field && this.field.name ? this.$.valueInput : this.$.nameInput;
         input.focus();
     }
+
+    finishEditing() {
+        this.$.nameInput.blur();
+        this.$.valueInput.blur();
+        this._editing = false;
+    }
 }
 
 window.customElements.define(RecordField.is, RecordField);

@@ -193,6 +193,12 @@ class RecordView extends applyMixins(
         this.$.nameInput.focus();
     }
 
+    finishEditing() {
+        Array.from(this.root.querySelectorAll("pl-input"))
+            .forEach((i) => i.blur());
+        Array.from(this.root.querySelectorAll("pl-record-field"))
+            .forEach((f) => f.finishEditing());
+    }
 }
 
 window.customElements.define(RecordView.is, RecordView);
