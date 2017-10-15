@@ -3,7 +3,6 @@
 const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { isAndroid } = padlock.platform;
 
 const cordovaReady = new Promise((resolve) => {
     document.addEventListener("deviceready", resolve);
@@ -178,7 +177,7 @@ class App extends applyMixins(
                 this._cloudViewBack();
                 break;
             default:
-                isAndroid() && navigator.Backbutton.goBack();
+                navigator.Backbutton && navigator.Backbutton.goBack();
         }
     }
 
