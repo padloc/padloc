@@ -36,13 +36,29 @@
                 opacity: 0.5;
                 @apply --pl-input-placeholder;
             }
+
+            .mask {
+                @apply --fullbleed;
+                pointer-events: none;
+                font-size: 150%;
+                line-height: 18px;
+                letter-spacing: -4px;
+                margin-left: -4px;
+            }
+
+            [invisible] {
+                opacity: 0;
+            }
         </style>
 
         <template is="dom-if" if="[[ multiline ]]" on-dom-change="_domChange">
             <textarea id="input" value="{{ value::input }}" placeholder$="[[ placeholder ]]"
                 rows="1" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"
-                on-touchend="_stopPropagation" tabindex$="[[ _tabIndex(noTab) ]]"></textarea>
+                on-touchend="_stopPropagation" tabindex$="[[ _tabIndex(noTab) ]]"
+                invisible$="[[ _showMask(masked, value, focused) ]]"></textarea>
+            <textarea class="mask" value="[[ _mask(value) ]]" tabindex="-1"
+                invisible$="[[ !_showMask(masked, value, focused) ]]"></textarea>
         </template>
 
         <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
@@ -51,7 +67,9 @@
                 type$="[[ type ]]" placeholder$="[[ placeholder ]]"
                 required$="[[ required ]]" pattern$="[[ pattern ]]"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"
-                on-touchend="_stopPropagation">
+                on-touchend="_stopPropagation" invisible$="[[ _showMask(masked, value, focused) ]]">
+            <input class="mask" value="[[ _mask(value) ]]" tabindex="-1"
+                invisible$="[[ !_showMask(masked, value, focused) ]]">
         </template>
 
     </template>
@@ -90,6 +108,11 @@ class PlInput extends padlock.BaseElement {
             notifiy: true,
             reflectToAttribute: true,
             readonly: true
+        },
+        masked: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
         },
         multiline: {
             type: Boolean,
@@ -189,6 +212,14 @@ class PlInput extends padlock.BaseElement {
 
     _tabIndex(noTab) {
         return noTab ? "-1" : "";
+    }
+
+    _showMask() {
+        return this.masked && !!this.value && !this.focused;
+    }
+
+    _mask(value) {
+        return value.replace(/[^\n]/g, "\u2022");
     }
 
     focus() {
