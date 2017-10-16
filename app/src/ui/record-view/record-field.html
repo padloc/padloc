@@ -14,6 +14,7 @@
                 display: block;
                 color: inherit;
                 font-size: var(--font-size-small);
+                overflow: hidden;
             }
 
             .container {
@@ -75,24 +76,24 @@
                 <pl-input id="nameInput" value="[[ field.name ]]" placeholder="[[ $l('Enter New Field Name') ]]" select-on-focus
                     focused="{{ _editingName }}" on-enter="_focusValueInput" on-escape="_cancelEdit"></pl-input>
                 <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ $l('Enter Content') ]]" select-on-focus
-                    focused="{{ _editingValue }}" on-escape="_cancelEdit" on-mousedown="_valueInputMouseDown"></pl-input>
+                    focused="{{ _editingValue }}" on-escape="_cancelEdit" on-mousedown="_valueInputMouseDown" masked="[[ _masked ]]"></pl-input>
             </div>
 
             <template is="dom-if" if="[[ !draft ]]">
                 <div class="field-buttons">
-                    <pl-icon icon="copy" class="field-button tiles-1 tap" on-click="_copy" hidden="[[ _editing ]]"></pl-icon>
-                    <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit" hidden="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="delete" class="field-button tiles-2" on-click="_delete"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tiles-3" on-click="_showGenerator"></pl-icon>
+                    <pl-icon icon="[[ _toggleMaskIcon(_masked) ]]" class="field-button tiles-1 tap" on-click="_toggleMask" hidden$="[[ _editing ]]"></pl-icon>
+                    <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
+                    <pl-icon icon="copy" class="field-button tiles-2 tap" on-click="_copy"></pl-icon>
+                    <pl-icon icon="info" class="field-button tiles-3" on-click="_showFieldInfo"></pl-icon>
                     <div class="spacer tiles-4"></div>
                 </div>
             </template>
 
             <template is="dom-if" if="[[ draft ]]">
                 <div class="field-buttons">
-                    <pl-icon icon="add" class="field-button tiles-1 tap" on-click="edit" hidden="[[ _editing ]]"></pl-icon>
-                    <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit" hidden="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tiles-2" on-click="_showGenerator" hidden="[[ !_editing ]]"></pl-icon>
+                    <pl-icon icon="add" class="field-button tiles-1 tap" on-click="edit" hidden$="[[ _editing ]]"></pl-icon>
+                    <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
+                    <pl-icon icon="generate" class="field-button tiles-2" on-click="_showGenerator" hidden$="[[ !_editing ]]"></pl-icon>
                     <div class="spacer tiles-3"></div>
                 </div>
             </template>
@@ -133,13 +134,18 @@ class RecordField extends applyMixins(
             type: Boolean,
             value: false
         },
+        _masked: {
+            type: Boolean,
+            value: true
+        },
         draft: {
             type: Boolean,
             value: false
         },
         field: {
             type: Object,
-            value: () => { return { name: "", value: "" }; }
+            value: () => { return { name: "", value: "" }; },
+            observer: "_fieldChanged"
         }
     }; }
 
@@ -212,6 +218,18 @@ class RecordField extends applyMixins(
             e.preventDefault();
             this.$.nameInput.focus();
         }
+    }
+
+    _toggleMaskIcon() {
+        return this._masked ? "show" : "hide";
+    }
+
+    _toggleMask() {
+        this._masked = !this._masked;
+    }
+
+    _fieldChanged() {
+        this._masked = true;
     }
 
     edit() {
