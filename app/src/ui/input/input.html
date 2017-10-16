@@ -24,6 +24,7 @@
                 text-align: inherit;
                 width: 100%;
                 min-height: inherit;
+                line-height: inherit;
             }
 
             ::-webkit-search-cancel-button {
@@ -41,7 +42,7 @@
                 @apply --fullbleed;
                 pointer-events: none;
                 font-size: 150%;
-                line-height: 18px;
+                line-height: 22px;
                 letter-spacing: -4.5px;
                 margin-left: -4px;
             }
@@ -52,7 +53,7 @@
         </style>
 
         <template is="dom-if" if="[[ multiline ]]" on-dom-change="_domChange">
-            <textarea id="input" value="{{ value::input }}" placeholder$="[[ placeholder ]]"
+            <textarea id="input" value="{{ value::input }}" placeholder$="[[ placeholder ]]" readonly$="[[ readonly ]]"
                 rows="1" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"
                 on-touchend="_stopPropagation" tabindex$="[[ _tabIndex(noTab) ]]"
@@ -64,7 +65,7 @@
         <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
             <input id="input" value="{{ value::input }}" tabindex$="[[ _tabIndex(noTab) ]]"
                 autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
-                type$="[[ type ]]" placeholder$="[[ placeholder ]]"
+                type$="[[ type ]]" placeholder$="[[ placeholder ]]" readonly$="[[ readonly ]]"
                 required$="[[ required ]]" pattern$="[[ pattern ]]"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"
                 on-touchend="_stopPropagation" invisible$="[[ _showMask(masked, value, focused) ]]">
@@ -128,6 +129,10 @@ class PlInput extends padlock.BaseElement {
             value: ""
         },
         noTab: {
+            type: Boolean,
+            value: false
+        },
+        readonly: {
             type: Boolean,
             value: false
         },

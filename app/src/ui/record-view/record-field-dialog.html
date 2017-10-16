@@ -1,0 +1,85 @@
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../locale/locale.html">
+
+<dom-module id="pl-record-field-dialog">
+
+    <template>
+        <style include="shared">
+            .name {
+                text-align: center;
+                font-weight: bold;
+                height: var(--row-height);
+                line-height: var(--row-height);
+            }
+
+            .value {
+                font-family: var(--font-family-mono);
+                word-break: break-all;
+                font-size: 130%;
+                padding: 15px;
+                line-height: 120%;
+                text-align: center;
+            }
+        </style>
+
+        <pl-dialog open="{{ open }}" class="tiles">
+            <div class="name">[[ field.name ]]</div>
+            <pl-input multiline value="[[ field.value ]]" class="value" placeholder="[[ $l('Empty Field') ]]" readonly></pl-input>
+            <button class="tap" on-click="_delete">[[ $l("Delete") ]]</button>
+            <button class="tap" on-click="_close">[[ $l("Close") ]]</button>
+        </pl-dialog>
+
+    </template>
+
+    <script>
+(function() {
+
+const { BaseElement, LocaleMixin } = padlock;
+
+class RecordFieldDialog extends LocaleMixin(BaseElement) {
+
+    static get is() { return "pl-record-field-dialog"; }
+
+    static get properties() { return {
+        field: {
+            type: Object,
+            value: () => { return { name: "", value: "" }; }
+        },
+        open: {
+            type: Boolean,
+            value: false
+        }
+    }; }
+
+    openField(field) {
+        this.open = true;
+        this.field = field;
+        return new Promise((resolve) => {
+            this._resolve = resolve;
+        });
+    }
+
+    _closeWithAction(action) {
+        this.open = false;
+        this._resolve && this._resolve(action);
+        this._resolve = null;
+    }
+
+    _close() {
+        this._closeWithAction();
+    }
+
+    _delete() {
+        this._closeWithAction("delete");
+    }
+
+}
+
+window.customElements.define(RecordFieldDialog.is, RecordFieldDialog);
+
+})();
+    </script>
+
+</dom-module>
