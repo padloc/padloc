@@ -5,6 +5,7 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
+<link rel="import" href="record-field-dialog.html">
 
 <dom-module id="pl-record-field">
     <template>
@@ -230,6 +231,18 @@ class RecordField extends applyMixins(
 
     _fieldChanged() {
         this._masked = true;
+    }
+
+    _showFieldInfo() {
+        this.getSingleton("pl-record-field-dialog")
+            .openField(this.field)
+            .then((action) => {
+                switch (action) {
+                    case "delete":
+                        this._delete();
+                        break;
+                }
+            });
     }
 
     edit() {

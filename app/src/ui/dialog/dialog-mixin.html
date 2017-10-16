@@ -61,6 +61,10 @@ padlock.DialogMixin = (superClass) => {
             return lineUpDialog(() => dialog.generate());
         }
 
+        getSingleton(elName) {
+            return getDialog(elName);
+        }
+
     };
 };
 
