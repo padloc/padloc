@@ -199,6 +199,13 @@ class RecordView extends applyMixins(
         }, 500);
     }
 
+    dataUnloaded() {
+        this.record = null;
+        const fieldDialog = this.getSingleton("pl-record-field-dialog");
+        fieldDialog.open = false;
+        fieldDialog.field = null;
+    }
+
     _catListShowing() {
         return this._showCatList && !!this._catCount;
     }

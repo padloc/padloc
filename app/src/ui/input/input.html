@@ -228,7 +228,7 @@ class PlInput extends padlock.BaseElement {
     }
 
     _mask(value) {
-        return value.replace(/[^\n]/g, "\u2022");
+        return value && value.replace(/[^\n]/g, "\u2022");
     }
 
     _computeAutoCapitalize() {
