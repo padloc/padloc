@@ -58,13 +58,8 @@ padlock.AutoLockMixin = (superClass) => {
         }
 
         _doLock() {
-            const minutes = this.settings.autoLockDelay;
             this.unloadData();
-            setTimeout(() => {
-                this.alert($l("Padlock was automatically locked after {0} {1} " +
-                "of inactivity. You can change this behavior from the settings page.",
-                minutes, minutes > 1 ? $l("minutes") : $l("minute")));
-            }, 1000);
+            this.dispatch("auto-lock");
         }
 
         _autoLockChanged() {
