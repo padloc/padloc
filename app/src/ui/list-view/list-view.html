@@ -139,9 +139,9 @@
         </style>
 
         <header>
-            <pl-icon icon="logo" class="tiles-1 tap" on-click="_lock" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="settings" class="tiles-2 tap" on-click="_openSettings" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <div class="cloud-icon-wrapper tiles-3 tap" on-click="_openCloudView" hidden$="{{ _filterActive(_filterString) }}">
+            <pl-icon icon="logo" class="tiles-1 tap" on-click="_lock" hidden$="[[ filterActive ]]"></pl-icon>
+            <pl-icon icon="settings" class="tiles-2 tap" on-click="_openSettings" hidden$="[[ filterActive ]]"></pl-icon>
+            <div class="cloud-icon-wrapper tiles-3 tap" on-click="_openCloudView" hidden$="[[ filterActive ]]">
                 <pl-icon icon="cloud"></pl-icon>
                 <pl-icon icon="refresh" class="syncing-icon" hidden$="[[ !isSynching ]]"></pl-icon>
             </div>
@@ -149,8 +149,8 @@
                 <pl-icon icon="search" on-click="focusFilterInput"></pl-icon>
                 <pl-input id="filterInput" placeholder="" value="{{ _filterString }}" on-escape="_clearFilter" no-tab select-on-focus></pl-input>
             </div>
-            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="{{ _filterActive(_filterString) }}"></pl-icon>
-            <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="{{ !_filterActive(_filterString) }}"></pl-icon>
+            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
+            <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
         </header>
 
         <div class="current-section tap" on-click="_selectSection" hidden$="[[ _isEmpty(records.length) ]]">
@@ -236,6 +236,10 @@ class ListView extends applyMixins(
         animationOptions: {
             type: Object,
             value: { clear: true }
+        },
+        filterActive: {
+            type: Boolean,
+            computed: "_filterActive(_filterString)"
         },
         records: {
             type: Array,
@@ -428,6 +432,10 @@ class ListView extends applyMixins(
 
     focusFilterInput() {
         this.$.filterInput.focus();
+    }
+
+    clearFilter() {
+        this.$.filterInput.value = "";
     }
 
 }
