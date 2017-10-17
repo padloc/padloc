@@ -54,7 +54,7 @@
 
         <template is="dom-if" if="[[ multiline ]]" on-dom-change="_domChange">
             <textarea id="input" value="{{ value::input }}" placeholder$="[[ placeholder ]]" readonly$="[[ readonly ]]"
-                rows="1" autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
+                rows="1" autocomplete="off" spellcheck="false" autocapitalize$="[[ _computeAutoCapitalize(autocapitalize) ]]" autocorrect="off"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"
                 on-touchend="_stopPropagation" tabindex$="[[ _tabIndex(noTab) ]]"
                 invisible$="[[ _showMask(masked, value, focused) ]]"></textarea>
@@ -64,7 +64,7 @@
 
         <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
             <input id="input" value="{{ value::input }}" tabindex$="[[ _tabIndex(noTab) ]]"
-                autocomplete="off" spellcheck="false" autocapitalize="off" autocorrect="off"
+                autocomplete="off" spellcheck="false" autocapitalize$="[[ _computeAutoCapitalize(autocapitalize) ]]" autocorrect="off"
                 type$="[[ type ]]" placeholder$="[[ placeholder ]]" readonly$="[[ readonly ]]"
                 required$="[[ required ]]" pattern$="[[ pattern ]]"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"
@@ -96,6 +96,10 @@ class PlInput extends padlock.BaseElement {
     static get activeInput() { return activeInput; }
 
     static get properties() { return {
+        autocapitalize: {
+            type: Boolean,
+            value: false
+        },
         focused: {
             type: Boolean,
             value: false,
@@ -225,6 +229,10 @@ class PlInput extends padlock.BaseElement {
 
     _mask(value) {
         return value.replace(/[^\n]/g, "\u2022");
+    }
+
+    _computeAutoCapitalize() {
+        return this.autocapitalize ? "" : "off";
     }
 
     focus() {

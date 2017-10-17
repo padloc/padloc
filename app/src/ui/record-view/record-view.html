@@ -101,7 +101,7 @@
         <header>
             <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
             <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}"
-                placeholder="[[ $l('Enter Record Name') ]]" select-on-focus
+                placeholder="[[ $l('Enter Record Name') ]]" select-on-focus autocapitalize
                 on-change="_setEdited" on-focus="_inputFocused" on-blur="_debouncedFinishEditing"
             ></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
