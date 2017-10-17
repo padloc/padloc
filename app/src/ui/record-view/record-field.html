@@ -238,6 +238,15 @@ class RecordField extends applyMixins(
             .openField(this.field)
             .then((action) => {
                 switch (action) {
+                    case "copy":
+                        this._copy();
+                        break;
+                    case "edit":
+                        this.edit();
+                        break;
+                    case "generate":
+                        this._showGenerator();
+                        break;
                     case "delete":
                         this._delete();
                         break;

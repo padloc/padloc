@@ -1,34 +1,61 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../icon/icon.html">
 <link rel="import" href="../locale/locale.html">
 
 <dom-module id="pl-record-field-dialog">
 
     <template>
         <style include="shared">
+            .header {
+                display: flex;
+            }
+
             .name {
-                text-align: center;
+                flex: 1;
                 font-weight: bold;
                 height: var(--row-height);
                 line-height: var(--row-height);
+                padding: 0 20px;
+            }
+
+            .header > pl-icon {
+                width: var(--row-height);
+                height: var(--row-height);
             }
 
             .value {
                 font-family: var(--font-family-mono);
                 word-break: break-all;
                 font-size: 130%;
-                padding: 15px;
+                padding: 25px;
                 line-height: 120%;
                 text-align: center;
+            }
+
+            .actions {
+                display: flex;
+            }
+
+            .actions > * {
+                height: var(--row-height);
+                flex: 1;
             }
         </style>
 
         <pl-dialog open="{{ open }}" class="tiles">
-            <div class="name">[[ field.name ]]</div>
+            <div class="header">
+                <div class="name">[[ field.name ]]</div>
+                <pl-icon icon="cancel" class="tap" on-click="_close"></pl-icon>
+            </div>
             <pl-input multiline value="[[ field.value ]]" class="value" placeholder="[[ $l('Empty Field') ]]" readonly></pl-input>
-            <button class="tap" on-click="_delete">[[ $l("Delete") ]]</button>
-            <button class="tap" on-click="_close">[[ $l("Close") ]]</button>
+            <div class="actions tiles">
+                <pl-icon icon="copy" class="tap" on-click="_copy"></pl-icon>
+                <pl-icon icon="edit" class="tap" on-click="_edit"></pl-icon>
+                <pl-icon icon="generate" class="tap" on-click="_generate"></pl-icon>
+                <pl-icon icon="delete" class="tap" on-click="_delete"></pl-icon>
+            </div>
         </pl-dialog>
 
     </template>
@@ -73,6 +100,18 @@ class RecordFieldDialog extends LocaleMixin(BaseElement) {
 
     _delete() {
         this._closeWithAction("delete");
+    }
+
+    _copy() {
+        this._closeWithAction("copy");
+    }
+
+    _generate() {
+        this._closeWithAction("generate");
+    }
+
+    _edit() {
+        this._closeWithAction("edit");
     }
 
 }
