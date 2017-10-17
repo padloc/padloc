@@ -208,6 +208,7 @@ class App extends applyMixins(
     }
 
     dataUnloaded() {
+        this.clearDialogs();
         this.$.startView.reset();
         this.locked = true;
         this.$.startView.open = false;

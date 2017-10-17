@@ -13,6 +13,7 @@ const { wait } = padlock.util;
 const dialogElements = {};
 
 let lastDialogPromise = Promise.resolve();
+let currentDialog;
 
 function getDialog(elName) {
     let el = dialogElements[elName];
@@ -25,10 +26,16 @@ function getDialog(elName) {
     return el;
 }
 
-function lineUpDialog(fn) {
-    const promise = lastDialogPromise.then(fn);
+function lineUpDialog(dialog, fn) {
+    const promise = lastDialogPromise
+        .then(() => {
+            currentDialog = dialog;
+            fn();
+        });
 
-    lastDialogPromise = promise.then(() => wait(500));
+    lastDialogPromise = promise
+        .then(() => wait(500));
+
     return promise;
 }
 
@@ -38,31 +45,38 @@ padlock.DialogMixin = (superClass) => {
 
         alert(message, buttonLabel) {
             const dialog = getDialog("pl-dialog-alert");
-            return lineUpDialog(() => dialog.alert(message, buttonLabel));
+            return lineUpDialog(dialog, () => dialog.alert(message, buttonLabel));
         }
 
         confirm(message, confirmLabel, cancelLabel) {
             const dialog = getDialog("pl-dialog-confirm");
-            return lineUpDialog(() => dialog.confirm(message, confirmLabel, cancelLabel));
+            return lineUpDialog(dialog, () => dialog.confirm(message, confirmLabel, cancelLabel));
         }
 
         prompt(message, placeholder, type, confirmLabel, cancelLabel) {
             const dialog = getDialog("pl-dialog-prompt");
-            return lineUpDialog(() => dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel));
+            return lineUpDialog(dialog, () => dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel));
         }
 
         choose(message, options) {
             const dialog = getDialog("pl-dialog-options");
-            return lineUpDialog(() => dialog.choose(message, options));
+            return lineUpDialog(dialog, () => dialog.choose(message, options));
         }
 
         generate() {
             const dialog = getDialog("pl-generator");
-            return lineUpDialog(() => dialog.generate());
+            return lineUpDialog(dialog, () => dialog.generate());
         }
 
         getSingleton(elName) {
             return getDialog(elName);
+        }
+
+        clearDialogs() {
+            if (currentDialog) {
+                currentDialog.open = false;
+            }
+            lastDialogPromise = Promise.resolve();
         }
 
     };
