@@ -136,7 +136,7 @@ class PlInput extends padlock.BaseElement {
         if (this.multiline && this.inputElement) {
             autosize(this.inputElement);
         }
-        this._valueChanged();
+        setTimeout(() => this._valueChanged(), 50);
     }
 
     _stopPropagation(e) {
