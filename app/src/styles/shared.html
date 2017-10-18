@@ -141,7 +141,6 @@
             header {
                 display: flex;
                 height: var(--row-height);
-                line-height: var(--row-height);
                 background: var(--color-background);
                 font-size: var(--font-size-default);
                 position: relative;
@@ -150,6 +149,7 @@
             }
 
             header > .title {
+                line-height: var(--row-height);
                 padding: 0 15px;
                 flex: 1;
                 @apply --ellipsis;
