@@ -95,12 +95,27 @@
             </array>
         </config-file>
     </platform>
+    <engine name="ios" spec="^4.5.2" />
     <engine name="android" spec="^6.2.3" />
-    <engine name="ios" spec="^4.4.0" />
-    <plugin name="cordova-clipboard" spec="^1.0.0" />
-    <plugin name="cordova-custom-config" spec="^4.0.2" />
     <plugin name="cordova-plugin-app-version" spec="~0.1.9" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
+    <plugin name="cordova-plugin-customurlscheme" spec="~4.2.0">
+        <variable name="URL_SCHEME" value="padlock" />
+    </plugin>
+    <plugin name="cordova-plugin-inappbrowser" spec="~1.4.0" />
+    <plugin name="cordova-plugin-privacyscreen" spec="~0.3.1" />
+    <plugin name="cordova-plugin-statusbar" spec="~2.1.3" />
+    <plugin name="cordova-plugin-whitelist" spec="~1.2.2" />
+    <plugin name="ionic-plugin-keyboard" spec="~2.2.1" />
+    <plugin name="cordova-plugin-file" spec="^4.3.3" />
+    <plugin name="cordova-plugin-splashscreen" spec="^4.0.3" />
+    <plugin name="cordova-plugin-migrate-localstorage" spec="0.0.2" />
+    <plugin name="cordova-clipboard" spec="^1.0.0" />
+    <plugin name="cordova-custom-config" spec="^4.0.2" />
+    <plugin name="cordova-plugin-pbkdf2" spec="^0.2.0" />
+    <plugin name="cordova-plugin-device" spec="^1.1.6" />
+    <plugin name="cordova-plugin-wkwebview-engine" spec="git+https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git" />
+    <plugin name="cordova-plugin-compat" spec="^1.2.0" />
     <plugin name="cordova-plugin-crosswalk-webview" spec="^2.3.0">
         <variable name="XWALK_VERSION" value="23+" />
         <variable name="XWALK_LITEVERSION" value="xwalk_core_library_canary:17+" />
@@ -108,18 +123,4 @@
         <variable name="XWALK_MODE" value="embedded" />
         <variable name="XWALK_MULTIPLEAPK" value="true" />
     </plugin>
-    <plugin name="cordova-plugin-customurlscheme" spec="~4.2.0">
-        <variable name="URL_SCHEME" value="padlock" />
-    </plugin>
-    <plugin name="cordova-plugin-device" spec="^1.1.6" />
-    <plugin name="cordova-plugin-file" spec="^4.3.3" />
-    <plugin name="cordova-plugin-inappbrowser" spec="~1.4.0" />
-    <plugin name="cordova-plugin-migrate-localstorage" spec="0.0.2" />
-    <plugin name="cordova-plugin-pbkdf2" spec="^0.2.0" />
-    <plugin name="cordova-plugin-privacyscreen" spec="~0.3.1" />
-    <plugin name="cordova-plugin-splashscreen" spec="^4.0.3" />
-    <plugin name="cordova-plugin-statusbar" spec="~2.1.3" />
-    <plugin name="cordova-plugin-whitelist" spec="~1.2.2" />
-    <plugin name="cordova-plugin-wkwebview-engine" spec="git+https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git" />
-    <plugin name="ionic-plugin-keyboard" spec="~2.2.1" />
 </widget>
