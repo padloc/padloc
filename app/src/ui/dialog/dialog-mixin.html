@@ -30,7 +30,7 @@ function lineUpDialog(dialog, fn) {
     const promise = lastDialogPromise
         .then(() => {
             currentDialog = dialog;
-            fn();
+            return fn();
         });
 
     lastDialogPromise = promise
