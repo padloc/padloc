@@ -100,9 +100,9 @@
 
         <header>
             <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
-            <pl-input id="nameInput" class="name tiles-2 tap" value="{{ record.name }}"
+            <pl-input id="nameInput" class="name tiles-2 tap" value="[[ record.name ]]"
                 placeholder="[[ $l('Enter Record Name') ]]" select-on-focus autocapitalize
-                on-change="_setEdited" on-focus="_inputFocused" on-blur="_debouncedFinishEditing"
+                on-change="_nameEdited" on-focus="_inputFocused" on-blur="_debouncedFinishEditing"
             ></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
@@ -233,6 +233,15 @@ class RecordView extends applyMixins(
         clearTimeout(this._changeTimeout);
     }
 
+    _nameEdited() {
+        if (this.$.nameInput.value) {
+            this.record.name = this.$.nameInput.value;
+            this._setEdited();
+        } else {
+            this.notifyPath("record.name");
+        }
+    }
+
     _deleteField(e) {
         this.confirm($l("Are you sure you want to delete this field?"), $l("Delete")).then((confirmed) => {
             if (confirmed) {
@@ -336,10 +345,6 @@ class RecordView extends applyMixins(
     }
 
     close() {
-        if (!this.record.name) {
-            this.alert($l("Please enter a record name!")).then(() => this.edit());
-            return;
-        }
         this.dispatchEvent(new CustomEvent("record-close"));
     }
 
