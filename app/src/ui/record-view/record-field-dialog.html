@@ -44,13 +44,13 @@
             }
         </style>
 
-        <pl-dialog open="{{ open }}" class="tiles">
+        <pl-dialog open="{{ open }}">
             <div class="header">
                 <div class="name">[[ field.name ]]</div>
                 <pl-icon icon="cancel" class="tap" on-click="_close"></pl-icon>
             </div>
-            <pl-input multiline value="[[ field.value ]]" class="value" placeholder="[[ $l('Empty Field') ]]" readonly></pl-input>
-            <div class="actions tiles">
+            <pl-input multiline value="[[ field.value ]]" class="value tiles-2" placeholder="[[ $l('Empty Field') ]]" readonly></pl-input>
+            <div class="actions tiles tiles-3">
                 <pl-icon icon="copy" class="tap" on-click="_copy"></pl-icon>
                 <pl-icon icon="edit" class="tap" on-click="_edit"></pl-icon>
                 <pl-icon icon="generate" class="tap" on-click="_generate"></pl-icon>
