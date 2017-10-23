@@ -278,6 +278,14 @@ class ListView extends applyMixins(
         this._clearFilter();
     }
 
+    sectionSelectorActive(){
+        return this.$.sectionSelector.open;
+    }
+
+    dismissSectionSelector(){
+        return this.$.sectionSelector.dismiss();
+    }
+
     select(record) {
         this.$.list.selectItem(record);
     }

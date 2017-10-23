@@ -300,7 +300,9 @@ class App extends applyMixins(
                 this._cloudViewBack();
                 break;
             default:
-                if (this.$.listView.filterActive) {
+                if (this.$.listView.sectionSelectorActive()) {
+                    this.$.listView.dismissSectionSelector();
+                } else if (this.$.listView.filterActive) {
                     this.$.listView.clearFilter();
                 } else {
                     navigator.Backbutton && navigator.Backbutton.goBack();
