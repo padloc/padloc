@@ -8,7 +8,7 @@
     <template>
         <style include="shared"></style>
 
-        <pl-dialog open="{{ open }}" prevent-dismiss>
+        <pl-dialog open="{{ open }}" prevent-dismiss$="{{ preventDismiss }}">
             <template is="dom-if" if="[[ _hasMessage(message) ]]" restamp>
                 <div class="message tiles-1">[[ message ]]</div>
             </template>
@@ -28,7 +28,8 @@ class DialogOptions extends padlock.BaseElement {
     static get properties() { return {
         message: { type: String, value: "" },
         open: { type: Boolean, value: false },
-        options: { type: Array, value: [$l("Dismiss")] }
+        options: { type: Array, value: [$l("Dismiss")] },
+        preventDismiss: { type: boolean, value: true }
     }; }
 
     choose(message, options) {
