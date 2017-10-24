@@ -43,7 +43,7 @@ class DialogOptions extends padlock.BaseElement {
     }
 
     dismiss() {
-        this.open = false;
+        setTimeout(() => this.open = false, 50);
     }
 
     _selectOption(e) {
