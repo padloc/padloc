@@ -42,10 +42,6 @@ class DialogOptions extends padlock.BaseElement {
         });
     }
 
-    dismiss() {
-        setTimeout(() => this.open = false, 50);
-    }
-
     _selectOption(e) {
         this.open = false;
         typeof (this._resolve === "function") && this._resolve(this.options.indexOf(e.model.item));
