@@ -6,9 +6,12 @@
 
     <template>
         <style include="shared">
+            .message {
+                font-weight: bold;
+            }
         </style>
 
-        <pl-dialog id="dialog" on-dialog-dismiss="_dismiss">
+        <pl-dialog id="dialog">
             <div class="message">[[ $l("Export {0} Records", records.length) ]]</div>
             <pl-export records="[[ records ]]" on-click="_close" class="tiles-2"></pl-export>
         </pl-dialog>

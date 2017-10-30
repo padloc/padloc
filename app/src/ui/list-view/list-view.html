@@ -156,6 +156,7 @@
                 line-height: var(--row-height);
                 font-weight: bold;
                 overflow: hidden;
+                text-align: center;
             }
         </style>
 
@@ -175,11 +176,11 @@
         </header>
 
         <header class="tiles" hidden$="[[ !multiSelect ]]">
-            <pl-icon icon="cancel" class="tap" on-click="_clearMultiSelection"></pl-icon>
-            <div class="multi-select-count">[[ $l("{0} records selected", selectedRecords.length) ]]</div>
-            <pl-icon icon="share" class="tap" on-click="_shareSelected"></pl-icon>
-            <pl-icon icon="delete" class="tap" on-click="_deleteSelected"></pl-icon>
+            <pl-icon icon="unchecked" class="tap" on-click="_clearMultiSelection"></pl-icon>
             <pl-icon icon="checked" class="tap" on-click="_selectAll"></pl-icon>
+            <div class="multi-select-count">[[ $l("{0} records selected", selectedRecords.length) ]]</div>
+            <pl-icon icon="delete" class="tap" on-click="_deleteSelected"></pl-icon>
+            <pl-icon icon="share" class="tap" on-click="_shareSelected"></pl-icon>
         </header>
 
         <div class="current-section tap" on-click="_selectSection" hidden$="[[ _isEmpty(records.length) ]]">
