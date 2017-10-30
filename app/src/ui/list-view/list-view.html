@@ -3,6 +3,7 @@
 <link rel="import" href="../animation/animation.html">
 <link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
+<link rel="import" href="../export/export-dialog.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
@@ -492,16 +493,8 @@ class ListView extends applyMixins(
     }
 
     _shareSelected() {
-        this.choose($l("{0} records selected", this.selectedRecords.length), [
-            $l("Export")
-        ])
-            .then((choice) => {
-                switch (choice) {
-                    case 0:
-                        // this._deleteSelected();
-                        break;
-                }
-            });
+        const exportDialog = this.getSingleton("pl-export-dialog");
+        exportDialog.export(this.selectedRecords);
     }
 
     _deleteSelected() {
