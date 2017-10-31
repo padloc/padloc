@@ -234,6 +234,8 @@ class RecordItem extends applyMixins(
             setClipboard(e.model.item.value);
             const field = this.root.querySelectorAll(".field")[e.model.index];
             field.classList.add("copied");
+            this.record.lastUsed = new Date();
+            this.saveCollection();
             setTimeout(() => field.classList.remove("copied"), 1000);
         }
     }
