@@ -156,6 +156,18 @@
                 content: "\f070";
             }
 
+            :host([icon="checked"]) > div::before {
+                content: "\f046";
+            }
+
+            :host([icon="unchecked"]) > div::before {
+                content: "\f096";
+            }
+
+            :host([icon="share"]) > div::before {
+                content: "\f045";
+            }
+
             :host([icon="logo"]) > div::before {
                 font-family: "Padlock";
                 content: "\0041";
