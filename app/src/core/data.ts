@@ -27,21 +27,24 @@ export class Record {
     uuid: string;
     updated: Date;
     removed: boolean;
+    lastUsed?: Date;
 
     constructor(name = "", fields?: Array<Field>, category?: string,
-                id?: string, updated?: Date, removed = false) {
+                id?: string, updated?: Date, removed = false, lastUsed?: Date) {
         this.name = name;
         this.fields = fields || new Array<Field>();
         this.category = category || "";
         this.uuid = id || uuid();
         this.updated = updated || new Date();
         this.removed = removed;
+        this.lastUsed = lastUsed;
     }
 
     static fromRaw(obj: any): Record {
         let fields = obj.fields && <Array<Field>>obj.fields;
         let updated = obj.updated && (obj.updated instanceof Date ? obj.updated : new Date(obj.updated));
-        return new Record(obj.name, fields, obj.category, obj.uuid, updated, obj.removed);
+        let lastUsed = obj.lastUsed && (obj.lastUsed instanceof Date ? obj.lastUsed : new Date(obj.lastUsed));
+        return new Record(obj.name, fields, obj.category, obj.uuid, updated, obj.removed, lastUsed);
     }
 
     static compare(a: Record, b: Record): number {
@@ -63,7 +66,8 @@ export class Record {
             category: this.category,
             uuid: this.uuid,
             updated: this.updated,
-            removed: this.removed
+            removed: this.removed,
+            lastUsed: this.lastUsed
         };
     }
 

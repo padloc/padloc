@@ -202,7 +202,7 @@
                 <template>
                     <div>
                         <div class="section-header" hidden$="[[ !_firstInSection(records, index) ]]">
-                            [[ _sectionHeader(item) ]]
+                            [[ _sectionHeader(index, records) ]]
                         </div>
                         <pl-record-item record="[[ item ]]" selected$="[[ selected ]]"
                             tabindex$="[[ tabIndex ]]" on-search-category="_searchCategory"
@@ -334,9 +334,17 @@ class ListView extends applyMixins(
     }
 
     _filterAndSort() {
-        return this.collection.records
-            .filter((r) => !r.removed && filterByString(this._filterString, r))
-            .sort((a, b) => Record.compare(a, b));
+        let records = this.collection.records
+            .filter((r) => !r.removed && filterByString(this._filterString, r));
+
+        this._recentCount = records.length > 10 ? 3 : 0;
+
+        const recent = records.sort((a, b) => {
+            return (b.lastUsed || b.updated).getTime() - (a.lastUsed || a.updated).getTime();
+        }).slice(0, this._recentCount);
+
+        records = records.slice(this._recentCount);
+        return recent.concat(records.sort((a, b) => Record.compare(a, b)));
     }
 
     _isEmpty() {
@@ -396,42 +404,29 @@ class ListView extends applyMixins(
     }
 
     _firstInSection(records, index) {
-        const prev = records[index - 1];
-        const curr = records[index];
-
-        if (!curr) {
-            return false;
-        }
-
-        return !prev || this._sectionHeader(prev) !== this._sectionHeader(curr);
+        return index === 0 || this._sectionHeader(index - 1) !== this._sectionHeader(index);
     }
 
     _lastInSection(records, index) {
-        const curr = records[index];
-        const next = records[index + 1];
-
-        if (!curr) {
-            return false;
-        }
-
-        return !next || this._sectionHeader(next) !== this._sectionHeader(curr);
+        return this._sectionHeader(index + 1) !== this._sectionHeader(index);
     }
 
-    _sectionHeader(record) {
-        return record.name[0] && record.name[0].toUpperCase();
+    _sectionHeader(index) {
+        const record = this.records[index];
+        return index < this._recentCount ? $l("Recently Used") :
+            record && record.name[0] && record.name[0].toUpperCase();
     }
 
     _updateCurrentSection() {
-        const record = this.records[this.$.list.firstVisibleIndex];
-        this._currentSection = record && this._sectionHeader(record);
+        this._currentSection = this._sectionHeader(this.$.list.firstVisibleIndex);
     }
 
     _selectSection() {
-        const sections = Array.from(this.records.reduce((s, r) => s.add(this._sectionHeader(r)), new Set()));
+        const sections = Array.from(this.records.reduce((s, r, i) => s.add(this._sectionHeader(i)), new Set()));
         if (sections.length > 1) {
             this.$.sectionSelector.choose("", sections)
                 .then((i) => {
-                    const record = this.records.find((r) => this._sectionHeader(r) === sections[i]);
+                    const record = this.records.find((r, j) => this._sectionHeader(j) === sections[i]);
                     this.$.list.scrollToItem(record);
                 });
         }
