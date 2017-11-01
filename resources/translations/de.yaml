@@ -50,10 +50,14 @@
   t: >-
     Die URL muss von der Form https://myserver.tld:port. Eine sichere Verbindung
     über https ist erforderlich.
+- o: 'Export {0} Records'
+  t: '{0} Einträge Exportieren'
 - o: No Fields
   t: Keine Felder
 - o: copied
   t: kopiert
+- o: '{0} records selected'
+  t: '{0} Einträge ausgewählt'
 - o: You don't have any data yet! Start by creating your first record!
   t: >-
     Es sind noch keine Einträge vorhanden. Fangen Sie an, indem Sie Ihren ersten
@@ -68,6 +72,10 @@
   t: Namen Eingeben
 - o: No Category
   t: Ohne Kategory
+- o: As CSV
+  t: Als CSV
+- o: As Encrypted File
+  t: Als Verschlüsselte Datei
 - o: Settings
   t: Einstellungen
 - o: Enable Auto Lock
@@ -80,10 +88,6 @@
   t: Schneller Blick
 - o: Export
   t: Exportieren
-- o: As CSV
-  t: Als CSV
-- o: As Encrypted File
-  t: Als Verschlüsselte Datei
 - o: Import
   t: Importieren
 - o: Paste From Clipboard
@@ -287,6 +291,16 @@
   t: Zum Kopieren Klicken
 - o: Cannot lock app while sync is in progress!
   t: App kann nicht gesperrt werden solange Synchronisierung im Gange ist!
+- o: Recently Used
+  t: Kürzlich Verwendet
+- o: >-
+    Are you sure you want to delete these records? This action can not be
+    undone!
+  t: >-
+    Sind Sie sicher, dass Sie diese Einträge löschen wollen? Diese Aktion kann
+    nicht rückgänging gemacht werden!
+- o: 'Delete {0} Records'
+  t: '{0} Einträge Löschen'
 - o: Please enter a field name first!
   t: Bitte geben Sie zuerst einen Feldnamen ein!
 - o: Value copied to clipboard!
@@ -307,42 +321,6 @@
     was sie leicht für andere lesbar macht! Es wird dringend geraten, Ihre Daten
     stattdessen als sichere, verschlüsselte Datei abzuspeichern! Sind Sie sicher
     dass Sie fortfahren möchten?
-- o: >-
-    Are you sure you want to change your master password? Enter your current
-    password to continue!
-  t: >-
-    Sind Sie sicher, dass Sie Ihr Master Passwort ändern wollen? Geben Sie Ihr
-    jetziges Passwort ein um fortzufahren!
-- o: Enter Current Password
-  t: Jetziges Passwort Eingeben
-- o: You entered the wrong master password!
-  t: Sie haben das falsche Passwort eingegeben!
-- o: Now choose a new master password!
-  t: Wählen Sie ein neues Master Passwort aus!
-- o: Enter New Password
-  t: Neues Passwort Eingeben
-- o: Confirm your new master password!
-  t: Bestätigen Sie Ihr neues Passwort!
-- o: Confirm New Password
-  t: Neues Passwort Bestätigen
-- o: Confirm & Change
-  t: Bestätigen & Ändern
-- o: You failed to confirm the new password. Please try again!
-  t: >-
-    Sie haben das neue Passwort nicht korrekt wiederholt. Bitte versuchen Sie es
-    erneut!
-- o: Master password changed successfully.
-  t: Ihr Masterpassword wurde erfolgreich geändert.
-- o: >-
-    Are you sure you want to delete all your data and reset the app? Enter your
-    master password to continue!
-  t: >-
-    Sind Sie sicher dass Sie all Ihre Daten löschen und die App zurücksetzen
-    wollen? Geben Sie Ihr Master Passwort ein um fortzufahren!
-- o: You entered the wrong master password! Please try again!
-  t: >-
-    Sie haben das falsche Master Passwort eigegeben! Bitte versuchen Sie es
-    erneut!
 - o: Download
   t: Herunterladen
 - o: Copy to Clipboard
@@ -381,6 +359,42 @@
   t: Anderes Password Wählen
 - o: Your data has successfully been copied to the system clipboard.
   t: Ihre Daten wurden erfolgreich in die Zwischenablage kopiert.
+- o: >-
+    Are you sure you want to change your master password? Enter your current
+    password to continue!
+  t: >-
+    Sind Sie sicher, dass Sie Ihr Master Passwort ändern wollen? Geben Sie Ihr
+    jetziges Passwort ein um fortzufahren!
+- o: Enter Current Password
+  t: Jetziges Passwort Eingeben
+- o: You entered the wrong master password!
+  t: Sie haben das falsche Passwort eingegeben!
+- o: Now choose a new master password!
+  t: Wählen Sie ein neues Master Passwort aus!
+- o: Enter New Password
+  t: Neues Passwort Eingeben
+- o: Confirm your new master password!
+  t: Bestätigen Sie Ihr neues Passwort!
+- o: Confirm New Password
+  t: Neues Passwort Bestätigen
+- o: Confirm & Change
+  t: Bestätigen & Ändern
+- o: You failed to confirm the new password. Please try again!
+  t: >-
+    Sie haben das neue Passwort nicht korrekt wiederholt. Bitte versuchen Sie es
+    erneut!
+- o: Master password changed successfully.
+  t: Ihr Masterpassword wurde erfolgreich geändert.
+- o: >-
+    Are you sure you want to delete all your data and reset the app? Enter your
+    master password to continue!
+  t: >-
+    Sind Sie sicher dass Sie all Ihre Daten löschen und die App zurücksetzen
+    wollen? Geben Sie Ihr Master Passwort ein um fortzufahren!
+- o: You entered the wrong master password! Please try again!
+  t: >-
+    Sie haben das falsche Master Passwort eigegeben! Bitte versuchen Sie es
+    erneut!
 - o: Failed to open file. Did you enter the correct password?
   t: >-
     Datei konnte nicht geöffnet werden. Haben Sie das richtige Passwort
