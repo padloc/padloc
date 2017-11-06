@@ -28,6 +28,7 @@ padlock.SyncMixin = (superClass) => {
         constructor() {
             super();
             this.listen("data-unloaded", () => cloudSource.password = "");
+            this.listen("data-reset", () => cloudSource.password = "");
             this.listen("sync-start", () => this._syncStart());
             this.listen("sync-success", () => this._syncSuccess());
             this.listen("sync-fail", () => this._syncFail());
@@ -53,7 +54,7 @@ padlock.SyncMixin = (superClass) => {
             this.dispatch("sync-disconnect");
         }
 
-        synchronize() {
+        synchronize(auto) {
             if (!this.settings.syncConnected) {
                 this.alert($l("You have to be connected to a Padlock Cloud account to synchronize your data!"));
                 return Promise.reject();
@@ -75,7 +76,7 @@ padlock.SyncMixin = (superClass) => {
                 return chained;
             }
 
-            const sync = this._currentSync = this._synchronize()
+            const sync = this._currentSync = this._synchronize(auto)
                 .then(() => this._currentSync = null, () => this._currentSync = null);
             return sync;
         }
@@ -149,8 +150,10 @@ padlock.SyncMixin = (superClass) => {
             return this._testCredsPromise;
         }
 
-        openDashboard() {
-            cloudSource.source.getLoginUrl()
+        openDashboard(action = "", referer = "app") {
+            action = encodeURIComponent(action);
+            referer = encodeURIComponent(referer);
+            cloudSource.source.getLoginUrl(`/dashboard/?action=${action}&ref=${referer}`)
                 .then((url) => window.open(url, "_system"))
                 .catch(() => window.open(`${this.settings.syncHostUrl}/dashboard/`, "_system"));
         }
@@ -206,8 +209,9 @@ padlock.SyncMixin = (superClass) => {
             );
         }
 
-        _synchronize() {
-            this.dispatch("sync-start");
+        _synchronize(auto) {
+            auto = auto === true;
+            this.dispatch("sync-start", { auto: auto });
 
             if (!cloudSource.password) {
                 cloudSource.password = this.password;
@@ -219,7 +223,7 @@ padlock.SyncMixin = (superClass) => {
                 .then(() => {
                     this.dispatch("records-changed");
                     this.dispatch("settings-changed");
-                    this.dispatch("sync-success");
+                    this.dispatch("sync-success", { auto: auto });
 
                     if (cloudSource.password !== this.password) {
                         return this.confirm(
@@ -236,9 +240,9 @@ padlock.SyncMixin = (superClass) => {
                     this.dispatch("settings-changed");
                     if (this._handleCloudError(e)) {
                         this.dispatch("records-changed");
-                        this.dispatch("sync-success");
+                        this.dispatch("sync-success", { auto: auto });
                     } else {
-                        this.dispatch("sync-fail");
+                        this.dispatch("sync-fail", { auto: auto, error: e });
                     }
                 });
         }
@@ -264,7 +268,11 @@ padlock.SyncMixin = (superClass) => {
             this.settings.syncToken = "";
             this.dispatch("settings-changed");
 
-            return cloudSource.source.requestAuthToken(email, create)
+            return padlock.stats.get()
+                .then((stats) => {
+                    const redirect = `/dashboard/?tid=${encodeURIComponent(stats.trackingID)}`;
+                    return cloudSource.source.requestAuthToken(email, create, redirect);
+                })
                 .then((authToken) => {
                     // We're getting back the api key directly, but it will valid only
                     // after the user has visited the activation link in the email he was sent
@@ -366,12 +374,16 @@ padlock.SyncMixin = (superClass) => {
                         });
                     return false;
                 case "subscription_required":
-                    this.alert($l(
-                        "You currently don't have an active subscription which means you can access " +
-                        "your existing data on Padlock Cloud but you won't be able to upload any new data " +
-                        "or synchronize changes between devices. Get a subscription now to regain full access " +
-                        "to Padlock Cloud!"
-                    ));
+                    this.confirm(
+                        this.readOnlyInfoText(),
+                        $l("Buy Subscription"),
+                        $l("Dismiss")
+                    )
+                        .then((confirmed) => {
+                            if (confirmed) {
+                                this.openDashboard("subscribe", "app-5");
+                            }
+                        });
                     return true;
                 default:
                     this.alert($l("Something went wrong. Please try again later!"));

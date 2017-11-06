@@ -16,8 +16,8 @@
   t: Abbrechen
 - o: 'Your trial period ends in {0} days.'
   t: 'Ihre kostenlose Testphase ended in {0} Tagen'
-- o: Manage Subscriptions
-  t: Abonnement Verwalten
+- o: Buy Subscription
+  t: Abonnement Kaufen
 - o: Read-Only
   t: Nur Lesezugriff
 - o: 'Paired with:'
@@ -260,17 +260,6 @@
     Gerät!
 - o: Check For Updates
   t: Auf Updates Prüfen
-- o: >-
-    You currently don't have an active subscription which means you can access
-    your existing data on Padlock Cloud but you won't be able to upload any new
-    data or synchronize changes between devices. Get a subscription now to
-    regain full access to Padlock Cloud!
-  t: >-
-    Sie haben momentan kein Aktives Abonnement. Dies bedeutet, dass Sie zwar
-    weiterhin auf Ihre in Padlock Cloud gespeicherten Daten zugreifen können,
-    aber weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
-    synchronisieren können. Erwerben Sie jetzt ein Abonnement um erneut vollen
-    Zugriff auf Padlock Cloud zu erhalten!
 - o: Something went wrong. Please try again later!
   t: Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!
 - o: Please enter a valid email address!
@@ -628,9 +617,7 @@
   t: Minuten
 - o: minute
   t: Minute
-- o: Would you like to pair this device with Padlock Cloud now?
-  t: Möchten sie diese Gerät nun mit Padlock Cloud verbinden?
-- o: Maybe Later
-  t: Vielleicht Später
+- o: Activation link sent. Check your email!
+  t: Aktivierungs-Link gesendet. Prüfen Sie Ihr Postfach!
 - o: App reset successfully. Off to a fresh start!
   t: Die App wurde erfolgreich zurückgesetzt.

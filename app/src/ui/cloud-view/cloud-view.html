@@ -97,7 +97,7 @@
                     <strong>[[ $l("Your trial period ends in {0} days.", remainingTrialDays) ]]</strong> -
                     [[ trialInfoText() ]]
                 </div>
-                <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
+                <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
             </section>
 
             <section class="tiles" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
@@ -105,7 +105,7 @@
                     <strong>[[ $l("Read-Only") ]]</strong> -
                     [[ readOnlyInfoText() ]]
                 </div>
-                <button class="tap" on-click="openDashboard">[[ $l("Manage Subscriptions") ]]</button>
+                <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
             </section>
 
             <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
@@ -116,7 +116,7 @@
                 </div>
                 <pl-loading-button id="syncButton" class="tap" on-click="synchronize"
                     label="[[ $l('Synchronize') ]]"></pl-loading-button>
-                <button class="tap" on-click="openDashboard">[[ $l("Manage Account") ]]</button>
+                <button class="tap" on-click="_manageAccount">[[ $l("Manage Account") ]]</button>
                 <button class="tap" on-click="_disconnect">[[ $l("Unpair") ]]</button>
             </section>
 
@@ -206,12 +206,15 @@ class CloudView extends applyMixins(
     }
 
     _credentialsChanged() {
-        if (this.isActivationPending()) {
+        if (this.isActivationPending() && !this._testCredsTimeout) {
             // Wait 1 minute, then poll every 10 seconds
-            setTimeout(() => this.testCredentials(10000), 60000);
+            this._testCredsTimeout = setTimeout(() => this.testCredentials(10000), 60000);
             // Also test on first focus event since there is a chance the user is just returning
             // from his email client / web browsers
             window.addEventListener("focus", () => this.testCredentials(), { once: true });
+        } else if (!this.isActivationPending()) {
+            clearTimeout(this._testCredsTimeout);
+            this._testCredsTimeout = null;
         }
     }
 
@@ -237,9 +240,10 @@ class CloudView extends applyMixins(
                     "This option is only recommended for advanced users!"),
                 $l("Continue"))
                 .then((confirmed) => {
-                    if (!confirmed) {
-                        this.set("settings.syncCustomHost", false);
+                    if (confirmed) {
                         this.settingChanged();
+                    } else {
+                        this.set("settings.syncCustomHost", false);
                     }
                 });
         } else {
@@ -266,6 +270,18 @@ class CloudView extends applyMixins(
 
     _animateSections() {
         this.animateCascade(this.root.querySelectorAll("section:not([hidden])"));
+    }
+
+    _trialingBuySubscription() {
+        this.openDashboard("subscribe", "app-2");
+    }
+
+    _readonlyBuySubscription() {
+        this.openDashboard("subscribe", "app-3");
+    }
+
+    _manageAccount() {
+        this.openDashboard("", "app-1");
     }
 
 }

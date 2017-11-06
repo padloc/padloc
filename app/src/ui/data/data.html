@@ -160,7 +160,9 @@ padlock.DataMixin = (superClass) => {
         resetData() {
             localSource.clear();
             settingsSource.clear();
-            this.unloadData();
+            collection.clear();
+            settings.clear();
+            localSource.password = settingsSource.password = "";
             this.dispatch("data-reset");
         }
 

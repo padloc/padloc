@@ -9,8 +9,6 @@
             :host {
                 display: block;
                 --height: 50px;
-                height: var(--height);
-                line-height: var(--height);
                 text-align: center;
                 font-weight: bold;
                 transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3);
@@ -21,15 +19,14 @@
                 z-index: 10;
                 max-width: 400px;
                 margin: 0 auto;
-                pointer-events: none;
             }
 
             :host(:not(.showing)) {
-                transform: translateY(80px);
+                transform: translateY(calc(100% + 30px));
             }
 
             .text {
-                @apply --ellipsis;
+                padding: 15px;
                 position: relative;
             }
 
@@ -60,7 +57,7 @@
 
         <div class="background"></div>
 
-        <div class="text">{{ message }}</div>
+        <div class="text" on-click="_click">{{ message }}</div>
 
     </template>
 
@@ -92,17 +89,27 @@ class Notification extends padlock.BaseElement {
         this.classList.add("showing");
 
         if (duration) {
-            setTimeout(() => this.hide(), duration);
+            setTimeout(() => this.hide(false), duration);
         }
+
+        return new Promise((resolve) => {
+            this._resolve = resolve;
+        });
     }
 
-    hide() {
+    hide(clicked) {
         this.classList.remove("showing");
+        typeof this._resolve === "function" && this._resolve(clicked);
+        this._resolve = null;
     }
 
     _typeChanged(newType, oldType) {
         this.classList.remove(oldType);
         this.classList.add(newType);
+    }
+
+    _click() {
+        this.hide(true);
     }
 }
 
@@ -117,9 +124,10 @@ padlock.NotificationMixin = (baseClass) => {
             if (!notificationSingleton) {
                 notificationSingleton = document.createElement("pl-notification");
                 document.body.appendChild(notificationSingleton);
+                notificationSingleton.offsetLeft;
             }
 
-            setTimeout(() => notificationSingleton.show(message, type, duration), 10);
+            return notificationSingleton.show(message, type, duration);
         }
 
     };

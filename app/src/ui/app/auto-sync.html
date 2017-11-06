@@ -9,7 +9,7 @@ padlock.AutoSyncMixin = (superClass) => {
 
         constructor() {
             super();
-            const debouncedSynchronize = padlock.util.debounce(() => this.synchronize(), 1000);
+            const debouncedSynchronize = padlock.util.debounce(() => this.synchronize(true), 1000);
             const autoSync = () => {
                 if (this.settings.syncAuto && this.settings.syncConnected) {
                     debouncedSynchronize();
