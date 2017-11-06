@@ -6,6 +6,7 @@
 
 const { CloudSource } = padlock.source;
 const { DataMixin } = padlock;
+const { getAppVersion } = padlock.platform;
 
 const cloudSource = new CloudSource(DataMixin.settings);
 
@@ -63,16 +64,27 @@ function track(event, props) {
         });
 }
 
-const ready = padlock.stats.get()
-    .then((stats) => {
+const ready = Promise.all([
+    padlock.stats.get(),
+    getAppVersion()
+])
+    .then(([stats, version]) => {
         trackingID = stats.trackingID;
         const launchCount = typeof stats.launchCount === "number" ? stats.launchCount + 1 : 1;
+        const isFirstLaunch = !stats.firstLaunch;
         const firstLaunch = stats.firstLaunch || new Date().getTime();
 
-        padlock.stats.set({
+        if (isFirstLaunch) {
+            track("Install");
+        } else if (stats.lastVersion !== version) {
+            track("Update", { "From Version": stats.lastVersion });
+        }
+
+        return padlock.stats.set({
             firstLaunch: firstLaunch,
             lastLaunch: new Date().getTime(),
-            launchCount: launchCount
+            launchCount: launchCount,
+            lastVersion: version
         });
     });
 
