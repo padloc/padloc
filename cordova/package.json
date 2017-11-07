@@ -4,8 +4,8 @@
   "displayName": "Padlock",
   "cordova": {
     "platforms": [
-      "ios",
-      "android"
+      "android",
+      "ios"
     ],
     "plugins": {
       "cordova-plugin-app-version": {},
@@ -40,7 +40,7 @@
     "cordova-android": "^6.2.3",
     "cordova-clipboard": "^1.0.0",
     "cordova-custom-config": "^4.0.2",
-    "cordova-ios": "^4.5.2",
+    "cordova-ios": "^4.5.3",
     "cordova-plugin-app-version": "~0.1.9",
     "cordova-plugin-backbutton": "~0.3.0",
     "cordova-plugin-compat": "^1.2.0",

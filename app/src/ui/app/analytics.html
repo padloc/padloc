@@ -175,7 +175,7 @@ padlock.AnalyticsMixin = (superClass) => {
             Promise.all([
                 this.hasData(),
                 ready
-            ]).then(([hasData]) => track("Launch App", {
+            ]).then(([hasData]) => track("Launch", {
                 "Clean Launch": !hasData
             }));
         }
