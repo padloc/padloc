@@ -135,6 +135,12 @@ padlock.DataMixin = (superClass) => {
             this.dispatch("record-deleted", record);
         }
 
+        deleteRecords(records) {
+            records.forEach((r) => r.remove());
+            this.saveCollection();
+            this.dispatch("records-changed");
+        }
+
         addRecords(records) {
             this.collection.add(records);
             this.saveCollection();
@@ -154,7 +160,9 @@ padlock.DataMixin = (superClass) => {
         resetData() {
             localSource.clear();
             settingsSource.clear();
-            this.unloadData();
+            collection.clear();
+            settings.clear();
+            localSource.password = settingsSource.password = "";
             this.dispatch("data-reset");
         }
 

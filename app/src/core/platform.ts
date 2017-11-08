@@ -147,6 +147,7 @@ export async function getPlatformName(): Promise<string> {
             linux: "Linux"
         }[platform] || platform;
     } else if (isCordova()) {
+        await cordovaReady;
         return device.platform;
     } else if (isChromeApp()) {
         const info = await new Promise<{os: string}>((r) => chrome.runtime.getPlatformInfo(r));

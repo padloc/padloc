@@ -195,10 +195,11 @@ export class CloudSource extends AjaxSource {
         return req;
     }
 
-    async authenticate(email: string, create = false, authType = "api"): Promise<CloudAuthToken> {
+    async authenticate(email: string, create = false, authType = "api", redirect = ""): Promise<CloudAuthToken> {
         const params = new URLSearchParams();
         params.set("email", email);
         params.set("type", authType);
+        params.set("redirect", redirect);
 
         const req = await this.request(
             create ? "POST" : "PUT",
@@ -216,19 +217,19 @@ export class CloudSource extends AjaxSource {
         return authToken;
     }
 
-    async requestAuthToken(email: string, create = false): Promise<CloudAuthToken> {
-        const authToken = await this.authenticate(email, create, "api");
+    async requestAuthToken(email: string, create = false, redirect = ""): Promise<CloudAuthToken> {
+        const authToken = await this.authenticate(email, create, "api", redirect);
         this.settings.syncEmail = authToken.email;
         this.settings.syncToken = authToken.token;
         return authToken;
     }
 
-    async getLoginUrl() {
+    async getLoginUrl(redirect: string) {
         if (!this.settings.syncConnected) {
             throw new CloudError("invalid_auth_token", "Need to be authenticated to get a login link.");
         }
 
-        const authToken = await this.authenticate(this.settings.syncEmail, false, "web");
+        const authToken = await this.authenticate(this.settings.syncEmail, false, "web", redirect);
         return authToken.actUrl;
     }
 

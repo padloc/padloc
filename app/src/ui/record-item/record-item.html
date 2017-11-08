@@ -32,7 +32,7 @@
             }
 
             .name {
-                padding-left: 15px;
+                padding-left: 10px;
                 flex: 1;
                 @apply --ellipsis;
             }
@@ -70,7 +70,8 @@
                 content: "\f00c\ ";
             }
 
-            :host(:not(.touch)) .field:hover .field-label, :host(:not(.touch)) .field:hover .field-value {
+            :host(:not(.touch):not([multi-select])) .field:hover .field-label,
+            :host(:not(.touch):not([multi-select])) .field:hover .field-value {
                 transform: translateY(-100%);
             }
 
@@ -85,21 +86,22 @@
             }
 
             .category {
-                font-size: 12px;
+                font-size: 13px;
                 max-width: 80px;
-                border: solid 1px;
-                border-radius: 4px;
-                padding: 2px 4px;
-                margin: 0 15px;
+                border-radius: 6px;
+                padding: 5px 8px;
+                margin: 0 12px;
                 line-height: normal;
                 font-weight: bold;
+                @apply --shade-2;
             }
-
+/*
             .category::before {
                 font-family: "FontAwesome";
                 content: "\f02b\ ";
                 font-size: 90%;
             }
+*/
 
             .fields-placeholder {
                 opacity: 0.5;
@@ -115,7 +117,22 @@
                 transform-origin: 0 0;
             }
 
-            :host([selected]), :host([selected]) .copied-message {
+            .multi-select-icon {
+                border-radius: 0 35px 35px 0;
+                font-size: 80%;
+                width: 30px;
+                height: 30px;
+                margin-left: -2px;
+                @apply --shade-2;
+                /* color: var(--shade-2-color); */
+                color: var(--color-background);
+            }
+
+            .multi-select-icon:hover {
+                @apply --shade-3;
+            }
+
+            :host(:not([multi-select])[selected]), :host(:not([multi-select])[selected]) .copied-message {
                 color: var(--color-background);
             }
 
@@ -124,14 +141,20 @@
                 color: #4ca8d9;
             }
 
-            :host([selected]) .slider {
+            :host(:not([multi-select])[selected]) .slider {
                 transform: scale(1, 1);
+            }
+
+            :host([multi-select][selected]) .multi-select-icon {
+                color: var(--color-background);
+                background: var(--color-highlight);
             }
         </style>
 
         <div class="slider"></div>
 
         <div class="header">
+            <pl-icon icon="check" class="multi-select-icon" on-click="_selectIconClicked"></pl-icon>
             <div class="name">[[ record.name ]]</div>
             <div class="category ellipsis"
                 hidden$="[[ !_isSet(record.category) ]]"
@@ -177,6 +200,11 @@ class RecordItem extends applyMixins(
     static get is() { return "pl-record-item"; }
 
     static get properties() { return {
+        multiSelect: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
         record: Object
     }; }
 
@@ -200,12 +228,16 @@ class RecordItem extends applyMixins(
     }
 
     _copyField(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        setClipboard(e.model.item.value);
-        const field = this.root.querySelectorAll(".field")[e.model.index];
-        field.classList.add("copied");
-        setTimeout(() => field.classList.remove("copied"), 1000);
+        if (!this.multiSelect) {
+            e.stopPropagation();
+            e.preventDefault();
+            setClipboard(e.model.item.value);
+            const field = this.root.querySelectorAll(".field")[e.model.index];
+            field.classList.add("copied");
+            this.record.lastUsed = new Date();
+            this.saveCollection();
+            setTimeout(() => field.classList.remove("copied"), 1000);
+        }
     }
 
     _fieldLabel(value) {
@@ -221,13 +253,19 @@ class RecordItem extends applyMixins(
     }
 
     _categoryClicked(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        this.dispatchEvent(new CustomEvent("search-category", { detail: this.record.category }));
+        if (!this.multiSelect) {
+            e.stopPropagation();
+            e.preventDefault();
+            this.dispatchEvent(new CustomEvent("search-category", { detail: this.record.category }));
+        }
     }
 
     _value(val, peekValues) {
         return peekValues ? val : $l("Click To Copy");
+    }
+
+    _selectIconClicked() {
+        this.dispatchEvent(new CustomEvent("multi-select", { detail: this.record }));
     }
 }
 

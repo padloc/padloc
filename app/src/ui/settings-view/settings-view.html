@@ -3,6 +3,7 @@
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
+<link rel="import" href="../export/export.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../slider/slider.html">
@@ -107,16 +108,7 @@
 
             <section class="tiles">
                 <div class="section-header">[[ $l("Export") ]]</div>
-                <div class="section-row tiles">
-                    <div class="section-row-label">[[ $l("As CSV") ]]</div>
-                    <pl-icon icon="copy" class="tap" on-click="_copyCSV"></pl-icon>
-                    <pl-icon icon="download" class="tap" on-click="_downloadCSV" hidden$="[[ _isMobile() ]]"></pl-icon>
-                </div>
-                <div class="section-row tiles">
-                    <div class="section-row-label">[[ $l("As Encrypted File") ]]</div>
-                    <pl-icon icon="copy" class="tap" on-click="_copyEncrypted"></pl-icon>
-                    <pl-icon icon="download" class="tap" on-click="_downloadEncrypted" hidden$="[[ _isMobile() ]]"></pl-icon>
-                </div>
+                <pl-export records="[[ collection.records ]]"></pl-export>
             </section>
 
             <section class="tiles">
@@ -162,14 +154,7 @@
     </template>
 
     <script>
-/* global zxcvbn */
 (() => {
-
-const exportCSVWarning = $l(
-    "WARNING: Exporting to CSV format will save your data without encyryption of any " +
-    "kind which means it can be read by anyone. We strongly recommend exporting your data as " +
-    "a secure, encrypted file, instead! Are you sure you want to proceed?"
-);
 
 const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
@@ -256,90 +241,6 @@ class SettingsView extends applyMixins(
                 }
 
                 return this.resetData();
-            });
-    }
-
-    _downloadCSV() {
-        this.confirm(exportCSVWarning, $l("Download"), $l("Cancel"))
-            .then((confirm) => {
-                if (confirm) {
-                    setTimeout(() => {
-                        const date = new Date().toISOString().substr(0, 10);
-                        const fileName = `padlock-export-${date}.csv`;
-                        const csv = padlock.exp.toCSV(this.collection.records);
-                        const a = document.createElement("a");
-                        a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
-                        a.download = fileName;
-                        a.click();
-                        this.dispatch("data-exported");
-                    }, 500);
-                }
-            });
-    }
-
-    _copyCSV() {
-        this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"))
-            .then((confirm) => {
-                if (confirm) {
-                    padlock.platform.setClipboard(padlock.exp.toCSV(this.collection.records))
-                        .then(() => this.alert($l("Your data has successfully been copied to the system " +
-                            "clipboard. You can now paste it into the spreadsheet program of your choice.")));
-                    this.dispatch("data-exported");
-                }
-            });
-    }
-
-    _getEncryptedData() {
-        return this.prompt($l("Please choose a password to protect your data. This may be the same as " +
-            "your master password or something else, but make sure it is sufficiently strong!"),
-        $l("Enter Password"), "password", $l("Confirm"), $l("Cancel"))
-            .then((pwd) => {
-                if (!pwd) {
-                    if (pwd === "") {
-                        this.alert($l("Please enter a password!"));
-                    }
-                    return Promise.reject();
-                }
-                if (zxcvbn(pwd).score < 2) {
-                    return this.confirm($l(
-                        "WARNING: The password you entered is weak which makes it easier for " +
-                        "attackers to break the encryption used to protect your data. Try to use a longer " +
-                        "password or include a variation of uppercase, lowercase and special characters as " +
-                        "well as numbers."
-                    ), $l("Use Anyway"), $l("Choose Different Password")).then((confirm) => {
-                        if (!confirm) {
-                            return Promise.reject();
-                        }
-
-                        return padlock.exp.toPadlock(this.collection.records, pwd);
-                    });
-                } else {
-                    return padlock.exp.toPadlock(this.collection.records, pwd);
-                }
-            });
-    }
-
-    _downloadEncrypted() {
-        this._getEncryptedData()
-            .then((data) => {
-                const a = document.createElement("a");
-                const date = new Date().toISOString().substr(0, 10);
-                const fileName = `padlock-export-${date}.pls`;
-                a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
-                a.download = fileName;
-                setTimeout(() => {
-                    a.click();
-                    this.dispatch("data-exported");
-                }, 500);
-            });
-    }
-
-    _copyEncrypted() {
-        this._getEncryptedData()
-            .then((data) => {
-                padlock.platform.setClipboard(data)
-                    .then(() => this.alert($l("Your data has successfully been copied to the system clipboard.")));
-                this.dispatch("data-exported");
             });
     }
 

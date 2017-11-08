@@ -1,6 +1,6 @@
 {
   "name": "padlock",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "A minimalist password manager",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
@@ -24,7 +24,7 @@
     "core-js": "^2.4.1",
     "crisper": "^2.1.1",
     "electron": "^1.6.10",
-    "electron-builder": "^19.37.2",
+    "electron-builder": "^19.45.0",
     "eslint": "^4.0.0",
     "eslint-plugin-html": "^3.0.0",
     "estraverse": "^4.2.0",
@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "electron-store": "^1.1.0",
-    "electron-updater": "^2.13.0",
+    "electron-updater": "^2.16.1",
     "uuid": "^3.1.0",
     "yargs": "^4.8.1"
   },

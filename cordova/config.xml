@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.maklesoft.padlock" version="2.2.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.maklesoft.padlock" version="2.3.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Padlock</name>
     <description>
     </description>
@@ -45,22 +45,25 @@
     <platform name="ios">
         <preference name="Fullscreen" value="true" />
         <preference name="deployment-target" value="10.0" />
-        <icon height="120" src="res/ios/icon/app-icon-120.png" width="120" />
-        <icon height="180" src="res/ios/icon/app-icon-180.png" width="180" />
-        <icon height="76" src="res/ios/icon/app-icon-76.png" width="76" />
-        <icon height="152" src="res/ios/icon/app-icon-152.png" width="152" />
-        <icon height="40" src="res/ios/icon/app-icon-40.png" width="40" />
-        <icon height="80" src="res/ios/icon/app-icon-80.png" width="80" />
-        <icon height="57" src="res/ios/icon/app-icon-57.png" width="57" />
-        <icon height="114" src="res/ios/icon/app-icon-114.png" width="114" />
-        <icon height="72" src="res/ios/icon/app-icon-72.png" width="72" />
-        <icon height="144" src="res/ios/icon/app-icon-144.png" width="144" />
+        <icon height="20" src="res/ios/icon/app-icon-20.png" width="20" />
         <icon height="29" src="res/ios/icon/app-icon-29.png" width="29" />
-        <icon height="58" src="res/ios/icon/app-icon-58.png" width="58" />
-        <icon height="87" src="res/ios/icon/app-icon-87.png" width="87" />
+        <icon height="40" src="res/ios/icon/app-icon-40.png" width="40" />
         <icon height="50" src="res/ios/icon/app-icon-50.png" width="50" />
+        <icon height="57" src="res/ios/icon/app-icon-57.png" width="57" />
+        <icon height="58" src="res/ios/icon/app-icon-58.png" width="58" />
+        <icon height="60" src="res/ios/icon/app-icon-60.png" width="60" />
+        <icon height="72" src="res/ios/icon/app-icon-72.png" width="72" />
+        <icon height="76" src="res/ios/icon/app-icon-76.png" width="76" />
+        <icon height="80" src="res/ios/icon/app-icon-80.png" width="80" />
+        <icon height="87" src="res/ios/icon/app-icon-87.png" width="87" />
         <icon height="100" src="res/ios/icon/app-icon-100.png" width="100" />
+        <icon height="114" src="res/ios/icon/app-icon-114.png" width="114" />
+        <icon height="120" src="res/ios/icon/app-icon-120.png" width="120" />
+        <icon height="144" src="res/ios/icon/app-icon-144.png" width="144" />
+        <icon height="152" src="res/ios/icon/app-icon-152.png" width="152" />
         <icon height="167" src="res/ios/icon/app-icon-167.png" width="167" />
+        <icon height="180" src="res/ios/icon/app-icon-180.png" width="180" />
+        <icon height="1024" src="res/ios/icon/app-icon-1024.jpg" width="1024" />
         <splash src="res/ios/splash/Default@2x~universal~anyany.png" />
         <splash height="480" src="res/ios/splash/splash-320x480.png" width="320" />
         <splash height="960" src="res/ios/splash/splash-640x960.png" width="640" />
@@ -95,8 +98,8 @@
             </array>
         </config-file>
     </platform>
-    <engine name="ios" spec="^4.5.2" />
     <engine name="android" spec="^6.2.3" />
+    <engine name="ios" spec="^4.5.3" />
     <plugin name="cordova-plugin-app-version" spec="~0.1.9" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
     <plugin name="cordova-plugin-customurlscheme" spec="~4.2.0">

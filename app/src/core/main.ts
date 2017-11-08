@@ -8,6 +8,7 @@ import * as exp from "./export";
 import * as platform from "./platform";
 import * as file from "./file";
 import * as messages from "./messages";
+import * as stats from "./stats";
 
 export {
     util,
@@ -19,5 +20,6 @@ export {
     exp,
     platform,
     file,
-    messages
+    messages,
+    stats
 }

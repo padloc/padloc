@@ -1,7 +1,9 @@
+<link rel="import" href="./analytics.html">
 <link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../cloud-view/cloud-view.html">
+<link rel="import" href="../data/data.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../list-view/list-view.html">
@@ -123,7 +125,7 @@
 (() => {
 
 const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin,
-    SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, BaseElement } = padlock;
+    SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 
 const cordovaReady = new Promise((resolve) => {
@@ -139,7 +141,8 @@ class App extends applyMixins(
     DialogMixin,
     MessagesMixin,
     NotificationMixin,
-    HintsMixin
+    HintsMixin,
+    AnalyticsMixin
 ) {
 
     static get is() { return "pl-app"; }
@@ -192,11 +195,12 @@ class App extends applyMixins(
 
     dataInitialized() {
         if (this.settings.syncEmail) {
-            this.confirm($l("Would you like to pair this device with Padlock Cloud now?"), $l("Yes"), $l("Maybe Later"))
-                .then((confirm) => {
-                    if (confirm) {
-                        this._currentView = "cloudView";
-                        this.$.cloudView.connect();
+            padlock.stats.set({ pairingSource: "Setup" });
+            this.connectCloud(this.settings.syncEmail)
+                .then(() => this.notify($l("Activation link sent. Check your email!"), "info", 3000))
+                .then((clicked) => {
+                    if (clicked) {
+                        this._openCloudView();
                     }
                 });
         }
@@ -229,6 +233,8 @@ class App extends applyMixins(
                 this.$.recordView.finishEditing();
                 this.$.recordView.record = this._selectedRecord;
                 this._currentView = "recordView";
+                this._selectedRecord.lastUsed = new Date();
+                this.saveCollection();
             } else {
                 if (this._currentView == "recordView") {
                     this._currentView = "placeholderView";

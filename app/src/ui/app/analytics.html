@@ -1,0 +1,191 @@
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../data/data.html">
+
+<script>
+(() => {
+
+const { CloudSource } = padlock.source;
+const { DataMixin } = padlock;
+const { getAppVersion } = padlock.platform;
+
+const cloudSource = new CloudSource(DataMixin.settings);
+
+let trackingID = "";
+
+function setTrackingID(id) {
+    trackingID = id;
+    return padlock.stats.set({ trackingID: id });
+}
+
+function track(event, props) {
+    // Don't track events if user is using a custom padlock cloud instance
+    if (DataMixin.settings.syncCustomHost) {
+        return Promise.resolve();
+    }
+
+    const data = {
+        event: event,
+        props: props || {}
+    };
+
+    if (trackingID) {
+        data.trackingID = trackingID;
+    }
+
+    return padlock.stats.get()
+        .then((stats) => {
+            Object.assign(data.props, {
+                "First Launch": new Date(stats.firstLaunch).toISOString(),
+                "Launch Count": stats.launchCount,
+                "Custom Server": stats.syncCustomHost || false,
+                "Last Sync": new Date(stats.lastSync).toISOString(),
+            });
+
+            if (stats.lastAskedFeedback) {
+                Object.assign(data.props, {
+                    "Last Rated": new Date(stats.lastAskedFeedback).toISOString(),
+                    "Rated Version": stats.lastRatedVersion,
+                    "Rating": stats.lastRating
+                });
+            }
+
+            if (stats.lastReviewed) {
+                data.props["Last Reviewed"] = new Date(stats.lastReviewed).toISOString();
+            }
+        })
+        .then(() => cloudSource.request(
+            "POST",
+            "https://cloud.padlock.io/track/",
+            JSON.stringify(data)
+        ))
+        .then((r) => {
+            const res = JSON.parse(r.responseText);
+            return setTrackingID(res.trackingID);
+        });
+}
+
+const ready = Promise.all([
+    padlock.stats.get(),
+    getAppVersion()
+])
+    .then(([stats, version]) => {
+        trackingID = stats.trackingID;
+        const launchCount = typeof stats.launchCount === "number" ? stats.launchCount + 1 : 1;
+        const isFirstLaunch = !stats.firstLaunch;
+        const firstLaunch = stats.firstLaunch || new Date().getTime();
+
+        if (isFirstLaunch) {
+            track("Install");
+        } else if (stats.lastVersion !== version) {
+            track("Update", { "From Version": stats.lastVersion });
+        }
+
+        return padlock.stats.set({
+            firstLaunch: firstLaunch,
+            lastLaunch: new Date().getTime(),
+            launchCount: launchCount,
+            lastVersion: version
+        });
+    });
+
+padlock.AnalyticsMixin = (superClass) => {
+
+    return class AnalyticsMixin extends superClass {
+
+        constructor() {
+            super();
+
+            this.listen("data-exported", () => padlock.stats.set({ lastExport: new Date().getTime() }));
+
+            this.listen("settings-changed", () => {
+                padlock.stats.set({ syncCustomHost: this.settings.syncCustomHost });
+            });
+
+            this.listen("data-initialized", () => {
+                track("Setup", {
+                    "With Email": !!this.settings.syncEmail
+                });
+            });
+
+            this.listen("data-loaded", () => track("Unlock"));
+
+            this.listen("data-unloaded", () => track("Lock"));
+
+            this.listen("data-reset", () => {
+                track("Reset Local Data")
+                    .then(() => setTrackingID(""));
+            });
+
+            this.listen("sync-connect-start", () => {
+                padlock.stats.get().then((stats) => {
+                    track("Start Pairing", {
+                        "Source": stats.pairingSource
+                    });
+                    padlock.stats.set({ startedPairing: new Date().getTime() });
+                });
+            });
+
+            this.listen("sync-connect-success", () => {
+                return padlock.stats.get()
+                    .then((stats) => {
+                        track("Finish Pairing", {
+                            "Success": true,
+                            "Source": stats.pairingSource,
+                            "$duration": (new Date().getTime() - stats.startedPairing) / 1000
+                        });
+                    });
+            });
+
+            this.listen("sync-connect-cancel", () => {
+                return padlock.stats.get()
+                    .then((stats) => {
+                        track("Finish Pairing", {
+                            "Success": false,
+                            "Canceled": true,
+                            "Source": stats.pairingSource,
+                            "$duration": (new Date().getTime() - stats.startedPairing) / 1000
+                        });
+                    });
+            });
+
+            this.listen("sync-disconnect", () => track("Unpair").then(() => setTrackingID("")));
+
+            let startedSync;
+            this.listen("sync-start", () => startedSync = new Date().getTime());
+
+            this.listen("sync-success", (e) => {
+                padlock.stats.set({ lastSync: new Date().getTime() })
+                    .then(() => track("Synchronize", {
+                        "Success": true,
+                        "Auto Sync": e.detail.auto,
+                        "$duration": (new Date().getTime() - startedSync) / 1000
+                    }));
+            });
+
+            this.listen("sync-fail", (e) => track("Synchronize", {
+                "Success": false,
+                "Auto Sync": e.detail.auto,
+                "Error Code": e.detail.error.code,
+                "$duration": (new Date().getTime() - startedSync) / 1000
+            }));
+        }
+
+        connectedCallback() {
+            super.connectedCallback();
+            Promise.all([
+                this.hasData(),
+                ready
+            ]).then(([hasData]) => track("Launch", {
+                "Clean Launch": !hasData
+            }));
+        }
+
+        track(event, props) {
+            track(event, props);
+        }
+
+    };
+};
+
+})();
+</script>
