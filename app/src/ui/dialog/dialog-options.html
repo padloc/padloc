@@ -8,7 +8,7 @@
     <template>
         <style include="shared"></style>
 
-        <pl-dialog open="{{ open }}" prevent-dismiss$="[[ preventDismiss ]]">
+        <pl-dialog open="{{ open }}" prevent-dismiss="[[ preventDismiss ]]">
             <template is="dom-if" if="[[ _hasMessage(message) ]]" restamp>
                 <div class="message tiles-1">[[ message ]]</div>
             </template>
