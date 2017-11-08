@@ -42,7 +42,7 @@ function track(event, props) {
                 "Custom Server": stats.syncCustomHost || false,
             });
 
-            if (stats.lastSynced) {
+            if (stats.lastSync) {
                 data.props["Last Sync"] = new Date(stats.lastSync);
             }
 
