@@ -38,8 +38,11 @@ function track(event, props) {
                 "First Launch": new Date(stats.firstLaunch).toISOString(),
                 "Launch Count": stats.launchCount,
                 "Custom Server": stats.syncCustomHost || false,
-                "Last Sync": new Date(stats.lastSync).toISOString(),
             });
+
+            if (stats.lastSynced) {
+                data.props["Last Sync"] = new Date(stats.lastSync);
+            }
 
             if (stats.lastAskedFeedback) {
                 Object.assign(data.props, {
