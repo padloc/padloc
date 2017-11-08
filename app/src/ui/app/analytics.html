@@ -9,6 +9,7 @@ const { DataMixin } = padlock;
 const { getAppVersion } = padlock.platform;
 
 const cloudSource = new CloudSource(DataMixin.settings);
+const startedLoading = new Date().getTime();
 
 let trackingID = "";
 
@@ -17,6 +18,7 @@ function setTrackingID(id) {
     return padlock.stats.set({ trackingID: id });
 }
 
+let lastTrack = Promise.resolve();
 function track(event, props) {
     // Don't track events if user is using a custom padlock cloud instance
     if (DataMixin.settings.syncCustomHost) {
@@ -32,10 +34,10 @@ function track(event, props) {
         data.trackingID = trackingID;
     }
 
-    return padlock.stats.get()
+    lastTrack = lastTrack.then(() => padlock.stats.get())
         .then((stats) => {
             Object.assign(data.props, {
-                "First Launch": new Date(stats.firstLaunch).toISOString(),
+                "First Launch": stats.firstLaunch && new Date(stats.firstLaunch).toISOString(),
                 "Launch Count": stats.launchCount,
                 "Custom Server": stats.syncCustomHost || false,
             });
@@ -179,7 +181,8 @@ padlock.AnalyticsMixin = (superClass) => {
                 this.hasData(),
                 ready
             ]).then(([hasData]) => track("Launch", {
-                "Clean Launch": !hasData
+                "Clean Launch": !hasData,
+                "$duration": (new Date().getTime() - startedLoading) / 1000
             }));
         }
 
