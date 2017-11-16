@@ -3,7 +3,7 @@
 
 const gulp = require("gulp");
 const { argv } = require("yargs");
-const { buildChrome, buildElectron, compile } = require("./lib/build");
+const { buildChrome, buildElectron, compile, buildDashboard } = require("./lib/build");
 const http = require("http");
 const st = require("st");
 const { updateLanguageFiles, buildTranslationsFile } = require("./lib/locale");
@@ -46,6 +46,11 @@ gulp.task("update-langfiles", () => {
 gulp.task("build-transfile", () => {
     return buildTranslationsFile("resources/translations/",
         "app/src/ui/locale/translations.js", supportedLanguages);
+});
+
+gulp.task("build-dashboard", () => {
+    const { dest, watch } = argv;
+    return buildDashboard(dest, watch);
 });
 
 gulp.task("default", ["compile", "serve"]);
