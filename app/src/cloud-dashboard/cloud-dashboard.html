@@ -1,0 +1,407 @@
+<script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+<script src="https://js.stripe.com/v3/"></script>
+
+<link rel="import" href="../styles/shared.html">
+<link rel="import" href="../ui/animation/animation.html">
+<link rel="import" href="../ui/base/base.html">
+<link rel="import" href="../ui/dialog/dialog-mixin.html">
+<link rel="import" href="../ui/icon/icon.html">
+<link rel="import" href="../ui/input/input.html">
+<link rel="import" href="../ui/loading-button/loading-button.html">
+<link rel="import" href="../ui/locale/locale.html">
+<link rel="import" href="../ui/notification/notification.html">
+
+<dom-module id="pl-cloud-dashboard">
+
+    <template>
+
+        <style include="shared">
+            :host {
+                display: flex;
+                flex-direction: column;
+                @apply --fullbleed;
+                background: var(--color-background);
+            }
+            /*  */
+            /* header { */
+            /*     --color-background: var(--color-primary); */
+            /*     --color-foreground: var(--color-tertiary); */
+            /*     --color-highlight: var(--color-secondary); */
+            /*     color: var(--color-foreground); */
+            /*     background: var(--color-background); */
+            /*     text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0; */
+            /*     border-bottom: solid 2px rgb(64, 143, 184); */
+            /* } */
+
+            button {
+                display: block;
+                width: 100%;
+                box-sizing: border-box;
+                /* font-weight: bold; */
+            }
+
+            .account {
+                font-size: 130%;
+                font-weight: bold;
+                margin: 10px 0;
+                overflow-wrap: break-word;
+            }
+
+            .subscription-status {
+                font-size: 150%;
+                font-weight: bold;
+                margin: 10px 0;
+            }
+
+            .title.back {
+                padding: 0;
+                /* margin-left: -10px; */
+                font-size: var(--font-size-small);
+                flex: none;
+            }
+
+            .back-icon {
+                font-size: var(--font-size-small);
+                width: 30px;
+            }
+
+            .title.email {
+                text-align: right;
+                padding-right: 0;
+            }
+
+            .devices {
+                line-height: var(--row-height);
+            }
+
+            .devices .title {
+                text-align: center;
+                padding: 0 15px;
+                font-weight: bold;
+            }
+
+            .device {
+                display: flex;
+            }
+
+            .device-name {
+                flex: 1;
+                padding: 0 15px;
+                @apply --ellipsis;
+            }
+
+            .device > pl-icon {
+                width: var(--row-height);
+                height: var(--row-height);
+            }
+
+            #cardElement {
+                height: var(--row-height);
+                padding: 0 15px;
+            }
+        </style>
+
+
+        <header>
+            <pl-icon icon="backward" class="tap back-icon" on-click="_back"></pl-icon>
+            <div class="title back">Back To App</div>
+            <div class="title email">[[ account.Email ]]</div>
+            <a href="/logout/">
+                <pl-icon icon="logout" class="tap"></pl-icon>
+            </a>
+        </header>
+
+        <main>
+
+            <dom-if if="[[ _isSet(_subscription) ]]">
+
+                <template>
+
+                    <section class="tiles" hidden$="[[ !_isTrialing(_subscription.status) ]]">
+                        <div class="info">
+                            <div>[[ $l("Subscription Status:") ]]</div>
+                            <div class="subscription-status">[[ $l("Trialing") ]]</div>
+                            <div>[[ _trialInfoText() ]]</div>
+                        </div>
+                        <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
+                    </section>
+
+                    <section class="tiles" hidden$="[[ !_isInactive(_subscription.status) ]]">
+                        <div class="info">
+                            <div>[[ $l("Subscription Status:") ]]</div>
+                            <div class="subscription-status">[[ $l("Read-Only") ]]</div>
+                            <div>[[ _readOnlyInfoText() ]]</div>
+                        </div>
+                        <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
+                    </section>
+
+                    <section class="tiles" hidden$="[[ !_isActive(_subscription.status) ]]">
+                        <div class="info">
+                            <div>[[ $l("Subscription Status:") ]]</div>
+                            <div class="subscription-status">[[ $l("Active") ]]</div>
+                            <div>[[ connectedInfoText(settings.syncEmail) ]]</div>
+                        </div>
+                        <button class="tap" on-click="_changePaymentMethod">[[ $l("Payment Method") ]]: <strong>[[ _paymentMethod(subAccount) ]]</strong></button>
+                    </section>
+
+                </template>
+
+            </dom-if>
+
+            <div id="paymentRequestButton"></div>
+
+            <section class="devices">
+                <div class="title">[[ $l("{0} Paired Devices", _devices.length) ]]</div>
+
+                <div class="tiles tiles-2 device-list">
+                    <dom-repeat items="[[ _devices ]]">
+                        <template>
+                            <div class="device tiles">
+                                <div class="device-name">[[ item.Description ]]</div>
+                                <pl-icon icon="delete"></pl-icon>
+                            </div>
+                        </template>
+                    </dom-repeat>
+                </div>
+            </section>
+
+            <section class="tiles">
+                <div class="info">
+                    Want to start from scratch? Here you can reset the data stored in your Padlock Cloud
+                    account in case you lost your master password or simply want to start over.
+                </div>
+                <button class="tap" on-click="_resetData">[[ $l("Delete Data") ]]</button>
+            </section>
+
+        </main>
+
+        <pl-dialog id="deleteStoreDialog">
+            <form action="/deletestore/" method="POST">
+                <div class="message">[[ $l("Are you sure you want to delete all your data on Padlock Cloud? This action can not be undone! (Data stored locally on your devices will not be affected)") ]]</div>
+                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
+                <button class="tiles-2">[[ $l("Reset Data") ]]</button>
+            </form>
+        </pl-dialog>
+
+        <pl-dialog id="cardDialog">
+            <form action="/subscribe/" method="post" on-submit="_submitCard">
+                <div id="cardElement" class="card"></div>
+                <button class="tiles-2">Buy For 1 USD / Month</button>
+            </form>
+        </pl-dialog>
+
+    </template>
+
+    <script>
+/* global Stripe */
+(() => {
+
+const { LocaleMixin, DialogMixin, NotificationMixin, AnimationMixin, BaseElement } = padlock;
+const { applyMixins } = padlock.util;
+
+let stripe;
+
+class Dashboard extends applyMixins(
+    BaseElement,
+    LocaleMixin,
+    DialogMixin,
+    NotificationMixin,
+    AnimationMixin
+) {
+
+    static get is() { return "pl-cloud-dashboard"; }
+
+    static get properties() { return {
+        account: Object,
+        subAccount: Object,
+        action: String,
+        token: Object,
+        csrfToken: String,
+        stripePubKey: String,
+        _devices: {
+            type: Array,
+            computed: "_computeDevices(account.AuthTokens)"
+        },
+        _subscription: {
+            type: Object,
+            computed: "_computeSubscription(subAccount)"
+        },
+        _paymentSource: {
+            type: Object,
+            computed: "_computePaymentSource(subAccount)"
+        }
+    }; }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.animateCascade(this.root.querySelectorAll("section"), { delay: 500 });
+
+        this._setupPayment();
+
+        console.log(this.subAccount);
+
+        switch (this.action) {
+            case "paired":
+                setTimeout(() => {
+                    this.notify($l("{0} paired successfully!", this.token.Description), "info", 3000);
+                }, 500);
+                break;
+            case "revoked":
+                setTimeout(() => {
+                    this.notify($l("Access for {0} revoked successfully!", this.token.Description), "info", 3000);
+                }, 500);
+                break;
+            case "reset":
+                setTimeout(() => this.notify($l("Successfully reset data!"), "info", 3000), 500);
+                break;
+            case "subscribed":
+                setTimeout(() => this.notify($l("Subscription added successfully!"), "info", 3000), 500);
+                break;
+            case "unsubscribed":
+                setTimeout(() => this.notify($l("Subscription canceled successfully!"), "info", 3000), 500);
+                break;
+            case "subscribe":
+                this.alert("subscribe!");
+                break;
+        }
+    }
+
+    _setupPayment() {
+        stripe = Stripe(this.stripePubKey);
+        const elements = stripe.elements();
+        const card = this._cardElement = elements.create("card", {
+            style: {
+                base: {
+                    fontFamily: '"Clear Sans", "Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: "antialiased",
+                    fontSize: "18px",
+                    color: "#fff",
+                    iconColor: "#fff",
+                    lineHeight: "50px",
+                    textShadow: "rgba(0, 0, 0, 0.2) 0 2px 0",
+                    "::placeholder": {
+                        color: "rgba(255, 255, 255, 0.7)",
+                        textShadow: "rgba(0, 0, 0, 0.15) 0 2px 0"
+                    }
+                }
+            }
+        });
+
+        // Add an instance of the card Element into the `card-element` <div>
+        card.mount(this.$.cardElement);
+
+        // Handle real-time validation errors from the card Element.
+        card.addEventListener("change", function(event) {
+            var displayError = document.getElementById("card-errors");
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = "";
+            }
+        });
+
+        // const paymentRequest = stripe.paymentRequest({
+        //     country: "DE",
+        //     currency: "usd",
+        //     total: {
+        //         label: "Padlock Cloud Yearly Subscription",
+        //         amount: 1200,
+        //     }
+        // });
+        //
+        // // Check the availability of the Payment Request API first.
+        // paymentRequest.canMakePayment().then((result) => {
+        //     if (result) {
+        //         const prButton = elements.create("paymentRequestButton", {
+        //             paymentRequest: paymentRequest,
+        //             style: {
+        //                 paymentRequestButton: {
+        //                     type: "buy",
+        //                     theme: "light"
+        //                 }
+        //             }
+        //         });
+        //         prButton.mount(this.$.paymentRequestButton);
+        //     } else {
+        //         // document.getElementById('payment-request-button').style.display = 'none';
+        //     }
+        // });
+    }
+
+    _submitCard(event) {
+        event.preventDefault();
+
+        stripe.createToken(this._cardElement).then((result) => {
+            if (result.error) {
+                this.alert(result.error.message);
+            } else {
+                // Send the token to your server
+                console.log(result);
+            }
+        });
+    }
+
+    _computeDevices() {
+        return this.account.AuthTokens.filter((t) => t.Type === "api" && !t.Expired);
+    }
+
+    _computeSubscription() {
+        return this.subAccount && this.subAccount.Customer.subscriptions.data[0] || null;
+    }
+
+    _computePaymentSource() {
+        return this.subAccount && this.subAccount.Customer.sources.data[0] || null;
+    }
+
+    _paymentMethod() {
+        const s = this._paymentSource;
+        return `${s.brand} **** **** **** ${s.last4}`;
+    }
+
+    _isSet(val) {
+        return !!val;
+    }
+
+    _isTrialing() {
+        return this._subscription.status === "trialing";
+    }
+
+    _isInactive() {
+        return this._subscription.status === "inactive";
+    }
+
+    _isActive() {
+        return this._subscription.status === "active";
+    }
+
+    _trialInfoText() {
+        return $l(
+            "Your trial period ends in {0} days. After this period, your access will be read-only, " +
+            "which means you will be able to access your existing data on Padlock Cloud but you won't " +
+            "be able to upload any new data or synchronize changes between devices. " +
+            "Get a subscription now to get unlimited access to Padlock Cloud!",
+            this.remainingTrialDays
+        );
+    }
+
+    _readOnlyInfoText() {
+        return $l(
+            "You currently don't have an active subscription which means you can still access " +
+            "your existing data on Padlock Cloud but you won't be able to upload any new data " +
+            "or synchronize changes between devices. Get a subscription now to take full advantage " +
+            "of Padlock Cloud!"
+        );
+    }
+
+    _resetData() {
+        this.$.deleteStoreDialog.open = true;
+    }
+
+}
+
+window.customElements.define(Dashboard.is, Dashboard);
+
+})();
+    </script>
+
+</dom-module>
