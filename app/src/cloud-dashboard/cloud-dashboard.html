@@ -158,7 +158,7 @@
                         <template>
                             <div class="device tiles">
                                 <div class="device-name">[[ item.Description ]]</div>
-                                <pl-icon icon="delete"></pl-icon>
+                                <pl-icon icon="delete" on-click="_revokeDevice"></pl-icon>
                             </div>
                         </template>
                     </dom-repeat>
@@ -166,10 +166,7 @@
             </section>
 
             <section class="tiles">
-                <div class="info">
-                    Want to start from scratch? Here you can reset the data stored in your Padlock Cloud
-                    account in case you lost your master password or simply want to start over.
-                </div>
+                <div class="info">[[ _resetDataText() ]]</div>
                 <button class="tap" on-click="_resetData">[[ $l("Delete Data") ]]</button>
             </section>
 
@@ -177,9 +174,20 @@
 
         <pl-dialog id="deleteStoreDialog">
             <form action="/deletestore/" method="POST">
-                <div class="message">[[ $l("Are you sure you want to delete all your data on Padlock Cloud? This action can not be undone! (Data stored locally on your devices will not be affected)") ]]</div>
+                <div class="message">[[ _confirmResetDataText() ]]</div>
                 <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
-                <button class="tiles-2">[[ $l("Reset Data") ]]</button>
+                <button class="tap tiles-2">[[ $l("Reset Data") ]]</button>
+                <!-- <button class="tap tiles&#45;3">[[ $l("Cancel") ]]</button> -->
+            </form>
+        </pl-dialog>
+
+        <pl-dialog id="revokeDeviceDialog">
+            <form action="/revoke/" method="POST">
+                <div class="message">[[ _revokeDeviceMessage ]]</div>
+                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
+                <input type="hidden" name="id" value="[[ _revokedDeviceId ]]">
+                <button class="tap tiles-2">[[ $l("Revoke Access") ]]</button>
+                <!-- <button class="tap tiles&#45;3" >[[ $l("Cancel") ]]</button> -->
             </form>
         </pl-dialog>
 
@@ -393,8 +401,28 @@ class Dashboard extends applyMixins(
         );
     }
 
+    _resetDataText() {
+        return $l(
+            "Want to start from scratch? Here you can reset the data stored in your Padlock Cloud " +
+            "account in case you lost your master password or simply want to start over."
+        );
+    }
+
+    _confirmResetDataText() {
+        return $l(
+            "Are you sure you want to delete all your data on Padlock Cloud? " +
+            "This action can not be undone! (Data stored locally on your devices will not be affected)"
+        );
+    }
+
     _resetData() {
         this.$.deleteStoreDialog.open = true;
+    }
+
+    _revokeDevice(e) {
+        this._revokedDeviceId = e.model.item.Id;
+        this._revokeDeviceMessage = $l("Are you sure you want to revoke access for \"{0}\"?", e.model.item.Description);
+        this.$.revokeDeviceDialog.open = true;
     }
 
 }
