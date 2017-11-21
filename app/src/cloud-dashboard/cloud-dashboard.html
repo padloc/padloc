@@ -97,7 +97,8 @@
 
             #cardElement {
                 height: var(--row-height);
-                padding: 0 15px;
+                padding: 15px;
+                box-sizing: border-box;
             }
         </style>
 
@@ -113,7 +114,7 @@
 
         <main>
 
-            <dom-if if="[[ _isSet(_subscription) ]]">
+            <dom-if if="[[ _isSet(subAccount) ]]">
 
                 <template>
 
@@ -139,9 +140,10 @@
                         <div class="info">
                             <div>[[ $l("Subscription Status:") ]]</div>
                             <div class="subscription-status">[[ $l("Active") ]]</div>
-                            <div>[[ connectedInfoText(settings.syncEmail) ]]</div>
+                            <div>[[ $l("Payment Method") ]]: <strong>[[ _paymentMethod(subAccount) ]]</strong></div>
                         </div>
-                        <button class="tap" on-click="_changePaymentMethod">[[ $l("Payment Method") ]]: <strong>[[ _paymentMethod(subAccount) ]]</strong></button>
+                        <button class="tiles-2 tap" on-click="_changePaymentMethod">[[ $l("Change Payment Method") ]]</button>
+                        <button class="tiles-3 tap" on-click="_cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
                     </section>
 
                 </template>
@@ -177,7 +179,14 @@
                 <div class="message">[[ _confirmResetDataText() ]]</div>
                 <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
                 <button class="tap tiles-2">[[ $l("Reset Data") ]]</button>
-                <!-- <button class="tap tiles&#45;3">[[ $l("Cancel") ]]</button> -->
+            </form>
+        </pl-dialog>
+
+        <pl-dialog id="cancelSubscriptionDialog">
+            <form action="/unsubscribe/" method="POST">
+                <div class="message">[[ _cancelSubscriptionText() ]]</div>
+                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
+                <button class="tap tiles-2">[[ $l("Cancel Subscription") ]]</button>
             </form>
         </pl-dialog>
 
@@ -187,14 +196,16 @@
                 <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
                 <input type="hidden" name="id" value="[[ _revokedDeviceId ]]">
                 <button class="tap tiles-2">[[ $l("Revoke Access") ]]</button>
-                <!-- <button class="tap tiles&#45;3" >[[ $l("Cancel") ]]</button> -->
             </form>
         </pl-dialog>
 
         <pl-dialog id="cardDialog">
-            <form action="/subscribe/" method="post" on-submit="_submitCard">
-                <div id="cardElement" class="card"></div>
-                <button class="tiles-2">Buy For 1 USD / Month</button>
+            <form id="paymentForm" action="/subscribe/" method="post" on-submit="_submitCard">
+                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
+                <input type="hidden" name="stripeToken" value="[[ _paymentToken.id ]]">
+                <div class="message">[[ $l("Please enter your credit or debit card information") ]]</div>
+                <div id="cardElement" class="card tiles-2"></div>
+                <button class="tiles-3">[[ $l("Pay 12.00 USD") ]]</button>
             </form>
         </pl-dialog>
 
@@ -246,8 +257,6 @@ class Dashboard extends applyMixins(
 
         this._setupPayment();
 
-        console.log(this.subAccount);
-
         switch (this.action) {
             case "paired":
                 setTimeout(() => {
@@ -278,6 +287,7 @@ class Dashboard extends applyMixins(
         stripe = Stripe(this.stripePubKey);
         const elements = stripe.elements();
         const card = this._cardElement = elements.create("card", {
+            iconStyle: "solid",
             style: {
                 base: {
                     fontFamily: '"Clear Sans", "Helvetica Neue", Helvetica, sans-serif',
@@ -285,7 +295,6 @@ class Dashboard extends applyMixins(
                     fontSize: "18px",
                     color: "#fff",
                     iconColor: "#fff",
-                    lineHeight: "50px",
                     textShadow: "rgba(0, 0, 0, 0.2) 0 2px 0",
                     "::placeholder": {
                         color: "rgba(255, 255, 255, 0.7)",
@@ -299,14 +308,7 @@ class Dashboard extends applyMixins(
         card.mount(this.$.cardElement);
 
         // Handle real-time validation errors from the card Element.
-        card.addEventListener("change", function(event) {
-            var displayError = document.getElementById("card-errors");
-            if (event.error) {
-                displayError.textContent = event.error.message;
-            } else {
-                displayError.textContent = "";
-            }
-        });
+        card.addEventListener("change", (e) => this._cardError = e.error && e.error.message || "");
 
         // const paymentRequest = stripe.paymentRequest({
         //     country: "DE",
@@ -343,9 +345,10 @@ class Dashboard extends applyMixins(
             if (result.error) {
                 this.alert(result.error.message);
             } else {
-                // Send the token to your server
-                console.log(result);
+                this._paymentToken = result.token;
             }
+
+            this.$.paymentForm.submit();
         });
     }
 
@@ -375,7 +378,7 @@ class Dashboard extends applyMixins(
     }
 
     _isInactive() {
-        return this._subscription.status === "inactive";
+        return !this._isTrialing() && !this._isActive();
     }
 
     _isActive() {
@@ -415,6 +418,14 @@ class Dashboard extends applyMixins(
         );
     }
 
+    _cancelSubscriptionText() {
+        return $l(
+            "Are you sure you want to cancel your subscription? Without an active subscription your access " +
+            "will be read-only, which means you won't be able to upload any new data or synchronize changes " +
+            "between devices!"
+        );
+    }
+
     _resetData() {
         this.$.deleteStoreDialog.open = true;
     }
@@ -423,6 +434,18 @@ class Dashboard extends applyMixins(
         this._revokedDeviceId = e.model.item.Id;
         this._revokeDeviceMessage = $l("Are you sure you want to revoke access for \"{0}\"?", e.model.item.Description);
         this.$.revokeDeviceDialog.open = true;
+    }
+
+    _buySubscription() {
+        this.$.cardDialog.open = true;
+    }
+
+    _cancelSubscription() {
+        this.$.cancelSubscriptionDialog.open = true;
+    }
+
+    _changePaymentMethod() {
+        this.$.cardDialog.open = true;
     }
 
 }
