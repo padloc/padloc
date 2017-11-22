@@ -7,7 +7,6 @@
 <link rel="import" href="../ui/dialog/dialog-mixin.html">
 <link rel="import" href="../ui/icon/icon.html">
 <link rel="import" href="../ui/input/input.html">
-<link rel="import" href="../ui/loading-button/loading-button.html">
 <link rel="import" href="../ui/locale/locale.html">
 <link rel="import" href="../ui/notification/notification.html">
 
@@ -22,16 +21,6 @@
                 @apply --fullbleed;
                 background: var(--color-background);
             }
-            /*  */
-            /* header { */
-            /*     --color-background: var(--color-primary); */
-            /*     --color-foreground: var(--color-tertiary); */
-            /*     --color-highlight: var(--color-secondary); */
-            /*     color: var(--color-foreground); */
-            /*     background: var(--color-background); */
-            /*     text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0; */
-            /*     border-bottom: solid 2px rgb(64, 143, 184); */
-            /* } */
 
             button {
                 display: block;
@@ -53,20 +42,21 @@
                 margin: 10px 0;
             }
 
-            .title.back {
+            header .title.back {
                 padding: 0;
                 /* margin-left: -10px; */
                 font-size: var(--font-size-small);
                 flex: none;
             }
 
-            .back-icon {
+            header .back-icon {
                 font-size: var(--font-size-small);
                 width: 30px;
+                margin-right: -20px;
             }
 
             .title.email {
-                text-align: right;
+                text-align: center;
                 padding-right: 0;
             }
 
@@ -100,12 +90,21 @@
                 padding: 15px;
                 box-sizing: border-box;
             }
+
+            .payment-method {
+                padding-top: 15px;
+                padding-bottom: 5px;
+                font-weight: bold;
+            }
+
         </style>
 
 
         <header>
-            <pl-icon icon="backward" class="tap back-icon" on-click="_back"></pl-icon>
-            <div class="title back">Back To App</div>
+            <div class="tap" on-click="_back">
+                <pl-icon icon="backward" class="back-icon"></pl-icon>
+                <pl-icon icon="logo"></pl-icon>
+            </div>
             <div class="title email">[[ account.Email ]]</div>
             <a href="/logout/">
                 <pl-icon icon="logout" class="tap"></pl-icon>
@@ -133,14 +132,16 @@
                             <div class="subscription-status">[[ $l("Read-Only") ]]</div>
                             <div>[[ _readOnlyInfoText() ]]</div>
                         </div>
-                        <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
+                        <button class="tap" on-click="_buySubscription" hidden$="[[ _paymentRequestSupported ]]">[[ $l("Buy Subscription") ]]</button>
+                        <div id="paymentRequestButton" hidden$="[[ !_paymentRequestSupported ]]"></div>
                     </section>
 
                     <section class="tiles" hidden$="[[ !_isActive(_subscription.status) ]]">
                         <div class="info">
                             <div>[[ $l("Subscription Status:") ]]</div>
                             <div class="subscription-status">[[ $l("Active") ]]</div>
-                            <div>[[ $l("Payment Method") ]]: <strong>[[ _paymentMethod(subAccount) ]]</strong></div>
+                            <div>[[ $l("Payment Method") ]]:</div>
+                            <div class="payment-method">[[ _paymentMethod(subAccount) ]]</div>
                         </div>
                         <button class="tiles-2 tap" on-click="_changePaymentMethod">[[ $l("Change Payment Method") ]]</button>
                         <button class="tiles-3 tap" on-click="_cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
@@ -205,7 +206,7 @@
                 <input type="hidden" name="stripeToken" value="[[ _paymentToken.id ]]">
                 <div class="message">[[ $l("Please enter your credit or debit card information") ]]</div>
                 <div id="cardElement" class="card tiles-2"></div>
-                <button class="tiles-3">[[ $l("Pay 12.00 USD") ]]</button>
+                <button class="tiles-3">[[ _submitCardLabel ]]</button>
             </form>
         </pl-dialog>
 
@@ -437,6 +438,7 @@ class Dashboard extends applyMixins(
     }
 
     _buySubscription() {
+        this._submitCardLabel = $l("Pay 12.00 USD");
         this.$.cardDialog.open = true;
     }
 
@@ -445,6 +447,7 @@ class Dashboard extends applyMixins(
     }
 
     _changePaymentMethod() {
+        this._submitCardLabel = $l("Change Payment Method");
         this.$.cardDialog.open = true;
     }
 
