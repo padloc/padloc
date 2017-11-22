@@ -22,6 +22,10 @@
                 background: var(--color-background);
             }
 
+            :host:not([ready]) main {
+                opacity: 0;
+            }
+
             button {
                 display: block;
                 width: 100%;
@@ -254,7 +258,11 @@ class Dashboard extends applyMixins(
 
     connectedCallback() {
         super.connectedCallback();
-        this.animateCascade(this.root.querySelectorAll("section"), { delay: 500 });
+
+        setTimeout(() => {
+            this.animateCascade(this.root.querySelectorAll("section"));
+            this.setAttribute("ready", "");
+        }, 100);
 
         this._setupPayment();
 
@@ -281,6 +289,24 @@ class Dashboard extends applyMixins(
             case "subscribe":
                 this.alert("subscribe!");
                 break;
+        }
+
+        if (!localStorage.getItem("firstOpened")) {
+            localStorage.setItem("firstOpened", new Date().getTime());
+
+            this.choose($l(
+                "Welcome to your Padlock Cloud dashboard! This is where you can manage your " +
+                "Padlock Cloud account and see all your paired devices. You won't be able to access " +
+                "any of your actual data here, though, that can only be done from the Padlock app!"
+            ), [
+                $l("Got it!"),
+                $l("Download App")
+            ])
+                .then((choice) => {
+                    if (choice === 1) {
+                        window.open("https://padlock.io/downloads/", "_blank");
+                    }
+                });
         }
     }
 
