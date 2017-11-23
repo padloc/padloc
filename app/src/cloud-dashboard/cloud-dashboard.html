@@ -103,11 +103,11 @@
 
             .buy-subscription {
                 text-align: center;
-                padding: 25px;
+                padding: 20px;
             }
 
             .price {
-                margin-top: 10px;
+                margin: 10px 0;
                 font-size: 180%;
                 font-weight: bold;
             }
@@ -233,7 +233,7 @@
                 <input type="hidden" name="stripeToken" value="[[ _paymentToken.id ]]">
                 <input type="hidden" name="updating" value="[[ _paymentToken.id ]]">
                 <div class="buy-subscription tiles-1" hidden$="[[ _changingPaymentMethod ]]">
-                    <div><strong>[[ $l("Buy Subscription For") ]]</strong></div>
+                    <div><strong>[[ $l("Buy Subscription") ]]</strong></div>
                     <div class="price">[[ $l("{0}/month", "$1") ]]</div>
                     <div class="small">[[ $l("(billed annually)") ]]</div>
                 </div>
@@ -512,6 +512,11 @@ class Dashboard extends applyMixins(
         this._submitCardLabel = $l("Change Payment Method");
         this._changingPaymentMethod = true;
         this.$.cardDialog.open = true;
+    }
+
+    _back() {
+        setTimeout(() => window.location = "https://padlock.io/", 200);
+        window.location = "padlock://";
     }
 
 }
