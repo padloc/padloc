@@ -101,6 +101,16 @@
                 font-weight: bold;
             }
 
+            @media (min-width: 700px) {
+                section {
+                    width: 670px;
+                    margin: 15px auto;
+                    border-left: solid 1px rgba(0, 0, 0, 0.1);
+                    border-right: solid 1px rgba(0, 0, 0, 0.1);
+                    border-radius: 8px;
+                }
+            }
+
         </style>
 
 
@@ -286,8 +296,11 @@ class Dashboard extends applyMixins(
             case "unsubscribed":
                 setTimeout(() => this.notify($l("Subscription canceled successfully!"), "info", 3000), 500);
                 break;
+            case "payment-updated":
+                setTimeout(() => this.notify($l("Payment method updated successfully!"), "info", 3000), 500);
+                break;
             case "subscribe":
-                this.alert("subscribe!");
+                // this.alert("subscribe!");
                 break;
         }
 
