@@ -101,6 +101,21 @@
                 font-weight: bold;
             }
 
+            .buy-subscription {
+                text-align: center;
+                padding: 25px;
+            }
+
+            .price {
+                margin-top: 10px;
+                font-size: 180%;
+                font-weight: bold;
+            }
+
+            .small {
+                font-size: var(--font-size-small);
+            }
+
             @media (min-width: 700px) {
                 section {
                     width: 670px;
@@ -165,8 +180,6 @@
 
             </dom-if>
 
-            <div id="paymentRequestButton"></div>
-
             <section class="devices">
                 <div class="title">[[ $l("{0} Paired Devices", _devices.length) ]]</div>
 
@@ -218,9 +231,18 @@
             <form id="paymentForm" action="/subscribe/" method="post" on-submit="_submitCard">
                 <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
                 <input type="hidden" name="stripeToken" value="[[ _paymentToken.id ]]">
-                <div class="message">[[ $l("Please enter your credit or debit card information") ]]</div>
-                <div id="cardElement" class="card tiles-2"></div>
-                <button class="tiles-3">[[ _submitCardLabel ]]</button>
+                <input type="hidden" name="updating" value="[[ _paymentToken.id ]]">
+                <div class="buy-subscription tiles-1" hidden$="[[ _changingPaymentMethod ]]">
+                    <div><strong>[[ $l("Buy Subscription For") ]]</strong></div>
+                    <div class="price">[[ $l("{0}/month", "$1") ]]</div>
+                    <div class="small">[[ $l("(billed annually)") ]]</div>
+                </div>
+                <div class="message tiles-1" hidden$="[[ !_changingPaymentMethod ]]">
+                    <strong>[[ $l("Update Payment Method") ]]</strong>
+                </div>
+                <div class="message tiles-2 small">[[ $l("Please enter your credit or debit card information") ]]</div>
+                <div id="cardElement" class="card tiles-3"></div>
+                <button class="tiles-4">[[ _submitCardLabel ]]</button>
             </form>
         </pl-dialog>
 
@@ -414,7 +436,7 @@ class Dashboard extends applyMixins(
     }
 
     _isTrialing() {
-        return this._subscription.status === "trialing";
+        return this._subscription && this._subscription.status === "trialing";
     }
 
     _isInactive() {
@@ -422,7 +444,7 @@ class Dashboard extends applyMixins(
     }
 
     _isActive() {
-        return this._subscription.status === "active";
+        return this._subscription && this._subscription.status === "active";
     }
 
     _trialInfoText() {
@@ -478,6 +500,7 @@ class Dashboard extends applyMixins(
 
     _buySubscription() {
         this._submitCardLabel = $l("Pay 12.00 USD");
+        this._changingPaymentMethod = false;
         this.$.cardDialog.open = true;
     }
 
@@ -487,6 +510,7 @@ class Dashboard extends applyMixins(
 
     _changePaymentMethod() {
         this._submitCardLabel = $l("Change Payment Method");
+        this._changingPaymentMethod = true;
         this.$.cardDialog.open = true;
     }
 
