@@ -116,6 +116,33 @@
                 font-size: var(--font-size-small);
             }
 
+            .secure-payment {
+                display: block;
+                font-size: 12px;
+                padding: 5px;
+                text-align: center;
+                text-shadow: none;
+            }
+
+            .secure-payment::before {
+                font-family: "FontAwesome";
+                content: "\f023\ ";
+                vertical-align: middle;
+                position: relative;
+                top: 1px;
+                text-shadow: none;
+            }
+
+            .secure-payment > * {
+                vertical-align: middle;
+            }
+
+            .secure-payment > img {
+                height: 20px;
+                position: relative;
+                top: 1px;
+            }
+
             @media (min-width: 700px) {
                 section {
                     width: 670px;
@@ -240,9 +267,13 @@
                 <div class="message tiles-1" hidden$="[[ !_changingPaymentMethod ]]">
                     <strong>[[ $l("Update Payment Method") ]]</strong>
                 </div>
-                <div class="message tiles-2 small">[[ $l("Please enter your credit or debit card information") ]]</div>
+                <div class="message tiles-2 small">[[ $l("Please enter your credit or debit card information:") ]]</div>
                 <div id="cardElement" class="card tiles-3"></div>
                 <button class="tiles-4">[[ _submitCardLabel ]]</button>
+                <a href="https://stripe.com" target="_blank" class="secure-payment tiles-5">
+                    <span>[[ $l("Secure Payment - ") ]]</span>
+                    <img src="/static/img/powered_by_stripe.svg">
+                </a>
             </form>
         </pl-dialog>
 
@@ -529,7 +560,7 @@ class Dashboard extends applyMixins(
 
     _back() {
         setTimeout(() => window.location = "https://padlock.io/", 200);
-        window.location = "padlock://";
+        window.location = "padlock://?ref=dashboard";
     }
 
 }
