@@ -343,6 +343,19 @@ class Dashboard extends applyMixins(
                     }
                 });
         }
+
+        if (this.subAccount && this._isInactive()) {
+            this.confirm(
+                this._readOnlyInfoText(),
+                $l("Buy Subscription"),
+                $l("Continue In Read-Only Mode")
+            )
+                .then((confirmed) => {
+                    if (confirmed) {
+                        this._buySubscription();
+                    }
+                });
+        }
     }
 
     _setupPayment() {
