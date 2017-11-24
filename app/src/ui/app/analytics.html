@@ -67,6 +67,8 @@ function track(event, props) {
             const res = JSON.parse(r.responseText);
             return setTrackingID(res.trackingID);
         });
+
+    return lastTrack;
 }
 
 const ready = Promise.all([
