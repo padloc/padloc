@@ -223,6 +223,8 @@ app.on("ready", () => {
     createWindow();
     createApplicationMenu();
 
+    app.setAsDefaultProtocolClient("padlock");
+
     checkForUpdates();
 });
 
