@@ -35,6 +35,12 @@
                 overflow-wrap: break-word;
             }
 
+            .subscription-status {
+                font-size: 150%;
+                font-weight: bold;
+                margin: 10px 0;
+            }
+
             #emailInput {
                 text-align: center;
             }
@@ -71,7 +77,7 @@
         <header class="tiles">
             <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
             <div class="title">Padlock Cloud</div>
-            <pl-icon icon="refresh" class="tap" on-click="_refresh" spin$="[[ isSynching ]]"></pl-icon>
+            <pl-icon icon="refresh" class="tap" on-click="_refresh" spin$="[[ isSynching ]]" hidden$="[[ !settings.syncConnected ]]"></pl-icon>
         </header>
 
         <main>
@@ -94,18 +100,20 @@
 
             <section class="tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
-                    <strong>[[ $l("Your trial period ends in {0} days.", remainingTrialDays) ]]</strong> -
-                    [[ trialInfoText() ]]
+                    <div>[[ $l("Subscription Status:") ]]</div>
+                    <div class="subscription-status">[[ $l("Trialing ({0} days left)", remainingTrialDays) ]]</div>
+                    <div>[[ trialInfoText(remainingTrialDays) ]]</div>
                 </div>
-                <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
+                <button class="tap" on-click="_trialingBuySubscription">[[ $l("Buy Subscription") ]]</button>
             </section>
 
             <section class="tiles" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
-                    <strong>[[ $l("Read-Only") ]]</strong> -
-                    [[ readOnlyInfoText() ]]
+                    <div>[[ $l("Subscription Status:") ]]</div>
+                    <div class="subscription-status">[[ $l("Read-Only") ]]</div>
+                    <div>[[ readOnlyInfoText() ]]</div>
                 </div>
-                <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
+                <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Buy Subscription") ]]</button>
             </section>
 
             <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
@@ -120,13 +128,13 @@
                 <button class="tap" on-click="_disconnect">[[ $l("Unpair") ]]</button>
             </section>
 
-            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
+            <section class="tiles" disabled$="[[ !settings.syncConnected ]]">
                 <div class="info">[[ autoSyncInfoText() ]]</div>
                 <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]"
                     reverse class="tap" on-change="settingChanged"></pl-toggle-button>
             </section>
 
-            <section class="tiles">
+            <section class="tiles" disabled$="[[ settings.syncConnected ]]">
                 <div class="info">
                     [[ $l("By providing a custom URL you can synchronize your data with a server other than the official Padlock Cloud server.") ]]
                     <div class="warning">[[ $l("WARNING: This is only recommended for advanced users!") ]]</div>

@@ -109,6 +109,10 @@ padlock.SyncMixin = (superClass) => {
             return this.settings.syncConnected && s && s !== "active" && s !== "trialing";
         }
 
+        isActive() {
+            return this.settings.syncConnected && this.settings.syncSubStatus === "active";
+        }
+
         hasSyncToken() {
             return !!this.settings.syncToken;
         }
@@ -160,17 +164,19 @@ padlock.SyncMixin = (superClass) => {
 
         activationPendingText() {
             return $l(
-                "You are almost done connecting this device. An email was sent to {0}. Check your " +
-                "inbox and follow the instructions to complete the process!",
+                "Almost done! We send an email with a login link to {0}. Check your " +
+                "inbox and follow the link to complete the process!",
                 this.settings.syncEmail
             );
         }
 
         trialInfoText() {
             return $l(
-                "After this period, your access will be read-only, which means you will be able to access " +
-                "your existing data on Padlock Cloud but you won't be able to upload any new data or synchronize " +
-                "changes between devices. Get a subscription now to get unlimited access to Padlock Cloud!"
+                "Your trial period ends in {0} days. After this period, your access will be read-only, " +
+                "which means you will be able to access your existing data on Padlock Cloud but you won't " +
+                "be able to upload any new data or synchronize changes between devices. " +
+                "Get a subscription now to get unlimited access to Padlock Cloud!",
+                this.remainingTrialDays
             );
         }
 

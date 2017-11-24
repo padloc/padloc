@@ -203,7 +203,6 @@
                             <div>[[ _readOnlyInfoText() ]]</div>
                         </div>
                         <button class="tap" on-click="_buySubscription" hidden$="[[ _paymentRequestSupported ]]">[[ $l("Buy Subscription") ]]</button>
-                        <div id="paymentRequestButton" hidden$="[[ !_paymentRequestSupported ]]"></div>
                     </section>
 
                     <section class="tiles" hidden$="[[ !_isActive(_subscription.status) ]]">
