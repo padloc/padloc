@@ -7,6 +7,7 @@
 <link rel="import" href="../ui/dialog/dialog-mixin.html">
 <link rel="import" href="../ui/icon/icon.html">
 <link rel="import" href="../ui/input/input.html">
+<link rel="import" href="../ui/loading-button/loading-button.html">
 <link rel="import" href="../ui/locale/locale.html">
 <link rel="import" href="../ui/notification/notification.html">
 
@@ -143,6 +144,19 @@
                 top: 1px;
             }
 
+            .card-hint {
+                font-size: var(--font-size-small);
+            }
+
+            .card-hint:not([error=""]) {
+                color: #eb1c26;
+                text-shadow: none;
+            }
+
+            #submitButton {
+                font-weight: bold;
+            }
+
             @media (min-width: 700px) {
                 section {
                     width: 670px;
@@ -264,12 +278,9 @@
                     <div class="price">[[ $l("{0}/month", "$1") ]]</div>
                     <div class="small">[[ $l("(billed annually)") ]]</div>
                 </div>
-                <div class="message tiles-1" hidden$="[[ !_changingPaymentMethod ]]">
-                    <strong>[[ $l("Update Payment Method") ]]</strong>
-                </div>
-                <div class="message tiles-2 small">[[ $l("Please enter your credit or debit card information:") ]]</div>
+                <div class="message tiles-2 card-hint" error$="[[ _cardError ]]">[[ _cardHint(_cardError) ]]</div>
                 <div id="cardElement" class="card tiles-3"></div>
-                <button class="tiles-4">[[ _submitCardLabel ]]</button>
+                <pl-loading-button class="tiles-4 tap" id="submitButton" on-click="_submitCard" label="[[ _submitCardLabel ]]"></pl-loading-button>
                 <a href="https://stripe.com" target="_blank" class="secure-payment tiles-5">
                     <span>[[ $l("Secure Payment - ") ]]</span>
                     <img src="/static/img/powered_by_stripe.svg">
@@ -305,6 +316,10 @@ class Dashboard extends applyMixins(
         token: Object,
         csrfToken: String,
         stripePubKey: String,
+        _cardError: {
+            type: String,
+            value: ""
+        },
         _devices: {
             type: Array,
             computed: "_computeDevices(account.AuthTokens)"
@@ -353,7 +368,9 @@ class Dashboard extends applyMixins(
                 setTimeout(() => this.notify($l("Payment method updated successfully!"), "info", 3000), 500);
                 break;
             case "subscribe":
-                // this.alert("subscribe!");
+                if (!this._isActive()) {
+                    this._buySubscription();
+                }
                 break;
         }
 
@@ -375,7 +392,7 @@ class Dashboard extends applyMixins(
                 });
         }
 
-        if (this.subAccount && this._isInactive()) {
+        if (this.subAccount && this._isInactive() && this.action !== "subscribe") {
             this.confirm(
                 this._readOnlyInfoText(),
                 $l("Buy Subscription"),
@@ -406,6 +423,9 @@ class Dashboard extends applyMixins(
                         color: "rgba(255, 255, 255, 0.7)",
                         textShadow: "rgba(0, 0, 0, 0.15) 0 2px 0"
                     }
+                },
+                invalid: {
+                    textShadow: "none"
                 }
             }
         });
@@ -415,46 +435,24 @@ class Dashboard extends applyMixins(
 
         // Handle real-time validation errors from the card Element.
         card.addEventListener("change", (e) => this._cardError = e.error && e.error.message || "");
-
-        // const paymentRequest = stripe.paymentRequest({
-        //     country: "DE",
-        //     currency: "usd",
-        //     total: {
-        //         label: "Padlock Cloud Yearly Subscription",
-        //         amount: 1200,
-        //     }
-        // });
-        //
-        // // Check the availability of the Payment Request API first.
-        // paymentRequest.canMakePayment().then((result) => {
-        //     if (result) {
-        //         const prButton = elements.create("paymentRequestButton", {
-        //             paymentRequest: paymentRequest,
-        //             style: {
-        //                 paymentRequestButton: {
-        //                     type: "buy",
-        //                     theme: "light"
-        //                 }
-        //             }
-        //         });
-        //         prButton.mount(this.$.paymentRequestButton);
-        //     } else {
-        //         // document.getElementById('payment-request-button').style.display = 'none';
-        //     }
-        // });
     }
 
-    _submitCard(event) {
-        event.preventDefault();
+    _submitCard() {
+        if (this._submittingCard) {
+            return;
+        }
+
+        this.$.submitButton.start();
+        this._submittingCard = true;
 
         stripe.createToken(this._cardElement).then((result) => {
             if (result.error) {
-                this.alert(result.error.message);
+                this.$.submitButton.fail();
+                this._submittingCard = false;
             } else {
                 this._paymentToken = result.token;
+                this.$.paymentForm.submit();
             }
-
-            this.$.paymentForm.submit();
         });
     }
 
@@ -553,7 +551,7 @@ class Dashboard extends applyMixins(
     }
 
     _changePaymentMethod() {
-        this._submitCardLabel = $l("Change Payment Method");
+        this._submitCardLabel = $l("Add New Card");
         this._changingPaymentMethod = true;
         this.$.cardDialog.open = true;
     }
@@ -561,6 +559,10 @@ class Dashboard extends applyMixins(
     _back() {
         setTimeout(() => window.location = "https://padlock.io/", 200);
         window.location = "padlock://?ref=dashboard";
+    }
+
+    _cardHint() {
+        return this._cardError || $l("Please enter your credit or debit card information:");
     }
 
 }
