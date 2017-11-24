@@ -175,7 +175,7 @@
                 <pl-icon icon="backward" class="back-icon"></pl-icon>
                 <pl-icon icon="logo"></pl-icon>
             </div>
-            <div class="title email">[[ account.Email ]]</div>
+            <div class="title email">[[ account.email ]]</div>
             <a href="/logout/">
                 <pl-icon icon="logout" class="tap"></pl-icon>
             </a>
@@ -183,11 +183,11 @@
 
         <main>
 
-            <dom-if if="[[ _isSet(subAccount) ]]">
+            <dom-if if="[[ account.displaySubscription ]]">
 
                 <template>
 
-                    <section class="tiles" hidden$="[[ !_isTrialing(_subscription.status) ]]">
+                    <section class="tiles" hidden$="[[ !_isTrialing(account.subscription.status) ]]">
                         <div class="info">
                             <div>[[ $l("Subscription Status:") ]]</div>
                             <div class="subscription-status">[[ $l("Trialing ({0} days left)", _trialDays) ]]</div>
@@ -196,21 +196,21 @@
                         <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
                     </section>
 
-                    <section class="tiles" hidden$="[[ !_isInactive(_subscription.status) ]]">
+                    <section class="tiles" hidden$="[[ !_isInactive(account.subscription.status) ]]">
                         <div class="info">
                             <div>[[ $l("Subscription Status:") ]]</div>
                             <div class="subscription-status">[[ $l("Read-Only") ]]</div>
                             <div>[[ _readOnlyInfoText() ]]</div>
                         </div>
-                        <button class="tap" on-click="_buySubscription" hidden$="[[ _paymentRequestSupported ]]">[[ $l("Buy Subscription") ]]</button>
+                        <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
                     </section>
 
-                    <section class="tiles" hidden$="[[ !_isActive(_subscription.status) ]]">
+                    <section class="tiles" hidden$="[[ !_isActive(account.subscription.status) ]]">
                         <div class="info">
                             <div>[[ $l("Subscription Status:") ]]</div>
                             <div class="subscription-status">[[ $l("Active") ]]</div>
                             <div>[[ $l("Payment Method") ]]:</div>
-                            <div class="payment-method">[[ _paymentMethod(subAccount) ]]</div>
+                            <div class="payment-method">[[ _paymentMethod(account.paymentSource) ]]</div>
                         </div>
                         <button class="tiles-2 tap" on-click="_changePaymentMethod">[[ $l("Change Payment Method") ]]</button>
                         <button class="tiles-3 tap" on-click="_cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
@@ -221,13 +221,13 @@
             </dom-if>
 
             <section class="devices">
-                <div class="title">[[ $l("{0} Paired Devices", _devices.length) ]]</div>
+                <div class="title">[[ $l("{0} Paired Devices", account.devices.length) ]]</div>
 
                 <div class="tiles tiles-2 device-list">
-                    <dom-repeat items="[[ _devices ]]">
+                    <dom-repeat items="[[ account.devices ]]">
                         <template>
                             <div class="device tiles">
-                                <div class="device-name">[[ item.Description ]]</div>
+                                <div class="device-name">[[ item.description ]]</div>
                                 <pl-icon icon="delete" on-click="_revokeDevice"></pl-icon>
                             </div>
                         </template>
@@ -310,7 +310,6 @@ class Dashboard extends applyMixins(
 
     static get properties() { return {
         account: Object,
-        subAccount: Object,
         action: String,
         token: Object,
         csrfToken: String,
@@ -319,21 +318,9 @@ class Dashboard extends applyMixins(
             type: String,
             value: ""
         },
-        _devices: {
-            type: Array,
-            computed: "_computeDevices(account.AuthTokens)"
-        },
-        _subscription: {
-            type: Object,
-            computed: "_computeSubscription(subAccount)"
-        },
-        _paymentSource: {
-            type: Object,
-            computed: "_computePaymentSource(subAccount)"
-        },
         _trialDays: {
             type: Number,
-            computed: "_computeRemainingTrialDays(_subscription.trial_end)"
+            computed: "_computeRemainingTrialDays(account.subscription.trialEnd)"
         }
     }; }
 
@@ -350,12 +337,12 @@ class Dashboard extends applyMixins(
         switch (this.action) {
             case "paired":
                 setTimeout(() => {
-                    this.notify($l("{0} paired successfully!", this.token.Description), "info", 3000);
+                    this.notify($l("{0} paired successfully!", this.token.description), "info", 3000);
                 }, 500);
                 break;
             case "revoked":
                 setTimeout(() => {
-                    this.notify($l("Access for {0} revoked successfully!", this.token.Description), "info", 3000);
+                    this.notify($l("Access for {0} revoked successfully!", this.token.description), "info", 3000);
                 }, 500);
                 break;
             case "reset":
@@ -395,7 +382,7 @@ class Dashboard extends applyMixins(
                 });
         }
 
-        if (this.subAccount && this._isInactive() && this.action !== "subscribe") {
+        if (this.account.displaySubscription && this._isInactive() && this.action !== "subscribe") {
             this.confirm(
                 this._readOnlyInfoText(),
                 $l("Buy Subscription"),
@@ -459,18 +446,6 @@ class Dashboard extends applyMixins(
         });
     }
 
-    _computeDevices() {
-        return this.account.AuthTokens.filter((t) => t.Type === "api" && !t.Expired);
-    }
-
-    _computeSubscription() {
-        return this.subAccount && this.subAccount.Customer.subscriptions.data[0] || null;
-    }
-
-    _computePaymentSource() {
-        return this.subAccount && this.subAccount.Customer.sources.data[0] || null;
-    }
-
     _computeRemainingTrialDays(trialEnd) {
         var now = new Date().getTime() / 1000;
         trialEnd = trialEnd ? parseInt(trialEnd, 10) : now;
@@ -478,16 +453,12 @@ class Dashboard extends applyMixins(
     }
 
     _paymentMethod() {
-        const s = this._paymentSource;
-        return s && `${s.brand} **** **** **** ${s.last4}`;
-    }
-
-    _isSet(val) {
-        return !!val;
+        const s = this.account.paymentSource;
+        return s && `${s.brand} **** **** **** ${s.lastFour}`;
     }
 
     _isTrialing() {
-        return this._subscription && this._subscription.status === "trialing";
+        return this.account.subscription && this.account.subscription.status === "trialing";
     }
 
     _isInactive() {
@@ -495,7 +466,7 @@ class Dashboard extends applyMixins(
     }
 
     _isActive() {
-        return this._subscription && this._subscription.status === "active";
+        return this.account.subscription && this.account.subscription.status === "active";
     }
 
     _trialInfoText() {
@@ -544,8 +515,8 @@ class Dashboard extends applyMixins(
     }
 
     _revokeDevice(e) {
-        this._revokedDeviceId = e.model.item.Id;
-        this._revokeDeviceMessage = $l("Are you sure you want to revoke access for \"{0}\"?", e.model.item.Description);
+        this._revokedDeviceId = e.model.item.tokenId;
+        this._revokeDeviceMessage = $l("Are you sure you want to revoke access for \"{0}\"?", e.model.item.description);
         this.$.revokeDeviceDialog.open = true;
     }
 
