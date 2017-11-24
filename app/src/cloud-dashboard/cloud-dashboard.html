@@ -190,7 +190,7 @@
                     <section class="tiles" hidden$="[[ !_isTrialing(_subscription.status) ]]">
                         <div class="info">
                             <div>[[ $l("Subscription Status:") ]]</div>
-                            <div class="subscription-status">[[ $l("Trialing") ]]</div>
+                            <div class="subscription-status">[[ $l("Trialing ({0} days left)", _trialDays) ]]</div>
                             <div>[[ _trialInfoText() ]]</div>
                         </div>
                         <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
@@ -331,6 +331,10 @@ class Dashboard extends applyMixins(
         _paymentSource: {
             type: Object,
             computed: "_computePaymentSource(subAccount)"
+        },
+        _trialDays: {
+            type: Number,
+            computed: "_computeRemainingTrialDays(_subscription.trial_end)"
         }
     }; }
 
@@ -468,9 +472,15 @@ class Dashboard extends applyMixins(
         return this.subAccount && this.subAccount.Customer.sources.data[0] || null;
     }
 
+    _computeRemainingTrialDays(trialEnd) {
+        var now = new Date().getTime() / 1000;
+        trialEnd = trialEnd ? parseInt(trialEnd, 10) : now;
+        return Math.max(0, Math.ceil((trialEnd - now) / 60 / 60 / 24));
+    }
+
     _paymentMethod() {
         const s = this._paymentSource;
-        return `${s.brand} **** **** **** ${s.last4}`;
+        return s && `${s.brand} **** **** **** ${s.last4}`;
     }
 
     _isSet(val) {
@@ -495,7 +505,7 @@ class Dashboard extends applyMixins(
             "which means you will be able to access your existing data on Padlock Cloud but you won't " +
             "be able to upload any new data or synchronize changes between devices. " +
             "Get a subscription now to get unlimited access to Padlock Cloud!",
-            this.remainingTrialDays
+            this._trialDays
         );
     }
 
