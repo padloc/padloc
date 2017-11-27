@@ -268,7 +268,7 @@
         </pl-dialog>
 
         <pl-dialog id="cardDialog">
-            <form id="paymentForm" action="/subscribe/" method="post" on-submit="_submitCard">
+            <form id="paymentForm" action="/subscribe/?ref=[[ referer ]]" method="post" on-submit="_submitCard">
                 <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
                 <input type="hidden" name="stripeToken" value="[[ _paymentToken.id ]]">
                 <input type="hidden" name="updating" value="[[ _paymentToken.id ]]">
@@ -325,6 +325,7 @@ class Dashboard extends applyMixins(
         token: Object,
         csrfToken: String,
         stripePubKey: String,
+        referer: String,
         _cardError: {
             type: String,
             value: ""
@@ -450,7 +451,8 @@ class Dashboard extends applyMixins(
 
         stripe.createToken(this._cardElement).then((result) => {
             const edata = {
-                "Action": this._changingPaymentSource ? "Change Payment Source" : "Buy Subscription"
+                "Action": this._changingPaymentSource ? "Change Payment Source" : "Buy Subscription",
+                "Source": this.referer
             };
 
             if (result.error) {
@@ -552,7 +554,7 @@ class Dashboard extends applyMixins(
         this._changingPaymentSource = false;
         this.$.cardDialog.open = true;
 
-        track("Dashboard: Open Payment Dialog", { "Action": "Buy Subscription" });
+        track("Dashboard: Open Payment Dialog", { "Action": "Buy Subscription", "Source": this.referer });
     }
 
     _cancelSubscription() {
@@ -564,7 +566,7 @@ class Dashboard extends applyMixins(
         this._changingPaymentSource = true;
         this.$.cardDialog.open = true;
 
-        track("Dashboard: Open Payment Dialog", { "Action": "Change Payment Source" });
+        track("Dashboard: Open Payment Dialog", { "Action": "Change Payment Source", "Source": this.referer });
     }
 
     _back() {
