@@ -272,7 +272,7 @@
                 <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
                 <input type="hidden" name="stripeToken" value="[[ _paymentToken.id ]]">
                 <input type="hidden" name="updating" value="[[ _paymentToken.id ]]">
-                <div class="buy-subscription tiles-1" hidden$="[[ _changingPaymentMethod ]]">
+                <div class="buy-subscription tiles-1" hidden$="[[ _changingPaymentSource ]]">
                     <div><strong>[[ $l("Buy Subscription") ]]</strong></div>
                     <div class="price">[[ $l("{0}/month", "$1") ]]</div>
                     <div class="small">[[ $l("(billed annually)") ]]</div>
@@ -290,11 +290,22 @@
     </template>
 
     <script>
-/* global Stripe */
+/* global Stripe, mixpanel */
 (() => {
 
 const { LocaleMixin, DialogMixin, NotificationMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
+
+function track(event, data) {
+    if (typeof mixpanel === "undefined") {
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+        mixpanel.track(event, data, resolve);
+        setTimeout(resolve, 300);
+    });
+}
 
 let stripe;
 
@@ -394,6 +405,8 @@ class Dashboard extends applyMixins(
                     }
                 });
         }
+
+        track("Dashboard: Finish Loading");
     }
 
     _setupPayment() {
@@ -436,12 +449,26 @@ class Dashboard extends applyMixins(
         this._submittingCard = true;
 
         stripe.createToken(this._cardElement).then((result) => {
+            const edata = {
+                "Action": this._changingPaymentSource ? "Change Payment Source" : "Buy Subscription"
+            };
+
+            if (result.error) {
+                Object.assign(edata, {
+                    "Error Code": result.error.code,
+                    "Error Type": result.error.type,
+                    "Error Message": result.error.message
+                });
+            }
+
+            const trackPromise = track("Dashboard: Submit Payment Source", edata);
+
             if (result.error) {
                 this.$.submitButton.fail();
                 this._submittingCard = false;
             } else {
                 this._paymentToken = result.token;
-                this.$.paymentForm.submit();
+                trackPromise.then(() => this.$.paymentForm.submit());
             }
         });
     }
@@ -522,8 +549,10 @@ class Dashboard extends applyMixins(
 
     _buySubscription() {
         this._submitCardLabel = $l("Pay 12.00 USD");
-        this._changingPaymentMethod = false;
+        this._changingPaymentSource = false;
         this.$.cardDialog.open = true;
+
+        track("Dashboard: Open Payment Dialog", { "Action": "Buy Subscription" });
     }
 
     _cancelSubscription() {
@@ -532,12 +561,16 @@ class Dashboard extends applyMixins(
 
     _changePaymentMethod() {
         this._submitCardLabel = $l("Add New Card");
-        this._changingPaymentMethod = true;
+        this._changingPaymentSource = true;
         this.$.cardDialog.open = true;
+
+        track("Dashboard: Open Payment Dialog", { "Action": "Change Payment Source" });
     }
 
     _back() {
-        setTimeout(() => window.location = "https://padlock.io/", 200);
+        track("Dashboard: Back", {}).then(() => {
+            setTimeout(() => window.location = "https://padlock.io/", 200);
+        });
         window.location = "padlock://?ref=dashboard";
     }
 
