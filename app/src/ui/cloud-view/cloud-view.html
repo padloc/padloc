@@ -85,7 +85,7 @@
             <section class="tiles" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
                 <div class="info">[[ generalInfoText() ]]</div>
                 <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" label="[[ $l('Pair Device') ]]" on-click="connect"></pl-loading-button>
+                <pl-loading-button id="connectButton" class="tap" on-click="connect">[[ $l('Pair Device') ]]</pl-loading-button>
             </section>
 
             <section class="tiles" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
@@ -94,7 +94,7 @@
                     <div class="account">[[ settings.syncEmail ]]</div>
                     <div>[[ activationPendingText(settings.syncEmail) ]]</div>
                 </div>
-                <pl-loading-button id="refreshButton" label="[[ $l('Refresh') ]]" on-click="_refresh"></pl-loading-button>
+                <pl-loading-button id="refreshButton" on-click="_refresh">[[ $l('Refresh') ]]</pl-loading-button>
                 <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
             </section>
 

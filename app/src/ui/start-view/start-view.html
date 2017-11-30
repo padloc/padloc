@@ -25,7 +25,7 @@
             }
 
             @keyframes reveal {
-                from { transform: translate(0, 40px); opacity: 0; }
+                from { transform: translate(0, 30px); opacity: 0; }
                 to { opacity: 1; }
             }
 
@@ -38,7 +38,7 @@
                 display: flex;
                 z-index: 5;
                 text-align: center;
-                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
+                text-shadow: rgba(0, 0, 0, 0.15) 0 2px 0;
             }
 
             main {
@@ -49,28 +49,56 @@
 
             .shutter {
                 flex: 1;
-                display: flex;
-                flex-direction: column;
-                background: var(--color-background);
+                /* background: var(--color-background); */
                 transform: translate3d(0, 0, 0);
                 transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
             }
 
-            .hero {
-                display: block;
-                height: 150px;
-                font-size: 150px;
-                width: auto;
-                margin-bottom: 40px;
-                position: relative;
-                z-index: 1;
+            .shutter.top {
+                background: linear-gradient(180deg, #59c6ff 0%, #077cb9 200%);
             }
 
-            pl-input {
+            .shutter.bottom {
+                background: linear-gradient(180deg, #59c6ff -100%, #077cb9 100%);
+            }
+
+            form {
+                width: 100%;
+                max-width: 300px;
+                margin: 20px auto 0 auto;
+                border: solid 1px var(--shade-3-color);
+                border-radius: 12px;
+                overflow: hidden;
+                display: flex;
+            }
+
+            .hero {
+                display: block;
+                height: 110px;
+                font-size: 110px;
+                width: auto;
+                position: absolute;
+                bottom: 30px;
+                z-index: 1;
+                left: 0;
+                right: 0;
+                opacity: 0.9;
+            }
+
+            form pl-input {
+                flex: 1;
                 text-align: center;
                 --pl-input-placeholder: {
-                    opacity: 0.8;
+                    opacity: 0.4;
                 };
+            }
+
+            form pl-loading-button {
+                width: var(--row-height);
+            }
+
+            form pl-loading-button pl-icon {
+                margin-left: 6px;
             }
 
             .input-wrapper {
@@ -115,28 +143,24 @@
 
         <main hidden$="[[ !_hasData ]]">
             <div class="shutter top">
-
-                <div class="spacer"></div>
-
-                <pl-icon id="logo" icon="logo" class="hero"></pl-icon>
-
+                <pl-icon id="logo" icon="logo" class="hero animate"></pl-icon>
             </div>
 
             <div class="shutter bottom">
+                <form class="tiles tiles-2 animate">
+                    <pl-input id="passwordInput" type="password" class="tap"
+                        select-on-focus on-enter="_unlock" no-tab="[[ open ]]"
+                        placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
 
-                <pl-input id="passwordInput" type="password" class="tap tiles-3"
-                    select-on-focus on-enter="_unlock" no-tab="[[ open ]]"
-                    placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
-
-                <pl-loading-button id="enterButton" on-click="_unlock" class="tap tiles-4 enter-button"
-                    label="[[ $l('Unlock') ]]" no-tab="[[ open ]]"></pl-loading-button>
-
-                <div class="spacer tiles-5"></div>
-
+                    <pl-loading-button id="enterButton" on-click="_unlock" class="tap enter-button"
+                        label="[[ $l('Unlock') ]]" no-tab="[[ open ]]">
+                        <pl-icon icon="forward"></pl-icon>
+                    </pl-loading-button>
+                </form>
             </div>
         </main>
 
-        <main hidden$="[[ _hasData ]]">
+        <main hidden>
             <div class="shutter top">
 
                 <div class="spacer"></div>
@@ -195,8 +219,8 @@ class StartView extends applyMixins(
             type: Object,
             value: {
                 animation: "reveal",
-                duration: 800,
-                fullDuration: 3000,
+                duration: 1200,
+                fullDuration: 1500,
                 initialDelay: 200
             }
         },
@@ -221,7 +245,7 @@ class StartView extends applyMixins(
 
     connectedCallback() {
         super.connectedCallback();
-        this.animateCascade(this.root.querySelectorAll("main:not([hidden]) .shutter > *"));
+        this.animateCascade(this.root.querySelectorAll("main:not([hidden]) .animate"));
     }
 
     ready() {

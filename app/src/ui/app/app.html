@@ -22,6 +22,12 @@
 <dom-module id="pl-app">
     <template>
         <style include="shared">
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
             :host {
                 overflow: hidden;
                 color: var(--color-foreground);
@@ -29,6 +35,7 @@
                 position: absolute;
                 width: 100%;
                 height: 100%;
+                animation: fadeIn 0.5s both;
             }
 
             :host(.notch) {
