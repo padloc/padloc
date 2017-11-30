@@ -26,7 +26,22 @@
                 overflow: hidden;
                 color: var(--color-foreground);
                 background: #eee;
-                @apply --fullbleed;
+                position: absolute;
+                width: 100%;
+                height: 100%;
+            }
+
+            :host(.notch) {
+                background: black;
+                border-radius: 8px;
+            }
+
+            :host(.notch) pl-list-view,
+            :host(.notch) #pages {
+                top: constant(safe-area-inset-top);
+                top: env(safe-area-inset-top);
+                border-radius: 8px;
+                overflow: hidden;
             }
 
             #main {
