@@ -13,8 +13,11 @@ function localize(msg, ...fmtArgs) {
     let res = lang && lang[msg] || msg;
 
     for (let i = 0; i < fmtArgs.length; i++) {
-        res = res.replace(new RegExp(`\\{${i}\\}`, "g"), fmtArgs[i]);
+        res = res
+            .replace(new RegExp(`\\{${i}\\}`, "g"), fmtArgs[i]);
     }
+
+    res = res.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 
     return res;
 }

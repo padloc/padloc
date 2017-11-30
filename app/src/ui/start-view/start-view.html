@@ -128,6 +128,20 @@
                 font-weight: bold;
             }
 
+            .hint {
+                font-size: var(--font-size-tiny);
+                width: 100%;
+                max-width: 300px;
+                padding: 20px;
+                margin: 30px auto;
+            }
+
+            .hint pl-icon {
+                width: 1em;
+                height: 1em;
+                vertical-align: middle;
+            }
+
             :host([open]) {
                 pointer-events: none;
             }
@@ -157,6 +171,8 @@
                         <pl-icon icon="forward"></pl-icon>
                     </pl-loading-button>
                 </form>
+
+                <div class="hint animate" inner-h-t-m-l="[[ _randomHint() ]]"></div>
             </div>
         </main>
 
@@ -203,6 +219,21 @@
 const { DataMixin, LocaleMixin, DialogMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins, wait } = padlock.util;
 const { isTouch } = padlock.platform;
+
+const hints = [
+    $l(
+        "**Did you know**: Padlock Cloud is not only a great way " +
+        "to synchronize your data between devices but also acts as a backup in" +
+        "case you lose your device or accidentally delete the app. You can find" +
+        "your Padlock Cloud settings by clicking on the {0} icon.",
+        "<pl-icon icon='cloud'></pl-icon>"
+    ),
+    $l(
+        "**Did you know**: You can generate random values for your fields " +
+        "by clicking the {0} icon.",
+        "<pl-icon icon='generate'></pl-icon>"
+    )
+];
 
 class StartView extends applyMixins(
     BaseElement,
@@ -456,6 +487,10 @@ class StartView extends applyMixins(
 
     _emailEnter() {
         this.$.newPasswordInput.focus();
+    }
+
+    _randomHint() {
+        return hints[Math.floor(Math.random() * hints.length)];
     }
 
 }
