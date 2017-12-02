@@ -36,6 +36,7 @@
                 @apply --fullbleed;
                 color: var(--color-foreground);
                 display: flex;
+                flex-direction: column;
                 z-index: 5;
                 text-align: center;
                 text-shadow: rgba(0, 0, 0, 0.15) 0 2px 0;
@@ -45,11 +46,12 @@
                 @apply --fullbleed;
                 display: flex;
                 flex-direction: column;
+                align-items: center;
+                justify-content: center;
             }
 
             .shutter {
                 flex: 1;
-                /* background: var(--color-background); */
                 transform: translate3d(0, 0, 0);
                 transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
             }
@@ -62,30 +64,51 @@
                 background: linear-gradient(180deg, #59c6ff -100%, #077cb9 100%);
             }
 
-            form {
+            .form-box {
                 width: 100%;
                 max-width: 300px;
-                margin: 20px auto 0 auto;
                 border: solid 1px var(--shade-3-color);
                 border-radius: 12px;
                 overflow: hidden;
                 display: flex;
+                margin-top: 20px;
             }
 
             .hero {
                 display: block;
-                height: 110px;
                 font-size: 110px;
-                width: auto;
-                position: absolute;
-                bottom: 30px;
-                z-index: 1;
-                left: 0;
-                right: 0;
+                height: 120px;
+                width: 120px;
+                margin-bottom: 30px;
                 opacity: 0.9;
             }
 
-            form pl-input {
+            .welcome-title {
+                font-size: 120%;
+                font-weight: bold;
+                padding: 10px;
+            }
+
+            .welcome-subtitle {
+                max-width: 300px;
+                padding: 10px;
+            }
+
+            .start-button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                text-align: center;
+                font-weight: bold;
+            }
+
+            .start-button pl-icon {
+                position: relative;
+                top: 2px;
+            }
+
+            .form-box pl-input, .form-box .input-wrapper {
                 flex: 1;
                 text-align: center;
                 --pl-input-placeholder: {
@@ -93,11 +116,11 @@
                 };
             }
 
-            form pl-loading-button {
+            .form-box pl-loading-button {
                 width: var(--row-height);
             }
 
-            form pl-loading-button pl-icon {
+            .form-box pl-loading-button pl-icon {
                 margin-left: 6px;
             }
 
@@ -117,11 +140,10 @@
             }
 
             .strength-meter {
-                position: absolute;
-                right: 10px;
-                bottom: 5px;
                 font-size: 12px;
                 font-weight: bold;
+                margin-top: 10px;
+                height: 16px;
             }
 
             .enter-button {
@@ -133,13 +155,88 @@
                 width: 100%;
                 max-width: 300px;
                 padding: 20px;
-                margin: 30px auto;
+                margin-top: 20px;
             }
 
             .hint pl-icon {
                 width: 1em;
                 height: 1em;
                 vertical-align: middle;
+            }
+
+            :host(:not([_mode="get-started"])) .get-started,
+            :host(:not([_mode="unlock"])) .unlock {
+                display: none;
+            }
+
+            .get-started-steps {
+                width: 100%;
+                height: 250px;
+                position: relative;
+            }
+
+            .get-started-step {
+                @apply --fullbleed;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .get-started-step:not(.center) {
+                pointer-events: none;
+            }
+
+            .get-started-step > * {
+                transform: translate3d(0, 0, 0);
+                transition: transform 0.5s, opacity 0.2s;
+            }
+
+            .get-started-step > :nth-child(2) {
+                transition-delay: 0.1s;
+            }
+
+            .get-started-step > :nth-child(3) {
+                transition-delay: 0.2s;
+            }
+
+            .get-started-step:not(.center) > * {
+                opacity: 0;
+            }
+
+            .get-started-step.left > * {
+                transform: translate3d(-100%, 0, 0);
+            }
+
+            .get-started-step.right > * {
+                transform: translate3d(100%, 0, 0);
+            }
+
+            .get-started-thumbs {
+                position: absolute;
+                bottom: 20px;
+                display: flex;
+                justify-content: center;
+            }
+
+            .get-started-thumbs > * {
+                background: var(--color-foreground);
+                width: 10px;
+                height: 10px;
+                border-radius: 100%;
+                margin: 5px;
+            }
+
+            .get-started-thumbs > .right {
+                opacity: 0.3;
+            }
+
+            button.skip {
+                background: none;
+                border: none;
+                height: auto;
+                line-height: normal;
+                font-weight: bold;
+                margin-top: 10px;
             }
 
             :host([open]) {
@@ -155,57 +252,139 @@
             }
         </style>
 
-        <main hidden$="[[ !_hasData ]]">
-            <div class="shutter top">
-                <pl-icon id="logo" icon="logo" class="hero animate"></pl-icon>
+        <div class="shutter top"></div>
+        <div class="shutter bottom"></div>
+
+        <main class="unlock">
+
+            <pl-icon id="logo" icon="logo" class="hero animate-in animate-out"></pl-icon>
+
+            <div class="form-box tiles tiles-2 animate-in animate-out">
+                <pl-input id="passwordInput" type="password" class="tap"
+                    select-on-focus on-enter="_unlock" no-tab="[[ open ]]"
+                    placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
+
+                <pl-loading-button id="enterButton" on-click="_unlock" class="tap enter-button"
+                    label="[[ $l('Unlock') ]]" no-tab="[[ open ]]">
+                    <pl-icon icon="forward"></pl-icon>
+                </pl-loading-button>
             </div>
 
-            <div class="shutter bottom">
-                <form class="tiles tiles-2 animate">
-                    <pl-input id="passwordInput" type="password" class="tap"
-                        select-on-focus on-enter="_unlock" no-tab="[[ open ]]"
-                        placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
+            <div class="hint animate-in animate-out" inner-h-t-m-l="[[ _randomHint() ]]"></div>
 
-                    <pl-loading-button id="enterButton" on-click="_unlock" class="tap enter-button"
-                        label="[[ $l('Unlock') ]]" no-tab="[[ open ]]">
-                        <pl-icon icon="forward"></pl-icon>
-                    </pl-loading-button>
-                </form>
-
-                <div class="hint animate" inner-h-t-m-l="[[ _randomHint() ]]"></div>
-            </div>
         </main>
 
-        <main hidden>
-            <div class="shutter top">
+        <main class="get-started">
 
-                <div class="spacer"></div>
+            <pl-icon icon="logo" class="hero animate"></pl-icon>
 
-                <pl-icon icon="logo" class="hero"></pl-icon>
+            <div class="get-started-steps">
+
+                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 0) ]]">
+
+                    <div class="welcome-title animate">[[ $l("Welcome to Padlock!") ]]</div>
+                    <div class="welcome-subtitle animate">[[ $l("Let's get you set up! It'll take only a couple of seconds.") ]]</div>
+
+                    <div class="form-box tiles tiles-2 animate">
+                        <button on-click="_startSetup" class="tap start-button" no-tab="[[ open ]]">
+                            <span>[[ $l("Get Started") ]]</span>
+                            <pl-icon icon="forward"></pl-icon>
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 1) ]]">
+
+                    <div class="form-box tiles tiles-2">
+                        <pl-input id="emailInput" type="email" select-on-focus no-tab="[[ open ]]"
+                            on-enter="_enterEmail" placeholder="[[ $l('Enter Email Address') ]]"></pl-input>
+
+                        <pl-loading-button on-click="_enterEmail" class="tap" no-tab="[[ open ]]">
+                            <pl-icon icon="forward"></pl-icon>
+                        </pl-loading-button>
+                    </div>
+
+                    <div class="hint">
+                        <pl-icon icon="cloud"></pl-icon>
+                        <span>[[ _getStartedHint(0) ]]</span>
+                    </div>
+
+                    <button class="skip" on-click="_skipEmail">[[ $l("Skip Email") ]]</button>
+
+                </div>
+
+                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 2) ]]">
+
+                    <div class="form-box tiles tiles-2">
+
+                        <pl-input id="newPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
+                            on-enter="_enterNewPassword" value="{{ newPwd }}" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
+
+                        <pl-loading-button id="enterButton" on-click="_enterNewPassword" class="tap enter-button" no-tab="[[ open ]]">
+                            <pl-icon icon="forward"></pl-icon>
+                        </pl-loading-button>
+
+                    </div>
+
+                    <div class="strength-meter">[[ _pwdStrength ]]</div>
+
+                    <div class="hint">
+                        <pl-icon icon="info-round"></pl-icon>
+                        <span>[[ _getStartedHint(1) ]]</span>
+                    </div>
+
+                </div>
+
+                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 3) ]]">
+
+                    <div class="form-box tiles tiles-2">
+
+                        <pl-input id="confirmPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
+                            on-enter="_confirmNewPassword" placeholder="[[ $l('Confirm Master Password') ]]"></pl-input>
+
+                        <pl-loading-button id="enterButton" on-click="_confirmNewPassword" class="tap enter-button" no-tab="[[ open ]]">
+                            <pl-icon icon="forward"></pl-icon>
+                        </pl-loading-button>
+
+                    </div>
+
+                    <div class="hint">
+                        <pl-icon icon="info-round"></pl-icon>
+                        <span>[[ _getStartedHint(2) ]]</span>
+                    </div>
+
+                </div>
+
+                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 4) ]]">
+
+                    <div class="welcome-title">[[ $l("All done!") ]]</div>
+                    <div class="welcome-subtitle">[[ $l("You're all set! Have fun!") ]]</div>
+
+                    <div class="form-box tiles tiles-2 animate">
+                        <button on-click="_finishSetup" class="tap start-button" no-tab="[[ open ]]">
+                            <span>[[ $l("Start Using Padlock") ]]</span>
+                            <pl-icon icon="forward"></pl-icon>
+                        </button>
+                    </div>
+
+                </div>
 
             </div>
 
-            <div class="shutter bottom">
+            <div class="get-started-thumbs">
+                <div class$="[[ _getStartedClass(_getStartedStep, 0) ]]" on-click="_goToStep"></div>
+                <div class$="[[ _getStartedClass(_getStartedStep, 1) ]]" on-click="_goToStep"></div>
+                <div class$="[[ _getStartedClass(_getStartedStep, 2) ]]" on-click="_goToStep"></div>
+                <div class$="[[ _getStartedClass(_getStartedStep, 3) ]]" on-click="_goToStep"></div>
+                <div class$="[[ _getStartedClass(_getStartedStep, 4) ]]" on-click="_goToStep"></div>
+            </div>
 
-                <div class="tap tiles-2 input-wrapper">
-                    <pl-input id="emailInput" type="email" select-on-focus no-tab="[[ open ]]"
-                        on-enter="_emailEnter" placeholder="[[ $l('Enter Email (Optional)') ]]"></pl-input>
-                    <pl-icon icon="info-round" on-click="_showEmailInfo"></pl-icon>
-                </div>
-
-                <div class="tap tiles-3 input-wrapper">
-                    <pl-input id="newPasswordInput" type="password" select-on-focus no-tab="[[ open ]]"
-                        on-enter="_getStarted" value="{{ newPwd }}" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
-                    <div class="strength-meter" hidden$="[[ !_hasValue(newPwd) ]]">[[ $l('strength: {0}', _pwdStrength) ]]</div>
-                    <pl-icon icon="info-round" on-click="_showPasswordInfo" hidden$="[[ _hasValue(newPwd) ]]"></pl-icon>
-                </div>
-
+            <div hidden>
                 <pl-loading-button id="getStartedButton" on-click="_getStarted" no-tab="[[ open ]]"
                     class="tap tiles-4 enter-button" label="[[ $l('Get Started') ]]"></pl-loading-button>
-
-                <div class="spacer tiles-5"></div>
-
             </div>
+
         </main>
 
     </template>
@@ -252,16 +431,27 @@ class StartView extends applyMixins(
                 animation: "reveal",
                 duration: 1200,
                 fullDuration: 1500,
-                initialDelay: 200
+                initialDelay: 200,
+                fill: "both"
             }
         },
         open: {
             type: Boolean,
             value: false,
-            reflectToAttribute: true
+            reflectToAttribute: true,
+            observer: "_openChanged"
+        },
+        _getStartedStep: {
+            type: Number,
+            value: 0
         },
         _hasData: {
             type: Boolean
+        },
+        _mode: {
+            type: String,
+            reflectToAttribute: true,
+            computed: "_computeMode(_hasData)"
         },
         _pwdStrength: {
             type: String,
@@ -272,11 +462,6 @@ class StartView extends applyMixins(
     constructor() {
         super();
         this._failCount = 0;
-    }
-
-    connectedCallback() {
-        super.connectedCallback();
-        this.animateCascade(this.root.querySelectorAll("main:not([hidden]) .animate"));
     }
 
     ready() {
@@ -301,17 +486,37 @@ class StartView extends applyMixins(
         return this._checkHasData();
     }
 
-    _checkHasData() {
-        return this.hasData()
-            .then((has) => this._hasData = has);
+    _openChanged() {
+        if (this.open) {
+            this.animateCascade(this.root.querySelectorAll("main:not([hidden]) .animate-out"), {
+                direction: "reverse",
+                duration: 200,
+                fullDuration: 300,
+                initialDelay: 0
+            });
+        } else {
+            this.animateCascade(this.root.querySelectorAll("main:not([hidden]) .animate-in"));
+        }
     }
 
-    _getStarted() {
-        if (this.$.emailInput.value && this.$.emailInput.invalid) {
-            this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
+    _startSetup() {
+        this._getStartedStep = 1;
+    }
+
+    _enterEmail() {
+        if (this.$.emailInput.invalid) {
+            this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"))
+                .then(() => this.$.emailInput.focus());
             return;
         }
+        this._getStartedStep = 2;
+    }
 
+    _skipEmail() {
+        this._getStartedStep = 2;
+    }
+
+    _enterNewPassword() {
         const pwd = this.$.newPasswordInput.value;
 
         if (!pwd) {
@@ -327,7 +532,7 @@ class StartView extends applyMixins(
             ),
             $l("Use Anyway"), $l("Choose Different Password")).then((confirm) => {
                 if (confirm) {
-                    this._confirmPassword();
+                    this._getStartedStep = 3;
                 } else {
                     this.$.newPasswordInput.focus();
                 }
@@ -335,24 +540,45 @@ class StartView extends applyMixins(
             return;
         }
 
-        this._confirmPassword();
+        this._getStartedStep = 3;
     }
 
-    _confirmPassword() {
-        this.prompt($l(
-            "Remember your master password! Without it, nobody will be able to access your data, " +
-            "not even we! This is to ensure that your data is as safe as possible but it also means " +
-            "that if you lose your master password, we won't be able to assist you with recovering your " +
-            "data."
-        ),
-        $l("Repeat Master Password"), "password", $l("Confirm")).then((pwd) => {
-            if (pwd === this.$.newPasswordInput.value) {
-                this._initializeData();
-            } else {
-                this.alert($l("You failed to repeat the password correctly. Try again!"))
-                    .then(() => this.$.newPasswordInput.focus());
-            }
-        });
+    _confirmNewPassword() {
+        if (this.$.confirmPasswordInput.value !== this.$.newPasswordInput.value) {
+            this.choose($l(
+                "The password you entered does not match the original one!"
+            ), [
+                $l("Try Again"),
+                $l("Change Password")
+            ])
+                .then((choice) => {
+                    switch (choice) {
+                        case 0:
+                            this.$.confirmPasswordInput.focus();
+                            break;
+                        case 1:
+                            this._getStartedStep = 2;
+                            this.$.newPasswordInput.focus();
+                            break;
+                    }
+                });
+            return;
+        }
+
+        this._getStartedStep = 4;
+    }
+
+    _computeMode() {
+        return this._hasData ? "unlock" : "get-started";
+    }
+
+    _checkHasData() {
+        return this.hasData()
+            .then((has) => this._hasData = has);
+    }
+
+    _finishSetup() {
+        this._initializeData();
     }
 
     _initializeData() {
@@ -478,7 +704,8 @@ class StartView extends applyMixins(
 
     _passwordStrength(pwd) {
         const score = pwd ? zxcvbn(pwd).score : -1;
-        return score === -1 ? "" : score < 2 ? $l("weak") : score < 4 ? $l("medium") : $l("strong");
+        const strength = score === -1 ? "" : score < 2 ? $l("weak") : score < 4 ? $l("medium") : $l("strong");
+        return strength && $l("strength: {0}", strength);
     }
 
     _hasValue(val) {
@@ -491,6 +718,42 @@ class StartView extends applyMixins(
 
     _randomHint() {
         return hints[Math.floor(Math.random() * hints.length)];
+    }
+
+    _getStartedMessage() {
+        return $l(
+            "**Welcome to Padlock!** Let's get you started! First, choose your master password:"
+        );
+    }
+
+    _getStartedHint(step) {
+        return [
+            $l(
+                "Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
+                "you to easily and securely store your data online and synchronize it between all your devices."
+            ),
+            $l(
+                "Your master password is a single passphrase that will protect " +
+                "your data. Without it, nobody will be able to access your data - not even us!"
+            ),
+            $l(
+                "Remember your master password! Without it, nobody will be able to access your data, " +
+                "not even we! This is to ensure that your data is as safe as possible but it also means " +
+                "that if you lose your master password, we won't be able to assist you with recovering your " +
+                "data."
+            )
+        ][step];
+    }
+
+    _getStartedClass(currStep, step) {
+        return currStep > step ? "left" : currStep < step ? "right" : "center";
+    }
+
+    _goToStep(e) {
+        const s = Array.from(this.root.querySelectorAll(".get-started-thumbs > *")).indexOf(e.target);
+        if (s < this._getStartedStep) {
+            this._getStartedStep = s;
+        }
     }
 
 }
