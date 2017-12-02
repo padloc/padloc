@@ -446,12 +446,12 @@ class ListView extends applyMixins(
             setTimeout(() => {
                 this.$.list.scrollToIndex(0);
                 this.$.list.style.opacity = 1;
-                this._animateRecords();
+                this.animateRecords();
             }, 100);
         }
     }
 
-    _animateRecords() {
+    animateRecords() {
         const first = this.$.list.firstVisibleIndex;
         const last = this.$.list.lastVisibleIndex + 1;
         const elements = Array.from(this.root.querySelectorAll("pl-record-item"));

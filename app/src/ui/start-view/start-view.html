@@ -18,15 +18,13 @@
                 75% {transform: translate(5px, 2px);}
             }
 
-            @keyframes bounceIn {
-                from { transform: scale(0.1); opacity: 0; }
-                50% { transform: scale(1.05); opacity: 1; }
-                to { transform: scale(1); opacity: 1; }
-            }
-
             @keyframes reveal {
                 from { transform: translate(0, 30px); opacity: 0; }
                 to { opacity: 1; }
+            }
+
+            @keyframes fade {
+                to { transform: translate(0, -200px); opacity: 0; }
             }
 
             :host {
@@ -51,17 +49,10 @@
             }
 
             .shutter {
-                flex: 1;
+                @apply --fullbleed;
+                background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%);
                 transform: translate3d(0, 0, 0);
                 transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
-            }
-
-            .shutter.top {
-                background: linear-gradient(180deg, #59c6ff 0%, #077cb9 200%);
-            }
-
-            .shutter.bottom {
-                background: linear-gradient(180deg, #59c6ff -100%, #077cb9 100%);
             }
 
             .form-box {
@@ -80,7 +71,7 @@
                 height: 120px;
                 width: 120px;
                 margin-bottom: 30px;
-                opacity: 0.9;
+                color: rgba(255, 255, 255, 0.9);
             }
 
             .welcome-title {
@@ -188,7 +179,7 @@
 
             .get-started-step > * {
                 transform: translate3d(0, 0, 0);
-                transition: transform 0.5s, opacity 0.2s;
+                transition: transform 0.5s cubic-bezier(0.60, 0.2, 0.1, 1.2), opacity 0.3s;
             }
 
             .get-started-step > :nth-child(2) {
@@ -204,11 +195,11 @@
             }
 
             .get-started-step.left > * {
-                transform: translate3d(-100%, 0, 0);
+                transform: translate3d(-200px, 0, 0);
             }
 
             .get-started-step.right > * {
-                transform: translate3d(100%, 0, 0);
+                transform: translate3d(200px, 0, 0);
             }
 
             .get-started-thumbs {
@@ -243,17 +234,13 @@
                 pointer-events: none;
             }
 
-            :host([open]) .shutter.top {
+            :host([open]) .shutter {
+                transition-delay: 0.4s;
                 transform: translate3d(0, -100%, 0);
-            }
-
-            :host([open]) .shutter.bottom {
-                transform: translate3d(0, 100%, 0);
             }
         </style>
 
-        <div class="shutter top"></div>
-        <div class="shutter bottom"></div>
+        <div class="shutter"></div>
 
         <main class="unlock">
 
@@ -264,7 +251,7 @@
                     select-on-focus on-enter="_unlock" no-tab="[[ open ]]"
                     placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
 
-                <pl-loading-button id="enterButton" on-click="_unlock" class="tap enter-button"
+                <pl-loading-button id="unlockButton" on-click="_unlock" class="tap enter-button"
                     label="[[ $l('Unlock') ]]" no-tab="[[ open ]]">
                     <pl-icon icon="forward"></pl-icon>
                 </pl-loading-button>
@@ -276,16 +263,16 @@
 
         <main class="get-started">
 
-            <pl-icon icon="logo" class="hero animate"></pl-icon>
+            <pl-icon icon="logo" class="hero animate-in animate-out"></pl-icon>
 
             <div class="get-started-steps">
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 0) ]]">
 
-                    <div class="welcome-title animate">[[ $l("Welcome to Padlock!") ]]</div>
-                    <div class="welcome-subtitle animate">[[ $l("Let's get you set up! It'll take only a couple of seconds.") ]]</div>
+                    <div class="welcome-title animate-in">[[ $l("Welcome to Padlock!") ]]</div>
+                    <div class="welcome-subtitle animate-in">[[ $l("Let's get you set up! It'll take only a couple of seconds.") ]]</div>
 
-                    <div class="form-box tiles tiles-2 animate">
+                    <div class="form-box tiles tiles-2 animate-in">
                         <button on-click="_startSetup" class="tap start-button" no-tab="[[ open ]]">
                             <span>[[ $l("Get Started") ]]</span>
                             <pl-icon icon="forward"></pl-icon>
@@ -321,7 +308,7 @@
                         <pl-input id="newPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                             on-enter="_enterNewPassword" value="{{ newPwd }}" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
 
-                        <pl-loading-button id="enterButton" on-click="_enterNewPassword" class="tap enter-button" no-tab="[[ open ]]">
+                        <pl-loading-button on-click="_enterNewPassword" class="tap enter-button" no-tab="[[ open ]]">
                             <pl-icon icon="forward"></pl-icon>
                         </pl-loading-button>
 
@@ -343,7 +330,7 @@
                         <pl-input id="confirmPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                             on-enter="_confirmNewPassword" placeholder="[[ $l('Confirm Master Password') ]]"></pl-input>
 
-                        <pl-loading-button id="enterButton" on-click="_confirmNewPassword" class="tap enter-button" no-tab="[[ open ]]">
+                        <pl-loading-button on-click="_confirmNewPassword" class="tap enter-button" no-tab="[[ open ]]">
                             <pl-icon icon="forward"></pl-icon>
                         </pl-loading-button>
 
@@ -358,31 +345,26 @@
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 4) ]]">
 
-                    <div class="welcome-title">[[ $l("All done!") ]]</div>
-                    <div class="welcome-subtitle">[[ $l("You're all set! Have fun!") ]]</div>
+                    <div class="welcome-title animate-out">[[ $l("All done!") ]]</div>
+                    <div class="welcome-subtitle animate-out">[[ $l("You're all set! Have fun!") ]]</div>
 
-                    <div class="form-box tiles tiles-2 animate">
-                        <button on-click="_finishSetup" class="tap start-button" no-tab="[[ open ]]">
+                    <div class="form-box tiles tiles-2 animate-out">
+                        <pl-loading-button id="getStartedButton" on-click="_finishSetup" class="tap start-button" no-tab="[[ open ]]">
                             <span>[[ $l("Start Using Padlock") ]]</span>
                             <pl-icon icon="forward"></pl-icon>
-                        </button>
+                        </pl-loading-button>
                     </div>
 
                 </div>
 
             </div>
 
-            <div class="get-started-thumbs">
+            <div class="get-started-thumbs animate-out">
                 <div class$="[[ _getStartedClass(_getStartedStep, 0) ]]" on-click="_goToStep"></div>
                 <div class$="[[ _getStartedClass(_getStartedStep, 1) ]]" on-click="_goToStep"></div>
                 <div class$="[[ _getStartedClass(_getStartedStep, 2) ]]" on-click="_goToStep"></div>
                 <div class$="[[ _getStartedClass(_getStartedStep, 3) ]]" on-click="_goToStep"></div>
                 <div class$="[[ _getStartedClass(_getStartedStep, 4) ]]" on-click="_goToStep"></div>
-            </div>
-
-            <div hidden>
-                <pl-loading-button id="getStartedButton" on-click="_getStarted" no-tab="[[ open ]]"
-                    class="tap tiles-4 enter-button" label="[[ $l('Get Started') ]]"></pl-loading-button>
             </div>
 
         </main>
@@ -425,16 +407,6 @@ class StartView extends applyMixins(
     static get is() { return "pl-start-view"; }
 
     static get properties() { return {
-        animationOptions: {
-            type: Object,
-            value: {
-                animation: "reveal",
-                duration: 1200,
-                fullDuration: 1500,
-                initialDelay: 200,
-                fill: "both"
-            }
-        },
         open: {
             type: Boolean,
             value: false,
@@ -472,6 +444,7 @@ class StartView extends applyMixins(
                 if (!isTouch() && this._hasData) {
                     this.$.passwordInput.focus();
                 }
+                this._openChanged();
             });
     }
 
@@ -479,7 +452,7 @@ class StartView extends applyMixins(
         this.$.passwordInput.value = "";
         this.$.emailInput.value = "";
         this.$.newPasswordInput.value = "";
-        this.$.enterButton.stop();
+        this.$.unlockButton.stop();
         this.$.getStartedButton.stop();
         this._failCount = 0;
         this._hasEmailInputShown = this._hasPasswordInfoShown = false;
@@ -488,14 +461,22 @@ class StartView extends applyMixins(
 
     _openChanged() {
         if (this.open) {
-            this.animateCascade(this.root.querySelectorAll("main:not([hidden]) .animate-out"), {
-                direction: "reverse",
-                duration: 200,
-                fullDuration: 300,
-                initialDelay: 0
+            this.animateCascade(this.root.querySelectorAll(`main.${this._mode} .animate-out`), {
+                animation: "fade",
+                duration: 400,
+                fullDuration: 600,
+                initialDelay: 0,
+                fill: "forwards",
+                easing: "cubic-bezier(1, 0, 0.2, 1)"
             });
         } else {
-            this.animateCascade(this.root.querySelectorAll("main:not([hidden]) .animate-in"));
+            this.animateCascade(this.root.querySelectorAll(`main.${this._mode} .animate-in`), {
+                animation: "reveal",
+                duration: 1000,
+                fullDuration: 1500,
+                initialDelay: 300,
+                fill: "backwards"
+            });
         }
     }
 
@@ -587,7 +568,10 @@ class StartView extends applyMixins(
             return;
         }
         this._initializing = true;
-        this.initData(this.$.newPasswordInput.value, this.$.emailInput.value)
+        Promise.all([
+            this.initData(this.$.newPasswordInput.value, this.$.emailInput.value),
+            wait(1000)
+        ])
             .then(() => {
                 this.$.getStartedButton.success();
                 this.$.newPasswordInput.blur();
@@ -618,20 +602,23 @@ class StartView extends applyMixins(
         }
 
         this.$.passwordInput.blur();
-        this.$.enterButton.start();
+        this.$.unlockButton.start();
 
         if (this._unlocking) {
             return;
         }
         this._unlocking = true;
 
-        this.loadData(password)
+        Promise.all([
+            this.loadData(password),
+            wait(1000)
+        ])
             .then(() => {
-                this.$.enterButton.success();
+                this.$.unlockButton.success();
                 this._unlocking = false;
             })
             .catch((e) => {
-                this.$.enterButton.fail();
+                this.$.unlockButton.fail();
                 this._unlocking = false;
                 switch (e.code) {
                     case "decryption_failed":

@@ -339,7 +339,14 @@ class App extends applyMixins(
     }
 
     _lockedChanged() {
-        this.$.main.classList.toggle("active", !this.locked);
+        if (this.locked) {
+            this.$.main.classList.remove("active");
+        } else {
+            setTimeout(() => {
+                this.$.main.classList.add("active");
+                this.$.listView.animateRecords();
+            }, 600);
+        }
     }
 }
 
