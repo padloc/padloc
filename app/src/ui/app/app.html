@@ -148,6 +148,8 @@
     <script>
 (() => {
 
+/* global cordova, device, StatusBar */
+
 const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
@@ -208,7 +210,30 @@ class App extends applyMixins(
 
     connectedCallback() {
         super.connectedCallback();
-        cordovaReady.then(() => navigator.splashscreen.hide());
+        cordovaReady.then(() => {
+            // Replace window.open method with the inappbrowser equivalent
+            window.open = cordova.InAppBrowser.open;
+
+            const isIOS = device.platform === "iOS";
+            const isIPhoneX = device.model === "iPhone10,3" || device.model === "iPhone10,6";
+            // Hide status bar on iOS
+            if (isIOS && !isIPhoneX) {
+                StatusBar.hide();
+            }
+
+            if (isIPhoneX) {
+                StatusBar.show();
+                Object.assign(document.body.style, {
+                    margin: 0,
+                    height: "812px",
+                    position: "relative"
+                });
+                this.classList.add("notch");
+                setTimeout(() => document.body.style.background = "black", 500);
+            }
+
+            navigator.splashscreen.hide();
+        });
     }
 
     recordDeleted(record) {
