@@ -122,8 +122,7 @@
                     <div class="account">[[ settings.syncEmail ]]</div>
                     <div>[[ connectedInfoText(settings.syncEmail) ]]</div>
                 </div>
-                <pl-loading-button id="syncButton" class="tap" on-click="synchronize"
-                    label="[[ $l('Synchronize') ]]"></pl-loading-button>
+                <pl-loading-button id="syncButton" class="tap" on-click="synchronize">[[ $l('Synchronize') ]]</pl-loading-button>
                 <button class="tap" on-click="_manageAccount">[[ $l("Manage Account") ]]</button>
                 <button class="tap" on-click="_disconnect">[[ $l("Unpair") ]]</button>
             </section>

@@ -112,10 +112,6 @@
                 width: var(--row-height);
             }
 
-            .form-box pl-loading-button pl-icon {
-                margin-left: 6px;
-            }
-
             .input-wrapper {
                 position: relative;
             }
@@ -231,6 +227,18 @@
                 margin-top: 10px;
             }
 
+            .version {
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 20px;
+                margin: auto;
+                font-size: var(--font-size-small);
+                color: rgba(0, 0, 0, 0.25);
+                text-shadow: none;
+                cursor: pointer;
+            }
+
             :host([open]) {
                 pointer-events: none;
             }
@@ -258,7 +266,7 @@
                 </pl-loading-button>
             </div>
 
-            <div class="hint animate-in animate-out" inner-h-t-m-l="[[ _randomHint() ]]"></div>
+            <div class="version animate-in animate-out" on-click="_openProductPage">Padlock v[[ _version ]]</div>
 
         </main>
 
@@ -378,22 +386,7 @@
 
 const { DataMixin, LocaleMixin, DialogMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins, wait } = padlock.util;
-const { isTouch } = padlock.platform;
-
-const hints = [
-    $l(
-        "**Did you know**: Padlock Cloud is not only a great way " +
-        "to synchronize your data between devices but also acts as a backup in" +
-        "case you lose your device or accidentally delete the app. You can find" +
-        "your Padlock Cloud settings by clicking on the {0} icon.",
-        "<pl-icon icon='cloud'></pl-icon>"
-    ),
-    $l(
-        "**Did you know**: You can generate random values for your fields " +
-        "by clicking the {0} icon.",
-        "<pl-icon icon='generate'></pl-icon>"
-    )
-];
+const { isTouch, getAppVersion, getAppStoreLink } = padlock.platform;
 
 class StartView extends applyMixins(
     BaseElement,
@@ -433,6 +426,7 @@ class StartView extends applyMixins(
     constructor() {
         super();
         this._failCount = 0;
+        getAppVersion().then(((version) => this._version = version));
     }
 
     ready() {
@@ -466,7 +460,7 @@ class StartView extends applyMixins(
                 duration: 400,
                 fullDuration: 600,
                 initialDelay: 0,
-                fill: "forwards",
+                fill: "both",
                 easing: "cubic-bezier(1, 0, 0.2, 1)"
             });
         } else {
@@ -475,7 +469,7 @@ class StartView extends applyMixins(
                 duration: 1000,
                 fullDuration: 1500,
                 initialDelay: 300,
-                fill: "backwards"
+                fill: "both"
             });
         }
     }
@@ -485,20 +479,28 @@ class StartView extends applyMixins(
     }
 
     _enterEmail() {
+        this.$.emailInput.blur();
         if (this.$.emailInput.invalid) {
             this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"))
                 .then(() => this.$.emailInput.focus());
             return;
         }
         this._getStartedStep = 2;
+        if (!isTouch()) {
+            this.$.newPasswordInput.focus();
+        }
     }
 
     _skipEmail() {
         this.$.emailInput.value = "";
         this._getStartedStep = 2;
+        if (!isTouch()) {
+            this.$.newPasswordInput.focus();
+        }
     }
 
     _enterNewPassword() {
+        this.$.newPasswordInput.blur();
         const pwd = this.$.newPasswordInput.value;
 
         if (!pwd) {
@@ -523,9 +525,13 @@ class StartView extends applyMixins(
         }
 
         this._getStartedStep = 3;
+        if (!isTouch()) {
+            this.$.confirmPasswordInput.focus();
+        }
     }
 
     _confirmNewPassword() {
+        this.$.confirmPasswordInput.blur();
         if (this.$.confirmPasswordInput.value !== this.$.newPasswordInput.value) {
             this.choose($l(
                 "The password you entered does not match the original one!"
@@ -704,10 +710,6 @@ class StartView extends applyMixins(
         this.$.newPasswordInput.focus();
     }
 
-    _randomHint() {
-        return hints[Math.floor(Math.random() * hints.length)];
-    }
-
     _getStartedMessage() {
         return $l(
             "**Welcome to Padlock!** Let's get you started! First, choose your master password:"
@@ -742,6 +744,10 @@ class StartView extends applyMixins(
         if (s < this._getStartedStep) {
             this._getStartedStep = s;
         }
+    }
+
+    _openProductPage() {
+        getAppStoreLink().then((link) => window.open(link, "_system"));
     }
 
 }
