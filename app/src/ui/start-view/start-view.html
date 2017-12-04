@@ -92,6 +92,7 @@
                 width: 100%;
                 text-align: center;
                 font-weight: bold;
+                height: auto;
             }
 
             .start-button pl-icon {
@@ -272,12 +273,10 @@
                     <div class="welcome-title animate-in">[[ $l("Welcome to Padlock!") ]]</div>
                     <div class="welcome-subtitle animate-in">[[ $l("Let's get you set up! It'll take only a couple of seconds.") ]]</div>
 
-                    <div class="form-box tiles tiles-2 animate-in">
-                        <button on-click="_startSetup" class="tap start-button" no-tab="[[ open ]]">
-                            <span>[[ $l("Get Started") ]]</span>
-                            <pl-icon icon="forward"></pl-icon>
-                        </button>
-                    </div>
+                    <pl-loading-button on-click="_startSetup" class="form-box tiles-2 animate-in tap start-button" no-tab="[[ open ]]">
+                        <div>[[ $l("Get Started") ]]</div>
+                        <pl-icon icon="forward"></pl-icon>
+                    </pl-loading-button>
 
                 </div>
 
@@ -303,18 +302,20 @@
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 2) ]]">
 
-                    <div class="form-box tiles tiles-2">
+                    <div>
+                        <div class="form-box tiles tiles-2">
 
-                        <pl-input id="newPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
-                            on-enter="_enterNewPassword" value="{{ newPwd }}" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
+                            <pl-input id="newPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
+                                on-enter="_enterNewPassword" value="{{ newPwd }}" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
 
-                        <pl-loading-button on-click="_enterNewPassword" class="tap enter-button" no-tab="[[ open ]]">
-                            <pl-icon icon="forward"></pl-icon>
-                        </pl-loading-button>
+                            <pl-loading-button on-click="_enterNewPassword" class="tap enter-button" no-tab="[[ open ]]">
+                                <pl-icon icon="forward"></pl-icon>
+                            </pl-loading-button>
 
+                        </div>
+
+                        <div class="strength-meter">[[ _pwdStrength ]]</div>
                     </div>
-
-                    <div class="strength-meter">[[ _pwdStrength ]]</div>
 
                     <div class="hint">
                         <pl-icon icon="info-round"></pl-icon>
@@ -348,12 +349,10 @@
                     <div class="welcome-title animate-out">[[ $l("All done!") ]]</div>
                     <div class="welcome-subtitle animate-out">[[ $l("You're all set! Have fun!") ]]</div>
 
-                    <div class="form-box tiles tiles-2 animate-out">
-                        <pl-loading-button id="getStartedButton" on-click="_finishSetup" class="tap start-button" no-tab="[[ open ]]">
-                            <span>[[ $l("Start Using Padlock") ]]</span>
-                            <pl-icon icon="forward"></pl-icon>
-                        </pl-loading-button>
-                    </div>
+                    <pl-loading-button id="getStartedButton" on-click="_finishSetup" class="form-box tiles-2 animate-out tap start-button" no-tab="[[ open ]]">
+                        <span>[[ $l("Start Using Padlock") ]]</span>
+                        <pl-icon icon="forward"></pl-icon>
+                    </pl-loading-button>
 
                 </div>
 
@@ -456,6 +455,7 @@ class StartView extends applyMixins(
         this.$.getStartedButton.stop();
         this._failCount = 0;
         this._hasEmailInputShown = this._hasPasswordInfoShown = false;
+        this._getStartedStep = 0;
         return this._checkHasData();
     }
 
@@ -494,6 +494,7 @@ class StartView extends applyMixins(
     }
 
     _skipEmail() {
+        this.$.emailInput.value = "";
         this._getStartedStep = 2;
     }
 

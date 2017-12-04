@@ -16,9 +16,16 @@
                 flex: 1;
             }
 
-            button > *, ::slotted(*) {
+            button > * {
                 @apply --absolute-center;
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+            }
+
+            button > .label {
+                @appy --fullbleed;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             button.loading .label, button.success .label, button.fail .label,
