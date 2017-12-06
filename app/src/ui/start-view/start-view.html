@@ -32,6 +32,7 @@
                 --color-foreground: var(--color-tertiary);
                 --color-highlight: var(--color-secondary);
                 @apply --fullbleed;
+                @apply --scroll;
                 color: var(--color-foreground);
                 display: flex;
                 flex-direction: column;
@@ -42,6 +43,8 @@
 
             main {
                 @apply --fullbleed;
+                background: transparent;
+                min-height: 500px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -50,19 +53,20 @@
 
             .shutter {
                 @apply --fullbleed;
+                min-height: 500px;
                 background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%);
                 transform: translate3d(0, 0, 0);
                 transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
             }
 
             .form-box {
-                width: 100%;
-                max-width: 300px;
+                width: 300px;
                 border: solid 1px var(--shade-3-color);
                 border-radius: 12px;
                 overflow: hidden;
                 display: flex;
                 margin-top: 20px;
+                transform: translate3d(0, 0, 0);
             }
 
             .hero {
@@ -81,7 +85,7 @@
             }
 
             .welcome-subtitle {
-                max-width: 300px;
+                width: 300px;
                 padding: 10px;
             }
 
@@ -89,7 +93,6 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                width: 100%;
                 text-align: center;
                 font-weight: bold;
                 height: auto;
@@ -98,6 +101,7 @@
             .start-button pl-icon {
                 position: relative;
                 top: 2px;
+                width: 30px;
             }
 
             .form-box pl-input, .form-box .input-wrapper {
@@ -112,38 +116,18 @@
                 width: var(--row-height);
             }
 
-            .input-wrapper {
-                position: relative;
-            }
-
-            .input-wrapper pl-icon {
-                position: absolute;
-                width: var(--row-height);
-                height: var(--row-height);
-                top: 0;
-                right: 0;
-                bottom: 0;
-                margin: auto 0;
-                opacity: 0.8;
-            }
-
             .strength-meter {
                 font-size: 12px;
                 font-weight: bold;
                 margin-top: 10px;
+                margin-bottom: -15px;
                 height: 16px;
-            }
-
-            .enter-button {
-                font-weight: bold;
             }
 
             .hint {
                 font-size: var(--font-size-tiny);
-                width: 100%;
-                max-width: 300px;
-                padding: 20px;
-                margin-top: 20px;
+                width: 305px;
+                margin-top: 40px;
             }
 
             .hint pl-icon {
@@ -159,7 +143,7 @@
 
             .get-started-steps {
                 width: 100%;
-                height: 250px;
+                height: 260px;
                 position: relative;
             }
 
@@ -224,7 +208,7 @@
                 height: auto;
                 line-height: normal;
                 font-weight: bold;
-                margin-top: 10px;
+                margin-top: 40px;
             }
 
             .version {
@@ -237,6 +221,16 @@
                 color: rgba(0, 0, 0, 0.25);
                 text-shadow: none;
                 cursor: pointer;
+            }
+
+            a {
+                text-decoration: underline;
+                font-weight: bold;
+            }
+
+            .hint.choose-password {
+                margin-top: 30px;
+                width: 160px;
             }
 
             :host([open]) {
@@ -260,7 +254,7 @@
                     select-on-focus on-enter="_unlock" no-tab="[[ open ]]"
                     placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
 
-                <pl-loading-button id="unlockButton" on-click="_unlock" class="tap enter-button"
+                <pl-loading-button id="unlockButton" on-click="_unlock" class="tap"
                     label="[[ $l('Unlock') ]]" no-tab="[[ open ]]">
                     <pl-icon icon="forward"></pl-icon>
                 </pl-loading-button>
@@ -279,7 +273,7 @@
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 0) ]]">
 
                     <div class="welcome-title animate-in">[[ $l("Welcome to Padlock!") ]]</div>
-                    <div class="welcome-subtitle animate-in">[[ $l("Let's get you set up! It'll take only a couple of seconds.") ]]</div>
+                    <div class="welcome-subtitle animate-in">[[ $l("Let's get you set up! This will only take a couple of seconds.") ]]</div>
 
                     <pl-loading-button on-click="_startSetup" class="form-box tiles-2 animate-in tap start-button" no-tab="[[ open ]]">
                         <div>[[ $l("Get Started") ]]</div>
@@ -291,7 +285,7 @@
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 1) ]]">
 
                     <div class="form-box tiles tiles-2">
-                        <pl-input id="emailInput" type="email" select-on-focus no-tab="[[ open ]]"
+                        <pl-input id="emailInput" type="email" select-on-focus no-tab="[[ open ]]" class="tap"
                             on-enter="_enterEmail" placeholder="[[ $l('Enter Email Address') ]]"></pl-input>
 
                         <pl-loading-button on-click="_enterEmail" class="tap" no-tab="[[ open ]]">
@@ -301,7 +295,7 @@
 
                     <div class="hint">
                         <pl-icon icon="cloud"></pl-icon>
-                        <span>[[ _getStartedHint(0) ]]</span>
+                        <span inner-h-t-m-l="[[ _getStartedHint(0) ]]"></span>
                     </div>
 
                     <button class="skip" on-click="_skipEmail">[[ $l("Skip Email") ]]</button>
@@ -316,7 +310,7 @@
                             <pl-input id="newPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                                 on-enter="_enterNewPassword" value="{{ newPwd }}" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
 
-                            <pl-loading-button on-click="_enterNewPassword" class="tap enter-button" no-tab="[[ open ]]">
+                            <pl-loading-button on-click="_enterNewPassword" class="tap" no-tab="[[ open ]]">
                                 <pl-icon icon="forward"></pl-icon>
                             </pl-loading-button>
 
@@ -327,8 +321,11 @@
 
                     <div class="hint">
                         <pl-icon icon="info-round"></pl-icon>
-                        <span>[[ _getStartedHint(1) ]]</span>
+                        <span inner-h-t-m-l="[[ _getStartedHint(1) ]]"></span>
                     </div>
+
+                    <a href="https://padlock.io/howto/choose-master-password/" target="_system"
+                        class="hint choose-password">[[ $l("How do I choose a good master password?") ]]</a>
 
                 </div>
 
@@ -339,7 +336,7 @@
                         <pl-input id="confirmPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                             on-enter="_confirmNewPassword" placeholder="[[ $l('Confirm Master Password') ]]"></pl-input>
 
-                        <pl-loading-button on-click="_confirmNewPassword" class="tap enter-button" no-tab="[[ open ]]">
+                        <pl-loading-button on-click="_confirmNewPassword" class="tap" no-tab="[[ open ]]">
                             <pl-icon icon="forward"></pl-icon>
                         </pl-loading-button>
 
@@ -347,7 +344,7 @@
 
                     <div class="hint">
                         <pl-icon icon="info-round"></pl-icon>
-                        <span>[[ _getStartedHint(2) ]]</span>
+                        <span inner-h-t-m-l="[[ _getStartedHint(2) ]]"</span>
                     </div>
 
                 </div>
@@ -355,10 +352,10 @@
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 4) ]]">
 
                     <div class="welcome-title animate-out">[[ $l("All done!") ]]</div>
-                    <div class="welcome-subtitle animate-out">[[ $l("You're all set! Have fun!") ]]</div>
+                    <div class="welcome-subtitle animate-out">[[ $l("You're all set! Enjoy using Padlock!") ]]</div>
 
                     <pl-loading-button id="getStartedButton" on-click="_finishSetup" class="form-box tiles-2 animate-out tap start-button" no-tab="[[ open ]]">
-                        <span>[[ $l("Start Using Padlock") ]]</span>
+                        <span>[[ $l("Finish Setup") ]]</span>
                         <pl-icon icon="forward"></pl-icon>
                     </pl-loading-button>
 
@@ -366,7 +363,7 @@
 
             </div>
 
-            <div class="get-started-thumbs animate-out">
+            <div class="get-started-thumbs animate-in animate-out">
                 <div class$="[[ _getStartedClass(_getStartedStep, 0) ]]" on-click="_goToStep"></div>
                 <div class$="[[ _getStartedClass(_getStartedStep, 1) ]]" on-click="_goToStep"></div>
                 <div class$="[[ _getStartedClass(_getStartedStep, 2) ]]" on-click="_goToStep"></div>
@@ -445,10 +442,10 @@ class StartView extends applyMixins(
         this.$.passwordInput.value = "";
         this.$.emailInput.value = "";
         this.$.newPasswordInput.value = "";
+        this.$.confirmPasswordInput.value = "";
         this.$.unlockButton.stop();
         this.$.getStartedButton.stop();
         this._failCount = 0;
-        this._hasEmailInputShown = this._hasPasswordInfoShown = false;
         this._getStartedStep = 0;
         return this._checkHasData();
     }
@@ -460,7 +457,7 @@ class StartView extends applyMixins(
                 duration: 400,
                 fullDuration: 600,
                 initialDelay: 0,
-                fill: "both",
+                fill: "forwards",
                 easing: "cubic-bezier(1, 0, 0.2, 1)"
             });
         } else {
@@ -469,13 +466,16 @@ class StartView extends applyMixins(
                 duration: 1000,
                 fullDuration: 1500,
                 initialDelay: 300,
-                fill: "both"
+                fill: "backwards"
             });
         }
     }
 
     _startSetup() {
         this._getStartedStep = 1;
+        if (!isTouch()) {
+            this.$.emailInput.focus();
+        }
     }
 
     _enterEmail() {
@@ -667,70 +667,31 @@ class StartView extends applyMixins(
             });
     }
 
-    _showEmailInfo() {
-        this.$.emailInput.blur();
-        wait(100)
-            .then(() => {
-                return this.alert($l(
-                    "Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
-                    "you to easily and securely store your data online and synchronize it between all your devices. " +
-                    "Don't worry, we'll only use it as a method of authentication and won't send you any spam!"
-                ));
-            })
-            .then(() => this.$.emailInput.focus());
-        this._hasEmailInputShown = true;
-    }
-
-    _showPasswordInfo() {
-        this.$.newPasswordInput.blur();
-        wait(100)
-            .then(() => {
-                return this.alert($l(
-                    "Your master password is a single passphrase that is used to encrypt everything you " +
-                    "store in Padlock and the only way to access your data. Without your master password, no " +
-                    "one will be able to read your data - not even we! So make sure you don't forget it, because " +
-                    "we won't be able to help you recover it in case you do."
-                ));
-            })
-            .then(() => this.$.newPasswordInput.focus());
-        this._hasPasswordInfoShown = true;
-    }
-
     _passwordStrength(pwd) {
         const score = pwd ? zxcvbn(pwd).score : -1;
         const strength = score === -1 ? "" : score < 2 ? $l("weak") : score < 4 ? $l("medium") : $l("strong");
         return strength && $l("strength: {0}", strength);
     }
 
-    _hasValue(val) {
-        return !!val;
-    }
-
     _emailEnter() {
         this.$.newPasswordInput.focus();
-    }
-
-    _getStartedMessage() {
-        return $l(
-            "**Welcome to Padlock!** Let's get you started! First, choose your master password:"
-        );
     }
 
     _getStartedHint(step) {
         return [
             $l(
-                "Padlock uses your email address to connect to the Padlock Cloud service, which allows " +
-                "you to easily and securely store your data online and synchronize it between all your devices."
+                "Providing an email address will allow you to make use of the {0} service, an easy " +
+                "and secure way to store your data online and synchronize it between all your devices!",
+                "<a href='https://padlock.io/cloud/' target='_system'>Padlock Cloud</a>"
             ),
             $l(
-                "Your master password is a single passphrase that will protect " +
-                "your data. Without it, nobody will be able to access your data - not even us!"
+                "Your **master password** is a single passphrase used to protect your data. " +
+                "Without it, nobody will be able to access your data - not even us!"
             ),
             $l(
-                "Remember your master password! Without it, nobody will be able to access your data, " +
-                "not even we! This is to ensure that your data is as safe as possible but it also means " +
-                "that if you lose your master password, we won't be able to assist you with recovering your " +
-                "data."
+                "**Don't forget your master password!** For privacy and security reasons we never store your " +
+                "password anywhere which means we won't be able to help you recover your data in case you forget " +
+                "it. We recommend writing it down on a piece of paper and storing it somewhere safe."
             )
         ][step];
     }
