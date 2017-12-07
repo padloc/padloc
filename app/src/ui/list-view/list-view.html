@@ -41,7 +41,7 @@
                 color: var(--color-foreground);
                 background: var(--color-background);
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-                border-bottom: solid 2px rgb(64, 143, 184);
+                border-bottom: solid 1px rgb(64, 143, 184);
             }
 
             header pl-icon[icon=logo] {
@@ -446,12 +446,12 @@ class ListView extends applyMixins(
             setTimeout(() => {
                 this.$.list.scrollToIndex(0);
                 this.$.list.style.opacity = 1;
-                this._animateRecords();
+                this.animateRecords();
             }, 100);
         }
     }
 
-    _animateRecords() {
+    animateRecords() {
         const first = this.$.list.firstVisibleIndex;
         const last = this.$.list.lastVisibleIndex + 1;
         const elements = Array.from(this.root.querySelectorAll("pl-record-item"));

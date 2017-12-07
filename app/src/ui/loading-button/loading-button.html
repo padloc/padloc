@@ -21,6 +21,13 @@
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
             }
 
+            button > .label {
+                @appy --fullbleed;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
             button.loading .label, button.success .label, button.fail .label,
             button:not(.loading) .spinner,
             button:not(.success) .icon-success,
@@ -42,7 +49,7 @@
 
         <button type="button" class$="[[ _buttonClass(_loading, _success, _fail) ]]"
             tabindex$="[[ _tabIndex(noTab) ]]">
-            <div class="label">[[ label ]]</div>
+            <div class="label"><slot></slot></div>
             <paper-spinner-lite active="[[ _loading ]]" class="spinner"></paper-spinner-lite>
             <pl-icon icon="check" class="icon-success"></pl-icon>
             <pl-icon icon="cancel" class="icon-fail"></pl-icon>
