@@ -523,16 +523,25 @@ class StartView extends applyMixins(
         };
 
         if (zxcvbn(pwd).score < 2) {
-            this.confirm($l(
+            this.choose($l(
                 "WARNING: The password you entered is weak which makes it easier for attackers to break " +
                 "the encryption used to protect your data. Try to use a longer password or include a " +
                 "variation of uppercase, lowercase and special characters as well as numbers."
-            ),
-            $l("Use Anyway"), $l("Choose Different Password")).then((confirm) => {
-                if (confirm) {
-                    next();
-                } else {
-                    this.$.newPasswordInput.focus();
+            ), [
+                $l("Learn More"),
+                $l("Choose Different Password"),
+                $l("Use Anyway")
+            ]).then((choice) => {
+                switch (choice) {
+                    case 0:
+                        this._openPwdHowto();
+                        break;
+                    case 1:
+                        this.$.newPasswordInput.focus();
+                        break;
+                    case 2:
+                        next();
+                        break;
                 }
             });
             return;
