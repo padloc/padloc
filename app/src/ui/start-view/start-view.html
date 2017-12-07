@@ -196,6 +196,7 @@
                 height: 10px;
                 border-radius: 100%;
                 margin: 5px;
+                cursor: pointer;
             }
 
             .get-started-thumbs > .right {
@@ -223,14 +224,12 @@
                 cursor: pointer;
             }
 
-            a {
-                text-decoration: underline;
-                font-weight: bold;
-            }
-
             .hint.choose-password {
                 margin-top: 30px;
                 width: 160px;
+                text-decoration: underline;
+                font-weight: bold;
+                cursor: pointer;
             }
 
             :host([open]) {
@@ -324,8 +323,7 @@
                         <span inner-h-t-m-l="[[ _getStartedHint(1) ]]"></span>
                     </div>
 
-                    <a href="https://padlock.io/howto/choose-master-password/" target="_system"
-                        class="hint choose-password">[[ $l("How do I choose a good master password?") ]]</a>
+                    <div on-click="_openPwdHowto" class="hint choose-password">[[ $l("How do I choose a good master password?") ]]</div>
 
                 </div>
 
@@ -697,9 +695,8 @@ class StartView extends applyMixins(
     _getStartedHint(step) {
         return [
             $l(
-                "Providing an email address will allow you to make use of the {0} service, an easy " +
-                "and secure way to store your data online and synchronize it between all your devices!",
-                "<a href='https://padlock.io/cloud/' target='_system'>Padlock Cloud</a>"
+                "Providing an email address will allow you to make use of the **Padlock Cloud** service, an easy " +
+                "and secure way to store your data online and synchronize it between all your devices!"
             ),
             $l(
                 "Your **master password** is a single passphrase used to protect your data. " +
@@ -726,6 +723,10 @@ class StartView extends applyMixins(
 
     _openProductPage() {
         getAppStoreLink().then((link) => window.open(link, "_system"));
+    }
+
+    _openPwdHowto() {
+        window.open("https://padlock.io/howto/choose-master-password/", "_system");
     }
 
 }
