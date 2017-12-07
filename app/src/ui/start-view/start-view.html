@@ -384,6 +384,7 @@
 const { DataMixin, LocaleMixin, DialogMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins, wait } = padlock.util;
 const { isTouch, getAppVersion, getAppStoreLink } = padlock.platform;
+const { track } = padlock.tracking;
 
 class StartView extends applyMixins(
     BaseElement,
@@ -476,6 +477,8 @@ class StartView extends applyMixins(
         if (!isTouch()) {
             this.$.emailInput.focus();
         }
+
+        track("Setup: Start");
     }
 
     _enterEmail() {
@@ -489,6 +492,8 @@ class StartView extends applyMixins(
         if (!isTouch()) {
             this.$.newPasswordInput.focus();
         }
+
+        track("Setup: Email", { "Skipped": false });
     }
 
     _skipEmail() {
@@ -497,6 +502,8 @@ class StartView extends applyMixins(
         if (!isTouch()) {
             this.$.newPasswordInput.focus();
         }
+
+        track("Setup: Email", { "Skipped": true });
     }
 
     _enterNewPassword() {
@@ -508,6 +515,15 @@ class StartView extends applyMixins(
             return;
         }
 
+        const next = () => {
+            this._getStartedStep = 3;
+            if (!isTouch()) {
+                this.$.confirmPasswordInput.focus();
+            }
+
+            track("Setup: Choose Password");
+        };
+
         if (zxcvbn(pwd).score < 2) {
             this.confirm($l(
                 "WARNING: The password you entered is weak which makes it easier for attackers to break " +
@@ -516,7 +532,7 @@ class StartView extends applyMixins(
             ),
             $l("Use Anyway"), $l("Choose Different Password")).then((confirm) => {
                 if (confirm) {
-                    this._getStartedStep = 3;
+                    next();
                 } else {
                     this.$.newPasswordInput.focus();
                 }
@@ -524,10 +540,7 @@ class StartView extends applyMixins(
             return;
         }
 
-        this._getStartedStep = 3;
-        if (!isTouch()) {
-            this.$.confirmPasswordInput.focus();
-        }
+        next();
     }
 
     _confirmNewPassword() {
@@ -554,6 +567,8 @@ class StartView extends applyMixins(
         }
 
         this._getStartedStep = 4;
+
+        track("Setup: Confirm Password");
     }
 
     _computeMode() {
@@ -567,6 +582,8 @@ class StartView extends applyMixins(
 
     _finishSetup() {
         this._initializeData();
+
+        track("Setup: Finish");
     }
 
     _initializeData() {
