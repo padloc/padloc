@@ -9,6 +9,7 @@ import * as platform from "./platform";
 import * as file from "./file";
 import * as messages from "./messages";
 import * as stats from "./stats";
+import * as tracking from "./tracking";
 
 export {
     util,
@@ -21,5 +22,6 @@ export {
     platform,
     file,
     messages,
-    stats
+    stats,
+    tracking
 }
