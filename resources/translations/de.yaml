@@ -14,8 +14,10 @@
   t: Aktualisieren
 - o: Cancel
   t: Abbrechen
-- o: 'Your trial period ends in {0} days.'
-  t: 'Ihre kostenlose Testphase ended in {0} Tagen'
+- o: 'Subscription Status:'
+  t: 'Abonemment-Status:'
+- o: 'Trialing ({0} days left)'
+  t: 'Testphase ({0} Tage verbleibend)'
 - o: Buy Subscription
   t: Abonnement Kaufen
 - o: Read-Only
@@ -110,12 +112,24 @@
   t: Passwort Eingeben
 - o: Unlock
   t: Entsperren
-- o: Enter Email (Optional)
-  t: Email Eingeben (Optional)
-- o: 'strength: {0}'
-  t: 'Sicherheit: {0}'
+- o: Welcome to Padlock!
+  t: Willkommen zu Padlock!
+- o: Let's get you set up! This will only take a couple of seconds.
+  t: Bitte nehmen Sie sich einen kleinen Moment Zeit, um die App einzurichten.
 - o: Get Started
   t: Starten
+- o: Skip Email
+  t: Überspringen
+- o: How do I choose a good master password?
+  t: Wie wähle ich ein gutes Master Passwort?
+- o: Confirm Master Password
+  t: Master Passwort Bestätigen
+- o: All done!
+  t: Fertig!
+- o: You're all set! Enjoy using Padlock!
+  t: Alles ist eingerichtet! Viel Spaß beim Nutzen von Padlock!
+- o: Finish Setup
+  t: Setup Abschließen
 - o: New Record
   t: Neuer Eintrag
 - o: OK
@@ -141,19 +155,20 @@
 - o: Synchonize Now
   t: Jetzt Synchronisieren
 - o: >-
-    You are almost done connecting this device. An email was sent to {0}. Check
-    your inbox and follow the instructions to complete the process!
+    Almost done! We send an email with a login link to {0}. Check your inbox and
+    follow the link to complete the process!
   t: >-
-    Der Verbindungsvorgang ist fast abgeschlossen. Es wurde eine Email an {0}
-    gesendet. Prüfen Sie Ihr Postfach und folgen Sie den Anweisungen um den
-    Vorgang abzuschließen!
+    Fast fertig! Wir haben eine Email mit einem Login-Link an {0} gesendet.
+    Prüfen Sie Ihr Postfach und folgen Sie dem Link um den Prozess abzuschließen!
 - o: >-
-    After this period, your access will be read-only, which means you will be
-    able to access your existing data on Padlock Cloud but you won't be able to
-    upload any new data or synchronize changes between devices. Get a
-    subscription now to get unlimited access to Padlock Cloud!
+    Your trial period ends in {0} days. After this period, your access will be
+    read-only, which means you will be able to access your existing data on
+    Padlock Cloud but you won't be able to upload any new data or synchronize
+    changes between devices. Get a subscription now to get unlimited access to
+    Padlock Cloud!
   t: >-
-    Nach dieser Zeitspanne ist Ihr Zugriff auf das Lesen Ihrer Daten beschränkt.
+    Ihre Testphase ended in {0} Tagen. Nach dieser Zeitspanne
+    ist Ihr Zugriff auf das Lesen Ihrer Daten beschränkt.
     Dies bedeutet, dass Sie zwar weiterhin Ihre Daten herunterladen, jedoch
     weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
     synchronisieren können. Erwerben Sie jetzt ein Abonnement um um vollen
@@ -345,7 +360,7 @@
 - o: Use Anyway
   t: Trotzdem Verwenden
 - o: Choose Different Password
-  t: Anderes Password Wählen
+  t: Anderes Passwort Wählen
 - o: Your data has successfully been copied to the system clipboard.
   t: Ihre Daten wurden erfolgreich in die Zwischenablage kopiert.
 - o: >-
@@ -452,22 +467,14 @@
   t: Padlock Bewerten
 - o: No Thanks
   t: Nein Danke
-- o: >-
-    Remember your master password! Without it, nobody will be able to access
-    your data, not even we! This is to ensure that your data is as safe as
-    possible but it also means that if you lose your master password, we won't
-    be able to assist you with recovering your data.
-  t: >-
-    Gehen Sie sicher, dass Sie Ihr Master Passwort nicht vergessen! Ohne Ihr
-    Passwort kann niemand auf Ihre Daten zugreifen, nicht einmal wir! Dies ist
-    essentiell für die Sicherung Ihrer Daten aber bedeutet auch, dass wir Ihnen
-    nicht helfen können, sollten Sie Ihr Passwort vergessen!
-- o: Repeat Master Password
-  t: Master Passwort Wiederholen
-- o: You failed to repeat the password correctly. Try again!
-  t: >-
-    Sie haben das password nicht korrekt wiederholt. Versuchen Sie es noch
-    einmal!
+- o: Learn More
+  t: Mehr Erfahren
+- o: The password you entered does not match the original one!
+  t: Das eingegebene Passwort stimmt nicht mit dem ursprünglichen überein!
+- o: Try Again
+  t: Erneut Versuchen
+- o: Change Password
+  t: Passwort Ändern
 - o: Type 'RESET' to confirm
   t: '"RESET" zum Bestätigen Eingeben'
 - o: You didn't type 'RESET'. Refusing to reset the app.
@@ -504,35 +511,40 @@
   t: >-
     Beim Laden Ihrer Daten ist ein Fehler aufgetreten! Falls das Problem
     weiterhin besteht, setzen Sie App zurück oder installieren Padlock neu!
-- o: >-
-    Padlock uses your email address to connect to the Padlock Cloud service,
-    which allows you to easily and securely store your data online and
-    synchronize it between all your devices. Don't worry, we'll only use it as a
-    method of authentication and won't send you any spam!
-  t: >-
-    Padlock verwendet Ihre Emailadresse um sich mit dem Padlock Cloud Service zu
-    verbinden, welcher es Ihnen ermöglicht, Ihre Daten schnell und einfach
-    online zu speichern und zwischen all Ihren Geräten zu synchronisieren. Keine
-    Sorge, wir verwenden Ihre Email nur zu Authentifizierungszwecken und
-    keinesfalls zum versenden von Werbung oder dergleichen.
-- o: >-
-    Your master password is a single passphrase that is used to encrypt
-    everything you store in Padlock and the only way to access your data.
-    Without your master password, no one will be able to read your data - not
-    even we! So make sure you don't forget it, because we won't be able to help
-    you recover it in case you do.
-  t: >-
-    Ihr Master Passwort ist der Schlüssel, mit dem all Ihre Daten in Padlock
-    geschützt werden. Ohne Ihr Master Passwort wird niemand auf Ihre Daten
-    zugreifen können, nicht einmal wir! Gehen Sie sicher, dass Sie es nicht
-    vergessen, denn in diesem Fall werden wir ihnen nicht helfen können, Zugang
-    zu Ihren Daten zurück zu gewinnen!
 - o: weak
   t: schwach
 - o: medium
   t: mittel
 - o: strong
   t: stark
+- o: 'strength: {0}'
+  t: 'Sicherheit: {0}'
+- o: >-
+    Providing an email address will allow you to make use of the **Padlock
+    Cloud** Service, an easy and secure way to store your data online and
+    synchronize it between all your devices!
+  t: >-
+    Indem Sie eine Emailadresse angeben erhalten Sie Zugriff auf den **Padlock
+    Cloud** service, der es Ihnen ermöglicht, Ihre Daten einfach und sicher
+    online zu speichern und zwischen Ihren Geräten zu synchronisieren!
+- o: >-
+    Your **master password** is a single passphrase used to protect your data.
+    Without it, nobody will be able to access your data - not even us!
+  t : >-
+    Ihr **Master Passwort** ist der eine Schlüssel, mit dem Ihre sämtlichen Daten
+    gesichert werden. Ohne dieses Passwort kann niemand auf Ihre Daten zugreifen -
+    auch wir nicht!
+- o: >-
+    **Don't forget your master password!** For privacy and security reasons we
+    never store your password anywhere which means we won't be able to help you
+    recover your data in case you forget it. We recommend writing it down on a
+    piece of paper and storing it somewhere safe.
+  t: >-
+    **Vergessen Sie Ihr Master Passwort nicht!** Aus Sicherheits- und Privatsphäregründen
+    wird Ihr Master Passwort nirgends gespeichert. Deshalb können wir Ihnen leider
+    nicht bei der Wiederherstellung Ihrer Daten behilflich sein, sollten Sie es jemals
+    verlieren. Wir empfehlen, es auf einen Zettel zu schreiben und diesen an einem sicheren
+    Ort zu verwahren.
 - o: Auto-lock in 10 seconds
   t: Automatische Sperrung in 10 Sekunden
 - o: >-
@@ -583,8 +595,6 @@
     Sorge, denn Padlock ist jetzt auch als native app für Windows, MacOS und
     Linux verfügbar! Besuchen sie unsere Webseite um zu erfahren, wie Sie
     einfach wechseln können!
-- o: Learn More
-  t: Mehr Erfahren
 - o: >-
     Hey there! Sorry to bother you, but we'd love to know how you are liking
     Padlock so far!
