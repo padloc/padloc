@@ -246,7 +246,7 @@ class App extends applyMixins(
         if (this.settings.syncEmail) {
             padlock.stats.set({ pairingSource: "Setup" });
             this.connectCloud(this.settings.syncEmail)
-                .then(() => this.notify($l("Activation link sent. Check your email!"), "info", 3000))
+                .then(() => this.notify($l("Activation link sent. Check your email!"), "info", 4000))
                 .then((clicked) => {
                     if (clicked) {
                         this._openCloudView();
