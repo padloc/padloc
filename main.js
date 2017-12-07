@@ -114,8 +114,12 @@ function createWindow() {
         x: settings.get("windowBounds.x"),
         y: settings.get("windowBounds.y"),
         fullscreen: settings.get("fullscreen"),
-        backgroundColor: "#59c6ff",
-        fullscreenable: true
+        backgroundColor: "#333",
+        fullscreenable: true,
+        frame: false,
+        titleBarStyle: "customButtonsOnHover",
+        transparent: true,
+        hasShadow: false
     });
 
     // and load the index.html of the app.
