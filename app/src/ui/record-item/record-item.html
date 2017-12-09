@@ -20,7 +20,7 @@
                 transition: color 0.3s;
                 margin-top: 10px;
                 border-top: solid 1px rgba(0, 0, 0, 0.1);
-                border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
             .header {
@@ -35,10 +35,20 @@
                 padding-left: 10px;
                 flex: 1;
                 @apply --ellipsis;
+                font-weight: bold;
             }
 
             .fields {
                 position: relative;
+                display: flex;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: 5px 0 10px 0;
+            }
+
+            .fields::after {
+                content: "";
+                flex: 0 0 10px;
             }
 
             .field {
@@ -48,6 +58,10 @@
                 height: 35px;
                 text-align: center;
                 position: relative;
+                border-radius: 8px;
+                margin-left: 10px;
+                flex: 1;
+                min-width: 130px;
             }
 
             .field > * {
@@ -62,7 +76,9 @@
 
             .copied-message {
                 font-weight: bold;
-                color: #4ca8d9;
+                background: var(--color-primary);
+                color: var(--color-background);
+                border-radius: 8px;
             }
 
             .copied-message::before {
@@ -80,28 +96,32 @@
                 padding: 0 15px;
                 @apply --ellipsis;
             }
+            /*  */
+            /* .field-label { */
+            /*     font-weight: bold; */
+            /* } */
 
-            .field-label {
-                font-weight: bold;
+            .field-value {
+                font-family: var(--font-family-mono);
             }
 
             .category {
-                font-size: 13px;
+                font-size: 12px;
                 max-width: 80px;
                 border-radius: 6px;
-                padding: 5px 8px;
+                padding: 4px 8px;
                 margin: 0 12px;
                 line-height: normal;
                 font-weight: bold;
-                @apply --shade-2;
+                /* background: var(--shade-2-color); */
+                border: solid 1px;
             }
-/*
+
             .category::before {
                 font-family: "FontAwesome";
                 content: "\f02b\ ";
                 font-size: 90%;
             }
-*/
 
             .fields-placeholder {
                 opacity: 0.5;
@@ -161,7 +181,9 @@
                 on-click="_categoryClicked">[[ record.category ]]</div>
         </div>
 
-        <div class="fields tiles-2 tiles">
+        <div class="fields tiles">
+            <div>
+            </div>
 
             <template is="dom-repeat" items="[[ record.fields ]]" mutable-data>
 
