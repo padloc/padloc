@@ -13,7 +13,7 @@
                 font-size: inherit;
                 --track-color: var(--slider-track-color, var(--color-foreground));
                 --knob-color: var(--slider-knob-color, var(--color-foreground));
-                --track-size: var(--slider-track-size, 4px);
+                --track-size: var(--slider-track-size, 2px);
                 --knob-size: var(--slider-knob-size, 25px);
             }
 
@@ -35,7 +35,7 @@
                 width: 100%;
                 height: var(--track-size);
                 cursor: pointer;
-                background: var(--color-background);
+                background: var(--track-color);
                 border-radius: var(--track-size);
             }
 
@@ -46,7 +46,7 @@
                 margin-top: calc(0.5 * var(--track-size) - 0.5 * var(--knob-size));
                 position: relative;
                 border-radius: 100%;
-                background: var(--color-foreground);
+                background: var(--knob-color);
                 cursor: pointer;
                 border: none;
                 box-sizing: border-box;
@@ -54,7 +54,7 @@
             }
 
             input[type=range]:active::-webkit-slider-thumb {
-                background: var(--color-highlight);
+                transform: scale(1.1);
             }
 
             label {
