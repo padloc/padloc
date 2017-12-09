@@ -14,6 +14,7 @@
 <link rel="import" href="../settings-view/settings-view.html">
 <link rel="import" href="../start-view/start-view.html">
 <link rel="import" href="../sync/sync.html">
+<link rel="import" href="../title-bar/title-bar.html">
 <link rel="import" href="./auto-lock.html">
 <link rel="import" href="./auto-sync.html">
 <link rel="import" href="./hints.html">
@@ -29,37 +30,50 @@
             }
 
             :host {
+                --border-radius: 12px;
                 overflow: hidden;
                 color: var(--color-foreground);
                 background: #333;
-                border-radius: 10px;
                 position: absolute;
                 width: 100%;
                 height: 100%;
                 animation: fadeIn 0.5s both;
             }
 
-            :host(.notch) {
+            :host(.ios):host(.android) {
                 background: black;
-                border-radius: 8px;
             }
 
-            pl-list-view,
-            #pages {
-                border-radius: 14px;
-                overflow: hidden;
+            :host(.windows), :host(.macos), :host(.ios), :host(.android) {
+                border-radius: var(--border-radius);
             }
 
             #main {
                 @apply --fullbleed;
                 display: flex;
                 overflow: hidden;
-                top: 30px;
-                left: 4px;
-                right: 4px;
-                bottom: 4px;
+            }
+
+            :host(:not(.ios):not(.android)) #main {
+                top: var(--gutter-width);
+                left: var(--gutter-width);
+                right: var(--gutter-width);
+                bottom: var(--gutter-width);
+            }
+
+            :host(.macos) #main, :host(.windows) #main, :host(.linux) #main {
+                top: var(--title-bar-height) !important;
+            }
+
+            :host(.ios) #main {
+                top: 35px;
                 top: constant(safe-area-inset-top);
                 top: env(safe-area-inset-top);
+            }
+
+            #listView, #pages {
+                border-radius: var(--border-radius);
+                overflow: hidden;
             }
 
             :host, #main, #pages, #listView {
@@ -71,6 +85,10 @@
                 transform: translate3d(0, 0, 0) scale(0.95);
             }
 
+            :host(:not(.macos):not(.windows):not(.linux)) pl-title-bar {
+                display: none;
+            }
+
             #listView {
                 flex: 1;
             }
@@ -79,7 +97,7 @@
                 position: relative;
                 flex: 1.62; /* Golden Ratio ;) */
                 background: var(--color-background);
-                margin-left: 4px;
+                margin-left: var(--gutter-width);
             }
 
             #placeholderView {
@@ -149,16 +167,19 @@
 
         </div>
 
+        <pl-title-bar></pl-title-bar>
+
     </template>
 
     <script>
 (() => {
 
-/* global cordova, device, StatusBar */
+/* global cordova, StatusBar */
 
 const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
+const { getPlatformName, getDeviceInfo } = padlock.platform;
 
 const cordovaReady = new Promise((resolve) => {
     document.addEventListener("deviceready", resolve);
@@ -219,26 +240,29 @@ class App extends applyMixins(
         cordovaReady.then(() => {
             // Replace window.open method with the inappbrowser equivalent
             window.open = cordova.InAppBrowser.open;
+            StatusBar.show();
+            navigator.splashscreen.hide();
+        });
 
-            const isIOS = device.platform === "iOS";
+        Promise.all([
+            getPlatformName(),
+            getDeviceInfo()
+        ]).then(([platform, device]) => {
             const isIPhoneX = device.model === "iPhone10,3" || device.model === "iPhone10,6";
-            // Hide status bar on iOS
-            if (isIOS && !isIPhoneX) {
-                StatusBar.hide();
-            }
+
+            this.classList.add(platform.toLowerCase());
 
             if (isIPhoneX) {
-                StatusBar.show();
                 Object.assign(document.body.style, {
                     margin: 0,
                     height: "812px",
                     position: "relative"
                 });
-                this.classList.add("notch");
-                setTimeout(() => document.body.style.background = "black", 500);
             }
 
-            navigator.splashscreen.hide();
+            if (platform === "iOS" || platform === "Android") {
+                setTimeout(() => document.body.style.background = "black", 500);
+            }
         });
     }
 

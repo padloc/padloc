@@ -114,12 +114,11 @@ function createWindow() {
         x: settings.get("windowBounds.x"),
         y: settings.get("windowBounds.y"),
         fullscreen: settings.get("fullscreen"),
-        backgroundColor: "#333",
         fullscreenable: true,
         frame: false,
-        titleBarStyle: "customButtonsOnHover",
         transparent: true,
-        hasShadow: false
+        hasShadow: true,
+        show: false
     });
 
     // and load the index.html of the app.
@@ -128,6 +127,10 @@ function createWindow() {
         protocol: "file:",
         slashes: true
     }));
+
+    win.once("ready-to-show", () => {
+        win.show();
+    });
 
     if (debug) {
         // Open the DevTools.
