@@ -164,12 +164,16 @@ export async function getPlatformName(): Promise<string> {
     }
 }
 
+export function getDesktopSettings(): any {
+    return isElectron() ? electron.remote.getGlobal("settings") : null;
+}
+
 export async function getDeviceUUID(): Promise<string> {
     if (isCordova()) {
         await cordovaReady;
         return device.uuid;
     } else if (isElectron()) {
-        return electron.remote.getGlobal("settings").get("uuid");
+        return getDesktopSettings().get("uuid");
     } else {
         return "";
     }

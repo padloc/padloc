@@ -104,6 +104,14 @@
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
 
+            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Updates") ]]</div>
+                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap"
+                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
+                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
+                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
+            </section>
+
             <section class="tiles" hidden$="[[ _isTouch() ]]">
                 <div class="info">[[ _peekValuesInfo() ]]</div>
                 <pl-toggle-button active="{{ settings.peekValues }}" label="[[ $l('Peek Values') ]]" class="tap"
@@ -152,6 +160,7 @@
                 </button>
                 <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
                 <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
+                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates") ]]</button>
             </section>
         </main>
 
@@ -162,7 +171,7 @@
 
 const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { isCordova, getReviewLink, isTouch } = padlock.platform;
+const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, isElectron } = padlock.platform;
 
 class SettingsView extends applyMixins(
     BaseElement,
@@ -176,6 +185,9 @@ class SettingsView extends applyMixins(
 
     connectedCallback() {
         super.connectedCallback();
+        const desktopSettings = getDesktopSettings().get();
+        this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
+        this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
         this.animateCascade(this.root.querySelectorAll("section"));
     }
 
@@ -396,6 +408,21 @@ class SettingsView extends applyMixins(
                     getReviewLink(0).then((link) => window.open(link, "_system"));
                 }
             });
+    }
+
+    _isDesktop() {
+        return isElectron();
+    }
+
+    _desktopSettingsChanged() {
+        getDesktopSettings().set({
+            autoDownloadUpdates: this.$.autoUpdatesButton.active,
+            allowPrerelease: this.$.betaReleasesButton.active
+        });
+    }
+
+    _checkForUpdates() {
+        checkForUpdates();
     }
 
 }
