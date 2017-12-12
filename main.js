@@ -115,8 +115,9 @@ function createWindow() {
         y: settings.get("windowBounds.y"),
         fullscreen: settings.get("fullscreen"),
         fullscreenable: true,
+        backgroundColor: "#59c6ff",
         frame: false,
-        transparent: true,
+        transparent: false,
         hasShadow: true,
         show: false
     });

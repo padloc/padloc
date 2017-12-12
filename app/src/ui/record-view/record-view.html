@@ -19,6 +19,11 @@
                 position: relative;
                 @apply --fullbleed;
                 transition: background 0.5s;
+                background: var(--color-background);
+            }
+
+            #background {
+                @apply --fullbleed;
             }
 
             header > pl-input {
@@ -104,6 +109,8 @@
             ></pl-input>
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
+
+        <div id="background"></div>
 
         <main id="main" style="visibility: hidden">
             <div class="category animate tap tiles-1" on-click="_categoryClicked">
@@ -260,7 +267,7 @@ class RecordView extends applyMixins(
 
     _setBackground(nFields) {
         const shade = 4 - Math.abs(4 - (nFields + 2 % 8));
-        this.style.background = `var(--shade-${shade + 1}-color)`;
+        this.$.background.style.background = `var(--shade-${shade + 1}-color)`;
     }
 
     _newFieldEnter() {

@@ -1,8 +1,8 @@
 <script src="../../padlock.js"></script>
 
 <link rel="import" href="./analytics.html">
-<link rel="import" href="../../../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../animation/animation.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../cloud-view/cloud-view.html">
 <link rel="import" href="../data/data.html">
@@ -29,6 +29,21 @@
                 to { opacity: 1; }
             }
 
+            @keyframes viewIn {
+                from { transform: translate3d(100%, 0, 0); z-index: 1; }
+                to { transform: translate3d(0, 0, 0); z-index: 1; }
+            }
+
+            @keyframes viewOutBack {
+                from { transform: translate3d(0, 0, 0); }
+                to { transform: translate3d(0, 0, -100px); }
+            }
+
+            @keyframes viewOutSide {
+                from { transform: translate3d(0, 0, 0); }
+                to { transform: translate3d(100%, 0, 0); }
+            }
+
             :host {
                 --border-radius: 12px;
                 overflow: hidden;
@@ -37,7 +52,8 @@
                 position: absolute;
                 width: 100%;
                 height: 100%;
-                animation: fadeIn 0.5s both;
+                animation: fadeIn 0.5s backwards;
+                perspective: 1000px;
             }
 
             :host(.ios), :host(.android) {
@@ -52,6 +68,7 @@
                 @apply --fullbleed;
                 display: flex;
                 overflow: hidden;
+                perspective: 1000px;
             }
 
             :host(:not(.ios):not(.android)) #main {
@@ -71,18 +88,14 @@
                 top: env(safe-area-inset-top);
             }
 
-            #listView, #pages {
-                border-radius: var(--border-radius);
-                overflow: hidden;
-            }
-
-            :host, #main, #pages, #listView {
+            #main, #listView {
                 transform: translate3d(0, 0, 0);
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
-            #main:not(.active), :host(.dialog-open) #main {
-                transform: translate3d(0, 0, 0) scale(0.95);
+            #main:not(.active),
+            :host(.dialog-open) #main {
+                transform: translate3d(0, 0, -100px);
             }
 
             :host(:not(.macos):not(.windows):not(.linux)) pl-title-bar {
@@ -96,8 +109,12 @@
             #pages {
                 position: relative;
                 flex: 1.62; /* Golden Ratio ;) */
-                background: var(--color-background);
                 margin-left: var(--gutter-width);
+                pointer-events: none;
+            }
+
+            #pages > * {
+                pointer-events: auto;
             }
 
             #placeholderView {
@@ -106,13 +123,14 @@
                 align-items: center;
                 justify-content: center;
                 text-align: center;
-                color: var(--color-background);
             }
 
             .placeholder-icon {
                 display: block;
-                font-size: 150px;
+                font-size: 120px;
                 width: 150px;
+                color: var(--color-foreground);
+                opacity: 0.5;
             }
 
             @media (max-width: 800px) {
@@ -123,7 +141,7 @@
 
             @media (max-width: 600px) {
                 .showing-pages #listView {
-                    transform: translate3d(0, 0, 0) scale(0.95);
+                    transform: translate3d(0, 0, -100px);
                 }
 
                 #pages {
@@ -133,8 +151,8 @@
                     margin-left: 0;
                 }
 
-                :not(.showing-pages) #pages {
-                    transform: translate3d(100%, 0, 0);
+                #placeholderView {
+                    display: none;
                 }
             }
         </style>
@@ -148,22 +166,22 @@
                 on-open-settings="_openSettings"
                 on-open-cloud-view="_openCloudView"></pl-list-view>
 
-            <iron-pages id="pages" attr-for-selected="id">
+            <div id="pages">
 
-                <div id="placeholderView" class="tiles-2">
+                <div id="placeholderView">
                     <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
                 </div>
 
-                <pl-record-view id="recordView"
+                <pl-record-view id="recordView" style="display: none"
                     on-record-close="_closeRecord"></pl-record-view>
 
-                <pl-settings-view id="settingsView"
+                <pl-settings-view id="settingsView" style="display: none"
                     on-settings-back="_settingsBack"></pl-settings-view>
 
-                <pl-cloud-view id="cloudView"
+                <pl-cloud-view id="cloudView" style="display: none"
                     on-cloud-back="_cloudViewBack"></pl-cloud-view>
 
-            </iron-pages>
+            </div>
 
         </div>
 
@@ -176,7 +194,7 @@
 
 /* global cordova, StatusBar */
 
-const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin,
+const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 const { getPlatformName, getDeviceInfo } = padlock.platform;
@@ -195,7 +213,8 @@ class App extends applyMixins(
     MessagesMixin,
     NotificationMixin,
     HintsMixin,
-    AnalyticsMixin
+    AnalyticsMixin,
+    AnimationMixin
 ) {
 
     static get is() { return "pl-app"; }
@@ -208,7 +227,7 @@ class App extends applyMixins(
         },
         _currentView: {
             type: String,
-            value: "placeholderView",
+            value: "",
             observer: "_currentViewChanged"
         },
         _selectedRecord: {
@@ -316,7 +335,7 @@ class App extends applyMixins(
                 this.saveCollection();
             } else {
                 if (this._currentView == "recordView") {
-                    this._currentView = "placeholderView";
+                    this._currentView = "";
                 }
             }
         }, 10);
@@ -328,7 +347,7 @@ class App extends applyMixins(
     }
 
     _settingsBack() {
-        this._currentView = "placeholderView";
+        this._currentView = "";
     }
 
     _openCloudView() {
@@ -337,15 +356,36 @@ class App extends applyMixins(
     }
 
     _cloudViewBack() {
-        this._currentView = "placeholderView";
+        this._currentView = "";
     }
 
-    _currentViewChanged() {
-        this.$.main.classList.toggle("showing-pages", this._currentView !== "placeholderView");
-        clearTimeout(this._switchPagesTimeout);
-        // If we're in narrow layout, wait for animation to finish before switching to placeholder view
-        this._switchPagesTimeout = setTimeout(() => this.$.pages.select(this._currentView),
-            this._currentView === "placeholderView" && this._isNarrow ? 300 : 0);
+    _currentViewChanged(curr, prev) {
+        this.$.main.classList.toggle("showing-pages", !!curr);
+
+        const currView = this.$[curr];
+        const prevView = this.$[prev];
+        if (currView) {
+            // currView.classList.remove("view-out");
+            // currView.classList.add("view-in");
+            this.animateElement(currView, {
+                animation: "viewIn",
+                duration: 400,
+                easing: "cubic-bezier(0.6, 0, 0.2, 1)",
+                fill: "backwards"
+            });
+            currView.style.display = "";
+        }
+        if (prevView) {
+            // prevView.classList.remove("view-in");
+            // prevView.classList.add("view-out");
+            this.animateElement(prevView, {
+                animation: !curr || this._isNarrow ? "viewOutSide" : "viewOutBack",
+                duration: 400,
+                easing: "cubic-bezier(0.6, 0, 0.2, 1)",
+                fill: "forwards"
+            });
+            setTimeout(() => prevView.style.display = "none", 350);
+        }
     }
 
     //* Keyboard shortcuts
