@@ -16,7 +16,6 @@
     "zxcvbn": "~3.1.0",
     "autosize": "~3.0.13",
     "iron-list": "https://github.com/MaKleSoft/iron-list.git#custom-fixes",
-    "iron-pages": "^2.0.0",
     "paper-spinner": "^2.0.0",
     "webcomponentsjs": "1.0.13"
   }

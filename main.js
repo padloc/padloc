@@ -15,7 +15,7 @@ const settings = global.settings = new ElectronStore({
         autoDownloadUpdates: false,
         allowPrerelease: autoUpdater.allowPrerelease,
         windowBounds: {
-            width: 900,
+            width: 800,
             height: 600
         },
         fullscreen: false
