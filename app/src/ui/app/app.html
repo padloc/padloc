@@ -45,11 +45,11 @@
             }
 
             :host {
-                --border-radius: 12px;
+                --color-gutter: #222;
                 --title-bar-height: 25px;
                 overflow: hidden;
                 color: var(--color-foreground);
-                background: #333;
+                background: var(--color-gutter);
                 position: absolute;
                 width: 100%;
                 height: 100%;
@@ -61,8 +61,8 @@
                 --title-bar-height: 40px;
             }
 
-            :host(.windows), :host(.macos) {
-                border-radius: var(--border-radius);
+            :host(.ios), :host(.android) {
+                --color-gutter: black;
             }
 
             #main {
@@ -279,10 +279,6 @@ class App extends applyMixins(
                     height: "812px",
                     position: "relative"
                 });
-            }
-
-            if (platform === "iOS" || platform === "Android") {
-                setTimeout(() => document.body.style.background = "black", 500);
             }
         });
     }

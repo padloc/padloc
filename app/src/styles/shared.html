@@ -234,6 +234,21 @@
                 @apply --ellipsis;
             }
 
+            .rounded-corners {
+                content: "";
+                display: block;
+                position: absolute;
+                left: -10px;
+                right: -10px;
+                top: -10px;
+                bottom: -10px;
+                border: solid 10px var(--color-gutter);
+                border-radius: calc(10px + var(--border-radius));
+                z-index: 1;
+                pointer-events: none;
+                transform: translate3d(0, 0, 0);
+            }
+
             @keyframes spin {
                 to { transform: rotate(360deg); }
             }
