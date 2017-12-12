@@ -32,6 +32,10 @@
                 box-sizing: border-box;
             }
 
+            section {
+                transform: translate3d(0, 0, 0);
+            }
+
             .account {
                 font-size: var(--font-size-default);
                 font-weight: bold;
@@ -185,11 +189,15 @@ class CloudView extends applyMixins(
 
     ready() {
         super.ready();
-        this.listen("data-loaded", () => this._animateSections());
-        this.listen("sync-connect-start", () => this._animateSections());
-        this.listen("sync-connect-cancel", () => this._animateSections());
-        this.listen("sync-connect-success", () => this._animateSections());
-        this.listen("sync-disconnect", () => this._animateSections());
+        this.listen("data-loaded", () => this.animate());
+        this.listen("sync-connect-start", () => this.animate());
+        this.listen("sync-connect-cancel", () => this.animate());
+        this.listen("sync-connect-success", () => this.animate());
+        this.listen("sync-disconnect", () => this.animate());
+    }
+
+    animate() {
+        this.animateCascade(this.root.querySelectorAll("section:not([hidden])"), { initialDelay: 200 });
     }
 
     syncStart() {
@@ -279,10 +287,6 @@ class CloudView extends applyMixins(
         } else {
             this.synchronize();
         }
-    }
-
-    _animateSections() {
-        this.animateCascade(this.root.querySelectorAll("section:not([hidden])"));
     }
 
     _trialingBuySubscription() {

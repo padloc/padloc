@@ -114,8 +114,16 @@
                 pointer-events: none;
             }
 
-            #pages > * {
+            .view {
+                transform: translate3d(0, 0, 0);
+            }
+
+            .view.showing {
                 pointer-events: auto;
+            }
+
+            .view:not(.showing) {
+                opacity: 0;
             }
 
             #placeholderView {
@@ -173,13 +181,13 @@
                     <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
                 </div>
 
-                <pl-record-view id="recordView" style="display: none"
+                <pl-record-view id="recordView" class="view"
                     on-record-close="_closeRecord"></pl-record-view>
 
-                <pl-settings-view id="settingsView" style="display: none"
+                <pl-settings-view id="settingsView" class="view"
                     on-settings-back="_settingsBack"></pl-settings-view>
 
-                <pl-cloud-view id="cloudView" style="display: none"
+                <pl-cloud-view id="cloudView" class="view"
                     on-cloud-back="_cloudViewBack"></pl-cloud-view>
 
             </div>
@@ -331,10 +339,8 @@ class App extends applyMixins(
                 this._currentView = "recordView";
                 this._selectedRecord.lastUsed = new Date();
                 this.saveCollection();
-            } else {
-                if (this._currentView == "recordView") {
-                    this._currentView = "";
-                }
+            } else if (this._currentView == "recordView") {
+                this._currentView = "";
             }
         }, 10);
     }
@@ -363,26 +369,23 @@ class App extends applyMixins(
         const currView = this.$[curr];
         const prevView = this.$[prev];
         if (currView) {
-            // currView.classList.remove("view-out");
-            // currView.classList.add("view-in");
             this.animateElement(currView, {
                 animation: "viewIn",
                 duration: 400,
                 easing: "cubic-bezier(0.6, 0, 0.2, 1)",
                 fill: "backwards"
             });
-            currView.style.display = "";
+            currView.classList.add("showing");
+            currView.animate();
         }
         if (prevView) {
-            // prevView.classList.remove("view-in");
-            // prevView.classList.add("view-out");
             this.animateElement(prevView, {
                 animation: !curr || this._isNarrow ? "viewOutSide" : "viewOutBack",
                 duration: 400,
                 easing: "cubic-bezier(0.6, 0, 0.2, 1)",
                 fill: "forwards"
             });
-            setTimeout(() => prevView.style.display = "none", 350);
+            setTimeout(() => prevView.classList.remove("showing"), 350);
         }
     }
 

@@ -92,6 +92,7 @@
 
             .animate {
                 background: var(--color-background);
+                transform: translate3d(0, 0, 0);
             }
 
             @media (min-width: 600px) {
@@ -110,9 +111,7 @@
             <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
-        <div id="background"></div>
-
-        <main id="main" style="visibility: hidden">
+        <main id="main">
             <div class="category animate tap tiles-1" on-click="_categoryClicked">
                 <pl-icon icon="category"></pl-icon>
                 <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]" select-on-focus
@@ -168,13 +167,6 @@ class RecordView extends applyMixins(
     static get is() { return "pl-record-view"; }
 
     static get properties() { return {
-        animationOptions: {
-            type: Object,
-            value: {
-                clear: true,
-                fullDuration: 800
-            }
-        },
         record: {
             type: Object,
             notify: true,
@@ -269,7 +261,7 @@ class RecordView extends applyMixins(
 
     _setBackground(nFields) {
         const shade = 4 - Math.abs(4 - (nFields + 2 % 8));
-        this.$.background.style.background = `var(--shade-${shade + 1}-color)`;
+        this.$.main.style.background = `var(--shade-${shade + 1}-color)`;
     }
 
     _newFieldEnter() {
@@ -343,11 +335,9 @@ class RecordView extends applyMixins(
         return this._catListShowing() && this.record && !this.record.category ? "dropup" : "dropdown";
     }
 
-    _recordObserver() {
-        this.$.main.style.visibility = "hidden";
+    animate() {
         setTimeout(() => {
-            this.$.main.style.visibility = "";
-            this.animateCascade(this.root.querySelectorAll(".animate"));
+            this.animateCascade(this.root.querySelectorAll(".animate"), { fullDuration: 800, fill: "both" });
         }, 100);
     }
 

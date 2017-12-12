@@ -30,6 +30,10 @@
                 background: var(--color-quaternary);
             }
 
+            section {
+                transform: translate3d(0, 0, 0);
+            }
+
             button {
                 width: 100%;
                 box-sizing: border-box;
@@ -191,6 +195,10 @@ class SettingsView extends applyMixins(
         this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
         this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
         this.animateCascade(this.root.querySelectorAll("section"));
+    }
+
+    animate() {
+        this.animateCascade(this.root.querySelectorAll("section"), { initialDelay: 200 });
     }
 
     _back() {
