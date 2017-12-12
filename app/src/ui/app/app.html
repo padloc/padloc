@@ -46,6 +46,7 @@
 
             :host {
                 --border-radius: 12px;
+                --title-bar-height: 25px;
                 overflow: hidden;
                 color: var(--color-foreground);
                 background: #333;
@@ -56,8 +57,8 @@
                 perspective: 1000px;
             }
 
-            :host(.ios), :host(.android) {
-                background: black;
+            :host(.windows) {
+                --title-bar-height: 40px;
             }
 
             :host(.windows), :host(.macos) {
@@ -270,6 +271,7 @@ class App extends applyMixins(
             const isIPhoneX = device.model === "iPhone10,3" || device.model === "iPhone10,6";
 
             this.classList.add(platform.toLowerCase());
+            this.root.querySelector("pl-title-bar").classList.add(platform.toLowerCase());
 
             if (isIPhoneX) {
                 Object.assign(document.body.style, {
