@@ -185,10 +185,11 @@ class SettingsView extends applyMixins(
 
     connectedCallback() {
         super.connectedCallback();
-        const desktopSettings = getDesktopSettings().get();
-        this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
-        this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
-        this.animateCascade(this.root.querySelectorAll("section"));
+        if (isElectron()) {
+            const desktopSettings = getDesktopSettings().get();
+            this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
+            this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
+        }
     }
 
     animate() {
