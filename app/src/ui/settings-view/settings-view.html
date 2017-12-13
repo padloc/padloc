@@ -102,14 +102,6 @@
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
 
-            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
-                <div class="section-header">[[ $l("Updates") ]]</div>
-                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap"
-                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
-                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
-                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
-            </section>
-
             <section class="tiles" hidden$="[[ _isTouch() ]]">
                 <div class="info">[[ _peekValuesInfo() ]]</div>
                 <pl-toggle-button active="{{ settings.peekValues }}" label="[[ $l('Peek Values') ]]" class="tap"
@@ -149,6 +141,14 @@
                 <button on-click="_promptReview" class="tap">
                     <span>[[ $l("I") ]]</span><div class="padlock-heart"></div><span>Padlock</span>
                 </button>
+            </section>
+
+            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Updates") ]]</div>
+                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap"
+                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
+                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
+                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
             </section>
 
             <section class="tiles">
