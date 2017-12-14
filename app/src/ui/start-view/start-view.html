@@ -39,6 +39,9 @@
                 z-index: 5;
                 text-align: center;
                 text-shadow: rgba(0, 0, 0, 0.15) 0 2px 0;
+                background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%);
+                transform: translate3d(0, 0, 0);
+                transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
             }
 
             main {
@@ -49,14 +52,6 @@
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-            }
-
-            .shutter {
-                @apply --fullbleed;
-                min-height: 500px;
-                background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%);
-                transform: translate3d(0, 0, 0);
-                transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
             }
 
             .form-box {
@@ -236,13 +231,11 @@
                 pointer-events: none;
             }
 
-            :host([open]) .shutter {
+            :host([open]) {
                 transition-delay: 0.4s;
                 transform: translate3d(0, -100%, 0);
             }
         </style>
-
-        <div class="shutter"></div>
 
         <main class="unlock">
 
