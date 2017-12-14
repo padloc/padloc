@@ -167,8 +167,7 @@ class RecordView extends applyMixins(
     static get properties() { return {
         record: {
             type: Object,
-            notify: true,
-            observer: "_recordObserver"
+            notify: true
         },
         _showCatList: {
             type: Boolean,

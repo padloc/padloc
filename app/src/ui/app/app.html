@@ -112,6 +112,7 @@
                 flex: 1.62; /* Golden Ratio ;) */
                 margin-left: var(--gutter-width);
                 pointer-events: none;
+                perspective: 1000px;
             }
 
             .view {
@@ -436,6 +437,7 @@ class App extends applyMixins(
 
     _lockedChanged() {
         if (this.locked) {
+            this._currentView = "";
             this.$.main.classList.remove("active");
         } else {
             setTimeout(() => {
