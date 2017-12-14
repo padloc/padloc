@@ -282,8 +282,7 @@ class ListView extends applyMixins(
         },
         records: {
             type: Array,
-            computed: " _filterAndSort(collection.records, _filterString)",
-            observer: "_recordsObserver"
+            computed: " _filterAndSort(collection.records, _filterString)"
         },
         selectedRecord: {
             type: Object,
@@ -317,6 +316,13 @@ class ListView extends applyMixins(
         });
         this.$.list.addEventListener("keydown", (e) => e.stopPropagation());
         this.$.main.addEventListener("scroll", () => this._updateCurrentSection());
+        this.listen("data-loaded", () => { this.animateRecords(600); });
+        this.listen("sync-success", (e) => {
+            if (!e.detail.auto) {
+                this.animateRecords();
+            }
+        });
+        this.listen("data-imported", () => this.animateRecords());
     }
 
     dataUnloaded() {
@@ -438,32 +444,21 @@ class ListView extends applyMixins(
         this._filterString = e.detail;
     }
 
-    _recordsObserver(curr, prev) {
-        const prevLength = prev && prev.length || 0;
-        const currLength = curr && curr.length || 0;
-        // If more than on record was added or removed, do the slide in animation
-        if (!prevLength || Math.abs(prevLength - currLength) > 1) {
-            this.$.list.style.opacity = 0;
-            // Wait a little to make sure all list items have been rendered
-            setTimeout(() => {
-                this.$.list.scrollToIndex(0);
-                this.$.list.style.opacity = 1;
-                this.animateRecords();
-            }, 100);
-        }
-    }
-
-    animateRecords() {
-        const first = this.$.list.firstVisibleIndex;
-        const last = this.$.list.lastVisibleIndex + 1;
-        const elements = Array.from(this.root.querySelectorAll("pl-record-item"));
+    animateRecords(delay = 100) {
         const m4e = (e) => this.$.list.modelForElement(e);
 
-        const animated = elements
-            .filter((el) => m4e(el).index >= first && m4e(el).index <= last)
-            .sort((a, b) => m4e(a).index - m4e(b).index);
+        this.$.list.style.opacity = 0;
+        setTimeout(() => {
+            const first = this.$.list.firstVisibleIndex;
+            const last = this.$.list.lastVisibleIndex + 1;
+            const elements = Array.from(this.root.querySelectorAll("pl-record-item"));
+            const animated = elements
+                .filter((el) => m4e(el).index >= first && m4e(el).index <= last)
+                .sort((a, b) => m4e(a).index - m4e(b).index);
 
-        this.animateCascade(animated);
+            this.animateCascade(animated);
+            this.$.list.style.opacity = 1;
+        }, delay);
     }
 
     _stopPropagation(e) {

@@ -365,6 +365,7 @@ class SettingsView extends applyMixins(
             .then((records) => {
                 if (records) {
                     this.addRecords(records);
+                    this.dispatch("data-imported", { records: records });
                     this.alert($l("Successfully imported {0} records.", records.length));
                 }
             });
