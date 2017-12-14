@@ -9,6 +9,8 @@ const { DataMixin } = padlock;
 
 const cloudSource = new EncryptedSource(new CloudSource(DataMixin.settings));
 
+let hasShownReadOnlyDialog;
+
 padlock.SyncMixin = (superClass) => {
 
     return class SyncMixin extends superClass {
@@ -380,16 +382,19 @@ padlock.SyncMixin = (superClass) => {
                         });
                     return false;
                 case "subscription_required":
-                    this.confirm(
-                        this.readOnlyInfoText(),
-                        $l("Buy Subscription"),
-                        $l("Dismiss")
-                    )
-                        .then((confirmed) => {
-                            if (confirmed) {
-                                this.openDashboard("subscribe", "app-5");
-                            }
-                        });
+                    if (!hasShownReadOnlyDialog) {
+                        this.confirm(
+                            this.readOnlyInfoText(),
+                            $l("Buy Subscription"),
+                            $l("Dismiss")
+                        )
+                            .then((confirmed) => {
+                                hasShownReadOnlyDialog = true;
+                                if (confirmed) {
+                                    this.openDashboard("subscribe", "app-5");
+                                }
+                            });
+                    }
                     return true;
                 default:
                     this.alert($l("Something went wrong. Please try again later!"));
