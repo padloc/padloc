@@ -90,7 +90,7 @@ function checkForUpdates(manual) {
 
     const check = autoUpdater.checkForUpdates();
     check && check.then((result) => {
-        if (result.fileInfo) {
+        if (autoUpdater.updateAvailable) {
             updateAvailable(result.versionInfo);
         } else if (manual) {
             dialog.showMessageBox({
