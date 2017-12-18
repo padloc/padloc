@@ -84,7 +84,8 @@
                 <div class="field-buttons">
                     <pl-icon icon="[[ _toggleMaskIcon(_masked) ]]" class="field-button tiles-1 tap" on-click="_toggleMask" hidden$="[[ _editing ]]"></pl-icon>
                     <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="copy" class="field-button tiles-2 tap" on-click="_copy"></pl-icon>
+                    <pl-icon icon="copy" class="field-button tiles-2 tap" on-click="_copy" hidden$="[[ !_isEmpty(field.value) ]]"></pl-icon>
+                    <pl-icon icon="generate" class="field-button tiles-2 tap" on-click="_showGenerator" hidden$="[[ _isEmpty(field.value) ]]"></pl-icon>
                     <pl-icon icon="info" class="field-button tiles-3" on-click="_showFieldInfo"></pl-icon>
                     <div class="spacer tiles-4"></div>
                 </div>
@@ -166,8 +167,8 @@ class RecordField extends applyMixins(
             this.field && !this._editing &&
             (this.field.name !== this.$.nameInput.value || this.field.value !== this.$.valueInput.value)
         ) {
-            this.field.name = this.$.nameInput.value;
-            this.field.value = this.$.valueInput.value;
+            this.set("field.name", this.$.nameInput.value);
+            this.set("field.value", this.$.valueInput.value);
             this.dispatchEvent(new CustomEvent("field-change"));
         }
 
@@ -252,6 +253,10 @@ class RecordField extends applyMixins(
                         break;
                 }
             });
+    }
+
+    _isEmpty() {
+        return !!this.field.value;
     }
 
     edit() {
