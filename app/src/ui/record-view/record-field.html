@@ -95,7 +95,7 @@
                 <div class="field-buttons">
                     <pl-icon icon="add" class="field-button tiles-1 tap" on-click="edit" hidden$="[[ _editing ]]"></pl-icon>
                     <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tiles-2" on-click="_showGenerator" hidden$="[[ !_editing ]]"></pl-icon>
+                    <pl-icon icon="generate" class="field-button tiles-2" on-click="_showGenerator"></pl-icon>
                     <div class="spacer tiles-3"></div>
                 </div>
             </template>
@@ -159,7 +159,7 @@ class RecordField extends applyMixins(
     _updateEditing() {
         clearTimeout(this._updateEditingTimeout);
         const editing = this._editingName || this._editingValue || this._generatorShowing;
-        this._updateEditingTimeout = setTimeout(() => this._editing = editing, 100);
+        this._updateEditingTimeout = setTimeout(() => this._editing = editing, 200);
     }
 
     _editingChanged() {
