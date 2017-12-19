@@ -53,7 +53,7 @@
                 position: absolute;
                 width: 100%;
                 height: 100%;
-                animation: fadeIn 0.5s backwards;
+                animation: fadeIn 0.5s backwards 0.2s;
                 perspective: 1000px;
             }
 
@@ -266,29 +266,28 @@ class App extends applyMixins(
 
     connectedCallback() {
         super.connectedCallback();
-        cordovaReady.then(() => {
-            // Replace window.open method with the inappbrowser equivalent
-            window.open = cordova.InAppBrowser.open;
-            StatusBar.show();
-            navigator.splashscreen.hide();
-        });
+        getDeviceInfo()
+            .then((device) => {
+                const isIPhoneX = device.model === "iPhone10,3" || device.model === "iPhone10,6";
+                if (isIPhoneX) {
+                    Object.assign(document.body.style, {
+                        margin: 0,
+                        height: "812px",
+                        position: "relative"
+                    });
+                }
+                return cordovaReady
+            })
+            .then(() => {
+                // Replace window.open method with the inappbrowser equivalent
+                window.open = cordova.InAppBrowser.open;
+                StatusBar.show();
+                navigator.splashscreen.hide();
+            });
 
-        Promise.all([
-            getPlatformName(),
-            getDeviceInfo()
-        ]).then(([platform, device]) => {
-            const isIPhoneX = device.model === "iPhone10,3" || device.model === "iPhone10,6";
-
+        getPlatformName().then((platform) => {
             this.classList.add(platform.toLowerCase());
             this.root.querySelector("pl-title-bar").classList.add(platform.toLowerCase());
-
-            if (isIPhoneX) {
-                Object.assign(document.body.style, {
-                    margin: 0,
-                    height: "812px",
-                    position: "relative"
-                });
-            }
         });
     }
 
