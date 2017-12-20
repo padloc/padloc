@@ -8,7 +8,6 @@
         <style include="shared">
             :host {
                 display: block;
-                --height: 50px;
                 text-align: center;
                 font-weight: bold;
                 transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3);
@@ -22,7 +21,7 @@
             }
 
             :host(:not(.showing)) {
-                transform: translateY(calc(100% + 30px));
+                transform: translateY(130%);
             }
 
             .text {
