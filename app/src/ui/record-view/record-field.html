@@ -42,6 +42,7 @@
                 font-size: var(--font-size-small);
                 width: 100%;
                 font-weight: bold;
+                color: var(--color-highlight);
             }
 
             #valueInput {
@@ -83,20 +84,19 @@
             <template is="dom-if" if="[[ !draft ]]">
                 <div class="field-buttons">
                     <pl-icon icon="[[ _toggleMaskIcon(_masked) ]]" class="field-button tiles-1 tap" on-click="_toggleMask" hidden$="[[ _editing ]]"></pl-icon>
-                    <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="copy" class="field-button tiles-2 tap" on-click="_copy" hidden$="[[ !_isEmpty(field.value) ]]"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tiles-2 tap" on-click="_showGenerator" hidden$="[[ _isEmpty(field.value) ]]"></pl-icon>
-                    <pl-icon icon="info" class="field-button tiles-3" on-click="_showFieldInfo"></pl-icon>
+                    <pl-icon icon="cancel" class="field-button tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
+                    <pl-icon icon="copy" class="field-button tap" on-click="_copy" hidden$="[[ !_isEmpty(field.value) ]]"></pl-icon>
+                    <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator" hidden$="[[ _isEmpty(field.value) ]]"></pl-icon>
+                    <pl-icon icon="more" class="field-button tap" on-click="_showFieldInfo"></pl-icon>
                     <div class="spacer tiles-4"></div>
                 </div>
             </template>
 
             <template is="dom-if" if="[[ draft ]]">
                 <div class="field-buttons">
-                    <pl-icon icon="add" class="field-button tiles-1 tap" on-click="edit" hidden$="[[ _editing ]]"></pl-icon>
-                    <pl-icon icon="cancel" class="field-button tiles-1 tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tiles-2" on-click="_showGenerator"></pl-icon>
-                    <div class="spacer tiles-3"></div>
+                    <pl-icon icon="add" class="field-button tap" on-click="edit" hidden$="[[ _editing ]]"></pl-icon>
+                    <pl-icon icon="cancel" class="field-button tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
+                    <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator"></pl-icon>
                 </div>
             </template>
         </div>

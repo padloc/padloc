@@ -19,7 +19,7 @@
                 position: relative;
                 @apply --fullbleed;
                 transition: background 0.5s;
-                background: var(--color-background);
+                background: var(--color-quaternary);
             }
 
             #background {
@@ -29,7 +29,6 @@
             header > pl-input {
                 flex: 1;
                 width: 0;
-                padding: 0 15px;
             }
 
             .name {
@@ -47,6 +46,7 @@
                 font-size: var(--font-size-small);
                 flex: 1;
                 height: auto;
+                font-weight: bold;
                 padding-bottom: 2px;
             }
 
@@ -62,7 +62,7 @@
             .categories {
                 position: absolute;
                 z-index: 1;
-                top: 40px;
+                top: 50px;
                 left: 0;
                 right: 0;
                 bottom: 0;
@@ -97,26 +97,22 @@
             .animate {
                 background: var(--color-background);
                 transform: translate3d(0, 0, 0);
-            }
-
-            #background {
-                @apply --fullbleed;
+                margin: 10px 0;
+                border: solid 1px rgba(0, 0, 0, 0.1);
             }
         </style>
 
         <header>
-            <pl-icon icon="backward" class="tiles-1 tap" on-click="close"></pl-icon>
-            <pl-input id="nameInput" class="name tiles-2 tap" value="[[ record.name ]]"
+            <pl-icon icon="backward" class="tap" on-click="close"></pl-icon>
+            <pl-input id="nameInput" class="name tap" value="[[ record.name ]]"
                 placeholder="[[ $l('Enter Record Name') ]]" select-on-focus autocapitalize
                 on-change="_nameEdited" on-focus="_inputFocused" on-blur="_debouncedFinishEditing"
             ></pl-input>
-            <pl-icon icon="delete" class="tiles-3 tap" on-click="_deleteRecord"></pl-icon>
+            <pl-icon icon="delete" class="tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
-        <div id="background"></div>
-
         <main id="main">
-            <div class="category animate tap tiles-1" on-click="_categoryClicked">
+            <div class="category animate tap" on-click="_categoryClicked">
                 <pl-icon icon="category"></pl-icon>
                 <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]" select-on-focus
                     on-change="_setEdited" on-focus="_categoryInputFocused" on-blur="_debouncedFinishEditing"></pl-input>
@@ -134,7 +130,7 @@
             <div class="fields">
                 <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
                     <div class="animate">
-                        <pl-record-field class$="{{ _fieldClass(index) }}" field="{{ item }}"
+                        <pl-record-field field="{{ item }}"
                             on-field-change="_setEdited"
                             on-field-delete="_deleteField"
                             on-field-edit-start="_inputFocused"
@@ -144,7 +140,6 @@
             </div>
             <div class="animate" id="newFieldWrapper">
                 <pl-record-field id="newField" draft
-                    class$="{{ _fieldClass(record.fields.length) }}"
                     on-field-edit-start="_inputFocused"
                     on-field-edit-end="_newFieldEnter"></pl-record-field>
             </div>
@@ -188,10 +183,6 @@ class RecordView extends applyMixins(
             value: false
         }
     }; }
-
-    static get observers() { return [
-        "_setBackground(record.fields.length)"
-    ]; }
 
     recordCreated(record) {
         setTimeout(() => {
@@ -256,15 +247,6 @@ class RecordView extends applyMixins(
     _inputFocused() {
         this._deferFinishEditing();
         this._hideCategoryList();
-    }
-
-    _fieldClass(index) {
-        return "tiles-" + (Math.floor((index + 1) % 8) + 1);
-    }
-
-    _setBackground(nFields) {
-        const shade = 4 - Math.abs(4 - (nFields + 2 % 8));
-        this.$.background.style.background = `var(--shade-${shade + 1}-color)`;
     }
 
     _newFieldEnter() {
