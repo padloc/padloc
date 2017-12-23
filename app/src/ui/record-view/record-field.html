@@ -96,7 +96,7 @@
                 <div class="field-buttons">
                     <pl-icon icon="add" class="field-button tap" on-click="edit" hidden$="[[ _editing ]]"></pl-icon>
                     <pl-icon icon="cancel" class="field-button tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator"></pl-icon>
+                    <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator" hidden$="[[ !_editing ]]"></pl-icon>
                 </div>
             </template>
         </div>
