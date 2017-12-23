@@ -76,8 +76,9 @@
         </style>
 
         <header>
-            <pl-icon icon="backward" class="tap" on-click="_back"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="_back"></pl-icon>
             <div class="title">Padlock Cloud</div>
+            <pl-icon hidden$="[[ settings.syncConnected ]]"></pl-icon>
             <pl-icon icon="refresh" class="tap" on-click="_refresh" spin$="[[ isSynching ]]" hidden$="[[ !settings.syncConnected ]]"></pl-icon>
         </header>
 

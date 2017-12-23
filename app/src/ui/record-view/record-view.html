@@ -33,6 +33,7 @@
 
             .name {
                 font-weight: bold;
+                text-align: center;
             }
 
             .category {
@@ -103,7 +104,7 @@
         </style>
 
         <header>
-            <pl-icon icon="backward" class="tap" on-click="close"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="close"></pl-icon>
             <pl-input id="nameInput" class="name tap" value="[[ record.name ]]"
                 placeholder="[[ $l('Enter Record Name') ]]" select-on-focus autocapitalize
                 on-change="_nameEdited" on-focus="_inputFocused" on-blur="_debouncedFinishEditing"
