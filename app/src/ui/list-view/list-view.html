@@ -39,9 +39,9 @@
                 --color-foreground: var(--color-tertiary);
                 --color-highlight: var(--color-secondary);
                 color: var(--color-foreground);
-                background: var(--color-background);
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-                border-bottom: solid 1px rgb(64, 143, 184);
+                border-bottom: none;
+                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
             }
 
             header pl-icon[icon=logo] {
@@ -161,21 +161,21 @@
         </style>
 
         <header hidden$="[[ multiSelect ]]">
-            <pl-icon icon="logo" class="tiles-1 tap" on-click="_lock" hidden$="[[ filterActive ]]"></pl-icon>
-            <pl-icon icon="settings" class="tiles-2 tap" on-click="_openSettings" hidden$="[[ filterActive ]]"></pl-icon>
-            <div class="cloud-icon-wrapper tiles-3 tap" on-click="_openCloudView" hidden$="[[ filterActive ]]">
+            <pl-icon icon="logo" class="tap" on-click="_lock" hidden$="[[ filterActive ]]"></pl-icon>
+            <pl-icon icon="settings" class="tap" on-click="_openSettings" hidden$="[[ filterActive ]]"></pl-icon>
+            <div class="cloud-icon-wrapper tap" on-click="_openCloudView" hidden$="[[ filterActive ]]">
                 <pl-icon icon="cloud"></pl-icon>
                 <pl-icon icon="refresh" class="syncing-icon" hidden$="[[ !isSynching ]]"></pl-icon>
             </div>
-            <div class="filter-input-wrapper tiles-4 tap">
+            <div class="filter-input-wrapper tap">
                 <pl-icon icon="search" on-click="focusFilterInput"></pl-icon>
                 <pl-input id="filterInput" placeholder="" value="{{ _filterString }}" on-escape="_clearFilter" no-tab select-on-focus></pl-input>
             </div>
-            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tiles-5 tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
-            <pl-icon icon="cancel" class="tiles-5 tap" on-click="_clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
+            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
+            <pl-icon icon="cancel" class="tap" on-click="_clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
         </header>
 
-        <header class="tiles" hidden$="[[ !multiSelect ]]">
+        <header hidden$="[[ !multiSelect ]]">
             <pl-icon icon="unchecked" class="tap" on-click="_clearMultiSelection"></pl-icon>
             <pl-icon icon="checked" class="tap" on-click="_selectAll"></pl-icon>
             <div class="multi-select-count">[[ $l("{0} records selected", selectedRecords.length) ]]</div>
