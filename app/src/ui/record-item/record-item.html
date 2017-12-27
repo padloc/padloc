@@ -21,6 +21,7 @@
                 margin-top: 10px;
                 border-top: solid 1px rgba(0, 0, 0, 0.1);
                 border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                --fields-padding: 5px;
             }
 
             .header {
@@ -40,15 +41,7 @@
 
             .fields {
                 position: relative;
-                display: flex;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 10px;
-            }
-
-            .fields::after {
-                content: "";
-                flex: 0 0 10px;
+                padding: 0 var(--fields-padding);
             }
 
             .field {
@@ -59,7 +52,7 @@
                 text-align: center;
                 position: relative;
                 border-radius: var(--border-radius);
-                margin-left: 10px;
+                margin-bottom: var(--fields-padding);
                 flex: 1;
                 min-width: 130px;
                 font-weight: bold;
@@ -97,10 +90,6 @@
                 padding: 0 15px;
                 @apply --ellipsis;
             }
-            /*  */
-            /* .field-label { */
-            /*     font-weight: bold; */
-            /* } */
 
             .field-value {
                 font-family: var(--font-family-mono);
@@ -115,7 +104,9 @@
                 line-height: normal;
                 font-weight: bold;
                 /* background: var(--shade-2-color); */
-                border: solid 1px;
+                background: var(--color-foreground);
+                color: var(--color-background);
+                transition: background 0.3s;
             }
 
             .category::before {
@@ -166,6 +157,11 @@
                 transform: scale(1, 1);
             }
 
+
+            :host([selected]) .category {
+                background: var(--shade-3-color);
+            }
+
             :host([multi-select][selected]) .multi-select-icon {
                 color: var(--color-background);
                 background: var(--color-highlight);
@@ -183,10 +179,9 @@
         </div>
 
         <div class="fields tiles">
-            <div>
-            </div>
+            <div></div>
 
-            <template is="dom-repeat" items="[[ record.fields ]]" mutable-data>
+            <template is="dom-repeat" items="[[ _limit(record.fields, 4) ]]" mutable-data>
 
                 <div class="field" on-click="_copyField">
                     <div class="label-value">
@@ -289,6 +284,10 @@ class RecordItem extends applyMixins(
 
     _selectIconClicked() {
         this.dispatchEvent(new CustomEvent("multi-select", { detail: this.record }));
+    }
+
+    _limit(arr, n) {
+        return arr.slice(0, n);
     }
 }
 
