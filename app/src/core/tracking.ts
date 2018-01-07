@@ -19,7 +19,7 @@ export function setTrackingID(id: string) {
     return setStats({ trackingID: id });
 }
 
-const ready = Promise.all([
+let ready = Promise.all([
     getStats(),
     getAppVersion(),
     initialized
@@ -30,23 +30,18 @@ const ready = Promise.all([
         const isFirstLaunch = !stats.firstLaunch;
         const firstLaunch = stats.firstLaunch || new Date().getTime();
 
-        let p: Promise<any>;
         if (isFirstLaunch) {
-            p = track("Install");
+            track("Install");
         } else if (stats.lastVersion !== version) {
-            p = track("Update", { "From Version": stats.lastVersion });
-        } else {
-            p = Promise.resolve();
+            track("Update", { "From Version": stats.lastVersion });
         }
 
-        return Promise.all([p,
-            setStats({
-                firstLaunch: firstLaunch,
-                lastLaunch: new Date().getTime(),
-                launchCount: launchCount,
-                lastVersion: version
-            })
-        ]);
+        return setStats({
+            firstLaunch: firstLaunch,
+            lastLaunch: new Date().getTime(),
+            launchCount: launchCount,
+            lastVersion: version
+        });
     });
 
 let lastTrack: Promise<any> = ready;
@@ -62,7 +57,7 @@ export function track(event: string, props?: { [prop: string]: number|string }) 
         trackingID: trackingID
     };
 
-    lastTrack = lastTrack.then(() => getStats())
+    ready = ready.then(() => getStats())
         .then((stats) => {
             Object.assign(data.props, {
                 "First Launch": stats.firstLaunch && new Date(stats.firstLaunch as number).toISOString(),

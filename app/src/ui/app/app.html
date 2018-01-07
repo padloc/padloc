@@ -270,7 +270,7 @@ class App extends applyMixins(
         super.connectedCallback();
         getDeviceInfo()
             .then((device) => {
-                const isIPhoneX = device.model === "iPhone10,3" || device.model === "iPhone10,6";
+                const isIPhoneX = /iPhone10,3|iPhone10,6/.test(device.model);
                 if (isIPhoneX) {
                     Object.assign(document.body.style, {
                         margin: 0,
