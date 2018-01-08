@@ -166,6 +166,18 @@ function createApplicationMenu() {
 
     appSubMenu.push(
         checkForUpdatesItem,
+    );
+
+    if (os.platform() == "darwin") {
+        appSubMenu.push(
+            { type: "separator" },
+            { role: "hide" },
+            { role: "hideothers" },
+            { role: "unhide" },
+        );
+    }
+
+    appSubMenu.push(
         { type: "separator" },
         { role: "quit" }
     );
