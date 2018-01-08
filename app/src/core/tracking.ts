@@ -57,12 +57,17 @@ export function track(event: string, props?: { [prop: string]: number|string }) 
         trackingID: trackingID
     };
 
+    if (data.props.Email) {
+        ready = setStats({ "email": data.props.Email });
+    }
+
     ready = ready.then(() => getStats())
         .then((stats) => {
             Object.assign(data.props, {
                 "First Launch": stats.firstLaunch && new Date(stats.firstLaunch as number).toISOString(),
                 "Launch Count": stats.launchCount,
                 "Custom Server": stats.syncCustomHost || false,
+                "Email": stats.email
             });
 
             if (stats.lastSync) {

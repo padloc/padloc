@@ -20,7 +20,10 @@ padlock.AnalyticsMixin = (superClass) => {
             this.listen("data-exported", () => padlock.stats.set({ lastExport: new Date().getTime() }));
 
             this.listen("settings-changed", () => {
-                padlock.stats.set({ syncCustomHost: this.settings.syncCustomHost });
+                padlock.stats.set({
+                    syncCustomHost: this.settings.syncCustomHost,
+                    email: this.settings.syncEmail
+                });
             });
 
             this.listen("data-initialized", () => {
@@ -38,10 +41,11 @@ padlock.AnalyticsMixin = (superClass) => {
                     .then(() => setTrackingID(""));
             });
 
-            this.listen("sync-connect-start", () => {
+            this.listen("sync-connect-start", (e) => {
                 padlock.stats.get().then((stats) => {
                     track("Start Pairing", {
-                        "Source": stats.pairingSource
+                        "Source": stats.pairingSource,
+                        "Email": e.detail.email
                     });
                     padlock.stats.set({ startedPairing: new Date().getTime() });
                 });

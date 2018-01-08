@@ -484,7 +484,7 @@ class StartView extends applyMixins(
             this.$.newPasswordInput.focus();
         }
 
-        track("Setup: Email", { "Skipped": false });
+        track("Setup: Email", { "Skipped": false, "Email": this.$.emailInput.value });
     }
 
     _skipEmail() {
