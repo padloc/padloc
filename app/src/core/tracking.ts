@@ -44,7 +44,6 @@ let ready = Promise.all([
         });
     });
 
-let lastTrack: Promise<any> = ready;
 export function track(event: string, props?: { [prop: string]: number|string }) {
     // Don't track events if user is using a custom padlock cloud instance
     if (cloudSource.settings.syncCustomHost) {
@@ -97,5 +96,5 @@ export function track(event: string, props?: { [prop: string]: number|string }) 
         })
         .catch(() => {});
 
-    return lastTrack;
+    return ready;
 }
