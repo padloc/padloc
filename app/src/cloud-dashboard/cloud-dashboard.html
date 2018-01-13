@@ -104,7 +104,22 @@
 
             .buy-subscription {
                 text-align: center;
-                padding: 20px;
+                padding: 30px;
+            }
+
+            .subscription-name {
+                font-weight: bold;
+                font-size: 130%;
+            }
+
+            .subscription-features {
+                list-style: none;
+                padding: 0;
+            }
+
+            .subscription-features li::before {
+                font-family: "FontAwesome";
+                content: "\f00c\ ";
             }
 
             .price {
@@ -151,6 +166,10 @@
             .card-hint:not([error=""]) {
                 color: #eb1c26;
                 text-shadow: none;
+            }
+
+            #cardDialog {
+                --pl-dialog-max-width: 500px;
             }
 
             #submitButton {
@@ -273,9 +292,14 @@
                 <input type="hidden" name="stripeToken" value="[[ _paymentToken.id ]]">
                 <input type="hidden" name="updating" value="[[ _paymentToken.id ]]">
                 <div class="buy-subscription tiles-1" hidden$="[[ _changingPaymentSource ]]">
-                    <div><strong>[[ $l("Buy Subscription") ]]</strong></div>
-                    <div class="price">[[ $l("{0}/month", "$1") ]]</div>
-                    <div class="small">[[ $l("(billed annually)") ]]</div>
+                    <div class="subscription-name">[[ account.subscription.plan.name ]]</div>
+                    <ul class="subscription-features">
+                        <li>End-To-End Encryption</li>
+                        <li>Automatic Backups</li>
+                        <li>Unlimited Devices</li>
+                    </ul>
+                    <div class="price">[[ _monthlyPrice(account.subscription) ]]</div>
+                    <div class="small">[[ _billingCycle(account.subscription) ]]</div>
                 </div>
                 <div class="message tiles-2 card-hint" error$="[[ _cardError ]]">[[ _cardHint(_cardError) ]]</div>
                 <div id="cardElement" class="card tiles-3"></div>
@@ -550,7 +574,8 @@ class Dashboard extends applyMixins(
     }
 
     _buySubscription() {
-        this._submitCardLabel = $l("Pay 12.00 USD");
+        const plan = this.account.subscription.plan;
+        this._submitCardLabel = $l("Pay {0}.{1} USD", Math.floor(plan.amount / 100), plan.amount % 100);
         this._changingPaymentSource = false;
         this.$.cardDialog.open = true;
 
@@ -578,6 +603,16 @@ class Dashboard extends applyMixins(
 
     _cardHint() {
         return this._cardError || $l("Please enter your credit or debit card information:");
+    }
+
+    _monthlyPrice() {
+        const plan = this.account.subscription.plan;
+        const price = plan.interval === "month" ? plan.amount / 100 : plan.amount / 1200;
+        return $l("${0}/month", price);
+    }
+
+    _billingCycle() {
+        return this.account.subscription.plan.interval === "month" ? $l("(billed monthly)") : $l("(billed annually)");
     }
 
 }
