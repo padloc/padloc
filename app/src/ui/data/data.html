@@ -119,10 +119,10 @@ padlock.DataMixin = (superClass) => {
         }
 
         createRecord(name) {
-            const fields = this.settings.defaultFields.map((name) => { return {
-                name: name,
-                value: ""
-            }; });
+            const fields = [
+                { name: $l("Username"), value: "", masked: false },
+                { name: $l("Password"), value: "", masked: true },
+            ];
             const record = new Record(name || $l("New Record"), fields);
             this.addRecords([record]);
             this.dispatch("record-created", record);

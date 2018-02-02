@@ -102,12 +102,20 @@
   t: App Zurücksetzen
 - o: I
   t: Ich
+- o: Updates
+  t: Updates
+- o: Automatically Install Updates
+  t: Updates Automatisch Installieren
+- o: Install Beta Releases
+  t: Beta-Versionen Installieren
 - o: Developed and maintained by
   t: Entwickelt durch
 - o: Website
   t: Webseite
 - o: Support
   t: Hilfe
+- o: Check For Updates
+  t: Auf Updates Prüfen
 - o: Enter Master Password
   t: Passwort Eingeben
 - o: Unlock
@@ -115,7 +123,7 @@
 - o: Welcome to Padlock!
   t: Willkommen zu Padlock!
 - o: Let's get you set up! This will only take a couple of seconds.
-  t: Bitte nehmen Sie sich einen kleinen Moment Zeit, um die App einzurichten.
+  t: 'Bitte nehmen Sie sich einen kleinen Moment Zeit, um die App einzurichten.'
 - o: Get Started
   t: Starten
 - o: Skip Email
@@ -130,6 +138,10 @@
   t: Alles ist eingerichtet! Viel Spaß beim Nutzen von Padlock!
 - o: Finish Setup
   t: Setup Abschließen
+- o: Username
+  t: Benutzername
+- o: Password
+  t: Passwort
 - o: New Record
   t: Neuer Eintrag
 - o: OK
@@ -159,7 +171,8 @@
     follow the link to complete the process!
   t: >-
     Fast fertig! Wir haben eine Email mit einem Login-Link an {0} gesendet.
-    Prüfen Sie Ihr Postfach und folgen Sie dem Link um den Prozess abzuschließen!
+    Prüfen Sie Ihr Postfach und folgen Sie dem Link um den Prozess
+    abzuschließen!
 - o: >-
     Your trial period ends in {0} days. After this period, your access will be
     read-only, which means you will be able to access your existing data on
@@ -167,12 +180,11 @@
     changes between devices. Get a subscription now to get unlimited access to
     Padlock Cloud!
   t: >-
-    Ihre Testphase ended in {0} Tagen. Nach dieser Zeitspanne
-    ist Ihr Zugriff auf das Lesen Ihrer Daten beschränkt.
-    Dies bedeutet, dass Sie zwar weiterhin Ihre Daten herunterladen, jedoch
-    weder neue Daten hochladen noch Änderungen zwischen Ihren Geräten
-    synchronisieren können. Erwerben Sie jetzt ein Abonnement um um vollen
-    Zugriff auf Padlock Cloud zu erhalten!
+    Ihre Testphase ended in {0} Tagen. Nach dieser Zeitspanne ist Ihr Zugriff
+    auf das Lesen Ihrer Daten beschränkt. Dies bedeutet, dass Sie zwar weiterhin
+    Ihre Daten herunterladen, jedoch weder neue Daten hochladen noch Änderungen
+    zwischen Ihren Geräten synchronisieren können. Erwerben Sie jetzt ein
+    Abonnement um um vollen Zugriff auf Padlock Cloud zu erhalten!
 - o: >-
     Padlock Cloud provides a convenient way of synchronising your data between
     all your devices. By securely storing your data in the cloud, it not only
@@ -273,8 +285,6 @@
     von Padlock gespeichert worden zu sein und können deshalb nicht geöffnet
     werden. Bitte installieren Sie die neueste Version von Padlock auf diesem
     Gerät!
-- o: Check For Updates
-  t: Auf Updates Prüfen
 - o: Something went wrong. Please try again later!
   t: Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut!
 - o: Please enter a valid email address!
@@ -521,30 +531,30 @@
   t: 'Sicherheit: {0}'
 - o: >-
     Providing an email address will allow you to make use of the **Padlock
-    Cloud** Service, an easy and secure way to store your data online and
+    Cloud** service, an easy and secure way to store your data online and
     synchronize it between all your devices!
   t: >-
-    Indem Sie eine Emailadresse angeben erhalten Sie Zugriff auf den **Padlock
-    Cloud** service, der es Ihnen ermöglicht, Ihre Daten einfach und sicher
-    online zu speichern und zwischen Ihren Geräten zu synchronisieren!
+    Geben Sie eine Emailadresse an um den **Padlock Cloud** Service zu nutzen.
+    Padlock Cloud speichert Ihre Daten sicher online und ermöglicht es, diese
+    einfach zwischen Ihren Geräten zu synchronisieren.
 - o: >-
     Your **master password** is a single passphrase used to protect your data.
     Without it, nobody will be able to access your data - not even us!
-  t : >-
-    Ihr **Master Passwort** ist der eine Schlüssel, mit dem Ihre sämtlichen Daten
-    gesichert werden. Ohne dieses Passwort kann niemand auf Ihre Daten zugreifen -
-    auch wir nicht!
+  t: >-
+    Ihr **Master Passwort** ist der eine Schlüssel, mit dem Ihre sämtlichen
+    Daten gesichert werden. Ohne dieses Passwort kann niemand auf Ihre Daten
+    zugreifen - auch wir nicht!
 - o: >-
     **Don't forget your master password!** For privacy and security reasons we
     never store your password anywhere which means we won't be able to help you
     recover your data in case you forget it. We recommend writing it down on a
     piece of paper and storing it somewhere safe.
   t: >-
-    **Vergessen Sie Ihr Master Passwort nicht!** Aus Sicherheits- und Privatsphäregründen
-    wird Ihr Master Passwort nirgends gespeichert. Deshalb können wir Ihnen leider
-    nicht bei der Wiederherstellung Ihrer Daten behilflich sein, sollten Sie es jemals
-    verlieren. Wir empfehlen, es auf einen Zettel zu schreiben und diesen an einem sicheren
-    Ort zu verwahren.
+    **Vergessen Sie Ihr Master Passwort nicht!** Aus Sicherheits- und
+    Privatsphäregründen wird Ihr Master Passwort nirgends gespeichert. Deshalb
+    können wir Ihnen leider nicht bei der Wiederherstellung Ihrer Daten
+    behilflich sein, sollten Sie es jemals verlieren. Wir empfehlen, es auf
+    einen Zettel zu schreiben und diesen an einem sicheren Ort zu verwahren.
 - o: Auto-lock in 10 seconds
   t: Automatische Sperrung in 10 Sekunden
 - o: >-

@@ -17,6 +17,7 @@ const compareUuid = compareProperty("uuid");
 export interface Field {
     name: string;
     value: string;
+    masked?: boolean;
 }
 
 export class Record {

@@ -266,7 +266,7 @@ class RecordView extends applyMixins(
             this._setEdited();
         }
 
-        this.$.newField.field = { name: "", value: "" };
+        this.$.newField.field = { name: "", value: "", masked: false };
 
         this._debouncedFinishEditing();
     }

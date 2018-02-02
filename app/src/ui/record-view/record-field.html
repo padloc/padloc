@@ -61,6 +61,7 @@
 
             .field-button {
                 cursor: pointer;
+                font-size: 110%;
             }
 
             :host(:not([_editing-name])) #nameInput {
@@ -78,17 +79,16 @@
                 <pl-input id="nameInput" value="[[ field.name ]]" placeholder="[[ $l('Enter New Field Name') ]]" select-on-focus
                     focused="{{ _editingName }}" on-enter="_focusValueInput" on-escape="_cancelEdit"></pl-input>
                 <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ $l('Enter Content') ]]" select-on-focus
-                    focused="{{ _editingValue }}" on-escape="_cancelEdit" on-mousedown="_valueInputMouseDown" masked="[[ _masked ]]"></pl-input>
+                    focused="{{ _editingValue }}" on-escape="_cancelEdit" on-mousedown="_valueInputMouseDown" masked="[[ field.masked ]]"></pl-input>
             </div>
 
             <template is="dom-if" if="[[ !draft ]]">
                 <div class="field-buttons">
-                    <pl-icon icon="[[ _toggleMaskIcon(_masked) ]]" class="field-button tiles-1 tap" on-click="_toggleMask" hidden$="[[ _editing ]]"></pl-icon>
+                    <pl-icon icon="[[ _toggleMaskIcon(field.masked) ]]" class="field-button tiles-1 tap" on-click="_toggleMask" hidden$="[[ _editing ]]"></pl-icon>
                     <pl-icon icon="cancel" class="field-button tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="copy" class="field-button tap" on-click="_copy" hidden$="[[ !_isEmpty(field.value) ]]"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator" hidden$="[[ _isEmpty(field.value) ]]"></pl-icon>
+                    <pl-icon icon="copy" class="field-button tap" on-click="_copy" hidden$="[[ !_showCopyButton(_editing, field.value) ]]"></pl-icon>
+                    <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator" hidden$="[[ !_showGenerateButton(_editing, field.value) ]]"></pl-icon>
                     <pl-icon icon="more" class="field-button tap" on-click="_showFieldInfo"></pl-icon>
-                    <div class="spacer tiles-4"></div>
                 </div>
             </template>
 
@@ -146,7 +146,7 @@ class RecordField extends applyMixins(
         },
         field: {
             type: Object,
-            value: () => { return { name: "", value: "" }; },
+            value: () => { return { name: "", value: "", masked: false }; },
             observer: "_fieldChanged"
         }
     }; }
@@ -223,15 +223,12 @@ class RecordField extends applyMixins(
     }
 
     _toggleMaskIcon() {
-        return this._masked ? "show" : "hide";
+        return this.field.masked ? "show" : "hide";
     }
 
     _toggleMask() {
-        this._masked = !this._masked;
-    }
-
-    _fieldChanged() {
-        this._masked = true;
+        this.set("field.masked", !this.field.masked);
+        this.dispatchEvent(new CustomEvent("field-change"));
     }
 
     _showFieldInfo() {
@@ -256,7 +253,15 @@ class RecordField extends applyMixins(
     }
 
     _isEmpty() {
-        return !!this.field.value;
+        return !this.field.value;
+    }
+
+    _showCopyButton() {
+        return !this._editing && !this._isEmpty();
+    }
+
+    _showGenerateButton() {
+        return this._editing || this._isEmpty();
     }
 
     edit() {
