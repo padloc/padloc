@@ -124,8 +124,8 @@ class Dialog extends padlock.AnimationMixin(padlock.BaseElement) {
         window.addEventListener("keydown", (e) => {
             if (this.open && (e.key === "Enter" || e.key === "Escape")) {
                 this.dismiss();
-                e.preventDefault();
-                e.stopPropagation();
+                // e.preventDefault();
+                // e.stopPropagation();
             }
         });
         window.addEventListener("backbutton", (e) => {
