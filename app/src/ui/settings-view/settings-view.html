@@ -103,12 +103,6 @@
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
 
-            <section class="tiles" hidden$="[[ _isTouch() ]]">
-                <div class="info">[[ _peekValuesInfo() ]]</div>
-                <pl-toggle-button active="{{ settings.peekValues }}" label="[[ $l('Peek Values') ]]" class="tap"
-                    reverse on-change="settingChanged"></pl-toggle-button>
-            </section>
-
             <section class="tiles">
                 <div class="section-header">[[ $l("Export") ]]</div>
                 <pl-export records="[[ collection.records ]]"></pl-export>
