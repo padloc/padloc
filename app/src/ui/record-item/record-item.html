@@ -144,6 +144,11 @@
                 @apply --shade-3;
             }
 
+            .field-value[masked] {
+                font-size: 150%;
+                letter-spacing: -3.5px;
+            }
+
             :host(:not([multi-select])[selected]), :host(:not([multi-select])[selected]) .copied-message {
                 color: var(--color-background);
             }
@@ -186,7 +191,7 @@
                 <div class="field" on-click="_copyField">
                     <div class="label-value">
                         <div class="field-label">[[ item.name ]]</div>
-                        <div class="field-value">[[ _value(item.value, settings.peekValues) ]]</div>
+                        <div class="field-value" masked$="[[ item.masked ]]">[[ _value(item.value, item.masked) ]]</div>
                     </div>
                     <div class="copied-message">[[ $l("copied") ]]</div>
                 </div>
@@ -240,11 +245,6 @@ class RecordItem extends applyMixins(
         this.classList.toggle("touch", isTouch());
     }
 
-    // Replaces all non-newline characters in a given string with dots
-    _obfuscate(value) {
-        return value ? value.replace(/[^\n]/g, "\u2022") : "";
-    }
-
     _copyField(e) {
         if (!this.multiSelect) {
             e.stopPropagation();
@@ -278,8 +278,8 @@ class RecordItem extends applyMixins(
         }
     }
 
-    _value(val, peekValues) {
-        return peekValues ? val : $l("Click To Copy");
+    _value(val, masked) {
+        return masked ? val.replace(/[^\n]/g, "\u2022") : val;
     }
 
     _selectIconClicked() {
