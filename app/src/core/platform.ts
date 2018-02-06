@@ -12,10 +12,6 @@ let clipboardTextArea: HTMLTextAreaElement;
 // Set clipboard text using `document.execCommand("cut")`.
 // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
 function domSetClipboard(text: string) {
-    // copying an empty string does not work with this method, so copy a single space instead.
-    if (text === "") {
-        text = " ";
-    }
     clipboardTextArea = clipboardTextArea || document.createElement("textarea");
     clipboardTextArea.value = text;
     document.body.appendChild(clipboardTextArea);

@@ -132,7 +132,7 @@
             <div class="fields">
                 <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
                     <div class="animate">
-                        <pl-record-field field="{{ item }}"
+                        <pl-record-field field="[[ item ]]" record="[[ record ]]"
                             on-field-change="_setEdited"
                             on-field-delete="_deleteField"
                             on-field-edit-start="_inputFocused"
