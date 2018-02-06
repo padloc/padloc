@@ -12,6 +12,10 @@ let clipboardTextArea: HTMLTextAreaElement;
 // Set clipboard text using `document.execCommand("cut")`.
 // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
 function domSetClipboard(text: string) {
+    // copying an empty string does not work with this method, so copy a single space instead.
+    if (text === "") {
+        text = " ";
+    }
     clipboardTextArea = clipboardTextArea || document.createElement("textarea");
     clipboardTextArea.value = text;
     document.body.appendChild(clipboardTextArea);
@@ -71,6 +75,8 @@ export async function setClipboard(text: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             cordova.plugins.clipboard.copy(text, resolve, reject);
         });
+    } else if (isElectron()) {
+        electron.clipboard.writeText(text);
     } else {
         domSetClipboard(text);
     }
@@ -84,6 +90,8 @@ export async function getClipboard(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             cordova.plugins.clipboard.paste(resolve, reject);
         });
+    } else if (isElectron()) {
+        return electron.clipboard.readText();
     } else {
         return domGetClipboard();
     }
