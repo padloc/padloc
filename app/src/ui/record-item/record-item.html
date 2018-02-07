@@ -3,7 +3,7 @@
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../locale/locale.html">
-<link rel="import" href="../notification/notification.html">
+<link rel="import" href="../clipboard/clipboard.html">
 
 <dom-module id="pl-record-item">
     <template>
@@ -207,16 +207,16 @@
     <script>
 (() => {
 
-const { NotificationMixin, LocaleMixin, DataMixin, BaseElement } = padlock;
+const { ClipboardMixin, LocaleMixin, DataMixin, BaseElement } = padlock;
 const { MutableData } = Polymer;
 const { applyMixins } = padlock.util;
-const { isTouch, setClipboard } = padlock.platform;
+const { isTouch } = padlock.platform;
 
 class RecordItem extends applyMixins(
     BaseElement,
     DataMixin,
     MutableData,
-    NotificationMixin,
+    ClipboardMixin,
     LocaleMixin
 ) {
 
@@ -249,7 +249,7 @@ class RecordItem extends applyMixins(
         if (!this.multiSelect) {
             e.stopPropagation();
             e.preventDefault();
-            setClipboard(e.model.item.value);
+            this.setClipboard(this.record, e.model.item);
             const field = this.root.querySelectorAll(".field")[e.model.index];
             field.classList.add("copied");
             this.record.lastUsed = new Date();

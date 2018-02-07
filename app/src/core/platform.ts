@@ -71,6 +71,8 @@ export async function setClipboard(text: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             cordova.plugins.clipboard.copy(text, resolve, reject);
         });
+    } else if (isElectron()) {
+        electron.clipboard.writeText(text);
     } else {
         domSetClipboard(text);
     }
@@ -84,6 +86,8 @@ export async function getClipboard(): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             cordova.plugins.clipboard.paste(resolve, reject);
         });
+    } else if (isElectron()) {
+        return electron.clipboard.readText();
     } else {
         return domGetClipboard();
     }

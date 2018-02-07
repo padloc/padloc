@@ -1,5 +1,6 @@
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
+<link rel="import" href="../clipboard/clipboard.html">
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../input/input.html">
@@ -107,13 +108,14 @@
 (() => {
 
 const { applyMixins } = padlock.util;
-const { BaseElement, NotificationMixin, LocaleMixin, DialogMixin } = padlock;
+const { BaseElement, NotificationMixin, LocaleMixin, DialogMixin, ClipboardMixin } = padlock;
 
 class RecordField extends applyMixins(
     BaseElement,
     NotificationMixin,
     LocaleMixin,
-    DialogMixin
+    DialogMixin,
+    ClipboardMixin
 ) {
 
     static get is() { return "pl-record-field"; }
@@ -144,10 +146,10 @@ class RecordField extends applyMixins(
             type: Boolean,
             value: false
         },
+        record: Object,
         field: {
             type: Object,
-            value: () => { return { name: "", value: "", masked: false }; },
-            observer: "_fieldChanged"
+            value: () => { return { name: "", value: "", masked: false }; }
         }
     }; }
 
@@ -210,8 +212,7 @@ class RecordField extends applyMixins(
     }
 
     _copy() {
-        padlock.platform.setClipboard(this.field.value)
-            .then(() => this.notify($l("Value copied to clipboard!"), "success", 1500));
+        this.setClipboard(this.record, this.field);
     }
 
     _valueInputMouseDown(e) {
