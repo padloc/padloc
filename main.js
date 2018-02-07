@@ -71,7 +71,7 @@ function updateAvailable(versionInfo) {
         detail: htmlToText(versionInfo.releaseNotes),
         checkboxLabel: "Automatically download and install updates in the future (recommended)",
         buttons: ["Remind Me Later", "Download And Install"],
-        defaultId: 1,
+        defaultId: 1
     }, (buttonIndex, checkboxChecked) => {
         settings.set("autoDownloadUpdates", checkboxChecked);
 
@@ -116,10 +116,39 @@ function changeDataDir() {
     });
     const newDir = dirs && dirs[0];
     if (newDir) {
-        for (const file of ["data.pls", "settings.pls", "stats.json"]) {
-            fs.moveSync(path.join(oldDir, file), path.join(newDir, file));
+        let moveFiles = true;
+        if (fs.pathExistsSync(path.join(newDir, "data.pls"))) {
+            const choice = dialog.showMessageBox({
+                type: "question",
+                message: "Existing Database Found",
+                detail: "The directory you selected already contains a database file!",
+                buttons: [
+                    "Cancel",
+                    "Load New Database (Restart Required)",
+                    "Overwrite Database"
+                ],
+                defaultId: 0
+            });
+
+            if (choice == 0) {
+                return;
+            }
+
+            if (choice == 1) {
+                moveFiles = false;
+            }
         }
+
         settings.set("dataDir", newDir);
+
+        if (moveFiles) {
+            for (const file of ["data.pls", "settings.pls", "stats.json"]) {
+                fs.moveSync(path.join(oldDir, file), path.join(newDir, file), {overwrite: true});
+            }
+        } else {
+            app.relaunch();
+            app.exit(0);
+        }
     }
 }
 
@@ -182,7 +211,7 @@ function createApplicationMenu() {
         [ { label: `Padlock v${app.getVersion()}`, enabled: false} ];
 
     appSubMenu.push(
-        checkForUpdatesItem,
+        checkForUpdatesItem
     );
 
     if (os.platform() == "darwin") {
@@ -190,7 +219,7 @@ function createApplicationMenu() {
             { type: "separator" },
             { role: "hide" },
             { role: "hideothers" },
-            { role: "unhide" },
+            { role: "unhide" }
         );
     }
 
