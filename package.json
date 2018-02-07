@@ -28,7 +28,6 @@
     "eslint": "^4.0.0",
     "eslint-plugin-html": "^3.0.0",
     "estraverse": "^4.2.0",
-    "fs-extra": "^1.0.0",
     "gulp": "^3.9.1",
     "gulp-insert-lines": "0.0.4",
     "js-yaml": "^3.8.4",
@@ -52,6 +51,7 @@
   "dependencies": {
     "electron-store": "^1.1.0",
     "electron-updater": "^2.17.6",
+    "fs-extra": "^5.0.0",
     "uuid": "^3.1.0",
     "yargs": "^4.8.1"
   },

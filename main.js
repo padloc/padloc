@@ -5,9 +5,14 @@ const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const url = require("url");
 const os = require("os");
+const fs = require("fs-extra");
 const uuid = require("uuid/v4");
 const { debug, test } = require("yargs").argv;
 const ElectronStore = require("electron-store");
+
+if (debug || test) {
+    app.setPath("userData", path.join(app.getPath("temp"), app.getName()));
+}
 
 const settings = global.settings = new ElectronStore({
     name: "settings",
@@ -18,7 +23,8 @@ const settings = global.settings = new ElectronStore({
             width: 800,
             height: 600
         },
-        fullscreen: false
+        fullscreen: false,
+        dataDir: app.getPath("userData")
     }
 });
 
@@ -28,10 +34,6 @@ if (!settings.get("uuid")) {
 
 let win;
 let updateOnQuit = false;
-
-if (debug || test) {
-    app.setPath("userData", path.join(app.getPath("temp"), app.getName()));
-}
 
 function updateReady(updateInfo) {
     dialog.showMessageBox({
@@ -104,6 +106,21 @@ function checkForUpdates(manual) {
             });
         }
     });
+}
+
+function changeDataDir() {
+    const oldDir = settings.get("dataDir");
+    const dirs = dialog.showOpenDialog({
+        defaultPath: oldDir,
+        properties: ["openDirectory", "createDirectory", "promptToCreate"]
+    });
+    const newDir = dirs && dirs[0];
+    if (newDir) {
+        for (const file of ["data.pls", "settings.pls", "stats.json"]) {
+            fs.moveSync(path.join(oldDir, file), path.join(newDir, file));
+        }
+        settings.set("dataDir", newDir);
+    }
 }
 
 function createWindow() {
@@ -216,6 +233,10 @@ function createApplicationMenu() {
                             click(item) { settings.set("allowPrerelease", item.checked); }
                         }
                     ]
+                },
+                {
+                    label: "Change Data Directory...",
+                    click() { changeDataDir(); }
                 }
             ]
         },
@@ -268,3 +289,4 @@ app.on("before-quit", (e) => {
 });
 
 ipcMain.on("check-updates", () => checkForUpdates(true));
+ipcMain.on("change-datadir", () => changeDataDir());
