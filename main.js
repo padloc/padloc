@@ -139,6 +139,15 @@ function changeDataDir() {
             }
         }
 
+        if (dialog.showMessageBox({
+            type: "question",
+            message: `Are you sure you want to change your data directory to ${newDir}?`,
+            buttons: ["Confirm", "Cancel"],
+            defaultId: 0
+        }) === 1) {
+            return;
+        }
+
         settings.set("dataDir", newDir);
 
         if (moveFiles) {
