@@ -202,6 +202,12 @@ export async function checkForUpdates(): Promise<void> {
     }
 }
 
+export function changeDataDir() {
+    if (isElectron()) {
+        electron.ipcRenderer.send("change-datadir");
+    }
+}
+
 export function getLocale(): string {
     // TODO: Is there a more reliable way to get the system locale,
     // e.g. through `electron.remote.app.getLocale()`?

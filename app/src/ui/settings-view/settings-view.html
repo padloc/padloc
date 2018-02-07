@@ -153,7 +153,8 @@
                 </button>
                 <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
                 <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
-                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates") ]]</button>
+                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
+                <button on-click="_changeDataDir" class="tap" hidden$="[[ !_isDesktop() ]]">[[ $l("Change Data Directory...") ]]</button>
             </section>
         </main>
 
@@ -166,7 +167,7 @@
 
 const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, isElectron } = padlock.platform;
+const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, changeDataDir, isElectron } = padlock.platform;
 
 class SettingsView extends applyMixins(
     BaseElement,
@@ -424,6 +425,10 @@ class SettingsView extends applyMixins(
 
     _checkForUpdates() {
         checkForUpdates();
+    }
+
+    _changeDataDir() {
+        changeDataDir();
     }
 
 }
