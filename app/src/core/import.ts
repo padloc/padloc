@@ -166,7 +166,7 @@ function lpParseRow(row: string[]): Record {
     let fields: Field[] = [
         { name: "url", value: row[urlIndex] },
         { name: "username", value: row[usernameIndex] },
-        { name: "password", value: row[passwordIndex] }
+        { name: "password", value: row[passwordIndex], masked: true }
     ]
     let notes = row[notesIndex];
 
