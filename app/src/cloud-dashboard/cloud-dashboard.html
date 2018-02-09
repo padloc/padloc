@@ -351,11 +351,11 @@
                 <div class="message">
                     Enter your billing info below if you want to receive full invoices via email.
                 </div>
-                <input name="name" required placeholder="[[ $l('Full Name') ]]" value="[[ account.billing.name ]]">
-                <input name="address1" placeholder="[[ $l('Company Name (Optional)') ]]" value="[[ account.billing.address1 ]]">
-                <input name="address2" required placeholder="[[ $l('Address') ]]" autocomplete="street-address" value="[[ account.billing.address2 ]]">
+                <input name="name" required placeholder="[[ $l('Full Name') ]]" autocomplete="name" value="[[ account.billing.name ]]">
+                <input name="address1" placeholder="[[ $l('Company Name (Optional)') ]]" autocomplete="address-line1" value="[[ account.billing.address1 ]]">
+                <input name="address2" required placeholder="[[ $l('Address') ]]" autocomplete="address-line2" value="[[ account.billing.address2 ]]">
                 <input name="zip" required placeholder="[[ $l('Zip Code') ]]" autocomplete="postal-code" value="[[ account.billing.postalCode ]]">
-                <input name="city" required placeholder="[[ $l('City') ]]" autocomplete="locality" value="[[ account.billing.city ]]">
+                <input name="city" required placeholder="[[ $l('City') ]]" autocomplete="address-level2" value="[[ account.billing.city ]]">
                 <div class="select-wrapper">
                     <select id="countrySelect" name="country" required placeholder="[[ $l('Country') ]]" autocomplete="country">
                         <option value="AF">Afghanistan</option>
