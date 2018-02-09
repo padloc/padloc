@@ -268,76 +268,75 @@
                         <button class="tiles-2 tap" on-click="_changePaymentMethod">[[ $l("Change Payment Method") ]]</button>
                         <button class="tiles-3 tap" on-click="_openBillingDialog">[[ $l("Update Billing Info") ]]</button>
                         <pl-loading-button class="tiles-4 tap" on-click="_showInvoices">[[ $l("Invoices") ]]</pl-loading-button>
-                    <button class="tiles-5 tap" on-click="_cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
-                </section>
+                        <button class="tiles-5 tap" on-click="_cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
+                    </section>
 
-            </template>
+                </template>
 
-        </dom-if>
+            </dom-if>
 
-        <section class="devices">
-            <div class="title">[[ $l("{0} Paired Devices", account.devices.length) ]]</div>
+            <section class="devices">
+                <div class="title">[[ $l("{0} Paired Devices", account.devices.length) ]]</div>
 
-            <div class="tiles tiles-2 device-list">
-                <dom-repeat items="[[ account.devices ]]">
-                    <template>
-                        <div class="device tiles">
-                            <div class="device-name">[[ item.description ]]</div>
-                            <pl-icon icon="delete" on-click="_revokeDevice"></pl-icon>
-                        </div>
-                    </template>
-                </dom-repeat>
-            </div>
-        </section>
+                <div class="tiles tiles-2 device-list">
+                    <dom-repeat items="[[ account.devices ]]">
+                        <template>
+                            <div class="device tiles">
+                                <div class="device-name">[[ item.description ]]</div>
+                                <pl-icon icon="delete" on-click="_revokeDevice"></pl-icon>
+                            </div>
+                        </template>
+                    </dom-repeat>
+                </div>
+            </section>
 
-        <section class="tiles">
-            <div class="info">[[ _resetDataText() ]]</div>
-            <button class="tap" on-click="_resetData">[[ $l("Delete Data") ]]</button>
-        </section>
+            <section class="tiles">
+                <div class="info">[[ _resetDataText() ]]</div>
+                <button class="tap" on-click="_resetData">[[ $l("Delete Data") ]]</button>
+            </section>
 
-    </main>
+        </main>
 
-    <pl-dialog id="deleteStoreDialog">
-        <form action="/deletestore/" method="POST">
-            <div class="message">[[ _confirmResetDataText() ]]</div>
-            <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
-            <button class="tap tiles-2">[[ $l("Reset Data") ]]</button>
-        </form>
-    </pl-dialog>
+        <pl-dialog id="deleteStoreDialog">
+            <form action="/deletestore/" method="POST">
+                <div class="message">[[ _confirmResetDataText() ]]</div>
+                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
+                <button class="tap tiles-2">[[ $l("Reset Data") ]]</button>
+            </form>
+        </pl-dialog>
 
-    <pl-dialog id="cancelSubscriptionDialog">
-        <form action="/unsubscribe/" method="POST">
-            <div class="message">[[ _cancelSubscriptionText() ]]</div>
-            <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
-            <button class="tap tiles-2">[[ $l("Cancel Subscription") ]]</button>
-        </form>
-    </pl-dialog>
+        <pl-dialog id="cancelSubscriptionDialog">
+            <form action="/unsubscribe/" method="POST">
+                <div class="message">[[ _cancelSubscriptionText() ]]</div>
+                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
+                <button class="tap tiles-2">[[ $l("Cancel Subscription") ]]</button>
+            </form>
+        </pl-dialog>
 
-    <pl-dialog id="revokeDeviceDialog">
-        <form action="/revoke/" method="POST">
-            <div class="message">[[ _revokeDeviceMessage ]]</div>
-            <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
-            <input type="hidden" name="id" value="[[ _revokedDeviceId ]]">
-            <button class="tap tiles-2">[[ $l("Revoke Access") ]]</button>
-        </form>
-    </pl-dialog>
+        <pl-dialog id="revokeDeviceDialog">
+            <form action="/revoke/" method="POST">
+                <div class="message">[[ _revokeDeviceMessage ]]</div>
+                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
+                <input type="hidden" name="id" value="[[ _revokedDeviceId ]]">
+                <button class="tap tiles-2">[[ $l("Revoke Access") ]]</button>
+            </form>
+        </pl-dialog>
 
-    <pl-dialog id="cardDialog">
-        <form id="paymentForm" action="/subscribe/?ref=[[ referer ]]" method="post" on-submit="_submitCard">
-            <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
-            <input type="hidden" name="stripeToken" id="stripeTokenInput">
-            <div class="buy-subscription tiles-1" hidden$="[[ _changingPaymentSource ]]">
-                <div class="subscription-name">[[ account.subscription.plan.name ]]</div>
-                <ul class="subscription-features">
-                    <li>End-To-End Encryption</li>
+        <pl-dialog id="cardDialog">
+            <form id="paymentForm" action="/subscribe/?ref=[[ referer ]]" method="post" on-submit="_submitCard">
+                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
+                <input type="hidden" name="stripeToken" id="stripeTokenInput">
+                <div class="buy-subscription tiles-1" hidden$="[[ _changingPaymentSource ]]">
+                    <div class="subscription-name">[[ account.subscription.plan.name ]]</div>
+                    <ul class="subscription-features">
+                        <li>End-To-End Encryption</li>
                         <li>Automatic Backups</li>
                         <li>Unlimited Devices</li>
                     </ul>
                     <div class="price">[[ _monthlyPrice(account.subscription) ]]</div>
                     <div class="small">[[ _billingCycle(account.subscription) ]]</div>
                 </div>
-                <div class="message tiles-2 card-hint" error$="[[ _cardError ]]">
-                   [[ _cardHint(_cardError) ]]</div>
+                <div class="message tiles-2 card-hint" error$="[[ _cardError ]]">[[ _cardHint(_cardError) ]]</div>
                 <div id="cardElement" class="card tiles-3"></div>
                 <pl-loading-button class="tiles-4 tap" id="submitButton" on-click="_submitCard">[[ _submitCardLabel ]]</pl-loading-button>
                 <a href="https://stripe.com" target="_blank" class="secure-payment tiles-5">
