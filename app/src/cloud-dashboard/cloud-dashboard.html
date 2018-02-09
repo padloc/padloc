@@ -688,9 +688,10 @@ class Dashboard extends applyMixins(
             this.setAttribute("ready", "");
         }, 100);
 
-        this._setupPayment();
-
-        this.$.countrySelect.value = this.account.billing.country;
+        if (this.account.displaySubscription) {
+            this._setupPayment();
+            this.$.countrySelect.value = this.account.billing.country;
+        }
 
         switch (this.action) {
             case "paired":
@@ -928,12 +929,18 @@ class Dashboard extends applyMixins(
     }
 
     _monthlyPrice() {
+        if (!this.account.subscription) {
+            return "";
+        }
         const plan = this.account.subscription.plan;
         const price = plan.interval === "month" ? plan.amount / 100 : plan.amount / 1200;
         return $l("${0}/month", price);
     }
 
     _billingCycle() {
+        if (!this.account.subscription) {
+            return "";
+        }
         return this.account.subscription.plan.interval === "month" ? $l("(billed monthly)") : $l("(billed annually)");
     }
 
