@@ -24,7 +24,7 @@ const settings = global.settings = new ElectronStore({
             height: 600
         },
         fullscreen: false,
-        dataDir: app.getPath("userData")
+        dbPath: path.join(app.getPath("userData"), "data.pls")
     }
 });
 
@@ -108,24 +108,23 @@ function checkForUpdates(manual) {
     });
 }
 
-function changeDataDir() {
-    const oldDir = settings.get("dataDir");
-    const dirs = dialog.showOpenDialog({
-        defaultPath: oldDir,
-        properties: ["openDirectory", "createDirectory", "promptToCreate"]
+function changeDBPath() {
+    const oldPath = settings.get("dbPath");
+    const newPath = dialog.showSaveDialog({
+        defaultPath: oldPath
+        // properties: ["openFile", "createDirectory", "promptToCreate"]
     });
-    const newDir = dirs && dirs[0];
-    if (newDir) {
-        let moveFiles = true;
-        if (fs.pathExistsSync(path.join(newDir, "data.pls"))) {
+    if (newPath) {
+        let moveFile = true;
+        if (fs.pathExistsSync(newPath)) {
             const choice = dialog.showMessageBox({
                 type: "question",
-                message: "Existing Database Found",
-                detail: "The directory you selected already contains a database file!",
+                message: "Existing Database",
+                detail: "You've selected an existing database file. What do you want to do?",
                 buttons: [
                     "Cancel",
-                    "Load New Database (Restart Required)",
-                    "Overwrite Database"
+                    "Load (Restart Required)",
+                    "Overwrite"
                 ],
                 defaultId: 0
             });
@@ -135,28 +134,26 @@ function changeDataDir() {
             }
 
             if (choice == 1) {
-                moveFiles = false;
+                moveFile = false;
             }
         }
 
         if (dialog.showMessageBox({
             type: "question",
-            message: `Are you sure you want to change your data directory to ${newDir}?`,
+            message: `Are you sure you want to change your database path to ${newPath}?`,
             buttons: ["Confirm", "Cancel"],
             defaultId: 0
         }) === 1) {
             return;
         }
 
-        settings.set("dataDir", newDir);
+        settings.set("dbPath", newPath);
 
-        if (moveFiles) {
-            for (const file of ["data.pls", "settings.pls", "stats.json"]) {
-                fs.moveSync(path.join(oldDir, file), path.join(newDir, file), {overwrite: true});
-            }
-        } else {
+        if (!moveFile) {
             app.relaunch();
             app.exit(0);
+        } else if (fs.pathExistsSync(oldPath)) {
+            fs.moveSync(oldPath, newPath, {overwrite: true});
         }
     }
 }
@@ -273,8 +270,8 @@ function createApplicationMenu() {
                     ]
                 },
                 {
-                    label: "Change Data Directory...",
-                    click() { changeDataDir(); }
+                    label: "Change Database Path...",
+                    click() { changeDBPath(); }
                 }
             ]
         },
@@ -327,4 +324,4 @@ app.on("before-quit", (e) => {
 });
 
 ipcMain.on("check-updates", () => checkForUpdates(true));
-ipcMain.on("change-datadir", () => changeDataDir());
+ipcMain.on("change-db-path", () => changeDBPath());

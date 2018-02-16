@@ -202,9 +202,9 @@ export async function checkForUpdates(): Promise<void> {
     }
 }
 
-export function changeDataDir() {
+export function changeDBPath() {
     if (isElectron()) {
-        electron.ipcRenderer.send("change-datadir");
+        electron.ipcRenderer.send("change-db-path");
     }
 }
 
