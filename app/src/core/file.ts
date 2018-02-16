@@ -1,5 +1,3 @@
-import { getDesktopSettings } from "./platform";
-
 const persistentStorage =  navigator.persistentStorage || navigator.webkitPersistentStorage;
 
 function requestFileSystem(bytes: number): Promise<any> {
@@ -93,12 +91,11 @@ export class CordovaFileManager extends HTML5FileManager {
 
 const nodeFs = window.require && window.require("fs");
 const nodePath = window.require && window.require("path");
+const electron = window.require && window.require("electron");
 
 export class NodeFileManager implements FileManager {
 
-    static get basePath() {
-        return getDesktopSettings().get().dataDir;
-    }
+    public basePath = electron.remote.app.getPath("userData");
 
     constructor() {
         if (!nodeFs) {
@@ -107,7 +104,7 @@ export class NodeFileManager implements FileManager {
     }
 
     resolvePath(path: string): string {
-        return nodePath.resolve(NodeFileManager.basePath, path);
+        return nodePath.isAbsolute(path) ? path : nodePath.resolve(this.basePath, path);
     }
 
     read(path: string): Promise<string> {
