@@ -202,9 +202,15 @@ export async function checkForUpdates(): Promise<void> {
     }
 }
 
-export function changeDBPath() {
+export function saveDBAs() {
     if (isElectron()) {
-        electron.ipcRenderer.send("change-db-path");
+        electron.ipcRenderer.send("save-db-as");
+    }
+}
+
+export function loadDB() {
+    if (isElectron()) {
+        electron.ipcRenderer.send("load-db");
     }
 }
 

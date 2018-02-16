@@ -146,6 +146,12 @@
                     reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
             </section>
 
+            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Database") ]]</div>
+                <button on-click="_saveDBAs" class="tap">[[ $l("Save As...") ]]</button>
+                <button on-click="_loadDB" class="tap">[[ $l("Load...") ]]</button>
+            </section>
+
             <section class="tiles">
                 <button class="info tap" on-click="_openSource">
                     <strong>Padlock {{ settings.version }}</strong><br>
@@ -154,7 +160,6 @@
                 <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
                 <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
                 <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
-                <button on-click="_changeDBPath" class="tap" hidden$="[[ !_isDesktop() ]]">[[ $l("Change Database Path...") ]]</button>
             </section>
         </main>
 
@@ -167,7 +172,7 @@
 
 const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, changeDBPath, isElectron } = padlock.platform;
+const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, saveDBAs, loadDB, isElectron } = padlock.platform;
 
 class SettingsView extends applyMixins(
     BaseElement,
@@ -427,8 +432,12 @@ class SettingsView extends applyMixins(
         checkForUpdates();
     }
 
-    _changeDBPath() {
-        changeDBPath();
+    _saveDBAs() {
+        saveDBAs();
+    }
+
+    _loadDB() {
+        loadDB();
     }
 
 }
