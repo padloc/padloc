@@ -108,40 +108,20 @@ function checkForUpdates(manual) {
     });
 }
 
-function changeDBPath() {
+function saveDBAs() {
     const oldPath = settings.get("dbPath");
     const newPath = dialog.showSaveDialog({
-        defaultPath: oldPath
-        // properties: ["openFile", "createDirectory", "promptToCreate"]
+        defaultPath: oldPath,
+        filters: [
+            {name: "Padlock Store", extensions: ["pls"]},
+        ]
     });
     if (newPath) {
-        let moveFile = true;
-        if (fs.pathExistsSync(newPath)) {
-            const choice = dialog.showMessageBox({
-                type: "question",
-                message: "Existing Database",
-                detail: "You've selected an existing database file. What do you want to do?",
-                buttons: [
-                    "Cancel",
-                    "Load (Restart Required)",
-                    "Overwrite"
-                ],
-                defaultId: 0
-            });
-
-            if (choice == 0) {
-                return;
-            }
-
-            if (choice == 1) {
-                moveFile = false;
-            }
-        }
-
         if (dialog.showMessageBox({
             type: "question",
-            message: `Are you sure you want to change your database path to ${newPath}?`,
-            buttons: ["Confirm", "Cancel"],
+            message: "Confirm Changing Database Location",
+            detail: `Are you sure you want to change your database location to ${newPath}?`,
+            buttons: ["Save And Restart", "Cancel"],
             defaultId: 0
         }) === 1) {
             return;
@@ -149,12 +129,43 @@ function changeDBPath() {
 
         settings.set("dbPath", newPath);
 
-        if (!moveFile) {
-            app.relaunch();
-            app.exit(0);
-        } else if (fs.pathExistsSync(oldPath)) {
+        if (fs.pathExistsSync(oldPath)) {
+            console.log(`moving file from ${oldPath} to ${newPath}`);
             fs.moveSync(oldPath, newPath, {overwrite: true});
         }
+
+        app.relaunch();
+        app.exit(0);
+    }
+}
+
+function loadDB() {
+    const oldPath = settings.get("dbPath");
+    const paths = dialog.showOpenDialog({
+        defaultPath: oldPath,
+        properties: ["openFile", "createDirectory", "promptToCreate"],
+        filters: [
+            {name: "Padlock Store", extensions: ["pls"]},
+        ]
+    });
+    const newPath = paths && paths[0];
+
+    if (newPath && newPath !== oldPath) {
+        if (dialog.showMessageBox({
+            type: "question",
+            message: "Confirm Loading Database",
+            detail: `Are you sure you want to load the database file at ${newPath}?` +
+                ` Your existing datbase will remain at ${oldPath}.`,
+            buttons: ["Load And Restart", "Cancel"],
+            defaultId: 0
+        }) === 1) {
+            return;
+        }
+
+        settings.set("dbPath", newPath);
+
+        app.relaunch();
+        app.exit(0);
     }
 }
 
@@ -269,9 +280,19 @@ function createApplicationMenu() {
                         }
                     ]
                 },
+                { type: "separator" },
                 {
-                    label: "Change Database Path...",
-                    click() { changeDBPath(); }
+                    label: "Database",
+                    submenu: [
+                        {
+                            label: "Load...",
+                            click() { loadDB(); }
+                        },
+                        {
+                            label: "Save As...",
+                            click() { saveDBAs(); }
+                        }
+                    ]
                 }
             ]
         },
@@ -324,4 +345,5 @@ app.on("before-quit", (e) => {
 });
 
 ipcMain.on("check-updates", () => checkForUpdates(true));
-ipcMain.on("change-db-path", () => changeDBPath());
+ipcMain.on("save-db-as", () => saveDBAs());
+ipcMain.on("load-db", () => loadDB());
