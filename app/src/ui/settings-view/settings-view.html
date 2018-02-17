@@ -95,6 +95,7 @@
         </header>
 
         <main>
+
             <section class="tiles">
                 <div class="info">[[ _autoLockInfo() ]]</div>
                 <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Enable Auto Lock') ]]" class="tap"
@@ -138,8 +139,18 @@
                 </button>
             </section>
 
+            <section class="tiles">
+                <button class="info tap" on-click="_openSource">
+                    <strong>Padlock {{ settings.version }}</strong><br>
+                    [[ $l("Developed and maintained by") ]] <strong>MaKleSoft</strong>
+                </button>
+                <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
+                <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
+            </section>
+
             <section class="tiles" hidden$="[[ !_isDesktop() ]]">
                 <div class="section-header">[[ $l("Updates") ]]</div>
+                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
                 <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap"
                     reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
                 <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
@@ -148,18 +159,12 @@
 
             <section class="tiles" hidden$="[[ !_isDesktop() ]]">
                 <div class="section-header">[[ $l("Database") ]]</div>
-                <button on-click="_saveDBAs" class="tap">[[ $l("Save As...") ]]</button>
-                <button on-click="_loadDB" class="tap">[[ $l("Load...") ]]</button>
-            </section>
-
-            <section class="tiles">
-                <button class="info tap" on-click="_openSource">
-                    <strong>Padlock {{ settings.version }}</strong><br>
-                    [[ $l("Developed and maintained by") ]] <strong>MaKleSoft</strong>
-                </button>
-                <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
-                <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
-                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
+                <div class="info">
+                    <div>[[ $l("Current Location:") ]]</div>
+                    <strong>[[ _dbPath ]]</strong>
+                </div>
+                <button on-click="_saveDBAs" class="tap">[[ $l("Change Location...") ]]</button>
+                <button on-click="_loadDB" class="tap">[[ $l("Load Different Database...") ]]</button>
             </section>
         </main>
 
@@ -190,6 +195,7 @@ class SettingsView extends applyMixins(
             const desktopSettings = getDesktopSettings().get();
             this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
             this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
+            this._dbPath = desktopSettings.dbPath;
         }
     }
 
