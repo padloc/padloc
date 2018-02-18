@@ -290,8 +290,9 @@ class App extends applyMixins(
             });
 
         getPlatformName().then((platform) => {
-            this.classList.add(platform.toLowerCase());
-            this.root.querySelector("pl-title-bar").classList.add(platform.toLowerCase());
+            const className = platform.toLowerCase().replace(/ /g, "-");
+            this.classList.add(className);
+            this.root.querySelector("pl-title-bar").classList.add(className);
         });
     }
 
