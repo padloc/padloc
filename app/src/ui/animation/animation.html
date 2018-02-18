@@ -34,7 +34,8 @@ padlock.AnimationMixin = (superClass) => {
             el.offsetLeft;
             el.style.animation = `${animation} ${direction} ${duration}ms ${easing} ${delay}ms ${fill}`;
             if (clear) {
-                el.clearAnimation = setTimeout(() => el.style.animation = "", delay + duration);
+                const clearDelay = typeof clear === "number" ? clear : 0;
+                el.clearAnimation = setTimeout(() => el.style.animation = "", delay + duration + clearDelay);
             }
 
             return new Promise((resolve) => setTimeout(resolve, delay + duration));
