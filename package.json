@@ -23,8 +23,7 @@
     "chai": "^4.0.2",
     "core-js": "^2.4.1",
     "crisper": "^2.1.1",
-    "electron": "^1.6.10",
-    "electron-builder": "^19.49.0",
+    "electron-builder": "^20.0.7",
     "eslint": "^4.0.0",
     "eslint-plugin-html": "^3.0.0",
     "estraverse": "^4.2.0",
@@ -50,7 +49,7 @@
   },
   "dependencies": {
     "electron-store": "^1.1.0",
-    "electron-updater": "^2.17.6",
+    "electron-updater": "^2.21.0",
     "fs-extra": "^5.0.0",
     "uuid": "^3.1.0",
     "yargs": "^4.8.1"
