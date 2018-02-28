@@ -1,6 +1,6 @@
 {
   "name": "padlock",
-  "version": "2.5.0-beta.1",
+  "version": "2.5.0",
   "description": "A minimalist password manager",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
@@ -48,6 +48,7 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
+    "electron": "^1.8.2",
     "electron-store": "^1.1.0",
     "electron-updater": "^2.21.0",
     "fs-extra": "^5.0.0",
