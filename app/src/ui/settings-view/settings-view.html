@@ -86,6 +86,11 @@
                 font-family: "FontAwesome";
                 content: "\f004";
             }
+
+            .made-in {
+                font-size: var(--font-size-tiny);
+                margin-top: 3px;
+            }
         </style>
 
         <header>
@@ -97,11 +102,32 @@
         <main>
 
             <section class="tiles">
+                <button class="info tap" on-click="_openSource">
+                    <div><strong>Padlock {{ settings.version }}</strong></div>
+                    <div class="made-in">Made with &#9829; in Germany</div>
+                </button>
+                <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
+                <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
+                <button on-click="_promptReview" class="tap">
+                    <span>[[ $l("I") ]]</span><div class="padlock-heart"></div><span>Padlock</span>
+                </button>
+            </section>
+
+            <section class="tiles">
                 <div class="info">[[ _autoLockInfo() ]]</div>
                 <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Enable Auto Lock') ]]" class="tap"
                     reverse on-change="settingChanged"></pl-toggle-button>
                 <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
+            </section>
+
+            <section class="tiles">
+                <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
+            </section>
+
+            <section class="tiles">
+                <div class="info">[[ _resetDataInfo() ]]</div>
+                <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
             </section>
 
             <section class="tiles">
@@ -122,30 +148,6 @@
                         <pl-icon icon="upload" class="tap"></pl-icon>
                     </label>
                 </div>
-            </section>
-
-            <section class="tiles">
-                <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
-            </section>
-
-            <section class="tiles">
-                <div class="info">[[ _resetDataInfo() ]]</div>
-                <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
-            </section>
-
-            <section>
-                <button on-click="_promptReview" class="tap">
-                    <span>[[ $l("I") ]]</span><div class="padlock-heart"></div><span>Padlock</span>
-                </button>
-            </section>
-
-            <section class="tiles">
-                <button class="info tap" on-click="_openSource">
-                    <strong>Padlock {{ settings.version }}</strong><br>
-                    [[ $l("Developed and maintained by") ]] <strong>MaKleSoft</strong>
-                </button>
-                <button on-click="_openWebsite" class="tap">[[ $l("Website") ]]</button>
-                <button on-click="_sendMail" class="tap">[[ $l("Support") ]]</button>
             </section>
 
             <section class="tiles" hidden$="[[ !_isDesktop() ]]">
