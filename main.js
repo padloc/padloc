@@ -14,6 +14,7 @@ if (debug || test) {
     app.setPath("userData", path.join(app.getPath("temp"), app.getName()));
 }
 
+const defaultDBPath = path.join(app.getPath("userData"), "data.pls");
 const settings = global.settings = new ElectronStore({
     name: "settings",
     defaults: {
@@ -24,7 +25,7 @@ const settings = global.settings = new ElectronStore({
             height: 600
         },
         fullscreen: false,
-        dbPath: path.join(app.getPath("userData"), "data.pls")
+        dbPath: defaultDBPath
     }
 });
 
@@ -111,7 +112,7 @@ function checkForUpdates(manual) {
 function saveDBAs() {
     const oldPath = settings.get("dbPath");
     const newPath = dialog.showSaveDialog({
-        defaultPath: oldPath,
+        defaultPath: oldPath === defaultDBPath ? path.join(app.getPath("home"), "padlock.pls") : oldPath,
         filters: [
             {name: "Padlock Store", extensions: ["pls"]},
         ]
@@ -142,7 +143,7 @@ function saveDBAs() {
 function loadDB() {
     const oldPath = settings.get("dbPath");
     const paths = dialog.showOpenDialog({
-        defaultPath: oldPath,
+        defaultPath: oldPath === defaultDBPath ? path.join(app.getPath("home"), "padlock.pls") : oldPath,
         properties: ["openFile", "createDirectory", "promptToCreate"],
         filters: [
             {name: "Padlock Store", extensions: ["pls"]},
