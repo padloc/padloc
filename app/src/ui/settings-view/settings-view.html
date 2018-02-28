@@ -91,6 +91,12 @@
                 font-size: var(--font-size-tiny);
                 margin-top: 3px;
             }
+
+            .db-path {
+                font-weight: bold;
+                margin-top: 5px;
+                word-wrap: break-word;
+            }
         </style>
 
         <header>
@@ -163,7 +169,7 @@
                 <div class="section-header">[[ $l("Database") ]]</div>
                 <div class="info">
                     <div>[[ $l("Current Location:") ]]</div>
-                    <strong>[[ _dbPath ]]</strong>
+                    <div class="db-path">[[ _dbPath ]]</div>
                 </div>
                 <button on-click="_saveDBAs" class="tap">[[ $l("Change Location...") ]]</button>
                 <button on-click="_loadDB" class="tap">[[ $l("Load Different Database...") ]]</button>
