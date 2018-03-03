@@ -27,6 +27,10 @@ padlock.SyncMixin = (superClass) => {
             }
         }; }
 
+        get cloudSource() {
+            return cloudSource;
+        }
+
         constructor() {
             super();
             this.listen("data-unloaded", () => cloudSource.password = "");
@@ -37,8 +41,12 @@ padlock.SyncMixin = (superClass) => {
         }
 
         connectCloud(email) {
-            return this._requestAuthToken(email.toLowerCase())
+            return this._requestAuthToken(email.toLowerCase(), false, "code")
                 .then(() => this.dispatch("sync-connect-start", { email: email }));
+        }
+
+        activateToken(code) {
+            return cloudSource.source.activateToken(code);
         }
 
         cancelConnect() {
@@ -271,7 +279,7 @@ padlock.SyncMixin = (superClass) => {
         }
 
         //* Requests an api key from the cloud api with the entered email and device name
-        _requestAuthToken(email, create) {
+        _requestAuthToken(email, create, actType) {
             this.settings.email = email;
             this.settings.syncToken = "";
             this.dispatch("settings-changed");
@@ -279,7 +287,7 @@ padlock.SyncMixin = (superClass) => {
             return padlock.stats.get()
                 .then((stats) => {
                     const redirect = `/dashboard/?tid=${encodeURIComponent(stats.trackingID)}`;
-                    return cloudSource.source.requestAuthToken(email, create, redirect);
+                    return cloudSource.source.requestAuthToken(email, create, redirect, actType);
                 })
                 .then((authToken) => {
                     // We're getting back the api key directly, but it will valid only
@@ -293,7 +301,7 @@ padlock.SyncMixin = (superClass) => {
                     this.dispatch("settings-changed");
                     switch (typeof e === "string" ? e : e.code) {
                         case "account_not_found":
-                            return this._requestAuthToken(email, true);
+                            return this._requestAuthToken(email, true, actType);
                         case "rate_limit_exceeded":
                             this.alert($l("For security reasons only a limited amount of connection request " +
                                 "are allowed at a time. Please wait a little before trying again!"));
@@ -400,6 +408,10 @@ padlock.SyncMixin = (superClass) => {
                     this.alert($l("Something went wrong. Please try again later!"));
                     return false;
             }
+        }
+
+        hasCloudData() {
+            return cloudSource.hasData();
         }
 
     };

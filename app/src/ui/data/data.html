@@ -91,6 +91,10 @@ padlock.DataMixin = (superClass) => {
             return localSource.password;
         }
 
+        get localSource() {
+            return localSource;
+        }
+
         listen(name, fn) {
             dispatcher.addEventListener(name, fn);
         }
@@ -107,8 +111,7 @@ padlock.DataMixin = (superClass) => {
             return localSource.hasData();
         }
 
-        initData(password, email) {
-            settings.syncEmail = email;
+        initData(password) {
             return this.setPassword(password).then(() => this.dispatch("data-initialized"));
         }
 

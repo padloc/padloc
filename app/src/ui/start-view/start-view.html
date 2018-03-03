@@ -239,7 +239,7 @@
 
         <main class="unlock">
 
-            <pl-icon id="logo" icon="logo" class="hero animate-in animate-out"></pl-icon>
+            <pl-icon icon="logo" class="hero animate-in animate-out"></pl-icon>
 
             <div class="form-box tiles tiles-2 animate-in animate-out">
                 <pl-input id="passwordInput" type="password" class="tap"
@@ -280,7 +280,7 @@
                         <pl-input id="emailInput" type="email" select-on-focus no-tab="[[ open ]]" class="tap"
                             on-enter="_enterEmail" placeholder="[[ $l('Enter Email Address') ]]"></pl-input>
 
-                        <pl-loading-button on-click="_enterEmail" class="tap" no-tab="[[ open ]]">
+                        <pl-loading-button id="emailButton" on-click="_enterEmail" class="tap" no-tab="[[ open ]]">
                             <pl-icon icon="forward"></pl-icon>
                         </pl-loading-button>
                     </div>
@@ -290,11 +290,55 @@
                         <span inner-h-t-m-l="[[ _getStartedHint(0) ]]"></span>
                     </div>
 
-                    <button class="skip" on-click="_skipEmail">[[ $l("Skip Email") ]]</button>
+                    <button class="skip" on-click="_skipEmail">[[ $l("Use Offline") ]]</button>
 
                 </div>
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 2) ]]">
+
+                    <div class="form-box tiles tiles-2">
+                        <pl-input id="codeInput" required select-on-focus no-tab="[[ open ]]" class="tap"
+                            on-enter="_enterCode" placeholder="[[ $l('Enter Login Code') ]]"></pl-input>
+
+                        <pl-loading-button id="codeButton" on-click="_enterCode" class="tap" no-tab="[[ open ]]">
+                            <pl-icon icon="forward"></pl-icon>
+                        </pl-loading-button>
+                    </div>
+
+                    <div class="hint">
+                        <pl-icon icon="mail"></pl-icon>
+                        <span inner-h-t-m-l="[[ $l('Check your inbox! An email was sent to **{0}** containing your login code.', settings.syncEmail) ]]"></span>
+                    </div>
+
+                    <button class="skip" on-click="_cancelActivation">[[ $l("Cancel") ]]</button>
+
+                </div>
+
+                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 3) ]]" hidden$="[[ !_hasCloudData ]]">
+
+                    <div>
+                        <div class="form-box tiles tiles-2">
+
+                            <pl-input id="cloudPwdInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
+                                on-enter="_enterCloudPassword" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
+
+                            <pl-loading-button id="cloudPwdButton" on-click="_enterCloudPassword" class="tap" no-tab="[[ open ]]">
+                                <pl-icon icon="forward"></pl-icon>
+                            </pl-loading-button>
+
+                        </div>
+                    </div>
+
+                    <div class="hint">
+                        <pl-icon icon="lock"></pl-icon>
+                        <span inner-h-t-m-l="[[ $l('Please enter the master password for the account **{0}**!', settings.syncEmail) ]]"></span>
+                    </div>
+
+                    <button class="skip" on-click="_forgotPassword">[[ $l("I Forgot My Password") ]]</button>
+
+                </div>
+
+                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 3) ]]" hidden$="[[ _hasCloudData ]]">
 
                     <div>
                         <div class="form-box tiles tiles-2">
@@ -320,7 +364,7 @@
 
                 </div>
 
-                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 3) ]]">
+                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 4) ]]">
 
                     <div class="form-box tiles tiles-2">
 
@@ -340,7 +384,7 @@
 
                 </div>
 
-                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 4) ]]">
+                <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 5) ]]">
 
                     <div class="welcome-title animate-out">[[ $l("All done!") ]]</div>
                     <div class="welcome-subtitle animate-out">[[ $l("You're all set! Enjoy using Padlock!") ]]</div>
@@ -357,9 +401,9 @@
             <div class="get-started-thumbs animate-in animate-out">
                 <div class$="[[ _getStartedClass(_getStartedStep, 0) ]]" on-click="_goToStep"></div>
                 <div class$="[[ _getStartedClass(_getStartedStep, 1) ]]" on-click="_goToStep"></div>
-                <div class$="[[ _getStartedClass(_getStartedStep, 2) ]]" on-click="_goToStep"></div>
                 <div class$="[[ _getStartedClass(_getStartedStep, 3) ]]" on-click="_goToStep"></div>
                 <div class$="[[ _getStartedClass(_getStartedStep, 4) ]]" on-click="_goToStep"></div>
+                <div class$="[[ _getStartedClass(_getStartedStep, 5) ]]" on-click="_goToStep"></div>
             </div>
 
         </main>
@@ -372,7 +416,7 @@
 /* global zxcvbn */
 (() => {
 
-const { DataMixin, LocaleMixin, DialogMixin, AnimationMixin, BaseElement } = padlock;
+const { DataMixin, LocaleMixin, DialogMixin, AnimationMixin, BaseElement, SyncMixin } = padlock;
 const { applyMixins, wait } = padlock.util;
 const { isTouch, getAppVersion, getAppStoreLink } = padlock.platform;
 const { track } = padlock.tracking;
@@ -382,7 +426,8 @@ class StartView extends applyMixins(
     DataMixin,
     LocaleMixin,
     DialogMixin,
-    AnimationMixin
+    AnimationMixin,
+    SyncMixin
 ) {
 
     static get is() { return "pl-start-view"; }
@@ -400,6 +445,10 @@ class StartView extends applyMixins(
         },
         _hasData: {
             type: Boolean
+        },
+        _hasCloudData: {
+            type: Boolean,
+            value: false
         },
         _mode: {
             type: String,
@@ -439,6 +488,7 @@ class StartView extends applyMixins(
         this.$.getStartedButton.stop();
         this._failCount = 0;
         this._getStartedStep = 0;
+        this._hasCloudData = false;
         return this._checkHasData();
     }
 
@@ -481,17 +531,60 @@ class StartView extends applyMixins(
                 .then(() => this.$.emailInput.focus());
             return;
         }
-        this._getStartedStep = 2;
-        if (!isTouch()) {
-            this.$.newPasswordInput.focus();
-        }
+
+        this.$.emailButton.start();
+        this.connectCloud(this.$.emailInput.value)
+            .then(() => {
+                this.$.emailButton.success();
+                this._getStartedStep = 2;
+                this.$.codeInput.value = "";
+                if (!isTouch()) {
+                    this.$.codeInput.focus();
+                }
+            })
+            .catch(() => this.$.emailButton.fail());
 
         track("Setup: Email", { "Skipped": false, "Email": this.$.emailInput.value });
     }
 
+    _enterCode() {
+        if (this.$.codeInput.invalid) {
+            this.alert($l("Please enter the login code sent to you via email!"));
+            return;
+        }
+        this.$.codeButton.start();
+        this.activateToken(this.$.codeInput.value)
+            .then(() => {
+                this.$.codeButton.success();
+                return this.hasCloudData();
+            })
+            .then((hasData) => {
+                this._hasCloudData = hasData;
+                setTimeout(() => {
+                    this._getStartedStep = 3;
+                    if (!isTouch()) {
+                        this.$.newPasswordInput.focus();
+                    }
+                }, 50);
+            })
+            .catch((e) => {
+                this.$.codeButton.fail();
+                if (e.code == "bad_request") {
+                    this._rumble();
+                } else {
+                    this._handleCloudError(e);
+                }
+            });
+    }
+
+    _cancelActivation() {
+        this.$.codeInput.value = "";
+        this._getStartedStep = 1;
+    }
+
     _skipEmail() {
         this.$.emailInput.value = "";
-        this._getStartedStep = 2;
+        this._getStartedStep = 3;
         if (!isTouch()) {
             this.$.newPasswordInput.focus();
         }
@@ -509,7 +602,7 @@ class StartView extends applyMixins(
         }
 
         const next = () => {
-            this._getStartedStep = 3;
+            this._getStartedStep = 4;
             if (!isTouch()) {
                 this.$.confirmPasswordInput.focus();
             }
@@ -560,7 +653,7 @@ class StartView extends applyMixins(
                             this.$.confirmPasswordInput.focus();
                             break;
                         case 1:
-                            this._getStartedStep = 2;
+                            this._getStartedStep = 3;
                             this.$.newPasswordInput.focus();
                             break;
                     }
@@ -568,7 +661,7 @@ class StartView extends applyMixins(
             return;
         }
 
-        this._getStartedStep = 4;
+        this._getStartedStep = 5;
 
         track("Setup: Confirm Password");
     }
@@ -594,11 +687,15 @@ class StartView extends applyMixins(
             return;
         }
         this._initializing = true;
+
         Promise.all([
-            this.initData(this.$.newPasswordInput.value, this.$.emailInput.value),
+            this.initData(this.cloudSource.password || this.$.newPasswordInput.value),
             wait(1000)
         ])
             .then(() => {
+                if (this.settings.syncConnected) {
+                    return this.collection.save(this.cloudSource);
+                }
                 this.$.getStartedButton.success();
                 this.$.newPasswordInput.blur();
                 this._initializing = false;
@@ -648,7 +745,7 @@ class StartView extends applyMixins(
                 this._unlocking = false;
                 switch (e.code) {
                     case "decryption_failed":
-                        this.animateElement(this.$.logo, { animation: "rumble", duration: 200, clear: true });
+                        this._rumble();
                         this._failCount++;
                         if (this._failCount > 2) {
                             this._promptResetData($l(
@@ -692,15 +789,11 @@ class StartView extends applyMixins(
         return strength && $l("strength: {0}", strength);
     }
 
-    _emailEnter() {
-        this.$.newPasswordInput.focus();
-    }
-
     _getStartedHint(step) {
         return [
             $l(
-                "Providing an email address will allow you to make use of the **Padlock Cloud** service, an easy " +
-                "and secure way to store your data online and synchronize it between all your devices!"
+                "Log in for advanced features like automatic backups and seamless synchronization " +
+                "between all your devices!"
             ),
             $l(
                 "Your **master password** is a single passphrase used to protect your data. " +
@@ -731,6 +824,45 @@ class StartView extends applyMixins(
 
     _openPwdHowto() {
         window.open("https://padlock.io/howto/choose-master-password/", "_system");
+    }
+
+    _rumble() {
+        this.animateElement(this.root.querySelector(`main.${this._mode} .hero`), { animation: "rumble", duration: 200, clear: true });
+    }
+
+    _enterCloudPassword() {
+        if (this._unlocking) {
+            return;
+        }
+        this._unlocking = true;
+
+        const password = this.$.cloudPwdInput.value;
+
+        if (!password) {
+            this.alert($l("Please enter your password!")).then(() => this.$.cloudPwdInput.focus());
+            return;
+        }
+
+        this.$.cloudPwdInput.blur();
+        this.$.cloudPwdButton.start();
+
+        this.cloudSource.password = password;
+        this.collection.fetch(this.cloudSource)
+            .then(() => {
+                this.$.cloudPwdButton.success();
+                this._unlocking = false;
+                this._getStartedStep = 5;
+            })
+            .catch((e) => {
+                this.$.cloudPwdButton.fail();
+                this._unlocking = false;
+
+                if (e.code === "decryption_failed") {
+                    this._rumble();
+                } else {
+                    this._handleCloudError(e);
+                }
+            });
     }
 
 }

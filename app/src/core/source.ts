@@ -136,7 +136,7 @@ export class CloudSource extends AjaxSource {
         // Remove trailing slashes
         const host = this.settings.syncCustomHost ?
             this.settings.syncHostUrl.replace(/\/+$/, "") :
-            "https://cloud.padlock.io";
+            "http://127.0.0.1:3000"
         return `${host}/${path}/`;
     }
 
@@ -195,11 +195,12 @@ export class CloudSource extends AjaxSource {
         return req;
     }
 
-    async authenticate(email: string, create = false, authType = "api", redirect = ""): Promise<CloudAuthToken> {
+    async authenticate(email: string, create = false, authType = "api", redirect = "", actType = ""): Promise<CloudAuthToken> {
         const params = new URLSearchParams();
         params.set("email", email);
         params.set("type", authType);
         params.set("redirect", redirect);
+        params.set("actType", actType);
 
         const req = await this.request(
             create ? "POST" : "PUT",
@@ -217,8 +218,8 @@ export class CloudSource extends AjaxSource {
         return authToken;
     }
 
-    async requestAuthToken(email: string, create = false, redirect = ""): Promise<CloudAuthToken> {
-        const authToken = await this.authenticate(email, create, "api", redirect);
+    async requestAuthToken(email: string, create = false, redirect = "", actType?: string): Promise<CloudAuthToken> {
+        const authToken = await this.authenticate(email, create, "api", redirect, actType);
         this.settings.syncEmail = authToken.email;
         this.settings.syncToken = authToken.token;
         return authToken;
@@ -245,6 +246,19 @@ export class CloudSource extends AjaxSource {
                 throw err;
             }
         }
+    }
+
+    activateToken(code: string): Promise<XMLHttpRequest> {
+        const params = new URLSearchParams();
+        params.set("code", code);
+        params.set("email", this.settings.syncEmail);
+
+        return this.request(
+            "POST",
+            this.urlForPath("activate"),
+            params.toString(),
+            new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
+        );
     }
 
 }

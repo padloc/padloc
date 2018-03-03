@@ -302,19 +302,6 @@ class App extends applyMixins(
         }
     }
 
-    dataInitialized() {
-        if (this.settings.syncEmail) {
-            padlock.stats.set({ pairingSource: "Setup" });
-            this.connectCloud(this.settings.syncEmail)
-                .then(() => this.notify($l("Activation link sent. Check your email!"), "info", 4000))
-                .then((clicked) => {
-                    if (clicked) {
-                        this._openCloudView();
-                    }
-                });
-        }
-    }
-
     dataLoaded() {
         this.locked = false;
         this.$.startView.open = true;
