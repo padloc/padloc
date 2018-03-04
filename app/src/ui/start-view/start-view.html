@@ -356,7 +356,7 @@
                     </div>
 
                     <div class="hint">
-                        <pl-icon icon="info-round"></pl-icon>
+                        <pl-icon icon="lock"></pl-icon>
                         <span inner-h-t-m-l="[[ _getStartedHint(1) ]]"></span>
                     </div>
 
@@ -378,7 +378,7 @@
                     </div>
 
                     <div class="hint">
-                        <pl-icon icon="info-round"></pl-icon>
+                        <pl-icon icon="lock"></pl-icon>
                         <span inner-h-t-m-l="[[ _getStartedHint(2) ]]"</span>
                     </div>
 
@@ -688,14 +688,20 @@ class StartView extends applyMixins(
         }
         this._initializing = true;
 
-        Promise.all([
-            this.initData(this.cloudSource.password || this.$.newPasswordInput.value),
+        const password = this.cloudSource.password || this.$.newPasswordInput.value;
+        this.cloudSource.password = password;
+
+        const promises = [
+            this.initData(password),
             wait(1000)
-        ])
+        ];
+
+        if (this.settings.syncConnected && !this._hasRemoteData) {
+            promises.push(this.collection.save(this.cloudSource));
+        }
+
+        Promise.all(promises)
             .then(() => {
-                if (this.settings.syncConnected) {
-                    return this.collection.save(this.cloudSource);
-                }
                 this.$.getStartedButton.success();
                 this.$.newPasswordInput.blur();
                 this._initializing = false;
@@ -831,10 +837,10 @@ class StartView extends applyMixins(
     }
 
     _enterCloudPassword() {
-        if (this._unlocking) {
+        if (this._restoringCloud) {
             return;
         }
-        this._unlocking = true;
+        this._restoringCloud = true;
 
         const password = this.$.cloudPwdInput.value;
 
@@ -850,12 +856,12 @@ class StartView extends applyMixins(
         this.collection.fetch(this.cloudSource)
             .then(() => {
                 this.$.cloudPwdButton.success();
-                this._unlocking = false;
+                this._restoringCloud = false;
                 this._getStartedStep = 5;
             })
             .catch((e) => {
                 this.$.cloudPwdButton.fail();
-                this._unlocking = false;
+                this._restoringCloud = false;
 
                 if (e.code === "decryption_failed") {
                     this._rumble();

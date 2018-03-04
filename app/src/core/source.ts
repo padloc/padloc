@@ -258,7 +258,11 @@ export class CloudSource extends AjaxSource {
             this.urlForPath("activate"),
             params.toString(),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
-        );
+        )
+            .then((req) => {
+                this.settings.syncConnected = true;
+                return req;
+            });
     }
 
 }
