@@ -334,7 +334,7 @@
                         <span inner-h-t-m-l="[[ $l('Please enter the master password for the account **{0}**!', settings.syncEmail) ]]"></span>
                     </div>
 
-                    <button class="skip" on-click="_forgotPassword">[[ $l("I Forgot My Password") ]]</button>
+                    <button class="skip" on-click="_forgotCloudPassword">[[ $l("I Forgot My Password") ]]</button>
 
                 </div>
 
@@ -548,6 +548,11 @@ class StartView extends applyMixins(
     }
 
     _enterCode() {
+        if (this._checkingCode) {
+            return;
+        }
+        this._checkingCode = true;
+
         if (this.$.codeInput.invalid) {
             this.alert($l("Please enter the login code sent to you via email!"));
             return;
@@ -555,9 +560,23 @@ class StartView extends applyMixins(
         this.$.codeButton.start();
         this.activateToken(this.$.codeInput.value)
             .then(() => {
+                this._checkingCode = false;
                 this.$.codeButton.success();
-                return this.hasCloudData();
+                return this._connected();
             })
+            .catch((e) => {
+                this._checkingCode = false;
+                this.$.codeButton.fail();
+                if (e.code == "bad_request") {
+                    this._rumble();
+                } else {
+                    this._handleCloudError(e);
+                }
+            });
+    }
+
+    _connected() {
+        return this.hasCloudData()
             .then((hasData) => {
                 this._hasCloudData = hasData;
                 setTimeout(() => {
@@ -567,14 +586,6 @@ class StartView extends applyMixins(
                     }
                 }, 50);
             })
-            .catch((e) => {
-                this.$.codeButton.fail();
-                if (e.code == "bad_request") {
-                    this._rumble();
-                } else {
-                    this._handleCloudError(e);
-                }
-            });
     }
 
     _cancelActivation() {
@@ -754,10 +765,12 @@ class StartView extends applyMixins(
                         this._rumble();
                         this._failCount++;
                         if (this._failCount > 2) {
-                            this._promptResetData($l(
-                                "Forgot your master password? You can start over by resetting the app. " +
-                                "WARNING: This will delete all your data!"
-                            ));
+                            this._promptForgotPassword()
+                                .then((doReset) => {
+                                    if (doReset) {
+                                        this.resetData();
+                                    }
+                                });
                         } else {
                             this.$.passwordInput.focus();
                         }
@@ -840,7 +853,6 @@ class StartView extends applyMixins(
         if (this._restoringCloud) {
             return;
         }
-        this._restoringCloud = true;
 
         const password = this.$.cloudPwdInput.value;
 
@@ -851,6 +863,7 @@ class StartView extends applyMixins(
 
         this.$.cloudPwdInput.blur();
         this.$.cloudPwdButton.start();
+        this._restoringCloud = true;
 
         this.cloudSource.password = password;
         this.collection.fetch(this.cloudSource)
@@ -867,6 +880,30 @@ class StartView extends applyMixins(
                     this._rumble();
                 } else {
                     this._handleCloudError(e);
+                }
+            });
+    }
+
+    _promptForgotPassword() {
+        return this.confirm($l(
+            "Forgot your password? For security reasons don't keep a record of your master " +
+            "password so unfortunately we cannot help you recover it. You can reset your password, " +
+            "but your data will be lost in the process."
+        ), $l("Reset Password"), $l("Keep Trying"))
+            .then((confirmed) => {
+                return confirmed && this.confirm($l(
+                    "Are you sure you want to reset your password? " +
+                    "WARNING: All your data will be lost!"
+                ), $l("Reset Password"));
+            });
+    }
+
+    _forgotCloudPassword() {
+        this._promptForgotPassword()
+            .then((doReset) => {
+                if (doReset) {
+                    this.cloudSource.clear()
+                        .then(() => this._connected());
                 }
             });
     }

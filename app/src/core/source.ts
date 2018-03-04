@@ -102,7 +102,7 @@ export class AjaxSource implements Source {
     }
 
     clear(): Promise<void> {
-        return this.request("DELETE", this.url).then(() => {});
+        return this.set("").then(() => {});
     }
 
 }
