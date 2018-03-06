@@ -47,14 +47,18 @@
             }
 
             @keyframes menuItemIn {
-                from { transform: translate3d(-100%, 0, 0) rotateY(90deg); opacity: 0; }
-                to { transform: translate3d(0, 0, 0); opacity: 1; }
+                to { transform: translate3d(0, 0, 0); }
+            }
+
+            @keyframes menuItemOut {
+                from { transform: translate3d(0, 0, 0); }
             }
 
             :host {
                 --color-gutter: #222;
                 --title-bar-height: 30px;
                 --menu-width: 250px;
+                --menu-icon-width: 50px;
                 overflow: hidden;
                 color: var(--color-foreground);
                 background: var(--color-gutter);
@@ -82,7 +86,7 @@
 
             :host(:not(.ios):not(.android)) #main {
                 top: var(--gutter-width);
-                left: var(--gutter-width);
+                left: calc(var(--gutter-width) + var(--menu-icon-width));
                 right: var(--gutter-width);
                 bottom: var(--gutter-width);
             }
@@ -109,7 +113,7 @@
             }
 
             :host(.show-menu) #main {
-                transform: translate3d(calc(var(--menu-width) + var(--gutter-width)), 0, 0) rotateY(-10deg);
+                transform: translate3d(calc(var(--menu-width) - var(--menu-icon-width)), 0, 0) rotateY(-10deg);
             }
 
             :host(:not(.macos):not(.windows):not(.linux)) pl-title-bar {
@@ -161,6 +165,7 @@
                 top: 0;
                 left: 0;
                 bottom: 0;
+                z-index: -2;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
@@ -171,30 +176,34 @@
 
             .menu > * {
                 transform-origin: 0 center;
+                transform: translate3d(calc(var(--menu-icon-width) - var(--menu-width)), 0, 0);
             }
 
             .menu-item {
                 display: flex;
                 align-items: center;
                 padding: 0 5px;
-                line-height: 45px;
-                height: auto;
+                height: 45px;
                 justify-content: flex-end;
             }
 
+            .menu-item:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
             .menu-item > pl-icon {
-                margin-top: 4px;
+                margin: 4px 0 0 5px;
+                font-size: 120%;
+
             }
 
             .account {
-                display: flex;
-                height: 70px;
-                align-items: center;
-                padding: 0 5px;
+                /* height: 70px; */
+                line-height: normal;
             }
 
             .account-icon {
-                font-size: 150%;
+                font-size: 130%;
             }
 
             .account-status {
@@ -253,6 +262,10 @@
             }
 
             @media (max-width: 600px) {
+                :host {
+                    --menu-icon-width: 0;
+                }
+
                 .showing-pages #listView {
                     transform: translate3d(0, 0, -150px) rotateX(10deg);
                 }
@@ -273,9 +286,9 @@
 
         <pl-start-view id="startView"></pl-start-view>
 
-        <div class="menu">
+        <div id="menu" class="menu" on-mouseover="_menuMouseOver" on-mouseout="_menuMouseOut">
             <div class="spacer"></div>
-            <div class="account tap" on-click="_openCloudView">
+            <div class="account menu-item tap" on-click="_openCloudView">
                 <div class="account-status" hidden$="[[ !settings.syncConnected ]]">
                     <div class="account-email">[[ settings.syncEmail ]]</div>
                     <div class="account-stats">
@@ -594,22 +607,33 @@ class App extends applyMixins(
     }
 
     _menuOpenChanged() {
-        if (this._menuOpen) {
-            this.classList.add("show-menu");
-            this.animateCascade(this.root.querySelectorAll(".menu > *"), {
-                animation: "menuItemIn",
-                duration: 400,
-                fullDuration: 600,
-                initialDelay: 0,
-                fill: "both"
-            });
-        } else {
-            this.classList.remove("show-menu");
-        }
+        console.log("menu open changed", this._menuOpen);
+        this.classList.toggle("show-menu", this._menuOpen);
+        this.animateCascade(this.root.querySelectorAll(".menu > *"), {
+            animation: this._menuOpen ? "menuItemIn" : "menuItemOut",
+            duration: 400,
+            fullDuration: 600,
+            initialDelay: 0,
+            fill: "both"
+        });
     }
 
     _toggleMenu() {
         this._menuOpen = !this._menuOpen;
+    }
+
+    _menuMouseOver(e) {
+        clearTimeout(this._menuHoverTimeout);
+        this._menuHoverTimeout = setTimeout(() => {
+            this._menuOpen = true;
+        }, 10);
+    }
+
+    _menuMouseOut(e) {
+        clearTimeout(this._menuHoverTimeout);
+        this._menuHoverTimeout = setTimeout(() => {
+            this._menuOpen = false;
+        }, 10);
     }
 
     _lock() {
