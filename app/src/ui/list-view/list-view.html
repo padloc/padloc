@@ -24,14 +24,12 @@
                 background: var(--color-quaternary);
             }
 
-            .filter-input-wrapper {
+            .filter-input {
                 flex: 1;
-                display: flex;
             }
 
-            .filter-input-wrapper pl-input {
-                padding-left: 0;
-                flex: 1;
+            .filter-input:not([active]) {
+                text-align: center;
             }
 
             header {
@@ -161,22 +159,23 @@
         </style>
 
         <header hidden$="[[ multiSelect ]]">
-            <pl-icon icon="logo" class="tap" on-click="_lock" hidden$="[[ filterActive ]]"></pl-icon>
-            <pl-icon icon="settings" class="tap" on-click="_openSettings" hidden$="[[ filterActive ]]"></pl-icon>
-            <div class="cloud-icon-wrapper tap" on-click="_openCloudView" hidden$="[[ filterActive ]]">
-                <pl-icon icon="cloud"></pl-icon>
-                <pl-icon icon="refresh" class="syncing-icon" hidden$="[[ !isSynching ]]"></pl-icon>
-            </div>
-            <div class="filter-input-wrapper tap">
-                <pl-icon icon="search" on-click="focusFilterInput"></pl-icon>
-                <pl-input id="filterInput" placeholder="" value="{{ _filterString }}" on-escape="_clearFilter" no-tab select-on-focus></pl-input>
-            </div>
+            <pl-icon icon="menu" class="tap" on-click="_toggleMenu" hidden$="[[ filterActive ]]"></pl-icon>
+            <!-- <pl&#45;icon icon="settings" class="tap" on&#45;click="_openSettings" hidden$="[[ filterActive ]]"></pl&#45;icon> -->
+            <!-- <div class="cloud&#45;icon&#45;wrapper tap" on&#45;click="_openCloudView" hidden$="[[ filterActive ]]"> -->
+            <!--     <pl&#45;icon icon="cloud"></pl&#45;icon> -->
+            <!--     <pl&#45;icon icon="refresh" class="syncing&#45;icon" hidden$="[[ !isSynching ]]"></pl&#45;icon> -->
+            <!-- </div> -->
+            <!-- <div class="filter&#45;input&#45;wrapper tap"> -->
+                <pl-input id="filterInput" class="filter-input tap" placeholder="Type To Search" active$="[[ filterActive ]]"
+                    value="{{ _filterString }}" on-escape="clearFilter" no-tab select-on-focus></pl-input>
+                <!-- <pl&#45;icon icon="search" on&#45;click="focusFilterInput"></pl&#45;icon> -->
+            <!-- </div> -->
             <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
-            <pl-icon icon="cancel" class="tap" on-click="_clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
+            <pl-icon icon="cancel" class="tap" on-click="clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
         </header>
 
         <header hidden$="[[ !multiSelect ]]">
-            <pl-icon icon="unchecked" class="tap" on-click="_clearMultiSelection"></pl-icon>
+            <pl-icon icon="cancel" class="tap" on-click="_clearMultiSelection"></pl-icon>
             <pl-icon icon="checked" class="tap" on-click="_selectAll"></pl-icon>
             <div class="multi-select-count">[[ $l("{0} records selected", selectedRecords.length) ]]</div>
             <pl-icon icon="delete" class="tap" on-click="_deleteSelected"></pl-icon>
@@ -282,6 +281,7 @@ class ListView extends applyMixins(
         },
         records: {
             type: Array,
+            notify: true,
             computed: " _filterAndSort(collection.records, _filterString)"
         },
         selectedRecord: {
@@ -375,12 +375,8 @@ class ListView extends applyMixins(
         this.set("_filterString", "");
     }
 
-    _lock() {
-        if (this.isSynching) {
-            this.alert($l("Cannot lock app while sync is in progress!"));
-        } else {
-            this.unloadData();
-        }
+    _toggleMenu() {
+        this.dispatchEvent(new CustomEvent("toggle-menu"));
     }
 
     _openSettings() {
@@ -479,6 +475,7 @@ class ListView extends applyMixins(
 
     _clearMultiSelection() {
         this.$.list.clearSelection();
+        this.multiSelect = false;
     }
 
     _selectAll() {

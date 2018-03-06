@@ -10,6 +10,7 @@
 <link rel="import" href="../dialog/dialog-mixin.html">
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../list-view/list-view.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
 <link rel="import" href="../record-view/record-view.html">
 <link rel="import" href="../settings-view/settings-view.html">
@@ -31,23 +32,29 @@
             }
 
             @keyframes viewIn {
-                from { transform: translate3d(100%, 0, 0); z-index: 1; }
+                from { transform: translate3d(100%, 0, 0) rotateY(-30deg); z-index: 1; }
                 to { transform: translate3d(0, 0, 0); z-index: 1; }
             }
 
             @keyframes viewOutBack {
                 from { transform: translate3d(0, 0, 0); }
-                to { transform: translate3d(0, 0, -100px); }
+                to { transform: translate3d(0, 0, -200px) rotateX(10deg); }
             }
 
             @keyframes viewOutSide {
                 from { transform: translate3d(0, 0, 0); }
-                to { transform: translate3d(100%, 0, 0); }
+                to { transform: translate3d(100%, 0, 0) rotateY(-30deg); }
+            }
+
+            @keyframes menuItemIn {
+                from { transform: translate3d(-100%, 0, 0) rotateY(90deg); opacity: 0; }
+                to { transform: translate3d(0, 0, 0); opacity: 1; }
             }
 
             :host {
                 --color-gutter: #222;
                 --title-bar-height: 30px;
+                --menu-width: 250px;
                 overflow: hidden;
                 color: var(--color-foreground);
                 background: var(--color-gutter);
@@ -78,7 +85,6 @@
                 left: var(--gutter-width);
                 right: var(--gutter-width);
                 bottom: var(--gutter-width);
-                overflow: visible;
             }
 
             :host(.macos) #main, :host(.windows) #main, :host(.linux) #main {
@@ -93,12 +99,17 @@
 
             #main, #listView {
                 transform: translate3d(0, 0, 0);
+                transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
             #main:not(.active),
             :host(.dialog-open) #main {
-                transform: translate3d(0, 0, -100px);
+                transform: translate3d(0, 0, -150px) rotateX(5deg);
+            }
+
+            :host(.show-menu) #main {
+                transform: translate3d(calc(var(--menu-width) + var(--gutter-width)), 0, 0) rotateY(-10deg);
             }
 
             :host(:not(.macos):not(.windows):not(.linux)) pl-title-bar {
@@ -145,6 +156,96 @@
                 opacity: 0.5;
             }
 
+            .menu {
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                width: var(--menu-width);
+                box-sizing: border-box;
+                color: var(--color-background);
+            }
+
+            .menu > * {
+                transform-origin: 0 center;
+            }
+
+            .menu-item {
+                display: flex;
+                align-items: center;
+                padding: 0 5px;
+                line-height: 45px;
+                height: auto;
+                justify-content: flex-end;
+            }
+
+            .menu-item > pl-icon {
+                margin-top: 4px;
+            }
+
+            .account {
+                display: flex;
+                height: 70px;
+                align-items: center;
+                padding: 0 5px;
+            }
+
+            .account-icon {
+                font-size: 150%;
+            }
+
+            .account-status {
+                width: 0;
+                flex: 1;
+                text-align: right;
+            }
+
+            .account-email {
+                font-weight: bold;
+                font-size: var(--font-size-small);
+                @apply --ellipsis;
+            }
+
+            .account-stats {
+                font-size: var(--font-size-tiny);
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            .account-stats > * {
+                margin-left: 5px;
+            }
+
+            .account-last-synced::before {
+                font-family: "FontAwesome";
+                font-size: 70%;
+                position: relative;
+                top: -1px;
+                content: "\f021\ ";
+            }
+
+            .account-record-count::before {
+                font-family: "FontAwesome";
+                font-size: 60%;
+                position: relative;
+                top: -2px;
+                content: "\f15b\ ";
+            }
+
+            .account-sync-button {
+                width: 50px;
+            }
+
+            .menu-info {
+                font-size: var(--font-size-tiny);
+                text-align: center;
+                padding: 20px;
+                color: rgba(255, 255, 255, 0.5);
+            }
+
             @media (max-width: 900px) {
                 #pages {
                     flex: 1;
@@ -153,7 +254,7 @@
 
             @media (max-width: 600px) {
                 .showing-pages #listView {
-                    transform: translate3d(0, 0, -100px);
+                    transform: translate3d(0, 0, -150px) rotateX(10deg);
                 }
 
                 #pages {
@@ -172,12 +273,56 @@
 
         <pl-start-view id="startView"></pl-start-view>
 
+        <div class="menu">
+            <div class="spacer"></div>
+            <div class="account tap" on-click="_openCloudView">
+                <div class="account-status" hidden$="[[ !settings.syncConnected ]]">
+                    <div class="account-email">[[ settings.syncEmail ]]</div>
+                    <div class="account-stats">
+                        <div class="account-record-count">[[ _records.length ]]</div>
+                        <div class="account-last-synced">[[ lastSync ]]</div>
+                    </div>
+                </div>
+                <div class="account-status" hidden$="[[ settings.syncConnected ]]">
+                    <div class="account-email">[[ $l("Not Logged In") ]]</div>
+                    <div class="account-stats">
+                        <div class="account-record-count">[[ _records.length ]]</div>
+                        <div class="account-last-synced">[[ $l("offline") ]]</div>
+                    </div>
+                </div>
+                <pl-icon icon="user" class="account-icon"></pl-icon>
+            </div>
+            <div class="menu-item tap" on-click="_newRecord">
+                <div>[[ $l("Add Record") ]]</div>
+                <pl-icon icon="add"></pl-icon>
+            </div>
+            <div class="menu-item tap" on-click="_openSettings">
+                <div>[[ $l("Settings") ]]</div>
+                <pl-icon icon="settings"></pl-icon>
+            </div>
+            <div class="menu-item tap" on-click="_lock">
+                <div>[[ $l("Lock App") ]]</div>
+                <pl-icon icon="lock"></pl-icon>
+            </div>
+            <div class="menu-item tap" on-click="_enableMultiSelect">
+                <div>[[ $l("Multi-Select") ]]</div>
+                <pl-icon icon="checked"></pl-icon>
+            </div>
+            <div class="spacer"></div>
+            <div class="menu-info">
+                <div><strong>Padlock {{ settings.version }}</strong></div>
+                <div>Made with &#9829; in Germany</div>
+            </div>
+        </div>
+
         <div id="main">
 
             <pl-list-view id="listView"
                 selected-record="{{ _selectedRecord }}"
                 on-open-settings="_openSettings"
-                on-open-cloud-view="_openCloudView"></pl-list-view>
+                on-open-cloud-view="_openCloudView"
+                on-toggle-menu="_toggleMenu"
+                records="{{ _records }}"></pl-list-view>
 
             <div id="pages">
 
@@ -208,7 +353,7 @@
 /* global cordova, StatusBar */
 
 const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin, ClipboardMixin,
-    SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, BaseElement } = padlock;
+    SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, LocaleMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 const { getPlatformName, getDeviceInfo } = padlock.platform;
 
@@ -228,7 +373,8 @@ class App extends applyMixins(
     HintsMixin,
     AnalyticsMixin,
     AnimationMixin,
-    ClipboardMixin
+    ClipboardMixin,
+    LocaleMixin
 ) {
 
     static get is() { return "pl-app"; }
@@ -247,6 +393,14 @@ class App extends applyMixins(
         _selectedRecord: {
             type: Object,
             observer: "_selectedRecordChanged"
+        },
+        _menuOpen: {
+            type: Boolean,
+            value: false,
+            observer: "_menuOpenChanged"
+        },
+        _records: {
+            type: Array
         }
     }; }
 
@@ -358,6 +512,7 @@ class App extends applyMixins(
 
     _currentViewChanged(curr, prev) {
         this.$.main.classList.toggle("showing-pages", !!curr);
+        this._menuOpen = false;
 
         const currView = this.$[curr];
         const prevView = this.$[prev];
@@ -437,6 +592,45 @@ class App extends applyMixins(
             }, 600);
         }
     }
+
+    _menuOpenChanged() {
+        if (this._menuOpen) {
+            this.classList.add("show-menu");
+            this.animateCascade(this.root.querySelectorAll(".menu > *"), {
+                animation: "menuItemIn",
+                duration: 400,
+                fullDuration: 600,
+                initialDelay: 0,
+                fill: "both"
+            });
+        } else {
+            this.classList.remove("show-menu");
+        }
+    }
+
+    _toggleMenu() {
+        this._menuOpen = !this._menuOpen;
+    }
+
+    _lock() {
+        this._menuOpen = false;
+        if (this.isSynching) {
+            this.alert($l("Cannot lock app while sync is in progress!"));
+        } else {
+            this.unloadData();
+        }
+    }
+
+    _newRecord() {
+        this._menuOpen = false;
+        this.createRecord();
+    }
+
+    _enableMultiSelect() {
+        this.$.listView.multiSelect = true;
+        this._menuOpen = false;
+    }
+
 }
 
 window.customElements.define(App.is, App);
