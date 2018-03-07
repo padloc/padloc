@@ -6,6 +6,7 @@
 
 const { EncryptedSource, CloudSource } = padlock.source;
 const { DataMixin } = padlock;
+const { formatDateFromNow } = padlock.util;
 
 const cloudSource = new EncryptedSource(new CloudSource(DataMixin.settings));
 
@@ -21,6 +22,7 @@ padlock.SyncMixin = (superClass) => {
                 value: false,
                 notify: true
             },
+            lastSync: String,
             remainingTrialDays: {
                 type: Number,
                 computed: "_computeRemainingTrialDays(settings.syncTrialEnd)"
@@ -38,6 +40,8 @@ padlock.SyncMixin = (superClass) => {
             this.listen("sync-start", () => this._syncStart());
             this.listen("sync-success", () => this._syncSuccess());
             this.listen("sync-fail", () => this._syncFail());
+            this._updateLastSync();
+            setInterval(() => this._updateLastSync(), 60000);
         }
 
         connectCloud(email) {
@@ -269,6 +273,7 @@ padlock.SyncMixin = (superClass) => {
         }
 
         _syncSuccess() {
+            this._updateLastSync();
             this.set("isSynching", false);
             this.saveCall("syncSuccess");
         }
@@ -412,6 +417,10 @@ padlock.SyncMixin = (superClass) => {
 
         hasCloudData() {
             return cloudSource.hasData();
+        }
+
+        _updateLastSync() {
+            return padlock.stats.get().then((s) => this.lastSync = formatDateFromNow(s.lastSync));
         }
 
     };

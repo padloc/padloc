@@ -295,7 +295,7 @@
                     <div class="account-email">[[ settings.syncEmail ]]</div>
                     <div class="account-stats">
                         <div class="account-record-count">[[ _records.length ]]</div>
-                        <div class="account-last-synced">[[ _lastSync ]]</div>
+                        <div class="account-last-synced">[[ lastSync ]]</div>
                     </div>
                 </div>
                 <div class="account-status" hidden$="[[ settings.syncConnected ]]">
@@ -373,7 +373,7 @@
 
 const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin, ClipboardMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, LocaleMixin, BaseElement } = padlock;
-const { applyMixins, formatDateFromNow } = padlock.util;
+const { applyMixins } = padlock.util;
 const { getPlatformName, getDeviceInfo } = padlock.platform;
 
 const cordovaReady = new Promise((resolve) => {
@@ -409,7 +409,6 @@ class App extends applyMixins(
             value: "",
             observer: "_currentViewChanged"
         },
-        _lastSync: String,
         _selectedRecord: {
             type: Object,
             observer: "_selectedRecordChanged"
@@ -436,12 +435,6 @@ class App extends applyMixins(
 
         document.addEventListener("dialog-open", () => this.classList.add("dialog-open"));
         document.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
-
-        const updateLastSync = () => {
-            padlock.stats.get().then((s) => this._lastSync = formatDateFromNow(s.lastSync));
-        };
-        updateLastSync();
-        setInterval(updateLastSync, 60000);
     }
 
     get _isNarrow() {
