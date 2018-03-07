@@ -59,6 +59,7 @@
                 --title-bar-height: 30px;
                 --menu-width: 250px;
                 --menu-icon-width: 50px;
+                --main-padding: 0px;
                 overflow: hidden;
                 color: var(--color-foreground);
                 background: var(--color-gutter);
@@ -67,6 +68,10 @@
                 height: 100%;
                 animation: fadeIn 0.5s backwards 0.2s;
                 perspective: 1000px;
+            }
+
+            :host(:not(.ios):not(.android)) {
+                --main-padding: var(--gutter-width);
             }
 
             :host(.windows) {
@@ -82,13 +87,10 @@
                 display: flex;
                 overflow: hidden;
                 perspective: 1000px;
-            }
-
-            :host(:not(.ios):not(.android)) #main {
-                top: var(--gutter-width);
-                left: calc(var(--gutter-width) + var(--menu-icon-width));
-                right: var(--gutter-width);
-                bottom: var(--gutter-width);
+                top: var(--main-padding);
+                left: calc(var(--main-padding) + var(--menu-icon-width));
+                right: var(--main-padding);
+                bottom: var(--main-padding);
             }
 
             :host(.macos) #main, :host(.windows) #main, :host(.linux) #main {
@@ -192,7 +194,7 @@
             }
 
             .menu-item > pl-icon {
-                margin: 4px 0 0 5px;
+                margin-left: 5px;
                 font-size: 120%;
 
             }
@@ -263,7 +265,7 @@
 
             @media (max-width: 600px) {
                 :host {
-                    --menu-icon-width: 0;
+                    --menu-icon-width: 0px;
                 }
 
                 .showing-pages #listView {
@@ -300,7 +302,7 @@
                     <div class="account-email">[[ $l("Not Logged In") ]]</div>
                     <div class="account-stats">
                         <div class="account-record-count">[[ _records.length ]]</div>
-                        <div class="account-last-synced">[[ $l("offline") ]]</div>
+                        <div class="account-last-synced">[[ $l("never") ]]</div>
                     </div>
                 </div>
                 <pl-icon icon="user" class="account-icon"></pl-icon>
