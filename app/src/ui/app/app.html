@@ -293,7 +293,7 @@
                     <div class="account-email">[[ settings.syncEmail ]]</div>
                     <div class="account-stats">
                         <div class="account-record-count">[[ _records.length ]]</div>
-                        <div class="account-last-synced">[[ lastSync ]]</div>
+                        <div class="account-last-synced">[[ _lastSync ]]</div>
                     </div>
                 </div>
                 <div class="account-status" hidden$="[[ settings.syncConnected ]]">
@@ -305,6 +305,10 @@
                 </div>
                 <pl-icon icon="user" class="account-icon"></pl-icon>
             </div>
+            <div class="menu-item tap" on-click="synchronize">
+                <div>[[ $l("Synchronize") ]]</div>
+                <pl-icon icon="refresh" spin$="[[ isSynching ]]"></pl-icon>
+            </div>
             <div class="menu-item tap" on-click="_newRecord">
                 <div>[[ $l("Add Record") ]]</div>
                 <pl-icon icon="add"></pl-icon>
@@ -313,13 +317,13 @@
                 <div>[[ $l("Settings") ]]</div>
                 <pl-icon icon="settings"></pl-icon>
             </div>
-            <div class="menu-item tap" on-click="_lock">
-                <div>[[ $l("Lock App") ]]</div>
-                <pl-icon icon="lock"></pl-icon>
-            </div>
             <div class="menu-item tap" on-click="_enableMultiSelect">
                 <div>[[ $l("Multi-Select") ]]</div>
                 <pl-icon icon="checked"></pl-icon>
+            </div>
+            <div class="menu-item tap" on-click="_lock">
+                <div>[[ $l("Lock App") ]]</div>
+                <pl-icon icon="lock"></pl-icon>
             </div>
             <div class="spacer"></div>
             <div class="menu-info">
@@ -367,7 +371,7 @@
 
 const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin, ClipboardMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, LocaleMixin, BaseElement } = padlock;
-const { applyMixins } = padlock.util;
+const { applyMixins, formatDateFromNow } = padlock.util;
 const { getPlatformName, getDeviceInfo } = padlock.platform;
 
 const cordovaReady = new Promise((resolve) => {
@@ -403,6 +407,7 @@ class App extends applyMixins(
             value: "",
             observer: "_currentViewChanged"
         },
+        _lastSync: String,
         _selectedRecord: {
             type: Object,
             observer: "_selectedRecordChanged"
@@ -429,6 +434,12 @@ class App extends applyMixins(
 
         document.addEventListener("dialog-open", () => this.classList.add("dialog-open"));
         document.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
+
+        const updateLastSync = () => {
+            padlock.stats.get().then((s) => this._lastSync = formatDateFromNow(s.lastSync));
+        };
+        updateLastSync();
+        setInterval(updateLastSync, 60000);
     }
 
     get _isNarrow() {
@@ -607,7 +618,6 @@ class App extends applyMixins(
     }
 
     _menuOpenChanged() {
-        console.log("menu open changed", this._menuOpen);
         this.classList.toggle("show-menu", this._menuOpen);
         this.animateCascade(this.root.querySelectorAll(".menu > *"), {
             animation: this._menuOpen ? "menuItemIn" : "menuItemOut",

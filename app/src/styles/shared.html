@@ -255,6 +255,11 @@
                 transform: translate3d(0, 0, 0);
             }
 
+            pl-icon[spin] {
+                animation: spin 1s infinite;
+                transform-origin: center 49%;
+            }
+
             @keyframes spin {
                 to { transform: rotate(360deg); }
             }
