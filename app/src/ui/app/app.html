@@ -290,15 +290,18 @@
 
         <div id="menu" class="menu" on-mouseover="_menuMouseOver" on-mouseout="_menuMouseOut">
             <div class="spacer"></div>
-            <div class="account menu-item tap" on-click="_openCloudView">
-                <div class="account-status" hidden$="[[ !settings.syncConnected ]]">
+            <div class="account menu-item tap" hidden$="[[ !settings.syncConnected ]]" on-click="_openCloudView">
+                <div class="account-status">
                     <div class="account-email">[[ settings.syncEmail ]]</div>
                     <div class="account-stats">
                         <div class="account-record-count">[[ _records.length ]]</div>
                         <div class="account-last-synced">[[ lastSync ]]</div>
                     </div>
                 </div>
-                <div class="account-status" hidden$="[[ settings.syncConnected ]]">
+                <pl-icon icon="user" class="account-icon"></pl-icon>
+            </div>
+            <div class="account menu-item tap" hidden$="[[ settings.syncConnected ]]" on-click="_login">
+                <div class="account-status">
                     <div class="account-email">[[ $l("Not Logged In") ]]</div>
                     <div class="account-stats">
                         <div class="account-record-count">[[ _records.length ]]</div>
@@ -658,6 +661,16 @@ class App extends applyMixins(
     _enableMultiSelect() {
         this.$.listView.multiSelect = true;
         this._menuOpen = false;
+    }
+
+    _login() {
+        this._menuOpen = false;
+        this.login()
+            .then((success) => {
+                if (success) {
+                    this._openCloudView();
+                }
+            });
     }
 
 }

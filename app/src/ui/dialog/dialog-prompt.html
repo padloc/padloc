@@ -13,11 +13,11 @@
             }
         </style>
 
-        <pl-dialog open="{{ open }}" prevent-dismiss>
+        <pl-dialog open="{{ open }}" prevent-dismiss="[[ preventDismiss ]]" on-dialog-dismiss="_dismiss">
             <div class="message tiles-1">[[ message ]]</div>
             <pl-input class="tiles-2" id="input" type="[[ type ]]" placeholder="[[ placeholder ]]" on-enter="_confirm"></pl-input>
             <button class="tap tiles-3" on-click="_confirm">[[ confirmLabel ]]</button>
-            <button class="tap tiles-4" on-click="_dismiss">[[ dismissLabel ]]</button>
+            <button class="tap tiles-4" on-click="_dismiss" hidden$="[[ _hideCancelButton ]]">[[ dismissLabel ]]</button>
         </pl-dialog>
     </template>
 
@@ -41,6 +41,7 @@ class DialogPrompt extends padlock.BaseElement {
         message: { type: String, value: "" },
         open: { type: Boolean, value: false },
         placeholder: { type: String, value: ""},
+        preventDismiss: { type: Boolean, value: true},
         type: { type: String, value: defaultType }
     }; }
 
@@ -56,12 +57,14 @@ class DialogPrompt extends padlock.BaseElement {
         this.open = false;
     }
 
-    prompt(message, placeholder, type, confirmLabel, cancelLabel) {
+    prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss=true) {
         this.message = message || "";
         this.type = type || defaultType;
         this.placeholder = placeholder || defaultPlaceholder;
         this.confirmLabel = confirmLabel || defaultConfirmLabel;
         this.cancelLabel = cancelLabel || defaultCancelLabel;
+        this._hideCancelButton = cancelLabel === false;
+        this.preventDismiss = preventDismiss;
         this.$.input.value = "";
         this.open = true;
 

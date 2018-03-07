@@ -50,7 +50,16 @@ padlock.SyncMixin = (superClass) => {
         }
 
         activateToken(code) {
-            return cloudSource.source.activateToken(code);
+            return cloudSource.source.activateToken(code)
+                .then((success) => {
+                    this.settings.syncConnected = success;
+                    this.dispatch("settings-changed");
+
+                    if (success) {
+                        this.dispatch("sync-connect-success");
+                    }
+                    return success;
+                });;
         }
 
         cancelConnect() {
@@ -176,6 +185,50 @@ padlock.SyncMixin = (superClass) => {
                 .catch(() => window.open(`${this.settings.syncHostUrl}/dashboard/`, "_system"));
         }
 
+        login() {
+            const enterCode = () => {
+                return this.prompt(
+                    $l("Check your email! We sent your login code to {0}.", this.settings.email),
+                    $l("Enter Login Code"),
+                    "text",
+                    $l("Confirm"),
+                    $l("Cancel"),
+                ).then((code) => {
+                    if (code == "") {
+                        return this.alert("Please enter a valid login code!")
+                            .then(enterCode);
+                    }
+                    return code;
+                });
+            };
+
+            return this.prompt(this.loginInfoText(), $l("Enter Email Address"), "email", $l("Login"), false, false)
+                .then((email) => {
+                    if (email) {
+                        return this.connectCloud(email);
+                    } else {
+                        return Promise.reject();
+                    }
+                })
+                .then(enterCode)
+                .then((code) => {
+                    if (code === null) {
+                        return Promise.reject();
+                    } else {
+                        return this.activateToken(code);
+                    }
+                })
+                .then((success) => {
+                    if (!success) {
+                        return this.alert("The login code you entered was incorrect. Please try again!")
+                            .then(enterCode);
+                    }
+                    this.synchronize();
+                    return success;
+                })
+                .catch((e) => e && this._handleCloudError(e));
+        }
+
         activationPendingText() {
             return $l(
                 "Almost done! We send an email with a login link to {0}. Check your " +
@@ -202,6 +255,13 @@ padlock.SyncMixin = (superClass) => {
                 "your device or accidentally delete the app. Before being sent to our servers, " +
                 "your data is encrypted locally using your master password to make sure that nobody " +
                 "can read it - not even we!"
+            );
+        }
+
+        loginInfoText() {
+            return $l(
+                "Log in now to take advantage of advanced features like automatic online backups and " +
+                "seamless synchronization between all your devices!"
             );
         }
 

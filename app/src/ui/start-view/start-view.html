@@ -559,20 +559,16 @@ class StartView extends applyMixins(
         }
         this.$.codeButton.start();
         this.activateToken(this.$.codeInput.value)
-            .then(() => {
+            .then((success) => {
                 this._checkingCode = false;
-                this.$.codeButton.success();
-                return this._connected();
-            })
-            .catch((e) => {
-                this._checkingCode = false;
-                this.$.codeButton.fail();
-                if (e.code == "bad_request") {
-                    this._rumble();
+                if (success) {
+                    this.$.codeButton.success();
+                    return this._connected();
                 } else {
-                    this._handleCloudError(e);
+                    this._rumble();
                 }
-            });
+            })
+            .catch((e) => this._handleCloudError(e));
     }
 
     _connected() {
