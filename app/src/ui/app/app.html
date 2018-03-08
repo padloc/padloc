@@ -300,7 +300,7 @@
                 </div>
                 <pl-icon icon="user" class="account-icon"></pl-icon>
             </div>
-            <div class="account menu-item tap" hidden$="[[ settings.syncConnected ]]" on-click="_login">
+            <div class="account menu-item tap" hidden$="[[ settings.syncConnected ]]" on-click="_openCloudView">
                 <div class="account-status">
                     <div class="account-email">[[ $l("Not Logged In") ]]</div>
                     <div class="account-stats">
@@ -310,7 +310,7 @@
                 </div>
                 <pl-icon icon="user" class="account-icon"></pl-icon>
             </div>
-            <div class="menu-item tap" on-click="synchronize">
+            <div class="menu-item tap" on-click="_sync">
                 <div>[[ $l("Synchronize") ]]</div>
                 <pl-icon icon="refresh" spin$="[[ isSynching ]]"></pl-icon>
             </div>
@@ -671,6 +671,23 @@ class App extends applyMixins(
                     this._openCloudView();
                 }
             });
+    }
+
+    _sync() {
+        if (this.settings.syncConnected) {
+            this.synchronize();
+        } else {
+            this.confirm(
+                $l("You have to be logged in to the this feature!"),
+                $l("Log Me In"),
+                $l("No Thanks")
+            ).then((confirmed) => {
+                if (confirmed) {
+                    this._openCloudView();
+                    setTimeout(() => this.$.cloudView.focusEmailInput(), 500);
+                }
+            });
+        }
     }
 
 }

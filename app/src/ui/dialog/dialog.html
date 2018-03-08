@@ -49,7 +49,6 @@
                 box-sizing: border-box;
                 max-width: var(--pl-dialog-max-width, 400px);
                 z-index: 1;
-                overflow: hidden;
                 --color-background: var(--color-primary);
                 --color-foreground: var(--color-tertiary);
                 --color-highlight: var(--color-secondary);
@@ -81,7 +80,7 @@
         <div class="outer" on-click="dismiss">
             <div class="scrim"></div>
 
-            <div class="inner" on-click="_preventDismiss">
+            <div id="inner" class="inner" on-click="_preventDismiss">
                 <slot></slot>
             </div>
         </div>
@@ -135,6 +134,10 @@ class Dialog extends padlock.AnimationMixin(padlock.BaseElement) {
                 e.stopPropagation();
             }
         });
+    }
+
+    rumble() {
+        this.animateElement(this.$.inner, { animation: "rumble", duration: 200, clear: true });
     }
 
     //* Changed handler for the _open_ property. Shows/hides the dialog

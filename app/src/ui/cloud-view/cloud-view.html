@@ -63,6 +63,37 @@
                 display: none;
             }
 
+            .login-section {
+                --color-background: var(--color-primary);
+                --color-foreground: var(--color-tertiary);
+                --color-highlight: var(--color-secondary);
+                background: var(--color-background);
+                color: var(--color-foreground);
+                border-bottom: solid 2px rgb(64, 143, 184);
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
+            }
+
+            .login-section-header {
+                display: flex;
+                align-items: center;
+            }
+
+            .login-section-header pl-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 70px;
+                margin: 10px 0 10px 10px;
+            }
+
+            .login-section-header .info {
+                padding: 10px;
+                flex: 1;
+            }
+
+            #loginButton {
+                font-weight: bold;
+            }
+
             pl-icon[icon=refresh][spin] {
                 background: transparent !important;
                 pointer-events: none;
@@ -75,30 +106,26 @@
 
         <header>
             <pl-icon icon="close" class="tap" on-click="_back"></pl-icon>
-            <div class="title">Padlock Cloud</div>
+            <div class="title">My Account</div>
             <pl-icon hidden$="[[ settings.syncConnected ]]"></pl-icon>
             <pl-icon icon="refresh" class="tap" on-click="_refresh" spin$="[[ isSynching ]]" hidden$="[[ !settings.syncConnected ]]"></pl-icon>
         </header>
 
         <main>
 
-            <section class="tiles" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
-                <div class="info">[[ generalInfoText() ]]</div>
-                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" on-click="connect">[[ $l('Pair Device') ]]</pl-loading-button>
-            </section>
-
-            <section class="tiles" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
-                <div class="info">
-                    <div>[[ $l("Check your email:") ]]</div>
-                    <div class="account">[[ settings.syncEmail ]]</div>
-                    <div>[[ activationPendingText(settings.syncEmail) ]]</div>
+            <section class="login-section" hidden$="[[ settings.syncConnected ]]">
+                <div class="login-section-header">
+                    <pl-icon icon="logo"></pl-icon>
+                    <div class="info">
+                        <strong>[[ loginInfoText() ]]</strong>
+                    </div>
                 </div>
-                <pl-loading-button id="refreshButton" on-click="_refresh">[[ $l('Refresh') ]]</pl-loading-button>
-                <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
+                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]"
+                    select-on-focus required on-enter="_login"></pl-input>
+                <pl-loading-button id="loginButton" class="tap" on-click="_login">[[ $l("Log In") ]]</pl-loading-button>
             </section>
 
-            <section class="tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <div>[[ $l("Subscription Status:") ]]</div>
                     <div class="subscription-status">[[ $l("Trialing ({0} days left)", remainingTrialDays) ]]</div>
@@ -107,7 +134,7 @@
                 <button class="tap" on-click="_trialingBuySubscription">[[ $l("Buy Subscription") ]]</button>
             </section>
 
-            <section class="tiles" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <div>[[ $l("Subscription Status:") ]]</div>
                     <div class="subscription-status">[[ $l("Read-Only") ]]</div>
@@ -116,7 +143,7 @@
                 <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Buy Subscription") ]]</button>
             </section>
 
-            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
+            <section hidden$="[[ !settings.syncConnected ]]">
                 <div class="info">
                     <div>[[ $l("Paired with:") ]]</div>
                     <div class="account">[[ settings.syncEmail ]]</div>
@@ -127,13 +154,13 @@
                 <button class="tap" on-click="_disconnect">[[ $l("Unpair") ]]</button>
             </section>
 
-            <section class="tiles" disabled$="[[ !settings.syncConnected ]]">
+            <section disabled$="[[ !settings.syncConnected ]]">
                 <div class="info">[[ autoSyncInfoText() ]]</div>
                 <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]"
                     reverse class="tap" on-change="settingChanged"></pl-toggle-button>
             </section>
 
-            <section class="tiles" disabled$="[[ settings.syncConnected ]]">
+            <section disabled$="[[ settings.syncConnected ]]">
                 <div class="info">
                     [[ $l("By providing a custom URL you can synchronize your data with a server other than the official Padlock Cloud server.") ]]
                     <div class="warning">[[ $l("WARNING: This is only recommended for advanced users!") ]]</div>
@@ -200,18 +227,8 @@ class CloudView extends applyMixins(
         this.$.syncButton.fail();
     }
 
-    connect() {
-        if (this.$.emailInput.invalid) {
-            this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
-        } else {
-            this.$.connectButton.start();
-            this.connectCloud(this.$.emailInput.value)
-                .then(() => {
-                    this.$.connectButton.success();
-                    return this.alert(this.activationPendingText());
-                })
-                .catch(() => this.$.connectButton.fail());
-        }
+    focusEmailInput() {
+        this.$.emailInput.focus();
     }
 
     _credentialsChanged() {
@@ -287,6 +304,37 @@ class CloudView extends applyMixins(
 
     _manageAccount() {
         this.openDashboard("", "app-1");
+    }
+
+    _login() {
+        if (this._submittingEmail) {
+            return;
+        }
+
+        this.$.loginButton.start();
+
+        if (this.$.emailInput.invalid) {
+            this.alert($l("Please enter a valid email address!"))
+                .then(() => this.$.emailInput.focus());
+            this.$.loginButton.fail();
+            return;
+        }
+
+        this._submittingEmail = true;
+
+        this.connectCloud(this.$.emailInput.value)
+            .then(() => {
+                this._submittingEmail = false;
+                this.$.loginButton.success();
+                return this.promptLoginCode();
+            })
+            .then(() => {
+                if (this.settings.syncConnected) {
+                    this.synchronize();
+                }
+            })
+            .catch(() => this.$.loginButton.fail());
+
     }
 
 }

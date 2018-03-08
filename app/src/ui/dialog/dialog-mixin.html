@@ -53,9 +53,11 @@ padlock.DialogMixin = (superClass) => {
             return lineUpDialog(dialog, () => dialog.confirm(message, confirmLabel, cancelLabel));
         }
 
-        prompt(message, placeholder, type, confirmLabel, cancelLabel, allowDismiss) {
+        prompt(message, placeholder, type, confirmLabel, cancelLabel, allowDismiss, verify) {
             const dialog = getDialog("pl-dialog-prompt");
-            return lineUpDialog(dialog, () => dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel, allowDismiss));
+            return lineUpDialog(dialog, () => {
+                return dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel, allowDismiss, verify);
+            });
         }
 
         choose(message, options) {

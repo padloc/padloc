@@ -59,7 +59,11 @@ padlock.SyncMixin = (superClass) => {
                         this.dispatch("sync-connect-success");
                     }
                     return success;
-                });;
+                })
+                .catch((e) => {
+                    this._handleCloudError(e);
+                    throw e;
+                });
         }
 
         cancelConnect() {
@@ -177,55 +181,59 @@ padlock.SyncMixin = (superClass) => {
             return this._testCredsPromise;
         }
 
-        openDashboard(action = "", referer = "app") {
-            action = encodeURIComponent(action);
-            referer = encodeURIComponent(referer);
+        openDashboard(action = "", referer = "app") { action = encodeURIComponent(action); referer = encodeURIComponent(referer);
             cloudSource.source.getLoginUrl(`/dashboard/?action=${action}&ref=${referer}`)
                 .then((url) => window.open(url, "_system"))
                 .catch(() => window.open(`${this.settings.syncHostUrl}/dashboard/`, "_system"));
         }
 
-        login() {
-            const enterCode = () => {
-                return this.prompt(
-                    $l("Check your email! We sent your login code to {0}.", this.settings.email),
-                    $l("Enter Login Code"),
-                    "text",
-                    $l("Confirm"),
-                    $l("Cancel"),
-                ).then((code) => {
-                    if (code == "") {
-                        return this.alert("Please enter a valid login code!")
-                            .then(enterCode);
-                    }
-                    return code;
-                });
-            };
-
-            return this.prompt(this.loginInfoText(), $l("Enter Email Address"), "email", $l("Login"), false, false)
-                .then((email) => {
-                    if (email) {
-                        return this.connectCloud(email);
-                    } else {
-                        return Promise.reject();
-                    }
-                })
-                .then(enterCode)
-                .then((code) => {
+        promptLoginCode() {
+            return this.prompt(
+                $l("Check your email! We sent your login code to {0}.", this.settings.email),
+                $l("Enter Login Code"),
+                "text",
+                $l("Confirm"),
+                $l("Cancel"),
+                true,
+                (code) => {
                     if (code === null) {
-                        return Promise.reject();
+                        return Promise.resolve(null);
+                    } else if (code == "") {
+                        return Promise.reject("Please enter a valid login code!");
                     } else {
-                        return this.activateToken(code);
+                        return this.activateToken(code)
+                            .catch((e) => this._handleCloudError(e))
+                            .then((success) => {
+                                if (success) {
+                                    return true;
+                                } else {
+                                    Promise.reject($l("Invalid login code. Try again!"));
+                                }
+                            });
                     }
-                })
-                .then((success) => {
-                    if (!success) {
-                        return this.alert("The login code you entered was incorrect. Please try again!")
-                            .then(enterCode);
+                }
+            );
+        }
+
+        loginDialog() {
+            return this.prompt(this.loginInfoText(), $l("Enter Email Address"), "email", $l("Login"), false, false,
+                    (val) => {
+                        const input = document.createElement("input");
+                        input.type = "email";
+                        input.value = val;
+                        if (val === null) {
+                            return Promise.resolve(null);
+                        } else if (val == "" || !input.validity.valid) {
+                            return Promise.reject($l("Please enter a valid email address!"));
+                        } else {
+                            return this.connectCloud(val);
+                        }
                     }
-                    this.synchronize();
-                    return success;
-                })
+                )
+                .then((val) => val === null ? Promise.reject() : val)
+                .then(() => this.promptLoginCode())
+                .then((val) => val === null ? Promise.reject() : val )
+                .then(() => this.synchronize())
                 .catch((e) => e && this._handleCloudError(e));
         }
 
@@ -260,8 +268,8 @@ padlock.SyncMixin = (superClass) => {
 
         loginInfoText() {
             return $l(
-                "Log in now to take advantage of advanced features like automatic online backups and " +
-                "seamless synchronization between all your devices!"
+                "Log in now for advanced features like automatic online backups and " +
+                "seamless synchronization between devices!"
             );
         }
 

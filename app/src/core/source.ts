@@ -248,7 +248,7 @@ export class CloudSource extends AjaxSource {
         }
     }
 
-    activateToken(code: string): Promise<XMLHttpRequest> {
+    activateToken(code: string): Promise<Boolean> {
         const params = new URLSearchParams();
         params.set("code", code);
         params.set("email", this.settings.syncEmail);
