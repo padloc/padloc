@@ -36,17 +36,56 @@
                 transform: translate3d(0, 0, 0);
             }
 
-            .account {
-                font-size: var(--font-size-default);
+            .account-email {
+                flex: 1;
+                width: 0;
                 font-weight: bold;
-                margin: 10px 0;
                 overflow-wrap: break-word;
+                text-align: center;
+                padding: 12px;
+            }
+
+            .account-header pl-icon {
+                width: var(--row-height);
+                height: auto;
+                font-size: 120%;
+            }
+
+            .account-stats {
+                display: flex;
+                justify-content: center;
+            }
+
+            .account-stats > * {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 10px;
+            }
+
+            .account-stats pl-icon {
+                font-size: 20px;
+            }
+
+            .last-sync {
+                font-size: var(--font-size-tiny);
+                text-align: center;
+            }
+
+            .last-sync > pl-icon {
+                font-size: 25px;
+            }
+
+            .device-count > pl-icon {
+                font-size: 35px;
             }
 
             .subscription-status {
                 font-size: 150%;
                 font-weight: bold;
-                margin: 10px 0;
+                margin-bottom: 10px;
             }
 
             #emailInput {
@@ -63,16 +102,6 @@
                 display: none;
             }
 
-            .login-section {
-                --color-background: var(--color-primary);
-                --color-foreground: var(--color-tertiary);
-                --color-highlight: var(--color-secondary);
-                background: var(--color-background);
-                color: var(--color-foreground);
-                border-bottom: solid 2px rgb(64, 143, 184);
-                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-            }
-
             .login-section-header {
                 display: flex;
                 align-items: center;
@@ -81,7 +110,7 @@
             .login-section-header pl-icon {
                 width: 80px;
                 height: 80px;
-                font-size: 70px;
+                font-size: 65px;
                 margin: 10px 0 10px 10px;
             }
 
@@ -107,8 +136,8 @@
         <header>
             <pl-icon icon="close" class="tap" on-click="_back"></pl-icon>
             <div class="title">My Account</div>
-            <pl-icon hidden$="[[ settings.syncConnected ]]"></pl-icon>
-            <pl-icon icon="refresh" class="tap" on-click="_refresh" spin$="[[ isSynching ]]" hidden$="[[ !settings.syncConnected ]]"></pl-icon>
+            <pl-icon></pl-icon>
+            <!-- <pl&#45;icon icon="refresh" class="tap" on&#45;click="_refresh" spin$="[[ isSynching ]]" hidden$="[[ !settings.syncConnected ]]"></pl&#45;icon> -->
         </header>
 
         <main>
@@ -125,9 +154,28 @@
                 <pl-loading-button id="loginButton" class="tap" on-click="_login">[[ $l("Log In") ]]</pl-loading-button>
             </section>
 
+            <section class="horizontal account-header" hidden$="[[ !settings.syncConnected ]]">
+                <div class="account-email tap" on-click="_manageAccount">[[ settings.syncEmail ]]</div>
+                <pl-icon icon="logout" class="tap" on-click="_logout"></pl-icon>
+            </section>
+
+            <section class="horizontal account-stats" hidden$="[[ !settings.syncConnected ]]">
+                <div class="record-count">
+                    <pl-icon icon="record"></pl-icon>
+                    <div>[[ records.length ]]</div>
+                </div>
+                <div class="device-count tap">
+                    <pl-icon icon="mobile"></pl-icon>
+                    <div>3</div>
+                </div>
+                <div class="last-sync tap" on-click="synchronize">
+                    <pl-icon icon="refresh" spin$="[[ isSynching ]]"></pl-icon>
+                    <div>[[ lastSync ]]</div>
+                </div>
+            </section>
+
             <section hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
-                    <div>[[ $l("Subscription Status:") ]]</div>
                     <div class="subscription-status">[[ $l("Trialing ({0} days left)", remainingTrialDays) ]]</div>
                     <div>[[ trialInfoText(remainingTrialDays) ]]</div>
                 </div>
@@ -136,23 +184,17 @@
 
             <section hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
-                    <div>[[ $l("Subscription Status:") ]]</div>
                     <div class="subscription-status">[[ $l("Read-Only") ]]</div>
                     <div>[[ readOnlyInfoText() ]]</div>
                 </div>
                 <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Buy Subscription") ]]</button>
             </section>
 
-            <section hidden$="[[ !settings.syncConnected ]]">
-                <div class="info">
-                    <div>[[ $l("Paired with:") ]]</div>
-                    <div class="account">[[ settings.syncEmail ]]</div>
-                    <div>[[ connectedInfoText(settings.syncEmail) ]]</div>
-                </div>
-                <pl-loading-button id="syncButton" class="tap" on-click="synchronize">[[ $l('Synchronize') ]]</pl-loading-button>
-                <button class="tap" on-click="_manageAccount">[[ $l("Manage Account") ]]</button>
-                <button class="tap" on-click="_disconnect">[[ $l("Unpair") ]]</button>
-            </section>
+            <!-- <section> -->
+            <!--     <pl&#45;loading&#45;button id="syncButton" class="tap" on&#45;click="synchronize">[[ $l('Synchronize') ]]</pl&#45;loading&#45;button> -->
+            <!--     <button class="tap" on&#45;click="_manageAccount">[[ $l("Manage Account") ]]</button> -->
+            <!--     <button class="tap" on&#45;click="_disconnect">[[ $l("Unpair") ]]</button> -->
+            <!-- </section> -->
 
             <section disabled$="[[ !settings.syncConnected ]]">
                 <div class="info">[[ autoSyncInfoText() ]]</div>
@@ -215,17 +257,17 @@ class CloudView extends applyMixins(
         this.animateCascade(this.root.querySelectorAll("section:not([hidden])"), { initialDelay: 200 });
     }
 
-    syncStart() {
-        this.$.syncButton.start();
-    }
-
-    syncSuccess() {
-        this.$.syncButton.success();
-    }
-
-    syncFail() {
-        this.$.syncButton.fail();
-    }
+    // syncStart() {
+    //     this.$.syncButton.start();
+    // }
+    //
+    // syncSuccess() {
+    //     this.$.syncButton.success();
+    // }
+    //
+    // syncFail() {
+    //     this.$.syncButton.fail();
+    // }
 
     focusEmailInput() {
         this.$.emailInput.focus();
@@ -248,10 +290,10 @@ class CloudView extends applyMixins(
         this.dispatchEvent(new CustomEvent("cloud-back"));
     }
 
-    _disconnect() {
+    _logout() {
         this.confirm(
-            $l("Are you sure you want to disconnect from Padlock Cloud?"),
-            $l("Disconnect")
+            $l("Are you sure you want to log out?"),
+            $l("Log Out")
         ).then((confirmed) => {
             if (confirmed) {
                 this.disconnectCloud();
@@ -333,7 +375,10 @@ class CloudView extends applyMixins(
                     this.synchronize();
                 }
             })
-            .catch(() => this.$.loginButton.fail());
+            .catch(() => {
+                this._submittingEmail = false;
+                this.$.loginButton.fail();
+            });
 
     }
 

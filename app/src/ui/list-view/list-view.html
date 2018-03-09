@@ -167,7 +167,7 @@
             <!-- </div> -->
             <!-- <div class="filter&#45;input&#45;wrapper tap"> -->
                 <pl-input id="filterInput" class="filter-input tap" placeholder="Type To Search" active$="[[ filterActive ]]"
-                    value="{{ _filterString }}" on-escape="clearFilter" no-tab select-on-focus></pl-input>
+                    value="{{ filterString }}" on-escape="clearFilter" no-tab select-on-focus></pl-input>
                 <!-- <pl&#45;icon icon="search" on&#45;click="focusFilterInput"></pl&#45;icon> -->
             <!-- </div> -->
             <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
@@ -234,19 +234,6 @@ const Record = padlock.data.Record;
 const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin, AnimationMixin } = padlock;
 const { applyMixins } = padlock.util;
 
-function filterByString(fs, rec) {
-    const words = fs.toLowerCase().split(" ");
-
-    // For the record to be a match, each word in the filter string has to appear
-    // in either the category or the record name.
-    for (var i = 0, match = true; i < words.length && match; i++) {
-        match = rec.category && rec.category.toLowerCase().search(words[i]) != -1 ||
-            rec.name.toLowerCase().search(words[i]) != -1;
-    }
-
-    return !!match;
-}
-
 class ListView extends applyMixins(
     BaseElement,
     LocaleMixin,
@@ -263,26 +250,17 @@ class ListView extends applyMixins(
             type: String,
             value: ""
         },
-        _filterString: {
-            type: String,
-            value: ""
-        },
         animationOptions: {
             type: Object,
             value: { clear: true }
         },
         filterActive: {
             type: Boolean,
-            computed: "_filterActive(_filterString)"
+            computed: "_filterActive(filterString)"
         },
         multiSelect: {
             type: Boolean,
             value: false
-        },
-        records: {
-            type: Array,
-            notify: true,
-            computed: " _filterAndSort(collection.records, _filterString)"
         },
         selectedRecord: {
             type: Object,
@@ -318,7 +296,7 @@ class ListView extends applyMixins(
         this.$.main.addEventListener("scroll", () => this._updateCurrentSection());
         this.listen("data-loaded", () => { this.animateRecords(600); });
         this.listen("sync-success", (e) => {
-            if (!e.detail.auto) {
+            if (!e.detail || !e.detail.auto) {
                 this.animateRecords();
             }
         });
@@ -341,20 +319,6 @@ class ListView extends applyMixins(
         this.select(record);
     }
 
-    _filterAndSort() {
-        let records = this.collection.records
-            .filter((r) => !r.removed && filterByString(this._filterString, r));
-
-        this._recentCount = records.length > 10 ? 3 : 0;
-
-        const recent = records.sort((a, b) => {
-            return (b.lastUsed || b.updated).getTime() - (a.lastUsed || a.updated).getTime();
-        }).slice(0, this._recentCount);
-
-        records = records.slice(this._recentCount);
-        return recent.concat(records.sort((a, b) => Record.compare(a, b)));
-    }
-
     _isEmpty() {
         return !this.collection.records.filter((r) => !r.removed).length;
     }
@@ -368,11 +332,11 @@ class ListView extends applyMixins(
     }
 
     _filterActive() {
-        return this._filterString !== "";
+        return this.filterString !== "";
     }
 
     _clearFilter() {
-        this.set("_filterString", "");
+        this.set("filterString", "");
     }
 
     _toggleMenu() {
@@ -437,7 +401,7 @@ class ListView extends applyMixins(
     }
 
     _searchCategory(e) {
-        this._filterString = e.detail;
+        this.filterString = e.detail;
     }
 
     animateRecords(delay = 100) {

@@ -57,6 +57,19 @@ dispatcher.addEventListener("settings-changed", () => {
     }
 });
 
+function filterByString(fs, rec) {
+    const words = fs.toLowerCase().split(" ");
+
+    // For the record to be a match, each word in the filter string has to appear
+    // in either the category or the record name.
+    for (var i = 0, match = true; i < words.length && match; i++) {
+        match = rec.category && rec.category.toLowerCase().search(words[i]) != -1 ||
+            rec.name.toLowerCase().search(words[i]) != -1;
+    }
+
+    return !!match;
+}
+
 padlock.DataMixin = (superClass) => {
 
     return class DataMixin extends MutableData(superClass) {
@@ -66,6 +79,15 @@ padlock.DataMixin = (superClass) => {
                 type: Object,
                 value: collection,
                 notify: true
+            },
+            filterString: {
+                type: String,
+                value: ""
+            },
+            records: {
+                type: Array,
+                notify: true,
+                computed: " _filterAndSort(collection.records, filterString)"
             },
             settings: {
                 type: Object,
@@ -251,6 +273,20 @@ padlock.DataMixin = (superClass) => {
         _settingsChanged() {
             this.notifyPath("settings");
             this.saveCall("settingsChanged");
+        }
+
+        _filterAndSort() {
+            let records = this.collection.records
+                .filter((r) => !r.removed && filterByString(this.filterString, r));
+
+            this._recentCount = records.length > 10 ? 3 : 0;
+
+            const recent = records.sort((a, b) => {
+                return (b.lastUsed || b.updated).getTime() - (a.lastUsed || a.updated).getTime();
+            }).slice(0, this._recentCount);
+
+            records = records.slice(this._recentCount);
+            return recent.concat(records.sort((a, b) => Record.compare(a, b)));
         }
 
     };

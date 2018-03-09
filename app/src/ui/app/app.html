@@ -200,7 +200,6 @@
             }
 
             .account {
-                /* height: 70px; */
                 line-height: normal;
             }
 
@@ -294,7 +293,6 @@
                 <div class="account-status">
                     <div class="account-email">[[ settings.syncEmail ]]</div>
                     <div class="account-stats">
-                        <div class="account-record-count">[[ _records.length ]]</div>
                         <div class="account-last-synced">[[ lastSync ]]</div>
                     </div>
                 </div>
@@ -304,7 +302,7 @@
                 <div class="account-status">
                     <div class="account-email">[[ $l("Not Logged In") ]]</div>
                     <div class="account-stats">
-                        <div class="account-record-count">[[ _records.length ]]</div>
+                        <div class="account-record-count">[[ records.length ]]</div>
                         <div class="account-last-synced">[[ $l("never") ]]</div>
                     </div>
                 </div>
@@ -344,7 +342,7 @@
                 on-open-settings="_openSettings"
                 on-open-cloud-view="_openCloudView"
                 on-toggle-menu="_toggleMenu"
-                records="{{ _records }}"></pl-list-view>
+            ></pl-list-view>
 
             <div id="pages">
 
@@ -420,9 +418,6 @@ class App extends applyMixins(
             type: Boolean,
             value: false,
             observer: "_menuOpenChanged"
-        },
-        _records: {
-            type: Array
         }
     }; }
 
