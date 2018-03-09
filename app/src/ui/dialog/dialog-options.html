@@ -8,7 +8,7 @@
     <template>
         <style include="shared"></style>
 
-        <pl-dialog open="{{ open }}" prevent-dismiss="[[ preventDismiss ]]">
+        <pl-dialog open="{{ open }}" prevent-dismiss="[[ preventDismiss ]]" on-dialog-dismiss="_dismiss">
             <template is="dom-if" if="[[ _hasMessage(message) ]]" restamp>
                 <div class="message tiles-1">[[ message ]]</div>
             </template>
@@ -45,7 +45,7 @@ class DialogOptions extends padlock.BaseElement {
 
     _selectOption(e) {
         this.open = false;
-        typeof (this._resolve === "function") && this._resolve(this.options.indexOf(e.model.item));
+        typeof this._resolve === "function" && this._resolve(this.options.indexOf(e.model.item));
         this._resolve = null;
     }
 
@@ -55,6 +55,11 @@ class DialogOptions extends padlock.BaseElement {
 
     _hasMessage(message) {
         return !!message;
+    }
+
+    _dismiss() {
+        typeof this._resolve === "function" && this._resolve(-1);
+        this._resolve = null;
     }
 
 }

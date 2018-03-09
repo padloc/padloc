@@ -60,9 +60,9 @@ padlock.DialogMixin = (superClass) => {
             });
         }
 
-        choose(message, options) {
+        choose(message, options, preventDismiss=true) {
             const dialog = getDialog("pl-dialog-options");
-            dialog.preventDismiss = true;
+            dialog.preventDismiss = preventDismiss;
             return lineUpDialog(dialog, () => dialog.choose(message, options));
         }
 

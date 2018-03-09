@@ -116,31 +116,17 @@
             </section>
 
             <section>
-                <button class="tap" on-click="_export">[[ $l("Export...") ]]</div>
-            </section>
-
-            <section>
-                <div class="section-header">[[ $l("Import") ]]</div>
-                <div class="section-row">
-                    <div class="section-row-label">[[ $l("Paste From Clipboard") ]]</div>
-                    <pl-icon icon="copy" class="tap" on-click="_importFromClipboard"></pl-icon>
-                </div>
-                <div class="section-row" hidden$="[[ _isMobile() ]]">
-                    <div class="section-row-label">[[ $l("Select a File") ]]</div>
-                    <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.csv,.pls,.set">
-                    <label for="importFile">
-                        <pl-icon icon="upload" class="tap"></pl-icon>
-                    </label>
-                </div>
-            </section>
-
-            <section>
                 <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
             </section>
 
             <section>
                 <div class="info">[[ _resetDataInfo() ]]</div>
                 <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
+            </section>
+
+            <section>
+                <button class="tap" on-click="_import">[[ $l("Import...") ]]</button>
+                <button class="tap" on-click="_export">[[ $l("Export...") ]]</div>
             </section>
 
             <section hidden$="[[ !_isDesktop() ]]">
@@ -176,6 +162,8 @@
         </main>
 
         <div class="rounded-corners"></div>
+
+        <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.csv,.pls,.set" hidden>
 
     </template>
 
@@ -276,6 +264,26 @@ class SettingsView extends applyMixins(
                 }
 
                 return this.resetData();
+            });
+    }
+
+    _import() {
+        const options = [
+            $l("From Clipboard")
+        ];
+        if (!isCordova()) {
+            options.push($l("From File"));
+        }
+        this.choose($l("Import..."), options, false)
+            .then((choice) => {
+                switch (choice) {
+                    case 0:
+                        this._importFromClipboard();
+                        break;
+                    case 1:
+                        this.$.importFile.click();
+                        break;
+                }
             });
     }
 
