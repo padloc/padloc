@@ -107,7 +107,62 @@
 
         <main>
 
-            <section class="tiles">
+            <section>
+                <div class="info">[[ _autoLockInfo() ]]</div>
+                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Enable Auto Lock') ]]" class="tap"
+                    reverse on-change="settingChanged"></pl-toggle-button>
+                <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
+                    label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
+            </section>
+
+            <section>
+                <button class="tap" on-click="_export">[[ $l("Export...") ]]</div>
+            </section>
+
+            <section>
+                <div class="section-header">[[ $l("Import") ]]</div>
+                <div class="section-row">
+                    <div class="section-row-label">[[ $l("Paste From Clipboard") ]]</div>
+                    <pl-icon icon="copy" class="tap" on-click="_importFromClipboard"></pl-icon>
+                </div>
+                <div class="section-row" hidden$="[[ _isMobile() ]]">
+                    <div class="section-row-label">[[ $l("Select a File") ]]</div>
+                    <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.csv,.pls,.set">
+                    <label for="importFile">
+                        <pl-icon icon="upload" class="tap"></pl-icon>
+                    </label>
+                </div>
+            </section>
+
+            <section>
+                <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
+            </section>
+
+            <section>
+                <div class="info">[[ _resetDataInfo() ]]</div>
+                <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
+            </section>
+
+            <section hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Updates") ]]</div>
+                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap"
+                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
+                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
+                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
+                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
+            </section>
+
+            <section hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Database") ]]</div>
+                <div class="info">
+                    <div>[[ $l("Current Location:") ]]</div>
+                    <div class="db-path">[[ _dbPath ]]</div>
+                </div>
+                <button on-click="_saveDBAs" class="tap">[[ $l("Change Location...") ]]</button>
+                <button on-click="_loadDB" class="tap">[[ $l("Load Different Database...") ]]</button>
+            </section>
+
+            <section>
                 <button class="info tap" on-click="_openSource">
                     <div><strong>Padlock {{ settings.version }}</strong></div>
                     <div class="made-in">Made with &#9829; in Germany</div>
@@ -117,62 +172,6 @@
                 <button on-click="_promptReview" class="tap">
                     <span>[[ $l("I") ]]</span><div class="padlock-heart"></div><span>Padlock</span>
                 </button>
-            </section>
-
-            <section class="tiles">
-                <div class="info">[[ _autoLockInfo() ]]</div>
-                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Enable Auto Lock') ]]" class="tap"
-                    reverse on-change="settingChanged"></pl-toggle-button>
-                <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
-                    label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
-            </section>
-
-            <section class="tiles">
-                <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
-            </section>
-
-            <section class="tiles">
-                <div class="info">[[ _resetDataInfo() ]]</div>
-                <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
-            </section>
-
-            <section class="tiles">
-                <div class="section-header">[[ $l("Export") ]]</div>
-                <pl-export records="[[ collection.records ]]"></pl-export>
-            </section>
-
-            <section class="tiles">
-                <div class="section-header">[[ $l("Import") ]]</div>
-                <div class="section-row tiles">
-                    <div class="section-row-label">[[ $l("Paste From Clipboard") ]]</div>
-                    <pl-icon icon="copy" class="tap" on-click="_importFromClipboard"></pl-icon>
-                </div>
-                <div class="section-row" hidden$="[[ _isMobile() ]]">
-                    <div class="section-row-label">[[ $l("Select a File") ]]</div>
-                    <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.csv,.pls,.set">
-                    <label for="importFile" class="tiles-2">
-                        <pl-icon icon="upload" class="tap"></pl-icon>
-                    </label>
-                </div>
-            </section>
-
-            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
-                <div class="section-header">[[ $l("Updates") ]]</div>
-                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
-                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap"
-                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
-                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
-                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
-            </section>
-
-            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
-                <div class="section-header">[[ $l("Database") ]]</div>
-                <div class="info">
-                    <div>[[ $l("Current Location:") ]]</div>
-                    <div class="db-path">[[ _dbPath ]]</div>
-                </div>
-                <button on-click="_saveDBAs" class="tap">[[ $l("Change Location...") ]]</button>
-                <button on-click="_loadDB" class="tap">[[ $l("Load Different Database...") ]]</button>
             </section>
         </main>
 
@@ -452,6 +451,11 @@ class SettingsView extends applyMixins(
 
     _loadDB() {
         loadDB();
+    }
+
+    _export() {
+        const exportDialog = this.getSingleton("pl-export-dialog");
+        exportDialog.export(this.records);
     }
 
 }
