@@ -756,7 +756,7 @@ class StartView extends applyMixins(
                         this._rumble();
                         this._failCount++;
                         if (this._failCount > 2) {
-                            this._promptForgotPassword()
+                            this.promptForgotPassword()
                                 .then((doReset) => {
                                     if (doReset) {
                                         this.resetData();
@@ -875,28 +875,8 @@ class StartView extends applyMixins(
             });
     }
 
-    _promptForgotPassword() {
-        return this.confirm($l(
-            "Forgot your password? For security reasons don't keep a record of your master " +
-            "password so unfortunately we cannot help you recover it. You can reset your password, " +
-            "but your data will be lost in the process."
-        ), $l("Reset Password"), $l("Keep Trying"))
-            .then((confirmed) => {
-                return confirmed && this.confirm($l(
-                    "Are you sure you want to reset your password? " +
-                    "WARNING: All your data will be lost!"
-                ), $l("Reset Password"));
-            });
-    }
-
     _forgotCloudPassword() {
-        this._promptForgotPassword()
-            .then((doReset) => {
-                if (doReset) {
-                    this.cloudSource.clear()
-                        .then(() => this._connected());
-                }
-            });
+        this.forgotCloudPassword().then(() => this._connected());
     }
 
 }

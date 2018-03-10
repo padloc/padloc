@@ -83,7 +83,7 @@ padlock.SyncMixin = (superClass) => {
 
         synchronize(auto) {
             if (!this.settings.syncConnected) {
-                this.alert($l("You have to be connected to a Padlock Cloud account to synchronize your data!"));
+                this.alert($l("You have to be logged in to synchronize your data!"));
                 return Promise.reject();
             }
 
@@ -114,12 +114,11 @@ padlock.SyncMixin = (superClass) => {
             return this.collection.save(cloudSource)
                 .then(() => {
                     this.dispatch("sync-success");
-                    this.alert($l("Padlock Cloud master password updated successfully!"));
+                    this.alert($l("Successfully updated the password for your account {0}.", this.settings.syncEmail));
                 })
                 .catch(() => {
                     this.dispatch("sync-fail");
-                    this.alert($l("Failed to update Padlock Cloud " +
-                        "master password. Please try again later!"));
+                    this.alert($l("Failed to update password. Please try again later!"));
                 });
         }
 
@@ -248,9 +247,9 @@ padlock.SyncMixin = (superClass) => {
         trialInfoText() {
             return $l(
                 "Your trial period ends in {0} days. After this period, your access will be read-only, " +
-                "which means you will be able to access your existing data on Padlock Cloud but you won't " +
+                "which means you will be able to access your existing online data but you won't " +
                 "be able to upload any new data or synchronize changes between devices. " +
-                "Get a subscription now to get unlimited access to Padlock Cloud!",
+                "Get a subscription now to get unlimited access to Padlocks online features!",
                 this.remainingTrialDays
             );
         }
@@ -276,9 +275,9 @@ padlock.SyncMixin = (superClass) => {
         readOnlyInfoText() {
             return $l(
                 "You currently don't have an active subscription which means you can still access " +
-                "your existing data on Padlock Cloud but you won't be able to upload any new data " +
+                "your existing online data but you won't be able to upload any new data " +
                 "or synchronize changes between devices. Get a subscription now to take full advantage " +
-                "of Padlock Cloud!"
+                "of Padlocks online features!"
             );
         }
 
@@ -293,7 +292,7 @@ padlock.SyncMixin = (superClass) => {
         autoSyncInfoText() {
             return $l(
                 "Enable Auto Sync to automatically synchronize your data with " +
-                "your Padlock Cloud account every time you make a change!"
+                "your Padlock online account every time you make a change!"
             );
         }
 
@@ -314,12 +313,23 @@ padlock.SyncMixin = (superClass) => {
                     this.dispatch("sync-success", { auto: auto });
 
                     if (cloudSource.password !== this.password) {
-                        return this.confirm(
-                            $l("Do you want to change your Padlock Cloud master password to your local one?"),
-                            $l("Yes"), $l("No")
-                        ).then((confirm) => {
-                            if (confirm) {
-                                this.setRemotePassword(this.password);
+                        return this.choose(
+                            $l("The master password you use locally does not match the one of your " +
+                                "online account {0}. What do you want to do?", this.settings.syncEmail),
+                            [
+                                $l("Update Local Password"),
+                                $l("Update Online Password"),
+                                $l("Keep Both Passwords")
+                            ],
+                        ).then((choice) => {
+                            switch (choice) {
+                                case 0:
+                                    this.setPassword(cloudSource.password)
+                                        .then(() => this.alert($l("Local password updated successfully.")));
+                                    break;
+                                case 1:
+                                    this.setRemotePassword(this.password);
+                                    break;
                             }
                         });
                     }
@@ -402,14 +412,12 @@ padlock.SyncMixin = (superClass) => {
                     this.settings.syncEmail = "";
                     this.settings.syncReadonly = false;
                     this.dispatch("settings-changed");
-                    this.alert($l("There was a problem authenticating with Padlock Cloud. Please " +
-                        "complete the connection process again!"));
+                    this.alert($l("You've been logged out of your Padlock online account. Please login in again!"));
                     return false;
                 case "deprecated_api_version":
                     this.confirm(
-                        $l("A newer version of Padlock is available now! You can download it using the " +
-                        "button below. Please note that you won't be able to use Padlock Cloud until " +
-                        "you install the latest version!"),
+                        $l("A newer version of Padlock is available now! Update now to keep using " +
+                            "online features (you won't be able to sync with your account until then)!"),
                         $l("Update Now"),
                         $l("Cancel")
                     ).then((confirm) => {
@@ -419,16 +427,15 @@ padlock.SyncMixin = (superClass) => {
                     });
                     return false;
                 case "rate_limit_exceeded":
-                    this.alert($l("It seems Padlock Cloud is over capacity right now. Please try again later!"));
+                    this.alert($l("It seems are servers are over capacity right now. Please try again later!"));
                     return false;
                 case "invalid_container_data":
                 case "invalid_key_params":
                     this.alert($l(
-                        "The data received from Padlock Cloud seems to be corrupt and " +
+                        "The data received from your online account seems to be corrupt and " +
                         "cannot be decrypted. This might be due to a network error but could " +
                         "also be the result of someone trying to compromise your connection to " +
-                        "Padlock Cloud. If the problem persists, please notify " +
-                        "Padlock support!"
+                        "our servers. If the problem persists, please notify Padlock support!"
                     ));
                     return false;
                 case "decryption_failed":
@@ -437,18 +444,32 @@ padlock.SyncMixin = (superClass) => {
                     // password does not match the one that was used for encrypting the remote data so
                     // we need to prompt the user for the correct password.
                     this.prompt(
-                        $l("It seems that your Padlock Cloud account uses a different master " +
-                        "password than then one you are using on this device. Please provide the " +
-                        "correct master password for your Padlock Cloud account!"),
-                        $l("Enter Master Password"), "password", $l("Submit"))
-                        .then((pwd) => {
-                            if (pwd === null) {
-                                return;
+                        $l("Please enter the master password for the online account {0}.", this.settings.syncEmail),
+                        $l("Enter Master Password"), "password", $l("Submit"), $l("Forgot Password"), true, (pwd) => {
+                            if (!pwd) {
+                                return Promise.reject($l("Please enter a password!"));
                             }
-
                             cloudSource.password = pwd;
-                            this.synchronize();
-                        });
+                            return this.collection.fetch(cloudSource)
+                                .then(() => true)
+                                .catch((e) => {
+                                    if (e.code == "decryption_failed") {
+                                        throw $l("Incorrect password. Please try again!");
+                                    } else {
+                                        this._handleCloudError(e);
+                                        return false;
+                                    }
+                                });
+                        })
+                            .then((success) => {
+                                if (success === null) {
+                                    this.forgotCloudPassword()
+                                        .then(() => this.synchronize());
+                                }
+                                if (success) {
+                                    this.synchronize();
+                                }
+                            });
                     return false;
                 case "unsupported_container_version":
                     this.confirm($l(
@@ -485,6 +506,15 @@ padlock.SyncMixin = (superClass) => {
 
         hasCloudData() {
             return cloudSource.hasData();
+        }
+
+        forgotCloudPassword() {
+            return this.promptForgotPassword()
+                .then((doReset) => {
+                    if (doReset) {
+                        return this.cloudSource.clear();
+                    }
+                });
         }
 
         _updateLastSync() {

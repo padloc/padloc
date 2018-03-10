@@ -31,7 +31,7 @@
             <div class="message tiles-1">[[ message ]]</div>
             <pl-input class="tiles-2" id="input" type="[[ type ]]" placeholder="[[ placeholder ]]" on-enter="_confirm"></pl-input>
             <pl-loading-button id="confirmButton" class="tap tiles-3" on-click="_confirm">[[ confirmLabel ]]</pl-loading-button>
-            <button class="tap tiles-4" on-click="_dismiss" hidden$="[[ _hideCancelButton ]]">[[ dismissLabel ]]</button>
+            <button class="tap tiles-4" on-click="_dismiss" hidden$="[[ _hideCancelButton ]]">[[ cancelLabel ]]</button>
             <div class="validation-message">[[ _validationMessage ]]</div>
         </pl-dialog>
     </template>
@@ -52,7 +52,7 @@ class DialogPrompt extends padlock.BaseElement {
 
     static get properties() { return {
         confirmLabel: { type: String, value: defaultConfirmLabel },
-        dismissLabel: { type: String, value: defaultCancelLabel },
+        cancelLabel: { type: String, value: defaultCancelLabel },
         message: { type: String, value: "" },
         open: { type: Boolean, value: false },
         placeholder: { type: String, value: ""},
@@ -69,7 +69,7 @@ class DialogPrompt extends padlock.BaseElement {
         p.then((v) => {
             this._validationMessage = "";
             this.$.confirmButton.success();
-            typeof this._resolve === "function" && this._resolve(this.$.input.value);
+            typeof this._resolve === "function" && this._resolve(v);
             this._resolve = null;
             this.open = false;
         }).catch((e) => {

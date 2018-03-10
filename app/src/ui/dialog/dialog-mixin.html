@@ -53,10 +53,10 @@ padlock.DialogMixin = (superClass) => {
             return lineUpDialog(dialog, () => dialog.confirm(message, confirmLabel, cancelLabel));
         }
 
-        prompt(message, placeholder, type, confirmLabel, cancelLabel, allowDismiss, verify) {
+        prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss, verify) {
             const dialog = getDialog("pl-dialog-prompt");
             return lineUpDialog(dialog, () => {
-                return dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel, allowDismiss, verify);
+                return dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss, verify);
             });
         }
 
@@ -80,6 +80,20 @@ padlock.DialogMixin = (superClass) => {
                 currentDialog.open = false;
             }
             lastDialogPromise = Promise.resolve();
+        }
+
+        promptForgotPassword() {
+            return this.confirm($l(
+                "Forgot your password? For security reasons don't keep a record of your master " +
+                "password so unfortunately we cannot help you recover it. You can reset your password, " +
+                "but your data will be lost in the process."
+            ), $l("Reset Password"), $l("Keep Trying"))
+                .then((confirmed) => {
+                    return confirmed && this.confirm($l(
+                        "Are you sure you want to reset your password? " +
+                        "WARNING: All your data will be lost!"
+                    ), $l("Reset Password"));
+                });
         }
 
     };
