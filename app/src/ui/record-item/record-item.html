@@ -18,9 +18,11 @@
                 background: var(--color-background);
                 position: relative;
                 transition: color 0.3s;
-                margin-top: 10px;
-                border-top: solid 1px rgba(0, 0, 0, 0.1);
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                margin: 5px 5px 0 5px;
+                border-radius: 8px;
+                border: solid 1px rgba(0, 0, 0, 0.1);
+                border-bottom-width: 2px;
+                overflow: hidden;
                 --fields-padding: 5px;
             }
 
@@ -33,7 +35,7 @@
             }
 
             .name {
-                padding-left: 10px;
+                padding-left: 15px;
                 flex: 1;
                 @apply --ellipsis;
                 font-weight: bold;
@@ -129,27 +131,12 @@
                 transform-origin: 0 0;
             }
 
-            .multi-select-icon {
-                border-radius: 0 35px 35px 0;
-                font-size: 80%;
-                width: 30px;
-                height: 30px;
-                margin-left: -2px;
-                @apply --shade-2;
-                /* color: var(--shade-2-color); */
-                color: var(--color-background);
-            }
-
-            .multi-select-icon:hover {
-                @apply --shade-3;
-            }
-
             .field-value[masked] {
                 font-size: 150%;
                 letter-spacing: -3.5px;
             }
 
-            :host(:not([multi-select])[selected]), :host(:not([multi-select])[selected]) .copied-message {
+            :host([selected]), :host([selected]) .copied-message {
                 color: var(--color-background);
             }
 
@@ -158,7 +145,7 @@
                 color: #4ca8d9;
             }
 
-            :host(:not([multi-select])[selected]) .slider {
+            :host([selected]) .slider {
                 transform: scale(1, 1);
             }
 
@@ -166,17 +153,11 @@
             :host([selected]) .category {
                 background: var(--shade-3-color);
             }
-
-            :host([multi-select][selected]) .multi-select-icon {
-                color: var(--color-background);
-                background: var(--color-highlight);
-            }
         </style>
 
         <div class="slider"></div>
 
         <div class="header">
-            <pl-icon icon="check" class="multi-select-icon" on-click="_selectIconClicked"></pl-icon>
             <div class="name">[[ record.name ]]</div>
             <div class="category ellipsis"
                 hidden$="[[ !_isSet(record.category) ]]"

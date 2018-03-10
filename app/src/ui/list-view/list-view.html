@@ -150,8 +150,10 @@
 
             .multi-select-count {
                 flex: 1;
-                padding: 0 15px;
-                line-height: var(--row-height);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: var(--font-size-small);
                 font-weight: bold;
                 overflow: hidden;
                 text-align: center;
@@ -177,7 +179,7 @@
         <header hidden$="[[ !multiSelect ]]">
             <pl-icon icon="cancel" class="tap" on-click="_clearMultiSelection"></pl-icon>
             <pl-icon icon="checked" class="tap" on-click="_selectAll"></pl-icon>
-            <div class="multi-select-count">[[ $l("{0} records selected", selectedRecords.length) ]]</div>
+            <div class="multi-select-count"><div>[[ _multiSelectLabel(selectedRecords.length) ]]</div></div>
             <pl-icon icon="delete" class="tap" on-click="_deleteSelected"></pl-icon>
             <pl-icon icon="share" class="tap" on-click="_shareSelected"></pl-icon>
         </header>
@@ -463,6 +465,10 @@ class ListView extends applyMixins(
                     this.multiSelect = false;
                 }
             });
+    }
+
+    _multiSelectLabel(count) {
+        return count ? $l("{0} records selected", count) : $l("tap to select");
     }
 
     focusFilterInput() {
