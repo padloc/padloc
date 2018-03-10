@@ -287,7 +287,7 @@
 
         <pl-start-view id="startView"></pl-start-view>
 
-        <div id="menu" class="menu" on-mouseover="_menuMouseOver" on-mouseout="_menuMouseOut">
+        <div id="menu" class="menu">
             <div class="spacer"></div>
             <div class="account menu-item tap" hidden$="[[ !settings.syncConnected ]]" on-click="_openCloudView">
                 <div class="account-status">
@@ -623,20 +623,6 @@ class App extends applyMixins(
 
     _toggleMenu() {
         this._menuOpen = !this._menuOpen;
-    }
-
-    _menuMouseOver(e) {
-        clearTimeout(this._menuHoverTimeout);
-        this._menuHoverTimeout = setTimeout(() => {
-            this._menuOpen = true;
-        }, 10);
-    }
-
-    _menuMouseOut(e) {
-        clearTimeout(this._menuHoverTimeout);
-        this._menuHoverTimeout = setTimeout(() => {
-            this._menuOpen = false;
-        }, 10);
     }
 
     _lock() {
