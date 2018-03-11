@@ -110,7 +110,7 @@
             .login-section-header pl-icon {
                 width: 80px;
                 height: 80px;
-                font-size: 65px;
+                font-size: 60px;
                 margin: 10px 0 10px 10px;
             }
 
@@ -144,7 +144,7 @@
 
             <section class="login-section" hidden$="[[ settings.syncConnected ]]">
                 <div class="login-section-header">
-                    <pl-icon icon="logo"></pl-icon>
+                    <pl-icon icon="cloud"></pl-icon>
                     <div class="info">
                         <strong>[[ loginInfoText() ]]</strong>
                     </div>
@@ -164,7 +164,7 @@
                     <pl-icon icon="record"></pl-icon>
                     <div>[[ records.length ]]</div>
                 </div>
-                <div class="device-count tap">
+                <div class="device-count tap" on-click="_manageAccount">
                     <pl-icon icon="mobile"></pl-icon>
                     <div>[[ settings.syncDeviceCount ]]</div>
                 </div>

@@ -187,6 +187,8 @@
                 padding: 0 5px;
                 height: 45px;
                 justify-content: flex-end;
+                position: relative;
+                text-align: right;
             }
 
             .menu-item:hover {
@@ -199,54 +201,18 @@
 
             }
 
-            .account {
-                line-height: normal;
+            .menu-item-hint {
+                font-size: 12px;
             }
 
-            .account-icon {
-                font-size: 130%;
+            .last-sync {
+                opacity: 0.6;
             }
 
-            .account-status {
-                width: 0;
-                flex: 1;
-                text-align: right;
-            }
-
-            .account-email {
-                font-weight: bold;
-                font-size: var(--font-size-small);
-                @apply --ellipsis;
-            }
-
-            .account-stats {
-                font-size: var(--font-size-tiny);
-                display: flex;
-                justify-content: flex-end;
-            }
-
-            .account-stats > * {
-                margin-left: 5px;
-            }
-
-            .account-last-synced::before {
+            .last-sync::before {
                 font-family: "FontAwesome";
-                font-size: 70%;
-                position: relative;
-                top: -1px;
-                content: "\f021\ ";
-            }
-
-            .account-record-count::before {
-                font-family: "FontAwesome";
-                font-size: 60%;
-                position: relative;
-                top: -2px;
-                content: "\f15b\ ";
-            }
-
-            .account-sync-button {
-                width: 50px;
+                font-size: 90%;
+                content: "\f017\ ";
             }
 
             .menu-info {
@@ -289,27 +255,19 @@
 
         <div id="menu" class="menu">
             <div class="spacer"></div>
-            <div class="account menu-item tap" hidden$="[[ !settings.syncConnected ]]" on-click="_openCloudView">
-                <div class="account-status">
-                    <div class="account-email">[[ settings.syncEmail ]]</div>
-                    <div class="account-stats">
-                        <div class="account-last-synced">[[ lastSync ]]</div>
-                    </div>
+            <div class="account menu-item tap" on-click="_openCloudView">
+                <div>
+                    <div hidden$="[[ settings.syncConnected ]]">[[ $l("Log In") ]]</div>
+                    <div hidden$="[[ !settings.syncConnected ]]">[[ $l("My Account") ]]</div>
                 </div>
-                <pl-icon icon="user" class="account-icon"></pl-icon>
+                <pl-icon icon="cloud" class="account-icon"></pl-icon>
             </div>
-            <div class="account menu-item tap" hidden$="[[ settings.syncConnected ]]" on-click="_openCloudView">
-                <div class="account-status">
-                    <div class="account-email">[[ $l("Not Logged In") ]]</div>
-                    <div class="account-stats">
-                        <div class="account-record-count">[[ records.length ]]</div>
-                        <div class="account-last-synced">[[ $l("never") ]]</div>
-                    </div>
+            <div class="menu-item tap" on-click="synchronize" disabled$="[[ !settings.syncConnected ]]">
+                <div>
+                    <div>[[ $l("Synchronize") ]]</div>
+                    <div class="menu-item-hint" hidden$="[[ settings.syncConnected ]]">[[ $l("Log In To Sync") ]]</div>
+                    <div class="menu-item-hint last-sync" hidden$="[[ !settings.syncConnected ]]">[[ lastSync ]]</div>
                 </div>
-                <pl-icon icon="user" class="account-icon"></pl-icon>
-            </div>
-            <div class="menu-item tap" on-click="_sync">
-                <div>[[ $l("Synchronize") ]]</div>
                 <pl-icon icon="refresh" spin$="[[ isSynching ]]"></pl-icon>
             </div>
             <div class="menu-item tap" on-click="_newRecord">
@@ -521,6 +479,9 @@ class App extends applyMixins(
     _openCloudView() {
         this._currentView = "cloudView";
         this.$.listView.deselect();
+        if (!this.settings.syncConnected) {
+            setTimeout(() => this.$.cloudView.focusEmailInput(), 500);
+        }
     }
 
     _cloudViewBack() {
@@ -642,33 +603,6 @@ class App extends applyMixins(
     _enableMultiSelect() {
         this.$.listView.multiSelect = true;
         this._menuOpen = false;
-    }
-
-    _login() {
-        this._menuOpen = false;
-        this.login()
-            .then((success) => {
-                if (success) {
-                    this._openCloudView();
-                }
-            });
-    }
-
-    _sync() {
-        if (this.settings.syncConnected) {
-            this.synchronize();
-        } else {
-            this.confirm(
-                $l("You have to be logged in to the this feature!"),
-                $l("Log Me In"),
-                $l("No Thanks")
-            ).then((confirmed) => {
-                if (confirmed) {
-                    this._openCloudView();
-                    setTimeout(() => this.$.cloudView.focusEmailInput(), 500);
-                }
-            });
-        }
     }
 
 }
