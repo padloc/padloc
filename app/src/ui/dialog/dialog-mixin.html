@@ -82,6 +82,18 @@ padlock.DialogMixin = (superClass) => {
             lastDialogPromise = Promise.resolve();
         }
 
+        promptPassword(password, msg, confirmLabel, cancelLabel) {
+            return this.prompt(msg, $l("Enter Password"), "password", confirmLabel, cancelLabel, true, (pwd) => {
+                if (!pwd) {
+                    return Promise.reject($l("Please enter a password!"));
+                } else if (pwd !== password) {
+                    return Promise.reject($l("Wrong password. Please try again!"));
+                } else {
+                    return Promise.resolve(true);
+                }
+            });
+        }
+
         promptForgotPassword() {
             return this.confirm($l(
                 "Forgot your password? For security reasons don't keep a record of your master " +

@@ -205,34 +205,29 @@ class SettingsView extends applyMixins(
     //* Opens the change password dialog and resets the corresponding input elements
     _changePassword() {
         let newPwd;
-        return this.prompt($l("Are you sure you want to change your master password? Enter your " +
-            "current password to continue!"), $l("Enter Current Password"), "password", $l("Confirm"))
-            .then((pwd) => {
-                if (!this.checkPassword(pwd)) {
-                    this.alert($l("You entered the wrong master password!"));
+        return this.promptPassword(this.password, $l(
+            "Are you sure you want to change your master password? Enter your " +
+            "current password to continue!"
+        ), $l("Confirm"), $l("Cancel"))
+            .then((success) => {
+                if (success) {
+                    return this.prompt($l("Now choose a new master password!"),
+                        $l("Enter New Password"), "password", $l("Confirm"));
+                } else {
                     return Promise.reject();
                 }
-                return this.prompt($l("Now choose a new master password!"),
-                    $l("Enter New Password"), "password", $l("Confirm"));
             })
             .then((pwd) => {
-                if (pwd === null) {
-                    return Promise.reject();
-                }
                 newPwd = pwd;
-                return this.prompt($l("Confirm your new master password!"), $l("Confirm New Password"),
-                    "password", $l("Confirm & Change"));
+                return this.promptPassword(pwd, $l("Confirm your new master password!"),
+                    $l("Confirm"), $l("Cancel"));
             })
-            .then((pwd) => {
-                if (pwd === null) {
-                    return null;
+            .then((success) => {
+                if (success) {
+                    return this.setPassword(newPwd);
+                } else {
+                    return Promise.reject();
                 }
-
-                if (pwd !== newPwd) {
-                    return this.alert($l("You failed to confirm the new password. Please try again!"));
-                }
-
-                return this.setPassword(pwd);
             })
             .then(() => this.alert($l("Master password changed successfully.")));
     }
