@@ -97,6 +97,7 @@
             .form-box pl-input, .form-box .input-wrapper {
                 flex: 1;
                 text-align: center;
+                border-right: solid 1px rgba(0, 0, 0, 0.08);
                 --pl-input-placeholder: {
                     opacity: 0.4;
                 };
@@ -236,7 +237,7 @@
 
             <pl-icon icon="logo" class="hero animate-in animate-out"></pl-icon>
 
-            <div class="form-box tiles tiles-2 animate-in animate-out">
+            <div class="form-box tiles-2 animate-in animate-out">
                 <pl-input id="passwordInput" type="password" class="tap"
                     select-on-focus on-enter="_unlock" no-tab="[[ open ]]"
                     placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
@@ -271,7 +272,7 @@
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 1) ]]">
 
-                    <div class="form-box tiles tiles-2">
+                    <div class="form-box tiles-2">
                         <pl-input id="emailInput" type="email" select-on-focus no-tab="[[ open ]]" class="tap"
                             on-enter="_enterEmail" placeholder="[[ $l('Enter Email Address') ]]"></pl-input>
 
@@ -291,7 +292,7 @@
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 2) ]]">
 
-                    <div class="form-box tiles tiles-2">
+                    <div class="form-box tiles-2">
                         <pl-input id="codeInput" required select-on-focus no-tab="[[ open ]]" class="tap"
                             on-enter="_enterCode" placeholder="[[ $l('Enter Login Code') ]]"></pl-input>
 
@@ -312,7 +313,7 @@
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 3) ]]" hidden$="[[ !_hasCloudData ]]">
 
                     <div>
-                        <div class="form-box tiles tiles-2">
+                        <div class="form-box tiles-2">
 
                             <pl-input id="cloudPwdInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                                 on-enter="_enterCloudPassword" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
@@ -336,7 +337,7 @@
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 3) ]]" hidden$="[[ _hasCloudData ]]">
 
                     <div>
-                        <div class="form-box tiles tiles-2">
+                        <div class="form-box tiles-2">
 
                             <pl-input id="newPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                                 on-enter="_enterNewPassword" value="{{ newPwd }}" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
@@ -361,7 +362,7 @@
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 4) ]]">
 
-                    <div class="form-box tiles tiles-2">
+                    <div class="form-box tiles-2">
 
                         <pl-input id="confirmPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                             on-enter="_confirmNewPassword" placeholder="[[ $l('Confirm Master Password') ]]"></pl-input>
