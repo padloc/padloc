@@ -7,6 +7,7 @@
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../slider/slider.html">
+<link rel="import" href="../sync/sync.html">
 <link rel="import" href="../toggle/toggle-button.html">
 
 <dom-module id="pl-settings-view">
@@ -170,7 +171,7 @@
     <script>
 (() => {
 
-const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
+const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, SyncMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, saveDBAs, loadDB, isElectron } = padlock.platform;
 
@@ -179,7 +180,8 @@ class SettingsView extends applyMixins(
     DataMixin,
     LocaleMixin,
     DialogMixin,
-    AnimationMixin
+    AnimationMixin,
+    SyncMixin
 ) {
 
     static get is() { return "pl-settings-view"; }
@@ -229,7 +231,22 @@ class SettingsView extends applyMixins(
                     return Promise.reject();
                 }
             })
-            .then(() => this.alert($l("Master password changed successfully.")));
+            .then(() => {
+                if (this.settings.syncConnected) {
+                    return this.confirm(
+                        $l("Do you want to update the password for you online account {0} as well?",
+                            this.settings.syncEmail),
+                        $l("Yes"), $l("No")
+                    ).then((confirmed) => {
+                        if (confirmed) {
+                            return this.setRemotePassword(this.password);
+                        }
+                    })
+                }
+            })
+            .then(() => {
+                this.alert($l("Master password changed successfully."));
+            });
     }
 
     _openWebsite() {
