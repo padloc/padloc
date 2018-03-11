@@ -185,6 +185,7 @@ export class CloudSource extends AjaxSource {
             }
         }
 
+        this.settings.syncDeviceCount = parseInt(req.getResponseHeader("X-Device-Count") || "0", 10);
         this.settings.syncSubStatus = req.getResponseHeader("X-Sub-Status") || "";
         try {
             this.settings.syncTrialEnd =
