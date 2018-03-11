@@ -144,6 +144,7 @@ export class Settings {
         syncAuto: true,
         syncSubStatus: "",
         syncTrialEnd: 0,
+        syncDeviceCount: 0,
         defaultFields: ["username", "password"],
         obfuscateFields: false,
         syncRequireSubscription: false,
@@ -170,6 +171,7 @@ export class Settings {
     syncSubStatus: string;
     syncTrialEnd: number;
     syncId: string;
+    syncDeviceCount: number;
 
     // Record-related settings
     recordDefaultFields: Array<string>;
