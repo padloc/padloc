@@ -58,31 +58,30 @@
                 border-bottom: solid 2px rgb(64, 143, 184);
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
                 transform: translate3d(0, 0, 0);
+
+                @apply --pl-dialog-inner;
+            }
+
+            .inner, ::slotted([slot]) {
                 transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
             }
 
-            :host(:not(.open)) .inner {
+            :host(:not(.open)) .inner, :host(:not(.open)) ::slotted([slot]) {
                 opacity: 0;
                 transform: translate3d(0, 0, 0) scale(0.95);
-            }
-
-            @media (min-width: 400px) {
-                :host {
-                    justify-content: center;
-                }
-
-                .inner {
-                    margin-top: 0;
-                }
             }
         </style>
 
         <div class="outer" on-click="dismiss">
-            <div class="scrim"></div>
+            <div class="scrim">
+                <slot name="scrim"></slot>
+            </div>
 
+            <slot name="before"></slot>
             <div id="inner" class="inner" on-click="_preventDismiss">
                 <slot></slot>
             </div>
+            <slot name="after"></slot>
         </div>
     </template>
 

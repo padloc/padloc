@@ -1,0 +1,344 @@
+<script src="https://js.stripe.com/v3/"></script>
+
+<link rel="import" href="../../styles/shared.html">
+<link rel="import" href="../base/base.html">
+<link rel="import" href="../dialog/dialog.html">
+<link rel="import" href="../icon/icon.html">
+<link rel="import" href="../input/input.html">
+<link rel="import" href="../loading-button/loading-button.html">
+<link rel="import" href="../locale/locale.html">
+
+<dom-module id="pl-payment-dialog">
+
+    <template>
+
+        <style include="shared">
+            :host {
+                --pl-dialog-max-width: 500px;
+
+                --pl-dialog-inner: {
+                    background: var(--color-background);
+                    color: var(--color-foreground);
+                    text-shadow: none;
+                    border: none;
+                    overflow: hidden;
+                    box-shadow: rgba(0, 0, 0, 0.25) 0 0 10px;
+                };
+            }
+
+            ::slotted(.StripeElement) {
+                height: var(--row-height);
+                padding: 15px;
+                box-sizing: border-box;
+            }
+
+            .plan-description {
+                text-align: center;
+                padding: 30px 15px;
+                background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%);
+                color: var(--color-foreground);
+                text-shadow: rgba(0, 0, 0, 0.15) 0 2px 0;
+            }
+
+            .plan-name {
+                font-weight: bold;
+                font-size: 150%;
+            }
+
+            .features {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 15px 0;
+            }
+
+            .feature {
+                width: 105px;
+                font-size: var(--font-size-small);
+            }
+
+            .feature pl-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 50px;
+            }
+
+            .price {
+                font-size: 180%;
+                font-weight: bold;
+            }
+
+            .price-hint {
+                font-size: var(--font-size-tiny);
+            }
+
+            .secure-payment {
+                display: block;
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                padding: 15px;
+                font-size: var(--font-size-tiny);
+                text-align: center;
+                text-shadow: none;
+            }
+
+            .secure-payment::before {
+                font-family: "FontAwesome";
+                content: "\f023\ ";
+                vertical-align: middle;
+                position: relative;
+                top: 1px;
+                text-shadow: none;
+            }
+
+            .secure-payment > * {
+                vertical-align: middle;
+            }
+
+            .secure-payment > img {
+                height: 20px;
+                position: relative;
+                top: 1px;
+            }
+
+            .card-hint {
+                font-size: var(--font-size-small);
+            }
+
+            .error {
+                color: #eb1c26;
+            }
+
+            .support-link {
+                text-decoration: underline;
+                font-size: var(--font-size-tiny);
+                cursor: pointer;
+            }
+
+            .trial-button {
+                position: relative;
+                text-decoration: underline;
+                font-size: var(--font-size-small);
+                margin: 5px 0 15px 0;
+            }
+
+            #paymentForm > *,
+            ::slotted(.StripeElement) {
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+            }
+
+            #submitButton {
+                font-weight: bold;
+            }
+
+        </style>
+
+        <pl-dialog id="cardDialog" open="{{ open }}" on-dialog-dismiss="_dismiss">
+            <form id="paymentForm" method="post" on-submit="_submitCard">
+                <div class="plan-description" hidden$="[[ _changingPaymentSource ]]">
+                    <div class="plan-name">[[ plan.name ]]</div>
+                    <div class="features">
+                        <div class="feature">
+                            <pl-icon icon="refresh"></pl-icon>
+                            <div>[[ $l("Synchronize Seamlessy") ]]</div>
+                        </div>
+                        <div class="feature">
+                            <pl-icon icon="mobile"></pl-icon>
+                            <div>[[ $l("Unlimited Devices") ]]</div>
+                        </div>
+                        <div class="feature">
+                            <pl-icon icon="lock"></pl-icon>
+                            <div>[[ $l("End-To-End Encryption") ]]</div>
+                        </div>
+                    </div>
+                    <div class="price">[[ _monthlyPrice(plan.amount) ]]</div>
+                    <div class="price-hint">[[ $l("(excl. taxes\, billed annually)") ]]</div>
+                </div>
+                <div class="message card-hint" hidden$="[[ _hasError(_cardError) ]]">
+                    [[ $l("Please enter your credit or debit card information:") ]]
+                </div>
+                <div class="message card-hint tap" hidden$="[[ !_hasError(_cardError) ]]" on-click="_openSupport">
+                    <div class="error">[[ _cardError ]]</div>
+                    <div class="support-link"
+                        hidden$="[[ !_needsSupport ]]">[[ $l("Contact Support") ]]</div>
+                </div>
+                <slot>
+                </slot>
+                <pl-loading-button class="tap" id="submitButton" on-click="_submitCard">[[ _submitLabel ]]</pl-loading-button>
+            </form>
+            <a slot="scrim" href="https://stripe.com" target="_blank" class="secure-payment">
+                <span>[[ $l("Secure Payment - ") ]]</span>
+                <img src="assets/img/powered_by_stripe.svg">
+            </a>
+            <button class="trial-button" slot="after">[[ $l("Start 30-Day Trial") ]]</button>
+        </pl-dialog>
+
+    </template>
+
+    <script>
+/* global Stripe, mixpanel */
+(() => {
+
+const { LocaleMixin, BaseElement } = padlock;
+const { applyMixins } = padlock.util;
+
+let stripe;
+
+class PaymentDialog extends applyMixins(
+    BaseElement,
+    LocaleMixin
+) {
+
+    static get is() { return "pl-payment-dialog"; }
+
+    static get properties() { return {
+        open: { type: Boolean },
+        plan: {
+            type: Object,
+            value: {
+                name: "Padlock Online",
+                amount: 2400
+            }
+        },
+        source: Object,
+        stripePubKey: { type: String, value: "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy" },
+        _cardError: { type: String, value: "" },
+        _needsSupport: { type: Boolean, value: false },
+        _submitLabel: { type: String, value: $l("Submit") }
+    }; }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this._setupPayment();
+    }
+
+    updatePaymentMethod() {
+        this._needsSupport = false;
+        this._errorMessage = "";
+        this.open = true;
+        return new Promise((resolve) => {
+            this._resolve = resolve;
+        });
+    }
+
+    _setupPayment() {
+        stripe = Stripe(this.stripePubKey);
+        const elements = stripe.elements();
+        const card = this._cardElement = elements.create("card", {
+            iconStyle: "solid",
+            style: {
+                base: {
+                    fontFamily: '"Clear Sans", "Helvetica Neue", Helvetica, sans-serif',
+                    fontSmoothing: "antialiased",
+                    fontSize: "18px",
+                    // color: "#fff",
+                    // iconColor: "#fff",
+                    // textShadow: "rgba(0, 0, 0, 0.2) 0 2px 0",
+                    // "::placeholder": {
+                    //     color: "rgba(255, 255, 255, 0.7)",
+                    //     textShadow: "rgba(0, 0, 0, 0.15) 0 2px 0"
+                    // }
+                },
+                invalid: {
+                    textShadow: "none"
+                }
+            }
+        });
+
+        const cardElement = document.createElement("div");
+        this.appendChild(cardElement);
+        card.mount(cardElement);
+
+        card.addEventListener("change", (e) => this._cardError = e.error && e.error.message || "");
+    }
+
+    _submitCard() {
+        if (this._submittingCard) {
+            return;
+        }
+
+        this.$.submitButton.start();
+        this._submittingCard = true;
+
+        stripe.createToken(this._cardElement).then((result) => {
+            const edata = {
+                "Action": this._changingPaymentSource ? "Change Payment Source" : "Buy Subscription",
+                "Source": this.referer
+            };
+
+            if (result.error) {
+                Object.assign(edata, {
+                    "Error Code": result.error.code,
+                    "Error Type": result.error.type,
+                    "Error Message": result.error.message
+                });
+            }
+
+            // const trackPromise = track("Dashboard: Submit Payment Source", edata);
+
+            if (result.error) {
+                this.$.submitButton.fail();
+                this._submittingCard = false;
+            } else {
+                this.source.setPaymentSource(result.token.id)
+                    .then(() => {
+                        this.$.submitButton.success();
+                        typeof this._resolve === "function" && this._resolve(true);
+                        this._submittingCard = false;
+                        this._resolve = null;
+                        this.open = false;
+                    })
+                    .catch((e) => {
+                        this.$.submitButton.fail();
+                        this._submittingCard = false;
+                        this._cardError = e.message;
+                        this._needsSupport = true;
+                    });
+            }
+        });
+    }
+
+    _buySubscription() {
+        const plan = this.account.subscription.plan;
+        this._submitLabel = $l("Pay {0}.{1} USD", Math.floor(plan.amount / 100), plan.amount % 100);
+        this._changingPaymentSource = false;
+        this.$.cardDialog.open = true;
+
+        // track("Dashboard: Open Payment Dialog", { "Action": "Buy Subscription", "Source": this.referer });
+    }
+
+    _changePaymentMethod() {
+        this._submitLabel = $l("Add New Card");
+        this._changingPaymentSource = true;
+        this.$.cardDialog.open = true;
+
+        // track("Dashboard: Open Payment Dialog", { "Action": "Change Payment Source", "Source": this.referer });
+    }
+
+    _hasError() {
+        return !!this._cardError;
+    }
+
+    _monthlyPrice(amount) {
+        return $l("${0}/month", amount / 1200);
+    }
+
+    _dismiss() {
+        typeof this._resolve === "function" && this._resolve(false);
+        this._resolve = null;
+    }
+
+    _openSupport() {
+        window.open("mailto:support@padlock.io", "_system");
+    }
+
+}
+
+window.customElements.define(PaymentDialog.is, PaymentDialog);
+
+})();
+    </script>
+
+</dom-module>

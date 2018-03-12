@@ -1,5 +1,6 @@
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../data/data.html">
+<link rel="import" href="../payment-dialog/payment-dialog.html">
 
 <script>
 (() => {
@@ -519,6 +520,13 @@ padlock.SyncMixin = (superClass) => {
 
         _updateLastSync() {
             return padlock.stats.get().then((s) => this.lastSync = formatDateFromNow(s.lastSync));
+        }
+
+        updatePaymentMethod() {
+            return this.lineUpDialog("pl-payment-dialog", (dialog) => {
+                dialog.source = this.cloudSource.source;
+                dialog.updatePaymentMethod();
+            });
         }
 
     };

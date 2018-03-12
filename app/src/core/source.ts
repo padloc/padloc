@@ -270,6 +270,17 @@ export class CloudSource extends AjaxSource {
             });
     }
 
+    setPaymentSource(stripeToken: string): Promise<XMLHttpRequest> {
+        const params = new URLSearchParams();
+        params.set("stripeToken", stripeToken);
+        return this.request(
+            "POST",
+            this.urlForPath("payment"),
+            params.toString(),
+            new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
+        );
+    }
+
 }
 
 export class EncryptedSource implements Source {
