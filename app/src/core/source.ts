@@ -270,6 +270,13 @@ export class CloudSource extends AjaxSource {
             });
     }
 
+    logout(): Promise<XMLHttpRequest> {
+        return this.request(
+            "GET",
+            this.urlForPath("logout")
+        );
+    }
+
     setPaymentSource(stripeToken: string): Promise<XMLHttpRequest> {
         const params = new URLSearchParams();
         params.set("stripeToken", stripeToken);
