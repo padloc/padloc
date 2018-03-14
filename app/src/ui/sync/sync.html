@@ -211,7 +211,7 @@ padlock.SyncMixin = (superClass) => {
                                 if (success) {
                                     return true;
                                 } else {
-                                    Promise.reject($l("Invalid login code. Try again!"));
+                                    return Promise.reject($l("Invalid login code. Try again!"));
                                 }
                             });
                     }
