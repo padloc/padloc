@@ -14,11 +14,8 @@
             }
 
             .validation-message {
-                position: absolute;
-                top: 100%;
+                position: relative;
                 margin-top: 15px;
-                left: 0;
-                right: 0;
                 font-weight: bold;
                 font-size: var(--font-size-small);
                 color: var(--color-error);
@@ -32,7 +29,7 @@
             <pl-input class="tiles-2" id="input" type="[[ type ]]" placeholder="[[ placeholder ]]" on-enter="_confirm"></pl-input>
             <pl-loading-button id="confirmButton" class="tap tiles-3" on-click="_confirm">[[ confirmLabel ]]</pl-loading-button>
             <button class="tap tiles-4" on-click="_dismiss" hidden$="[[ _hideCancelButton ]]">[[ cancelLabel ]]</button>
-            <div class="validation-message">[[ _validationMessage ]]</div>
+            <div class="validation-message" slot="after">[[ _validationMessage ]]</div>
         </pl-dialog>
     </template>
 
