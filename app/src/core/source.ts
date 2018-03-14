@@ -277,6 +277,24 @@ export class CloudSource extends AjaxSource {
         );
     }
 
+    async getAccountInfo(): Promise<Account> {
+        const res = await this.request("GET", this.urlForPath("account"))
+        const account = JSON.parse(res.responseText);
+        this.settings.account = account;
+        return account;
+    }
+
+    revokeAuthToken(tokenId: string): Promise<XMLHttpRequest> {
+        const params = new URLSearchParams();
+        params.set("id", tokenId);
+        return this.request(
+            "POST",
+            this.urlForPath("revoke"),
+            params.toString(),
+            new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
+        );
+    }
+
     setPaymentSource(stripeToken: string): Promise<XMLHttpRequest> {
         const params = new URLSearchParams();
         params.set("stripeToken", stripeToken);

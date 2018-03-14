@@ -128,6 +128,15 @@ export class Collection {
 
 }
 
+export interface Device {
+    description: string;
+    tokenId: string;
+}
+
+export interface Account {
+    email: string;
+    devices: Device[];
+}
 
 export class Settings {
 
@@ -135,7 +144,8 @@ export class Settings {
         autoLock: true,
         // Auto lock delay in minutes
         autoLockDelay: 5,
-        syncHostUrl: "https://cloud.padlock.io",
+        // syncHostUrl: "https://cloud.padlock.io",
+        syncHostUrl: "http://127.0.0.1:3000",
         syncCustomHost: false,
         syncEmail: "",
         syncToken: "",
@@ -145,6 +155,7 @@ export class Settings {
         syncSubStatus: "",
         syncTrialEnd: 0,
         syncDeviceCount: 0,
+        account: undefined,
         defaultFields: ["username", "password"],
         obfuscateFields: false,
         syncRequireSubscription: false,
@@ -172,6 +183,8 @@ export class Settings {
     syncTrialEnd: number;
     syncId: string;
     syncDeviceCount: number;
+
+    account?: Account;
 
     // Record-related settings
     recordDefaultFields: Array<string>;

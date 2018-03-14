@@ -478,6 +478,7 @@ class App extends applyMixins(
 
     _openCloudView() {
         this._currentView = "cloudView";
+        this.refreshAccount();
         this.$.listView.deselect();
         if (!this.settings.syncConnected) {
             setTimeout(() => this.$.cloudView.focusEmailInput(), 500);

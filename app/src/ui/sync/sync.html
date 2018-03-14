@@ -533,6 +533,11 @@ padlock.SyncMixin = (superClass) => {
             });
         }
 
+        refreshAccount() {
+            return this.cloudSource.source.getAccountInfo()
+                .then(() => this.dispatch("settings-changed"));
+        }
+
     };
 
 };

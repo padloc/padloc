@@ -183,6 +183,18 @@
                 <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Buy Subscription") ]]</button>
             </section>
 
+            <section hidden$="[[ !settings.syncConnected ]]">
+                <div class="section-header">[[ $l("{0} Devices Connected", settings.account.devices.length) ]]</div>
+                <div class="devices">
+                    <template is="dom-repeat" items="[[ settings.account.devices ]]">
+                        <div class="section-row">
+                            <div class="section-row-label">[[ item.description ]]</div>
+                            <pl-icon icon="delete" class="tap" on-click="_revokeDevice" disabled$="[[ _isCurrentDevice(item) ]]"></pl-icon>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
             <!-- <section> -->
             <!--     <pl&#45;loading&#45;button id="syncButton" class="tap" on&#45;click="synchronize">[[ $l('Synchronize') ]]</pl&#45;loading&#45;button> -->
             <!--     <button class="tap" on&#45;click="_manageAccount">[[ $l("Manage Account") ]]</button> -->
@@ -361,6 +373,24 @@ class CloudView extends applyMixins(
                 this.$.loginButton.fail();
             });
 
+    }
+
+    _isCurrentDevice(device) {
+        return this.settings.syncId === device.tokenId;
+    }
+
+    _revokeDevice(e) {
+        const device = e.model.item;
+        this.confirm($l("Do you want to revoke access to for the device \"{0}\"?", device.description))
+            .then((confirmed) => {
+                if (confirmed) {
+                    this.cloudSource.source.revokeAuthToken(device.tokenId)
+                        .then(() => {
+                            this.refreshAccount();
+                            this.alert($l("Access for {0} revoked successfully!", device.description))
+                        });
+                }
+            });
     }
 
 }
