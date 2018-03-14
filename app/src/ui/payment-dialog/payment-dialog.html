@@ -22,7 +22,6 @@
                     text-shadow: none;
                     border: none;
                     overflow: hidden;
-                    box-shadow: rgba(0, 0, 0, 0.25) 0 0 10px;
                 };
             }
 
@@ -73,7 +72,6 @@
             }
 
             .secure-payment {
-                display: block;
                 position: absolute;
                 left: 0;
                 right: 0;
@@ -168,10 +166,10 @@
                 </slot>
                 <pl-loading-button class="tap" id="submitButton" on-click="_submitCard">[[ _submitLabel ]]</pl-loading-button>
             </form>
-            <a slot="scrim" href="https://stripe.com" target="_blank" class="secure-payment">
+            <div slot="scrim" class="secure-payment">
                 <span>[[ $l("Secure Payment - ") ]]</span>
                 <img src="assets/img/powered_by_stripe.svg">
-            </a>
+            </div>
             <button class="trial-button" slot="after">[[ $l("Start 30-Day Trial") ]]</button>
         </pl-dialog>
 
@@ -195,13 +193,7 @@ class PaymentDialog extends applyMixins(
 
     static get properties() { return {
         open: { type: Boolean },
-        plan: {
-            type: Object,
-            value: {
-                name: "Padlock Online",
-                amount: 2400
-            }
-        },
+        plan: Object,
         source: Object,
         stripePubKey: { type: String, value: "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy" },
         _cardError: { type: String, value: "" },

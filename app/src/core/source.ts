@@ -306,6 +306,11 @@ export class CloudSource extends AjaxSource {
         );
     }
 
+    getPlans(): Promise<any[]> {
+        return this.request("GET", this.urlForPath("plans"))
+            .then((res) => <any[]>JSON.parse(res.responseText));
+    }
+
 }
 
 export class EncryptedSource implements Source {

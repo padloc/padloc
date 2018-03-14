@@ -526,8 +526,20 @@ padlock.SyncMixin = (superClass) => {
             return padlock.stats.get().then((s) => this.lastSync = formatDateFromNow(s.lastSync));
         }
 
+        buySubscription() {
+            if (!this._plansPromise) {
+                this._plansPromise = this.cloudSource.source.getPlans();
+            }
+            this._plansPromise.then((plans) => this.openPaymentDialog(plans[0]));
+        }
+
         updatePaymentMethod() {
+            this.openPaymenDialog();
+        }
+
+        openPaymentDialog(plan) {
             return this.lineUpDialog("pl-payment-dialog", (dialog) => {
+                dialog.plan = plan;
                 dialog.source = this.cloudSource.source;
                 dialog.updatePaymentMethod();
             });
