@@ -113,20 +113,25 @@
             }
 
             .section-separator {
-                height: 15px;
+                height: 10px;
+            }
+
+            .section-header:first-of-kind {
+                visibility: hidden;
             }
 
             .section-header {
-                display: inline-block;
-                margin-bottom: 5px;
-                height: 30px;
-                line-height: 30px;
-                background: var(--color-foreground);
-                color: var(--color-background);
-                border-radius: 0 30px 30px 0;
-                padding: 0 12px;
+                display: flex;
+                margin-bottom: 10px;
+                height: 35px;
+                line-height: 33px;
+                padding: 0 15px;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
+                background: var(--color-background);
+                border-top: solid 1px rgba(0, 0, 0, 0.1);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                box-sizing: border-box;
             }
 
             iron-list {
@@ -205,7 +210,9 @@
                 <template>
                     <div>
                         <div class="section-header" hidden$="[[ !_firstInSection(records, index) ]]">
-                            [[ _sectionHeader(index, records) ]]
+                            <div>[[ _sectionHeader(index, records) ]]</div>
+                            <div class="spacer"></div>
+                            <div>[[ _sectionHeader(index, records) ]]</div>
                         </div>
                         <pl-record-item record="[[ item ]]" selected$="[[ selected ]]"
                             tabindex$="[[ tabIndex ]]" on-search-category="_searchCategory"
@@ -415,7 +422,7 @@ class ListView extends applyMixins(
         setTimeout(() => {
             const first = this.$.list.firstVisibleIndex;
             const last = this.$.list.lastVisibleIndex + 1;
-            const elements = Array.from(this.root.querySelectorAll("pl-record-item"));
+            const elements = Array.from(this.root.querySelectorAll("pl-record-item, .section-header"));
             const animated = elements
                 .filter((el) => m4e(el).index >= first && m4e(el).index <= last)
                 .sort((a, b) => m4e(a).index - m4e(b).index);
