@@ -31,7 +31,7 @@
                 box-sizing: border-box;
             }
 
-            .plan-description {
+            .plan {
                 text-align: center;
                 padding: 10px 15px;
                 background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%);
@@ -193,7 +193,7 @@
 
         <pl-dialog id="cardDialog" open="{{ open }}" on-dialog-dismiss="_dismiss">
             <form id="paymentForm" method="post" on-submit="_submitCard">
-                <div class="plan-description" hidden$="[[ _changingPaymentSource ]]">
+                <div class="plan" hidden$="[[ _hasPlan(plan) ]]">
                     <div class="plan-name">[[ plan.name ]]</div>
                     <div class="features">
                         <div class="feature sync">
@@ -393,6 +393,10 @@ class PaymentDialog extends applyMixins(
 
     _trialExpired() {
         return !this.remainingTrialDays;
+    }
+
+    _hasPlan() {
+        return !!this.plan;
     }
 
 }
