@@ -33,42 +33,100 @@
 
             .plan-description {
                 text-align: center;
-                padding: 30px 15px;
+                padding: 10px 15px;
                 background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%);
                 color: var(--color-foreground);
                 text-shadow: rgba(0, 0, 0, 0.15) 0 2px 0;
             }
 
             .plan-name {
+                margin-top: 10px;
                 font-weight: bold;
                 font-size: 150%;
             }
 
             .features {
                 display: flex;
+                height: 150px;
+                width: 100%;
+                max-width: 350px;
+                margin: 10px auto 0 auto;
                 align-items: center;
                 justify-content: center;
-                margin: 15px 0;
+                position: relative;
             }
 
             .feature {
-                width: 105px;
-                font-size: var(--font-size-small);
+                position: absolute;
+                width: 65px;
+                height: 60px;
+                font-size: 12px;
             }
 
             .feature pl-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 35px;
+            }
+
+            .feature.sync {
+                top: 10px;
+                left: 0;
+                right: 0;
+                margin: auto;
+                width: 150px;
+                height: 100px;
+                font-size: var(--font-size-small);
+            }
+
+            .feature.sync .feature-label {
+                margin-top: -10px;
+            }
+
+            .feature.sync pl-icon {
                 width: 80px;
                 height: 80px;
                 font-size: 50px;
             }
 
+            .feature.sync pl-icon[icon="mobile"] {
+                @apply --fullbleed;
+                margin: auto;
+                z-index: 1;
+                transform: translate(35px, -8px) rotate(15deg);
+            }
+
+            .feature.sync pl-icon[icon="desktop"] {
+                transform: translate(-30px, 0) rotate(-10deg);
+            }
+
+            .feature.backup {
+                top: 60px;
+                left: 5px;
+            }
+
+            .feature.encryption {
+                top: 60px;
+                right: 5px;
+            }
+
             .price {
-                font-size: 180%;
                 font-weight: bold;
+            }
+
+            .price-amount {
+                font-size: 270%;
+                line-height: 45px;
+                font-weight: bold;
+            }
+
+            .price-period {
+                font-size: var(--font-size-small);
             }
 
             .price-hint {
                 font-size: var(--font-size-tiny);
+                margin-top: 10px;
             }
 
             .secure-payment {
@@ -76,8 +134,8 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                padding: 15px;
-                font-size: var(--font-size-tiny);
+                padding: 10px;
+                font-size: 12px;
                 text-align: center;
                 text-shadow: none;
             }
@@ -96,7 +154,7 @@
             }
 
             .secure-payment > img {
-                height: 20px;
+                height: 18px;
                 position: relative;
                 top: 1px;
             }
@@ -119,7 +177,7 @@
                 position: relative;
                 text-decoration: underline;
                 font-size: var(--font-size-small);
-                margin: 5px 0 15px 0;
+                margin: 5px 0 25px 0;
             }
 
             #paymentForm > *,
@@ -138,20 +196,24 @@
                 <div class="plan-description" hidden$="[[ _changingPaymentSource ]]">
                     <div class="plan-name">[[ plan.name ]]</div>
                     <div class="features">
-                        <div class="feature">
-                            <pl-icon icon="refresh"></pl-icon>
-                            <div>[[ $l("Synchronize Seamlessy") ]]</div>
-                        </div>
-                        <div class="feature">
+                        <div class="feature sync">
                             <pl-icon icon="mobile"></pl-icon>
-                            <div>[[ $l("Unlimited Devices") ]]</div>
+                            <pl-icon icon="desktop"></pl-icon>
+                            <div class="feature-label">[[ $l("Seamless Synchronization") ]]</div>
                         </div>
-                        <div class="feature">
+                        <div class="feature backup">
+                            <pl-icon icon="database"></pl-icon>
+                            <div>[[ $l("Automatic Backups") ]]</div>
+                        </div>
+                        <div class="feature encryption">
                             <pl-icon icon="lock"></pl-icon>
                             <div>[[ $l("End-To-End Encryption") ]]</div>
                         </div>
                     </div>
-                    <div class="price">[[ _monthlyPrice(plan.amount) ]]</div>
+                    <div class="price">
+                        <div class="price-amount">[[ _monthlyPrice(plan.amount) ]]</div>
+                        <div class="price-period">[[ $l("per month") ]]</div>
+                    </div>
                     <div class="price-hint">[[ $l("(excl. taxes\, billed annually)") ]]</div>
                 </div>
                 <div class="message card-hint" hidden$="[[ _hasError(_cardError) ]]">
@@ -166,7 +228,7 @@
                 </slot>
                 <pl-loading-button class="tap" id="submitButton" on-click="_submitCard">[[ _submitLabel ]]</pl-loading-button>
             </form>
-            <div slot="scrim" class="secure-payment">
+            <div slot="after" class="secure-payment">
                 <span>[[ $l("Secure Payment - ") ]]</span>
                 <img src="assets/img/powered_by_stripe.svg">
             </div>
@@ -314,7 +376,7 @@ class PaymentDialog extends applyMixins(
     }
 
     _monthlyPrice(amount) {
-        return $l("${0}/month", amount / 1200);
+        return $l("${0}", amount / 1200);
     }
 
     _dismiss() {
