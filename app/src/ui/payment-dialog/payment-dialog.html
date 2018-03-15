@@ -232,7 +232,9 @@
                 <span>[[ $l("Secure Payment - ") ]]</span>
                 <img src="assets/img/powered_by_stripe.svg">
             </div>
-            <button class="trial-button" slot="after">[[ $l("Start 30-Day Trial") ]]</button>
+            <button class="trial-button" slot="after" hidden$="[[ _trialExpired(remainingTrialDays) ]]">
+                [[ $l("Continue Trial ({0} Days Left)", remainingTrialDays) ]]
+            </button>
         </pl-dialog>
 
     </template>
@@ -258,6 +260,7 @@ class PaymentDialog extends applyMixins(
         plan: Object,
         source: Object,
         stripePubKey: { type: String, value: "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy" },
+        remainingTrialDays: { type: Number, value: 0 },
         _cardError: { type: String, value: "" },
         _needsSupport: { type: Boolean, value: false },
         _submitLabel: { type: String, value: $l("Submit") }
@@ -386,6 +389,10 @@ class PaymentDialog extends applyMixins(
 
     _openSupport() {
         window.open("mailto:support@padlock.io", "_system");
+    }
+
+    _trialExpired() {
+        return !this.remainingTrialDays;
     }
 
 }
