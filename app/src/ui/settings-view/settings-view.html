@@ -35,6 +35,15 @@
                 transform: translate3d(0, 0, 0);
             }
 
+            section .info {
+                display: block;
+                font-size: var(--font-size-small);
+                text-align: center;
+                line-height: normal;
+                padding: 15px;
+                height: auto;
+            }
+
             button {
                 width: 100%;
                 box-sizing: border-box;
@@ -86,6 +95,12 @@
         </header>
 
         <main>
+
+            <section disabled$="[[ !settings.syncConnected ]]">
+                <div class="info">[[ _autoSyncInfoText() ]]</div>
+                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]"
+                    reverse class="tap" on-change="settingChanged"></pl-toggle-button>
+            </section>
 
             <section>
                 <div class="info">[[ _autoLockInfo() ]]</div>
@@ -452,6 +467,13 @@ class SettingsView extends applyMixins(
     _export() {
         const exportDialog = this.getSingleton("pl-export-dialog");
         exportDialog.export(this.records);
+    }
+
+    _autoSyncInfoText() {
+        return $l(
+            "Enable Auto Sync to automatically synchronize your data with " +
+            "your Padlock online account every time you make a change!"
+        );
     }
 
 }

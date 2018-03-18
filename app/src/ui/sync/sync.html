@@ -260,6 +260,14 @@ padlock.SyncMixin = (superClass) => {
             );
         }
 
+        trialingMessage() {
+            return $l(
+                "Your trial period ends in {0} days. Upgrade now to continue using online features like " +
+                "synchronization and automatic backups!",
+                this.remainingTrialDays
+            );
+        }
+
         generalInfoText() {
             return $l(
                 "Padlock Cloud provides a convenient way of synchronising your data between " +
@@ -287,18 +295,18 @@ padlock.SyncMixin = (superClass) => {
             );
         }
 
+        subscriptionInactiveMessage() {
+            return $l(
+                "Your free trial has expired. Upgrade now to continue using online features like " +
+                "synchronization and automatic backups!"
+            );
+        }
+
         connectedInfoText() {
             return $l(
                 "This device is connected to the Padlock Cloud account {0}. Connect all your devices " +
                 "with the same account to easily synchronize your data between them!",
                 this.settings.syncEmail
-            );
-        }
-
-        autoSyncInfoText() {
-            return $l(
-                "Enable Auto Sync to automatically synchronize your data with " +
-                "your Padlock online account every time you make a change!"
             );
         }
 
@@ -531,11 +539,23 @@ padlock.SyncMixin = (superClass) => {
             if (!this._plansPromise) {
                 this._plansPromise = this.cloudSource.source.getPlans();
             }
-            this._plansPromise.then((plans) => this.openPaymentDialog(plans[0]));
+            this._plansPromise.then((plans) => this.openPaymentDialog(plans[0]))
+                .then((success) => {
+                    if (success) {
+                        this.refreshAccount();
+                        this.alert($l("Congratulations! You've successfully upgraded your plan!"));
+                    }
+                });
         }
 
         updatePaymentMethod() {
-            this.openPaymenDialog();
+            this.openPaymentDialog()
+                .then((success) => {
+                    if (success) {
+                        this.refreshAccount();
+                        this.alert($l("Payment method updated successfully!"));
+                    }
+                });
         }
 
         openPaymentDialog(plan) {
@@ -543,13 +563,15 @@ padlock.SyncMixin = (superClass) => {
                 dialog.plan = plan;
                 dialog.source = this.cloudSource.source;
                 dialog.remainingTrialDays = this.remainingTrialDays;
-                dialog.updatePaymentMethod();
+                return dialog.updatePaymentMethod();
             });
         }
 
         refreshAccount() {
-            return this.cloudSource.source.getAccountInfo()
-                .then(() => this.dispatch("settings-changed"));
+            if (this.settings.syncConnected) {
+                return this.cloudSource.source.getAccountInfo()
+                    .then(() => this.dispatch("settings-changed"));
+            }
         }
 
     };

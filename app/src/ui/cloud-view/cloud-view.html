@@ -36,49 +36,39 @@
                 transform: translate3d(0, 0, 0);
             }
 
-            .account-email {
-                flex: 1;
-                width: 0;
-                font-weight: bold;
-                overflow-wrap: break-word;
-                text-align: center;
-                padding: 12px;
+            .account {
+                height: 90px;
             }
 
-            .account-header pl-icon {
-                width: var(--row-height);
-                height: auto;
-                font-size: 120%;
+            .account-info {
+                flex: 1;
+                padding: 15px;
+                text-align: center;
+            }
+
+            .account-email {
+                font-size: 110%;
+                font-weight: bold;
+                @apply --ellipsis;
+                margin-bottom: 10px;
             }
 
             .account-stats {
+                font-size: var(--font-size-tiny);
                 display: flex;
-                justify-content: center;
-            }
-
-            .account-stats > * {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
                 justify-content: center;
                 align-items: center;
-                padding: 15px 10px;
             }
 
             .account-stats pl-icon {
-                font-size: 30px;
-                margin-bottom: 10px;
+                width: 20px;
+                height: 20px;
             }
 
-            .last-sync {
-                font-size: var(--font-size-tiny);
-                text-align: center;
-            }
-
-            .subscription-status {
-                font-size: 150%;
-                font-weight: bold;
-                margin-bottom: 10px;
+            .account-sync {
+                height: auto;
+                width: 70px;
+                font-size: 25px;
             }
 
             #emailInput {
@@ -95,25 +85,56 @@
                 display: none;
             }
 
-            .login-section-header {
+            section.login, section.sub-status {
+                @apply --hero-gradient;
+                background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                color: var(--color-background);
+                text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
+                border: none;
+                --border-color: rgba(255, 255, 255, 0.3);
+            }
+
+            section.login pl-loading-button, section.sub-status button {
+                font-weight: bold;
+            }
+
+            .sub-status.inactive {
+                background: linear-gradient(180deg, #f49300 0%, #f25b00 100%);
+            }
+
+            .info {
                 display: flex;
                 align-items: center;
             }
 
-            .login-section-header pl-icon {
+            .info-icon {
                 width: 80px;
                 height: 80px;
                 font-size: 60px;
                 margin: 10px 0 10px 10px;
             }
 
-            .login-section-header .info {
-                padding: 10px;
+            .info-body {
+                padding: 20px 15px 20px 10px;
                 flex: 1;
             }
 
-            #loginButton {
+            .info-title {
+                font-size: 120%;
                 font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            .info-text {
+                font-size: var(--font-size-small);
+            }
+
+            .url-warning {
+                font-size: var(--font-size-small);
+                text-align: center;
+                padding: 15px;
+                border-top: solid 1px var(--border-color);
+                color: var(--color-error);
             }
 
             pl-icon[icon=refresh][spin] {
@@ -128,18 +149,18 @@
 
         <header>
             <pl-icon icon="close" class="tap" on-click="_back"></pl-icon>
-            <div class="title">My Account</div>
-            <pl-icon></pl-icon>
-            <!-- <pl&#45;icon icon="refresh" class="tap" on&#45;click="_refresh" spin$="[[ isSynching ]]" hidden$="[[ !settings.syncConnected ]]"></pl&#45;icon> -->
+            <div class="title">[[ $l("My Account") ]]</div>
+            <pl-icon icon="logout" class="tap" on-click="_logout"></pl-icon>
         </header>
 
         <main>
 
-            <section class="login-section" hidden$="[[ settings.syncConnected ]]">
-                <div class="login-section-header">
-                    <pl-icon icon="cloud"></pl-icon>
-                    <div class="info">
-                        <strong>[[ loginInfoText() ]]</strong>
+            <section class="section login" hidden$="[[ settings.syncConnected ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="cloud"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Padlock Online") ]]</div>
+                        <div class="info-text">[[ loginInfoText() ]]</div>
                     </div>
                 </div>
                 <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]"
@@ -147,40 +168,41 @@
                 <pl-loading-button id="loginButton" class="tap" on-click="_login">[[ $l("Log In") ]]</pl-loading-button>
             </section>
 
-            <section class="horizontal account-header" hidden$="[[ !settings.syncConnected ]]">
-                <div class="account-email tap" on-click="_manageAccount">[[ settings.syncEmail ]]</div>
-                <pl-icon icon="logout" class="tap" on-click="_logout"></pl-icon>
+            <section class="horizontal account" hidden$="[[ !settings.syncConnected ]]">
+                <div class="account-info">
+                    <div class="account-email">[[ settings.syncEmail ]]</div>
+                    <div class="account-stats">
+                        <pl-icon icon="record"></pl-icon>
+                        <span>[[ records.length ]]</span>
+                        <pl-icon icon="mobile"></pl-icon>
+                        <span>[[ settings.account.devices.length ]]</span>
+                        <pl-icon icon="refresh"></pl-icon>
+                        <span>[[ lastSync ]]</span>
+                    </div>
+                </div>
+                <pl-icon class="account-sync tap" icon="refresh" spin$="[[ isSynching ]]" on-click="synchronize"></pl-icon>
             </section>
 
-            <section class="horizontal account-stats" hidden$="[[ !settings.syncConnected ]]">
-                <div class="record-count">
-                    <pl-icon icon="record"></pl-icon>
-                    <div>[[ records.length ]]</div>
-                </div>
-                <div class="device-count tap" on-click="_manageAccount">
-                    <pl-icon icon="mobile"></pl-icon>
-                    <div>[[ settings.account.devices.length ]]</div>
-                </div>
-                <div class="last-sync tap" on-click="synchronize">
-                    <pl-icon icon="refresh" spin$="[[ isSynching ]]"></pl-icon>
-                    <div>[[ lastSync ]]</div>
-                </div>
-            </section>
-
-            <section hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="sub-status trialing" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
-                    <div class="subscription-status">[[ $l("Trialing ({0} days left)", remainingTrialDays) ]]</div>
-                    <div>[[ trialInfoText(remainingTrialDays) ]]</div>
+                    <pl-icon class="info-icon" icon="time"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Trialing ({0} days left)", remainingTrialDays) ]]</div>
+                        <div class="info-text">[[ trialingMessage(remainingTrialDays) ]]</div>
+                    </div>
                 </div>
-                <button class="tap" on-click="_trialingBuySubscription">[[ $l("Buy Subscription") ]]</button>
+                <button class="tap" on-click="_trialingBuySubscription">[[ $l("Upgrade Now") ]]</button>
             </section>
 
-            <section hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="sub-status inactive" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
-                    <div class="subscription-status">[[ $l("Read-Only") ]]</div>
-                    <div>[[ readOnlyInfoText() ]]</div>
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Trial Expired") ]]</div>
+                        <div class="info-text">[[ subscriptionInactiveMessage() ]]</div>
+                    </div>
                 </div>
-                <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Buy Subscription") ]]</button>
+                <button class="tap" on-click="_readonlyBuySubscription">[[ $l("UpgradeNow") ]]</button>
             </section>
 
             <section hidden$="[[ !settings.syncConnected ]]">
@@ -195,30 +217,14 @@
                 </div>
             </section>
 
-            <!-- <section> -->
-            <!--     <pl&#45;loading&#45;button id="syncButton" class="tap" on&#45;click="synchronize">[[ $l('Synchronize') ]]</pl&#45;loading&#45;button> -->
-            <!--     <button class="tap" on&#45;click="_manageAccount">[[ $l("Manage Account") ]]</button> -->
-            <!--     <button class="tap" on&#45;click="_disconnect">[[ $l("Unpair") ]]</button> -->
-            <!-- </section> -->
-
-            <section disabled$="[[ !settings.syncConnected ]]">
-                <div class="info">[[ autoSyncInfoText() ]]</div>
-                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]"
-                    reverse class="tap" on-change="settingChanged"></pl-toggle-button>
-            </section>
-
-            <section disabled$="[[ settings.syncConnected ]]">
-                <div class="info">
-                    [[ $l("By providing a custom URL you can synchronize your data with a server other than the official Padlock Cloud server.") ]]
-                    <div class="warning">[[ $l("WARNING: This is only recommended for advanced users!") ]]</div>
-                </div>
+            <section hidden$="[[ settings.syncConnected ]]">
                 <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
                     on-change="_customHostChanged" class="tap"></pl-toggle-button>
-                <div class="tap tiles" hidden$="[[ !settings.syncCustomHost ]]">
+                <div class="tap" hidden$="[[ !settings.syncCustomHost ]]">
                     <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
                         value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
                         required on-change="settingChanged"></pl-input>
-                    <div class="info warning">
+                    <div class="url-warning">
                         <strong>[[ $l("Invalid URL") ]]</strong> -
                         [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
                     </div>
@@ -330,11 +336,13 @@ class CloudView extends applyMixins(
     }
 
     _trialingBuySubscription() {
-        this.openDashboard("subscribe", "app-2");
+        // this.openDashboard("subscribe", "app-2");
+        this.buySubscription();
     }
 
     _readonlyBuySubscription() {
-        this.openDashboard("subscribe", "app-3");
+        // this.openDashboard("subscribe", "app-3");
+        this.buySubscription();
     }
 
     _manageAccount() {
