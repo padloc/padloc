@@ -447,7 +447,7 @@ class App extends applyMixins(
     }
 
     dataReset() {
-        setTimeout(() => this.alert($l("App reset successfully. Off to a fresh start!")), 500);
+        setTimeout(() => this.alert($l("App reset successfully. Off to a fresh start!"), { type: "success" }), 500);
     }
 
     _closeRecord() {

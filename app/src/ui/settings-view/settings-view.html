@@ -235,11 +235,11 @@ class SettingsView extends applyMixins(
                         if (confirmed) {
                             return this.setRemotePassword(this.password);
                         }
-                    })
+                    });
                 }
             })
             .then(() => {
-                this.alert($l("Master password changed successfully."));
+                this.alert($l("Master password changed successfully."), { type: "success" });
             });
     }
 
@@ -298,14 +298,15 @@ class SettingsView extends applyMixins(
                 .catch((e) => {
                     switch (e.code) {
                         case "decryption_failed":
-                            this.alert($l("Failed to open file. Did you enter the correct password?"));
+                            this.alert($l("Failed to open file. Did you enter the correct password?"),
+                                { type: "warning" });
                             break;
                         case "unsupported_container_version":
                             this.confirm($l(
                                 "It seems the data you are trying to import was exported from a " +
                                 "newer version of Padlock and can not be opened with the version you are " +
                                 "currently running."
-                            ), $l("Check For Updates"), $l("Cancel"))
+                            ), $l("Check For Updates"), $l("Cancel"), { type: "info" })
                                 .then((confirmed) => {
                                     if (confirmed) {
                                         padlock.platform.checkForUpdates();
@@ -313,10 +314,10 @@ class SettingsView extends applyMixins(
                                 });
                             break;
                         case "invalid_csv":
-                            this.alert($l("Failed to recognize file format."));
+                            this.alert($l("Failed to recognize file format."), { type: "warning" });
                             break;
                         default:
-                            this.alert($l("Failed to open file."));
+                            this.alert($l("Failed to open file."), { type: "warning" });
                             throw e;
                     }
                 });
@@ -331,11 +332,12 @@ class SettingsView extends applyMixins(
             .catch((e) => {
                 switch (e.code) {
                     case "decryption_failed":
-                        this.alert($l("Failed to decrypt data. Did you enter the correct password?"));
+                        this.alert($l("Failed to decrypt data. Did you enter the correct password?"),
+                            { type: "warning" });
                         break;
                     default:
                         this.alert($l("No supported data found in clipboard. Please make sure to copy " +
-                            "you data to the clipboard first (e.g. via ctrl + C)."));
+                            "you data to the clipboard first (e.g. via ctrl + C)."), { type: "warning" });
                 }
             });
     }
@@ -369,7 +371,7 @@ class SettingsView extends applyMixins(
                         "The data you want to import seems to be in CSV format. Before you continue, " +
                         "please make sure that the data is structured according to Padlocks specific " +
                         "requirements!"
-                    ), [$l("Review Import Guidelines"), $l("Continue"), $l("Cancel")])
+                    ), [$l("Review Import Guidelines"), $l("Continue"), $l("Cancel")], { type: "info" })
                         .then((choice) => {
                             switch (choice) {
                                 case 0:
@@ -391,7 +393,7 @@ class SettingsView extends applyMixins(
                 if (records) {
                     this.addRecords(records);
                     this.dispatch("data-imported", { records: records });
-                    this.alert($l("Successfully imported {0} records.", records.length));
+                    this.alert($l("Successfully imported {0} records.", records.length), { type: "success" });
                 }
             });
     }

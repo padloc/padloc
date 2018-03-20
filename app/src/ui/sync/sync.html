@@ -120,11 +120,12 @@ padlock.SyncMixin = (superClass) => {
             return this.collection.save(cloudSource)
                 .then(() => {
                     this.dispatch("sync-success");
-                    this.alert($l("Successfully updated the password for your account {0}.", this.settings.syncEmail));
+                    this.alert($l("Successfully updated the password for your account {0}.", this.settings.syncEmail),
+                        { type: "success" });
                 })
                 .catch(() => {
                     this.dispatch("sync-fail");
-                    this.alert($l("Failed to update password. Please try again later!"));
+                    this.alert($l("Failed to update password. Please try again later!"), { type: "warning" });
                 });
         }
 
@@ -367,8 +368,12 @@ padlock.SyncMixin = (superClass) => {
                         ).then((choice) => {
                             switch (choice) {
                                 case 0:
-                                    this.setPassword(cloudSource.password)
-                                        .then(() => this.alert($l("Local password updated successfully.")));
+                                    this.setPassword(cloudSource.password).then(() => {
+                                        this.alert(
+                                            $l("Local password updated successfully."),
+                                            { type: "success" }
+                                        );
+                                    });
                                     break;
                                 case 1:
                                     this.setRemotePassword(this.password);
@@ -462,7 +467,8 @@ padlock.SyncMixin = (superClass) => {
                         $l("A newer version of Padlock is available now! Update now to keep using " +
                             "online features (you won't be able to sync with your account until then)!"),
                         $l("Update Now"),
-                        $l("Cancel")
+                        $l("Cancel"),
+                        { type: "info" }
                     ).then((confirm) => {
                         if (confirm) {
                             padlock.platform.checkForUpdates();
@@ -479,7 +485,7 @@ padlock.SyncMixin = (superClass) => {
                         "cannot be decrypted. This might be due to a network error but could " +
                         "also be the result of someone trying to compromise your connection to " +
                         "our servers. If the problem persists, please notify Padlock support!"
-                    ));
+                    ), { type: "warning" });
                     return false;
                 case "decryption_failed":
                 case "encryption_failed":
@@ -545,7 +551,8 @@ padlock.SyncMixin = (superClass) => {
                     this.confirm(
                         e && e.message || $l("Something went wrong. Please try again later!"),
                         $l("Contact Support"),
-                        $l("Dismiss")
+                        $l("Dismiss"),
+                        { type: "warning" }
                     ).then((confirmed) => {
                         if (confirmed) {
                             window.open(`mailto:support@padlock.io?subject=Server+Error+(${e.code})`);
@@ -580,7 +587,10 @@ padlock.SyncMixin = (superClass) => {
                 .then((success) => {
                     if (success) {
                         this.refreshAccount();
-                        this.alert($l("Congratulations! You've successfully upgraded your plan!"));
+                        this.alert(
+                            $l("Congratulations, your upgrade was successful! Enjoy using Padlock!"),
+                            { type: "success" }
+                        );
                     }
                 });
         }
@@ -590,7 +600,7 @@ padlock.SyncMixin = (superClass) => {
                 .then((success) => {
                     if (success) {
                         this.refreshAccount();
-                        this.alert($l("Payment method updated successfully!"));
+                        this.alert($l("Payment method updated successfully!"), { type: "success" });
                     }
                 });
         }
@@ -608,7 +618,7 @@ padlock.SyncMixin = (superClass) => {
             return this.cloudSource.source.subscribe()
                 .then(() => {
                     this.refreshAccount();
-                    this.alert($l("Subscription reactivated successfully!"));
+                    this.alert($l("Subscription reactivated successfully!"), { type: "success" });
                 })
                 .catch((e) => this._handleCloudError(e));
         }
@@ -628,13 +638,14 @@ padlock.SyncMixin = (superClass) => {
                     "to continue using advanced features like automatic online backups and seamless " +
                     "synchronization between devices!"),
                 $l("Cancel Subscription"),
-                $l("Don't Cancel")
+                $l("Don't Cancel"),
+                { type: "warning" }
             ).then((confirmed) => {
                 if (confirmed) {
                     this.cloudSource.source.cancelSubscription()
                         .then(() => {
                             this.refreshAccount();
-                            this.alert($l("Subscription canceled successfully."));
+                            this.alert($l("Subscription canceled successfully."), { type: "success" });
                         });
                 }
             });

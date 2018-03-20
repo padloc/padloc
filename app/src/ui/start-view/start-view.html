@@ -523,8 +523,10 @@ class StartView extends applyMixins(
     _enterEmail() {
         this.$.emailInput.blur();
         if (this.$.emailInput.invalid) {
-            this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"))
-                .then(() => this.$.emailInput.focus());
+            this.alert(
+                this.$.emailInput.validationMessage || $l("Please enter a valid email address!"),
+                { type: "warning" }
+            ).then(() => this.$.emailInput.focus());
             return;
         }
 
@@ -550,7 +552,7 @@ class StartView extends applyMixins(
         this._checkingCode = true;
 
         if (this.$.codeInput.invalid) {
-            this.alert($l("Please enter the login code sent to you via email!"));
+            this.alert($l("Please enter the login code sent to you via email!"), { type: "warning" });
             return;
         }
         this.$.codeButton.start();
@@ -577,7 +579,7 @@ class StartView extends applyMixins(
                         this.$.newPasswordInput.focus();
                     }
                 }, 50);
-            })
+            });
     }
 
     _cancelActivation() {
@@ -622,7 +624,7 @@ class StartView extends applyMixins(
                 $l("Learn More"),
                 $l("Choose Different Password"),
                 $l("Use Anyway")
-            ]).then((choice) => {
+            ], { type: "warning" }).then((choice) => {
                 switch (choice) {
                     case 0:
                         this._openPwdHowto();
@@ -649,7 +651,7 @@ class StartView extends applyMixins(
             ), [
                 $l("Try Again"),
                 $l("Change Password")
-            ])
+            ], { type: "warning" })
                 .then((choice) => {
                     switch (choice) {
                         case 0:

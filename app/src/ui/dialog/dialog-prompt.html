@@ -88,7 +88,7 @@ class DialogPrompt extends padlock.BaseElement {
         this.open = false;
     }
 
-    prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss=true, validation) {
+    prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss = true, validation) {
         this.message = message || "";
         this.type = type || defaultType;
         this.placeholder = placeholder || defaultPlaceholder;

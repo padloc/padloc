@@ -27,18 +27,27 @@
 
             .info {
                 display: flex;
+                padding: 20px;
                 align-items: center;
             }
 
             .info-icon {
-                width: 80px;
-                height: 80px;
+                width: 60px;
+                height: 60px;
                 font-size: 60px;
-                margin: 10px 0 10px 10px;
+                margin-right: 20px;
+            }
+
+            :host([hide-icon]) .info-icon {
+                display: none;
+            }
+
+            :host([hide-icon]) .info-text,
+            :host([hide-icon]) .info-title {
+                text-align: center;
             }
 
             .info-body {
-                padding: 20px 15px 20px 10px;
                 flex: 1;
             }
 
@@ -48,18 +57,18 @@
                 margin-bottom: 5px;
             }
 
-            .info-text {
+            .info-text.small {
                 font-size: var(--font-size-small);
             }
         </style>
 
-        <pl-dialog id="dialog" open="{{ _open }}" class="tiles"
+        <pl-dialog id="dialog" open="{{ open }}" class="tiles"
             prevent-dismiss="[[ preventDismiss ]]" on-dialog-dismiss="_dialogDismiss">
             <div class="info">
-                <pl-icon class="info-icon" icon="[[ _icon(type) ]]" hidden$="[[ hideIcon ]]"></pl-icon>
+                <pl-icon class="info-icon" icon="[[ _icon(type) ]]"></pl-icon>
                 <div class="info-body">
                     <div class="info-title">[[ title ]]</div>
-                    <div class$="[[ _textClass(title) ]]">[[ message ]]</div>
+                    <div class$="info-text [[ _textClass(title) ]]">[[ message ]]</div>
                 </div>
             </div>
             <template is="dom-repeat" items="[[ options ]]">
@@ -84,17 +93,18 @@ class DialogAlert extends padlock.BaseElement {
         options: { type: Array, value: ["OK"] },
         preventDismiss: { type: Boolean, value: false },
         type: { type: String, value: "info", reflectToAttribute: true },
-        hideIcon: { type: Boolean, value: false },
-        _open: { type: Boolean, value: false }
+        hideIcon: { type: Boolean, value: false, reflectToAttribute: true },
+        open: { type: Boolean, value: false }
     }; }
 
-    open(message = "", { title = "", options = ["OK"], type = "info", preventDismiss = false } = {}) {
+    show(message = "", { title = "", options = ["OK"], type = "info", preventDismiss = false, hideIcon = false } = {}) {
         this.message = message;
         this.title = title;
         this.type = type;
         this.preventDismiss = preventDismiss;
         this.options = options;
-        this._open = true;
+        this.hideIcon = hideIcon;
+        this.open = true;
 
         return new Promise((resolve) => {
             this._resolve = resolve;
@@ -115,7 +125,7 @@ class DialogAlert extends padlock.BaseElement {
     }
 
     _selectOption(e) {
-        this._open = false;
+        this.open = false;
         typeof this._resolve === "function" && this._resolve(this.options.indexOf(e.model.item));
         this._resolve = null;
     }
@@ -126,7 +136,7 @@ class DialogAlert extends padlock.BaseElement {
     }
 
     _textClass() {
-        return this.title ? "info-text" : "";
+        return this.title ? "small" : "";
     }
 }
 

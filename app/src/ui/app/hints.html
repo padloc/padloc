@@ -48,7 +48,7 @@ padlock.HintsMixin = (superClass) => {
                     "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
                     "reset your data. Padlock Cloud is a great way to back up your data online and synchronize " +
                     "with other devices. Alternatively, you can export your data and store it somewhere safe."
-                ), [$l("Sync With Padlock Cloud"), $l("Export Data"), $l("Do Nothing")])
+                ), [$l("Sync With Padlock Cloud"), $l("Export Data"), $l("Do Nothing")], { type: "warning" })
                     .then((choice) => {
                         switch (choice) {
                             case 0:
@@ -105,7 +105,8 @@ padlock.HintsMixin = (superClass) => {
                     $l("Your Padlock Cloud trial period ends in {0} days!", this.remainingTrialDays) +
                     " " + this.trialInfoText(),
                     $l("Buy Subscription"),
-                    $l("Dismiss")
+                    $l("Dismiss"),
+                    { type: "warning" }
                 )
                     .then((confirmed) => {
                         if (confirmed) {
@@ -127,7 +128,7 @@ padlock.HintsMixin = (superClass) => {
                         "longer be able to load this app! Don't worry though, because Padlock is now available " +
                         "as a native app for Windows, MacOS and Linux! Head over to our website to find out " +
                         "how to switch now!"
-                    ), $l("Learn More"), $l("Dismiss"))
+                    ), $l("Learn More"), $l("Dismiss"), { type: "info" })
                         .then((confirmed) => {
                             if (confirmed) {
                                 window.open("https://padlock.io/news/discontinuing-chrome/", "_system");

@@ -29,7 +29,7 @@ padlock.MessagesMixin = (superClass) => {
 
         _displayMessage(a) {
             if (a.link) {
-                this.confirm(a.text, $l("Learn More"), $l("Dismiss"))
+                this.confirm(a.text, $l("Learn More"), $l("Dismiss"), { type: "info" })
                     .then((confirmed) => {
                         if (confirmed) {
                             window.open(a.link, "_system");

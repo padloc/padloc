@@ -86,12 +86,11 @@
             }
 
             section.highlight {
-                @apply --hero-gradient;
                 background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
                 color: var(--color-background);
                 text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
                 border: none;
-                --border-color: rgba(255, 255, 255, 0.3);
+                --border-color: transparent;
             }
 
             section.highlight button, section.highlight pl-loading-button {
@@ -155,7 +154,7 @@
 
         <main>
 
-            <section class="section highlight" hidden$="[[ settings.syncConnected ]]">
+            <section class="highlight tiles" hidden$="[[ settings.syncConnected ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="cloud"></pl-icon>
                     <div class="info-body">
@@ -183,7 +182,7 @@
                 <pl-icon class="account-sync tap" icon="refresh" spin$="[[ isSynching ]]" on-click="synchronize"></pl-icon>
             </section>
 
-            <section class="highlight" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="time"></pl-icon>
                     <div class="info-body">
@@ -194,7 +193,7 @@
                 <button class="tap" on-click="_trialingBuySubscription">[[ $l("Upgrade Now") ]]</button>
             </section>
 
-            <section class="highlight warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight tiles warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="error"></pl-icon>
                     <div class="info-body">
@@ -205,7 +204,7 @@
                 <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Upgrade Now") ]]</button>
             </section>
 
-            <section class="highlight warning" hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight tiles warning" hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="error"></pl-icon>
                     <div class="info-body">
@@ -217,7 +216,7 @@
                 <button class="tap" on-click="_contactSupport">[[ $l("Contact Support") ]]</button>
             </section>
 
-            <section class="highlight warning" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight tiles warning" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="error"></pl-icon>
                     <div class="info-body">
@@ -422,7 +421,8 @@ class CloudView extends applyMixins(
                     this.cloudSource.source.revokeAuthToken(device.tokenId)
                         .then(() => {
                             this.refreshAccount();
-                            this.alert($l("Access for {0} revoked successfully!", device.description))
+                            this.alert($l("Access for {0} revoked successfully!", device.description),
+                                { type: "success" });
                         });
                 }
             });
