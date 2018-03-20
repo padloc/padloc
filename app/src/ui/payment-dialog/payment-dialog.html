@@ -1,4 +1,4 @@
-<script src="https://js.stripe.com/v3/"></script>
+<script src="https://js.stripe.com/v3/" async></script>
 
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
@@ -42,7 +42,7 @@
             .plan-name {
                 margin-top: 10px;
                 font-weight: bold;
-                font-size: 150%;
+                font-size: 140%;
             }
 
             .features {
@@ -58,9 +58,9 @@
 
             .feature {
                 position: absolute;
-                width: 65px;
+                width: 75px;
                 height: 60px;
-                font-size: 12px;
+                font-size: var(--font-size-tiny);
             }
 
             .feature pl-icon {
@@ -70,7 +70,7 @@
             }
 
             .feature.sync {
-                top: 10px;
+                top: 5px;
                 left: 0;
                 right: 0;
                 margin: auto;
@@ -101,12 +101,12 @@
             }
 
             .feature.backup {
-                top: 60px;
+                top: 95px;
                 left: 5px;
             }
 
             .feature.encryption {
-                top: 60px;
+                top: 95px;
                 right: 5px;
             }
 
@@ -193,8 +193,8 @@
 
         <pl-dialog id="cardDialog" open="{{ open }}" on-dialog-dismiss="_dismiss">
             <form id="paymentForm" method="post" on-submit="_submitCard">
-                <div class="plan" hidden$="[[ _hasPlan(plan) ]]">
-                    <div class="plan-name">[[ plan.name ]]</div>
+                <div class="plan" hidden$="[[ !_hasPlan(plan) ]]">
+                    <div class="plan-name">[[ $l("Upgrade to {0} now!", plan.name) ]]</div>
                     <div class="features">
                         <div class="feature sync">
                             <pl-icon icon="mobile"></pl-icon>
@@ -226,7 +226,7 @@
                 </div>
                 <slot>
                 </slot>
-                <pl-loading-button class="tap" id="submitButton" on-click="_submitCard">[[ _submitLabel ]]</pl-loading-button>
+                <pl-loading-button class="tap" id="submitButton" on-click="_submitCard">[[ _submitLabel(plan) ]]</pl-loading-button>
             </form>
             <div slot="after" class="secure-payment">
                 <span>[[ $l("Secure Payment - ") ]]</span>
@@ -257,13 +257,12 @@ class PaymentDialog extends applyMixins(
 
     static get properties() { return {
         open: { type: Boolean },
-        plan: Object,
+        plan: { type: Object, value: null },
         source: Object,
         stripePubKey: { type: String, value: "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy" },
         remainingTrialDays: { type: Number, value: 0 },
         _cardError: { type: String, value: "" },
-        _needsSupport: { type: Boolean, value: false },
-        _submitLabel: { type: String, value: $l("Submit") }
+        _needsSupport: { type: Boolean, value: false }
     }; }
 
     connectedCallback() {
@@ -339,7 +338,7 @@ class PaymentDialog extends applyMixins(
                 this.$.submitButton.fail();
                 this._submittingCard = false;
             } else {
-                this.source.setPaymentSource(result.token.id)
+                this.source.subscribe(result.token.id)
                     .then(() => {
                         this.$.submitButton.success();
                         typeof this._resolve === "function" && this._resolve(true);
@@ -355,23 +354,6 @@ class PaymentDialog extends applyMixins(
                     });
             }
         });
-    }
-
-    _buySubscription() {
-        const plan = this.account.subscription.plan;
-        this._submitLabel = $l("Pay {0}.{1} USD", Math.floor(plan.amount / 100), plan.amount % 100);
-        this._changingPaymentSource = false;
-        this.$.cardDialog.open = true;
-
-        // track("Dashboard: Open Payment Dialog", { "Action": "Buy Subscription", "Source": this.referer });
-    }
-
-    _changePaymentMethod() {
-        this._submitLabel = $l("Add New Card");
-        this._changingPaymentSource = true;
-        this.$.cardDialog.open = true;
-
-        // track("Dashboard: Open Payment Dialog", { "Action": "Change Payment Source", "Source": this.referer });
     }
 
     _hasError() {
@@ -397,6 +379,10 @@ class PaymentDialog extends applyMixins(
 
     _hasPlan() {
         return !!this.plan;
+    }
+
+    _submitLabel() {
+        return this.plan ? $l("Upgrade Now") : $l("Submit");
     }
 
 }
