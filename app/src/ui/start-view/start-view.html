@@ -549,37 +549,45 @@ class StartView extends applyMixins(
         if (this._checkingCode) {
             return;
         }
-        this._checkingCode = true;
 
         if (this.$.codeInput.invalid) {
             this.alert($l("Please enter the login code sent to you via email!"), { type: "warning" });
             return;
         }
+
+        this._checkingCode = true;
+
         this.$.codeButton.start();
         this.activateToken(this.$.codeInput.value)
             .then((success) => {
-                this._checkingCode = false;
                 if (success) {
-                    this.$.codeButton.success();
-                    return this._connected();
+                    return this.hasCloudData().then((hasData) => {
+                        this._checkingCode = false;
+                        this.$.codeButton.success();
+                        this._hasCloudData = hasData;
+                        return this._connected();
+                    });
                 } else {
+                    this._checkingCode = false;
                     this._rumble();
+                    this.$.codeButton.fail();
                 }
             })
-            .catch((e) => this._handleCloudError(e));
+            .catch((e) => {
+                this._checkingCode = false;
+                this._rumble();
+                this.$.codeButton.fail();
+                this._handleCloudError(e);
+            });
     }
 
     _connected() {
-        return this.hasCloudData()
-            .then((hasData) => {
-                this._hasCloudData = hasData;
-                setTimeout(() => {
-                    this._getStartedStep = 3;
-                    if (!isTouch()) {
-                        this.$.newPasswordInput.focus();
-                    }
-                }, 50);
-            });
+        setTimeout(() => {
+            this._getStartedStep = 3;
+            if (!isTouch()) {
+                this.$.newPasswordInput.focus();
+            }
+        }, 50);
     }
 
     _cancelActivation() {
@@ -844,7 +852,8 @@ class StartView extends applyMixins(
     }
 
     _rumble() {
-        this.animateElement(this.root.querySelector(`main.${this._mode} .hero`), { animation: "rumble", duration: 200, clear: true });
+        this.animateElement(this.root.querySelector(`main.${this._mode} .hero`),
+            { animation: "rumble", duration: 200, clear: true });
     }
 
     _enterCloudPassword() {
@@ -883,7 +892,10 @@ class StartView extends applyMixins(
     }
 
     _forgotCloudPassword() {
-        this.forgotCloudPassword().then(() => this._connected());
+        this.forgotCloudPassword().then(() => {
+            this._hasCloudData = false;
+            this._connected();
+        });
     }
 
 }
