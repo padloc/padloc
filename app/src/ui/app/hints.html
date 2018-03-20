@@ -45,18 +45,14 @@ padlock.HintsMixin = (superClass) => {
             ) {
                 this.choose($l(
                     "Have you backed up your data yet? Remember that by default your data is only stored " +
-                    "locally and may be lost if you uninstall Padlock, lose your device or accidentally " +
-                    "reset your data. Padlock Cloud is a great way to back up your data online and synchronize " +
-                    "with other devices. Alternatively, you can export your data and store it somewhere safe."
-                ), [$l("Sync With Padlock Cloud"), $l("Export Data"), $l("Do Nothing")], { type: "warning" })
+                    "locally and can not be recovered in case your device gets damaged or lost. " +
+                    "Lock in now to enable automatic online backups!"
+                ), [$l("Log In"), $l("Do Nothing")], { type: "warning" })
                     .then((choice) => {
                         switch (choice) {
                             case 0:
                                 padlock.stats.set({ pairingSource: "Backup Reminder" });
                                 this._openCloudView();
-                                break;
-                            case 1:
-                                this._openSettings();
                                 break;
                         }
                     });
@@ -73,11 +69,11 @@ padlock.HintsMixin = (superClass) => {
                 daysPassed(stats.lastSyncReminder || stats.firstLaunch) > 7
             ) {
                 this.choose($l(
-                    "The last time you synced your data with Padlock Cloud was {0} days ago! You should " +
+                    "The last time you synced your data with your account was {0} days ago! You should " +
                     "synchronize regularly to keep all your devices up-to-date and to make sure you always " +
                     "have a recent backup in the cloud.",
                     Math.floor(daysSinceLastSync)
-                ), [$l("Synchronize Now"), $l("Turn On Auto Sync"), $l("Do Nothing")])
+                ), [$l("Synchronize Now"), $l("Turn On Auto Sync"), $l("Do Nothing")], { type: "warning" })
                     .then((choice) => {
                         switch (choice) {
                             case 0:
@@ -98,22 +94,9 @@ padlock.HintsMixin = (superClass) => {
         _remindTrialEnds() {
             if (
                 this.settings.syncSubStatus === "trialing" &&
-                this.remainingTrialDays <= 7 &&
-                (!stats.lastTrialEndsReminder || daysPassed(stats.lastTrialEndsReminder) > 1)
+                (!stats.lastTrialEndsReminder || daysPassed(stats.lastTrialEndsReminder) > 7)
             ) {
-                this.confirm(
-                    $l("Your Padlock Cloud trial period ends in {0} days!", this.remainingTrialDays) +
-                    " " + this.trialInfoText(),
-                    $l("Buy Subscription"),
-                    $l("Dismiss"),
-                    { type: "warning" }
-                )
-                    .then((confirmed) => {
-                        if (confirmed) {
-                            this.openDashboard("subscribe", "app-4");
-                        }
-                    });
-
+                this.buySubscription();
                 padlock.stats.set({ lastTrialEndsReminder: new Date().getTime() });
             }
 
@@ -128,7 +111,7 @@ padlock.HintsMixin = (superClass) => {
                         "longer be able to load this app! Don't worry though, because Padlock is now available " +
                         "as a native app for Windows, MacOS and Linux! Head over to our website to find out " +
                         "how to switch now!"
-                    ), $l("Learn More"), $l("Dismiss"), { type: "info" })
+                    ), $l("Learn More"), $l("Dismiss"), { type: "info", hideIcon: true })
                         .then((confirmed) => {
                             if (confirmed) {
                                 window.open("https://padlock.io/news/discontinuing-chrome/", "_system");
