@@ -46,7 +46,7 @@ padlock.DialogMixin = (superClass) => {
         }
 
         alert(message, options) {
-            return this.lineUpDialog("pl-dialog-alert", (dialog) => dialog.open(message, options));
+            return this.lineUpDialog("pl-dialog-alert", (dialog) => dialog.show(message, options));
         }
 
         confirm(message, confirmLabel = $l("Confirm"), cancelLabel = $l("Cancel"), options = { type: "question" }) {
@@ -54,8 +54,7 @@ padlock.DialogMixin = (superClass) => {
                 confirmLabel,
                 cancelLabel
             ];
-            return this.lineUpDialog("pl-dialog-alert", (dialog) => dialog.open(message, options))
-                .then((choice) => choice === 0);
+            return this.alert(message, options).then((choice) => choice === 0);
         }
 
         prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss, verify) {
@@ -66,9 +65,7 @@ padlock.DialogMixin = (superClass) => {
 
         choose(message, options, opts = { preventDismiss: true, type: "question" }) {
             opts.options = options;
-            return this.lineUpDialog("pl-dialog-alert", (dialog) => {
-                return dialog.open(message, opts);
-            });
+            return this.alert(message, opts);
         }
 
         generate() {
@@ -100,15 +97,14 @@ padlock.DialogMixin = (superClass) => {
 
         promptForgotPassword() {
             return this.confirm($l(
-                "Forgot your password? For security reasons don't keep a record of your master " +
-                "password so unfortunately we cannot help you recover it. You can reset your password, " +
-                "but your data will be lost in the process."
-            ), $l("Reset Password"), $l("Keep Trying"))
+                "For security reasons don't keep a record of your master password so unfortunately we cannot " +
+                "help you recover it. You can reset your password, but your data will be lost in the process!"
+            ), $l("Reset Password"), $l("Keep Trying"), { hideIcon: true, title: $l("Forgot Your Password?") })
                 .then((confirmed) => {
                     return confirmed && this.confirm($l(
                         "Are you sure you want to reset your password? " +
                         "WARNING: All your data will be lost!"
-                    ), $l("Reset Password"));
+                    ), $l("Reset Password"), $l("Cancel"), { type: "warning" });
                 });
         }
 

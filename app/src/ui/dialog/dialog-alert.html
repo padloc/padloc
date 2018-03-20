@@ -104,7 +104,8 @@ class DialogAlert extends padlock.BaseElement {
         this.preventDismiss = preventDismiss;
         this.options = options;
         this.hideIcon = hideIcon;
-        this.open = true;
+
+        setTimeout(() => this.open = true, 10);
 
         return new Promise((resolve) => {
             this._resolve = resolve;
