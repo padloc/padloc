@@ -85,7 +85,7 @@
                 display: none;
             }
 
-            section.login, section.sub-status {
+            section.highlight {
                 @apply --hero-gradient;
                 background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
                 color: var(--color-background);
@@ -94,11 +94,11 @@
                 --border-color: rgba(255, 255, 255, 0.3);
             }
 
-            section.login pl-loading-button, section.sub-status button {
+            section.highlight button, section.highlight pl-loading-button {
                 font-weight: bold;
             }
 
-            .sub-status.inactive {
+            section.highlight.warning {
                 background: linear-gradient(180deg, #f49300 0%, #f25b00 100%);
             }
 
@@ -155,7 +155,7 @@
 
         <main>
 
-            <section class="section login" hidden$="[[ settings.syncConnected ]]">
+            <section class="section highlight" hidden$="[[ settings.syncConnected ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="cloud"></pl-icon>
                     <div class="info-body">
@@ -183,7 +183,7 @@
                 <pl-icon class="account-sync tap" icon="refresh" spin$="[[ isSynching ]]" on-click="synchronize"></pl-icon>
             </section>
 
-            <section class="sub-status trialing" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="time"></pl-icon>
                     <div class="info-body">
@@ -194,15 +194,38 @@
                 <button class="tap" on-click="_trialingBuySubscription">[[ $l("Upgrade Now") ]]</button>
             </section>
 
-            <section class="sub-status inactive" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="error"></pl-icon>
                     <div class="info-body">
                         <div class="info-title">[[ $l("Trial Expired") ]]</div>
-                        <div class="info-text">[[ subscriptionInactiveMessage() ]]</div>
+                        <div class="info-text">[[ trialExpiredMessage() ]]</div>
                     </div>
                 </div>
-                <button class="tap" on-click="_readonlyBuySubscription">[[ $l("UpgradeNow") ]]</button>
+                <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Upgrade Now") ]]</button>
+            </section>
+
+            <section class="highlight warning" hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Payment Failed") ]]</div>
+                        <div class="info-text">[[ subUnpaidMessage() ]]</div>
+                    </div>
+                </div>
+                <button class="tap" on-click="updatePaymentMethod">[[ $l("Update Payment Method") ]]</button>
+                <button class="tap" on-click="_contactSupport">[[ $l("Contact Support") ]]</button>
+            </section>
+
+            <section class="highlight warning" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Subscription Canceled") ]]</div>
+                        <div class="info-text">[[ subCanceledMessage() ]]</div>
+                    </div>
+                </div>
+                <button class="tap" on-click="reactivateSubscription">[[ $l("Reactivate Subscription") ]]</button>
             </section>
 
             <section hidden$="[[ !settings.syncConnected ]]">
@@ -215,6 +238,10 @@
                         </div>
                     </template>
                 </div>
+            </section>
+
+            <section hidden$="[[ !isSubActive(settings.syncConnected, settings.syncSubStatus) ]]">
+                <button class="tap" on-click="cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
             </section>
 
             <section hidden$="[[ settings.syncConnected ]]">
@@ -399,6 +426,10 @@ class CloudView extends applyMixins(
                         });
                 }
             });
+    }
+
+    _contactSupport() {
+        window.open("mailto:support@padlock.io", "_system");
     }
 
 }

@@ -136,13 +136,26 @@ padlock.SyncMixin = (superClass) => {
             return this.settings.syncConnected && this.settings.syncSubStatus === "trialing";
         }
 
-        isInactive() {
-            const s = this.settings.syncSubStatus;
-            return this.settings.syncConnected && s && s !== "active" && s !== "trialing";
+        isTrialExpired() {
+            return this.settings.syncConnected && this.settings.syncSubStatus === "trial_expired";
         }
 
-        isActive() {
+        isSubCanceled() {
+            return this.settings.syncConnected && this.settings.syncSubStatus === "canceled";
+        }
+
+        isSubUnpaid() {
+            const s = this.settings.syncSubStatus;
+            return this.settings.syncConnected && (s === "unpaid" || s === "past_due");
+        }
+
+        isSubActive() {
             return this.settings.syncConnected && this.settings.syncSubStatus === "active";
+        }
+
+        isSubValid() {
+            const s = this.settings.syncSubStatus;
+            return this.settings.syncConnected && (s === "active" || s === "trialing");
         }
 
         hasSyncToken() {
@@ -186,7 +199,9 @@ padlock.SyncMixin = (superClass) => {
             return this._testCredsPromise;
         }
 
-        openDashboard(action = "", referer = "app") { action = encodeURIComponent(action); referer = encodeURIComponent(referer);
+        openDashboard(action = "", referer = "app") {
+            action = encodeURIComponent(action);
+            referer = encodeURIComponent(referer);
             cloudSource.source.getLoginUrl(`/dashboard/?action=${action}&ref=${referer}`)
                 .then((url) => window.open(url, "_system"))
                 .catch(() => window.open(`${this.settings.syncHostUrl}/dashboard/`, "_system"));
@@ -222,22 +237,22 @@ padlock.SyncMixin = (superClass) => {
 
         loginDialog() {
             return this.prompt(this.loginInfoText(), $l("Enter Email Address"), "email", $l("Login"), false, false,
-                    (val) => {
-                        const input = document.createElement("input");
-                        input.type = "email";
-                        input.value = val;
-                        if (val === null) {
-                            return Promise.resolve(null);
-                        } else if (val == "" || !input.validity.valid) {
-                            return Promise.reject($l("Please enter a valid email address!"));
-                        } else {
-                            return this.connectCloud(val);
-                        }
+                (val) => {
+                    const input = document.createElement("input");
+                    input.type = "email";
+                    input.value = val;
+                    if (val === null) {
+                        return Promise.resolve(null);
+                    } else if (val == "" || !input.validity.valid) {
+                        return Promise.reject($l("Please enter a valid email address!"));
+                    } else {
+                        return this.connectCloud(val);
                     }
-                )
+                }
+            )
                 .then((val) => val === null ? Promise.reject() : val)
                 .then(() => this.promptLoginCode())
-                .then((val) => val === null ? Promise.reject() : val )
+                .then((val) => val === null ? Promise.reject() : val)
                 .then(() => this.synchronize())
                 .catch((e) => e && this._handleCloudError(e));
         }
@@ -256,14 +271,6 @@ padlock.SyncMixin = (superClass) => {
                 "which means you will be able to access your existing online data but you won't " +
                 "be able to upload any new data or synchronize changes between devices. " +
                 "Get a subscription now to get unlimited access to Padlocks online features!",
-                this.remainingTrialDays
-            );
-        }
-
-        trialingMessage() {
-            return $l(
-                "Your trial period ends in {0} days. Upgrade now to continue using online features like " +
-                "synchronization and automatic backups!",
                 this.remainingTrialDays
             );
         }
@@ -295,10 +302,32 @@ padlock.SyncMixin = (superClass) => {
             );
         }
 
-        subscriptionInactiveMessage() {
+        trialingMessage() {
             return $l(
-                "Your free trial has expired. Upgrade now to continue using online features like " +
-                "synchronization and automatic backups!"
+                "Your trial period ends in {0} days. Upgrade now to continue using online features like " +
+                "synchronization and automatic backups!",
+                this.remainingTrialDays
+            );
+        }
+
+        trialExpiredMessage() {
+            return $l(
+                "Your free trial has expired. Upgrade now to continue using advanced features like " +
+                "automatic online backups and seamless synchronization between devices!"
+            );
+        }
+
+        subUnpaidMessage() {
+            return $l(
+                "Your last payment has failed. Please contact your card provider " +
+                "or update your payment method!"
+            );
+        }
+
+        subCanceledMessage() {
+            return $l(
+                "Your subscription has been canceled. Reactivate it now to continue using advanced " +
+                "features like automatic online backups and seamless synchronization between devices!"
             );
         }
 
@@ -334,7 +363,7 @@ padlock.SyncMixin = (superClass) => {
                                 $l("Update Local Password"),
                                 $l("Update Online Password"),
                                 $l("Keep Both Passwords")
-                            ],
+                            ]
                         ).then((choice) => {
                             switch (choice) {
                                 case 0:
@@ -475,15 +504,15 @@ padlock.SyncMixin = (superClass) => {
                                     }
                                 });
                         })
-                            .then((success) => {
-                                if (success === null) {
-                                    this.forgotCloudPassword()
-                                        .then(() => this.synchronize());
-                                }
-                                if (success) {
-                                    this.synchronize();
-                                }
-                            });
+                        .then((success) => {
+                            if (success === null) {
+                                this.forgotCloudPassword()
+                                    .then(() => this.synchronize());
+                            }
+                            if (success) {
+                                this.synchronize();
+                            }
+                        });
                     return false;
                 case "unsupported_container_version":
                     this.confirm($l(
@@ -513,7 +542,15 @@ padlock.SyncMixin = (superClass) => {
                     }
                     return true;
                 default:
-                    this.alert($l("Something went wrong. Please try again later!"));
+                    this.confirm(
+                        e && e.message || $l("Something went wrong. Please try again later!"),
+                        $l("Contact Support"),
+                        $l("Dismiss")
+                    ).then((confirmed) => {
+                        if (confirmed) {
+                            window.open(`mailto:support@padlock.io?subject=Server+Error+(${e.code})`);
+                        }
+                    });
                     return false;
             }
         }
@@ -567,11 +604,40 @@ padlock.SyncMixin = (superClass) => {
             });
         }
 
+        reactivateSubscription() {
+            return this.cloudSource.source.subscribe()
+                .then(() => {
+                    this.refreshAccount();
+                    this.alert($l("Subscription reactivated successfully!"));
+                })
+                .catch((e) => this._handleCloudError(e));
+        }
+
         refreshAccount() {
             if (this.settings.syncConnected) {
                 return this.cloudSource.source.getAccountInfo()
                     .then(() => this.dispatch("settings-changed"));
+            } else {
+                return Promise.resolve();
             }
+        }
+
+        cancelSubscription() {
+            return this.confirm(
+                $l("Are you sure you want to cancel your subscription? You won't be able " +
+                    "to continue using advanced features like automatic online backups and seamless " +
+                    "synchronization between devices!"),
+                $l("Cancel Subscription"),
+                $l("Don't Cancel")
+            ).then((confirmed) => {
+                if (confirmed) {
+                    this.cloudSource.source.cancelSubscription()
+                        .then(() => {
+                            this.refreshAccount();
+                            this.alert($l("Subscription canceled successfully."));
+                        });
+                }
+            });
         }
 
     };

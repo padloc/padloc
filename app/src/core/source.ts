@@ -136,7 +136,8 @@ export class CloudSource extends AjaxSource {
         // Remove trailing slashes
         const host = this.settings.syncCustomHost ?
             this.settings.syncHostUrl.replace(/\/+$/, "") :
-            "https://cloud.padlock.io"
+            // "https://cloud.padlock.io"
+            "http://127.0.0.1:3000"
         return `${host}/${path}/`;
     }
 
@@ -185,7 +186,10 @@ export class CloudSource extends AjaxSource {
             }
         }
 
-        this.settings.syncSubStatus = req.getResponseHeader("X-Sub-Status") || "";
+        const subStatus = req.getResponseHeader("X-Sub-Status");
+        if (subStatus) {
+            this.settings.syncSubStatus = subStatus;
+        }
         try {
             this.settings.syncTrialEnd =
                 parseInt(req.getResponseHeader("X-Sub-Trial-End") || "0", 10);
@@ -294,15 +298,19 @@ export class CloudSource extends AjaxSource {
         );
     }
 
-    setPaymentSource(stripeToken: string): Promise<XMLHttpRequest> {
+    subscribe(stripeToken = ""): Promise<XMLHttpRequest> {
         const params = new URLSearchParams();
         params.set("stripeToken", stripeToken);
         return this.request(
             "POST",
-            this.urlForPath("payment"),
+            this.urlForPath("subscribe"),
             params.toString(),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
+    }
+
+    cancelSubscription(): Promise<XMLHttpRequest> {
+        return this.request("POST", this.urlForPath("unsubscribe"));
     }
 
     getPlans(): Promise<any[]> {
