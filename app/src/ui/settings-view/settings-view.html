@@ -277,7 +277,7 @@ class SettingsView extends applyMixins(
         if (!isCordova()) {
             options.push($l("From File"));
         }
-        this.choose($l("Import..."), options, false)
+        this.choose($l("Please choose an import method!"), options, { preventDismiss: false, type: "question" })
             .then((choice) => {
                 switch (choice) {
                     case 0:

@@ -6,11 +6,65 @@
 <dom-module id="pl-dialog-alert">
 
     <template>
-        <style include="shared"></style>
+        <style include="shared">
+            :host {
+                --pl-dialog-inner: {
+                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                };
+            }
 
-        <pl-dialog id="dialog" open="{{ open }}" on-dialog-close="_dialogClosed">
-            <div class="message tiles-1">{{ message }}</div>
-            <button class="tap tiles-2" on-click="_dismiss">{{ buttonLabel }}</button>
+            :host([type="warning"]) {
+                --pl-dialog-inner: {
+                    background: linear-gradient(180deg, #f49300 0%, #f25b00 100%);
+                };
+            }
+
+            :host([type="plain"]) {
+                --pl-dialog-inner: {
+                    background: var(--color-background);
+                };
+            }
+
+            .info {
+                display: flex;
+                align-items: center;
+            }
+
+            .info-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 60px;
+                margin: 10px 0 10px 10px;
+            }
+
+            .info-body {
+                padding: 20px 15px 20px 10px;
+                flex: 1;
+            }
+
+            .info-title {
+                font-size: 120%;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            .info-text {
+                font-size: var(--font-size-small);
+            }
+        </style>
+
+        <pl-dialog id="dialog" open="{{ _open }}" class="tiles"
+            prevent-dismiss="[[ preventDismiss ]]" on-dialog-dismiss="_dialogDismiss">
+            <div class="info">
+                <pl-icon class="info-icon" icon="[[ _icon(type) ]]" hidden$="[[ hideIcon ]]"></pl-icon>
+                <div class="info-body">
+                    <div class="info-title">[[ title ]]</div>
+                    <div class$="[[ _textClass(title) ]]">[[ message ]]</div>
+                </div>
+            </div>
+            <template is="dom-repeat" items="[[ options ]]">
+                <button on-click="_selectOption" class="tap">[[ item ]]</button>
+            </template>
         </pl-dialog>
     </template>
 
@@ -25,27 +79,54 @@ class DialogAlert extends padlock.BaseElement {
 
     static get properties() { return {
         buttonLabel: { type: String, value: defaultButtonLabel },
+        title: { type: String, value: ""},
         message: { type: String, value: "" },
-        open: { type: Boolean, value: false }
+        options: { type: Array, value: ["OK"] },
+        preventDismiss: { type: Boolean, value: false },
+        type: { type: String, value: "info", reflectToAttribute: true },
+        hideIcon: { type: Boolean, value: false },
+        _open: { type: Boolean, value: false }
     }; }
 
-    _dialogClosed() {
-        typeof this._resolve === "function" && this._resolve();
-        this._resolve = null;
-    }
-
-    _dismiss() {
-        this.$.dialog.dismiss();
-    }
-
-    alert(message, buttonLabel) {
+    open(message = "", { title = "", options = ["OK"], type = "info", preventDismiss = false } = {}) {
         this.message = message;
-        this.buttonLabel = buttonLabel || defaultButtonLabel;
-        this.open = true;
+        this.title = title;
+        this.type = type;
+        this.preventDismiss = preventDismiss;
+        this.options = options;
+        this._open = true;
 
         return new Promise((resolve) => {
             this._resolve = resolve;
         });
+    }
+
+    _icon() {
+        switch (this.type) {
+            case "info":
+                return "info-round";
+            case "warning":
+                return "error";
+            case "success":
+                return "success";
+            case "question":
+                return "question";
+        }
+    }
+
+    _selectOption(e) {
+        this._open = false;
+        typeof this._resolve === "function" && this._resolve(this.options.indexOf(e.model.item));
+        this._resolve = null;
+    }
+
+    _dialogDismiss() {
+        typeof this._resolve === "function" && this._resolve();
+        this._resolve = null;
+    }
+
+    _textClass() {
+        return this.title ? "info-text" : "";
     }
 }
 

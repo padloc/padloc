@@ -1,12 +1,13 @@
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../generator/generator.html">
+<link rel="import" href="../locale/locale.html">
 <link rel="import" href="dialog-alert.html">
 <link rel="import" href="dialog-confirm.html">
 <link rel="import" href="dialog-prompt.html">
 <link rel="import" href="dialog-options.html">
 
 <script>
-((dialog) => {
+(() => {
 
 const { wait } = padlock.util;
 
@@ -14,7 +15,6 @@ const dialogElements = {};
 
 let lastDialogPromise = Promise.resolve();
 let currentDialog;
-
 
 padlock.DialogMixin = (superClass) => {
 
@@ -40,17 +40,22 @@ padlock.DialogMixin = (superClass) => {
                 });
 
             lastDialogPromise = promise
-                .then(() => wait(500));
+                .then(() => wait(400));
 
             return promise;
         }
 
-        alert(message, buttonLabel) {
-            return this.lineUpDialog("pl-dialog-alert", (dialog) => dialog.alert(message, buttonLabel));
+        alert(message, options) {
+            return this.lineUpDialog("pl-dialog-alert", (dialog) => dialog.open(message, options));
         }
 
-        confirm(message, confirmLabel, cancelLabel) {
-            return this.lineUpDialog("pl-dialog-confirm", (dialog) => dialog.confirm(message, confirmLabel, cancelLabel));
+        confirm(message, confirmLabel = $l("Confirm"), cancelLabel = $l("Cancel"), options = { type: "question" }) {
+            options.options = [
+                confirmLabel,
+                cancelLabel
+            ];
+            return this.lineUpDialog("pl-dialog-alert", (dialog) => dialog.open(message, options))
+                .then((choice) => choice === 0);
         }
 
         prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss, verify) {
@@ -59,10 +64,10 @@ padlock.DialogMixin = (superClass) => {
             });
         }
 
-        choose(message, options, preventDismiss=true) {
-            return this.lineUpDialog("pl-dialog-options", (dialog) => {
-                dialog.preventDismiss = preventDismiss;
-                return dialog.choose(message, options);
+        choose(message, options, opts = { preventDismiss: true, type: "question" }) {
+            opts.options = options;
+            return this.lineUpDialog("pl-dialog-alert", (dialog) => {
+                return dialog.open(message, opts);
             });
         }
 
