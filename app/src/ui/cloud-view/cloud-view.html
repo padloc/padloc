@@ -245,8 +245,12 @@
                 </div>
             </section>
 
-            <section hidden$="[[ !isSubActive(settings.syncConnected, settings.syncSubStatus) ]]">
-                <button class="tap" on-click="cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
+            <section hidden$="[[ !_hasPaymentSource(settings.account.paymentSource) ]]">
+                <div class="section-header">[[ $l("Billing") ]]</div>
+                <button class="tap" on-click="updatePaymentMethod">[[ _paymentSourceLabel(settings.account.paymentSource) ]]</button>
+                <button class="tap">[[ $l("Update Billing Info") ]]</button>
+                <button class="tap" on-click="cancelSubscription"
+                    hidden$="[[ !isSubActive(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Cancel Subscription") ]]</button>
             </section>
 
             <section hidden$="[[ settings.syncConnected ]]">
@@ -436,6 +440,15 @@ class CloudView extends applyMixins(
 
     _contactSupport() {
         window.open("mailto:support@padlock.io", "_system");
+    }
+
+    _hasPaymentSource() {
+        return !!(this.settings.account && this.settings.account.paymentSource);
+    }
+
+    _paymentSourceLabel() {
+        const s = this.settings.account && this.settings.account.paymentSource;
+        return s && `${s.brand} •••• •••• •••• ${s.lastFour}`;
     }
 
 }

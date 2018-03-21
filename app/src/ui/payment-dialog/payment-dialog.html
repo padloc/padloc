@@ -189,10 +189,18 @@
                 font-weight: bold;
             }
 
+            .update-title {
+                font-weight: bold;
+                line-height: var(--row-height);
+                padding: 0 15px;
+                text-align: center;
+            }
+
         </style>
 
         <pl-dialog id="cardDialog" open="{{ open }}" on-dialog-dismiss="_dismiss">
             <form id="paymentForm" method="post" on-submit="_submitCard">
+                <div class="update-title" hidden$="[[ _hasPlan(plan) ]]">[[ $l("Update Payment Method") ]]</div>
                 <div class="plan" hidden$="[[ !_hasPlan(plan) ]]">
                     <div class="plan-name">[[ $l("Upgrade to {0} now!", plan.name) ]]</div>
                     <div class="features">
