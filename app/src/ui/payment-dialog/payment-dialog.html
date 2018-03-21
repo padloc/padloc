@@ -37,6 +37,7 @@
                 background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%);
                 color: var(--color-foreground);
                 text-shadow: rgba(0, 0, 0, 0.15) 0 2px 0;
+                border-bottom: none !important;
             }
 
             .plan-name {
@@ -196,6 +197,10 @@
                 text-align: center;
             }
 
+            #couponInput {
+                text-align: center;
+            }
+
         </style>
 
         <pl-dialog id="cardDialog" open="{{ open }}" on-dialog-dismiss="_dismiss">
@@ -220,12 +225,14 @@
                     </div>
                     <div class="price">
                         <div class="price-amount">[[ _monthlyPrice(plan.amount) ]]</div>
-                        <div class="price-period">[[ $l("per month") ]]</div>
+                        <div class="price-period">[[ $l("per month*") ]]</div>
                     </div>
-                    <div class="price-hint">[[ $l("(excl. taxes\, billed annually)") ]]</div>
+                    <div class="price-hint">[[ $l("*USD\, billed annually") ]]</div>
                 </div>
-                <div class="message card-hint" hidden$="[[ _hasError(_cardError) ]]">
-                    [[ $l("Please enter your credit or debit card information:") ]]
+                <pl-input id="couponInput" value="{{ coupon }}" placeholder="[[ $l('Enter Coupon Code') ]]" hidden$="[[ !_showCouponInput ]]"></pl-input>
+                <div class="message card-hint tap" hidden$="[[ _hasError(_cardError) ]]" on-click="_toggleCoupon">
+                    <div>[[ $l("Please enter your credit or debit card information:") ]]</div>
+                    <div class="support-link" hidden$="[[ _showCouponInput ]]">[[ $l("I have a coupon!") ]]</div>
                 </div>
                 <div class="message card-hint tap" hidden$="[[ !_hasError(_cardError) ]]" on-click="_openSupport">
                     <div class="error">[[ _cardError ]]</div>
@@ -265,12 +272,14 @@ class PaymentDialog extends applyMixins(
 
     static get properties() { return {
         open: { type: Boolean },
+        coupon: { type: String, value: "" },
         plan: { type: Object, value: null },
         source: Object,
         stripePubKey: { type: String, value: "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy" },
         remainingTrialDays: { type: Number, value: 0 },
         _cardError: { type: String, value: "" },
-        _needsSupport: { type: Boolean, value: false }
+        _needsSupport: { type: Boolean, value: false },
+        _showCouponInput: { type: Boolean, value: false }
     }; }
 
     connectedCallback() {
@@ -281,6 +290,7 @@ class PaymentDialog extends applyMixins(
     show() {
         this._needsSupport = false;
         this._cardError = "";
+        this._showCouponInput = !!this.coupon;
         this.open = true;
         return new Promise((resolve) => {
             this._resolve = resolve;
@@ -346,7 +356,7 @@ class PaymentDialog extends applyMixins(
                 this.$.submitButton.fail();
                 this._submittingCard = false;
             } else {
-                this.source.subscribe(result.token.id)
+                this.source.subscribe(result.token.id, this.$.couponInput.value)
                     .then(() => {
                         this.$.submitButton.success();
                         typeof this._resolve === "function" && this._resolve(true);
@@ -391,6 +401,11 @@ class PaymentDialog extends applyMixins(
 
     _submitLabel() {
         return this.plan ? $l("Upgrade Now") : $l("Submit");
+    }
+
+    _toggleCoupon() {
+        this._showCouponInput = true;
+        this.$.couponInput.focus();
     }
 
 }

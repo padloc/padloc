@@ -155,7 +155,7 @@ padlock.SyncMixin = (superClass) => {
 
         isSubValid() {
             const s = this.settings.syncSubStatus;
-            return this.settings.syncConnected && (s === "active" || s === "trialing");
+            return this.settings.syncConnected && (s === "" || s === "active" || s === "trialing");
         }
 
         hasSyncToken() {

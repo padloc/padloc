@@ -298,9 +298,10 @@ export class CloudSource extends AjaxSource {
         );
     }
 
-    subscribe(stripeToken = ""): Promise<XMLHttpRequest> {
+    subscribe(stripeToken = "", coupon = ""): Promise<XMLHttpRequest> {
         const params = new URLSearchParams();
         params.set("stripeToken", stripeToken);
+        params.set("coupon", coupon);
         return this.request(
             "POST",
             this.urlForPath("subscribe"),
