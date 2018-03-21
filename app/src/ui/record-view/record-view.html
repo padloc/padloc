@@ -63,7 +63,7 @@
             .categories {
                 position: fixed;
                 z-index: 1;
-                top: 102px;
+                top: 100px;
                 left: 0;
                 right: 0;
                 bottom: 0;
@@ -76,10 +76,8 @@
                 max-height: 100%;
                 @apply --scroll;
                 transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                background: var(--color-background);
-                border: solid 1px rgba(0, 0, 0, 0.1);
-                margin: 0 5px;
-                border-radius: var(--border-radius);
+                margin: 6px;
+                @apply --card;
             }
 
             .categories:not([showing]) {
@@ -99,12 +97,9 @@
             }
 
             .category, pl-record-field {
-                background: var(--color-background);
                 transform: translate3d(0, 0, 0);
-                margin: 5px;
-                border: solid 1px rgba(0, 0, 0, 0.1);
-                border-radius: var(--border-radius);
-                overflow: hidden;
+                margin: 8px 6px;
+                @apply --card;
             }
         </style>
 
