@@ -26,6 +26,7 @@
 
             .filter-input {
                 flex: 1;
+                padding-left: 15px;
             }
 
             .filter-input:not([active]) {
@@ -169,16 +170,8 @@
 
         <header hidden$="[[ multiSelect ]]">
             <pl-icon icon="menu" class="tap" on-click="_toggleMenu" hidden$="[[ filterActive ]]"></pl-icon>
-            <!-- <pl&#45;icon icon="settings" class="tap" on&#45;click="_openSettings" hidden$="[[ filterActive ]]"></pl&#45;icon> -->
-            <!-- <div class="cloud&#45;icon&#45;wrapper tap" on&#45;click="_openCloudView" hidden$="[[ filterActive ]]"> -->
-            <!--     <pl&#45;icon icon="cloud"></pl&#45;icon> -->
-            <!--     <pl&#45;icon icon="refresh" class="syncing&#45;icon" hidden$="[[ !isSynching ]]"></pl&#45;icon> -->
-            <!-- </div> -->
-            <!-- <div class="filter&#45;input&#45;wrapper tap"> -->
-                <pl-input id="filterInput" class="filter-input tap" placeholder="Type To Search" active$="[[ filterActive ]]"
-                    value="{{ filterString }}" on-escape="clearFilter" no-tab select-on-focus></pl-input>
-                <!-- <pl&#45;icon icon="search" on&#45;click="focusFilterInput"></pl&#45;icon> -->
-            <!-- </div> -->
+            <pl-input id="filterInput" class="filter-input tap" placeholder="Type To Search" active$="[[ filterActive ]]"
+                value="{{ filterString }}" on-escape="clearFilter" no-tab></pl-input>
             <pl-icon icon="add" class="tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
             <pl-icon icon="cancel" class="tap" on-click="clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
         </header>
@@ -241,7 +234,6 @@
     <script>
 (() => {
 
-const Record = padlock.data.Record;
 const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin, AnimationMixin } = padlock;
 const { applyMixins } = padlock.util;
 
@@ -480,7 +472,7 @@ class ListView extends applyMixins(
         return count ? $l("{0} records selected", count) : $l("tap to select");
     }
 
-    focusFilterInput() {
+    search() {
         this.$.filterInput.focus();
     }
 

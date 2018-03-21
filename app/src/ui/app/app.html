@@ -545,6 +545,10 @@ class App extends applyMixins(
 
     //* Keyboard shortcuts
     _keydown(event) {
+        if (this.locked || padlock.Input.activeInput) {
+            return;
+        }
+
         let shortcut;
         const control = event.ctrlKey || event.metaKey;
 
@@ -554,7 +558,7 @@ class App extends applyMixins(
         }
         // CTRL/CMD + F -> Filter
         else if (control && event.key === "f") {
-            shortcut = () => this.$.listView.focusFilterInput();
+            shortcut = () => this.$.listView.search();
         }
         // CTRL/CMD + N -> New Record
         else if (control && event.key === "n") {
@@ -565,6 +569,8 @@ class App extends applyMixins(
         if (shortcut) {
             shortcut();
             event.preventDefault();
+        } else if (event.key.length === 1) {
+            this.$.listView.search();
         }
     }
 
