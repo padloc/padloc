@@ -28,6 +28,9 @@ padlock.HintsMixin = (superClass) => {
             this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindTrialEnds()));
             this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._askFeedback()));
             this.listen("auto-lock", () => statsLoaded.then(() => this._showAutoLockNotice()));
+            this.listen("settings-changed", () => this._notifySubStatus());
+            this.listen("sync-connect-success", () => this._notifySubStatus());
+            this.listen("data-loaded", () => wait(1000).then(() => this._notifySubStatus()));
         }
 
         ready() {
@@ -201,6 +204,36 @@ padlock.HintsMixin = (superClass) => {
                     minutes, minutes > 1 ? $l("minutes") : $l("minute")));
                 }, 1000);
                 padlock.stats.set({ hasShownAutoLockNotice: true });
+            }
+        }
+
+        _notifySubStatus() {
+            if (this.settings.syncConnected && this.settings.syncSubStatus !== this._lastSubStatus) {
+                this._lastSubStatus = this.settings.syncSubStatus;
+
+                if (this.isTrialExpired()) {
+                    this.alert(this.trialExpiredMessage(), {
+                        type: "warning",
+                        title: $l("Trial Expired"),
+                        options: [$l("Upgrade Now")]
+                    }).then((choice) => {
+                        if (choice === 0) {
+                            this.buySubscription();
+                        }
+                    });
+                } else if (this.isSubUnpaid()) {
+                    this.alert(this.subUnpaidMessage(), {
+                        type: "warning",
+                        title: $l("Payment Failed"),
+                        options: [$l("Update Payment Method"), $l("Contact Support")]
+                    }).then((choice) => {
+                        if (choice === 0) {
+                            this.updatePaymentMethod();
+                        } else if (choice === 1) {
+                            window.open("mailto:support@padlock.io", "_system");
+                        }
+                    });
+                }
             }
         }
 

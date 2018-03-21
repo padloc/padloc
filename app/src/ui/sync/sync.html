@@ -81,6 +81,7 @@ padlock.SyncMixin = (superClass) => {
                     this.settings.syncToken = "";
                     this.settings.syncEmail = "";
                     this.settings.syncReadonly = false;
+                    this.settings.syncSubStatus = "";
                     this.dispatch("settings-changed");
                     this.dispatch("sync-disconnect");
                 })
@@ -289,7 +290,7 @@ padlock.SyncMixin = (superClass) => {
 
         loginInfoText() {
             return $l(
-                "Log in now for advanced features like automatic online backups and " +
+                "Log in now to unlock advanced features like automatic online backups and " +
                 "seamless synchronization between devices!"
             );
         }
@@ -533,20 +534,7 @@ padlock.SyncMixin = (superClass) => {
                         });
                     return false;
                 case "subscription_required":
-                    if (!hasShownReadOnlyDialog) {
-                        this.confirm(
-                            this.readOnlyInfoText(),
-                            $l("Buy Subscription"),
-                            $l("Dismiss")
-                        )
-                            .then((confirmed) => {
-                                hasShownReadOnlyDialog = true;
-                                if (confirmed) {
-                                    this.openDashboard("subscribe", "app-5");
-                                }
-                            });
-                    }
-                    return true;
+                    return false;
                 default:
                     this.confirm(
                         e && e.message || $l("Something went wrong. Please try again later!"),
