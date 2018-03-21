@@ -610,7 +610,7 @@ padlock.SyncMixin = (superClass) => {
                 dialog.plan = plan;
                 dialog.source = this.cloudSource.source;
                 dialog.remainingTrialDays = this.remainingTrialDays;
-                return dialog.updatePaymentMethod();
+                return dialog.show();
             });
         }
 

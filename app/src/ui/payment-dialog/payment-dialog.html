@@ -240,7 +240,7 @@
     </template>
 
     <script>
-/* global Stripe, mixpanel */
+/* global Stripe */
 (() => {
 
 const { LocaleMixin, BaseElement } = padlock;
@@ -270,9 +270,9 @@ class PaymentDialog extends applyMixins(
         this._setupPayment();
     }
 
-    updatePaymentMethod() {
+    show() {
         this._needsSupport = false;
-        this._errorMessage = "";
+        this._cardError = "";
         this.open = true;
         return new Promise((resolve) => {
             this._resolve = resolve;
