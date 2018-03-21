@@ -212,6 +212,15 @@
                 content: "\f017\ ";
             }
 
+            .menu-wrapper {
+                @apply --fullbleed;
+                z-index: -1;
+            }
+
+            :host(.show-menu) .menu-wrapper {
+                z-index: 10;
+            }
+
             .menu-item-hint.warning {
                 color: var(--color-error);
             }
@@ -267,46 +276,48 @@
 
         <pl-start-view id="startView"></pl-start-view>
 
-        <div id="menu" class="menu">
-            <div class="spacer"></div>
-            <div class="account menu-item tap" on-click="_openCloudView">
-                <div>
-                    <div hidden$="[[ settings.syncConnected ]]">[[ $l("Log In") ]]</div>
-                    <div hidden$="[[ !settings.syncConnected ]]">[[ $l("My Account") ]]</div>
-                    <div class="menu-item-hint warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Trial Expired") ]]</div>
-                    <div class="menu-item-hint warning" hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Payment Failed") ]]</div>
-                    <div class="menu-item-hint warning" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Subscr. Canceled") ]]</div>
+        <div class="menu-wrapper" on-click="_menuWrapperClicked">
+            <div id="menu" class="menu">
+                <div class="spacer"></div>
+                <div class="account menu-item tap" on-click="_openCloudView">
+                    <div>
+                        <div hidden$="[[ settings.syncConnected ]]">[[ $l("Log In") ]]</div>
+                        <div hidden$="[[ !settings.syncConnected ]]">[[ $l("My Account") ]]</div>
+                        <div class="menu-item-hint warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Trial Expired") ]]</div>
+                        <div class="menu-item-hint warning" hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Payment Failed") ]]</div>
+                        <div class="menu-item-hint warning" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Subscr. Canceled") ]]</div>
+                    </div>
+                    <pl-icon icon="cloud" class="account-icon"></pl-icon>
                 </div>
-                <pl-icon icon="cloud" class="account-icon"></pl-icon>
-            </div>
-            <div class="menu-item tap" on-click="synchronize" disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">
-                <div>
-                    <div>[[ $l("Synchronize") ]]</div>
-                    <div class="menu-item-hint" hidden$="[[ settings.syncConnected ]]">[[ $l("Log In To Sync") ]]</div>
-                    <div class="menu-item-hint last-sync" hidden$="[[ !settings.syncConnected ]]">[[ lastSync ]]</div>
+                <div class="menu-item tap" on-click="synchronize" disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">
+                    <div>
+                        <div>[[ $l("Synchronize") ]]</div>
+                        <div class="menu-item-hint" hidden$="[[ settings.syncConnected ]]">[[ $l("Log In To Sync") ]]</div>
+                        <div class="menu-item-hint last-sync" hidden$="[[ !settings.syncConnected ]]">[[ lastSync ]]</div>
+                    </div>
+                    <pl-icon icon="refresh" spin$="[[ isSynching ]]"></pl-icon>
                 </div>
-                <pl-icon icon="refresh" spin$="[[ isSynching ]]"></pl-icon>
-            </div>
-            <div class="menu-item tap" on-click="_newRecord">
-                <div>[[ $l("Add Record") ]]</div>
-                <pl-icon icon="add"></pl-icon>
-            </div>
-            <div class="menu-item tap" on-click="_openSettings">
-                <div>[[ $l("Settings") ]]</div>
-                <pl-icon icon="settings"></pl-icon>
-            </div>
-            <div class="menu-item tap" on-click="_enableMultiSelect">
-                <div>[[ $l("Multi-Select") ]]</div>
-                <pl-icon icon="checked"></pl-icon>
-            </div>
-            <div class="menu-item tap" on-click="_lock">
-                <div>[[ $l("Lock App") ]]</div>
-                <pl-icon icon="lock"></pl-icon>
-            </div>
-            <div class="spacer"></div>
-            <div class="menu-info">
-                <div><strong>Padlock {{ settings.version }}</strong></div>
-                <div>Made with &#9829; in Germany</div>
+                <div class="menu-item tap" on-click="_newRecord">
+                    <div>[[ $l("Add Record") ]]</div>
+                    <pl-icon icon="add"></pl-icon>
+                </div>
+                <div class="menu-item tap" on-click="_openSettings">
+                    <div>[[ $l("Settings") ]]</div>
+                    <pl-icon icon="settings"></pl-icon>
+                </div>
+                <div class="menu-item tap" on-click="_enableMultiSelect">
+                    <div>[[ $l("Multi-Select") ]]</div>
+                    <pl-icon icon="checked"></pl-icon>
+                </div>
+                <div class="menu-item tap" on-click="_lock">
+                    <div>[[ $l("Lock App") ]]</div>
+                    <pl-icon icon="lock"></pl-icon>
+                </div>
+                <div class="spacer"></div>
+                <div class="menu-info">
+                    <div><strong>Padlock {{ settings.version }}</strong></div>
+                    <div>Made with &#9829; in Germany</div>
+                </div>
             </div>
         </div>
 
@@ -426,7 +437,7 @@ class App extends applyMixins(
                         position: "relative"
                     });
                 }
-                return cordovaReady
+                return cordovaReady;
             })
             .then(() => {
                 // Replace window.open method with the inappbrowser equivalent
@@ -508,7 +519,6 @@ class App extends applyMixins(
 
     _currentViewChanged(curr, prev) {
         this.$.main.classList.toggle("showing-pages", !!curr);
-        this._menuOpen = false;
 
         const currView = this.$[curr];
         const prevView = this.$[prev];
@@ -605,7 +615,6 @@ class App extends applyMixins(
     }
 
     _lock() {
-        this._menuOpen = false;
         if (this.isSynching) {
             this.alert($l("Cannot lock app while sync is in progress!"));
         } else {
@@ -614,13 +623,15 @@ class App extends applyMixins(
     }
 
     _newRecord() {
-        this._menuOpen = false;
         this.createRecord();
     }
 
     _enableMultiSelect() {
         this.$.listView.multiSelect = true;
-        this._menuOpen = false;
+    }
+
+    _menuWrapperClicked() {
+        setTimeout(() => this._menuOpen = false, 50);
     }
 
 }
