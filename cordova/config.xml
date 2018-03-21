@@ -8,6 +8,7 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
+    <allow-navigation href="https://*.stripe.com" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="KeyboardDisplayRequiresUserAction" value="false" />
     <preference name="HideKeyboardFormAccessoryBar" value="true" />
