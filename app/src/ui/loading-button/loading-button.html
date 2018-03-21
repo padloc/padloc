@@ -88,6 +88,7 @@ class LoadingButton extends padlock.BaseElement {
     }; }
 
     start() {
+        clearTimeout(this._stopTimeout);
         this._success = this._fail = false;
         this._loading = true;
     }
@@ -99,13 +100,13 @@ class LoadingButton extends padlock.BaseElement {
     success() {
         this._loading = this._fail = false;
         this._success = true;
-        setTimeout(() => this.stop(), 1000);
+        this._stopTimeout = setTimeout(() => this.stop(), 1000);
     }
 
     fail() {
         this._loading = this._success = false;
         this._fail = true;
-        setTimeout(() => this.stop(), 1000);
+        this._stopTimeout = setTimeout(() => this.stop(), 1000);
     }
 
     _tabIndex(noTab) {

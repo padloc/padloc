@@ -211,12 +211,20 @@ class SettingsView extends applyMixins(
             .then((success) => {
                 if (success) {
                     return this.prompt($l("Now choose a new master password!"),
-                        $l("Enter New Password"), "password", $l("Confirm"));
+                        $l("Enter New Password"), "password", $l("Confirm"), $l("Cancel"), false, (val) => {
+                            if (val === "") {
+                                return Promise.reject($l("Please enter a password!"));
+                            }
+                            return Promise.resolve(val);
+                        });
                 } else {
                     return Promise.reject();
                 }
             })
             .then((pwd) => {
+                if (pwd === null) {
+                    return Promise.reject();
+                }
                 newPwd = pwd;
                 return this.promptPassword(pwd, $l("Confirm your new master password!"),
                     $l("Confirm"), $l("Cancel"));
