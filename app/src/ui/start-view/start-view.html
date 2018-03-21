@@ -713,7 +713,7 @@ class StartView extends applyMixins(
             wait(1000)
         ];
 
-        if (this.settings.syncConnected && !this._hasRemoteData) {
+        if (this.settings.syncConnected && !this._hasCloudData) {
             promises.push(this.collection.save(this.cloudSource));
         }
 

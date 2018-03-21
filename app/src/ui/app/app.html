@@ -279,7 +279,7 @@
                 </div>
                 <pl-icon icon="cloud" class="account-icon"></pl-icon>
             </div>
-            <div class="menu-item tap" on-click="synchronize" disabled$="[[ !isSubValid() ]]">
+            <div class="menu-item tap" on-click="synchronize" disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div>
                     <div>[[ $l("Synchronize") ]]</div>
                     <div class="menu-item-hint" hidden$="[[ settings.syncConnected ]]">[[ $l("Log In To Sync") ]]</div>

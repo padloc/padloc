@@ -248,7 +248,6 @@
             <section hidden$="[[ !_hasPaymentSource(settings.account.paymentSource) ]]">
                 <div class="section-header">[[ $l("Billing") ]]</div>
                 <button class="tap" on-click="updatePaymentMethod">[[ _paymentSourceLabel(settings.account.paymentSource) ]]</button>
-                <button class="tap">[[ $l("Update Billing Info") ]]</button>
                 <button class="tap" on-click="cancelSubscription"
                     hidden$="[[ !isSubActive(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Cancel Subscription") ]]</button>
             </section>
