@@ -212,6 +212,18 @@
                 content: "\f017\ ";
             }
 
+            .menu-item-hint.warning {
+                color: var(--color-error);
+            }
+
+            .menu-item-hint.warning::before {
+                font-family: "FontAwesome";
+                font-size: 85%;
+                content: "\f071\ ";
+                position: relative;
+                top: -1px;
+            }
+
             .menu-info {
                 font-size: var(--font-size-tiny);
                 text-align: center;
@@ -261,10 +273,13 @@
                 <div>
                     <div hidden$="[[ settings.syncConnected ]]">[[ $l("Log In") ]]</div>
                     <div hidden$="[[ !settings.syncConnected ]]">[[ $l("My Account") ]]</div>
+                    <div class="menu-item-hint warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Trial Expired") ]]</div>
+                    <div class="menu-item-hint warning" hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Payment Failed") ]]</div>
+                    <div class="menu-item-hint warning" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Subscr. Canceled") ]]</div>
                 </div>
                 <pl-icon icon="cloud" class="account-icon"></pl-icon>
             </div>
-            <div class="menu-item tap" on-click="synchronize" disabled$="[[ !settings.syncConnected ]]">
+            <div class="menu-item tap" on-click="synchronize" disabled$="[[ !isSubValid() ]]">
                 <div>
                     <div>[[ $l("Synchronize") ]]</div>
                     <div class="menu-item-hint" hidden$="[[ settings.syncConnected ]]">[[ $l("Log In To Sync") ]]</div>
