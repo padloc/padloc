@@ -38,12 +38,14 @@
 
             .account {
                 height: 90px;
+                display: flex;
             }
 
             .account-info {
                 flex: 1;
                 padding: 15px;
                 text-align: center;
+                border-right: solid 1px rgba(0, 0, 0, 0.1);
             }
 
             .account-email {
@@ -167,21 +169,6 @@
                 <pl-loading-button id="loginButton" class="tap" on-click="_login">[[ $l("Log In") ]]</pl-loading-button>
             </section>
 
-            <section class="horizontal account" hidden$="[[ !settings.syncConnected ]]">
-                <div class="account-info">
-                    <div class="account-email">[[ settings.syncEmail ]]</div>
-                    <div class="account-stats">
-                        <pl-icon icon="record"></pl-icon>
-                        <span>[[ records.length ]]</span>
-                        <pl-icon icon="mobile"></pl-icon>
-                        <span>[[ settings.account.devices.length ]]</span>
-                        <pl-icon icon="refresh"></pl-icon>
-                        <span>[[ lastSync ]]</span>
-                    </div>
-                </div>
-                <pl-icon class="account-sync tap" icon="refresh" spin$="[[ isSynching ]]" on-click="synchronize"></pl-icon>
-            </section>
-
             <section class="highlight tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="time"></pl-icon>
@@ -225,6 +212,25 @@
                     </div>
                 </div>
                 <button class="tap" on-click="reactivateSubscription">[[ $l("Reactivate Subscription") ]]</button>
+            </section>
+
+            <section hidden$="[[ !settings.syncConnected ]]">
+                <div class="account">
+                    <div class="account-info">
+                        <div class="account-email">[[ settings.syncEmail ]]</div>
+                        <div class="account-stats">
+                            <pl-icon icon="record"></pl-icon>
+                            <span>[[ records.length ]]</span>
+                            <pl-icon icon="mobile"></pl-icon>
+                            <span>[[ settings.account.devices.length ]]</span>
+                            <pl-icon icon="refresh"></pl-icon>
+                            <span>[[ lastSync ]]</span>
+                        </div>
+                    </div>
+                    <pl-icon class="account-sync tap" icon="refresh" spin$="[[ isSynching ]]" on-click="synchronize"
+                        disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]"></pl-icon>
+                </div>
+                <div class="unlock-feature-hint" hidden$="[[ isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable synchronization!") ]]</div>
             </section>
 
             <section hidden$="[[ !settings.syncConnected ]]">

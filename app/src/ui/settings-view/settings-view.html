@@ -96,10 +96,13 @@
 
         <main>
 
-            <section disabled$="[[ !settings.syncConnected ]]">
+            <section>
                 <div class="info">[[ _autoSyncInfoText() ]]</div>
                 <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]"
-                    reverse class="tap" on-change="settingChanged"></pl-toggle-button>
+                    reverse class="tap" on-change="settingChanged" disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]"></pl-toggle-button>
+                <div class="unlock-feature-hint" hidden$="[[ settings.syncConnected ]]">[[ $l("Log in to enable auto sync!") ]]</div>
+                <div class="unlock-feature-hint" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable auto sync!") ]]</div>
+                <div class="unlock-feature-hint" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable auto sync!") ]]</div>
             </section>
 
             <section>

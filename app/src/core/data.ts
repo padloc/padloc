@@ -151,7 +151,7 @@ export class Settings {
         syncToken: "",
         syncDevice: "",
         syncConnected: false,
-        syncAuto: true,
+        syncAuto: false,
         syncSubStatus: "",
         syncTrialEnd: 0,
         syncDeviceCount: 0,

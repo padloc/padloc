@@ -11,8 +11,6 @@ const { formatDateFromNow } = padlock.util;
 
 const cloudSource = new EncryptedSource(new CloudSource(DataMixin.settings));
 
-let hasShownReadOnlyDialog;
-
 padlock.SyncMixin = (superClass) => {
 
     return class SyncMixin extends superClass {
@@ -55,6 +53,7 @@ padlock.SyncMixin = (superClass) => {
             return cloudSource.source.activateToken(code)
                 .then((success) => {
                     this.settings.syncConnected = success;
+                    this.settings.syncAuto = true;
                     this.dispatch("settings-changed");
 
                     if (success) {
@@ -89,9 +88,8 @@ padlock.SyncMixin = (superClass) => {
         }
 
         synchronize(auto) {
-            if (!this.settings.syncConnected) {
-                this.alert($l("You have to be logged in to synchronize your data!"));
-                return Promise.reject();
+            if (!this.settings.syncConnected || auto === true && !this.isSubValid()) {
+                return;
             }
 
             if (this._chainedSync) {
@@ -173,6 +171,7 @@ padlock.SyncMixin = (superClass) => {
                 .then((connected) => {
                     this._testCredsPromise = null;
                     this.settings.syncConnected = connected;
+                    this.settings.syncAuto = true;
                     this.dispatch("settings-changed");
 
                     if (connected) {
@@ -224,14 +223,14 @@ padlock.SyncMixin = (superClass) => {
                         return Promise.reject("Please enter a valid login code!");
                     } else {
                         return this.activateToken(code)
-                            .catch((e) => this._handleCloudError(e))
                             .then((success) => {
                                 if (success) {
                                     return true;
                                 } else {
                                     return Promise.reject($l("Invalid login code. Try again!"));
                                 }
-                            });
+                            })
+                            .catch((e) => this._handleCloudError(e));
                     }
                 }
             );
@@ -425,6 +424,7 @@ padlock.SyncMixin = (superClass) => {
                     // We're getting back the api key directly, but it will valid only
                     // after the user has visited the activation link in the email he was sent
                     this.settings.syncConnected = false;
+                    this.settings.syncAuto = false;
                     this.settings.syncToken = authToken.token;
                     this.settings.syncId = authToken.id;
                     this.dispatch("settings-changed");
@@ -457,6 +457,7 @@ padlock.SyncMixin = (superClass) => {
                 case "invalid_auth_token":
                 case "expired_auth_token":
                     this.settings.syncConnected = false;
+                    this.settings.syncAuto = false;
                     this.settings.syncToken = "";
                     this.settings.syncEmail = "";
                     this.settings.syncReadonly = false;
@@ -534,7 +535,7 @@ padlock.SyncMixin = (superClass) => {
                         });
                     return false;
                 case "subscription_required":
-                    return false;
+                    return true;
                 default:
                     this.confirm(
                         e && e.message || $l("Something went wrong. Please try again later!"),

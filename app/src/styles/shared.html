@@ -137,17 +137,8 @@
                 overflow: hidden;
             }
 
-            section:not(.horizontal) > :not(:last-child) {
+            section > :not(:last-child) {
                 border-bottom: solid 1px var(--border-color);
-            }
-
-            section.horizontal {
-                display: flex;
-                align-items: stretch;
-            }
-
-            section.horizontal > :not(:last-child) {
-                border-right: solid 1px rgba(0, 0, 0, 0.1);
             }
 
             .section-header {
@@ -287,6 +278,15 @@
             pl-icon[spin] {
                 animation: spin 1s infinite;
                 transform-origin: center 49%;
+            }
+
+            .unlock-feature-hint {
+                padding: 8px;
+                text-align: center;
+                background: var(--color-foreground);
+                color: var(--color-background);
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
             }
 
             @keyframes spin {
