@@ -248,8 +248,6 @@
                 </pl-loading-button>
             </div>
 
-            <div class="version animate-in animate-out" on-click="_openProductPage">Padlock v[[ _version ]]</div>
-
         </main>
 
         <main class="get-started">
@@ -460,7 +458,6 @@ class StartView extends applyMixins(
     constructor() {
         super();
         this._failCount = 0;
-        getAppVersion().then(((version) => this._version = version));
     }
 
     ready() {
