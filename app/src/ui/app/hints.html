@@ -27,6 +27,7 @@ padlock.HintsMixin = (superClass) => {
             this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindSync()));
             this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindTrialEnds()));
             this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._askFeedback()));
+            this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._crossPlatformHint()));
             this.listen("auto-lock", () => statsLoaded.then(() => this._showAutoLockNotice()));
             this.listen("settings-changed", () => this._notifySubStatus());
             this.listen("sync-connect-success", () => this._notifySubStatus());
@@ -234,6 +235,30 @@ padlock.HintsMixin = (superClass) => {
                         }
                     });
                 }
+            }
+        }
+
+        _crossPlatformHint() {
+            if (
+                !this.settings.syncConnected &&
+                !stats.hasShownCrossPlatformHint
+            ) {
+                this.confirm(
+                    $l(
+                        "Padlock lets you share your data seamlessly across all your devices like phones, " +
+                        "tablets and computers! Log in now and we'll get you set up in just few steps!"
+                    ),
+                    $l("Log In"),
+                    $l("No Thanks"),
+                    { title: $l("Did You Know?"), type: "question" }
+                )
+                    .then((confirmed) => {
+                        if (confirmed) {
+                            this._openCloudView();
+                        }
+                    });
+
+                padlock.stats.set({ hasShownCrossPlatformHint: new Date().getTime() });
             }
         }
 
