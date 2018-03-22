@@ -62,7 +62,7 @@
             }
         </style>
 
-        <pl-dialog id="dialog" open="{{ open }}" class="tiles"
+        <pl-dialog id="dialog" open="{{ open }}"
             prevent-dismiss="[[ preventDismiss ]]" on-dialog-dismiss="_dialogDismiss">
             <div class="info">
                 <pl-icon class="info-icon" icon="[[ _icon(type) ]]"></pl-icon>
@@ -72,7 +72,7 @@
                 </div>
             </div>
             <template is="dom-repeat" items="[[ options ]]">
-                <button on-click="_selectOption" class="tap">[[ item ]]</button>
+                <button on-click="_selectOption" class$="[[ _buttonClass(index) ]]">[[ item ]]</button>
             </template>
         </pl-dialog>
     </template>
@@ -138,6 +138,10 @@ class DialogAlert extends padlock.BaseElement {
 
     _textClass() {
         return this.title ? "small" : "";
+    }
+
+    _buttonClass(index) {
+        return "tap tiles-" + (Math.floor((index + 1) % 8) + 1);
     }
 }
 
