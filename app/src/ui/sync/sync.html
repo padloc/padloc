@@ -536,6 +536,10 @@ padlock.SyncMixin = (superClass) => {
                     return false;
                 case "subscription_required":
                     return true;
+                case "failed_connection":
+                    this.alert($l("Looks like we can't connect to our servers right now. Please check your internet " +
+                        "connection and try again!"), { type: "warning", title: $l("Failed Connection") });
+                    return false;
                 default:
                     this.confirm(
                         e && e.message || $l("Something went wrong. Please try again later!"),
