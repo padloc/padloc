@@ -81,6 +81,7 @@ padlock.SyncMixin = (superClass) => {
                     this.settings.syncEmail = "";
                     this.settings.syncReadonly = false;
                     this.settings.syncSubStatus = "";
+                    this.settings.account = null;
                     this.dispatch("settings-changed");
                     this.dispatch("sync-disconnect");
                 })
