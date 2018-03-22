@@ -25,10 +25,8 @@
                 };
             }
 
-            ::slotted(.StripeElement) {
-                height: var(--row-height);
-                padding: 15px;
-                box-sizing: border-box;
+            .stripe-element-wrapper {
+                padding: 14px;
             }
 
             .plan {
@@ -191,8 +189,7 @@
                 margin: 5px 0 25px 0;
             }
 
-            #paymentForm > *,
-            ::slotted(.StripeElement) {
+            #paymentForm > * {
                 border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
@@ -251,8 +248,10 @@
                     <div class="support-link"
                         hidden$="[[ !_needsSupport ]]">[[ $l("Contact Support") ]]</div>
                 </div>
-                <slot>
-                </slot>
+                <div class="stripe-element-wrapper">
+                    <slot>
+                    </slot>
+                </div>
                 <pl-loading-button class="tap" id="submitButton" on-click="_submitCard">[[ _submitLabel(plan) ]]</pl-loading-button>
             </form>
             <div slot="after" class="secure-payment">
@@ -318,14 +317,7 @@ class PaymentDialog extends applyMixins(
                 base: {
                     fontFamily: '"Clear Sans", "Helvetica Neue", Helvetica, sans-serif',
                     fontSmoothing: "antialiased",
-                    fontSize: "18px",
-                    // color: "#fff",
-                    // iconColor: "#fff",
-                    // textShadow: "rgba(0, 0, 0, 0.2) 0 2px 0",
-                    // "::placeholder": {
-                    //     color: "rgba(255, 255, 255, 0.7)",
-                    //     textShadow: "rgba(0, 0, 0, 0.15) 0 2px 0"
-                    // }
+                    fontSize: "18px"
                 },
                 invalid: {
                     textShadow: "none"
