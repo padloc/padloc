@@ -116,9 +116,19 @@
             }
 
             .price-amount {
-                font-size: 270%;
+                font-size: 300%;
                 line-height: 45px;
                 font-weight: bold;
+            }
+
+            .price-decimal {
+                vertical-align: super;
+                font-size: 42%;
+            }
+
+            .price-currency {
+                vertical-align: top;
+                font-size: 60%;
             }
 
             .price-period {
@@ -224,12 +234,14 @@
                         </div>
                     </div>
                     <div class="price">
-                        <div class="price-amount">[[ _monthlyPrice(plan.amount) ]]</div>
+                        <div class="price-amount">
+                            <span class="price-currency">$</span>[[ _monthlyPrice(plan.amount) ]]<span class="price-decimal">[[ _monthlyPriceDecimal(plan.amount) ]]</span>
+                        </div>
                         <div class="price-period">[[ $l("per month*") ]]</div>
                     </div>
                     <div class="price-hint">[[ $l("*USD\, billed annually") ]]</div>
                 </div>
-                <pl-input id="couponInput" value="{{ coupon }}" placeholder="[[ $l('Enter Coupon Code') ]]" hidden$="[[ !_showCouponInput ]]"></pl-input>
+                <pl-input id="couponInput" value="{{ coupon }}" placeholder="[[ $l('Coupon Code') ]]" hidden$="[[ !_showCouponInput ]]"></pl-input>
                 <div class="message card-hint tap" hidden$="[[ _hasError(_cardError) ]]" on-click="_toggleCoupon">
                     <div>[[ $l("Please enter your credit or debit card information:") ]]</div>
                     <div class="support-link" hidden$="[[ _showCouponInput ]]">[[ $l("I have a coupon!") ]]</div>
@@ -379,7 +391,12 @@ class PaymentDialog extends applyMixins(
     }
 
     _monthlyPrice(amount) {
-        return $l("${0}", amount / 1200);
+        return `${Math.floor(amount / 1200)}`;
+    }
+
+    _monthlyPriceDecimal(amount) {
+        const d = (amount / 12) % 100;
+        return d < 10 ? `.0${d}` : `.${d}`;
     }
 
     _dismiss() {
