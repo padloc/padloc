@@ -74,18 +74,20 @@ padlock.SyncMixin = (superClass) => {
         }
 
         disconnectCloud() {
+            const done = () => {
+                this.settings.syncConnected = false;
+                this.settings.syncToken = "";
+                this.settings.syncEmail = "";
+                this.settings.syncReadonly = false;
+                this.settings.syncSubStatus = "";
+                this.settings.account = null;
+                this.dispatch("settings-changed");
+                this.dispatch("sync-disconnect");
+            };
+
             this.cloudSource.source.logout()
-                .then(() => {
-                    this.settings.syncConnected = false;
-                    this.settings.syncToken = "";
-                    this.settings.syncEmail = "";
-                    this.settings.syncReadonly = false;
-                    this.settings.syncSubStatus = "";
-                    this.settings.account = null;
-                    this.dispatch("settings-changed");
-                    this.dispatch("sync-disconnect");
-                })
-                .catch((e) => this._handleCloudError(e));
+                .then(done)
+                .catch(done);
         }
 
         synchronize(auto) {
