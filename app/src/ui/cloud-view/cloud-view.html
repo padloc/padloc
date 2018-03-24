@@ -36,6 +36,90 @@
                 transform: translate3d(0, 0, 0);
             }
 
+            .login {
+                @apply --fullbleed;
+                background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                color: var(--color-background);
+                text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                z-index: 1;
+                padding: 0 20px;
+            }
+
+            .login > * {
+                width: 100%;
+                max-width: 400px;
+                box-sizing: border-box;
+            }
+
+            .login .back-button {
+                position: absolute;
+                width: 50px;
+                height: 50px;
+                top: 0;
+                left: 0;
+                font-size: 120%;
+            }
+
+            .login .icons {
+                position: relative;
+                height: 100px;
+                overflow: visible;
+            }
+
+            .login .icons > * {
+                @apply --fullbleed;
+                margin: auto;
+                width: 80px;
+                height: 80px;
+                bottom: 0;
+                font-size: 50px;
+            }
+
+            .login .icons pl-icon[icon="cloud"] {
+                width: 300px;
+                height: 300px;
+                font-size: 230px;
+                text-shadow: rgba(0, 0, 0, 0.2) 0 -2px 5px;
+                bottom: -30px;
+            }
+
+            .login .icons pl-icon[icon="mobile"] {
+                transform: translate(-110px, -100px) rotate(-30deg)
+            }
+
+            .login .icons pl-icon[icon="desktop"] {
+                transform: translate(100px, -100px) rotate(15deg)
+            }
+
+            .login .title {
+                font-size: 150%;
+                text-align: center;
+                font-weight: bold;
+            }
+
+            .login .text {
+                padding: 15px;
+                font-size: var(--font-size-small);
+                text-align: center;
+            }
+
+            .login pl-input {
+                height: var(--row-height);
+                background: var(--shade-2-color);
+                border-radius: 12px;
+                margin: 10px 0;
+            }
+
+            .login pl-loading-button {
+                font-weight: bold;
+                border-radius: 12px;
+                overflow: hidden;
+                will-change: transform:
+            }
+
             .account {
                 height: 90px;
                 display: flex;
@@ -75,16 +159,6 @@
 
             #emailInput {
                 text-align: center;
-            }
-
-            #customUrlInput {
-                width: 100%;
-                padding-left: 15px;
-                padding-right: 15px;
-            }
-
-            #customUrlInput:not([invalid]) + .warning {
-                display: none;
             }
 
             section.highlight {
@@ -130,14 +204,6 @@
                 font-size: var(--font-size-small);
             }
 
-            .url-warning {
-                font-size: var(--font-size-small);
-                text-align: center;
-                padding: 15px;
-                border-top: solid 1px var(--border-color);
-                color: var(--color-error);
-            }
-
             pl-icon[icon=refresh][spin] {
                 background: transparent !important;
                 pointer-events: none;
@@ -156,19 +222,6 @@
 
         <main>
 
-            <section class="highlight tiles" hidden$="[[ settings.syncConnected ]]">
-                <div class="info">
-                    <pl-icon class="info-icon" icon="cloud"></pl-icon>
-                    <div class="info-body">
-                        <div class="info-title">[[ $l("Log In") ]]</div>
-                        <div class="info-text">[[ loginInfoText() ]]</div>
-                    </div>
-                </div>
-                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]"
-                    select-on-focus required on-enter="_login"></pl-input>
-                <pl-loading-button id="loginButton" class="tap" on-click="_login">[[ $l("Log In") ]]</pl-loading-button>
-            </section>
-
             <section class="highlight tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="time"></pl-icon>
@@ -177,7 +230,7 @@
                         <div class="info-text">[[ trialingMessage(remainingTrialDays) ]]</div>
                     </div>
                 </div>
-                <button class="tap" on-click="_trialingBuySubscription">[[ $l("Upgrade Now") ]]</button>
+                <button class="tap" on-click="_buySubscription" data-source="App - Trialing">[[ $l("Upgrade Now") ]]</button>
             </section>
 
             <section class="highlight tiles warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">
@@ -188,7 +241,7 @@
                         <div class="info-text">[[ trialExpiredMessage() ]]</div>
                     </div>
                 </div>
-                <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Upgrade Now") ]]</button>
+                <button class="tap" on-click="_buySubscription" data-source="App - Trial Expired">[[ $l("Upgrade Now") ]]</button>
             </section>
 
             <section class="highlight tiles warning" hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">
@@ -199,7 +252,7 @@
                         <div class="info-text">[[ subUnpaidMessage() ]]</div>
                     </div>
                 </div>
-                <button class="tap" on-click="updatePaymentMethod">[[ $l("Update Payment Method") ]]</button>
+                <button class="tap" on-click="_updatePaymentMethod" data-source="App - Payment Failed">[[ $l("Update Payment Method") ]]</button>
                 <button class="tap" on-click="_contactSupport">[[ $l("Contact Support") ]]</button>
             </section>
 
@@ -247,26 +300,37 @@
 
             <section hidden$="[[ !_hasPaymentSource(settings.account.paymentSource) ]]">
                 <div class="section-header">[[ $l("Billing") ]]</div>
-                <button class="tap" on-click="updatePaymentMethod">[[ _paymentSourceLabel(settings.account.paymentSource) ]]</button>
+                <button class="tap" on-click="_updatePaymentMethod" data-source="App - Billing">[[ _paymentSourceLabel(settings.account.paymentSource) ]]</button>
                 <button class="tap" on-click="cancelSubscription"
                     hidden$="[[ !isSubActive(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Cancel Subscription") ]]</button>
             </section>
 
-            <section hidden$="[[ settings.syncConnected ]]">
-                <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
-                    on-change="_customHostChanged" class="tap"></pl-toggle-button>
-                <div class="tap" hidden$="[[ !settings.syncCustomHost ]]">
-                    <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
-                        value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
-                        required on-change="settingChanged"></pl-input>
-                    <div class="url-warning">
-                        <strong>[[ $l("Invalid URL") ]]</strong> -
-                        [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
-                    </div>
-                </div>
-            </section>
-
         </main>
+
+        <div class="login" hidden$="[[ settings.syncConnected ]]">
+
+            <pl-icon icon="close" class="back-button tap" on-click="_back"></pl-icon>
+
+            <div class="spacer"></div>
+
+            <div class="title">[[ $l("Padlock Online") ]]</div>
+
+            <div class="text">[[ loginInfoText() ]]</div>
+
+            <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]"
+                select-on-focus required on-enter="_login"></pl-input>
+
+            <pl-loading-button id="loginButton" class="tap" on-click="_login">[[ $l("Log In") ]]</pl-loading-button>
+
+            <div class="spacer"></div>
+
+            <div class="icons">
+                <pl-icon icon="mobile"></pl-icon>
+                <pl-icon icon="desktop"></pl-icon>
+                <pl-icon icon="cloud"></pl-icon>
+            </div>
+
+        </div>
 
         <div class="rounded-corners"></div>
 
@@ -290,6 +354,10 @@ class CloudView extends applyMixins(
 
     static get is() { return "pl-cloud-view"; }
 
+    static get properties() {
+
+    }
+
     ready() {
         super.ready();
         this.listen("data-loaded", () => this.animate());
@@ -297,6 +365,7 @@ class CloudView extends applyMixins(
         this.listen("sync-connect-cancel", () => this.animate());
         this.listen("sync-connect-success", () => this.animate());
         this.listen("sync-disconnect", () => this.animate());
+        this.listen("sync-connect-success", () => this.refreshAccount());
     }
 
     animate() {
@@ -333,55 +402,6 @@ class CloudView extends applyMixins(
                 this.disconnectCloud();
             }
         });
-    }
-
-    _customHostChanged() {
-        if (this.settings.syncCustomHost) {
-            this.confirm(
-                $l("Are you sure you want to use a custom server for synchronization? " +
-                    "This option is only recommended for advanced users!"),
-                $l("Continue"))
-                .then((confirmed) => {
-                    if (confirmed) {
-                        this.settingChanged();
-                    } else {
-                        this.set("settings.syncCustomHost", false);
-                    }
-                });
-        } else {
-            this.settingChanged();
-        }
-    }
-
-    _refresh() {
-        if (this.isActivationPending()) {
-            this.$.refreshButton.start();
-            this.testCredentials()
-                .then((connected) => {
-                    if (connected) {
-                        this.$.refreshButton.success();
-                    } else {
-                        this.$.refreshButton.fail();
-                    }
-                })
-                .catch(() => this.$.refreshButton.fail());
-        } else {
-            this.synchronize();
-        }
-    }
-
-    _trialingBuySubscription() {
-        // this.openDashboard("subscribe", "app-2");
-        this.buySubscription();
-    }
-
-    _readonlyBuySubscription() {
-        // this.openDashboard("subscribe", "app-3");
-        this.buySubscription();
-    }
-
-    _manageAccount() {
-        this.openDashboard("", "app-1");
     }
 
     _login() {
@@ -448,6 +468,14 @@ class CloudView extends applyMixins(
     _paymentSourceLabel() {
         const s = this.settings.account && this.settings.account.paymentSource;
         return s && `${s.brand} •••• •••• •••• ${s.lastFour}`;
+    }
+
+    _buySubscription(e) {
+        this.buySubscription(e.target.dataset.source);
+    }
+
+    _updatePaymentMethod(e) {
+        this.updatePaymentMethod(e.target.dataset.source);
     }
 
 }

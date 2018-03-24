@@ -86,6 +86,18 @@
                 margin-top: 5px;
                 word-wrap: break-word;
             }
+
+            #customUrlInput:not([invalid]) + .warning {
+                display: none;
+            }
+
+            .url-warning {
+                font-size: var(--font-size-small);
+                text-align: center;
+                padding: 15px;
+                border-top: solid 1px var(--border-color);
+                color: var(--color-error);
+            }
         </style>
 
         <header>
@@ -134,6 +146,20 @@
                 <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
                     reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
                 <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
+            </section>
+
+            <section hidden$="[[ settings.syncConnected ]]">
+                <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
+                    on-change="_customHostChanged" class="tap"></pl-toggle-button>
+                <div class="tap" hidden$="[[ !settings.syncCustomHost ]]">
+                    <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
+                        value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
+                        required on-change="settingChanged"></pl-input>
+                    <div class="url-warning">
+                        <strong>[[ $l("Invalid URL") ]]</strong> -
+                        [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
+                    </div>
+                </div>
             </section>
 
             <section hidden$="[[ !_isDesktop() ]]">
@@ -487,6 +513,24 @@ class SettingsView extends applyMixins(
             "Enable Auto Sync to automatically synchronize your data with " +
             "your Padlock online account every time you make a change!"
         );
+    }
+
+    _customHostChanged() {
+        if (this.settings.syncCustomHost) {
+            this.confirm(
+                $l("Are you sure you want to use a custom server for synchronization? " +
+                    "This option is only recommended for advanced users!"),
+                $l("Continue"))
+                .then((confirmed) => {
+                    if (confirmed) {
+                        this.settingChanged();
+                    } else {
+                        this.set("settings.syncCustomHost", false);
+                    }
+                });
+        } else {
+            this.settingChanged();
+        }
     }
 
 }

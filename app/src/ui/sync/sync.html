@@ -39,7 +39,6 @@ padlock.SyncMixin = (superClass) => {
             this.listen("sync-start", () => this._syncStart());
             this.listen("sync-success", () => this._syncSuccess());
             this.listen("sync-fail", () => this._syncFail());
-            this.listen("sync-connect-success", () => this.refreshAccount());
             this._updateLastSync();
             setInterval(() => this._updateLastSync(), 60000);
         }
@@ -221,6 +220,8 @@ padlock.SyncMixin = (superClass) => {
                 true,
                 (code) => {
                     if (code === null) {
+                        // Dialog canceled
+                        this.cancelConnect();
                         return Promise.resolve(null);
                     } else if (code == "") {
                         return Promise.reject("Please enter a valid login code!");
