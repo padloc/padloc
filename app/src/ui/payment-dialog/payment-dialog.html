@@ -271,6 +271,7 @@
 
 const { LocaleMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
+const { track } = padlock.tracking;
 
 let stripe;
 
@@ -298,11 +299,18 @@ class PaymentDialog extends applyMixins(
         this._setupPayment();
     }
 
-    show() {
+    show(source) {
         this._needsSupport = false;
         this._cardError = "";
         this._showCouponInput = !!this.coupon;
         this.open = true;
+        this._source = source;
+
+        track("Payment Dialog: Open", {
+            "Plan": this.plan && this.plan.id,
+            "Source": this._source
+        });
+
         return new Promise((resolve) => {
             this._resolve = resolve;
         });
@@ -342,37 +350,45 @@ class PaymentDialog extends applyMixins(
 
         stripe.createToken(this._cardElement).then((result) => {
             const edata = {
-                "Action": this._changingPaymentSource ? "Change Payment Source" : "Buy Subscription",
-                "Source": this.referer
+                "Plan": this.plan && this.plan.id,
+                "Source": this._source,
+                "Success": true,
+                "Token Created": true,
+                "Coupon": this.coupon
             };
-
-            if (result.error) {
-                Object.assign(edata, {
-                    "Error Code": result.error.code,
-                    "Error Type": result.error.type,
-                    "Error Message": result.error.message
-                });
-            }
-
-            // const trackPromise = track("Dashboard: Submit Payment Source", edata);
 
             if (result.error) {
                 this.$.submitButton.fail();
                 this._submittingCard = false;
+                Object.assign(edata, {
+                    "Error Code": result.error.code,
+                    "Error Type": result.error.type,
+                    "Error Message": result.error.message,
+                    "Success": false,
+                    "Token Created": false
+                });
+                track("Payment Dialog: Submit", edata);
             } else {
-                this.source.subscribe(result.token.id, this.$.couponInput.value)
+                this.source.subscribe(result.token.id, this.coupon, this._source)
                     .then(() => {
                         this.$.submitButton.success();
                         typeof this._resolve === "function" && this._resolve(true);
                         this._submittingCard = false;
                         this._resolve = null;
                         this.open = false;
+                        track("Payment Dialog: Submit", edata);
                     })
                     .catch((e) => {
                         this.$.submitButton.fail();
                         this._submittingCard = false;
                         this._cardError = e.message;
                         this._needsSupport = true;
+                        Object.assign(edata, {
+                            "Error Code": e.code,
+                            "Error Message": e.message,
+                            "Success": false
+                        });
+                        track("Payment Dialog: Submit", edata);
                     });
             }
         });

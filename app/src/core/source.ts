@@ -187,7 +187,7 @@ export class CloudSource extends AjaxSource {
         }
 
         const subStatus = req.getResponseHeader("X-Sub-Status");
-        if (subStatus) {
+        if (subStatus !== null) {
             this.settings.syncSubStatus = subStatus;
         }
         try {
@@ -298,10 +298,11 @@ export class CloudSource extends AjaxSource {
         );
     }
 
-    subscribe(stripeToken = "", coupon = ""): Promise<XMLHttpRequest> {
+    subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {
         const params = new URLSearchParams();
         params.set("stripeToken", stripeToken);
         params.set("coupon", coupon);
+        params.set("source", source);
         return this.request(
             "POST",
             this.urlForPath("subscribe"),

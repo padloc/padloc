@@ -412,7 +412,7 @@
 
 const { DataMixin, LocaleMixin, DialogMixin, AnimationMixin, BaseElement, SyncMixin } = padlock;
 const { applyMixins, wait } = padlock.util;
-const { isTouch, getAppVersion, getAppStoreLink } = padlock.platform;
+const { isTouch, getAppStoreLink } = padlock.platform;
 const { track } = padlock.tracking;
 
 class StartView extends applyMixins(
@@ -477,6 +477,7 @@ class StartView extends applyMixins(
         this.$.emailInput.value = "";
         this.$.newPasswordInput.value = "";
         this.$.confirmPasswordInput.value = "";
+        this.$.cloudPwdInput.value = "";
         this.$.unlockButton.stop();
         this.$.getStartedButton.stop();
         this._failCount = 0;
@@ -528,6 +529,8 @@ class StartView extends applyMixins(
         }
 
         this.$.emailButton.start();
+        padlock.stats.set({ pairingSource: "Setup" });
+
         this.connectCloud(this.$.emailInput.value)
             .then(() => {
                 this.$.emailButton.success();
@@ -576,6 +579,8 @@ class StartView extends applyMixins(
                 this.$.codeButton.fail();
                 this._handleCloudError(e);
             });
+
+        track("Setup: Code", { "Email": this.$.emailInput.value });
     }
 
     _connected() {
@@ -588,6 +593,7 @@ class StartView extends applyMixins(
     }
 
     _cancelActivation() {
+        this.cancelConnect();
         this.$.codeInput.value = "";
         this._getStartedStep = 1;
     }
@@ -886,6 +892,8 @@ class StartView extends applyMixins(
                     this._handleCloudError(e);
                 }
             });
+
+        track("Setup: Remote Password", { Email: this.settings.syncEmail });
     }
 
     _forgotCloudPassword() {

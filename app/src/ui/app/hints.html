@@ -100,7 +100,7 @@ padlock.HintsMixin = (superClass) => {
                 this.settings.syncSubStatus === "trialing" &&
                 (!stats.lastTrialEndsReminder || daysPassed(stats.lastTrialEndsReminder) > 7)
             ) {
-                this.buySubscription();
+                this.buySubscription("App - Trialing (Alert)");
                 padlock.stats.set({ lastTrialEndsReminder: new Date().getTime() });
             }
 
@@ -219,7 +219,7 @@ padlock.HintsMixin = (superClass) => {
                         options: [$l("Upgrade Now")]
                     }).then((choice) => {
                         if (choice === 0) {
-                            this.buySubscription();
+                            this.buySubscription("App - Trial Expired (Alert)");
                         }
                     });
                 } else if (this.isSubUnpaid()) {
@@ -229,7 +229,7 @@ padlock.HintsMixin = (superClass) => {
                         options: [$l("Update Payment Method"), $l("Contact Support")]
                     }).then((choice) => {
                         if (choice === 0) {
-                            this.updatePaymentMethod();
+                            this.updatePaymentMethod("App - Payment Failed (Alert)");
                         } else if (choice === 1) {
                             window.open("mailto:support@padlock.io", "_system");
                         }
@@ -254,6 +254,7 @@ padlock.HintsMixin = (superClass) => {
                 )
                     .then((confirmed) => {
                         if (confirmed) {
+                            padlock.stats.set({ pairingSource: "Cross-Platform Hint" });
                             this._openCloudView();
                         }
                     });
