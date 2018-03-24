@@ -50,7 +50,7 @@ padlock.HintsMixin = (superClass) => {
                 this.choose($l(
                     "Have you backed up your data yet? Remember that by default your data is only stored " +
                     "locally and can not be recovered in case your device gets damaged or lost. " +
-                    "Lock in now to enable automatic online backups!"
+                    "Log in now to enable automatic online backups!"
                 ), [$l("Log In"), $l("Do Nothing")], { type: "warning" })
                     .then((choice) => {
                         switch (choice) {

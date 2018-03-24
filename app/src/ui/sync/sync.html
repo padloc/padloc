@@ -262,14 +262,6 @@ padlock.SyncMixin = (superClass) => {
                 .catch((e) => e && this._handleCloudError(e));
         }
 
-        activationPendingText() {
-            return $l(
-                "Almost done! We send an email with a login link to {0}. Check your " +
-                "inbox and follow the link to complete the process!",
-                this.settings.syncEmail
-            );
-        }
-
         trialInfoText() {
             return $l(
                 "Your free trial period ends in {0} days. After this period, your access will be read-only, " +
@@ -280,30 +272,10 @@ padlock.SyncMixin = (superClass) => {
             );
         }
 
-        generalInfoText() {
-            return $l(
-                "Padlock Cloud provides a convenient way of synchronising your data between " +
-                "all your devices. By securely storing your data in the cloud, it not only allows you " +
-                "to easily access it from anywhere but also acts as a backup in case you should lose " +
-                "your device or accidentally delete the app. Before being sent to our servers, " +
-                "your data is encrypted locally using your master password to make sure that nobody " +
-                "can read it - not even we!"
-            );
-        }
-
         loginInfoText() {
             return $l(
                 "Log in now to unlock advanced features like automatic online backups and " +
                 "seamless synchronization between devices!"
-            );
-        }
-
-        readOnlyInfoText() {
-            return $l(
-                "You currently don't have an active subscription which means you can still access " +
-                "your existing online data but you won't be able to upload any new data " +
-                "or synchronize changes between devices. Get a subscription now to take full advantage " +
-                "of Padlocks online features!"
             );
         }
 
