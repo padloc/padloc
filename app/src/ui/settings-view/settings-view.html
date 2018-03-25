@@ -98,6 +98,12 @@
                 border-top: solid 1px var(--border-color);
                 color: var(--color-error);
             }
+
+            .feature-locked {
+                font-size: var(--font-size-tiny);
+                color: var(--color-error);
+                margin: -14px 15px 12px 15px;
+            }
         </style>
 
         <header>
@@ -109,32 +115,38 @@
         <main>
 
             <section>
-                <div class="info">[[ _autoSyncInfoText() ]]</div>
-                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]"
-                    reverse class="tap" on-change="settingChanged" disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]"></pl-toggle-button>
-                <div class="unlock-feature-hint" hidden$="[[ settings.syncConnected ]]">[[ $l("Log in to enable auto sync!") ]]</div>
-                <div class="unlock-feature-hint" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable auto sync!") ]]</div>
-                <div class="unlock-feature-hint" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable auto sync!") ]]</div>
-            </section>
-
-            <section>
-                <div class="info">[[ _autoLockInfo() ]]</div>
-                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Enable Auto Lock') ]]" class="tap"
+                <div class="section-header">[[ $l("Auto Lock") ]]</div>
+                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Lock Automatically') ]]" class="tap"
                     reverse on-change="settingChanged"></pl-toggle-button>
                 <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
                     label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
             </section>
 
             <section>
+                <div class="section-header">[[ $l("Synchronization") ]]</div>
+                <div disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">
+                    <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Sync Automatically') ]]"
+                        reverse class="tap" on-change="settingChanged"></pl-toggle-button>
+                    <div class="feature-locked" hidden$="[[ settings.syncConnected ]]">[[ $l("Log in to enable auto sync!") ]]</div>
+                    <div class="feature-locked" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable auto sync!") ]]</div>
+                    <div class="feature-locked" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable auto sync!") ]]</div>
+                </div>
+                <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
+                    on-change="_customHostChanged" class="tap" disabled$="[[ settings.syncConnected ]]"></pl-toggle-button>
+                <div class="tap" hidden$="[[ !settings.syncCustomHost ]]" disabled$="[[ settings.syncConnected ]]">
+                    <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
+                        value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
+                        required on-change="settingChanged"></pl-input>
+                    <div class="url-warning">
+                        <strong>[[ $l("Invalid URL") ]]</strong> -
+                        [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
+                    </div>
+                </div>
+            </section>
+
+            <section>
                 <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
-            </section>
-
-            <section>
-                <div class="info">[[ _resetDataInfo() ]]</div>
                 <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
-            </section>
-
-            <section>
                 <button class="tap" on-click="_import">[[ $l("Import...") ]]</button>
                 <button class="tap" on-click="_export">[[ $l("Export...") ]]</div>
             </section>
@@ -146,20 +158,6 @@
                 <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
                     reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
                 <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
-            </section>
-
-            <section hidden$="[[ settings.syncConnected ]]">
-                <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
-                    on-change="_customHostChanged" class="tap"></pl-toggle-button>
-                <div class="tap" hidden$="[[ !settings.syncCustomHost ]]">
-                    <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
-                        value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
-                        required on-change="settingChanged"></pl-input>
-                    <div class="url-warning">
-                        <strong>[[ $l("Invalid URL") ]]</strong> -
-                        [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
-                    </div>
-                </div>
             </section>
 
             <section hidden$="[[ !_isDesktop() ]]">
@@ -196,7 +194,8 @@
 
 const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, SyncMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, saveDBAs, loadDB, isElectron } = padlock.platform;
+const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates,
+    saveDBAs, loadDB, isElectron } = padlock.platform;
 
 class SettingsView extends applyMixins(
     BaseElement,
