@@ -241,6 +241,7 @@ export class Settings {
 
     clear(): void {
         Object.assign(this, Settings.defaults);
+        this.loaded = false;
     }
 
 }
