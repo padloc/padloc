@@ -68,6 +68,8 @@
   t: Keine Felder
 - o: copied
   t: kopiert
+- o: Type To Search
+  t: Suchen...
 - o: You don't have any data yet! Start by creating your first record!
   t: >-
     Es sind noch keine Einträge vorhanden. Fangen Sie an, indem Sie Ihren ersten
@@ -81,25 +83,41 @@
 - o: Enter Record Name
   t: Namen Eingeben
 - o: No Category
-  t: Ohne Kategory
+  t: Ohne Kategorie
 - o: As CSV
   t: Als CSV
 - o: As Encrypted File
   t: Als Verschlüsselte Datei
 - o: Settings
   t: Einstellungen
-- o: Enable Auto Sync
-  t: Auto Sync Aktivieren
-- o: Log in to enable auto sync!
-  t: Zum freischalten einloggen!
-- o: Upgrade to enable auto sync!
-  t: Zum freischalten upgraden!
-- o: Enable Auto Lock
-  t: Auto Lock Aktivieren
+- o: Auto Lock
+  t: Auto-Lock
+- o: Lock Automatically
+  t: Automatisch Sperren
 - o: ' min'
   t: ' Min'
 - o: After
   t: Nach
+- o: Synchronization
+  t: Synchronisation
+- o: Sync Automatically
+  t: Autom. Synchronisieren
+- o: Log in to enable auto sync!
+  t: Zum freischalten einloggen!
+- o: Upgrade to enable auto sync!
+  t: Zum freischalten upgraden!
+- o: Use Custom Server
+  t: Eigenen Server Verwenden
+- o: Enter Custom URL
+  t: URL des Servers
+- o: Invalid URL
+  t: Ungültige URL
+- o: >-
+    Make sure that the URL is of the form https://myserver.tld:port. Note that a
+    https connection is required.
+  t: >-
+    Die URL muss von der Form https://myserver.tld:port. Eine sichere Verbindung
+    über https ist erforderlich.
 - o: Change Master Password
   t: Master Passwort Ändern
 - o: Reset App
@@ -116,18 +134,6 @@
   t: Beta-Versionen Installieren
 - o: Check For Updates...
   t: Nach Updates Suchen...
-- o: Use Custom Server
-  t: Eigenen Server Verwenden
-- o: Enter Custom URL
-  t: URL des Servers
-- o: Invalid URL
-  t: Ungültige URL
-- o: >-
-    Make sure that the URL is of the form https://myserver.tld:port. Note that a
-    https connection is required.
-  t: >-
-    Die URL muss von der Form https://myserver.tld:port. Eine sichere Verbindung
-    über https ist erforderlich.
 - o: Database
   t: Datenbank
 - o: 'Current Location:'
@@ -157,7 +163,9 @@
 - o: Enter Login Code
   t: Login-Code Eingeben
 - o: 'Check your inbox! An email was sent to **{0}** containing your login code.'
-  t: 'Prüfen Sie Ihr Postfach! Eine Email mit Ihrem Login-Code wurde an **{0}** gesendet.'
+  t: >-
+    Prüfen Sie Ihr Postfach! Eine Email mit Ihrem Login-Code wurde an **{0}**
+    gesendet.
 - o: Cancel
   t: Abbrechen
 - o: 'Please enter the master password for the account **{0}**!'
@@ -209,10 +217,10 @@
     unfortunately we cannot help you recover it. You can reset your password,
     but your data will be lost in the process!
   t: >-
-    Aus Sicherheitsgründen wird Ihr Passwort nicht von uns gespeichert
-    weshalb wir Ihnen leider nicht helfen können erneut Zugang zu Ihrer
-    Datenbank zu gewinnen. Sie können Ihr Password zurücksetzen, aber das
-    hat auch die Löschung Ihrer Daten zu Folge!
+    Aus Sicherheitsgründen wird Ihr Passwort nicht von uns gespeichert weshalb
+    wir Ihnen leider nicht helfen können erneut Zugang zu Ihrer Datenbank zu
+    gewinnen. Sie können Ihr Password zurücksetzen, aber das hat auch die
+    Löschung Ihrer Daten zur Folge!
 - o: Reset Password
   t: Passwort Zurücksetzen
 - o: Keep Trying
@@ -223,8 +231,8 @@
     Are you sure you want to reset your password? WARNING: All your data will be
     lost!
   t: >-
-    Sind Sie sicher, dass Sie Ihr Passwort zurücksetzen wollen? WARNUNG: All Ihre
-    Daten werden gelöscht!
+    Sind Sie sicher, dass Sie Ihr Passwort zurücksetzen wollen? WARNUNG: All
+    Ihre Daten werden gelöscht!
 - o: Submit
   t: Senden
 - o: 'Successfully updated the password for your account {0}.'
@@ -243,13 +251,6 @@
   t: Einloggen
 - o: Please enter a valid email address!
   t: Bitte geben Sie eine gültige Emailadresse ein!
-- o: >-
-    Almost done! We send an email with a login link to {0}. Check your inbox and
-    follow the link to complete the process!
-  t: >-
-    Fast fertig! Wir haben eine Email mit einem Login-Link an {0} gesendet.
-    Prüfen Sie Ihr Postfach und folgen Sie dem Link um den Prozess
-    abzuschließen!
 - o: >-
     Log in now to unlock advanced features like automatic online backups and
     seamless synchronization between devices!
@@ -272,15 +273,16 @@
     Your last payment has failed. Please contact your card provider or update
     your payment method!
   t: >-
-    Ihre letzte Zahlung ist fehlgeschlagen. Bitte kontaktieren Sie Ihren Anbieter
-    oder aktualisieren Sie Ihre Zahlungsmethode!
+    Ihre letzte Zahlung ist fehlgeschlagen. Bitte kontaktieren Sie Ihren
+    Anbieter oder aktualisieren Sie Ihre Zahlungsmethode!
 - o: >-
     Your subscription has been canceled. Reactivate it now to continue using
     advanced features like automatic online backups and seamless synchronization
     between devices!
   t: >-
-    Ihr Abonnement wurde beendet. Reaktivieren Sie es um weiterhin Online-Funktionen
-    wie automatische Backups und nahtlose synchronisation von Geräten zu nutzen!
+    Ihr Abonnement wurde beendet. Reaktivieren Sie es um weiterhin
+    Online-Funktionen wie automatische Backups und nahtlose synchronisation von
+    Geräten zu nutzen!
 - o: >-
     This device is connected to the Padlock Cloud account {0}. Connect all your
     devices with the same account to easily synchronize your data between them!
@@ -292,8 +294,8 @@
     The master password you use locally does not match the one of your online
     account {0}. What do you want to do?
   t: >-
-    Ihr lokales Master-Passwort stimmt nicht mit dem Ihres Online-Accounts
-    {0} überein. Was wollen Sie tun?
+    Ihr lokales Master-Passwort stimmt nicht mit dem Ihres Online-Accounts {0}
+    überein. Was wollen Sie tun?
 - o: Update Local Password
   t: Lokales Passwort Aktualisieren
 - o: Update Online Password
@@ -319,8 +321,8 @@
     A newer version of Padlock is available now! Update now to keep using online
     features (you won't be able to sync with your account until then)!
   t: >-
-    Eine neuere Version von Padlock ist verfügbar! Updaten Sie jetzt um weiterhin
-    Online-Funktionen zu nutzen!
+    Eine neuere Version von Padlock ist verfügbar! Updaten Sie jetzt um
+    weiterhin Online-Funktionen zu nutzen!
 - o: Update Now
   t: Jetzt Updaten
 - o: It seems are servers are over capacity right now. Please try again later!
@@ -456,7 +458,7 @@
 - o: Confirm your new master password!
   t: Bestätigen Sie Ihr neues Passwort!
 - o: 'Do you want to update the password for you online account {0} as well?'
-  t: 'Wollen Sie auch das Password für Ihren Online-Account aktualisieren?'
+  t: Wollen Sie auch das Password für Ihren Online-Account aktualisieren?
 - o: 'Yes'
   t: Ja
 - o: 'No'
@@ -558,7 +560,7 @@
     Sind Sie sicher, dass Sie einen eigenen Server zur Synchronisation verwenden
     möchten? Dies ist nur für fortgeschrittene Nutzer zu empfehlen!
 - o: Please enter the login code sent to you via email!
-  t: Bitte geben Sie den Login-Code ein, der Ihnen per Email geschickt wurde!
+  t: 'Bitte geben Sie den Login-Code ein, der Ihnen per Email geschickt wurde!'
 - o: >-
     The password you entered is weak which makes it easier for attackers to
     break the encryption used to protect your data. Try to use a longer password
@@ -647,7 +649,7 @@
     Have you backed up your data yet? Remember that by default your data is only
     stored locally and can not be recovered in case your device gets damaged or
     lost. Log in now to enable automatic online backups!
-  e: >-
+  t: >-
     Haben Sie bereits Ihre Daten gesichert? Denken Sie daran, dass Ihren Daten
     standardmäßig nur offline gespeichert und können nicht wiederhergestellt
     werden falls Ihr Gerät beschädigt wird oder verloren geht.
@@ -658,10 +660,10 @@
     should synchronize regularly to keep all your devices up-to-date and to make
     sure you always have a recent backup in the cloud.
   t: >-
-    Sie haben Ihre Daten das letzte mal mit Ihren Account for {0} Tagen synchronisiert!
-    Sie sollten Ihre Daten regelmäßig sychronisiern um all Ihre Geräte auf
-    dem neuesten Stand zu halten und sicher zu stellen, dass Sie stets ein
-    aktuelles Online-Backup haben!
+    Sie haben Ihre Daten das letzte mal mit Ihren Account for {0} Tagen
+    synchronisiert! Sie sollten Ihre Daten regelmäßig sychronisiern um all Ihre
+    Geräte auf dem neuesten Stand zu halten und sicher zu stellen, dass Sie
+    stets ein aktuelles Online-Backup haben!
 - o: Synchronize Now
   t: Jetzt Synchronisieren
 - o: Turn On Auto Sync
