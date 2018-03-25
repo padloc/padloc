@@ -112,6 +112,9 @@
                 background: var(--shade-2-color);
                 border-radius: 12px;
                 margin: 10px 0;
+                text-align: center;
+                overflow: hidden;
+                transform: translate3d(0, 0, 0);
             }
 
             .login pl-loading-button {
@@ -163,10 +166,6 @@
                 height: auto;
                 width: 70px;
                 font-size: 25px;
-            }
-
-            #emailInput {
-                text-align: center;
             }
 
             section.highlight {
@@ -326,7 +325,7 @@
             <div class="text">[[ loginInfoText() ]]</div>
 
             <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]"
-                select-on-focus required on-enter="_login"></pl-input>
+                select-on-focus required on-enter="_login" class="tap"></pl-input>
 
             <pl-loading-button id="loginButton" class="tap" on-click="_login">[[ $l("Log In") ]]</pl-loading-button>
 

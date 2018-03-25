@@ -25,7 +25,6 @@
       "cordova-custom-config": {},
       "cordova-plugin-pbkdf2": {},
       "cordova-plugin-device": {},
-      "cordova-plugin-wkwebview-engine": {},
       "cordova-plugin-compat": {},
       "cordova-plugin-crosswalk-webview": {
         "XWALK_VERSION": "23+",
@@ -33,7 +32,8 @@
         "XWALK_COMMANDLINE": "--disable-pull-to-refresh-effect",
         "XWALK_MODE": "embedded",
         "XWALK_MULTIPLEAPK": "true"
-      }
+      },
+      "cordova-plugin-wkwebview-engine": {}
     }
   },
   "dependencies": {
