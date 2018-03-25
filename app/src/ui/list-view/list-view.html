@@ -142,6 +142,9 @@
             #sectionSelector {
                 --row-height: 40px;
                 --font-size-default: var(--font-size-small);
+                --pl-dialog-inner: {
+                    background: var(--color-secondary);
+                };
             }
 
             .multi-select {
@@ -170,7 +173,7 @@
 
         <header hidden$="[[ multiSelect ]]">
             <pl-icon icon="menu" class="tap" on-click="_toggleMenu" hidden$="[[ filterActive ]]"></pl-icon>
-            <pl-input id="filterInput" class="filter-input tap" placeholder="Type To Search" active$="[[ filterActive ]]"
+            <pl-input id="filterInput" class="filter-input tap" placeholder="[[ $l('Type To Search') ]]" active$="[[ filterActive ]]"
                 value="{{ filterString }}" on-escape="clearFilter" no-tab></pl-input>
             <pl-icon icon="add" class="tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
             <pl-icon icon="cancel" class="tap" on-click="clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>

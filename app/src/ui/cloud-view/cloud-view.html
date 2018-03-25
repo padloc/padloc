@@ -267,8 +267,8 @@
                 <button class="tap" on-click="reactivateSubscription">[[ $l("Reactivate Subscription") ]]</button>
             </section>
 
-            <section hidden$="[[ !settings.syncConnected ]]">
-                <div class="account">
+            <section class="highlight hidden$="[[ !settings.syncConnected ]]">
+                <div class="account tiles">
                     <div class="account-info">
                         <div class="account-email">[[ settings.syncEmail ]]</div>
                         <div class="account-stats">
