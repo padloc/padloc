@@ -1,15 +1,15 @@
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../data/data.html">
+<link rel="import" href="../payment-dialog/payment-dialog.html">
 
 <script>
 (() => {
 
 const { EncryptedSource, CloudSource } = padlock.source;
 const { DataMixin } = padlock;
+const { formatDateFromNow } = padlock.util;
 
 const cloudSource = new EncryptedSource(new CloudSource(DataMixin.settings));
-
-let hasShownReadOnlyDialog;
 
 padlock.SyncMixin = (superClass) => {
 
@@ -21,6 +21,7 @@ padlock.SyncMixin = (superClass) => {
                 value: false,
                 notify: true
             },
+            lastSync: String,
             remainingTrialDays: {
                 type: Number,
                 computed: "_computeRemainingTrialDays(settings.syncTrialEnd)"
@@ -38,6 +39,8 @@ padlock.SyncMixin = (superClass) => {
             this.listen("sync-start", () => this._syncStart());
             this.listen("sync-success", () => this._syncSuccess());
             this.listen("sync-fail", () => this._syncFail());
+            this._updateLastSync();
+            setInterval(() => this._updateLastSync(), 60000);
         }
 
         connectCloud(email) {
@@ -46,7 +49,21 @@ padlock.SyncMixin = (superClass) => {
         }
 
         activateToken(code) {
-            return cloudSource.source.activateToken(code);
+            return cloudSource.source.activateToken(code)
+                .then((success) => {
+                    this.settings.syncConnected = success;
+                    this.settings.syncAuto = true;
+                    this.dispatch("settings-changed");
+
+                    if (success) {
+                        this.dispatch("sync-connect-success");
+                    }
+                    return success;
+                })
+                .catch((e) => {
+                    this._handleCloudError(e);
+                    throw e;
+                });
         }
 
         cancelConnect() {
@@ -56,18 +73,25 @@ padlock.SyncMixin = (superClass) => {
         }
 
         disconnectCloud() {
-            this.settings.syncConnected = false;
-            this.settings.syncToken = "";
-            this.settings.syncEmail = "";
-            this.settings.syncReadonly = false;
-            this.dispatch("settings-changed");
-            this.dispatch("sync-disconnect");
+            const done = () => {
+                this.settings.syncConnected = false;
+                this.settings.syncToken = "";
+                this.settings.syncEmail = "";
+                this.settings.syncReadonly = false;
+                this.settings.syncSubStatus = "";
+                this.settings.account = null;
+                this.dispatch("settings-changed");
+                this.dispatch("sync-disconnect");
+            };
+
+            this.cloudSource.source.logout()
+                .then(done)
+                .catch(done);
         }
 
         synchronize(auto) {
-            if (!this.settings.syncConnected) {
-                this.alert($l("You have to be connected to a Padlock Cloud account to synchronize your data!"));
-                return Promise.reject();
+            if (!this.settings.syncConnected || auto === true && !this.isSubValid()) {
+                return;
             }
 
             if (this._chainedSync) {
@@ -97,12 +121,12 @@ padlock.SyncMixin = (superClass) => {
             return this.collection.save(cloudSource)
                 .then(() => {
                     this.dispatch("sync-success");
-                    this.alert($l("Padlock Cloud master password updated successfully!"));
+                    this.alert($l("Successfully updated the password for your account {0}.", this.settings.syncEmail),
+                        { type: "success" });
                 })
                 .catch(() => {
                     this.dispatch("sync-fail");
-                    this.alert($l("Failed to update Padlock Cloud " +
-                        "master password. Please try again later!"));
+                    this.alert($l("Failed to update password. Please try again later!"), { type: "warning" });
                 });
         }
 
@@ -114,13 +138,26 @@ padlock.SyncMixin = (superClass) => {
             return this.settings.syncConnected && this.settings.syncSubStatus === "trialing";
         }
 
-        isInactive() {
-            const s = this.settings.syncSubStatus;
-            return this.settings.syncConnected && s && s !== "active" && s !== "trialing";
+        isTrialExpired() {
+            return this.settings.syncConnected && this.settings.syncSubStatus === "trial_expired";
         }
 
-        isActive() {
+        isSubCanceled() {
+            return this.settings.syncConnected && this.settings.syncSubStatus === "canceled";
+        }
+
+        isSubUnpaid() {
+            const s = this.settings.syncSubStatus;
+            return this.settings.syncConnected && (s === "unpaid" || s === "past_due");
+        }
+
+        isSubActive() {
             return this.settings.syncConnected && this.settings.syncSubStatus === "active";
+        }
+
+        isSubValid() {
+            const s = this.settings.syncSubStatus;
+            return this.settings.syncConnected && (s === "" || s === "active" || s === "trialing");
         }
 
         hasSyncToken() {
@@ -136,6 +173,7 @@ padlock.SyncMixin = (superClass) => {
                 .then((connected) => {
                     this._testCredsPromise = null;
                     this.settings.syncConnected = connected;
+                    this.settings.syncAuto = true;
                     this.dispatch("settings-changed");
 
                     if (connected) {
@@ -172,41 +210,91 @@ padlock.SyncMixin = (superClass) => {
                 .catch(() => window.open(`${this.settings.syncHostUrl}/dashboard/`, "_system"));
         }
 
-        activationPendingText() {
-            return $l(
-                "Almost done! We send an email with a login link to {0}. Check your " +
-                "inbox and follow the link to complete the process!",
-                this.settings.syncEmail
+        promptLoginCode() {
+            return this.prompt(
+                $l("Check your email! We sent your login code to {0}.", this.settings.email),
+                $l("Enter Login Code"),
+                "text",
+                $l("Confirm"),
+                $l("Cancel"),
+                true,
+                (code) => {
+                    if (code === null) {
+                        // Dialog canceled
+                        this.cancelConnect();
+                        return Promise.resolve(null);
+                    } else if (code == "") {
+                        return Promise.reject("Please enter a valid login code!");
+                    } else {
+                        return this.activateToken(code)
+                            .then((success) => {
+                                if (success) {
+                                    return true;
+                                } else {
+                                    return Promise.reject($l("Invalid login code. Try again!"));
+                                }
+                            })
+                            .catch((e) => this._handleCloudError(e));
+                    }
+                }
             );
         }
 
-        trialInfoText() {
+        loginDialog() {
+            return this.prompt(this.loginInfoText(), $l("Enter Email Address"), "email", $l("Login"), false, false,
+                (val) => {
+                    const input = document.createElement("input");
+                    input.type = "email";
+                    input.value = val;
+                    if (val === null) {
+                        return Promise.resolve(null);
+                    } else if (val == "" || !input.validity.valid) {
+                        return Promise.reject($l("Please enter a valid email address!"));
+                    } else {
+                        return this.connectCloud(val);
+                    }
+                }
+            )
+                .then((val) => val === null ? Promise.reject() : val)
+                .then(() => this.promptLoginCode())
+                .then((val) => val === null ? Promise.reject() : val)
+                .then(() => this.synchronize())
+                .catch((e) => e && this._handleCloudError(e));
+        }
+
+        loginInfoText() {
             return $l(
-                "Your trial period ends in {0} days. After this period, your access will be read-only, " +
-                "which means you will be able to access your existing data on Padlock Cloud but you won't " +
-                "be able to upload any new data or synchronize changes between devices. " +
-                "Get a subscription now to get unlimited access to Padlock Cloud!",
+                "Log in now to unlock advanced features like automatic online backups and " +
+                "seamless synchronization between devices!"
+            );
+        }
+
+        trialingMessage() {
+            return $l(
+                "Your trial period ends in {0} days. Upgrade now to continue using online features like " +
+                "synchronization and automatic backups!",
                 this.remainingTrialDays
             );
         }
 
-        generalInfoText() {
+        trialExpiredMessage() {
             return $l(
-                "Padlock Cloud provides a convenient way of synchronising your data between " +
-                "all your devices. By securely storing your data in the cloud, it not only allows you " +
-                "to easily access it from anywhere but also acts as a backup in case you should lose " +
-                "your device or accidentally delete the app. Before being sent to our servers, " +
-                "your data is encrypted locally using your master password to make sure that nobody " +
-                "can read it - not even we!"
+                "Your free trial has expired. Upgrade now to continue using advanced features like " +
+                "automatic online backups and seamless synchronization between devices!"
             );
         }
 
-        readOnlyInfoText() {
+        subUnpaidMessage() {
             return $l(
-                "You currently don't have an active subscription which means you can still access " +
-                "your existing data on Padlock Cloud but you won't be able to upload any new data " +
-                "or synchronize changes between devices. Get a subscription now to take full advantage " +
-                "of Padlock Cloud!"
+                "Your last payment has failed. Please contact your card provider " +
+                "or update your payment method!"
+            );
+        }
+
+        subCanceledMessage() {
+            return $l(
+                "Your subscription has been canceled. Reactivate it now to continue using advanced " +
+                "features like automatic online backups and seamless synchronization between devices!"
             );
         }
 
@@ -215,13 +303,6 @@ padlock.SyncMixin = (superClass) => {
                 "This device is connected to the Padlock Cloud account {0}. Connect all your devices " +
                 "with the same account to easily synchronize your data between them!",
                 this.settings.syncEmail
-            );
-        }
-
-        autoSyncInfoText() {
-            return $l(
-                "Enable Auto Sync to automatically synchronize your data with " +
-                "your Padlock Cloud account every time you make a change!"
             );
         }
 
@@ -242,12 +323,27 @@ padlock.SyncMixin = (superClass) => {
                     this.dispatch("sync-success", { auto: auto });
 
                     if (cloudSource.password !== this.password) {
-                        return this.confirm(
-                            $l("Do you want to change your Padlock Cloud master password to your local one?"),
-                            $l("Yes"), $l("No")
-                        ).then((confirm) => {
-                            if (confirm) {
-                                this.setRemotePassword(this.password);
+                        return this.choose(
+                            $l("The master password you use locally does not match the one of your " +
+                                "online account {0}. What do you want to do?", this.settings.syncEmail),
+                            [
+                                $l("Update Local Password"),
+                                $l("Update Online Password"),
+                                $l("Keep Both Passwords")
+                            ]
+                        ).then((choice) => {
+                            switch (choice) {
+                                case 0:
+                                    this.setPassword(cloudSource.password).then(() => {
+                                        this.alert(
+                                            $l("Local password updated successfully."),
+                                            { type: "success" }
+                                        );
+                                    });
+                                    break;
+                                case 1:
+                                    this.setRemotePassword(this.password);
+                                    break;
                             }
                         });
                     }
@@ -269,6 +365,7 @@ padlock.SyncMixin = (superClass) => {
         }
 
         _syncSuccess() {
+            this._updateLastSync();
             this.set("isSynching", false);
             this.saveCall("syncSuccess");
         }
@@ -293,6 +390,7 @@ padlock.SyncMixin = (superClass) => {
                     // We're getting back the api key directly, but it will valid only
                     // after the user has visited the activation link in the email he was sent
                     this.settings.syncConnected = false;
+                    this.settings.syncAuto = false;
                     this.settings.syncToken = authToken.token;
                     this.settings.syncId = authToken.id;
                     this.dispatch("settings-changed");
@@ -325,20 +423,20 @@ padlock.SyncMixin = (superClass) => {
                 case "invalid_auth_token":
                 case "expired_auth_token":
                     this.settings.syncConnected = false;
+                    this.settings.syncAuto = false;
                     this.settings.syncToken = "";
                     this.settings.syncEmail = "";
                     this.settings.syncReadonly = false;
                     this.dispatch("settings-changed");
-                    this.alert($l("There was a problem authenticating with Padlock Cloud. Please " +
-                        "complete the connection process again!"));
+                    this.alert($l("You've been logged out of your Padlock online account. Please login in again!"));
                     return false;
                 case "deprecated_api_version":
                     this.confirm(
-                        $l("A newer version of Padlock is available now! You can download it using the " +
-                        "button below. Please note that you won't be able to use Padlock Cloud until " +
-                        "you install the latest version!"),
+                        $l("A newer version of Padlock is available now! Update now to keep using " +
+                            "online features (you won't be able to sync with your account until then)!"),
                         $l("Update Now"),
-                        $l("Cancel")
+                        $l("Cancel"),
+                        { type: "info" }
                     ).then((confirm) => {
                         if (confirm) {
                             padlock.platform.checkForUpdates();
@@ -346,17 +444,16 @@ padlock.SyncMixin = (superClass) => {
                     });
                     return false;
                 case "rate_limit_exceeded":
-                    this.alert($l("It seems Padlock Cloud is over capacity right now. Please try again later!"));
+                    this.alert($l("It seems are servers are over capacity right now. Please try again later!"));
                     return false;
                 case "invalid_container_data":
                 case "invalid_key_params":
                     this.alert($l(
-                        "The data received from Padlock Cloud seems to be corrupt and " +
+                        "The data received from your online account seems to be corrupt and " +
                         "cannot be decrypted. This might be due to a network error but could " +
                         "also be the result of someone trying to compromise your connection to " +
-                        "Padlock Cloud. If the problem persists, please notify " +
-                        "Padlock support!"
-                    ));
+                        "our servers. If the problem persists, please notify Padlock support!"
+                    ), { type: "warning" });
                     return false;
                 case "decryption_failed":
                 case "encryption_failed":
@@ -364,17 +461,31 @@ padlock.SyncMixin = (superClass) => {
                     // password does not match the one that was used for encrypting the remote data so
                     // we need to prompt the user for the correct password.
                     this.prompt(
-                        $l("It seems that your Padlock Cloud account uses a different master " +
-                        "password than then one you are using on this device. Please provide the " +
-                        "correct master password for your Padlock Cloud account!"),
-                        $l("Enter Master Password"), "password", $l("Submit"))
-                        .then((pwd) => {
-                            if (pwd === null) {
-                                return;
+                        $l("Please enter the master password for the online account {0}.", this.settings.syncEmail),
+                        $l("Enter Master Password"), "password", $l("Submit"), $l("Forgot Password"), true, (pwd) => {
+                            if (!pwd) {
+                                return Promise.reject($l("Please enter a password!"));
                             }
-
                             cloudSource.password = pwd;
-                            this.synchronize();
+                            return this.collection.fetch(cloudSource)
+                                .then(() => true)
+                                .catch((e) => {
+                                    if (e.code == "decryption_failed") {
+                                        throw $l("Incorrect password. Please try again!");
+                                    } else {
+                                        this._handleCloudError(e);
+                                        return false;
+                                    }
+                                });
+                        })
+                        .then((success) => {
+                            if (success === null) {
+                                this.forgotCloudPassword()
+                                    .then(() => this.synchronize());
+                            }
+                            if (success) {
+                                this.synchronize();
+                            }
                         });
                     return false;
                 case "unsupported_container_version":
@@ -390,28 +501,113 @@ padlock.SyncMixin = (superClass) => {
                         });
                     return false;
                 case "subscription_required":
-                    if (!hasShownReadOnlyDialog) {
-                        this.confirm(
-                            this.readOnlyInfoText(),
-                            $l("Buy Subscription"),
-                            $l("Dismiss")
-                        )
-                            .then((confirmed) => {
-                                hasShownReadOnlyDialog = true;
-                                if (confirmed) {
-                                    this.openDashboard("subscribe", "app-5");
-                                }
-                            });
-                    }
                     return true;
+                case "failed_connection":
+                    this.alert($l("Looks like we can't connect to our servers right now. Please check your internet " +
+                        "connection and try again!"), { type: "warning", title: $l("Failed Connection") });
+                    return false;
                 default:
-                    this.alert($l("Something went wrong. Please try again later!"));
+                    this.confirm(
+                        e && e.message || $l("Something went wrong. Please try again later!"),
+                        $l("Contact Support"),
+                        $l("Dismiss"),
+                        { type: "warning" }
+                    ).then((confirmed) => {
+                        if (confirmed) {
+                            window.open(`mailto:support@padlock.io?subject=Server+Error+(${e.code})`);
+                        }
+                    });
                     return false;
             }
         }
 
         hasCloudData() {
             return cloudSource.hasData();
+        }
+
+        forgotCloudPassword() {
+            return this.promptForgotPassword()
+                .then((doReset) => {
+                    if (doReset) {
+                        return this.cloudSource.clear();
+                    }
+                });
+        }
+
+        _updateLastSync() {
+            return padlock.stats.get().then((s) => this.lastSync = formatDateFromNow(s.lastSync));
+        }
+
+        buySubscription(source) {
+            if (!this._plansPromise) {
+                this._plansPromise = this.cloudSource.source.getPlans();
+            }
+            this._plansPromise.then((plans) => this.openPaymentDialog(plans[0], source))
+                .then((success) => {
+                    if (success) {
+                        this.refreshAccount();
+                        this.alert(
+                            $l("Congratulations, your upgrade was successful! Enjoy using Padlock!"),
+                            { type: "success" }
+                        );
+                    }
+                });
+        }
+
+        updatePaymentMethod(source) {
+            this.openPaymentDialog(null, source)
+                .then((success) => {
+                    if (success) {
+                        this.refreshAccount();
+                        this.alert($l("Payment method updated successfully!"), { type: "success" });
+                    }
+                });
+        }
+
+        openPaymentDialog(plan, source) {
+            return this.lineUpDialog("pl-payment-dialog", (dialog) => {
+                dialog.plan = plan;
+                dialog.source = this.cloudSource.source;
+                dialog.remainingTrialDays = this.remainingTrialDays;
+                return dialog.show(source);
+            });
+        }
+
+        reactivateSubscription() {
+            return this.cloudSource.source.subscribe()
+                .then(() => {
+                    this.refreshAccount();
+                    this.alert($l("Subscription reactivated successfully!"), { type: "success" });
+                })
+                .catch((e) => this._handleCloudError(e));
+        }
+
+        refreshAccount() {
+            if (this.settings.syncConnected) {
+                return this.cloudSource.source.getAccountInfo()
+                    .then(() => this.dispatch("settings-changed"));
+            } else {
+                return Promise.resolve();
+            }
+        }
+
+        cancelSubscription() {
+            return this.confirm(
+                $l("Are you sure you want to cancel your subscription? You won't be able " +
+                    "to continue using advanced features like automatic online backups and seamless " +
+                    "synchronization between devices!"),
+                $l("Cancel Subscription"),
+                $l("Don't Cancel"),
+                { type: "warning" }
+            ).then((confirmed) => {
+                if (confirmed) {
+                    this.cloudSource.source.cancelSubscription()
+                        .then(() => {
+                            this.refreshAccount();
+                            this.alert($l("Subscription canceled successfully."), { type: "success" });
+                        });
+                }
+            });
         }
 
     };

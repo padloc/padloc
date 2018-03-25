@@ -12,11 +12,6 @@
     <template>
 
         <style include="shared">
-            @keyframes rumble {
-                25% {transform: translate(5px, 0);}
-                50% {transform: translate(-5px, -3px);}
-                75% {transform: translate(5px, 2px);}
-            }
 
             @keyframes reveal {
                 from { transform: translate(0, 30px); opacity: 0; }
@@ -56,7 +51,6 @@
 
             .form-box {
                 width: 300px;
-                border: solid 1px var(--shade-3-color);
                 border-radius: 12px;
                 overflow: hidden;
                 display: flex;
@@ -102,9 +96,6 @@
             .form-box pl-input, .form-box .input-wrapper {
                 flex: 1;
                 text-align: center;
-                --pl-input-placeholder: {
-                    opacity: 0.4;
-                };
             }
 
             .form-box pl-loading-button {
@@ -241,7 +232,7 @@
 
             <pl-icon icon="logo" class="hero animate-in animate-out"></pl-icon>
 
-            <div class="form-box tiles tiles-2 animate-in animate-out">
+            <div class="form-box tiles-2 animate-in animate-out">
                 <pl-input id="passwordInput" type="password" class="tap"
                     select-on-focus on-enter="_unlock" no-tab="[[ open ]]"
                     placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
@@ -251,8 +242,6 @@
                     <pl-icon icon="forward"></pl-icon>
                 </pl-loading-button>
             </div>
-
-            <div class="version animate-in animate-out" on-click="_openProductPage">Padlock v[[ _version ]]</div>
 
         </main>
 
@@ -276,7 +265,7 @@
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 1) ]]">
 
-                    <div class="form-box tiles tiles-2">
+                    <div class="form-box tiles-2">
                         <pl-input id="emailInput" type="email" select-on-focus no-tab="[[ open ]]" class="tap"
                             on-enter="_enterEmail" placeholder="[[ $l('Enter Email Address') ]]"></pl-input>
 
@@ -296,7 +285,7 @@
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 2) ]]">
 
-                    <div class="form-box tiles tiles-2">
+                    <div class="form-box tiles-2">
                         <pl-input id="codeInput" required select-on-focus no-tab="[[ open ]]" class="tap"
                             on-enter="_enterCode" placeholder="[[ $l('Enter Login Code') ]]"></pl-input>
 
@@ -317,7 +306,7 @@
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 3) ]]" hidden$="[[ !_hasCloudData ]]">
 
                     <div>
-                        <div class="form-box tiles tiles-2">
+                        <div class="form-box tiles-2">
 
                             <pl-input id="cloudPwdInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                                 on-enter="_enterCloudPassword" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
@@ -334,14 +323,14 @@
                         <span inner-h-t-m-l="[[ $l('Please enter the master password for the account **{0}**!', settings.syncEmail) ]]"></span>
                     </div>
 
-                    <button class="skip" on-click="_forgotPassword">[[ $l("I Forgot My Password") ]]</button>
+                    <button class="skip" on-click="_forgotCloudPassword">[[ $l("I Forgot My Password") ]]</button>
 
                 </div>
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 3) ]]" hidden$="[[ _hasCloudData ]]">
 
                     <div>
-                        <div class="form-box tiles tiles-2">
+                        <div class="form-box tiles-2">
 
                             <pl-input id="newPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                                 on-enter="_enterNewPassword" value="{{ newPwd }}" placeholder="[[ $l('Enter Master Password') ]]"></pl-input>
@@ -356,7 +345,7 @@
                     </div>
 
                     <div class="hint">
-                        <pl-icon icon="info-round"></pl-icon>
+                        <pl-icon icon="lock"></pl-icon>
                         <span inner-h-t-m-l="[[ _getStartedHint(1) ]]"></span>
                     </div>
 
@@ -366,7 +355,7 @@
 
                 <div class$="get-started-step [[ _getStartedClass(_getStartedStep, 4) ]]">
 
-                    <div class="form-box tiles tiles-2">
+                    <div class="form-box tiles-2">
 
                         <pl-input id="confirmPasswordInput" class="tap" type="password" select-on-focus no-tab="[[ open ]]"
                             on-enter="_confirmNewPassword" placeholder="[[ $l('Confirm Master Password') ]]"></pl-input>
@@ -378,7 +367,7 @@
                     </div>
 
                     <div class="hint">
-                        <pl-icon icon="info-round"></pl-icon>
+                        <pl-icon icon="lock"></pl-icon>
                         <span inner-h-t-m-l="[[ _getStartedHint(2) ]]"</span>
                     </div>
 
@@ -418,7 +407,7 @@
 
 const { DataMixin, LocaleMixin, DialogMixin, AnimationMixin, BaseElement, SyncMixin } = padlock;
 const { applyMixins, wait } = padlock.util;
-const { isTouch, getAppVersion, getAppStoreLink } = padlock.platform;
+const { isTouch, getAppStoreLink } = padlock.platform;
 const { track } = padlock.tracking;
 
 class StartView extends applyMixins(
@@ -464,7 +453,6 @@ class StartView extends applyMixins(
     constructor() {
         super();
         this._failCount = 0;
-        getAppVersion().then(((version) => this._version = version));
     }
 
     ready() {
@@ -484,6 +472,7 @@ class StartView extends applyMixins(
         this.$.emailInput.value = "";
         this.$.newPasswordInput.value = "";
         this.$.confirmPasswordInput.value = "";
+        this.$.cloudPwdInput.value = "";
         this.$.unlockButton.stop();
         this.$.getStartedButton.stop();
         this._failCount = 0;
@@ -527,12 +516,16 @@ class StartView extends applyMixins(
     _enterEmail() {
         this.$.emailInput.blur();
         if (this.$.emailInput.invalid) {
-            this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"))
-                .then(() => this.$.emailInput.focus());
+            this.alert(
+                this.$.emailInput.validationMessage || $l("Please enter a valid email address!"),
+                { type: "warning" }
+            ).then(() => this.$.emailInput.focus());
             return;
         }
 
         this.$.emailButton.start();
+        padlock.stats.set({ pairingSource: "Setup" });
+
         this.connectCloud(this.$.emailInput.value)
             .then(() => {
                 this.$.emailButton.success();
@@ -548,36 +541,54 @@ class StartView extends applyMixins(
     }
 
     _enterCode() {
-        if (this.$.codeInput.invalid) {
-            this.alert($l("Please enter the login code sent to you via email!"));
+        if (this._checkingCode) {
             return;
         }
+
+        if (this.$.codeInput.invalid) {
+            this.alert($l("Please enter the login code sent to you via email!"), { type: "warning" });
+            return;
+        }
+
+        this._checkingCode = true;
+
         this.$.codeButton.start();
         this.activateToken(this.$.codeInput.value)
-            .then(() => {
-                this.$.codeButton.success();
-                return this.hasCloudData();
-            })
-            .then((hasData) => {
-                this._hasCloudData = hasData;
-                setTimeout(() => {
-                    this._getStartedStep = 3;
-                    if (!isTouch()) {
-                        this.$.newPasswordInput.focus();
-                    }
-                }, 50);
+            .then((success) => {
+                if (success) {
+                    return this.hasCloudData().then((hasData) => {
+                        this._checkingCode = false;
+                        this.$.codeButton.success();
+                        this._hasCloudData = hasData;
+                        return this._connected();
+                    });
+                } else {
+                    this._checkingCode = false;
+                    this._rumble();
+                    this.$.codeButton.fail();
+                }
             })
             .catch((e) => {
+                this._checkingCode = false;
+                this._rumble();
                 this.$.codeButton.fail();
-                if (e.code == "bad_request") {
-                    this._rumble();
-                } else {
-                    this._handleCloudError(e);
-                }
+                this._handleCloudError(e);
             });
+
+        track("Setup: Code", { "Email": this.$.emailInput.value });
+    }
+
+    _connected() {
+        setTimeout(() => {
+            this._getStartedStep = 3;
+            if (!isTouch()) {
+                this.$.newPasswordInput.focus();
+            }
+        }, 50);
     }
 
     _cancelActivation() {
+        this.cancelConnect();
         this.$.codeInput.value = "";
         this._getStartedStep = 1;
     }
@@ -612,14 +623,18 @@ class StartView extends applyMixins(
 
         if (zxcvbn(pwd).score < 2) {
             this.choose($l(
-                "WARNING: The password you entered is weak which makes it easier for attackers to break " +
+                "The password you entered is weak which makes it easier for attackers to break " +
                 "the encryption used to protect your data. Try to use a longer password or include a " +
-                "variation of uppercase, lowercase and special characters as well as numbers."
+                "variation of uppercase, lowercase and special characters as well as numbers!"
             ), [
                 $l("Learn More"),
                 $l("Choose Different Password"),
                 $l("Use Anyway")
-            ]).then((choice) => {
+            ], {
+                type: "warning",
+                title: $l("WARNING: Weak Password"),
+                hideIcon: true
+            }).then((choice) => {
                 switch (choice) {
                     case 0:
                         this._openPwdHowto();
@@ -646,7 +661,7 @@ class StartView extends applyMixins(
             ), [
                 $l("Try Again"),
                 $l("Change Password")
-            ])
+            ], { type: "warning" })
                 .then((choice) => {
                     switch (choice) {
                         case 0:
@@ -688,14 +703,20 @@ class StartView extends applyMixins(
         }
         this._initializing = true;
 
-        Promise.all([
-            this.initData(this.cloudSource.password || this.$.newPasswordInput.value),
+        const password = this.cloudSource.password || this.$.newPasswordInput.value;
+        this.cloudSource.password = password;
+
+        const promises = [
+            this.initData(password),
             wait(1000)
-        ])
+        ];
+
+        if (this.settings.syncConnected && !this._hasCloudData) {
+            promises.push(this.collection.save(this.cloudSource));
+        }
+
+        Promise.all(promises)
             .then(() => {
-                if (this.settings.syncConnected) {
-                    return this.collection.save(this.cloudSource);
-                }
                 this.$.getStartedButton.success();
                 this.$.newPasswordInput.blur();
                 this._initializing = false;
@@ -748,10 +769,12 @@ class StartView extends applyMixins(
                         this._rumble();
                         this._failCount++;
                         if (this._failCount > 2) {
-                            this._promptResetData($l(
-                                "Forgot your master password? You can start over by resetting the app. " +
-                                "WARNING: This will delete all your data!"
-                            ));
+                            this.promptForgotPassword()
+                                .then((doReset) => {
+                                    if (doReset) {
+                                        this.resetData();
+                                    }
+                                });
                         } else {
                             this.$.passwordInput.focus();
                         }
@@ -792,8 +815,8 @@ class StartView extends applyMixins(
     _getStartedHint(step) {
         return [
             $l(
-                "Log in for advanced features like automatic backups and seamless synchronization " +
-                "between all your devices!"
+                "Logging in will unlock advanced features like automatic backups and seamless " +
+                "synchronization between all your devices!"
             ),
             $l(
                 "Your **master password** is a single passphrase used to protect your data. " +
@@ -827,14 +850,14 @@ class StartView extends applyMixins(
     }
 
     _rumble() {
-        this.animateElement(this.root.querySelector(`main.${this._mode} .hero`), { animation: "rumble", duration: 200, clear: true });
+        this.animateElement(this.root.querySelector(`main.${this._mode} .hero`),
+            { animation: "rumble", duration: 200, clear: true });
     }
 
     _enterCloudPassword() {
-        if (this._unlocking) {
+        if (this._restoringCloud) {
             return;
         }
-        this._unlocking = true;
 
         const password = this.$.cloudPwdInput.value;
 
@@ -845,17 +868,18 @@ class StartView extends applyMixins(
 
         this.$.cloudPwdInput.blur();
         this.$.cloudPwdButton.start();
+        this._restoringCloud = true;
 
         this.cloudSource.password = password;
         this.collection.fetch(this.cloudSource)
             .then(() => {
                 this.$.cloudPwdButton.success();
-                this._unlocking = false;
+                this._restoringCloud = false;
                 this._getStartedStep = 5;
             })
             .catch((e) => {
                 this.$.cloudPwdButton.fail();
-                this._unlocking = false;
+                this._restoringCloud = false;
 
                 if (e.code === "decryption_failed") {
                     this._rumble();
@@ -863,6 +887,15 @@ class StartView extends applyMixins(
                     this._handleCloudError(e);
                 }
             });
+
+        track("Setup: Remote Password", { Email: this.settings.syncEmail });
+    }
+
+    _forgotCloudPassword() {
+        this.forgotCloudPassword().then(() => {
+            this._hasCloudData = false;
+            this._connected();
+        });
     }
 
 }

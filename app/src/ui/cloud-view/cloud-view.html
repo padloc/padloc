@@ -36,38 +36,184 @@
                 transform: translate3d(0, 0, 0);
             }
 
-            .account {
-                font-size: var(--font-size-default);
-                font-weight: bold;
-                margin: 10px 0;
-                overflow-wrap: break-word;
+            .login {
+                @apply --fullbleed;
+                background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                color: var(--color-background);
+                text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                z-index: 1;
+                padding: 0 20px;
+                transform: translate3d(0, 0, 0);
             }
 
-            .subscription-status {
+            .login > * {
+                width: 100%;
+                max-width: 400px;
+                box-sizing: border-box;
+            }
+
+            .login .back-button {
+                position: absolute;
+                width: 50px;
+                height: 50px;
+                top: 0;
+                left: 0;
+                font-size: 120%;
+            }
+
+            .login .icons {
+                position: relative;
+                height: 100px;
+                overflow: visible;
+            }
+
+            .login .icons > * {
+                @apply --fullbleed;
+                margin: auto;
+                width: 80px;
+                height: 80px;
+                bottom: 0;
+                font-size: 50px;
+            }
+
+            .login .icons pl-icon[icon="cloud"] {
+                width: 300px;
+                height: 300px;
+                font-size: 230px;
+                text-shadow: rgba(0, 0, 0, 0.2) 0 -2px 5px;
+                bottom: -30px;
+            }
+
+            .login .icons pl-icon[icon="mobile"] {
+                transform: translate(-110px, -100px) rotate(-30deg)
+            }
+
+            .login .icons pl-icon[icon="desktop"] {
+                transform: translate(100px, -100px) rotate(15deg)
+            }
+
+            .login .title {
                 font-size: 150%;
+                text-align: center;
                 font-weight: bold;
-                margin: 10px 0;
             }
 
-            #emailInput {
+            .login .text {
+                padding: 15px;
+                font-size: var(--font-size-small);
                 text-align: center;
             }
 
-            #customUrlInput {
-                width: 100%;
-                padding-left: 15px;
-                padding-right: 15px;
+            .login pl-input {
+                height: var(--row-height);
+                background: var(--shade-2-color);
+                border-radius: 12px;
+                margin: 10px 0;
+                text-align: center;
+                overflow: hidden;
+                transform: translate3d(0, 0, 0);
             }
 
-            #customUrlInput:not([invalid]) + .warning {
-                display: none;
+            .login pl-loading-button {
+                font-weight: bold;
+                border-radius: 12px;
+                overflow: hidden;
+                will-change: transform:
+            }
+
+            .account {
+                height: 90px;
+                display: flex;
+            }
+
+            .account-info {
+                flex: 1;
+                width: 0;
+                padding: 15px;
+                text-align: center;
+                border-right: solid 1px rgba(0, 0, 0, 0.1);
+            }
+
+            .account-email {
+                font-size: 110%;
+                font-weight: bold;
+                @apply --ellipsis;
+                margin-bottom: 10px;
+            }
+
+            .account-stats {
+                font-size: var(--font-size-tiny);
+                @apply --ellipsis;
+            }
+
+            .account-stats > * {
+                vertical-align: middle;
+            }
+
+            .account-stats pl-icon {
+                width: 16px;
+                height: 20px;
+            }
+
+            .account-stats pl-icon:not(:first-child) {
+                margin-left: 5px;
+            }
+
+            .account-sync {
+                height: auto;
+                width: 70px;
+                font-size: 25px;
+            }
+
+            section.highlight {
+                background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                color: var(--color-background);
+                text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
+                border: none;
+                --border-color: transparent;
+            }
+
+            section.highlight button, section.highlight pl-loading-button {
+                font-weight: bold;
+            }
+
+            section.highlight.warning {
+                background: linear-gradient(180deg, #f49300 0%, #f25b00 100%);
+            }
+
+            .info {
+                display: flex;
+                align-items: center;
+            }
+
+            .info-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 60px;
+                margin: 10px 0 10px 10px;
+            }
+
+            .info-body {
+                padding: 20px 15px 20px 10px;
+                flex: 1;
+            }
+
+            .info-title {
+                font-size: 120%;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            .info-text {
+                font-size: var(--font-size-small);
             }
 
             pl-icon[icon=refresh][spin] {
                 background: transparent !important;
                 pointer-events: none;
-                animation: spin 1s infinite;
-                transform-origin: center 49%;
             }
 
             pl-icon[spin]::after, pl-icon[spin]::before {
@@ -77,83 +223,121 @@
 
         <header>
             <pl-icon icon="close" class="tap" on-click="_back"></pl-icon>
-            <div class="title">Padlock Cloud</div>
-            <pl-icon hidden$="[[ settings.syncConnected ]]"></pl-icon>
-            <pl-icon icon="refresh" class="tap" on-click="_refresh" spin$="[[ isSynching ]]" hidden$="[[ !settings.syncConnected ]]"></pl-icon>
+            <div class="title">[[ $l("My Account") ]]</div>
+            <pl-icon icon="logout" class="tap" on-click="_logout"></pl-icon>
         </header>
 
         <main>
 
-            <section class="tiles" hidden$="[[ hasSyncToken(settings.syncToken) ]]">
-                <div class="info">[[ generalInfoText() ]]</div>
-                <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]" required on-enter="connect"></pl-input>
-                <pl-loading-button id="connectButton" class="tap" on-click="connect">[[ $l('Pair Device') ]]</pl-loading-button>
-            </section>
-
-            <section class="tiles" hidden$="[[ !isActivationPending(settings.syncToken, settings.syncConnected) ]]">
+            <section class="highlight tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
                 <div class="info">
-                    <div>[[ $l("Check your email:") ]]</div>
-                    <div class="account">[[ settings.syncEmail ]]</div>
-                    <div>[[ activationPendingText(settings.syncEmail) ]]</div>
-                </div>
-                <pl-loading-button id="refreshButton" on-click="_refresh">[[ $l('Refresh') ]]</pl-loading-button>
-                <button class="tap" on-click="cancelConnect">[[ $l("Cancel") ]]</button>
-            </section>
-
-            <section class="tiles" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
-                <div class="info">
-                    <div>[[ $l("Subscription Status:") ]]</div>
-                    <div class="subscription-status">[[ $l("Trialing ({0} days left)", remainingTrialDays) ]]</div>
-                    <div>[[ trialInfoText(remainingTrialDays) ]]</div>
-                </div>
-                <button class="tap" on-click="_trialingBuySubscription">[[ $l("Buy Subscription") ]]</button>
-            </section>
-
-            <section class="tiles" hidden$="[[ !isInactive(settings.syncConnected, settings.syncSubStatus) ]]">
-                <div class="info">
-                    <div>[[ $l("Subscription Status:") ]]</div>
-                    <div class="subscription-status">[[ $l("Read-Only") ]]</div>
-                    <div>[[ readOnlyInfoText() ]]</div>
-                </div>
-                <button class="tap" on-click="_readonlyBuySubscription">[[ $l("Buy Subscription") ]]</button>
-            </section>
-
-            <section class="tiles" hidden$="[[ !settings.syncConnected ]]">
-                <div class="info">
-                    <div>[[ $l("Paired with:") ]]</div>
-                    <div class="account">[[ settings.syncEmail ]]</div>
-                    <div>[[ connectedInfoText(settings.syncEmail) ]]</div>
-                </div>
-                <pl-loading-button id="syncButton" class="tap" on-click="synchronize">[[ $l('Synchronize') ]]</pl-loading-button>
-                <button class="tap" on-click="_manageAccount">[[ $l("Manage Account") ]]</button>
-                <button class="tap" on-click="_disconnect">[[ $l("Unpair") ]]</button>
-            </section>
-
-            <section class="tiles" disabled$="[[ !settings.syncConnected ]]">
-                <div class="info">[[ autoSyncInfoText() ]]</div>
-                <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Enable Auto Sync') ]]"
-                    reverse class="tap" on-change="settingChanged"></pl-toggle-button>
-            </section>
-
-            <section class="tiles" disabled$="[[ settings.syncConnected ]]">
-                <div class="info">
-                    [[ $l("By providing a custom URL you can synchronize your data with a server other than the official Padlock Cloud server.") ]]
-                    <div class="warning">[[ $l("WARNING: This is only recommended for advanced users!") ]]</div>
-                </div>
-                <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
-                    on-change="_customHostChanged" class="tap"></pl-toggle-button>
-                <div class="tap tiles" hidden$="[[ !settings.syncCustomHost ]]">
-                    <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
-                        value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
-                        required on-change="settingChanged"></pl-input>
-                    <div class="info warning">
-                        <strong>[[ $l("Invalid URL") ]]</strong> -
-                        [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
+                    <pl-icon class="info-icon" icon="time"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Trialing ({0} days left)", remainingTrialDays) ]]</div>
+                        <div class="info-text">[[ trialingMessage(remainingTrialDays) ]]</div>
                     </div>
                 </div>
+                <button class="tap" on-click="_buySubscription" data-source="App - Trialing">[[ $l("Upgrade Now") ]]</button>
+            </section>
+
+            <section class="highlight tiles warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Trial Expired") ]]</div>
+                        <div class="info-text">[[ trialExpiredMessage() ]]</div>
+                    </div>
+                </div>
+                <button class="tap" on-click="_buySubscription" data-source="App - Trial Expired">[[ $l("Upgrade Now") ]]</button>
+            </section>
+
+            <section class="highlight tiles warning" hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Payment Failed") ]]</div>
+                        <div class="info-text">[[ subUnpaidMessage() ]]</div>
+                    </div>
+                </div>
+                <button class="tap" on-click="_updatePaymentMethod" data-source="App - Payment Failed">[[ $l("Update Payment Method") ]]</button>
+                <button class="tap" on-click="_contactSupport">[[ $l("Contact Support") ]]</button>
+            </section>
+
+            <section class="highlight tiles warning" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Subscription Canceled") ]]</div>
+                        <div class="info-text">[[ subCanceledMessage() ]]</div>
+                    </div>
+                </div>
+                <button class="tap" on-click="reactivateSubscription">[[ $l("Reactivate Subscription") ]]</button>
+            </section>
+
+            <section class="highlight hidden$="[[ !settings.syncConnected ]]">
+                <div class="account tiles">
+                    <div class="account-info">
+                        <div class="account-email">[[ settings.syncEmail ]]</div>
+                        <div class="account-stats">
+                            <pl-icon icon="record"></pl-icon>
+                            <span>[[ records.length ]]</span>
+                            <pl-icon icon="mobile"></pl-icon>
+                            <span>[[ settings.account.devices.length ]]</span>
+                            <pl-icon icon="refresh"></pl-icon>
+                            <span>[[ lastSync ]]</span>
+                        </div>
+                    </div>
+                    <pl-icon class="account-sync tap" icon="refresh" spin$="[[ isSynching ]]" on-click="synchronize"
+                        disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]"></pl-icon>
+                </div>
+                <div class="unlock-feature-hint" hidden$="[[ isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable synchronization!") ]]</div>
+            </section>
+
+            <section hidden$="[[ !settings.syncConnected ]]">
+                <div class="section-header">[[ $l("{0} Devices Connected", settings.account.devices.length) ]]</div>
+                <div class="devices">
+                    <template is="dom-repeat" items="[[ settings.account.devices ]]">
+                        <div class="section-row">
+                            <div class="section-row-label">[[ item.description ]]</div>
+                            <pl-icon icon="delete" class="tap" on-click="_revokeDevice" disabled$="[[ _isCurrentDevice(item) ]]"></pl-icon>
+                        </div>
+                    </template>
+                </div>
+            </section>
+
+            <section hidden$="[[ !_hasPaymentSource(settings.account.paymentSource) ]]">
+                <div class="section-header">[[ $l("Billing") ]]</div>
+                <button class="tap" on-click="_updatePaymentMethod" data-source="App - Billing">[[ _paymentSourceLabel(settings.account.paymentSource) ]]</button>
+                <button class="tap" on-click="cancelSubscription"
+                    hidden$="[[ !isSubActive(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Cancel Subscription") ]]</button>
             </section>
 
         </main>
+
+        <div class="login" hidden$="[[ settings.syncConnected ]]">
+
+            <pl-icon icon="close" class="back-button tap" on-click="_back"></pl-icon>
+
+            <div class="spacer"></div>
+
+            <div class="title">[[ $l("Padlock Online") ]]</div>
+
+            <div class="text">[[ loginInfoText() ]]</div>
+
+            <pl-input id="emailInput" type="email" placeholder="[[ $l('Enter Email Address') ]]" value="[[ settings.syncEmail ]]"
+                select-on-focus required on-enter="_login" class="tap"></pl-input>
+
+            <pl-loading-button id="loginButton" class="tap" on-click="_login">[[ $l("Log In") ]]</pl-loading-button>
+
+            <div class="spacer"></div>
+
+            <div class="icons">
+                <pl-icon icon="mobile"></pl-icon>
+                <pl-icon icon="desktop"></pl-icon>
+                <pl-icon icon="cloud"></pl-icon>
+            </div>
+
+        </div>
 
         <div class="rounded-corners"></div>
 
@@ -177,6 +361,10 @@ class CloudView extends applyMixins(
 
     static get is() { return "pl-cloud-view"; }
 
+    static get properties() {
+
+    }
+
     ready() {
         super.ready();
         this.listen("data-loaded", () => this.animate());
@@ -184,36 +372,17 @@ class CloudView extends applyMixins(
         this.listen("sync-connect-cancel", () => this.animate());
         this.listen("sync-connect-success", () => this.animate());
         this.listen("sync-disconnect", () => this.animate());
+        this.listen("sync-connect-success", () => this.refreshAccount());
     }
 
     animate() {
-        this.animateCascade(this.root.querySelectorAll("section:not([hidden])"), { initialDelay: 200 });
-    }
-
-    syncStart() {
-        this.$.syncButton.start();
-    }
-
-    syncSuccess() {
-        this.$.syncButton.success();
-    }
-
-    syncFail() {
-        this.$.syncButton.fail();
-    }
-
-    connect() {
-        if (this.$.emailInput.invalid) {
-            this.alert(this.$.emailInput.validationMessage || $l("Please enter a valid email address!"));
-        } else {
-            this.$.connectButton.start();
-            this.connectCloud(this.$.emailInput.value)
-                .then(() => {
-                    this.$.connectButton.success();
-                    return this.alert(this.activationPendingText());
-                })
-                .catch(() => this.$.connectButton.fail());
+        if (this.settings.syncConnected) {
+            this.animateCascade(this.root.querySelectorAll("section:not([hidden])"), { initialDelay: 200 });
         }
+    }
+
+    focusEmailInput() {
+        this.$.emailInput.focus();
     }
 
     _credentialsChanged() {
@@ -233,10 +402,10 @@ class CloudView extends applyMixins(
         this.dispatchEvent(new CustomEvent("cloud-back"));
     }
 
-    _disconnect() {
+    _logout() {
         this.confirm(
-            $l("Are you sure you want to disconnect from Padlock Cloud?"),
-            $l("Disconnect")
+            $l("Are you sure you want to log out?"),
+            $l("Log Out")
         ).then((confirmed) => {
             if (confirmed) {
                 this.disconnectCloud();
@@ -244,51 +413,78 @@ class CloudView extends applyMixins(
         });
     }
 
-    _customHostChanged() {
-        if (this.settings.syncCustomHost) {
-            this.confirm(
-                $l("Are you sure you want to use a custom server for synchronization? " +
-                    "This option is only recommended for advanced users!"),
-                $l("Continue"))
-                .then((confirmed) => {
-                    if (confirmed) {
-                        this.settingChanged();
-                    } else {
-                        this.set("settings.syncCustomHost", false);
-                    }
-                });
-        } else {
-            this.settingChanged();
+    _login() {
+        if (this._submittingEmail) {
+            return;
         }
-    }
 
-    _refresh() {
-        if (this.isActivationPending()) {
-            this.$.refreshButton.start();
-            this.testCredentials()
-                .then((connected) => {
-                    if (connected) {
-                        this.$.refreshButton.success();
-                    } else {
-                        this.$.refreshButton.fail();
-                    }
-                })
-                .catch(() => this.$.refreshButton.fail());
-        } else {
-            this.synchronize();
+        this.$.loginButton.start();
+
+        if (this.$.emailInput.invalid) {
+            this.alert($l("Please enter a valid email address!"))
+                .then(() => this.$.emailInput.focus());
+            this.$.loginButton.fail();
+            return;
         }
+
+        this._submittingEmail = true;
+
+        this.connectCloud(this.$.emailInput.value)
+            .then(() => {
+                this._submittingEmail = false;
+                this.$.loginButton.success();
+                return this.promptLoginCode();
+            })
+            .then(() => {
+                if (this.settings.syncConnected) {
+                    this.synchronize();
+                }
+            })
+            .catch(() => {
+                this._submittingEmail = false;
+                this.$.loginButton.fail();
+            });
+
     }
 
-    _trialingBuySubscription() {
-        this.openDashboard("subscribe", "app-2");
+    _isCurrentDevice(device) {
+        return this.settings.syncId === device.tokenId;
     }
 
-    _readonlyBuySubscription() {
-        this.openDashboard("subscribe", "app-3");
+    _revokeDevice(e) {
+        const device = e.model.item;
+        this.confirm($l("Do you want to revoke access to for the device \"{0}\"?", device.description))
+            .then((confirmed) => {
+                if (confirmed) {
+                    this.cloudSource.source.revokeAuthToken(device.tokenId)
+                        .then(() => {
+                            this.refreshAccount();
+                            this.alert($l("Access for {0} revoked successfully!", device.description),
+                                { type: "success" });
+                        });
+                }
+            });
     }
 
-    _manageAccount() {
-        this.openDashboard("", "app-1");
+    _contactSupport() {
+        window.open("mailto:support@padlock.io", "_system");
+    }
+
+    _hasPaymentSource() {
+        return !!(this.settings.account && this.settings.account.paymentSource);
+    }
+
+    _paymentSourceLabel() {
+        const s = this.settings.account && this.settings.account.paymentSource;
+        return s && `${s.brand} •••• •••• •••• ${s.lastFour}`;
+    }
+
+    _buySubscription(e) {
+        this.buySubscription(e.target.dataset.source);
+    }
+
+    _updatePaymentMethod(e) {
+        this.updatePaymentMethod(e.target.dataset.source);
     }
 
 }

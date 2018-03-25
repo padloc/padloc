@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.maklesoft.padlock" version="2.5.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.maklesoft.padlock" version="2.6.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Padlock</name>
     <description>
     </description>
@@ -8,6 +8,7 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
+    <allow-navigation href="https://*.stripe.com" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="KeyboardDisplayRequiresUserAction" value="false" />
     <preference name="HideKeyboardFormAccessoryBar" value="true" />
@@ -99,8 +100,6 @@
         </config-file>
         <splash src="res/ios/splash/Default@3x~universal~anyany.png" />
     </platform>
-    <engine name="android" spec="^6.2.3" />
-    <engine name="ios" spec="^4.5.3" />
     <plugin name="cordova-plugin-app-version" spec="~0.1.9" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
     <plugin name="cordova-plugin-customurlscheme" spec="~4.2.0">
@@ -118,13 +117,15 @@
     <plugin name="cordova-custom-config" spec="^4.0.2" />
     <plugin name="cordova-plugin-pbkdf2" spec="^0.2.0" />
     <plugin name="cordova-plugin-device" spec="^1.1.6" />
-    <plugin name="cordova-plugin-wkwebview-engine" spec="git+https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git" />
     <plugin name="cordova-plugin-compat" spec="^1.2.0" />
-    <plugin name="cordova-plugin-crosswalk-webview" spec="^2.3.0">
+    <plugin name="cordova-plugin-crosswalk-webview" spec="^2.4.0">
         <variable name="XWALK_VERSION" value="23+" />
         <variable name="XWALK_LITEVERSION" value="xwalk_core_library_canary:17+" />
         <variable name="XWALK_COMMANDLINE" value="--disable-pull-to-refresh-effect" />
         <variable name="XWALK_MODE" value="embedded" />
         <variable name="XWALK_MULTIPLEAPK" value="true" />
     </plugin>
+    <plugin name="cordova-plugin-wkwebview-engine" spec="git+https://github.com/MaKleSoft/cordova-plugin-wkwebview-engine.git" />
+    <engine name="android" spec="^6.2.3" />
+    <engine name="ios" spec="^4.5.3" />
 </widget>

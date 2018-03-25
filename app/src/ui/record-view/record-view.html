@@ -61,9 +61,9 @@
             }
 
             .categories {
-                position: absolute;
+                position: fixed;
                 z-index: 1;
-                top: 45px;
+                top: 100px;
                 left: 0;
                 right: 0;
                 bottom: 0;
@@ -73,12 +73,11 @@
             }
 
             .categories-inner {
-                /* box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px; */
                 max-height: 100%;
                 @apply --scroll;
                 transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                background: var(--color-background);
-                border-bottom: solid 1px rgba(0, 0, 0, 0.2);
+                margin: 6px;
+                @apply --card;
             }
 
             .categories:not([showing]) {
@@ -94,13 +93,13 @@
                 font-size: var(--font-size-small);
                 padding: 10px 15px 10px 40px;
                 font-weight: bold;
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
             .category, pl-record-field {
-                background: var(--color-background);
                 transform: translate3d(0, 0, 0);
-                margin: 5px 0;
-                border: solid 1px rgba(0, 0, 0, 0.1);
+                margin: 8px 6px;
+                @apply --card;
             }
         </style>
 
@@ -121,7 +120,7 @@
                 <pl-icon icon="[[ _dropDownIcon(_showCatList, _catCount) ]]" class="tap" on-click="_toggleCategoryList"></pl-icon>
             </div>
             <div class="categories" showing$="[[ _catListShowing(_showCatList, _catCount) ]]" on-click="_hideCategoryList">
-                <div class="categories-inner tiles">
+                <div class="categories-inner">
                     <div></div>
                     <template is="dom-repeat" items="{{ collection.categories }}"
                         filter="{{ _categoryFilter(record.category) }}" rendered-item-count="{{ _catCount }}">

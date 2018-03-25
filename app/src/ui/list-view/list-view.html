@@ -24,14 +24,13 @@
                 background: var(--color-quaternary);
             }
 
-            .filter-input-wrapper {
+            .filter-input {
                 flex: 1;
-                display: flex;
+                padding-left: 15px;
             }
 
-            .filter-input-wrapper pl-input {
-                padding-left: 0;
-                flex: 1;
+            .filter-input:not([active]) {
+                text-align: center;
             }
 
             header {
@@ -48,34 +47,36 @@
                 font-size: 140%;
             }
 
-            header pl-icon[arrow] {
-                position: relative;
+            .empty {
+                @apply --fullbleed;
+                display: flex;
+                flex-direction: column;
+                @apply --fullbleed;
+                top: var(--row-height);
+                z-index: 1;
+                overflow: visible;
             }
 
-            header pl-icon[arrow]::before {
+            .empty-message {
+                padding: 15px 20px;
+                text-align: center;
+                position: relative;
+                background: var(--color-background);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+            }
+
+            .empty-message::before {
                 content: "";
                 display: block;
                 width: 15px;
                 height: 15px;
                 position: absolute;
-                bottom: -10px;
-                left: 0;
-                right: 0;
+                top: -7px;
+                right: 18px;
                 margin: 0 auto;
                 transform: rotate(45deg);
-                background: var(--color-foreground);
+                background: var(--color-background);
                 pointer-events: none;
-            }
-
-            .empty {
-                @apply --fullbleed;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .empty-message {
-                padding: 15px;
-                text-align: center;
             }
 
             .cloud-icon-wrapper {
@@ -113,20 +114,25 @@
             }
 
             .section-separator {
-                height: 15px;
+                height: 10px;
+            }
+
+            .section-header:first-of-kind {
+                visibility: hidden;
             }
 
             .section-header {
-                display: inline-block;
-                margin-bottom: 5px;
-                height: 30px;
-                line-height: 30px;
-                background: var(--color-foreground);
-                color: var(--color-background);
-                border-radius: 0 30px 30px 0;
-                padding: 0 12px;
+                display: flex;
+                margin-bottom: 10px;
+                height: 35px;
+                line-height: 33px;
+                padding: 0 15px;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
+                background: var(--color-background);
+                border-top: solid 1px rgba(0, 0, 0, 0.1);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                box-sizing: border-box;
             }
 
             iron-list {
@@ -136,6 +142,9 @@
             #sectionSelector {
                 --row-height: 40px;
                 --font-size-default: var(--font-size-small);
+                --pl-dialog-inner: {
+                    background: var(--color-secondary);
+                };
             }
 
             .multi-select {
@@ -152,8 +161,10 @@
 
             .multi-select-count {
                 flex: 1;
-                padding: 0 15px;
-                line-height: var(--row-height);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: var(--font-size-small);
                 font-weight: bold;
                 overflow: hidden;
                 text-align: center;
@@ -161,24 +172,17 @@
         </style>
 
         <header hidden$="[[ multiSelect ]]">
-            <pl-icon icon="logo" class="tap" on-click="_lock" hidden$="[[ filterActive ]]"></pl-icon>
-            <pl-icon icon="settings" class="tap" on-click="_openSettings" hidden$="[[ filterActive ]]"></pl-icon>
-            <div class="cloud-icon-wrapper tap" on-click="_openCloudView" hidden$="[[ filterActive ]]">
-                <pl-icon icon="cloud"></pl-icon>
-                <pl-icon icon="refresh" class="syncing-icon" hidden$="[[ !isSynching ]]"></pl-icon>
-            </div>
-            <div class="filter-input-wrapper tap">
-                <pl-icon icon="search" on-click="focusFilterInput"></pl-icon>
-                <pl-input id="filterInput" placeholder="" value="{{ _filterString }}" on-escape="_clearFilter" no-tab select-on-focus></pl-input>
-            </div>
-            <pl-icon icon="add" arrow$="[[ _isEmpty(records.length) ]]" class="tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
-            <pl-icon icon="cancel" class="tap" on-click="_clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
+            <pl-icon icon="menu" class="tap" on-click="_toggleMenu" hidden$="[[ filterActive ]]"></pl-icon>
+            <pl-input id="filterInput" class="filter-input tap" placeholder="[[ $l('Type To Search') ]]" active$="[[ filterActive ]]"
+                value="{{ filterString }}" on-escape="clearFilter" no-tab></pl-input>
+            <pl-icon icon="add" class="tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
+            <pl-icon icon="cancel" class="tap" on-click="clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
         </header>
 
         <header hidden$="[[ !multiSelect ]]">
-            <pl-icon icon="unchecked" class="tap" on-click="_clearMultiSelection"></pl-icon>
+            <pl-icon icon="cancel" class="tap" on-click="_clearMultiSelection"></pl-icon>
             <pl-icon icon="checked" class="tap" on-click="_selectAll"></pl-icon>
-            <div class="multi-select-count">[[ $l("{0} records selected", selectedRecords.length) ]]</div>
+            <div class="multi-select-count"><div>[[ _multiSelectLabel(selectedRecords.length) ]]</div></div>
             <pl-icon icon="delete" class="tap" on-click="_deleteSelected"></pl-icon>
             <pl-icon icon="share" class="tap" on-click="_shareSelected"></pl-icon>
         </header>
@@ -202,7 +206,9 @@
                 <template>
                     <div>
                         <div class="section-header" hidden$="[[ !_firstInSection(records, index) ]]">
-                            [[ _sectionHeader(index, records) ]]
+                            <div>[[ _sectionHeader(index, records) ]]</div>
+                            <div class="spacer"></div>
+                            <div>[[ _sectionHeader(index, records) ]]</div>
                         </div>
                         <pl-record-item record="[[ item ]]" selected$="[[ selected ]]"
                             tabindex$="[[ tabIndex ]]" on-search-category="_searchCategory"
@@ -212,14 +218,14 @@
                 </template>
             </iron-list>
 
-            <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty tiles">
-                <div class="empty-message">
-                    [[ $l("You don't have any data yet! Start by creating your first record!") ]]
-                </div>
-                <div class="spacer"></div>
-            </div>
-
         </main>
+
+        <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty">
+            <div class="empty-message">
+                [[ $l("You don't have any data yet! Start by creating your first record!") ]]
+            </div>
+            <div class="spacer tiles-2"></div>
+        </div>
 
         <pl-dialog-options id="sectionSelector" on-dialog-open="_stopPropagation"
             on-dialog-close="_stopPropagation"></pl-dialog-options>
@@ -231,22 +237,8 @@
     <script>
 (() => {
 
-const Record = padlock.data.Record;
 const { LocaleMixin, DataMixin, SyncMixin, BaseElement, DialogMixin, AnimationMixin } = padlock;
 const { applyMixins } = padlock.util;
-
-function filterByString(fs, rec) {
-    const words = fs.toLowerCase().split(" ");
-
-    // For the record to be a match, each word in the filter string has to appear
-    // in either the category or the record name.
-    for (var i = 0, match = true; i < words.length && match; i++) {
-        match = rec.category && rec.category.toLowerCase().search(words[i]) != -1 ||
-            rec.name.toLowerCase().search(words[i]) != -1;
-    }
-
-    return !!match;
-}
 
 class ListView extends applyMixins(
     BaseElement,
@@ -264,25 +256,17 @@ class ListView extends applyMixins(
             type: String,
             value: ""
         },
-        _filterString: {
-            type: String,
-            value: ""
-        },
         animationOptions: {
             type: Object,
             value: { clear: true }
         },
         filterActive: {
             type: Boolean,
-            computed: "_filterActive(_filterString)"
+            computed: "_filterActive(filterString)"
         },
         multiSelect: {
             type: Boolean,
             value: false
-        },
-        records: {
-            type: Array,
-            computed: " _filterAndSort(collection.records, _filterString)"
         },
         selectedRecord: {
             type: Object,
@@ -318,7 +302,7 @@ class ListView extends applyMixins(
         this.$.main.addEventListener("scroll", () => this._updateCurrentSection());
         this.listen("data-loaded", () => { this.animateRecords(600); });
         this.listen("sync-success", (e) => {
-            if (!e.detail.auto) {
+            if (!e.detail || !e.detail.auto) {
                 this.animateRecords();
             }
         });
@@ -341,20 +325,6 @@ class ListView extends applyMixins(
         this.select(record);
     }
 
-    _filterAndSort() {
-        let records = this.collection.records
-            .filter((r) => !r.removed && filterByString(this._filterString, r));
-
-        this._recentCount = records.length > 10 ? 3 : 0;
-
-        const recent = records.sort((a, b) => {
-            return (b.lastUsed || b.updated).getTime() - (a.lastUsed || a.updated).getTime();
-        }).slice(0, this._recentCount);
-
-        records = records.slice(this._recentCount);
-        return recent.concat(records.sort((a, b) => Record.compare(a, b)));
-    }
-
     _isEmpty() {
         return !this.collection.records.filter((r) => !r.removed).length;
     }
@@ -368,19 +338,15 @@ class ListView extends applyMixins(
     }
 
     _filterActive() {
-        return this._filterString !== "";
+        return this.filterString !== "";
     }
 
     _clearFilter() {
-        this.set("_filterString", "");
+        this.set("filterString", "");
     }
 
-    _lock() {
-        if (this.isSynching) {
-            this.alert($l("Cannot lock app while sync is in progress!"));
-        } else {
-            this.unloadData();
-        }
+    _toggleMenu() {
+        this.dispatchEvent(new CustomEvent("toggle-menu"));
     }
 
     _openSettings() {
@@ -441,7 +407,7 @@ class ListView extends applyMixins(
     }
 
     _searchCategory(e) {
-        this._filterString = e.detail;
+        this.filterString = e.detail;
     }
 
     animateRecords(delay = 100) {
@@ -451,7 +417,7 @@ class ListView extends applyMixins(
         setTimeout(() => {
             const first = this.$.list.firstVisibleIndex;
             const last = this.$.list.lastVisibleIndex + 1;
-            const elements = Array.from(this.root.querySelectorAll("pl-record-item"));
+            const elements = Array.from(this.root.querySelectorAll("pl-record-item, .section-header"));
             const animated = elements
                 .filter((el) => m4e(el).index >= first && m4e(el).index <= last)
                 .sort((a, b) => m4e(a).index - m4e(b).index);
@@ -479,6 +445,7 @@ class ListView extends applyMixins(
 
     _clearMultiSelection() {
         this.$.list.clearSelection();
+        this.multiSelect = false;
     }
 
     _selectAll() {
@@ -504,7 +471,11 @@ class ListView extends applyMixins(
             });
     }
 
-    focusFilterInput() {
+    _multiSelectLabel(count) {
+        return count ? $l("{0} records selected", count) : $l("tap to select");
+    }
+
+    search() {
         this.$.filterInput.focus();
     }
 

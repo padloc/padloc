@@ -7,6 +7,7 @@
 <link rel="import" href="../icon/icon.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../slider/slider.html">
+<link rel="import" href="../sync/sync.html">
 <link rel="import" href="../toggle/toggle-button.html">
 
 <dom-module id="pl-settings-view">
@@ -34,6 +35,15 @@
                 transform: translate3d(0, 0, 0);
             }
 
+            section .info {
+                display: block;
+                font-size: var(--font-size-small);
+                text-align: center;
+                line-height: normal;
+                padding: 15px;
+                height: auto;
+            }
+
             button {
                 width: 100%;
                 box-sizing: border-box;
@@ -45,27 +55,6 @@
 
             pl-toggle-button {
                 display: block;
-            }
-
-            .section-header {
-                text-align: center;
-                font-weight: bold;
-                line-height: var(--row-height);
-            }
-
-            .section-row {
-                display: flex;
-                align-items: center;
-            }
-
-            .section-row-label {
-                padding: 0 15px;
-                flex: 1;
-            }
-
-            .section-row pl-icon {
-                width: 50px;
-                height: 50px;
             }
 
             input[type="file"] {
@@ -96,6 +85,25 @@
                 font-weight: bold;
                 margin-top: 5px;
                 word-wrap: break-word;
+                font-size: var(--font-size-tiny);
+            }
+
+            #customUrlInput:not([invalid]) + .warning {
+                display: none;
+            }
+
+            .url-warning {
+                font-size: var(--font-size-small);
+                text-align: center;
+                padding: 15px;
+                border-top: solid 1px var(--border-color);
+                color: var(--color-error);
+            }
+
+            .feature-locked {
+                font-size: var(--font-size-tiny);
+                color: var(--color-error);
+                margin: -14px 15px 12px 15px;
             }
         </style>
 
@@ -107,7 +115,63 @@
 
         <main>
 
-            <section class="tiles">
+            <section>
+                <div class="section-header">[[ $l("Auto Lock") ]]</div>
+                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Lock Automatically') ]]" class="tap"
+                    reverse on-change="settingChanged"></pl-toggle-button>
+                <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
+                    label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
+            </section>
+
+            <section>
+                <div class="section-header">[[ $l("Synchronization") ]]</div>
+                <div disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">
+                    <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ $l('Sync Automatically') ]]"
+                        reverse class="tap" on-change="settingChanged"></pl-toggle-button>
+                    <div class="feature-locked" hidden$="[[ settings.syncConnected ]]">[[ $l("Log in to enable auto sync!") ]]</div>
+                    <div class="feature-locked" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable auto sync!") ]]</div>
+                    <div class="feature-locked" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable auto sync!") ]]</div>
+                </div>
+                <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ $l('Use Custom Server') ]]" reverse
+                    on-change="_customHostChanged" class="tap" disabled$="[[ settings.syncConnected ]]"></pl-toggle-button>
+                <div class="tap" hidden$="[[ !settings.syncCustomHost ]]" disabled$="[[ settings.syncConnected ]]">
+                    <pl-input id="customUrlInput" placeholder="[[ $l('Enter Custom URL') ]]"
+                        value="{{ settings.syncHostUrl }}" pattern="^https://[^\s/$.?#].[^\s]*$"
+                        required on-change="settingChanged"></pl-input>
+                    <div class="url-warning">
+                        <strong>[[ $l("Invalid URL") ]]</strong> -
+                        [[ $l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
+                <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
+                <button class="tap" on-click="_import">[[ $l("Import...") ]]</button>
+                <button class="tap" on-click="_export">[[ $l("Export...") ]]</div>
+            </section>
+
+            <section hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Updates") ]]</div>
+                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap"
+                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
+                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
+                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
+                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
+            </section>
+
+            <section hidden$="[[ !_isDesktop() ]]">
+                <div class="section-header">[[ $l("Database") ]]</div>
+                <div class="info">
+                    <div>[[ $l("Current Location:") ]]</div>
+                    <div class="db-path">[[ _dbPath ]]</div>
+                </div>
+                <button on-click="_saveDBAs" class="tap">[[ $l("Change Location...") ]]</button>
+                <button on-click="_loadDB" class="tap">[[ $l("Load Different Database...") ]]</button>
+            </section>
+
+            <section>
                 <button class="info tap" on-click="_openSource">
                     <div><strong>Padlock {{ settings.version }}</strong></div>
                     <div class="made-in">Made with &#9829; in Germany</div>
@@ -118,81 +182,29 @@
                     <span>[[ $l("I") ]]</span><div class="padlock-heart"></div><span>Padlock</span>
                 </button>
             </section>
-
-            <section class="tiles">
-                <div class="info">[[ _autoLockInfo() ]]</div>
-                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ $l('Enable Auto Lock') ]]" class="tap"
-                    reverse on-change="settingChanged"></pl-toggle-button>
-                <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ $l(' min') ]]"
-                    label="[[ $l('After') ]]" hidden$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
-            </section>
-
-            <section class="tiles">
-                <button on-click="_changePassword" class="tap">[[ $l("Change Master Password") ]]</button>
-            </section>
-
-            <section class="tiles">
-                <div class="info">[[ _resetDataInfo() ]]</div>
-                <button on-click="_resetData" class="tap">[[ $l("Reset App") ]]</button>
-            </section>
-
-            <section class="tiles">
-                <div class="section-header">[[ $l("Export") ]]</div>
-                <pl-export records="[[ collection.records ]]"></pl-export>
-            </section>
-
-            <section class="tiles">
-                <div class="section-header">[[ $l("Import") ]]</div>
-                <div class="section-row tiles">
-                    <div class="section-row-label">[[ $l("Paste From Clipboard") ]]</div>
-                    <pl-icon icon="copy" class="tap" on-click="_importFromClipboard"></pl-icon>
-                </div>
-                <div class="section-row" hidden$="[[ _isMobile() ]]">
-                    <div class="section-row-label">[[ $l("Select a File") ]]</div>
-                    <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.csv,.pls,.set">
-                    <label for="importFile" class="tiles-2">
-                        <pl-icon icon="upload" class="tap"></pl-icon>
-                    </label>
-                </div>
-            </section>
-
-            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
-                <div class="section-header">[[ $l("Updates") ]]</div>
-                <button on-click="_checkForUpdates" class="tap">[[ $l("Check For Updates...") ]]</button>
-                <pl-toggle-button id="autoUpdatesButton" label="[[ $l('Automatically Install Updates') ]]" class="tap"
-                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
-                <pl-toggle-button id="betaReleasesButton" label="[[ $l('Install Beta Releases') ]]" class="tap"
-                    reverse on-change="_desktopSettingsChanged"></pl-toggle-button>
-            </section>
-
-            <section class="tiles" hidden$="[[ !_isDesktop() ]]">
-                <div class="section-header">[[ $l("Database") ]]</div>
-                <div class="info">
-                    <div>[[ $l("Current Location:") ]]</div>
-                    <div class="db-path">[[ _dbPath ]]</div>
-                </div>
-                <button on-click="_saveDBAs" class="tap">[[ $l("Change Location...") ]]</button>
-                <button on-click="_loadDB" class="tap">[[ $l("Load Different Database...") ]]</button>
-            </section>
         </main>
 
         <div class="rounded-corners"></div>
+
+        <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.csv,.pls,.set" hidden>
 
     </template>
 
     <script>
 (() => {
 
-const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, BaseElement } = padlock;
+const { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, SyncMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates, saveDBAs, loadDB, isElectron } = padlock.platform;
+const { isCordova, getReviewLink, isTouch, getDesktopSettings, checkForUpdates,
+    saveDBAs, loadDB, isElectron } = padlock.platform;
 
 class SettingsView extends applyMixins(
     BaseElement,
     DataMixin,
     LocaleMixin,
     DialogMixin,
-    AnimationMixin
+    AnimationMixin,
+    SyncMixin
 ) {
 
     static get is() { return "pl-settings-view"; }
@@ -218,36 +230,54 @@ class SettingsView extends applyMixins(
     //* Opens the change password dialog and resets the corresponding input elements
     _changePassword() {
         let newPwd;
-        return this.prompt($l("Are you sure you want to change your master password? Enter your " +
-            "current password to continue!"), $l("Enter Current Password"), "password", $l("Confirm"))
-            .then((pwd) => {
-                if (!this.checkPassword(pwd)) {
-                    this.alert($l("You entered the wrong master password!"));
+        return this.promptPassword(this.password, $l(
+            "Are you sure you want to change your master password? Enter your " +
+            "current password to continue!"
+        ), $l("Confirm"), $l("Cancel"))
+            .then((success) => {
+                if (success) {
+                    return this.prompt($l("Now choose a new master password!"),
+                        $l("Enter New Password"), "password", $l("Confirm"), $l("Cancel"), false, (val) => {
+                            if (val === "") {
+                                return Promise.reject($l("Please enter a password!"));
+                            }
+                            return Promise.resolve(val);
+                        });
+                } else {
                     return Promise.reject();
                 }
-                return this.prompt($l("Now choose a new master password!"),
-                    $l("Enter New Password"), "password", $l("Confirm"));
             })
             .then((pwd) => {
                 if (pwd === null) {
                     return Promise.reject();
                 }
                 newPwd = pwd;
-                return this.prompt($l("Confirm your new master password!"), $l("Confirm New Password"),
-                    "password", $l("Confirm & Change"));
+                return this.promptPassword(pwd, $l("Confirm your new master password!"),
+                    $l("Confirm"), $l("Cancel"));
             })
-            .then((pwd) => {
-                if (pwd === null) {
-                    return null;
+            .then((success) => {
+                if (success) {
+                    return this.setPassword(newPwd);
+                } else {
+                    return Promise.reject();
                 }
-
-                if (pwd !== newPwd) {
-                    return this.alert($l("You failed to confirm the new password. Please try again!"));
-                }
-
-                return this.setPassword(pwd);
             })
-            .then(() => this.alert($l("Master password changed successfully.")));
+            .then(() => {
+                if (this.settings.syncConnected) {
+                    return this.confirm(
+                        $l("Do you want to update the password for you online account {0} as well?",
+                            this.settings.syncEmail),
+                        $l("Yes"), $l("No")
+                    ).then((confirmed) => {
+                        if (confirmed) {
+                            return this.setRemotePassword(this.password);
+                        }
+                    });
+                }
+            })
+            .then(() => {
+                this.alert($l("Master password changed successfully."), { type: "success" });
+            });
     }
 
     _openWebsite() {
@@ -263,20 +293,37 @@ class SettingsView extends applyMixins(
     }
 
     _resetData() {
-        this.prompt($l("Are you sure you want to delete all your data and reset the app? Enter your " +
-            "master password to continue!"), $l("Enter Master Password"), "password", $l("Reset App"))
-            .then((pwd) => {
-                if (pwd === null) {
-                    return;
+        this.promptPassword(this.password,
+            $l(
+                "Are you sure you want to delete all your data and reset the app? Enter your " +
+                "master password to continue!"
+            ),
+            $l("Reset App")
+        )
+            .then((success) => {
+                if (success) {
+                    return this.resetData();
                 }
+            });
+    }
 
-                if (!this.checkPassword(pwd)) {
-                    this.alert($l("You entered the wrong master password! Please try again!"))
-                        .then(() => this._resetData());
-                    return;
+    _import() {
+        const options = [
+            $l("From Clipboard")
+        ];
+        if (!isCordova()) {
+            options.push($l("From File"));
+        }
+        this.choose($l("Please choose an import method!"), options, { preventDismiss: false, type: "question" })
+            .then((choice) => {
+                switch (choice) {
+                    case 0:
+                        this._importFromClipboard();
+                        break;
+                    case 1:
+                        this.$.importFile.click();
+                        break;
                 }
-
-                return this.resetData();
             });
     }
 
@@ -288,14 +335,15 @@ class SettingsView extends applyMixins(
                 .catch((e) => {
                     switch (e.code) {
                         case "decryption_failed":
-                            this.alert($l("Failed to open file. Did you enter the correct password?"));
+                            this.alert($l("Failed to open file. Did you enter the correct password?"),
+                                { type: "warning" });
                             break;
                         case "unsupported_container_version":
                             this.confirm($l(
                                 "It seems the data you are trying to import was exported from a " +
                                 "newer version of Padlock and can not be opened with the version you are " +
                                 "currently running."
-                            ), $l("Check For Updates"), $l("Cancel"))
+                            ), $l("Check For Updates"), $l("Cancel"), { type: "info" })
                                 .then((confirmed) => {
                                     if (confirmed) {
                                         padlock.platform.checkForUpdates();
@@ -303,10 +351,10 @@ class SettingsView extends applyMixins(
                                 });
                             break;
                         case "invalid_csv":
-                            this.alert($l("Failed to recognize file format."));
+                            this.alert($l("Failed to recognize file format."), { type: "warning" });
                             break;
                         default:
-                            this.alert($l("Failed to open file."));
+                            this.alert($l("Failed to open file."), { type: "warning" });
                             throw e;
                     }
                 });
@@ -321,11 +369,12 @@ class SettingsView extends applyMixins(
             .catch((e) => {
                 switch (e.code) {
                     case "decryption_failed":
-                        this.alert($l("Failed to decrypt data. Did you enter the correct password?"));
+                        this.alert($l("Failed to decrypt data. Did you enter the correct password?"),
+                            { type: "warning" });
                         break;
                     default:
                         this.alert($l("No supported data found in clipboard. Please make sure to copy " +
-                            "you data to the clipboard first (e.g. via ctrl + C)."));
+                            "you data to the clipboard first (e.g. via ctrl + C)."), { type: "warning" });
                 }
             });
     }
@@ -359,7 +408,7 @@ class SettingsView extends applyMixins(
                         "The data you want to import seems to be in CSV format. Before you continue, " +
                         "please make sure that the data is structured according to Padlocks specific " +
                         "requirements!"
-                    ), [$l("Review Import Guidelines"), $l("Continue"), $l("Cancel")])
+                    ), [$l("Review Import Guidelines"), $l("Continue"), $l("Cancel")], { type: "info" })
                         .then((choice) => {
                             switch (choice) {
                                 case 0:
@@ -381,7 +430,7 @@ class SettingsView extends applyMixins(
                 if (records) {
                     this.addRecords(records);
                     this.dispatch("data-imported", { records: records });
-                    this.alert($l("Successfully imported {0} records.", records.length));
+                    this.alert($l("Successfully imported {0} records.", records.length), { type: "success" });
                 }
             });
     }
@@ -452,6 +501,36 @@ class SettingsView extends applyMixins(
 
     _loadDB() {
         loadDB();
+    }
+
+    _export() {
+        const exportDialog = this.getSingleton("pl-export-dialog");
+        exportDialog.export(this.records);
+    }
+
+    _autoSyncInfoText() {
+        return $l(
+            "Enable Auto Sync to automatically synchronize your data with " +
+            "your Padlock online account every time you make a change!"
+        );
+    }
+
+    _customHostChanged() {
+        if (this.settings.syncCustomHost) {
+            this.confirm(
+                $l("Are you sure you want to use a custom server for synchronization? " +
+                    "This option is only recommended for advanced users!"),
+                $l("Continue"))
+                .then((confirmed) => {
+                    if (confirmed) {
+                        this.settingChanged();
+                    } else {
+                        this.set("settings.syncCustomHost", false);
+                    }
+                });
+        } else {
+            this.settingChanged();
+        }
     }
 
 }

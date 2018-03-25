@@ -20,7 +20,7 @@
                 display: flex;
                 flex-direction: column;
                 @apply --fullbleed;
-                background: var(--color-background);
+                background: var(--color-quaternary);
             }
 
             :host:not([ready]) main {
@@ -210,6 +210,12 @@
                 text-align: center;
             }
 
+            .info {
+                padding: 15px;
+                font-size: var(--font-size-small);
+                text-align: center;
+            }
+
             @media (min-width: 700px) {
                 section {
                     width: 670px;
@@ -240,7 +246,7 @@
 
                 <template>
 
-                    <section class="tiles" hidden$="[[ !_isTrialing(account.subscription.status) ]]">
+                    <section hidden$="[[ !_isTrialing(account.subscription.status) ]]">
                         <div class="info">
                             <div>[[ $l("Subscription Status:") ]]</div>
                             <div class="subscription-status">[[ $l("Trialing ({0} days left)", _trialDays) ]]</div>
@@ -249,7 +255,7 @@
                         <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
                     </section>
 
-                    <section class="tiles" hidden$="[[ !_isInactive(account.subscription.status) ]]">
+                    <section hidden$="[[ !_isInactive(account.subscription.status) ]]">
                         <div class="info">
                             <div>[[ $l("Subscription Status:") ]]</div>
                             <div class="subscription-status">[[ $l("Read-Only") ]]</div>
@@ -258,17 +264,17 @@
                         <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
                     </section>
 
-                    <section class="tiles" hidden$="[[ !_isActive(account.subscription.status) ]]">
+                    <section hidden$="[[ !_isActive(account.subscription.status) ]]">
                         <div class="info">
                             <div>[[ $l("Subscription Status:") ]]</div>
                             <div class="subscription-status">[[ $l("Active") ]]</div>
                             <div>[[ $l("Payment Method") ]]:</div>
                             <div class="payment-method">[[ _paymentMethod(account.paymentSource) ]]</div>
                         </div>
-                        <button class="tiles-2 tap" on-click="_changePaymentMethod">[[ $l("Change Payment Method") ]]</button>
-                        <button class="tiles-3 tap" on-click="_openBillingDialog">[[ $l("Update Billing Info") ]]</button>
-                        <pl-loading-button class="tiles-4 tap" on-click="_showInvoices">[[ $l("Invoices") ]]</pl-loading-button>
-                        <button class="tiles-5 tap" on-click="_cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
+                        <button class="tap" on-click="_changePaymentMethod">[[ $l("Change Payment Method") ]]</button>
+                        <!-- <button class="tiles&#45;3 tap" on&#45;click="_openBillingDialog">[[ $l("Update Billing Info") ]]</button> -->
+                        <!-- <pl&#45;loading&#45;button class="tiles&#45;4 tap" on&#45;click="_showInvoices">[[ $l("Invoices") ]]</pl&#45;loading&#45;button> -->
+                        <button class="tap" on-click="_cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
                     </section>
 
                 </template>
@@ -277,20 +283,17 @@
 
             <section class="devices">
                 <div class="title">[[ $l("{0} Paired Devices", account.devices.length) ]]</div>
-
-                <div class="tiles tiles-2 device-list">
-                    <dom-repeat items="[[ account.devices ]]">
-                        <template>
-                            <div class="device tiles">
-                                <div class="device-name">[[ item.description ]]</div>
-                                <pl-icon icon="delete" on-click="_revokeDevice"></pl-icon>
-                            </div>
-                        </template>
-                    </dom-repeat>
-                </div>
+                <dom-repeat items="[[ account.devices ]]">
+                    <template>
+                        <div class="device">
+                            <div class="device-name">[[ item.description ]]</div>
+                            <pl-icon icon="delete" on-click="_revokeDevice"></pl-icon>
+                        </div>
+                    </template>
+                </dom-repeat>
             </section>
 
-            <section class="tiles">
+            <section>
                 <div class="info">[[ _resetDataText() ]]</div>
                 <button class="tap" on-click="_resetData">[[ $l("Delete Data") ]]</button>
             </section>
@@ -327,7 +330,7 @@
                 <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
                 <input type="hidden" name="stripeToken" id="stripeTokenInput">
                 <div class="buy-subscription tiles-1" hidden$="[[ _changingPaymentSource ]]">
-                    <div class="subscription-name">[[ account.subscription.plan.name ]]</div>
+                    <div class="subscription-name">[[ account.plan.name ]]</div>
                     <ul class="subscription-features">
                         <li>End-To-End Encryption</li>
                         <li>Automatic Backups</li>
@@ -897,7 +900,7 @@ class Dashboard extends applyMixins(
     }
 
     _buySubscription() {
-        const plan = this.account.subscription.plan;
+        const plan = this.account.plan;
         this._submitCardLabel = $l("Pay {0}.{1} USD", Math.floor(plan.amount / 100), plan.amount % 100);
         this._changingPaymentSource = false;
         this.$.cardDialog.open = true;
@@ -932,7 +935,7 @@ class Dashboard extends applyMixins(
         if (!this.account.subscription) {
             return "";
         }
-        const plan = this.account.subscription.plan;
+        const plan = this.account.plan;
         const price = plan.interval === "month" ? plan.amount / 100 : plan.amount / 1200;
         return $l("${0}/month", price);
     }
@@ -941,7 +944,7 @@ class Dashboard extends applyMixins(
         if (!this.account.subscription) {
             return "";
         }
-        return this.account.subscription.plan.interval === "month" ? $l("(billed monthly)") : $l("(billed annually)");
+        return this.account.plan.interval === "month" ? $l("(billed monthly)") : $l("(billed annually)");
     }
 
     _openBillingDialog() {

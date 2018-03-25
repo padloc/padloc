@@ -18,6 +18,8 @@
                 z-index: 10;
                 max-width: 400px;
                 margin: 0 auto;
+                color: var(--color-background);
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
             }
 
             :host(:not(.showing)) {
@@ -33,24 +35,11 @@
                 opacity: 0.95;
                 border-radius: var(--border-radius);
                 @apply --fullbleed;
-            }
-
-            :host(.success), :host(.info) {
-                color: var(--color-background);
-                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-            }
-
-            :host(.error), :host(.warning) {
-                color: var(--color-background);
-            }
-
-            :host(.success) .background, :host(.info) .background {
-                background: var(--color-highlight);
-                border-bottom: solid 2px rgb(64, 143, 184);
+                background: linear-gradient(90deg, rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
             }
 
             :host(.error) .background, :host(.warning) .background {
-                background: var(--color-foreground);
+                background: linear-gradient(90deg, #f49300 0%, #f25b00 100%);
             }
         </style>
 

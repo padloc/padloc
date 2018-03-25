@@ -83,7 +83,7 @@ padlock.AnalyticsMixin = (superClass) => {
                 padlock.stats.set({ lastSync: new Date().getTime() })
                     .then(() => track("Synchronize", {
                         "Success": true,
-                        "Auto Sync": e.detail.auto,
+                        "Auto Sync": e.detail ? e.detail.auto : false,
                         "$duration": (new Date().getTime() - startedSync) / 1000
                     }));
             });
