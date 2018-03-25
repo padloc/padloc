@@ -127,6 +127,7 @@
 
             .account-info {
                 flex: 1;
+                width: 0;
                 padding: 15px;
                 text-align: center;
                 border-right: solid 1px rgba(0, 0, 0, 0.1);
@@ -141,14 +142,20 @@
 
             .account-stats {
                 font-size: var(--font-size-tiny);
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                @apply --ellipsis;
+            }
+
+            .account-stats > * {
+                vertical-align: middle;
             }
 
             .account-stats pl-icon {
-                width: 20px;
+                width: 16px;
                 height: 20px;
+            }
+
+            .account-stats pl-icon:not(:first-child) {
+                margin-left: 5px;
             }
 
             .account-sync {
