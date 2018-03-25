@@ -361,7 +361,7 @@
 const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin, ClipboardMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, LocaleMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { getPlatformName, getDeviceInfo } = padlock.platform;
+const { getPlatformName, getDeviceInfo, isTouch } = padlock.platform;
 
 const cordovaReady = new Promise((resolve) => {
     document.addEventListener("deviceready", resolve);
@@ -508,7 +508,7 @@ class App extends applyMixins(
         this._currentView = "cloudView";
         this.refreshAccount();
         this.$.listView.deselect();
-        if (!this.settings.syncConnected) {
+        if (!this.settings.syncConnected && !isTouch()) {
             setTimeout(() => this.$.cloudView.focusEmailInput(), 500);
         }
     }
