@@ -59,10 +59,6 @@ padlock.SyncMixin = (superClass) => {
                         this.dispatch("sync-connect-success");
                     }
                     return success;
-                })
-                .catch((e) => {
-                    this._handleCloudError(e);
-                    throw e;
                 });
         }
 
@@ -227,14 +223,22 @@ padlock.SyncMixin = (superClass) => {
                         return Promise.reject("Please enter a valid login code!");
                     } else {
                         return this.activateToken(code)
+                            .catch((e) => {
+                                this._handleCloudError(e);
+                                this.cancelConnect();
+                                return e;
+                            })
                             .then((success) => {
+                                // Error from previous catch clause; Cancel dialog
+                                if (success.code) {
+                                    return null;
+                                }
                                 if (success) {
                                     return true;
                                 } else {
                                     return Promise.reject($l("Invalid login code. Try again!"));
                                 }
-                            })
-                            .catch((e) => this._handleCloudError(e));
+                            });
                     }
                 }
             );
