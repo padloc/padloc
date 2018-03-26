@@ -598,6 +598,7 @@ class App extends applyMixins(
         if (this.locked) {
             this._currentView = "";
             this.$.main.classList.remove("active");
+            this._menuOpen = false;
         } else {
             setTimeout(() => {
                 this.$.main.classList.add("active");
