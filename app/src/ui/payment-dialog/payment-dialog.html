@@ -287,7 +287,7 @@ class PaymentDialog extends applyMixins(
         coupon: { type: String, value: "" },
         plan: { type: Object, value: null },
         source: Object,
-        stripePubKey: { type: String, value: "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy" },
+        stripePubKey: { type: String, value: "" },
         remainingTrialDays: { type: Number, value: 0 },
         _cardError: { type: String, value: "" },
         _needsSupport: { type: Boolean, value: false },
@@ -296,7 +296,6 @@ class PaymentDialog extends applyMixins(
 
     connectedCallback() {
         super.connectedCallback();
-        this._setupPayment();
     }
 
     show(source) {
@@ -305,6 +304,10 @@ class PaymentDialog extends applyMixins(
         this._showCouponInput = !!this.coupon;
         this.open = true;
         this._source = source;
+
+        if (!this._cardElement) {
+            this._setupPayment();
+        }
 
         track("Payment Dialog: Open", {
             "Plan": this.plan && this.plan.id,

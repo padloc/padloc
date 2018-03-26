@@ -189,6 +189,10 @@ export class CloudSource extends AjaxSource {
         if (subStatus !== null) {
             this.settings.syncSubStatus = subStatus;
         }
+        const stripePubKey = req.getResponseHeader("X-Stripe-Pub-Key");
+        if (stripePubKey !== null) {
+            this.settings.stripePubKey = stripePubKey;
+        }
         try {
             this.settings.syncTrialEnd =
                 parseInt(req.getResponseHeader("X-Sub-Trial-End") || "0", 10);

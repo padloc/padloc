@@ -144,8 +144,8 @@ export class Settings {
         autoLock: true,
         // Auto lock delay in minutes
         autoLockDelay: 5,
-        // syncHostUrl: "https://cloud.padlock.io",
-        syncHostUrl: "http://127.0.0.1:3000",
+        stripePubKey: "",
+        syncHostUrl: "https://cloud.padlock.io",
         syncCustomHost: false,
         syncEmail: "",
         syncToken: "",
@@ -171,6 +171,9 @@ export class Settings {
     autoLockDelay: number;
 
     peekValues: boolean;
+
+    // Stripe settings
+    stripePubKey: string;
 
     // Synchronization settings
     syncHostUrl: string;
