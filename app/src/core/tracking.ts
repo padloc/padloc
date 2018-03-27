@@ -1,29 +1,32 @@
-import { CloudSource } from "./source";
-import { Settings } from "./data";
+import { Client } from "./ajax";
 import { getAppVersion } from "./platform";
-import { get as getStats, set as setStats } from "./stats";
 
 let initCb: () => void;
-let cloudSource: CloudSource;
+let client: Client;
 let trackingID = "";
+let statsApi:{ get(): Promise<any>, set(data: any): Promise<void> } ;
 
 const initialized = new Promise((resolve) => initCb = resolve);
 
-export function init(settings: Settings) {
-    cloudSource = new CloudSource(settings);
+export function init(cl: Client, st?: { get(): Promise<any>, set(data: any): Promise<void> }) {
+    client = cl;
+    statsApi = st || {
+        get() { return Promise.resolve({}) },
+        set() { return Promise.resolve() }
+    };
     initCb();
 }
 
 export function setTrackingID(id: string) {
     trackingID = id;
-    return setStats({ trackingID: id });
+    return statsApi.set({ trackingID: id });
 }
 
-let ready = Promise.all([
-    getStats(),
-    getAppVersion(),
-    initialized
-])
+let ready = initialized
+    .then(() => Promise.all([
+        statsApi.get(),
+        getAppVersion()
+    ]))
     .then(([stats, version]) => {
         trackingID = stats.trackingID as string;
         const launchCount = typeof stats.launchCount === "number" ? (stats.launchCount as number)+ 1 : 1;
@@ -36,7 +39,7 @@ let ready = Promise.all([
             track("Update", { "From Version": stats.lastVersion });
         }
 
-        return setStats({
+        return statsApi.set({
             firstLaunch: firstLaunch,
             lastLaunch: new Date().getTime(),
             launchCount: launchCount,
@@ -45,11 +48,6 @@ let ready = Promise.all([
     });
 
 export function track(event: string, props?: { [prop: string]: number|string }) {
-    // Don't track events if user is using a custom padlock cloud instance
-    if (cloudSource.settings.syncCustomHost) {
-        return Promise.resolve();
-    }
-
     const data = {
         event: event,
         props: props || {},
@@ -57,10 +55,10 @@ export function track(event: string, props?: { [prop: string]: number|string }) 
     };
 
     if (data.props.Email) {
-        ready = setStats({ "email": data.props.Email });
+        ready = statsApi.set({ "email": data.props.Email });
     }
 
-    ready = ready.then(() => getStats())
+    ready = ready.then(() => statsApi.get())
         .then((stats) => {
             Object.assign(data.props, {
                 "First Launch": stats.firstLaunch && new Date(stats.firstLaunch as number).toISOString(),
@@ -85,9 +83,9 @@ export function track(event: string, props?: { [prop: string]: number|string }) 
                 data.props["Last Reviewed"] = new Date(stats.lastReviewed as number).toISOString();
             }
         })
-        .then(() => cloudSource.request(
+        .then(() => client.request(
             "POST",
-            "https://cloud.padlock.io/track/",
+            client.urlForPath("track"),
             JSON.stringify(data)
         ))
         .then((r) => {

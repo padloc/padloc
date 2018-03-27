@@ -7,8 +7,9 @@
 const startedLoading = new Date().getTime();
 const { init, track, setTrackingID } = padlock.tracking;
 const { DataMixin } = padlock;
+const { CloudSource } = padlock.source;
 
-init(DataMixin.settings);
+init(new CloudSource(DataMixin.settings), padlock.stats);
 
 padlock.AnalyticsMixin = (superClass) => {
 
@@ -106,6 +107,10 @@ padlock.AnalyticsMixin = (superClass) => {
         }
 
         track(event, props) {
+            // Don't track events if user is using a custom padlock cloud instance
+            if (DataMixin.settings.syncCustomHost) {
+                return Promise.resolve();
+            }
             track(event, props);
         }
 

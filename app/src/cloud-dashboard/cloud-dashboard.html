@@ -1,4 +1,3 @@
-<script src="https://js.stripe.com/v3/"></script>
 <script src="../padlock-lite.js"></script>
 
 <link rel="import" href="../styles/shared.html">
@@ -10,6 +9,7 @@
 <link rel="import" href="../ui/loading-button/loading-button.html">
 <link rel="import" href="../ui/locale/locale.html">
 <link rel="import" href="../ui/notification/notification.html">
+<link rel="import" href="../ui/payment-dialog/payment-dialog.html">
 
 <dom-module id="pl-cloud-dashboard">
 
@@ -211,9 +211,37 @@
             }
 
             .info {
+                display: flex;
+                align-items: center;
+            }
+
+            .info-icon {
+                width: 80px;
+                height: 80px;
+                font-size: 60px;
+                margin: 10px 0 10px 10px;
+            }
+
+            .info-body {
+                padding: 20px 15px 20px 10px;
+                flex: 1;
+            }
+
+            .info-title {
+                font-size: 120%;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+
+            .info-text {
+                font-size: var(--font-size-small);
+            }
+
+            .info-2 {
                 padding: 15px;
                 font-size: var(--font-size-small);
                 text-align: center;
+                line-height: normal;
             }
 
             @media (min-width: 700px) {
@@ -246,26 +274,41 @@
 
                 <template>
 
-                    <section hidden$="[[ !_isTrialing(account.subscription.status) ]]">
+                    <section class="highlight tiles" hidden$="[[ !_hasCoupon(account.coupon) ]]">
                         <div class="info">
-                            <div>[[ $l("Subscription Status:") ]]</div>
-                            <div class="subscription-status">[[ $l("Trialing ({0} days left)", _trialDays) ]]</div>
-                            <div>[[ _trialInfoText() ]]</div>
+                            <pl-icon class="info-icon" icon="category"></pl-icon>
+                            <div class="info-body">
+                                <div class="info-title">[[ $l("Coupon Unlocked") ]]</div>
+                                <div class="info-text" inner-h-t-m-l="[[ $l('The following coupon has been unlocked for your account: **{0}**', account.coupon.metadata.description) ]]"></div>
+                            </div>
                         </div>
-                        <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
+                        <button class="tap" on-click="_buySubscription">[[ $l("Claim Coupon") ]]</button>
                     </section>
 
-                    <section hidden$="[[ !_isInactive(account.subscription.status) ]]">
+                    <section class="highlight warning tiles" hidden$="[[ !_isTrialing(account.subscription.status) ]]">
                         <div class="info">
-                            <div>[[ $l("Subscription Status:") ]]</div>
-                            <div class="subscription-status">[[ $l("Read-Only") ]]</div>
-                            <div>[[ _readOnlyInfoText() ]]</div>
+                            <pl-icon class="info-icon" icon="time"></pl-icon>
+                            <div class="info-body">
+                                <div class="info-title">[[ $l("Trialing ({0} days left)", _trialDays) ]]</div>
+                                <div class="info-text">[[ _trialInfoText(_trialDays) ]]</div>
+                            </div>
                         </div>
-                        <button class="tap" on-click="_buySubscription">[[ $l("Buy Subscription") ]]</button>
+                        <button class="tap" on-click="_buySubscription">[[ $l("Upgrade Now") ]]</button>
+                    </section>
+
+                    <section class="highlight warning tiles" hidden$="[[ !_isInactive(account.subscription.status) ]]">
+                        <div class="info">
+                            <pl-icon class="info-icon" icon="error"></pl-icon>
+                            <div class="info-body">
+                                <div class="info-title">[[ $l("Read-Only") ]]</div>
+                                <div class="info-text">[[ _readOnlyInfoText() ]]</div>
+                            </div>
+                        </div>
+                        <button class="tap" on-click="_buySubscription">[[ $l("Upgrade Now") ]]</button>
                     </section>
 
                     <section hidden$="[[ !_isActive(account.subscription.status) ]]">
-                        <div class="info">
+                        <div class="info-2">
                             <div>[[ $l("Subscription Status:") ]]</div>
                             <div class="subscription-status">[[ $l("Active") ]]</div>
                             <div>[[ $l("Payment Method") ]]:</div>
@@ -283,6 +326,8 @@
 
             <section class="devices">
                 <div class="title">[[ $l("{0} Paired Devices", account.devices.length) ]]</div>
+                <div class="info-2" hidden$="[[ !_hasNoDevices(account.devices) ]]">[[ $l("Looks like you haven't installed the Padlock app on any devices yet!") ]]</div>
+                <button class="tap" on-click="_downloadApp" hidden$="[[ !_hasNoDevices(account.devices) ]]">[[ $l("Download App") ]]</button>
                 <dom-repeat items="[[ account.devices ]]">
                     <template>
                         <div class="device">
@@ -294,7 +339,7 @@
             </section>
 
             <section>
-                <div class="info">[[ _resetDataText() ]]</div>
+                <div class="info-2">[[ _resetDataText() ]]</div>
                 <button class="tap" on-click="_resetData">[[ $l("Delete Data") ]]</button>
             </section>
 
@@ -325,336 +370,24 @@
             </form>
         </pl-dialog>
 
-        <pl-dialog id="cardDialog">
-            <form id="paymentForm" action="/subscribe/?ref=[[ referer ]]" method="post" on-submit="_submitCard">
-                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
-                <input type="hidden" name="stripeToken" id="stripeTokenInput">
-                <div class="buy-subscription tiles-1" hidden$="[[ _changingPaymentSource ]]">
-                    <div class="subscription-name">[[ account.plan.name ]]</div>
-                    <ul class="subscription-features">
-                        <li>End-To-End Encryption</li>
-                        <li>Automatic Backups</li>
-                        <li>Unlimited Devices</li>
-                    </ul>
-                    <div class="price">[[ _monthlyPrice(account.subscription) ]]</div>
-                    <div class="small">[[ _billingCycle(account.subscription) ]]</div>
-                </div>
-                <div class="message tiles-2 card-hint" error$="[[ _cardError ]]">[[ _cardHint(_cardError) ]]</div>
-                <div id="cardElement" class="card tiles-3"></div>
-                <pl-loading-button class="tiles-4 tap" id="submitButton" on-click="_submitCard">[[ _submitCardLabel ]]</pl-loading-button>
-                <a href="https://stripe.com" target="_blank" class="secure-payment tiles-5">
-                    <span>[[ $l("Secure Payment - ") ]]</span>
-                    <img src="/static/img/powered_by_stripe.svg">
-                </a>
-            </form>
-        </pl-dialog>
-
-        <pl-dialog id="billingDialog">
-            <form id="billingForm" action="/billing/?ref=[[ referer ]]" method="post" on-submit="_submitBilling" class="tiles">
-                <div class="message">
-                    Enter your billing info below if you want to receive full invoices via email.
-                </div>
-                <input name="name" required placeholder="[[ $l('Full Name') ]]" autocomplete="name" value="[[ account.billing.name ]]">
-                <input name="address1" placeholder="[[ $l('Company Name (Optional)') ]]" autocomplete="address-line1" value="[[ account.billing.address1 ]]">
-                <input name="address2" required placeholder="[[ $l('Address') ]]" autocomplete="address-line2" value="[[ account.billing.address2 ]]">
-                <input name="zip" required placeholder="[[ $l('Zip Code') ]]" autocomplete="postal-code" value="[[ account.billing.postalCode ]]">
-                <input name="city" required placeholder="[[ $l('City') ]]" autocomplete="address-level2" value="[[ account.billing.city ]]">
-                <div class="select-wrapper">
-                    <select id="countrySelect" name="country" required placeholder="[[ $l('Country') ]]" autocomplete="country">
-                        <option value="AF">Afghanistan</option>
-                        <option value="AX">Åland Islands</option>
-                        <option value="AL">Albania</option>
-                        <option value="DZ">Algeria</option>
-                        <option value="AS">American Samoa</option>
-                        <option value="AD">Andorra</option>
-                        <option value="AO">Angola</option>
-                        <option value="AI">Anguilla</option>
-                        <option value="AQ">Antarctica</option>
-                        <option value="AG">Antigua and Barbuda</option>
-                        <option value="AR">Argentina</option>
-                        <option value="AM">Armenia</option>
-                        <option value="AW">Aruba</option>
-                        <option value="AU">Australia</option>
-                        <option value="AT">Austria</option>
-                        <option value="AZ">Azerbaijan</option>
-                        <option value="BS">Bahamas</option>
-                        <option value="BH">Bahrain</option>
-                        <option value="BD">Bangladesh</option>
-                        <option value="BB">Barbados</option>
-                        <option value="BY">Belarus</option>
-                        <option value="BE">Belgium</option>
-                        <option value="BZ">Belize</option>
-                        <option value="BJ">Benin</option>
-                        <option value="BM">Bermuda</option>
-                        <option value="BT">Bhutan</option>
-                        <option value="BO">Bolivia, Plurinational State of</option>
-                        <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
-                        <option value="BA">Bosnia and Herzegovina</option>
-                        <option value="BW">Botswana</option>
-                        <option value="BV">Bouvet Island</option>
-                        <option value="BR">Brazil</option>
-                        <option value="IO">British Indian Ocean Territory</option>
-                        <option value="BN">Brunei Darussalam</option>
-                        <option value="BG">Bulgaria</option>
-                        <option value="BF">Burkina Faso</option>
-                        <option value="BI">Burundi</option>
-                        <option value="KH">Cambodia</option>
-                        <option value="CM">Cameroon</option>
-                        <option value="CA">Canada</option>
-                        <option value="CV">Cape Verde</option>
-                        <option value="KY">Cayman Islands</option>
-                        <option value="CF">Central African Republic</option>
-                        <option value="TD">Chad</option>
-                        <option value="CL">Chile</option>
-                        <option value="CN">China</option>
-                        <option value="CX">Christmas Island</option>
-                        <option value="CC">Cocos (Keeling) Islands</option>
-                        <option value="CO">Colombia</option>
-                        <option value="KM">Comoros</option>
-                        <option value="CG">Congo</option>
-                        <option value="CD">Congo, the Democratic Republic of the</option>
-                        <option value="CK">Cook Islands</option>
-                        <option value="CR">Costa Rica</option>
-                        <option value="CI">Côte d'Ivoire</option>
-                        <option value="HR">Croatia</option>
-                        <option value="CU">Cuba</option>
-                        <option value="CW">Curaçao</option>
-                        <option value="CY">Cyprus</option>
-                        <option value="CZ">Czech Republic</option>
-                        <option value="DK">Denmark</option>
-                        <option value="DJ">Djibouti</option>
-                        <option value="DM">Dominica</option>
-                        <option value="DO">Dominican Republic</option>
-                        <option value="EC">Ecuador</option>
-                        <option value="EG">Egypt</option>
-                        <option value="SV">El Salvador</option>
-                        <option value="GQ">Equatorial Guinea</option>
-                        <option value="ER">Eritrea</option>
-                        <option value="EE">Estonia</option>
-                        <option value="ET">Ethiopia</option>
-                        <option value="FK">Falkland Islands (Malvinas)</option>
-                        <option value="FO">Faroe Islands</option>
-                        <option value="FJ">Fiji</option>
-                        <option value="FI">Finland</option>
-                        <option value="FR">France</option>
-                        <option value="GF">French Guiana</option>
-                        <option value="PF">French Polynesia</option>
-                        <option value="TF">French Southern Territories</option>
-                        <option value="GA">Gabon</option>
-                        <option value="GM">Gambia</option>
-                        <option value="GE">Georgia</option>
-                        <option value="DE">Germany</option>
-                        <option value="GH">Ghana</option>
-                        <option value="GI">Gibraltar</option>
-                        <option value="GR">Greece</option>
-                        <option value="GL">Greenland</option>
-                        <option value="GD">Grenada</option>
-                        <option value="GP">Guadeloupe</option>
-                        <option value="GU">Guam</option>
-                        <option value="GT">Guatemala</option>
-                        <option value="GG">Guernsey</option>
-                        <option value="GN">Guinea</option>
-                        <option value="GW">Guinea-Bissau</option>
-                        <option value="GY">Guyana</option>
-                        <option value="HT">Haiti</option>
-                        <option value="HM">Heard Island and McDonald Islands</option>
-                        <option value="VA">Holy See (Vatican City State)</option>
-                        <option value="HN">Honduras</option>
-                        <option value="HK">Hong Kong</option>
-                        <option value="HU">Hungary</option>
-                        <option value="IS">Iceland</option>
-                        <option value="IN">India</option>
-                        <option value="ID">Indonesia</option>
-                        <option value="IR">Iran, Islamic Republic of</option>
-                        <option value="IQ">Iraq</option>
-                        <option value="IE">Ireland</option>
-                        <option value="IM">Isle of Man</option>
-                        <option value="IL">Israel</option>
-                        <option value="IT">Italy</option>
-                        <option value="JM">Jamaica</option>
-                        <option value="JP">Japan</option>
-                        <option value="JE">Jersey</option>
-                        <option value="JO">Jordan</option>
-                        <option value="KZ">Kazakhstan</option>
-                        <option value="KE">Kenya</option>
-                        <option value="KI">Kiribati</option>
-                        <option value="KP">Korea, Democratic People's Republic of</option>
-                        <option value="KR">Korea, Republic of</option>
-                        <option value="KW">Kuwait</option>
-                        <option value="KG">Kyrgyzstan</option>
-                        <option value="LA">Lao People's Democratic Republic</option>
-                        <option value="LV">Latvia</option>
-                        <option value="LB">Lebanon</option>
-                        <option value="LS">Lesotho</option>
-                        <option value="LR">Liberia</option>
-                        <option value="LY">Libya</option>
-                        <option value="LI">Liechtenstein</option>
-                        <option value="LT">Lithuania</option>
-                        <option value="LU">Luxembourg</option>
-                        <option value="MO">Macao</option>
-                        <option value="MK">Macedonia, the former Yugoslav Republic of</option>
-                        <option value="MG">Madagascar</option>
-                        <option value="MW">Malawi</option>
-                        <option value="MY">Malaysia</option>
-                        <option value="MV">Maldives</option>
-                        <option value="ML">Mali</option>
-                        <option value="MT">Malta</option>
-                        <option value="MH">Marshall Islands</option>
-                        <option value="MQ">Martinique</option>
-                        <option value="MR">Mauritania</option>
-                        <option value="MU">Mauritius</option>
-                        <option value="YT">Mayotte</option>
-                        <option value="MX">Mexico</option>
-                        <option value="FM">Micronesia, Federated States of</option>
-                        <option value="MD">Moldova, Republic of</option>
-                        <option value="MC">Monaco</option>
-                        <option value="MN">Mongolia</option>
-                        <option value="ME">Montenegro</option>
-                        <option value="MS">Montserrat</option>
-                        <option value="MA">Morocco</option>
-                        <option value="MZ">Mozambique</option>
-                        <option value="MM">Myanmar</option>
-                        <option value="NA">Namibia</option>
-                        <option value="NR">Nauru</option>
-                        <option value="NP">Nepal</option>
-                        <option value="NL">Netherlands</option>
-                        <option value="NC">New Caledonia</option>
-                        <option value="NZ">New Zealand</option>
-                        <option value="NI">Nicaragua</option>
-                        <option value="NE">Niger</option>
-                        <option value="NG">Nigeria</option>
-                        <option value="NU">Niue</option>
-                        <option value="NF">Norfolk Island</option>
-                        <option value="MP">Northern Mariana Islands</option>
-                        <option value="NO">Norway</option>
-                        <option value="OM">Oman</option>
-                        <option value="PK">Pakistan</option>
-                        <option value="PW">Palau</option>
-                        <option value="PS">Palestinian Territory, Occupied</option>
-                        <option value="PA">Panama</option>
-                        <option value="PG">Papua New Guinea</option>
-                        <option value="PY">Paraguay</option>
-                        <option value="PE">Peru</option>
-                        <option value="PH">Philippines</option>
-                        <option value="PN">Pitcairn</option>
-                        <option value="PL">Poland</option>
-                        <option value="PT">Portugal</option>
-                        <option value="PR">Puerto Rico</option>
-                        <option value="QA">Qatar</option>
-                        <option value="RE">Réunion</option>
-                        <option value="RO">Romania</option>
-                        <option value="RU">Russian Federation</option>
-                        <option value="RW">Rwanda</option>
-                        <option value="BL">Saint Barthélemy</option>
-                        <option value="SH">Saint Helena, Ascension and Tristan da Cunha</option>
-                        <option value="KN">Saint Kitts and Nevis</option>
-                        <option value="LC">Saint Lucia</option>
-                        <option value="MF">Saint Martin (French part)</option>
-                        <option value="PM">Saint Pierre and Miquelon</option>
-                        <option value="VC">Saint Vincent and the Grenadines</option>
-                        <option value="WS">Samoa</option>
-                        <option value="SM">San Marino</option>
-                        <option value="ST">Sao Tome and Principe</option>
-                        <option value="SA">Saudi Arabia</option>
-                        <option value="SN">Senegal</option>
-                        <option value="RS">Serbia</option>
-                        <option value="SC">Seychelles</option>
-                        <option value="SL">Sierra Leone</option>
-                        <option value="SG">Singapore</option>
-                        <option value="SX">Sint Maarten (Dutch part)</option>
-                        <option value="SK">Slovakia</option>
-                        <option value="SI">Slovenia</option>
-                        <option value="SB">Solomon Islands</option>
-                        <option value="SO">Somalia</option>
-                        <option value="ZA">South Africa</option>
-                        <option value="GS">South Georgia and the South Sandwich Islands</option>
-                        <option value="SS">South Sudan</option>
-                        <option value="ES">Spain</option>
-                        <option value="LK">Sri Lanka</option>
-                        <option value="SD">Sudan</option>
-                        <option value="SR">Suriname</option>
-                        <option value="SJ">Svalbard and Jan Mayen</option>
-                        <option value="SZ">Swaziland</option>
-                        <option value="SE">Sweden</option>
-                        <option value="CH">Switzerland</option>
-                        <option value="SY">Syrian Arab Republic</option>
-                        <option value="TW">Taiwan, Province of China</option>
-                        <option value="TJ">Tajikistan</option>
-                        <option value="TZ">Tanzania, United Republic of</option>
-                        <option value="TH">Thailand</option>
-                        <option value="TL">Timor-Leste</option>
-                        <option value="TG">Togo</option>
-                        <option value="TK">Tokelau</option>
-                        <option value="TO">Tonga</option>
-                        <option value="TT">Trinidad and Tobago</option>
-                        <option value="TN">Tunisia</option>
-                        <option value="TR">Turkey</option>
-                        <option value="TM">Turkmenistan</option>
-                        <option value="TC">Turks and Caicos Islands</option>
-                        <option value="TV">Tuvalu</option>
-                        <option value="UG">Uganda</option>
-                        <option value="UA">Ukraine</option>
-                        <option value="AE">United Arab Emirates</option>
-                        <option value="GB">United Kingdom</option>
-                        <option value="US">United States</option>
-                        <option value="UM">United States Minor Outlying Islands</option>
-                        <option value="UY">Uruguay</option>
-                        <option value="UZ">Uzbekistan</option>
-                        <option value="VU">Vanuatu</option>
-                        <option value="VE">Venezuela, Bolivarian Republic of</option>
-                        <option value="VN">Viet Nam</option>
-                        <option value="VG">Virgin Islands, British</option>
-                        <option value="VI">Virgin Islands, U.S.</option>
-                        <option value="WF">Wallis and Futuna</option>
-                        <option value="EH">Western Sahara</option>
-                        <option value="YE">Yemen</option>
-                        <option value="ZM">Zambia</option>
-                        <option value="ZW">Zimbabwe</option>
-                    </select>
-                </div>
-                <input name="vat" placeholder="[[ $l('VAT ID (optional)') ]]" value="[[ account.billing.vat ]]">
-                <!-- <pl&#45;loading&#45;button class="tap" id="submitBillingButton" on&#45;click="_submitBilling">[[ $l("Update Billing Info") ]]</pl&#45;loading&#45;button> -->
-                <button>[[ $l("Update Billing Info") ]]</button>
-                <input type="hidden" name="gorilla.csrf.Token" value="[[ csrfToken ]]">
-            </form>
-        </pl-dialog>
-
-        <pl-dialog id="invoicesDialog">
-            <ul class="invoices tiles">
-                <template is="dom-repeat" items="[[ _invoices ]]">
-                    <li class="tap">
-                        <a href="/invoices/[[ item.id ]]" target="_blank">
-                            <strong>[[ item.lines.data.0.plan.name ]]</strong>
-                            ([[ _formatTimestamp(item.lines.data.0.period.start) ]] -
-                            [[ _formatTimestamp(item.lines.data.0.period.end) ]])
-                        </a>
-                    </li>
-                </template>
-            </ul>
-        </pl-dialog>
+        <pl-payment-dialog id="paymentDialog" stripe-pub-key="[[ stripePubKey ]]" csrf-token="[[ csrfToken ]]"></pl-payment-dialog>
 
     </template>
 
     <script>
-/* global Stripe, mixpanel */
 (() => {
 
 const { LocaleMixin, DialogMixin, NotificationMixin, AnimationMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
 const { request } = padlock.ajax;
+const { track, init } = padlock.tracking;
 
-function track(event, data) {
-    if (typeof mixpanel === "undefined") {
-        return Promise.resolve();
+init({
+    request: padlock.ajax.request,
+    urlForPath(path) {
+        return `/${path}/`;
     }
-
-    return new Promise((resolve) => {
-        mixpanel.track(event, data, resolve);
-        setTimeout(resolve, 300);
-    });
-}
-
-let stripe;
+});
 
 class Dashboard extends applyMixins(
     BaseElement,
@@ -686,15 +419,12 @@ class Dashboard extends applyMixins(
     connectedCallback() {
         super.connectedCallback();
 
+        this.$.paymentDialog.source = this;
+
         setTimeout(() => {
             this.animateCascade(this.root.querySelectorAll("section"));
             this.setAttribute("ready", "");
         }, 100);
-
-        if (this.account.displaySubscription) {
-            this._setupPayment();
-            this.$.countrySelect.value = this.account.billing.country;
-        }
 
         switch (this.action) {
             case "paired":
@@ -730,25 +460,22 @@ class Dashboard extends applyMixins(
             localStorage.setItem("firstOpened", new Date().getTime());
 
             this.choose($l(
-                "Welcome to your Padlock Cloud dashboard! This is where you can manage your " +
-                "Padlock Cloud account and see all your paired devices. You won't be able to access " +
+                "This is where you can manage your Padlock online " +
+                "account and see all your paired devices. You won't be able to access " +
                 "any of your actual data here, though, that can only be done from the Padlock app!"
             ), [
-                $l("Got it!"),
-                $l("Download App")
-            ])
-                .then((choice) => {
-                    if (choice === 1) {
-                        window.open("https://padlock.io/downloads/", "_blank");
-                    }
-                });
+                $l("Got it!")
+            ], { title: "Welcome To Your Dashboard!", hideIcon: true });
         }
 
-        if (this.account.displaySubscription && this._isInactive() && this.action !== "subscribe") {
+        if (this.account.coupon) {
+            this.$.paymentDialog.coupon = this.account.coupon;
             this.confirm(
-                this._readOnlyInfoText(),
-                $l("Buy Subscription"),
-                $l("Continue In Read-Only Mode")
+                $l("The following coupon has been unlocked for your account: '{0}'",
+                    this.account.coupon.metadata.description),
+                $l("Claim It Now!"),
+                $l("No Thanks"),
+                { type: "info", title: $l("Coupon Unlocked") }
             )
                 .then((confirmed) => {
                     if (confirmed) {
@@ -760,69 +487,20 @@ class Dashboard extends applyMixins(
         track("Dashboard: Finish Loading");
     }
 
-    _setupPayment() {
-        stripe = Stripe(this.stripePubKey);
-        const elements = stripe.elements();
-        const card = this._cardElement = elements.create("card", {
-            iconStyle: "solid",
-            style: {
-                base: {
-                    fontFamily: '"Clear Sans", "Helvetica Neue", Helvetica, sans-serif',
-                    fontSmoothing: "antialiased",
-                    fontSize: "18px",
-                    color: "#fff",
-                    iconColor: "#fff",
-                    textShadow: "rgba(0, 0, 0, 0.2) 0 2px 0",
-                    "::placeholder": {
-                        color: "rgba(255, 255, 255, 0.7)",
-                        textShadow: "rgba(0, 0, 0, 0.15) 0 2px 0"
-                    }
-                },
-                invalid: {
-                    textShadow: "none"
-                }
-            }
-        });
-
-        // Add an instance of the card Element into the `card-element` <div>
-        card.mount(this.$.cardElement);
-
-        // Handle real-time validation errors from the card Element.
-        card.addEventListener("change", (e) => this._cardError = e.error && e.error.message || "");
-    }
-
-    _submitCard() {
-        if (this._submittingCard) {
-            return;
-        }
-
-        this.$.submitButton.start();
-        this._submittingCard = true;
-
-        stripe.createToken(this._cardElement).then((result) => {
-            const edata = {
-                "Action": this._changingPaymentSource ? "Change Payment Source" : "Buy Subscription",
-                "Source": this.referer
-            };
-
-            if (result.error) {
-                Object.assign(edata, {
-                    "Error Code": result.error.code,
-                    "Error Type": result.error.type,
-                    "Error Message": result.error.message
-                });
-            }
-
-            const trackPromise = track("Dashboard: Submit Payment Source", edata);
-
-            if (result.error) {
-                this.$.submitButton.fail();
-                this._submittingCard = false;
-            } else {
-                this.$.stripeTokenInput.value = result.token.id;
-                trackPromise.then(() => this.$.paymentForm.submit());
-            }
-        });
+    subscribe(stripeToken = "", coupon = "", source = "") {
+        const params = new URLSearchParams();
+        params.set("stripeToken", stripeToken);
+        params.set("coupon", coupon);
+        params.set("source", source);
+        params.set("gorilla.csrf.Token", this.csrfToken);
+        return request(
+            "POST",
+            "/subscribe/",
+            params.toString(),
+            new Map()
+                .set("Content-Type", "application/x-www-form-urlencoded")
+                .set("Accept", "application/json")
+        );
     }
 
     _computeRemainingTrialDays(trialEnd) {
@@ -850,10 +528,8 @@ class Dashboard extends applyMixins(
 
     _trialInfoText() {
         return $l(
-            "Your trial period ends in {0} days. After this period, your access will be read-only, " +
-            "which means you will be able to access your existing data on Padlock Cloud but you won't " +
-            "be able to upload any new data or synchronize changes between devices. " +
-            "Get a subscription now to get unlimited access to Padlock Cloud!",
+            "Your trial period ends in {0} days. Upgrade now to continue using online features like " +
+            "synchronization and automatic backups!",
             this._trialDays
         );
     }
@@ -861,9 +537,9 @@ class Dashboard extends applyMixins(
     _readOnlyInfoText() {
         return $l(
             "You currently don't have an active subscription which means you can still access " +
-            "your existing data on Padlock Cloud but you won't be able to upload any new data " +
+            "your existing online data but you won't be able to upload any new data " +
             "or synchronize changes between devices. Get a subscription now to take full advantage " +
-            "of Padlock Cloud!"
+            "of Padlocks online features!"
         );
     }
 
@@ -900,12 +576,8 @@ class Dashboard extends applyMixins(
     }
 
     _buySubscription() {
-        const plan = this.account.plan;
-        this._submitCardLabel = $l("Pay {0}.{1} USD", Math.floor(plan.amount / 100), plan.amount % 100);
-        this._changingPaymentSource = false;
-        this.$.cardDialog.open = true;
-
-        track("Dashboard: Open Payment Dialog", { "Action": "Buy Subscription", "Source": this.referer });
+        this.$.paymentDialog.plan = this.account.plan;
+        this.$.paymentDialog.show(this.referer);
     }
 
     _cancelSubscription() {
@@ -913,11 +585,8 @@ class Dashboard extends applyMixins(
     }
 
     _changePaymentMethod() {
-        this._submitCardLabel = $l("Add New Card");
-        this._changingPaymentSource = true;
-        this.$.cardDialog.open = true;
-
-        track("Dashboard: Open Payment Dialog", { "Action": "Change Payment Source", "Source": this.referer });
+        this.$.paymentDialog.plan = null;
+        this.$.paymentDialog.show("Dashboard");
     }
 
     _back() {
@@ -925,26 +594,6 @@ class Dashboard extends applyMixins(
             setTimeout(() => window.location = "https://padlock.io/", 200);
         });
         window.location = "padlock://?ref=dashboard";
-    }
-
-    _cardHint() {
-        return this._cardError || $l("Please enter your credit or debit card information:");
-    }
-
-    _monthlyPrice() {
-        if (!this.account.subscription) {
-            return "";
-        }
-        const plan = this.account.plan;
-        const price = plan.interval === "month" ? plan.amount / 100 : plan.amount / 1200;
-        return $l("${0}/month", price);
-    }
-
-    _billingCycle() {
-        if (!this.account.subscription) {
-            return "";
-        }
-        return this.account.plan.interval === "month" ? $l("(billed monthly)") : $l("(billed annually)");
     }
 
     _openBillingDialog() {
@@ -965,6 +614,18 @@ class Dashboard extends applyMixins(
 
     _formatTimestamp(ts) {
         return new Date(ts * 1000).toLocaleDateString();
+    }
+
+    _hasCoupon() {
+        return !!this.account.coupon;
+    }
+
+    _hasNoDevices() {
+        return !this.account.devices.length;
+    }
+
+    _downloadApp() {
+        window.open("https://padlock.io/downloads/", "_blank");
     }
 
 }

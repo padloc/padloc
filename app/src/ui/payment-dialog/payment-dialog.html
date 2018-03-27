@@ -288,15 +288,12 @@ class PaymentDialog extends applyMixins(
         plan: { type: Object, value: null },
         source: Object,
         stripePubKey: { type: String, value: "" },
+        csrfToken: { stype: String, value: ""},
         remainingTrialDays: { type: Number, value: 0 },
         _cardError: { type: String, value: "" },
         _needsSupport: { type: Boolean, value: false },
         _showCouponInput: { type: Boolean, value: false }
     }; }
-
-    connectedCallback() {
-        super.connectedCallback();
-    }
 
     show(source) {
         this._needsSupport = false;

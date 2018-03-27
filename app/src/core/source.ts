@@ -1,4 +1,4 @@
-import { request, Method, AjaxError } from "./ajax";
+import { request, Method, AjaxError, Client } from "./ajax";
 import { FileManager, HTML5FileManager, CordovaFileManager, NodeFileManager } from "./file";
 import { Settings } from "./data";
 import { Container } from "./crypto";
@@ -115,24 +115,9 @@ export interface CloudAuthToken {
     actUrl?: string;
 }
 
-export class CloudError {
-    constructor(
-        public code:
-            "invalid_auth_token" |
-            "expired_auth_token" |
-            "internal_server_error" |
-            "deprecated_api_version" |
-            "subscription_required" |
-            "account_not_found" |
-            "rate_limit_exceeded" |
-            "json_error",
-        public message?: string
-    ) {};
-}
+export class CloudSource extends AjaxSource implements Client {
 
-export class CloudSource extends AjaxSource {
-
-    urlForPath(path: string) {
+    urlForPath(path: string): string {
         // Remove trailing slashes
         const host = this.settings.syncCustomHost ?
             this.settings.syncHostUrl.replace(/\/+$/, "") :
@@ -167,23 +152,7 @@ export class CloudSource extends AjaxSource {
         headers.set("X-Device-Model", model || "");
         headers.set("X-Device-Hostname", hostName || "");
 
-        let req: XMLHttpRequest;
-        try {
-            req = await super.request(method, url, data, headers);
-        } catch (e) {
-            const err = <AjaxError>e;
-            if (err.code === "client_error" || err.code === "server_error") {
-                let parsedErr;
-                try {
-                    parsedErr = JSON.parse(err.request.responseText);
-                } catch (e) {
-                    throw new CloudError("json_error");
-                }
-                throw new CloudError(parsedErr.error, parsedErr.message);
-            } else {
-                throw err;
-            }
-        }
+        const req = await super.request(method, url, data, headers);
 
         const subStatus = req.getResponseHeader("X-Sub-Status");
         if (subStatus !== null) {
@@ -193,11 +162,14 @@ export class CloudSource extends AjaxSource {
         if (stripePubKey !== null) {
             this.settings.stripePubKey = stripePubKey;
         }
-        try {
-            this.settings.syncTrialEnd =
-                parseInt(req.getResponseHeader("X-Sub-Trial-End") || "0", 10);
-        } catch (e) {
-            //
+
+        const trialEnd = req.getResponseHeader("X-Sub-Trial-End");
+        if (trialEnd !== null) {
+            try {
+                this.settings.syncTrialEnd = parseInt(trialEnd, 10);
+            } catch (e) {
+                //
+            }
         }
         return req;
     }
@@ -220,7 +192,7 @@ export class CloudSource extends AjaxSource {
         try {
             authToken = <CloudAuthToken>JSON.parse(req.responseText);
         } catch (e) {
-            throw new CloudError("json_error");
+            throw new AjaxError(req);
         }
         return authToken;
     }
@@ -234,7 +206,7 @@ export class CloudSource extends AjaxSource {
 
     async getLoginUrl(redirect: string) {
         if (!this.settings.syncConnected) {
-            throw new CloudError("invalid_auth_token", "Need to be authenticated to get a login link.");
+            throw { code: "invalid_auth_token", message: "Need to be authenticated to get a login link." };
         }
 
         const authToken = await this.authenticate(this.settings.syncEmail, false, "web", redirect);
@@ -246,7 +218,7 @@ export class CloudSource extends AjaxSource {
             await this.get();
             return true;
         } catch (e) {
-            const err = <AjaxError|CloudError>e;
+            const err = <AjaxError>e;
             if (err.code === "invalid_auth_token") {
                 return false;
             } else {
