@@ -138,6 +138,15 @@
                 margin-top: 10px;
             }
 
+            .coupon-desc {
+                font-size: var(--font-size-small);
+                background: var(--color-secondary);
+                color: var(--color-quaternary);
+                font-weight: bold;
+                line-height: 30px;
+                text-align: center;
+            }
+
             .secure-payment {
                 position: absolute;
                 left: 0;
@@ -238,10 +247,9 @@
                     </div>
                     <div class="price-hint">[[ $l("*USD\, billed annually") ]]</div>
                 </div>
-                <pl-input id="couponInput" value="{{ coupon }}" placeholder="[[ $l('Coupon Code') ]]" hidden$="[[ !_showCouponInput ]]"></pl-input>
+                <div class="coupon-desc" hidden$="[[ !_hasCoupon(coupon) ]]">Coupon: [[ coupon.metadata.description ]]</div>
                 <div class="message card-hint tap" hidden$="[[ _hasError(_cardError) ]]" on-click="_toggleCoupon">
                     <div>[[ $l("Please enter your credit or debit card information:") ]]</div>
-                    <div class="support-link" hidden$="[[ _showCouponInput ]]">[[ $l("I have a coupon!") ]]</div>
                 </div>
                 <div class="message card-hint tap" hidden$="[[ !_hasError(_cardError) ]]" on-click="_openSupport">
                     <div class="error">[[ _cardError ]]</div>
@@ -284,21 +292,19 @@ class PaymentDialog extends applyMixins(
 
     static get properties() { return {
         open: { type: Boolean },
-        coupon: { type: String, value: "" },
+        coupon: { type: Object, value: null },
         plan: { type: Object, value: null },
         source: Object,
         stripePubKey: { type: String, value: "" },
         csrfToken: { stype: String, value: ""},
         remainingTrialDays: { type: Number, value: 0 },
         _cardError: { type: String, value: "" },
-        _needsSupport: { type: Boolean, value: false },
-        _showCouponInput: { type: Boolean, value: false }
+        _needsSupport: { type: Boolean, value: false }
     }; }
 
     show(source) {
         this._needsSupport = false;
         this._cardError = "";
-        this._showCouponInput = !!this.coupon;
         this.open = true;
         this._source = source;
 
@@ -314,6 +320,10 @@ class PaymentDialog extends applyMixins(
         return new Promise((resolve) => {
             this._resolve = resolve;
         });
+    }
+
+    _hasCoupon() {
+        return !!this.coupon;
     }
 
     _setupPayment() {
@@ -348,13 +358,15 @@ class PaymentDialog extends applyMixins(
         this.$.submitButton.start();
         this._submittingCard = true;
 
+        const coupon = this.coupon && this.coupon.id || "";
+
         stripe.createToken(this._cardElement).then((result) => {
             const edata = {
                 "Plan": this.plan && this.plan.id,
                 "Source": this._source,
                 "Success": true,
                 "Token Created": true,
-                "Coupon": this.coupon
+                "Coupon": coupon
             };
 
             if (result.error) {
@@ -369,7 +381,7 @@ class PaymentDialog extends applyMixins(
                 });
                 track("Payment Dialog: Submit", edata);
             } else {
-                this.source.subscribe(result.token.id, this.coupon, this._source)
+                this.source.subscribe(result.token.id, coupon, this._source)
                     .then(() => {
                         this.$.submitButton.success();
                         typeof this._resolve === "function" && this._resolve(true);
@@ -426,11 +438,6 @@ class PaymentDialog extends applyMixins(
 
     _submitLabel() {
         return this.plan ? $l("Upgrade Now") : $l("Submit");
-    }
-
-    _toggleCoupon() {
-        this._showCouponInput = true;
-        this.$.couponInput.focus();
     }
 
 }
