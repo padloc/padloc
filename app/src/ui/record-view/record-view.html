@@ -316,22 +316,27 @@ class RecordView extends applyMixins(
         return this._catListShowing() && this.record && !this.record.category ? "dropup" : "dropdown";
     }
 
-    _addField() {
-        const field = { name: "", value: "", masked: false };
+    _addField(field = { name: "", value: "", masked: false }) {
         this.lineUpDialog("pl-record-field-dialog", (d) => d.openField(field, true))
-            .then((action) => {
-                switch (action) {
+            .then((result) => {
+                switch (result.action) {
                     case "generate":
-                        // this.generate()
-                        //     .then((value) => {
-                        //
-                        //     });
+                        this.generate()
+                            .then((value) => {
+                                field.value = value;
+                                field.name = result.name;
+                                this._addField(field);
+                            });
                         break;
                     case "edited":
                         this.push("record.fields", field);
                         break;
                 }
             });
+    }
+
+    _fieldButtonClicked() {
+        this._addField();
     }
 
     animate() {

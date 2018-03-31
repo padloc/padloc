@@ -140,12 +140,8 @@ class RecordField extends applyMixins(
     _showGenerator() {
         return this.generate()
             .then((value) => {
-                if (this.field.value) {
-                    this._openFieldDialog(true, { value: value });
-                } else {
-                    this.set("field.value", value);
-                    this.dispatchEvent(new CustomEvent("field-change"));
-                }
+                this.set("field.value", value);
+                this.dispatchEvent(new CustomEvent("field-change"));
             });
     }
 
@@ -164,13 +160,16 @@ class RecordField extends applyMixins(
 
     _openFieldDialog(edit, presets) {
         this.lineUpDialog("pl-record-field-dialog", (d) => d.openField(this.field, edit, presets))
-            .then((action) => {
-                switch (action) {
+            .then((result) => {
+                switch (result.action) {
                     case "copy":
                         this._copy();
                         break;
                     case "generate":
-                        this._showGenerator();
+                        this.generate()
+                            .then((value) => {
+                                this._openFieldDialog(true, { name: result.name, value: value || result.value });
+                            });
                         break;
                     case "delete":
                         this._delete();

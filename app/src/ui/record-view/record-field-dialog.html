@@ -70,8 +70,29 @@
                 flex: 1;
             }
 
-            pl-input[readonly]:empty {
-                cursor: pointer;
+            .value-wrapper {
+                position: relative;
+            }
+
+            .generate-button {
+                font-size: var(--font-size-tiny);
+                height: 35px;
+                line-height: normal;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                position: absolute;
+                bottom: 0;
+                right: 0;
+                z-index: 1;
+                padding: 0 8px;
+                width: auto;
+                background: rgba(255, 255, 255, 0.95);
+            }
+
+            .generate-button pl-icon {
+                width: 20px;
+                height: 20px;
             }
         </style>
 
@@ -81,8 +102,14 @@
                     readonly="[[ !editing ]]" on-focus="_inputFocused" on-enter="_nameInputEnter"></pl-input>
                 <pl-icon icon="cancel" class="tap" on-click="_close" hidden$="[[ editing ]]"></pl-icon>
             </div>
-            <pl-input id="valueInput" multiline class="value" autosize on-focus="_inputFocused"
-                placeholder="[[ $l('Enter Content') ]]" readonly="[[ !editing ]]"></pl-input>
+            <div class="value-wrapper">
+                <pl-input id="valueInput" multiline class="value" autosize on-focus="_inputFocused"
+                    placeholder="[[ $l('Enter Content') ]]" readonly="[[ !editing ]]"></pl-input>
+                <button class="generate-button" on-click="_generate" hidden$="[[ !editing ]]">
+                    <div>[[ $l("Generate") ]]</div>
+                    <pl-icon icon="generate"></pl-icon>
+                </button>
+            </div>
             <div class="actions">
                 <div class="action-items tiles-3 tiles" hidden$="[[ editing ]]">
                     <pl-icon icon="copy" class="tap" on-click="_copy"></pl-icon>
@@ -140,7 +167,11 @@ class RecordFieldDialog extends LocaleMixin(BaseElement) {
 
     _closeWithAction(action) {
         this.open = false;
-        this._resolve && this._resolve(action);
+        this._resolve && this._resolve({
+            action: action,
+            name: this.$.nameInput.value,
+            value: this.$.valueInput.value
+        });
         this._resolve = null;
     }
 
