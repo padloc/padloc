@@ -71,7 +71,7 @@
                 flex: 1;
             }
 
-            :host(:not(:hover)) .field-buttons {
+            :host(:not(.touch):not(:hover)) .field-buttons {
                 visibility: hidden;
             }
 
@@ -103,6 +103,7 @@
 (() => {
 
 const { applyMixins } = padlock.util;
+const { isTouch } = padlock.platform;
 const { BaseElement, NotificationMixin, LocaleMixin, DialogMixin, ClipboardMixin } = padlock;
 
 class RecordField extends applyMixins(
@@ -126,6 +127,11 @@ class RecordField extends applyMixins(
             value: () => { return { name: "", value: "", masked: false }; }
         }
     }; }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.classList.toggle("touch", isTouch());
+    }
 
     _delete() {
         this.dispatchEvent(new CustomEvent("field-delete", { bubbles: true, composed: true }));

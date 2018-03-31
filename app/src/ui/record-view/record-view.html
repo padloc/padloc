@@ -7,6 +7,7 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="record-field.html">
+<link rel="import" href="record-field-dialog.html">
 
 <dom-module id="pl-record-view">
     <template>
@@ -96,10 +97,23 @@
                 border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
-            .category, pl-record-field {
+            .category, pl-record-field, .add-button-wrapper {
                 transform: translate3d(0, 0, 0);
                 margin: 8px 6px;
                 @apply --card;
+            }
+
+            .add-button {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .add-button pl-icon {
+                width: 30px;
+                position: relative;
+                top: 1px;
             }
         </style>
 
@@ -139,10 +153,11 @@
                     </div>
                 </template>
             </div>
-            <div class="animate" id="newFieldWrapper">
-                <pl-record-field id="newField" draft
-                    on-field-edit-start="_inputFocused"
-                    on-field-edit-end="_newFieldEnter"></pl-record-field>
+            <div class="add-button-wrapper animate">
+                <button class="add-button tap" on-click="_addField">
+                    <pl-icon icon="add"></pl-icon>
+                    <div>[[ $l("Add Field") ]]</div>
+                </button>
             </div>
         </main>
 
@@ -250,26 +265,6 @@ class RecordView extends applyMixins(
         this._hideCategoryList();
     }
 
-    _newFieldEnter() {
-        if (!this.record) {
-            return;
-        }
-
-        const newField = this.$.newField.field;
-        if (newField.name) {
-            this.push("record.fields", newField);
-            this.animateElement(this.$.newFieldWrapper);
-            if (!padlock.platform.isTouch()) {
-                setTimeout(() => this.$.newField.edit(), 10);
-            }
-            this._setEdited();
-        }
-
-        this.$.newField.field = { name: "", value: "", masked: false };
-
-        this._debouncedFinishEditing();
-    }
-
     _deleteRecord() {
         this.confirm($l("Are you sure you want to delete this record?"), $l("Delete")).then((confirmed) => {
             if (confirmed) {
@@ -319,6 +314,24 @@ class RecordView extends applyMixins(
 
     _dropDownIcon() {
         return this._catListShowing() && this.record && !this.record.category ? "dropup" : "dropdown";
+    }
+
+    _addField() {
+        const field = { name: "", value: "", masked: false };
+        this.lineUpDialog("pl-record-field-dialog", (d) => d.openField(field, true))
+            .then((action) => {
+                switch (action) {
+                    case "generate":
+                        // this.generate()
+                        //     .then((value) => {
+                        //
+                        //     });
+                        break;
+                    case "edited":
+                        this.push("record.fields", field);
+                        break;
+                }
+            });
     }
 
     animate() {

@@ -78,7 +78,7 @@
         <pl-dialog open="{{ open }}" prevent-dismiss="[[ editing ]]" on-dialog-dismiss="_close">
             <div class="header">
                 <pl-input id="nameInput" placeholder="[[ $l('Enter Field Name') ]]" class="name"
-                    readonly="[[ !editing ]]" on-focus="_inputFocused"></pl-input>
+                    readonly="[[ !editing ]]" on-focus="_inputFocused" on-enter="_nameInputEnter"></pl-input>
                 <pl-icon icon="cancel" class="tap" on-click="_close" hidden$="[[ editing ]]"></pl-icon>
             </div>
             <pl-input id="valueInput" multiline class="value" autosize on-focus="_inputFocused"
@@ -181,6 +181,10 @@ class RecordFieldDialog extends LocaleMixin(BaseElement) {
         if (e.target.value === "") {
             this.editing = true;
         }
+    }
+
+    _nameInputEnter() {
+        this.$.valueInput.focus();
     }
 
 }
