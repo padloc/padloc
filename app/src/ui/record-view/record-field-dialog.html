@@ -11,7 +11,25 @@
             :host {
                 --pl-dialog-inner: {
                     background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                    transition: background 0.3s, color 0.3s;
                 };
+            }
+
+            :host([editing]) {
+                --pl-dialog-inner: {
+                    transition: background 0.3s, color 0.3s;
+                    background: var(--color-tertiary);
+                    color: var(--color-secondary);
+                    text-shadow: none;
+                };
+            }
+
+            :host([editing]) .header {
+                border-bottom: solid 1px;;
+            }
+
+            :host([editing]) .actions {
+                border-top: dashed 1px;;
             }
 
             .header {
@@ -21,45 +39,61 @@
             .name {
                 flex: 1;
                 font-weight: bold;
-                padding: 10px 20px;
-                line-height: 30px;
+                padding: 0 20px;
             }
 
             .header > pl-icon {
-                width: var(--row-height);
                 height: var(--row-height);
+                width: var(--row-height);
             }
 
             .value {
                 font-family: var(--font-family-mono);
                 word-break: break-all;
                 font-size: 130%;
-                padding: 25px;
+                padding: 20px;
                 line-height: 120%;
-                text-align: center;
+                background: var(--shade-2-color);
+                transition: background 0.3s;
             }
 
-            .actions {
+            :host([editing]) .value {
+                background: transparent;
+            }
+
+            .action-items {
                 display: flex;
             }
 
-            .actions > * {
+            .action-items > * {
                 height: var(--row-height);
                 flex: 1;
             }
+
+            pl-input[readonly]:empty {
+                cursor: pointer;
+            }
         </style>
 
-        <pl-dialog open="{{ open }}">
+        <pl-dialog open="{{ open }}" prevent-dismiss="[[ editing ]]" on-dialog-dismiss="_close">
             <div class="header">
-                <div class="name">[[ field.name ]]</div>
-                <pl-icon icon="cancel" class="tap" on-click="_close"></pl-icon>
+                <pl-input id="nameInput" placeholder="[[ $l('Enter Field Name') ]]" class="name"
+                    readonly="[[ !editing ]]" on-focus="_inputFocused"></pl-input>
+                <pl-icon icon="cancel" class="tap" on-click="_close" hidden$="[[ editing ]]"></pl-icon>
             </div>
-            <pl-input multiline value="[[ field.value ]]" class="value tiles-2" placeholder="[[ $l('Empty Field') ]]" readonly></pl-input>
-            <div class="actions tiles tiles-3">
-                <pl-icon icon="copy" class="tap" on-click="_copy"></pl-icon>
-                <pl-icon icon="edit" class="tap" on-click="_edit"></pl-icon>
-                <pl-icon icon="generate" class="tap" on-click="_generate"></pl-icon>
-                <pl-icon icon="delete" class="tap" on-click="_delete"></pl-icon>
+            <pl-input id="valueInput" multiline class="value" autosize on-focus="_inputFocused"
+                placeholder="[[ $l('Enter Content') ]]" readonly="[[ !editing ]]"></pl-input>
+            <div class="actions">
+                <div class="action-items tiles-3 tiles" hidden$="[[ editing ]]">
+                    <pl-icon icon="copy" class="tap" on-click="_copy"></pl-icon>
+                    <pl-icon icon="edit" class="tap" on-click="_edit"></pl-icon>
+                    <pl-icon icon="generate" class="tap" on-click="_generate"></pl-icon>
+                    <pl-icon icon="delete" class="tap" on-click="_delete"></pl-icon>
+                </div>
+                <div class="action-items" hidden$="[[ !editing ]]">
+                    <button class="tap" on-click="_discardChanges">[[ $l("Discard") ]]</button>
+                    <button class="tap" on-click="_saveChanges">[[ $l("Save") ]]</button>
+                </div>
             </div>
         </pl-dialog>
 
@@ -75,6 +109,11 @@ class RecordFieldDialog extends LocaleMixin(BaseElement) {
     static get is() { return "pl-record-field-dialog"; }
 
     static get properties() { return {
+        editing: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
         field: {
             type: Object,
             value: () => { return { name: "", value: "" }; }
@@ -85,9 +124,15 @@ class RecordFieldDialog extends LocaleMixin(BaseElement) {
         }
     }; }
 
-    openField(field) {
+    openField(field, edit = false, presets = {}) {
         this.open = true;
+        this.editing = false;
         this.field = field;
+        this.$.nameInput.value = presets.name || this.field.name;
+        this.$.valueInput.value = presets.value || this.field.value;
+        if (edit) {
+            this._edit();
+        }
         return new Promise((resolve) => {
             this._resolve = resolve;
         });
@@ -116,7 +161,26 @@ class RecordFieldDialog extends LocaleMixin(BaseElement) {
     }
 
     _edit() {
-        this._closeWithAction("edit");
+        this.editing = true;
+        setTimeout(() => this.$.nameInput.focus(), 100);
+    }
+
+    _discardChanges() {
+        this.$.nameInput.value = this.field.name;
+        this.$.valueInput.value = this.field.value;
+        this._close();
+    }
+
+    _saveChanges() {
+        this.field.name = this.$.nameInput.value;
+        this.field.value = this.$.valueInput.value;
+        this._closeWithAction("edited");
+    }
+
+    _inputFocused(e) {
+        if (e.target.value === "") {
+            this.editing = true;
+        }
     }
 
 }

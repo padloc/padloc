@@ -338,8 +338,6 @@ class RecordView extends applyMixins(
     finishEditing() {
         Array.from(this.root.querySelectorAll("pl-input"))
             .forEach((i) => i.blur());
-        Array.from(this.root.querySelectorAll("pl-record-field"))
-            .forEach((f) => f.finishEditing());
     }
 }
 

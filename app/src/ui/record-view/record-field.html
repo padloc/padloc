@@ -21,38 +21,42 @@
 
             .container {
                 display: flex;
-                min-height: 120px;
+                height: 100px;
             }
 
             .input-container {
                 position: relative;
                 flex: 1;
-                margin: 10px 15px;
+                display: flex;
+                flex-direction: column;
                 overflow: visible;
             }
 
-            #nameInput {
-                position: absolute;
-                z-index: 0;
-                top: 10px;
-                background: transparent;
-                transform-origin: 0 0;
-                padding: 0;
-                height: 40px;
-                transition: transform 0.2s;
-                font-size: var(--font-size-small);
-                width: 100%;
+            .name {
+                font-size: var(--font-size-tiny);
                 font-weight: bold;
                 color: var(--color-highlight);
+                margin: 12px 12px 6px 12px;
             }
 
             #valueInput {
                 font-family: var(--font-family-mono);
                 font-size: 130%;
-                line-height: 1.3;
-                margin: 30px 0 5px 0;
-                min-height: 65px;
-                transition: opacity 0.2s, transform 0.2s;
+                line-height: 1.2;
+                flex: 1;
+                margin: 0 12px;
+                opacity: 1;
+            }
+
+            #valueInput::after {
+                content: "";
+                display: block;
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                height: 20px;
+                background: linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
             }
 
             .field-buttons {
@@ -63,43 +67,34 @@
             .field-button {
                 cursor: pointer;
                 font-size: 110%;
+                width: 50px;
+                flex: 1;
             }
 
-            :host(:not([_editing-name])) #nameInput {
-                transform: translate(0, -15px) scale(0.9);
+            :host(:not(:hover)) .field-buttons {
+                visibility: hidden;
             }
 
-            :host([_editing-name]) #valueInput {
-                opacity: 0.5;
-                transform: translate(0, 20px);
+            .field-button:hover {
+                background: rgba(0, 0, 0, 0.05);
             }
         </style>
 
         <div class="container">
-            <div class="input-container">
-                <pl-input id="nameInput" value="[[ field.name ]]" placeholder="[[ $l('Enter New Field Name') ]]" select-on-focus
-                    focused="{{ _editingName }}" on-enter="_focusValueInput" on-escape="_cancelEdit"></pl-input>
-                <pl-input multiline id="valueInput" value="[[ field.value ]]" placeholder="[[ $l('Enter Content') ]]" select-on-focus
-                    focused="{{ _editingValue }}" on-escape="_cancelEdit" on-mousedown="_valueInputMouseDown" masked="[[ field.masked ]]"></pl-input>
+
+            <div class="input-container tap" on-click="_fieldClicked">
+                <div class="name">[[ field.name ]]</div>
+                <pl-input multiline id="valueInput" value="[[ field.value ]]" disabled
+                    placeholder="[[ $l('No Content') ]]" masked="[[ field.masked ]]"></pl-input>
             </div>
 
-            <template is="dom-if" if="[[ !draft ]]">
-                <div class="field-buttons">
-                    <pl-icon icon="[[ _toggleMaskIcon(field.masked) ]]" class="field-button tiles-1 tap" on-click="_toggleMask" hidden$="[[ _editing ]]"></pl-icon>
-                    <pl-icon icon="cancel" class="field-button tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="copy" class="field-button tap" on-click="_copy" hidden$="[[ !_showCopyButton(_editing, field.value) ]]"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator" hidden$="[[ !_showGenerateButton(_editing, field.value) ]]"></pl-icon>
-                    <pl-icon icon="more" class="field-button tap" on-click="_showFieldInfo"></pl-icon>
-                </div>
-            </template>
-
-            <template is="dom-if" if="[[ draft ]]">
-                <div class="field-buttons">
-                    <pl-icon icon="add" class="field-button tap" on-click="edit" hidden$="[[ _editing ]]"></pl-icon>
-                    <pl-icon icon="cancel" class="field-button tap" on-click="_cancelEdit" hidden$="[[ !_editing ]]"></pl-icon>
-                    <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator" hidden$="[[ !_editing ]]"></pl-icon>
-                </div>
-            </template>
+            <div class="field-buttons">
+                <pl-icon icon="[[ _toggleMaskIcon(field.masked) ]]" class="field-button tap"
+                    on-click="_toggleMask" hidden$="[[ !_hasValue(field.value) ]]"></pl-icon>
+                <pl-icon icon="copy" class="field-button tap" on-click="_copy" hidden$="[[ !_hasValue(field.value) ]]"></pl-icon>
+                <pl-icon icon="edit" class="field-button tap" on-click="_edit" hidden$="[[ _hasValue(field.value) ]]"></pl-icon>
+                <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator" hidden$="[[ _hasValue(field.value) ]]"></pl-icon>
+            </div>
         </div>
 
     </template>
@@ -121,30 +116,9 @@ class RecordField extends applyMixins(
     static get is() { return "pl-record-field"; }
 
     static get properties() { return {
-        _editing: {
-            type: Boolean,
-            value: false
-        },
-        _editingName: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
-        _editingValue: {
-            type: Boolean,
-            value: false
-        },
-        _generatorShowing: {
-            type: Boolean,
-            value: false
-        },
         _masked: {
             type: Boolean,
             value: true
-        },
-        draft: {
-            type: Boolean,
-            value: false
         },
         record: Object,
         field: {
@@ -153,74 +127,24 @@ class RecordField extends applyMixins(
         }
     }; }
 
-    static get observers() { return [
-        "_updateEditing(_editingName, _editingValue, _generatorShowing)",
-        "_editingChanged(_editing)"
-    ]; }
-
-    _updateEditing() {
-        clearTimeout(this._updateEditingTimeout);
-        const editing = this._editingName || this._editingValue || this._generatorShowing;
-        this._updateEditingTimeout = setTimeout(() => this._editing = editing, 200);
-    }
-
-    _editingChanged() {
-        if (
-            this.field && !this._editing &&
-            (this.field.name !== this.$.nameInput.value || this.field.value !== this.$.valueInput.value)
-        ) {
-            this.set("field.name", this.$.nameInput.value);
-            this.set("field.value", this.$.valueInput.value);
-            this.dispatchEvent(new CustomEvent("field-change"));
-        }
-
-        this.dispatchEvent(new CustomEvent(this._editing ? "field-edit-start" : "field-edit-end"));
-    }
-
-    _focusValueInput() {
-        this.$.valueInput.focus();
-    }
-
-    _cancelEdit() {
-        this.notifyPath("field.name");
-        this.notifyPath("field.value");
-        this.$.nameInput.blur();
-        this.$.valueInput.blur();
-        if (this.draft) {
-            this.$.nameInput.value = this.$.valueInput.value = "";
-        }
-    }
-
     _delete() {
         this.dispatchEvent(new CustomEvent("field-delete", { bubbles: true, composed: true }));
     }
 
     _showGenerator() {
-        if (!this.$.nameInput.value) {
-            this.alert($l("Please enter a field name first!"))
-                .then(() => this.$.nameInput.focus());
-            return;
-        }
-        this._generatorShowing = true;
-        this.generate()
+        return this.generate()
             .then((value) => {
-                if (value) {
-                    this.$.valueInput.value = value;
+                if (this.field.value) {
+                    this._openFieldDialog(true, { value: value });
+                } else {
+                    this.set("field.value", value);
+                    this.dispatchEvent(new CustomEvent("field-change"));
                 }
-                this._generatorShowing = false;
             });
     }
 
     _copy() {
         this.setClipboard(this.record, this.field);
-    }
-
-    _valueInputMouseDown(e) {
-        // Prevent focusing value input if name input is still empty; Focus name input instead
-        if (!this.$.nameInput.value) {
-            e.preventDefault();
-            this.$.nameInput.focus();
-        }
     }
 
     _toggleMaskIcon() {
@@ -232,16 +156,12 @@ class RecordField extends applyMixins(
         this.dispatchEvent(new CustomEvent("field-change"));
     }
 
-    _showFieldInfo() {
-        this.getSingleton("pl-record-field-dialog")
-            .openField(this.field)
+    _openFieldDialog(edit, presets) {
+        this.lineUpDialog("pl-record-field-dialog", (d) => d.openField(this.field, edit, presets))
             .then((action) => {
                 switch (action) {
                     case "copy":
                         this._copy();
-                        break;
-                    case "edit":
-                        this.edit();
                         break;
                     case "generate":
                         this._showGenerator();
@@ -249,31 +169,25 @@ class RecordField extends applyMixins(
                     case "delete":
                         this._delete();
                         break;
+                    case "edited":
+                        this.notifyPath("field.name");
+                        this.notifyPath("field.value");
+                        this.dispatchEvent(new CustomEvent("field-change"));
+                        break;
                 }
             });
     }
 
-    _isEmpty() {
-        return !this.field.value;
+    _hasValue() {
+        return !!this.field.value;
     }
 
-    _showCopyButton() {
-        return !this._editing && !this._isEmpty();
+    _fieldClicked() {
+        this._openFieldDialog();
     }
 
-    _showGenerateButton() {
-        return this._editing || this._isEmpty();
-    }
-
-    edit() {
-        const input = this.field && this.field.name ? this.$.valueInput : this.$.nameInput;
-        input.focus();
-    }
-
-    finishEditing() {
-        this.$.nameInput.blur();
-        this.$.valueInput.blur();
-        this._editing = false;
+    _edit() {
+        this._openFieldDialog(true);
     }
 }
 
