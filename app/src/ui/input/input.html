@@ -47,7 +47,11 @@
                 margin-left: -4px;
             }
 
-            [invisible] {
+            input[disabled], textarea[disabled] {
+                opacity: 1;
+            }
+
+            input[invisible], textarea[invisible] {
                 opacity: 0;
             }
         </style>
@@ -57,20 +61,20 @@
                 rows="1" autocomplete="off" spellcheck="false" autocapitalize$="[[ _computeAutoCapitalize(autocapitalize) ]]" autocorrect="off"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"
                 on-touchend="_stopPropagation" tabindex$="[[ _tabIndex(noTab) ]]"
-                invisible$="[[ _showMask(masked, value, focused) ]]"></textarea>
+                invisible$="[[ _showMask(masked, value, focused) ]]" disabled$="[[ disabled ]]"></textarea>
             <textarea class="mask" value="[[ _mask(value) ]]" tabindex="-1"
-                invisible$="[[ !_showMask(masked, value, focused) ]]"></textarea>
+                invisible$="[[ !_showMask(masked, value, focused) ]]" disabled></textarea>
         </template>
 
         <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
             <input id="input" value="{{ value::input }}" tabindex$="[[ _tabIndex(noTab) ]]"
                 autocomplete="off" spellcheck="false" autocapitalize$="[[ _computeAutoCapitalize(autocapitalize) ]]" autocorrect="off"
                 type$="[[ type ]]" placeholder$="[[ placeholder ]]" readonly$="[[ readonly ]]"
-                required$="[[ required ]]" pattern$="[[ pattern ]]"
+                required$="[[ required ]]" pattern$="[[ pattern ]]" disabled$="[[ disabled ]]"
                 on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown"
                 on-touchend="_stopPropagation" invisible$="[[ _showMask(masked, value, focused) ]]">
             <input class="mask" value="[[ _mask(value) ]]" tabindex="-1"
-                invisible$="[[ !_showMask(masked, value, focused) ]]">
+                invisible$="[[ !_showMask(masked, value, focused) ]]" disabled>
         </template>
 
     </template>
@@ -101,6 +105,10 @@ class PlInput extends padlock.BaseElement {
             value: false
         },
         autocapitalize: {
+            type: Boolean,
+            value: false
+        },
+        disabled: {
             type: Boolean,
             value: false
         },
