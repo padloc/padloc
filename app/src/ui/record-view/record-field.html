@@ -177,7 +177,7 @@ class RecordField extends applyMixins(
                     case "edited":
                         this.notifyPath("field.name");
                         this.notifyPath("field.value");
-                        this.dispatchEvent(new CustomEvent("field-change"));
+                        setTimeout(() => this.dispatchEvent(new CustomEvent("field-change"), 500));
                         break;
                 }
             });

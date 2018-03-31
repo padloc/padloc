@@ -121,7 +121,7 @@
             <pl-icon icon="close" class="tap" on-click="close"></pl-icon>
             <pl-input id="nameInput" class="name tap" value="[[ record.name ]]"
                 placeholder="[[ $l('Enter Record Name') ]]" select-on-focus autocapitalize
-                on-change="_nameEdited" on-focus="_inputFocused" on-blur="_debouncedFinishEditing"
+                on-change="_nameEdited" on-focus="_inputFocused"
             ></pl-input>
             <pl-icon icon="delete" class="tap" on-click="_deleteRecord"></pl-icon>
         </header>
@@ -130,7 +130,7 @@
             <div class="category animate tap" on-click="_categoryClicked">
                 <pl-icon icon="category"></pl-icon>
                 <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]" select-on-focus
-                    on-change="_setEdited" on-focus="_categoryInputFocused" on-blur="_debouncedFinishEditing"></pl-input>
+                    on-change="_notifyChange" on-focus="_categoryInputFocused"></pl-input>
                 <pl-icon icon="[[ _dropDownIcon(_showCatList, _catCount) ]]" class="tap" on-click="_toggleCategoryList"></pl-icon>
             </div>
             <div class="categories" showing$="[[ _catListShowing(_showCatList, _catCount) ]]" on-click="_hideCategoryList">
@@ -146,10 +146,8 @@
                 <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
                     <div class="animate">
                         <pl-record-field field="[[ item ]]" record="[[ record ]]"
-                            on-field-change="_setEdited"
-                            on-field-delete="_deleteField"
-                            on-field-edit-start="_inputFocused"
-                            on-field-edit-end="_debouncedFinishEditing"></pl-record-field>
+                            on-field-change="_notifyChange"
+                            on-field-delete="_deleteField"></pl-record-field>
                     </div>
                 </template>
             </div>
@@ -223,32 +221,17 @@ class RecordView extends applyMixins(
         this.$.categoryInput.focus();
     }
 
-    _setEdited() {
-        this.dispatch("record-changed", this.record);
-        this._edited = true;
-    }
-
-    _debouncedFinishEditing() {
-        this._deferFinishEditing();
-        this._changeTimeout = setTimeout(() => {
-            if (this._edited) {
-                this.dispatch("record-finished-editing", this.record);
-                this._edited = false;
-            }
-        }, 500);
-    }
-
-    _deferFinishEditing() {
-        clearTimeout(this._changeTimeout);
-    }
-
     _nameEdited() {
         if (this.$.nameInput.value) {
             this.record.name = this.$.nameInput.value;
-            this._setEdited();
+            this._notifyChange();
         } else {
             this.notifyPath("record.name");
         }
+    }
+
+    _notifyChange() {
+        this.dispatch("record-changed", this.record);
     }
 
     _deleteField(e) {
@@ -261,7 +244,6 @@ class RecordView extends applyMixins(
     }
 
     _inputFocused() {
-        this._deferFinishEditing();
         this._hideCategoryList();
     }
 
@@ -282,13 +264,12 @@ class RecordView extends applyMixins(
     _selectCategory(e) {
         setTimeout(() => {
             this.set("record.category", e.model.item);
-            this._setEdited();
+            this._notifyChange();
             this.$.categoryInput.focus();
         }, 300);
     }
 
     _categoryInputFocused() {
-        this._deferFinishEditing();
         this._showCategoryList();
     }
 
@@ -330,6 +311,7 @@ class RecordView extends applyMixins(
                         break;
                     case "edited":
                         this.push("record.fields", field);
+                        this._notifyChange();
                         break;
                 }
             });
@@ -351,11 +333,6 @@ class RecordView extends applyMixins(
 
     edit() {
         this.$.nameInput.focus();
-    }
-
-    finishEditing() {
-        Array.from(this.root.querySelectorAll("pl-input"))
-            .forEach((i) => i.blur());
     }
 }
 
