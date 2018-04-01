@@ -193,7 +193,13 @@ class RecordFieldDialog extends LocaleMixin(BaseElement) {
 
     _edit() {
         this.editing = true;
-        setTimeout(() => this.$.nameInput.focus(), 100);
+        setTimeout(() => {
+            if (!this.$.nameInput.value) {
+                this.$.nameInput.focus();
+            } else {
+                this.$.valueInput.focus();
+            }
+        }, 100);
     }
 
     _discardChanges() {
@@ -208,8 +214,8 @@ class RecordFieldDialog extends LocaleMixin(BaseElement) {
         this._closeWithAction("edited");
     }
 
-    _inputFocused(e) {
-        if (e.target.value === "") {
+    _inputClicked(e) {
+        if (!e.target.value) {
             this.editing = true;
         }
     }
