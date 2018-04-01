@@ -74,7 +74,7 @@
                 position: relative;
             }
 
-            .generate-button {
+            button.generate-button {
                 font-size: var(--font-size-tiny);
                 height: 35px;
                 line-height: normal;
@@ -85,7 +85,7 @@
                 bottom: 0;
                 right: 0;
                 z-index: 1;
-                padding: 0 8px;
+                padding: 0 6px 0 12px;
                 width: auto;
                 background: rgba(255, 255, 255, 0.95);
             }
@@ -99,13 +99,13 @@
         <pl-dialog open="{{ open }}" prevent-dismiss="[[ editing ]]" on-dialog-dismiss="_close">
             <div class="header">
                 <pl-input id="nameInput" placeholder="[[ $l('Enter Field Name') ]]" class="name"
-                    readonly="[[ !editing ]]" on-focus="_inputFocused" on-enter="_nameInputEnter"></pl-input>
+                    readonly="[[ !editing ]]" on-click="_inputClicked" on-enter="_nameInputEnter"></pl-input>
                 <pl-icon icon="cancel" class="tap" on-click="_close" hidden$="[[ editing ]]"></pl-icon>
             </div>
             <div class="value-wrapper">
-                <pl-input id="valueInput" multiline class="value" autosize on-focus="_inputFocused"
+                <pl-input id="valueInput" multiline class="value" autosize on-click="_inputClicked"
                     placeholder="[[ $l('Enter Content') ]]" readonly="[[ !editing ]]"></pl-input>
-                <button class="generate-button" on-click="_generate" hidden$="[[ !editing ]]">
+                <button class="generate-button tap" on-click="_generate" hidden$="[[ !editing ]]">
                     <div>[[ $l("Generate") ]]</div>
                     <pl-icon icon="generate"></pl-icon>
                 </button>

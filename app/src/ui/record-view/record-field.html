@@ -17,19 +17,15 @@
                 color: inherit;
                 font-size: var(--font-size-small);
                 overflow: hidden;
+                position: relative;
             }
 
             .container {
                 display: flex;
                 height: 100px;
-            }
-
-            .input-container {
                 position: relative;
-                flex: 1;
-                display: flex;
                 flex-direction: column;
-                overflow: visible;
+                padding-right: 50px;
             }
 
             .name {
@@ -60,15 +56,18 @@
             }
 
             .field-buttons {
-                display: flex;
-                flex-direction: column;
+                position: absolute;
+                top: 0;
+                right: 0;
+                z-index: 1;
             }
 
             .field-button {
+                display: block;
                 cursor: pointer;
                 font-size: 110%;
                 width: 50px;
-                flex: 1;
+                height: 50px;
             }
 
             :host(:not(.touch):not(:hover)) .field-buttons {
@@ -80,21 +79,18 @@
             }
         </style>
 
-        <div class="container">
+        <div class="container tap" on-click="_fieldClicked">
+            <div class="name">[[ field.name ]]</div>
+            <pl-input multiline id="valueInput" value="[[ field.value ]]" disabled
+                placeholder="[[ $l('No Content') ]]" masked="[[ field.masked ]]"></pl-input>
+        </div>
 
-            <div class="input-container tap" on-click="_fieldClicked">
-                <div class="name">[[ field.name ]]</div>
-                <pl-input multiline id="valueInput" value="[[ field.value ]]" disabled
-                    placeholder="[[ $l('No Content') ]]" masked="[[ field.masked ]]"></pl-input>
-            </div>
-
-            <div class="field-buttons">
-                <pl-icon icon="[[ _toggleMaskIcon(field.masked) ]]" class="field-button tap"
-                    on-click="_toggleMask" hidden$="[[ !_hasValue(field.value) ]]"></pl-icon>
-                <pl-icon icon="copy" class="field-button tap" on-click="_copy" hidden$="[[ !_hasValue(field.value) ]]"></pl-icon>
-                <pl-icon icon="edit" class="field-button tap" on-click="_edit" hidden$="[[ _hasValue(field.value) ]]"></pl-icon>
-                <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator" hidden$="[[ _hasValue(field.value) ]]"></pl-icon>
-            </div>
+        <div class="field-buttons">
+            <pl-icon icon="[[ _toggleMaskIcon(field.masked) ]]" class="field-button tap"
+                on-click="_toggleMask" hidden$="[[ !_hasValue(field.value) ]]"></pl-icon>
+            <pl-icon icon="copy" class="field-button tap" on-click="_copy" hidden$="[[ !_hasValue(field.value) ]]"></pl-icon>
+            <pl-icon icon="edit" class="field-button tap" on-click="_edit" hidden$="[[ _hasValue(field.value) ]]"></pl-icon>
+            <pl-icon icon="generate" class="field-button tap" on-click="_showGenerator" hidden$="[[ _hasValue(field.value) ]]"></pl-icon>
         </div>
 
     </template>
