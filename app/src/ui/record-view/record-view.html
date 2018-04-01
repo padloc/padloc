@@ -238,7 +238,7 @@ class RecordView extends applyMixins(
         this.confirm($l("Are you sure you want to delete this field?"), $l("Delete")).then((confirmed) => {
             if (confirmed) {
                 this.splice("record.fields", e.model.index, 1);
-                this._setEdited();
+                this._notifyChange();
             }
         });
     }
