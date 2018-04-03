@@ -590,6 +590,7 @@ padlock.SyncMixin = (superClass) => {
         refreshAccount() {
             if (this.settings.syncConnected) {
                 return this.cloudSource.source.getAccountInfo()
+                    .catch((e) => this._handleCloudError(e))
                     .then(() => this.dispatch("settings-changed"));
             } else {
                 return Promise.resolve();
