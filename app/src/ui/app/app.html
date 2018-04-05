@@ -114,7 +114,7 @@
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
             }
 
-            :host(.show-menu) #main {
+            #main.show-menu {
                 transform: translate3d(calc(var(--menu-width) - var(--menu-icon-width)), 0, 0) rotateY(-10deg);
             }
 
@@ -217,7 +217,7 @@
                 z-index: -1;
             }
 
-            :host(.show-menu) .menu-wrapper {
+            .menu-wrapper.show-menu {
                 z-index: 10;
             }
 
@@ -241,7 +241,7 @@
                 transition: opacity 400ms;
             }
 
-            :host(:not(.show-menu)) .menu-info {
+            .menu-wrapper:not(.show-menu)) .menu-info {
                 opacity: 0;
             }
 
@@ -276,7 +276,7 @@
 
         <pl-start-view id="startView"></pl-start-view>
 
-        <div class="menu-wrapper" on-click="_menuWrapperClicked">
+        <div id="menuWrapper" class="menu-wrapper" on-click="_menuWrapperClicked">
             <div id="menu" class="menu">
                 <div class="spacer"></div>
                 <div class="account menu-item tap" on-click="_openCloudView">
@@ -607,7 +607,8 @@ class App extends applyMixins(
     }
 
     _menuOpenChanged() {
-        this.classList.toggle("show-menu", this._menuOpen);
+        this.$.menuWrapper.classList.toggle("show-menu", this._menuOpen);
+        this.$.main.classList.toggle("show-menu", this._menuOpen);
         this.animateCascade(this.root.querySelectorAll(".menu-item"), {
             animation: this._menuOpen ? "menuItemIn" : "menuItemOut",
             duration: 400,
