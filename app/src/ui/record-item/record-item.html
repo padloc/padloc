@@ -16,9 +16,9 @@
                 box-sizing: border-box;
                 flex-direction: row;
                 position: relative;
-                transition: color 0.3s;
-                margin: 8px 6px 0 6px;
-                transform: translate3d(0, 0, 0);
+                /* transition: color 0.3s; */
+                margin: 6px 6px 0 6px;
+                /* transform: translate3d(0, 0, 0); */
                 @apply --card;
             }
 
@@ -39,25 +39,42 @@
 
             .fields {
                 position: relative;
+                display: flex;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .fields::after {
+                content: "";
+                display: block;
+                width: 6px;
+                flex: none;
             }
 
             .field {
                 cursor: pointer;
                 font-size: var(--font-size-tiny);
-                line-height: 40px;
-                height: 40px;
+                line-height: 35px;
+                height: 35px;
                 text-align: center;
                 position: relative;
                 flex: 1;
                 font-weight: bold;
+                margin: 0 0 6px 6px;
+                border-radius: 8px;
+                @apply --shade-2;
             }
 
             .field > * {
-                @apply --fullbleed;
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
             }
 
-            .field:not(.copied) .copied-message, .field.copied .label-value {
+            .copied-message {
+                @apply --fullbleed;
+                border-radius: inherit;
+            }
+
+            .field:not(.copied) .copied-message, .field.copied .field-label {
                 opacity: 0;
                 transform: scale(0);
             }
@@ -73,19 +90,13 @@
                 content: "\f00c\ ";
             }
 
-            :host(:not(.touch):not([multi-select])) .field:hover .field-label,
-            :host(:not(.touch):not([multi-select])) .field:hover .field-value {
-                transform: translateY(-100%);
+            :host(:not(.touch):not([multi-select])) .field:hover {
+                @apply --shade-3;
             }
 
-            .field-label, .field-value {
-                transition: transform 0.2s ease;
+            .field-label {
                 padding: 0 15px;
                 @apply --ellipsis;
-            }
-
-            .field-value {
-                font-family: var(--font-family-mono);
             }
 
             .category {
@@ -98,7 +109,7 @@
                 font-weight: bold;
                 background: var(--color-foreground);
                 color: var(--color-background);
-                transition: background 0.3s;
+                /* transition: background 0.3s; */
             }
 
             .category::before {
@@ -107,26 +118,21 @@
                 font-size: 90%;
             }
 
-            .fields-placeholder {
-                opacity: 0.5;
-            }
-
-            .slider {
+            .highlight {
                 content: "";
                 display: block;
                 background: var(--color-highlight);
-                transition: transform 0.2s cubic-bezier(0.6, 0, 0.2, 1);
+                transition-property: opacity, transform;
+                transition-duration: 0.2s;
+                transition-timing-function: cubic-bezier(0.6, 0, 0.2, 1);
                 @apply --fullbleed;
-                transform: scale(0, 1);
-                transform-origin: 0 0;
+                transform: scale(1, 0);
+                /* transform-origin: 0 0; */
+                opacity: 0;
+                border-radius: 5px;
             }
 
-            .field-value[masked] {
-                font-size: 150%;
-                letter-spacing: -3.5px;
-            }
-
-            :host([selected]), :host([selected]) .copied-message {
+            :host([selected]) {
                 color: var(--color-background);
             }
 
@@ -135,17 +141,17 @@
                 color: #4ca8d9;
             }
 
-            :host([selected]) .slider {
+            :host([selected]) .highlight {
                 transform: scale(1, 1);
+                opacity: 1;
             }
 
-
             :host([selected]) .category {
-                background: var(--shade-3-color);
+                @apply --shade-3;
             }
         </style>
 
-        <div class="slider"></div>
+        <div class="highlight"></div>
 
         <div class="header">
             <div class="name">[[ record.name ]]</div>
@@ -154,22 +160,18 @@
                 on-click="_categoryClicked">[[ record.category ]]</div>
         </div>
 
-        <div class="fields tiles">
-            <div></div>
+        <div class="fields">
 
-            <template is="dom-repeat" items="[[ _limit(record.fields, 4) ]]" mutable-data>
+            <template is="dom-repeat" items="[[ record.fields ]]" mutable-data>
 
                 <div class="field" on-click="_copyField">
-                    <div class="label-value">
-                        <div class="field-label">[[ item.name ]]</div>
-                        <div class="field-value" masked$="[[ item.masked ]]">[[ _value(item.value, item.masked) ]]</div>
-                    </div>
+                    <div class="field-label">[[ item.name ]]</div>
                     <div class="copied-message">[[ $l("copied") ]]</div>
                 </div>
 
             </template>
 
-            <div class="field fields-placeholder" hidden$="[[ _hasFields(record.fields.length) ]]">[[ $l("No Fields") ]]</div>
+            <div class="field" disabled hidden$="[[ _hasFields(record.fields.length) ]]">[[ $l("No Fields") ]]</div>
 
         </div>
 
@@ -249,16 +251,8 @@ class RecordItem extends applyMixins(
         }
     }
 
-    _value(val, masked) {
-        return masked ? val.replace(/[^\n]/g, "\u2022") : val;
-    }
-
     _selectIconClicked() {
         this.dispatchEvent(new CustomEvent("multi-select", { detail: this.record }));
-    }
-
-    _limit(arr, n) {
-        return arr.slice(0, n);
     }
 }
 
