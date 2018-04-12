@@ -398,10 +398,6 @@ class ListView extends applyMixins(
         }
     }
 
-    _searchCategory(e) {
-        this.filterString = e.detail;
-    }
-
     animateRecords(delay = 100) {
         const m4e = (e) => this.$.list.modelForElement(e);
 
