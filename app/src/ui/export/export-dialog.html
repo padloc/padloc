@@ -6,6 +6,12 @@
 
     <template>
         <style include="shared">
+            :host {
+                --pl-dialog-inner: {
+                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                };
+            }
+
             .message {
                 font-weight: bold;
             }
@@ -13,7 +19,7 @@
 
         <pl-dialog id="dialog">
             <div class="message">[[ $l("Export {0} Records", records.length) ]]</div>
-            <pl-export records="[[ records ]]" on-click="_close" class="tiles-2"></pl-export>
+            <pl-export export-records="[[ records ]]" on-click="_close" class="tiles-2"></pl-export>
         </pl-dialog>
 
     </template>
