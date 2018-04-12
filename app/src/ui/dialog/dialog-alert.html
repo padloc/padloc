@@ -64,7 +64,7 @@
 
         <pl-dialog id="dialog" open="{{ open }}"
             prevent-dismiss="[[ preventDismiss ]]" on-dialog-dismiss="_dialogDismiss">
-            <div class="info">
+            <div class="info" hidden$="[[ _hideInfo(title, message) ]]">
                 <pl-icon class="info-icon" icon="[[ _icon(type) ]]"></pl-icon>
                 <div class="info-body">
                     <div class="info-title">[[ title ]]</div>
@@ -142,6 +142,10 @@ class DialogAlert extends padlock.BaseElement {
 
     _buttonClass(index) {
         return "tap tiles-" + (Math.floor((index + 1) % 8) + 1);
+    }
+
+    _hideInfo() {
+        return !this.title && !this.message;
     }
 }
 

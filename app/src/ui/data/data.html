@@ -58,16 +58,12 @@ dispatcher.addEventListener("settings-changed", () => {
 });
 
 function filterByString(fs, rec) {
-    const words = fs.toLowerCase().split(" ");
-
-    // For the record to be a match, each word in the filter string has to appear
-    // in either the category or the record name.
-    for (var i = 0, match = true; i < words.length && match; i++) {
-        match = rec.category && rec.category.toLowerCase().search(words[i]) != -1 ||
-            rec.name.toLowerCase().search(words[i]) != -1;
+    if (!fs) {
+        return true;
     }
-
-    return !!match;
+    const words = fs.toLowerCase().split(" ");
+    const content = rec.tags.concat([rec.name]).join(" ").toLowerCase();
+    return words.some((word) => content.search(word) !== -1);
 }
 
 padlock.DataMixin = (superClass) => {

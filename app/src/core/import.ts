@@ -50,7 +50,7 @@ export async function fromSecuStore(rawData: string, password: string): Promise<
             // regular fields in Padlock
             item.fields.concat([{name: "password", value: item.password}]) : item.fields;
 
-        return new Record(item.title, fields, data.name);
+        return new Record(item.title, fields, [data.name]);
     });
 
     return records;
@@ -61,12 +61,12 @@ export async function fromSecuStore(rawData: string, password: string): Promise<
  * into an array of records
  * @param  Array    data         Two-dimensional array containing tabular record data; The first 'row'
  *                               should contain field names. All other rows represent records, containing
- *                               the record name, field values and optionally a category name.
+ *                               the record name, field values and optionally a list of tags.
  * @param  Integer  nameColIndex Index of the column containing the record names. Defaults to 0
- * @param  Integer  catColIndex  Index of the column containing the record categories. If left empty
+ * @param  Integer  tagsColIndex  Index of the column containing the record categories. If left empty
  *                               no categories will be used
  */
-export function fromTable(data: string[][], nameColIndex?: number, catColIndex?: number): Record[] {
+export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?: number): Record[] {
     // Use first row for column names
     const colNames = data[0];
 
@@ -75,8 +75,11 @@ export function fromTable(data: string[][], nameColIndex?: number, catColIndex?:
         nameColIndex = i !== -1 ? i : 0;
     }
 
-    if (catColIndex === undefined) {
-        catColIndex = colNames.indexOf("category");
+    if (tagsColIndex === undefined) {
+        tagsColIndex = colNames.indexOf("tags");
+        if (tagsColIndex === -1) {
+            tagsColIndex = colNames.indexOf("category");
+        }
     }
 
 
@@ -86,7 +89,7 @@ export function fromTable(data: string[][], nameColIndex?: number, catColIndex?:
         let fields = [];
         for (let i=0; i<row.length; i++) {
             // Skip name column, category column (if any) and empty fields
-            if (i != nameColIndex && i != catColIndex && row[i]) {
+            if (i != nameColIndex && i != tagsColIndex && row[i]) {
                 fields.push({
                     name: colNames[i],
                     value: row[i]
@@ -94,7 +97,8 @@ export function fromTable(data: string[][], nameColIndex?: number, catColIndex?:
             }
         }
 
-        return new Record(row[nameColIndex || 0], fields, row[catColIndex || -1] || "");
+        const tags = row[tagsColIndex!];
+        return new Record(row[nameColIndex || 0], fields, tags && tags.split(",") || []);
     });
 
     return records;
@@ -104,12 +108,12 @@ export function isCSV(data: string): Boolean {
     return parse(data).errors.length === 0;
 }
 
-export function fromCSV(data: string, nameColIndex?: number, catColIndex?: number): Record[] {
+export function fromCSV(data: string, nameColIndex?: number, tagsColIndex?: number): Record[] {
     const parsed = parse(data);
     if (parsed.errors.length) {
         throw new ImportError("invalid_csv");
     }
-    return fromTable(parsed.data, nameColIndex, catColIndex);
+    return fromTable(parsed.data, nameColIndex, tagsColIndex);
 }
 
 /**
@@ -181,8 +185,9 @@ function lpParseRow(row: string[]): Record {
         fields.push({ name: "notes", value: notes });
     }
 
+    const dir = row[categoryIndex];
     // Create a basic item using the standard fields
-    return new Record(row[nameIndex], fields, row[categoryIndex]);
+    return new Record(row[nameIndex], fields, dir ? [dir] : []);
 }
 
 export function fromLastPass(data: string): Record[] {

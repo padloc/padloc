@@ -99,9 +99,9 @@
                 @apply --ellipsis;
             }
 
-            .category {
+            .tags {
                 font-size: 12px;
-                max-width: 80px;
+                max-width: 100px;
                 border-radius: 6px;
                 padding: 4px 8px;
                 margin: 0 12px;
@@ -112,22 +112,23 @@
                 /* transition: background 0.3s; */
             }
 
-            .category::before {
+            .tags::before {
                 font-family: "FontAwesome";
                 content: "\f02b\ ";
                 font-size: 90%;
+                display: inline-block;
+                margin-right: 5px;
             }
 
             .highlight {
                 content: "";
                 display: block;
-                background: var(--color-highlight);
+                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
                 transition-property: opacity, transform;
                 transition-duration: 0.2s;
                 transition-timing-function: cubic-bezier(0.6, 0, 0.2, 1);
                 @apply --fullbleed;
                 transform: scale(1, 0);
-                /* transform-origin: 0 0; */
                 opacity: 0;
                 border-radius: 5px;
             }
@@ -146,7 +147,7 @@
                 opacity: 1;
             }
 
-            :host([selected]) .category {
+            :host([selected]) .tags {
                 @apply --shade-3;
             }
         </style>
@@ -155,9 +156,8 @@
 
         <div class="header">
             <div class="name">[[ record.name ]]</div>
-            <div class="category ellipsis"
-                hidden$="[[ !_isSet(record.category) ]]"
-                on-click="_categoryClicked">[[ record.category ]]</div>
+            <div class="tags ellipsis"
+                hidden$="[[ !_hasTags(record.tags) ]]">[[ _tagsString(record.tags) ]]</div>
         </div>
 
         <div class="fields">
@@ -235,20 +235,16 @@ class RecordItem extends applyMixins(
         return value ? value + ":" : "";
     }
 
-    _isSet(value) {
-        return !!value;
+    _hasTags(value) {
+        return !!value.length;
     }
 
     _hasFields() {
         return !!this.record.fields.length;
     }
 
-    _categoryClicked(e) {
-        if (!this.multiSelect) {
-            e.stopPropagation();
-            e.preventDefault();
-            this.dispatchEvent(new CustomEvent("search-category", { detail: this.record.category }));
-        }
+    _tagsString(tags) {
+        return [...tags].join(", ");
     }
 
     _selectIconClicked() {

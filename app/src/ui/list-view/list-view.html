@@ -202,8 +202,7 @@
                             <div class="spacer"></div>
                             <div>[[ _sectionHeader(index, records) ]]</div>
                         </div>
-                        <pl-record-item record="[[ item ]]" selected$="[[ selected ]]"
-                            tabindex$="[[ tabIndex ]]" on-search-category="_searchCategory"
+                        <pl-record-item record="[[ item ]]" selected$="[[ selected ]]" tabindex$="[[ tabIndex ]]"
                             multi-select="[[ multiSelect ]]" on-multi-select="_recordMultiSelect"></pl-record-item>
                         <div class="section-separator" hidden$="[[ !_lastInSection(records, index) ]]"></div>
                     </div>
@@ -266,6 +265,7 @@ class ListView extends applyMixins(
         },
         selectedRecords: {
             type: Array,
+            value: () => [],
             notify: true
         }
 
