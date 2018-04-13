@@ -170,17 +170,17 @@
 
             .menu, .tags {
                 position: absolute;
-                top: 0;
+                top: var(--title-bar-height);
                 left: var(--main-padding);
                 bottom: 0;
                 z-index: -2;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
                 width: var(--menu-width);
                 box-sizing: border-box;
                 color: var(--color-background);
                 transition: opacity 0.3s;
+                @apply --scroll;
             }
 
             .menu-item {
@@ -190,6 +190,11 @@
                 justify-content: flex-end;
                 position: relative;
                 text-align: right;
+                flex: none;
+            }
+
+            .menu-item > div {
+                @apply --ellipsis;
             }
 
             .menu .menu-item {
@@ -358,6 +363,7 @@
             </div>
 
             <div class="tags">
+                <div class="spacer"></div>
                 <div class="menu-item tap" on-click="_closeTags">
                     <div>[[ $l("Tags") ]]</div>
                     <pl-icon icon="close"></pl-icon>
@@ -371,6 +377,7 @@
                 <div class="no-tags" disabled hidden$="[[ _hasTags(collection.tags) ]]">
                     [[ $l("You don't have any tags yet!") ]]
                 </div>
+                <div class="spacer"></div>
             </div>
         </div>
 
@@ -665,6 +672,9 @@ class App extends applyMixins(
     _menuOpenChanged() {
         this.$.menuWrapper.classList.toggle("show-menu", this._menuOpen);
         this.$.main.classList.toggle("show-menu", this._menuOpen);
+        if (!this._menuOpen) {
+            setTimeout(() => this._showingTags = false, 300);
+        }
         this.animateCascade(this.root.querySelectorAll(".menu .menu-item"), {
             animation: this._menuOpen ? "menuItemIn" : "menuItemOut",
             duration: 400,
@@ -718,7 +728,6 @@ class App extends applyMixins(
     _selectTag(e) {
         setTimeout(() => {
             this.$.listView.filterString = e.model.item;
-            this._showingTags = false;
         }, 350);
     }
 

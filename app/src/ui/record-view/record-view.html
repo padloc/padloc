@@ -111,8 +111,6 @@
 
         <main id="main">
             <div class="tags animate">
-                <!-- <pl&#45;icon icon="tag"></pl&#45;icon> -->
-                <!-- <div class="tag no&#45;tags" hidden$="[[ _hasTags(record.tags) ]]">[[ $l("No Tags") ]]</div> -->
                 <template is="dom-repeat" items="[[ record.tags ]]">
                     <div class="tag tap" on-click="_removeTag">
                         <div class="tag-name">[[ item ]]</div>
