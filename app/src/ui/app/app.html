@@ -102,7 +102,6 @@
             }
 
             :host(.ios) #main {
-                top: 20px;
                 top: constant(safe-area-inset-top);
                 top: env(safe-area-inset-top);
             }
@@ -119,7 +118,7 @@
             }
 
             #main.show-menu {
-                transform: translate3d(calc(var(--menu-width) - var(--menu-icon-width)), 0, 0) rotateY(-10deg);
+                transform: translate3d(calc(var(--menu-width) - var(--menu-icon-width)), 0, 0) rotateY(-5deg);
             }
 
             :host(:not(.macos):not(.windows):not(.linux)) pl-title-bar {
@@ -491,9 +490,10 @@ class App extends applyMixins(
 
     connectedCallback() {
         super.connectedCallback();
+        let isIPhoneX;
         getDeviceInfo()
             .then((device) => {
-                const isIPhoneX = /iPhone10,3|iPhone10,6/.test(device.model);
+                isIPhoneX = /iPhone10,3|iPhone10,6/.test(device.model);
                 if (isIPhoneX) {
                     Object.assign(document.body.style, {
                         margin: 0,
@@ -506,7 +506,9 @@ class App extends applyMixins(
             .then(() => {
                 // Replace window.open method with the inappbrowser equivalent
                 window.open = cordova.InAppBrowser.open;
-                StatusBar.show();
+                if (isIPhoneX) {
+                    StatusBar && StatusBar.show();
+                }
                 navigator.splashscreen.hide();
             });
 
