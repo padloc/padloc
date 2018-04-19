@@ -155,7 +155,8 @@
         <div class="highlight"></div>
 
         <div class="header">
-            <div class="name">[[ record.name ]]</div>
+            <div class="name" hidden$="[[ !truthy(record.name) ]]">[[ record.name ]]</div>
+            <div class="name" disabled hidden$="[[ truthy(record.name) ]]">[[ $l("No Name") ]]</div>
             <div class="tags ellipsis"
                 hidden$="[[ !_hasTags(record.tags) ]]">[[ _tagsString(record.tags) ]]</div>
         </div>

@@ -5,7 +5,13 @@
 
 window.padlock = window.padlock || {};
 
-padlock.BaseElement = Polymer.Element;
+padlock.BaseElement = class Base extends Polymer.Element {
+
+    truthy(val) {
+        return !!val;
+    }
+
+};
 
 })();
 </script>

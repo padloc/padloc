@@ -102,9 +102,9 @@
 
         <header>
             <pl-icon icon="close" class="tap" on-click="close"></pl-icon>
-            <pl-input id="nameInput" class="name tap" value="[[ record.name ]]"
-                placeholder="[[ $l('Enter Record Name') ]]" select-on-focus autocapitalize
-                on-change="_nameEdited" on-focus="_inputFocused"
+            <pl-input id="nameInput" class="name tap" value="{{ record.name }}"
+                 placeholder="[[ $l('Enter Record Name') ]]" select-on-focus autocapitalize
+                 on-change="_notifyChange" on-enter="_nameEnter"
             ></pl-input>
             <pl-icon icon="delete" class="tap" on-click="_deleteRecord"></pl-icon>
         </header>
@@ -162,21 +162,14 @@ class RecordView extends applyMixins(
     static get properties() { return {
         record: {
             type: Object,
-            notify: true
+            notify: true,
+            observer: "_recordChanged"
         },
         _edited: {
             type: Boolean,
             value: false
         }
     }; }
-
-    recordCreated(record) {
-        setTimeout(() => {
-            if (record === this.record) {
-                this.edit();
-            }
-        }, 500);
-    }
 
     dataUnloaded() {
         this.record = null;
@@ -185,13 +178,12 @@ class RecordView extends applyMixins(
         fieldDialog.field = null;
     }
 
-    _nameEdited() {
-        if (this.$.nameInput.value) {
-            this.record.name = this.$.nameInput.value;
-            this._notifyChange();
-        } else {
-            this.notifyPath("record.name");
-        }
+    _recordChanged() {
+        setTimeout(() => {
+            if (this.record && !this.record.name) {
+                this.$.nameInput.focus();
+            }
+        }, 500);
     }
 
     _notifyChange() {
@@ -282,6 +274,10 @@ class RecordView extends applyMixins(
                     this._notifyChange();
                 }
             });
+    }
+
+    _nameEnter() {
+        this.$.nameInput.blur();
     }
 
     animate() {

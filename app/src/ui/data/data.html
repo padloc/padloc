@@ -148,7 +148,7 @@ padlock.DataMixin = (superClass) => {
                 { name: $l("Username"), value: "", masked: false },
                 { name: $l("Password"), value: "", masked: true },
             ];
-            const record = new Record(name || $l("New Record"), fields);
+            const record = new Record(name || "", fields);
             this.addRecords([record]);
             this.dispatch("record-created", record);
             return record;

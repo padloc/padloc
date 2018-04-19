@@ -380,7 +380,7 @@ class ListView extends applyMixins(
     _sectionHeader(index) {
         const record = this.records[index];
         return index < this._recentCount ? $l("Recently Used") :
-            record && record.name[0] && record.name[0].toUpperCase();
+            record && record.name[0] && record.name[0].toUpperCase() || $l("No Name");
     }
 
     _updateCurrentSection() {
