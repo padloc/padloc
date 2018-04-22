@@ -1,6 +1,7 @@
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../data/data.html">
 <link rel="import" href="../payment-dialog/payment-dialog.html">
+<link rel="import" href="../promo/promo-dialog.html">
 
 <script>
 (() => {
@@ -628,6 +629,18 @@ padlock.SyncMixin = (superClass) => {
                 isFuture(promo.created, promo.redeemWithin)
             );
             return promoActive ? promo : null;
+        }
+
+        alertPromo() {
+            return this.lineUpDialog("pl-promo-dialog", (dialog) => {
+                dialog.promo = this.promo;
+                return dialog.show();
+            })
+                .then((redeem) => {
+                    if (redeem) {
+                        this.buySubscription("App - Promo (Alert)");
+                    }
+                });
         }
 
     };
