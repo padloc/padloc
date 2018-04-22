@@ -7,7 +7,7 @@
 
 const { EncryptedSource, CloudSource } = padlock.source;
 const { DataMixin } = padlock;
-const { formatDateFromNow } = padlock.util;
+const { formatDateFromNow, isFuture } = padlock.util;
 
 const cloudSource = new EncryptedSource(new CloudSource(DataMixin.settings));
 
@@ -25,6 +25,10 @@ padlock.SyncMixin = (superClass) => {
             remainingTrialDays: {
                 type: Number,
                 computed: "_computeRemainingTrialDays(settings.syncTrialEnd)"
+            },
+            promo: {
+                type: Object,
+                computed: "_getPromo(settings.account.promo)"
             }
         }; }
 
@@ -574,6 +578,7 @@ padlock.SyncMixin = (superClass) => {
                 dialog.stripePubKey = this.settings.stripePubKey;
                 dialog.source = this.cloudSource.source;
                 dialog.remainingTrialDays = this.remainingTrialDays;
+                dialog.promo = this.promo;
                 return dialog.show(source);
             });
         }
@@ -614,6 +619,15 @@ padlock.SyncMixin = (superClass) => {
                         });
                 }
             });
+        }
+
+        _getPromo() {
+            const promo = this.settings.account && this.settings.account.promo;
+            const promoActive = !this.isSubActive() && promo && (
+                !promo.redeemWithin ||
+                isFuture(promo.created, promo.redeemWithin)
+            );
+            return promoActive ? promo : null;
         }
 
     };

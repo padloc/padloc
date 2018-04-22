@@ -8,6 +8,7 @@
 <link rel="import" href="../loading-button/loading-button.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
+<link rel="import" href="../promo/promo.html">
 <link rel="import" href="../sync/sync.html">
 <link rel="import" href="../toggle/toggle-button.html">
 
@@ -168,33 +169,6 @@
                 font-size: 25px;
             }
 
-            .info {
-                display: flex;
-                align-items: center;
-            }
-
-            .info-icon {
-                width: 80px;
-                height: 80px;
-                font-size: 60px;
-                margin: 10px 0 10px 10px;
-            }
-
-            .info-body {
-                padding: 20px 15px 20px 10px;
-                flex: 1;
-            }
-
-            .info-title {
-                font-size: 120%;
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-
-            .info-text {
-                font-size: var(--font-size-small);
-            }
-
             pl-icon[icon=refresh][spin] {
                 background: transparent !important;
                 pointer-events: none;
@@ -213,7 +187,11 @@
 
         <main>
 
-            <section class="highlight tiles warning" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight dark" hidden$="[[ !truthy(promo) ]]">
+                <pl-promo promo="[[ promo ]]" data-source="App - Promo" on-promo-redeem="_buySubscription" on-promo-expired="_promoExpired"></pl-promo>
+            </section>
+
+            <section class="highlight tiles warning" hidden$="[[ !_showTrialSection(settings.syncConnected, settings.syncSubStatus, promo) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="time"></pl-icon>
                     <div class="info-body">
@@ -224,7 +202,7 @@
                 <button class="tap" on-click="_buySubscription" data-source="App - Trialing">[[ $l("Upgrade Now") ]]</button>
             </section>
 
-            <section class="highlight tiles warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight tiles warning" hidden$="[[ !_showTrialExpiredSection(settings.syncConnected, settings.syncSubStatus, promo) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="error"></pl-icon>
                     <div class="info-body">
@@ -469,6 +447,18 @@ class CloudView extends applyMixins(
 
     _updatePaymentMethod(e) {
         this.updatePaymentMethod(e.target.dataset.source);
+    }
+
+    _promoExpired() {
+        this.dispatch("settings-changed");
+    }
+
+    _showTrialSection() {
+        return this.isTrialing() && !this.promo;
+    }
+
+    _showTrialExpiredSection() {
+        return this.isTrialExpired() && !this.promo;
     }
 
 }
