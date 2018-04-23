@@ -1,5 +1,3 @@
-<script src="https://js.stripe.com/v3/" async></script>
-
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../dialog/dialog.html">
@@ -306,6 +304,14 @@ const { track } = padlock.tracking;
 
 let stripe;
 
+const stripeLoaded = new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://js.stripe.com/v3/";
+    script.async = true;
+    script.onload = resolve;
+    document.body.appendChild(script);
+});
+
 class PaymentDialog extends applyMixins(
     BaseElement,
     LocaleMixin
@@ -368,27 +374,29 @@ class PaymentDialog extends applyMixins(
     }
 
     _setupPayment() {
-        stripe = Stripe(this.stripePubKey);
-        const elements = stripe.elements();
-        const card = this._cardElement = elements.create("card", {
-            iconStyle: "solid",
-            style: {
-                base: {
-                    fontFamily: '"Clear Sans", "Helvetica Neue", Helvetica, sans-serif',
-                    fontSmoothing: "antialiased",
-                    fontSize: "18px"
-                },
-                invalid: {
-                    textShadow: "none"
+        stripeLoaded.then(() => {
+            stripe = Stripe(this.stripePubKey);
+            const elements = stripe.elements();
+            const card = this._cardElement = elements.create("card", {
+                iconStyle: "solid",
+                style: {
+                    base: {
+                        fontFamily: '"Clear Sans", "Helvetica Neue", Helvetica, sans-serif',
+                        fontSmoothing: "antialiased",
+                        fontSize: "18px"
+                    },
+                    invalid: {
+                        textShadow: "none"
+                    }
                 }
-            }
+            });
+
+            const cardElement = document.createElement("div");
+            this.appendChild(cardElement);
+            card.mount(cardElement);
+
+            card.addEventListener("change", (e) => this._cardError = e.error && e.error.message || "");
         });
-
-        const cardElement = document.createElement("div");
-        this.appendChild(cardElement);
-        card.mount(cardElement);
-
-        card.addEventListener("change", (e) => this._cardError = e.error && e.error.message || "");
     }
 
     _submitCard() {
