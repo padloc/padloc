@@ -2,35 +2,32 @@
 <link rel="import" href="../data/data.html">
 <link rel="import" href="../payment-dialog/payment-dialog.html">
 <link rel="import" href="../promo/promo-dialog.html">
+<link rel="import" href="./subinfo.html">
 
 <script>
 (() => {
 
 const { EncryptedSource, CloudSource } = padlock.source;
-const { DataMixin } = padlock;
-const { formatDateFromNow, isFuture } = padlock.util;
+const { DataMixin, SubInfoMixin } = padlock;
+const { formatDateFromNow } = padlock.util;
 
 const cloudSource = new EncryptedSource(new CloudSource(DataMixin.settings));
 
 padlock.SyncMixin = (superClass) => {
 
-    return class SyncMixin extends superClass {
+    return class SyncMixin extends SubInfoMixin(superClass) {
 
         static get properties() { return {
+            account: {
+                type: Object,
+                computed: "identity(settings.account)"
+            },
             isSynching: {
                 type: Boolean,
                 value: false,
                 notify: true
             },
-            lastSync: String,
-            remainingTrialDays: {
-                type: Number,
-                computed: "_computeRemainingTrialDays(settings.syncTrialEnd)"
-            },
-            promo: {
-                type: Object,
-                computed: "_getPromo(settings.account.promo)"
-            }
+            lastSync: String
         }; }
 
         get cloudSource() {
@@ -133,32 +130,6 @@ padlock.SyncMixin = (superClass) => {
 
         isActivationPending() {
             return this.settings.syncToken && !this.settings.syncConnected;
-        }
-
-        isTrialing() {
-            return this.settings.syncConnected && this.settings.syncSubStatus === "trialing";
-        }
-
-        isTrialExpired() {
-            return this.settings.syncConnected && this.settings.syncSubStatus === "trial_expired";
-        }
-
-        isSubCanceled() {
-            return this.settings.syncConnected && this.settings.syncSubStatus === "canceled";
-        }
-
-        isSubUnpaid() {
-            const s = this.settings.syncSubStatus;
-            return this.settings.syncConnected && (s === "unpaid" || s === "past_due");
-        }
-
-        isSubActive() {
-            return this.settings.syncConnected && this.settings.syncSubStatus === "active";
-        }
-
-        isSubValid() {
-            const s = this.settings.syncSubStatus;
-            return this.settings.syncConnected && (s === "" || s === "active" || s === "trialing");
         }
 
         hasSyncToken() {
@@ -275,43 +246,6 @@ padlock.SyncMixin = (superClass) => {
             return $l(
                 "Log in now to unlock advanced features like automatic online backups and " +
                 "seamless synchronization between devices!"
-            );
-        }
-
-        trialingMessage() {
-            return $l(
-                "Your trial period ends in {0} days. Upgrade now to continue using online features like " +
-                "synchronization and automatic backups!",
-                this.remainingTrialDays
-            );
-        }
-
-        trialExpiredMessage() {
-            return $l(
-                "Your free trial has expired. Upgrade now to continue using advanced features like " +
-                "automatic online backups and seamless synchronization between devices!"
-            );
-        }
-
-        subUnpaidMessage() {
-            return $l(
-                "Your last payment has failed. Please contact your card provider " +
-                "or update your payment method!"
-            );
-        }
-
-        subCanceledMessage() {
-            return $l(
-                "Your subscription has been canceled. Reactivate it now to continue using advanced " +
-                "features like automatic online backups and seamless synchronization between devices!"
-            );
-        }
-
-        connectedInfoText() {
-            return $l(
-                "This device is connected to the Padlock Cloud account {0}. Connect all your devices " +
-                "with the same account to easily synchronize your data between them!",
-                this.settings.syncEmail
             );
         }
 
@@ -620,15 +554,6 @@ padlock.SyncMixin = (superClass) => {
                         });
                 }
             });
-        }
-
-        _getPromo() {
-            const promo = this.settings.account && this.settings.account.promo;
-            const promoActive = !this.isSubActive() && promo && (
-                !promo.redeemWithin ||
-                isFuture(promo.created, promo.redeemWithin)
-            );
-            return promoActive ? promo : null;
         }
 
         alertPromo() {

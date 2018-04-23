@@ -12,6 +12,7 @@
 <link rel="import" href="../ui/payment-dialog/payment-dialog.html">
 <link rel="import" href="../ui/promo/promo.html">
 <link rel="import" href="../ui/promo/promo-dialog.html">
+<link rel="import" href="../ui/sync/subinfo.html">
 
 <dom-module id="pl-cloud-dashboard">
 
@@ -272,30 +273,53 @@
 
         <main>
 
-            <section class="highlight dark" hidden$="[[ !truthy(_promo) ]]">
-                <pl-promo promo="[[ _promo ]]" data-source="Dashboard - Promo" on-promo-redeem="_buySubscription" on-promo-expired="_promoExpired"></pl-promo>
+            <section class="highlight dark" hidden$="[[ !truthy(promo) ]]">
+                <pl-promo promo="[[ promo ]]" data-source="Dashboard - Promo" on-promo-redeem="_buySubscription" on-promo-expired="_promoExpired"></pl-promo>
             </section>
 
-            <section class="highlight warning tiles" hidden$="[[ !_isTrialing(account.subscription.status) ]]">
+            <section class="highlight tiles warning" hidden$="[[ !isTrialing(account.subscription.status) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="time"></pl-icon>
                     <div class="info-body">
-                        <div class="info-title">[[ $l("Trialing ({0} days left)", _trialDays) ]]</div>
-                        <div class="info-text">[[ _trialInfoText(_trialDays) ]]</div>
+                        <div class="info-title">[[ $l("Trialing ({0} days left)", remainingTrialDays) ]]</div>
+                        <div class="info-text">[[ trialingMessage(remainingTrialDays) ]]</div>
                     </div>
                 </div>
-                <button class="tap" on-click="_buySubscription">[[ $l("Upgrade Now") ]]</button>
+                <button class="tap" on-click="_buySubscription" data-source="Dashboard - Trialing">[[ $l("Upgrade Now") ]]</button>
             </section>
 
-            <section class="highlight warning tiles" hidden$="[[ !_isInactive(account.subscription.status) ]]">
+            <section class="highlight tiles warning" hidden$="[[ !isTrialExpired(account.subscription.status) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="error"></pl-icon>
                     <div class="info-body">
-                        <div class="info-title">[[ $l("Read-Only") ]]</div>
-                        <div class="info-text">[[ _readOnlyInfoText() ]]</div>
+                        <div class="info-title">[[ $l("Trial Expired") ]]</div>
+                        <div class="info-text">[[ trialExpiredMessage() ]]</div>
                     </div>
                 </div>
-                <button class="tap" on-click="_buySubscription">[[ $l("Upgrade Now") ]]</button>
+                <button class="tap" on-click="_buySubscription" data-source="Dashboard - Trial Expired">[[ $l("Upgrade Now") ]]</button>
+            </section>
+
+            <section class="highlight tiles warning" hidden$="[[ !isSubUnpaid(account.subscription.status) ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Payment Failed") ]]</div>
+                        <div class="info-text">[[ subUnpaidMessage() ]]</div>
+                    </div>
+                </div>
+                <button class="tap" on-click="_updatePaymentMethod" data-source="Dashboard - Payment Failed">[[ $l("Update Payment Method") ]]</button>
+                <button class="tap" on-click="_contactSupport">[[ $l("Contact Support") ]]</button>
+            </section>
+
+            <section class="highlight tiles warning" hidden$="[[ !isSubCanceled(account.subscription.status) ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Subscription Canceled") ]]</div>
+                        <div class="info-text">[[ subCanceledMessage() ]]</div>
+                    </div>
+                </div>
+                <button class="tap" on-click="_reactivateSubscription">[[ $l("Reactivate Subscription") ]]</button>
             </section>
 
             <section class="devices">
@@ -312,11 +336,11 @@
                 </dom-repeat>
             </section>
 
-            <section hidden$="[[ !truthy(settings.account.paymentSource) ]]">
+            <section hidden$="[[ !truthy(account.paymentSource) ]]">
                 <div class="section-header">[[ $l("Billing") ]]</div>
                 <button class="tap" on-click="_updatePaymentMethod" data-source="App - Billing">[[ _paymentSourceLabel(account.paymentSource) ]]</button>
                 <button class="tap" on-click="_cancelSubscription"
-                    hidden$="[[ !_isActive(account.subscription.status) ]]">[[ $l("Cancel Subscription") ]]</button>
+                    hidden$="[[ !isSubActive(account.subscription.status) ]]">[[ $l("Cancel Subscription") ]]</button>
             </section>
 
             <section>
@@ -358,8 +382,8 @@
     <script>
 (() => {
 
-const { LocaleMixin, DialogMixin, NotificationMixin, AnimationMixin, BaseElement } = padlock;
-const { applyMixins, isFuture } = padlock.util;
+const { LocaleMixin, DialogMixin, NotificationMixin, AnimationMixin, SubInfoMixin, BaseElement } = padlock;
+const { applyMixins } = padlock.util;
 const { request } = padlock.ajax;
 const { track, init } = padlock.tracking;
 
@@ -375,7 +399,8 @@ class Dashboard extends applyMixins(
     LocaleMixin,
     DialogMixin,
     NotificationMixin,
-    AnimationMixin
+    AnimationMixin,
+    SubInfoMixin
 ) {
 
     static get is() { return "pl-cloud-dashboard"; }
@@ -387,19 +412,7 @@ class Dashboard extends applyMixins(
         token: Object,
         csrfToken: String,
         stripePubKey: String,
-        referer: String,
-        _cardError: {
-            type: String,
-            value: ""
-        },
-        _trialDays: {
-            type: Number,
-            computed: "_computeRemainingTrialDays(account.subscription.trialEnd)"
-        },
-        _promo: {
-            type: Object,
-            computed: "_getPromo(account.promo)"
-        }
+        referer: String
 
     }; }
 
@@ -437,7 +450,7 @@ class Dashboard extends applyMixins(
                 setTimeout(() => this.notify($l("Payment method updated successfully!"), "info", 3000), 500);
                 break;
             case "subscribe":
-                if (!this._isActive()) {
+                if (!this.isSubActive()) {
                     this._buySubscription();
                 }
                 break;
@@ -479,46 +492,6 @@ class Dashboard extends applyMixins(
             .then((req) => this.account = JSON.parse(req.responseText));
     }
 
-    _computeRemainingTrialDays(trialEnd) {
-        var now = new Date().getTime() / 1000;
-        trialEnd = trialEnd ? parseInt(trialEnd, 10) : now;
-        return Math.max(0, Math.ceil((trialEnd - now) / 60 / 60 / 24));
-    }
-
-    _paymentMethod() {
-        const s = this.account.paymentSource;
-        return s && `${s.brand} **** **** **** ${s.lastFour}`;
-    }
-
-    _isTrialing() {
-        return this.account.subscription && this.account.subscription.status === "trialing";
-    }
-
-    _isInactive() {
-        return !this._isTrialing() && !this._isActive();
-    }
-
-    _isActive() {
-        return this.account.subscription && this.account.subscription.status === "active";
-    }
-
-    _trialInfoText() {
-        return $l(
-            "Your trial period ends in {0} days. Upgrade now to continue using online features like " +
-            "synchronization and automatic backups!",
-            this._trialDays
-        );
-    }
-
-    _readOnlyInfoText() {
-        return $l(
-            "You currently don't have an active subscription which means you can still access " +
-            "your existing online data but you won't be able to upload any new data " +
-            "or synchronize changes between devices. Get a subscription now to take full advantage " +
-            "of Padlocks online features!"
-        );
-    }
-
     _resetDataText() {
         return $l(
             "Want to start from scratch? Here you can reset the data stored in your Padlock Cloud " +
@@ -551,14 +524,15 @@ class Dashboard extends applyMixins(
         this.$.revokeDeviceDialog.open = true;
     }
 
-    _buySubscription() {
+    _buySubscription(e) {
         this.$.paymentDialog.promo = this.account.promo;
         this.$.paymentDialog.plan = this.account.plan;
-        this.$.paymentDialog.show(this.referer)
+        this.$.paymentDialog.show(e && e.target.dataset.source || this.referer)
             .then((success) => {
                 if (success) {
                     this._refreshAccount();
-                    this.alert($l("Congratulations, you've successfully upgraded to Padlock Pro!"));
+                    this.alert($l("Congratulations, you've successfully upgraded to Padlock Pro!"),
+                        { type: "success" });
                 }
             });
     }
@@ -605,10 +579,6 @@ class Dashboard extends applyMixins(
         return new Date(ts * 1000).toLocaleDateString();
     }
 
-    _hasPromo() {
-        return !!this.account.promo && !this._isActive();
-    }
-
     _hasNoDevices() {
         return !this.account.devices.length;
     }
@@ -617,21 +587,21 @@ class Dashboard extends applyMixins(
         window.open("https://padlock.io/downloads/", "_blank");
     }
 
-    _getPromo() {
-        const promo = this.account.promo;
-        const promoActive = !this._isActive() && promo && (
-            !promo.redeemWithin ||
-            isFuture(promo.created, promo.redeemWithin)
-        );
-        return promoActive ? promo : null;
-    }
-
     _promoExpired() {
         this.notifyPath("account.promo");
     }
 
     _paymentSourceLabel(s) {
         return s && `${s.brand} •••• •••• •••• ${s.lastFour}`;
+    }
+
+    _reactivateSubscription() {
+        this.subscribe(undefined, undefined, "Dashboard")
+            .then(() => {
+                this._refreshAccount();
+                this.alert($l("Subscription reactivated successfully!"), { type: "success" });
+            })
+            .catch((e) => this.alert(e.message, { type: "warning" }));
     }
 
 }
