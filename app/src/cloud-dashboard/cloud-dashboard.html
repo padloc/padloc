@@ -10,6 +10,8 @@
 <link rel="import" href="../ui/locale/locale.html">
 <link rel="import" href="../ui/notification/notification.html">
 <link rel="import" href="../ui/payment-dialog/payment-dialog.html">
+<link rel="import" href="../ui/promo/promo.html">
+<link rel="import" href="../ui/promo/promo-dialog.html">
 
 <dom-module id="pl-cloud-dashboard">
 
@@ -270,59 +272,31 @@
 
         <main>
 
-            <dom-if if="[[ account.displaySubscription ]]">
+            <section class="highlight dark" hidden$="[[ !truthy(_promo) ]]">
+                <pl-promo promo="[[ _promo ]]" data-source="Dashboard - Promo" on-promo-redeem="_buySubscription" on-promo-expired="_promoExpired"></pl-promo>
+            </section>
 
-                <template>
+            <section class="highlight warning tiles" hidden$="[[ !_isTrialing(account.subscription.status) ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="time"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Trialing ({0} days left)", _trialDays) ]]</div>
+                        <div class="info-text">[[ _trialInfoText(_trialDays) ]]</div>
+                    </div>
+                </div>
+                <button class="tap" on-click="_buySubscription">[[ $l("Upgrade Now") ]]</button>
+            </section>
 
-                    <section class="highlight tiles" hidden$="[[ !_hasCoupon(account.coupon) ]]">
-                        <div class="info">
-                            <pl-icon class="info-icon" icon="category"></pl-icon>
-                            <div class="info-body">
-                                <div class="info-title">[[ $l("Coupon Unlocked") ]]</div>
-                                <div class="info-text" inner-h-t-m-l="[[ $l('The following coupon has been unlocked for your account: **{0}**', account.coupon.metadata.description) ]]"></div>
-                            </div>
-                        </div>
-                        <button class="tap" on-click="_buySubscription">[[ $l("Claim Coupon") ]]</button>
-                    </section>
-
-                    <section class="highlight warning tiles" hidden$="[[ !_isTrialing(account.subscription.status) ]]">
-                        <div class="info">
-                            <pl-icon class="info-icon" icon="time"></pl-icon>
-                            <div class="info-body">
-                                <div class="info-title">[[ $l("Trialing ({0} days left)", _trialDays) ]]</div>
-                                <div class="info-text">[[ _trialInfoText(_trialDays) ]]</div>
-                            </div>
-                        </div>
-                        <button class="tap" on-click="_buySubscription">[[ $l("Upgrade Now") ]]</button>
-                    </section>
-
-                    <section class="highlight warning tiles" hidden$="[[ !_isInactive(account.subscription.status) ]]">
-                        <div class="info">
-                            <pl-icon class="info-icon" icon="error"></pl-icon>
-                            <div class="info-body">
-                                <div class="info-title">[[ $l("Read-Only") ]]</div>
-                                <div class="info-text">[[ _readOnlyInfoText() ]]</div>
-                            </div>
-                        </div>
-                        <button class="tap" on-click="_buySubscription">[[ $l("Upgrade Now") ]]</button>
-                    </section>
-
-                    <section hidden$="[[ !_isActive(account.subscription.status) ]]">
-                        <div class="info-2">
-                            <div>[[ $l("Subscription Status:") ]]</div>
-                            <div class="subscription-status">[[ $l("Active") ]]</div>
-                            <div>[[ $l("Payment Method") ]]:</div>
-                            <div class="payment-method">[[ _paymentMethod(account.paymentSource) ]]</div>
-                        </div>
-                        <button class="tap" on-click="_changePaymentMethod">[[ $l("Change Payment Method") ]]</button>
-                        <!-- <button class="tiles&#45;3 tap" on&#45;click="_openBillingDialog">[[ $l("Update Billing Info") ]]</button> -->
-                        <!-- <pl&#45;loading&#45;button class="tiles&#45;4 tap" on&#45;click="_showInvoices">[[ $l("Invoices") ]]</pl&#45;loading&#45;button> -->
-                        <button class="tap" on-click="_cancelSubscription">[[ $l("Cancel Subscription") ]]</button>
-                    </section>
-
-                </template>
-
-            </dom-if>
+            <section class="highlight warning tiles" hidden$="[[ !_isInactive(account.subscription.status) ]]">
+                <div class="info">
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">[[ $l("Read-Only") ]]</div>
+                        <div class="info-text">[[ _readOnlyInfoText() ]]</div>
+                    </div>
+                </div>
+                <button class="tap" on-click="_buySubscription">[[ $l("Upgrade Now") ]]</button>
+            </section>
 
             <section class="devices">
                 <div class="title">[[ $l("{0} Paired Devices", account.devices.length) ]]</div>
@@ -378,7 +352,7 @@
 (() => {
 
 const { LocaleMixin, DialogMixin, NotificationMixin, AnimationMixin, BaseElement } = padlock;
-const { applyMixins } = padlock.util;
+const { applyMixins, isFuture } = padlock.util;
 const { request } = padlock.ajax;
 const { track, init } = padlock.tracking;
 
@@ -400,6 +374,7 @@ class Dashboard extends applyMixins(
     static get is() { return "pl-cloud-dashboard"; }
 
     static get properties() { return {
+
         account: Object,
         action: String,
         token: Object,
@@ -413,7 +388,12 @@ class Dashboard extends applyMixins(
         _trialDays: {
             type: Number,
             computed: "_computeRemainingTrialDays(account.subscription.trialEnd)"
+        },
+        _promo: {
+            type: Object,
+            computed: "_getPromo(account.promo)"
         }
+
     }; }
 
     connectedCallback() {
@@ -466,22 +446,6 @@ class Dashboard extends applyMixins(
             ), [
                 $l("Got it!")
             ], { title: "Welcome To Your Dashboard!", hideIcon: true });
-        }
-
-        if (this._hasCoupon()) {
-            this.$.paymentDialog.coupon = this.account.coupon;
-            this.confirm(
-                $l("The following coupon has been unlocked for your account: '{0}'",
-                    this.account.coupon.metadata.description),
-                $l("Claim It Now!"),
-                $l("No Thanks"),
-                { type: "info", title: $l("Coupon Unlocked") }
-            )
-                .then((confirmed) => {
-                    if (confirmed) {
-                        this._buySubscription();
-                    }
-                });
         }
 
         track("Dashboard: Finish Loading");
@@ -576,6 +540,7 @@ class Dashboard extends applyMixins(
     }
 
     _buySubscription() {
+        this.$.paymentDialog.promo = this.account.promo;
         this.$.paymentDialog.plan = this.account.plan;
         this.$.paymentDialog.show(this.referer)
             .then((success) => {
@@ -626,8 +591,8 @@ class Dashboard extends applyMixins(
         return new Date(ts * 1000).toLocaleDateString();
     }
 
-    _hasCoupon() {
-        return !!this.account.coupon && !this._isActive();
+    _hasPromo() {
+        return !!this.account.promo && !this._isActive();
     }
 
     _hasNoDevices() {
@@ -636,6 +601,19 @@ class Dashboard extends applyMixins(
 
     _downloadApp() {
         window.open("https://padlock.io/downloads/", "_blank");
+    }
+
+    _getPromo() {
+        const promo = this.account.promo;
+        const promoActive = !this._isActive() && promo && (
+            !promo.redeemWithin ||
+            isFuture(promo.created, promo.redeemWithin)
+        );
+        return promoActive ? promo : null;
+    }
+
+    _promoExpired() {
+        this.notifyPath("account.promo");
     }
 
 }
