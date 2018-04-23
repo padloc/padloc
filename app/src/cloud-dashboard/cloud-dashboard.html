@@ -312,6 +312,13 @@
                 </dom-repeat>
             </section>
 
+            <section hidden$="[[ !truthy(settings.account.paymentSource) ]]">
+                <div class="section-header">[[ $l("Billing") ]]</div>
+                <button class="tap" on-click="_updatePaymentMethod" data-source="App - Billing">[[ _paymentSourceLabel(account.paymentSource) ]]</button>
+                <button class="tap" on-click="_cancelSubscription"
+                    hidden$="[[ !_isActive(account.subscription.status) ]]">[[ $l("Cancel Subscription") ]]</button>
+            </section>
+
             <section>
                 <div class="info-2">[[ _resetDataText() ]]</div>
                 <button class="tap" on-click="_resetData">[[ $l("Delete Data") ]]</button>
@@ -467,6 +474,11 @@ class Dashboard extends applyMixins(
         );
     }
 
+    _refreshAccount() {
+        return request("GET", "/account/")
+            .then((req) => this.account = JSON.parse(req.responseText));
+    }
+
     _computeRemainingTrialDays(trialEnd) {
         var now = new Date().getTime() / 1000;
         trialEnd = trialEnd ? parseInt(trialEnd, 10) : now;
@@ -545,7 +557,8 @@ class Dashboard extends applyMixins(
         this.$.paymentDialog.show(this.referer)
             .then((success) => {
                 if (success) {
-                    window.location = "/dashboard/?action=subscribed";
+                    this._refreshAccount();
+                    this.alert($l("Congratulations, you've successfully upgraded to Padlock Pro!"));
                 }
             });
     }
@@ -554,12 +567,13 @@ class Dashboard extends applyMixins(
         this.$.cancelSubscriptionDialog.open = true;
     }
 
-    _changePaymentMethod() {
+    _updatePaymentMethod() {
         this.$.paymentDialog.plan = null;
         this.$.paymentDialog.show("Dashboard")
             .then((success) => {
                 if (success) {
-                    window.location = "/dashboard/?action=payment-updated";
+                    this._refreshAccount();
+                    this.notify($l("Payment method updated successfully!"), "info", 2000);
                 }
             });
     }
@@ -614,6 +628,10 @@ class Dashboard extends applyMixins(
 
     _promoExpired() {
         this.notifyPath("account.promo");
+    }
+
+    _paymentSourceLabel(s) {
+        return s && `${s.brand} •••• •••• •••• ${s.lastFour}`;
     }
 
 }

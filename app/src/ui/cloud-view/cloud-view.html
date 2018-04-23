@@ -267,7 +267,7 @@
                 </div>
             </section>
 
-            <section hidden$="[[ !_hasPaymentSource(settings.account.paymentSource) ]]">
+            <section hidden$="[[ !truthy(settings.account.paymentSource) ]]">
                 <div class="section-header">[[ $l("Billing") ]]</div>
                 <button class="tap" on-click="_updatePaymentMethod" data-source="App - Billing">[[ _paymentSourceLabel(settings.account.paymentSource) ]]</button>
                 <button class="tap" on-click="cancelSubscription"
@@ -430,10 +430,6 @@ class CloudView extends applyMixins(
 
     _contactSupport() {
         window.open("mailto:support@padlock.io", "_system");
-    }
-
-    _hasPaymentSource() {
-        return !!(this.settings.account && this.settings.account.paymentSource);
     }
 
     _paymentSourceLabel() {
