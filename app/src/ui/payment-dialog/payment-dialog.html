@@ -331,7 +331,7 @@ class PaymentDialog extends applyMixins(
         _needsSupport: { type: Boolean, value: false },
         _price: {
             type: Array,
-            computed: "_calcPrice(plan.amount, promo.coupon.percent_off)"
+            computed: "_calcPrice(plan.amount, promo.coupon.percent_off, promo.coupon.amount_off)"
         },
         _originalPrice: {
             type: Array,
@@ -459,8 +459,8 @@ class PaymentDialog extends applyMixins(
         return !!this._cardError;
     }
 
-    _calcPrice(amount, percentOff = 0) {
-        amount = amount * (1 - percentOff / 100);
+    _calcPrice(amount, percentOff = 0, amountOff = 0) {
+        amount = percentOff ? amount * (1 - percentOff / 100) : amount - amountOff;
         const d = Math.round((amount / 12) % 100);
 
         return [

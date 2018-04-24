@@ -16,7 +16,7 @@ padlock.SubInfoMixin = (superClass) => {
             },
             promo: {
                 type: Object,
-                computed: "_getPromo(account.promo)"
+                computed: "_getPromo(account.promo, subStatus)"
             },
             subStatus: {
                 type: String,
