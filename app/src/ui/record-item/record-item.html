@@ -32,9 +32,9 @@
 
             .name {
                 padding-left: 15px;
-                flex: 1;
                 @apply --ellipsis;
                 font-weight: bold;
+                /* min-width: 150px; */
             }
 
             .fields {
@@ -100,24 +100,21 @@
             }
 
             .tags {
+                display: flex;
+                align-items: center;
+                padding-right: 8px;
+            }
+
+            .tag {
                 font-size: 12px;
-                max-width: 100px;
+                max-width: 60px;
                 border-radius: 6px;
-                padding: 4px 8px;
-                margin: 0 12px;
+                padding: 4px 7px;
+                margin-right: 4px;
                 line-height: normal;
                 font-weight: bold;
                 background: var(--color-foreground);
                 color: var(--color-background);
-                /* transition: background 0.3s; */
-            }
-
-            .tags::before {
-                font-family: "FontAwesome";
-                content: "\f02b\ ";
-                font-size: 90%;
-                display: inline-block;
-                margin-right: 5px;
             }
 
             .highlight {
@@ -157,8 +154,12 @@
         <div class="header">
             <div class="name" hidden$="[[ !truthy(record.name) ]]">[[ record.name ]]</div>
             <div class="name" disabled hidden$="[[ truthy(record.name) ]]">[[ $l("No Name") ]]</div>
-            <div class="tags ellipsis"
-                hidden$="[[ !_hasTags(record.tags) ]]">[[ _tagsString(record.tags) ]]</div>
+            <div class="spacer"></div>
+            <div class="tags">
+                <template is="dom-repeat" items="[[ _limitTags(record.tags) ]]" mutable-data>
+                    <div class="ellipsis tag">[[ item ]]</div>
+                </template>
+            </div>
         </div>
 
         <div class="fields">
@@ -236,20 +237,23 @@ class RecordItem extends applyMixins(
         return value ? value + ":" : "";
     }
 
-    _hasTags(value) {
-        return !!value.length;
-    }
-
     _hasFields() {
         return !!this.record.fields.length;
     }
 
-    _tagsString(tags) {
-        return [...tags].join(", ");
-    }
-
     _selectIconClicked() {
         this.dispatchEvent(new CustomEvent("multi-select", { detail: this.record }));
+    }
+
+    _limitTags() {
+        const tags = this.record.tags.slice(0, 2);
+        const more = this.record.tags.length - tags.length;
+
+        if (more) {
+            tags.push("+" + more);
+        }
+
+        return tags;
     }
 }
 
