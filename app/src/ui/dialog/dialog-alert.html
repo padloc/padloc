@@ -25,19 +25,6 @@
                 };
             }
 
-            .info {
-                display: flex;
-                padding: 20px;
-                align-items: center;
-            }
-
-            .info-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 60px;
-                margin-right: 20px;
-            }
-
             :host([hide-icon]) .info-icon {
                 display: none;
             }
@@ -47,18 +34,8 @@
                 text-align: center;
             }
 
-            .info-body {
-                flex: 1;
-            }
-
-            .info-title {
-                font-size: 120%;
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-
-            .info-text.small {
-                font-size: var(--font-size-small);
+            .info-text:not(.small) {
+                font-size: var(--font-size-default);
             }
         </style>
 
