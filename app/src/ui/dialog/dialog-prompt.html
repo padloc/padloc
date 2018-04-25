@@ -31,7 +31,7 @@
         </style>
 
         <pl-dialog id="dialog" open="{{ open }}" prevent-dismiss="[[ preventDismiss ]]" on-dialog-dismiss="_dismiss">
-            <div class="message tiles-1">[[ message ]]</div>
+            <div class="message tiles-1" hidden$="[[ !_hasMessage(message) ]]">[[ message ]]</div>
             <pl-input class="tiles-2" id="input" type="[[ type ]]" placeholder="[[ placeholder ]]" on-enter="_confirm"></pl-input>
             <pl-loading-button id="confirmButton" class="tap tiles-3" on-click="_confirm">[[ confirmLabel ]]</pl-loading-button>
             <button class="tap tiles-4" on-click="_dismiss" hidden$="[[ _hideCancelButton ]]">[[ cancelLabel ]]</button>
@@ -41,8 +41,6 @@
 
     <script>
 (() => {
-
-const { isTouch } = padlock.platform;
 
 const defaultConfirmLabel = $l("OK");
 const defaultCancelLabel = $l("Cancel");
@@ -88,6 +86,10 @@ class DialogPrompt extends padlock.BaseElement {
         this.open = false;
     }
 
+    _hasMessage() {
+        return !!this.message;
+    }
+
     prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss = true, validation) {
         this.$.confirmButton.stop();
         this.message = message || "";
@@ -102,9 +104,7 @@ class DialogPrompt extends padlock.BaseElement {
         this.$.input.value = "";
         this.open = true;
 
-        if (!isTouch()) {
-            setTimeout(() => this.$.input.focus(), 100);
-        }
+        setTimeout(() => this.$.input.focus(), 100);
 
         return new Promise((resolve) => {
             this._resolve = resolve;

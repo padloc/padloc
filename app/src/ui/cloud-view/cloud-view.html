@@ -8,6 +8,7 @@
 <link rel="import" href="../loading-button/loading-button.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="../notification/notification.html">
+<link rel="import" href="../promo/promo.html">
 <link rel="import" href="../sync/sync.html">
 <link rel="import" href="../toggle/toggle-button.html">
 
@@ -168,33 +169,6 @@
                 font-size: 25px;
             }
 
-            .info {
-                display: flex;
-                align-items: center;
-            }
-
-            .info-icon {
-                width: 80px;
-                height: 80px;
-                font-size: 60px;
-                margin: 10px 0 10px 10px;
-            }
-
-            .info-body {
-                padding: 20px 15px 20px 10px;
-                flex: 1;
-            }
-
-            .info-title {
-                font-size: 120%;
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-
-            .info-text {
-                font-size: var(--font-size-small);
-            }
-
             pl-icon[icon=refresh][spin] {
                 background: transparent !important;
                 pointer-events: none;
@@ -213,7 +187,11 @@
 
         <main>
 
-            <section class="highlight tiles warning" hidden$="[[ !isTrialing(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight dark" hidden$="[[ !truthy(promo) ]]">
+                <pl-promo promo="[[ promo ]]" data-source="App - Promo" on-promo-redeem="_buySubscription" on-promo-expired="_promoExpired"></pl-promo>
+            </section>
+
+            <section class="highlight tiles warning" hidden$="[[ !isTrialing(subStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="time"></pl-icon>
                     <div class="info-body">
@@ -224,7 +202,7 @@
                 <button class="tap" on-click="_buySubscription" data-source="App - Trialing">[[ $l("Upgrade Now") ]]</button>
             </section>
 
-            <section class="highlight tiles warning" hidden$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight tiles warning" hidden$="[[ !isTrialExpired(subStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="error"></pl-icon>
                     <div class="info-body">
@@ -235,7 +213,7 @@
                 <button class="tap" on-click="_buySubscription" data-source="App - Trial Expired">[[ $l("Upgrade Now") ]]</button>
             </section>
 
-            <section class="highlight tiles warning" hidden$="[[ !isSubUnpaid(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight tiles warning" hidden$="[[ !isSubUnpaid(subStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="error"></pl-icon>
                     <div class="info-body">
@@ -247,7 +225,7 @@
                 <button class="tap" on-click="_contactSupport">[[ $l("Contact Support") ]]</button>
             </section>
 
-            <section class="highlight tiles warning" hidden$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">
+            <section class="highlight tiles warning" hidden$="[[ !isSubCanceled(subStatus) ]]">
                 <div class="info">
                     <pl-icon class="info-icon" icon="error"></pl-icon>
                     <div class="info-body">
@@ -266,21 +244,21 @@
                             <pl-icon icon="record"></pl-icon>
                             <span>[[ records.length ]]</span>
                             <pl-icon icon="mobile"></pl-icon>
-                            <span>[[ settings.account.devices.length ]]</span>
+                            <span>[[ account.devices.length ]]</span>
                             <pl-icon icon="refresh"></pl-icon>
                             <span>[[ lastSync ]]</span>
                         </div>
                     </div>
                     <pl-icon class="account-sync tap" icon="refresh" spin$="[[ isSynching ]]" on-click="synchronize"
-                        disabled$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]"></pl-icon>
+                        disabled$="[[ !isSubValid(subStatus) ]]"></pl-icon>
                 </div>
-                <div class="unlock-feature-hint" hidden$="[[ isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Upgrade to enable synchronization!") ]]</div>
+                <div class="unlock-feature-hint" hidden$="[[ isSubValid(subStatus) ]]">[[ $l("Upgrade to enable synchronization!") ]]</div>
             </section>
 
             <section hidden$="[[ !settings.syncConnected ]]">
-                <div class="section-header">[[ $l("{0} Devices Connected", settings.account.devices.length) ]]</div>
+                <div class="section-header">[[ $l("{0} Devices Connected", account.devices.length) ]]</div>
                 <div class="devices">
-                    <template is="dom-repeat" items="[[ settings.account.devices ]]">
+                    <template is="dom-repeat" items="[[ account.devices ]]">
                         <div class="section-row">
                             <div class="section-row-label">[[ item.description ]]</div>
                             <pl-icon icon="delete" class="tap" on-click="_revokeDevice" disabled$="[[ _isCurrentDevice(item) ]]"></pl-icon>
@@ -289,11 +267,11 @@
                 </div>
             </section>
 
-            <section hidden$="[[ !_hasPaymentSource(settings.account.paymentSource) ]]">
+            <section hidden$="[[ !truthy(account.paymentSource) ]]">
                 <div class="section-header">[[ $l("Billing") ]]</div>
-                <button class="tap" on-click="_updatePaymentMethod" data-source="App - Billing">[[ _paymentSourceLabel(settings.account.paymentSource) ]]</button>
+                <button class="tap" on-click="_updatePaymentMethod" data-source="App - Billing">[[ _paymentSourceLabel(account.paymentSource) ]]</button>
                 <button class="tap" on-click="cancelSubscription"
-                    hidden$="[[ !isSubActive(settings.syncConnected, settings.syncSubStatus) ]]">[[ $l("Cancel Subscription") ]]</button>
+                    hidden$="[[ !isSubActive(subStatus) ]]">[[ $l("Cancel Subscription") ]]</button>
             </section>
 
         </main>
@@ -454,12 +432,8 @@ class CloudView extends applyMixins(
         window.open("mailto:support@padlock.io", "_system");
     }
 
-    _hasPaymentSource() {
-        return !!(this.settings.account && this.settings.account.paymentSource);
-    }
-
     _paymentSourceLabel() {
-        const s = this.settings.account && this.settings.account.paymentSource;
+        const s = this.account && this.account.paymentSource;
         return s && `${s.brand} •••• •••• •••• ${s.lastFour}`;
     }
 
@@ -469,6 +443,10 @@ class CloudView extends applyMixins(
 
     _updatePaymentMethod(e) {
         this.updatePaymentMethod(e.target.dataset.source);
+    }
+
+    _promoExpired() {
+        this.dispatch("settings-changed");
     }
 
 }

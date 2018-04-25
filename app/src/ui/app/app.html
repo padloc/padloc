@@ -54,6 +54,10 @@
                 from { transform: translate3d(0, 0, 0); }
             }
 
+            @keyframes tagIn {
+                from { transform: translate3d(0, 100px, 0); opacity: 0; }
+            }
+
             :host {
                 --color-gutter: #222;
                 --title-bar-height: 30px;
@@ -98,7 +102,6 @@
             }
 
             :host(.ios) #main {
-                top: 20px;
                 top: constant(safe-area-inset-top);
                 top: env(safe-area-inset-top);
             }
@@ -115,7 +118,7 @@
             }
 
             #main.show-menu {
-                transform: translate3d(calc(var(--menu-width) - var(--menu-icon-width)), 0, 0) rotateY(-10deg);
+                transform: translate3d(calc(var(--menu-width) - var(--menu-icon-width)), 0, 0) rotateY(-5deg);
             }
 
             :host(:not(.macos):not(.windows):not(.linux)) pl-title-bar {
@@ -164,29 +167,52 @@
                 opacity: 0.5;
             }
 
-            .menu {
+            .menu, .tags {
                 position: absolute;
-                top: 0;
+                top: var(--title-bar-height);
                 left: var(--main-padding);
                 bottom: 0;
                 z-index: -2;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
                 width: var(--menu-width);
                 box-sizing: border-box;
                 color: var(--color-background);
+                transition: opacity 0.3s;
+            }
+
+            .tags {
+                @apply --scroll;
             }
 
             .menu-item {
-                transform-origin: 0 center;
-                transform: translate3d(calc(var(--menu-icon-width) - var(--menu-width)), 0, 0);
                 display: flex;
                 align-items: center;
                 height: 45px;
                 justify-content: flex-end;
                 position: relative;
                 text-align: right;
+                flex: none;
+            }
+
+            .menu-item > div {
+                @apply --ellipsis;
+            }
+
+            .menu .menu-item {
+                transform: translate3d(calc(var(--menu-icon-width) - var(--menu-width)), 0, 0);
+            }
+
+            .menu-item.tag {
+                font-size: var(--font-size-small);
+                height: 35px;
+            }
+
+            .menu-item.tag pl-icon {
+                font-size: 90%;
+                height: 35px;
+                width: 35px;
+                margin-right: 5px;
             }
 
             .menu-item:hover {
@@ -197,7 +223,6 @@
                 width: 45px;
                 height: 45px;
                 font-size: 120%;
-
             }
 
             .menu-item-hint {
@@ -247,6 +272,19 @@
                 opacity: 0;
             }
 
+            [show-tags] .menu, :not([show-tags]) .tags {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .no-tags {
+                padding: 0 15px;
+                font-size: var(--font-size-small);
+                text-align: right;
+                width: 130px;
+                align-self: flex-end;
+            }
+
             @media (max-width: 900px) {
                 #pages {
                     flex: 1;
@@ -278,7 +316,7 @@
 
         <pl-start-view id="startView"></pl-start-view>
 
-        <div id="menuWrapper" class="menu-wrapper" on-click="_menuWrapperClicked">
+        <div id="menuWrapper" class="menu-wrapper" on-click="_menuWrapperClicked" show-tags$="[[ _showingTags ]]">
             <div id="menu" class="menu">
                 <div class="spacer"></div>
                 <div class="account menu-item tap" on-click="_openCloudView">
@@ -299,13 +337,17 @@
                     </div>
                     <pl-icon icon="refresh" spin$="[[ isSynching ]]"></pl-icon>
                 </div>
-                <div class="menu-item tap" on-click="_newRecord">
-                    <div>[[ $l("Add Record") ]]</div>
-                    <pl-icon icon="add"></pl-icon>
-                </div>
+                <!-- <div class="menu&#45;item tap" on&#45;click="_newRecord"> -->
+                <!--     <div>[[ $l("Add Record") ]]</div> -->
+                <!--     <pl&#45;icon icon="add"></pl&#45;icon> -->
+                <!-- </div> -->
                 <div class="menu-item tap" on-click="_openSettings">
                     <div>[[ $l("Settings") ]]</div>
                     <pl-icon icon="settings"></pl-icon>
+                </div>
+                <div class="menu-item tap" on-click="_showTags">
+                    <div>[[ $l("Tags") ]]</div>
+                    <pl-icon icon="tag"></pl-icon>
                 </div>
                 <div class="menu-item tap" on-click="_enableMultiSelect">
                     <div>[[ $l("Multi-Select") ]]</div>
@@ -320,6 +362,24 @@
                     <div><strong>Padlock {{ settings.version }}</strong></div>
                     <div>Made with &#9829; in Germany</div>
                 </div>
+            </div>
+
+            <div class="tags">
+                <div class="spacer"></div>
+                <div class="menu-item tap" on-click="_closeTags">
+                    <div>[[ $l("Tags") ]]</div>
+                    <pl-icon icon="close"></pl-icon>
+                </div>
+                <template is="dom-repeat" items="[[ collection.tags ]]">
+                    <div class="menu-item tag tap" on-click="_selectTag">
+                        <div>[[ item ]]</div>
+                        <pl-icon icon="tag"></pl-icon>
+                    </div>
+                </template>
+                <div class="no-tags" disabled hidden$="[[ _hasTags(collection.tags) ]]">
+                    [[ $l("You don't have any tags yet!") ]]
+                </div>
+                <div class="spacer"></div>
             </div>
         </div>
 
@@ -406,6 +466,10 @@ class App extends applyMixins(
             type: Boolean,
             value: false,
             observer: "_menuOpenChanged"
+        },
+        _showingTags: {
+            type: Boolean,
+            value: false
         }
     }; }
 
@@ -429,9 +493,10 @@ class App extends applyMixins(
 
     connectedCallback() {
         super.connectedCallback();
+        let isIPhoneX;
         getDeviceInfo()
             .then((device) => {
-                const isIPhoneX = /iPhone10,3|iPhone10,6/.test(device.model);
+                isIPhoneX = /iPhone10,3|iPhone10,6/.test(device.model);
                 if (isIPhoneX) {
                     Object.assign(document.body.style, {
                         margin: 0,
@@ -444,7 +509,9 @@ class App extends applyMixins(
             .then(() => {
                 // Replace window.open method with the inappbrowser equivalent
                 window.open = cordova.InAppBrowser.open;
-                StatusBar.show();
+                if (isIPhoneX) {
+                    StatusBar && StatusBar.show();
+                }
                 navigator.splashscreen.hide();
             });
 
@@ -486,7 +553,6 @@ class App extends applyMixins(
         clearTimeout(this._selectedRecordChangedTimeout);
         this._selectedRecordChangedTimeout = setTimeout(() => {
             if (this._selectedRecord) {
-                this.$.recordView.finishEditing();
                 this.$.recordView.record = this._selectedRecord;
                 this._currentView = "recordView";
                 this._selectedRecord.lastUsed = new Date();
@@ -611,7 +677,10 @@ class App extends applyMixins(
     _menuOpenChanged() {
         this.$.menuWrapper.classList.toggle("show-menu", this._menuOpen);
         this.$.main.classList.toggle("show-menu", this._menuOpen);
-        this.animateCascade(this.root.querySelectorAll(".menu-item"), {
+        if (!this._menuOpen) {
+            setTimeout(() => this._showingTags = false, 300);
+        }
+        this.animateCascade(this.root.querySelectorAll(".menu .menu-item"), {
             animation: this._menuOpen ? "menuItemIn" : "menuItemOut",
             duration: 400,
             fullDuration: 600,
@@ -644,10 +713,39 @@ class App extends applyMixins(
         setTimeout(() => this._menuOpen = false, 50);
     }
 
+    _showTags(e) {
+        this._menuOpen = true;
+        this._showingTags = true;
+        this.animateCascade(this.root.querySelectorAll(".tags .menu-item, .no-tags"), {
+            animation: "tagIn",
+            duration: 400,
+            fullDuration: 600,
+            fill: "both"
+        });
+        e.stopPropagation();
+    }
+
+    _closeTags(e) {
+        this._showingTags = false;
+        e.stopPropagation();
+    }
+
+    _selectTag(e) {
+        setTimeout(() => {
+            this.$.listView.filterString = e.model.item;
+        }, 350);
+    }
+
+    _hasTags() {
+        return !!this.collection.tags.length;
+    }
+
 }
 
 window.customElements.define(App.is, App);
 
 })();
     </script>
+
+    <script src="../../../bower_components/zxcvbn/lib/zxcvbn.js"></script>
 </dom-module>

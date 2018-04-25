@@ -1,5 +1,3 @@
-<script src="https://js.stripe.com/v3/" async></script>
-
 <link rel="import" href="../../styles/shared.html">
 <link rel="import" href="../base/base.html">
 <link rel="import" href="../dialog/dialog.html">
@@ -111,6 +109,8 @@
 
             .price {
                 font-weight: bold;
+                position: relative;
+                z-index: 1;
             }
 
             .price-amount {
@@ -138,13 +138,30 @@
                 margin-top: 10px;
             }
 
-            .coupon-desc {
+            .price-original {
+                text-decoration: line-through;
+                color: var(--color-highlight);
+                text-shadow: none;
+                font-size: 120%;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: -20px;
+                z-index: -1;
+                transform: rotate(-8deg);
+            }
+
+            .promo-desc {
                 font-size: var(--font-size-small);
                 background: var(--color-secondary);
                 color: var(--color-quaternary);
                 font-weight: bold;
-                line-height: 30px;
+                padding: 5px;
                 text-align: center;
+            }
+
+            .redeem-within {
+                font-size: var(--font-size-tiny);
             }
 
             .secure-payment {
@@ -240,14 +257,18 @@
                         </div>
                     </div>
                     <div class="price">
+                        <div class="price-original" hidden$="[[ !truthy(promo) ]]">$[[ _originalPrice.0 ]][[ _originalPrice.1 ]]</div>
                         <div class="price-amount">
-                            <span class="price-currency">$</span>[[ _monthlyPrice(plan.amount) ]]<span class="price-decimal">[[ _monthlyPriceDecimal(plan.amount) ]]</span>
+                            <span class="price-currency">$</span>[[ _price.0 ]]<span class="price-decimal">[[ _price.1 ]]</span>
                         </div>
                         <div class="price-period">[[ $l("per month*") ]]</div>
                     </div>
                     <div class="price-hint">[[ $l("*USD\, billed annually") ]]</div>
                 </div>
-                <div class="coupon-desc" hidden$="[[ !_hasCoupon(coupon) ]]">Coupon: [[ coupon.metadata.description ]]</div>
+                <div class="promo-desc" hidden$="[[ !truthy(promo) ]]">
+                    <div>[[ promo.title ]]</div>
+                    <div class="redeem-within" hidden$="[[ !truthy(promo.redeemWithin) ]]">[[ $l("Expires In") ]] [[ _redeemCountDown ]]</div>
+                </div>
                 <div class="message card-hint tap" hidden$="[[ _hasError(_cardError) ]]" on-click="_toggleCoupon">
                     <div>[[ $l("Please enter your credit or debit card information:") ]]</div>
                 </div>
@@ -278,10 +299,18 @@
 (() => {
 
 const { LocaleMixin, BaseElement } = padlock;
-const { applyMixins } = padlock.util;
+const { applyMixins, formatDateUntil } = padlock.util;
 const { track } = padlock.tracking;
 
 let stripe;
+
+const stripeLoaded = new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://js.stripe.com/v3/";
+    script.async = true;
+    script.onload = resolve;
+    document.body.appendChild(script);
+});
 
 class PaymentDialog extends applyMixins(
     BaseElement,
@@ -292,15 +321,37 @@ class PaymentDialog extends applyMixins(
 
     static get properties() { return {
         open: { type: Boolean },
-        coupon: { type: Object, value: null },
+        promo: { type: Object, value: null },
         plan: { type: Object, value: null },
         source: Object,
         stripePubKey: { type: String, value: "" },
         csrfToken: { stype: String, value: ""},
         remainingTrialDays: { type: Number, value: 0 },
         _cardError: { type: String, value: "" },
-        _needsSupport: { type: Boolean, value: false }
+        _needsSupport: { type: Boolean, value: false },
+        _price: {
+            type: Array,
+            computed: "_calcPrice(plan.amount, promo.coupon.percent_off, promo.coupon.amount_off)"
+        },
+        _originalPrice: {
+            type: Array,
+            computed: "_calcPrice(plan.amount)"
+        }
     }; }
+
+    static get observers() { return [
+        "_setupCountdown(promo.redeemWithin)"
+    ]; }
+
+    _setupCountdown() {
+        clearInterval(this._countdown);
+        const p = this.promo;
+        if (p && p.redeemWithin) {
+            this._countdown = setInterval(() => {
+                this._redeemCountDown = formatDateUntil(p.created, p.redeemWithin);
+            }, 1000);
+        }
+    }
 
     show(source) {
         this._needsSupport = false;
@@ -322,32 +373,30 @@ class PaymentDialog extends applyMixins(
         });
     }
 
-    _hasCoupon() {
-        return !!this.coupon;
-    }
-
     _setupPayment() {
-        stripe = Stripe(this.stripePubKey);
-        const elements = stripe.elements();
-        const card = this._cardElement = elements.create("card", {
-            iconStyle: "solid",
-            style: {
-                base: {
-                    fontFamily: '"Clear Sans", "Helvetica Neue", Helvetica, sans-serif',
-                    fontSmoothing: "antialiased",
-                    fontSize: "18px"
-                },
-                invalid: {
-                    textShadow: "none"
+        stripeLoaded.then(() => {
+            stripe = Stripe(this.stripePubKey);
+            const elements = stripe.elements();
+            const card = this._cardElement = elements.create("card", {
+                iconStyle: "solid",
+                style: {
+                    base: {
+                        fontFamily: '"Clear Sans", "Helvetica Neue", Helvetica, sans-serif',
+                        fontSmoothing: "antialiased",
+                        fontSize: "18px"
+                    },
+                    invalid: {
+                        textShadow: "none"
+                    }
                 }
-            }
+            });
+
+            const cardElement = document.createElement("div");
+            this.appendChild(cardElement);
+            card.mount(cardElement);
+
+            card.addEventListener("change", (e) => this._cardError = e.error && e.error.message || "");
         });
-
-        const cardElement = document.createElement("div");
-        this.appendChild(cardElement);
-        card.mount(cardElement);
-
-        card.addEventListener("change", (e) => this._cardError = e.error && e.error.message || "");
     }
 
     _submitCard() {
@@ -358,7 +407,7 @@ class PaymentDialog extends applyMixins(
         this.$.submitButton.start();
         this._submittingCard = true;
 
-        const coupon = this.coupon && this.coupon.id || "";
+        const coupon = this.promo && this.promo.coupon.id || "";
 
         stripe.createToken(this._cardElement).then((result) => {
             const edata = {
@@ -410,13 +459,14 @@ class PaymentDialog extends applyMixins(
         return !!this._cardError;
     }
 
-    _monthlyPrice(amount) {
-        return `${Math.floor(amount / 1200)}`;
-    }
+    _calcPrice(amount, percentOff = 0, amountOff = 0) {
+        amount = percentOff ? amount * (1 - percentOff / 100) : amount - amountOff;
+        const d = Math.round((amount / 12) % 100);
 
-    _monthlyPriceDecimal(amount) {
-        const d = (amount / 12) % 100;
-        return d < 10 ? `.0${d}` : `.${d}`;
+        return [
+            `${Math.floor(amount / 1200)}`,
+            d < 10 ? `.0${d}` : `.${d}`
+        ];
     }
 
     _dismiss() {

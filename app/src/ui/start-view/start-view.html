@@ -400,8 +400,6 @@
 
     </template>
 
-    <script src="../../../bower_components/zxcvbn/lib/zxcvbn.js"></script>
-
     <script>
 /* global zxcvbn */
 (() => {
@@ -466,6 +464,12 @@ class StartView extends applyMixins(
                 }
                 this._openChanged();
             });
+
+        if (!isTouch()) {
+            window.addEventListener("focus", () => setTimeout(() => {
+                this.$.passwordInput.focus();
+            }, 100));
+        }
     }
 
     reset() {

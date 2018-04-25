@@ -9,8 +9,6 @@
 <script>
 (() => {
 
-const { wait } = padlock.util;
-
 const dialogElements = {};
 
 let lastDialogPromise = Promise.resolve();
@@ -39,8 +37,7 @@ padlock.DialogMixin = (superClass) => {
                     return fn(dialog);
                 });
 
-            lastDialogPromise = promise
-                .then(() => wait(400));
+            lastDialogPromise = promise;
 
             return promise;
         }

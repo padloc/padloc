@@ -68,7 +68,7 @@ class PlExport extends applyMixins(
     static get is() { return "pl-export"; }
 
     static get properties() { return {
-        records: Array
+        exportRecords: Array
     }; }
 
     _downloadCSV() {
@@ -78,7 +78,7 @@ class PlExport extends applyMixins(
                     setTimeout(() => {
                         const date = new Date().toISOString().substr(0, 10);
                         const fileName = `padlock-export-${date}.csv`;
-                        const csv = toCSV(this.records);
+                        const csv = toCSV(this.exportRecords);
                         const a = document.createElement("a");
                         a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
                         a.download = fileName;
@@ -93,7 +93,7 @@ class PlExport extends applyMixins(
         this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"), { type: "warning" })
             .then((confirm) => {
                 if (confirm) {
-                    setClipboard(toCSV(this.records))
+                    setClipboard(toCSV(this.exportRecords))
                         .then(() => this.alert($l("Your data has successfully been copied to the system " +
                             "clipboard. You can now paste it into the spreadsheet program of your choice.")));
                     this.dispatch("data-exported");
@@ -123,10 +123,10 @@ class PlExport extends applyMixins(
                             return Promise.reject();
                         }
 
-                        return toPadlock(this.records, pwd);
+                        return toPadlock(this.exportRecords, pwd);
                     });
                 } else {
-                    return toPadlock(this.records, pwd);
+                    return toPadlock(this.exportRecords, pwd);
                 }
             });
     }

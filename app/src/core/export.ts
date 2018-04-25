@@ -4,7 +4,7 @@ import { MemorySource, EncryptedSource } from "./source";
 
 function recordsToTable(records: Record[]) {
     // Array of column names
-    let cols = ["name", "category"];
+    let cols = ["name", "tags"];
     // Column indizes associated with field/column names
     let colInds = {};
     // Two dimensional array, starting with column names
@@ -38,7 +38,7 @@ function recordsToTable(records: Record[]) {
         var row = emptyRow();
         // Record name and category are always the first and second column respectively
         row[0] = rec.name;
-        row[1] = rec.category;
+        row[1] = rec.tags.join(",");
 
         // Fill up columns with corrensponding field values if the fields exist on the record. All
         // other columns remain empty

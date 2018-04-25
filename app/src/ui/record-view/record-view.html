@@ -7,6 +7,7 @@
 <link rel="import" href="../input/input.html">
 <link rel="import" href="../locale/locale.html">
 <link rel="import" href="record-field.html">
+<link rel="import" href="record-field-dialog.html">
 
 <dom-module id="pl-record-view">
     <template>
@@ -36,113 +37,105 @@
                 text-align: center;
             }
 
-            .category {
-                display: flex;
-                align-items: center;
-                position: relative;
-                overflow: visible;
-            }
-
-            .category > pl-input {
-                font-size: var(--font-size-small);
-                flex: 1;
-                height: auto;
-                font-weight: bold;
-                padding-bottom: 2px;
-            }
-
-            .category > pl-icon {
-                font-size: 90%;
-            }
-
-            pl-icon[icon="category"] {
-                width: 15px;
-                margin-left: 15px;
-            }
-
-            .categories {
-                position: fixed;
-                z-index: 1;
-                top: 100px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(255, 255, 255, 0.8);
-                overflow: hidden;
-                transition: opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-            }
-
-            .categories-inner {
-                max-height: 100%;
-                @apply --scroll;
-                transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+            pl-record-field, .add-button-wrapper {
+                transform: translate3d(0, 0, 0);
                 margin: 6px;
                 @apply --card;
             }
 
-            .categories:not([showing]) {
-                opacity: 0;
-                pointer-events: none;
+            .add-button {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
-            .categories:not([showing]) .categories-inner {
-                transform: translateY(-100%);
+            .add-button pl-icon {
+                width: 30px;
+                position: relative;
+                top: 1px;
             }
 
-            .category-option {
-                font-size: var(--font-size-small);
-                padding: 10px 15px 10px 40px;
+            .tags {
+                display: flex;
+                overflow-x: auto;
+                margin: 8px 0;
+                padding: 0 8px;
+                /* align-items: center; */
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tags::after {
+                content: "";
+                display: block;
+                width: 1px;
+                flex: none;
+            }
+
+            .tag {
+                background: var(--color-foreground);
+                color: var(--color-background);
                 font-weight: bold;
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                border-radius: var(--border-radius);
+                margin-right: 6px;
+                display: flex;
+                align-items: center;
+                font-size: var(--font-size-tiny);
+                white-space: nowrap;
+                line-height: 0;
+                padding-left: 12px;
             }
 
-            .category, pl-record-field {
-                transform: translate3d(0, 0, 0);
-                margin: 8px 6px;
-                @apply --card;
+            .tags pl-icon {
+                width: 30px;
+                height: 30px;
+            }
+
+            .tag.add {
+                padding-left: 0;
+                padding-right: 12px;
+                border: dashed 1px;
+                background: transparent;
+                color: var(--color-foreground);
             }
         </style>
 
         <header>
             <pl-icon icon="close" class="tap" on-click="close"></pl-icon>
-            <pl-input id="nameInput" class="name tap" value="[[ record.name ]]"
-                placeholder="[[ $l('Enter Record Name') ]]" select-on-focus autocapitalize
-                on-change="_nameEdited" on-focus="_inputFocused" on-blur="_debouncedFinishEditing"
+            <pl-input id="nameInput" class="name tap" value="{{ record.name }}"
+                 placeholder="[[ $l('Enter Record Name') ]]" select-on-focus autocapitalize
+                 on-change="_notifyChange" on-enter="_nameEnter"
             ></pl-input>
             <pl-icon icon="delete" class="tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
         <main id="main">
-            <div class="category animate tap" on-click="_categoryClicked">
-                <pl-icon icon="category"></pl-icon>
-                <pl-input id="categoryInput" value="{{ record.category }}" placeholder="[[ $l('No Category') ]]" select-on-focus
-                    on-change="_setEdited" on-focus="_categoryInputFocused" on-blur="_debouncedFinishEditing"></pl-input>
-                <pl-icon icon="[[ _dropDownIcon(_showCatList, _catCount) ]]" class="tap" on-click="_toggleCategoryList"></pl-icon>
-            </div>
-            <div class="categories" showing$="[[ _catListShowing(_showCatList, _catCount) ]]" on-click="_hideCategoryList">
-                <div class="categories-inner">
-                    <div></div>
-                    <template is="dom-repeat" items="{{ collection.categories }}"
-                        filter="{{ _categoryFilter(record.category) }}" rendered-item-count="{{ _catCount }}">
-                        <div class="category-option tap" on-click="_selectCategory">{{ item }}</div>
-                    </template>
+            <div class="tags animate">
+                <template is="dom-repeat" items="[[ record.tags ]]">
+                    <div class="tag tap" on-click="_removeTag">
+                        <div class="tag-name">[[ item ]]</div>
+                        <pl-icon icon="cancel"></pl-icon>
+                    </div>
+                </template>
+                <div class="tag add tap" on-click="_addTag">
+                    <pl-icon icon="tag"></pl-icon>
+                    <div>[[ $l("Add Tag") ]]</div>
                 </div>
             </div>
             <div class="fields">
                 <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
                     <div class="animate">
                         <pl-record-field field="[[ item ]]" record="[[ record ]]"
-                            on-field-change="_setEdited"
-                            on-field-delete="_deleteField"
-                            on-field-edit-start="_inputFocused"
-                            on-field-edit-end="_debouncedFinishEditing"></pl-record-field>
+                            on-field-change="_notifyChange"
+                            on-field-delete="_deleteField"></pl-record-field>
                     </div>
                 </template>
             </div>
-            <div class="animate" id="newFieldWrapper">
-                <pl-record-field id="newField" draft
-                    on-field-edit-start="_inputFocused"
-                    on-field-edit-end="_newFieldEnter"></pl-record-field>
+            <div class="add-button-wrapper animate">
+                <button class="add-button tap" on-click="_addField">
+                    <pl-icon icon="add"></pl-icon>
+                    <div>[[ $l("Add Field") ]]</div>
+                </button>
             </div>
         </main>
 
@@ -169,29 +162,14 @@ class RecordView extends applyMixins(
     static get properties() { return {
         record: {
             type: Object,
-            notify: true
-        },
-        _showCatList: {
-            type: Boolean,
-            value: false
-        },
-        _catCount: {
-            type: Number,
-            value: 0
+            notify: true,
+            observer: "_recordChanged"
         },
         _edited: {
             type: Boolean,
             value: false
         }
     }; }
-
-    recordCreated(record) {
-        setTimeout(() => {
-            if (record === this.record) {
-                this.edit();
-            }
-        }, 500);
-    }
 
     dataUnloaded() {
         this.record = null;
@@ -200,74 +178,26 @@ class RecordView extends applyMixins(
         fieldDialog.field = null;
     }
 
-    _catListShowing() {
-        return this._showCatList && !!this._catCount;
-    }
-
-    _categoryClicked() {
-        this.$.categoryInput.focus();
-    }
-
-    _setEdited() {
-        this.dispatch("record-changed", this.record);
-        this._edited = true;
-    }
-
-    _debouncedFinishEditing() {
-        this._deferFinishEditing();
-        this._changeTimeout = setTimeout(() => {
-            if (this._edited) {
-                this.dispatch("record-finished-editing", this.record);
-                this._edited = false;
+    _recordChanged() {
+        setTimeout(() => {
+            if (this.record && !this.record.name) {
+                this.$.nameInput.focus();
             }
         }, 500);
     }
 
-    _deferFinishEditing() {
-        clearTimeout(this._changeTimeout);
-    }
-
-    _nameEdited() {
-        if (this.$.nameInput.value) {
-            this.record.name = this.$.nameInput.value;
-            this._setEdited();
-        } else {
-            this.notifyPath("record.name");
-        }
+    _notifyChange() {
+        this.dispatch("record-changed", this.record);
+        this.notifyPath("record");
     }
 
     _deleteField(e) {
         this.confirm($l("Are you sure you want to delete this field?"), $l("Delete")).then((confirmed) => {
             if (confirmed) {
                 this.splice("record.fields", e.model.index, 1);
-                this._setEdited();
+                this._notifyChange();
             }
         });
-    }
-
-    _inputFocused() {
-        this._deferFinishEditing();
-        this._hideCategoryList();
-    }
-
-    _newFieldEnter() {
-        if (!this.record) {
-            return;
-        }
-
-        const newField = this.$.newField.field;
-        if (newField.name) {
-            this.push("record.fields", newField);
-            this.animateElement(this.$.newFieldWrapper);
-            if (!padlock.platform.isTouch()) {
-                setTimeout(() => this.$.newField.edit(), 10);
-            }
-            this._setEdited();
-        }
-
-        this.$.newField.field = { name: "", value: "", masked: false };
-
-        this._debouncedFinishEditing();
     }
 
     _deleteRecord() {
@@ -278,47 +208,76 @@ class RecordView extends applyMixins(
         });
     }
 
-    _categoryFilter(currCat) {
-        return currCat ? (cat) => {
-            return cat && cat !== currCat && cat.toLowerCase().startsWith(currCat.toLowerCase());
-        } : null;
+    _addField(field = { name: "", value: "", masked: false }) {
+        this.lineUpDialog("pl-record-field-dialog", (d) => d.openField(field, true))
+            .then((result) => {
+                switch (result.action) {
+                    case "generate":
+                        this.generate()
+                            .then((value) => {
+                                field.value = value;
+                                field.name = result.name;
+                                this._addField(field);
+                            });
+                        break;
+                    case "edited":
+                        this.push("record.fields", field);
+                        this._notifyChange();
+                        break;
+                }
+            });
     }
 
-    _selectCategory(e) {
-        setTimeout(() => {
-            this.set("record.category", e.model.item);
-            this._setEdited();
-            this.$.categoryInput.focus();
-        }, 300);
+    _fieldButtonClicked() {
+        this._addField();
     }
 
-    _categoryInputFocused() {
-        this._deferFinishEditing();
-        this._showCategoryList();
+    _hasTags() {
+        return !!this.record.tags.length;
     }
 
-    _showCategoryList() {
-        this._showCatList = true;
+    _removeTag(e) {
+        this.confirm($l("Do you want to remove this tag?"), $l("Remove"), $l("Cancel"), { title: $l("Remove Tag") })
+            .then((confirmed) => {
+                if (confirmed) {
+                    this.record.removeTag(e.model.item);
+                    this._notifyChange();
+                }
+            });
     }
 
-    _hideCategoryList() {
-        this._showCatList = false;
+    _createTag() {
+        return this.prompt("", $l("Enter Tag Name"), "text", $l("Add Tag"), false, false)
+            .then((tag) => {
+                if (tag) {
+                    this.record.addTag(tag);
+                    this._notifyChange();
+                }
+            });
     }
 
-    _toggleCategoryList(e) {
-        e.stopPropagation();
-
-        if (!this._showCatList || this.record.category) {
-            this.$.categoryInput.value = "";
-            this._showCatList = true;
-            this.$.categoryInput.focus();
-        } else {
-            this._showCatList = false;
+    _addTag() {
+        const tags = this.collection.tags.filter((tag) => !this.record.hasTag(tag));
+        if (!tags.length) {
+            return this._createTag();
         }
+
+        return this.choose("", tags.concat([$l("New Tag")]), { preventDismiss: false })
+            .then((choice) => {
+                if (choice == tags.length) {
+                    return this._createTag();
+                }
+
+                const tag = tags[choice];
+                if (tag) {
+                    this.record.addTag(tag);
+                    this._notifyChange();
+                }
+            });
     }
 
-    _dropDownIcon() {
-        return this._catListShowing() && this.record && !this.record.category ? "dropup" : "dropdown";
+    _nameEnter() {
+        this.$.nameInput.blur();
     }
 
     animate() {
@@ -333,13 +292,6 @@ class RecordView extends applyMixins(
 
     edit() {
         this.$.nameInput.focus();
-    }
-
-    finishEditing() {
-        Array.from(this.root.querySelectorAll("pl-input"))
-            .forEach((i) => i.blur());
-        Array.from(this.root.querySelectorAll("pl-record-field"))
-            .forEach((f) => f.finishEditing());
     }
 }
 
