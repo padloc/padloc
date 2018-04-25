@@ -81,5 +81,5 @@ export function formatDateUntil(startDate: Date|string|number, duration: number)
 }
 
 export function isFuture(date: Date|string|number, duration: number) {
-    return moment(date).add(duration, "days").isAfter();
+    return moment(date).add(duration, "hours").isAfter();
 }
