@@ -20,7 +20,8 @@ padlock.SubInfoMixin = (superClass) => {
             },
             subStatus: {
                 type: String,
-                computed: "identity(account.subscription.status)"
+                computed: "identity(account.subscription.status)",
+                value: ""
             }
         }; }
 
@@ -47,7 +48,7 @@ padlock.SubInfoMixin = (superClass) => {
 
         isSubValid() {
             const s = this.subStatus;
-            return this.settings.syncConnected && (s === "" || s === "active" || s === "trialing");
+            return this.settings.syncConnected && (!s || s === "active" || s === "trialing");
         }
 
         trialingMessage() {
