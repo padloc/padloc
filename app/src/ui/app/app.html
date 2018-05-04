@@ -520,6 +520,14 @@ class App extends applyMixins(
             this.classList.add(className);
             this.root.querySelector("pl-title-bar").classList.add(className);
         });
+
+        if (!isTouch()) {
+            window.addEventListener("focus", () => setTimeout(() => {
+                if (this.locked) {
+                    this.$.startView.focus();
+                }
+            }, 100));
+        }
     }
 
     recordDeleted(record) {

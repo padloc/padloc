@@ -464,12 +464,6 @@ class StartView extends applyMixins(
                 }
                 this._openChanged();
             });
-
-        if (!isTouch()) {
-            window.addEventListener("focus", () => setTimeout(() => {
-                this.$.passwordInput.focus();
-            }, 100));
-        }
     }
 
     reset() {
@@ -484,6 +478,10 @@ class StartView extends applyMixins(
         this._getStartedStep = 0;
         this._hasCloudData = false;
         return this._checkHasData();
+    }
+
+    focus() {
+        this.$.passwordInput.focus();
     }
 
     _openChanged() {
