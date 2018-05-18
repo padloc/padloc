@@ -347,26 +347,34 @@
                     hidden$="[[ !isSubActive(account.subscription.status) ]]">[[ $l("Cancel Subscription") ]]</button>
             </section>
 
-            <section>
-                <div class="info-2">[[ _resetDataText() ]]</div>
-                <button class="tap" on-click="_resetData">[[ $l("Reset Data") ]]</button>
+            <section hidden$="[[ _showAdvanced ]]">
+                <button class="tap" on-click="_showAdvancedOptions">[[ $l("Advanced Options...") ]]</button>
             </section>
 
-            <section>
-                <div class="info-2">
-                    Had enough? Deleting your acccount will wipe all your
-                    online vault data and personal information from our systems.
-                    Your connected devices will be locked out.
-                    Any active subscriptions will be canceled immediately.
-                    We may retain some billing information and transaction
-                    history as required by law (Consult our <a
-                        href="https://padlock.io/privacy/" target="_blank">Privacy Policy</a>
-                    for more information).<br>
-                    <strong>Note:</strong> This will not affect data stored locally on your devices. You
-                    may continue to use the app offline or wipe your data from your devices manually.
-                    </div>
-                <pl-loading-button id="deleteAccountButton" class="tap" on-click="_deleteAccount">[[ $l("Delete Account") ]]</pl-loading-button>
-            </section>
+            <div hidden$="[[ !_showAdvanced ]]">
+
+                <section>
+                    <div class="info-2">[[ _resetDataText() ]]</div>
+                    <button class="tap" on-click="_resetData">[[ $l("Reset Data") ]]</button>
+                </section>
+
+                <section>
+                    <div class="info-2">
+                        Had enough? Deleting your acccount will wipe all your
+                        online vault data and personal information from our systems.
+                        Your connected devices will be locked out.
+                        Any active subscriptions will be canceled immediately.
+                        We may retain some billing information and transaction
+                        history as required by law (consult our <a
+                            href="https://padlock.io/privacy/" target="_blank">Privacy Policy</a>
+                        for more information).<br>
+                        <strong>Note:</strong> This will not affect data stored locally on your devices. You
+                        may continue to use the app offline or wipe your data from your devices manually.
+                        </div>
+                    <pl-loading-button id="deleteAccountButton" class="tap" on-click="_deleteAccount">[[ $l("Delete Account") ]]</pl-loading-button>
+                </section>
+
+            </div>
 
         </main>
 
@@ -432,7 +440,12 @@ class Dashboard extends applyMixins(
         token: Object,
         csrfToken: String,
         stripePubKey: String,
-        referer: String
+        referer: String,
+
+        _showAdvanced: {
+            type: Boolean,
+            value: false
+        }
 
     }; }
 
@@ -661,6 +674,10 @@ class Dashboard extends applyMixins(
                     });
             }
         });
+    }
+
+    _showAdvancedOptions() {
+        this._showAdvanced = true;
     }
 
 }
