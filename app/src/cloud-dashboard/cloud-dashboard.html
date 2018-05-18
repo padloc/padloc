@@ -247,6 +247,10 @@
                 line-height: normal;
             }
 
+            .info-2 a {
+                text-decoration: underline;
+            }
+
             @media (min-width: 700px) {
                 section {
                     width: 670px;
@@ -345,10 +349,22 @@
 
             <section>
                 <div class="info-2">[[ _resetDataText() ]]</div>
-                <button class="tap" on-click="_resetData">[[ $l("Delete Data") ]]</button>
+                <button class="tap" on-click="_resetData">[[ $l("Reset Data") ]]</button>
             </section>
 
             <section>
+                <div class="info-2">
+                    Had enough? Deleting your acccount will wipe all your
+                    online vault data and personal information from our systems.
+                    Your connected devices will be locked out.
+                    Any active subscriptions will be canceled immediately.
+                    We may retain some billing information and transaction
+                    history as required by law (Consult our <a
+                        href="https://padlock.io/privacy/" target="_blank">Privacy Policy</a>
+                    for more information).<br>
+                    <strong>Note:</strong> This will not affect data stored locally on your devices. You
+                    may continue to use the app offline or wipe your data from your devices manually.
+                    </div>
                 <pl-loading-button id="deleteAccountButton" class="tap" on-click="_deleteAccount">[[ $l("Delete Account") ]]</pl-loading-button>
             </section>
 
@@ -498,14 +514,15 @@ class Dashboard extends applyMixins(
 
     _resetDataText() {
         return $l(
-            "Want to start from scratch? Here you can reset the data stored in your Padlock Cloud " +
-            "account in case you lost your master password or simply want to start over."
+            "Want to start from scratch? Here you can reset your online vault data in case " +
+            "you lost your master password or simply want to start over. Your connected " +
+            "devices, billing information and subscription status will remain unaffected."
         );
     }
 
     _confirmResetDataText() {
         return $l(
-            "Are you sure you want to delete all your data on Padlock Cloud? " +
+            "Are you sure you want to reset your online vault data? " +
             "This action can not be undone! (Data stored locally on your devices will not be affected)"
         );
     }
