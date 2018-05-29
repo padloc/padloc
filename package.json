@@ -50,12 +50,18 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
+    "@polymer/iron-list": "^3.0.0-pre.18",
+    "@polymer/paper-spinner": "^3.0.0-pre.18",
+    "@polymer/polymer": "^3.0.0",
+    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "autosize": "^4.0.2",
     "electron-store": "^1.1.0",
     "electron-updater": "^2.21.0",
     "fs-extra": "^5.0.0",
     "moment": "^2.21.0",
     "uuid": "^3.1.0",
-    "yargs": "^4.8.1"
+    "yargs": "^4.8.1",
+    "zxcvbn": "^4.4.2"
   },
   "scripts": {
     "bower-install": "pushd app && bower install && popd",

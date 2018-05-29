@@ -1,18 +1,18 @@
 <script src="../padlock-lite.js"></script>
 
-<link rel="import" href="../styles/shared.html">
-<link rel="import" href="../ui/animation/animation.html">
-<link rel="import" href="../ui/base/base.html">
-<link rel="import" href="../ui/dialog/dialog-mixin.html">
-<link rel="import" href="../ui/icon/icon.html">
-<link rel="import" href="../ui/input/input.html">
-<link rel="import" href="../ui/loading-button/loading-button.html">
-<link rel="import" href="../ui/locale/locale.html">
-<link rel="import" href="../ui/notification/notification.html">
-<link rel="import" href="../ui/payment-dialog/payment-dialog.html">
-<link rel="import" href="../ui/promo/promo.html">
-<link rel="import" href="../ui/promo/promo-dialog.html">
-<link rel="import" href="../ui/sync/subinfo.html">
+<script type="module" src="../styles/shared.js"></script>
+<script type="module" src="../ui/animation/animation.js"></script>
+<script type="module" src="../ui/base/base.js"></script>
+<script type="module" src="../ui/dialog/dialog-mixin.js"></script>
+<script type="module" src="../ui/icon/icon.js"></script>
+<script type="module" src="../ui/input/input.js"></script>
+<script type="module" src="../ui/loading-button/loading-button.js"></script>
+<script type="module" src="../ui/locale/locale.js"></script>
+<script type="module" src="../ui/notification/notification.js"></script>
+<script type="module" src="../ui/payment-dialog/payment-dialog.js"></script>
+<script type="module" src="../ui/promo/promo.js"></script>
+<script type="module" src="../ui/promo/promo-dialog.js"></script>
+<script type="module" src="../ui/sync/subinfo.js"></script>
 
 <dom-module id="pl-cloud-dashboard">
 
@@ -407,8 +407,20 @@
 
     </template>
 
-    <script>
-(() => {
+    <script type="module">
+import '../styles/shared.js';
+import '../ui/animation/animation.js';
+import '../ui/base/base.js';
+import '../ui/dialog/dialog-mixin.js';
+import '../ui/icon/icon.js';
+import '../ui/input/input.js';
+import '../ui/loading-button/loading-button.js';
+import '../ui/locale/locale.js';
+import '../ui/notification/notification.js';
+import '../ui/payment-dialog/payment-dialog.js';
+import '../ui/promo/promo.js';
+import '../ui/promo/promo-dialog.js';
+import '../ui/sync/subinfo.js';
 
 const { LocaleMixin, DialogMixin, NotificationMixin, AnimationMixin, SubInfoMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
@@ -683,8 +695,6 @@ class Dashboard extends applyMixins(
 }
 
 window.customElements.define(Dashboard.is, Dashboard);
-
-})();
-    </script>
+</script>
 
 </dom-module>
