@@ -1,4 +1,4 @@
-import * as sjcl from "sjcl";
+import { sjcl } from "../vendor/sjcl";
 import { isCordova, hasNode } from "./platform";
 
 declare var pbkdf2: undefined |
@@ -244,7 +244,7 @@ export class Container implements KeyParams, CipherParams {
                 // quietly accepted the string and simply treated it as an array.
                 // So in order to successfully decrypt legacy containers we have to
                 // perfom this conversion first.
-                raw.adata = bitsToBase64(raw.adata as any as sjcl.BitArray);
+                raw.adata = bitsToBase64(raw.adata);
                 break;
             case 1:
                 break;

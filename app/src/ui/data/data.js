@@ -1,49 +1,43 @@
-import { MutableData } from '../../../../../node_modules/@polymer/polymer/lib/mixins/mutable-data.js';
-import '../base/base.js';
-import '../locale/locale.js';
-import { Polymer } from '../../../../../node_modules/@polymer/polymer/lib/legacy/polymer-fn.js';
-
-const { Collection, Record, Settings } = padlock.data;
-const { FileSource, EncryptedSource } = padlock.source;
-const { getDesktopSettings } = padlock.platform;
+import "../base/base";
+import { MutableData } from "@polymer/polymer/lib/mixins/mutable-data";
+import { localize as $l } from "../locale/locale";
+import { Collection, Record, Settings } from "../../core/data";
+import { FileSource, EncryptedSource, LocalStorageSource } from "../../core/source";
+import { getDesktopSettings } from "../../core/platform";
+import { debounce } from "../../core/util";
 
 const desktopSettings = getDesktopSettings();
 const dbPath = desktopSettings ? desktopSettings.get("dbPath") : "data.pls";
-
 const collection = new Collection();
 const localSource = new EncryptedSource(new FileSource(dbPath));
 const settings = new Settings();
 const settingsSource = new EncryptedSource(new FileSource("settings.pls"));
-
 const dispatcher = document.createElement("div");
 
 // transfer legacy data from LocalStorageSource to FileSource
-function transferData(lsName, fileName) {
-    const lsSource = new padlock.source.LocalStorageSource(lsName);
-    const fileSource = new padlock.source.FileSource(fileName);
-    return Promise.all([lsSource.get(), fileSource.get()])
-        .then((data) => {
-            // Only transfer if there is existing localstorage data but no
-            // existing data in file storage
-            if (data[0] && !data[1]) {
-                return Promise.all([
-                    fileSource.set(data[0]),
-                    lsSource.clear()
-                ]);
-            }
-        });
+async function transferData(lsName, fileName) {
+    const lsSource = new LocalStorageSource(lsName);
+    const fileSource = new FileSource(fileName);
+    const data = await Promise.all([lsSource.get(), fileSource.get()]);
+    // Only transfer if there is existing localstorage data but no
+    // existing data in file storage
+    if (data[0] && !data[1]) {
+        await Promise.all([fileSource.set(data[0]), lsSource.clear()]);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 const legacyDataTransfered = Promise.all([
     transferData("coll_default", dbPath),
     transferData("settings_encrypted", "settings.pls")
 ]);
+const debouncedSaveSettings = debounce(() => settings.save(settingsSource), 500);
+const debouncedSaveCollection = debounce(() => collection.save(localSource), 500);
 
-const debouncedSaveSettings = padlock.util.debounce(() => settings.save(settingsSource), 500);
-const debouncedSaveCollection = padlock.util.debounce(() => collection.save(localSource), 500);
-
-dispatcher.addEventListener("record-changed", (e) => {
-    const record = e.detail;
+dispatcher.addEventListener("record-changed", ({ detail }) => {
+    const record = detail;
     record.updated = new Date();
     debouncedSaveCollection();
 });
@@ -59,47 +53,50 @@ function filterByString(fs, rec) {
         return true;
     }
     const words = fs.toLowerCase().split(" ");
-    const content = rec.tags.concat([rec.name]).join(" ").toLowerCase();
-    return words.some((word) => content.search(word) !== -1);
+    const content = rec.tags
+        .concat([rec.name])
+        .join(" ")
+        .toLowerCase();
+    return words.some(word => content.search(word) !== -1);
 }
 
-padlock.DataMixin = (superClass) => {
-
+export function DataMixin(superClass) {
     return class DataMixin extends MutableData(superClass) {
-
-        static get properties() { return {
-            collection: {
-                type: Object,
-                value: collection,
-                notify: true
-            },
-            filterString: {
-                type: String,
-                value: ""
-            },
-            records: {
-                type: Array,
-                notify: true,
-                computed: " _filterAndSort(collection.records, filterString)"
-            },
-            settings: {
-                type: Object,
-                value: settings,
-                notify: true
-            }
-        }; }
+        static get properties() {
+            return {
+                collection: {
+                    type: Object,
+                    value: collection,
+                    notify: true
+                },
+                filterString: {
+                    type: String,
+                    value: ""
+                },
+                records: {
+                    type: Array,
+                    notify: true,
+                    computed: "_filterAndSort(collection.records, filterString)"
+                },
+                settings: {
+                    type: Object,
+                    value: settings,
+                    notify: true
+                }
+            };
+        }
 
         constructor() {
             super();
-            this.listen("record-created", (e) => this._recordCreated(e));
-            this.listen("record-deleted", (e) => this._recordDeleted(e));
-            this.listen("record-changed", (e) => this._recordChanged(e));
-            this.listen("records-changed", (e) => this._recordsChanged(e));
-            this.listen("data-initialized", (e) => this._dataInitialized(e));
-            this.listen("data-loaded", (e) => this._dataLoaded(e));
-            this.listen("data-unloaded", (e) => this._dataUnloaded(e));
-            this.listen("data-reset", (e) => this._dataReset(e));
-            this.listen("settings-changed", (e) => this._settingsChanged(e));
+            this.listen("record-created", e => this._recordCreated(e));
+            this.listen("record-deleted", e => this._recordDeleted(e));
+            this.listen("record-changed", e => this._recordChanged(e));
+            this.listen("records-changed", e => this._recordsChanged(e));
+            this.listen("data-initialized", () => this._dataInitialized());
+            this.listen("data-loaded", () => this._dataLoaded());
+            this.listen("data-unloaded", () => this._dataUnloaded());
+            this.listen("data-reset", () => this._dataReset());
+            this.listen("settings-changed", () => this._settingsChanged());
         }
 
         get password() {
@@ -143,7 +140,7 @@ padlock.DataMixin = (superClass) => {
         createRecord(name) {
             const fields = [
                 { name: $l("Username"), value: "", masked: false },
-                { name: $l("Password"), value: "", masked: true },
+                { name: $l("Password"), value: "", masked: true }
             ];
             const record = new Record(name || "", fields);
             this.addRecords([record]);
@@ -158,7 +155,7 @@ padlock.DataMixin = (superClass) => {
         }
 
         deleteRecords(records) {
-            records.forEach((r) => r.remove());
+            records.forEach(r => r.remove());
             this.saveCollection();
             this.dispatch("records-changed");
         }
@@ -194,10 +191,7 @@ padlock.DataMixin = (superClass) => {
 
         setPassword(password) {
             localSource.password = settingsSource.password = password;
-            return Promise.all([
-                collection.save(localSource),
-                settings.save(settingsSource)
-            ]);
+            return Promise.all([collection.save(localSource), settings.save(settingsSource)]);
         }
 
         unloadData() {
@@ -269,24 +263,22 @@ padlock.DataMixin = (superClass) => {
         }
 
         _filterAndSort() {
-            let records = this.collection.records
-                .filter((r) => !r.removed && filterByString(this.filterString, r));
-
+            let records = this.collection.records.filter(r => !r.removed && filterByString(this.filterString, r));
             this._recentCount = records.length > 10 ? 3 : 0;
-
-            const recent = records.sort((a, b) => {
-                return (b.lastUsed || b.updated).getTime() - (a.lastUsed || a.updated).getTime();
-            }).slice(0, this._recentCount);
-
+            const recent = records
+                .sort((a, b) => {
+                    return (b.lastUsed || b.updated).getTime() - (a.lastUsed || a.updated).getTime();
+                })
+                .slice(0, this._recentCount);
             records = records.slice(this._recentCount);
             return recent.concat(records.sort((a, b) => Record.compare(a, b)));
         }
-
     };
+}
 
-};
-
-Object.assign(padlock.DataMixin, {
+Object.assign(DataMixin, {
     collection,
     settings
 });
+
+padlock.DataMixin = DataMixin;

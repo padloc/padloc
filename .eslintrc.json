@@ -1,6 +1,7 @@
 {
     "parserOptions": {
-        "ecmaVersion": "2015"
+        "ecmaVersion": "2017",
+        "sourceType": "module"
     },
     "env": {
         "node": true,
@@ -8,9 +9,7 @@
         "browser": true
     },
     "extends": "eslint:recommended",
-    "plugins": [
-        "html"
-    ],
+    "plugins": ["html"],
     "globals": {
         "Polymer": true,
         "padlock": true,
@@ -23,7 +22,7 @@
         "comma-style": "error",
         "curly": "error",
         "eol-last": "warn",
-        "indent": ["error", 4, {"SwitchCase": 1, "outerIIFEBody": 0}],
+        "indent": ["error", 4, { "SwitchCase": 1, "outerIIFEBody": 0 }],
         "key-spacing": "warn",
         "keyword-spacing": "warn",
         "linebreak-style": "error",
@@ -31,7 +30,7 @@
         "no-console": ["error", { "allow": ["warn", "error"] }],
         "no-loop-func": "error",
         "no-multi-spaces": "error",
-        "no-multiple-empty-lines": ["error", {"max": 1, "maxBOF": 1, "maxEOF": 0}],
+        "no-multiple-empty-lines": ["error", { "max": 1, "maxBOF": 1, "maxEOF": 0 }],
         "no-spaced-func": "error",
         "no-trailing-spaces": "error",
         "no-undef": "error",
@@ -40,7 +39,7 @@
         "no-use-before-define": "warn",
         "no-whitespace-before-property": "error",
         "operator-linebreak": ["error", "after"],
-        "quotes": ["error", "double", {"avoidEscape": true, "allowTemplateLiterals": true}],
+        "quotes": ["error", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
         "semi": "error",
         "semi-spacing": "error",
         "space-before-blocks": "error",

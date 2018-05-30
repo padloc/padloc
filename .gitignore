@@ -8,5 +8,8 @@ cordova/platforms
 cordova/plugins
 cordova/www
 
-app/lib
+// Core files compiled from typescript
+app/src/core/*.js
+app/src/core/*.js.map
+
 tests.js

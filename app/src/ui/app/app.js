@@ -19,13 +19,13 @@ import './auto-lock.js';
 import './auto-sync.js';
 import './hints.js';
 import './messages.js';
+import { getPlatformName, getDeviceInfo, isTouch } from "../../core/platform.js"
 
 /* global cordova, StatusBar */
 
 const { NotificationMixin, DialogMixin, MessagesMixin, DataMixin, AnimationMixin, ClipboardMixin,
     SyncMixin, AutoSyncMixin, AutoLockMixin, HintsMixin, AnalyticsMixin, LocaleMixin, BaseElement } = padlock;
 const { applyMixins } = padlock.util;
-const { getPlatformName, getDeviceInfo, isTouch } = padlock.platform;
 
 const cordovaReady = new Promise((resolve) => {
     document.addEventListener("deviceready", resolve);

@@ -1,9 +1,10 @@
-import '../../styles/shared.js';
-import '../base/base.js';
+import "../../styles/shared";
+import { BaseElement } from "../base/base";
+import { html } from "@polymer/polymer/polymer-element";
 
-class PlIcon extends padlock.BaseElement {
-  static get template() {
-    return Polymer.html`
+export class PlIcon extends BaseElement {
+    static get template() {
+        return html `
         <style include="shared">
             :host {
                 display: inline-block;
@@ -215,16 +216,17 @@ class PlIcon extends padlock.BaseElement {
 
         <div></div>
 `;
-  }
+    }
 
-  static get is() { return "pl-icon"; }
+    static get is() { return "pl-icon"; }
 
-  static get properties() { return {
-      icon: {
-          type: String,
-          reflectToAttribute: true
-      }
-  }; }
+    static get properties() {
+        return {
+            icon: {
+                type: String,
+                reflectToAttribute: true
+            }
+        };
+    }
 }
-
 window.customElements.define(PlIcon.is, PlIcon);

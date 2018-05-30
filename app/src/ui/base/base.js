@@ -1,22 +1,23 @@
-import '../../../../../node_modules/@polymer/polymer/polymer-legacy.js';
-import { PolymerElement, html } from '../../../../../node_modules/@polymer/polymer/polymer-element.js';
+import "@polymer/polymer/polymer-legacy";
+import { PolymerElement, html } from "@polymer/polymer/polymer-element";
 import "../../padlock.js";
 
 window.Polymer = { html };
-window.padlock = window.padlock || {};
 
-padlock.BaseElement = class Base extends PolymerElement {
+export class BaseElement extends PolymerElement {
 
     truthy(val) {
         return !!val;
     }
 
     equals(val, ...vals) {
-        return vals.some((v) => v === val);
+        return vals.some(v => v === val);
     }
 
     identity(val) {
         return val;
     }
 
-};
+}
+
+padlock.BaseElement = BaseElement;

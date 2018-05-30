@@ -5,7 +5,7 @@ const { getLocale } = padlock.platform;
 
 let translations, language;
 
-function localize(msg, ...fmtArgs) {
+export function localize(msg, ...fmtArgs) {
     const lang = translations[language];
     let res = lang && lang[msg] || msg;
 
@@ -24,7 +24,7 @@ localize.loadTranslations = (t) => {
     language = resolveLanguage(getLocale(), translations);
 };
 
-padlock.LocaleMixin = (superClass) => {
+export function LocaleMixin(superClass) {
 
     return class LocaleMixin extends superClass {
 
@@ -35,6 +35,8 @@ padlock.LocaleMixin = (superClass) => {
     };
 
 };
+
+padlock.LocaleMixin = LocaleMixin;
 
 window.$l = localize;
 

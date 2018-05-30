@@ -1,5 +1,5 @@
-const moment = require("moment");
-require("moment-duration-format");
+import * as moment from "moment";
+import "moment-duration-format";
 
 // RFC4122-compliant uuid generator
 export function uuid(): string {
