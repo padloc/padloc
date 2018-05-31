@@ -3,21 +3,24 @@ import { Source } from "./source";
 import { resolveLanguage } from "./util";
 import { getLocale, getPlatformName } from "./platform";
 import { Settings } from "./data";
-import { satisfies } from "semver";
+// import { satisfies } from "semver";
+
+function satisfies(v1: string, v2: string): boolean {
+    return v1 === v2;
+}
 
 export interface Message {
-    id: string
-    from: Date
-    until: Date
-    link: string
-    text: string
-    platform?: string[]
-    subStatus?: string[]
-    version?: string
+    id: string;
+    from: Date;
+    until: Date;
+    link: string;
+    text: string;
+    platform?: string[];
+    subStatus?: string[];
+    version?: string;
 }
 
 export class Messages {
-
     constructor(public url: string, public source: Source, public settings: Settings) {}
 
     private async fetchRead(): Promise<any> {
@@ -58,7 +61,8 @@ export class Messages {
             })
             .filter((a: Message) => {
                 return (
-                    !read[a.id] && a.from <= now &&
+                    !read[a.id] &&
+                    a.from <= now &&
                     a.until >= now &&
                     (!a.platform || a.platform.includes(platform)) &&
                     (!a.subStatus || a.subStatus.includes(this.settings.syncSubStatus)) &&
@@ -68,8 +72,12 @@ export class Messages {
     }
 
     async fetch(): Promise<Message[]> {
-        const req = await request("GET", this.url, undefined,
-            new Map<string, string>([["Accept", "application/json"]]));
+        const req = await request(
+            "GET",
+            this.url,
+            undefined,
+            new Map<string, string>([["Accept", "application/json"]])
+        );
         return this.parseAndFilter(req.responseText);
     }
 
@@ -78,6 +86,4 @@ export class Messages {
         read[a.id] = true;
         await this.saveRead(read);
     }
-
 }
-

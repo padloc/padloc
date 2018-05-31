@@ -1,4 +1,4 @@
-import { unparse } from "papaparse";
+import * as papaparse from "papaparse";
 import { Collection, Record } from "./data";
 import { MemorySource, EncryptedSource } from "./source";
 
@@ -10,7 +10,9 @@ function recordsToTable(records: Record[]) {
     // Two dimensional array, starting with column names
     let table = [cols];
     // Filter out removed items
-    records = records.filter(function(rec) { return !rec.removed; });
+    records = records.filter(function(rec) {
+        return !rec.removed;
+    });
 
     // Fill up columns array with distinct field names
     for (let rec of records) {
@@ -54,7 +56,7 @@ function recordsToTable(records: Record[]) {
 }
 
 export function toCSV(records: Record[]): string {
-    return unparse(recordsToTable(records));
+    return papaparse.unparse(recordsToTable(records));
 }
 
 export async function toPadlock(records: Record[], password: string): Promise<string> {

@@ -17,6 +17,7 @@
     "@types/moment-duration-format": "^2.2.0",
     "@types/papaparse": "^4.1.28",
     "@types/semver": "^5.3.33",
+    "@types/zxcvbn": "^4.4.0",
     "archiver": "^1.2.0",
     "bower": "^1.8.0",
     "browserify": "^13.1.1",
@@ -39,7 +40,6 @@
     "polymer-analyzer": "^2.2.0",
     "polymer-bundler": "^2.3.1",
     "rimraf": "^2.5.4",
-    "semver": "^5.4.1",
     "st": "^1.2.0",
     "tsify": "^2.0.3",
     "typescript": "^2.8.3",
@@ -58,12 +58,12 @@
     "moment": "^2.21.0",
     "moment-duration-format": "^2.2.2",
     "papaparse": "^4.1.2",
+    "semver": "^5.5.0",
     "uuid": "^3.1.0",
     "yargs": "^4.8.1",
     "zxcvbn": "^4.4.2"
   },
   "scripts": {
-    "bower-install": "pushd app && bower install && popd",
     "compile": "gulp compile --silent",
     "lint": "eslint app/**/*.{js,html}",
     "test": "karma start --single-run --browsers ChromeHeadless karma.conf.js",
@@ -71,6 +71,6 @@
     "build:mac": "gulp build --mac --silent",
     "build:win": "gulp build --win --silent",
     "build:linux": "gulp build --linux --silent",
-    "postinstall": "npm run bower-install && npm run compile && mkdir -p cordova/www"
+    "postinstall": "npm run compile && mkdir -p cordova/www"
   }
 }

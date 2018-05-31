@@ -10,11 +10,6 @@
     },
     "extends": "eslint:recommended",
     "plugins": ["html"],
-    "globals": {
-        "Polymer": true,
-        "padlock": true,
-        "$l": true
-    },
     "rules": {
         "brace-style": "off",
         "camelcase": "error",
@@ -38,7 +33,6 @@
         "no-unused-expressions": "off",
         "no-use-before-define": "warn",
         "no-whitespace-before-property": "error",
-        "operator-linebreak": ["error", "after"],
         "quotes": ["error", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
         "semi": "error",
         "semi-spacing": "error",

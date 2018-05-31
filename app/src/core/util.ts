@@ -1,10 +1,12 @@
 import * as moment from "moment";
 import "moment-duration-format";
+import * as zxcvbn from "zxcvbn";
 
 // RFC4122-compliant uuid generator
 export function uuid(): string {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-        var r = Math.random()*16|0, v = c == "x" ? r : (r&0x3|0x8);
+        var r = (Math.random() * 16) | 0,
+            v = c == "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
 }
@@ -31,7 +33,7 @@ export function randomString(length = 32, charSet = charSets.full) {
     while (str.length < length) {
         window.crypto.getRandomValues(rnd);
         // Prevent modulo bias by rejecting values larger than the highest muliple of `charSet.length`
-        if (rnd[0] > 255 - 256 % charSet.length) {
+        if (rnd[0] > 255 - (256 % charSet.length)) {
             continue;
         }
         str += charSet[rnd[0] % charSet.length];
@@ -49,7 +51,7 @@ export function debounce(fn: (...args: any[]) => any, delay: number) {
 }
 
 export function wait(dt: number): Promise<void> {
-    return new Promise<void>((resolve) => setTimeout(resolve, dt));
+    return new Promise<void>(resolve => setTimeout(resolve, dt));
 }
 
 export function resolveLanguage(locale: string, supportedLanguages: { [lang: string]: any }): string {
@@ -75,11 +77,21 @@ export function formatDateFromNow(date: Date) {
     return moment(date).fromNow();
 }
 
-export function formatDateUntil(startDate: Date|string|number, duration: number) {
-    const d = moment.duration(moment(startDate).add(duration, "hours").diff(moment()));
+export function formatDateUntil(startDate: Date | string | number, duration: number) {
+    const d = moment.duration(
+        moment(startDate)
+            .add(duration, "hours")
+            .diff(moment())
+    );
     return d.format("hh:mm:ss");
 }
 
-export function isFuture(date: Date|string|number, duration: number) {
-    return moment(date).add(duration, "hours").isAfter();
+export function isFuture(date: Date | string | number, duration: number) {
+    return moment(date)
+        .add(duration, "hours")
+        .isAfter();
+}
+
+export function passwordStrength(password: string): zxcvbn.ZXCVBNResult {
+    return zxcvbn(password);
 }

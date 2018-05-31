@@ -3,17 +3,13 @@ import { Record, Field } from "./data";
 import { Container } from "./crypto";
 
 export class ImportError {
-    constructor(
-        public code: "invalid_csv"
-    ) {};
+    constructor(public code: "invalid_csv") {}
 }
 
 //* Detects if a string contains a SecuStore backup
 export function isFromSecuStore(data: string): boolean {
-    return data.indexOf("SecuStore") != -1 &&
-        data.indexOf("#begin") != -1 &&
-        data.indexOf("#end") != -1;
-};
+    return data.indexOf("SecuStore") != -1 && data.indexOf("#begin") != -1 && data.indexOf("#end") != -1;
+}
 
 export async function fromSecuStore(rawData: string, password: string): Promise<Record[]> {
     const begin = "#begin";
@@ -45,10 +41,11 @@ export async function fromSecuStore(rawData: string, password: string): Promise<
 
     // Convert the _items_ array of the SecuStore Set object into an array of Padlock records
     let records = data.items.map((item: any) => {
-        let fields = item.template.containsPassword ?
-            // Passwords are a separate property in SecuStore but will be treated as
-            // regular fields in Padlock
-            item.fields.concat([{name: "password", value: item.password}]) : item.fields;
+        let fields = item.template.containsPassword
+            ? // Passwords are a separate property in SecuStore but will be treated as
+              // regular fields in Padlock
+              item.fields.concat([{ name: "password", value: item.password }])
+            : item.fields;
 
         return new Record(item.title, fields, [data.name]);
     });
@@ -82,12 +79,11 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
         }
     }
 
-
     // All subsequent rows should contain values
     let records = data.slice(1).map(function(row) {
         // Construct an array of field object from column names and values
         let fields = [];
-        for (let i=0; i<row.length; i++) {
+        for (let i = 0; i < row.length; i++) {
             // Skip name column, category column (if any) and empty fields
             if (i != nameColIndex && i != tagsColIndex && row[i]) {
                 fields.push({
@@ -98,7 +94,7 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
         }
 
         const tags = row[tagsColIndex!];
-        return new Record(row[nameColIndex || 0], fields, tags && tags.split(",") || []);
+        return new Record(row[nameColIndex || 0], fields, (tags && tags.split(",")) || []);
     });
 
     return records;
@@ -123,7 +119,7 @@ export function isFromPadlock(data: string): boolean {
     try {
         Container.fromJSON(data);
         return true;
-    } catch(e) {
+    } catch (e) {
         return false;
     }
 }
@@ -171,7 +167,7 @@ function lpParseRow(row: string[]): Record {
         { name: "url", value: row[urlIndex] },
         { name: "username", value: row[usernameIndex] },
         { name: "password", value: row[passwordIndex], masked: true }
-    ]
+    ];
     let notes = row[notesIndex];
 
     if (row[urlIndex] === "http://sn") {
@@ -191,8 +187,8 @@ function lpParseRow(row: string[]): Record {
 }
 
 export function fromLastPass(data: string): Record[] {
-    let records = parse(data).data
-        // Remove first row as it only contains field names
+    let records = parse(data)
+        .data// Remove first row as it only contains field names
         .slice(1)
         // Filter out empty rows
         .filter(row => row.length > 1)

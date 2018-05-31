@@ -19,14 +19,10 @@
         "experimentalDecorators": true,
         "baseUrl": ".",
         "paths": {
-            "*": ["typings/*"]
+            "*": ["typings/*"],
+            "zxcvbn/dist/zxcvbn": ["node_modules/@types/zxcvbn"]
         }
     },
-    "include": [
-        "app/src/**/*.ts",
-        "typings/*"
-    ],
-    "exclude": [
-        "node_modules/**/*.ts"
-    ]
+    "include": ["app/src/**/*.ts", "typings/*"],
+    "exclude": ["node_modules/**/*.ts"]
 }
