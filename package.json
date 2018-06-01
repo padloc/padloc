@@ -15,7 +15,7 @@
     "@types/core-js": "^0.9.35",
     "@types/mocha": "^2.2.33",
     "@types/moment-duration-format": "^2.2.0",
-    "@types/papaparse": "^4.1.28",
+    "@types/papaparse": "^4.1.34",
     "@types/semver": "^5.3.33",
     "@types/zxcvbn": "^4.4.0",
     "archiver": "^1.2.0",
@@ -47,21 +47,11 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
-    "@polymer/iron-list": "^3.0.0-pre.18",
-    "@polymer/paper-spinner": "^3.0.0-pre.18",
-    "@polymer/polymer": "^3.0.0",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
-    "autosize": "^4.0.2",
     "electron-store": "^1.1.0",
     "electron-updater": "^2.21.0",
     "fs-extra": "^5.0.0",
-    "moment": "^2.21.0",
-    "moment-duration-format": "^2.2.2",
-    "papaparse": "^4.1.2",
-    "semver": "^5.5.0",
     "uuid": "^3.1.0",
-    "yargs": "^4.8.1",
-    "zxcvbn": "^4.4.2"
+    "yargs": "^4.8.1"
   },
   "scripts": {
     "compile": "gulp compile --silent",

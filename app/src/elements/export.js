@@ -63,10 +63,10 @@ class PlExport extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogMi
     _downloadCSV() {
         this.confirm(exportCSVWarning, $l("Download"), $l("Cancel"), { type: "warning" }).then(confirm => {
             if (confirm) {
-                setTimeout(() => {
+                setTimeout(async () => {
                     const date = new Date().toISOString().substr(0, 10);
                     const fileName = `padlock-export-${date}.csv`;
-                    const csv = toCSV(this.exportRecords);
+                    const csv = await toCSV(this.exportRecords);
                     const a = document.createElement("a");
                     a.href = `data:application/octet-stream,${encodeURIComponent(csv)}`;
                     a.download = fileName;
@@ -77,24 +77,25 @@ class PlExport extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogMi
         });
     }
 
-    _copyCSV() {
-        this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"), { type: "warning" }).then(confirm => {
-            if (confirm) {
-                setClipboard(toCSV(this.exportRecords)).then(() =>
-                    this.alert(
-                        $l(
-                            "Your data has successfully been copied to the system " +
-                                "clipboard. You can now paste it into the spreadsheet program of your choice."
-                        )
-                    )
-                );
-                this.dispatch("data-exported");
-            }
+    async _copyCSV() {
+        const confirmed = await this.confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"), {
+            type: "warning"
         });
+        if (confirmed) {
+            const csv = await toCSV(this.exportRecords);
+            setClipboard(csv);
+            this.alert(
+                $l(
+                    "Your data has successfully been copied to the system " +
+                        "clipboard. You can now paste it into the spreadsheet program of your choice."
+                )
+            );
+            this.dispatch("data-exported");
+        }
     }
 
-    _getEncryptedData() {
-        return this.prompt(
+    async _getEncryptedData() {
+        const pwd = await this.prompt(
             $l(
                 "Please choose a password to protect your data. This may be the same as " +
                     "your master password or something else, but make sure it is sufficiently strong!"
@@ -103,35 +104,38 @@ class PlExport extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogMi
             "password",
             $l("Confirm"),
             $l("Cancel")
-        ).then(pwd => {
-            if (!pwd) {
-                if (pwd === "") {
-                    this.alert($l("Please enter a password!"));
-                }
-                return Promise.reject();
-            }
-            if (passwordStrength(pwd).score < 2) {
-                return this.confirm(
-                    $l(
-                        "WARNING: The password you entered is weak which makes it easier for " +
-                            "attackers to break the encryption used to protect your data. Try to use a longer " +
-                            "password or include a variation of uppercase, lowercase and special characters as " +
-                            "well as numbers."
-                    ),
-                    $l("Use Anyway"),
-                    $l("Choose Different Password"),
-                    { type: "warning" }
-                ).then(confirm => {
-                    if (!confirm) {
-                        return Promise.reject();
-                    }
+        );
 
-                    return toPadlock(this.exportRecords, pwd);
-                });
-            } else {
-                return toPadlock(this.exportRecords, pwd);
+        if (!pwd) {
+            if (pwd === "") {
+                this.alert($l("Please enter a password!"));
             }
-        });
+            return Promise.reject();
+        }
+
+        const strength = await passwordStrength(pwd);
+
+        if (strength.score < 2) {
+            const confirmed = await this.confirm(
+                $l(
+                    "WARNING: The password you entered is weak which makes it easier for " +
+                        "attackers to break the encryption used to protect your data. Try to use a longer " +
+                        "password or include a variation of uppercase, lowercase and special characters as " +
+                        "well as numbers."
+                ),
+                $l("Use Anyway"),
+                $l("Choose Different Password"),
+                { type: "warning" }
+            );
+
+            if (confirmed) {
+                return toPadlock(this.exportRecords, pwd);
+            } else {
+                return this._getEncryptedData();
+            }
+        } else {
+            return toPadlock(this.exportRecords, pwd);
+        }
     }
 
     _downloadEncrypted() {

@@ -1,8 +1,8 @@
-import './config.js';
-const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
+import "./config.js";
+const _documentContainer = document.createElement("template");
+_documentContainer.setAttribute("style", "display: none;");
 
-$_documentContainer.innerHTML = `<dom-module id="shared">
+_documentContainer.innerHTML = `<dom-module id="shared">
     <template>
         <style>
             :host {
@@ -353,4 +353,4 @@ $_documentContainer.innerHTML = `<dom-module id="shared">
     </template>
 </dom-module>`;
 
-document.head.appendChild($_documentContainer.content);
+document.head.appendChild(_documentContainer.content);

@@ -1,13 +1,8 @@
 import { request } from "./ajax";
 import { Source } from "./source";
-import { resolveLanguage } from "./util";
+import { resolveLanguage, loadScript } from "./util";
 import { getLocale, getPlatformName } from "./platform";
 import { Settings } from "./data";
-// import { satisfies } from "semver";
-
-function satisfies(v1: string, v2: string): boolean {
-    return v1 === v2;
-}
 
 export interface Message {
     id: string;
@@ -37,6 +32,7 @@ export class Messages {
         const aa = JSON.parse(data);
         const read = await this.fetchRead();
         const platform = await getPlatformName();
+        await loadScript("vendor/semver.js");
 
         return aa
             .map((a: any) => {
@@ -66,7 +62,7 @@ export class Messages {
                     a.until >= now &&
                     (!a.platform || a.platform.includes(platform)) &&
                     (!a.subStatus || a.subStatus.includes(this.settings.syncSubStatus)) &&
-                    (!a.version || satisfies(this.settings.version, a.version))
+                    (!a.version || semver.satisfies(this.settings.version, a.version))
                 );
             });
     }

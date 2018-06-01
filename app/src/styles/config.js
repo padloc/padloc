@@ -1,8 +1,8 @@
-import '../../../../node_modules/@polymer/polymer/polymer-legacy.js';
-const $_documentContainer = document.createElement('template');
-$_documentContainer.setAttribute('style', 'display: none;');
+import "../../node_modules/@polymer/polymer/polymer-legacy.js";
+const _documentContainer = document.createElement("template");
+_documentContainer.setAttribute("style", "display: none;");
 
-$_documentContainer.innerHTML = `<custom-style>
+_documentContainer.innerHTML = `<custom-style>
     <style is="custom-style">
 
         body {
@@ -136,4 +136,4 @@ $_documentContainer.innerHTML = `<custom-style>
     </style>
 </custom-style>`;
 
-document.head.appendChild($_documentContainer.content);
+document.head.appendChild(_documentContainer.content);

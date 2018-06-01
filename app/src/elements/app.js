@@ -6,8 +6,10 @@ import "./record-view.js";
 import "./settings-view.js";
 import "./start-view.js";
 import "./title-bar.js";
+import { Input } from "./input.js";
 import { getPlatformName, getDeviceInfo, isTouch } from "../core/platform.js";
 import { applyMixins } from "../core/util.js";
+import { localize as $l } from "../core/locale.js";
 import { BaseElement, html } from "./base.js";
 import {
     NotificationMixin,
@@ -614,7 +616,7 @@ class App extends applyMixins(
 
     //* Keyboard shortcuts
     _keydown(event) {
-        if (this.locked || padlock.Input.activeInput) {
+        if (this.locked || Input.activeInput) {
             return;
         }
 

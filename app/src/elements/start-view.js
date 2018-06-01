@@ -1,7 +1,7 @@
 import "../styles/shared.js";
 import { BaseElement, html } from "./base.js";
-import { applyMixins, wait, passwordStrength } from "../core/util";
-import { isTouch, getAppStoreLink, checkForUpdates } from "../core/platform";
+import { applyMixins, wait, passwordStrength } from "../core/util.js";
+import { isTouch, getAppStoreLink, checkForUpdates } from "../core/platform.js";
 import { localize as $l } from "../core/locale.js";
 import { track } from "../core/tracking.js";
 import * as stats from "../core/stats.js";
@@ -336,7 +336,7 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
 
                         </div>
 
-                        <div class="strength-meter">[[ _pwdStrength ]]</div>
+                        <div class="strength-meter">[[ _displayPwdStrength ]]</div>
                     </div>
 
                     <div class="hint">
@@ -399,6 +399,7 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
 
     static get properties() {
         return {
+            newPwd: String,
             open: {
                 type: Boolean,
                 value: false,
@@ -422,10 +423,19 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
                 computed: "_computeMode(_hasData)"
             },
             _pwdStrength: {
+                type: Object
+            },
+            _displayPwdStrength: {
                 type: String,
-                computed: "_passwordStrength(newPwd)"
+                computed: "_computeDisplayPwdStrength(_pwdStrength.score)"
             }
         };
+    }
+
+    static get observers() {
+        return [
+            "_updatePwdStrength(newPwd)"
+        ];
     }
 
     constructor() {
@@ -584,7 +594,7 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
         track("Setup: Email", { Skipped: true });
     }
 
-    _enterNewPassword() {
+    async _enterNewPassword() {
         this.$.newPasswordInput.blur();
         const pwd = this.$.newPasswordInput.value;
 
@@ -602,7 +612,8 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
             track("Setup: Choose Password");
         };
 
-        if (passwordStrength(pwd).score < 2) {
+        const strength = await passwordStrength(pwd);
+        if (strength.score < 2) {
             this.choose(
                 $l(
                     "The password you entered is weak which makes it easier for attackers to break " +
@@ -782,8 +793,11 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
             });
     }
 
-    _passwordStrength(pwd) {
-        const score = pwd ? passwordStrength(pwd).score : -1;
+    async _updatePwdStrength(newPwd) {
+        this._pwdStrength = newPwd ? await passwordStrength(newPwd) : null;
+    }
+
+    _computeDisplayPwdStrength(score = -1) {
         const strength = score === -1 ? "" : score < 2 ? $l("weak") : score < 4 ? $l("medium") : $l("strong");
         return strength && $l("strength: {0}", strength);
     }

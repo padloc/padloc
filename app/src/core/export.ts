@@ -1,6 +1,6 @@
-import * as papaparse from "papaparse";
 import { Collection, Record } from "./data";
 import { MemorySource, EncryptedSource } from "./source";
+import { loadPapa } from "./import";
 
 function recordsToTable(records: Record[]) {
     // Array of column names
@@ -55,8 +55,9 @@ function recordsToTable(records: Record[]) {
     return table;
 }
 
-export function toCSV(records: Record[]): string {
-    return papaparse.unparse(recordsToTable(records));
+export async function toCSV(records: Record[]): Promise<string> {
+    await loadPapa();
+    return Papa.unparse(recordsToTable(records));
 }
 
 export async function toPadlock(records: Record[], password: string): Promise<string> {

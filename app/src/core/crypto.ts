@@ -1,4 +1,4 @@
-import { sjcl } from "../vendor/sjcl";
+import { sjcl } from "../../vendor/sjcl";
 import { isCordova, hasNode } from "./platform";
 
 declare var pbkdf2: undefined |

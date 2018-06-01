@@ -4,6 +4,7 @@ declare interface Window {
   webkitRequestFileSystem: any;
   PERSISTENT: number;
   require: (m: String) => any;
+  zxcvbn: (password: string, userInputs?: string[]) => zxcvbn.ZXCVBNResult;
 }
 
 declare interface Navigator {

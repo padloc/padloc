@@ -1,9 +1,13 @@
-import { parse } from "papaparse";
 import { Record, Field } from "./data";
 import { Container } from "./crypto";
+import { loadScript } from "./util";
 
 export class ImportError {
     constructor(public code: "invalid_csv") {}
+}
+
+export async function loadPapa() {
+    await loadScript("vendor/papaparse.js");
 }
 
 //* Detects if a string contains a SecuStore backup
@@ -100,12 +104,14 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
     return records;
 }
 
-export function isCSV(data: string): Boolean {
-    return parse(data).errors.length === 0;
+export async function isCSV(data: string): Promise<Boolean> {
+    await loadPapa();
+    return Papa.parse(data).errors.length === 0;
 }
 
-export function fromCSV(data: string, nameColIndex?: number, tagsColIndex?: number): Record[] {
-    const parsed = parse(data);
+export async function fromCSV(data: string, nameColIndex?: number, tagsColIndex?: number): Promise<Record[]> {
+    await loadPapa();
+    const parsed = Papa.parse(data);
     if (parsed.errors.length) {
         throw new ImportError("invalid_csv");
     }
@@ -186,9 +192,10 @@ function lpParseRow(row: string[]): Record {
     return new Record(row[nameIndex], fields, dir ? [dir] : []);
 }
 
-export function fromLastPass(data: string): Record[] {
-    let records = parse(data)
-        .data// Remove first row as it only contains field names
+export async function fromLastPass(data: string): Promise<Record[]> {
+    await loadPapa();
+    let records = Papa.parse(data)
+        .data // Remove first row as it only contains field names
         .slice(1)
         // Filter out empty rows
         .filter(row => row.length > 1)

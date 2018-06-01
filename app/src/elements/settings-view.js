@@ -383,11 +383,11 @@ class SettingsView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dial
             });
     }
 
-    _importString(rawStr) {
+    async _importString(rawStr) {
         const isPadlock = imp.isFromPadlock(rawStr);
         const isSecuStore = imp.isFromSecuStore(rawStr);
         const isLastPass = imp.isFromLastPass(rawStr);
-        const isCSV = imp.isCSV(rawStr);
+        const isCSV = await imp.isCSV(rawStr);
         return Promise.resolve()
             .then(() => {
                 if (isPadlock || isSecuStore) {

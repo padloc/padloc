@@ -1,6 +1,5 @@
-import * as moment from "moment";
+import moment from "moment";
 import "moment-duration-format";
-import * as zxcvbn from "zxcvbn";
 
 // RFC4122-compliant uuid generator
 export function uuid(): string {
@@ -92,6 +91,20 @@ export function isFuture(date: Date | string | number, duration: number) {
         .isAfter();
 }
 
-export function passwordStrength(password: string): zxcvbn.ZXCVBNResult {
-    return zxcvbn(password);
+export function loadScript(src: string): Promise<void> {
+    if (document.querySelector(`script[src="${src}"]`) !== null) {
+        return Promise.resolve();
+    }
+    const s = document.createElement("script");
+    s.src = src;
+    s.type = "text/javascript";
+    return new Promise(resolve => {
+        s.onload = () => resolve();
+        document.body.appendChild(s);
+    });
+}
+
+export async function passwordStrength(pwd: string): Promise<{score: number}> {
+    await loadScript("vendor/zxcvbn.js");
+    return window.zxcvbn(pwd);
 }
