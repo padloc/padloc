@@ -1,6 +1,6 @@
 import "../styles/shared.js";
 import { BaseElement, html } from "./base.js";
-import autosize from "../../../../../node_modules/autosize/src/autosize.js";
+import autosize from "autosize/src/autosize.js";
 
 let activeInput = null;
 
