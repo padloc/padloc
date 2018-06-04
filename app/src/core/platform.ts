@@ -4,7 +4,7 @@ declare var device: any | undefined;
 
 const nodeRequire = window.require;
 const electron = nodeRequire && nodeRequire("electron");
-const cordovaReady = new Promise<void>((r) => document.addEventListener("deviceready", () => r()));
+const cordovaReady = new Promise<void>(r => document.addEventListener("deviceready", () => r()));
 
 // Textarea used for copying/pasting using the dom
 let clipboardTextArea: HTMLTextAreaElement;
@@ -38,7 +38,7 @@ export function isCordova(): Boolean {
 
 //* Checks if the app is running as a packaged Chrome app
 export function isChromeApp(): boolean {
-    return (typeof chrome !== "undefined") && chrome.app && !!chrome.app.runtime;
+    return typeof chrome !== "undefined" && chrome.app && !!chrome.app.runtime;
 }
 
 export async function isIOS(): Promise<boolean> {
@@ -105,7 +105,7 @@ export async function getAppStoreLink(): Promise<string> {
     }
 }
 
-export async function getReviewLink(rating:number): Promise<string> {
+export async function getReviewLink(rating: number): Promise<string> {
     if (await isIOS()) {
         return "https://itunes.apple.com/app/id871710139?action=write-review";
     } else if (await isAndroid()) {
@@ -145,24 +145,28 @@ export async function getAppVersion(): Promise<string> {
 export async function getPlatformName(): Promise<string> {
     if (isElectron()) {
         const platform = nodeRequire("os").platform();
-        return {
-            darwin: "MacOS",
-            win32: "Windows",
-            linux: "Linux"
-        }[platform] || platform;
+        return (
+            {
+                darwin: "MacOS",
+                win32: "Windows",
+                linux: "Linux"
+            }[platform] || platform
+        );
     } else if (isCordova()) {
         await cordovaReady;
         return device.platform;
     } else if (isChromeApp()) {
-        const info = await new Promise<{os: string}>((r) => chrome.runtime.getPlatformInfo(r));
-        return {
-            cros: "ChromeOS",
-            win: "Windows (Chrome)",
-            linux: "Linux (Chrome)",
-            android: "Android (Chrome)",
-            mac: "MacOS (Chrome)",
-            openbsd: "OpenBSD (Chrome)"
-        }[info.os] || info.os;
+        const info = await new Promise<{ os: string }>(r => chrome.runtime.getPlatformInfo(r));
+        return (
+            {
+                cros: "ChromeOS",
+                win: "Windows (Chrome)",
+                linux: "Linux (Chrome)",
+                android: "Android (Chrome)",
+                mac: "MacOS (Chrome)",
+                openbsd: "OpenBSD (Chrome)"
+            }[info.os] || info.os
+        );
     } else {
         return "";
     }
@@ -221,13 +225,13 @@ export function getLocale(): string {
 }
 
 export interface DeviceInfo {
-    platform: string,
-    osVersion: string,
-    uuid: string,
-    appVersion: string,
-    manufacturer?: string,
-    model?: string,
-    hostName?: string
+    platform: string;
+    osVersion: string;
+    uuid: string;
+    appVersion: string;
+    manufacturer?: string;
+    model?: string;
+    hostName?: string;
 }
 
 export async function getDeviceInfo(): Promise<DeviceInfo> {

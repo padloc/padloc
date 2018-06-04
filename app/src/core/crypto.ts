@@ -1,19 +1,20 @@
 import { sjcl } from "../../vendor/sjcl";
 import { isCordova, hasNode } from "./platform";
 
-declare var pbkdf2: undefined |
-    ((pass: string, salt: string, opts: { iterations: number, keySize: number }) => Promise<string>);
+declare var pbkdf2:
+    | undefined
+    | ((pass: string, salt: string, opts: { iterations: number; keySize: number }) => Promise<string>);
 const nodeCrypto = hasNode() && window.require("crypto");
 
 export class CryptoError {
     constructor(
         public code:
-            "invalid_container_data" |
-            "unsupported_container_version" |
-            "invalid_key_params" |
-            "decryption_failed" |
-            "encryption_failed"
-    ) {};
+            | "invalid_container_data"
+            | "unsupported_container_version"
+            | "invalid_key_params"
+            | "decryption_failed"
+            | "encryption_failed"
+    ) {}
 }
 
 // Available cipher algorithms
@@ -67,30 +68,24 @@ export interface CipherParams {
 }
 
 function validateKeyParams(params: any) {
-    return [128, 192, 256].includes(params.keySize) &&
+    return (
+        [128, 192, 256].includes(params.keySize) &&
         typeof params.iter == "number" && // valid PBKDF2 iteration count
         params.iter <= PBKDF2_ITER_MAX && // sane pbkdf2 iteration count
-        typeof params.salt == "string";//valid salt
+        typeof params.salt == "string"
+    ); //valid salt
 }
 
 function genKey(params: KeyParams): Promise<string> {
-    if (
-        !params.password ||
-        typeof params.password !== "string" ||
-        !validateKeyParams(params)
-    ) {
+    if (!params.password || typeof params.password !== "string" || !validateKeyParams(params)) {
         throw new CryptoError("invalid_key_params");
     }
 
     if (isCordova() && typeof pbkdf2 === "function") {
-        return pbkdf2(
-            params.password,
-            params.salt,
-            {
-                iterations: params.iter,
-                keySize: params.keySize
-            }
-        );
+        return pbkdf2(params.password, params.salt, {
+            iterations: params.iter,
+            keySize: params.keySize
+        });
     } else if (nodeCrypto) {
         return new Promise((resolve, reject) => {
             nodeCrypto.pbkdf2(
@@ -109,12 +104,7 @@ function genKey(params: KeyParams): Promise<string> {
             );
         });
     } else {
-        let k = sjcl.misc.pbkdf2(
-            utf8ToBits(params.password),
-            base64ToBits(params.salt),
-            params.iter,
-            params.keySize
-        );
+        let k = sjcl.misc.pbkdf2(utf8ToBits(params.password), base64ToBits(params.salt), params.iter, params.keySize);
 
         return Promise.resolve(bitsToBase64(k));
     }
@@ -124,11 +114,14 @@ function decrypt(key: string, ct: string, params: CipherParams): string {
     try {
         const cipher = new sjcl.cipher[params.cipher](base64ToBits(key));
         const pt = sjcl.mode[params.mode].decrypt(
-            cipher, base64ToBits(ct), base64ToBits(params.iv),
-            base64ToBits(params.adata), params.ts
+            cipher,
+            base64ToBits(ct),
+            base64ToBits(params.iv),
+            base64ToBits(params.adata),
+            params.ts
         );
         return bitsToUtf8(pt);
-    } catch(e) {
+    } catch (e) {
         throw new CryptoError("decryption_failed");
     }
 }
@@ -137,10 +130,9 @@ function encrypt(key: string, pt: string, params: CipherParams): string {
     try {
         const cipher = new sjcl.cipher[params.cipher](base64ToBits(key));
         const mode = sjcl.mode[params.mode];
-        var ct = mode.encrypt(cipher, utf8ToBits(pt), base64ToBits(params.iv),
-                              base64ToBits(params.adata), params.ts);
+        var ct = mode.encrypt(cipher, utf8ToBits(pt), base64ToBits(params.iv), base64ToBits(params.adata), params.ts);
         return bitsToBase64(ct);
-    } catch(e) {
+    } catch (e) {
         throw new CryptoError("encryption_failed");
     }
 }
@@ -150,7 +142,7 @@ export interface RawContainerV0 extends Pbkdf2Params, CipherParams {
     ct: string;
 }
 
-export interface RawContainerV1 extends Pbkdf2Params, CipherParams  {
+export interface RawContainerV1 extends Pbkdf2Params, CipherParams {
     version: 1;
     ct: string;
 }
@@ -158,7 +150,6 @@ export interface RawContainerV1 extends Pbkdf2Params, CipherParams  {
 export type RawContainer = RawContainerV0 | RawContainerV1;
 
 export class Container implements KeyParams, CipherParams {
-
     password: string;
     salt: string;
     iv: string;
@@ -235,8 +226,8 @@ export class Container implements KeyParams, CipherParams {
             throw new CryptoError("invalid_container_data");
         }
 
-        switch(raw.version) {
-            case undefined: 
+        switch (raw.version) {
+            case undefined:
                 // Legacy versions of Padlock had a bug where the base64-encoded
                 // `adata` value was not converted to a BitArray before being
                 // passed to `sjcl.mode.ccm.encrypt/decrypt` and the raw string was
@@ -272,7 +263,8 @@ export class Container implements KeyParams, CipherParams {
     }
 
     static validateRaw(obj: RawContainer) {
-        return typeof obj == "object" &&
+        return (
+            typeof obj == "object" &&
             (obj.version === undefined || typeof obj.version === "number") && // has a valid version
             validateKeyParams(obj) &&
             ["aes"].includes(obj.cipher) && // valid cipher
@@ -280,7 +272,7 @@ export class Container implements KeyParams, CipherParams {
             typeof obj.iv == "string" && // valid initialisation vector
             typeof obj.ct == "string" && // valid cipher text
             typeof obj.adata == "string" && // valid authorisation data
-            [64, 96, 128].includes(obj.ts); // valid authorisation tag length
+            [64, 96, 128].includes(obj.ts)
+        ); // valid authorisation tag length
     }
-
 }

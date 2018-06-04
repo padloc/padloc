@@ -14,7 +14,6 @@ export interface Source {
 }
 
 export class MemorySource implements Source {
-
     constructor(private data = "") {}
 
     async get(): Promise<string> {
@@ -28,33 +27,29 @@ export class MemorySource implements Source {
     async clear(): Promise<void> {
         this.data = "";
     }
-
 }
 
 export class HTML5LocalStorageSource implements Source {
-
     constructor(public key: string) {}
 
     async get(): Promise<string> {
         return localStorage.getItem(this.key) || "";
-    };
+    }
 
     async set(data: string): Promise<void> {
         localStorage.setItem(this.key, data);
-    };
+    }
 
     async clear(): Promise<void> {
         localStorage.removeItem(this.key);
-    };
-
+    }
 }
 
 export class ChromeLocalStorageSource implements Source {
-
     constructor(public key: string) {}
 
     get(): Promise<string> {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             chromeLocalStorage.get(this.key, (obj: any) => {
                 let data = obj[this.key];
                 if (typeof data === "object") {
@@ -63,26 +58,24 @@ export class ChromeLocalStorageSource implements Source {
                 resolve(data || "");
             });
         });
-    };
+    }
 
     set(data: string): Promise<void> {
         const obj = {
             [this.key]: data
         };
 
-        return new Promise<void>((resolve) => chromeLocalStorage.set(obj, resolve));
+        return new Promise<void>(resolve => chromeLocalStorage.set(obj, resolve));
     }
 
     clear(): Promise<void> {
-        return new Promise<void>((resolve) => chromeLocalStorage.remove(this.key, resolve));
+        return new Promise<void>(resolve => chromeLocalStorage.remove(this.key, resolve));
     }
-
 }
 
 export const LocalStorageSource = isChromeApp() ? ChromeLocalStorageSource : HTML5LocalStorageSource;
 
 export class AjaxSource implements Source {
-
     constructor(private _url: string) {}
 
     get url() {
@@ -104,7 +97,6 @@ export class AjaxSource implements Source {
     clear(): Promise<void> {
         return this.set("").then(() => {});
     }
-
 }
 
 export interface CloudAuthToken {
@@ -116,12 +108,11 @@ export interface CloudAuthToken {
 }
 
 export class CloudSource extends AjaxSource implements Client {
-
     urlForPath(path: string): string {
         // Remove trailing slashes
-        const host = this.settings.syncCustomHost ?
-            this.settings.syncHostUrl.replace(/\/+$/, "") :
-            "https://cloud.padlock.io"
+        const host = this.settings.syncCustomHost
+            ? this.settings.syncHostUrl.replace(/\/+$/, "")
+            : "https://cloud.padlock.io";
         return `${host}/${path}/`;
     }
 
@@ -134,13 +125,11 @@ export class CloudSource extends AjaxSource implements Client {
     }
 
     async request(method: Method, url: string, data?: string, headers?: Map<string, string>): Promise<XMLHttpRequest> {
-
         headers = headers || new Map<string, string>();
 
         headers.set("Accept", "application/vnd.padlock;version=1");
         if (this.settings.syncEmail && this.settings.syncToken) {
-            headers.set("Authorization",
-                "AuthToken " + this.settings.syncEmail + ":" + this.settings.syncToken);
+            headers.set("Authorization", "AuthToken " + this.settings.syncEmail + ":" + this.settings.syncToken);
         }
 
         const { uuid, platform, osVersion, appVersion, manufacturer, model, hostName } = await getDeviceInfo();
@@ -174,7 +163,13 @@ export class CloudSource extends AjaxSource implements Client {
         return req;
     }
 
-    async authenticate(email: string, create = false, authType = "api", redirect = "", actType = ""): Promise<CloudAuthToken> {
+    async authenticate(
+        email: string,
+        create = false,
+        authType = "api",
+        redirect = "",
+        actType = ""
+    ): Promise<CloudAuthToken> {
         const params = new URLSearchParams();
         params.set("email", email);
         params.set("type", authType);
@@ -239,7 +234,7 @@ export class CloudSource extends AjaxSource implements Client {
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         )
             .then(() => true)
-            .catch((e) => {
+            .catch(e => {
                 if (e.code === "bad_request") {
                     return false;
                 } else {
@@ -249,14 +244,11 @@ export class CloudSource extends AjaxSource implements Client {
     }
 
     logout(): Promise<XMLHttpRequest> {
-        return this.request(
-            "GET",
-            this.urlForPath("logout")
-        );
+        return this.request("GET", this.urlForPath("logout"));
     }
 
     async getAccountInfo(): Promise<Account> {
-        const res = await this.request("GET", this.urlForPath("account"))
+        const res = await this.request("GET", this.urlForPath("account"));
         const account = JSON.parse(res.responseText);
         this.settings.account = account;
         return account;
@@ -291,14 +283,11 @@ export class CloudSource extends AjaxSource implements Client {
     }
 
     getPlans(): Promise<any[]> {
-        return this.request("GET", this.urlForPath("plans"))
-            .then((res) => <any[]>JSON.parse(res.responseText));
+        return this.request("GET", this.urlForPath("plans")).then(res => <any[]>JSON.parse(res.responseText));
     }
-
 }
 
 export class EncryptedSource implements Source {
-
     private container?: Container;
 
     public password: string;
@@ -311,7 +300,7 @@ export class EncryptedSource implements Source {
             return "";
         }
 
-        let cont = this.container = Container.fromJSON(data);
+        let cont = (this.container = Container.fromJSON(data));
         cont.password = this.password;
 
         return await cont.get();
@@ -319,7 +308,7 @@ export class EncryptedSource implements Source {
 
     async set(data: string): Promise<void> {
         // Reuse container if possible
-        let cont = this.container = this.container || new Container();
+        let cont = (this.container = this.container || new Container());
         cont.password = this.password;
         await cont.set(data);
 
@@ -339,16 +328,17 @@ export class EncryptedSource implements Source {
         delete this.container;
         return this.source.clear();
     }
-
 }
 
 export class FileSource implements Source {
-
     private fileManager: FileManager;
 
     constructor(private filePath: string) {
-        this.fileManager = isElectron() ? new NodeFileManager() :
-            isCordova() ? new CordovaFileManager() : new HTML5FileManager();
+        this.fileManager = isElectron()
+            ? new NodeFileManager()
+            : isCordova()
+                ? new CordovaFileManager()
+                : new HTML5FileManager();
     }
 
     get(): Promise<string> {
@@ -362,5 +352,4 @@ export class FileSource implements Source {
     clear(): Promise<void> {
         return this.fileManager.write(this.filePath, "");
     }
-
 }

@@ -1,4 +1,4 @@
-const persistentStorage =  navigator.persistentStorage || navigator.webkitPersistentStorage;
+const persistentStorage = navigator.persistentStorage || navigator.webkitPersistentStorage;
 
 function requestFileSystem(bytes: number): Promise<any> {
     return new Promise<any>((resolve, reject) => {
@@ -18,16 +18,14 @@ async function requestQuota(requestedBytes: number): Promise<number> {
 }
 
 export interface FileManager {
-    read(path: string): Promise<string>
-    write(path: string, content: string): Promise<void>
+    read(path: string): Promise<string>;
+    write(path: string, content: string): Promise<void>;
 }
 
 export class HTML5FileManager implements FileManager {
-
     protected get fs(): Promise<any> {
-        return requestQuota(1024 * 1024 * 10)
-            .then((grantedBytes) => requestFileSystem(grantedBytes));
-    };
+        return requestQuota(1024 * 1024 * 10).then(grantedBytes => requestFileSystem(grantedBytes));
+    }
 
     async getFile(name: string): Promise<any> {
         const fs = await this.fs;
@@ -35,7 +33,6 @@ export class HTML5FileManager implements FileManager {
         return new Promise<any>((resolve, reject) => {
             fs.root.getFile(name, { create: true, exclusive: false }, resolve, reject);
         });
-
     }
 
     async read(name: string): Promise<string> {
@@ -62,24 +59,22 @@ export class HTML5FileManager implements FileManager {
         return new Promise<void>((resolve, reject) => {
             // Create a FileWriter object for our FileEntry (log.txt).
             fileEntry.createWriter(function(fileWriter: any) {
-
                 fileWriter.onerror = reject;
 
                 fileWriter.onwrite = () => {
-                    const blob = new Blob([content], {type: "text/plain"});
+                    const blob = new Blob([content], { type: "text/plain" });
                     fileWriter.onwrite = resolve;
                     fileWriter.write(blob);
                 };
 
                 fileWriter.seek(0);
                 fileWriter.truncate(0);
-
             }, reject);
         });
     }
 }
 
-const cordovaReady = new Promise<void>((resolve) => {
+const cordovaReady = new Promise<void>(resolve => {
     document.addEventListener("deviceready", () => resolve());
 });
 
@@ -94,7 +89,6 @@ const nodePath = window.require && window.require("path");
 const electron = window.require && window.require("electron");
 
 export class NodeFileManager implements FileManager {
-
     public basePath = electron.remote.app.getPath("userData");
 
     constructor() {
@@ -109,7 +103,7 @@ export class NodeFileManager implements FileManager {
 
     read(path: string): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            nodeFs.readFile(this.resolvePath(path), "utf8", (err: {code: string}, content: string) => {
+            nodeFs.readFile(this.resolvePath(path), "utf8", (err: { code: string }, content: string) => {
                 if (err) {
                     if (err.code === "ENOENT") {
                         resolve("");
@@ -125,7 +119,7 @@ export class NodeFileManager implements FileManager {
 
     write(path: string, content: string): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            nodeFs.writeFile(this.resolvePath(path), content, "utf8", (err: {code: string}) => {
+            nodeFs.writeFile(this.resolvePath(path), content, "utf8", (err: { code: string }) => {
                 if (err) {
                     reject(err);
                 } else {

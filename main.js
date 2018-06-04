@@ -15,7 +15,7 @@ if (debug || test) {
 }
 
 const defaultDBPath = path.join(app.getPath("userData"), "data.pls");
-const settings = global.settings = new ElectronStore({
+const settings = (global.settings = new ElectronStore({
     name: "settings",
     defaults: {
         autoDownloadUpdates: false,
@@ -27,7 +27,7 @@ const settings = global.settings = new ElectronStore({
         fullscreen: false,
         dbPath: defaultDBPath
     }
-});
+}));
 
 if (!settings.get("uuid")) {
     settings.set("uuid", uuid());
@@ -37,19 +37,23 @@ let win;
 let updateOnQuit = false;
 
 function updateReady(updateInfo) {
-    dialog.showMessageBox({
-        message: "Install Update",
-        detail: `Padlock version ${updateInfo.version} has been downloaded. The update will be installed ` +
-            `the next time the app is launched.`,
-        buttons: ["Install Later", "Install And Restart"],
-        defaultId: 1,
-    }, (buttonIndex) => {
-        if (buttonIndex === 1) {
-            autoUpdater.quitAndInstall();
-        } else {
-            updateOnQuit = true;
+    dialog.showMessageBox(
+        {
+            message: "Install Update",
+            detail:
+                `Padlock version ${updateInfo.version} has been downloaded. The update will be installed ` +
+                `the next time the app is launched.`,
+            buttons: ["Install Later", "Install And Restart"],
+            defaultId: 1
+        },
+        buttonIndex => {
+            if (buttonIndex === 1) {
+                autoUpdater.quitAndInstall();
+            } else {
+                updateOnQuit = true;
+            }
         }
-    });
+    );
 }
 
 autoUpdater.on("update-downloaded", updateReady);
@@ -66,25 +70,28 @@ function updateAvailable(versionInfo) {
         return;
     }
 
-    dialog.showMessageBox({
-        type: "info",
-        message: `A new version of Padlock is available! (v${versionInfo.version})`,
-        detail: htmlToText(versionInfo.releaseNotes),
-        checkboxLabel: "Automatically download and install updates in the future (recommended)",
-        buttons: ["Remind Me Later", "Download And Install"],
-        defaultId: 1
-    }, (buttonIndex, checkboxChecked) => {
-        settings.set("autoDownloadUpdates", checkboxChecked);
+    dialog.showMessageBox(
+        {
+            type: "info",
+            message: `A new version of Padlock is available! (v${versionInfo.version})`,
+            detail: htmlToText(versionInfo.releaseNotes),
+            checkboxLabel: "Automatically download and install updates in the future (recommended)",
+            buttons: ["Remind Me Later", "Download And Install"],
+            defaultId: 1
+        },
+        (buttonIndex, checkboxChecked) => {
+            settings.set("autoDownloadUpdates", checkboxChecked);
 
-        if (buttonIndex === 1) {
-            autoUpdater.downloadUpdate();
+            if (buttonIndex === 1) {
+                autoUpdater.downloadUpdate();
 
-            dialog.showMessageBox({
-                message: "Downloading Update...",
-                detail: "The new version is being downloaded. You'll be notified when it is ready to be installed!"
-            });
+                dialog.showMessageBox({
+                    message: "Downloading Update...",
+                    detail: "The new version is being downloaded. You'll be notified when it is ready to be installed!"
+                });
+            }
         }
-    });
+    );
 }
 
 function checkForUpdates(manual) {
@@ -92,46 +99,50 @@ function checkForUpdates(manual) {
     autoUpdater.allowPrerelease = settings.get("allowPrerelease");
 
     const check = autoUpdater.checkForUpdates();
-    check && check.then((result) => {
-        if (autoUpdater.updateAvailable) {
-            updateAvailable(result.versionInfo);
-        } else if (manual) {
-            dialog.showMessageBox({
-                type: "info",
-                message: "No Updates Available",
-                detail: "Your version of Padlock is up to date.",
-                checkboxLabel: "Automatically download and install updates in the future (recommended)",
-                checkboxChecked: settings.get("autoDownloadUpdates")
-            }, (buttonIndex, checkboxChecked) => {
-                settings.set("autoDownloadUpdates", checkboxChecked);
-            });
-        }
-    });
+    check &&
+        check.then(result => {
+            if (autoUpdater.updateAvailable) {
+                updateAvailable(result.versionInfo);
+            } else if (manual) {
+                dialog.showMessageBox(
+                    {
+                        type: "info",
+                        message: "No Updates Available",
+                        detail: "Your version of Padlock is up to date.",
+                        checkboxLabel: "Automatically download and install updates in the future (recommended)",
+                        checkboxChecked: settings.get("autoDownloadUpdates")
+                    },
+                    (buttonIndex, checkboxChecked) => {
+                        settings.set("autoDownloadUpdates", checkboxChecked);
+                    }
+                );
+            }
+        });
 }
 
 function saveDBAs() {
     const oldPath = settings.get("dbPath");
     const newPath = dialog.showSaveDialog({
         defaultPath: oldPath === defaultDBPath ? path.join(app.getPath("home"), "padlock.pls") : oldPath,
-        filters: [
-            {name: "Padlock Store", extensions: ["pls"]},
-        ]
+        filters: [{ name: "Padlock Store", extensions: ["pls"] }]
     });
     if (newPath) {
-        if (dialog.showMessageBox({
-            type: "question",
-            message: "Confirm Changing Database Location",
-            detail: `Are you sure you want to change your database location to ${newPath}?`,
-            buttons: ["Save And Restart", "Cancel"],
-            defaultId: 0
-        }) === 1) {
+        if (
+            dialog.showMessageBox({
+                type: "question",
+                message: "Confirm Changing Database Location",
+                detail: `Are you sure you want to change your database location to ${newPath}?`,
+                buttons: ["Save And Restart", "Cancel"],
+                defaultId: 0
+            }) === 1
+        ) {
             return;
         }
 
         settings.set("dbPath", newPath);
 
         if (fs.pathExistsSync(oldPath)) {
-            fs.moveSync(oldPath, newPath, {overwrite: true});
+            fs.moveSync(oldPath, newPath, { overwrite: true });
         }
 
         app.relaunch();
@@ -144,21 +155,22 @@ function loadDB() {
     const paths = dialog.showOpenDialog({
         defaultPath: oldPath === defaultDBPath ? path.join(app.getPath("home"), "padlock.pls") : oldPath,
         properties: ["openFile", "createDirectory", "promptToCreate"],
-        filters: [
-            {name: "Padlock Store", extensions: ["pls"]},
-        ]
+        filters: [{ name: "Padlock Store", extensions: ["pls"] }]
     });
     const newPath = paths && paths[0];
 
     if (newPath && newPath !== oldPath) {
-        if (dialog.showMessageBox({
-            type: "question",
-            message: "Confirm Loading Database",
-            detail: `Are you sure you want to load the database file at ${newPath}?` +
-                ` Your existing datbase will remain at ${oldPath}.`,
-            buttons: ["Load And Restart", "Cancel"],
-            defaultId: 0
-        }) === 1) {
+        if (
+            dialog.showMessageBox({
+                type: "question",
+                message: "Confirm Loading Database",
+                detail:
+                    `Are you sure you want to load the database file at ${newPath}?` +
+                    ` Your existing datbase will remain at ${oldPath}.`,
+                buttons: ["Load And Restart", "Cancel"],
+                defaultId: 0
+            }) === 1
+        ) {
             return;
         }
 
@@ -189,11 +201,13 @@ function createWindow() {
     });
 
     // and load the index.html of the app.
-    win.loadURL(url.format({
-        pathname: path.resolve(__dirname, test ? "test/index.html" : "app/index.html"),
-        protocol: "file:",
-        slashes: true
-    }));
+    win.loadURL(
+        url.format({
+            pathname: path.resolve(__dirname, test ? "test/index.html" : "app/build/dev/index.html"),
+            protocol: "file:",
+            slashes: true
+        })
+    );
 
     win.once("ready-to-show", () => {
         win.show();
@@ -218,46 +232,42 @@ function createWindow() {
         e.preventDefault();
         shell.openExternal(url);
     });
-
 }
 
 function createApplicationMenu() {
     const checkForUpdatesItem = {
         label: "Check for Updates...",
-        click() { checkForUpdates(true); }
+        click() {
+            checkForUpdates(true);
+        }
     };
 
-    const appSubMenu = os.platform() === "darwin" ? [ { role: "about" } ] :
-        [ { label: `Padlock v${app.getVersion()}`, enabled: false} ];
+    const appSubMenu =
+        os.platform() === "darwin" ? [{ role: "about" }] : [{ label: `Padlock v${app.getVersion()}`, enabled: false }];
 
-    appSubMenu.push(
-        checkForUpdatesItem
-    );
+    appSubMenu.push(checkForUpdatesItem);
 
     if (os.platform() == "darwin") {
-        appSubMenu.push(
-            { type: "separator" },
-            { role: "hide" },
-            { role: "hideothers" },
-            { role: "unhide" }
-        );
+        appSubMenu.push({ type: "separator" }, { role: "hide" }, { role: "hideothers" }, { role: "unhide" });
     }
 
     if (debug) {
         appSubMenu.push(
             { type: "separator" },
-            { label: "Debug", submenu: [{
-                label: "Open Dev Tools",
-                accelerator: "CmdOrCtrl+Shift+I",
-                click: () => win.webContents.toggleDevTools()
-            }] }
+            {
+                label: "Debug",
+                submenu: [
+                    {
+                        label: "Open Dev Tools",
+                        accelerator: "CmdOrCtrl+Shift+I",
+                        click: () => win.webContents.toggleDevTools()
+                    }
+                ]
+            }
         );
     }
 
-    appSubMenu.push(
-        { type: "separator" },
-        { role: "quit" }
-    );
+    appSubMenu.push({ type: "separator" }, { role: "quit" });
 
     // Set up menu
     const template = [
@@ -277,20 +287,26 @@ function createApplicationMenu() {
                             type: "checkbox",
                             label: "Automatically Download and Install Updates",
                             checked: settings.get("autoDownloadUpdates"),
-                            click(item) { settings.set("autoDownloadUpdates", item.checked); }
+                            click(item) {
+                                settings.set("autoDownloadUpdates", item.checked);
+                            }
                         },
                         { type: "separator" },
                         {
                             type: "radio",
                             label: "Only Download Stable Releases (recommended)",
                             checked: !settings.get("allowPrerelease"),
-                            click(item) { settings.set("allowPrerelease", !item.checked); }
+                            click(item) {
+                                settings.set("allowPrerelease", !item.checked);
+                            }
                         },
                         {
                             type: "radio",
                             label: "Download Stable and Beta Releases",
                             checked: settings.get("allowPrerelease"),
-                            click(item) { settings.set("allowPrerelease", item.checked); }
+                            click(item) {
+                                settings.set("allowPrerelease", item.checked);
+                            }
                         }
                     ]
                 },
@@ -300,11 +316,15 @@ function createApplicationMenu() {
                     submenu: [
                         {
                             label: "Load...",
-                            click() { loadDB(); }
+                            click() {
+                                loadDB();
+                            }
                         },
                         {
                             label: "Save As...",
-                            click() { saveDBAs(); }
+                            click() {
+                                saveDBAs();
+                            }
                         }
                     ]
                 }
@@ -350,7 +370,7 @@ app.on("activate", () => {
     }
 });
 
-app.on("before-quit", (e) => {
+app.on("before-quit", e => {
     if (updateOnQuit) {
         updateOnQuit = false;
         e.preventDefault();

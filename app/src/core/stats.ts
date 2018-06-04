@@ -1,11 +1,11 @@
-import { FileSource } from "./source"
+import { FileSource } from "./source";
 
 const statsSource = new FileSource("stats.json");
 
-export type Stats = { [prop: string]: number|string };
+export type Stats = { [prop: string]: number | string };
 let stats: Stats;
 
-const statsLoaded = statsSource.get().then((data) => {
+const statsLoaded = statsSource.get().then(data => {
     try {
         stats = JSON.parse(data);
     } catch (e) {

@@ -2,7 +2,6 @@ import { uuid } from "./util";
 import { getAppVersion } from "./platform";
 import { Source } from "./source";
 
-
 function compareProperty(p: string): (a: Object, b: Object) => number {
     return (a, b) => {
         const x = typeof a[p] === "string" ? a[p].toLowerCase() : a[p];
@@ -23,7 +22,6 @@ function normalizeTag(tag: string): string {
 }
 
 export class Record {
-
     private _tags: Set<string>;
     name: string;
     fields: Array<Field>;
@@ -32,8 +30,15 @@ export class Record {
     removed: boolean;
     lastUsed?: Date;
 
-    constructor(name = "", fields?: Array<Field>, tags?: string[],
-                id?: string, updated?: Date, removed = false, lastUsed?: Date) {
+    constructor(
+        name = "",
+        fields?: Array<Field>,
+        tags?: string[],
+        id?: string,
+        updated?: Date,
+        removed = false,
+        lastUsed?: Date
+    ) {
         this.name = name;
         this.fields = fields || new Array<Field>();
         if (!Array.isArray(tags)) {
@@ -50,7 +55,7 @@ export class Record {
         const fields = obj.fields && <Array<Field>>obj.fields;
         const updated = obj.updated && (obj.updated instanceof Date ? obj.updated : new Date(obj.updated));
         const lastUsed = obj.lastUsed && (obj.lastUsed instanceof Date ? obj.lastUsed : new Date(obj.lastUsed));
-        const tags = obj.tags || obj.category && [obj.category];
+        const tags = obj.tags || (obj.category && [obj.category]);
         return new Record(obj.name, fields, tags, obj.uuid, updated, obj.removed, lastUsed);
     }
 
@@ -93,14 +98,12 @@ export class Record {
             lastUsed: this.lastUsed
         };
     }
-
 }
 
 export class Collection {
-
     private _records: Map<string, Record>;
 
-    constructor(records?:Record[]) {
+    constructor(records?: Record[]) {
         this._records = new Map<string, Record>();
 
         if (records) {
@@ -151,7 +154,6 @@ export class Collection {
     clear(): void {
         this._records.clear();
     }
-
 }
 
 export interface Device {
@@ -165,7 +167,6 @@ export interface Account {
 }
 
 export class Settings {
-
     static defaults = {
         autoLock: true,
         // Auto lock delay in minutes
@@ -272,5 +273,4 @@ export class Settings {
         Object.assign(this, Settings.defaults);
         this.loaded = false;
     }
-
 }
