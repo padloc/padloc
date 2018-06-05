@@ -9,7 +9,6 @@
         "browser": true
     },
     "extends": "eslint:recommended",
-    "plugins": ["html"],
     "rules": {
         "brace-style": "off",
         "camelcase": "error",

@@ -56,8 +56,8 @@ function recordsToTable(records: Record[]) {
 }
 
 export async function toCSV(records: Record[]): Promise<string> {
-    await loadPapa();
-    return Papa.unparse(recordsToTable(records));
+    const papa = await loadPapa();
+    return papa.unparse(recordsToTable(records));
 }
 
 export async function toPadlock(records: Record[], password: string): Promise<string> {

@@ -13,3 +13,4 @@ app/src/core/*.js
 app/src/core/*.js.map
 
 tests.js
+app/build

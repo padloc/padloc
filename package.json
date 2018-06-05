@@ -29,7 +29,6 @@
     "estraverse": "^4.2.0",
     "gulp": "^3.9.1",
     "gulp-insert-lines": "0.0.4",
-    "husky": "^0.14.3",
     "js-yaml": "^3.8.4",
     "karma": "^1.7.0",
     "karma-chai": "^0.1.0",
@@ -63,8 +62,5 @@
     "build:win": "gulp build --win --silent",
     "build:linux": "gulp build --linux --silent",
     "postinstall": "npm run compile && mkdir -p cordova/www"
-  },
-  "husky": {
-    "pre-commit": "npm run lint"
   }
 }

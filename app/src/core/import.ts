@@ -6,8 +6,8 @@ export class ImportError {
     constructor(public code: "invalid_csv") {}
 }
 
-export async function loadPapa() {
-    await loadScript("vendor/papaparse.js");
+export async function loadPapa(): Promise<any> {
+    await loadScript("vendor/papaparse.js", "Papa");
 }
 
 //* Detects if a string contains a SecuStore backup
@@ -105,13 +105,13 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
 }
 
 export async function isCSV(data: string): Promise<Boolean> {
-    await loadPapa();
-    return Papa.parse(data).errors.length === 0;
+    const papa = await loadPapa();
+    return papa.parse(data).errors.length === 0;
 }
 
 export async function fromCSV(data: string, nameColIndex?: number, tagsColIndex?: number): Promise<Record[]> {
-    await loadPapa();
-    const parsed = Papa.parse(data);
+    const papa = await loadPapa();
+    const parsed = papa.parse(data);
     if (parsed.errors.length) {
         throw new ImportError("invalid_csv");
     }
@@ -193,12 +193,13 @@ function lpParseRow(row: string[]): Record {
 }
 
 export async function fromLastPass(data: string): Promise<Record[]> {
-    await loadPapa();
-    let records = Papa.parse(data)
+    const papa = await loadPapa();
+    let records = papa
+        .parse(data)
         .data // Remove first row as it only contains field names
         .slice(1)
         // Filter out empty rows
-        .filter(row => row.length > 1)
+        .filter((row: string[]) => row.length > 1)
         .map(lpParseRow);
 
     return records;

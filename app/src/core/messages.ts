@@ -32,7 +32,7 @@ export class Messages {
         const aa = JSON.parse(data);
         const read = await this.fetchRead();
         const platform = await getPlatformName();
-        await loadScript("vendor/semver.js");
+        const semver = await loadScript("vendor/semver.js", "semver");
 
         return aa
             .map((a: any) => {

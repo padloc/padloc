@@ -10,9 +10,9 @@
     "@polymer/paper-spinner": "^3.0.0-pre.18",
     "@polymer/polymer": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
+    "autosize": "^4.0.2",
     "moment": "^2.22.2",
-    "moment-duration-format": "^2.2.2",
-    "autosize": "^4.0.2"
+    "moment-duration-format": "^2.2.2"
   },
   "devDependencies": {},
   "description": "Padlock Client",

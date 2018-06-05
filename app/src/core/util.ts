@@ -1,3 +1,4 @@
+// @ts-ignore
 import moment from "moment";
 import "moment-duration-format";
 
@@ -91,7 +92,7 @@ export function isFuture(date: Date | string | number, duration: number) {
         .isAfter();
 }
 
-export function loadScript(src: string): Promise<void> {
+export function loadScript(src: string, global?: string): Promise<any | undefined> {
     if (document.querySelector(`script[src="${src}"]`) !== null) {
         return Promise.resolve();
     }
@@ -99,12 +100,14 @@ export function loadScript(src: string): Promise<void> {
     s.src = src;
     s.type = "text/javascript";
     return new Promise(resolve => {
-        s.onload = () => resolve();
+        s.onload = () => {
+            resolve(global ? window[global] : undefined);
+        };
         document.body.appendChild(s);
     });
 }
 
-export async function passwordStrength(pwd: string): Promise<{score: number}> {
-    await loadScript("vendor/zxcvbn.js");
-    return window.zxcvbn(pwd);
+export async function passwordStrength(pwd: string): Promise<{ score: number }> {
+    const zxcvbn = await loadScript("vendor/zxcvbn.js", "zxcvbn");
+    return zxcvbn(pwd);
 }
