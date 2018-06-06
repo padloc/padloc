@@ -1,0 +1,25 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/elements/app.js",
+  "sources": [
+   "src/**/*.js",
+   "vendor/**/*.js",
+   "manifest/**",
+   "package.json",
+   "manifest.json"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "node_modules/@webcomponents/webcomponentsjs/**/*",
+    "vendor/**/*.js",
+    "assets/**/*"
+  ],
+  "moduleResolution": "node",
+  "npm": true,
+  "builds": [
+    { 
+      "name": "web",
+      "preset": "es6-bundled"
+    }
+  ]
+}

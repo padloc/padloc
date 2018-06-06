@@ -5,12 +5,23 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 
+        <link rel="manifest" href="./manifest.json">
+
         <style> html, body {
             background: #59c6ff;
             margin: 0;
         } </style>
 
         <link rel="stylesheet" href="./assets/fonts/fonts.css">
+
+        <script>
+            // Register service worker if supported.
+            if ("serviceWorker" in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register("service-worker.js");
+                });
+            }
+        </script>
 
         <script type="module" src="node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.js"></script>
         <script type="module" src="./src/elements/app.js"></script>

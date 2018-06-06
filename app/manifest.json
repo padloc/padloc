@@ -1,0 +1,19 @@
+{
+  "name": "Padlock",
+  "short_name": "Padlock",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#59c6ff",
+  "icons": [
+    {
+      "src": "./assets/icons/192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "./assets/icons/512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
