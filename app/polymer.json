@@ -3,7 +3,6 @@
   "shell": "src/elements/app.js",
   "sources": [
    "src/**/*.js",
-   "vendor/**/*.js",
    "manifest/**",
    "package.json",
    "manifest.json"
@@ -15,11 +14,5 @@
     "assets/**/*"
   ],
   "moduleResolution": "node",
-  "npm": true,
-  "builds": [
-    { 
-      "name": "web",
-      "preset": "es6-bundled"
-    }
-  ]
+  "npm": true
 }

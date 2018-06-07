@@ -2,8 +2,8 @@
 
 "use strict";
 
-var { buildCordova } = require("../../lib/build");
-var path = require("path");
+const { buildCordova } = require("../../lib/build");
+const path = require("path");
 
 module.exports = function(context) {
     const platforms = context.opts.cordova.platforms;

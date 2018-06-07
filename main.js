@@ -7,12 +7,14 @@ const url = require("url");
 const os = require("os");
 const fs = require("fs-extra");
 const uuid = require("uuid/v4");
-const { debug, test } = require("yargs").argv;
+const { debug, test, dir } = require("yargs").argv;
 const ElectronStore = require("electron-store");
 
 if (debug || test) {
     app.setPath("userData", path.join(app.getPath("temp"), app.getName()));
 }
+
+const indexPath = path.resolve(__dirname, test ? "test" : dir || "app", "index.html");
 
 const defaultDBPath = path.join(app.getPath("userData"), "data.pls");
 const settings = (global.settings = new ElectronStore({
@@ -203,7 +205,7 @@ function createWindow() {
     // and load the index.html of the app.
     win.loadURL(
         url.format({
-            pathname: path.resolve(__dirname, test ? "test/index.html" : "app/build/dev/index.html"),
+            pathname: indexPath,
             protocol: "file:",
             slashes: true
         })
