@@ -1,6 +1,5 @@
-import { Base64String } from "./encoding";
-import { SymmetricKey, CipherText, PlainText } from "./crypto";
-import { KeyDerivationParams, CipherParams, CryptoError } from "./crypto";
+import { Base64String, bytesToBase64, base64ToBytes, stringToBytes, bytesToString } from "./encoding";
+import { SymmetricKey, CipherText, PlainText, KeyDerivationParams, CipherParams, CryptoError } from "./crypto";
 import { sjcl } from "../app/vendor/sjcl";
 
 export interface CryptoProvider {
@@ -9,6 +8,11 @@ export interface CryptoProvider {
     deriveKey(params: KeyDerivationParams): Promise<SymmetricKey>;
     encrypt(data: PlainText, params: CipherParams): Promise<CipherText>;
     decrypt(data: Base64String, params: CipherParams): Promise<PlainText>;
+}
+
+// TODO: more checks
+function validateKeyParams(params: KeyDerivationParams): boolean {
+    return !!params.password && typeof params.password === "string" && !!params.salt && typeof params.salt === "string";
 }
 
 // Shorthands for codec functions
@@ -30,6 +34,10 @@ export var SJCLProvider: CryptoProvider = {
     },
 
     async deriveKey(params: KeyDerivationParams): Promise<SymmetricKey> {
+        if (!validateKeyParams(params)) {
+            throw new CryptoError("invalid_key_params");
+        }
+
         const k = sjcl.misc.pbkdf2(
             utf8ToBits(params.password),
             base64ToBits(params.salt!),
@@ -88,6 +96,90 @@ export var SJCLProvider: CryptoProvider = {
             return Promise.resolve(bitsToBase64(ct));
         } catch (e) {
             throw new CryptoError("encryption_failed");
+        }
+    }
+};
+
+const webCrypto = window.crypto && window.crypto.subtle;
+
+export var WebCryptoProvider: CryptoProvider = {
+    isAvailable() {
+        return !!webCrypto;
+    },
+
+    randomBytes(n: number): Base64String {
+        const bytes = window.crypto.getRandomValues(new Uint8Array(n));
+        return bytesToBase64(bytes as Uint8Array);
+    },
+
+    async deriveKey(params: KeyDerivationParams): Promise<SymmetricKey> {
+        if (!validateKeyParams(params)) {
+            throw new CryptoError("invalid_key_params");
+        }
+
+        // First, create a PBKDF2 "key" containing the password
+        const baseKey = await webCrypto.importKey("raw", stringToBytes(params.password!), params.algorithm, false, [
+            "deriveKey"
+        ]);
+
+        const key = await webCrypto.deriveKey(
+            {
+                name: "PBKDF2",
+                salt: base64ToBytes(params.salt!),
+                iterations: params.iterations,
+                hash: "SHA-256"
+            },
+            baseKey,
+            { name: "AES-GCM", length: params.keySize }, // Key we want
+            true, // Extrable
+            ["encrypt", "decrypt"] // For new key
+        );
+
+        const k = await webCrypto.exportKey("jwk", key);
+        // const k = bytesToBase64(new Uint8Array(raw));
+
+        return k as SymmetricKey;
+    },
+
+    async encrypt(data: string, params: CipherParams): Promise<CipherText> {
+        switch (params.cipherType) {
+            case "symmetric":
+                const key = await webCrypto.importKey("jwk", params.key as JsonWebKey, "AES-GCM", false, ["encrypt"]);
+                const buf = await webCrypto.encrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: base64ToBytes(params.iv!),
+                        additionalData: base64ToBytes(params.additionalData!),
+                        tagLength: params.tagSize
+                    },
+                    key,
+                    stringToBytes(data)
+                );
+                return bytesToBase64(new Uint8Array(buf));
+                break;
+            default:
+                throw new CryptoError("invalid_cipher_params");
+        }
+    },
+
+    async decrypt(data: CipherText, params: CipherParams): Promise<string> {
+        switch (params.cipherType) {
+            case "symmetric":
+                const key = await webCrypto.importKey("jwk", params.key as JsonWebKey, "AES-GCM", false, ["decrypt"]);
+                const buf = await webCrypto.decrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: base64ToBytes(params.iv!),
+                        additionalData: base64ToBytes(params.additionalData!),
+                        tagLength: params.tagSize
+                    },
+                    key,
+                    base64ToBytes(data)
+                );
+                return bytesToString(new Uint8Array(buf));
+                break;
+            default:
+                throw new CryptoError("invalid_cipher_params");
         }
     }
 };

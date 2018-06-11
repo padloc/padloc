@@ -1,5 +1,5 @@
 import { Serializable, Base64String, marshal, unmarshal, Marshalable } from "./encoding";
-import { SJCLProvider as provider } from "./providers";
+import { WebCryptoProvider as provider } from "./providers";
 import { JWK as Key, JWE, PrivateKey, PublicKey, SymmetricKey, Algorithm as JoseAlgorithm } from "./jose";
 
 export { Key, PrivateKey, PublicKey, SymmetricKey };
@@ -165,8 +165,8 @@ export class Container<T extends Serializable> implements Serializable {
 }
 
 export interface KeyDerivationParams {
-    algorithm: "pbkdf2";
-    hash: "sha-256";
+    algorithm: "PBKDF2";
+    hash: "SHA-256";
     keySize: SymmetricCipherKeySize;
     iterations: number;
     password?: string;
@@ -175,8 +175,8 @@ export interface KeyDerivationParams {
 
 export function defaultKeyDerivationParams(): KeyDerivationParams {
     return {
-        algorithm: "pbkdf2",
-        hash: "sha-256",
+        algorithm: "PBKDF2",
+        hash: "SHA-256",
         keySize: 256,
         iterations: PBKDF2_ITER_DEFAULT
     };

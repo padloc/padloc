@@ -11,6 +11,8 @@ cordova/www
 // Core files compiled from typescript
 app/src/core/*.js
 app/src/core/*.js.map
+core/*.js
+core/*.js.map
 
 tests.js
 app/build
