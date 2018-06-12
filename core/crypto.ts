@@ -73,6 +73,7 @@ export type CipherParams = SymmetricCipherParams | AsymmetricCipherParams;
 interface RawContainerV2 {
     version: 2;
     jwe: JWE;
+    keyParams?: KeyDerivationParams;
 }
 
 type RawContainer = RawContainerV2;

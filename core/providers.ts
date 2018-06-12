@@ -16,8 +16,14 @@ function validateKeyParams(params: KeyDerivationParams): boolean {
 }
 
 // Shorthands for codec functions
-const bitsToBase64: (bits: any) => Base64String = sjcl.codec.base64.fromBits;
-const base64ToBits: (base64: Base64String) => any = sjcl.codec.base64.toBits;
+const bitsToBase64: (bits: any) => Base64String = sjcl.codec.base64url.fromBits;
+const base64ToBits = (base64: Base64String): any => {
+    try {
+        return sjcl.codec.base64url.toBits(base64);
+    } catch {
+        return sjcl.codec.base64.toBits(base64);
+    }
+};
 const bitsToUtf8 = sjcl.codec.utf8String.fromBits;
 const utf8ToBits = sjcl.codec.utf8String.toBits;
 
@@ -102,6 +108,10 @@ export var SJCLProvider: CryptoProvider = {
 
 const webCrypto = window.crypto && window.crypto.subtle;
 
+const webCryptoSupportedAlgorithms = {
+    A256GCM: "AES-GCM"
+};
+
 export var WebCryptoProvider: CryptoProvider = {
     isAvailable() {
         return !!webCrypto;
@@ -144,10 +154,19 @@ export var WebCryptoProvider: CryptoProvider = {
     async encrypt(data: string, params: CipherParams): Promise<CipherText> {
         switch (params.cipherType) {
             case "symmetric":
-                const key = await webCrypto.importKey("jwk", params.key as JsonWebKey, "AES-GCM", false, ["encrypt"]);
+                if (params.algorithm === "A256CCM") {
+                    return SJCLProvider.encrypt(data, params);
+                }
+
+                const algorithm = webCryptoSupportedAlgorithms[params.algorithm];
+                if (!algorithm) {
+                    throw new CryptoError("invalid_cipher_params");
+                }
+
+                const key = await webCrypto.importKey("jwk", params.key as JsonWebKey, algorithm, false, ["encrypt"]);
                 const buf = await webCrypto.encrypt(
                     {
-                        name: "AES-GCM",
+                        name: algorithm,
                         iv: base64ToBytes(params.iv!),
                         additionalData: base64ToBytes(params.additionalData!),
                         tagLength: params.tagSize
@@ -165,10 +184,20 @@ export var WebCryptoProvider: CryptoProvider = {
     async decrypt(data: CipherText, params: CipherParams): Promise<string> {
         switch (params.cipherType) {
             case "symmetric":
-                const key = await webCrypto.importKey("jwk", params.key as JsonWebKey, "AES-GCM", false, ["decrypt"]);
+                if (params.algorithm === "A256CCM") {
+                    return SJCLProvider.decrypt(data, params);
+                }
+
+                const algorithm = webCryptoSupportedAlgorithms[params.algorithm];
+
+                if (!algorithm) {
+                    throw new CryptoError("invalid_cipher_params");
+                }
+
+                const key = await webCrypto.importKey("jwk", params.key as JsonWebKey, algorithm, false, ["decrypt"]);
                 const buf = await webCrypto.decrypt(
                     {
-                        name: "AES-GCM",
+                        name: algorithm,
                         iv: base64ToBytes(params.iv!),
                         additionalData: base64ToBytes(params.additionalData!),
                         tagLength: params.tagSize
