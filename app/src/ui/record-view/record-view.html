@@ -208,7 +208,8 @@ class RecordView extends applyMixins(
         });
     }
 
-    _addField(field = { name: "", value: "", masked: false }) {
+    _addField() {
+        const field = { name: "", value: "", masked: false };
         this.lineUpDialog("pl-record-field-dialog", (d) => d.openField(field, true))
             .then((result) => {
                 switch (result.action) {
@@ -226,10 +227,6 @@ class RecordView extends applyMixins(
                         break;
                 }
             });
-    }
-
-    _fieldButtonClicked() {
-        this._addField();
     }
 
     _hasTags() {
