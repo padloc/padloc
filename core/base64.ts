@@ -17,30 +17,17 @@ revLookup["-".charCodeAt(0)] = 62;
 revLookup["_".charCodeAt(0)] = 63;
 
 function getLens(b64: string) {
-    const len = b64.length;
-
-    if (len % 4 > 0) {
-        throw new Error("Invalid string. Length must be a multiple of 4");
-    }
-
-    // Trim off extra bytes after placeholder bytes are found
-    // See: https://github.com/beatgammit/base64-js/issues/42
-    let validLen = b64.indexOf("=");
-    if (validLen === -1) {
-        validLen = len;
-    }
-
-    const placeHoldersLen = validLen === len ? 0 : 4 - (validLen % 4);
-
-    return [validLen, placeHoldersLen];
+    // Remove trailing padding characters
+    const trimmed = b64.replace(/=*$/, "");
+    const len = trimmed.length;
+    const padLen = (4 - (len % 4)) % 4;
+    return [len, padLen];
 }
 
 // base64 is 4/3 + up to two characters of the original data
 export function byteLength(b64: string): number {
     const lens = getLens(b64);
-    const validLen = lens[0];
-    const placeHoldersLen = lens[1];
-    return ((validLen + placeHoldersLen) * 3) / 4 - placeHoldersLen;
+    return _byteLength(lens[0], lens[1]);
 }
 
 function _byteLength(validLen: number, placeHoldersLen: number) {
@@ -91,7 +78,7 @@ export function toByteArray(b64: string) {
 
 function tripletToBase64(num: number, urlSafe = false) {
     const lu = urlSafe ? lookupURL : lookup;
-    return lu[(num >> 18) & 0x3f] + lu[(num >> 12) & 0x3f] + lu[(num >> 6) & 0x3f] + lookup[num & 0x3f];
+    return lu[(num >> 18) & 0x3f] + lu[(num >> 12) & 0x3f] + lu[(num >> 6) & 0x3f] + lu[num & 0x3f];
 }
 
 function encodeChunk(uint8: Uint8Array, start: number, end: number, urlSafe = false) {
@@ -106,6 +93,8 @@ function encodeChunk(uint8: Uint8Array, start: number, end: number, urlSafe = fa
 
 export function fromByteArray(uint8: Uint8Array, urlSafe = false) {
     let tmp;
+    const lu = urlSafe ? lookupURL : lookup;
+    const padChar = urlSafe ? "" : "=";
     const len = uint8.length;
     const extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
     const parts = [];
@@ -119,10 +108,10 @@ export function fromByteArray(uint8: Uint8Array, urlSafe = false) {
     // pad the end with zeros, but make sure to not forget the extra bytes
     if (extraBytes === 1) {
         tmp = uint8[len - 1];
-        parts.push(lookup[tmp >> 2] + lookup[(tmp << 4) & 0x3f] + "==");
+        parts.push(lu[tmp >> 2] + lu[(tmp << 4) & 0x3f] + padChar + padChar);
     } else if (extraBytes === 2) {
         tmp = (uint8[len - 2] << 8) + uint8[len - 1];
-        parts.push(lookup[tmp >> 10] + lookup[(tmp >> 4) & 0x3f] + lookup[(tmp << 2) & 0x3f] + "=");
+        parts.push(lu[tmp >> 10] + lu[(tmp >> 4) & 0x3f] + lu[(tmp << 2) & 0x3f] + padChar);
     }
 
     return parts.join("");
