@@ -1,4 +1,13 @@
-import { Base64String, bytesToBase64, base64ToBytes, stringToBytes, bytesToString } from "./encoding";
+import {
+    Base64String,
+    bytesToBase64,
+    base64ToBytes,
+    stringToBytes,
+    bytesToString,
+    marshal,
+    unmarshal,
+    Serializable
+} from "./encoding";
 import { sjcl } from "../app/vendor/sjcl";
 import { JWK as Key, PrivateKey, PublicKey, SymmetricKey, Algorithm as JoseAlgorithm } from "./jose";
 
@@ -28,13 +37,13 @@ export type CipherType = "symmetric" | "asymmetric";
 export interface BaseCipherParams {
     cipherType: CipherType;
     algorithm: string;
-    key?: Key;
 }
 
 export interface SymmetricCipherParams extends BaseCipherParams {
     cipherType: "symmetric";
     algorithm: "AES-GCM" | "AES-CCM";
-    tagSize?: TagSize;
+    tagSize: TagSize;
+    keySize: KeySize;
     iv?: Base64String;
     additionalData?: Base64String;
 }
@@ -51,7 +60,6 @@ export interface KeyDerivationParams {
     hash: "SHA-256" | "SHA-512";
     keySize: KeySize;
     iterations: number;
-    password?: string;
     salt?: string;
 }
 
@@ -59,9 +67,9 @@ export interface CryptoProvider {
     isAvailable(): boolean;
     randomBytes(n: number): Base64String;
     randomKey(n: KeySize): Promise<SymmetricKey>;
-    deriveKey(params: KeyDerivationParams): Promise<SymmetricKey>;
-    encrypt(data: PlainText, params: CipherParams): Promise<CipherText>;
-    decrypt(data: Base64String, params: CipherParams): Promise<PlainText>;
+    deriveKey(password: string, params: KeyDerivationParams): Promise<SymmetricKey>;
+    encrypt(key: Key, data: PlainText, params: CipherParams): Promise<CipherText>;
+    decrypt(key: Key, data: Base64String, params: CipherParams): Promise<PlainText>;
     generateKeyPair(): Promise<{ privateKey: PrivateKey; publicKey: PublicKey }>;
 }
 
@@ -78,14 +86,6 @@ export class CryptoError {
     ) {}
 }
 
-export function defaultSymmetricCipherParams(): SymmetricCipherParams {
-    return {
-        cipherType: "symmetric",
-        algorithm: "AES-GCM",
-        tagSize: 64
-    };
-}
-
 export function validateCipherParams(params: CipherParams) {
     switch (params.cipherType) {
         case "symmetric":
@@ -97,13 +97,11 @@ export function validateCipherParams(params: CipherParams) {
                 !!params.additionalData &&
                 typeof params.additionalData === "string" &&
                 params.tagSize &&
-                [64, 96, 128].includes(params.tagSize) &&
-                !!params.key &&
-                params.key.kty === "oct"
+                [64, 96, 128].includes(params.tagSize)
             );
             break;
         case "asymmetric":
-            return params.algorithm === "RSA-OAEP" && !!params.key && params.key.kty === "RSA";
+            return params.algorithm === "RSA-OAEP";
             break;
         default:
             return false;
@@ -122,8 +120,6 @@ export function defaultKeyDerivationParams(): KeyDerivationParams {
 export function validateKeyParams(params: KeyDerivationParams): boolean {
     return (
         params.algorithm === "PBKDF2" &&
-        !!params.password &&
-        typeof params.password === "string" &&
         !!params.salt &&
         typeof params.salt === "string" &&
         !!params.iterations &&
@@ -158,17 +154,12 @@ export var SJCLProvider: CryptoProvider = {
         return bitsToBase64(sjcl.random.randomWords(bytes / 4, 0));
     },
 
-    async deriveKey(params: KeyDerivationParams): Promise<SymmetricKey> {
+    async deriveKey(password: string, params: KeyDerivationParams): Promise<SymmetricKey> {
         if (!validateKeyParams(params)) {
             throw new CryptoError("invalid_key_params");
         }
 
-        const k = sjcl.misc.pbkdf2(
-            utf8ToBits(params.password),
-            base64ToBits(params.salt!),
-            params.iterations,
-            params.keySize
-        );
+        const k = sjcl.misc.pbkdf2(utf8ToBits(password), base64ToBits(params.salt!), params.iterations, params.keySize);
         return {
             kty: "oct",
             alg: "A256GCM",
@@ -184,7 +175,7 @@ export var SJCLProvider: CryptoProvider = {
         };
     },
 
-    async decrypt(ct: CipherText, params: CipherParams): Promise<PlainText> {
+    async decrypt(key: Key, ct: CipherText, params: CipherParams): Promise<PlainText> {
         if (params.cipherType !== "symmetric" || params.algorithm !== "AES-CCM") {
             throw new CryptoError("invalid_cipher_params");
         }
@@ -192,10 +183,10 @@ export var SJCLProvider: CryptoProvider = {
         // Only AES and CCM are supported
         const algorithm = "aes";
         const mode = "ccm";
-        const key = (params.key as SymmetricKey).k;
+        const k = (key as SymmetricKey).k;
 
         try {
-            const cipher = new sjcl.cipher[algorithm](base64ToBits(key));
+            const cipher = new sjcl.cipher[algorithm](base64ToBits(k));
             const pt = sjcl.mode[mode].decrypt(
                 cipher,
                 base64ToBits(ct),
@@ -209,7 +200,7 @@ export var SJCLProvider: CryptoProvider = {
         }
     },
 
-    async encrypt(pt: PlainText, params: CipherParams): Promise<CipherText> {
+    async encrypt(key: Key, pt: PlainText, params: CipherParams): Promise<CipherText> {
         if (params.cipherType !== "symmetric" || params.algorithm !== "AES-CCM") {
             throw new CryptoError("invalid_cipher_params");
         }
@@ -217,10 +208,10 @@ export var SJCLProvider: CryptoProvider = {
         // Only AES and CCM are supported
         const algorithm = "aes";
         const mode = "ccm";
-        const key = (params.key as SymmetricKey).k;
+        const k = (key as SymmetricKey).k;
 
         try {
-            const cipher = new sjcl.cipher[algorithm](base64ToBits(key));
+            const cipher = new sjcl.cipher[algorithm](base64ToBits(k));
             var ct = sjcl.mode[mode].encrypt(
                 cipher,
                 utf8ToBits(pt),
@@ -241,18 +232,14 @@ export var SJCLProvider: CryptoProvider = {
 
 const webCrypto = window.crypto && window.crypto.subtle;
 
-async function webCryptoGetArgs(params: CipherParams, action = "encrypt") {
+async function webCryptoGetArgs(key: Key, params: CipherParams, action = "encrypt") {
     if (!validateCipherParams(params)) {
         throw new CryptoError("invalid_cipher_params");
     }
 
-    const key = await webCrypto.importKey(
-        "jwk",
-        params.key as JsonWebKey,
-        { name: params.algorithm, hash: "SHA-1" },
-        false,
-        [action]
-    );
+    const k = await webCrypto.importKey("jwk", key as JsonWebKey, { name: params.algorithm, hash: "SHA-1" }, false, [
+        action
+    ]);
 
     const p = { name: params.algorithm };
 
@@ -264,7 +251,7 @@ async function webCryptoGetArgs(params: CipherParams, action = "encrypt") {
         });
     }
 
-    return { p, key };
+    return { p, k };
 }
 
 export var WebCryptoProvider: CryptoProvider = {
@@ -283,12 +270,12 @@ export var WebCryptoProvider: CryptoProvider = {
         return jwk as SymmetricKey;
     },
 
-    async deriveKey(params: KeyDerivationParams): Promise<SymmetricKey> {
+    async deriveKey(password: string, params: KeyDerivationParams): Promise<SymmetricKey> {
         if (!validateKeyParams(params)) {
             throw new CryptoError("invalid_key_params");
         }
 
-        const baseKey = await webCrypto.importKey("raw", stringToBytes(params.password!), params.algorithm, false, [
+        const baseKey = await webCrypto.importKey("raw", stringToBytes(password!), params.algorithm, false, [
             "deriveKey"
         ]);
 
@@ -310,26 +297,26 @@ export var WebCryptoProvider: CryptoProvider = {
         return k as SymmetricKey;
     },
 
-    async encrypt(data: string, params: CipherParams): Promise<CipherText> {
+    async encrypt(key: Key, data: string, params: CipherParams): Promise<CipherText> {
         if (params.algorithm === "AES-CCM") {
-            return SJCLProvider.encrypt(data, params);
+            return SJCLProvider.encrypt(key, data, params);
         }
 
-        const { p, key } = await webCryptoGetArgs(params, "encrypt");
+        const { p, k } = await webCryptoGetArgs(key, params, "encrypt");
 
-        const buf = await webCrypto.encrypt(p, key, stringToBytes(data));
+        const buf = await webCrypto.encrypt(p, k, stringToBytes(data));
 
         return bytesToBase64(new Uint8Array(buf));
     },
 
-    async decrypt(data: CipherText, params: CipherParams): Promise<string> {
+    async decrypt(key: Key, data: CipherText, params: CipherParams): Promise<string> {
         if (params.algorithm === "AES-CCM") {
-            return SJCLProvider.decrypt(data, params);
+            return SJCLProvider.decrypt(key, data, params);
         }
 
-        const { p, key } = await webCryptoGetArgs(params, "decrypt");
+        const { p, k } = await webCryptoGetArgs(key, params, "decrypt");
 
-        const buf = await webCrypto.decrypt(p, key, base64ToBytes(data));
+        const buf = await webCrypto.decrypt(p, k, base64ToBytes(data));
 
         return bytesToString(new Uint8Array(buf));
     },
@@ -352,3 +339,149 @@ export var WebCryptoProvider: CryptoProvider = {
         };
     }
 };
+
+export const provider = WebCryptoProvider;
+
+interface RawContainerV2 {
+    version: 2;
+    ccp: SymmetricCipherParams;
+    ct: CipherText;
+    wcp?: AsymmetricCipherParams;
+    kdp?: KeyDerivationParams;
+    ek?: {
+        [id: string]: CipherText;
+    };
+}
+
+type RawContainer = RawContainerV2;
+
+export interface Participant {
+    id: string;
+    publicKey: PublicKey;
+    privateKey?: PrivateKey;
+    encryptedKey?: CipherText;
+}
+
+export function defaultEncryptionParams(): SymmetricCipherParams {
+    return {
+        cipherType: "symmetric",
+        algorithm: "AES-GCM",
+        tagSize: 64,
+        keySize: 256
+    };
+}
+
+export function defaultWrappingParams(): AsymmetricCipherParams {
+    return {
+        cipherType: "asymmetric",
+        algorithm: "RSA-OAEP"
+    };
+}
+
+export class Container<T extends Serializable> implements Serializable {
+    constructor(
+        public data: T,
+        public currentParticipant?: Participant,
+        public participants: Participant[] = [],
+        public encryptionParams: SymmetricCipherParams = defaultEncryptionParams(),
+        public wrappingParams: AsymmetricCipherParams = defaultWrappingParams()
+    ) {}
+
+    private _key: SymmetricKey;
+
+    async getKey(): Promise<SymmetricKey> {
+        if (!this._key) {
+            this._key = await provider.randomKey(this.encryptionParams.keySize);
+        }
+
+        return this._key;
+    }
+
+    async addParticipant(p: Participant) {
+        const key = await this.getKey();
+        const rawKey = key.k;
+        p.encryptedKey = await provider.encrypt(p.publicKey, rawKey, this.wrappingParams);
+        this.participants.push(p);
+    }
+
+    async serialize(): Promise<RawContainer> {
+        this.encryptionParams.iv = provider.randomBytes(16);
+        // TODO: useful additional authenticated data?
+        this.encryptionParams.additionalData = provider.randomBytes(16);
+
+        const key = await this.getKey();
+        const pt = marshal(await this.data.serialize());
+        const ct = await provider.encrypt(key, pt, this.encryptionParams);
+        const raw: RawContainer = {
+            version: 2,
+            ccp: this.encryptionParams,
+            ct: ct
+        };
+
+        if (this.participants.length) {
+            raw.wcp = this.wrappingParams;
+            raw.ek = {};
+            for (const p of this.participants) {
+                raw.ek[p.id] = p.encryptedKey!;
+            }
+        }
+
+        return raw;
+    }
+
+    async deserialize(raw: RawContainer): Promise<void> {
+        this.encryptionParams = raw.ccp;
+        this.wrappingParams = raw.wcp || defaultWrappingParams();
+        const currPart = this.currentParticipant;
+
+        if (currPart && raw.ek) {
+            const encryptedKey = raw.ek[currPart.id];
+
+            this._key = {
+                kty: "oct",
+                alg: "A256GCM",
+                key_ops: ["decrypt"],
+                k: await provider.decrypt(currPart.privateKey!, encryptedKey, this.wrappingParams)
+            };
+        }
+
+        const key = await this.getKey();
+
+        const pt = await provider.decrypt(key, raw.ct, this.encryptionParams);
+        await this.data.deserialize(unmarshal(pt));
+    }
+}
+
+export class PasswordBasedContainer<T extends Serializable> extends Container<T> {
+    password: string;
+
+    constructor(
+        data: T,
+        params?: SymmetricCipherParams,
+        public keyDerivationParams: KeyDerivationParams = defaultKeyDerivationParams()
+    ) {
+        super(data, undefined, undefined, params, undefined);
+    }
+
+    private async _deriveKey(): Promise<SymmetricKey> {
+        if (!this.keyDerivationParams.salt) {
+            this.keyDerivationParams.salt = provider.randomBytes(16);
+        }
+        return await provider.deriveKey(this.password, this.keyDerivationParams);
+    }
+
+    async getKey() {
+        return this._deriveKey();
+    }
+
+    async serialize() {
+        const raw = await super.serialize();
+        raw.kdp = this.keyDerivationParams;
+        return raw;
+    }
+
+    async deserialize(raw: RawContainer) {
+        this.keyDerivationParams = raw.kdp!;
+        return super.deserialize(raw);
+    }
+}

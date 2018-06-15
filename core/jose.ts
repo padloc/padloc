@@ -22,7 +22,7 @@ export interface JWKBase {
     kty: KeyType;
     alg: Algorithm;
     use?: PublicKeyUse;
-    key_ops?: KeyOperation;
+    key_ops?: KeyOperation[];
     kid?: string;
 }
 
