@@ -3,7 +3,8 @@ import {
     bytesToBase64,
     base64ToBytes,
     stringToBytes,
-    bytesToString,
+    stringToBase64,
+    base64ToString,
     marshal,
     unmarshal,
     Serializable
@@ -25,7 +26,7 @@ const PBKDF2_ITER_DEFAULT = 5e4;
 const PBKDF2_ITER_MAX = 1e7;
 
 export type CipherText = Base64String;
-export type PlainText = string;
+export type PlainText = Base64String;
 
 // Available Symmetric Key Sizes
 export type KeySize = 128 | 192 | 256;
@@ -139,7 +140,6 @@ const base64ToBits = (base64: Base64String): any => {
         return sjcl.codec.base64.toBits(base64);
     }
 };
-const bitsToUtf8 = sjcl.codec.utf8String.fromBits;
 const utf8ToBits = sjcl.codec.utf8String.toBits;
 
 export var SJCLProvider: CryptoProvider = {
@@ -194,7 +194,7 @@ export var SJCLProvider: CryptoProvider = {
                 base64ToBits(params.additionalData!),
                 params.tagSize
             );
-            return bitsToUtf8(pt);
+            return bitsToBase64(pt);
         } catch (e) {
             throw new CryptoError("decryption_failed");
         }
@@ -214,7 +214,7 @@ export var SJCLProvider: CryptoProvider = {
             const cipher = new sjcl.cipher[algorithm](base64ToBits(k));
             var ct = sjcl.mode[mode].encrypt(
                 cipher,
-                utf8ToBits(pt),
+                base64ToBits(pt),
                 base64ToBits(params.iv!),
                 base64ToBits(params.additionalData!),
                 params.tagSize
@@ -297,14 +297,14 @@ export var WebCryptoProvider: CryptoProvider = {
         return k as SymmetricKey;
     },
 
-    async encrypt(key: Key, data: string, params: CipherParams): Promise<CipherText> {
+    async encrypt(key: Key, data: PlainText, params: CipherParams): Promise<CipherText> {
         if (params.algorithm === "AES-CCM") {
             return SJCLProvider.encrypt(key, data, params);
         }
 
         const { p, k } = await webCryptoGetArgs(key, params, "encrypt");
 
-        const buf = await webCrypto.encrypt(p, k, stringToBytes(data));
+        const buf = await webCrypto.encrypt(p, k, base64ToBytes(data));
 
         return bytesToBase64(new Uint8Array(buf));
     },
@@ -318,7 +318,7 @@ export var WebCryptoProvider: CryptoProvider = {
 
         const buf = await webCrypto.decrypt(p, k, base64ToBytes(data));
 
-        return bytesToString(new Uint8Array(buf));
+        return bytesToBase64(new Uint8Array(buf));
     },
 
     async generateKeyPair(): Promise<{ privateKey: PrivateKey; publicKey: PublicKey }> {
@@ -410,7 +410,7 @@ export class Container<T extends Serializable> implements Serializable {
         this.encryptionParams.additionalData = provider.randomBytes(16);
 
         const key = await this.getKey();
-        const pt = marshal(await this.data.serialize());
+        const pt = stringToBase64(marshal(await this.data.serialize()));
         const ct = await provider.encrypt(key, pt, this.encryptionParams);
         const raw: RawContainer = {
             version: 2,
@@ -447,7 +447,7 @@ export class Container<T extends Serializable> implements Serializable {
 
         const key = await this.getKey();
 
-        const pt = await provider.decrypt(key, raw.ct, this.encryptionParams);
+        const pt = base64ToString(await provider.decrypt(key, raw.ct, this.encryptionParams));
         await this.data.deserialize(unmarshal(pt));
     }
 }

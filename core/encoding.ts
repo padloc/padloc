@@ -1,5 +1,6 @@
 import { toByteArray, fromByteArray, byteLength } from "./base64";
 
+export type Bytes = Uint8Array;
 export type Base64String = string;
 
 export interface Marshalable {}
@@ -10,10 +11,7 @@ export interface Serializable {
 }
 
 export class EncodingError {
-    constructor(
-        public code:
-            "serialization_error" | "deserialization_error"
-    ) {}
+    constructor(public code: "serialization_error" | "deserialization_error") {}
 }
 
 export function marshal(obj: Marshalable): string {
@@ -24,19 +22,19 @@ export function unmarshal(str: string): Marshalable {
     return JSON.parse(str);
 }
 
-export function bytesToBase64(inp: Uint8Array, urlSafe = true): Base64String {
+export function bytesToBase64(inp: Bytes, urlSafe = true): Base64String {
     return fromByteArray(inp, urlSafe);
 }
 
-export function base64ToBytes(inp: Base64String): Uint8Array {
+export function base64ToBytes(inp: Base64String): Bytes {
     return toByteArray(inp);
 }
 
-export function stringToBytes(str: string): Uint8Array {
+export function stringToBytes(str: string): Bytes {
     return new TextEncoder().encode(str);
 }
 
-export function bytesToString(bytes: Uint8Array, encoding = "utf-8") {
+export function bytesToString(bytes: Bytes, encoding = "utf-8") {
     return new TextDecoder(encoding).decode(bytes);
 }
 
