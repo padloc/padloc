@@ -342,8 +342,11 @@ export var WebCryptoProvider: CryptoProvider = {
 
 export const provider = WebCryptoProvider;
 
+export type ContainerID = string;
+
 interface RawContainerV2 {
     version: 2;
+    id: ContainerID;
     ccp: SymmetricCipherParams;
     ct: CipherText;
     wcp?: AsymmetricCipherParams;
@@ -379,6 +382,8 @@ export function defaultWrappingParams(): AsymmetricCipherParams {
 }
 
 export class Container<T extends Serializable> implements Serializable {
+    id: ContainerID;
+
     constructor(
         public data: T,
         public currentParticipant?: Participant,
@@ -414,6 +419,7 @@ export class Container<T extends Serializable> implements Serializable {
         const ct = await provider.encrypt(key, pt, this.encryptionParams);
         const raw: RawContainer = {
             version: 2,
+            id: this.id,
             ccp: this.encryptionParams,
             ct: ct
         };
@@ -430,6 +436,7 @@ export class Container<T extends Serializable> implements Serializable {
     }
 
     async deserialize(raw: RawContainer): Promise<void> {
+        this.id = raw.id;
         this.encryptionParams = raw.ccp;
         this.wrappingParams = raw.wcp || defaultWrappingParams();
         const currPart = this.currentParticipant;

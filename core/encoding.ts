@@ -2,6 +2,8 @@ import { toByteArray, fromByteArray, byteLength } from "./base64";
 
 export type Bytes = Uint8Array;
 export type Base64String = string;
+export type DateString = string;
+export type TimeStamp = number;
 
 export interface Marshalable {}
 
