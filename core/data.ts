@@ -1,10 +1,13 @@
-import { Serializable, DateString, TimeStamp, marshal, unmarshal } from "./encoding";
-import { PublicKey, PrivateKey, Container, PasswordBasedContainer, ContainerID } from "./crypto";
+import { Serializable, DateString, TimeStamp } from "./encoding";
+import { PublicKey, PrivateKey, provider } from "./crypto";
+import { Storable, Storage, LocalStorage, EncryptedStorage } from "./storage";
+import { uuid } from "./util";
 
 export interface Record {}
 
 export type AccountID = string;
 export type ClientID = string;
+export type StoreID = string;
 
 type EditInfo =
     | {
@@ -14,14 +17,14 @@ type EditInfo =
     | DateString
     | TimeStamp;
 
-export class StoreData implements Serializable {
+export class Store implements Serializable {
     created: EditInfo;
     updated: EditInfo;
     account?: Account;
     members?: PublicAccount[];
     trustedAccounts?: PublicAccount[];
 
-    constructor(public records: Record[] = []) {}
+    constructor(public id: StoreID = uuid(), public records: Record[] = []) {}
 
     async serialize() {
         return {
@@ -43,17 +46,28 @@ export interface PublicAccount {
     id: AccountID;
     email: string;
     publicKey: PublicKey;
+    mainStore: StoreID;
 }
 
-export class Account implements PublicAccount, Storeable {
-    id: AccountID;
+export class Account implements PublicAccount, Storable {
     created: DateString;
     email: string;
-    mainStore: ContainerID;
-    sharedStores: ContainerID[];
+    mainStore: StoreID;
+    sharedStores: StoreID[];
     clients: ClientID[];
     publicKey: PublicKey;
     privateKey: PrivateKey;
+
+    constructor(public id: AccountID) {}
+
+    get publicAccount(): PublicAccount {
+        return {
+            id: this.id,
+            email: this.email,
+            publicKey: this.publicKey,
+            mainStore: this.mainStore
+        };
+    }
 
     async serialize() {
         return {
@@ -73,91 +87,76 @@ export class Account implements PublicAccount, Storeable {
     }
 }
 
-export class SharedStore extends Container<StoreData> {
-    constructor(public id: ContainerID) {
-        super(new StoreData());
-    }
-}
+export class ClientMeta implements Storable {
+    id = "meta";
+    public accounts: PublicAccount[] = [];
+    public currentAccount?: PublicAccount;
 
-export class MainStore extends PasswordBasedContainer<StoreData> {
-    constructor(public id: ContainerID, public password: string) {
-        super(new StoreData());
+    async serialize() {
+        return {
+            accounts: this.accounts,
+            currentAccount: this.currentAccount
+        };
+    }
+
+    async deserialize(raw: any) {
+        Object.assign(this, raw);
     }
 }
 
 export class Client {
     id: ClientID;
-    account: Account;
-    mainStore: MainStore;
-    sharedStores: Map<ContainerID, SharedStore>;
-    storage: Storage;
+    meta: ClientMeta;
+    localStorage: Storage;
+    encryptedStorage: EncryptedStorage;
+    mainStore: Store;
+    sharedStores: Store[];
 
     constructor() {
-        this.storage = new LocalStorage();
-        this.account = new Account();
-        this.account.id = "account";
+        this.localStorage = new LocalStorage();
+        this.encryptedStorage = new EncryptedStorage(this.localStorage);
+        this.meta = new ClientMeta();
+    }
+
+    get account(): Account | undefined {
+        return this.mainStore.account;
     }
 
     async load() {
         try {
-            await this.storage.get(this.account);
+            await this.localStorage.get(this.meta);
         } catch (e) {
-            console.log("no account found, creating...");
-            this.account.created = new Date().toISOString();
-            await this.storage.set(this.account);
+            await this.localStorage.set(this.meta);
         }
+    }
+
+    async init(password: string) {
+        const account = new Account(uuid());
+        Object.assign(account, await provider.generateKeyPair());
+        this.mainStore = new Store();
+        this.mainStore.account = account;
+        account.mainStore = this.mainStore.id;
+        this.encryptedStorage.user = account;
+        await this.setPassword(password);
+        const pubAcc = account.publicAccount;
+        this.meta.accounts.push(pubAcc);
+        this.meta.currentAccount = pubAcc;
+        await this.localStorage.set(this.meta);
     }
 
     async unlock(password: string) {
-        if (!this.account.mainStore) {
-            const id = "main";
-            this.mainStore = new MainStore(id, password);
-            await this.storage.set(this.mainStore);
-            this.account.mainStore = id;
-            await this.storage.set(this.account);
-        } else {
-            this.mainStore = new MainStore(this.account.mainStore, password);
-        }
-
-        await this.storage.get(this.mainStore);
-    }
-}
-
-export interface Storeable extends Serializable {
-    id: string;
-}
-
-export interface Storage {
-    set(s: Storeable): Promise<void>;
-    get(s: Storeable): Promise<void>;
-}
-
-export class MemoryStorage implements Storage {
-    private _storage: Map<string, any>;
-
-    constructor() {
-        this._storage = new Map<string, any>();
+        this.encryptedStorage.password = password;
+        this.mainStore = new Store(this.meta.currentAccount!.mainStore);
+        await this.encryptedStorage.get(this.mainStore);
     }
 
-    async set(s: Storeable) {
-        this._storage.set(s.id, await s.serialize());
+    async setPassword(password: string) {
+        this.encryptedStorage.password = password;
+        this.encryptedStorage.setAs(this.mainStore, "PBES2");
     }
 
-    async get(s: Storeable) {
-        return s.deserialize(this._storage.get(s.id));
-    }
-}
-
-export class LocalStorage implements Storage {
-    async set(s: Storeable) {
-        localStorage.setItem(s.id, marshal(await s.serialize()));
-    }
-
-    async get(s: Storeable) {
-        const data = localStorage.getItem(s.id);
-        if (!data) {
-            throw "not_found";
-        }
-        return s.deserialize(unmarshal(data));
+    async createSharedStore() {
+        const store = new Store();
+        await this.encryptedStorage.set(store);
     }
 }
