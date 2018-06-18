@@ -394,8 +394,8 @@ export interface Participant {
 }
 
 export class Container implements Storage, Storable {
-    id: string;
-    cipherText: CipherText;
+    id: string = "";
+    cipherText?: CipherText;
     key?: SymmetricKey;
     password?: string;
     user?: Participant;
@@ -447,6 +447,9 @@ export class Container implements Storage, Storable {
     }
 
     async get(data: Storable) {
+        if (!this.cipherText) {
+            throw "Nothing to get";
+        }
         const key = await this.getKey();
         const pt = base64ToString(await provider.decrypt(key, this.cipherText, this.encryptionParams));
         await data.deserialize(unmarshal(pt));
@@ -496,6 +499,15 @@ export class Container implements Storage, Storable {
         }
         const key = await this.getKey();
         this.encryptedKeys[p.id] = await provider.encrypt(p.publicKey, key, this.wrappingParams);
+    }
+
+    async clear() {
+        delete this.password;
+        delete this.user;
+        delete this.key;
+        delete this.cipherText;
+        this.id = "";
+        this.encryptedKeys = {};
     }
 }
 

@@ -1,5 +1,5 @@
 import { Serializable, marshal, unmarshal } from "./encoding";
-import { Container, Participant, EncryptionScheme } from "./crypto";
+// import { Container, Participant, EncryptionScheme } from "./crypto";
 
 export interface Storable extends Serializable {
     id: string;
@@ -8,13 +8,14 @@ export interface Storable extends Serializable {
 export interface Storage {
     set(s: Storable): Promise<void>;
     get(s: Storable): Promise<void>;
+    clear(): Promise<void>;
 }
 
 export class MemoryStorage implements Storage {
     private _storage: Map<string, any>;
 
     constructor() {
-        this._storage = new Map<string, any>();
+        this.clear();
     }
 
     async set(s: Storable) {
@@ -23,6 +24,10 @@ export class MemoryStorage implements Storage {
 
     async get(s: Storable) {
         await s.deserialize(this._storage.get(s.id));
+    }
+
+    async clear() {
+        this._storage = new Map<string, any>();
     }
 }
 
@@ -38,59 +43,52 @@ export class LocalStorage implements Storage {
         }
         await s.deserialize(unmarshal(data));
     }
-}
 
-export type Proxy = Storage & Storable;
-
-export class SerialStorage implements Storage {
-    constructor(public proxy: Proxy, public storage: Storage) {}
-
-    async set(s: Storable) {
-        await this.proxy.set(s);
-        await this.storage.set(this.proxy);
-    }
-
-    async get(s: Storable) {
-        await this.storage.get(this.proxy);
-        await this.proxy.get(s);
-    }
-}
-
-export class EncryptedStorage implements Storage {
-    public user?: Participant;
-    public password?: string;
-    private containers: Map<string, Container> = new Map<string, Container>();
-
-    constructor(public storage: Storage) {}
-
-    private getContainer(s: Storable) {
-        if (!this.containers.has(s.id)) {
-            const container = new Container();
-            container.id = s.id;
-            this.containers.set(s.id, container);
+    async clear() {
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key) {
+                localStorage.removeItem(key);
+            }
         }
-        return this.containers.get(s.id)!;
-    }
-
-    async get(s: Storable) {
-        const container = this.getContainer(s);
-        container.password = this.password;
-        container.user = this.user;
-        await this.storage.get(container);
-        await container.get(s);
-    }
-
-    async set(s: Storable) {
-        const container = this.getContainer(s);
-        container.password = this.password;
-        container.user = this.user;
-        await container.set(s);
-        await this.storage.set(container);
-    }
-
-    async setAs(s: Storable, scheme: EncryptionScheme) {
-        const container = this.getContainer(s);
-        container.scheme = scheme;
-        return this.set(s);
     }
 }
+//
+// export class EncryptedStorage implements Storage {
+//     public user?: Participant;
+//     public password?: string;
+//     private containers: Map<string, Container> = new Map<string, Container>();
+//
+//     constructor(public storage: Storage) {}
+//
+//     private getContainer(s: Storable) {
+//         if (!this.containers.has(s.id)) {
+//             const container = new Container();
+//             container.id = s.id;
+//             this.containers.set(s.id, container);
+//         }
+//         return this.containers.get(s.id)!;
+//     }
+//
+//     async get(s: Storable) {
+//         const container = this.getContainer(s);
+//         container.password = this.password;
+//         container.user = this.user;
+//         await this.storage.get(container);
+//         await container.get(s);
+//     }
+//
+//     async set(s: Storable) {
+//         const container = this.getContainer(s);
+//         container.password = this.password;
+//         container.user = this.user;
+//         await container.set(s);
+//         await this.storage.set(container);
+//     }
+//
+//     async setAs(s: Storable, scheme: EncryptionScheme) {
+//         const container = this.getContainer(s);
+//         container.scheme = scheme;
+//         return this.set(s);
+//     }
+// }

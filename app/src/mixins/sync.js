@@ -1,6 +1,6 @@
 import { EncryptedSource, CloudSource } from "../core/source.js";
 import { formatDateFromNow } from "../core/util.js";
-import { settings } from "./data.js";
+import { DataMixin } from "./data.js";
 import { localize as $l } from "../core/locale.js";
 import * as statsApi from "../core/stats.js";
 import { checkForUpdates } from "../core/platform.js";
@@ -8,7 +8,7 @@ import { SubInfoMixin } from ".";
 import "../elements/dialog-payment.js";
 import "../elements/dialog-promo.js";
 
-const cloudSource = new EncryptedSource(new CloudSource(settings));
+const cloudSource = new EncryptedSource(new CloudSource(DataMixin.client.settings));
 
 export function SyncMixin(superClass) {
     return class SyncMixin extends SubInfoMixin(superClass) {

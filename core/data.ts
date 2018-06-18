@@ -3,8 +3,6 @@ import { PublicKey, PrivateKey, Container, EncryptionScheme, provider } from "./
 import { Storable, Storage, LocalStorage } from "./storage";
 import { uuid } from "./util";
 
-export interface Record {}
-
 export type AccountID = string;
 export type ClientID = string;
 export type StoreID = string;
@@ -26,6 +24,101 @@ type EditInfo = {
 //     }
 // }
 
+export interface Device {
+    description: string;
+    tokenId: string;
+}
+
+export class Settings implements Storable {
+    id = "settings";
+
+    static defaults = {
+        autoLock: true,
+        // Auto lock delay in minutes
+        autoLockDelay: 5,
+        stripePubKey: "",
+        syncHostUrl: "https://cloud.padlock.io",
+        syncCustomHost: false,
+        syncEmail: "",
+        syncToken: "",
+        syncDevice: "",
+        syncConnected: false,
+        syncAuto: false,
+        syncSubStatus: "",
+        syncTrialEnd: 0,
+        syncDeviceCount: 0,
+        account: undefined,
+        defaultFields: ["username", "password"],
+        obfuscateFields: false,
+        syncRequireSubscription: false,
+        syncId: "",
+        version: ""
+    };
+
+    loaded: boolean;
+
+    // Auto lock settings
+    autoLock: boolean;
+    // Auto lock delay in minutes
+    autoLockDelay: number;
+
+    peekValues: boolean;
+
+    // Stripe settings
+    stripePubKey: string;
+
+    // Synchronization settings
+    syncHostUrl: string;
+    syncCustomHost: boolean;
+    syncEmail: string;
+    syncToken: string;
+    syncConnected: boolean;
+    syncAuto: boolean;
+    syncSubStatus: string;
+    syncTrialEnd: number;
+    syncId: string;
+    syncDeviceCount: number;
+
+    account?: Account;
+
+    // Record-related settings
+    recordDefaultFields: Array<string>;
+    recordObfuscateFields: boolean;
+
+    // Miscellaneous settings
+    showedBackupReminder: number;
+    version: string;
+
+    constructor() {
+        // Set defaults
+        this.clear();
+        // Flag used to indicate if the settings have been loaded from persistent storage initially
+        this.loaded = false;
+    }
+
+    async deserialize(raw: any) {
+        // Copy over setting values
+        Object.assign(this, raw);
+        this.loaded = true;
+        return this;
+    }
+
+    //* Returns a raw JS object containing the current settings
+    async serialize() {
+        let obj = {};
+        // Extract settings from `Settings` Object based on property names in `properties` member
+        for (let prop in Settings.defaults) {
+            obj[prop] = this[prop];
+        }
+        return obj;
+    }
+
+    clear(): void {
+        Object.assign(this, Settings.defaults);
+        this.loaded = false;
+    }
+}
+
 export interface Field {
     name: string;
     value: string;
@@ -38,8 +131,6 @@ function normalizeTag(tag: string): string {
 
 export class Record implements Serializable {
     id: RecordID;
-    name: string;
-    fields: Array<Field> = [];
     removed: boolean;
     updated: Date;
     lastUsed: Date;
@@ -49,9 +140,10 @@ export class Record implements Serializable {
         return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
     }
 
-    constructor(name = "") {
-        this.name = name;
+    constructor(public name = "", public fields: Field[] = []) {
         this.id = uuid();
+        this.lastUsed = new Date();
+        this.updated = new Date();
     }
 
     get tags() {
@@ -191,6 +283,13 @@ export class Store implements Serializable {
         await this.container.get(this.serializer);
         return this;
     }
+
+    async clear() {
+        this._records = new Map<string, Record>();
+        delete this.account;
+        delete this.privateKey;
+        await this.container.clear();
+    }
 }
 
 export class MainStore extends Store {
@@ -198,6 +297,7 @@ export class MainStore extends Store {
         return "PBES2";
     }
 
+    settings = new Settings();
     trustedAccounts: PublicAccount[];
 
     set password(pwd: string | undefined) {
@@ -211,6 +311,7 @@ export class MainStore extends Store {
     protected async _serialize() {
         return Object.assign(await super._serialize(), {
             account: await this.account.serialize(),
+            settings: await this.settings.serialize(),
             privateKey: this.privateKey,
             trustedAccounts: this.trustedAccounts
         });
@@ -220,6 +321,8 @@ export class MainStore extends Store {
         if (!this.account) {
             this.account = new Account();
         }
+        this.settings.deserialize(raw.settings);
+        delete raw.settings;
         await this.account.deserialize(raw.account);
         delete raw.account;
         return super._deserialize(raw);
@@ -313,10 +416,13 @@ export class Client {
     storage: Storage;
     mainStore: MainStore;
     sharedStores: SharedStore[] = [];
+    loaded: Promise<void>;
 
     constructor() {
         this.storage = new LocalStorage();
         this.meta = new ClientMeta();
+        this.loaded = this.load();
+        this.mainStore = new MainStore();
     }
 
     get account(): Account | undefined {
@@ -327,6 +433,10 @@ export class Client {
         return this.mainStore.privateKey;
     }
 
+    get settings(): Settings {
+        return this.mainStore.settings;
+    }
+
     async load() {
         try {
             await this.storage.get(this.meta);
@@ -335,10 +445,14 @@ export class Client {
         }
     }
 
+    async isInitialized(): Promise<boolean> {
+        await this.loaded;
+        return !!this.meta.currentAccount;
+    }
+
     async init(password: string) {
         const account = new Account(uuid());
         Object.assign(account, await provider.generateKeyPair());
-        this.mainStore = new MainStore();
         this.mainStore.account = account;
         account.mainStore = this.mainStore.id;
         await this.setPassword(password);
@@ -349,7 +463,7 @@ export class Client {
     }
 
     async unlock(password: string) {
-        this.mainStore = new MainStore(this.meta.currentAccount!.mainStore);
+        this.mainStore.id = this.meta.currentAccount!.mainStore;
         this.mainStore.password = password;
         await this.storage.get(this.mainStore);
 
@@ -381,5 +495,25 @@ export class Client {
         this.account!.sharedStores.push(store.id);
         await this.storage.set(this.mainStore);
         return store;
+    }
+
+    async save() {
+        return Promise.all([
+            this.storage.set(this.meta),
+            this.storage.set(this.mainStore),
+            ...this.sharedStores.map(s => this.storage.set(s))
+        ]);
+    }
+
+    async lock() {
+        await Promise.all([this.mainStore.clear(), ...this.sharedStores.map(s => s.clear())]);
+        this.sharedStores = [];
+    }
+
+    async reset() {
+        await this.lock();
+        await this.storage.clear();
+        this.meta = new ClientMeta();
+        this.loaded = this.load();
     }
 }

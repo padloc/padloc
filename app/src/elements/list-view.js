@@ -299,7 +299,7 @@ class ListView extends applyMixins(BaseElement, LocaleMixin, SyncMixin, DataMixi
     }
 
     _isEmpty() {
-        return !this.collection.records.filter(r => !r.removed).length;
+        return !this.currentStore.records.filter(r => !r.removed).length;
     }
 
     _openMenu() {

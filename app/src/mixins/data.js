@@ -1,50 +1,27 @@
 import { MutableData } from "@polymer/polymer/lib/mixins/mutable-data";
 import { localize as $l } from "../core/locale.js";
-import { Collection, Record, Settings } from "../core/data.js";
-import { FileSource, EncryptedSource, LocalStorageSource } from "../core/source.js";
-import { getDesktopSettings } from "../core/platform.js";
+import { Client, Record } from "../../../core/data.js";
+// import { getDesktopSettings } from "../core/platform.js";
 import { debounce } from "../core/util.js";
 
-export const collection = new Collection();
-export const settings = new Settings();
+export const client = new Client();
 
-const desktopSettings = getDesktopSettings();
-const dbPath = desktopSettings ? desktopSettings.get("dbPath") : "data.pls";
-const localSource = new EncryptedSource(new FileSource(dbPath));
-const settingsSource = new EncryptedSource(new FileSource("settings.pls"));
+// const desktopSettings = getDesktopSettings();
+// const dbPath = desktopSettings ? desktopSettings.get("dbPath") : "data.pls";
+// const localSource = new EncryptedSource(new FileSource(dbPath));
 const dispatcher = document.createElement("div");
 
-// transfer legacy data from LocalStorageSource to FileSource
-async function transferData(lsName, fileName) {
-    const lsSource = new LocalStorageSource(lsName);
-    const fileSource = new FileSource(fileName);
-    const data = await Promise.all([lsSource.get(), fileSource.get()]);
-    // Only transfer if there is existing localstorage data but no
-    // existing data in file storage
-    if (data[0] && !data[1]) {
-        await Promise.all([fileSource.set(data[0]), lsSource.clear()]);
-        return true;
-    } else {
-        return false;
-    }
-}
-
-const legacyDataTransfered = Promise.all([
-    transferData("coll_default", dbPath),
-    transferData("settings_encrypted", "settings.pls")
-]);
-const debouncedSaveSettings = debounce(() => settings.save(settingsSource), 500);
-const debouncedSaveCollection = debounce(() => collection.save(localSource), 500);
+const debouncedSave = debounce(() => client.save(), 500);
 
 dispatcher.addEventListener("record-changed", ({ detail }) => {
     const record = detail;
     record.updated = new Date();
-    debouncedSaveCollection();
+    debouncedSave();
 });
 
 dispatcher.addEventListener("settings-changed", () => {
-    if (settings.loaded) {
-        debouncedSaveSettings();
+    if (client.settings.loaded) {
+        debouncedSave();
     }
 });
 
@@ -64,9 +41,9 @@ export function DataMixin(superClass) {
     return class DataMixin extends MutableData(superClass) {
         static get properties() {
             return {
-                collection: {
+                currentStore: {
                     type: Object,
-                    value: collection,
+                    value: client.mainStore,
                     notify: true
                 },
                 filterString: {
@@ -76,11 +53,11 @@ export function DataMixin(superClass) {
                 records: {
                     type: Array,
                     notify: true,
-                    computed: "_filterAndSort(collection.records, filterString)"
+                    computed: "_filterAndSort(currentStore.records, filterString)"
                 },
                 settings: {
                     type: Object,
-                    value: settings,
+                    value: client.mainStore.settings,
                     notify: true
                 }
             };
@@ -100,11 +77,12 @@ export function DataMixin(superClass) {
         }
 
         get password() {
-            return localSource.password;
+            return client.password;
         }
 
         get localSource() {
-            return localSource;
+            throw "Get local source is not supported";
+            // return localSource;
         }
 
         listen(name, fn) {
@@ -116,25 +94,22 @@ export function DataMixin(superClass) {
         }
 
         dataReady() {
-            return legacyDataTransfered;
+            return client.loaded;
         }
 
         hasData() {
-            return localSource.hasData();
+            return client.isInitialized();
         }
 
-        initData(password) {
-            return this.setPassword(password).then(() => this.dispatch("data-initialized"));
+        async initData(password) {
+            await client.init(password);
+            await this.setPassword(password);
+            this.dispatch("data-initialized");
         }
 
-        loadData(password) {
-            localSource.password = settingsSource.password = password;
-            return Promise.all([
-                collection.fetch(localSource),
-                // We silently ignore failure to load settings since they don't contain any
-                // critical data and should not prevent the app from loading if corrupted
-                settings.fetch(settingsSource).catch()
-            ]).then(() => this.dispatch("data-loaded"));
+        async loadData(password) {
+            await client.unlock(password);
+            this.dispatch("data-loaded");
         }
 
         createRecord(name) {
@@ -150,6 +125,7 @@ export function DataMixin(superClass) {
 
         deleteRecord(record) {
             record.remove();
+            record.updated = new Date();
             this.saveCollection();
             this.dispatch("record-deleted", record);
         }
@@ -161,43 +137,30 @@ export function DataMixin(superClass) {
         }
 
         addRecords(records) {
-            this.collection.add(records);
+            this.currentStore.addRecords(records);
             this.saveCollection();
             this.dispatch("records-changed", records);
         }
 
         saveCollection() {
-            debouncedSaveCollection();
+            debouncedSave();
         }
 
-        saveSettings() {
-            if (settings.loaded) {
-                settings.save(settingsSource);
-            }
-        }
-
-        resetData() {
-            localSource.clear();
-            settingsSource.clear();
-            collection.clear();
-            settings.clear();
-            localSource.password = settingsSource.password = "";
+        async resetData() {
+            await client.reset();
             this.dispatch("data-reset");
         }
 
         checkPassword(password) {
-            return password === localSource.password;
+            return password === client.password;
         }
 
         setPassword(password) {
-            localSource.password = settingsSource.password = password;
-            return Promise.all([collection.save(localSource), settings.save(settingsSource)]);
+            return client.setPassword(password);
         }
 
-        unloadData() {
-            collection.clear();
-            settings.clear();
-            localSource.password = settingsSource.password = "";
+        async unloadData() {
+            await client.lock();
             this.dispatch("data-unloaded");
         }
 
@@ -219,7 +182,7 @@ export function DataMixin(superClass) {
 
         _dataLoaded() {
             this.notifyPath("settings");
-            this.notifyPath("collection");
+            this.notifyPath("currentStore");
             this.saveCall("dataLoaded");
         }
 
@@ -229,7 +192,7 @@ export function DataMixin(superClass) {
             // TODO: Move this delay somewhere more appropriate (separation of concerns)
             setTimeout(() => {
                 this.notifyPath("settings");
-                this.notifyPath("collection");
+                this.notifyPath("currentStore");
             }, 500);
         }
 
@@ -243,17 +206,17 @@ export function DataMixin(superClass) {
         }
 
         _recordDeleted(e) {
-            this.notifyPath("collection");
+            this.notifyPath("currentStore");
             this.saveCall("recordDeleted", e.detail);
         }
 
         _recordChanged(e) {
-            this.notifyPath("collection");
+            this.notifyPath("currentStore");
             this.saveCall("recordChanged", e.detail);
         }
 
         _recordsChanged(e) {
-            this.notifyPath("collection");
+            this.notifyPath("currentStore");
             this.saveCall("recordsChanged", e.detail);
         }
 
@@ -263,7 +226,7 @@ export function DataMixin(superClass) {
         }
 
         _filterAndSort() {
-            let records = this.collection.records.filter(r => !r.removed && filterByString(this.filterString, r));
+            let records = this.currentStore.records.filter(r => !r.removed && filterByString(this.filterString, r));
             this._recentCount = records.length > 10 ? 3 : 0;
             const recent = records
                 .sort((a, b) => {
@@ -277,6 +240,5 @@ export function DataMixin(superClass) {
 }
 
 Object.assign(DataMixin, {
-    collection,
-    settings
+    client
 });

@@ -433,9 +433,7 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
     }
 
     static get observers() {
-        return [
-            "_updatePwdStrength(newPwd)"
-        ];
+        return ["_updatePwdStrength(newPwd)"];
     }
 
     constructor() {
@@ -443,16 +441,14 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
         this._failCount = 0;
     }
 
-    ready() {
+    async ready() {
         super.ready();
-        this.dataReady()
-            .then(() => this.reset())
-            .then(() => {
-                if (!isTouch() && this._hasData) {
-                    this.$.passwordInput.focus();
-                }
-                this._openChanged();
-            });
+        await this.dataReady();
+        await this.reset();
+        if (!isTouch() && this._hasData) {
+            this.$.passwordInput.focus();
+        }
+        this._openChanged();
     }
 
     reset() {
@@ -675,8 +671,8 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
         return this._hasData ? "unlock" : "get-started";
     }
 
-    _checkHasData() {
-        return this.hasData().then(has => (this._hasData = has));
+    async _checkHasData() {
+        this._hasData = await this.hasData();
     }
 
     _finishSetup() {

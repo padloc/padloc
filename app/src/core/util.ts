@@ -94,7 +94,7 @@ export function isFuture(date: Date | string | number, duration: number) {
 
 export function loadScript(src: string, global?: string): Promise<any | undefined> {
     if (document.querySelector(`script[src="${src}"]`) !== null) {
-        return Promise.resolve();
+        return Promise.resolve(global ? window[global] : undefined);
     }
     const s = document.createElement("script");
     s.src = src;
