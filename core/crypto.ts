@@ -230,9 +230,14 @@ async function webCryptoGetArgs(key: Key, params: CipherParams, action = "encryp
         throw new CryptoError("invalid_cipher_params");
     }
 
-    const k = await webCrypto.importKey("raw", base64ToBytes(key), { name: params.algorithm, hash: "SHA-1" }, false, [
-        action
-    ]);
+    const keyFormat = params.cipherType === "symmetric" ? "raw" : action === "encrypt" ? "spki" : "pkcs8";
+    const k = await webCrypto.importKey(
+        keyFormat,
+        base64ToBytes(key),
+        { name: params.algorithm, hash: "SHA-1" },
+        false,
+        [action]
+    );
 
     const p = { name: params.algorithm };
 
@@ -389,7 +394,6 @@ export interface Participant {
 }
 
 export class Container implements Storage, Storable {
-    scheme: EncryptionScheme = "simple";
     id: string;
     cipherText: CipherText;
     key?: SymmetricKey;
@@ -398,6 +402,7 @@ export class Container implements Storage, Storable {
     private encryptedKeys: { [id: string]: CipherText } = {};
 
     constructor(
+        public scheme: EncryptionScheme = "simple",
         public encryptionParams: SymmetricCipherParams = defaultEncryptionParams(),
         public keyDerivationParams: KeyDerivationparams = defaultKeyDerivationParams(),
         public wrappingParams: AsymmetricCipherParams = defaultWrappingParams()
@@ -422,8 +427,12 @@ export class Container implements Storage, Storable {
                 if (!this.user || !this.user.privateKey || !this.encryptedKeys) {
                     throw "Cannot derive key";
                 }
-                const encryptedKey = this.encryptedKeys[this.user.id];
-                return provider.decrypt(this.user.privateKey, encryptedKey, this.wrappingParams);
+                if (Object.keys(this.encryptedKeys).length) {
+                    const encryptedKey = this.encryptedKeys[this.user.id];
+                    return provider.decrypt(this.user.privateKey, encryptedKey, this.wrappingParams);
+                } else {
+                    return await provider.randomKey(this.encryptionParams.keySize);
+                }
         }
     }
 
