@@ -473,7 +473,7 @@ export class Container implements Storage, Storable {
         return raw;
     }
 
-    async deserialize(raw: RawContainer): Promise<void> {
+    async deserialize(raw: RawContainer) {
         this.id = raw.id;
         this.scheme = raw.scheme;
         this.cipherText = raw.ct;
@@ -487,6 +487,7 @@ export class Container implements Storage, Storable {
             this.wrappingParams = raw.wp;
             this.encryptedKeys = raw.ek;
         }
+        return this;
     }
 
     async addParticipant(p: Participant) {

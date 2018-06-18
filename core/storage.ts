@@ -1,4 +1,4 @@
-import { Serializable, Marshalable, marshal, unmarshal } from "./encoding";
+import { Serializable, marshal, unmarshal } from "./encoding";
 import { Container, Participant, EncryptionScheme } from "./crypto";
 
 export interface Storable extends Serializable {
@@ -22,7 +22,7 @@ export class MemoryStorage implements Storage {
     }
 
     async get(s: Storable) {
-        return s.deserialize(this._storage.get(s.id));
+        await s.deserialize(this._storage.get(s.id));
     }
 }
 
@@ -36,7 +36,7 @@ export class LocalStorage implements Storage {
         if (!data) {
             throw "not_found";
         }
-        return s.deserialize(unmarshal(data));
+        await s.deserialize(unmarshal(data));
     }
 }
 
@@ -53,28 +53,6 @@ export class SerialStorage implements Storage {
     async get(s: Storable) {
         await this.storage.get(this.proxy);
         await this.proxy.get(s);
-    }
-}
-
-export class SingletonStorage implements Storage, Serializable {
-    private data: any;
-
-    constructor(public id: string) {}
-
-    async set(s: Storable) {
-        this.data = s.serialize();
-    }
-
-    async get(s: Storable) {
-        return s.deserialize(this.data);
-    }
-
-    async serialize() {
-        return this.data;
-    }
-
-    async deserialize(raw: any) {
-        this.data = raw;
     }
 }
 
@@ -114,17 +92,5 @@ export class EncryptedStorage implements Storage {
         const container = this.getContainer(s);
         container.scheme = scheme;
         return this.set(s);
-    }
-}
-
-export class StorableObject implements Storable {
-    constructor(public id: string, public obj: Marshalable) {}
-
-    async serialize() {
-        return this.obj;
-    }
-
-    async deserialize(raw: any) {
-        Object.assign(this.obj, raw);
     }
 }

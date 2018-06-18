@@ -1,4 +1,4 @@
-import { Serializable, DateString, TimeStamp } from "./encoding";
+import { Serializable, DateString } from "./encoding";
 import { PublicKey, PrivateKey, Container, EncryptionScheme, provider } from "./crypto";
 import { Storable, Storage, LocalStorage } from "./storage";
 import { uuid } from "./util";
@@ -8,14 +8,101 @@ export interface Record {}
 export type AccountID = string;
 export type ClientID = string;
 export type StoreID = string;
+export type RecordID = string;
 
-type EditInfo =
-    | {
-          account: AccountID;
-          date: DateString;
-      }
-    | DateString
-    | TimeStamp;
+type EditInfo = {
+    account: AccountID | undefined;
+    date: Date | DateString;
+};
+//
+// function parseEditInfo(raw: string | number | Date | EditInfo): EditInfo {
+//     if (typeof raw === "string" || typeof raw === "number" || typeof raw === "undefined" || raw instanceof Date) {
+//         return { date: raw ? new Date(raw) : new Date(), account: undefined };
+//     } else {
+//         return {
+//             date: raw.date ? new Date(raw.date) : new Date(),
+//             account: raw.account
+//         };
+//     }
+// }
+
+export interface Field {
+    name: string;
+    value: string;
+    masked?: boolean;
+}
+
+function normalizeTag(tag: string): string {
+    return tag.replace(",", "");
+}
+
+export class Record implements Serializable {
+    id: RecordID;
+    name: string;
+    fields: Array<Field> = [];
+    removed: boolean;
+    updated: Date;
+    lastUsed: Date;
+    private _tags = new Set<string>();
+
+    static compare(a: Record, b: Record): number {
+        return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
+    }
+
+    constructor(name = "") {
+        this.name = name;
+        this.id = uuid();
+    }
+
+    get tags() {
+        return [...this._tags];
+    }
+
+    async deserialize(raw: any): Promise<Record> {
+        const tags = raw.tags || (raw.category && [raw.category]) || [];
+        this.name = raw.name;
+        this.fields = raw.fields || [];
+        this._tags = new Set<string>(tags.map(normalizeTag));
+        this.id = raw.id || raw.uuid || uuid();
+        this.removed = raw.removed;
+        this.updated = new Date(raw.updated);
+        this.lastUsed = new Date(raw.lastUsed);
+        return this;
+    }
+
+    async serialize() {
+        return {
+            name: this.name,
+            fields: this.fields,
+            tags: this.tags,
+            id: this.id,
+            // For backward compatibility
+            uuid: this.id,
+            updated: this.updated,
+            removed: this.removed,
+            lastUsed: this.lastUsed
+        };
+    }
+
+    addTag(tag: string) {
+        this._tags.add(normalizeTag(tag));
+    }
+
+    removeTag(tag: string) {
+        this._tags.delete(tag);
+    }
+
+    hasTag(tag: string) {
+        return this._tags.has(tag);
+    }
+
+    remove(): void {
+        this.name = "";
+        this.fields = [];
+        this._tags = new Set<string>();
+        this.removed = true;
+    }
+}
 
 export class Store implements Serializable {
     created: EditInfo;
@@ -23,25 +110,55 @@ export class Store implements Serializable {
     account: Account;
     privateKey: PrivateKey;
     protected container: Container;
+    private _records = new Map<string, Record>();
 
     protected get scheme(): EncryptionScheme {
         return "simple";
     }
 
-    constructor(public id: StoreID = uuid(), public records: Record[] = []) {
+    constructor(public id: StoreID = uuid(), records: Record[] = []) {
         this.container = new Container(this.scheme);
+        this.addRecords(records);
+    }
+
+    get records(): Array<Record> {
+        return Array.from(this._records.values());
+    }
+
+    get tags(): string[] {
+        const tags = new Set<string>();
+        for (const r of this.records) {
+            for (const t of r.tags) {
+                tags.add(t);
+            }
+        }
+        return [...tags];
+    }
+
+    addRecords(rec: Record | Array<Record>) {
+        const records = Array.isArray(rec) ? rec : [rec];
+        for (const r of records) {
+            const existing = this._records.get(r.id);
+            if (!existing || r.updated > existing.updated) {
+                this._records.set(r.id, r);
+            }
+        }
     }
 
     protected async _serialize() {
         return {
             created: this.created,
             updated: this.updated,
-            records: this.records
+            records: await Promise.all(this.records.map(r => r.serialize()))
         };
     }
 
     protected async _deserialize(raw: any) {
-        Object.assign(this, raw);
+        this.created = raw.created;
+        this.updated = raw.updated;
+        const records = await Promise.all(raw.records.map((r: any) => new Record().deserialize(r)));
+        this.addRecords(Array.from(records) as Record[]);
+        return this;
     }
 
     get serializer() {
@@ -72,6 +189,7 @@ export class Store implements Serializable {
         this.prepContainer();
         await this.container.deserialize(raw);
         await this.container.get(this.serializer);
+        return this;
     }
 }
 
@@ -104,7 +222,7 @@ export class MainStore extends Store {
         }
         await this.account.deserialize(raw.account);
         delete raw.account;
-        await super._deserialize(raw);
+        return super._deserialize(raw);
     }
 }
 
@@ -167,6 +285,7 @@ export class Account implements PublicAccount, Storable {
 
     async deserialize(raw: any) {
         Object.assign(this, raw);
+        return this;
     }
 }
 
@@ -184,6 +303,7 @@ export class ClientMeta implements Storable {
 
     async deserialize(raw: any) {
         Object.assign(this, raw);
+        return this;
     }
 }
 

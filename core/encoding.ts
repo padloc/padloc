@@ -9,7 +9,7 @@ export interface Marshalable {}
 
 export interface Serializable {
     serialize: () => Promise<Marshalable>;
-    deserialize: (data: Marshalable) => Promise<void>;
+    deserialize: (data: Marshalable) => Promise<Serializable>;
 }
 
 export class EncodingError {
