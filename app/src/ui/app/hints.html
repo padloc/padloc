@@ -68,6 +68,7 @@ padlock.HintsMixin = (superClass) => {
             const daysSinceLastSync = daysPassed(stats.lastSync || stats.firstLaunch);
             if (
                 this.settings.syncConnected &&
+                this.settings.syncAuto == false &&
                 daysSinceLastSync > 7 &&
                 daysPassed(stats.lastSyncReminder || stats.firstLaunch) > 7
             ) {
