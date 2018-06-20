@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+xmlns:android="http://schemas.android.com/apk/res/android"
+           id="cordova-plugin-pbkdf2"
+      version="0.2.0">
+    <name>Pbkdf2 Plugin</name>
+    <description>Interface for native PBKDF2 implementations</description>
+    <license>Apache 2.0</license>
+    <keywords>ecosystem:cordova,cordova,cordova-ios,cordova-android,pbkdf2</keywords>
+    <repo>https://github.com/maklesoft/cordova-plugin-pbkdf2.git</repo>
+    <issue>https://github.com/maklesoft/cordova-plugin-pbkdf2/issues/</issue>
+
+    <js-module src="src/js/pbkdf2.js" name="pbkdf2">
+        <clobbers target="cordovapbkdf2" />
+    </js-module>
+
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Pbkdf2">
+                <param name="ios-package" value="Pbkdf2"/>
+            </feature>
+        </config-file>
+        <header-file src="src/ios/Pbkdf2.h" />
+        <source-file src="src/ios/Pbkdf2.m" />
+    </platform>
+
+    <platform name="android">
+        <config-file target="config.xml" parent="/*">
+            <feature name="Pbkdf2">
+                <param name="android-package" value="com.maklesoft.cordova.Pbkdf2"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/android/Pbkdf2.java" target-dir="src/com/maklesoft/cordova" />
+        <source-file src="src/android/libs/PBKDF2-1.1.2.jar" target-dir="libs" />
+    </platform>
+
+</plugin>

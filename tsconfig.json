@@ -14,7 +14,7 @@
         "suppressImplicitAnyIndexErrors": true,
         "lib": ["es2017", "dom"],
         "declaration": false,
-        "sourceMap": true,
+        "sourceMap": false,
         "pretty": true,
         "experimentalDecorators": true,
         "baseUrl": ".",
@@ -23,6 +23,6 @@
             "zxcvbn/dist/zxcvbn": ["node_modules/@types/zxcvbn"]
         }
     },
-    "include": ["app/src/**/*.ts", "typings/*"],
+    "include": ["core/*.ts", "app/src/**/*.ts", "typings/*"],
     "exclude": ["node_modules/**/*.ts"]
 }

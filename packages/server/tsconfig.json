@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "isolatedModules": false,
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitThis": true,
+        "strictNullChecks": true,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "lib": ["es2017", "dom"],
+        "declaration": false,
+        "sourceMap": false,
+        "pretty": true,
+        "experimentalDecorators": true,
+        "baseUrl": ".",
+        "allowJs": true
+    },
+    "include": ["core/*.ts", "app/vendor/sjcl.js"],
+    "exclude": ["node_modules/**/*.ts"]
+}

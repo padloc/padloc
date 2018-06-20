@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="cordova-plugin-customurlscheme"
+        version="4.2.0">
+
+  <name>Custom URL scheme</name>
+
+  <description>
+    Launch your app by using this URL:  mycoolapp://
+    You can add a path and even pass params like this: mycoolerapp://somepath?foo=bar
+  </description>
+
+  <author>Eddy Verbruggen</author>
+
+  <license>MIT</license>
+
+  <keywords>Custom URL Scheme, URLscheme, URL scheme, Custom URL, Launch My App, Launch App</keywords>
+
+  <repo>https://github.com/EddyVerbruggen/Custom-URL-scheme.git</repo>
+
+  <issue>https://github.com/EddyVerbruggen/Custom-URL-scheme/issues</issue>
+
+  <preference name="URL_SCHEME" />
+
+  <engines>
+    <engine name="cordova" version=">=3.0.0"/>
+  </engines>
+
+  <!-- ios -->
+  <platform name="ios">
+    <js-module src="www/ios/LaunchMyApp.js" name="LaunchMyApp">
+      <clobbers target="window.plugins.launchmyapp" />
+    </js-module>
+
+    <config-file target="*-Info.plist" parent="CFBundleURLTypes">
+      <array>
+        <dict>
+          <key>CFBundleURLSchemes</key>
+          <array>
+            <string>$URL_SCHEME</string>
+          </array>
+        </dict>
+      </array>
+    </config-file>
+  </platform>
+
+  <!-- android -->
+  <platform name="android">
+    <preference name="ANDROID_SCHEME" default=" " />
+    <preference name="ANDROID_HOST" default=" " />
+    <preference name="ANDROID_PATHPREFIX" default="/" />
+
+    <js-module src="www/android/LaunchMyApp.js" name="LaunchMyApp">
+      <clobbers target="window.plugins.launchmyapp" />
+    </js-module>
+
+    <config-file target="res/xml/config.xml" parent="/*">
+      <feature name="LaunchMyApp">
+        <param name="android-package" value="nl.xservices.plugins.LaunchMyApp"/>
+      </feature>
+    </config-file>
+
+    <source-file src="src/android/nl/xservices/plugins/LaunchMyApp.java" target-dir="src/nl/xservices/plugins"/>
+
+    <config-file target="AndroidManifest.xml" parent="/manifest/application/activity">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="$URL_SCHEME"/>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="$ANDROID_SCHEME"
+              android:host="$ANDROID_HOST"
+              android:pathPrefix="$ANDROID_PATHPREFIX" />
+      </intent-filter>
+    </config-file>
+  </platform>
+
+  <!-- windows8 -->
+  <platform name="windows8">
+    <config-file target="package.appxmanifest" parent="/Package/Applications/Application/Extensions">
+      <Extension Category="windows.protocol" StartPage="www/index.html">
+        <Protocol Name="$URL_SCHEME" />
+      </Extension>
+    </config-file>
+
+    <js-module src="www/windows/LaunchMyApp.js" name="LaunchMyApp">
+      <clobbers target="window.plugins.launchmyapp" />
+    </js-module>
+  </platform>
+
+  <!-- windows -->
+  <platform name="windows">
+    <hook type="before_prepare" src="src/windows/hooks/prepare-manifest.js" />
+    <config-file target="package.windows10.appxmanifest" parent="/Package/Applications/Application/Extensions">
+      <uap:Extension Category="windows.protocol" StartPage="www/index.html">
+        <uap:Protocol Name="$URL_SCHEME" />
+      </uap:Extension>
+    </config-file>
+    <config-file target="package.windows.appxmanifest" parent="/Package/Applications/Application/Extensions">
+      <Extension Category="windows.protocol" StartPage="www/index.html">
+        <Protocol Name="$URL_SCHEME" />
+      </Extension>
+    </config-file>
+    <config-file target="package.windows80.appxmanifest" parent="/Package/Applications/Application/Extensions">
+      <Extension Category="windows.protocol" StartPage="www/index.html">
+        <Protocol Name="$URL_SCHEME" />
+      </Extension>
+    </config-file>
+    <config-file target="package.phone.appxmanifest" parent="/Package/Applications/Application/Extensions">
+      <Extension Category="windows.protocol" StartPage="www/index.html">
+        <Protocol Name="$URL_SCHEME" />
+      </Extension>
+    </config-file>
+    <js-module src="www/windows/LaunchMyApp.js" name="LaunchMyApp">
+      <clobbers target="window.plugins.launchmyapp" />
+    </js-module>
+  </platform>
+
+  <!-- wp8 -->
+    <platform name="wp8">
+      <config-file target="config.xml" parent="/*">
+        <feature name="CustomUriMapperCommand">
+          <param name="wp-package" value="CustomUriMapperCommand"/>
+          <param name="onload" value="true" />
+        </feature>
+      </config-file>
+
+      <config-file target="Properties/WMAppManifest.xml" parent="/Deployment/App" after="Tokens">
+          <Extensions>
+              <Protocol Name="$URL_SCHEME" NavUriFragment="encodedLaunchUri=%s" TaskID="_default" />
+          </Extensions>
+      </config-file>
+
+      <source-file src="src/wp8/CompositeUriMapper.cs" />
+      <source-file src="src/wp8/ICustomUriMapper.cs" />
+        <source-file src="src/wp8/CustomUriMapperCommand.cs" />
+      <js-module src="www/wp8/LaunchMyApp.js" name="LaunchMyApp">
+        <clobbers target="window.plugins.launchmyapp" />
+      </js-module>
+      <hook type="after_plugin_install" src="src/wp8/hooks/add-uri-mapper.js" />
+    </platform>
+
+</plugin>

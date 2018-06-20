@@ -1,0 +1,17 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/elements/app.js",
+  "sources": [
+   "src/**/*.js",
+   "manifest/**",
+   "package.json",
+   "manifest.json"
+  ],
+  "extraDependencies": [
+    "manifest.json",
+    "node_modules/@webcomponents/webcomponentsjs/**/*",
+    "assets/**/*"
+  ],
+  "moduleResolution": "node",
+  "npm": true
+}

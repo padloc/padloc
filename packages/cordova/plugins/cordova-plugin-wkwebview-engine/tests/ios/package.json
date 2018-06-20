@@ -1,0 +1,13 @@
+{
+    "name": "cordova-plugin-wkwebview-engine-test-ios",
+    "version": "1.0.0",
+    "description": "iOS Unit Tests for cordova-plugin-wkwebview-engine Plugin",
+    "author": "Apache Software Foundation",
+    "license": "Apache Version 2.0",
+    "dependencies": {
+        "cordova-ios": "*"
+    },
+    "scripts": {
+        "test": "xcodebuild test -workspace CDVWKWebViewEngineTest.xcworkspace -scheme CDVWKWebViewEngineLibTests -destination 'platform=iOS Simulator,name=iPhone 5' -xcconfig test.xcconfig"
+    }
+}

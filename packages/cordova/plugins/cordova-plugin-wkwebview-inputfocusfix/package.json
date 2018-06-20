@@ -1,0 +1,66 @@
+{
+  "_from": "cordova-plugin-wkwebview-inputfocusfix",
+  "_id": "cordova-plugin-wkwebview-inputfocusfix@1.0.2",
+  "_inBundle": false,
+  "_integrity": "sha512-VLEO/Z5sg/UAXJIQrI2397I3OEYE4T8KcsrdeuYiZT7A/3yj1VZnpKCxRcdQ2F+3LVk+aLvDLsorLjhW12BWfA==",
+  "_location": "/cordova-plugin-wkwebview-inputfocusfix",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "cordova-plugin-wkwebview-inputfocusfix",
+    "name": "cordova-plugin-wkwebview-inputfocusfix",
+    "escapedName": "cordova-plugin-wkwebview-inputfocusfix",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cordova-plugin-wkwebview-inputfocusfix/-/cordova-plugin-wkwebview-inputfocusfix-1.0.2.tgz",
+  "_shasum": "bce2960ed874cfdd9b73bf493d2388858646fc23",
+  "_spec": "cordova-plugin-wkwebview-inputfocusfix",
+  "_where": "/Users/martin/workspace/padlock/cordova",
+  "author": {
+    "name": "Önder Ceylan",
+    "email": "onderceylan@gmail.com"
+  },
+  "bugs": {
+    "url": "https://github.com/onderceylan/cordova-plugin-wkwebview-inputfocusfix/issues"
+  },
+  "bundleDependencies": false,
+  "cordova": {
+    "id": "cordova-plugin-wkwebview-inputfocusfix",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "deprecated": false,
+  "description": "Cordova plugin for fixing auto focus issue of html elements on WKWebView",
+  "engines": {
+    "cordovaDependencies": {
+      ">1.0.0": {
+        "cordova": ">=3.2.0"
+      }
+    }
+  },
+  "homepage": "https://github.com/onderceylan/cordova-plugin-wkwebview-inputfocusfix#readme",
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-ios",
+    "input",
+    "focus",
+    "auto-focus",
+    "wkwebview",
+    "ionic"
+  ],
+  "license": "MIT",
+  "name": "cordova-plugin-wkwebview-inputfocusfix",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onderceylan/cordova-plugin-wkwebview-inputfocusfix.git"
+  },
+  "version": "1.0.2"
+}

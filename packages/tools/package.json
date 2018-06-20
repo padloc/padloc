@@ -1,0 +1,9 @@
+{
+  "name": "@padlock/tools",
+  "version": "1.0.0",
+  "description": "Padlock toolin",
+  "main": "index.js",
+  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+  "license": "GPLv3",
+  "private": true
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="cordova-plugin-backbutton"
+    version="0.3.0">
+    <name>Backbutton</name>
+    <description>Cordova Backbutton Plugin</description>
+    <license>Apache 2.0</license>
+    <keywords>cordova,Backbutton</keywords>
+    <js-module src="www/Backbutton.js" name="Backbutton">
+        <clobbers target="navigator.Backbutton" />
+    </js-module>
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="BackbuttonPlugin">
+                <param name="android-package" value="com.badrit.Backbutton.BackbuttonPlugin"/>
+            </feature>
+        </config-file>
+        <source-file src="src/android/BackbuttonPlugin.java" target-dir="src/com/badrit/Backbutton/" />
+    </platform>
+</plugin>
+

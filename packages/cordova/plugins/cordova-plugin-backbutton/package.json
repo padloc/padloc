@@ -1,0 +1,22 @@
+{
+  "name": "cordova-plugin-backbutton",
+  "version": "0.3.0",
+  "description": "Cordova Backbutton Plugin",
+  "cordova": {
+    "id": "cordova-plugin-backbutton",
+    "platforms": [
+      "android"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mohamed-salah/phonegap-backbutton-plugin"
+  },
+  "keywords": [
+    "cordova",
+    "backbutton",
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,75 @@
+{
+  "_from": "cordova-plugin-crosswalk-webview@2.4.0",
+  "_id": "cordova-plugin-crosswalk-webview@2.4.0",
+  "_inBundle": false,
+  "_integrity": "sha512-XoUBv7RHvOWMKtI5mwSUzZDgStTaFfRlmZeC1cgicel6cX88IFMr+qqECix5V/xlutiLgEv34rxP4jR3Br19Cg==",
+  "_location": "/cordova-plugin-crosswalk-webview",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "cordova-plugin-crosswalk-webview@2.4.0",
+    "name": "cordova-plugin-crosswalk-webview",
+    "escapedName": "cordova-plugin-crosswalk-webview",
+    "rawSpec": "2.4.0",
+    "saveSpec": null,
+    "fetchSpec": "2.4.0"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cordova-plugin-crosswalk-webview/-/cordova-plugin-crosswalk-webview-2.4.0.tgz",
+  "_shasum": "90717bc4315c92d3182782fcba6b7ad89e532311",
+  "_spec": "cordova-plugin-crosswalk-webview@2.4.0",
+  "_where": "/Users/martin/workspace/padlock/cordova",
+  "author": "",
+  "bugs": {
+    "url": "https://crosswalk-project.org/jira"
+  },
+  "bundleDependencies": false,
+  "cordova": {
+    "id": "cordova-plugin-crosswalk-webview",
+    "platforms": [
+      "android"
+    ]
+  },
+  "deprecated": false,
+  "description": "Changes the default WebView to CrossWalk",
+  "engines": {
+    "cordovaDependencies": {
+      "2.0.0": {
+        "cordova": ">=5.2.0",
+        "cordova-android": "4 - 5"
+      },
+      "2.1.0": {
+        "cordova": ">=5.2.0",
+        "cordova-android": "4 - 5"
+      },
+      "2.2.0": {
+        "cordova": ">=5.2.0",
+        "cordova-android": ">=6"
+      },
+      "3.0.0": {
+        "cordova": ">100"
+      }
+    }
+  },
+  "homepage": "https://github.com/crosswalk-project/cordova-plugin-crosswalk-webview",
+  "keywords": [
+    "cordova",
+    "chromium",
+    "crosswalk",
+    "webview",
+    "engine",
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "license": "Apache 2.0",
+  "name": "cordova-plugin-crosswalk-webview",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crosswalk-project/cordova-plugin-crosswalk-webview.git"
+  },
+  "version": "2.4.0"
+}

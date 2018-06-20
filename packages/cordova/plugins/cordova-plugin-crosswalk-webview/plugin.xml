@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="cordova-plugin-crosswalk-webview"
+        version="2.4.0">
+
+    <name>Crosswalk WebView Engine</name>
+    <description>Changes the default WebView to CrossWalk</description>
+    <license>Apache 2.0</license>
+    <keywords>cordova,chromium,crosswalk,webview</keywords>
+    <repo>https://github.com/crosswalk-project/cordova-plugin-crosswalk-webview</repo>
+    <issue>https://crosswalk-project.org/jira</issue>
+
+    <engines>
+        <engine name="cordova-android" version=">=6"/>
+        <engine name="cordova-plugman" version=">=5.2.0"/><!-- needed for gradleReference support -->
+    </engines>
+
+    <!-- android -->
+    <platform name="android">
+        <preference name="XWALK_VERSION" default="23+"/>
+        <preference name="XWALK_LITEVERSION" default="xwalk_core_library_canary:17+"/>
+        <preference name="XWALK_COMMANDLINE" default="--disable-pull-to-refresh-effect"/>
+        <preference name="XWALK_MODE" default="embedded" />
+        <preference name="XWALK_MULTIPLEAPK" default="true" />
+        <config-file target="res/xml/config.xml" parent="/*">
+            <preference name="webView" value="org.crosswalk.engine.XWalkWebViewEngine"/>
+            <preference name="xwalkVersion" value="$XWALK_VERSION"/>
+            <preference name="xwalkLiteVersion" value="$XWALK_LITEVERSION"/>
+            <preference name="xwalkCommandLine" value="$XWALK_COMMANDLINE"/>
+            <preference name="xwalkMode" value="$XWALK_MODE" />
+            <preference name="xwalkMultipleApk" value="$XWALK_MULTIPLEAPK" />
+            <preference name="android-minSdkVersion" value="16" />
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+        </config-file>
+
+        <source-file src="platforms/android/src/org/crosswalk/engine/XWalkWebViewEngine.java" target-dir="src/org/crosswalk/engine"/>
+        <source-file src="platforms/android/src/org/crosswalk/engine/XWalkFileChooser.java" target-dir="src/org/crosswalk/engine"/>
+        <source-file src="platforms/android/src/org/crosswalk/engine/XWalkExposedJsApi.java" target-dir="src/org/crosswalk/engine"/>
+        <source-file src="platforms/android/src/org/crosswalk/engine/XWalkCordovaResourceClient.java" target-dir="src/org/crosswalk/engine"/>
+        <source-file src="platforms/android/src/org/crosswalk/engine/XWalkCordovaUiClient.java" target-dir="src/org/crosswalk/engine"/>
+        <source-file src="platforms/android/src/org/crosswalk/engine/XWalkCordovaView.java" target-dir="src/org/crosswalk/engine"/>
+        <source-file src="platforms/android/src/org/crosswalk/engine/XWalkCordovaCookieManager.java" target-dir="src/org/crosswalk/engine"/>
+        <source-file src="platforms/android/src/org/crosswalk/engine/XWalkCordovaClientCertRequest.java" target-dir="src/org/crosswalk/engine"/>
+        <source-file src="platforms/android/src/org/crosswalk/engine/XWalkCordovaHttpAuthHandler.java" target-dir="src/org/crosswalk/engine"/>
+
+        <framework src="platforms/android/xwalk.gradle" custom="true" type="gradleReference"/>
+
+        <hook type="after_plugin_install" src="hooks/after_plugin_install/000-shared_mode_special.js"/>
+        <hook type="before_plugin_uninstall" src="hooks/before_plugin_uninstall/000-shared_mode_special.js"/>
+        <hook type="after_build" src="hooks/after_build/000-build_64_bit.js"/>
+        <hook type="before_build" src="hooks/before_build/000-build_64_bit.js"/>
+    </platform>
+
+    <info>
+        After much discussion and analysis of the market, we have decided to discontinue support for Android 4.0 (ICS) in Crosswalk starting with version 20.
+
+        So the minSdkVersion of Cordova project is configured to 16 by default.
+    </info>
+</plugin>

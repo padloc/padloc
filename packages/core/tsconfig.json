@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "es2015",
+        "moduleResolution": "node",
+        "isolatedModules": false,
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitThis": true,
+        "strictNullChecks": true,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "declaration": false,
+        "sourceMap": true,
+        "declaration": true,
+        "pretty": true,
+        "experimentalDecorators": true,
+        "baseUrl": ".",
+        "paths": {
+            "*": ["typings/*"],
+            "zxcvbn/dist/zxcvbn": ["node_modules/@types/zxcvbn"]
+        },
+        "outDir": "lib"
+    },
+    "include": ["src/*.ts", "typings/*"],
+    "exclude": ["node_modules/**/*.ts"]
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Padlock</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+
+    </head>
+    <body>
+        <script type="module">
+            import { Client, Record } from "./core/data";
+            import { Container, WebCryptoProvider as provider, SJCLProvider, defaultWrappingParams } from "./core/crypto";
+            import { stringToBase64, base64ByteLength } from "./core/encoding";
+
+            (async () => {
+                // console.log(base64ByteLength(WebCryptoProvider.randomBytes(32)), base64ByteLength(SJCLProvider.randomBytes(32)));
+                // console.log(WebCryptoProvider.randomBytes(32), await WebCryptoProvider.deriveKey({password: "asdf", keySize: 256, iterations: 100, salt: WebCryptoProvider.randomBytes(16), algorithm: "PBKDF2"}))
+
+                // const store = new Store(new StoreData(["hello world"]))
+                // const s = await store.serialize();
+                // const newStore = new Store();
+                // await newStore.deserialize(s);
+                // console.log(newStore.data);
+                //
+                // const participant = await provider.generateKeyPair();
+                // participant.id = "1";
+                //
+                // const participant2 = await provider.generateKeyPair();
+                // participant2.id = "2";
+                //
+                // const ct = await provider.encrypt(participant.publicKey, "hello world", defaultWrappingParams());
+                // console.log(ct);
+                // const pt = await provider.decrypt(participant.privateKey, ct, defaultWrappingParams());
+                // console.log(pt);
+                //
+                // const cont = new Container(new StoreData(["hello world"]), participant);
+                // await cont.addParticipant(participant);
+                // await cont.addParticipant(participant2);
+                // const cont2 = new Container(new StoreData([]), participant2);
+                // const serialized = await cont.serialize();
+                // console.log(serialized);
+                // await cont2.deserialize(serialized);
+                // console.log(cont2.data);
+                const client = window.client = new Client();
+                await client.load();
+                window.Record = Record;
+            })();
+        </script>
+    </body>
+</html>

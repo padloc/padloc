@@ -1,0 +1,1 @@
+ext {ANDROID_SUPPORT_VERSION = "27.+"}

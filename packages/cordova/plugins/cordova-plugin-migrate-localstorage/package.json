@@ -1,0 +1,59 @@
+{
+  "_from": "cordova-plugin-migrate-localstorage@0.0.2",
+  "_id": "cordova-plugin-migrate-localstorage@0.0.2",
+  "_inBundle": false,
+  "_integrity": "sha512-WYCuLzEhtTR6y3+IWhyRB88P4OUn1VMx8nCX/3rp0ZIZQGTlFESelWMtIkdPEQgWj8TKA6Gu7S1iYBS3aelzbQ==",
+  "_location": "/cordova-plugin-migrate-localstorage",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "cordova-plugin-migrate-localstorage@0.0.2",
+    "name": "cordova-plugin-migrate-localstorage",
+    "escapedName": "cordova-plugin-migrate-localstorage",
+    "rawSpec": "0.0.2",
+    "saveSpec": null,
+    "fetchSpec": "0.0.2"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cordova-plugin-migrate-localstorage/-/cordova-plugin-migrate-localstorage-0.0.2.tgz",
+  "_shasum": "96b732bb1a3d0be31991317eda05924c60c14d97",
+  "_spec": "cordova-plugin-migrate-localstorage@0.0.2",
+  "_where": "/Users/martin/workspace/padlock/cordova",
+  "author": {
+    "name": "Martin Kleinschrodt",
+    "email": "martin@maklesoft.com"
+  },
+  "bugs": {
+    "url": "https://github.com/maklesoft/cordova-plugin-migrate-localstorage/issues"
+  },
+  "bundleDependencies": false,
+  "cordova": {
+    "id": "cordova-plugin-migrate-localstorage",
+    "platforms": [
+      "ios"
+    ]
+  },
+  "deprecated": false,
+  "description": "Migrate LocalStorage data from UIWebView to WKWebView",
+  "homepage": "https://github.com/maklesoft/cordova-plugin-migrate-localstorage#readme",
+  "issue": "https://github.com/maklesoft/cordova-plugin-migrate-localstorage/issues/",
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova",
+    "cordova-ios",
+    "uiwebview",
+    "wkwebview",
+    "localstorage"
+  ],
+  "license": "Apache 2.0",
+  "name": "cordova-plugin-migrate-localstorage",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maklesoft/cordova-plugin-migrate-localstorage.git"
+  },
+  "version": "0.0.2"
+}

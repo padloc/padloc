@@ -1,0 +1,97 @@
+Arguments: 
+  /Users/martin/.nvm/versions/node/v9.5.0/bin/node /Users/martin/.nvm/versions/node/v9.5.0/bin/yarn init
+
+PATH: 
+  /Users/martin/.nvm/versions/node/v9.5.0/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/Users/martin/workspace/go/bin:/Users/martin/android-sdk/platform-tools:/Users/martin/android-sdk/tools
+
+Yarn version: 
+  1.7.0
+
+Node version: 
+  9.5.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  Error: canceled
+      at Interface.<anonymous> (/Users/martin/.nvm/versions/node/v9.5.0/lib/node_modules/yarn/lib/cli.js:131036:13)
+      at Interface.emit (events.js:160:13)
+      at Interface._ttyWrite (readline.js:785:16)
+      at ReadStream.onkeypress (readline.js:165:10)
+      at ReadStream.emit (events.js:160:13)
+      at emitKeys (internal/readline.js:420:14)
+      at emitKeys.next (<anonymous>)
+      at ReadStream.onData (readline.js:1021:36)
+      at ReadStream.emit (events.js:160:13)
+      at addChunk (_stream_readable.js:269:12)
+
+npm manifest: 
+  {
+    "name": "com.maklesoft.padlock",
+    "version": "2.0.0",
+    "displayName": "Padlock",
+    "cordova": {
+      "platforms": [
+        "ios"
+      ],
+      "plugins": {
+        "cordova-plugin-app-version": {},
+        "cordova-plugin-backbutton": {},
+        "cordova-plugin-customurlscheme": {
+          "URL_SCHEME": "padlock"
+        },
+        "cordova-plugin-whitelist": {},
+        "ionic-plugin-keyboard": {},
+        "cordova-plugin-device": {},
+        "cordova-plugin-compat": {},
+        "cordova-plugin-crosswalk-webview": {
+          "XWALK_VERSION": "23+",
+          "XWALK_LITEVERSION": "xwalk_core_library_canary:17+",
+          "XWALK_COMMANDLINE": "--disable-pull-to-refresh-effect",
+          "XWALK_MODE": "embedded",
+          "XWALK_MULTIPLEAPK": "true"
+        },
+        "cordova-plugin-wkwebview-engine": {},
+        "cordova-plugin-file": {},
+        "cordova-plugin-statusbar": {},
+        "cordova-plugin-splashscreen": {},
+        "cordova-plugin-privacyscreen": {},
+        "cordova-plugin-wkwebview-inputfocusfix": {},
+        "cordova-clipboard": {},
+        "cordova-custom-config": {},
+        "cordova-android-support-gradle-release": {
+          "ANDROID_SUPPORT_VERSION": "27.+"
+        },
+        "cordova-plugin-inappbrowser": {}
+      }
+    },
+    "dependencies": {
+      "cordova-android": "^7.0.0",
+      "cordova-android-support-gradle-release": "^1.4.3",
+      "cordova-clipboard": "^1.2.1",
+      "cordova-custom-config": "^5.0.2",
+      "cordova-ios": "^4.5.4",
+      "cordova-plugin-app-version": "~0.1.9",
+      "cordova-plugin-backbutton": "~0.3.0",
+      "cordova-plugin-compat": "^1.2.0",
+      "cordova-plugin-crosswalk-webview": "^2.4.0",
+      "cordova-plugin-customurlscheme": "~4.2.0",
+      "cordova-plugin-device": "^1.1.6",
+      "cordova-plugin-file": "^6.0.1",
+      "cordova-plugin-inappbrowser": "^3.0.0",
+      "cordova-plugin-privacyscreen": "^0.4.0",
+      "cordova-plugin-splashscreen": "^5.0.2",
+      "cordova-plugin-statusbar": "^2.4.2",
+      "cordova-plugin-whitelist": "~1.2.2",
+      "cordova-plugin-wkwebview-engine": "^1.1.4",
+      "cordova-plugin-wkwebview-inputfocusfix": "^1.0.2",
+      "ionic-plugin-keyboard": "~2.2.1"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

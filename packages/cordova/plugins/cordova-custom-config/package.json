@@ -1,0 +1,79 @@
+{
+  "_from": "cordova-custom-config",
+  "_id": "cordova-custom-config@5.0.2",
+  "_inBundle": false,
+  "_integrity": "sha512-BOlDpmll+CIL+pSFfYrp0ederNCDKvB3X8tDY2EacEvcar/kB2MKs9M5Htv4VTrkfdIbjJtoePD2vaH3apY1Tg==",
+  "_location": "/cordova-custom-config",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "cordova-custom-config",
+    "name": "cordova-custom-config",
+    "escapedName": "cordova-custom-config",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/cordova-custom-config/-/cordova-custom-config-5.0.2.tgz",
+  "_shasum": "43e751d0c9d20845f57ace227c82c26668662eff",
+  "_spec": "cordova-custom-config",
+  "_where": "/Users/martin/workspace/padlock/cordova",
+  "author": {
+    "name": "Dave Alden"
+  },
+  "bugs": {
+    "url": "https://github.com/dpa99c/cordova-custom-config/issues"
+  },
+  "bundleDependencies": false,
+  "cordova": {
+    "id": "cordova-custom-config",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "cordova_name": "cordova-custom-config",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "elementtree": "^0.1.6",
+    "lodash": "^4.3.0",
+    "plist": "github:xiangpingmeng/plist.js",
+    "shelljs": "^0.7.0",
+    "tostr": "^0.1.0",
+    "xcode": "^1.0.0"
+  },
+  "deprecated": false,
+  "description": "Cordova/Phonegap plugin to update platform configuration files based on preferences and config-file data defined in config.xml.",
+  "devDependencies": {
+    "got": "^6.5.0",
+    "jshint": "^2.6.0"
+  },
+  "homepage": "https://github.com/dpa99c/cordova-custom-config#readme",
+  "issue": "https://github.com/dpa99c/cordova-custom-config/issues",
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova",
+    "cordova-android",
+    "cordova-ios",
+    "phonegap",
+    "config",
+    "configuration",
+    "plist",
+    "manifest"
+  ],
+  "license": "MIT",
+  "name": "cordova-custom-config",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dpa99c/cordova-custom-config.git"
+  },
+  "scripts": {
+    "test": "jshint hooks"
+  },
+  "version": "5.0.2"
+}
