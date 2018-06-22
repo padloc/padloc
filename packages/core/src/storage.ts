@@ -2,13 +2,14 @@ import { Serializable, marshal, unmarshal } from "./encoding";
 import { Client } from "./client";
 
 export interface Storable extends Serializable {
-    id: string;
-    kind: string;
+    storageKey: string;
+    storageKind: string;
 }
 
 export interface Storage {
     set(s: Storable): Promise<void>;
     get(s: Storable): Promise<void>;
+    delete(s: Storable): Promise<void>;
     clear(): Promise<void>;
 }
 
@@ -20,11 +21,15 @@ export class MemoryStorage implements Storage {
     }
 
     async set(s: Storable) {
-        this._storage.set(s.id, await s.serialize());
+        this._storage.set(s.storageKey, await s.serialize());
     }
 
     async get(s: Storable) {
-        await s.deserialize(this._storage.get(s.id));
+        await s.deserialize(this._storage.get(s.storageKey));
+    }
+
+    async delete(s: Storable) {
+        this._storage.delete(s.storageKey);
     }
 
     async clear() {
@@ -34,7 +39,7 @@ export class MemoryStorage implements Storage {
 
 export class LocalStorage implements Storage {
     keyFor(s: Storable) {
-        return `${s.kind || ""}_${s.id || ""}`;
+        return `${s.storageKind || ""}_${s.storageKey || ""}`;
     }
 
     async set(s: Storable) {
@@ -47,6 +52,10 @@ export class LocalStorage implements Storage {
             throw "not_found";
         }
         await s.deserialize(unmarshal(data));
+    }
+
+    async delete(s: Storable) {
+        localStorage.removeItem(this.keyFor(s));
     }
 
     async clear() {
@@ -63,7 +72,7 @@ export class RemoteStorage implements Storage {
     constructor(public client: Client) {}
 
     pathFor(s: Storable) {
-        return `${s.kind}/${s.id}`;
+        return `${s.storageKind}/${s.storageKey}`;
     }
 
     async get(s: Storable) {
@@ -74,6 +83,10 @@ export class RemoteStorage implements Storage {
     async set(s: Storable) {
         const data = await s.serialize();
         await this.client.request("POST", this.pathFor(s), marshal(data));
+    }
+
+    async delete() {
+        throw "not implemented";
     }
 
     async clear() {
@@ -90,12 +103,12 @@ export class RemoteStorage implements Storage {
 //     constructor(public storage: Storage) {}
 //
 //     private getContainer(s: Storable) {
-//         if (!this.containers.has(s.id)) {
+//         if (!this.containers.has(s.storageKey)) {
 //             const container = new Container();
-//             container.id = s.id;
-//             this.containers.set(s.id, container);
+//             container.storageKey = s.storageKey;
+//             this.containers.set(s.storageKey, container);
 //         }
-//         return this.containers.get(s.id)!;
+//         return this.containers.get(s.storageKey)!;
 //     }
 //
 //     async get(s: Storable) {

@@ -7,14 +7,19 @@
   "license": "GPLv3",
   "private": false,
   "devDependencies": {
+    "@types/fs-extra": "^5.0.3",
     "@types/koa": "^2.0.46",
+    "@types/koa-route": "^3.2.3",
     "@types/levelup": "0.0.30",
-    "@types/koa-route": "^3.2.3"
+    "@types/nodemailer": "^4.6.2"
   },
   "dependencies": {
+    "@padlock/core": "^1.0.0",
+    "fs-extra": "^6.0.1",
     "koa": "^2.5.1",
     "koa-body": "^4.0.3",
     "koa-route": "^3.2.0",
-    "level": "^4.0.0"
+    "level": "^4.0.0",
+    "nodemailer": "^4.6.7"
   }
 }

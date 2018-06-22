@@ -222,11 +222,12 @@ export class Container implements Storage, Storable {
         public wrappingParams: AsymmetricCipherParams = defaultWrappingParams()
     ) {}
 
-    get id() {
-        return this.data ? this.data.id : "";
+    get storageKey() {
+        return this.data ? this.data.storageKey : "";
     }
-    get kind() {
-        return this.data ? this.data.kind : "";
+
+    get storageKind() {
+        return this.data ? this.data.storageKind : "";
     }
 
     async getKey(): Promise<SymmetricKey> {
@@ -278,11 +279,14 @@ export class Container implements Storage, Storable {
         await data.deserialize(unmarshal(pt));
     }
 
+    async delete() {
+        await this.clear();
+    }
+
     async serialize() {
         const raw = {
             version: 2,
             scheme: this.scheme,
-            id: this.id,
             ep: this.encryptionParams,
             ct: this.cipherText
         } as RawContainer;

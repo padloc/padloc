@@ -20,6 +20,6 @@
         "baseUrl": ".",
         "allowJs": true
     },
-    "include": ["core/*.ts", "app/vendor/sjcl.js"],
+    "include": ["src/**/*.ts"],
     "exclude": ["node_modules/**/*.ts"]
 }
