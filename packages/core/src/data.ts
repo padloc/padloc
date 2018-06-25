@@ -1,5 +1,5 @@
 import { Serializable, DateString, Marshalable } from "./encoding";
-import { PublicKey, PrivateKey, Container, EncryptionScheme } from "./crypto";
+import { PrivateKey, Container, EncryptionScheme } from "./crypto";
 import { Storable } from "./storage";
 import { Account, PublicAccount } from "./auth";
 import { uuid } from "./util";
@@ -177,18 +177,23 @@ export class Record implements Serializable {
 }
 
 export class Store implements Storable {
+    id: string;
     created: DateString;
     updated: DateString;
-    account?: Account;
-    privateKey?: PrivateKey;
     protected container: Container;
     private _records = new Map<string, Record>();
+    storageKind = "store";
+
+    get storageKey() {
+        return this.id;
+    }
 
     protected get scheme(): EncryptionScheme {
         return "simple";
     }
 
-    constructor(records: Record[] = []) {
+    constructor(id = "", records: Record[] = []) {
+        this.id = id;
         this.container = new Container(this.scheme);
         this.addRecords(records);
     }
@@ -235,22 +240,14 @@ export class Store implements Storable {
 
     get serializer(): Storable {
         return {
-            storageKey: this.id,
+            storageKey: this.storageKey,
             storageKind: this.storageKind,
             serialize: async () => this._serialize(),
             deserialize: async (raw: any) => this._deserialize(raw)
         };
     }
 
-    protected prepContainer() {
-        if (this.account) {
-            this.container.user = {
-                id: this.account.id,
-                publicKey: this.account.publicKey,
-                privateKey: this.privateKey
-            };
-        }
-    }
+    protected prepContainer() {}
 
     async serialize(): Promise<Marshalable> {
         this.prepContainer();
@@ -267,19 +264,21 @@ export class Store implements Storable {
 
     async clear() {
         this._records = new Map<string, Record>();
-        delete this.account;
-        delete this.privateKey;
         await this.container.clear();
     }
 }
 
 export class MainStore extends Store {
+    privateKey: PrivateKey;
+    trustedAccounts: PublicAccount[];
+
+    get storageKey() {
+        return "main";
+    }
+
     protected get scheme(): EncryptionScheme {
         return "PBES2";
     }
-
-    settings = new Settings();
-    trustedAccounts: PublicAccount[];
 
     set password(pwd: string | undefined) {
         this.container.password = pwd;
@@ -291,26 +290,36 @@ export class MainStore extends Store {
 
     protected async _serialize() {
         return Object.assign(await super._serialize(), {
-            account: await this.account.serialize(),
-            settings: await this.settings.serialize(),
             privateKey: this.privateKey,
             trustedAccounts: this.trustedAccounts
         });
     }
 
     protected async _deserialize(raw: any) {
-        if (!this.account) {
-            this.account = Account.create();
-        }
-        this.settings.deserialize(raw.settings);
-        delete raw.settings;
-        await this.account.deserialize(raw.account);
-        delete raw.account;
+        this.privateKey = raw.privateKey;
+        this.trustedAccounts = raw.trustedAccounts;
         return super._deserialize(raw);
+    }
+
+    async clear() {
+        await super.clear();
+        delete this.privateKey;
+        delete this.trustedAccounts;
     }
 }
 
 export class SharedStore extends Store {
+    static create(): SharedStore {
+        const store = new SharedStore(uuid());
+        store.created = new Date().toISOString();
+        store.updated = new Date().toISOString();
+        return store;
+    }
+
+    constructor(public id: string) {
+        super();
+    }
+
     protected get scheme(): EncryptionScheme {
         return "shared";
     }

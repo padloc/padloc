@@ -681,27 +681,18 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
         track("Setup: Finish");
     }
 
-    _initializeData() {
+    async _initializeData() {
         this.$.getStartedButton.start();
         if (this._initializing) {
             return;
         }
         this._initializing = true;
 
-        const password = this.cloudSource.password || this.$.newPasswordInput.value;
-        this.cloudSource.password = password;
+        await Promise.all([this.initData(this.$.newPasswordInput.value), wait(1000)]);
 
-        const promises = [this.initData(password), wait(1000)];
-
-        if (this.settings.syncConnected && !this._hasCloudData) {
-            promises.push(this.collection.save(this.cloudSource));
-        }
-
-        Promise.all(promises).then(() => {
-            this.$.getStartedButton.success();
-            this.$.newPasswordInput.blur();
-            this._initializing = false;
-        });
+        this.$.getStartedButton.success();
+        this.$.newPasswordInput.blur();
+        this._initializing = false;
     }
 
     _promptResetData(message) {

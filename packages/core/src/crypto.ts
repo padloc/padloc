@@ -210,7 +210,8 @@ export interface Participant {
 }
 
 export class Container implements Storage, Storable {
-    data?: Storable;
+    id: string;
+    kind: string;
     cipherText?: CipherText;
     key?: SymmetricKey;
     password?: string;
@@ -225,11 +226,11 @@ export class Container implements Storage, Storable {
     ) {}
 
     get storageKey() {
-        return this.data ? this.data.storageKey : "";
+        return this.id;
     }
 
     get storageKind() {
-        return this.data ? this.data.storageKind : "";
+        return this.kind;
     }
 
     async getKey(): Promise<SymmetricKey> {
@@ -261,7 +262,8 @@ export class Container implements Storage, Storable {
     }
 
     async set(data: Storable) {
-        this.data = data;
+        this.id = data.storageKey;
+        this.kind = data.storageKind;
         this.encryptionParams.iv = provider.randomBytes(16);
         // TODO: useful additional authenticated data?
         this.encryptionParams.additionalData = provider.randomBytes(16);
@@ -272,7 +274,6 @@ export class Container implements Storage, Storable {
     }
 
     async get(data: Storable) {
-        this.data = data;
         if (!this.cipherText) {
             throw "Nothing to get";
         }
@@ -287,6 +288,8 @@ export class Container implements Storage, Storable {
 
     async serialize() {
         const raw = {
+            id: this.id,
+            kind: this.kind,
             version: 2,
             scheme: this.scheme,
             ep: this.encryptionParams,
@@ -310,6 +313,8 @@ export class Container implements Storage, Storable {
         this.scheme = raw.scheme;
         this.cipherText = raw.ct;
         this.encryptionParams = raw.ep;
+        this.id = raw.id;
+        this.kind = raw.kind;
 
         if (raw.scheme === "PBES2") {
             this.keyDerivationParams = raw.kp;
@@ -335,7 +340,8 @@ export class Container implements Storage, Storable {
         delete this.user;
         delete this.key;
         delete this.cipherText;
-        delete this.data;
+        delete this.id;
+        delete this.kind;
         this.encryptedKeys = {};
     }
 }

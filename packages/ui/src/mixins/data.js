@@ -2,11 +2,13 @@ import { MutableData } from "@polymer/polymer/lib/mixins/mutable-data";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Record } from "@padlock/core/lib/data.js";
 import { App } from "@padlock/core/lib/app.js";
+import { setProvider } from "@padlock/core/lib/crypto.js";
 import WebCryptoProvider from "@padlock/core/lib/webcrypto-provider.js";
 // import { getDesktopSettings } from "@padlock/core/lib/platform.js";
 import { debounce } from "@padlock/core/lib/util.js";
 
-export const app = new App(WebCryptoProvider);
+setProvider(WebCryptoProvider);
+export const app = (window.app = new App());
 
 // const desktopSettings = getDesktopSettings();
 // const dbPath = desktopSettings ? desktopSettings.get("dbPath") : "data.pls";
@@ -59,7 +61,7 @@ export function DataMixin(superClass) {
                 },
                 settings: {
                     type: Object,
-                    value: app.mainStore.settings,
+                    value: app.settings,
                     notify: true
                 }
             };
@@ -228,6 +230,9 @@ export function DataMixin(superClass) {
         }
 
         _filterAndSort() {
+            if (!this.currentStore) {
+                return [];
+            }
             let records = this.currentStore.records.filter(r => !r.removed && filterByString(this.filterString, r));
             this._recentCount = records.length > 10 ? 3 : 0;
             const recent = records
