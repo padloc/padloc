@@ -175,8 +175,10 @@ export function validateRawContainer(raw: any): RawContainer {
             break;
         case "PBES2":
             validateKeyDerivationParams(raw.kp);
+            break;
         case "shared":
             validateCipherParams(raw.wp);
+            break;
         default:
             throw new CryptoError("invalid_container_data");
     }
