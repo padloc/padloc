@@ -1,16 +1,11 @@
 import { Serializable, DateString, Marshalable } from "./encoding";
 import { PublicKey, PrivateKey, Container, EncryptionScheme } from "./crypto";
 import { Storable } from "./storage";
+import { Account, PublicAccount } from "./auth";
 import { uuid } from "./util";
 
-export type AccountID = string;
 export type StoreID = string;
 export type RecordID = string;
-
-export interface Device {
-    description: string;
-    tokenId: string;
-}
 
 export class Settings implements Storable {
     storageKind = "settings";
@@ -182,23 +177,18 @@ export class Record implements Serializable {
 }
 
 export class Store implements Storable {
-    storageKind: "store";
     created: DateString;
     updated: DateString;
-    account: Account;
-    privateKey: PrivateKey;
+    account?: Account;
+    privateKey?: PrivateKey;
     protected container: Container;
     private _records = new Map<string, Record>();
-
-    get storageKey() {
-        return this.id;
-    }
 
     protected get scheme(): EncryptionScheme {
         return "simple";
     }
 
-    constructor(public id: StoreID = uuid(), records: Record[] = []) {
+    constructor(records: Record[] = []) {
         this.container = new Container(this.scheme);
         this.addRecords(records);
     }
@@ -336,71 +326,5 @@ export class SharedStore extends Store {
         this.members.push(member);
         this.prepContainer();
         await this.container.addParticipant(member);
-    }
-}
-
-export interface PublicAccount {
-    id: AccountID;
-    email?: string;
-    publicKey: PublicKey;
-    mainStore: StoreID;
-}
-
-export interface Session {
-    id: string;
-    account: AccountID;
-    token: string;
-    created: DateString;
-    lastUsed?: DateString;
-    expires?: DateString;
-    device?: Device;
-}
-
-export class Account implements PublicAccount, Storable {
-    storageKind = "account";
-    id: AccountID;
-    created: DateString;
-    mainStore: StoreID;
-    sharedStores: StoreID[] = [];
-    publicKey: PublicKey;
-    sessions: Session[] = [];
-
-    static create(email?: string) {
-        const account = new Account(email);
-        account.id = uuid();
-        account.created = new Date().toISOString();
-        return account;
-    }
-
-    constructor(public email?: string) {}
-
-    get storageKey() {
-        return this.email || "";
-    }
-
-    get publicAccount(): PublicAccount {
-        return {
-            id: this.id,
-            email: this.email,
-            publicKey: this.publicKey,
-            mainStore: this.mainStore
-        };
-    }
-
-    async serialize() {
-        return {
-            id: this.id,
-            created: this.created,
-            email: this.email,
-            mainStore: this.mainStore,
-            sharedStores: this.sharedStores,
-            publicKey: this.publicKey,
-            sessions: this.sessions
-        };
-    }
-
-    async deserialize(raw: any) {
-        Object.assign(this, raw);
-        return this;
     }
 }

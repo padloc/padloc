@@ -1,5 +1,5 @@
 import { Storable } from "@padlock/core/src/storage";
-import { Session } from "@padlock/core/src/data";
+import { Session } from "@padlock/core/src/auth";
 import { DateString } from "@padlock/core/src/encoding";
 import { uuid } from "@padlock/core/src/util";
 import { randomBytes } from "crypto";

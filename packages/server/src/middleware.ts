@@ -1,4 +1,4 @@
-import { Account } from "@padlock/core/src/data";
+import { Account } from "@padlock/core/src/auth";
 import { Context } from "./server";
 
 export async function authenticate(ctx: Context, next: () => Promise<void>) {
