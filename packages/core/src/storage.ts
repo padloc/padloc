@@ -82,11 +82,16 @@ export class RemoteStorage implements Storage {
 
     async set(s: Storable) {
         const data = await s.serialize();
-        await this.client.request("POST", this.pathFor(s), marshal(data));
+        await this.client.request(
+            "PUT",
+            this.pathFor(s),
+            marshal(data),
+            new Map<string, string>([["Content-Type", "application/json"]])
+        );
     }
 
-    async delete() {
-        throw "not implemented";
+    async delete(s: Storable) {
+        await this.client.request("DELETE", this.pathFor(s));
     }
 
     async clear() {

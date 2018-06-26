@@ -259,6 +259,7 @@ export class Store implements Storable {
         this.prepContainer();
         await this.container.deserialize(raw);
         await this.container.get(this.serializer);
+        this.id = this.container.id;
         return this;
     }
 

@@ -1,5 +1,5 @@
 import { PrivateKey } from "./crypto";
-import { Storable, Storage, LocalStorage } from "./storage";
+import { Storable, Storage, LocalStorage, RemoteStorage } from "./storage";
 import { MainStore, SharedStore, Settings } from "./data";
 import { Account, AccountID, Session } from "./auth";
 import { DateString } from "./encoding";
@@ -9,7 +9,7 @@ export class AppMeta implements Storable {
     storageKind = "meta";
     storageKey = "";
     public initialized?: DateString;
-    public account?: AccountID;
+    public account?: Account;
     public session?: Session;
 
     async serialize() {
@@ -32,6 +32,7 @@ export class App {
     meta: AppMeta;
     settings: Settings;
     storage: Storage;
+    remoteStorage: Storage;
     client: Client;
     mainStore: MainStore;
     sharedStores: SharedStore[] = [];
@@ -44,6 +45,7 @@ export class App {
         this.mainStore = new MainStore();
         this.settings = new Settings();
         this.client = new Client(this.settings);
+        this.remoteStorage = new RemoteStorage(this.client);
         this.loaded = this.load();
     }
 
@@ -57,6 +59,18 @@ export class App {
 
     set password(pwd: string | undefined) {
         this.mainStore.password = pwd;
+    }
+
+    get session(): Session | undefined {
+        return this.client.session;
+    }
+
+    set session(s: Session | undefined) {
+        this.client.session = this.meta.session = s;
+    }
+
+    get isLoggedIn() {
+        return !!this.session && this.session.active;
     }
 
     async load() {
@@ -138,5 +152,28 @@ export class App {
         await this.storage.clear();
         this.meta = new AppMeta();
         this.loaded = this.load();
+    }
+
+    async login(email: string) {
+        this.meta.session = await this.client.createSession(email);
+        await this.save();
+    }
+
+    async activateSession(code: string) {
+        this.meta.session = await this.client.activateSession(code);
+        this.meta.account = await this.client.getAccount();
+        await this.save();
+    }
+
+    async refreshAccount() {
+        this.meta.account = await this.client.getAccount();
+        await this.save();
+    }
+
+    async logout() {
+        await this.client.logout();
+        delete this.meta.session;
+        delete this.meta.account;
+        await this.save();
     }
 }

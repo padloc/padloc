@@ -1,92 +1,86 @@
-import { EncryptedSource, CloudSource } from "@padlock/core/lib/source.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
-import { DataMixin } from "./data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import * as statsApi from "@padlock/core/lib/stats.js";
 import { checkForUpdates } from "@padlock/core/lib/platform.js";
 import { SubInfoMixin } from ".";
 import "../elements/dialog-payment.js";
 import "../elements/dialog-promo.js";
 
-const cloudSource = new EncryptedSource(new CloudSource(DataMixin.app.settings));
-
 export function SyncMixin(superClass) {
     return class SyncMixin extends SubInfoMixin(superClass) {
         static get properties() {
             return {
-                account: {
-                    type: Object,
-                    computed: "identity(settings.account)"
-                },
                 isSynching: {
                     type: Boolean,
                     value: false,
                     notify: true
                 },
-                lastSync: String
+                lastSync: String,
+                account: {
+                    type: Object,
+                    computed: "identity(app.client.account)"
+                },
+                session: {
+                    type: Object,
+                    computed: "identity(app.client.session)"
+                }
             };
-        }
-
-        get cloudSource() {
-            return cloudSource;
         }
 
         constructor() {
             super();
-            this.listen("data-unloaded", () => (cloudSource.password = ""));
-            this.listen("data-reset", () => (cloudSource.password = ""));
             this.listen("sync-start", () => this._syncStart());
             this.listen("sync-success", () => this._syncSuccess());
             this.listen("sync-fail", () => this._syncFail());
+            this.listen("account-changed", () => this.notifyPath("account"));
+            this.listen("session-changed", () => this.notifyPath("session"));
             this._updateLastSync();
             setInterval(() => this._updateLastSync(), 60000);
         }
 
-        connectCloud(email) {
-            return this._requestAuthToken(email.toLowerCase(), false, "code").then(() =>
-                this.dispatch("sync-connect-start", { email: email })
-            );
+        _syncStart() {
+            this.set("isSynching", true);
+            this.saveCall("syncStart");
         }
 
-        activateToken(code) {
-            return cloudSource.source.activateToken(code).then(success => {
-                this.settings.syncConnected = success;
-                this.settings.syncAuto = true;
-                this.dispatch("settings-changed");
+        _syncSuccess() {
+            this._updateLastSync();
+            this.set("isSynching", false);
+            this.saveCall("syncSuccess");
+        }
 
-                if (success) {
-                    this.dispatch("sync-connect-success");
-                }
-                return success;
-            });
+        _syncFail() {
+            this.set("isSynching", false);
+            this.saveCall("syncFail");
+        }
+
+        async login(email) {
+            await this.app.login(email.toLowerCase());
+            this.dispatch("sync-connect-start", { email: email });
+            this.dispatch("session-changed");
+        }
+
+        async activateSession(code) {
+            await this.app.activateSession(code);
+            this.dispatch("sync-connect-success");
+            this.dispatch("session-changed");
+            this.dispatch("account-changed");
         }
 
         cancelConnect() {
-            this.settings.syncToken = "";
-            this.dispatch("settings-changed");
+            this.app.session = undefined;
+            this.dispatch("session-changed");
             this.dispatch("sync-connect-cancel");
         }
 
-        disconnectCloud() {
-            const done = () => {
-                this.settings.syncConnected = false;
-                this.settings.syncToken = "";
-                this.settings.syncEmail = "";
-                this.settings.syncReadonly = false;
-                this.settings.syncSubStatus = "";
-                this.settings.account = null;
-                this.dispatch("settings-changed");
-                this.dispatch("sync-disconnect");
-            };
-
-            this.cloudSource.source
-                .logout()
-                .then(done)
-                .catch(done);
+        async logout() {
+            await this.app.logout();
+            this.dispatch("sync-disconnect");
+            this.dispatch("session-changed");
+            this.dispatch("account-changed");
         }
 
         synchronize(auto) {
-            if (!this.settings.syncConnected || (auto === true && !this.isSubValid())) {
+            if (!this.app.isLoggedIn || (auto === true && !this.isSubValid())) {
                 return;
             }
 
@@ -112,38 +106,8 @@ export function SyncMixin(superClass) {
             return sync;
         }
 
-        setRemotePassword(password) {
-            this.dispatch("sync-start");
-            cloudSource.password = password;
-            return this.collection
-                .save(cloudSource)
-                .then(() => {
-                    this.dispatch("sync-success");
-                    this.alert($l("Successfully updated the password for your account {0}.", this.settings.syncEmail), {
-                        type: "success"
-                    });
-                })
-                .catch(() => {
-                    this.dispatch("sync-fail");
-                    this.alert($l("Failed to update password. Please try again later!"), { type: "warning" });
-                });
-        }
-
         isActivationPending() {
-            return this.settings.syncToken && !this.settings.syncConnected;
-        }
-
-        hasSyncToken() {
-            return !!this.settings.syncToken;
-        }
-
-        openDashboard(action = "", referer = "app") {
-            action = encodeURIComponent(action);
-            referer = encodeURIComponent(referer);
-            cloudSource.source
-                .getLoginUrl(`/dashboard/?action=${action}&ref=${referer}`)
-                .then(url => window.open(url, "_system"))
-                .catch(() => window.open(`${this.settings.syncHostUrl}/dashboard/`, "_system"));
+            return this.app.session && !this.app.session.active;
         }
 
         promptLoginCode() {
@@ -154,7 +118,7 @@ export function SyncMixin(superClass) {
                 $l("Confirm"),
                 $l("Cancel"),
                 true,
-                code => {
+                async code => {
                     if (code === null) {
                         // Dialog canceled
                         this.cancelConnect();
@@ -162,54 +126,15 @@ export function SyncMixin(superClass) {
                     } else if (code == "") {
                         return Promise.reject("Please enter a valid login code!");
                     } else {
-                        return this.activateToken(code)
-                            .catch(e => {
-                                this._handleCloudError(e);
-                                this.cancelConnect();
-                                return e;
-                            })
-                            .then(success => {
-                                // Error from previous catch clause; Cancel dialog
-                                if (success.code) {
-                                    return null;
-                                }
-                                if (success) {
-                                    return true;
-                                } else {
-                                    return Promise.reject($l("Invalid login code. Try again!"));
-                                }
-                            });
+                        try {
+                            await this.activateSession(code);
+                            return true;
+                        } catch (e) {
+                            return Promise.reject($l("Invalid login code. Try again!"));
+                        }
                     }
                 }
             );
-        }
-
-        loginDialog() {
-            return this.prompt(
-                this.loginInfoText(),
-                $l("Enter Email Address"),
-                "email",
-                $l("Login"),
-                false,
-                false,
-                val => {
-                    const input = document.createElement("input");
-                    input.type = "email";
-                    input.value = val;
-                    if (val === null) {
-                        return Promise.resolve(null);
-                    } else if (val == "" || !input.validity.valid) {
-                        return Promise.reject($l("Please enter a valid email address!"));
-                    } else {
-                        return this.connectCloud(val);
-                    }
-                }
-            )
-                .then(val => (val === null ? Promise.reject() : val))
-                .then(() => this.promptLoginCode())
-                .then(val => (val === null ? Promise.reject() : val))
-                .then(() => this.synchronize())
-                .catch(e => e && this._handleCloudError(e));
         }
 
         loginInfoText() {
@@ -219,111 +144,47 @@ export function SyncMixin(superClass) {
             );
         }
 
-        _synchronize(auto) {
+        async _synchronize(auto) {
             auto = auto === true;
             this.dispatch("sync-start", { auto: auto });
 
-            if (!cloudSource.password) {
-                cloudSource.password = this.password;
-            }
-
-            return this.collection
-                .fetch(cloudSource)
-                .then(() => this.saveCollection())
-                .then(() => this.collection.save(cloudSource))
-                .then(() => {
-                    this.dispatch("records-changed");
-                    this.dispatch("settings-changed");
-                    this.dispatch("sync-success", { auto: auto });
-
-                    if (cloudSource.password !== this.password) {
-                        return this.choose(
-                            $l(
-                                "The master password you use locally does not match the one of your " +
-                                    "online account {0}. What do you want to do?",
-                                this.settings.syncEmail
-                            ),
-                            [$l("Update Local Password"), $l("Update Online Password"), $l("Keep Both Passwords")]
-                        ).then(choice => {
-                            switch (choice) {
-                                case 0:
-                                    this.setPassword(cloudSource.password).then(() => {
-                                        this.alert($l("Local password updated successfully."), { type: "success" });
-                                    });
-                                    break;
-                                case 1:
-                                    this.setRemotePassword(this.password);
-                                    break;
-                            }
-                        });
-                    }
-                })
-                .catch(e => {
-                    this.dispatch("settings-changed");
-                    if (this._handleCloudError(e)) {
-                        this.dispatch("records-changed");
-                        this.dispatch("sync-success", { auto: auto });
-                    } else {
-                        this.dispatch("sync-fail", { auto: auto, error: e });
-                    }
-                });
-        }
-
-        _syncStart() {
-            this.set("isSynching", true);
-            this.saveCall("syncStart");
-        }
-
-        _syncSuccess() {
-            this._updateLastSync();
-            this.set("isSynching", false);
-            this.saveCall("syncSuccess");
-        }
-
-        _syncFail() {
-            this.set("isSynching", false);
-            this.saveCall("syncFail");
-        }
-
-        //* Requests an api key from the cloud api with the entered email and device name
-        _requestAuthToken(email, create, actType) {
-            this.settings.email = email;
-            this.settings.syncToken = "";
+            await this.app.remoteStorage.get(this.app.mainStore);
+            await this.app.storage.set(this.app.mainStore);
+            await this.app.remoteStorage.set(this.app.mainstore);
+            this.dispatch("records-changed");
             this.dispatch("settings-changed");
+            this.dispatch("sync-success", { auto: auto });
 
-            return statsApi
-                .get()
-                .then(stats => {
-                    const redirect = `/dashboard/?tid=${encodeURIComponent(stats.trackingID)}`;
-                    return cloudSource.source.requestAuthToken(email, create, redirect, actType);
-                })
-                .then(authToken => {
-                    // We're getting back the api key directly, but it will valid only
-                    // after the user has visited the activation link in the email he was sent
-                    this.settings.syncConnected = false;
-                    this.settings.syncAuto = false;
-                    this.settings.syncToken = authToken.token;
-                    this.settings.syncId = authToken.id;
-                    this.dispatch("settings-changed");
-                })
-                .catch(e => {
-                    this.dispatch("settings-changed");
-                    switch (typeof e === "string" ? e : e.code) {
-                        case "account_not_found":
-                            return this._requestAuthToken(email, true, actType);
-                        case "rate_limit_exceeded":
-                            this.alert(
-                                $l(
-                                    "For security reasons only a limited amount of connection request " +
-                                        "are allowed at a time. Please wait a little before trying again!"
-                                )
-                            );
-                            throw e;
-                        default:
-                            this._handleCloudError(e);
-                            throw e;
-                    }
-                });
+            // if (cloudSource.password !== this.password) {
+            //     return this.choose(
+            //         $l(
+            //             "The master password you use locally does not match the one of your " +
+            //                 "online account {0}. What do you want to do?",
+            //             this.settings.syncEmail
+            //         ),
+            //         [$l("Update Local Password"), $l("Update Online Password"), $l("Keep Both Passwords")]
+            //     ).then(choice => {
+            //         switch (choice) {
+            //             case 0:
+            //                 this.setPassword(cloudSource.password).then(() => {
+            //                     this.alert($l("Local password updated successfully."), { type: "success" });
+            //                 });
+            //                 break;
+            //             case 1:
+            //                 this.setRemotePassword(this.password);
+            //                 break;
+            //         }
+            //     });
+            // }
+            // .catch(e => {
+            //     this.dispatch("settings-changed");
+            //     if (this._handleCloudError(e)) {
+            //         this.dispatch("records-changed");
+            //         this.dispatch("sync-success", { auto: auto });
+            //     } else {
+            //         this.dispatch("sync-fail", { auto: auto, error: e });
+            //     }
+            // });
         }
 
         _computeRemainingTrialDays(trialEnd) {
@@ -454,20 +315,17 @@ export function SyncMixin(superClass) {
             }
         }
 
-        hasCloudData() {
-            return cloudSource.hasData();
-        }
-
         forgotCloudPassword() {
-            return this.promptForgotPassword().then(doReset => {
-                if (doReset) {
-                    return this.cloudSource.clear();
-                }
-            });
+            throw "not implemented";
+            // return this.promptForgotPassword().then(doReset => {
+            //     if (doReset) {
+            //         return this.cloudSource.clear();
+            //     }
+            // });
         }
 
         _updateLastSync() {
-            return statsApi.get().then(s => (this.lastSync = formatDateFromNow(s.lastSync)));
+            // return statsApi.get().then(s => (this.lastSync = formatDateFromNow(s.lastSync)));
         }
 
         buySubscription(source) {
@@ -514,15 +372,9 @@ export function SyncMixin(superClass) {
                 .catch(e => this._handleCloudError(e));
         }
 
-        refreshAccount() {
-            if (this.settings.syncConnected) {
-                return this.cloudSource.source
-                    .getAccountInfo()
-                    .catch(e => this._handleCloudError(e))
-                    .then(() => this.dispatch("settings-changed"));
-            } else {
-                return Promise.resolve();
-            }
+        async refreshAccount() {
+            await this.app.refreshAccount();
+            this.dispatch("account-changed");
         }
 
         cancelSubscription() {
