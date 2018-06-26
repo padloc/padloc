@@ -1,15 +1,12 @@
-import { request, Method, AjaxError } from "./ajax";
+import { request, Method } from "./ajax";
 import { Settings } from "./data";
-
-export interface AuthToken {
-    email: string;
-    token: string;
-    id: string;
-    // Activation url returned by server. Only used for testing
-    actUrl?: string;
-}
+import { Session, Account } from "./auth";
+import { getDeviceInfo } from "./platform";
+import { unmarshal } from "./encoding";
 
 export class Client {
+    public session?: Session;
+
     constructor(public settings: Settings) {}
 
     get basePath() {
@@ -25,18 +22,18 @@ export class Client {
         headers = headers || new Map<string, string>();
 
         headers.set("Accept", "application/vnd.padlock;version=1");
-        if (this.settings.syncEmail && this.settings.syncToken) {
-            headers.set("Authorization", "AuthToken " + this.settings.syncEmail + ":" + this.settings.syncToken);
+        if (this.session) {
+            headers.set("Authorization", "AuthToken " + this.session.account + ":" + this.session.token);
         }
 
-        // const { uuid, platform, osVersion, appVersion, manufacturer, model, hostName } = await getDeviceInfo();
-        // headers.set("X-Device-App-Version", appVersion || "");
-        // headers.set("X-Device-Platform", platform || "");
-        // headers.set("X-Device-UUID", uuid || "");
-        // headers.set("X-Device-Manufacturer", manufacturer || "");
-        // headers.set("X-Device-OS-Version", osVersion || "");
-        // headers.set("X-Device-Model", model || "");
-        // headers.set("X-Device-Hostname", hostName || "");
+        const { uuid, platform, osVersion, appVersion, manufacturer, model, hostName } = await getDeviceInfo();
+        headers.set("X-Device-App-Version", appVersion || "");
+        headers.set("X-Device-Platform", platform || "");
+        headers.set("X-Device-UUID", uuid || "");
+        headers.set("X-Device-Manufacturer", manufacturer || "");
+        headers.set("X-Device-OS-Version", osVersion || "");
+        headers.set("X-Device-Model", model || "");
+        headers.set("X-Device-Hostname", hostName || "");
 
         const req = await request(method, url, data, headers);
 
@@ -60,112 +57,77 @@ export class Client {
         return req;
     }
 
-    async authenticate(
-        email: string,
-        create = false,
-        authType = "api",
-        redirect = "",
-        actType = ""
-    ): Promise<AuthToken> {
+    async createSession(email: string): Promise<Session> {
         const params = new URLSearchParams();
         params.set("email", email);
-        params.set("type", authType);
-        params.set("redirect", redirect);
-        params.set("actType", actType);
 
         const req = await this.request(
-            create ? "POST" : "PUT",
-            "auth",
+            "POST",
+            "session",
             params.toString(),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
 
-        let authToken: AuthToken;
-        try {
-            authToken = <AuthToken>JSON.parse(req.responseText);
-        } catch (e) {
-            throw new AjaxError(req);
-        }
-        return authToken;
+        this.session = unmarshal(req.responseText) as Session;
+        return this.session;
     }
 
-    async requestAuthToken(email: string, create = false, redirect = "", actType?: string): Promise<AuthToken> {
-        const authToken = await this.authenticate(email, create, "api", redirect, actType);
-        this.settings.syncEmail = authToken.email;
-        this.settings.syncToken = authToken.token;
-        return authToken;
-    }
-
-    async getLoginUrl(redirect: string) {
-        if (!this.settings.syncConnected) {
-            throw { code: "invalid_auth_token", message: "Need to be authenticated to get a login link." };
+    async activateSession(code: string): Promise<Session> {
+        if (!this.session) {
+            throw "No valid session object found. Need to call 'createSession' first!";
         }
 
-        const authToken = await this.authenticate(this.settings.syncEmail, false, "web", redirect);
-        return authToken.actUrl;
-    }
-
-    activateToken(code: string): Promise<Boolean> {
         const params = new URLSearchParams();
         params.set("code", code);
-        params.set("email", this.settings.syncEmail);
 
-        return this.request(
+        const req = await this.request(
             "POST",
-            "activate",
+            `session/${this.session.id}/activate`,
             params.toString(),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
-        )
-            .then(() => true)
-            .catch(e => {
-                if (e.code === "bad_request") {
-                    return false;
-                } else {
-                    throw e;
-                }
-            });
+        );
+        this.session = unmarshal(req.responseText) as Session;
+        return this.session;
     }
 
-    logout(): Promise<XMLHttpRequest> {
-        return this.request("GET", "logout");
+    async revokeSession(id: string): Promise<XMLHttpRequest> {
+        return this.request("DELETE", `session/${id}`);
     }
 
-    async getAccountInfo(): Promise<Account> {
+    async logout(): Promise<void> {
+        if (!this.session) {
+            throw "Not logged in";
+        }
+        await this.revokeSession(this.session.id);
+        delete this.session;
+    }
+
+    async getAccount(): Promise<Account> {
+        if (!this.session) {
+            throw "Need to be logged in to sync account";
+        }
         const res = await this.request("GET", "account");
-        const account = JSON.parse(res.responseText);
-        this.settings.account = account;
-        return account;
+        return await new Account().deserialize(unmarshal(res.responseText));
     }
-
-    revokeAuthToken(tokenId: string): Promise<XMLHttpRequest> {
-        const params = new URLSearchParams();
-        params.set("id", tokenId);
-        return this.request(
-            "POST",
-            "revoke",
-            params.toString(),
-            new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
-        );
-    }
-
-    subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {
-        const params = new URLSearchParams();
-        params.set("stripeToken", stripeToken);
-        params.set("coupon", coupon);
-        params.set("source", source);
-        return this.request(
-            "POST",
-            "subscribe",
-            params.toString(),
-            new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
-        );
-    }
-
-    cancelSubscription(): Promise<XMLHttpRequest> {
-        return this.request("POST", "unsubscribe");
-    }
-
-    getPlans(): Promise<any[]> {
-        return this.request("GET", this.urlForPath("plans")).then(res => <any[]>JSON.parse(res.responseText));
-    }
+    //
+    // subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {
+    //     const params = new URLSearchParams();
+    //     params.set("stripeToken", stripeToken);
+    //     params.set("coupon", coupon);
+    //     params.set("source", source);
+    //     return this.request(
+    //         "POST",
+    //         "subscribe",
+    //         params.toString(),
+    //         new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
+    //     );
+    // }
+    //
+    // cancelSubscription(): Promise<XMLHttpRequest> {
+    //     return this.request("POST", "unsubscribe");
+    // }
+    //
+    // getPlans(): Promise<any[]> {
+    //     return this.request("GET", this.urlForPath("plans")).then(res => <any[]>JSON.parse(res.responseText));
+    // }
 }

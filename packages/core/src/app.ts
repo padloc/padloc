@@ -3,6 +3,7 @@ import { Storable, Storage, LocalStorage } from "./storage";
 import { MainStore, SharedStore, Settings } from "./data";
 import { Account, AccountID, Session } from "./auth";
 import { DateString } from "./encoding";
+import { Client } from "./client";
 
 export class AppMeta implements Storable {
     storageKind = "meta";
@@ -31,6 +32,7 @@ export class App {
     meta: AppMeta;
     settings: Settings;
     storage: Storage;
+    client: Client;
     mainStore: MainStore;
     sharedStores: SharedStore[] = [];
     loaded: Promise<void>;
@@ -41,6 +43,7 @@ export class App {
         this.meta = new AppMeta();
         this.mainStore = new MainStore();
         this.settings = new Settings();
+        this.client = new Client(this.settings);
         this.loaded = this.load();
     }
 
@@ -59,6 +62,7 @@ export class App {
     async load() {
         try {
             await this.storage.get(this.meta);
+            this.client.session = this.meta.session;
         } catch (e) {
             await this.storage.set(this.meta);
         }
@@ -115,6 +119,7 @@ export class App {
     // }
 
     async save() {
+        this.meta.session = this.client.session;
         return Promise.all([
             this.storage.set(this.meta),
             this.storage.set(this.mainStore),

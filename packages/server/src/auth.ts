@@ -6,7 +6,6 @@ import { randomBytes } from "crypto";
 
 export class AuthRequest implements Storable {
     session: Session;
-    code: string;
     created: DateString;
     storageKind = "auth_request";
 
@@ -18,19 +17,16 @@ export class AuthRequest implements Storable {
             id: uuid(),
             account: email,
             created: new Date().toISOString(),
-            token: randomBytes(16).toString("hex")
+            token: randomBytes(16).toString("hex"),
+            active: false
         };
         return req;
     }
 
-    constructor(public email: string, code?: string) {
-        if (code) {
-            this.code = code;
-        }
-    }
+    constructor(public email = "", public code = "") {}
 
     get storageKey() {
-        return `${this.email}-${this.code}`;
+        return `${this.session.id}`;
     }
 
     async serialize() {

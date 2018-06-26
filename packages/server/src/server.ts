@@ -8,7 +8,7 @@ import { Storage } from "@padlock/core/src/storage";
 import { LevelDBStorage } from "./storage";
 import { Sender, EmailSender } from "./sender";
 import { authenticate } from "./middleware";
-import { createSession, activateSession, getAccount } from "./handlers";
+import { createSession, activateSession, revokeSession, getAccount } from "./handlers";
 
 export interface Context extends Koa.Context {
     storage: Storage;
@@ -43,7 +43,8 @@ export class Server {
         this.koa.use(body());
         this.koa.use(authenticate);
         this.koa.use(route.post("/session", createSession));
-        this.koa.use(route.post("/session/activate", activateSession));
+        this.koa.use(route.delete("/session/:id", revokeSession));
+        this.koa.use(route.post("/session/:id/activate", activateSession));
         this.koa.use(route.get("/account", getAccount));
     }
 

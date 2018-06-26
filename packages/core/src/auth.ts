@@ -13,7 +13,7 @@ export interface Device {
 
 export interface PublicAccount {
     id: AccountID;
-    email?: string;
+    email: string;
     publicKey: PublicKey;
     mainStore: StoreID;
 }
@@ -21,7 +21,7 @@ export interface PublicAccount {
 export interface Session {
     id: string;
     account: AccountID;
-    token: string;
+    token?: string;
     created: DateString;
     active: boolean;
     lastUsed?: DateString;
@@ -38,14 +38,14 @@ export class Account implements PublicAccount, Storable {
     publicKey: PublicKey;
     sessions: Session[] = [];
 
-    static create(email?: string) {
+    static create(email: string) {
         const account = new Account(email);
         account.id = uuid();
         account.created = new Date().toISOString();
         return account;
     }
 
-    constructor(public email?: string) {}
+    constructor(public email: string = "") {}
 
     get storageKey() {
         return this.email || "";
