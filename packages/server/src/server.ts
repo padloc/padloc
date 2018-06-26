@@ -2,6 +2,8 @@ import * as Koa from "koa";
 import * as route from "koa-route";
 // @ts-ignore
 import * as body from "koa-body";
+// @ts-ignore
+import * as cors from "@koa/cors";
 import { Storage } from "@padlock/core/src/storage";
 import { LevelDBStorage } from "./storage";
 import { Sender, EmailSender } from "./sender";
@@ -23,6 +25,21 @@ export class Server {
             sender: this.sender
         });
 
+        this.koa.use(
+            cors({
+                exposeHeaders: ["X-Sub-Status", "X-Stripe-Pub-Key", "X-Sub-Trial-End"],
+                allowHeaders: [
+                    "Authorization",
+                    "X-Device-App-Version",
+                    "X-Device-Platform",
+                    "X-Device-UUID",
+                    "X-Device-Manufacturer",
+                    "X-Device-OS-Version",
+                    "X-Device-Model",
+                    "X-Device-Hostname"
+                ]
+            })
+        );
         this.koa.use(body());
         this.koa.use(authenticate);
         this.koa.use(route.post("/session", createSession));

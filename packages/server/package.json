@@ -14,6 +14,7 @@
     "@types/nodemailer": "^4.6.2"
   },
   "dependencies": {
+    "@koa/cors": "2",
     "@padlock/core": "^1.0.0",
     "fs-extra": "^6.0.1",
     "koa": "^2.5.1",
