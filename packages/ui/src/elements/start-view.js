@@ -4,7 +4,6 @@ import { applyMixins, wait, passwordStrength } from "@padlock/core/lib/util.js";
 import { isTouch, getAppStoreLink, checkForUpdates } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { track } from "@padlock/core/lib/tracking.js";
-import * as stats from "@padlock/core/lib/stats.js";
 import "./input.js";
 import "./loading-button.js";
 import { DataMixin, LocaleMixin, DialogMixin, AnimationMixin, SyncMixin } from "../mixins";
@@ -511,7 +510,7 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
         }
 
         this.$.emailButton.start();
-        stats.set({ pairingSource: "Setup" });
+        this.app.setStats({ pairingSource: "Setup" });
 
         this.connectCloud(this.$.emailInput.value)
             .then(() => {

@@ -1,8 +1,7 @@
 import { request } from "./ajax";
 import { resolveLanguage, loadScript } from "./util";
-import { getLocale, getPlatformName } from "./platform";
-import { Settings } from "./data";
-import { Storage, Storable } from "./storage";
+import { getLocale, getPlatformName, getAppVersion } from "./platform";
+import { Storable } from "./storage";
 import { unmarshal } from "./encoding";
 
 export interface Message {
@@ -21,7 +20,7 @@ export class Messages implements Storable {
     storageKey = "";
     private readMessages: { [id: string]: boolean };
 
-    constructor(public url: string, public storage: Storage, public settings: Settings) {}
+    constructor(public url: string) {}
 
     async serialize() {
         return this.readMessages;
@@ -33,11 +32,11 @@ export class Messages implements Storable {
     }
 
     private async parseAndFilter(data: string): Promise<Message[]> {
-        await this.storage.get(this);
         const now = new Date();
         const aa = unmarshal(data) as Message[];
         const read = this.readMessages;
         const platform = await getPlatformName();
+        const version = await getAppVersion();
         const semver = await loadScript("vendor/semver.js", "semver");
 
         return aa
@@ -67,8 +66,8 @@ export class Messages implements Storable {
                     a.from <= now &&
                     a.until >= now &&
                     (!a.platform || a.platform.includes(platform)) &&
-                    (!a.subStatus || a.subStatus.includes(this.settings.syncSubStatus)) &&
-                    (!a.version || semver.satisfies(this.settings.version, a.version))
+                    // (!a.subStatus || a.subStatus.includes(this.settings.syncSubStatus)) &&
+                    (!a.version || semver.satisfies(version, a.version))
                 );
             });
     }
@@ -85,6 +84,5 @@ export class Messages implements Storable {
 
     async markRead(a: Message): Promise<void> {
         this.readMessages[a.id] = true;
-        await this.storage.set(this);
     }
 }

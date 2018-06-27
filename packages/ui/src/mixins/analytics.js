@@ -1,21 +1,21 @@
 import { init, track, setTrackingID } from "@padlock/core/lib/tracking.js";
-import * as statsApi from "@padlock/core/lib/stats.js";
-import { CloudSource } from "@padlock/core/lib/source.js";
+import { Client } from "@padlock/core/lib/client.js";
 import { DataMixin } from ".";
 
 const startedLoading = new Date().getTime();
 
-init(new CloudSource(DataMixin.settings), statsApi);
+init(new Client(DataMixin.settings));
 
 export function AnalyticsMixin(superClass) {
     return class AnalyticsMixin extends superClass {
         constructor() {
             super();
+            const stats = this.app.stats;
 
-            this.listen("data-exported", () => statsApi.set({ lastExport: new Date().getTime() }));
+            this.listen("data-exported", () => this.app.setStats({ lastExport: new Date().getTime() }));
 
             this.listen("settings-changed", () => {
-                statsApi.set({
+                this.app.setStats({
                     syncCustomHost: this.settings.syncCustomHost
                 });
             });
@@ -35,33 +35,27 @@ export function AnalyticsMixin(superClass) {
             });
 
             this.listen("sync-connect-start", e => {
-                statsApi.get().then(stats => {
-                    track("Start Pairing", {
-                        Source: stats.pairingSource,
-                        Email: e.detail.email
-                    });
-                    statsApi.set({ startedPairing: new Date().getTime() });
+                track("Start Pairing", {
+                    Source: stats.pairingSource,
+                    Email: e.detail.email
                 });
+                this.app.setStats({ startedPairing: new Date().getTime() });
             });
 
             this.listen("sync-connect-success", () => {
-                return statsApi.get().then(stats => {
-                    track("Finish Pairing", {
-                        Success: true,
-                        Source: stats.pairingSource,
-                        $duration: (new Date().getTime() - stats.startedPairing) / 1000
-                    });
+                track("Finish Pairing", {
+                    Success: true,
+                    Source: stats.pairingSource,
+                    $duration: (new Date().getTime() - stats.startedPairing) / 1000
                 });
             });
 
             this.listen("sync-connect-cancel", () => {
-                return statsApi.get().then(stats => {
-                    track("Finish Pairing", {
-                        Success: false,
-                        Canceled: true,
-                        Source: stats.pairingSource,
-                        $duration: (new Date().getTime() - stats.startedPairing) / 1000
-                    });
+                track("Finish Pairing", {
+                    Success: false,
+                    Canceled: true,
+                    Source: stats.pairingSource,
+                    $duration: (new Date().getTime() - stats.startedPairing) / 1000
                 });
             });
 
@@ -71,7 +65,7 @@ export function AnalyticsMixin(superClass) {
             this.listen("sync-start", () => (startedSync = new Date().getTime()));
 
             this.listen("sync-success", e => {
-                statsApi.set({ lastSync: new Date().getTime() }).then(() =>
+                this.app.setStats({ lastSync: new Date().getTime() }).then(() =>
                     track("Synchronize", {
                         Success: true,
                         "Auto Sync": e.detail ? e.detail.auto : false,

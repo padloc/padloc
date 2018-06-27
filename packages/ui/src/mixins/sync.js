@@ -325,7 +325,7 @@ export function SyncMixin(superClass) {
         }
 
         _updateLastSync() {
-            // return statsApi.get().then(s => (this.lastSync = formatDateFromNow(s.lastSync)));
+            return (this.lastSync = formatDateFromNow(this.app.stats.lastSync));
         }
 
         buySubscription(source) {

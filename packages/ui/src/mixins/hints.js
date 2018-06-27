@@ -1,12 +1,8 @@
 import { localize as $l } from "@padlock/core/lib/locale";
 import { wait } from "@padlock/core/lib/util";
 import { isChromeApp, isChromeOS, getReviewLink } from "@padlock/core/lib/platform";
-import * as statsApi from "@padlock/core/lib/stats";
 
 const day = 1000 * 60 * 60 * 24;
-
-let stats;
-const statsLoaded = statsApi.get().then(s => (stats = s));
 
 function daysPassed(date) {
     return (new Date().getTime() - date) / day;
@@ -17,11 +13,11 @@ export function HintsMixin(superClass) {
         constructor() {
             super();
 
-            this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindBackup()));
-            this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._remindSync()));
-            this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._askFeedback()));
-            this.listen("data-loaded", () => statsLoaded.then(() => wait(1000)).then(() => this._crossPlatformHint()));
-            this.listen("auto-lock", () => statsLoaded.then(() => this._showAutoLockNotice()));
+            this.listen("data-loaded", () => wait(1000).then(() => this._remindBackup()));
+            this.listen("data-loaded", () => wait(1000).then(() => this._remindSync()));
+            this.listen("data-loaded", () => wait(1000).then(() => this._askFeedback()));
+            this.listen("data-loaded", () => wait(1000).then(() => this._crossPlatformHint()));
+            this.listen("auto-lock", () => this._showAutoLockNotice());
             this.listen("settings-changed", () => this._notifySubStatus());
             this.listen("sync-connect-success", () => this._notifySubStatus());
             this.listen("data-loaded", () => wait(1000).then(() => this._notifySubStatus()));
@@ -29,10 +25,11 @@ export function HintsMixin(superClass) {
 
         ready() {
             super.ready();
-            statsLoaded.then(() => wait(1000)).then(() => this._notifyChromeAppDeprecation());
+            wait(1000).then(() => this._notifyChromeAppDeprecation());
         }
 
         _remindBackup() {
+            const stats = this.app.stats;
             if (
                 daysPassed(stats.lastExport || stats.firstLaunch) > 7 &&
                 daysPassed(stats.lastBackupReminder || stats.firstLaunch) > 7 &&
@@ -49,17 +46,18 @@ export function HintsMixin(superClass) {
                 ).then(choice => {
                     switch (choice) {
                         case 0:
-                            statsApi.set({ pairingSource: "Backup Reminder" });
+                            this.app.setStats({ pairingSource: "Backup Reminder" });
                             this._openCloudView();
                             break;
                     }
                 });
 
-                statsApi.set({ lastBackupReminder: new Date().getTime() });
+                this.app.setStats({ lastBackupReminder: new Date().getTime() });
             }
         }
 
         _remindSync() {
+            const stats = this.app.stats;
             const daysSinceLastSync = daysPassed(stats.lastSync || stats.firstLaunch);
             if (
                 this.settings.syncConnected &&
@@ -88,7 +86,7 @@ export function HintsMixin(superClass) {
                     }
                 });
 
-                statsApi.set({ lastSyncReminder: new Date().getTime() });
+                this.app.setStats({ lastSyncReminder: new Date().getTime() });
             }
         }
 
@@ -116,6 +114,7 @@ export function HintsMixin(superClass) {
         }
 
         _askFeedback() {
+            const stats = this.app.stats;
             if (stats.launchCount > 20 && !stats.dontAskFeeback && !stats.lastAskedFeedback) {
                 this.choose(
                     $l("Hey there! Sorry to bother you, but we'd love to know how you are liking Padlock so far!"),
@@ -123,7 +122,7 @@ export function HintsMixin(superClass) {
                 ).then(rating => {
                     this.track("Rate App", { Rating: rating });
 
-                    statsApi.set({
+                    this.app.setStats({
                         lastAskedFeedback: new Date().getTime(),
                         lastRating: rating,
                         lastRatedVersion: this.settings.version
@@ -142,10 +141,10 @@ export function HintsMixin(superClass) {
                                     case 0:
                                         this.track("Review App", { Rating: rating });
                                         this._sendFeedback(rating);
-                                        statsApi.set({ lastReviewed: new Date().getTime() });
+                                        this.app.setStats({ lastReviewed: new Date().getTime() });
                                         break;
                                     case 1:
-                                        statsApi.set({ dontAskFeedback: true });
+                                        this.app.setStats({ dontAskFeedback: true });
                                         break;
                                 }
                             });
@@ -177,6 +176,7 @@ export function HintsMixin(superClass) {
         }
 
         _showAutoLockNotice() {
+            const stats = this.app.stats;
             if (!stats.hasShownAutoLockNotice) {
                 const minutes = this.settings.autoLockDelay;
                 setTimeout(() => {
@@ -189,11 +189,12 @@ export function HintsMixin(superClass) {
                         )
                     );
                 }, 1000);
-                statsApi.set({ hasShownAutoLockNotice: true });
+                this.app.setStats({ hasShownAutoLockNotice: true });
             }
         }
 
         _notifySubStatus() {
+            const stats = this.app.stats;
             if (this.promo && !this._hasShownPromo) {
                 this.alertPromo();
                 this._hasShownPromo = true;
@@ -205,7 +206,7 @@ export function HintsMixin(superClass) {
                 (!stats.lastTrialEndsReminder || daysPassed(stats.lastTrialEndsReminder) > 7)
             ) {
                 this.buySubscription("App - Trialing (Alert)");
-                statsApi.set({ lastTrialEndsReminder: new Date().getTime() });
+                this.app.setStats({ lastTrialEndsReminder: new Date().getTime() });
                 return;
             }
 
@@ -239,6 +240,7 @@ export function HintsMixin(superClass) {
         }
 
         _crossPlatformHint() {
+            const stats = this.app.stats;
             if (!this.settings.syncConnected && !stats.hasShownCrossPlatformHint) {
                 this.confirm(
                     $l(
@@ -250,12 +252,12 @@ export function HintsMixin(superClass) {
                     { title: $l("Did You Know?"), type: "question" }
                 ).then(confirmed => {
                     if (confirmed) {
-                        statsApi.set({ pairingSource: "Cross-Platform Hint" });
+                        this.app.setStats({ pairingSource: "Cross-Platform Hint" });
                         this._openCloudView();
                     }
                 });
 
-                statsApi.set({ hasShownCrossPlatformHint: new Date().getTime() });
+                this.app.setStats({ hasShownCrossPlatformHint: new Date().getTime() });
             }
         }
     };

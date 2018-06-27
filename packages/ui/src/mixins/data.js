@@ -80,6 +80,10 @@ export function DataMixin(superClass) {
             this.listen("settings-changed", () => this._settingsChanged());
         }
 
+        get app() {
+            return app;
+        }
+
         get password() {
             return app.password;
         }

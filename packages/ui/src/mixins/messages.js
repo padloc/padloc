@@ -1,36 +1,29 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";
-import { Messages } from "@padlock/core/lib/messages.js";
-import { FileSource } from "@padlock/core/lib/source.js";
 
 export function MessagesMixin(superClass) {
     return class MessagesMixin extends superClass {
-        ready() {
-            super.ready();
-            this._messages = new Messages(
-                "https://padlock.io/messages.json",
-                new FileSource("read-messages.json"),
-                this.settings
-            );
+        constructor() {
+            super();
             this.listen("data-loaded", () => this.checkMessages());
         }
 
-        checkMessages() {
-            wait(1000)
-                .then(() => this._messages.fetch())
-                .then(aa => aa.forEach(a => this._displayMessage(a)));
+        async checkMessages() {
+            await wait(1000);
+            const messages = this.app.meta.messages.fetch();
+            messages.forEach(m => this._displayMessage(m));
         }
 
-        _displayMessage(a) {
-            if (a.link) {
-                this.confirm(a.text, $l("Learn More"), $l("Dismiss"), { type: "info" }).then(confirmed => {
+        _displayMessage(m) {
+            if (m.link) {
+                this.confirm(m.text, $l("Learn More"), $l("Dismiss"), { type: "info" }).then(confirmed => {
                     if (confirmed) {
-                        window.open(a.link, "_system");
+                        window.open(m.link, "_system");
                     }
-                    this._messages.markRead(a);
+                    this._messages.markRead(m);
                 });
             } else {
-                this.alert(a.text).then(() => this._messages.markRead(a));
+                this.alert(m.text).then(() => this._messages.markRead(m));
             }
         }
     };

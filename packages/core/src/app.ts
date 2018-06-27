@@ -1,22 +1,31 @@
 import { PrivateKey } from "./crypto";
 import { Storable, Storage, LocalStorage, RemoteStorage } from "./storage";
 import { MainStore, SharedStore, Settings } from "./data";
-import { Account, AccountID, Session } from "./auth";
+import { Account, Session } from "./auth";
 import { DateString } from "./encoding";
 import { Client } from "./client";
+import { Messages } from "./messages";
+
+export interface Stats {
+    [key: string]: string | number | boolean;
+}
 
 export class AppMeta implements Storable {
     storageKind = "meta";
     storageKey = "";
-    public initialized?: DateString;
-    public account?: Account;
-    public session?: Session;
+    stats: Stats;
+    initialized?: DateString;
+    account?: Account;
+    session?: Session;
+    messages = new Messages("https://padlock.io/messages.json");
 
     async serialize() {
         return {
             account: this.account,
             session: this.session,
-            initialized: this.initialized
+            initialized: this.initialized,
+            stats: this.stats,
+            messages: await this.messages.serialize()
         };
     }
 
@@ -24,6 +33,8 @@ export class AppMeta implements Storable {
         this.account = raw.account;
         this.session = raw.session;
         this.initialized = raw.initialized;
+        this.stats = raw.stats || {};
+        await this.messages.deserialize(raw.messages);
         return this;
     }
 }
@@ -71,6 +82,15 @@ export class App {
 
     get isLoggedIn() {
         return !!this.session && this.session.active;
+    }
+
+    get stats() {
+        return this.meta.stats;
+    }
+
+    async setStats(obj: Partial<Stats>) {
+        Object.assign(this.meta.stats, obj);
+        this.storage.set(this.meta);
     }
 
     async load() {
