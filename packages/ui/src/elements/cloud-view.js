@@ -316,12 +316,12 @@ class CloudView extends applyMixins(
 
     ready() {
         super.ready();
-        this.listen("data-loaded", () => this.animate());
-        this.listen("sync-connect-start", () => this.animate());
-        this.listen("sync-connect-cancel", () => this.animate());
-        this.listen("sync-connect-success", () => this.animate());
-        this.listen("sync-disconnect", () => this.animate());
-        this.listen("sync-connect-success", () => this.refreshAccount());
+        // this.listen("data-loaded", () => this.animate());
+        // this.listen("sync-connect-start", () => this.animate());
+        // this.listen("sync-connect-cancel", () => this.animate());
+        // this.listen("sync-connect-success", () => this.animate());
+        // this.listen("sync-disconnect", () => this.animate());
+        // this.listen("sync-connect-success", () => this.refreshAccount());
     }
 
     animate() {

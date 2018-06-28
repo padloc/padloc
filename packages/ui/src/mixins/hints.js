@@ -13,14 +13,14 @@ export function HintsMixin(superClass) {
         constructor() {
             super();
 
-            this.listen("data-loaded", () => wait(1000).then(() => this._remindBackup()));
-            this.listen("data-loaded", () => wait(1000).then(() => this._remindSync()));
-            this.listen("data-loaded", () => wait(1000).then(() => this._askFeedback()));
-            this.listen("data-loaded", () => wait(1000).then(() => this._crossPlatformHint()));
-            this.listen("auto-lock", () => this._showAutoLockNotice());
-            this.listen("settings-changed", () => this._notifySubStatus());
-            this.listen("sync-connect-success", () => this._notifySubStatus());
-            this.listen("data-loaded", () => wait(1000).then(() => this._notifySubStatus()));
+            // this.listen("data-loaded", () => wait(1000).then(() => this._remindBackup()));
+            // this.listen("data-loaded", () => wait(1000).then(() => this._remindSync()));
+            // this.listen("data-loaded", () => wait(1000).then(() => this._askFeedback()));
+            // this.listen("data-loaded", () => wait(1000).then(() => this._crossPlatformHint()));
+            // this.listen("auto-lock", () => this._showAutoLockNotice());
+            // this.listen("settings-changed", () => this._notifySubStatus());
+            // this.listen("sync-connect-success", () => this._notifySubStatus());
+            // this.listen("data-loaded", () => wait(1000).then(() => this._notifySubStatus()));
         }
 
         ready() {

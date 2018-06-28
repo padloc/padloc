@@ -13,28 +13,17 @@ export function SyncMixin(superClass) {
                     type: Boolean,
                     value: false,
                     notify: true
-                },
-                lastSync: String,
-                account: {
-                    type: Object,
-                    computed: "identity(app.client.account)"
-                },
-                session: {
-                    type: Object,
-                    computed: "identity(app.client.session)"
                 }
             };
         }
 
         constructor() {
             super();
-            this.listen("sync-start", () => this._syncStart());
-            this.listen("sync-success", () => this._syncSuccess());
-            this.listen("sync-fail", () => this._syncFail());
-            this.listen("account-changed", () => this.notifyPath("account"));
-            this.listen("session-changed", () => this.notifyPath("session"));
-            this._updateLastSync();
-            setInterval(() => this._updateLastSync(), 60000);
+            // this.listen("sync-start", () => this._syncStart());
+            // this.listen("sync-success", () => this._syncSuccess());
+            // this.listen("sync-fail", () => this._syncFail());
+            // this.listen("account-changed", () => this.notifyPath("account"));
+            // this.listen("session-changed", () => this.notifyPath("session"));
         }
 
         _syncStart() {

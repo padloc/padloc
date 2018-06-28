@@ -19,10 +19,8 @@ import {
     AnimationMixin,
     ClipboardMixin,
     SyncMixin,
-    AutoSyncMixin,
     AutoLockMixin,
     HintsMixin,
-    AnalyticsMixin,
     LocaleMixin
 } from "../mixins";
 
@@ -36,13 +34,11 @@ class App extends applyMixins(
     BaseElement,
     DataMixin,
     SyncMixin,
-    AutoSyncMixin,
     AutoLockMixin,
     DialogMixin,
     MessagesMixin,
     NotificationMixin,
     HintsMixin,
-    AnalyticsMixin,
     AnimationMixin,
     ClipboardMixin,
     LocaleMixin
@@ -395,13 +391,13 @@ class App extends applyMixins(
                     <div>[[ \$l("Tags") ]]</div>
                     <pl-icon icon="close"></pl-icon>
                 </div>
-                <template is="dom-repeat" items="[[ collection.tags ]]">
+                <template is="dom-repeat" items="[[ state.currentStore.tags ]]">
                     <div class="menu-item tag tap" on-click="_selectTag">
                         <div>[[ item ]]</div>
                         <pl-icon icon="tag"></pl-icon>
                     </div>
                 </template>
-                <div class="no-tags" disabled="" hidden\$="[[ _hasTags(collection.tags) ]]">
+                <div class="no-tags" disabled="" hidden\$="[[ _hasTags(state.currentStore.tags) ]]">
                     [[ \$l("You don't have any tags yet!") ]]
                 </div>
                 <div class="spacer"></div>
@@ -410,7 +406,7 @@ class App extends applyMixins(
 
         <div id="main">
 
-            <pl-list-view id="listView" selected-record="{{ _selectedRecord }}" on-open-settings="_openSettings" on-open-cloud-view="_openCloudView" on-toggle-menu="_toggleMenu"></pl-list-view>
+            <pl-list-view id="listView" on-open-settings="_openSettings" on-open-cloud-view="_openCloudView" on-toggle-menu="_toggleMenu"></pl-list-view>
 
             <div id="pages">
 
@@ -438,19 +434,10 @@ class App extends applyMixins(
 
     static get properties() {
         return {
-            locked: {
-                type: Boolean,
-                value: true,
-                observer: "_lockedChanged"
-            },
             _currentView: {
                 type: String,
                 value: "",
                 observer: "_currentViewChanged"
-            },
-            _selectedRecord: {
-                type: Object,
-                observer: "_selectedRecordChanged"
             },
             _menuOpen: {
                 type: Boolean,
@@ -462,6 +449,10 @@ class App extends applyMixins(
                 value: false
             }
         };
+    }
+
+    static get observers() {
+        return ["_lockedChanged(state.locked)", "_currentRecordChanged(state.currentRecord)"];
     }
 
     constructor() {
@@ -525,41 +516,16 @@ class App extends applyMixins(
         }
     }
 
-    recordDeleted(record) {
-        if (record === this._selectedRecord) {
-            this.$.listView.deselect();
-        }
-    }
-
-    dataLoaded() {
-        this.locked = false;
-        this.$.startView.open = true;
-    }
-
-    dataUnloaded() {
-        this.clearDialogs();
-        this.$.startView.reset();
-        this.locked = true;
-        this.$.startView.open = false;
-        this.clearClipboard();
-    }
-
-    dataReset() {
-        setTimeout(() => this.alert($l("App reset successfully. Off to a fresh start!"), { type: "success" }), 500);
-    }
-
     _closeRecord() {
-        this.$.listView.deselect();
+        this.app.selectRecord(null);
     }
 
-    _selectedRecordChanged() {
+    _currentRecordChanged() {
         clearTimeout(this._selectedRecordChangedTimeout);
         this._selectedRecordChangedTimeout = setTimeout(() => {
-            if (this._selectedRecord) {
-                this.$.recordView.record = this._selectedRecord;
+            if (this.state.currentRecord) {
+                this.$.recordView.record = this.state.currentRecord;
                 this._currentView = "recordView";
-                this._selectedRecord.lastUsed = new Date();
-                this.saveCollection();
             } else if (this._currentView == "recordView") {
                 this._currentView = "";
             }
@@ -568,7 +534,7 @@ class App extends applyMixins(
 
     _openSettings() {
         this._currentView = "settingsView";
-        this.$.listView.deselect();
+        this.app.selectRecord(null);
     }
 
     _settingsBack() {
@@ -578,7 +544,7 @@ class App extends applyMixins(
     _openCloudView() {
         this._currentView = "cloudView";
         this.refreshAccount();
-        this.$.listView.deselect();
+        this.app.selectRecord(null);
         if (!this.settings.syncConnected && !isTouch()) {
             setTimeout(() => this.$.cloudView.focusEmailInput(), 500);
         }
@@ -633,7 +599,7 @@ class App extends applyMixins(
         }
         // CTRL/CMD + N -> New Record
         else if (control && event.key === "n") {
-            shortcut = () => this.createRecord();
+            shortcut = () => this._newRecord();
         }
 
         // If one of the shortcuts matches, execute it and prevent the default behaviour
@@ -666,10 +632,12 @@ class App extends applyMixins(
     }
 
     _lockedChanged() {
-        if (this.locked) {
+        if (this.state.locked) {
             this._currentView = "";
             this.$.main.classList.remove("active");
             this._menuOpen = false;
+            this.clearDialogs();
+            this.clearClipboard();
         } else {
             setTimeout(() => {
                 this.$.main.classList.add("active");
@@ -700,12 +668,13 @@ class App extends applyMixins(
         if (this.isSynching) {
             this.alert($l("Cannot lock app while sync is in progress!"));
         } else {
-            this.unloadData();
+            this.app.lock();
         }
     }
 
     _newRecord() {
-        this.createRecord();
+        const record = this.app.createRecord();
+        this.app.selectRecord(record);
     }
 
     _enableMultiSelect() {
@@ -740,7 +709,7 @@ class App extends applyMixins(
     }
 
     _hasTags() {
-        return !!this.collection.tags.length;
+        return !!this.state.currentStore && !!this.state.currentStore.tags.length;
     }
 }
 

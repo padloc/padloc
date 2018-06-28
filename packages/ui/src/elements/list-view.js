@@ -185,7 +185,7 @@ class ListView extends applyMixins(BaseElement, LocaleMixin, SyncMixin, DataMixi
 
         <main id="main">
 
-            <iron-list id="list" mutable-data="" scroll-target="main" multi-selection="[[ multiSelect ]]" hidden\$="[[ _isEmpty(records.length) ]]" items="[[ records ]]" selection-enabled="" selected-item="{{ selectedRecord }}" selected-items="{{ selectedRecords }}">
+            <iron-list id="list" mutable-data="" scroll-target="main" multi-selection="[[ multiSelect ]]" hidden\$="[[ _isEmpty(records.length) ]]" items="[[ records ]]" selection-enabled selected-item="{{ _selectedRecord }}" selected-items="{{ selectedRecords }}">
                 <template>
                     <div>
                         <div class="section-header" hidden\$="[[ !_firstInSection(records, index) ]]">
@@ -236,9 +236,9 @@ class ListView extends applyMixins(BaseElement, LocaleMixin, SyncMixin, DataMixi
                 type: Boolean,
                 value: false
             },
-            selectedRecord: {
+            _selectedRecord: {
                 type: Object,
-                notify: true
+                observer: "_selectedRecordChanged"
             },
             selectedRecords: {
                 type: Array,
@@ -251,9 +251,10 @@ class ListView extends applyMixins(BaseElement, LocaleMixin, SyncMixin, DataMixi
     static get observers() {
         return [
             "_fixScroll(records)",
-            "_scrollToSelected(records, selectedRecord)",
+            "_scrollToSelected(records, _selectedRecord)",
             "_updateCurrentSection(records)",
-            "_selectedCountChanged(selectedRecords.length)"
+            "_selectedCountChanged(selectedRecords.length)",
+            "_currentRecordChanged(state.currentRecord)"
         ];
     }
 
@@ -271,35 +272,33 @@ class ListView extends applyMixins(BaseElement, LocaleMixin, SyncMixin, DataMixi
         });
         this.$.list.addEventListener("keydown", e => e.stopPropagation());
         this.$.main.addEventListener("scroll", () => this._updateCurrentSection());
-        this.listen("data-loaded", () => {
-            this.animateRecords(600);
-        });
-        this.listen("sync-success", e => {
-            if (!e.detail || !e.detail.auto) {
-                this.animateRecords();
+        // this.listen("data-loaded", () => {
+        //     this.animateRecords(600);
+        // });
+        // this.listen("sync-success", e => {
+        //     if (!e.detail || !e.detail.auto) {
+        //         this.animateRecords();
+        //     }
+        // });
+        // this.listen("data-imported", () => this.animateRecords());
+    }
+
+    _currentRecordChanged() {
+        if (this.state.currentRecord !== this._selectedRecord) {
+            if (this.state.currentRecord) {
+                this.$.list.selectItem(this.state.currentRecord);
+            } else {
+                this.$.list.clearSelection();
             }
-        });
-        this.listen("data-imported", () => this.animateRecords());
+        }
     }
 
-    dataUnloaded() {
-        this._clearFilter();
-    }
-
-    select(record) {
-        this.$.list.selectItem(record);
-    }
-
-    deselect() {
-        this.$.list.clearSelection();
-    }
-
-    recordCreated(record) {
-        this.select(record);
+    _selectedRecordChanged() {
+        this.app.selectRecord(this._selectedRecord);
     }
 
     _isEmpty() {
-        return !this.currentStore || !this.currentStore.records.filter(r => !r.removed).length;
+        return !this.records.length;
     }
 
     _openMenu() {
@@ -307,7 +306,8 @@ class ListView extends applyMixins(BaseElement, LocaleMixin, SyncMixin, DataMixi
     }
 
     _newRecord() {
-        this.createRecord();
+        const record = this.app.createRecord();
+        this.app.selectRecord(record);
     }
 
     _filterActive() {
@@ -332,7 +332,7 @@ class ListView extends applyMixins(BaseElement, LocaleMixin, SyncMixin, DataMixi
 
     _scrollToSelected() {
         const l = this.$.list;
-        const i = l.items.indexOf(this.selectedRecord);
+        const i = l.items.indexOf(this.state.currentRecord);
         if (i !== -1 && (i < l.firstVisibleIndex || i > l.lastVisibleIndex)) {
             // Scroll to item before the selected one so that selected
             // item is more towards the middle of the list

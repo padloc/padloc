@@ -5,7 +5,7 @@ export function MessagesMixin(superClass) {
     return class MessagesMixin extends superClass {
         constructor() {
             super();
-            this.listen("data-loaded", () => this.checkMessages());
+            this.app.addEventListener("unlock", () => this.checkMessages());
         }
 
         async checkMessages() {

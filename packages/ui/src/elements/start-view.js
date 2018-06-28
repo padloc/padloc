@@ -234,9 +234,11 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
             <pl-icon icon="logo" class="hero animate-in animate-out"></pl-icon>
 
             <div class="form-box tiles-2 animate-in animate-out">
-                <pl-input id="passwordInput" type="password" class="tap" select-on-focus="" on-enter="_unlock" no-tab="[[ open ]]" placeholder="[[ \$l('Enter Master Password') ]]"></pl-input>
+                <pl-input id="passwordInput" type="password" class="tap" select-on-focus="" on-enter="_unlock"
+                    no-tab="[[ open ]]" placeholder="[[ \$l('Enter Master Password') ]]"></pl-input>
 
-                <pl-loading-button id="unlockButton" on-click="_unlock" class="tap" label="[[ \$l('Unlock') ]]" no-tab="[[ open ]]">
+                <pl-loading-button id="unlockButton" on-click="_unlock" class="tap"
+                    label="[[ \$l('Unlock') ]]" no-tab="[[ open ]]">
                     <pl-icon icon="forward"></pl-icon>
                 </pl-loading-button>
             </div>
@@ -401,16 +403,12 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
             newPwd: String,
             open: {
                 type: Boolean,
-                value: false,
                 reflectToAttribute: true,
                 observer: "_openChanged"
             },
             _getStartedStep: {
                 type: Number,
                 value: 0
-            },
-            _hasData: {
-                type: Boolean
             },
             _hasCloudData: {
                 type: Boolean,
@@ -419,7 +417,7 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
             _mode: {
                 type: String,
                 reflectToAttribute: true,
-                computed: "_computeMode(_hasData)"
+                computed: "_computeMode(state.initialized)"
             },
             _pwdStrength: {
                 type: Object
@@ -432,7 +430,7 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
     }
 
     static get observers() {
-        return ["_updatePwdStrength(newPwd)"];
+        return ["_updatePwdStrength(newPwd)", "_lockedChanged(state.locked)"];
     }
 
     constructor() {
@@ -442,9 +440,9 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
 
     async ready() {
         super.ready();
-        await this.dataReady();
-        await this.reset();
-        if (!isTouch() && this._hasData) {
+        await this.app.loaded;
+        this.reset();
+        if (!isTouch() && this.state.initialized) {
             this.$.passwordInput.focus();
         }
         this._openChanged();
@@ -461,11 +459,17 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
         this._failCount = 0;
         this._getStartedStep = 0;
         this._hasCloudData = false;
-        return this._checkHasData();
     }
 
     focus() {
         this.$.passwordInput.focus();
+    }
+
+    _lockedChanged(locked) {
+        this.open = !locked;
+        if (locked) {
+            this.reset();
+        }
     }
 
     _openChanged() {
@@ -667,16 +671,11 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
     }
 
     _computeMode() {
-        return this._hasData ? "unlock" : "get-started";
-    }
-
-    async _checkHasData() {
-        this._hasData = await this.hasData();
+        return this.state.initialized ? "unlock" : "get-started";
     }
 
     _finishSetup() {
         this._initializeData();
-
         track("Setup: Finish");
     }
 
@@ -687,27 +686,25 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
         }
         this._initializing = true;
 
-        await Promise.all([this.initData(this.$.newPasswordInput.value), wait(1000)]);
-
+        await Promise.all([this.app.init(this.$.newPasswordInput.value), wait(1000)]);
         this.$.getStartedButton.success();
         this.$.newPasswordInput.blur();
         this._initializing = false;
     }
 
     _promptResetData(message) {
-        this.prompt(message, $l("Type 'RESET' to confirm"), "text", $l("Reset App")).then(value => {
-            if (value == null) {
-                return;
-            }
-            if (value.toUpperCase() === "RESET") {
-                this.resetData();
-            } else {
-                this.alert($l("You didn't type 'RESET'. Refusing to reset the app."));
-            }
-        });
+        const input = this.prompt(message, $l("Type 'RESET' to confirm"), "text", $l("Reset App"));
+        if (input == null) {
+            return;
+        }
+        if (input.toUpperCase() === "RESET") {
+            this.app.reset();
+        } else {
+            this.alert($l("You didn't type 'RESET'. Refusing to reset the app."));
+        }
     }
 
-    _unlock() {
+    async _unlock() {
         const password = this.$.passwordInput.value;
 
         if (!password) {
@@ -723,60 +720,59 @@ class StartView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogM
         }
         this._unlocking = true;
 
-        Promise.all([this.loadData(password), wait(1000)])
-            .then(() => {
-                this.$.unlockButton.success();
-                this._unlocking = false;
-            })
-            .catch(e => {
-                this.$.unlockButton.fail();
-                this._unlocking = false;
-                switch (e.code) {
-                    case "decryption_failed":
-                        this._rumble();
-                        this._failCount++;
-                        if (this._failCount > 2) {
-                            this.promptForgotPassword().then(doReset => {
-                                if (doReset) {
-                                    this.resetData();
-                                }
-                            });
-                        } else {
-                            this.$.passwordInput.focus();
-                        }
-                        break;
-                    case "unsupported_container_version":
-                        this.confirm(
-                            $l(
-                                "It seems the data stored on this device was saved with a newer version " +
-                                    "of Padlock and can not be opened with the version you are currently running. " +
-                                    "Please install the latest version of Padlock or reset the data to start over!"
-                            ),
-                            $l("Check For Updates"),
-                            $l("Reset Data")
-                        ).then(confirmed => {
-                            if (confirmed) {
-                                checkForUpdates();
-                            } else {
-                                this._promptResetData(
-                                    $l(
-                                        "Are you sure you want to reset the app? " +
-                                            "WARNING: This will delete all your data!"
-                                    )
-                                );
+        try {
+            await Promise.all([this.app.unlock(password), wait(1000)]);
+            this.$.unlockButton.success();
+            this._unlocking = false;
+        } catch (e) {
+            this.$.unlockButton.fail();
+            this._unlocking = false;
+            switch (e.code) {
+                case "decryption_failed":
+                    this._rumble();
+                    this._failCount++;
+                    if (this._failCount > 2) {
+                        this.promptForgotPassword().then(doReset => {
+                            if (doReset) {
+                                this.resetData();
                             }
                         });
-                        break;
-                    default:
-                        this._promptResetData(
-                            $l(
-                                "An error occured while loading your data! If the problem persists, please try " +
-                                    "resetting or reinstalling the app!"
-                            )
-                        );
-                        throw e;
-                }
-            });
+                    } else {
+                        this.$.passwordInput.focus();
+                    }
+                    break;
+                case "unsupported_container_version":
+                    this.confirm(
+                        $l(
+                            "It seems the data stored on this device was saved with a newer version " +
+                                "of Padlock and can not be opened with the version you are currently running. " +
+                                "Please install the latest version of Padlock or reset the data to start over!"
+                        ),
+                        $l("Check For Updates"),
+                        $l("Reset Data")
+                    ).then(confirmed => {
+                        if (confirmed) {
+                            checkForUpdates();
+                        } else {
+                            this._promptResetData(
+                                $l(
+                                    "Are you sure you want to reset the app? " +
+                                        "WARNING: This will delete all your data!"
+                                )
+                            );
+                        }
+                    });
+                    break;
+                default:
+                    this._promptResetData(
+                        $l(
+                            "An error occured while loading your data! If the problem persists, please try " +
+                                "resetting or reinstalling the app!"
+                        )
+                    );
+                    throw e;
+            }
+        }
     }
 
     async _updatePwdStrength(newPwd) {

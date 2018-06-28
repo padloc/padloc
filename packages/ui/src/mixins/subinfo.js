@@ -7,15 +7,15 @@ export function SubInfoMixin(superClass) {
             return {
                 remainingTrialDays: {
                     type: Number,
-                    computed: "_computeRemainingTrialDays(account.subscription.trialEnd)"
+                    computed: "_computeRemainingTrialDays(state.account.subscription.trialEnd)"
                 },
                 promo: {
                     type: Object,
-                    computed: "_getPromo(account.promo, subStatus)"
+                    computed: "_getPromo(state.account.promo, subStatus)"
                 },
                 subStatus: {
                     type: String,
-                    computed: "identity(account.subscription.status)",
+                    computed: "identity(state.account.subscription.status)",
                     value: ""
                 }
             };
@@ -44,7 +44,7 @@ export function SubInfoMixin(superClass) {
 
         isSubValid() {
             const s = this.subStatus;
-            return this.settings.syncConnected && (!s || s === "active" || s === "trialing");
+            return this.state.session && this.state.session.active && (!s || s === "active" || s === "trialing");
         }
 
         trialingMessage() {
@@ -82,7 +82,7 @@ export function SubInfoMixin(superClass) {
         }
 
         _getPromo() {
-            const promo = this.account && this.account.promo;
+            const promo = this.state.account && this.state.account.promo;
             const promoActive =
                 !this.isSubActive() && promo && (!promo.redeemWithin || isFuture(promo.created, promo.redeemWithin));
             return promoActive ? promo : null;

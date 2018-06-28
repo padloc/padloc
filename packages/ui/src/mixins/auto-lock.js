@@ -16,11 +16,13 @@ export function AutoLockMixin(superClass) {
         }
 
         static get observers() {
-            return ["_autoLockChanged(settings.autoLock, settings.autoLockDelay, locked, isSynching)"];
+            return [
+                "_autoLockChanged(state.settings.autoLock, state.settings.autoLockDelay, state.locked, isSynching)"
+            ];
         }
 
         get lockDelay() {
-            return this.settings.autoLockDelay * 60 * 1000;
+            return this.state.settings.autoLockDelay * 60 * 1000;
         }
 
         _cancelAutoLock() {
@@ -42,7 +44,7 @@ export function AutoLockMixin(superClass) {
         // since the app was paused, locks the app
         _resume() {
             if (
-                this.settings.autoLock &&
+                this.state.settings.autoLock &&
                 !this.locked &&
                 !this.isSynching &&
                 this._pausedAt &&
@@ -61,7 +63,7 @@ export function AutoLockMixin(superClass) {
         _autoLockChanged() {
             this._cancelAutoLock();
 
-            if (this.settings.autoLock && !this.locked && !this.isSynching) {
+            if (this.state.settings.autoLock && !this.locked && !this.isSynching) {
                 this._lockTimeout = setTimeout(() => this._doLock(), this.lockDelay);
                 this._lockNotificationTimeout = setTimeout(() => {
                     if (!this.locked && !this._pausedAt) {

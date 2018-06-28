@@ -101,7 +101,7 @@ class RecordView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dialog
 
         <header>
             <pl-icon icon="close" class="tap" on-click="close"></pl-icon>
-            <pl-input id="nameInput" class="name tap" value="{{ record.name }}" placeholder="[[ \$l('Enter Record Name') ]]" select-on-focus="" autocapitalize="" on-change="_notifyChange" on-enter="_nameEnter"></pl-input>
+            <pl-input id="nameInput" class="name tap" value="[[ record.name ]]" placeholder="[[ \$l('Enter Record Name') ]]" select-on-focus="" autocapitalize="" on-change="_updateName" on-enter="_nameEnter"></pl-input>
             <pl-icon icon="delete" class="tap" on-click="_deleteRecord"></pl-icon>
         </header>
 
@@ -121,7 +121,7 @@ class RecordView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dialog
             <div class="fields">
                 <template is="dom-repeat" items="[[ record.fields ]]" id="fieldList">
                     <div class="animate">
-                        <pl-record-field field="[[ item ]]" record="[[ record ]]" on-field-change="_notifyChange" on-field-delete="_deleteField"></pl-record-field>
+                        <pl-record-field field="[[ item ]]" record="[[ record ]]" on-field-change="_updateRecord" on-field-delete="_deleteField"></pl-record-field>
                     </div>
                 </template>
             </div>
@@ -147,19 +147,21 @@ class RecordView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dialog
                 type: Object,
                 notify: true,
                 observer: "_recordChanged"
-            },
-            _edited: {
-                type: Boolean,
-                value: false
             }
         };
     }
 
-    dataUnloaded() {
-        this.record = null;
-        const fieldDialog = this.getSingleton("pl-dialog-field");
-        fieldDialog.open = false;
-        fieldDialog.field = null;
+    static get observers() {
+        return ["_lockedChanged(state.locked)"];
+    }
+
+    _lockedChanged() {
+        if (this.state.locked) {
+            this.record = null;
+            const fieldDialog = this.getSingleton("pl-dialog-field");
+            fieldDialog.open = false;
+            fieldDialog.field = null;
+        }
     }
 
     _recordChanged() {
@@ -170,16 +172,20 @@ class RecordView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dialog
         }, 500);
     }
 
-    _notifyChange() {
-        this.dispatch("record-changed", this.record);
-        this.notifyPath("record");
+    _updateName() {
+        this.record.name = this.$.nameInput.value;
+        this._updateRecord();
+    }
+
+    _updateRecord() {
+        this.app.updateRecord(this.record);
     }
 
     _deleteField(e) {
         this.confirm($l("Are you sure you want to delete this field?"), $l("Delete")).then(confirmed => {
             if (confirmed) {
-                this.splice("record.fields", e.model.index, 1);
-                this._notifyChange();
+                this.record.fields.splice(e.model.index, 1);
+                this._updateRecord();
             }
         });
     }
@@ -187,7 +193,7 @@ class RecordView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dialog
     _deleteRecord() {
         this.confirm($l("Are you sure you want to delete this record?"), $l("Delete")).then(confirmed => {
             if (confirmed) {
-                this.deleteRecord(this.record);
+                this.app.deleteRecord(this.record);
             }
         });
     }
@@ -204,7 +210,7 @@ class RecordView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dialog
                     break;
                 case "edited":
                     this.push("record.fields", field);
-                    this._notifyChange();
+                    this._updateRecord();
                     break;
             }
         });
@@ -224,7 +230,7 @@ class RecordView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dialog
         }).then(confirmed => {
             if (confirmed) {
                 this.record.removeTag(e.model.item);
-                this._notifyChange();
+                this._updateRecord();
             }
         });
     }
@@ -233,13 +239,13 @@ class RecordView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dialog
         return this.prompt("", $l("Enter Tag Name"), "text", $l("Add Tag"), false, false).then(tag => {
             if (tag) {
                 this.record.addTag(tag);
-                this._notifyChange();
+                this._updateRecord();
             }
         });
     }
 
     _addTag() {
-        const tags = this.collection.tags.filter(tag => !this.record.hasTag(tag));
+        const tags = this.state.currentStore.tags.filter(tag => !this.record.hasTag(tag));
         if (!tags.length) {
             return this._createTag();
         }
@@ -252,7 +258,7 @@ class RecordView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dialog
             const tag = tags[choice];
             if (tag) {
                 this.record.addTag(tag);
-                this._notifyChange();
+                this._updateRecord();
             }
         });
     }
