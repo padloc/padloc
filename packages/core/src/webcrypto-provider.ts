@@ -12,6 +12,7 @@ import {
     validateKeyDerivationParams,
     validateCipherParams
 } from "./crypto";
+import { Err, ErrorCode } from "./error";
 import SJCLProvider from "./sjcl-provider";
 
 const webCrypto = window.crypto && window.crypto.subtle;
@@ -87,7 +88,12 @@ const WebCryptoProvider: CryptoProvider = {
 
         const { p, k } = await webCryptoGetArgs(key, params, "encrypt");
 
-        const buf = await webCrypto.encrypt(p, k, base64ToBytes(data));
+        let buf;
+        try {
+            buf = await webCrypto.encrypt(p, k, base64ToBytes(data));
+        } catch (e) {
+            throw new Err(ErrorCode.ENCRYPTION_FAILED);
+        }
 
         return bytesToBase64(new Uint8Array(buf));
     },
@@ -99,7 +105,12 @@ const WebCryptoProvider: CryptoProvider = {
 
         const { p, k } = await webCryptoGetArgs(key, params, "decrypt");
 
-        const buf = await webCrypto.decrypt(p, k, base64ToBytes(data));
+        let buf;
+        try {
+            buf = await webCrypto.decrypt(p, k, base64ToBytes(data));
+        } catch (e) {
+            throw new Err(ErrorCode.DECRYPTION_FAILED);
+        }
 
         return bytesToBase64(new Uint8Array(buf));
     },

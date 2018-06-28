@@ -1,5 +1,6 @@
 import { Serializable, marshal, unmarshal } from "./encoding";
 import { Client } from "./client";
+import { Err, ErrorCode } from "./error";
 
 export interface Storable extends Serializable {
     storageKey: string;
@@ -25,6 +26,9 @@ export class MemoryStorage implements Storage {
     }
 
     async get(s: Storable) {
+        if (!this._storage.has(s.storageKey)) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
         await s.deserialize(this._storage.get(s.storageKey));
     }
 
@@ -49,7 +53,7 @@ export class LocalStorage implements Storage {
     async get(s: Storable) {
         const data = localStorage.getItem(this.keyFor(s));
         if (!data) {
-            throw "not_found";
+            throw new Err(ErrorCode.NOT_FOUND);
         }
         await s.deserialize(unmarshal(data));
     }

@@ -10,7 +10,7 @@ export function MessagesMixin(superClass) {
 
         async checkMessages() {
             await wait(1000);
-            const messages = this.app.meta.messages.fetch();
+            const messages = await this.app.meta.messages.fetch();
             messages.forEach(m => this._displayMessage(m));
         }
 

@@ -7,7 +7,7 @@ import * as cors from "@koa/cors";
 import { Storage } from "@padlock/core/src/storage";
 import { LevelDBStorage } from "./storage";
 import { Sender, EmailSender } from "./sender";
-import { authenticate } from "./middleware";
+import * as middleware from "./middleware";
 import * as handlers from "./handlers";
 
 export interface Context extends Koa.Context {
@@ -42,7 +42,8 @@ export class Server {
             })
         );
         this.koa.use(body());
-        this.koa.use(authenticate);
+        this.koa.use(middleware.handleError);
+        this.koa.use(middleware.authenticate);
         this.koa.use(route.post("/session", handlers.createSession));
         this.koa.use(route.delete("/session/:id", handlers.revokeSession));
         this.koa.use(route.post("/session/:id/activate", handlers.activateSession));

@@ -1,12 +1,16 @@
 import { Container } from "@padlock/core/src/crypto";
 import { Account, Session } from "@padlock/core/src/auth";
+import { Err, ErrorCode } from "@padlock/core/src/error";
 import { uuid } from "@padlock/core/lib/util.js";
 import { Context } from "./server";
 import { AuthRequest } from "./auth";
 
 export async function createSession(ctx: Context) {
     const email = ctx.request.body.email;
-    ctx.assert(email, 400, "No email provided.");
+
+    if (!email) {
+        throw new Err(ErrorCode.BAD_REQUEST, "No email provided!");
+    }
 
     const req = AuthRequest.create(email);
     await ctx.storage.set(req);
@@ -18,14 +22,17 @@ export async function createSession(ctx: Context) {
 
 export async function activateSession(ctx: Context, id: string) {
     const { code } = ctx.request.body;
-    ctx.assert(code, 400, "No login code provided.");
+
+    if (!code) {
+        throw new Err(ErrorCode.BAD_REQUEST, "No code provided!");
+    }
 
     const req = new AuthRequest();
     req.session = { id: id } as Session;
     await ctx.storage.get(req);
 
     if (req.code !== code) {
-        ctx.throw(400, "Invalid code");
+        throw new Err(ErrorCode.BAD_REQUEST, "Invalid code");
     }
 
     let acc;
@@ -48,7 +55,9 @@ export async function activateSession(ctx: Context, id: string) {
 }
 
 export async function revokeSession(ctx: Context, id: string) {
-    ctx.assert(ctx.state.session, 401);
+    if (!ctx.state.session) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
     const account = ctx.state.account;
     account.sessions = account.sessions.filter((s: Session) => s.id !== id);
     await ctx.storage.set(account);
@@ -56,12 +65,16 @@ export async function revokeSession(ctx: Context, id: string) {
 }
 
 export async function getAccount(ctx: Context) {
-    ctx.assert(ctx.state.session, 401);
+    if (!ctx.state.session) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
     ctx.body = await ctx.state.account.serialize();
 }
 
 export async function getStore(ctx: Context, id?: string) {
-    ctx.assert(ctx.state.session, 401);
+    if (!ctx.state.session) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
 
     if (!id || id === "main") {
         id = ctx.state.account.mainStore;
@@ -80,7 +93,10 @@ export async function getStore(ctx: Context, id?: string) {
 }
 
 export async function putStore(ctx: Context, id?: string) {
-    ctx.assert(ctx.state.session, 401);
+    if (!ctx.state.session) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
     const account = ctx.state.account;
     const container = await new Container().deserialize(ctx.request.body);
 

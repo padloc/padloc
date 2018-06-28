@@ -9,10 +9,10 @@ import {
     SymmetricKey,
     PublicKey,
     PrivateKey,
-    CryptoError,
     validateKeyDerivationParams,
     validateCipherParams
 } from "./crypto";
+import { Err, ErrorCode } from "./error";
 import { sjcl } from "../vendor/sjcl";
 
 // Shorthands for codec functions
@@ -51,7 +51,7 @@ const SJCLProvider: CryptoProvider = {
 
     async decrypt(key: Key, ct: CipherText, params: CipherParams): Promise<PlainText> {
         if (params.cipherType !== "symmetric" || params.algorithm !== "AES-CCM") {
-            throw new CryptoError("invalid_cipher_params");
+            throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
         }
         validateCipherParams(params);
 
@@ -70,13 +70,13 @@ const SJCLProvider: CryptoProvider = {
             );
             return bitsToBase64(pt);
         } catch (e) {
-            throw new CryptoError("decryption_failed");
+            throw new Err(ErrorCode.DECRYPTION_FAILED);
         }
     },
 
     async encrypt(key: Key, pt: PlainText, params: CipherParams): Promise<CipherText> {
         if (params.cipherType !== "symmetric" || params.algorithm !== "AES-CCM") {
-            throw new CryptoError("invalid_cipher_params");
+            throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
         }
 
         validateCipherParams(params);
@@ -96,12 +96,12 @@ const SJCLProvider: CryptoProvider = {
             );
             return bitsToBase64(ct);
         } catch (e) {
-            throw new CryptoError("encryption_failed");
+            throw new Err(ErrorCode.ENCRYPTION_FAILED);
         }
     },
 
     async generateKeyPair(): Promise<{ privateKey: PrivateKey; publicKey: PublicKey }> {
-        throw new CryptoError("not_supported");
+        throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 };
 

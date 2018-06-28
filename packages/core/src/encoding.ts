@@ -12,10 +12,6 @@ export interface Serializable {
     deserialize: (data: Marshalable) => Promise<this>;
 }
 
-export class EncodingError {
-    constructor(public code: "serialization_error" | "deserialization_error") {}
-}
-
 export function marshal(obj: Marshalable): string {
     return JSON.stringify(obj);
 }

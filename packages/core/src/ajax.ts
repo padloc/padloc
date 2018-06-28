@@ -1,38 +1,8 @@
-export class AjaxError {
-    public code: string;
-
-    public message: string;
-
-    constructor(public request: XMLHttpRequest) {
-        try {
-            const err = JSON.parse(request.responseText);
-            this.code = err.error;
-            this.message = err.message;
-        } catch (e) {
-            switch (request.status.toString()[0]) {
-                case "0":
-                    this.code = "failed_connection";
-                    this.message = "Failed Connection";
-                    break;
-                case "3":
-                    this.code = "unexpected_redirect";
-                    this.message = "Unexpected Redirect";
-                    break;
-                case "4":
-                    this.code = "client_error";
-                    this.message = "Unknown Client Error";
-                    break;
-                default:
-                    this.code = "server_error";
-                    this.message = "Server Error";
-            }
-        }
-    }
-}
+import { errFromRequest } from "./error";
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE";
 
-export function request(
+export async function request(
     method: Method,
     url: string,
     body?: string,
@@ -44,7 +14,7 @@ export function request(
         req.onreadystatechange = () => {
             if (req.readyState === 4) {
                 if (req.status.toString()[0] !== "2") {
-                    reject(new AjaxError(req));
+                    reject(errFromRequest(req));
                 } else {
                     resolve(req);
                 }
@@ -58,7 +28,7 @@ export function request(
             }
             req.send(body);
         } catch (e) {
-            reject(new AjaxError(req));
+            throw errFromRequest(req);
         }
     });
 }

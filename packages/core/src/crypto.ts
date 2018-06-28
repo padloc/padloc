@@ -1,5 +1,6 @@
 import { Base64String, stringToBase64, base64ToString, marshal, unmarshal, Marshalable } from "./encoding";
 import { Storable, Storage } from "./storage";
+import { Err, ErrorCode } from "./error";
 
 // Minimum number of pbkdf2 iterations
 const PBKDF2_ITER_MIN = 1e4;
@@ -67,19 +68,6 @@ export interface CryptoProvider {
     generateKeyPair(): Promise<{ privateKey: PrivateKey; publicKey: PublicKey }>;
 }
 
-export class CryptoError {
-    constructor(
-        public code:
-            | "invalid_container_data"
-            | "unsupported_container_version"
-            | "invalid_cipher_params"
-            | "invalid_key_params"
-            | "decryption_failed"
-            | "encryption_failed"
-            | "not_supported"
-    ) {}
-}
-
 export function validateCipherParams(params: any): CipherParams {
     switch (params.cipherType) {
         case "symmetric":
@@ -93,16 +81,16 @@ export function validateCipherParams(params: any): CipherParams {
                 !params.tagSize ||
                 ![64, 96, 128].includes(params.tagSize)
             ) {
-                throw new CryptoError("invalid_cipher_params");
+                throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
             }
             break;
         case "asymmetric":
             if (params.algorithm !== "RSA-OAEP") {
-                throw new CryptoError("invalid_cipher_params");
+                throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
             }
             break;
         default:
-            throw new CryptoError("invalid_cipher_params");
+            throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
     }
 
     return params as CipherParams;
@@ -128,7 +116,7 @@ export function validateKeyDerivationParams(params: any): KeyDerivationParams {
         ![192, 256, 512].includes(params.keySize) ||
         !["SHA-256", "SHA-512"].includes(params.hash)
     ) {
-        throw new CryptoError("invalid_key_params");
+        throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
     }
 
     return params as KeyDerivationParams;
@@ -165,7 +153,7 @@ export type RawContainer = SimpleRawContainer | PasswordBasedRawContainer | Shar
 
 export function validateRawContainer(raw: any): RawContainer {
     if (raw.version !== 2 || !raw.ep || !raw.ct) {
-        throw new CryptoError("invalid_container_data");
+        throw new Err(ErrorCode.INVALID_CONTAINER_DATA);
     }
 
     validateCipherParams(raw.ep);
@@ -180,7 +168,7 @@ export function validateRawContainer(raw: any): RawContainer {
             validateCipherParams(raw.wp);
             break;
         default:
-            throw new CryptoError("invalid_container_data");
+            throw new Err(ErrorCode.INVALID_CONTAINER_DATA);
     }
 
     return raw as RawContainer;
@@ -245,12 +233,12 @@ export class Container implements Storage, Storable {
                     this.keyDerivationParams.salt = provider.randomBytes(16);
                 }
                 if (!this.password) {
-                    throw "no password provided";
+                    throw new Err(ErrorCode.DECRYPTION_FAILED, "No password provided");
                 }
                 return await provider.deriveKey(this.password, this.keyDerivationParams);
             case "shared":
                 if (!this.user || !this.user.privateKey || !this.encryptedKeys) {
-                    throw "Cannot derive key";
+                    throw new Err(ErrorCode.DECRYPTION_FAILED, "No private key provided");
                 }
                 if (Object.keys(this.encryptedKeys).length) {
                     const encryptedKey = this.encryptedKeys[this.user.id];
@@ -275,7 +263,7 @@ export class Container implements Storage, Storable {
 
     async get(data: Storable) {
         if (!this.cipherText) {
-            throw "Nothing to get";
+            throw new Err(ErrorCode.DECRYPTION_FAILED, "Container is empty");
         }
         const key = await this.getKey();
         const pt = base64ToString(await provider.decrypt(key, this.cipherText, this.encryptionParams));
@@ -329,7 +317,7 @@ export class Container implements Storage, Storable {
 
     async addParticipant(p: Participant) {
         if (this.scheme !== "shared") {
-            throw "Cannot add participant in this scheme";
+            throw new Err(ErrorCode.NOT_SUPPORTED, "Cannot add participant in this scheme");
         }
         const key = await this.getKey();
         this.encryptedKeys[p.id] = await provider.encrypt(p.publicKey, key, this.wrappingParams);

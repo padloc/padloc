@@ -2,10 +2,7 @@ import { unmarshal } from "./encoding";
 import { Record, Field, Store } from "./data";
 import { Container, validateRawContainer } from "./crypto";
 import { loadScript } from "./util";
-
-export class ImportError {
-    constructor(public code: "invalid_csv") {}
-}
+import { Err, ErrorCode } from "./error";
 
 export async function loadPapa(): Promise<any> {
     await loadScript("vendor/papaparse.js", "Papa");
@@ -67,7 +64,7 @@ export async function fromCSV(data: string, nameColIndex?: number, tagsColIndex?
     const papa = await loadPapa();
     const parsed = papa.parse(data);
     if (parsed.errors.length) {
-        throw new ImportError("invalid_csv");
+        throw new Err(ErrorCode.INVALID_CSV);
     }
     return fromTable(parsed.data, nameColIndex, tagsColIndex);
 }
