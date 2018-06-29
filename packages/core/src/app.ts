@@ -236,4 +236,10 @@ export class App extends EventTarget {
         this.notifyStateChanged("currentStore.records");
         this.save();
     }
+
+    updateSettings(s: any) {
+        Object.assign(this.state.settings, s);
+        this.save();
+        this.notifyStateChanged("settings");
+    }
 }

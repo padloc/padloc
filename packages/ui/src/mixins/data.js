@@ -41,22 +41,17 @@ export function DataMixin(superClass) {
                     type: Array,
                     notify: true,
                     computed: "_filterAndSort(state.currentStore.records, filterString)"
-                },
-                isSynching: {
-                    type: Boolean,
-                    value: false,
-                    notify: true
-                },
-                lastSync: {
-                    type: String,
-                    computed: "_lastSync(state.stats.lastSync)"
                 }
             };
         }
 
         constructor() {
             super();
+            if (!this.notifyPath) {
+                return;
+            }
             app.addEventListener("state-changed", e => {
+                this._stateChanged && this._stateChanged(this.state);
                 for (const path of e.detail.paths) {
                     this.notifyPath(path ? `state.${path}` : `state`);
                 }
@@ -87,9 +82,17 @@ export function DataMixin(superClass) {
             records = records.slice(this._recentCount);
             return recent.concat(records.sort((a, b) => Record.compare(a, b)));
         }
+    };
+}
 
-        _lastSync(lastSync) {
-            return formatDateFromNow(lastSync);
+export function StateMixin(superClass) {
+    return class StateMixin extends superClass {
+        constructor() {
+            super();
+            this.app = app;
+            app.addEventListener("state-changed", () => {
+                this._stateChanged && this._stateChanged(app.state);
+            });
         }
     };
 }

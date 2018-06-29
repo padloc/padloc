@@ -1,5 +1,4 @@
 import "../styles/shared.js";
-import { BaseElement, html } from "./base.js";
 import { applyMixins } from "@padlock/core/lib/util.js";
 import { getClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
@@ -8,7 +7,7 @@ import "./dialog-export.js";
 import "./icon.js";
 import "./slider.js";
 import "./toggle-button.js";
-import { LocaleMixin, DialogMixin, DataMixin, AnimationMixin, SyncMixin } from "../mixins";
+import { LocaleMixin, DialogMixin, StateMixin, AnimationMixin, SyncMixin } from "../mixins";
 import {
     isCordova,
     getReviewLink,
@@ -19,11 +18,33 @@ import {
     loadDB,
     isElectron
 } from "@padlock/core/lib/platform.js";
+import { LitElement, html } from "@polymer/lit-element";
+import sharedStyles from "../styles/shared.js";
 
-class SettingsView extends applyMixins(BaseElement, DataMixin, LocaleMixin, DialogMixin, AnimationMixin, SyncMixin) {
-    static get template() {
+class SettingsView extends applyMixins(LitElement, StateMixin, LocaleMixin, DialogMixin, AnimationMixin, SyncMixin) {
+    static get properties() {
+        return { settings: Object };
+    }
+
+    _stateChanged(state) {
+        this.settings = state.settings;
+        this.requestRender();
+    }
+
+    _render({ settings = {} }) {
+        console.log("render", arguments);
+        // const settings = props.state && props.state.settings;
+        const isDesktop = isElectron();
+        const isSubValid = false;
+        const isTrialExpired = false;
+        const isSubCanceled = false;
+        // const dbPath = desktopSettings.dbPath;
+        const dbPath = "";
+
         return html`
-        <style include="shared">
+        <style>
+            ${sharedStyles}
+
             @keyframes beat {
                 0% { transform: scale(1); }
                 5% { transform: scale(1.4); }
@@ -117,96 +138,120 @@ class SettingsView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dial
         </style>
 
         <header>
-            <pl-icon icon="close" class="tap" on-click="_back"></pl-icon>
-            <div class="title">[[ \$l("Settings") ]]</div>
+            <pl-icon icon="close" class="tap" on-click="${e => this._back(e)}"></pl-icon>
+            <div class="title">${$l("Settings")}</div>
             <pl-icon></pl-icon>
         </header>
 
         <main>
 
             <section>
-                <div class="section-header">[[ \$l("Auto Lock") ]]</div>
-                <pl-toggle-button active="{{ settings.autoLock }}" label="[[ \$l('Lock Automatically') ]]" class="tap" reverse="" on-change="settingChanged"></pl-toggle-button>
-                <pl-slider min="1" max="10" value="{{ settings.autoLockDelay }}" step="1" unit="[[ \$l(' min') ]]" label="[[ \$l('After') ]]" hidden\$="{{ !settings.autoLock }}" on-change="settingChanged"></pl-slider>
+
+                <div class="section-header">${$l("Auto Lock")}</div>
+                <pl-toggle-button id="autoLock" active="${settings.autoLock}" label="${$l(
+            "Lock Automatically"
+        )}" class="tap" reverse="" on-change="${e => this._updateSettings(e)}"></pl-toggle-button>
+                <pl-slider min="1" max="10" value="${settings.autoLockDelay}" step="1" unit="${$l(" min")}" label="${$l(
+            "After"
+        )}" hidden$="${!settings.autoLock}" on-change="${e => this._updateSettings(e)}"></pl-slider>
+
             </section>
 
             <section>
-                <div class="section-header">[[ \$l("Synchronization") ]]</div>
-                <div disabled\$="[[ !isSubValid(settings.syncConnected, settings.syncSubStatus) ]]">
-                    <pl-toggle-button active="{{ settings.syncAuto }}" label="[[ \$l('Sync Automatically') ]]" reverse="" class="tap" on-change="settingChanged"></pl-toggle-button>
-                    <div class="feature-locked" hidden\$="[[ settings.syncConnected ]]">[[ \$l("Log in to enable auto sync!") ]]</div>
-                    <div class="feature-locked" hidden\$="[[ !isTrialExpired(settings.syncConnected, settings.syncSubStatus) ]]">[[ \$l("Upgrade to enable auto sync!") ]]</div>
-                    <div class="feature-locked" hidden\$="[[ !isSubCanceled(settings.syncConnected, settings.syncSubStatus) ]]">[[ \$l("Upgrade to enable auto sync!") ]]</div>
+                <div class="section-header">${$l("Synchronization")}</div>
+                <div disabled$="${!isSubValid}">
+                    <pl-toggle-button active="${settings.syncAuto}" label="${$l(
+            "Sync Automatically"
+        )}" reverse="" class="tap" on-change="${e => this._updateSettings(e)}"></pl-toggle-button>
+                    <div class="feature-locked" hidden$="${settings.syncConnected}">${$l(
+            "Log in to enable auto sync!"
+        )}</div>
+                    <div class="feature-locked" hidden$="${!isTrialExpired}">${$l("Upgrade to enable auto sync!")}</div>
+                    <div class="feature-locked" hidden$="${!isSubCanceled}">${$l("Upgrade to enable auto sync!")}</div>
                 </div>
-                <pl-toggle-button active="{{ settings.syncCustomHost }}" label="[[ \$l('Use Custom Server') ]]" reverse="" on-change="_customHostChanged" class="tap" disabled\$="[[ settings.syncConnected ]]"></pl-toggle-button>
-                <div class="tap" hidden\$="[[ !settings.syncCustomHost ]]" disabled\$="[[ settings.syncConnected ]]">
-                    <pl-input id="customUrlInput" placeholder="[[ \$l('Enter Custom URL') ]]" value="{{ settings.syncHostUrl }}" pattern="^https://[^\\s/\$.?#].[^\\s]*\$" required="" on-change="settingChanged"></pl-input>
+                <pl-toggle-button active="${settings.syncCustomHost}" label="${$l(
+            "Use Custom Server"
+        )}" reverse="" on-change="${e => this._customHostChanged(e)}" class="tap" disabled$="${
+            settings.syncConnected
+        }"></pl-toggle-button>
+                <div class="tap" hidden$="${!settings.syncCustomHost}" disabled$="${settings.syncConnected}">
+                    <pl-input id="customUrlInput" placeholder="${$l("Enter Custom URL")}" value="${
+            settings.syncHostUrl
+        }" pattern="^https://[^\\s/$.?#].[^\\s]*$" required="" on-change="${e => this._updateSettings(e)}"></pl-input>
                     <div class="url-warning">
-                        <strong>[[ \$l("Invalid URL") ]]</strong> -
-                        [[ \$l("Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required.") ]]
+                        <strong>${$l("Invalid URL")}</strong> -
+                        ${$l(
+                            "Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required."
+                        )}
                     </div>
                 </div>
             </section>
 
             <section>
-                <button on-click="_changePassword" class="tap">[[ \$l("Change Master Password") ]]</button>
-                <button on-click="_resetData" class="tap">[[ \$l("Reset App") ]]</button>
-                <button class="tap" on-click="_import">[[ \$l("Import...") ]]</button>
-                <button class="tap" on-click="_export">[[ \$l("Export...") ]]
+                <button on-click="${e => this._changePassword(e)}" class="tap">${$l("Change Master Password")}</button>
+                <button on-click="${e => this._resetData(e)}" class="tap">${$l("Reset App")}</button>
+                <button class="tap" on-click="${e => this._import(e)}">${$l("Import...")}</button>
+                <button class="tap" on-click="${e => this._export(e)}">${$l("Export...")}
             </button></section>
 
-            <section hidden\$="[[ !_isDesktop() ]]">
-                <div class="section-header">[[ \$l("Updates") ]]</div>
-                <pl-toggle-button id="autoUpdatesButton" label="[[ \$l('Automatically Install Updates') ]]" class="tap" reverse="" on-change="_desktopSettingsChanged"></pl-toggle-button>
-                <pl-toggle-button id="betaReleasesButton" label="[[ \$l('Install Beta Releases') ]]" class="tap" reverse="" on-change="_desktopSettingsChanged"></pl-toggle-button>
-                <button on-click="_checkForUpdates" class="tap">[[ \$l("Check For Updates...") ]]</button>
+            <section hidden$="${!isDesktop}">
+                <div class="section-header">${$l("Updates")}</div>
+                <pl-toggle-button id="autoUpdatesButton" label="${$l(
+                    "Automatically Install Updates"
+                )}" class="tap" reverse="" on-change="${e => this._desktopSettingsChanged(e)}"></pl-toggle-button>
+                <pl-toggle-button id="betaReleasesButton" label="${$l(
+                    "Install Beta Releases"
+                )}" class="tap" reverse="" on-change="${e => this._desktopSettingsChanged(e)}"></pl-toggle-button>
+                <button on-click="${e => this._checkForUpdates(e)}" class="tap">${$l("Check For Updates...")}</button>
             </section>
 
-            <section hidden\$="[[ !_isDesktop() ]]">
-                <div class="section-header">[[ \$l("Database") ]]</div>
+            <section hidden$="${!isDesktop}">
+                <div class="section-header">${$l("Database")}</div>
                 <div class="info">
-                    <div>[[ \$l("Current Location:") ]]</div>
-                    <div class="db-path">[[ _dbPath ]]</div>
+                    <div>${$l("Current Location:")}</div>
+                    <div class="db-path">${dbPath}</div>
                 </div>
-                <button on-click="_saveDBAs" class="tap">[[ \$l("Change Location...") ]]</button>
-                <button on-click="_loadDB" class="tap">[[ \$l("Load Different Database...") ]]</button>
+                <button on-click="${e => this._saveDBAs(e)}" class="tap">${$l("Change Location...")}</button>
+                <button on-click="${e => this._loadDB(e)}" class="tap">${$l("Load Different Database...")}</button>
             </section>
 
             <section>
-                <button class="info tap" on-click="_openSource">
-                    <div><strong>Padlock {{ settings.version }}</strong></div>
+                <button class="info tap" on-click="${e => this._openSource(e)}">
+                    <div><strong>Padlock ${settings.version}</strong></div>
                     <div class="made-in">Made with ♥ in Germany</div>
                 </button>
-                <button on-click="_openWebsite" class="tap">[[ \$l("Website") ]]</button>
-                <button on-click="_sendMail" class="tap">[[ \$l("Support") ]]</button>
-                <button on-click="_promptReview" class="tap">
-                    <span>[[ \$l("I") ]]</span><div class="padlock-heart"></div><span>Padlock</span>
+                <button on-click="${e => this._openWebsite(e)}" class="tap">${$l("Website")}</button>
+                <button on-click="${e => this._sendMail(e)}" class="tap">${$l("Support")}</button>
+                <button on-click="${e => this._promptReview(e)}" class="tap">
+                    <span>${$l("I")}</span><div class="padlock-heart"></div><span>Padlock</span>
                 </button>
             </section>
         </main>
 
         <div class="rounded-corners"></div>
 
-        <input type="file" name="importFile" id="importFile" on-change="_importFile" accept="text/plain,.csv,.pls,.set" hidden="">
+        <input type="file" name="importFile" id="importFile" on-change="${e =>
+            this._importFile(e)}" accept="text/plain,.csv,.pls,.set" hidden="">
 `;
     }
 
-    static get is() {
-        return "pl-settings-view";
-    }
-
-    connectedCallback() {
-        super.connectedCallback();
-        if (isElectron()) {
-            const desktopSettings = getDesktopSettings().get();
-            this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
-            this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
-            this._dbPath = desktopSettings.dbPath;
-        }
-    }
+    // connectedCallback() {
+    //     super.connectedCallback();
+    //     if (isElectron()) {
+    //         const desktopSettings = getDesktopSettings().get();
+    //         this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
+    //         this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
+    //     }
+    // }
 
     animate() {
-        this.animateCascade(this.root.querySelectorAll("section"), { initialDelay: 200 });
+        this.animateCascade(this.shadowRoot.querySelectorAll("section"), { initialDelay: 200 });
+    }
+
+    _updateSettings() {
+        this.app.updateSettings({
+            autoLock: this.shadowRoot.querySelector("#autoLock").active
+        });
     }
 
     _back() {
@@ -492,10 +537,6 @@ class SettingsView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dial
         });
     }
 
-    _isDesktop() {
-        return isElectron();
-    }
-
     _desktopSettingsChanged() {
         getDesktopSettings().set({
             autoDownloadUpdates: this.$.autoUpdatesButton.active,
@@ -537,15 +578,15 @@ class SettingsView extends applyMixins(BaseElement, DataMixin, LocaleMixin, Dial
                 $l("Continue")
             ).then(confirmed => {
                 if (confirmed) {
-                    this.settingChanged();
+                    this._updateSettings();
                 } else {
                     this.set("settings.syncCustomHost", false);
                 }
             });
         } else {
-            this.settingChanged();
+            this._updateSettings();
         }
     }
 }
 
-window.customElements.define(SettingsView.is, SettingsView);
+window.customElements.define("pl-settings-view", SettingsView);
