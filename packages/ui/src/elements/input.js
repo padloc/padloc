@@ -1,258 +1,182 @@
-import "../styles/shared.js";
-import { BaseElement, html } from "./base.js";
-import autosize from "autosize/src/autosize.js";
-
-let activeInput = null;
-
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cooked, raw) {
+    if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
+    return cooked;
+};
+exports.__esModule = true;
+var lit_element_1 = require("@polymer/lit-element");
+var autosize_js_1 = require("autosize/src/autosize.js");
+var shared_1 = require("../styles/shared");
+var activeInput = null;
 // On touch devices, blur active input when tapping on a non-input
-document.addEventListener("touchend", () => {
+document.addEventListener("touchend", function () {
     if (activeInput) {
         activeInput.blur();
     }
 });
-
-export class Input extends BaseElement {
-    static get template() {
-        return html`
-        <style include="shared">
-            :host {
-                display: block;
-                position: relative;
-            }
-
-            :host(:not([multiline])) {
-                padding: 0 10px;
-                height: var(--row-height);
-            }
-
-            input {
-                box-sizing: border-box;
-                text-overflow: ellipsis;
-            }
-
-            input, textarea {
-                text-align: inherit;
-                width: 100%;
-                height: 100%;
-                min-height: inherit;
-                line-height: inherit;
-            }
-
-            ::-webkit-search-cancel-button {
-                display: none;
-            }
-
-            ::-webkit-input-placeholder {
-                text-shadow: inherit;
-                color: inherit;
-                opacity: 0.5;
-                @apply --pl-input-placeholder;
-            }
-
-            .mask {
-                @apply --fullbleed;
-                pointer-events: none;
-                font-size: 150%;
-                line-height: 22px;
-                letter-spacing: -4.5px;
-                margin-left: -4px;
-            }
-
-            input[disabled], textarea[disabled] {
-                opacity: 1;
-                -webkit-text-fill-color: currentColor;
-            }
-
-            input[invisible], textarea[invisible] {
-                opacity: 0;
-            }
-        </style>
-
-        <template is="dom-if" if="[[ multiline ]]" on-dom-change="_domChange">
-            <textarea id="input" value="{{ value::input }}" placeholder\$="[[ placeholder ]]" readonly\$="[[ readonly ]]" rows="1" autocomplete="off" spellcheck="false" autocapitalize\$="[[ _computeAutoCapitalize(autocapitalize) ]]" autocorrect="off" on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown" on-touchend="_stopPropagation" tabindex\$="[[ _tabIndex(noTab) ]]" invisible\$="[[ _showMask(masked, value, focused) ]]" disabled\$="[[ disabled ]]"></textarea>
-            <textarea class="mask" value="[[ _mask(value) ]]" tabindex="-1" invisible\$="[[ !_showMask(masked, value, focused) ]]" disabled=""></textarea>
-        </template>
-
-        <template is="dom-if" if="[[ !multiline ]]" on-dom-change="_domChange">
-            <input id="input" value="{{ value::input }}" tabindex\$="[[ _tabIndex(noTab) ]]" autocomplete="off" spellcheck="false" autocapitalize\$="[[ _computeAutoCapitalize(autocapitalize) ]]" autocorrect="off" type\$="[[ type ]]" placeholder\$="[[ placeholder ]]" readonly\$="[[ readonly ]]" required\$="[[ required ]]" pattern\$="[[ pattern ]]" disabled\$="[[ disabled ]]" on-focus="_focused" on-blur="_blurred" on-change="_changeHandler" on-keydown="_keydown" on-touchend="_stopPropagation" invisible\$="[[ _showMask(masked, value, focused) ]]">
-            <input class="mask" value="[[ _mask(value) ]]" tabindex="-1" invisible\$="[[ !_showMask(masked, value, focused) ]]" disabled="">
-        </template>
-`;
+function mask(value) {
+    return value && value.replace(/[^\n]/g, "\u2022");
+}
+var Input = /** @class */ (function (_super) {
+    __extends(Input, _super);
+    function Input() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
-
-    static get is() {
-        return "pl-input";
-    }
-
-    static get activeInput() {
-        return activeInput;
-    }
-
-    static get properties() {
-        return {
-            autosize: {
-                type: Boolean,
-                value: false
-            },
-            autocapitalize: {
-                type: Boolean,
-                value: false
-            },
-            disabled: {
-                type: Boolean,
-                value: false
-            },
-            focused: {
-                type: Boolean,
-                value: false,
-                notify: true,
-                reflectToAttribute: true,
-                readonly: true
-            },
-            invalid: {
-                type: Boolean,
-                value: false,
-                notifiy: true,
-                reflectToAttribute: true,
-                readonly: true
-            },
-            masked: {
-                type: Boolean,
-                value: false,
-                reflectToAttribute: true
-            },
-            multiline: {
-                type: Boolean,
-                value: false,
-                reflectToAttribute: true
-            },
-            pattern: {
+    Object.defineProperty(Input, "activeInput", {
+        get: function () {
+            return activeInput;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Input, "properties", {
+        get: function () {
+            return {
+                autosize: Boolean,
+                autocapitalize: Boolean,
+                disabled: Boolean,
+                focused: Boolean,
+                invalid: Boolean,
+                masked: Boolean,
+                multiline: Boolean,
+                pattern: String,
+                placeholder: String,
+                noTab: Boolean,
+                readonly: Boolean,
+                required: Boolean,
                 type: String,
-                value: null
-            },
-            placeholder: {
-                type: String,
-                value: ""
-            },
-            noTab: {
-                type: Boolean,
-                value: false
-            },
-            readonly: {
-                type: Boolean,
-                value: false
-            },
-            required: {
-                type: Boolean,
-                value: ""
-            },
-            type: {
-                type: String,
-                value: "text"
-            },
-            selectOnFocus: {
-                type: Boolean,
-                value: false
-            },
-            value: {
-                type: String,
-                value: "",
-                notify: true,
-                observer: "_valueChanged"
-            }
-        };
-    }
-
-    get inputElement() {
-        return this.root.querySelector(this.multiline ? "textarea" : "input");
-    }
-
-    _domChange() {
+                selectOnFocus: Boolean,
+                value: String
+            };
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Input.prototype._render = function (props) {
+        var masked = props.masked && !!props.value && !props.focused;
+        // const inputAttrs = `
+        //     id="input"
+        //     value="${props.value}"
+        //     placeholder$="${props.placeholder}"
+        //     readonly$="${props.readonly}"
+        //     tabindex$="${noTab ? "-1" : ""}"
+        //     invisible$="${masked}"
+        //     disabled$="${props.disabled}"
+        //     autocapitalize$="${props.autocapitalize ? "" : "off"}"
+        //     required$="${props.required}"
+        //     autocomplete="off"
+        //     spellcheck="false"
+        //     autocorrect="off"
+        //     on-focus="${e => this._focused(e)}"
+        //     on-blur="${e => this._blurred(e)}"
+        //     on-change="${e => this._changeHandler(e)}"
+        //     on-keydown="${e => this._keydown(e)}"
+        //     on-touchend="${e => this._stopPropagation(e)}"
+        // `;
+        // const maskAttrs = `
+        //     value="${mask(value)}"
+        //     invisible$="${!masked}"
+        //     class="mask"
+        //     tabindex="-1"
+        //     disabled
+        // `;
+        // const input = props.multiline
+        //     ? `<textarea ${inputAttrs} rows="1"></textarea><textarea ${maskAttrs}></textarea>`
+        //     : `<input ${inputAttrs} type$="${props.type}" pattern$="${props.pattern}"><input ${maskAttrs}>`;
+        return lit_element_1.html(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n        <style>\n            ", "\n\n            :host {\n                display: block;\n                position: relative;\n            }\n\n            :host(:not([multiline])) {\n                padding: 0 10px;\n                height: var(--row-height);\n            }\n\n            input {\n                box-sizing: border-box;\n                text-overflow: ellipsis;\n            }\n\n            input, textarea {\n                text-align: inherit;\n                width: 100%;\n                height: 100%;\n                min-height: inherit;\n                line-height: inherit;\n            }\n\n            .mask {\n                @apply --fullbleed;\n                pointer-events: none;\n                font-size: 150%;\n                line-height: 22px;\n                letter-spacing: -4.5px;\n                margin-left: -4px;\n            }\n\n            input[disabled], textarea[disabled] {\n                opacity: 1;\n                -webkit-text-fill-color: currentColor;\n            }\n\n            input[invisible], textarea[invisible] {\n                opacity: 0;\n            }\n        </style>\n\n        ", "\n"], ["\n        <style>\n            ", "\n\n            :host {\n                display: block;\n                position: relative;\n            }\n\n            :host(:not([multiline])) {\n                padding: 0 10px;\n                height: var(--row-height);\n            }\n\n            input {\n                box-sizing: border-box;\n                text-overflow: ellipsis;\n            }\n\n            input, textarea {\n                text-align: inherit;\n                width: 100%;\n                height: 100%;\n                min-height: inherit;\n                line-height: inherit;\n            }\n\n            .mask {\n                @apply --fullbleed;\n                pointer-events: none;\n                font-size: 150%;\n                line-height: 22px;\n                letter-spacing: -4.5px;\n                margin-left: -4px;\n            }\n\n            input[disabled], textarea[disabled] {\n                opacity: 1;\n                -webkit-text-fill-color: currentColor;\n            }\n\n            input[invisible], textarea[invisible] {\n                opacity: 0;\n            }\n        </style>\n\n        ", "\n"])), shared_1["default"], input);
+    };
+    Object.defineProperty(Input.prototype, "inputElement", {
+        get: function () {
+            return this.root.querySelector(this.multiline ? "textarea" : "input");
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Input.prototype._domChange = function () {
+        var _this = this;
         if (this.autosize && this.multiline && this.inputElement) {
-            autosize(this.inputElement);
+            autosize_js_1["default"](this.inputElement);
         }
-        setTimeout(() => this._valueChanged(), 50);
-    }
-
-    _stopPropagation(e) {
+        setTimeout(function () { return _this._valueChanged(); }, 50);
+    };
+    Input.prototype._stopPropagation = function (e) {
         e.stopPropagation();
-    }
-
-    _focused(e) {
+    };
+    Input.prototype._focused = function (e) {
+        var _this = this;
         e.stopPropagation();
         this.focused = true;
         activeInput = this;
         this.dispatchEvent(new CustomEvent("focus"));
-
         if (this.selectOnFocus) {
-            setTimeout(() => this.selectAll(), 10);
+            setTimeout(function () { return _this.selectAll(); }, 10);
         }
-    }
-
-    _blurred(e) {
+    };
+    Input.prototype._blurred = function (e) {
         e.stopPropagation();
         this.focused = false;
         if (activeInput === this) {
             activeInput = null;
         }
         this.dispatchEvent(new CustomEvent("blur"));
-    }
-
-    _changeHandler(e) {
+    };
+    Input.prototype._changeHandler = function (e) {
         e.stopPropagation();
         this.dispatchEvent(new CustomEvent("change"));
-    }
-
-    _keydown(e) {
+    };
+    Input.prototype._keydown = function (e) {
         if (e.key === "Enter" && !this.multiline) {
             this.dispatchEvent(new CustomEvent("enter"));
             e.preventDefault();
             e.stopPropagation();
-        } else if (e.key === "Escape") {
+        }
+        else if (e.key === "Escape") {
             this.dispatchEvent(new CustomEvent("escape"));
             e.preventDefault();
             e.stopPropagation();
         }
-    }
-
-    _valueChanged() {
+    };
+    Input.prototype._valueChanged = function () {
         this.invalid = this.inputElement && !this.inputElement.checkValidity();
         if (this.autosize && this.multiline) {
-            autosize.update(this.inputElement);
+            autosize_js_1["default"].update(this.inputElement);
         }
-    }
-
-    _tabIndex(noTab) {
+    };
+    Input.prototype._tabIndex = function (noTab) {
         return noTab ? "-1" : "";
-    }
-
-    _showMask() {
-        return this.masked && !!this.value && !this.focused;
-    }
-
-    _mask(value) {
+    };
+    Input.prototype._mask = function (value) {
         return value && value.replace(/[^\n]/g, "\u2022");
-    }
-
-    _computeAutoCapitalize() {
+    };
+    Input.prototype._computeAutoCapitalize = function () {
         return this.autocapitalize ? "" : "off";
-    }
-
-    focus() {
+    };
+    Input.prototype.focus = function () {
         this.inputElement.focus();
-    }
-
-    blur() {
+    };
+    Input.prototype.blur = function () {
         this.inputElement.blur();
-    }
-
-    selectAll() {
+    };
+    Input.prototype.selectAll = function () {
         try {
             this.inputElement.setSelectionRange(0, this.value.length);
-        } catch (e) {
+        }
+        catch (e) {
             this.inputElement.select();
         }
-    }
-}
-
-window.customElements.define(Input.is, Input);
+    };
+    return Input;
+}(lit_element_1.LitElement));
+exports.Input = Input;
+window.customElements.define("pl-input", Input);
+var templateObject_1;

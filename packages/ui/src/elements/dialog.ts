@@ -1,12 +1,12 @@
-import "../styles/shared.js";
-import { BaseElement, html } from "./base.js";
+import { LitElement, html } from "@polymer/lit-element";
 import { Input } from "./input.js";
-import { AnimationMixin } from "../mixins";
+import sharedStyles from "../styles/shared";
 
-class Dialog extends AnimationMixin(BaseElement) {
-    static get template() {
+class Dialog extends LitElement {
+    _render() {
         return html`
-        <style include="shared">
+        <style>
+            ${sharedStyles}
 
             :host {
                 display: block;

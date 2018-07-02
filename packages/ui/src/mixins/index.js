@@ -2,7 +2,7 @@ export { AnalyticsMixin } from "./analytics.js";
 export { AnimationMixin } from "./animation.js";
 export { AutoLockMixin } from "./auto-lock.js";
 export { AutoSyncMixin } from "./auto-sync.js";
-export { DataMixin, StateMixin } from "./data.js";
+export { DataMixin } from "./data.js";
 export { DialogMixin } from "./dialog.js";
 export { HintsMixin } from "./hints.js";
 export { LocaleMixin } from "./locale.js";
