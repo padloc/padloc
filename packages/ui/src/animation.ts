@@ -26,7 +26,7 @@ export function animateElement(el: HTMLElement, opts = {}) {
     return new Promise(resolve => setTimeout(resolve, delay + duration));
 }
 
-export function animateCascade(els: NodeList, opts = {}) {
+export function animateCascade(els: NodeList | Element[], opts = {}) {
     const { fullDuration, duration, initialDelay } = Object.assign({}, defaults, opts);
     const dt = Math.max(30, Math.floor((fullDuration - duration) / els.length));
 

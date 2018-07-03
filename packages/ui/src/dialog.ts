@@ -1,9 +1,9 @@
 import { localize as $l } from "@padlock/core/lib/locale";
-import "elements/generator.js";
-import "elements/dialog-alert.js";
-import "elements/dialog-confirm.js";
-import "elements/dialog-prompt.js";
-import "elements/dialog-options.js";
+import "./elements/generator.js";
+import "./elements/dialog-alert.js";
+import "./elements/dialog-confirm.js";
+import "./elements/dialog-prompt.js";
+import "./elements/dialog-options.js";
 
 export interface Dialog extends HTMLElement {
     show(message: string, options: any): Promise<any>;
@@ -60,7 +60,7 @@ export function prompt(
     });
 }
 
-export function choose(message, options, opts = { preventDismiss: true, type: "question" }) {
+export function choose(message: string, options: string[], opts = { preventDismiss: true, type: "question" }) {
     opts.options = options;
     return alert(message, opts);
 }

@@ -1,7 +1,7 @@
-import { LitElement } from "@polymer/lit-element";
+import { LitElement, html } from "@polymer/lit-element";
 // @ts-ignore
 import autosize from "autosize/src/autosize.js";
-// import sharedStyles from "../styles/shared";
+import sharedStyles from "../styles/shared";
 
 let activeInput: Input | null = null;
 
@@ -41,39 +41,88 @@ export class Input extends LitElement {
         };
     }
 
+    constructor() {
+        super();
+        this.autosize = false;
+        this.autocapitalize = false;
+        this.disabled = false;
+        this.focused = false;
+        this.invalid = false;
+        this.masked = false;
+        this.multiline = false;
+        this.pattern = "";
+        this.placeholder = "";
+        this.noTab = false;
+        this.readonly = false;
+        this.required = false;
+        this.type = "text";
+        this.selectOnFocus = false;
+        this.value = "";
+    }
+
     _render(props: any) {
         const masked = props.masked && !!props.value && !props.focused;
-        const inputAttrs = `
-            id="input"
-            value="${props.value}"
-            placeholder$="${props.placeholder}"
-            readonly$="${props.readonly}"
-            tabindex$="${props.noTab ? "-1" : ""}"
-            invisible$="${masked}"
-            disabled$="${props.disabled}"
-            autocapitalize$="${props.autocapitalize ? "" : "off"}"
-            required$="${props.required}"
-            autocomplete="off"
-            spellcheck="false"
-            autocorrect="off"
-            on-focus="${(e: Event) => this._focused(e)}"
-            on-blur="${(e: Event) => this._blurred(e)}"
-            on-change="${(e: Event) => this._changeHandler(e)}"
-            on-keydown="${(e: KeyboardEvent) => this._keydown(e)}"
-            on-touchend="${(e: Event) => e.stopPropagation()}"
-        `;
-        const maskAttrs = `
-            value="${mask(props.value)}"
-            invisible$="${!masked}"
-            class="mask"
-            tabindex="-1"
-            disabled
-        `;
+        const el = props.multiline ? "input" : "textarea";
         const input = props.multiline
-            ? `<textarea ${inputAttrs} rows="1"></textarea><textarea ${maskAttrs}></textarea>`
-            : `<input ${inputAttrs} type$="${props.type}" pattern$="${props.pattern}"><input ${maskAttrs}>`;
+            ? html`
+                <textarea 
+                    id="input"
+                    value="${props.value}"
+                    placeholder$="${props.placeholder}"
+                    readonly?="${props.readonly}"
+                    tabindex$="${props.noTab ? "-1" : ""}"
+                    invisible?="${masked}"
+                    disabled?="${props.disabled}"
+                    autocapitalize$="${props.autocapitalize ? "" : "off"}"
+                    required?="${props.required}"
+                    autocomplete="off"
+                    spellcheck="false"
+                    autocorrect="off"
+                    on-focus="${(e: Event) => this._focused(e)}"
+                    on-blur="${(e: Event) => this._blurred(e)}"
+                    on-change="${(e: Event) => this._changeHandler(e)}"
+                    on-keydown="${(e: KeyboardEvent) => this._keydown(e)}"
+                    on-touchend="${(e: Event) => e.stopPropagation()}"
+                    rows="1"></textarea>
 
-        return `<style>
+                <textarea
+                    value="${mask(props.value)}"
+                    invisible?="${!masked}"
+                    class="mask"
+                    tabindex="-1"
+                    disabled></textarea>`
+            : html`
+                <input 
+                    id="input"
+                    value="${props.value}"
+                    placeholder$="${props.placeholder}"
+                    readonly?="${props.readonly}"
+                    tabindex$="${props.noTab ? "-1" : ""}"
+                    invisible?="${masked}"
+                    disabled?="${props.disabled}"
+                    autocapitalize$="${props.autocapitalize ? "" : "off"}"
+                    required?="${props.required}"
+                    autocomplete="off"
+                    spellcheck="false"
+                    autocorrect="off"
+                    on-focus="${(e: Event) => this._focused(e)}"
+                    on-blur="${(e: Event) => this._blurred(e)}"
+                    on-change="${(e: Event) => this._changeHandler(e)}"
+                    on-keydown="${(e: KeyboardEvent) => this._keydown(e)}"
+                    on-touchend="${(e: Event) => e.stopPropagation()}"
+                    type$="${props.type}"
+                    pattern$="${props.pattern}">
+
+                <input
+                    value="${mask(props.value)}"
+                    invisible?="${!masked}"
+                    class="mask"
+                    tabindex="-1"
+                    disabled>`;
+
+        return html`<style>
+            ${sharedStyles}
+
             :host {
                 display: block;
                 position: relative;
@@ -106,6 +155,10 @@ export class Input extends LitElement {
                 color: inherit;
                 opacity: 0.5;
                 @apply --pl-input-placeholder;
+            }
+
+            --fullbleed: {
+                position: absolute;
             }
 
             .mask {
@@ -164,6 +217,7 @@ export class Input extends LitElement {
 
     _changeHandler(e: Event) {
         e.stopPropagation();
+        this.value = this.inputElement.value;
         this.dispatchEvent(new CustomEvent("change"));
     }
 

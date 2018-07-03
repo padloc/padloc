@@ -1,9 +1,26 @@
 import { LitElement, html } from "@polymer/lit-element";
 import { Input } from "./input.js";
 import sharedStyles from "../styles/shared";
+import { animateElement } from "../animation";
 
 class Dialog extends LitElement {
-    _render() {
+    static get properties() {
+        return {
+            open: Boolean,
+            isShowing: Boolean,
+            preventDismiss: Boolean
+        };
+    }
+
+    constructor() {
+        super();
+        this.open = false;
+        this.isShowing = false;
+        this.preventDismiss = false;
+    }
+
+    _render(props: any) {
+        this.classList.toggle("open", props.open);
         return html`
         <style>
             ${sharedStyles}
@@ -79,43 +96,12 @@ class Dialog extends LitElement {
 
         <div class="outer" on-click="dismiss">
             <slot name="before"></slot>
-            <div id="inner" class="inner" on-click="_preventDismiss">
+            <div id="inner" class="inner" on-click="${(e: Event) => e.stopPropagation()}">
                 <slot></slot>
             </div>
             <slot name="after"></slot>
         </div>
 `;
-    }
-
-    static get is() {
-        return "pl-dialog";
-    }
-
-    static get properties() {
-        return {
-            animationOptions: {
-                type: Object,
-                value: {
-                    duration: 500,
-                    fullDuration: 700
-                }
-            },
-            open: {
-                type: Boolean,
-                value: false,
-                notify: true,
-                observer: "_openChanged"
-            },
-            isShowing: {
-                type: Boolean,
-                value: false,
-                notify: true
-            },
-            preventDismiss: {
-                type: Boolean,
-                value: false
-            }
-        };
     }
 
     ready() {
@@ -137,7 +123,7 @@ class Dialog extends LitElement {
     }
 
     rumble() {
-        this.animateElement(this.$.inner, { animation: "rumble", duration: 200, clear: true });
+        animateElement(this.$.inner, { animation: "rumble", duration: 200, clear: true });
     }
 
     //* Changed handler for the _open_ property. Shows/hides the dialog
@@ -164,13 +150,7 @@ class Dialog extends LitElement {
 
         this.classList.toggle("open", this.open);
 
-        this.dispatchEvent(
-            new CustomEvent(this.open ? "dialog-open" : "dialog-close", { bubbles: true, composed: true })
-        );
-    }
-
-    _preventDismiss(e) {
-        e.stopPropagation();
+        this.dispatchEvent(new CustomEvent(this.open ? "dialog-open" : "dialog-close", { bubbles: true }));
     }
 
     dismiss() {
@@ -181,4 +161,4 @@ class Dialog extends LitElement {
     }
 }
 
-window.customElements.define(Dialog.is, Dialog);
+window.customElements.define("pl-dialog", Dialog);
