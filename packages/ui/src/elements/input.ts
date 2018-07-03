@@ -65,7 +65,7 @@ export class Input extends LitElement {
         const el = props.multiline ? "input" : "textarea";
         const input = props.multiline
             ? html`
-                <textarea 
+                <textarea
                     id="input"
                     value="${props.value}"
                     placeholder$="${props.placeholder}"
@@ -78,6 +78,7 @@ export class Input extends LitElement {
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
+                    on-input="${() => (this.value = this.inputElement.value)}"
                     on-focus="${(e: Event) => this._focused(e)}"
                     on-blur="${(e: Event) => this._blurred(e)}"
                     on-change="${(e: Event) => this._changeHandler(e)}"
@@ -92,7 +93,7 @@ export class Input extends LitElement {
                     tabindex="-1"
                     disabled></textarea>`
             : html`
-                <input 
+                <input
                     id="input"
                     value="${props.value}"
                     placeholder$="${props.placeholder}"
@@ -105,6 +106,7 @@ export class Input extends LitElement {
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
+                    on-input="${() => (this.value = this.inputElement.value)}"
                     on-focus="${(e: Event) => this._focused(e)}"
                     on-blur="${(e: Event) => this._blurred(e)}"
                     on-change="${(e: Event) => this._changeHandler(e)}"

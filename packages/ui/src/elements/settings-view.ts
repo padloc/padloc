@@ -24,7 +24,7 @@ import "./toggle-button.js";
 
 class SettingsView extends View {
     _render() {
-        const settings = this.state && this.state.settings;
+        const settings = (this.state && this.state.settings) || {};
         const isDesktop = isElectron();
         const isSubValid = false;
         const isTrialExpired = false;

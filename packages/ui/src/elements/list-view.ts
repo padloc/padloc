@@ -2,29 +2,28 @@ import { Record } from "@padlock/core/lib/data.js";
 // @ts-ignore
 import { PolymerElement, html } from "@polymer/polymer/polymer-element";
 // @ts-ignore
-import { MutableData } from "@polymer/polymer/lib/mixins/mutable-data";
+import { MutableData } from "@polymer/polymer/lib/mixins/mutable-data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { isIOS } from "@padlock/core/lib/platform.js";
 import { animateCascade } from "../animation";
 import { app } from "../init";
 import { confirm } from "../dialog";
 import "@polymer/iron-list/iron-list.js";
-import sharedStyles from "../styles/shared.js";
 import "./dialog-export.js";
 import "./icon.js";
 import "./input.js";
 import "./record-item.js";
-
-declare class PolymerElement extends HTMLElement {
-    $: any;
-    ready(): void;
-    set(prop: string, val: any): void;
-    root: ShadowRoot;
-    notifyPath(path: string): void;
-}
-
-type Constructor<T = {}> = new (...args: any[]) => T;
-declare function MutableData(cl: any): Constructor<PolymerElement>;
+//
+// declare class PolymerElement extends HTMLElement {
+//     $: any;
+//     ready(): void;
+//     set(prop: string, val: any): void;
+//     root: ShadowRoot;
+//     notifyPath(path: string): void;
+// }
+//
+// type Constructor<T = {}> = new (...args: any[]) => T;
+// declare function MutableData(cl: any): Constructor<PolymerElement>;
 
 function filterByString(fs: string, rec: Record) {
     if (!fs) {
@@ -41,9 +40,7 @@ function filterByString(fs: string, rec: Record) {
 class ListView extends MutableData(PolymerElement) {
     static get template() {
         return html`
-        <style>
-            ${sharedStyles}
-
+        <style include="shared">
             :host {
                 box-sizing: border-box;
                 display: flex;
@@ -192,9 +189,9 @@ class ListView extends MutableData(PolymerElement) {
             }
         </style>
 
-        <header hidden?="[[ multiSelect ]]">
+        <header hidden$="[[ multiSelect ]]">
 
-            <pl-icon icon="menu" class="tap" on-click="_toggleMenu" hidden?="[[ filterActive ]]"></pl-icon>
+            <pl-icon icon="menu" class="tap" on-click="_toggleMenu" hidden$="[[ filterActive ]]"></pl-icon>
 
             <pl-input
                 id="filterInput"
@@ -206,13 +203,13 @@ class ListView extends MutableData(PolymerElement) {
                 no-tab="">
             </pl-input>
 
-            <pl-icon icon="add" class="tap" on-click="_newRecord" hidden?="[[ filterActive ]]"></pl-icon>
+            <pl-icon icon="add" class="tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
 
-            <pl-icon icon="cancel" class="tap" on-click="clearFilter" hidden?="[[ !filterActive ]]"></pl-icon>
+            <pl-icon icon="cancel" class="tap" on-click="clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
 
         </header>
 
-        <header hidden?="[[ !multiSelect ]]">
+        <header hidden$="[[ !multiSelect ]]">
 
             <pl-icon icon="cancel" class="tap" on-click="_clearMultiSelection"></pl-icon>
 
@@ -226,7 +223,7 @@ class ListView extends MutableData(PolymerElement) {
 
         </header>
 
-        <div class="current-section tap" on-click="_selectSection" hidden?="[[ _isEmpty(records.length) ]]">
+        <div class="current-section tap" on-click="_selectSection" hidden$="[[ _isEmpty(records.length) ]]">
 
             <pl-icon icon="dropdown" class="float-right"></pl-icon>
 
@@ -241,7 +238,7 @@ class ListView extends MutableData(PolymerElement) {
                 mutable-data=""
                 scroll-target="main"
                 multi-selection="[[ multiSelect ]]"
-                hidden?="[[ _isEmpty(records.length) ]]"
+                hidden$="[[ _isEmpty(records.length) ]]"
                 items="[[ records ]]"
                 selection-enabled
                 selected-item="{{ _selectedRecord }}"
@@ -251,7 +248,7 @@ class ListView extends MutableData(PolymerElement) {
 
                     <div>
 
-                        <div class="section-header" hidden?="[[ !_firstInSection(index, records) ]]">
+                        <div class="section-header" hidden$="[[ !_firstInSection(index, records) ]]">
 
                             <div>[[ _sectionHeader(index, records) ]]</div>
 
@@ -269,7 +266,7 @@ class ListView extends MutableData(PolymerElement) {
                             on-multi-select="_recordMultiSelect">
                         </pl-record-item>
 
-                        <div class="section-separator" hidden?="[[ !_lastInSection(index, records) ]]"></div>
+                        <div class="section-separator" hidden$="[[ !_lastInSection(index, records) ]]"></div>
 
                     </div>
 
@@ -279,7 +276,7 @@ class ListView extends MutableData(PolymerElement) {
 
         </main>
 
-        <div hidden?="[[ !_isEmpty(records.length) ]]" class="empty">
+        <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty">
 
             <div class="empty-message">
                 [[ $l("You don't have any data yet! Start by creating your first record!") ]]
