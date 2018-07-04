@@ -236,7 +236,7 @@ class ListView extends MutableData(PolymerElement) {
 
             <iron-list
                 id="list"
-                mutable-data=""
+                mutable-data
                 scroll-target="main"
                 multi-selection="[[ multiSelect ]]"
                 hidden$="[[ _isEmpty(records.length) ]]"
@@ -354,7 +354,8 @@ class ListView extends MutableData(PolymerElement) {
             "_scrollToSelected(records, _selectedRecord)",
             "_updateCurrentSection(records)",
             "_selectedCountChanged(selectedRecords.length)",
-            "_currentRecordChanged(state.currentRecord)"
+            "_currentRecordChanged(state.currentRecord)",
+            "_recordsChanged(records)"
         ];
     }
 
@@ -573,6 +574,12 @@ class ListView extends MutableData(PolymerElement) {
 
     _updateFilterString() {
         this.filterString = this.$.filterInput.value;
+    }
+
+    _recordsChanged() {
+        for (const item of this.root.querySelectorAll("pl-record-item")) {
+            item.requestRender();
+        }
     }
 }
 

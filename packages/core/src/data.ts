@@ -116,7 +116,9 @@ export class Record implements Serializable {
     private _tags = new Set<string>();
 
     static compare(a: Record, b: Record): number {
-        return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
+        const x = a.name.toLowerCase();
+        const y = b.name.toLowerCase();
+        return x > y ? 1 : x < y ? -1 : 0;
     }
 
     constructor(public name = "", public fields: Field[] = [], tags: string[] = []) {

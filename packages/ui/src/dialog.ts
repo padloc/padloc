@@ -37,7 +37,7 @@ export function lineUpDialog(d: string | Dialog, fn: (d: Dialog) => Promise<any>
     return promise;
 }
 
-export function alert(message: string, options: any) {
+export function alert(message: string, options: any): Promise<number> {
     return lineUpDialog("pl-dialog-alert", dialog => dialog.show(message, options));
 }
 
@@ -51,7 +51,7 @@ export function prompt(
     placeholder: string,
     type?: string,
     confirmLabel?: string,
-    cancelLabel?: string,
+    cancelLabel?: string | false,
     preventDismiss?: boolean,
     verify?: (val: string) => Promise<string>
 ) {
@@ -64,7 +64,7 @@ export function choose(
     message: string,
     options: string[],
     opts: { preventDismiss?: boolean; type?: string; options?: string[] } = { preventDismiss: true, type: "question" }
-) {
+): Promise<number> {
     opts.options = options;
     return alert(message, opts);
 }
