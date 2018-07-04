@@ -24,7 +24,7 @@ import "./toggle-button.js";
 
 class SettingsView extends View {
     _render() {
-        const settings = (this.state && this.state.settings) || {};
+        const settings = (this.app.state && this.app.state.settings) || {};
         const isDesktop = isElectron();
         const isSubValid = false;
         const isTrialExpired = false;
@@ -145,7 +145,8 @@ class SettingsView extends View {
                     active="${settings.autoLock}"
                     label="${$l("Lock Automatically")}"
                     class="tap"
-                    reverse on-change="${() => this._updateSettings()}"
+                    reverse
+                    on-change="${() => this._updateSettings()}"
                 ></pl-toggle-button>
 
                 <pl-slider
@@ -155,7 +156,7 @@ class SettingsView extends View {
                     value="${settings.autoLockDelay}"
                     unit="${$l(" min")}"
                     label="${$l("After")}"
-                    hidden$="${!settings.autoLock}"
+                    hidden?="${!settings.autoLock}"
                     on-change="${() => this._updateSettings()}"
                 ></pl-slider>
 
@@ -175,13 +176,13 @@ class SettingsView extends View {
                         on-change="${() => this._updateSettings()}"
                     ></pl-toggle-button>
 
-                    <div class="feature-locked" hidden$="${settings.syncConnected}">
+                    <div class="feature-locked" hidden?="${settings.syncConnected}">
                         ${$l("Log in to enable auto sync!")}
                     </div>
 
-                    <div class="feature-locked" hidden$="${!isTrialExpired}">${$l("Upgrade to enable auto sync!")}</div>
+                    <div class="feature-locked" hidden?="${!isTrialExpired}">${$l("Upgrade to enable auto sync!")}</div>
 
-                    <div class="feature-locked" hidden$="${!isSubCanceled}">${$l("Upgrade to enable auto sync!")}</div>
+                    <div class="feature-locked" hidden?="${!isSubCanceled}">${$l("Upgrade to enable auto sync!")}</div>
 
                 </div>
 
@@ -194,7 +195,7 @@ class SettingsView extends View {
                     disabled$="${settings.syncConnected}"
                 ></pl-toggle-button>
 
-                <div class="tap" hidden$="${!settings.syncCustomHost}" disabled$="${settings.syncConnected}">
+                <div class="tap" hidden?="${!settings.syncCustomHost}" disabled$="${settings.syncConnected}">
 
                     <pl-input
                         id="customUrlInput"
@@ -228,7 +229,7 @@ class SettingsView extends View {
 
             </button></section>
 
-            <section hidden$="${!isDesktop}">
+            <section hidden?="${!isDesktop}">
 
                 <div class="section-header">${$l("Updates")}</div>
 
@@ -252,7 +253,7 @@ class SettingsView extends View {
 
             </section>
 
-            <section hidden$="${!isDesktop}">
+            <section hidden?="${!isDesktop}">
 
                 <div class="section-header">${$l("Database")}</div>
 
