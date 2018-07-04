@@ -198,8 +198,9 @@ class ListView extends MutableData(PolymerElement) {
                 class="filter-input tap"
                 placeholder="[[ $l('Type To Search') ]]"
                 active$="[[ filterActive ]]"
-                value="{{ filterString }}"
+                value="[[ filterString ]]"
                 on-escape="clearFilter"
+                on-input="_updateFilterString"
                 no-tab="">
             </pl-input>
 
@@ -330,8 +331,7 @@ class ListView extends MutableData(PolymerElement) {
             },
             selectedRecords: {
                 type: Array,
-                value: () => [],
-                notify: true
+                value: () => []
             },
             filterString: {
                 type: String,
@@ -339,7 +339,6 @@ class ListView extends MutableData(PolymerElement) {
             },
             records: {
                 type: Array,
-                notify: true,
                 computed: "_filterAndSort(state.currentStore.records, filterString)"
             },
             state: {
@@ -367,6 +366,8 @@ class ListView extends MutableData(PolymerElement) {
             }
         });
     }
+
+    $l = $l;
 
     ready() {
         super.ready();
@@ -437,10 +438,6 @@ class ListView extends MutableData(PolymerElement) {
 
     _filterActive() {
         return this.filterString !== "";
-    }
-
-    _clearFilter() {
-        this.set("filterString", "");
     }
 
     _toggleMenu() {
@@ -571,7 +568,11 @@ class ListView extends MutableData(PolymerElement) {
     }
 
     clearFilter() {
-        this.$.filterInput.value = "";
+        this.filterString = "";
+    }
+
+    _updateFilterString() {
+        this.filterString = this.$.filterInput.value;
     }
 }
 

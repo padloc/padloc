@@ -307,6 +307,10 @@ class SettingsView extends View {
 `;
     }
 
+    get fileInput() {
+        return this.shadowRoot.querySelector("#importFile");
+    }
+
     // connectedCallback() {
     //     super.connectedCallback();
     //     if (isElectron()) {
@@ -343,7 +347,7 @@ class SettingsView extends View {
             return;
         }
 
-        const newPwd = this.prompt(
+        const newPwd = await prompt(
             $l("Now choose a new master password!"),
             $l("Enter New Password"),
             "password",
@@ -433,13 +437,13 @@ class SettingsView extends View {
                 this._importFromClipboard();
                 break;
             case 1:
-                this.$.importFile.click();
+                this.fileInput.click();
                 break;
         }
     }
 
     async _importFile() {
-        const file = this.$.importFile.files[0];
+        const file = this.fileInput.files[0];
         const reader = new FileReader();
         reader.onload = async () => {
             try {
@@ -447,7 +451,7 @@ class SettingsView extends View {
             } catch (e) {
                 switch (e.code) {
                     case "decryption_failed":
-                        this.alert($l("Failed to open file. Did you enter the correct password?"), { type: "warning" });
+                        alert($l("Failed to open file. Did you enter the correct password?"), { type: "warning" });
                         break;
                     case "unsupported_container_version":
                         const confirmed = await confirm(
@@ -465,15 +469,15 @@ class SettingsView extends View {
                         }
                         break;
                     case "invalid_csv":
-                        this.alert($l("Failed to recognize file format."), { type: "warning" });
+                        alert($l("Failed to recognize file format."), { type: "warning" });
                         break;
                     default:
-                        this.alert($l("Failed to open file."), { type: "warning" });
+                        alert($l("Failed to open file."), { type: "warning" });
                         throw e;
                 }
             }
 
-            this.$.importFile.value = "";
+            this.fileInput.value = "";
         };
 
         reader.readAsText(file);
@@ -481,16 +485,16 @@ class SettingsView extends View {
 
     async _importFromClipboard() {
         try {
-            this._importString(await getClipboard());
+            await this._importString(await getClipboard());
         } catch (e) {
             switch (e.code) {
                 case "decryption_failed":
-                    this.alert($l("Failed to decrypt data. Did you enter the correct password?"), {
+                    alert($l("Failed to decrypt data. Did you enter the correct password?"), {
                         type: "warning"
                     });
                     break;
                 default:
-                    this.alert(
+                    alert(
                         $l(
                             "No supported data found in clipboard. Please make sure to copy " +
                                 "you data to the clipboard first (e.g. via ctrl + C)."
@@ -523,7 +527,7 @@ class SettingsView extends View {
         } else if (isLastPass) {
             records = await imp.fromLastPass(rawStr);
         } else if (isCSV) {
-            const choice = this.choose(
+            const choice = await choose(
                 $l(
                     "The data you want to import seems to be in CSV format. Before you continue, " +
                         "please make sure that the data is structured according to Padlocks specific " +
@@ -539,6 +543,7 @@ class SettingsView extends View {
                     return this._importString(rawStr);
                 case 1:
                     records = await imp.fromCSV(rawStr);
+                    break;
                 case 2:
                     return;
             }
@@ -547,9 +552,9 @@ class SettingsView extends View {
         }
 
         if (records.length) {
-            this.addRecords(records);
-            this.dispatch("data-imported", { records: records });
-            this.alert($l("Successfully imported {0} records.", records.length.toString()), { type: "success" });
+            this.app.addRecords(records);
+            // this.dispatch("data-imported", { records: records });
+            alert($l("Successfully imported {0} records.", records.length.toString()), { type: "success" });
         }
     }
 
@@ -562,28 +567,28 @@ class SettingsView extends View {
     }
 
     _autoLockInfo() {
-        return this.$l(
+        return $l(
             "Tell Padlock to automatically lock the app after a certain period of " +
                 "inactivity in case you leave your device unattended for a while."
         );
     }
 
     _peekValuesInfo() {
-        return this.$l(
+        return $l(
             "If enabled allows peeking at field values in the record list " +
                 "by moving the mouse cursor over the corresponding field."
         );
     }
 
     _resetDataInfo() {
-        return this.$l(
+        return $l(
             "Want to start fresh? Reseting Padlock will delete all your locally stored data and settings " +
                 "and will restore the app to the state it was when you first launched it."
         );
     }
 
     async _promptReview() {
-        const choice = await this.choose(
+        const choice = await choose(
             $l(
                 "So glad to hear you like our app! Would you mind taking a second to " +
                     "let others know what you think about Padlock?"

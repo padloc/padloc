@@ -53,14 +53,18 @@ export function prompt(
     confirmLabel?: string,
     cancelLabel?: string,
     preventDismiss?: boolean,
-    verify?: () => Promise<string>
+    verify?: (val: string) => Promise<string>
 ) {
     return lineUpDialog("pl-dialog-prompt", dialog => {
         return dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss, verify);
     });
 }
 
-export function choose(message: string, options: string[], opts = { preventDismiss: true, type: "question" }) {
+export function choose(
+    message: string,
+    options: string[],
+    opts: { preventDismiss?: boolean; type?: string; options?: string[] } = { preventDismiss: true, type: "question" }
+) {
     opts.options = options;
     return alert(message, opts);
 }

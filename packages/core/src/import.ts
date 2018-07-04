@@ -4,8 +4,8 @@ import { Container, validateRawContainer } from "./crypto";
 import { loadScript } from "./util";
 import { Err, ErrorCode } from "./error";
 
-export async function loadPapa(): Promise<any> {
-    await loadScript("vendor/papaparse.js", "Papa");
+export function loadPapa(): Promise<any> {
+    return loadScript("vendor/papaparse.js", "Papa");
 }
 
 /**
