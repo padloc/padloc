@@ -301,6 +301,7 @@ class ListView extends MutableData(PolymerElement) {
         return "pl-list-view";
     }
 
+    _records: Record[];
     _currentSection: string;
     filterActive: boolean;
     multiSelect: boolean;
@@ -313,6 +314,7 @@ class ListView extends MutableData(PolymerElement) {
 
     static get properties() {
         return {
+            _records: Array,
             _currentSection: {
                 type: String,
                 value: ""
@@ -339,11 +341,7 @@ class ListView extends MutableData(PolymerElement) {
             },
             records: {
                 type: Array,
-                computed: "_filterAndSort(state.currentStore.records, filterString)"
-            },
-            state: {
-                type: Object,
-                value: app.state
+                computed: "_filterAndSort(_records, filterString)"
             }
         };
     }
@@ -361,10 +359,8 @@ class ListView extends MutableData(PolymerElement) {
 
     constructor() {
         super();
-        app.addEventListener("state-changed", (e: CustomEvent) => {
-            for (const path of e.detail.paths) {
-                this.notifyPath(path ? `state.${path}` : `state`);
-            }
+        app.addEventListener("state-changed", () => {
+            this._records = (app.state.currentStore && app.state.currentStore.records) || [];
         });
     }
 
@@ -410,18 +406,13 @@ class ListView extends MutableData(PolymerElement) {
         return recent.concat(records.sort((a, b) => Record.compare(a, b)));
     }
 
-    _currentRecordChanged() {
-        if (app.state.currentRecord !== this._selectedRecord) {
-            if (app.state.currentRecord) {
-                this.$.list.selectItem(app.state.currentRecord);
-            } else {
-                this.$.list.clearSelection();
-            }
-        }
+    deselect() {
+        this.$.list.clearSelection();
     }
 
     _selectedRecordChanged() {
-        app.selectRecord(this._selectedRecord);
+        // app.selectRecord(this._selectedRecord);
+        this.dispatchEvent(new CustomEvent("select-record", { detail: { record: this._selectedRecord } }));
     }
 
     _isEmpty() {

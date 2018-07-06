@@ -111,3 +111,11 @@ export async function passwordStrength(pwd: string): Promise<{ score: number }> 
     const zxcvbn = await loadScript("../../node_modules/@padlock/core/vendor/zxcvbn.js", "zxcvbn");
     return zxcvbn(pwd);
 }
+
+export function toggleAttribute(el: Element, attr: string, on: boolean) {
+    if (on) {
+        el.setAttribute(attr, "");
+    } else {
+        el.removeAttribute(attr);
+    }
+}
