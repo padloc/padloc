@@ -228,6 +228,7 @@ class RecordView extends View {
             return;
         }
         this.app.updateRecord(this.record);
+        this.requestRender();
     }
 
     async _deleteField(index: number) {

@@ -5,16 +5,12 @@ import "./elements/dialog-confirm.js";
 import "./elements/dialog-prompt.js";
 import "./elements/dialog-options.js";
 
-export interface Dialog extends HTMLElement {
-    show(message: string, options: any): Promise<any>;
-}
-
 const dialogElements = {};
 
 let lastDialogPromise = Promise.resolve();
-let currentDialog: Dialog;
+let currentDialog: any;
 
-export function getDialog(elName: string): Dialog {
+export function getDialog(elName: string) {
     let el = dialogElements[elName];
 
     if (!el) {
@@ -22,10 +18,10 @@ export function getDialog(elName: string): Dialog {
         document.body.appendChild(el);
     }
 
-    return el as Dialog;
+    return el as any;
 }
 
-export function lineUpDialog(d: string | Dialog, fn: (d: Dialog) => Promise<any>): Promise<any> {
+export function lineUpDialog(d: string | any, fn: (d: any) => Promise<any>): Promise<any> {
     const dialog = typeof d === "string" ? getDialog(d) : d;
     const promise = lastDialogPromise.then(() => {
         currentDialog = dialog;
@@ -41,7 +37,7 @@ export function alert(message: string, options: any): Promise<number> {
     return lineUpDialog("pl-dialog-alert", dialog => dialog.show(message, options));
 }
 
-export function confirm(message: string, confirmLabel = $l("Confirm"), cancelLabel = $l("Cancel"), options = {}) {
+export function confirm(message: string, confirmLabel = $l("Confirm"), cancelLabel = $l("Cancel"), options: any = {}) {
     options.options = [confirmLabel, cancelLabel];
     return alert(message, options).then(choice => choice === 0);
 }
@@ -87,7 +83,7 @@ export function promptPassword(password: string, msg: string, confirmLabel?: str
         } else if (pwd !== password) {
             return Promise.reject($l("Wrong password. Please try again!"));
         } else {
-            return Promise.resolve(true);
+            return Promise.resolve(pwd);
         }
     });
 }
