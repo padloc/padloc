@@ -1,9 +1,9 @@
+import { html } from "@polymer/lit-element";
 import { getClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Record } from "@padlock/core/lib/data.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import * as imp from "@padlock/core/lib/import.js";
-import { View } from "./view.js";
 import {
     isCordova,
     getReviewLink,
@@ -13,10 +13,11 @@ import {
     loadDB,
     isElectron
 } from "@padlock/core/lib/platform.js";
-import { html } from "@polymer/lit-element";
 import sharedStyles from "../styles/shared.js";
+import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt } from "../dialog";
 import { animateCascade } from "../animation";
+import { app } from "../init.js";
 import "./dialog-export.js";
 import "./icon.js";
 import "./slider.js";
@@ -24,11 +25,10 @@ import "./toggle-button.js";
 
 class SettingsView extends View {
     _render() {
-        const settings = (this.app.state && this.app.state.settings) || {};
+        const { settings, account, session } = app;
         const isDesktop = isElectron();
-        const isSubValid = false;
-        const isTrialExpired = false;
-        const isSubCanceled = false;
+        const subStatus = (account && account.subscription && account.subscription.status) || "";
+        const loggedIn = session && session.active;
         // const dbPath = desktopSettings.dbPath;
         const dbPath = "";
 
@@ -141,7 +141,7 @@ class SettingsView extends View {
                 <div class="section-header">${$l("Auto Lock")}</div>
 
                 <pl-toggle-button
-                    id="autoLock"
+                    id="autoLockButton"
                     active="${settings.autoLock}"
                     label="${$l("Lock Automatically")}"
                     class="tap"
@@ -150,6 +150,7 @@ class SettingsView extends View {
                 ></pl-toggle-button>
 
                 <pl-slider
+                    id="autoLockDelaySlider"
                     min="1"
                     max="10"
                     step="1" 
@@ -166,41 +167,46 @@ class SettingsView extends View {
 
                 <div class="section-header">${$l("Synchronization")}</div>
 
-                <div disabled$="${!isSubValid}">
+                <div disabled$="${subStatus !== "active" && subStatus !== "trialing"}">
 
                     <pl-toggle-button
-                        active="${settings.syncAuto}"
+                        id="autoSyncButton"
+                        active="${settings.autoSync}"
                         label="${$l("Sync Automatically")}"
                         reverse
                         class="tap"
                         on-change="${() => this._updateSettings()}"
                     ></pl-toggle-button>
 
-                    <div class="feature-locked" hidden?="${settings.syncConnected}">
+                    <div class="feature-locked" hidden?="${loggedIn}">
                         ${$l("Log in to enable auto sync!")}
                     </div>
 
-                    <div class="feature-locked" hidden?="${!isTrialExpired}">${$l("Upgrade to enable auto sync!")}</div>
+                    <div class="feature-locked" hidden?="${subStatus !== "trial_expired"}">
+                        ${$l("Upgrade to enable auto sync!")}
+                    </div>
 
-                    <div class="feature-locked" hidden?="${!isSubCanceled}">${$l("Upgrade to enable auto sync!")}</div>
+                    <div class="feature-locked" hidden?="${subStatus !== "canceled"}">
+                        ${$l("Upgrade to enable auto sync!")}
+                    </div>
 
                 </div>
 
                 <pl-toggle-button
-                    active="${settings.syncCustomHost}"
+                    id="customServerButton"
+                    active="${settings.customServer}"
                     label="${$l("Use Custom Server")}"
                     reverse 
-                    on-change="${() => this._customHostChanged()}"
+                    on-change="${() => this._toggleCustomServer()}"
                     class="tap"
-                    disabled$="${settings.syncConnected}"
                 ></pl-toggle-button>
 
-                <div class="tap" hidden?="${!settings.syncCustomHost}" disabled$="${settings.syncConnected}">
+                <div class="tap" hidden?="${!settings.customServer}" disabled$="${loggedIn}">
 
                     <pl-input
-                        id="customUrlInput"
+                        id="customServerUrlInput"
                         placeholder="${$l("Enter Custom URL")}"
-                        value="${settings.syncHostUrl}"
+                        value="${settings.customServerUrl}"
                         pattern="^https://[^\\s/$.?#].[^\\s]*$"
                         required
                         on-change="${() => this._updateSettings()}"
@@ -326,8 +332,12 @@ class SettingsView extends View {
     }
 
     _updateSettings() {
-        this.app.updateSettings({
-            autoLock: this.shadowRoot.querySelector("#autoLock").active
+        app.setSettings({
+            autoLock: this.shadowRoot.querySelector("#autoLockButton").active,
+            autoLockDelay: this.shadowRoot.querySelector("#autoLockDelaySlider").value,
+            autoSync: this.shadowRoot.querySelector("#autoSyncButton").active,
+            customServer: this.shadowRoot.querySelector("#customServerButton").active,
+            customServerUrl: this.shadowRoot.querySelector("#customServerUrlInput").value
         });
     }
 
@@ -632,8 +642,13 @@ class SettingsView extends View {
         );
     }
 
-    async _customHostChanged() {
-        if (this.settings.syncCustomHost) {
+    async _toggleCustomServer() {
+        if (app.session && app.session.active) {
+            return this.alert($l("Please log out of the current server first!"));
+        }
+
+        const customHost = this.shadowRoot.querySelector("#customServerButton").active;
+        if (customHost) {
             const confirmed = this.confirm(
                 $l(
                     "Are you sure you want to use a custom server for synchronization? " +

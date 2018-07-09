@@ -3,6 +3,7 @@ import { toggleAttribute } from "@padlock/core/lib/util.js";
 import { LitElement, html } from "@polymer/lit-element";
 import sharedStyles from "../styles/shared.js";
 import { animateCascade } from "../animation.js";
+import { app } from "../init.js";
 
 class Menu extends LitElement {
     static get properties() {
@@ -12,7 +13,12 @@ class Menu extends LitElement {
         };
     }
 
-    _render({ _showingTags }: { _showingTags: boolean }) {
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener("click", () => setTimeout(() => (this.open = false), 50));
+    }
+
+    _render() {
         const settings: any = {};
         const isTrialExpired = false;
         const isSubUnpaid = false;
@@ -43,7 +49,7 @@ class Menu extends LitElement {
                 z-index: -1;
             }
 
-            :host[open] {
+            :host([open]) {
                 z-index: 10;
             }
 
@@ -139,11 +145,11 @@ class Menu extends LitElement {
                 transition: opacity 400ms;
             }
 
-            .menu-wrapper:not(.show-menu) .menu-info {
+            :host(:not([open])) .menu-info {
                 opacity: 0;
             }
 
-            [show-tags] .menu, :not([show-tags]) .tags {
+            :host([show-tags]) .menu, :host(:not([show-tags])) .tags {
                 opacity: 0;
                 pointer-events: none;
             }
@@ -157,17 +163,11 @@ class Menu extends LitElement {
             }
         </style>
 
-        <div
-            id="menuWrapper"
-            class="menu-wrapper"
-            on-click="${() => this._menuWrapperClicked()}"
-            show-tags?="${_showingTags}">
-
             <div id="menu" class="menu">
 
                 <div class="spacer"></div>
 
-                <div class="account menu-item tap" on-click="${() => this._openCloudView()}">
+                <div class="account menu-item tap" on-click="${() => this._openAccountView()}">
 
                     <div>
 
@@ -227,7 +227,7 @@ class Menu extends LitElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => this._lock()}">
+                <div class="menu-item tap" on-click="${() => app.lock()}">
 
                     <div>${$l("Lock App")}</div>
 
@@ -287,8 +287,9 @@ class Menu extends LitElement {
     }
 
     _didRender(_: any, changed: any) {
-        console.log(changed);
-        toggleAttribute(this, "open", this.open);
+        // TODO
+        toggleAttribute((this as any) as Element, "open", this.open);
+        toggleAttribute((this as any) as Element, "show-tags", this._showingTags);
         if (changed && changed.open === false) {
             setTimeout(() => (this._showingTags = false), 300);
             this.dispatchEvent(new CustomEvent("menu-close"));
@@ -312,12 +313,8 @@ class Menu extends LitElement {
         this.dispatchEvent(new CustomEvent("open-settings"));
     }
 
-    _openCloudView() {
-        this.dispatchEvent(new CustomEvent("open-cloud-view"));
-    }
-
-    _menuWrapperClicked() {
-        setTimeout(() => (this.open = false), 50);
+    _openAccountView() {
+        this.dispatchEvent(new CustomEvent("open-account-view"));
     }
 
     _showTags(e: Event) {

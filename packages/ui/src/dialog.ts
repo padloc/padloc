@@ -1,9 +1,7 @@
 import { localize as $l } from "@padlock/core/lib/locale";
 import "./elements/generator.js";
 import "./elements/dialog-alert.js";
-import "./elements/dialog-confirm.js";
 import "./elements/dialog-prompt.js";
-import "./elements/dialog-options.js";
 
 const dialogElements = {};
 
@@ -33,7 +31,7 @@ export function lineUpDialog(d: string | any, fn: (d: any) => Promise<any>): Pro
     return promise;
 }
 
-export function alert(message: string, options: any): Promise<number> {
+export function alert(message: string, options?: any): Promise<number> {
     return lineUpDialog("pl-dialog-alert", dialog => dialog.show(message, options));
 }
 
@@ -59,7 +57,10 @@ export function prompt(
 export function choose(
     message: string,
     options: string[],
-    opts: { preventDismiss?: boolean; type?: string; options?: string[] } = { preventDismiss: true, type: "question" }
+    opts: { preventDismiss?: boolean; type?: string; options?: string[]; title?: string; hideIcon?: boolean } = {
+        preventDismiss: true,
+        type: "question"
+    }
 ): Promise<number> {
     opts.options = options;
     return alert(message, opts);

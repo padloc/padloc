@@ -3,8 +3,9 @@ import { Record, Field } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
 import { View } from "./view.js";
-import { confirm, prompt, choose, lineUpDialog, generate } from "../dialog.js";
+import { confirm, prompt, choose, lineUpDialog, generate, getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
+import { app } from "../init.js";
 import "./icon.js";
 import "./input.js";
 import "./record-field.js";
@@ -15,8 +16,24 @@ class RecordView extends View {
 
     static get properties() {
         return {
+            store: Object,
             record: Object
         };
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        app.addEventListener("lock", () => {
+            this.record = null;
+            const fieldDialog = getDialog("pl-dialog-field");
+            fieldDialog.open = false;
+            fieldDialog.field = null;
+        });
+        app.addEventListener("record-changed", (e: CustomEvent) => {
+            if (e.detail.record === this.record) {
+                this.requestRender();
+            }
+        });
     }
 
     _shouldRender(props: { record?: Record }) {
@@ -198,16 +215,7 @@ class RecordView extends View {
 `;
     }
 
-    _lockedChanged() {
-        if (this.app.state.locked) {
-            this.record = null;
-            const fieldDialog = this.getSingleton("pl-dialog-field");
-            fieldDialog.open = false;
-            fieldDialog.field = null;
-        }
-    }
-
-    _recordChanged() {
+    _didRender() {
         setTimeout(() => {
             if (this.record && !this.record.name) {
                 this.shadowRoot.querySelector("#nameInput").focus();
@@ -219,16 +227,7 @@ class RecordView extends View {
         if (!this.record) {
             return;
         }
-        this.record.name = this.shadowRoot.querySelector("#nameInput").value;
-        this._updateRecord();
-    }
-
-    _updateRecord() {
-        if (!this.record) {
-            return;
-        }
-        this.app.updateRecord(this.record);
-        this.requestRender();
+        app.updateRecord(this.store, this.record, { name: this.shadowRoot.querySelector("#nameInput").value });
     }
 
     async _deleteField(index: number) {
@@ -236,9 +235,9 @@ class RecordView extends View {
             return;
         }
         const confirmed = await confirm($l("Are you sure you want to delete this field?"), $l("Delete"));
+        const fields = this.record.fields.filter((_, i) => i !== index);
         if (confirmed) {
-            this.record.fields.splice(index, 1);
-            this._updateRecord();
+            app.updateRecord(this.store, this.record, { fields: fields });
         }
     }
 
@@ -246,9 +245,9 @@ class RecordView extends View {
         if (!this.record) {
             return;
         }
-        const confirmed = confirm($l("Are you sure you want to delete this record?"), $l("Delete"));
+        const confirmed = await confirm($l("Are you sure you want to delete this record?"), $l("Delete"));
         if (confirmed) {
-            this.app.deleteRecord(this.record);
+            app.deleteRecords(this.store, this.record);
         }
     }
 
@@ -256,7 +255,7 @@ class RecordView extends View {
         if (!this.record) {
             return;
         }
-        const result = await lineUpDialog("pl-dialog-field", (d: FieldDialog) => d.openField(field, true));
+        const result = await lineUpDialog("pl-dialog-field", (d: any) => d.openField(field, true));
         switch (result.action) {
             case "generate":
                 const value = await generate();
@@ -265,8 +264,7 @@ class RecordView extends View {
                 this._addField(field);
                 break;
             case "edited":
-                this.record.fields.push(field);
-                this._updateRecord();
+                app.updateRecord(this.store, this.record, { fields: this.record.fields.concat([field]) });
                 break;
         }
     }
@@ -287,8 +285,7 @@ class RecordView extends View {
             title: $l("Remove Tag")
         });
         if (confirmed) {
-            this.record.removeTag(tag);
-            this._updateRecord();
+            app.updateRecord(this.store, this.record, { tags: this.record.tags.filter(t => t !== tag) });
         }
     }
 
@@ -297,9 +294,8 @@ class RecordView extends View {
             return;
         }
         const tag = await prompt("", $l("Enter Tag Name"), "text", $l("Add Tag"), false, false);
-        if (tag) {
-            this.record.addTag(tag);
-            this._updateRecord();
+        if (tag && !this.record.tags.includes(tag)) {
+            app.updateRecord(this.store, this.record, { tags: this.record.tags.concat([tag]) });
         }
     }
 
@@ -307,7 +303,7 @@ class RecordView extends View {
         if (!this.record) {
             return;
         }
-        const tags = this.app.state.currentStore.tags.filter((tag: string) => !this.record!.hasTag(tag));
+        const tags = this.store.tags.filter((tag: string) => !this.record!.tags.includes(tag));
         if (!tags.length) {
             return this._createTag();
         }
@@ -319,8 +315,7 @@ class RecordView extends View {
 
         const tag = tags[choice];
         if (tag) {
-            this.record.addTag(tag);
-            this._updateRecord();
+            app.updateRecord(this.store, this.record, { tags: this.record.tags.concat([tag]) });
         }
     }
 

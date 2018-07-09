@@ -9,11 +9,11 @@ import { animateCascade } from "../animation";
 import { app } from "../init";
 import { confirm } from "../dialog";
 import "@polymer/iron-list/iron-list.js";
-import "./dialog-export.js";
+import "./dialog-alert.js";
 import "./icon.js";
 import "./input.js";
 import "./record-item.js";
-//
+
 // declare class PolymerElement extends HTMLElement {
 //     $: any;
 //     ready(): void;
@@ -287,11 +287,11 @@ class ListView extends MutableData(PolymerElement) {
 
         </div>
 
-        <pl-dialog-options
+        <pl-dialog-alert
             id="sectionSelector"
             on-dialog-open="_stopPropagation"
             on-dialog-close="_stopPropagation">
-        </pl-dialog-options>
+        </pl-dialog-alert>
 
         <div class="rounded-corners"></div>
 `;
@@ -314,7 +314,7 @@ class ListView extends MutableData(PolymerElement) {
 
     static get properties() {
         return {
-            _records: Array,
+            store: Object,
             _currentSection: {
                 type: String,
                 value: ""
@@ -341,7 +341,7 @@ class ListView extends MutableData(PolymerElement) {
             },
             records: {
                 type: Array,
-                computed: "_filterAndSort(_records, filterString)"
+                computed: "_filterAndSort(store.records, filterString)"
             }
         };
     }
@@ -357,17 +357,23 @@ class ListView extends MutableData(PolymerElement) {
         ];
     }
 
-    constructor() {
-        super();
-        app.addEventListener("state-changed", () => {
-            this._records = (app.state.currentStore && app.state.currentStore.records) || [];
-        });
-    }
-
     $l = $l;
 
     ready() {
         super.ready();
+
+        const changeHandler = (e: CustomEvent) => {
+            if (e.detail.store === this.store) {
+                this.notifyPath("store");
+            }
+        };
+        app.addEventListener("records-added", changeHandler);
+        app.addEventListener("records-deleted", changeHandler);
+        app.addEventListener("record-changed", changeHandler);
+        app.addEventListener("record-created", (e: CustomEvent) => {
+            this.$.list.selectItem(e.detail.record);
+        });
+
         window.addEventListener("keydown", e => {
             switch (e.key) {
                 case "ArrowDown":
@@ -392,10 +398,10 @@ class ListView extends MutableData(PolymerElement) {
     }
 
     _filterAndSort() {
-        if (!app.state.currentStore) {
+        if (!this.store) {
             return [];
         }
-        let records = app.state.currentStore.records.filter(r => !r.removed && filterByString(this.filterString, r));
+        let records = this.store.records.filter(r => !r.removed && filterByString(this.filterString, r));
         this._recentCount = records.length > 10 ? 3 : 0;
         const recent = records
             .sort((a, b) => {
@@ -403,7 +409,14 @@ class ListView extends MutableData(PolymerElement) {
             })
             .slice(0, this._recentCount);
         records = records.slice(this._recentCount);
-        return recent.concat(records.sort((a, b) => Record.compare(a, b)));
+
+        return recent.concat(
+            records.sort((a: Record, b: Record) => {
+                const x = a.name.toLowerCase();
+                const y = b.name.toLowerCase();
+                return x > y ? 1 : x < y ? -1 : 0;
+            })
+        );
     }
 
     deselect() {
@@ -424,8 +437,7 @@ class ListView extends MutableData(PolymerElement) {
     }
 
     _newRecord() {
-        const record = app.createRecord("");
-        app.selectRecord(record);
+        const record = app.createRecord(this.store, "");
     }
 
     _filterActive() {
@@ -446,7 +458,7 @@ class ListView extends MutableData(PolymerElement) {
 
     _scrollToSelected() {
         const l = this.$.list;
-        const i = l.items.indexOf(app.state.currentRecord);
+        const i = l.items.indexOf(this._selectedRecord);
         if (i !== -1 && (i < l.firstVisibleIndex || i > l.lastVisibleIndex)) {
             // Scroll to item before the selected one so that selected
             // item is more towards the middle of the list
@@ -486,7 +498,7 @@ class ListView extends MutableData(PolymerElement) {
     async _selectSection() {
         const sections = Array.from(this.records.reduce((s, _, i) => s.add(this._sectionHeader(i)), new Set()));
         if (sections.length > 1) {
-            const i = await this.$.sectionSelector.choose("", sections);
+            const i = await this.$.sectionSelector.show("", sections);
             const record = this.records.find((_, j) => this._sectionHeader(j) === sections[i]);
             this.$.list.scrollToItem(record);
         }
@@ -546,7 +558,7 @@ class ListView extends MutableData(PolymerElement) {
         );
 
         if (confirmed) {
-            app.deleteRecords(this.selectedRecords);
+            app.deleteRecords(this.store, this.selectedRecords);
             this.multiSelect = false;
         }
     }

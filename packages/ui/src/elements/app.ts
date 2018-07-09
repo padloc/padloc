@@ -1,10 +1,8 @@
 import { getPlatformName, getDeviceInfo, isTouch } from "@padlock/core/lib/platform.js";
-import { State } from "@padlock/core/lib/app.js";
-import { Record } from "@padlock/core/lib/data.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
-import { html } from "@polymer/lit-element";
+import { LitElement, html } from "@polymer/lit-element";
 import sharedStyles from "../styles/shared.js";
-import "./cloud-view.js";
+import { app } from "../init.js";
+import "./account-view.js";
 import "./icon.js";
 import "./list-view.js";
 import "./record-view.js";
@@ -13,7 +11,6 @@ import "./start-view.js";
 import "./title-bar.js";
 import "./menu.js";
 import { Input } from "./input.js";
-import { View } from "./view.js";
 import { clearDialogs } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { animateElement } from "../animation.js";
@@ -34,17 +31,18 @@ const cordovaReady = new Promise(resolve => {
     document.addEventListener("deviceready", resolve);
 });
 
-class App extends View {
+class App extends LitElement {
     static get properties() {
         return {
             _currentView: String,
-            _menuOpen: Boolean,
-            _locked: Boolean
+            _menuOpen: Boolean
         };
     }
 
     constructor() {
         super();
+        this._currentStore = app.mainStore;
+        this._menuOpen = false;
 
         // If we want to capture all keydown events, we have to add the listener
         // directly to the document
@@ -55,13 +53,20 @@ class App extends View {
 
         document.addEventListener("dialog-open", () => this.classList.add("dialog-open"));
         document.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
-    }
 
-    _stateChanged({ locked }: State) {
-        this._locked = locked;
-        if (locked) {
+        app.addEventListener("lock", () => {
+            this._main.classList.remove("active");
+            this._menuOpen = false;
+            clearDialogs();
+            clearClipboard();
             this._currentView = "";
-        }
+        });
+
+        app.addEventListener("unlock", () => {
+            setTimeout(() => {
+                this._main.classList.add("active");
+            }, 600);
+        });
     }
 
     get _isNarrow() {
@@ -98,13 +103,13 @@ class App extends View {
         const className = platform.toLowerCase().replace(/ /g, "-");
         if (className) {
             this.classList.add(className);
-            this.root.querySelector("pl-title-bar").classList.add(className);
+            this.shadowRoot.querySelector("pl-title-bar").classList.add(className);
         }
 
         if (!isTouch()) {
             window.addEventListener("focus", () =>
                 setTimeout(() => {
-                    if (this._locked) {
+                    if (app.locked) {
                         this.$.startView.focus();
                     }
                 }, 100)
@@ -294,15 +299,16 @@ class App extends View {
             open="${this._menuOpen}"
             on-menu-close="${() => (this._menuOpen = false)}"
             on-open-settings="${() => this._openSettings()}"
-            on-open-cloud-view="${() => this._openCloudView()}">
+            on-open-account-view="${() => this._openAccountView()}">
         </pl-menu>
 
         <div id="main">
 
             <pl-list-view
                 id="listView"
+                store="${this._currentStore}"
                 on-open-settings="${() => this._openSettings()}"
-                on-open-cloud-view="${() => this._openCloudView()}"
+                on-open-account-view="${() => this._openAccountView()}"
                 on-select-record="${(e: CustomEvent) => this._recordSelected(e)}"
                 on-toggle-menu="${() => this._toggleMenu()}">
             </pl-list-view>
@@ -318,6 +324,7 @@ class App extends View {
                 <pl-record-view
                     id="recordView"
                     class="view"
+                    store="${this._currentStore}"
                     on-record-close="${() => this._closeRecord()}">
                 </pl-record-view>
 
@@ -327,11 +334,11 @@ class App extends View {
                     on-settings-back="${() => this._settingsBack()}">
                 </pl-settings-view>
 
-                <pl-cloud-view
-                    id="cloudView"
+                <pl-account-view
+                    id="accountView"
                     class="view"
-                    on-cloud-back="${() => this._cloudViewBack()}">
-                </pl-cloud-view>
+                    on-account-back="${() => this._accountViewBack()}">
+                </pl-account-view>
 
             </div>
 
@@ -342,26 +349,9 @@ class App extends View {
     }
 
     _didRender(_: any, changed: any, prev: any) {
-        console.log("changed", arguments);
-        if (changed && typeof changed._locked !== "undefined") {
-            this._lockedChanged();
-        }
         this._main.classList.toggle("show-menu", this._menuOpen);
         if (changed && typeof changed._currentView !== "undefined") {
             this._currentViewChanged(changed._currentView, prev._currentView);
-        }
-    }
-
-    _lockedChanged() {
-        if (this._locked) {
-            this._main.classList.remove("active");
-            this._menuOpen = false;
-            clearDialogs();
-            clearClipboard();
-        } else {
-            setTimeout(() => {
-                this._main.classList.add("active");
-            }, 600);
         }
     }
 
@@ -370,7 +360,7 @@ class App extends View {
     }
 
     _recordSelected(e: CustomEvent) {
-        const record = e.detail.record as Record | null;
+        const record = e.detail.record;
         clearTimeout(this._selectedRecordChangedTimeout);
         this._selectedRecordChangedTimeout = setTimeout(() => {
             if (record) {
@@ -391,15 +381,15 @@ class App extends View {
         this._currentView = "";
     }
 
-    _openCloudView() {
-        this._currentView = "cloudView";
+    _openAccountView() {
+        this._currentView = "accountView";
         this.shadowRoot.querySelector("#listView").deselect();
         // if (!this.settings.syncConnected && !isTouch()) {
-        //     setTimeout(() => this.$.cloudView.focusEmailInput(), 500);
+        //     setTimeout(() => this.$.accountView.focusEmailInput(), 500);
         // }
     }
 
-    _cloudViewBack() {
+    _accountViewBack() {
         this._currentView = "";
     }
 
@@ -468,8 +458,8 @@ class App extends View {
             case "settingsView":
                 this._settingsBack();
                 break;
-            case "cloudView":
-                this._cloudViewBack();
+            case "accountView":
+                this._accountViewBack();
                 break;
             default:
                 if (this.$.listView.filterActive) {
@@ -484,17 +474,8 @@ class App extends View {
         this._menuOpen = !this._menuOpen;
     }
 
-    _lock() {
-        if (this.isSynching) {
-            this.alert($l("Cannot lock app while sync is in progress!"));
-        } else {
-            this.app.lock();
-        }
-    }
-
     _newRecord() {
-        const record = this.app.createRecord("");
-        this.app.selectRecord(record);
+        app.createRecord(this._currentStore, "");
     }
 
     _enableMultiSelect() {
