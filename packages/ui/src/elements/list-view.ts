@@ -1,29 +1,15 @@
+import { LitElement, html } from "@polymer/lit-element";
 import { Record } from "@padlock/core/lib/data.js";
-// @ts-ignore
-import { PolymerElement, html } from "@polymer/polymer/polymer-element";
-// @ts-ignore
-import { MutableData } from "@polymer/polymer/lib/mixins/mutable-data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { isIOS } from "@padlock/core/lib/platform.js";
-import { animateCascade } from "../animation";
-import { app } from "../init";
-import { confirm } from "../dialog";
-import "@polymer/iron-list/iron-list.js";
+import { animateCascade } from "../animation.js";
+import { app } from "../init.js";
+import { confirm } from "../dialog.js";
+import sharedStyles from "../styles/shared.js";
 import "./dialog-alert.js";
 import "./icon.js";
 import "./input.js";
 import "./record-item.js";
-
-// declare class PolymerElement extends HTMLElement {
-//     $: any;
-//     ready(): void;
-//     set(prop: string, val: any): void;
-//     root: ShadowRoot;
-//     notifyPath(path: string): void;
-// }
-//
-// type Constructor<T = {}> = new (...args: any[]) => T;
-// declare function MutableData(cl: any): Constructor<PolymerElement>;
 
 function filterByString(fs: string, rec: Record) {
     if (!fs) {
@@ -37,10 +23,82 @@ function filterByString(fs: string, rec: Record) {
     return words.some(word => content.search(word) !== -1);
 }
 
-class ListView extends MutableData(PolymerElement) {
-    static get template() {
+class ListView extends LitElement {
+    static get properties() {
+        return {
+            store: Object,
+            multiSelect: Boolean,
+            filterString: String,
+            selectedRecord: Object,
+            _records: Array,
+            _listItems: Array,
+            _currentSection: String,
+            _selectedRecords: Array
+        };
+    }
+
+    static get observers() {
+        return [
+            "_fixScroll(records)",
+            "_scrollToSelected(records, selectedRecord)",
+            "_updateCurrentSection(records)",
+            "_selectedCountChanged(_selectedRecords.length)",
+            "_currentRecordChanged(state.currentRecord)",
+            "_recordsChanged(records)"
+        ];
+    }
+
+    constructor() {
+        super();
+        this.store = null;
+        this.multiSelect = false;
+        this.filterString = "";
+        this._records = [];
+        this._listItems = [];
+        this._currentSection = "";
+        this.selectedRecord = null;
+        this._selectedRecords = [];
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+
+        const changeHandler = (e: CustomEvent) => {
+            if (e.detail.store === this.store) {
+                this._updateRecords;
+            }
+        };
+        app.addEventListener("records-added", changeHandler);
+        app.addEventListener("records-deleted", changeHandler);
+        app.addEventListener("record-changed", changeHandler);
+        app.addEventListener("record-created", (e: CustomEvent) => {
+            this.shadowRoot.querySelector("#list").selectItem(e.detail.record);
+        });
+        app.addEventListener("unlock", () => {
+            this._updateRecords();
+            this.animateRecords(600);
+        });
+
+        window.addEventListener("keydown", e => {
+            switch (e.key) {
+                case "ArrowDown":
+                    this.shadowRoot.querySelector("#list").focusItem(this.$.list.firstVisibleIndex);
+                    break;
+                case "ArrowUp":
+                    this.shadowRoot.querySelector("#list").focusItem(this.$.list.lastVisibleIndex);
+                    break;
+            }
+        });
+        this.main = this.shadowRoot.querySelector("#main");
+        this.main.addEventListener("scroll", () => this._scroll());
+    }
+
+    _render(props: any) {
+        const filterActive = !!props.filterString;
         return html`
-        <style include="shared">
+        <style>
+            ${sharedStyles}
+
             :host {
                 box-sizing: border-box;
                 display: flex;
@@ -120,6 +178,18 @@ class ListView extends MutableData(PolymerElement) {
                 transform-origin: center 49%;
             }
 
+            .list-item {
+                height: 94px;
+            }
+
+            .list-item[first] {
+                height: 135px;
+            }
+
+            .list-item:not([first]) .section-header {
+                display: none;
+            }
+
             .current-section {
                 height: 35px;
                 line-height: 35px;
@@ -151,10 +221,6 @@ class ListView extends MutableData(PolymerElement) {
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
                 box-sizing: border-box;
-            }
-
-            iron-list {
-                margin-top: -35px;
             }
 
             #sectionSelector {
@@ -189,98 +255,91 @@ class ListView extends MutableData(PolymerElement) {
             }
         </style>
 
-        <header hidden$="[[ multiSelect ]]">
+        <header hidden?="${props.multiSelect}">
 
-            <pl-icon icon="menu" class="tap" on-click="_toggleMenu" hidden$="[[ filterActive ]]"></pl-icon>
+            <pl-icon icon="menu" class="tap" on-click="${() => this._toggleMenu()}" hidden?="${filterActive}"></pl-icon>
 
             <pl-input
                 id="filterInput"
                 class="filter-input tap"
-                placeholder="[[ $l('Type To Search') ]]"
-                active$="[[ filterActive ]]"
-                value="[[ filterString ]]"
-                on-escape="clearFilter"
-                on-input="_updateFilterString"
-                no-tab="">
+                placeholder="${$l("Type To Search")}"
+                active?="${filterActive}"
+                value="${props.filterString}"
+                on-escape="${() => this.clearFilter()}"
+                on-input="${() => this._updateFilterString()}"
+                no-tab>
             </pl-input>
 
-            <pl-icon icon="add" class="tap" on-click="_newRecord" hidden$="[[ filterActive ]]"></pl-icon>
+            <pl-icon icon="add" class="tap" on-click="${() => this._newRecord()}" hidden?="${filterActive}"></pl-icon>
 
-            <pl-icon icon="cancel" class="tap" on-click="clearFilter" hidden$="[[ !filterActive ]]"></pl-icon>
-
-        </header>
-
-        <header hidden$="[[ !multiSelect ]]">
-
-            <pl-icon icon="cancel" class="tap" on-click="_clearMultiSelection"></pl-icon>
-
-            <pl-icon icon="checked" class="tap" on-click="_selectAll"></pl-icon>
-
-            <div class="multi-select-count"><div>[[ _multiSelectLabel(selectedRecords.length) ]]</div></div>
-
-            <pl-icon icon="delete" class="tap" on-click="_deleteSelected"></pl-icon>
-
-            <pl-icon icon="share" class="tap" on-click="_shareSelected"></pl-icon>
+            <pl-icon
+                icon="cancel"
+                class="tap"
+                on-click="${() => this.clearFilter()}"
+                hidden?="${!filterActive}">
+            </pl-icon>
 
         </header>
 
-        <div class="current-section tap" on-click="_selectSection" hidden$="[[ _isEmpty(records.length) ]]">
+        <header hidden?="${!props.multiSelect}">
+
+            <pl-icon icon="cancel" class="tap" on-click="${() => this._clearMultiSelection()}"></pl-icon>
+
+            <pl-icon icon="checked" class="tap" on-click="${() => this._selectAll()}"></pl-icon>
+
+            <div class="multi-select-count"><div>${this._multiSelectLabel(props._selectedRecords)}</div></div>
+
+            <pl-icon icon="delete" class="tap" on-click="${() => this._deleteSelected()}"></pl-icon>
+
+            <pl-icon icon="share" class="tap" on-click="${() => this._shareSelected()}"></pl-icon>
+
+        </header>
+
+        <div class="current-section tap"
+            on-click="${() => this._selectSection()}"
+            hidden?="${!props._records.length}">
 
             <pl-icon icon="dropdown" class="float-right"></pl-icon>
 
-            <div>[[ _currentSection ]]</div>
+            <div>${props._currentSection}</div>
 
         </div>
 
-        <main id="main">
+        <main id="main" hidden?="${!props._records.length}">
 
-            <iron-list
-                id="list"
-                mutable-data
-                scroll-target="main"
-                multi-selection="[[ multiSelect ]]"
-                hidden$="[[ _isEmpty(records.length) ]]"
-                items="[[ records ]]"
-                selection-enabled
-                selected-item="{{ _selectedRecord }}"
-                selected-items="{{ selectedRecords }}">
+            ${props._listItems.map(
+                (item: any, index: number) => html`
+                <div class="list-item" index$="${index}">
 
-                <template>
+                    <div class="section-header" hidden?="${index === 0 || !item.firstInSection}">
 
-                    <div>
+                        <div>${item.sectionHeader}</div>
 
-                        <div class="section-header" hidden$="[[ !_firstInSection(index, records) ]]">
+                        <div class="spacer"></div>
 
-                            <div>[[ _sectionHeader(index, records) ]]</div>
-
-                            <div class="spacer"></div>
-
-                            <div>[[ _sectionHeader(index, records) ]]</div>
-
-                        </div>
-
-                        <pl-record-item
-                            record="[[ item ]]"
-                            selected$="[[ selected ]]"
-                            tabindex$="[[ tabIndex ]]"
-                            multi-select="[[ multiSelect ]]"
-                            on-multi-select="_recordMultiSelect">
-                        </pl-record-item>
-
-                        <div class="section-separator" hidden$="[[ !_lastInSection(index, records) ]]"></div>
+                        <div>${item.sectionHeader}</div>
 
                     </div>
 
-                </template>
+                    <pl-record-item
+                        record="${item.record}"
+                        selected?="${item.record === props.selectedRecord}"
+                        multi-select="${props.multiSelect}"
+                        on-click="${() => this.selectRecord(item.record)}">
+                    </pl-record-item>
 
-            </iron-list>
+                    <div class="section-separator" hidden?="${!item.lastInSection}"></div>
+
+                </div>
+                `
+            )}
 
         </main>
 
-        <div hidden$="[[ !_isEmpty(records.length) ]]" class="empty">
+        <div hidden?="${!!props._records.length}" class="empty">
 
             <div class="empty-message">
-                [[ $l("You don't have any data yet! Start by creating your first record!") ]]
+                ${$l("You don't have any data yet! Start by creating your first record!")}
             </div>
 
             <div class="spacer tiles-2"></div>
@@ -289,147 +348,95 @@ class ListView extends MutableData(PolymerElement) {
 
         <pl-dialog-alert
             id="sectionSelector"
-            on-dialog-open="_stopPropagation"
-            on-dialog-close="_stopPropagation">
+            on-dialog-open="${(e: Event) => e.stopPropagation()}"
+            on-dialog-close="${(e: Event) => e.stopPropagation()}">
         </pl-dialog-alert>
 
         <div class="rounded-corners"></div>
 `;
     }
 
-    static get is() {
-        return "pl-list-view";
+    _resized() {
+        delete this._cachedBounds;
     }
 
-    _records: Record[];
-    _currentSection: string;
-    filterActive: boolean;
-    multiSelect: boolean;
-    _selectedRecord: Record | null;
-    selectedRecords: Record[];
-    filterString: string;
-    records: Record[];
-    _recentCount: number;
-    _lastSelectCount: number;
-
-    static get properties() {
-        return {
-            store: Object,
-            _currentSection: {
-                type: String,
-                value: ""
-            },
-            filterActive: {
-                type: Boolean,
-                computed: "_filterActive(filterString)"
-            },
-            multiSelect: {
-                type: Boolean,
-                value: false
-            },
-            _selectedRecord: {
-                type: Object,
-                observer: "_selectedRecordChanged"
-            },
-            selectedRecords: {
-                type: Array,
-                value: () => []
-            },
-            filterString: {
-                type: String,
-                value: ""
-            },
-            records: {
-                type: Array,
-                computed: "_filterAndSort(store.records, filterString)"
-            }
-        };
+    get _bounds() {
+        if (!this._cachedBounds) {
+            this._cachedBounds = this.main.getBoundingClientRect();
+        }
+        return this._cachedBounds;
     }
 
-    static get observers() {
-        return [
-            "_fixScroll(records)",
-            "_scrollToSelected(records, _selectedRecord)",
-            "_updateCurrentSection(records)",
-            "_selectedCountChanged(selectedRecords.length)",
-            "_currentRecordChanged(state.currentRecord)",
-            "_recordsChanged(records)"
-        ];
-    }
-
-    $l = $l;
-
-    ready() {
-        super.ready();
-
-        const changeHandler = (e: CustomEvent) => {
-            if (e.detail.store === this.store) {
-                this.notifyPath("store");
+    _scroll() {
+        const { top, left } = this._bounds;
+        const els = this.shadowRoot.elementsFromPoint(left + 1, top + 1);
+        for (const el of els) {
+            if (el.hasAttribute("index")) {
+                const i = parseInt(el.getAttribute("index", 10));
+                if (i !== this._firstVisibleIndex) {
+                    this._firstVisibleIndex = i;
+                    this._updateCurrentSection();
+                }
+                break;
             }
-        };
-        app.addEventListener("records-added", changeHandler);
-        app.addEventListener("records-deleted", changeHandler);
-        app.addEventListener("record-changed", changeHandler);
-        app.addEventListener("record-created", (e: CustomEvent) => {
-            this.$.list.selectItem(e.detail.record);
-        });
-
-        window.addEventListener("keydown", e => {
-            switch (e.key) {
-                case "ArrowDown":
-                    this.$.list.focusItem(this.$.list.firstVisibleIndex);
-                    break;
-                case "ArrowUp":
-                    this.$.list.focusItem(this.$.list.lastVisibleIndex);
-                    break;
-            }
-        });
-        this.$.list.addEventListener("keydown", (e: Event) => e.stopPropagation());
-        this.$.main.addEventListener("scroll", () => this._updateCurrentSection());
-        // this.listen("data-loaded", () => {
-        //     this.animateRecords(600);
-        // });
-        // this.listen("sync-success", e => {
-        //     if (!e.detail || !e.detail.auto) {
-        //         this.animateRecords();
-        //     }
-        // });
-        // this.listen("data-imported", () => this.animateRecords());
+        }
     }
 
     _filterAndSort() {
         if (!this.store) {
             return [];
         }
-        let records = this.store.records.filter(r => !r.removed && filterByString(this.filterString, r));
+        let records = this.store.records.filter((r: Record) => !r.removed && filterByString(this.filterString, r));
         this._recentCount = records.length > 10 ? 3 : 0;
         const recent = records
-            .sort((a, b) => {
+            .sort((a: Record, b: Record) => {
                 return (b.lastUsed || b.updated).getTime() - (a.lastUsed || a.updated).getTime();
             })
             .slice(0, this._recentCount);
         records = records.slice(this._recentCount);
 
-        return recent.concat(
+        records = recent.concat(
             records.sort((a: Record, b: Record) => {
                 const x = a.name.toLowerCase();
                 const y = b.name.toLowerCase();
                 return x > y ? 1 : x < y ? -1 : 0;
             })
         );
+
+        return records;
     }
 
-    deselect() {
-        this.$.list.clearSelection();
+    _updateRecords() {
+        this._records = this._filterAndSort();
+        const items = this._records.map((record: Record, index: number) => {
+            const sectionHeader =
+                index < this._recentCount
+                    ? $l("Recently Used")
+                    : (record && record.name[0] && record.name[0].toUpperCase()) || $l("No Name");
+            return {
+                record,
+                sectionHeader
+            };
+        });
+        for (let i = 0, prev, curr, next; i < items.length; i++) {
+            prev = items[i - 1];
+            curr = items[i];
+            next = items[i + 1];
+            curr.firstInSection = !prev || prev.sectionHeader !== curr.sectionHeader;
+            curr.lastInSection = !next || next.sectionHeader !== curr.sectionHeader;
+        }
+        this._listItems = items;
+        this._updateCurrentSection();
     }
 
-    _selectedRecordChanged() {
-        // app.selectRecord(this._selectedRecord);
-        this.dispatchEvent(new CustomEvent("select-record", { detail: { record: this._selectedRecord } }));
+    selectRecord(record: Record | null) {
+        this.selectedRecord = record;
+        this.dispatchEvent(new CustomEvent("select-record", { detail: { record } }));
+        this._scrollToSelected();
     }
 
-    _isEmpty() {
-        return !this.records.length;
+    clearSelection() {
+        this.selectRecord(null);
     }
 
     _openMenu() {
@@ -437,11 +444,7 @@ class ListView extends MutableData(PolymerElement) {
     }
 
     _newRecord() {
-        const record = app.createRecord(this.store, "");
-    }
-
-    _filterActive() {
-        return this.filterString !== "";
+        app.createRecord(this.store, "");
     }
 
     _toggleMenu() {
@@ -457,12 +460,12 @@ class ListView extends MutableData(PolymerElement) {
     }
 
     _scrollToSelected() {
-        const l = this.$.list;
-        const i = l.items.indexOf(this._selectedRecord);
-        if (i !== -1 && (i < l.firstVisibleIndex || i > l.lastVisibleIndex)) {
+        const i = this._records.indexOf(this.selectedRecord);
+        if (i !== -1 && (i < this._firstVisibleIndex || i > this._lastVisibleIndex)) {
             // Scroll to item before the selected one so that selected
             // item is more towards the middle of the list
-            l.scrollToIndex(Math.max(i - 1, 0));
+            const el = this.shadowRoot.querySelector(`.list-item[index=i]`);
+            el && el.scrollIntoView();
         }
     }
 
@@ -470,63 +473,47 @@ class ListView extends MutableData(PolymerElement) {
         // Workaround for list losing scrollability on iOS after resetting filter
         isIOS().then(yes => {
             if (yes) {
-                this.$.main.style.overflow = "hidden";
-                setTimeout(() => (this.$.main.style.overflow = "auto"), 100);
+                this.shadowRoot.querySelector("#main").style.overflow = "hidden";
+                setTimeout(() => (this.shadowRoot.querySelector("#main").style.overflow = "auto"), 100);
             }
         });
     }
 
-    _firstInSection(index: number) {
-        return index === 0 || this._sectionHeader(index - 1) !== this._sectionHeader(index);
-    }
-
-    _lastInSection(index: number) {
-        return this._sectionHeader(index + 1) !== this._sectionHeader(index);
-    }
-
-    _sectionHeader(index: number) {
-        const record = this.records[index];
-        return index < this._recentCount
-            ? $l("Recently Used")
-            : (record && record.name[0] && record.name[0].toUpperCase()) || $l("No Name");
-    }
-
     _updateCurrentSection() {
-        this._currentSection = this._sectionHeader(this.$.list.firstVisibleIndex);
+        const currItem = this._listItems[this._firstVisibleIndex];
+        this._currentSection = currItem && currItem.sectionHeader;
     }
 
     async _selectSection() {
-        const sections = Array.from(this.records.reduce((s, _, i) => s.add(this._sectionHeader(i)), new Set()));
+        const sections = [...new Set(this._listItems.map((i: any) => i.sectionHeader))];
         if (sections.length > 1) {
-            const i = await this.$.sectionSelector.show("", sections);
-            const record = this.records.find((_, j) => this._sectionHeader(j) === sections[i]);
-            this.$.list.scrollToItem(record);
+            const i = await this.shadowRoot.querySelector("#sectionSelector").show("", { options: sections });
+            const item = this._listItems.find((item: any) => item.sectionHeader === sections[i] && item.firstInSection);
+            const element = this.main.children[this._listItems.indexOf(item)];
+            element.scrollIntoView();
         }
     }
 
     animateRecords(delay = 100) {
-        const m4e = (e: Element) => this.$.list.modelForElement(e);
-
-        this.$.list.style.opacity = 0;
+        return;
+        this.shadowRoot.querySelector("#main").style.opacity = 0;
         setTimeout(() => {
-            const first = this.$.list.firstVisibleIndex;
-            const last = this.$.list.lastVisibleIndex + 1;
-            const elements = Array.from(this.root.querySelectorAll("pl-record-item, .section-header"));
+            const first = this.shadowRoot.querySelector("#list").firstVisibleIndex;
+            const last = this.shadowRoot.querySelector("#list").lastVisibleIndex + 1;
+            const elements = Array.from(
+                this.shadowRoot.querySelectorAll("pl-record-item, .section-header")
+            ) as Element[];
             const animated = elements
-                .filter(el => m4e(el).index >= first && m4e(el).index <= last)
-                .sort((a, b) => m4e(a).index - m4e(b).index);
+                .filter((el: Element) => m4e(el).index >= first && m4e(el).index <= last)
+                .sort((a: Element, b: Element) => m4e(a).index - m4e(b).index);
 
             animateCascade(animated);
-            this.$.list.style.opacity = 1;
+            this.shadowRoot.querySelector("#list").style.opacity = 1;
         }, delay);
     }
 
-    _stopPropagation(e: Event) {
-        e.stopPropagation();
-    }
-
     _selectedCountChanged() {
-        const count = this.selectedRecords && this.selectedRecords.length;
+        const count = this._selectedRecords && this._selectedRecords.length;
         if (this._lastSelectCount && !count) {
             this.multiSelect = false;
         }
@@ -538,37 +525,38 @@ class ListView extends MutableData(PolymerElement) {
     }
 
     _clearMultiSelection() {
-        this.$.list.clearSelection();
+        this.shadowRoot.querySelector("#list").clearSelection();
         this.multiSelect = false;
     }
 
     _selectAll() {
-        this.records.forEach(r => this.$.list.selectItem(r));
+        this._records.forEach((r: Record) => this.shadowRoot.querySelector("#list").selectItem(r));
     }
 
     _shareSelected() {
         // const exportDialog = getDialog("pl-dialog-export") as ExportDialog;
-        // exportDialog.export(this.selectedRecords);
+        // exportDialog.export(this._selectedRecords);
     }
 
     async _deleteSelected() {
         const confirmed = await confirm(
             $l("Are you sure you want to delete these records? This action can not be undone!"),
-            $l("Delete {0} Records", this.selectedRecords.length.toString())
+            $l("Delete {0} Records", this._selectedRecords.length.toString())
         );
 
         if (confirmed) {
-            app.deleteRecords(this.store, this.selectedRecords);
+            app.deleteRecords(this.store, this._selectedRecords);
             this.multiSelect = false;
         }
     }
 
-    _multiSelectLabel(count: number) {
+    _multiSelectLabel(selected: Record[]) {
+        const count = selected && selected.length;
         return count ? $l("{0} records selected", count.toString()) : $l("tap to select");
     }
 
     search() {
-        this.$.filterInput.focus();
+        this.shadowRoot.querySelector("#filterInput").focus();
     }
 
     clearFilter() {
@@ -576,14 +564,15 @@ class ListView extends MutableData(PolymerElement) {
     }
 
     _updateFilterString() {
-        this.filterString = this.$.filterInput.value;
+        this.filterString = this.shadowRoot.querySelector("#filterInput").value;
+        this._updateRecords();
     }
 
     _recordsChanged() {
-        for (const item of this.root.querySelectorAll("pl-record-item")) {
+        for (const item of this.shadowRoot.querySelectorAll("pl-record-item")) {
             item.requestRender();
         }
     }
 }
 
-window.customElements.define(ListView.is, ListView);
+window.customElements.define("pl-list-view", ListView);
