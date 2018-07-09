@@ -1,5 +1,5 @@
 import { unmarshal } from "./encoding";
-import { Record, Field, Store } from "./data";
+import { Record, Field, Store, createRecord } from "./data";
 import { Container, validateRawContainer } from "./crypto";
 import { loadScript } from "./util";
 import { Err, ErrorCode } from "./error";
@@ -49,7 +49,7 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
         }
 
         const tags = row[tagsColIndex!];
-        return new Record(row[nameColIndex || 0], fields, (tags && tags.split(",")) || []);
+        return createRecord(name, fields, (tags && tags.split(",")) || []);
     });
 
     return records;
@@ -142,7 +142,7 @@ function lpParseRow(row: string[]): Record {
 
     const dir = row[categoryIndex];
     // Create a basic item using the standard fields
-    return new Record(row[nameIndex], fields, dir ? [dir] : []);
+    return createRecord(row[nameIndex], fields, dir ? [dir] : []);
 }
 
 export async function fromLastPass(data: string): Promise<Record[]> {

@@ -37,6 +37,10 @@ export class Account implements PublicAccount, Storable {
     sharedStores: StoreID[] = [];
     publicKey: PublicKey;
     sessions: Session[] = [];
+    // TODO
+    subscription?: { status: string };
+    promo?: any;
+    paymentSource?: any;
 
     static create(email: string) {
         const account = new Account(email);

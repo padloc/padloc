@@ -2,13 +2,13 @@ import { request, Method } from "./ajax";
 import { Session, Account } from "./auth";
 import { getDeviceInfo } from "./platform";
 import { unmarshal } from "./encoding";
-import { State } from "./app";
+import { App } from "./app";
 
 export class Client {
-    constructor(public state: State) {}
+    constructor(public app: App) {}
 
     get basePath() {
-        return this.state.settings.syncCustomHost ? this.state.settings.syncHostUrl : "https://cloud.padlock.io";
+        return this.app.settings.customServer ? this.app.settings.customServerUrl : "https://cloud.padlock.io";
     }
 
     urlForPath(path: string): string {
@@ -20,8 +20,8 @@ export class Client {
         headers = headers || new Map<string, string>();
 
         headers.set("Accept", "application/vnd.padlock;version=1");
-        if (this.state.session) {
-            headers.set("Authorization", "AuthToken " + this.state.session.account + ":" + this.state.session.token);
+        if (this.app.session) {
+            headers.set("Authorization", "AuthToken " + this.app.session.account + ":" + this.app.session.token);
         }
 
         const { uuid, platform, osVersion, appVersion, manufacturer, model, hostName } = await getDeviceInfo();
@@ -33,26 +33,7 @@ export class Client {
         headers.set("X-Device-Model", model || "");
         headers.set("X-Device-Hostname", hostName || "");
 
-        const req = await request(method, url, data, headers);
-
-        const subStatus = req.getResponseHeader("X-Sub-Status");
-        if (subStatus !== null) {
-            this.state.settings.syncSubStatus = subStatus;
-        }
-        const stripePubKey = req.getResponseHeader("X-Stripe-Pub-Key");
-        if (stripePubKey !== null) {
-            this.state.settings.stripePubKey = stripePubKey;
-        }
-
-        const trialEnd = req.getResponseHeader("X-Sub-Trial-End");
-        if (trialEnd !== null) {
-            try {
-                this.state.settings.syncTrialEnd = parseInt(trialEnd, 10);
-            } catch (e) {
-                //
-            }
-        }
-        return req;
+        return request(method, url, data, headers);
     }
 
     async createSession(email: string): Promise<Session> {
@@ -66,12 +47,12 @@ export class Client {
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
 
-        this.state.session = unmarshal(req.responseText) as Session;
-        return this.state.session;
+        this.app.session = unmarshal(req.responseText) as Session;
+        return this.app.session;
     }
 
     async activateSession(code: string): Promise<Session> {
-        if (!this.state.session) {
+        if (!this.app.session) {
             throw "No valid session object found. Need to call 'createSession' first!";
         }
 
@@ -80,12 +61,12 @@ export class Client {
 
         const req = await this.request(
             "POST",
-            `session/${this.state.session.id}/activate`,
+            `session/${this.app.session.id}/activate`,
             params.toString(),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
-        this.state.session = unmarshal(req.responseText) as Session;
-        return this.state.session;
+        this.app.session = unmarshal(req.responseText) as Session;
+        return this.app.session;
     }
 
     async revokeSession(id: string): Promise<XMLHttpRequest> {
@@ -93,20 +74,23 @@ export class Client {
     }
 
     async logout(): Promise<void> {
-        if (!this.state.session) {
+        if (!this.app.session) {
             throw "Not logged in";
         }
-        await this.revokeSession(this.state.session.id);
-        delete this.state.session;
+        if (this.app.session.active) {
+            await this.revokeSession(this.app.session.id);
+        }
+        delete this.app.session;
+        delete this.app.account;
     }
 
     async getAccount(): Promise<Account> {
-        if (!this.state.session) {
+        if (!this.app.session) {
             throw "Need to be logged in to sync account";
         }
         const res = await this.request("GET", "account");
-        this.state.account = await new Account().deserialize(unmarshal(res.responseText));
-        return this.state.account;
+        this.app.account = await new Account().deserialize(unmarshal(res.responseText));
+        return this.app.account;
     }
     //
     // subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {

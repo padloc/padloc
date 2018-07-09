@@ -1,4 +1,4 @@
-import { Serializable, DateString, Marshalable } from "./encoding";
+import { DateString, Marshalable } from "./encoding";
 import { PrivateKey, Container, EncryptionScheme } from "./crypto";
 import { Storable } from "./storage";
 import { Account, PublicAccount } from "./auth";
@@ -6,97 +6,7 @@ import { uuid } from "./util";
 
 export type StoreID = string;
 export type RecordID = string;
-
-export class Settings implements Storable {
-    storageKind = "settings";
-    storageKey = "";
-
-    static defaults = {
-        autoLock: true,
-        // Auto lock delay in minutes
-        autoLockDelay: 5,
-        stripePubKey: "",
-        syncHostUrl: "https://cloud.padlock.io",
-        syncCustomHost: false,
-        syncEmail: "",
-        syncToken: "",
-        syncDevice: "",
-        syncConnected: false,
-        syncAuto: false,
-        syncSubStatus: "",
-        syncTrialEnd: 0,
-        syncDeviceCount: 0,
-        account: undefined,
-        defaultFields: ["username", "password"],
-        obfuscateFields: false,
-        syncRequireSubscription: false,
-        syncId: "",
-        version: ""
-    };
-
-    loaded: boolean;
-
-    // Auto lock settings
-    autoLock: boolean;
-    // Auto lock delay in minutes
-    autoLockDelay: number;
-
-    peekValues: boolean;
-
-    // Stripe settings
-    stripePubKey: string;
-
-    // Synchronization settings
-    syncHostUrl: string;
-    syncCustomHost: boolean;
-    syncEmail: string;
-    syncToken: string;
-    syncConnected: boolean;
-    syncAuto: boolean;
-    syncSubStatus: string;
-    syncTrialEnd: number;
-    syncId: string;
-    syncDeviceCount: number;
-
-    account?: Account;
-
-    // Record-related settings
-    recordDefaultFields: Array<string>;
-    recordObfuscateFields: boolean;
-
-    // Miscellaneous settings
-    showedBackupReminder: number;
-    version: string;
-
-    constructor() {
-        // Set defaults
-        this.clear();
-        // Flag used to indicate if the settings have been loaded from persistent storage initially
-        this.loaded = false;
-    }
-
-    async deserialize(raw: any) {
-        // Copy over setting values
-        Object.assign(this, raw);
-        this.loaded = true;
-        return this;
-    }
-
-    //* Returns a raw JS object containing the current settings
-    async serialize() {
-        let obj = {};
-        // Extract settings from `Settings` Object based on property names in `properties` member
-        for (let prop in Settings.defaults) {
-            obj[prop] = this[prop];
-        }
-        return obj;
-    }
-
-    clear(): void {
-        Object.assign(this, Settings.defaults);
-        this.loaded = false;
-    }
-}
+export type Tag = string;
 
 export interface Field {
     name: string;
@@ -104,78 +14,30 @@ export interface Field {
     masked?: boolean;
 }
 
-function normalizeTag(tag: string): string {
+export function normalizeTag(tag: string): Tag {
     return tag.replace(",", "");
 }
 
-export class Record implements Serializable {
+export interface Record {
     id: RecordID;
     removed: boolean;
+    name: string;
+    fields: Field[];
+    tags: Tag[];
     updated: Date;
-    lastUsed: Date;
-    private _tags = new Set<string>();
+    lastUsed?: Date;
+}
 
-    static compare(a: Record, b: Record): number {
-        const x = a.name.toLowerCase();
-        const y = b.name.toLowerCase();
-        return x > y ? 1 : x < y ? -1 : 0;
-    }
-
-    constructor(public name = "", public fields: Field[] = [], tags: string[] = []) {
-        this.id = uuid();
-        this.lastUsed = new Date();
-        this.updated = new Date();
-        this._tags = new Set<string>(tags);
-    }
-
-    get tags() {
-        return [...this._tags];
-    }
-
-    async deserialize(raw: any) {
-        const tags = raw.tags || (raw.category && [raw.category]) || [];
-        this.name = raw.name;
-        this.fields = raw.fields || [];
-        this._tags = new Set<string>(tags.map(normalizeTag));
-        this.id = raw.id || raw.uuid || uuid();
-        this.removed = raw.removed;
-        this.updated = new Date(raw.updated);
-        this.lastUsed = new Date(raw.lastUsed);
-        return this;
-    }
-
-    async serialize() {
-        return {
-            name: this.name,
-            fields: this.fields,
-            tags: this.tags,
-            id: this.id,
-            // For backward compatibility
-            uuid: this.id,
-            updated: this.updated,
-            removed: this.removed,
-            lastUsed: this.lastUsed
-        };
-    }
-
-    addTag(tag: string) {
-        this._tags.add(normalizeTag(tag));
-    }
-
-    removeTag(tag: string) {
-        this._tags.delete(tag);
-    }
-
-    hasTag(tag: string) {
-        return this._tags.has(tag);
-    }
-
-    remove(): void {
-        this.name = "";
-        this.fields = [];
-        this._tags = new Set<string>();
-        this.removed = true;
-    }
+export function createRecord(name: string, fields?: Field[], tags?: Tag[]) {
+    return {
+        id: uuid(),
+        name: name,
+        fields: fields || [],
+        tags: tags || [],
+        updated: new Date(),
+        lastUsed: new Date(),
+        removed: false
+    };
 }
 
 export class Store implements Storable {
@@ -224,19 +86,48 @@ export class Store implements Storable {
         }
     }
 
+    removeRecords(rec: Record | Record[]) {
+        const records = Array.isArray(rec) ? rec : [rec];
+        for (const r of records) {
+            r.name = "";
+            r.fields = [];
+            r.tags = [];
+            r.removed = true;
+            r.updated = new Date();
+        }
+    }
+
+    createRecord(name: string, fields?: Field[], tags?: Tag[]): Record {
+        return createRecord(name, fields, tags);
+    }
+
     protected async _serialize() {
         return {
             created: this.created,
             updated: this.updated,
-            records: await Promise.all(this.records.map(r => r.serialize()))
+            records: this.records.map((r: any) => {
+                // For backwards compatibility
+                r.uuid = r.id;
+                return r;
+            })
         };
     }
 
     protected async _deserialize(raw: any) {
         this.created = raw.created;
         this.updated = raw.updated;
-        const records = await Promise.all(raw.records.map((r: any) => new Record().deserialize(r)));
-        this.addRecords(Array.from(records) as Record[]);
+        const records = raw.records.map((r: any) => {
+            return {
+                tags: r.tags || (r.category && [r.category]) || [],
+                name: r.name,
+                fields: r.fields,
+                id: r.id || r.uuid || uuid(),
+                removed: r.removed,
+                updated: raw.updated ? new Date(raw.updated) : new Date(),
+                lastUsed: raw.lastUsed && new Date(raw.lastUsed)
+            } as Record;
+        });
+        this.addRecords(records);
         return this;
     }
 

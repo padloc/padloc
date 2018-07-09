@@ -1,5 +1,5 @@
-import { Storable, Storage, LocalStorage, RemoteStorage } from "./storage";
-import { MainStore, SharedStore, Settings, Store, Record } from "./data";
+import { LocalStorage, RemoteStorage } from "./storage";
+import { Store, MainStore, SharedStore, Record, Field, Tag } from "./data";
 import { Account, Session } from "./auth";
 import { DateString } from "./encoding";
 import { Client } from "./client";
@@ -10,23 +10,43 @@ export interface Stats {
     [key: string]: string | number | boolean;
 }
 
-export class State implements Storable {
-    storageKind = "state";
-    storageKey = "";
+export interface Settings {
+    autoLock: boolean;
+    autoLockDelay: number;
+    defaultFields: string[];
+    customServer: boolean;
+    customServerUrl: string;
+    autoSync: boolean;
+}
 
-    // Persistent state
-    stats: Stats;
-    initialized?: DateString;
+const defaultSettings: Settings = {
+    autoLock: true,
+    autoLockDelay: 5,
+    defaultFields: ["username", "password"],
+    customServer: false,
+    customServerUrl: "https://cloud.padlock.io/",
+    autoSync: true
+};
+
+export class App extends EventTarget {
+    storageKind: "padlock-app";
+    storageKey: "";
+
+    storage = new LocalStorage();
+    client = new Client(this);
+    remoteStorage = new RemoteStorage(this.client);
+    mainStore = new MainStore();
+    sharedStores: SharedStore[] = [];
+    settings = defaultSettings;
+    messages = new Messages("https://padlock.io/messages.json");
     locked = true;
+    stats: Stats = {};
+
+    initialized?: DateString;
     account?: Account;
     session?: Session;
-    messages = new Messages("https://padlock.io/messages.json");
-    settings = new Settings();
 
-    currentStore: Store | null;
-    selectedRecords: Record[];
-    currentRecord: Record | null;
-    multiSelect = false;
+    loaded = this.load();
 
     async serialize() {
         return {
@@ -35,7 +55,7 @@ export class State implements Storable {
             initialized: this.initialized,
             stats: this.stats,
             messages: await this.messages.serialize(),
-            settings: await this.settings.serialize()
+            settings: this.settings
         };
     }
 
@@ -43,36 +63,18 @@ export class State implements Storable {
         this.account = raw.account;
         this.session = raw.session;
         this.initialized = raw.initialized;
-        this.stats = raw.stats || {};
+        this.setStats(raw.stats || {});
         await this.messages.deserialize(raw.messages);
-        await this.settings.deserialize(raw.settings);
+        this.setSettings(raw.settings);
         return this;
     }
-}
 
-export class App extends EventTarget {
-    state: State;
-    storage: Storage;
-    remoteStorage: Storage;
-    client: Client;
-    mainStore: MainStore;
-    sharedStores: SharedStore[] = [];
-    loaded: Promise<void>;
-
-    constructor() {
-        super();
-        this.storage = new LocalStorage();
-        this.state = new State();
-        this.mainStore = new MainStore();
-        this.client = new Client(this.state);
-        this.remoteStorage = new RemoteStorage(this.client);
-        this.loaded = this.load();
-
-        // this.debouncedSave = debounce(() => app.save(), 500);
-    }
-
-    private notifyStateChanged(...paths: string[]) {
-        this.dispatchEvent(new CustomEvent("state-changed", { detail: { paths: paths } }));
+    async load() {
+        try {
+            await this.storage.get(this);
+        } catch (e) {
+            await this.storage.set(this);
+        }
     }
 
     get password(): string | undefined {
@@ -84,33 +86,30 @@ export class App extends EventTarget {
     }
 
     async setStats(obj: Partial<Stats>) {
-        Object.assign(this.state.stats, obj);
-        this.storage.set(this.state);
-        this.notifyStateChanged("stats");
+        Object.assign(this.stats, obj);
+        this.storage.set(this);
+        this.dispatchEvent(new CustomEvent("stats-changed", { detail: { stats: this.stats } }));
     }
 
-    async load() {
-        try {
-            await this.storage.get(this.state);
-        } catch (e) {
-            await this.storage.set(this.state);
-        }
-        this.notifyStateChanged();
+    async setSettings(obj: Partial<Settings>) {
+        Object.assign(this.settings, obj);
+        this.storage.set(this);
+        this.dispatchEvent(new CustomEvent("settings-changed", { detail: { settings: this.settings } }));
     }
 
     async init(password: string) {
         await this.setPassword(password);
-        this.state.initialized = new Date().toISOString();
-        await this.storage.set(this.state);
+        this.initialized = new Date().toISOString();
+        await this.storage.set(this);
+        this.dispatchEvent(new CustomEvent("initialize"));
+        this.dispatchEvent(new CustomEvent("unlock"));
     }
 
     async unlock(password: string) {
         this.mainStore.password = password;
         await this.storage.get(this.mainStore);
-        this.state.currentStore = this.mainStore;
-        this.state.locked = false;
-        this.notifyStateChanged("currentStore");
-        this.notifyStateChanged("locked");
+        this.locked = false;
+        this.dispatchEvent(new CustomEvent("unlock"));
 
         // for (const id of this.account!.sharedStores) {
         //     const sharedStore = new SharedStore(id);
@@ -125,9 +124,17 @@ export class App extends EventTarget {
         // }
     }
 
+    async lock() {
+        await Promise.all([this.mainStore.clear(), ...this.sharedStores.map(s => s.clear())]);
+        this.sharedStores = [];
+        this.locked = true;
+        this.dispatchEvent(new CustomEvent("lock"));
+    }
+
     async setPassword(password: string) {
         this.password = password;
         await this.storage.set(this.mainStore);
+        this.dispatchEvent(new CustomEvent("password-changed"));
     }
     //
     // async createSharedStore(): Promise<SharedStore> {
@@ -144,102 +151,86 @@ export class App extends EventTarget {
 
     async save() {
         return Promise.all([
-            this.storage.set(this.state),
+            this.storage.set(this),
             this.storage.set(this.mainStore),
             ...this.sharedStores.map(s => this.storage.set(s))
         ]);
     }
 
-    async lock() {
-        await Promise.all([this.mainStore.clear(), ...this.sharedStores.map(s => s.clear())]);
-        this.sharedStores = [];
-        this.state.currentStore = null;
-        this.state.locked = true;
-        this.notifyStateChanged("currentStore", "locked");
-    }
-
     async reset() {
         await this.lock();
         await this.storage.clear();
-        this.state = new State();
+        delete this.account;
+        delete this.session;
+        delete this.initialized;
+        this.dispatchEvent(new CustomEvent("reset"));
         this.loaded = this.load();
-        this.notifyStateChanged();
     }
 
     async login(email: string) {
         await this.client.createSession(email);
         await this.client.getAccount();
         await this.save();
-        this.notifyStateChanged("session", "account");
+        this.dispatchEvent(new CustomEvent("login"));
+        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
+        this.dispatchEvent(new CustomEvent("session-changed", { detail: { session: this.session } }));
     }
 
     async activateSession(code: string) {
         await this.client.activateSession(code);
         await this.client.getAccount();
         await this.save();
-        this.notifyStateChanged("session", "account");
+        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
+        this.dispatchEvent(new CustomEvent("session-changed", { detail: { session: this.session } }));
     }
 
     async refreshAccount() {
-        this.state.account = await this.client.getAccount();
+        await this.client.getAccount();
         await this.save();
-        this.notifyStateChanged("account");
+        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
     }
 
     async logout() {
         await this.client.logout();
-        delete this.state.session;
-        delete this.state.account;
-        await this.save();
-        this.notifyStateChanged("account", "session");
+        delete this.session;
+        delete this.account;
+        await this.storage.set(this);
+        this.dispatchEvent(new CustomEvent("logout"));
+        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
+        this.dispatchEvent(new CustomEvent("session-changed", { detail: { session: this.session } }));
     }
 
-    addRecords(records: Record[]) {
-        if (!this.state.currentStore) {
-            return;
-        }
-        this.state.currentStore.addRecords(records);
-        this.notifyStateChanged("currentStore.records");
-        this.save();
+    async addRecords(store: Store, records: Record[]) {
+        store.addRecords(records);
+        await this.storage.set(store);
+        this.dispatchEvent(new CustomEvent("records-added", { detail: { store: store, records: records } }));
     }
 
-    createRecord(name: string): Record {
+    async createRecord(store: Store, name: string): Promise<Record> {
         const fields = [
             { name: $l("Username"), value: "", masked: false },
             { name: $l("Password"), value: "", masked: true }
         ];
-        const record = new Record(name || "", fields);
-        this.addRecords([record]);
+        const record = store.createRecord(name || "", fields);
+        await this.addRecords(store, [record]);
+        this.dispatchEvent(new CustomEvent("record-created", { detail: { store: store, record: record } }));
         return record;
     }
 
-    selectRecord(record: Record | null) {
-        this.state.currentRecord = record;
-        this.notifyStateChanged("currentRecord");
-    }
-
-    updateRecord(record: Record) {
+    async updateRecord(store: Store, record: Record, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
+        for (const prop of ["name", "fields", "tags"]) {
+            if (typeof upd[prop] !== "undefined") {
+                record[prop] = upd[prop];
+            }
+        }
         record.updated = new Date();
-        this.save();
-        this.notifyStateChanged("currentRecord", "currentStore");
+        await this.storage.set(store);
+        this.dispatchEvent(new CustomEvent("record-changed", { detail: { store: store, record: record } }));
     }
 
-    deleteRecord(record: Record) {
-        this.deleteRecords([record]);
-    }
-
-    deleteRecords(records: Record[]) {
-        records.forEach(r => {
-            r.remove();
-            r.updated = new Date();
-        });
-        this.notifyStateChanged("currentStore.records");
-        this.save();
-    }
-
-    updateSettings(s: any) {
-        Object.assign(this.state.settings, s);
-        this.save();
-        this.notifyStateChanged("settings");
+    async deleteRecords(store: Store, records: Record | Record[]) {
+        store.removeRecords(records);
+        await this.storage.set(store);
+        this.dispatchEvent(new CustomEvent("records-deleted", { detail: { store: store, records: records } }));
     }
 }

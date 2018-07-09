@@ -46,7 +46,7 @@ let ready = initialized.then(() => Promise.all([statsApi.get(), getAppVersion()]
     });
 });
 
-export function track(event: string, props?: { [prop: string]: number | string }) {
+export function track(event: string, props?: { [prop: string]: number | string | boolean | Date }) {
     const data = {
         event: event,
         props: props || {},
