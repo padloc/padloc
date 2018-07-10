@@ -9,7 +9,7 @@ import { View } from "./view.js";
 import "./icon.js";
 import "./input.js";
 import "./loading-button.js";
-import "./promo.js";
+// import "./promo.js";
 import "./toggle-button.js";
 
 class AccountView extends View {

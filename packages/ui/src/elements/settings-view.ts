@@ -18,7 +18,7 @@ import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt } from "../dialog";
 import { animateCascade } from "../animation";
 import { app } from "../init.js";
-import "./dialog-export.js";
+// import "./dialog-export.js";
 import "./icon.js";
 import "./slider.js";
 import "./toggle-button.js";
