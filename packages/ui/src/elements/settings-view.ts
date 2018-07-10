@@ -24,6 +24,10 @@ import "./slider.js";
 import "./toggle-button.js";
 
 class SettingsView extends View {
+    static get properties() {
+        return { store: Object };
+    }
+
     _render() {
         const { settings, account, session } = app;
         const isDesktop = isElectron();

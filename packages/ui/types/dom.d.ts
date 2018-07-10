@@ -1,0 +1,3 @@
+interface Navigator {
+    Backbutton: any
+}

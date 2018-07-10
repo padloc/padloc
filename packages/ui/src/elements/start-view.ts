@@ -11,7 +11,7 @@ import sharedStyles from "../styles/shared.js";
 import "./input.js";
 import "./loading-button.js";
 
-class StartView extends LitElement {
+export class StartView extends LitElement {
     static get properties() {
         return {
             open: Boolean,

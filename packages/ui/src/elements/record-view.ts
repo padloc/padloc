@@ -11,7 +11,7 @@ import "./input.js";
 import "./record-field.js";
 import "./dialog-field.js";
 
-class RecordView extends View {
+export class RecordView extends View {
     record: Record | null;
 
     static get properties() {
