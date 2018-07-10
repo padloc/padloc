@@ -185,6 +185,13 @@ export class App extends EventTarget {
         this.dispatchEvent(new CustomEvent("session-changed", { detail: { session: this.session } }));
     }
 
+    async revokeSession(id: string) {
+        await this.client.revokeSession(id);
+        await this.client.getAccount();
+        await this.save();
+        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
+    }
+
     async refreshAccount() {
         await this.client.getAccount();
         await this.save();
@@ -234,4 +241,11 @@ export class App extends EventTarget {
         await this.storage.set(store);
         this.dispatchEvent(new CustomEvent("records-deleted", { detail: { store: store, records: records } }));
     }
+
+    async reactivateSubscription() {}
+    async synchronize() {}
+
+    buySubscription(_source: string) {}
+
+    updatePaymentMethod(_source: String) {}
 }

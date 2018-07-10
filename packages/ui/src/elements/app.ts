@@ -1,49 +1,41 @@
+import { Store } from "@padlock/core/lib/data.js";
 import { getPlatformName, getDeviceInfo, isTouch } from "@padlock/core/lib/platform.js";
-import { LitElement, html } from "@polymer/lit-element";
+import config from "../styles/config.js";
 import sharedStyles from "../styles/shared.js";
 import { app } from "../init.js";
+import { BaseElement, html, property, query } from "./base.js";
 import "./account-view.js";
 import "./icon.js";
-import "./list-view.js";
-import "./record-view.js";
+import { ListView } from "./list-view.js";
+import { RecordView } from "./record-view.js";
 import "./settings-view.js";
-import "./start-view.js";
-import "./title-bar.js";
+import { StartView } from "./start-view.js";
+import { TitleBar } from "./title-bar.js";
 import "./menu.js";
 import { Input } from "./input.js";
 import { clearDialogs } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { animateElement } from "../animation.js";
-// import {
-//     NotificationMixin,
-//     DialogMixin,
-//     MessagesMixin,
-//     DataMixin,
-//     AnimationMixin,
-//     ClipboardMixin,
-//     SyncMixin,
-//     AutoLockMixin,
-//     HintsMixin,
-//     LocaleMixin
-// } from "../mixins";
+
+// TODO: auto lock, auto sync, hints, tracking
 
 const cordovaReady = new Promise(resolve => {
     document.addEventListener("deviceready", resolve);
 });
 
-class App extends LitElement {
-    static get properties() {
-        return {
-            _currentView: String,
-            _menuOpen: Boolean
-        };
-    }
+class App extends BaseElement {
+    @property() private _currentView: string = "";
+    @property() private _menuOpen: boolean = false;
+    @property() private _currentStore: Store = app.mainStore;
+
+    @query("#main") private _main: HTMLDivElement;
+    @query("pl-title-bar") private _titleBar: TitleBar;
+    @query("pl-list-view") private _listView: ListView;
+    @query("pl-record-view") private _recordView: RecordView;
+    @query("pl-start-view") private _startView: StartView;
 
     constructor() {
         super();
-        this._currentStore = app.mainStore;
-        this._menuOpen = false;
-
         // If we want to capture all keydown events, we have to add the listener
         // directly to the document
         document.addEventListener("keydown", this._keydown.bind(this), false);
@@ -73,10 +65,6 @@ class App extends LitElement {
         return this.offsetWidth < 600;
     }
 
-    get _main() {
-        return this.shadowRoot.querySelector("#main");
-    }
-
     async connectedCallback() {
         super.connectedCallback();
         const device = await getDeviceInfo();
@@ -103,14 +91,14 @@ class App extends LitElement {
         const className = platform.toLowerCase().replace(/ /g, "-");
         if (className) {
             this.classList.add(className);
-            this.shadowRoot.querySelector("pl-title-bar").classList.add(className);
+            this._titleBar.classList.add(className);
         }
 
         if (!isTouch()) {
             window.addEventListener("focus", () =>
                 setTimeout(() => {
                     if (app.locked) {
-                        this.$.startView.focus();
+                        this._startView.focus();
                     }
                 }, 100)
             );
@@ -119,6 +107,8 @@ class App extends LitElement {
 
     _render() {
         return html`
+        ${config}
+
         <style>
             ${sharedStyles}
 
@@ -331,6 +321,7 @@ class App extends LitElement {
                 <pl-settings-view
                     id="settingsView"
                     class="view"
+                    store="${this._currentStore}"
                     on-settings-back="${() => this._settingsBack()}">
                 </pl-settings-view>
 
@@ -356,25 +347,22 @@ class App extends LitElement {
     }
 
     _closeRecord() {
-        this.shadowRoot.querySelector("#listView").deselect();
+        this._listView.clearSelection();
     }
 
     _recordSelected(e: CustomEvent) {
         const record = e.detail.record;
-        clearTimeout(this._selectedRecordChangedTimeout);
-        this._selectedRecordChangedTimeout = setTimeout(() => {
-            if (record) {
-                this.shadowRoot.querySelector("#recordView").record = record;
-                this._currentView = "recordView";
-            } else if (this._currentView == "recordView") {
-                this._currentView = "";
-            }
-        }, 10);
+        if (record) {
+            this._recordView.record = record;
+            this._currentView = "recordView";
+        } else if (this._currentView == "recordView") {
+            this._currentView = "";
+        }
     }
 
     _openSettings() {
         this._currentView = "settingsView";
-        this.shadowRoot.querySelector("#listView").deselect();
+        this._listView.clearSelection();
     }
 
     _settingsBack() {
@@ -383,7 +371,7 @@ class App extends LitElement {
 
     _openAccountView() {
         this._currentView = "accountView";
-        this.shadowRoot.querySelector("#listView").deselect();
+        this._listView.clearSelection();
         // if (!this.settings.syncConnected && !isTouch()) {
         //     setTimeout(() => this.$.accountView.focusEmailInput(), 500);
         // }
@@ -396,8 +384,9 @@ class App extends LitElement {
     _currentViewChanged(curr: string, prev: string) {
         this._main.classList.toggle("showing-pages", !!curr);
 
-        const currView = curr && this.shadowRoot.querySelector("#" + curr);
-        const prevView = prev && this.shadowRoot.querySelector("#" + prev);
+        const currView = curr && this[`_${curr}`];
+        const prevView = curr && this[`_${prev}`];
+
         if (currView) {
             animateElement(currView, {
                 animation: "viewIn",
@@ -421,7 +410,7 @@ class App extends LitElement {
 
     //* Keyboard shortcuts
     _keydown(event: KeyboardEvent) {
-        if (this._locked || Input.activeInput) {
+        if (app.locked || Input.activeInput) {
             return;
         }
 
@@ -434,7 +423,7 @@ class App extends LitElement {
         }
         // CTRL/CMD + F -> Filter
         else if (control && event.key === "f") {
-            shortcut = () => this.$.listView.search();
+            shortcut = () => this._listView.search();
         }
         // CTRL/CMD + N -> New Record
         else if (control && event.key === "n") {
@@ -446,7 +435,7 @@ class App extends LitElement {
             shortcut();
             event.preventDefault();
         } else if (event.key.length === 1) {
-            this.$.listView.search();
+            this._listView.search();
         }
     }
 
@@ -462,8 +451,8 @@ class App extends LitElement {
                 this._accountViewBack();
                 break;
             default:
-                if (this.$.listView.filterActive) {
-                    this.$.listView.clearFilter();
+                if (this._listView.filterString) {
+                    this._listView.clearFilter();
                 } else {
                     navigator.Backbutton && navigator.Backbutton.goBack();
                 }
@@ -479,7 +468,7 @@ class App extends LitElement {
     }
 
     _enableMultiSelect() {
-        this.$.listView.multiSelect = true;
+        this._listView.multiSelect = true;
     }
 }
 

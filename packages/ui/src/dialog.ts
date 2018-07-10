@@ -7,13 +7,18 @@ const dialogElements = {};
 
 let lastDialogPromise = Promise.resolve();
 let currentDialog: any;
+let appElement: HTMLElement;
 
 export function getDialog(elName: string) {
+    if (!appElement) {
+        appElement = document.querySelector("pl-app") as HTMLElement;
+    }
+
     let el = dialogElements[elName];
 
     if (!el) {
         dialogElements[elName] = el = document.createElement(elName);
-        document.body.appendChild(el);
+        appElement.shadowRoot!.appendChild(el);
     }
 
     return el as any;

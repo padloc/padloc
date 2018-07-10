@@ -1,18 +1,22 @@
-import { html } from "@polymer/lit-element";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Session } from "@padlock/core/lib/auth.js";
 import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
 import * as messages from "../messages.js";
-import { confirm } from "../dialog.js";
+import { animateCascade } from "../animation.js";
+import { confirm, alert, prompt } from "../dialog.js";
+import { html, observe, query } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
-import "./input.js";
-import "./loading-button.js";
+import { Input } from "./input.js";
+import { LoadingButton } from "./loading-button.js";
 // import "./promo.js";
 import "./toggle-button.js";
 
 class AccountView extends View {
+    @query("#emailInput") private _emailInput: Input;
+    @query("#loginButton") private _loginButton: LoadingButton;
+
     connectedCallback() {
         super.connectedCallback();
         app.addEventListener("account-changed", () => this.requestRender());
@@ -215,7 +219,7 @@ class AccountView extends View {
 
                 <pl-promo
                     promo="${promo}"
-                    on-promo-redeem="${() => this._buySubscription("App - Promo")}"
+                    on-promo-redeem="${() => app.buySubscription("App - Promo")}"
                     on-promo-expired="${() => this._promoExpired()}">
                 </pl-promo>
 
@@ -237,7 +241,7 @@ class AccountView extends View {
 
                 </div>
 
-                <button class="tap" on-click="${() => this._buySubscription("App - Trialing")}">
+                <button class="tap" on-click="${() => app.buySubscription("App - Trialing")}">
                     ${$l("Upgrade Now")}
                 </button>
 
@@ -259,7 +263,7 @@ class AccountView extends View {
 
                 </div>
 
-                <button class="tap" on-click="${() => this._buySubscription("App - Trial Expired")}">
+                <button class="tap" on-click="${() => app.buySubscription("App - Trial Expired")}">
                     ${$l("Upgrade Now")}
                 </button>
 
@@ -281,7 +285,7 @@ class AccountView extends View {
 
                 </div>
 
-                <button class="tap" on-click="${() => this._updatePaymentMethod("App - Payment Failed")}">
+                <button class="tap" on-click="${() => app.updatePaymentMethod("App - Payment Failed")}">
                     ${$l("Update Payment Method")}
                 </button>
 
@@ -305,7 +309,7 @@ class AccountView extends View {
 
                 </div>
 
-                <button class="tap" on-click="${() => this.reactivateSubscription()}">
+                <button class="tap" on-click="${() => app.reactivateSubscription()}">
                     ${$l("Reactivate Subscription")}
                 </button>
 
@@ -341,7 +345,7 @@ class AccountView extends View {
                         class="account-sync tap"
                         icon="refresh"
                         spin$="${isSynching}"
-                        on-click="${() => this.synchronize()}"
+                        on-click="${() => app.synchronize()}"
                         disabled?="${subStatus !== "active" && subStatus !== "trialing"}">
                     </pl-icon>
 
@@ -383,11 +387,11 @@ class AccountView extends View {
 
                 <div class="section-header">${$l("Billing")}</div>
 
-                <button class="tap" on-click="${() => this._updatePaymentMethod("App - Billing")}">
+                <button class="tap" on-click="${() => app.updatePaymentMethod("App - Billing")}">
                     ${paymentSourceLabel}
                 </button>
 
-                <button class="tap" on-click="${() => this.cancelSubscription()}" hidden?="${subStatus !== "active"}">
+                <button class="tap" on-click="${() => app.cancelSubscription()}" hidden?="${subStatus !== "active"}">
                     ${$l("Cancel Subscription")}
                 </button>
             </section>
@@ -411,7 +415,7 @@ class AccountView extends View {
                 value="${email}"
                 select-on-focus
                 required
-                on-enter="${() => this._login()}"
+                on-enter="${() => this._loginButton.click()}"
                 class="tap">
             </pl-input>
 
@@ -437,14 +441,15 @@ class AccountView extends View {
 `;
     }
 
-    animate() {
-        if (app.session && app.session.active) {
-            this.animateCascade(this.root.querySelectorAll("section:not([hidden])"), { initialDelay: 200 });
+    @observe("active")
+    _activateChanged() {
+        if (this.active && app.session && app.session.active) {
+            animateCascade(this.$$("section:not([hidden])"), { initialDelay: 200 });
         }
     }
 
     focusEmailInput() {
-        this.shadowRoot.querySelector("#emailInput").focus();
+        this._emailInput.focus();
     }
 
     _back() {
@@ -458,37 +463,58 @@ class AccountView extends View {
         }
     }
 
-    _login() {
-        if (this._submittingEmail) {
+    async _login() {
+        if (this._loginButton.state === "loading") {
             return;
         }
 
-        this.$.loginButton.start();
+        this._loginButton.start();
 
-        const emailInput = this.shadowRoot.querySelector("#emailInput");
-        if (emailInput.invalid) {
-            this.alert($l("Please enter a valid email address!")).then(() => emailInput.focus());
-            this.$.loginButton.fail();
+        if (this._emailInput.invalid) {
+            alert($l("Please enter a valid email address!")).then(() => this._emailInput.focus());
+            this._loginButton.fail();
             return;
         }
 
-        this._submittingEmail = true;
+        try {
+            await app.login(this._emailInput.value);
+            this._loginButton.success();
+            await this._promptLoginCode();
+            if (app.session && app.session.active) {
+                app.synchronize();
+            }
+        } catch (e) {
+            // TODO: Handle error
+            this._loginButton.fail();
+        }
+    }
 
-        this.connectCloud(emailInput.value)
-            .then(() => {
-                this._submittingEmail = false;
-                this.$.loginButton.success();
-                return this.promptLoginCode();
-            })
-            .then(() => {
-                if (app.session && app.session.active) {
-                    this.synchronize();
+    async _promptLoginCode() {
+        await prompt(
+            $l("Check your email! We sent your login code to {0}.", this._emailInput.value),
+            $l("Enter Login Code"),
+            "text",
+            $l("Confirm"),
+            $l("Cancel"),
+            true,
+            async code => {
+                if (code === null) {
+                    // Dialog canceled
+                    app.logout();
+                    return "";
+                } else if (code == "") {
+                    throw $l("Please enter a valid login code!");
+                } else {
+                    try {
+                        await app.activateSession(code);
+                    } catch (e) {
+                        // TODO: Handle Server Error
+                        throw $l("Invalid login code. Try again!");
+                    }
                 }
-            })
-            .catch(() => {
-                this._submittingEmail = false;
-                this.$.loginButton.fail();
-            });
+                return code;
+            }
+        );
     }
 
     _isCurrentSession(_session: Session) {
@@ -501,11 +527,9 @@ class AccountView extends View {
             $l('Do you want to revoke access to for the device "{0}"?', session.device!.description)
         );
         if (confirmed) {
-            app.client.revokeSession(session.id).then(() => {
-                this.refreshAccount();
-                this.alert($l("Access for {0} revoked successfully!", session.device!.description), {
-                    type: "success"
-                });
+            await app.revokeSession(session.id);
+            alert($l("Access for {0} revoked successfully!", session.device!.description), {
+                type: "success"
             });
         }
     }
@@ -514,16 +538,8 @@ class AccountView extends View {
         window.open("mailto:support@padlock.io", "_system");
     }
 
-    _buySubscription(source: string) {
-        this.buySubscription(source);
-    }
-
-    _updatePaymentMethod(source: String) {
-        this.updatePaymentMethod(source);
-    }
-
     _promoExpired() {
-        this.dispatch("settings-changed");
+        // TODO: Do something?
     }
 }
 

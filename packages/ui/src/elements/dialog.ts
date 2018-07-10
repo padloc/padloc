@@ -1,26 +1,16 @@
-import { LitElement, html } from "@polymer/lit-element";
-import { Input } from "./input.js";
 import sharedStyles from "../styles/shared";
 import { animateElement } from "../animation";
+import { BaseElement, html, property, observe } from "./base.js";
+import { Input } from "./input.js";
 
-class Dialog extends LitElement {
-    static get properties() {
-        return {
-            open: Boolean,
-            isShowing: Boolean,
-            preventDismiss: Boolean
-        };
-    }
+export class Dialog extends BaseElement {
+    @property() open: boolean = false;
+    @property() preventDismiss: boolean = false;
 
-    constructor() {
-        super();
-        this.open = false;
-        this.isShowing = false;
-        this.preventDismiss = false;
-    }
+    isShowing: boolean = false;
+    private _hideTimeout?: number;
 
-    _render(props: any) {
-        this.classList.toggle("open", props.open);
+    _render() {
         return html`
         <style>
             ${sharedStyles}
@@ -33,7 +23,7 @@ class Dialog extends LitElement {
                 @apply --scroll;
             }
 
-            :host(:not(.open)) {
+            :host(:not([open])) {
                 pointer-events: none;
             }
 
@@ -58,7 +48,7 @@ class Dialog extends LitElement {
                 position: fixed;
             }
 
-            :host(.open) .scrim {
+            :host([open]) .scrim {
                 opacity: 0.90;
             }
 
@@ -86,7 +76,7 @@ class Dialog extends LitElement {
                 transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
             }
 
-            :host(:not(.open)) .outer {
+            :host(:not([open])) .outer {
                 opacity: 0;
                 transform: translate3d(0, 0, 0) scale(0.8);
             }
@@ -123,10 +113,10 @@ class Dialog extends LitElement {
     }
 
     rumble() {
-        animateElement(this.$.inner, { animation: "rumble", duration: 200, clear: true });
+        animateElement(this.$("#inner"), { animation: "rumble", duration: 200, clear: true });
     }
 
-    //* Changed handler for the _open_ property. Shows/hides the dialog
+    @observe("open")
     _openChanged() {
         clearTimeout(this._hideTimeout);
 
@@ -138,17 +128,16 @@ class Dialog extends LitElement {
                 Input.activeInput.blur();
             }
             this.style.display = "";
+            this.offsetLeft;
             this.isShowing = true;
+            this.setAttribute("open", "");
         } else {
+            this.removeAttribute("open");
             this._hideTimeout = window.setTimeout(() => {
                 this.style.display = "none";
                 this.isShowing = false;
             }, 400);
         }
-
-        this.offsetLeft;
-
-        this.classList.toggle("open", this.open);
 
         this.dispatchEvent(new CustomEvent(this.open ? "dialog-open" : "dialog-close", { bubbles: true }));
     }

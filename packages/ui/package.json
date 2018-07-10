@@ -14,7 +14,10 @@
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "autosize": "^4.0.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "lit-html": "^0.10.2",
+    "reflect-metadata": "^0.1.12"
+  },
   "description": "Padlock UI",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

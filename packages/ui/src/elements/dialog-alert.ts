@@ -1,37 +1,25 @@
 import { localize } from "@padlock/core/lib/locale.js";
-import { LitElement, html } from "@polymer/lit-element";
 import sharedStyles from "../styles/shared";
+import { BaseElement, html, property } from "./base.js";
 import "./dialog.js";
 
 const defaultButtonLabel = localize("OK");
 
-export class AlertDialog extends LitElement {
-    static get properties() {
-        return {
-            buttonLabel: String,
-            dialogTitle: String,
-            message: String,
-            options: Array,
-            preventDismiss: Boolean,
-            type: String,
-            hideIcon: Boolean,
-            open: Boolean
-        };
-    }
+export type AlertType = "info" | "warning" | "plain";
 
-    constructor() {
-        super();
-        this.buttonLabel = defaultButtonLabel;
-        this.dialogTitle = "";
-        this.message = "";
-        this.options = [];
-        this.preventDismiss = false;
-        this.type = "info";
-        this.hideIcon = false;
-        this.ope = false;
-    }
+export class AlertDialog extends BaseElement {
+    @property() buttonLabel: string = defaultButtonLabel;
+    @property() dialogTitle: string = "";
+    @property() message: string = "";
+    @property() type: AlertType = "info";
+    @property() options: string[] = [];
+    @property() preventDismiss: boolean = false;
+    @property() hideIcon: boolean = false;
+    @property() open: boolean = false;
 
-    _render(props: any) {
+    private _resolve: ((_: number) => void) | null;
+
+    _render(props: this) {
         return html`
         <style>
             ${sharedStyles}
@@ -69,7 +57,6 @@ export class AlertDialog extends LitElement {
         </style>
 
         <pl-dialog
-            id="dialog"
             open="${props.open}"
             prevent-dismiss="${props.preventDismiss}"
             on-dialog-dismiss="${() => this._dialogDismiss()}">
@@ -81,7 +68,7 @@ export class AlertDialog extends LitElement {
                     <div class\$="info-text ${this.dialogTitle ? "small" : ""}">${props.message}</div>
                 </div>
             </div>
-            
+
             ${props.options.map(
                 (o: any, i: number) =>
                     html`<button
@@ -96,7 +83,7 @@ export class AlertDialog extends LitElement {
 
     show(
         message = "",
-        { title = "", options = ["OK"], type = "info", preventDismiss = false, hideIcon = false } = {}
+        { title = "", options = ["OK"], type = "info", preventDismiss = false, hideIcon = false }: Partial<this> = {}
     ): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
@@ -132,7 +119,7 @@ export class AlertDialog extends LitElement {
     }
 
     _dialogDismiss() {
-        typeof this._resolve === "function" && this._resolve();
+        typeof this._resolve === "function" && this._resolve(-1);
         this._resolve = null;
     }
 

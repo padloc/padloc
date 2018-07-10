@@ -1,14 +1,14 @@
-import { LitElement, html } from "@polymer/lit-element";
-import { Record } from "@padlock/core/lib/data.js";
+import { Record, Store } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { isIOS } from "@padlock/core/lib/platform.js";
-import { animateCascade } from "../animation.js";
+// import { animateCascade } from "../animation.js";
 import { app } from "../init.js";
 import { confirm } from "../dialog.js";
 import sharedStyles from "../styles/shared.js";
-import "./dialog-alert.js";
+import { AlertDialog } from "./dialog-alert.js";
+import { BaseElement, html, property, query } from "./base.js";
 import "./icon.js";
-import "./input.js";
+import { Input } from "./input.js";
 import "./record-item.js";
 
 function filterByString(fs: string, rec: Record) {
@@ -23,42 +23,31 @@ function filterByString(fs: string, rec: Record) {
     return words.some(word => content.search(word) !== -1);
 }
 
-class ListView extends LitElement {
-    static get properties() {
-        return {
-            store: Object,
-            multiSelect: Boolean,
-            filterString: String,
-            selectedRecord: Object,
-            _records: Array,
-            _listItems: Array,
-            _currentSection: String,
-            _selectedRecords: Array
-        };
-    }
+interface ListItem {
+    record: Record;
+    section: string;
+    firstInSection: boolean;
+    lastInSection: boolean;
+}
 
-    static get observers() {
-        return [
-            "_fixScroll(records)",
-            "_scrollToSelected(records, selectedRecord)",
-            "_updateCurrentSection(records)",
-            "_selectedCountChanged(_selectedRecords.length)",
-            "_currentRecordChanged(state.currentRecord)",
-            "_recordsChanged(records)"
-        ];
-    }
+export class ListView extends BaseElement {
+    @property() store?: Store;
+    @property() multiSelect: boolean = false;
+    @property() filterString: string = "";
+    @property() selectedRecord: Record | null = null;
+    @property() selectedRecords: Record[] = [];
+    @property() private _records: Record[] = [];
+    @property() private _listItems: ListItem[] = [];
+    @property() private _currentSection: string = "";
+    @property() private _firstVisibleIndex: number = 0;
+    @property() private _lastVisibleIndex: number = 0;
 
-    constructor() {
-        super();
-        this.store = null;
-        this.multiSelect = false;
-        this.filterString = "";
-        this._records = [];
-        this._listItems = [];
-        this._currentSection = "";
-        this.selectedRecord = null;
-        this._selectedRecords = [];
-    }
+    @query("main") private _main: HTMLDivElement;
+    @query("#sectionSelector") private _sectionSelector: AlertDialog;
+    @query("#filterInput") private _filterInput: Input;
+
+    private _cachedBounds?: DOMRect | ClientRect;
+    private _recentCount: number = 0;
 
     connectedCallback() {
         super.connectedCallback();
@@ -72,28 +61,27 @@ class ListView extends LitElement {
         app.addEventListener("records-deleted", changeHandler);
         app.addEventListener("record-changed", changeHandler);
         app.addEventListener("record-created", (e: CustomEvent) => {
-            this.shadowRoot.querySelector("#list").selectItem(e.detail.record);
+            this.selectRecord(e.detail.record);
         });
         app.addEventListener("unlock", () => {
             this._updateRecords();
             this.animateRecords(600);
         });
 
-        window.addEventListener("keydown", e => {
-            switch (e.key) {
-                case "ArrowDown":
-                    this.shadowRoot.querySelector("#list").focusItem(this.$.list.firstVisibleIndex);
-                    break;
-                case "ArrowUp":
-                    this.shadowRoot.querySelector("#list").focusItem(this.$.list.lastVisibleIndex);
-                    break;
-            }
-        });
-        this.main = this.shadowRoot.querySelector("#main");
-        this.main.addEventListener("scroll", () => this._scroll());
+        // window.addEventListener("keydown", e => {
+        //     switch (e.key) {
+        //         case "ArrowDown":
+        //             this.shadowRoot!.querySelector("#list").focusItem(this.$.list.firstVisibleIndex);
+        //             break;
+        //         case "ArrowUp":
+        //             this.shadowRoot!.querySelector("#list").focusItem(this.$.list.lastVisibleIndex);
+        //             break;
+        //     }
+        // });
+        this._main.addEventListener("scroll", () => this._scroll());
     }
 
-    _render(props: any) {
+    _render(props: this) {
         const filterActive = !!props.filterString;
         return html`
         <style>
@@ -176,18 +164,6 @@ class ListView extends LitElement {
                 text-shadow: none;
                 animation: spin 1s infinite;
                 transform-origin: center 49%;
-            }
-
-            .list-item {
-                height: 94px;
-            }
-
-            .list-item[first] {
-                height: 135px;
-            }
-
-            .list-item:not([first]) .section-header {
-                display: none;
             }
 
             .current-section {
@@ -283,11 +259,11 @@ class ListView extends LitElement {
 
         <header hidden?="${!props.multiSelect}">
 
-            <pl-icon icon="cancel" class="tap" on-click="${() => this._clearMultiSelection()}"></pl-icon>
+            <pl-icon icon="cancel" class="tap" on-click="${() => this.clearSelection()}"></pl-icon>
 
-            <pl-icon icon="checked" class="tap" on-click="${() => this._selectAll()}"></pl-icon>
+            <pl-icon icon="checked" class="tap" on-click="${() => this.selectAll()}"></pl-icon>
 
-            <div class="multi-select-count"><div>${this._multiSelectLabel(props._selectedRecords)}</div></div>
+            <div class="multi-select-count"><div>${this._multiSelectLabel(props.selectedRecords)}</div></div>
 
             <pl-icon icon="delete" class="tap" on-click="${() => this._deleteSelected()}"></pl-icon>
 
@@ -313,11 +289,11 @@ class ListView extends LitElement {
 
                     <div class="section-header" hidden?="${index === 0 || !item.firstInSection}">
 
-                        <div>${item.sectionHeader}</div>
+                        <div>${item.section}</div>
 
                         <div class="spacer"></div>
 
-                        <div>${item.sectionHeader}</div>
+                        <div>${item.section}</div>
 
                     </div>
 
@@ -356,26 +332,46 @@ class ListView extends LitElement {
 `;
     }
 
+    _didRender() {
+        this._scroll();
+    }
+
     _resized() {
         delete this._cachedBounds;
     }
 
-    get _bounds() {
+    get _bounds(): DOMRect | ClientRect | null {
+        if (!this._main) {
+            return null;
+        }
         if (!this._cachedBounds) {
-            this._cachedBounds = this.main.getBoundingClientRect();
+            this._cachedBounds = this._main.getBoundingClientRect();
         }
         return this._cachedBounds;
     }
 
     _scroll() {
-        const { top, left } = this._bounds;
-        const els = this.shadowRoot.elementsFromPoint(left + 1, top + 1);
+        if (!this._bounds) {
+            return;
+        }
+        const { top, left, bottom } = this._bounds;
+        let els = this.shadowRoot!.elementsFromPoint(left + 1, top + 1);
         for (const el of els) {
             if (el.hasAttribute("index")) {
-                const i = parseInt(el.getAttribute("index", 10));
+                const i = parseInt(el.getAttribute("index") as string);
                 if (i !== this._firstVisibleIndex) {
                     this._firstVisibleIndex = i;
                     this._updateCurrentSection();
+                }
+                break;
+            }
+        }
+        els = this.shadowRoot!.elementsFromPoint(left + 1, bottom - 1);
+        for (const el of els) {
+            if (el.hasAttribute("index")) {
+                const i = parseInt(el.getAttribute("index") as string);
+                if (i !== this._lastVisibleIndex) {
+                    this._lastVisibleIndex = i;
                 }
                 break;
             }
@@ -409,24 +405,23 @@ class ListView extends LitElement {
     _updateRecords() {
         this._records = this._filterAndSort();
         const items = this._records.map((record: Record, index: number) => {
-            const sectionHeader =
+            const section =
                 index < this._recentCount
                     ? $l("Recently Used")
                     : (record && record.name[0] && record.name[0].toUpperCase()) || $l("No Name");
             return {
                 record,
-                sectionHeader
-            };
+                section
+            } as ListItem;
         });
         for (let i = 0, prev, curr, next; i < items.length; i++) {
             prev = items[i - 1];
             curr = items[i];
             next = items[i + 1];
-            curr.firstInSection = !prev || prev.sectionHeader !== curr.sectionHeader;
-            curr.lastInSection = !next || next.sectionHeader !== curr.sectionHeader;
+            curr.firstInSection = !prev || prev.section !== curr.section;
+            curr.lastInSection = !next || next.section !== curr.section;
         }
         this._listItems = items;
-        this._updateCurrentSection();
     }
 
     selectRecord(record: Record | null) {
@@ -434,6 +429,8 @@ class ListView extends LitElement {
         this.dispatchEvent(new CustomEvent("select-record", { detail: { record } }));
         this._scrollToSelected();
     }
+
+    selectAll() {}
 
     clearSelection() {
         this.selectRecord(null);
@@ -444,6 +441,9 @@ class ListView extends LitElement {
     }
 
     _newRecord() {
+        if (!this.store) {
+            return;
+        }
         app.createRecord(this.store, "");
     }
 
@@ -460,11 +460,14 @@ class ListView extends LitElement {
     }
 
     _scrollToSelected() {
+        if (!this.selectedRecord) {
+            return;
+        }
         const i = this._records.indexOf(this.selectedRecord);
         if (i !== -1 && (i < this._firstVisibleIndex || i > this._lastVisibleIndex)) {
             // Scroll to item before the selected one so that selected
             // item is more towards the middle of the list
-            const el = this.shadowRoot.querySelector(`.list-item[index=i]`);
+            const el = this.shadowRoot!.querySelector(`.list-item[index=i]`);
             el && el.scrollIntoView();
         }
     }
@@ -473,79 +476,62 @@ class ListView extends LitElement {
         // Workaround for list losing scrollability on iOS after resetting filter
         isIOS().then(yes => {
             if (yes) {
-                this.shadowRoot.querySelector("#main").style.overflow = "hidden";
-                setTimeout(() => (this.shadowRoot.querySelector("#main").style.overflow = "auto"), 100);
+                this._main.style.overflow = "hidden";
+                setTimeout(() => (this._main.style.overflow = "auto"), 100);
             }
         });
     }
 
     _updateCurrentSection() {
         const currItem = this._listItems[this._firstVisibleIndex];
-        this._currentSection = currItem && currItem.sectionHeader;
+        this._currentSection = currItem && currItem.section;
     }
 
     async _selectSection() {
-        const sections = [...new Set(this._listItems.map((i: any) => i.sectionHeader))];
+        const sections = [...new Set(this._listItems.map((i: any) => i.section))];
         if (sections.length > 1) {
-            const i = await this.shadowRoot.querySelector("#sectionSelector").show("", { options: sections });
-            const item = this._listItems.find((item: any) => item.sectionHeader === sections[i] && item.firstInSection);
-            const element = this.main.children[this._listItems.indexOf(item)];
-            element.scrollIntoView();
+            const i = await this._sectionSelector.show("", { options: sections });
+            const item = this._listItems.find((item: any) => item.section === sections[i] && item.firstInSection);
+            const element = item && this._main.children[this._listItems.indexOf(item)];
+            element && element.scrollIntoView();
         }
     }
 
     animateRecords(delay = 100) {
-        return;
-        this.shadowRoot.querySelector("#main").style.opacity = 0;
-        setTimeout(() => {
-            const first = this.shadowRoot.querySelector("#list").firstVisibleIndex;
-            const last = this.shadowRoot.querySelector("#list").lastVisibleIndex + 1;
-            const elements = Array.from(
-                this.shadowRoot.querySelectorAll("pl-record-item, .section-header")
-            ) as Element[];
-            const animated = elements
-                .filter((el: Element) => m4e(el).index >= first && m4e(el).index <= last)
-                .sort((a: Element, b: Element) => m4e(a).index - m4e(b).index);
-
-            animateCascade(animated);
-            this.shadowRoot.querySelector("#list").style.opacity = 1;
-        }, delay);
-    }
-
-    _selectedCountChanged() {
-        const count = this._selectedRecords && this._selectedRecords.length;
-        if (this._lastSelectCount && !count) {
-            this.multiSelect = false;
-        }
-        this._lastSelectCount = count;
+        return delay;
+        // this._main.style.opacity = 0;
+        // setTimeout(() => {
+        //     const first = this.shadowRoot!.querySelector("#list").firstVisibleIndex;
+        //     const last = this.shadowRoot!.querySelector("#list").lastVisibleIndex + 1;
+        //     const elements = Array.from(
+        //         this.shadowRoot!.querySelectorAll("pl-record-item, .section-header")
+        //     ) as Element[];
+        //     const animated = elements
+        //         .filter((el: Element) => m4e(el).index >= first && m4e(el).index <= last)
+        //         .sort((a: Element, b: Element) => m4e(a).index - m4e(b).index);
+        //
+        //     animateCascade(animated);
+        //     this.shadowRoot!.querySelector("#list").style.opacity = 1;
+        // }, delay);
     }
 
     _recordMultiSelect() {
         this.multiSelect = true;
     }
 
-    _clearMultiSelection() {
-        this.shadowRoot.querySelector("#list").clearSelection();
-        this.multiSelect = false;
-    }
-
-    _selectAll() {
-        this._records.forEach((r: Record) => this.shadowRoot.querySelector("#list").selectItem(r));
-    }
-
     _shareSelected() {
         // const exportDialog = getDialog("pl-dialog-export") as ExportDialog;
-        // exportDialog.export(this._selectedRecords);
+        // exportDialog.export(this.selectedRecords);
     }
 
     async _deleteSelected() {
         const confirmed = await confirm(
             $l("Are you sure you want to delete these records? This action can not be undone!"),
-            $l("Delete {0} Records", this._selectedRecords.length.toString())
+            $l("Delete {0} Records", this.selectedRecords.length.toString())
         );
 
         if (confirmed) {
-            app.deleteRecords(this.store, this._selectedRecords);
+            app.deleteRecords(this.store!, this.selectedRecords);
             this.multiSelect = false;
         }
     }
@@ -556,7 +542,7 @@ class ListView extends LitElement {
     }
 
     search() {
-        this.shadowRoot.querySelector("#filterInput").focus();
+        this._filterInput.focus();
     }
 
     clearFilter() {
@@ -564,12 +550,12 @@ class ListView extends LitElement {
     }
 
     _updateFilterString() {
-        this.filterString = this.shadowRoot.querySelector("#filterInput").value;
+        this.filterString = this._filterInput.value;
         this._updateRecords();
     }
 
     _recordsChanged() {
-        for (const item of this.shadowRoot.querySelectorAll("pl-record-item")) {
+        for (const item of this.shadowRoot!.querySelectorAll("pl-record-item") as NodeListOf<LitElement>) {
             item.requestRender();
         }
     }

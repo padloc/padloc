@@ -1,7 +1,7 @@
-import { LitElement, html } from "@polymer/lit-element";
 // @ts-ignore
 import autosize from "autosize/src/autosize.js";
 import sharedStyles from "../styles/shared";
+import { BaseElement, html, property, query } from "./base.js";
 
 let activeInput: Input | null = null;
 
@@ -16,53 +16,35 @@ function mask(value: string): string {
     return value && value.replace(/[^\n]/g, "\u2022");
 }
 
-export class Input extends LitElement {
+export class Input extends BaseElement {
+    @property() autosize: boolean = false;
+    @property() autocapitalize: boolean = false;
+    @property() disabled: boolean = false;
+    @property() focused: boolean = false;
+    @property() invalid: boolean = false;
+    @property() masked: boolean = false;
+    @property() multiline: boolean = false;
+    @property() pattern: string = "";
+    @property() placeholder: string = "";
+    @property() noTab: boolean = false;
+    @property() readonly: boolean = false;
+    @property() required: boolean = false;
+    @property() type: string = "text";
+    @property() selectOnFocus: boolean = false;
+    @property() value: string = "";
+
+    @query("textarea, input") inputElement: HTMLInputElement;
+
     static get activeInput() {
         return activeInput;
     }
 
-    static get properties() {
-        return {
-            autosize: Boolean,
-            autocapitalize: Boolean,
-            disabled: Boolean,
-            focused: Boolean,
-            invalid: Boolean,
-            masked: Boolean,
-            multiline: Boolean,
-            pattern: String,
-            placeholder: String,
-            noTab: Boolean,
-            readonly: Boolean,
-            required: Boolean,
-            type: String,
-            selectOnFocus: Boolean,
-            value: String
-        };
-    }
-
     constructor() {
         super();
-        this.autosize = false;
-        this.autocapitalize = false;
-        this.disabled = false;
-        this.focused = false;
-        this.invalid = false;
-        this.masked = false;
-        this.multiline = false;
-        this.pattern = "";
-        this.placeholder = "";
-        this.noTab = false;
-        this.readonly = false;
-        this.required = false;
-        this.type = "text";
-        this.selectOnFocus = false;
-        this.value = "";
     }
 
     _render(props: any) {
         const masked = props.masked && !!props.value && !props.focused;
-        const el = props.multiline ? "input" : "textarea";
         const input = props.multiline
             ? html`
                 <textarea
@@ -184,10 +166,6 @@ export class Input extends LitElement {
 
         ${input}
         `;
-    }
-
-    get inputElement() {
-        return this.shadowRoot.querySelector(this.multiline ? "textarea" : "input");
     }
 
     _domChange() {

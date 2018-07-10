@@ -1,23 +1,23 @@
-import { LitElement, html } from "@polymer/lit-element";
 import { Record, Field } from "@padlock/core/lib/data.js";
 import { setClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
+import { BaseElement, html, property } from "./base.js";
 
-export class Clipboard extends LitElement {
+export class Clipboard extends BaseElement {
 
-    static get properties() {
-        return {
-            record: Object,
-            field: Object
-        };
+    @property() record: Record | null = null;
+    @property() field: Field | null = null;
+    @property() private _tMinusClear: number = 0;
+
+    private _interval: number;
+    private _resolve: (() => void) | null = null;
+
+    _shouldRender() {
+        return !!this.record && !!this.field;
     }
 
-    _shouldRender(props: {record?: Record, field?: Field}) {
-        return !!props.record && !!props.field;
-    }
-
-    _render(props: {record: Record, field: Field}) {
+    _render(props: this) {
         return html`
         <style>
             ${ sharedStyles }
@@ -68,12 +68,12 @@ export class Clipboard extends LitElement {
 
         <div class="content">
             <div class="title">${ $l("Copied To Clipboard:") }</div>
-            <div class="name">${ props.record.name } / ${ props.field.name }</div>
+            <div class="name">${ props.record!.name } / ${ props.field!.name }</div>
         </div>
 
         <button class="tiles-2 tap" on-click="${ () => this.clear() }">
             <div><strong>${ $l("Clear") }</strong></div>
-            <div class="countdown">${ this._tMinusClear }s</div>
+            <div class="countdown">${ props._tMinusClear }s</div>
         </button>
 `;
     }
@@ -90,14 +90,13 @@ export class Clipboard extends LitElement {
         const tStart = Date.now();
 
         this._tMinusClear = duration;
-        this._interval = setInterval(() => {
+        this._interval = window.setInterval(() => {
             const dt = tStart + duration * 1000 - Date.now();
             if (dt <= 0) {
                 this.clear();
             } else {
                 this._tMinusClear = Math.floor(dt / 1000);
             }
-            this.requestRender();
         }, 1000);
 
         return new Promise(resolve => {
@@ -109,7 +108,7 @@ export class Clipboard extends LitElement {
         clearInterval(this._interval);
         setClipboard(" ");
         this.classList.remove("showing");
-        typeof this._resolve === "function" && this._resolve();
+        this._resolve && this._resolve();
         this._resolve = null;
     }
 }

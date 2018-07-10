@@ -1,15 +1,8 @@
-import { LitElement, html } from "@polymer/lit-element";
+import { BaseElement, html, property } from "./base.js";
 
-export class PlIcon extends LitElement {
-    static get properties() {
-        return {
-            icon: String
-        };
-    }
-    //
-    // _didRender() {
-    //     this.setAttribute("icon", this.icon);
-    // }
+export class PlIcon extends BaseElement {
+    @property({ reflect: true })
+    icon: string = "";
 
     _render() {
         return html`

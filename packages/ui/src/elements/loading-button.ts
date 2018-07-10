@@ -1,27 +1,18 @@
-import { LitElement, html } from "@polymer/lit-element";
 import "@polymer/paper-spinner/paper-spinner-lite.js";
 import sharedStyles from "../styles/shared.js";
+import { BaseElement, html, property } from "./base.js";
 import "./icon.js";
 
 type ButtonStatus = "idle" | "loading" | "success" | "fail";
 
-class LoadingButton extends LitElement {
-    static get properties() {
-        return {
-            status: String,
-            label: String,
-            noTab: Boolean
-        };
-    }
+export class LoadingButton extends BaseElement {
+    @property() state: ButtonStatus = "idle";
+    @property() label: string = "";
+    @property() noTab: boolean = false;
 
-    constructor() {
-        super();
-        this.status = "idle";
-        this.label = "";
-        this.noTab = false;
-    }
+    private _stopTimeout: number;
 
-    _render(props: { status: ButtonStatus; label: string; noTab: boolean }) {
+    _render(props: { state: ButtonStatus; label: string; noTab: boolean }) {
         return html`
         <style>
             ${sharedStyles}
@@ -66,11 +57,11 @@ class LoadingButton extends LitElement {
             }
         </style>
 
-        <button type="button" class$="${props.status}" tabindex$="{ props.noTab ? "-1" : "" }">
+        <button type="button" class$="${props.state}" tabindex$="{ props.noTab ? "-1" : "" }">
 
             <div class="label"><slot></slot></div>
 
-            <paper-spinner-lite active="${props.status == "loading"}" class="spinner"></paper-spinner-lite>
+            <paper-spinner-lite active="${props.state == "loading"}" class="spinner"></paper-spinner-lite>
 
             <pl-icon icon="check" class="icon-success"></pl-icon>
 
@@ -85,21 +76,21 @@ class LoadingButton extends LitElement {
 
     start() {
         clearTimeout(this._stopTimeout);
-        this.status = "loading";
+        this.state = "loading";
     }
 
     stop() {
-        this.status = "idle";
+        this.state = "idle";
     }
 
     success() {
-        this.status = "success";
-        this._stopTimeout = setTimeout(() => this.stop(), 1000);
+        this.state = "success";
+        this._stopTimeout = window.setTimeout(() => this.stop(), 1000);
     }
 
     fail() {
-        this.status = "fail";
-        this._stopTimeout = setTimeout(() => this.stop(), 1000);
+        this.state = "fail";
+        this._stopTimeout = window.setTimeout(() => this.stop(), 1000);
     }
 }
 
