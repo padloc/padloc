@@ -1,11 +1,8 @@
-import "@polymer/polymer/polymer-legacy.js";
-const _documentContainer = document.createElement("template");
-_documentContainer.setAttribute("style", "display: none;");
+import { html } from "@polymer/lit-element";
 
-_documentContainer.innerHTML = `<custom-style>
-    <style is="custom-style">
-
-        body {
+export default html`
+    <style>
+        :host {
             --font-family: "Clear Sans";
             --font-family-fallback: sans-serif;
             --font-family-mono: "Inconsolata";
@@ -132,8 +129,4 @@ _documentContainer.innerHTML = `<custom-style>
                 overflow: hidden;
             }
         }
-
-    </style>
-</custom-style>`;
-
-document.head.appendChild(_documentContainer.content);
+</style>`;

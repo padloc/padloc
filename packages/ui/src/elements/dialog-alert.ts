@@ -5,7 +5,7 @@ import "./dialog.js";
 
 const defaultButtonLabel = localize("OK");
 
-class DialogAlert extends LitElement {
+export class AlertDialog extends LitElement {
     static get properties() {
         return {
             buttonLabel: String,
@@ -94,7 +94,10 @@ class DialogAlert extends LitElement {
 `;
     }
 
-    show(message = "", { title = "", options = ["OK"], type = "info", preventDismiss = false, hideIcon = false } = {}) {
+    show(
+        message = "",
+        { title = "", options = ["OK"], type = "info", preventDismiss = false, hideIcon = false } = {}
+    ): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
         this.type = type;
@@ -144,4 +147,4 @@ class DialogAlert extends LitElement {
     _hideInfo() {}
 }
 
-window.customElements.define("pl-dialog-alert", DialogAlert);
+window.customElements.define("pl-dialog-alert", AlertDialog);

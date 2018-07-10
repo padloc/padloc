@@ -239,7 +239,7 @@ class Menu extends LitElement {
 
                 <div class="menu-info">
 
-                    <div><strong>Padlock ${settings.version}</strong></div>
+                    <div><strong>Padlock ${app.version}</strong></div>
 
                     <div>Made with ♥ in Germany</div>
 

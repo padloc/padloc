@@ -43,7 +43,7 @@ export class HTML5FileManager implements FileManager {
                 const reader = new FileReader();
 
                 reader.onload = function() {
-                    resolve(this.result);
+                    resolve(reader.result as string);
                 };
 
                 reader.onerror = reject;

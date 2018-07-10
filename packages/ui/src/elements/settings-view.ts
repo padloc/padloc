@@ -281,7 +281,7 @@ class SettingsView extends View {
 
                 <button class="info tap" on-click="${() => this._openSource()}">
 
-                    <div><strong>Padlock ${settings.version}</strong></div>
+                    <div><strong>Padlock ${app.version}</strong></div>
 
                     <div class="made-in">Made with ♥ in Germany</div>
 
@@ -388,7 +388,7 @@ class SettingsView extends View {
             return;
         }
 
-        await this.app.setPassword(newPwd);
+        await app.setPassword(newPwd);
         // if (this.settings.syncConnected) {
         //         return this.confirm(
         //             $l(
@@ -421,7 +421,7 @@ class SettingsView extends View {
 
     async _resetData() {
         const confirmed = await promptPassword(
-            this.app.password!,
+            app.password!,
             $l(
                 "Are you sure you want to delete all your data and reset the app? Enter your " +
                     "master password to continue!"
@@ -430,7 +430,7 @@ class SettingsView extends View {
         );
 
         if (confirmed) {
-            return this.app.reset();
+            return app.reset();
         }
     }
 
@@ -458,7 +458,7 @@ class SettingsView extends View {
         const reader = new FileReader();
         reader.onload = async () => {
             try {
-                await this._importString(reader.result);
+                await this._importString(reader.result as string);
             } catch (e) {
                 switch (e.code) {
                     case "decryption_failed":
@@ -563,7 +563,7 @@ class SettingsView extends View {
         }
 
         if (records.length) {
-            this.app.addRecords(records);
+            app.addRecords(this.store, records);
             // this.dispatch("data-imported", { records: records });
             alert($l("Successfully imported {0} records.", records.length.toString()), { type: "success" });
         }

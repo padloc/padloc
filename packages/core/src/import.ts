@@ -48,6 +48,7 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
             }
         }
 
+        const name = row[nameColIndex!];
         const tags = row[tagsColIndex!];
         return createRecord(name, fields, (tags && tags.split(",")) || []);
     });

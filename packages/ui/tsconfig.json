@@ -17,10 +17,11 @@
         "declaration": true,
         "pretty": true,
         "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
         "baseUrl": ".",
         "rootDir": "src",
         "outDir": "lib"
     },
-    "include": ["src/**/*.ts"],
+    "include": ["src/**/*.ts", "types/**/*.ts", "../../node_modules/@polymer/lit-element/custom_typings/polymer.d.ts"],
     "exclude": ["node_modules/**/*.ts"]
 }

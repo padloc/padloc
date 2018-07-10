@@ -32,6 +32,7 @@ export class App extends EventTarget {
     storageKind: "padlock-app";
     storageKey: "";
 
+    version = "3.0";
     storage = new LocalStorage();
     client = new Client(this);
     remoteStorage = new RemoteStorage(this.client);
