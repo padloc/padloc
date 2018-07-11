@@ -12,7 +12,7 @@ export async function createSession(ctx: Context) {
         throw new Err(ErrorCode.BAD_REQUEST, "No email provided!");
     }
 
-    const req = AuthRequest.create(email);
+    const req = AuthRequest.create(email, ctx.state.device);
     await ctx.storage.set(req);
 
     ctx.sender.send(email, "Your Padlock Login Code", `Here is your code: ${req.code}`);
@@ -58,7 +58,7 @@ export async function revokeSession(ctx: Context, id: string) {
     if (!ctx.state.session) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
-    const account = ctx.state.account;
+    const account = ctx.state.account!;
     account.sessions = account.sessions.filter((s: Session) => s.id !== id);
     await ctx.storage.set(account);
     ctx.body = "";
@@ -68,7 +68,7 @@ export async function getAccount(ctx: Context) {
     if (!ctx.state.session) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
-    ctx.body = await ctx.state.account.serialize();
+    ctx.body = await ctx.state.account!.serialize();
 }
 
 export async function getStore(ctx: Context, id?: string) {
@@ -77,7 +77,7 @@ export async function getStore(ctx: Context, id?: string) {
     }
 
     if (!id || id === "main") {
-        id = ctx.state.account.mainStore;
+        id = ctx.state.account!.mainStore;
     }
 
     if (!id) {
@@ -97,7 +97,7 @@ export async function putStore(ctx: Context, id?: string) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
 
-    const account = ctx.state.account;
+    const account = ctx.state.account!;
     const container = await new Container().deserialize(ctx.request.body);
 
     if (!id || id === "main") {

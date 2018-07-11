@@ -12,7 +12,7 @@ export class Client {
     }
 
     urlForPath(path: string): string {
-        return `${this.basePath}/${path}/`.replace(/\/+$/, "");
+        return `${this.basePath}/${path}/`.replace(/([^:]\/)\/+/g, "$1");
     }
 
     async request(method: Method, path: string, data?: string, headers?: Map<string, string>): Promise<XMLHttpRequest> {
@@ -20,7 +20,7 @@ export class Client {
         headers = headers || new Map<string, string>();
 
         headers.set("Accept", "application/vnd.padlock;version=1");
-        if (this.app.session) {
+        if (this.app.session && this.app.session.active) {
             headers.set("Authorization", "AuthToken " + this.app.session.account + ":" + this.app.session.token);
         }
 
@@ -47,7 +47,7 @@ export class Client {
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
 
-        this.app.session = unmarshal(req.responseText) as Session;
+        this.app.session = await new Session().deserialize(unmarshal(req.responseText));
         return this.app.session;
     }
 
@@ -65,7 +65,7 @@ export class Client {
             params.toString(),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
-        this.app.session = unmarshal(req.responseText) as Session;
+        await this.app.session.deserialize(unmarshal(req.responseText));
         return this.app.session;
     }
 

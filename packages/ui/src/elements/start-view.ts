@@ -36,7 +36,6 @@ export class StartView extends BaseElement {
     @query("#codeButton") private _codeButton: LoadingButton;
     @query("#remotePasswordButton") private _remotePasswordButton: LoadingButton;
 
-    @listen("load", app)
     reset() {
         this._passwordInput.value = "";
         this._emailInput.value = "";
@@ -52,8 +51,13 @@ export class StartView extends BaseElement {
         this.mode = app.initialized ? "unlock" : "get-started";
     }
 
+    @listen("load", app)
+    _loaded() {
+        this.reset();
+        this._openChanged();
+    }
+
     @listen("lock", app)
-    @listen("reset", app)
     _locked() {
         this.open = false;
         this.reset();

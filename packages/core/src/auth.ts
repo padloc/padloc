@@ -1,14 +1,32 @@
-import { DateString } from "./encoding";
+import { DateString, Serializable } from "./encoding";
 import { PublicKey } from "./crypto";
 import { Storable } from "./storage";
 import { StoreID } from "./data";
 import { uuid } from "./util";
 
 export type AccountID = string;
+export type SessionID = string;
+export type DeviceID = string;
 
-export interface Device {
-    description: string;
-    tokenId: string;
+export class Device implements Serializable {
+    id: DeviceID;
+    userAgent: string;
+
+    get description(): string {
+        return this.userAgent;
+    }
+
+    async serialize() {
+        return {
+            id: this.id,
+            userAgent: this.userAgent
+        };
+    }
+
+    async deserialize(raw: any) {
+        Object.assign(this, raw);
+        return this;
+    }
 }
 
 export interface PublicAccount {
@@ -18,7 +36,7 @@ export interface PublicAccount {
     mainStore: StoreID;
 }
 
-export interface Session {
+export class Session implements Serializable {
     id: string;
     account: AccountID;
     token?: string;
@@ -26,7 +44,27 @@ export interface Session {
     active: boolean;
     lastUsed?: DateString;
     expires?: DateString;
-    device?: Device;
+    device: Device;
+
+    async serialize() {
+        return {
+            id: this.id,
+            account: this.account,
+            token: this.token,
+            created: this.created,
+            active: this.active,
+            lastUsed: this.lastUsed,
+            expires: this.expires,
+            device: this.device && (await this.device.serialize())
+        };
+    }
+
+    async deserialize(raw: any) {
+        this.device = await new Device().deserialize(raw.device);
+        delete raw.device;
+        Object.assign(this, raw);
+        return this;
+    }
 }
 
 export class Account implements PublicAccount, Storable {
@@ -72,11 +110,15 @@ export class Account implements PublicAccount, Storable {
             mainStore: this.mainStore,
             sharedStores: this.sharedStores,
             publicKey: this.publicKey,
-            sessions: this.sessions
+            sessions: await Promise.all(this.sessions.map(s => s.serialize()))
         };
     }
 
     async deserialize(raw: any) {
+        this.sessions = ((await Promise.all(
+            raw.sessions.map((s: any) => new Session().deserialize(s))
+        )) as any) as Session[];
+        delete raw.sessions;
         Object.assign(this, raw);
         return this;
     }

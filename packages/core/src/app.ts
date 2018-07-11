@@ -61,8 +61,8 @@ export class App extends EventTarget {
     }
 
     async deserialize(raw: any) {
-        this.account = raw.account;
-        this.session = raw.session;
+        this.account = raw.account && (await new Account().deserialize(raw.account));
+        this.session = raw.session && (await new Session().deserialize(raw.session));
         this.initialized = raw.initialized;
         this.setStats(raw.stats || {});
         await this.messages.deserialize(raw.messages);
@@ -171,7 +171,6 @@ export class App extends EventTarget {
 
     async login(email: string) {
         await this.client.createSession(email);
-        await this.client.getAccount();
         await this.save();
         this.dispatchEvent(new CustomEvent("login"));
         this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
@@ -247,6 +246,8 @@ export class App extends EventTarget {
     async synchronize() {}
 
     buySubscription(_source: string) {}
+
+    cancelSubscription() {}
 
     updatePaymentMethod(_source: String) {}
 }

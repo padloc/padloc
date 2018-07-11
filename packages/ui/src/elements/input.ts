@@ -19,16 +19,21 @@ function mask(value: string): string {
 export class Input extends BaseElement {
     @property() autosize: boolean = false;
     @property() autocapitalize: boolean = false;
-    @property() disabled: boolean = false;
-    @property() focused: boolean = false;
-    @property() invalid: boolean = false;
+    @property({ reflect: true })
+    disabled: boolean = false;
+    @property({ reflect: true })
+    focused: boolean = false;
+    @property({ reflect: true })
+    invalid: boolean = false;
     @property() masked: boolean = false;
     @property() multiline: boolean = false;
     @property() pattern: string = "";
     @property() placeholder: string = "";
     @property() noTab: boolean = false;
-    @property() readonly: boolean = false;
-    @property() required: boolean = false;
+    @property({ reflect: true })
+    readonly: boolean = false;
+    @property({ reflect: true })
+    required: boolean = false;
     @property() type: string = "text";
     @property() selectOnFocus: boolean = false;
     @property() value: string = "";
@@ -39,7 +44,7 @@ export class Input extends BaseElement {
         return activeInput;
     }
 
-    _render(props: any) {
+    _render(props: this) {
         const masked = props.masked && !!props.value && !props.focused;
         const input = props.multiline
             ? html`
@@ -79,7 +84,7 @@ export class Input extends BaseElement {
                     spellcheck="false"
                     autocorrect="off"
                     type$="${props.type}"
-                    pattern$="${props.pattern}">
+                    pattern$="${props.pattern || ".*"}">
 
                 <input
                     value="${mask(props.value)}"
@@ -99,6 +104,10 @@ export class Input extends BaseElement {
             :host(:not([multiline])) {
                 padding: 0 10px;
                 height: var(--row-height);
+            }
+
+            :host([invalid]) {
+                color: var(--color-error);
             }
 
             input {
@@ -157,11 +166,9 @@ export class Input extends BaseElement {
     }
 
     @listen("focus")
-    _focused(e: Event) {
-        e.stopPropagation();
+    _focused() {
         this.focused = true;
         activeInput = this;
-        this.dispatchEvent(new CustomEvent("focus"));
 
         if (this.selectOnFocus) {
             setTimeout(() => this.selectAll(), 10);
@@ -169,26 +176,25 @@ export class Input extends BaseElement {
     }
 
     @listen("blur")
-    _blurred(e: Event) {
-        e.stopPropagation();
+    _blurred() {
+        this._updateValidity();
         this.focused = false;
         if (activeInput === this) {
             activeInput = null;
         }
-        this.dispatchEvent(new CustomEvent("blur"));
     }
 
     @listen("input")
-    _changeHandler(e: Event) {
-        e.stopPropagation();
+    _inputHandler() {
+        const oldVal = this.value;
         this.value = this._inputElement.value;
-        this.invalid = this._inputElement && !this._inputElement.checkValidity();
-        this.dispatchEvent(new CustomEvent("change"));
+        this.dispatch("change", { prev: oldVal, curr: this.value });
     }
 
     @listen("keydown")
     _keydown(e: KeyboardEvent) {
         if (e.key === "Enter" && !this.multiline) {
+            this._updateValidity();
             this.dispatchEvent(new CustomEvent("enter"));
             e.preventDefault();
             e.stopPropagation();
@@ -202,6 +208,10 @@ export class Input extends BaseElement {
     @listen("touchend")
     _touchend(e: Event) {
         e.preventDefault();
+    }
+
+    private _updateValidity() {
+        this.invalid = this._inputElement && this._inputElement.checkValidity && !this._inputElement.checkValidity();
     }
 
     focus() {

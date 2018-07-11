@@ -17,7 +17,7 @@ import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt } from "../dialog";
 import { animateCascade } from "../animation";
 import { app } from "../init.js";
-import { element, html, property, query } from "./base.js";
+import { element, html, property, query, listen } from "./base.js";
 // import "./dialog-export.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
@@ -29,6 +29,11 @@ export class SettingsView extends View {
     @property() store: Store;
 
     @query("#importFile") _fileInput: HTMLInputElement;
+
+    @listen("settings-changed", app)
+    _settingsChanged() {
+        this.requestRender();
+    }
 
     _render() {
         const { settings, account, session } = app;
@@ -115,7 +120,7 @@ export class SettingsView extends View {
                 font-size: var(--font-size-tiny);
             }
 
-            #customUrlInput:not([invalid]) + .url-warning {
+            #customServerUrlInput:not([invalid]) + .url-warning {
                 display: none;
             }
 

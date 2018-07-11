@@ -5,7 +5,7 @@ import sharedStyles from "../styles/shared.js";
 import * as messages from "../messages.js";
 import { animateCascade } from "../animation.js";
 import { confirm, alert, prompt } from "../dialog.js";
-import { html, observe, query } from "./base.js";
+import { html, query, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -17,9 +17,9 @@ export class AccountView extends View {
     @query("#emailInput") private _emailInput: Input;
     @query("#loginButton") private _loginButton: LoadingButton;
 
-    connectedCallback() {
-        super.connectedCallback();
-        app.addEventListener("account-changed", () => this.requestRender());
+    @listen("account-changed", app)
+    _accountChanged() {
+        this.requestRender();
     }
 
     _render() {
@@ -29,7 +29,7 @@ export class AccountView extends View {
         const promo = account && account.promo;
         // TODO: Compute remaining trial days
         const trialDays = 30;
-        const loggedIn = false;
+        const loggedIn = app.session && app.session.active;
         const recordCount = 0;
         const isSynching = false;
         const lastSync = "";
@@ -344,7 +344,7 @@ export class AccountView extends View {
                     <pl-icon
                         class="account-sync tap"
                         icon="refresh"
-                        spin$="${isSynching}"
+                        spin?="${isSynching}"
                         on-click="${() => app.synchronize()}"
                         disabled?="${subStatus !== "active" && subStatus !== "trialing"}">
                     </pl-icon>
@@ -367,13 +367,13 @@ export class AccountView extends View {
                         (session: Session) => html`
                         <div class="section-row">
 
-                            <div class="section-row-label">${session.device!.description}</div>
+                            <div class="section-row-label">${session.device.description}</div>
 
                             <pl-icon
                                 icon="delete"
                                 class="tap"
                                 on-click="${() => this._revokeSession(session)}"
-                                disabled?="${this._isCurrentSession(session)}">
+                                disabled?="${app.session && session.id === app.session.id}">
                             </pl-icon>
 
                         </div>`
@@ -441,25 +441,23 @@ export class AccountView extends View {
 `;
     }
 
-    @observe("active")
-    _activateChanged() {
-        if (this.active && app.session && app.session.active) {
-            animateCascade(this.$$("section:not([hidden])"), { initialDelay: 200 });
-        }
+    _activated() {
+        animateCascade(this.$$("section:not([hidden])"), { initialDelay: 200 });
+        app.refreshAccount();
     }
 
     focusEmailInput() {
         this._emailInput.focus();
     }
 
-    _logout() {
-        const confirmed = confirm($l("Are you sure you want to log out?"), $l("Log Out"));
+    private async _logout() {
+        const confirmed = await confirm($l("Are you sure you want to log out?"), $l("Log Out"));
         if (confirmed) {
             app.logout();
         }
     }
 
-    async _login() {
+    private async _login() {
         if (this._loginButton.state === "loading") {
             return;
         }
@@ -485,56 +483,44 @@ export class AccountView extends View {
         }
     }
 
-    async _promptLoginCode() {
-        await prompt(
-            $l("Check your email! We sent your login code to {0}.", this._emailInput.value),
-            $l("Enter Login Code"),
-            "text",
-            $l("Confirm"),
-            $l("Cancel"),
-            true,
-            async code => {
-                if (code === null) {
-                    // Dialog canceled
-                    app.logout();
-                    return "";
-                } else if (code == "") {
+    private async _promptLoginCode() {
+        const result = await prompt($l("Check your email! We sent your login code to {0}.", this._emailInput.value), {
+            placeholder: $l("Enter Login Code"),
+            validate: async (code: string) => {
+                if (code == "") {
                     throw $l("Please enter a valid login code!");
-                } else {
-                    try {
-                        await app.activateSession(code);
-                    } catch (e) {
-                        // TODO: Handle Server Error
-                        throw $l("Invalid login code. Try again!");
-                    }
+                }
+                try {
+                    await app.activateSession(code);
+                } catch (e) {
+                    // TODO: Handle Server Error
+                    throw $l("Invalid login code. Try again!");
                 }
                 return code;
             }
-        );
+        });
+        if (!result) {
+            app.logout();
+        }
     }
 
-    _isCurrentSession(_session: Session) {
-        // TODO
-        return false;
-    }
-
-    async _revokeSession(session: Session) {
+    private async _revokeSession(session: Session) {
         const confirmed = await confirm(
-            $l('Do you want to revoke access to for the device "{0}"?', session.device!.description)
+            $l('Do you want to revoke access to for the device "{0}"?', session.device.description)
         );
         if (confirmed) {
             await app.revokeSession(session.id);
-            alert($l("Access for {0} revoked successfully!", session.device!.description), {
+            alert($l("Access for {0} revoked successfully!", session.device.description), {
                 type: "success"
             });
         }
     }
 
-    _contactSupport() {
+    private _contactSupport() {
         window.open("mailto:support@padlock.io", "_system");
     }
 
-    _promoExpired() {
+    private _promoExpired() {
         // TODO: Do something?
     }
 }

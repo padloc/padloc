@@ -1,4 +1,4 @@
-import { Account } from "@padlock/core/src/auth";
+import { Account, Device } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 import { Context } from "./server";
 
@@ -62,4 +62,11 @@ export async function handleError(ctx: Context, next: () => Promise<void>) {
         }
         ctx.app.emit("error", e, ctx);
     }
+}
+
+export async function device(ctx: Context, next: () => Promise<void>) {
+    const id = ctx.request.header["x-device-uuid"];
+    const userAgent = ctx.request.header["user-agent"];
+    ctx.state.device = new Device(id, userAgent);
+    await next();
 }
