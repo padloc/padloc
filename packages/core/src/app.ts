@@ -76,6 +76,7 @@ export class App extends EventTarget {
         } catch (e) {
             await this.storage.set(this);
         }
+        this.dispatchEvent(new CustomEvent("load"));
     }
 
     get password(): string | undefined {

@@ -1,6 +1,5 @@
-import { LitElement, html } from "@polymer/lit-element";
-import { wait, passwordStrength, toggleAttribute } from "@padlock/core/lib/util.js";
-import { isTouch, getAppStoreLink, checkForUpdates } from "@padlock/core/lib/platform.js";
+import { passwordStrength } from "@padlock/core/lib/util.js";
+import { isTouch, checkForUpdates } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { track } from "@padlock/core/lib/tracking.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
@@ -8,59 +7,67 @@ import { app } from "../init.js";
 import { choose, prompt, alert, confirm, promptForgotPassword } from "../dialog.js";
 import { animateElement, animateCascade } from "../animation.js";
 import sharedStyles from "../styles/shared.js";
-import "./input.js";
-import "./loading-button.js";
+import { BaseElement, element, html, property, listen, query, observe } from "./base.js";
+import { Input } from "./input.js";
+import { LoadingButton } from "./loading-button.js";
 
-export class StartView extends LitElement {
-    static get properties() {
-        return {
-            open: Boolean,
-            _hasCloudData: Boolean,
-            _pwdStrength: Object,
-            _currStep: Number
-        };
-    }
+export type StartViewMode = "unlock" | "get-started";
 
-    connectedCallback() {
-        super.connectedCallback();
-        // TODO: make sure handler gets called at least once
-        app.addEventListener("unlock", () => (this.open = true));
-        app.addEventListener("lock", () => {
-            this.open = false;
-            this.reset();
-        });
-        app.addEventListener("reset", () => {
-            this.open = false;
-            this.reset();
-        });
-    }
+@element("pl-start-view")
+export class StartView extends BaseElement {
+    @property({ reflect: true })
+    open: boolean = false;
+    @property({ reflect: true })
+    mode: StartViewMode = "unlock";
+    @property() private _hasRemoteData: boolean = false;
+    @property() private _pwdStrength: string = "";
+    @property() private _currStep: number = 0;
+    @property() private _failCount: number = 0;
 
-    async ready() {
-        super.ready();
-        await app.loaded;
-        this.reset();
-        if (!isTouch() && app.initialized) {
-            this.shadowRoot.querySelector("#passwordInput").focus();
-        }
-    }
+    @query("#passwordInput") private _passwordInput: Input;
+    @query("#emailInput") private _emailInput: Input;
+    @query("#newPasswordInput") private _newPasswordInput: Input;
+    @query("#confirmPasswordInput") private _confirmPasswordInput: Input;
+    @query("#remotePasswordInput") private _remotePasswordInput: Input;
+    @query("#unlockButton") private _unlockButton: LoadingButton;
+    @query("#getStartedButton") private _getStartedButton: LoadingButton;
+    @query("#emailButton") private _emailButton: LoadingButton;
+    @query("#codeInput") private _codeInput: Input;
+    @query("#codeButton") private _codeButton: LoadingButton;
+    @query("#remotePasswordButton") private _remotePasswordButton: LoadingButton;
 
+    @listen("load", app)
     reset() {
-        this.shadowRoot.querySelector("#passwordInput").value = "";
-        this.shadowRoot.querySelector("#emailInput").value = "";
-        this.shadowRoot.querySelector("#newPasswordInput").value = "";
-        this.shadowRoot.querySelector("#confirmPasswordInput").value = "";
-        this.shadowRoot.querySelector("#cloudPwdInput").value = "";
-        this.shadowRoot.querySelector("#unlockButton").stop();
-        this.shadowRoot.querySelector("#getStartedButton").stop();
+        this._passwordInput.value = "";
+        this._emailInput.value = "";
+        this._newPasswordInput.value = "";
+        this._confirmPasswordInput.value = "";
+        this._remotePasswordInput.value = "";
+        this._unlockButton.stop();
+        this._getStartedButton.stop();
         this._failCount = 0;
         this._currStep = 0;
-        this._hasCloudData = false;
+        this._hasRemoteData = false;
         this.open = false;
+        this.mode = app.initialized ? "unlock" : "get-started";
     }
 
-    _render(props: any) {
-        const open = props.open;
-        const email = (props.account && props.account.email) || "";
+    @listen("lock", app)
+    @listen("reset", app)
+    _locked() {
+        this.open = false;
+        this.reset();
+    }
+
+    @listen("unlock", app)
+    @listen("initialize", app)
+    _unlocked() {
+        this.open = true;
+    }
+
+    _render({ open, _pwdStrength, _hasRemoteData }: this) {
+        const { account } = app;
+        const email = (account && account.email) || "";
 
         return html`
         <style include="shared">
@@ -293,7 +300,7 @@ export class StartView extends LitElement {
                     type="password"
                     class="tap"
                     select-on-focus=""
-                    on-enter="${() => this._unlock()}"
+                    on-enter="${() => this._unlockButton.click()}"
                     no-tab="${open}"
                     placeholder="${$l("Enter Master Password")}">
                 </pl-input>
@@ -330,7 +337,7 @@ export class StartView extends LitElement {
                     <pl-loading-button
                         on-click="${() => this._startSetup()}"
                         class="form-box tiles-2 animate-in tap start-button"
-                        no-tab="${props.open}">
+                        no-tab="${open}">
 
                         <div>${$l("Get Started")}</div>
 
@@ -350,7 +357,7 @@ export class StartView extends LitElement {
                             select-on-focus=""
                             no-tab="${open}"
                             class="tap"
-                            on-enter="${() => this._enterEmail()}"
+                            on-enter="${() => this._emailButton.click()}"
                             placeholder="${$l("Enter Email Address")}">
                         </pl-input>
 
@@ -388,7 +395,7 @@ export class StartView extends LitElement {
                             select-on-focus
                             no-tab="${open}"
                             class="tap"
-                            on-enter="${() => this._enterCode()}"
+                            on-enter="${() => this._codeButton.click()}"
                             placeholder="${$l("Enter Login Code")}">
                         </pl-input>
 
@@ -420,25 +427,25 @@ export class StartView extends LitElement {
 
                 </div>
 
-                <div class$="get-started-step ${this._getStartedClass(3)}" hidden?="${!props._hasCloudData}">
+                <div class$="get-started-step ${this._getStartedClass(3)}" hidden?="${!_hasRemoteData}">
 
                     <div>
 
                         <div class="form-box tiles-2">
 
                             <pl-input
-                                id="cloudPwdInput"
+                                id="remotePasswordInput"
                                 class="tap"
                                 type="password"
                                 select-on-focus
                                 no-tab="${open}"
-                                on-enter="${() => this._enterCloudPassword()}"
+                                on-enter="${() => this._remotePasswordButton.click()}"
                                 placeholder="${$l("Enter Master Password")}">
                             </pl-input>
 
                             <pl-loading-button
-                                id="cloudPwdButton"
-                                on-click="${() => this._enterCloudPassword()}"
+                                id="remotePasswordButton"
+                                on-click="${() => this._enterRemotePassword()}"
                                 class="tap"
                                 no-tab="${open}">
 
@@ -465,7 +472,7 @@ export class StartView extends LitElement {
 
                 </div>
 
-                <div class$="get-started-step ${this._getStartedClass(3)}" hidden?="${props._hasCloudData}">
+                <div class$="get-started-step ${this._getStartedClass(3)}" hidden?="${_hasRemoteData}">
 
                     <div>
 
@@ -493,7 +500,7 @@ export class StartView extends LitElement {
 
                         </div>
 
-                        <div class="strength-meter">${props._pwdStrength}</div>
+                        <div class="strength-meter">${_pwdStrength}</div>
 
                     </div>
 
@@ -583,13 +590,10 @@ export class StartView extends LitElement {
 `;
     }
 
-    _didRender(_: any, changed: any) {
-        this.setAttribute("mode", app.initialized ? "unlock" : "get-started");
-        // TODO: Why is that assertion necessary?
-        toggleAttribute((this as any) as Element, "open", this.open);
-
-        if (changed && changed.open === true) {
-            animateCascade(this.shadowRoot.querySelectorAll(`main.${this.mode} .animate-out`), {
+    @observe("open")
+    _openChanged() {
+        if (this.open) {
+            animateCascade(this.$$(`main.${this.mode} .animate-out`), {
                 animation: "fade",
                 duration: 400,
                 fullDuration: 600,
@@ -598,8 +602,8 @@ export class StartView extends LitElement {
                 easing: "cubic-bezier(1, 0, 0.2, 1)",
                 clear: 3000
             });
-        } else if (changed && changed.open === false) {
-            animateCascade(this.shadowRoot.querySelectorAll(`main.${this.mode} .animate-in`), {
+        } else {
+            animateCascade(this.$$(`main.${this.mode} .animate-in`), {
                 animation: "reveal",
                 duration: 1000,
                 fullDuration: 1500,
@@ -611,119 +615,107 @@ export class StartView extends LitElement {
     }
 
     focus() {
-        this.shadowRoot.querySelector("#passwordInput").focus();
+        this._passwordInput.focus();
     }
 
-    _startSetup() {
+    private _startSetup() {
         this._currStep = 1;
         if (!isTouch()) {
-            this.shadowRoot.querySelector("#emailInput").focus();
+            this._emailInput.focus();
         }
 
         track("Setup: Start");
     }
 
-    _enterEmail() {
-        this.shadowRoot.querySelector("#emailInput").blur();
-        if (this.shadowRoot.querySelector("#emailInput").invalid) {
-            this.alert(
-                this.shadowRoot.querySelector("#emailInput").validationMessage ||
-                    $l("Please enter a valid email address!"),
-                {
-                    type: "warning"
-                }
-            ).then(() => this.shadowRoot.querySelector("#emailInput").focus());
+    private async _enterEmail() {
+        this._emailInput.blur();
+        if (this._emailInput.invalid) {
+            alert(this._emailInput.validationMessage || $l("Please enter a valid email address!"), {
+                type: "warning"
+            }).then(() => this._emailInput.focus());
             return;
         }
 
-        this.shadowRoot.querySelector("#emailButton").start();
+        this._emailButton.start();
         app.setStats({ pairingSource: "Setup" });
 
-        this.connectCloud(this.shadowRoot.querySelector("#emailInput").value)
-            .then(() => {
-                this.shadowRoot.querySelector("#emailButton").success();
-                this._currStep = 2;
-                this.shadowRoot.querySelector("#codeInput").value = "";
-                if (!isTouch()) {
-                    this.shadowRoot.querySelector("#codeInput").focus();
-                }
-            })
-            .catch(() => this.shadowRoot.querySelector("#emailButton").fail());
+        try {
+            await app.login(this._emailInput.value);
+            this._emailButton.success();
+            this._currStep = 2;
+            this._codeInput.value = "";
+            if (!isTouch()) {
+                this._codeInput.focus();
+            }
+        } catch (e) {
+            // TODO: show error message
+            this._emailButton.fail();
+        }
 
-        track("Setup: Email", { Skipped: false, Email: this.shadowRoot.querySelector("#emailInput").value as string });
+        track("Setup: Email", { Skipped: false, Email: this._emailInput.value as string });
     }
 
-    async _enterCode() {
-        if (this._checkingCode) {
+    private async _enterCode() {
+        if (this._codeInput.invalid) {
+            alert($l("Please enter the login code sent to you via email!"), { type: "warning" });
             return;
         }
 
-        if (this.shadowRoot.querySelector("#codeInput").invalid) {
-            this.alert($l("Please enter the login code sent to you via email!"), { type: "warning" });
-            return;
-        }
-
-        this._checkingCode = true;
-
-        this.shadowRoot.querySelector("#codeButton").start();
+        this._codeButton.start();
         try {
-            await app.activateSession(this.shadowRoot.querySelector("#codeInput").value);
+            await app.activateSession(this._codeInput.value);
             const hasData = false;
             // TODO: Figure out way to check for data
-            this._checkingCode = false;
-            this.shadowRoot.querySelector("#codeButton").success();
-            this._hasCloudData = hasData;
+            this._codeButton.success();
+            this._hasRemoteData = hasData;
             return this._connected();
         } catch (e) {
-            this._checkingCode = false;
             this._rumble();
-            this.shadowRoot.querySelector("#codeButton").fail();
+            this._codeButton.fail();
             // TODO: handle cloud error
         }
 
-        track("Setup: Code", { Email: this.shadowRoot.querySelector("#emailInput").value });
+        track("Setup: Code", { Email: this._emailInput.value });
     }
 
-    _connected() {
+    private _connected() {
         setTimeout(() => {
             this._currStep = 3;
             if (!isTouch()) {
-                this.shadowRoot.querySelector("#newPasswordInput").focus();
+                this._newPasswordInput.focus();
             }
         }, 50);
     }
 
-    async _cancelActivation() {
+    private async _cancelActivation() {
         await app.logout();
-        this.shadowRoot.querySelector("#codeInput").value = "";
+        this._codeInput.value = "";
         this._currStep = 1;
     }
 
-    _skipEmail() {
-        this.shadowRoot.querySelector("#emailInput").value = "";
+    private _skipEmail() {
+        this._emailInput.value = "";
         this._currStep = 3;
         if (!isTouch()) {
-            this.shadowRoot.querySelector("#newPasswordInput").focus();
+            this._newPasswordInput.focus();
         }
 
         track("Setup: Email", { Skipped: true });
     }
 
-    async _enterNewPassword() {
-        this.shadowRoot.querySelector("#newPasswordInput").blur();
-        const pwd = this.shadowRoot.querySelector("#newPasswordInput").value;
+    private async _enterNewPassword() {
+        this._newPasswordInput.blur();
+        const pwd = this._newPasswordInput.value;
 
         if (!pwd) {
-            this.alert("Please enter a master password!").then(() =>
-                this.shadowRoot.querySelector("#newPasswordInput").focus()
-            );
+            alert("Please enter a master password!").then(() => this._newPasswordInput.focus());
             return;
         }
 
         const next = () => {
             this._currStep = 4;
             if (!isTouch()) {
-                this.shadowRoot.querySelector("#confirmPasswordInput").focus();
+                this._confirmPasswordInput.focus();
             }
 
             track("Setup: Choose Password");
@@ -749,7 +741,7 @@ export class StartView extends LitElement {
                     this._openPwdHowto();
                     break;
                 case 1:
-                    this.shadowRoot.querySelector("#newPasswordInput").focus();
+                    this._newPasswordInput.focus();
                     break;
                 case 2:
                     next();
@@ -761,9 +753,9 @@ export class StartView extends LitElement {
         next();
     }
 
-    async _confirmNewPassword() {
-        const pwdInput = this.shadowRoot.querySelector("#confirmPasswordInput");
-        const confPwdInput = this.shadowRoot.querySelector("#confirmPasswordInput");
+    private async _confirmNewPassword() {
+        const pwdInput = this._confirmPasswordInput;
+        const confPwdInput = this._confirmPasswordInput;
 
         confPwdInput.blur();
 
@@ -776,11 +768,11 @@ export class StartView extends LitElement {
 
             switch (choice) {
                 case 0:
-                    this.shadowRoot.querySelector("#confirmPasswordInput").focus();
+                    this._confirmPasswordInput.focus();
                     break;
                 case 1:
                     this._currStep = 3;
-                    this.shadowRoot.querySelector("#newPasswordInput").focus();
+                    this._newPasswordInput.focus();
                     break;
             }
         }
@@ -790,71 +782,59 @@ export class StartView extends LitElement {
         track("Setup: Confirm Password");
     }
 
-    _finishSetup() {
-        this._initializeData();
+    private async _finishSetup() {
+        this._getStartedButton.start();
+        await app.init(this._newPasswordInput.value);
+        this._getStartedButton.success();
+        this._newPasswordInput.blur();
         track("Setup: Finish");
     }
 
-    async _initializeData() {
-        this.shadowRoot.querySelector("#getStartedButton").start();
-        if (this._initializing) {
-            return;
-        }
-        this._initializing = true;
-
-        await Promise.all([app.init(this.shadowRoot.querySelector("#newPasswordInput").value), wait(1000)]);
-        this.shadowRoot.querySelector("#getStartedButton").success();
-        this.shadowRoot.querySelector("#newPasswordInput").blur();
-        this._initializing = false;
-    }
-
-    async _promptResetData(message: string) {
-        const input = await prompt(message, $l("Type 'RESET' to confirm"), "text", $l("Reset App"));
+    private async _promptResetData(message: string) {
+        const input = await prompt(message, {
+            placeholder: $l("Type 'RESET' to confirm"),
+            confirmLabel: $l("Reset App"),
+            validate: async (val: string) => {
+                if (val !== "RESET") {
+                    throw "Please type 'RESET' to confirm";
+                }
+                return val;
+            }
+        });
         if (input == null) {
             return;
         }
-        if (input.toUpperCase() === "RESET") {
-            await app.reset();
-        } else {
-            alert($l("You didn't type 'RESET'. Refusing to reset the app."));
-        }
+        await app.reset();
     }
 
-    async _unlock() {
-        const password = this.shadowRoot.querySelector("#passwordInput").value;
+    private async _unlock() {
+        const password = this._passwordInput.value;
 
         if (!password) {
             await alert($l("Please enter your password!"));
-            this.shadowRoot.querySelector("#passwordInput").focus();
+            this._passwordInput.focus();
             return;
         }
 
-        this.shadowRoot.querySelector("#passwordInput").blur();
-        this.shadowRoot.querySelector("#unlockButton").start();
-
-        if (this._unlocking) {
-            return;
-        }
-        this._unlocking = true;
+        this._passwordInput.blur();
+        this._unlockButton.start();
 
         try {
-            await Promise.all([app.unlock(password), wait(1000)]);
-            this.shadowRoot.querySelector("#unlockButton").success();
-            this._unlocking = false;
+            await app.unlock(password);
+            this._unlockButton.success();
         } catch (e) {
-            this.shadowRoot.querySelector("#unlockButton").fail();
-            this._unlocking = false;
+            this._unlockButton.fail();
             switch (e.code) {
                 case ErrorCode.DECRYPTION_FAILED:
                     this._rumble();
                     this._failCount++;
                     if (this._failCount > 2) {
-                        const doReset = promptForgotPassword();
+                        const doReset = await promptForgotPassword();
                         if (doReset) {
                             await app.reset();
                         }
                     } else {
-                        this.shadowRoot.querySelector("#passwordInput").focus();
+                        this._passwordInput.focus();
                     }
                     break;
                 case ErrorCode.UNSUPPORTED_CONTAINER_VERSION:
@@ -872,7 +852,7 @@ export class StartView extends LitElement {
                         checkForUpdates();
                     } else {
                         this._promptResetData(
-                            $l("Are you sure you want to reset the app? " + "WARNING: This will delete all your data!")
+                            $l("Are you sure you want to reset the app? WARNING: This will delete all your data!")
                         );
                     }
                     break;
@@ -888,8 +868,8 @@ export class StartView extends LitElement {
         }
     }
 
-    async _updatePwdStrength() {
-        const pwd = this.shadowRoot.querySelector("#newPasswordInput").value;
+    private async _updatePwdStrength() {
+        const pwd = this._newPasswordInput.value;
 
         if (!pwd) {
             this._pwdStrength = "";
@@ -902,7 +882,7 @@ export class StartView extends LitElement {
         this._pwdStrength = strength && $l("strength: {0}", strength);
     }
 
-    _getStartedHint(step: number) {
+    private _getStartedHint(step: number) {
         const text = [
             $l(
                 "Logging in will unlock advanced features like automatic backups and seamless " +
@@ -922,62 +902,52 @@ export class StartView extends LitElement {
         return html`${text}`;
     }
 
-    _getStartedClass(step: number) {
+    private _getStartedClass(step: number) {
         const currStep = this._currStep;
         return currStep > step ? "left" : currStep < step ? "right" : "center";
     }
 
-    _goToStep(s: number) {
+    private _goToStep(s: number) {
         if (s < this._currStep) {
             this._currStep = s;
         }
     }
 
-    async _openProductPage() {
-        const link = await getAppStoreLink();
-        window.open(link, "_system");
-    }
-
-    _openPwdHowto() {
+    private _openPwdHowto() {
         window.open("https://padlock.io/howto/choose-master-password/", "_system");
     }
 
-    _rumble() {
+    private _rumble() {
         const mode = app.initialized ? "unlock" : "get-started";
-        animateElement(this.shadowRoot.querySelector(`main.${mode} .hero`), {
+        animateElement(this.$(`main.${mode} .hero`), {
             animation: "rumble",
             duration: 200,
             clear: true
         });
     }
 
-    async _enterCloudPassword() {
-        if (this._restoringCloud) {
-            return;
-        }
-
-        const password = this.shadowRoot.querySelector("#cloudPwdInput").value;
+    private async _enterRemotePassword() {
+        const password = this._remotePasswordInput.value;
 
         if (!password) {
             await alert($l("Please enter your password!"));
-            this.shadowRoot.querySelector("#cloudPwdInput").focus();
+            this._remotePasswordInput.focus();
             return;
         }
 
-        this.shadowRoot.querySelector("#cloudPwdInput").blur();
-        this.shadowRoot.querySelector("#cloudPwdButton").start();
-        this._restoringCloud = true;
+        this._remotePasswordInput.blur();
+        this._remotePasswordButton.start();
 
         // TODO: Restore from cloud
         // this.collection
         //     .fetch(this.cloudSource)
         //     .then(() => {
-        //         this.shadowRoot.querySelector("#cloudPwdButton").success();
+        //         this._remotePasswordButton.success();
         //         this._restoringCloud = false;
         //         this._currStep = 5;
         //     })
         //     .catch(e => {
-        //         this.shadowRoot.querySelector("#cloudPwdButton").fail();
+        //         this._remotePasswordButton.fail();
         //         this._restoringCloud = false;
         //
         //         if (e.code === "decryption_failed") {
@@ -987,15 +957,13 @@ export class StartView extends LitElement {
         //         }
         //     });
 
-        track("Setup: Remote Password", { Email: this.settings.syncEmail });
+        track("Setup: Remote Password", { Email: this._emailInput.value });
     }
 
-    _forgotCloudPassword() {
+    private _forgotCloudPassword() {
         // TODO: Forgot cloud password
         // await promptForgotPassword();
-        // this._hasCloudData = false;
+        // this._hasRemoteData = false;
         // this._connected();
     }
 }
-
-window.customElements.define("pl-start-view", StartView);

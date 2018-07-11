@@ -33,14 +33,10 @@ export class Input extends BaseElement {
     @property() selectOnFocus: boolean = false;
     @property() value: string = "";
 
-    @query("textarea, input") inputElement: HTMLInputElement;
+    @query("textarea, input") private _inputElement: HTMLInputElement;
 
     static get activeInput() {
         return activeInput;
-    }
-
-    constructor() {
-        super();
     }
 
     _render(props: any) {
@@ -60,7 +56,7 @@ export class Input extends BaseElement {
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
-                    on-input="${() => (this.value = this.inputElement.value)}"
+                    on-input="${() => (this.value = this._inputElement.value)}"
                     on-focus="${(e: Event) => this._focused(e)}"
                     on-blur="${(e: Event) => this._blurred(e)}"
                     on-change="${(e: Event) => this._changeHandler(e)}"
@@ -88,7 +84,7 @@ export class Input extends BaseElement {
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
-                    on-input="${() => (this.value = this.inputElement.value)}"
+                    on-input="${() => (this.value = this._inputElement.value)}"
                     on-focus="${(e: Event) => this._focused(e)}"
                     on-blur="${(e: Event) => this._blurred(e)}"
                     on-change="${(e: Event) => this._changeHandler(e)}"
@@ -168,9 +164,13 @@ export class Input extends BaseElement {
         `;
     }
 
+    get validationMessage() {
+        return this._inputElement.validationMessage;
+    }
+
     _domChange() {
-        if (this.autosize && this.multiline && this.inputElement) {
-            autosize(this.inputElement);
+        if (this.autosize && this.multiline && this._inputElement) {
+            autosize(this._inputElement);
         }
         setTimeout(() => this._valueChanged(), 50);
     }
@@ -197,7 +197,7 @@ export class Input extends BaseElement {
 
     _changeHandler(e: Event) {
         e.stopPropagation();
-        this.value = this.inputElement.value;
+        this.value = this._inputElement.value;
         this.dispatchEvent(new CustomEvent("change"));
     }
 
@@ -214,25 +214,25 @@ export class Input extends BaseElement {
     }
 
     _valueChanged() {
-        this.invalid = this.inputElement && !this.inputElement.checkValidity();
+        this.invalid = this._inputElement && !this._inputElement.checkValidity();
         if (this.autosize && this.multiline) {
-            autosize.update(this.inputElement);
+            autosize.update(this._inputElement);
         }
     }
 
     focus() {
-        this.inputElement.focus();
+        this._inputElement.focus();
     }
 
     blur() {
-        this.inputElement.blur();
+        this._inputElement.blur();
     }
 
     selectAll() {
         try {
-            this.inputElement.setSelectionRange(0, this.value.length);
+            this._inputElement.setSelectionRange(0, this.value.length);
         } catch (e) {
-            this.inputElement.select();
+            this._inputElement.select();
         }
     }
 }
