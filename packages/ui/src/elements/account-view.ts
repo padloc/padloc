@@ -13,7 +13,7 @@ import { LoadingButton } from "./loading-button.js";
 // import "./promo.js";
 import "./toggle-button.js";
 
-class AccountView extends View {
+export class AccountView extends View {
     @query("#emailInput") private _emailInput: Input;
     @query("#loginButton") private _loginButton: LoadingButton;
 
@@ -450,10 +450,6 @@ class AccountView extends View {
 
     focusEmailInput() {
         this._emailInput.focus();
-    }
-
-    _back() {
-        this.dispatchEvent(new CustomEvent("account-back"));
     }
 
     _logout() {

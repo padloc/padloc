@@ -29,6 +29,10 @@ export class StartView extends LitElement {
             this.open = false;
             this.reset();
         });
+        app.addEventListener("reset", () => {
+            this.open = false;
+            this.reset();
+        });
     }
 
     async ready() {

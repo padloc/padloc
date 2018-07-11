@@ -1,13 +1,11 @@
-import { LitElement, html } from "@polymer/lit-element";
+import { BaseElement, element, html, property, listen } from "./base.js";
 import sharedStyles from "../styles/shared.js";
 
-class Toggle extends LitElement {
-    static get properties() {
-        return {
-            active: Boolean,
-            notap: Boolean
-        };
-    }
+@element("pl-toggle")
+export class Toggle extends BaseElement {
+    @property({ reflect: true })
+    active: boolean = false;
+    @property() notap: boolean = false;
 
     _render() {
         return html`
@@ -57,20 +55,8 @@ class Toggle extends LitElement {
 `;
     }
 
-    _didRender() {
-        if (this.active) {
-            this.setAttribute("active", "");
-        } else {
-            this.removeAttribute("active");
-        }
-    }
-
-    connectedCallback() {
-        super.connectedCallback();
-        this.addEventListener("click", this._tap.bind(this));
-    }
-
-    _tap() {
+    @listen("click")
+    _click() {
         if (!this.notap) {
             this.toggle();
         }
@@ -78,8 +64,6 @@ class Toggle extends LitElement {
 
     toggle() {
         this.active = !this.active;
-        this.dispatchEvent(new CustomEvent("change", { bubbles: true, composed: true }));
+        this.dispatch("change", { prev: this.active, curr: !this.active }, true, true);
     }
 }
-
-window.customElements.define("pl-toggle", Toggle);

@@ -5,7 +5,7 @@ import { isIOS } from "@padlock/core/lib/platform.js";
 import { app } from "../init.js";
 import { confirm } from "../dialog.js";
 import sharedStyles from "../styles/shared.js";
-import { AlertDialog } from "./dialog-alert.js";
+import { AlertDialog } from "./alert-dialog.js";
 import { BaseElement, html, property, query } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -322,11 +322,11 @@ export class ListView extends BaseElement {
 
         </div>
 
-        <pl-dialog-alert
+        <pl-alert-dialog
             id="sectionSelector"
             on-dialog-open="${(e: Event) => e.stopPropagation()}"
             on-dialog-close="${(e: Event) => e.stopPropagation()}">
-        </pl-dialog-alert>
+        </pl-alert-dialog>
 
         <div class="rounded-corners"></div>
 `;
@@ -449,14 +449,6 @@ export class ListView extends BaseElement {
 
     _toggleMenu() {
         this.dispatchEvent(new CustomEvent("toggle-menu"));
-    }
-
-    _openSettings() {
-        this.dispatchEvent(new CustomEvent("open-settings"));
-    }
-
-    _openCloudView() {
-        this.dispatchEvent(new CustomEvent("open-cloud-view"));
     }
 
     _scrollToSelected() {

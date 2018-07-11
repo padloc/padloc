@@ -8,7 +8,7 @@ export interface BasePrototype extends BaseElement {}
 
 export interface EventListenerDeclaration {
     eventName: string;
-    target: string | EventTarget;
+    target?: string | EventTarget;
     handler: (event?: Event) => void;
 }
 
@@ -21,9 +21,9 @@ export interface ChangeRecord {
 export type ObserveHandler = (changeRecords: ChangeRecord[]) => void;
 
 export class BaseElement extends LitElement {
-    static properties: { [prop: string]: { type: any; reflect: string | boolean } } = {};
-    static __listeners: EventListenerDeclaration[] = [];
-    static __observers: { [name: string]: ObserveHandler[] } = {};
+    static properties?: { [prop: string]: { type: any; reflect: string | boolean } };
+    static __listeners?: EventListenerDeclaration[];
+    static __observers?: { [name: string]: ObserveHandler[] };
 
     private _$: { [id: string]: HTMLElement } = {};
     private _$$: { [id: string]: NodeList } = {};
@@ -63,7 +63,7 @@ export class BaseElement extends LitElement {
      * @param bubbles Optional - if the event bubbles. Default is TRUE.
      * @param composed Optional - if the event bubbles past the shadow root. Default is TRUE.
      */
-    fire(name: string, detail?: any, bubbles: boolean = true, composed: boolean = true) {
+    dispatch(name: string, detail?: any, bubbles: boolean = true, composed: boolean = true) {
         if (name) {
             const init: any = {
                 bubbles: typeof bubbles === "boolean" ? bubbles : true,
@@ -83,9 +83,16 @@ export class BaseElement extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         const listeners = (<typeof BaseElement>this.constructor).__listeners;
+        if (!listeners) {
+            return;
+        }
         for (const listener of listeners) {
             if (listener.eventName && listener.handler) {
-                const target = typeof listener.target === "string" ? this.$(listener.target) : listener.target;
+                const target = listener.target
+                    ? typeof listener.target === "string"
+                        ? this.$(listener.target)
+                        : listener.target
+                    : this;
                 if (target && target.addEventListener) {
                     target.addEventListener(listener.eventName, e => {
                         listener.handler.call(this, e);
@@ -100,9 +107,9 @@ export class BaseElement extends LitElement {
         const properties = (<typeof BaseElement>this.constructor).properties;
         const map = new Map<ObserveHandler, ChangeRecord[]>();
         for (const propName in changedProps) {
-            const property = properties[propName];
+            const property = properties && properties[propName];
 
-            if (property.reflect) {
+            if (property && property.reflect) {
                 const attr = property.reflect === true ? propName : property.reflect;
                 const value = changedProps[propName];
                 if (value === true) {
@@ -114,7 +121,7 @@ export class BaseElement extends LitElement {
                 }
             }
 
-            const handlers = observers[propName];
+            const handlers = observers && observers[propName];
             if (handlers && handlers.length) {
                 const changeRecord: ChangeRecord = {
                     path: propName,
@@ -131,11 +138,7 @@ export class BaseElement extends LitElement {
             }
         }
         for (const handler of map.keys()) {
-            try {
-                handler.call(this, map.get(handler));
-            } catch (err) {
-                console.warn(err);
-            }
+            handler.call(this, map.get(handler));
         }
         super._propertiesChanged(currentProps, changedProps, oldProps);
     }
@@ -216,7 +219,7 @@ export function queryAll(selector: string, cached = true) {
  * @param eventName name of event, e.g. 'click'
  * @param selector EventTarget or a selector to the node to listen to e.g. '#myButton'
  */
-export function listen(eventName: string, target: string | EventTarget) {
+export function listen(eventName: string, target?: string | EventTarget) {
     return (prototype: any, methodName: string) => {
         const constructor = prototype.constructor;
         if (!constructor.hasOwnProperty("__listeners")) {

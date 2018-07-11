@@ -1,31 +1,19 @@
-import { LitElement, html } from "@polymer/lit-element";
+import { BaseElement, element, html, property, query } from "./base.js";
 import sharedStyles from "../styles/shared.js";
 
-class Slider extends LitElement {
-    static get properties() {
-        return {
-            min: Number,
-            max: Number,
-            value: Number,
-            unit: String,
-            step: Number,
-            label: String,
-            hideValue: Boolean
-        };
-    }
+@element("pl-slider")
+export class Slider extends BaseElement {
+    @property() min: number = 1;
+    @property() max: number = 10;
+    @property() value: number = this.min;
+    @property() unit: string = "";
+    @property() step: number = 1;
+    @property() label: string = "";
+    @property() hideValue: boolean = false;
 
-    constructor() {
-        super();
-        this.min = 1;
-        this.max = 10;
-        this.value = this.min;
-        this.unit = "";
-        this.step = 1;
-        this.label = "";
-        this.hideValue = false;
-    }
+    @query("input") private _input: HTMLInputElement;
 
-    _render(props: any) {
+    _render(props: this) {
         return html`
         <style include="shared">
             ${sharedStyles}
@@ -110,18 +98,9 @@ class Slider extends LitElement {
 `;
     }
 
-    _strValueChanged() {
-        this.value = parseFloat(this._strValue);
-    }
-
-    _valueChanged() {
-        this._strValue = this.value.toString();
-    }
-
-    _inputChange() {
-        this.value = parseFloat(this.shadowRoot.querySelector("input").value);
-        this.dispatchEvent(new CustomEvent("change", { bubbles: true, composed: true }));
+    private _inputChange() {
+        const prev = this.value;
+        this.value = parseFloat(this._input.value);
+        this.dispatch("change", { prev: prev, curr: this.value }, true, true);
     }
 }
-
-window.customElements.define("pl-slider", Slider);

@@ -1,47 +1,43 @@
-import { html } from "@polymer/lit-element";
-import { Record, Field } from "@padlock/core/lib/data.js";
+import { Store, Record, Field } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
 import { View } from "./view.js";
 import { confirm, prompt, choose, lineUpDialog, generate, getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app } from "../init.js";
+import { html, property, query, listen, observe } from "./base.js";
 import "./icon.js";
-import "./input.js";
+import { Input } from "./input.js";
 import "./record-field.js";
 import "./dialog-field.js";
 
 export class RecordView extends View {
-    record: Record | null;
+    @property() store: Store | null = null;
+    @property() record: Record | null = null;
 
-    static get properties() {
-        return {
-            store: Object,
-            record: Object
-        };
+    @query("#nameInput") _nameInput: Input;
+
+    @listen("lock", app)
+    _locked() {
+        this.record = null;
+        const fieldDialog = getDialog("pl-dialog-field");
+        fieldDialog.open = false;
+        fieldDialog.field = null;
     }
 
-    connectedCallback() {
-        super.connectedCallback();
-        app.addEventListener("lock", () => {
-            this.record = null;
-            const fieldDialog = getDialog("pl-dialog-field");
-            fieldDialog.open = false;
-            fieldDialog.field = null;
-        });
-        app.addEventListener("record-changed", (e: CustomEvent) => {
-            if (e.detail.record === this.record) {
-                this.requestRender();
-            }
-        });
+    @listen("record-changed", app)
+    _recordChanged(e: CustomEvent) {
+        if (e.detail.record === this.record) {
+            this.requestRender();
+        }
     }
 
-    _shouldRender(props: { record?: Record }) {
-        return !!props.record;
+    _shouldRender() {
+        return super._shouldRender() && !!this.record;
     }
 
-    _render(props: { record: Record }) {
-        const record = props.record;
+    _render({ record }: this) {
+        const { name, fields, tags } = record!;
 
         return html`
         <style>
@@ -137,12 +133,12 @@ export class RecordView extends View {
 
         <header>
 
-            <pl-icon icon="close" class="tap" on-click="${() => this.close()}"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="${() => this._back()}"></pl-icon>
 
             <pl-input
                 id="nameInput"
                 class="name tap"
-                value="${record.name}"
+                value="${name}"
                 placeholder="${$l("Enter Record Name")}"
                 select-on-focus=""
                 autocapitalize=""
@@ -158,7 +154,7 @@ export class RecordView extends View {
 
             <div class="tags animate">
 
-                ${record.tags.map(
+                ${tags.map(
                     (tag: string) => html`
                     <div class="tag tap" on-click="${() => this._removeTag(tag)}">
                         <div class="tag-name">${tag}</div>
@@ -179,7 +175,7 @@ export class RecordView extends View {
 
             <div class="fields">
 
-                ${record.fields.map(
+                ${fields.map(
                     (field: Field, index: number) => html`
 
                     <div class="animate">
@@ -187,7 +183,7 @@ export class RecordView extends View {
                         <pl-record-field
                             field="${field}"
                             record="${record}"
-                            on-field-change="${() => this._updateRecord()}"
+                            on-field-change="${(e: CustomEvent) => this._changeField(index, e.detail.changes)}"
                             on-field-delete="${() => this._deleteField(index)}">
                         </pl-record-field>
 
@@ -218,21 +214,21 @@ export class RecordView extends View {
     _didRender() {
         setTimeout(() => {
             if (this.record && !this.record.name) {
-                this.shadowRoot.querySelector("#nameInput").focus();
+                this._nameInput.focus();
             }
         }, 500);
     }
 
     _updateName() {
-        if (!this.record) {
-            return;
+        if (!this.store || !this.record) {
+            throw "store or record member not set";
         }
-        app.updateRecord(this.store, this.record, { name: this.shadowRoot.querySelector("#nameInput").value });
+        app.updateRecord(this.store, this.record, { name: this._nameInput.value });
     }
 
     async _deleteField(index: number) {
-        if (!this.record) {
-            return;
+        if (!this.store || !this.record) {
+            throw "store or record member not set";
         }
         const confirmed = await confirm($l("Are you sure you want to delete this field?"), $l("Delete"));
         const fields = this.record.fields.filter((_, i) => i !== index);
@@ -241,9 +237,18 @@ export class RecordView extends View {
         }
     }
 
+    async _changeField(index: number, changes: { name?: string; value?: string; masked?: boolean }) {
+        if (!this.store || !this.record) {
+            throw "store or record member not set";
+        }
+        const fields = [...this.record.fields];
+        fields[index] = Object.assign({}, fields[index], changes);
+        app.updateRecord(this.store, this.record, { fields: fields });
+    }
+
     async _deleteRecord() {
-        if (!this.record) {
-            return;
+        if (!this.store || !this.record) {
+            throw "store or record member not set";
         }
         const confirmed = await confirm($l("Are you sure you want to delete this record?"), $l("Delete"));
         if (confirmed) {
@@ -252,8 +257,8 @@ export class RecordView extends View {
     }
 
     async _addField(field = { name: "", value: "", masked: false }) {
-        if (!this.record) {
-            return;
+        if (!this.store || !this.record) {
+            throw "store or record member not set";
         }
         const result = await lineUpDialog("pl-dialog-field", (d: any) => d.openField(field, true));
         switch (result.action) {
@@ -278,8 +283,8 @@ export class RecordView extends View {
     }
 
     async _removeTag(tag: string) {
-        if (!this.record) {
-            return;
+        if (!this.store || !this.record) {
+            throw "store or record member not set";
         }
         const confirmed = await confirm($l("Do you want to remove this tag?"), $l("Remove"), $l("Cancel"), {
             title: $l("Remove Tag")
@@ -290,8 +295,8 @@ export class RecordView extends View {
     }
 
     async _createTag() {
-        if (!this.record) {
-            return;
+        if (!this.store || !this.record) {
+            throw "store or record member not set";
         }
         const tag = await prompt("", $l("Enter Tag Name"), "text", $l("Add Tag"), false, false);
         if (tag && !this.record.tags.includes(tag)) {
@@ -300,8 +305,8 @@ export class RecordView extends View {
     }
 
     async _addTag() {
-        if (!this.record) {
-            return;
+        if (!this.store || !this.record) {
+            throw "store or record member not set";
         }
         const tags = this.store.tags.filter((tag: string) => !this.record!.tags.includes(tag));
         if (!tags.length) {
@@ -320,21 +325,20 @@ export class RecordView extends View {
     }
 
     _nameEnter() {
-        this.shadowRoot.querySelector("#nameInput").blur();
+        this._nameInput.blur();
     }
 
-    animate() {
-        setTimeout(() => {
-            animateCascade(this.shadowRoot.querySelectorAll(".animate"), { fullDuration: 800, fill: "both" });
-        }, 100);
-    }
-
-    close() {
-        this.dispatchEvent(new CustomEvent("record-close"));
+    @observe("active")
+    _animate() {
+        if (this.active) {
+            setTimeout(() => {
+                animateCascade(this.$$(".animate"), { fullDuration: 800, fill: "both" });
+            }, 100);
+        }
     }
 
     edit() {
-        this.shadowRoot.querySelector("#nameInput").focus();
+        this._nameInput.focus();
     }
 }
 

@@ -1,36 +1,32 @@
-import { LitElement, html } from "@polymer/lit-element";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Field } from "@padlock/core/lib/data.js";
 import sharedStyles from "../styles/shared.js";
+import { BaseElement, element, html, property, query } from "./base.js";
+import { Input } from "./input.js";
 import "./dialog.js";
 import "./icon.js";
 
-class FieldDialog extends LitElement {
-    static get properties() {
-        return {
-            editing: Boolean,
-            field: Object,
-            open: Boolean
-        };
-    }
+export type FieldDialogAction = "edit" | "delete" | "generate" | "copy" | "dismiss";
 
-    get nameInput() {
-        return this.shadowRoot.querySelector("#nameInput");
-    }
+export interface FieldDialogResult {
+    action: FieldDialogAction;
+    name: string;
+    value: string;
+}
 
-    get valueInput() {
-        return this.shadowRoot.querySelector("#valueInput");
-    }
+@element("pl-dialog-field")
+export class FieldDialog extends BaseElement {
+    @property({ reflect: true })
+    editing: boolean = false;
+    @property() field: Field | null = null;
+    @property() open: boolean = false;
 
-    _didRender() {
-        if (this.editing) {
-            this.setAttribute("editing", "");
-        } else {
-            this.removeAttribute("editing");
-        }
-    }
+    @query("#nameInput") private _nameInput: Input;
+    @query("#valueInput") private _valueInput: Input;
 
-    _render(props: { editing: boolean; field: Field; open: boolean }) {
+    private _resolve: ((_: FieldDialogResult) => void) | null;
+
+    _render(props: this) {
         return html`
         <style>
             ${sharedStyles}
@@ -122,7 +118,7 @@ class FieldDialog extends LitElement {
             }
         </style>
 
-        <pl-dialog open="${props.open}" prevent-dismiss="${props.editing}" on-dialog-dismiss="${() => this._close()}">
+        <pl-dialog open="${props.open}" prevent-dismiss="${props.editing}" on-dialog-dismiss="${() => this._dismiss()}">
 
             <div class="header">
 
@@ -138,7 +134,7 @@ class FieldDialog extends LitElement {
                 <pl-icon
                     icon="cancel"
                     class="tap"
-                    on-click="${() => this._close()}"
+                    on-click="${() => this._dismiss()}"
                     hidden?="${props.editing}">
                 </pl-icon>
 
@@ -195,15 +191,15 @@ class FieldDialog extends LitElement {
     }
 
     openField(field: Field, edit = false, presets: { name?: string; value?: string } = {}) {
-        console.log(this.nameInput);
-        if (!this.nameInput) {
+        console.log(this._nameInput);
+        if (!this._nameInput) {
             return;
         }
         this.open = true;
         this.editing = false;
         this.field = field;
-        this.nameInput.value = presets.name || this.field.name;
-        this.valueInput.value = presets.value || this.field.value;
+        this._nameInput.value = presets.name || this.field.name;
+        this._valueInput.value = presets.value || this.field.value;
         if (edit) {
             this._edit();
         }
@@ -212,19 +208,19 @@ class FieldDialog extends LitElement {
         });
     }
 
-    _closeWithAction(action?: string) {
+    _closeWithAction(action: FieldDialogAction) {
         this.open = false;
         this._resolve &&
             this._resolve({
                 action: action,
-                name: this.nameInput.value,
-                value: this.valueInput.value
+                name: this._nameInput.value,
+                value: this._valueInput.value
             });
         this._resolve = null;
     }
 
-    _close() {
-        this._closeWithAction();
+    _dismiss() {
+        this._closeWithAction("dismiss");
     }
 
     _delete() {
@@ -242,24 +238,22 @@ class FieldDialog extends LitElement {
     _edit() {
         this.editing = true;
         setTimeout(() => {
-            if (!this.nameInput.value) {
-                this.nameInput.focus();
+            if (!this._nameInput.value) {
+                this._nameInput.focus();
             } else {
-                this.valueInput.focus();
+                this._valueInput.focus();
             }
         }, 100);
     }
 
     _discardChanges() {
-        this.nameInput.value = this.field.name;
-        this.valueInput.value = this.field.value;
-        this._close();
+        this._nameInput.value = this.field && this.field.name || "";
+        this._valueInput.value = this.field && this.field.value || "";
+        this._dismiss();
     }
 
     _saveChanges() {
-        this.field.name = this.nameInput.value;
-        this.field.value = this.valueInput.value;
-        this._closeWithAction("edited");
+        this._closeWithAction("edit");
     }
 
     _inputClicked(e: any) {
@@ -269,8 +263,6 @@ class FieldDialog extends LitElement {
     }
 
     _nameInputEnter() {
-        this.valueInput.focus();
+        this._valueInput.focus();
     }
 }
-
-window.customElements.define("pl-dialog-field", FieldDialog);

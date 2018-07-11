@@ -1,7 +1,6 @@
-import { html } from "@polymer/lit-element";
 import { getClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Record } from "@padlock/core/lib/data.js";
+import { Record, Store } from "@padlock/core/lib/data.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import * as imp from "@padlock/core/lib/import.js";
 import {
@@ -18,15 +17,18 @@ import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt } from "../dialog";
 import { animateCascade } from "../animation";
 import { app } from "../init.js";
+import { element, html, property, query } from "./base.js";
 // import "./dialog-export.js";
 import "./icon.js";
-import "./slider.js";
-import "./toggle-button.js";
+import { Slider } from "./slider.js";
+import { ToggleButton } from "./toggle-button.js";
+import { Input } from "./input.js";
 
-class SettingsView extends View {
-    static get properties() {
-        return { store: Object };
-    }
+@element("pl-settings-view")
+export class SettingsView extends View {
+    @property() store: Store;
+
+    @query("#importFile") _fileInput: HTMLInputElement;
 
     _render() {
         const { settings, account, session } = app;
@@ -157,7 +159,7 @@ class SettingsView extends View {
                     id="autoLockDelaySlider"
                     min="1"
                     max="10"
-                    step="1" 
+                    step="1"
                     value="${settings.autoLockDelay}"
                     unit="${$l(" min")}"
                     label="${$l("After")}"
@@ -248,16 +250,16 @@ class SettingsView extends View {
                     label="${$l("Automatically Install Updates")}"
                     class="tap"
                     reverse
-                    on-change="${() => this._desktopSettingsChanged()}"
-                ></pl-toggle-button>
+                    on-change="${() => this._desktopSettingsChanged()}">
+                </pl-toggle-button>
 
                 <pl-toggle-button
                     id="betaReleasesButton"
                     label="${$l("Install Beta Releases")}"
                     class="tap"
                     reverse
-                    on-change="${() => this._desktopSettingsChanged()}"
-                ></pl-toggle-button>
+                    on-change="${() => this._desktopSettingsChanged()}">
+                </pl-toggle-button>
 
                 <button on-click="${() => this._checkForUpdates()}" class="tap">${$l("Check For Updates...")}</button>
 
@@ -318,10 +320,6 @@ class SettingsView extends View {
 `;
     }
 
-    get fileInput() {
-        return this.shadowRoot.querySelector("#importFile");
-    }
-
     // connectedCallback() {
     //     super.connectedCallback();
     //     if (isElectron()) {
@@ -331,51 +329,45 @@ class SettingsView extends View {
     //     }
     // }
 
-    animate() {
-        animateCascade(this.shadowRoot.querySelectorAll("section"), { initialDelay: 200 });
+    _activated() {
+        animateCascade(this.$$("section"), { initialDelay: 200 });
     }
 
-    _updateSettings() {
+    private _updateSettings() {
         app.setSettings({
-            autoLock: this.shadowRoot.querySelector("#autoLockButton").active,
-            autoLockDelay: this.shadowRoot.querySelector("#autoLockDelaySlider").value,
-            autoSync: this.shadowRoot.querySelector("#autoSyncButton").active,
-            customServer: this.shadowRoot.querySelector("#customServerButton").active,
-            customServerUrl: this.shadowRoot.querySelector("#customServerUrlInput").value
+            autoLock: (this.$("#autoLockButton") as ToggleButton).active,
+            autoLockDelay: (this.$("#autoLockDelaySlider") as Slider).value,
+            autoSync: (this.$("#autoSyncButton") as ToggleButton).active,
+            customServer: (this.$("#customServerButton") as ToggleButton).active,
+            customServerUrl: (this.$("#customServerUrlInput") as Input).value
         });
     }
 
-    _back() {
-        this.dispatchEvent(new CustomEvent("settings-back"));
-    }
-
     //* Opens the change password dialog and resets the corresponding input elements
-    async _changePassword() {
-        const success = await promptPassword(
-            this.password,
-            $l("Are you sure you want to change your master password? Enter your current password to continue!"),
-            $l("Confirm"),
-            $l("Cancel")
-        );
+    private async _changePassword() {
+        const success =
+            !app.password ||
+            (await promptPassword(
+                app.password,
+                $l("Are you sure you want to change your master password? Enter your current password to continue!"),
+                $l("Confirm"),
+                $l("Cancel")
+            ));
 
         if (!success) {
             return;
         }
 
-        const newPwd = await prompt(
-            $l("Now choose a new master password!"),
-            $l("Enter New Password"),
-            "password",
-            $l("Confirm"),
-            $l("Cancel"),
-            false,
-            async (val: string) => {
+        const newPwd = await prompt($l("Now choose a new master password!"), {
+            placeholder: $l("Enter New Password"),
+            type: "password",
+            validate: async (val: string) => {
                 if (val === "") {
                     throw $l("Please enter a password!");
                 }
                 return val;
             }
-        );
+        });
 
         if (newPwd === null) {
             return;
@@ -411,19 +403,15 @@ class SettingsView extends View {
         alert($l("Master password changed successfully."), { type: "success" });
     }
 
-    _openWebsite() {
+    private _openWebsite() {
         window.open("https://padlock.io", "_system");
     }
 
-    _sendMail() {
+    private _sendMail() {
         window.open("mailto:support@padlock.io", "_system");
     }
 
-    _openGithub() {
-        window.open("https://github.com/maklesoft/padlock/", "_system");
-    }
-
-    async _resetData() {
+    private async _resetData() {
         const confirmed = await promptPassword(
             app.password!,
             $l(
@@ -438,7 +426,7 @@ class SettingsView extends View {
         }
     }
 
-    async _import() {
+    private async _import() {
         const options = [$l("From Clipboard")];
         if (!isCordova()) {
             options.push($l("From File"));
@@ -452,13 +440,13 @@ class SettingsView extends View {
                 this._importFromClipboard();
                 break;
             case 1:
-                this.fileInput.click();
+                this._fileInput.click();
                 break;
         }
     }
 
-    async _importFile() {
-        const file = this.fileInput.files[0];
+    private async _importFile() {
+        const file = this._fileInput.files![0];
         const reader = new FileReader();
         reader.onload = async () => {
             try {
@@ -492,13 +480,13 @@ class SettingsView extends View {
                 }
             }
 
-            this.fileInput.value = "";
+            this._fileInput.value = "";
         };
 
         reader.readAsText(file);
     }
 
-    async _importFromClipboard() {
+    private async _importFromClipboard() {
         try {
             await this._importString(await getClipboard());
         } catch (e) {
@@ -520,24 +508,22 @@ class SettingsView extends View {
         }
     }
 
-    async _importString(rawStr: string): Promise<void> {
+    private async _importString(rawStr: string): Promise<void> {
         const isPadlock = imp.isFromPadlock(rawStr);
         const isLastPass = imp.isFromLastPass(rawStr);
         const isCSV = await imp.isCSV(rawStr);
         let records: Record[] = [];
 
         if (isPadlock) {
-            const pwd = await prompt(
-                $l("This file is protected by a password."),
-                $l("Enter Password"),
-                "password",
-                $l("Confirm"),
-                $l("Cancel")
-            );
+            const pwd = await prompt($l("This file is protected by a password."), {
+                placeholder: $l("Enter Password"),
+                type: "password"
+            });
 
             if (pwd === null) {
                 return;
             }
+
             records = await imp.fromPadlock(rawStr, pwd);
         } else if (isLastPass) {
             records = await imp.fromLastPass(rawStr);
@@ -573,36 +559,11 @@ class SettingsView extends View {
         }
     }
 
-    _isMobile() {
-        return isCordova();
-    }
-
-    _openSource() {
+    private _openSource() {
         window.open("https://github.com/maklesoft/padlock/", "_system");
     }
 
-    _autoLockInfo() {
-        return $l(
-            "Tell Padlock to automatically lock the app after a certain period of " +
-                "inactivity in case you leave your device unattended for a while."
-        );
-    }
-
-    _peekValuesInfo() {
-        return $l(
-            "If enabled allows peeking at field values in the record list " +
-                "by moving the mouse cursor over the corresponding field."
-        );
-    }
-
-    _resetDataInfo() {
-        return $l(
-            "Want to start fresh? Reseting Padlock will delete all your locally stored data and settings " +
-                "and will restore the app to the state it was when you first launched it."
-        );
-    }
-
-    async _promptReview() {
+    private async _promptReview() {
         const choice = await choose(
             $l(
                 "So glad to hear you like our app! Would you mind taking a second to " +
@@ -615,45 +576,37 @@ class SettingsView extends View {
         }
     }
 
-    _desktopSettingsChanged() {
+    private _desktopSettingsChanged() {
         getDesktopSettings().set({
-            autoDownloadUpdates: this.$.autoUpdatesButton.active,
-            allowPrerelease: this.$.betaReleasesButton.active
+            autoDownloadUpdates: (this.$("autoUpdatesButton") as ToggleButton).active,
+            allowPrerelease: (this.$("betaReleasesButton") as ToggleButton).active
         });
     }
 
-    _checkForUpdates() {
+    private _checkForUpdates() {
         checkForUpdates();
     }
 
-    _saveDBAs() {
+    private _saveDBAs() {
         saveDBAs();
     }
 
-    _loadDB() {
+    private _loadDB() {
         loadDB();
     }
 
-    _export() {
-        const exportDialog = this.getSingleton("pl-dialog-export");
-        exportDialog.export(this.records);
+    private _export() {
+        // TODO
     }
 
-    _autoSyncInfoText() {
-        return $l(
-            "Enable Auto Sync to automatically synchronize your data with " +
-                "your Padlock online account every time you make a change!"
-        );
-    }
-
-    async _toggleCustomServer() {
+    private async _toggleCustomServer() {
         if (app.session && app.session.active) {
-            return this.alert($l("Please log out of the current server first!"));
+            return alert($l("Please log out of the current server first!"));
         }
 
-        const customHost = this.shadowRoot.querySelector("#customServerButton").active;
+        const customHost = (this.$("#customServerButton") as ToggleButton).active;
         if (customHost) {
-            const confirmed = this.confirm(
+            const confirmed = confirm(
                 $l(
                     "Are you sure you want to use a custom server for synchronization? " +
                         "This option is only recommended for advanced users!"
@@ -671,5 +624,3 @@ class SettingsView extends View {
         }
     }
 }
-
-window.customElements.define("pl-settings-view", SettingsView);

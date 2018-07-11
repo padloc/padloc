@@ -139,7 +139,7 @@ export class Dialog extends BaseElement {
             }, 400);
         }
 
-        this.dispatchEvent(new CustomEvent(this.open ? "dialog-open" : "dialog-close", { bubbles: true }));
+        this.dispatch(this.open ? "dialog-open" : "dialog-close", { dialog: this }, true, true);
     }
 
     dismiss() {

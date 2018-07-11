@@ -1,12 +1,20 @@
 import { localize } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared";
-import { BaseElement, html, property } from "./base.js";
+import { BaseElement, element, html, property } from "./base.js";
 import "./dialog.js";
 
 const defaultButtonLabel = localize("OK");
 
-export type AlertType = "info" | "warning" | "plain";
+export type AlertType = "info" | "warning" | "plain" | "question" | "success";
+export interface AlertOptions {
+    title?: string;
+    options?: string[];
+    type?: AlertType;
+    preventDismiss?: boolean;
+    hideIcon?: boolean;
+}
 
+@element("pl-alert-dialog")
 export class AlertDialog extends BaseElement {
     @property() buttonLabel: string = defaultButtonLabel;
     @property() dialogTitle: string = "";
@@ -83,7 +91,7 @@ export class AlertDialog extends BaseElement {
 
     show(
         message = "",
-        { title = "", options = ["OK"], type = "info", preventDismiss = false, hideIcon = false }: Partial<this> = {}
+        { title = "", options = ["OK"], type = "info", preventDismiss = false, hideIcon = false }: AlertOptions = {}
     ): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
@@ -133,5 +141,3 @@ export class AlertDialog extends BaseElement {
 
     _hideInfo() {}
 }
-
-window.customElements.define("pl-dialog-alert", AlertDialog);

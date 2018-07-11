@@ -1,14 +1,16 @@
 import { Store } from "@padlock/core/lib/data.js";
-import { getPlatformName, getDeviceInfo, isTouch } from "@padlock/core/lib/platform.js";
+import { getPlatformName, getDeviceInfo } from "@padlock/core/lib/platform.js";
+import { wait } from "@padlock/core/lib/util.js";
 import config from "../styles/config.js";
 import sharedStyles from "../styles/shared.js";
 import { app } from "../init.js";
-import { BaseElement, html, property, query } from "./base.js";
-import "./account-view.js";
+import { BaseElement, html, property, query, listen } from "./base.js";
+import { AccountView } from "./account-view.js";
 import "./icon.js";
+import { View } from "./view.js";
 import { ListView } from "./list-view.js";
 import { RecordView } from "./record-view.js";
-import "./settings-view.js";
+import { SettingsView } from "./settings-view.js";
 import { StartView } from "./start-view.js";
 import { TitleBar } from "./title-bar.js";
 import "./menu.js";
@@ -24,8 +26,8 @@ const cordovaReady = new Promise(resolve => {
 });
 
 class App extends BaseElement {
-    @property() private _currentView: string = "";
-    @property() private _menuOpen: boolean = false;
+    @property({ reflect: "show-menu" })
+    private _showMenu: boolean = false;
     @property() private _currentStore: Store = app.mainStore;
 
     @query("#main") private _main: HTMLDivElement;
@@ -33,32 +35,16 @@ class App extends BaseElement {
     @query("pl-list-view") private _listView: ListView;
     @query("pl-record-view") private _recordView: RecordView;
     @query("pl-start-view") private _startView: StartView;
+    @query("pl-settings-view") private _settingsView: SettingsView;
+    @query("pl-account-view") private _accountView: AccountView;
+
+    private _currentView: View | null;
 
     constructor() {
         super();
-        // If we want to capture all keydown events, we have to add the listener
-        // directly to the document
-        document.addEventListener("keydown", this._keydown.bind(this), false);
 
-        // Listen for android back button
-        document.addEventListener("backbutton", this._back.bind(this), false);
-
-        document.addEventListener("dialog-open", () => this.classList.add("dialog-open"));
-        document.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
-
-        app.addEventListener("lock", () => {
-            this._main.classList.remove("active");
-            this._menuOpen = false;
-            clearDialogs();
-            clearClipboard();
-            this._currentView = "";
-        });
-
-        app.addEventListener("unlock", () => {
-            setTimeout(() => {
-                this._main.classList.add("active");
-            }, 600);
-        });
+        this.addEventListener("dialog-open", () => this.classList.add("dialog-open"));
+        this.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
     }
 
     get _isNarrow() {
@@ -92,16 +78,6 @@ class App extends BaseElement {
         if (className) {
             this.classList.add(className);
             this._titleBar.classList.add(className);
-        }
-
-        if (!isTouch()) {
-            window.addEventListener("focus", () =>
-                setTimeout(() => {
-                    if (app.locked) {
-                        this._startView.focus();
-                    }
-                }, 100)
-            );
         }
     }
 
@@ -203,7 +179,7 @@ class App extends BaseElement {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
             }
 
-            #main.show-menu {
+            :host([show-menu]) #main {
                 transform: translate3d(calc(var(--menu-width) - var(--menu-icon-width)), 0, 0) rotateY(-5deg);
             }
 
@@ -216,7 +192,7 @@ class App extends BaseElement {
                 overflow: hidden;
             }
 
-            #pages {
+            #views {
                 position: relative;
                 flex: 1.62; /* Golden Ratio ;) */
                 margin-left: var(--gutter-width);
@@ -224,16 +200,16 @@ class App extends BaseElement {
                 perspective: 1000px;
             }
 
-            .view {
+            #views > * {
                 transform: translate3d(0, 0, 0);
                 overflow: hidden;
             }
 
-            .view.showing {
+            #views > *.showing {
                 pointer-events: auto;
             }
 
-            .view:not(.showing) {
+            #views > *:not(.showing) {
                 opacity: 0;
             }
 
@@ -254,7 +230,7 @@ class App extends BaseElement {
             }
 
             @media (max-width: 900px) {
-                #pages {
+                #views {
                     flex: 1;
                 }
             }
@@ -264,11 +240,11 @@ class App extends BaseElement {
                     --menu-icon-width: 0px;
                 }
 
-                .showing-pages #listView {
+                .showing-views #listView {
                     transform: translate3d(0, 0, -150px) rotateX(10deg);
                 }
 
-                #pages {
+                #views {
                     @apply --fullbleed;
                     box-shadow: none;
                     z-index: 1;
@@ -286,10 +262,10 @@ class App extends BaseElement {
 
         <pl-menu
             id="menu"
-            open="${this._menuOpen}"
-            on-menu-close="${() => (this._menuOpen = false)}"
-            on-open-settings="${() => this._openSettings()}"
-            on-open-account-view="${() => this._openAccountView()}">
+            open="${this._showMenu}"
+            on-menu-close="${() => (this._showMenu = false)}"
+            on-open-settings="${() => this._openView(this._settingsView)}"
+            on-open-account-view="${() => this._openView(this._accountView)}">
         </pl-menu>
 
         <div id="main">
@@ -297,39 +273,21 @@ class App extends BaseElement {
             <pl-list-view
                 id="listView"
                 store="${this._currentStore}"
-                on-open-settings="${() => this._openSettings()}"
-                on-open-account-view="${() => this._openAccountView()}"
                 on-select-record="${(e: CustomEvent) => this._recordSelected(e)}"
                 on-toggle-menu="${() => this._toggleMenu()}">
             </pl-list-view>
 
-            <div id="pages">
+            <div id="views">
 
                 <div id="placeholderView">
-
                     <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
-
                 </div>
 
-                <pl-record-view
-                    id="recordView"
-                    class="view"
-                    store="${this._currentStore}"
-                    on-record-close="${() => this._closeRecord()}">
-                </pl-record-view>
+                <pl-record-view store="${this._currentStore}"></pl-record-view>
 
-                <pl-settings-view
-                    id="settingsView"
-                    class="view"
-                    store="${this._currentStore}"
-                    on-settings-back="${() => this._settingsBack()}">
-                </pl-settings-view>
+                <pl-settings-view store="${this._currentStore}"></pl-settings-view>
 
-                <pl-account-view
-                    id="accountView"
-                    class="view"
-                    on-account-back="${() => this._accountViewBack()}">
-                </pl-account-view>
+                <pl-account-view></pl-account-view>
 
             </div>
 
@@ -339,76 +297,71 @@ class App extends BaseElement {
 `;
     }
 
-    _didRender(_: any, changed: any, prev: any) {
-        this._main.classList.toggle("show-menu", this._menuOpen);
-        if (changed && typeof changed._currentView !== "undefined") {
-            this._currentViewChanged(changed._currentView, prev._currentView);
-        }
+    @listen("lock", app)
+    _locked() {
+        this._main.classList.remove("active");
+        this._showMenu = false;
+        clearDialogs();
+        clearClipboard();
     }
 
-    _closeRecord() {
-        this._listView.clearSelection();
+    @listen("unlock", app)
+    _unlocked() {
+        setTimeout(() => {
+            this._main.classList.add("active");
+        }, 600);
+    }
+
+    @listen("focus", window)
+    _focused() {
+        setTimeout(() => {
+            if (app.locked) {
+                this._startView.focus();
+            }
+        }, 100);
     }
 
     _recordSelected(e: CustomEvent) {
         const record = e.detail.record;
         if (record) {
             this._recordView.record = record;
-            this._currentView = "recordView";
-        } else if (this._currentView == "recordView") {
-            this._currentView = "";
+            this._openView(this._recordView);
         }
     }
 
-    _openSettings() {
-        this._currentView = "settingsView";
-        this._listView.clearSelection();
-    }
+    async _openView(view: View | null) {
+        this._main.classList.toggle("showing-views", !!view);
 
-    _settingsBack() {
-        this._currentView = "";
-    }
-
-    _openAccountView() {
-        this._currentView = "accountView";
-        this._listView.clearSelection();
-        // if (!this.settings.syncConnected && !isTouch()) {
-        //     setTimeout(() => this.$.accountView.focusEmailInput(), 500);
-        // }
-    }
-
-    _accountViewBack() {
-        this._currentView = "";
-    }
-
-    _currentViewChanged(curr: string, prev: string) {
-        this._main.classList.toggle("showing-pages", !!curr);
-
-        const currView = curr && this[`_${curr}`];
-        const prevView = curr && this[`_${prev}`];
-
-        if (currView) {
-            animateElement(currView, {
+        if (view) {
+            animateElement(view, {
                 animation: "viewIn",
                 duration: 400,
                 easing: "cubic-bezier(0.6, 0, 0.2, 1)",
                 fill: "backwards"
             });
-            currView.classList.add("showing");
-            currView.animate();
+            view.classList.add("showing");
+            view.active = true;
         }
-        if (prevView) {
-            animateElement(prevView, {
-                animation: !curr || this._isNarrow ? "viewOutSide" : "viewOutBack",
+        if (this._currentView) {
+            animateElement(this._currentView, {
+                animation: !view || this._isNarrow ? "viewOutSide" : "viewOutBack",
                 duration: 400,
                 easing: "cubic-bezier(0.6, 0, 0.2, 1)",
                 fill: "forwards"
             });
-            setTimeout(() => prevView.classList.remove("showing"), 350);
+            await wait(350);
+            this._currentView.classList.remove("showing");
+            this._currentView.active = false;
         }
+
+        if (view !== this._recordView) {
+            this._listView.clearSelection();
+        }
+
+        this._currentView = view;
     }
 
-    //* Keyboard shortcuts
+    @listen("keydown", document)
     _keydown(event: KeyboardEvent) {
         if (app.locked || Input.activeInput) {
             return;
@@ -439,28 +392,23 @@ class App extends BaseElement {
         }
     }
 
+    @listen("backbutton", document)
+    @listen("back")
     _back() {
-        switch (this._currentView) {
-            case "recordView":
-                this._closeRecord();
-                break;
-            case "settingsView":
-                this._settingsBack();
-                break;
-            case "accountView":
-                this._accountViewBack();
-                break;
-            default:
-                if (this._listView.filterString) {
-                    this._listView.clearFilter();
-                } else {
-                    navigator.Backbutton && navigator.Backbutton.goBack();
-                }
+        this._listView.clearSelection();
+        if (this._currentView) {
+            this._openView(null);
+        } else {
+            if (this._listView.filterString) {
+                this._listView.clearFilter();
+            } else {
+                navigator.Backbutton && navigator.Backbutton.goBack();
+            }
         }
     }
 
     _toggleMenu() {
-        this._menuOpen = !this._menuOpen;
+        this._showMenu = !this._showMenu;
     }
 
     _newRecord() {

@@ -1,34 +1,18 @@
-import { LitElement, html } from "@polymer/lit-element";
 import sharedStyles from "../styles/shared.js";
-import "./toggle.js";
+import { BaseElement, element, html, property, query } from "./base.js";
+import { Toggle } from "./toggle.js";
 
-class ToggleButton extends LitElement {
-    static get properties() {
-        return {
-            active: Boolean,
-            label: String,
-            reverse: Boolean
-        };
-    }
+@element("pl-toggle-button")
+export class ToggleButton extends BaseElement {
+    @property({ reflect: true })
+    active: boolean = false;
+    @property({ reflect: true })
+    reverse: boolean = false;
+    @property() label: string = "";
 
-    get toggleEl() {
-        return this.shadowRoot.querySelector("pl-toggle");
-    }
+    @query("pl-toggle") _toggle: Toggle;
 
-    _didRender() {
-        if (this.active) {
-            this.setAttribute("active", "");
-        } else {
-            this.removeAttribute("active");
-        }
-        if (this.reverse) {
-            this.setAttribute("reverse", "");
-        } else {
-            this.removeAttribute("reverse");
-        }
-    }
-
-    _render(props: { active: boolean; label: string; reverse: boolean }) {
+    _render({ active, label }: this) {
         return html`
         <style>
             ${sharedStyles}
@@ -69,15 +53,13 @@ class ToggleButton extends LitElement {
         </style>
 
         <button on-click="${() => this.toggle()}">
-            <pl-toggle active="${props.active}" on-change=${() => (this.active = this.toggleEl.active)}"></pl-toggle>
-            <div>${props.label}</div>
+            <pl-toggle active="${active}" on-change=${() => (this.active = this._toggle.active)}"></pl-toggle>
+            <div>${label}</div>
         </button>
 `;
     }
 
     toggle() {
-        this.toggleEl.toggle();
+        this._toggle.toggle();
     }
 }
-
-window.customElements.define("pl-toggle-button", ToggleButton);

@@ -1,4 +1,4 @@
-import { BaseElement, property } from "./base.js";
+import { BaseElement, property, observe } from "./base.js";
 
 export class View extends BaseElement {
     @property() active: boolean = false;
@@ -6,4 +6,21 @@ export class View extends BaseElement {
     _shouldRender() {
         return this.active;
     }
+
+    @observe("active")
+    _activeChanged() {
+        if (this.active) {
+            this._activated();
+        } else {
+            this._deactivated();
+        }
+    }
+
+    protected _back() {
+        this.dispatch("back", { view: this }, true, true);
+    }
+
+    protected _activated() {}
+
+    protected _deactivated() {}
 }

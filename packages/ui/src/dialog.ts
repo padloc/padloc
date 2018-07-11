@@ -1,7 +1,9 @@
 import { localize as $l } from "@padlock/core/lib/locale";
 import "./elements/generator.js";
-import "./elements/dialog-alert.js";
-import "./elements/dialog-prompt.js";
+import "./elements/alert-dialog.js";
+import "./elements/prompt-dialog.js";
+import { AlertDialog, AlertOptions } from "./elements/alert-dialog.js";
+import { PromptDialog, PromptOptions } from "./elements/prompt-dialog.js";
 
 const dialogElements = {};
 
@@ -21,7 +23,7 @@ export function getDialog(elName: string) {
         appElement.shadowRoot!.appendChild(el);
     }
 
-    return el as any;
+    return el;
 }
 
 export function lineUpDialog(d: string | any, fn: (d: any) => Promise<any>): Promise<any> {
@@ -36,8 +38,8 @@ export function lineUpDialog(d: string | any, fn: (d: any) => Promise<any>): Pro
     return promise;
 }
 
-export function alert(message: string, options?: any): Promise<number> {
-    return lineUpDialog("pl-dialog-alert", dialog => dialog.show(message, options));
+export function alert(message: string, options?: AlertOptions): Promise<number> {
+    return lineUpDialog("pl-alert-dialog", (dialog: AlertDialog) => dialog.show(message, options));
 }
 
 export function confirm(message: string, confirmLabel = $l("Confirm"), cancelLabel = $l("Cancel"), options: any = {}) {
@@ -45,24 +47,16 @@ export function confirm(message: string, confirmLabel = $l("Confirm"), cancelLab
     return alert(message, options).then(choice => choice === 0);
 }
 
-export function prompt(
-    message: string,
-    placeholder: string,
-    type?: string,
-    confirmLabel?: string,
-    cancelLabel?: string | false,
-    preventDismiss?: boolean,
-    verify?: (val: string) => Promise<string>
-) {
-    return lineUpDialog("pl-dialog-prompt", dialog => {
-        return dialog.prompt(message, placeholder, type, confirmLabel, cancelLabel, preventDismiss, verify);
+export function prompt(message: string, opts: PromptOptions) {
+    return lineUpDialog("pl-prompt-dialog", (dialog: PromptDialog) => {
+        return dialog.show(message, opts);
     });
 }
 
 export function choose(
     message: string,
     options: string[],
-    opts: { preventDismiss?: boolean; type?: string; options?: string[]; title?: string; hideIcon?: boolean } = {
+    opts: AlertOptions = {
         preventDismiss: true,
         type: "question"
     }
@@ -83,13 +77,22 @@ export function clearDialogs() {
 }
 
 export function promptPassword(password: string, msg: string, confirmLabel?: string, cancelLabel?: string) {
-    return prompt(msg, $l("Enter Password"), "password", confirmLabel, cancelLabel, true, (pwd: string) => {
-        if (!pwd) {
-            return Promise.reject($l("Please enter a password!"));
-        } else if (pwd !== password) {
-            return Promise.reject($l("Wrong password. Please try again!"));
-        } else {
-            return Promise.resolve(pwd);
+    return prompt(msg, {
+        placeholder: $l("Enter Password"),
+        type: "password",
+        confirmLabel,
+        cancelLabel,
+        preventDismiss: true,
+        validate: async (pwd: string) => {
+            if (!pwd) {
+                throw $l("Please enter a password!");
+            }
+
+            if (pwd !== password) {
+                throw $l("Wrong password. Please try again!");
+            }
+
+            return pwd;
         }
     });
 }

@@ -1,24 +1,30 @@
 import "@polymer/paper-spinner/paper-spinner-lite.js";
 import sharedStyles from "../styles/shared.js";
-import { BaseElement, html, property } from "./base.js";
+import { BaseElement, element, html, property, listen } from "./base.js";
 import "./icon.js";
 
-type ButtonStatus = "idle" | "loading" | "success" | "fail";
+type ButtonState = "idle" | "loading" | "success" | "fail";
 
+@element("pl-loading-button")
 export class LoadingButton extends BaseElement {
-    @property() state: ButtonStatus = "idle";
+    @property({ reflect: true })
+    state: ButtonState = "idle";
     @property() label: string = "";
     @property() noTab: boolean = false;
 
     private _stopTimeout: number;
 
-    _render(props: { state: ButtonStatus; label: string; noTab: boolean }) {
+    _render({ state, noTab }: this) {
         return html`
         <style>
             ${sharedStyles}
 
             :host {
                 display: flex;
+            }
+
+            :host([state="loading"]) button {
+                cursor: progress;
             }
 
             button {
@@ -57,21 +63,29 @@ export class LoadingButton extends BaseElement {
             }
         </style>
 
-        <button type="button" class$="${props.state}" tabindex$="{ props.noTab ? "-1" : "" }">
+        <button type="button" class$="${state}" tabindex$="${noTab ? "-1" : ""}">
 
             <div class="label"><slot></slot></div>
 
-            <paper-spinner-lite active="${props.state == "loading"}" class="spinner"></paper-spinner-lite>
+            <paper-spinner-lite active="${state == "loading"}" class="spinner"></paper-spinner-lite>
 
             <pl-icon icon="check" class="icon-success"></pl-icon>
 
             <pl-icon icon="cancel" class="icon-fail"></pl-icon>
+
         </button>
 `;
     }
 
     static get is() {
         return "pl-loading-button";
+    }
+
+    @listen("click")
+    _click(e: MouseEvent) {
+        if (this.state === "loading") {
+            e.stopPropagation();
+        }
     }
 
     start() {
@@ -93,5 +107,3 @@ export class LoadingButton extends BaseElement {
         this._stopTimeout = window.setTimeout(() => this.stop(), 1000);
     }
 }
-
-window.customElements.define(LoadingButton.is, LoadingButton);

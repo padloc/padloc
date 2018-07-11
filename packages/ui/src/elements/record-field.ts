@@ -1,23 +1,23 @@
-import { LitElement, html } from "@polymer/lit-element";
 import { isTouch } from "@padlock/core/lib/platform.js";
 import { Record, Field } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
 import { lineUpDialog, generate } from "../dialog.js";
 import { setClipboard } from "../clipboard.js";
+import {BaseElement, html, property} from "./base.js";
 import "./icon.js";
 import "./input.js";
 import "./dialog-field.js";
 
-class RecordField extends LitElement {
-    static get properties() {
-        return {
-            record: Object,
-            field: Object
-        };
+class RecordField extends BaseElement {
+    @property() record: Record;
+    @property() field: Field;
+
+    _shouldRender() {
+        return !!this.field;
     }
 
-    _render(props: { record: Record; field: Field }) {
+    _render({field}: this) {
         return html`
         <style>
             ${sharedStyles}
@@ -91,15 +91,15 @@ class RecordField extends LitElement {
 
         <div class="container tap" on-click="${() => this._openFieldDialog()}">
 
-            <div class="name">${props.field.name}</div>
+            <div class="name">${field.name}</div>
 
             <pl-input
                 multiline
                 id="valueInput"
-                value="${props.field.value}"
+                value="${field.value}"
                 disabled
                 placeholder="${$l("No Content")}"
-                masked="${props.field.masked}">
+                masked="${field.masked}">
             </pl-input>
 
         </div>
@@ -107,31 +107,31 @@ class RecordField extends LitElement {
         <div class="field-buttons">
 
             <pl-icon
-                icon="${props.field.masked ? "show" : "hide"}"
+                icon="${field.masked ? "show" : "hide"}"
                 class="field-button tap"
                 on-click="${() => this._toggleMask()}"
-                hidden?="${!props.field.value}">
+                hidden?="${!field.value}">
             </pl-icon>
 
             <pl-icon
                 icon="copy"
                 class="field-button tap"
                 on-click="${() => this._copy()}"
-                hidden?="${!props.field.value}">
+                hidden?="${!field.value}">
             </pl-icon>
 
             <pl-icon
                 icon="edit"
                 class="field-button tap"
                 on-click="${() => this._edit()}"
-                hidden?="${!!props.field.value}">
+                hidden?="${!!field.value}">
             </pl-icon>
 
             <pl-icon
                 icon="generate"
                 class="field-button tap"
                 on-click="${() => this._showGenerator()}"
-                hidden?="${!!props.field.value}">
+                hidden?="${!!field.value}">
             </pl-icon>
 
         </div>
@@ -144,14 +144,12 @@ class RecordField extends LitElement {
     }
 
     _delete() {
-        this.dispatchEvent(new CustomEvent("field-delete", { bubbles: true, composed: true }));
+        this.dispatch("field-delete", { record: this.record, field: this.field });
     }
 
     async _showGenerator() {
         const value = await generate();
-        this.field.value = value;
-        this.requestRender();
-        this.dispatchEvent(new CustomEvent("field-change"));
+        this.dispatch("field-change", {record: this.record, field: this.field, changes: { value: value }});
     }
 
     _copy() {
@@ -159,8 +157,7 @@ class RecordField extends LitElement {
     }
 
     _toggleMask() {
-        this.set("field.masked", !this.field.masked);
-        this.dispatchEvent(new CustomEvent("field-change"));
+        this.dispatch("field-change", {record: this.record, field: this.field, changes: { masked: !this.field.masked }});
     }
 
     async _openFieldDialog(edit = false, presets?: any) {
@@ -177,8 +174,7 @@ class RecordField extends LitElement {
                 this._delete();
                 break;
             case "edited":
-                this.requestRender();
-                setTimeout(() => this.dispatchEvent(new CustomEvent("field-change"), 500));
+                this.dispatch("field-change", { record: this.record, field: this.field, changes: result});
                 break;
         }
     }
