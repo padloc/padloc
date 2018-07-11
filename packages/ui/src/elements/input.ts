@@ -1,7 +1,7 @@
 // @ts-ignore
 import autosize from "autosize/src/autosize.js";
 import sharedStyles from "../styles/shared";
-import { BaseElement, html, property, query } from "./base.js";
+import { BaseElement, html, property, query, listen } from "./base.js";
 
 let activeInput: Input | null = null;
 
@@ -56,12 +56,6 @@ export class Input extends BaseElement {
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
-                    on-input="${() => (this.value = this._inputElement.value)}"
-                    on-focus="${(e: Event) => this._focused(e)}"
-                    on-blur="${(e: Event) => this._blurred(e)}"
-                    on-change="${(e: Event) => this._changeHandler(e)}"
-                    on-keydown="${(e: KeyboardEvent) => this._keydown(e)}"
-                    on-touchend="${(e: Event) => e.stopPropagation()}"
                     rows="1"></textarea>
 
                 <textarea
@@ -84,12 +78,6 @@ export class Input extends BaseElement {
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
-                    on-input="${() => (this.value = this._inputElement.value)}"
-                    on-focus="${(e: Event) => this._focused(e)}"
-                    on-blur="${(e: Event) => this._blurred(e)}"
-                    on-change="${(e: Event) => this._changeHandler(e)}"
-                    on-keydown="${(e: KeyboardEvent) => this._keydown(e)}"
-                    on-touchend="${(e: Event) => e.stopPropagation()}"
                     type$="${props.type}"
                     pattern$="${props.pattern}">
 
@@ -168,13 +156,7 @@ export class Input extends BaseElement {
         return this._inputElement.validationMessage;
     }
 
-    _domChange() {
-        if (this.autosize && this.multiline && this._inputElement) {
-            autosize(this._inputElement);
-        }
-        setTimeout(() => this._valueChanged(), 50);
-    }
-
+    @listen("focus")
     _focused(e: Event) {
         e.stopPropagation();
         this.focused = true;
@@ -186,6 +168,7 @@ export class Input extends BaseElement {
         }
     }
 
+    @listen("blur")
     _blurred(e: Event) {
         e.stopPropagation();
         this.focused = false;
@@ -195,12 +178,15 @@ export class Input extends BaseElement {
         this.dispatchEvent(new CustomEvent("blur"));
     }
 
+    @listen("input")
     _changeHandler(e: Event) {
         e.stopPropagation();
         this.value = this._inputElement.value;
+        this.invalid = this._inputElement && !this._inputElement.checkValidity();
         this.dispatchEvent(new CustomEvent("change"));
     }
 
+    @listen("keydown")
     _keydown(e: KeyboardEvent) {
         if (e.key === "Enter" && !this.multiline) {
             this.dispatchEvent(new CustomEvent("enter"));
@@ -213,11 +199,9 @@ export class Input extends BaseElement {
         }
     }
 
-    _valueChanged() {
-        this.invalid = this._inputElement && !this._inputElement.checkValidity();
-        if (this.autosize && this.multiline) {
-            autosize.update(this._inputElement);
-        }
+    @listen("touchend")
+    _touchend(e: Event) {
+        e.preventDefault();
     }
 
     focus() {

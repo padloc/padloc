@@ -9,7 +9,7 @@ import { html, property, query, listen, observe } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import "./record-field.js";
-import "./dialog-field.js";
+import "./field-dialog.js";
 
 export class RecordView extends View {
     @property() store: Store | null = null;
@@ -20,7 +20,7 @@ export class RecordView extends View {
     @listen("lock", app)
     _locked() {
         this.record = null;
-        const fieldDialog = getDialog("pl-dialog-field");
+        const fieldDialog = getDialog("pl-field-dialog");
         fieldDialog.open = false;
         fieldDialog.field = null;
     }
@@ -260,7 +260,7 @@ export class RecordView extends View {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
-        const result = await lineUpDialog("pl-dialog-field", (d: any) => d.openField(field, true));
+        const result = await lineUpDialog("pl-field-dialog", (d: any) => d.openField(field, true));
         switch (result.action) {
             case "generate":
                 const value = await generate();
@@ -298,7 +298,12 @@ export class RecordView extends View {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
-        const tag = await prompt("", $l("Enter Tag Name"), "text", $l("Add Tag"), false, false);
+        const tag = await prompt("", {
+            placeholder: $l("Enter Tag Name"),
+            confirmLabel: $l("Add Tag"),
+            preventDismiss: false,
+            cancelLabel: ""
+        });
         if (tag && !this.record.tags.includes(tag)) {
             app.updateRecord(this.store, this.record, { tags: this.record.tags.concat([tag]) });
         }

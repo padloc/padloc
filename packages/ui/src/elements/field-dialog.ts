@@ -14,7 +14,7 @@ export interface FieldDialogResult {
     value: string;
 }
 
-@element("pl-dialog-field")
+@element("pl-field-dialog")
 export class FieldDialog extends BaseElement {
     @property({ reflect: true })
     editing: boolean = false;
@@ -247,8 +247,8 @@ export class FieldDialog extends BaseElement {
     }
 
     _discardChanges() {
-        this._nameInput.value = this.field && this.field.name || "";
-        this._valueInput.value = this.field && this.field.value || "";
+        this._nameInput.value = (this.field && this.field.name) || "";
+        this._valueInput.value = (this.field && this.field.value) || "";
         this._dismiss();
     }
 

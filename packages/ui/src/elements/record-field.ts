@@ -4,12 +4,13 @@ import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
 import { lineUpDialog, generate } from "../dialog.js";
 import { setClipboard } from "../clipboard.js";
-import {BaseElement, html, property} from "./base.js";
+import { BaseElement, element, html, property } from "./base.js";
 import "./icon.js";
 import "./input.js";
-import "./dialog-field.js";
+import "./field-dialog.js";
 
-class RecordField extends BaseElement {
+@element("pl-record-field")
+export class RecordField extends BaseElement {
     @property() record: Record;
     @property() field: Field;
 
@@ -17,7 +18,7 @@ class RecordField extends BaseElement {
         return !!this.field;
     }
 
-    _render({field}: this) {
+    _render({ field }: this) {
         return html`
         <style>
             ${sharedStyles}
@@ -149,7 +150,7 @@ class RecordField extends BaseElement {
 
     async _showGenerator() {
         const value = await generate();
-        this.dispatch("field-change", {record: this.record, field: this.field, changes: { value: value }});
+        this.dispatch("field-change", { record: this.record, field: this.field, changes: { value: value } });
     }
 
     _copy() {
@@ -157,11 +158,15 @@ class RecordField extends BaseElement {
     }
 
     _toggleMask() {
-        this.dispatch("field-change", {record: this.record, field: this.field, changes: { masked: !this.field.masked }});
+        this.dispatch("field-change", {
+            record: this.record,
+            field: this.field,
+            changes: { masked: !this.field.masked }
+        });
     }
 
     async _openFieldDialog(edit = false, presets?: any) {
-        const result = await lineUpDialog("pl-dialog-field", d => d.openField(this.field, edit, presets));
+        const result = await lineUpDialog("pl-field-dialog", d => d.openField(this.field, edit, presets));
         switch (result.action) {
             case "copy":
                 this._copy();
@@ -174,7 +179,7 @@ class RecordField extends BaseElement {
                 this._delete();
                 break;
             case "edited":
-                this.dispatch("field-change", { record: this.record, field: this.field, changes: result});
+                this.dispatch("field-change", { record: this.record, field: this.field, changes: result });
                 break;
         }
     }
@@ -183,5 +188,3 @@ class RecordField extends BaseElement {
         this._openFieldDialog(true);
     }
 }
-
-window.customElements.define("pl-record-field", RecordField);

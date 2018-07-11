@@ -1,42 +1,25 @@
-import { LitElement, html } from "@polymer/lit-element";
 import { randomString, chars } from "@padlock/core/lib/util.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
-import "./dialog.js";
+import { BaseElement, html, property, query, listen } from "./base.js";
+import { Dialog } from "./dialog.js";
 import "./icon.js";
-import "./slider.js";
-import "./toggle-button.js";
+import { Slider } from "./slider.js";
+import { ToggleButton } from "./toggle-button.js";
 
-class Generator extends LitElement {
-    static get properties() {
-        return {
-            value: String,
-            length: Number,
-            lower: Boolean,
-            upper: Boolean,
-            numbers: Boolean,
-            other: Boolean
-        };
-    }
+class Generator extends BaseElement {
+    @property() value: string = "";
+    @property() length: number = 10;
+    @property() lower: boolean = true;
+    @property() upper: boolean = true;
+    @property() numbers: boolean = true;
+    @property() other: boolean = false;
 
-    constructor() {
-        super();
-        this.value = "";
-        this.length = 10;
-        this.lower = true;
-        this.upper = true;
-        this.numbers = true;
-        this.other = false;
-    }
+    @query("pl-dialog") private _dialog: Dialog;
 
-    _render(props: {
-        value: string;
-        length: number;
-        lower: boolean;
-        upper: boolean;
-        numbers: boolean;
-        other: boolean;
-    }) {
+    private _resolve: ((val: string | null) => void) | null;
+
+    _render({ value, length, lower, upper, numbers, other }: this) {
         return html`
         <style>
 
@@ -111,56 +94,56 @@ class Generator extends LitElement {
             }
         </style>
 
-        <pl-dialog id="dialog" on-dialog-dismiss="${() => this._dismiss()}">
+        <pl-dialog on-dialog-dismiss="${() => this._dismiss()}">
 
             <div class="generate-button tap" on-click="${() => this._generate()}">
 
                 <div class="header">${$l("Generate Random Value")}</div>
 
                 <div class="value tiles-1">
-                    ${props.value}
+                    ${value}
                 </div>
 
             </div>
 
             <pl-toggle-button
                 label="a-z"
-                active="${props.lower}"
+                active="${lower}"
                 class="tap"
                 reverse
-                on-change="${(e: any) => (this.lower = e.target.active)}">
+                on-change="${(e: Event) => (this.lower = (e.target as ToggleButton).active)}">
             </pl-toggle-button>
 
             <pl-toggle-button
                 label="A-Z"
-                active="${props.upper}"
+                active="${upper}"
                 class="tap"
                 reverse
-                on-change="${(e: any) => (this.upper = e.target.active)}">
+                on-change="${(e: Event) => (this.upper = (e.target as ToggleButton).active)}">
             </pl-toggle-button>
 
             <pl-toggle-button
                 label="0-9"
-                active="${props.numbers}"
+                active="${numbers}"
                 class="tap"
                 reverse
-                on-change="${(e: any) => (this.numbers = e.target.active)}">
+                on-change="${(e: Event) => (this.numbers = (e.target as ToggleButton).active)}">
             </pl-toggle-button>
 
             <pl-toggle-button
                 label="?()/%..."
-                active="${props.other}"
+                active="${other}"
                 class="tap"
                 reverse
-                on-change="${(e: any) => (this.other = e.target.active)}">
+                on-change="${(e: Event) => (this.other = (e.target as ToggleButton).active)}">
             </pl-toggle-button>
 
             <pl-slider
                 label="${$l("length")}"
                 min="5"
                 max="50"
-                value="${props.length}"
-                on-change="${(e: any) => (this.length = e.target.value)}">
+                value="${length}"
+                on-change="${(e: any) => (this.length = (e.target as Slider).value)}">
             ></pl-slider>
 
             <button class="confirm-button tap" on-click="${() => this._confirm()}">${$l("Apply")}</button>
@@ -171,23 +154,15 @@ class Generator extends LitElement {
 `;
     }
 
-    get dialog() {
-        return this.shadowRoot.querySelector("pl-dialog");
-    }
-
-    connectedCallback() {
-        super.connectedCallback();
-        this.addEventListener("change", () => this._generate());
-    }
-
-    generate() {
+    generate(): Promise<string | null> {
         this._generate();
-        this.dialog.open = true;
+        this._dialog.open = true;
         return new Promise(resolve => {
             this._resolve = resolve;
         });
     }
 
+    @listen("change")
     _generate() {
         var charSet = "";
         this.lower && (charSet += chars.lower);
@@ -198,14 +173,14 @@ class Generator extends LitElement {
         this.value = charSet ? randomString(this.length, charSet) : "";
     }
 
-    _confirm() {
+    private _confirm() {
         typeof this._resolve === "function" && this._resolve(this.value);
-        this.dialog.open = false;
+        this._dialog.open = false;
     }
 
-    _dismiss() {
-        typeof this._resolve === "function" && this._resolve(undefined);
-        this.dialog.open = false;
+    private _dismiss() {
+        typeof this._resolve === "function" && this._resolve(null);
+        this._dialog.open = false;
     }
 }
 
