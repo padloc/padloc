@@ -1,7 +1,7 @@
 // @ts-ignore
 import autosize from "autosize/src/autosize.js";
 import sharedStyles from "../styles/shared";
-import { BaseElement, html, property, query, listen } from "./base.js";
+import { BaseElement, element, html, property, query, listen } from "./base.js";
 
 let activeInput: Input | null = null;
 
@@ -16,6 +16,7 @@ function mask(value: string): string {
     return value && value.replace(/[^\n]/g, "\u2022");
 }
 
+@element("pl-input")
 export class Input extends BaseElement {
     @property() autosize: boolean = false;
     @property() autocapitalize: boolean = false;
@@ -39,6 +40,8 @@ export class Input extends BaseElement {
     @property() value: string = "";
 
     @query("textarea, input") private _inputElement: HTMLInputElement;
+
+    private _prevValue: string = this.value;
 
     static get activeInput() {
         return activeInput;
@@ -184,22 +187,33 @@ export class Input extends BaseElement {
         }
     }
 
-    @listen("input")
-    _inputHandler() {
+    @listen("input", "input, textarea")
+    _inputHandler(e: Event) {
+        if (e.target === this) {
+            return;
+        }
+        e.stopPropagation();
         const oldVal = this.value;
         this.value = this._inputElement.value;
-        this.dispatch("change", { prev: oldVal, curr: this.value });
+        this.dispatch("input", { prevValue: oldVal, value: this.value }, true, true);
+    }
+
+    @listen("change", "input, textarea")
+    _changeHandler(e: Event) {
+        e.stopPropagation();
+        this.dispatch("change", { prevValue: this._prevValue, valud: this.value }, true, true);
+        this._prevValue = this.value;
     }
 
     @listen("keydown")
     _keydown(e: KeyboardEvent) {
         if (e.key === "Enter" && !this.multiline) {
             this._updateValidity();
-            this.dispatchEvent(new CustomEvent("enter"));
+            this.dispatch("enter");
             e.preventDefault();
             e.stopPropagation();
         } else if (e.key === "Escape") {
-            this.dispatchEvent(new CustomEvent("escape"));
+            this.dispatch("escape");
             e.preventDefault();
             e.stopPropagation();
         }
@@ -230,5 +244,3 @@ export class Input extends BaseElement {
         }
     }
 }
-
-window.customElements.define("pl-input", Input);

@@ -4,30 +4,15 @@ import "./elements/alert-dialog.js";
 import "./elements/prompt-dialog.js";
 import { AlertDialog, AlertOptions } from "./elements/alert-dialog.js";
 import { PromptDialog, PromptOptions } from "./elements/prompt-dialog.js";
-
-const dialogElements = {};
+import { getSingleton } from "./singleton.js";
 
 let lastDialogPromise = Promise.resolve();
 let currentDialog: any;
-let appElement: HTMLElement;
 
-export function getDialog(elName: string) {
-    if (!appElement) {
-        appElement = document.querySelector("pl-app") as HTMLElement;
-    }
-
-    let el = dialogElements[elName];
-
-    if (!el) {
-        dialogElements[elName] = el = document.createElement(elName);
-        appElement.shadowRoot!.appendChild(el);
-    }
-
-    return el;
-}
+export const getDialog = getSingleton;
 
 export function lineUpDialog(d: string | any, fn: (d: any) => Promise<any>): Promise<any> {
-    const dialog = typeof d === "string" ? getDialog(d) : d;
+    const dialog = typeof d === "string" ? getSingleton(d) : d;
     const promise = lastDialogPromise.then(() => {
         currentDialog = dialog;
         return fn(dialog);

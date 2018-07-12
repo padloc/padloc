@@ -330,6 +330,9 @@ class App extends BaseElement {
     }
 
     async _openView(view: View | null) {
+        if (view === this._currentView) {
+            return;
+        }
         this._main.classList.toggle("showing-views", !!view);
 
         if (view) {

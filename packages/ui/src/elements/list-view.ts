@@ -1,12 +1,12 @@
 import { Record, Store } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { isIOS } from "@padlock/core/lib/platform.js";
+// import { isIOS } from "@padlock/core/lib/platform.js";
 // import { animateCascade } from "../animation.js";
 import { app } from "../init.js";
 import { confirm } from "../dialog.js";
 import sharedStyles from "../styles/shared.js";
 import { AlertDialog } from "./alert-dialog.js";
-import { BaseElement, html, property, query } from "./base.js";
+import { BaseElement, html, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import "./record-item.js";
@@ -49,36 +49,25 @@ export class ListView extends BaseElement {
     private _cachedBounds?: DOMRect | ClientRect;
     private _recentCount: number = 0;
 
-    connectedCallback() {
-        super.connectedCallback();
-
-        const changeHandler = (e: CustomEvent) => {
-            if (e.detail.store === this.store) {
-                this._updateRecords;
-            }
-        };
-        app.addEventListener("records-added", changeHandler);
-        app.addEventListener("records-deleted", changeHandler);
-        app.addEventListener("record-changed", changeHandler);
-        app.addEventListener("record-created", (e: CustomEvent) => {
-            this.selectRecord(e.detail.record);
-        });
-        app.addEventListener("unlock", () => {
+    @listen("records-added", app)
+    @listen("records-deleted", app)
+    @listen("record-changed", app)
+    @listen("record-created", app)
+    _changeHandler(e: CustomEvent) {
+        if (e.detail.store === this.store) {
             this._updateRecords();
-            this.animateRecords(600);
-        });
+        }
+    }
 
-        // window.addEventListener("keydown", e => {
-        //     switch (e.key) {
-        //         case "ArrowDown":
-        //             this.shadowRoot!.querySelector("#list").focusItem(this.$.list.firstVisibleIndex);
-        //             break;
-        //         case "ArrowUp":
-        //             this.shadowRoot!.querySelector("#list").focusItem(this.$.list.lastVisibleIndex);
-        //             break;
-        //     }
-        // });
-        this._main.addEventListener("scroll", () => this._scroll());
+    @listen("record-created", app)
+    _recordCreated(e: CustomEvent) {
+        this.selectRecord(e.detail.record);
+    }
+
+    @listen("unlock", app)
+    _unlocked() {
+        this._updateRecords();
+        this.animateRecords(600);
     }
 
     _render(props: this) {
@@ -332,15 +321,12 @@ export class ListView extends BaseElement {
 `;
     }
 
-    _didRender() {
-        this._scroll();
-    }
-
+    @listen("resize", window)
     _resized() {
         delete this._cachedBounds;
     }
 
-    get _bounds(): DOMRect | ClientRect | null {
+    private get _bounds(): DOMRect | ClientRect | null {
         if (!this._main) {
             return null;
         }
@@ -350,6 +336,7 @@ export class ListView extends BaseElement {
         return this._cachedBounds;
     }
 
+    @listen("scroll")
     _scroll() {
         if (!this._bounds) {
             return;
@@ -378,7 +365,7 @@ export class ListView extends BaseElement {
         }
     }
 
-    _filterAndSort() {
+    private _filterAndSort() {
         if (!this.store) {
             return [];
         }
@@ -402,7 +389,7 @@ export class ListView extends BaseElement {
         return records;
     }
 
-    _updateRecords() {
+    private _updateRecords() {
         this._records = this._filterAndSort();
         const items = this._records.map((record: Record, index: number) => {
             const section =
@@ -436,22 +423,18 @@ export class ListView extends BaseElement {
         this.selectRecord(null);
     }
 
-    _openMenu() {
-        this.dispatchEvent(new CustomEvent("open-menu"));
-    }
-
-    _newRecord() {
+    private _newRecord() {
         if (!this.store) {
             return;
         }
         app.createRecord(this.store, "");
     }
 
-    _toggleMenu() {
+    private _toggleMenu() {
         this.dispatchEvent(new CustomEvent("toggle-menu"));
     }
 
-    _scrollToSelected() {
+    private _scrollToSelected() {
         if (!this.selectedRecord) {
             return;
         }
@@ -463,23 +446,23 @@ export class ListView extends BaseElement {
             el && el.scrollIntoView();
         }
     }
+    //
+    // private _fixScroll() {
+    //     // Workaround for list losing scrollability on iOS after resetting filter
+    //     isIOS().then(yes => {
+    //         if (yes) {
+    //             this._main.style.overflow = "hidden";
+    //             setTimeout(() => (this._main.style.overflow = "auto"), 100);
+    //         }
+    //     });
+    // }
 
-    _fixScroll() {
-        // Workaround for list losing scrollability on iOS after resetting filter
-        isIOS().then(yes => {
-            if (yes) {
-                this._main.style.overflow = "hidden";
-                setTimeout(() => (this._main.style.overflow = "auto"), 100);
-            }
-        });
-    }
-
-    _updateCurrentSection() {
+    private _updateCurrentSection() {
         const currItem = this._listItems[this._firstVisibleIndex];
         this._currentSection = currItem && currItem.section;
     }
 
-    async _selectSection() {
+    private async _selectSection() {
         const sections = [...new Set(this._listItems.map((i: any) => i.section))];
         if (sections.length > 1) {
             const i = await this._sectionSelector.show("", { options: sections });
@@ -507,16 +490,12 @@ export class ListView extends BaseElement {
         // }, delay);
     }
 
-    _recordMultiSelect() {
-        this.multiSelect = true;
-    }
-
-    _shareSelected() {
+    private _shareSelected() {
         // const exportDialog = getDialog("pl-dialog-export") as ExportDialog;
         // exportDialog.export(this.selectedRecords);
     }
 
-    async _deleteSelected() {
+    private async _deleteSelected() {
         const confirmed = await confirm(
             $l("Are you sure you want to delete these records? This action can not be undone!"),
             $l("Delete {0} Records", this.selectedRecords.length.toString())
@@ -528,7 +507,7 @@ export class ListView extends BaseElement {
         }
     }
 
-    _multiSelectLabel(selected: Record[]) {
+    private _multiSelectLabel(selected: Record[]) {
         const count = selected && selected.length;
         return count ? $l("{0} records selected", count.toString()) : $l("tap to select");
     }
@@ -541,15 +520,9 @@ export class ListView extends BaseElement {
         this.filterString = "";
     }
 
-    _updateFilterString() {
+    private _updateFilterString() {
         this.filterString = this._filterInput.value;
         this._updateRecords();
-    }
-
-    _recordsChanged() {
-        for (const item of this.shadowRoot!.querySelectorAll("pl-record-item") as NodeListOf<LitElement>) {
-            item.requestRender();
-        }
     }
 }
 
