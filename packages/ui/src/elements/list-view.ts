@@ -70,6 +70,10 @@ export class ListView extends BaseElement {
         this.animateRecords(600);
     }
 
+    _didRender() {
+        this._resizeHandler();
+    }
+
     _render(props: this) {
         const filterActive = !!props.filterString;
         return html`
@@ -290,7 +294,9 @@ export class ListView extends BaseElement {
                         record="${item.record}"
                         selected?="${item.record === props.selectedRecord}"
                         multi-select="${props.multiSelect}"
-                        on-click="${() => this.selectRecord(item.record)}">
+                        on-click="${() => this.selectRecord(item.record)}"
+                        index$="${index}"
+                        >
                     </pl-record-item>
 
                     <div class="section-separator" hidden?="${!item.lastInSection}"></div>
@@ -322,7 +328,7 @@ export class ListView extends BaseElement {
     }
 
     @listen("resize", window)
-    _resized() {
+    _resizeHandler() {
         delete this._cachedBounds;
     }
 
@@ -336,20 +342,18 @@ export class ListView extends BaseElement {
         return this._cachedBounds;
     }
 
-    @listen("scroll")
-    _scroll() {
+    @listen("scroll", "main")
+    _scrollHandler() {
         if (!this._bounds) {
             return;
         }
         const { top, left, bottom } = this._bounds;
         let els = this.shadowRoot!.elementsFromPoint(left + 1, top + 1);
+
         for (const el of els) {
             if (el.hasAttribute("index")) {
                 const i = parseInt(el.getAttribute("index") as string);
-                if (i !== this._firstVisibleIndex) {
-                    this._firstVisibleIndex = i;
-                    this._updateCurrentSection();
-                }
+                this._firstVisibleIndex = i;
                 break;
             }
         }
@@ -363,6 +367,9 @@ export class ListView extends BaseElement {
                 break;
             }
         }
+
+        const currItem = this._listItems[this._firstVisibleIndex];
+        this._currentSection = currItem && currItem.section;
     }
 
     private _filterAndSort() {
@@ -409,6 +416,7 @@ export class ListView extends BaseElement {
             curr.lastInSection = !next || next.section !== curr.section;
         }
         this._listItems = items;
+        this._scrollHandler();
     }
 
     selectRecord(record: Record | null) {
@@ -434,16 +442,20 @@ export class ListView extends BaseElement {
         this.dispatchEvent(new CustomEvent("toggle-menu"));
     }
 
+    private _scrollToIndex(i: number) {
+        const el = this.$(`pl-record-item[index="${i}"]`);
+        if (el) {
+            this._main.scrollTop = el.offsetTop - 6;
+        }
+    }
+
     private _scrollToSelected() {
         if (!this.selectedRecord) {
             return;
         }
         const i = this._records.indexOf(this.selectedRecord);
         if (i !== -1 && (i < this._firstVisibleIndex || i > this._lastVisibleIndex)) {
-            // Scroll to item before the selected one so that selected
-            // item is more towards the middle of the list
-            const el = this.shadowRoot!.querySelector(`.list-item[index=i]`);
-            el && el.scrollIntoView();
+            this._scrollToIndex(i);
         }
     }
     //
@@ -457,18 +469,14 @@ export class ListView extends BaseElement {
     //     });
     // }
 
-    private _updateCurrentSection() {
-        const currItem = this._listItems[this._firstVisibleIndex];
-        this._currentSection = currItem && currItem.section;
-    }
-
     private async _selectSection() {
         const sections = [...new Set(this._listItems.map((i: any) => i.section))];
         if (sections.length > 1) {
             const i = await this._sectionSelector.show("", { options: sections });
             const item = this._listItems.find((item: any) => item.section === sections[i] && item.firstInSection);
-            const element = item && this._main.children[this._listItems.indexOf(item)];
-            element && element.scrollIntoView();
+            if (item) {
+                this._scrollToIndex(this._listItems.indexOf(item));
+            }
         }
     }
 
@@ -476,17 +484,17 @@ export class ListView extends BaseElement {
         return delay;
         // this._main.style.opacity = 0;
         // setTimeout(() => {
-        //     const first = this.shadowRoot!.querySelector("#list").firstVisibleIndex;
-        //     const last = this.shadowRoot!.querySelector("#list").lastVisibleIndex + 1;
+        //     const first = this.$("#list").firstVisibleIndex;
+        //     const last = this.$("#list").lastVisibleIndex + 1;
         //     const elements = Array.from(
-        //         this.shadowRoot!.querySelectorAll("pl-record-item, .section-header")
+        //         this.$All("pl-record-item, .section-header")
         //     ) as Element[];
         //     const animated = elements
         //         .filter((el: Element) => m4e(el).index >= first && m4e(el).index <= last)
         //         .sort((a: Element, b: Element) => m4e(a).index - m4e(b).index);
         //
         //     animateCascade(animated);
-        //     this.shadowRoot!.querySelector("#list").style.opacity = 1;
+        //     this.$("#list").style.opacity = 1;
         // }, delay);
     }
 
