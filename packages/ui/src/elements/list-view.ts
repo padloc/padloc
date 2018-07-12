@@ -1,7 +1,8 @@
 import { Record, Store } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 // import { isIOS } from "@padlock/core/lib/platform.js";
-// import { animateCascade } from "../animation.js";
+import { wait } from "@padlock/core/lib/util.js";
+import { animateCascade } from "../animation.js";
 import { app } from "../init.js";
 import { confirm } from "../dialog.js";
 import sharedStyles from "../styles/shared.js";
@@ -46,7 +47,7 @@ export class ListView extends BaseElement {
     @query("#sectionSelector") private _sectionSelector: AlertDialog;
     @query("#filterInput") private _filterInput: Input;
 
-    private _cachedBounds?: DOMRect | ClientRect;
+    private _cachedBounds: DOMRect | ClientRect | null = null;
     private _recentCount: number = 0;
 
     @listen("records-added", app)
@@ -67,7 +68,19 @@ export class ListView extends BaseElement {
     @listen("unlock", app)
     _unlocked() {
         this._updateRecords();
-        this.animateRecords(600);
+        this._animateRecords(600);
+    }
+
+    @listen("lock", app)
+    async _locked() {
+        await wait(500);
+        this._updateRecords();
+    }
+
+    @listen("synchronize", app)
+    _synchronized() {
+        this._updateRecords();
+        this._animateRecords();
     }
 
     _didRender() {
@@ -333,10 +346,7 @@ export class ListView extends BaseElement {
     }
 
     private get _bounds(): DOMRect | ClientRect | null {
-        if (!this._main) {
-            return null;
-        }
-        if (!this._cachedBounds) {
+        if (this._main && !this._cachedBounds) {
             this._cachedBounds = this._main.getBoundingClientRect();
         }
         return this._cachedBounds;
@@ -347,8 +357,9 @@ export class ListView extends BaseElement {
         if (!this._bounds) {
             return;
         }
-        const { top, left, bottom } = this._bounds;
-        let els = this.shadowRoot!.elementsFromPoint(left + 1, top + 1);
+        const { top, right, bottom, left } = this._bounds;
+        const middle = left + (right - left) / 2;
+        let els = this.shadowRoot!.elementsFromPoint(middle, top + 1);
 
         for (const el of els) {
             if (el.hasAttribute("index")) {
@@ -357,7 +368,7 @@ export class ListView extends BaseElement {
                 break;
             }
         }
-        els = this.shadowRoot!.elementsFromPoint(left + 1, bottom - 1);
+        els = this.shadowRoot!.elementsFromPoint(middle, bottom - 1);
         for (const el of els) {
             if (el.hasAttribute("index")) {
                 const i = parseInt(el.getAttribute("index") as string);
@@ -480,22 +491,16 @@ export class ListView extends BaseElement {
         }
     }
 
-    animateRecords(delay = 100) {
-        return delay;
-        // this._main.style.opacity = 0;
-        // setTimeout(() => {
-        //     const first = this.$("#list").firstVisibleIndex;
-        //     const last = this.$("#list").lastVisibleIndex + 1;
-        //     const elements = Array.from(
-        //         this.$All("pl-record-item, .section-header")
-        //     ) as Element[];
-        //     const animated = elements
-        //         .filter((el: Element) => m4e(el).index >= first && m4e(el).index <= last)
-        //         .sort((a: Element, b: Element) => m4e(a).index - m4e(b).index);
-        //
-        //     animateCascade(animated);
-        //     this.$("#list").style.opacity = 1;
-        // }, delay);
+    private _animateRecords(delay = 100) {
+        this._main.style.opacity = "0";
+        setTimeout(() => {
+            this._scrollHandler();
+            const elements = Array.from(this.$$(".list-item"));
+            const animated = elements.slice(this._firstVisibleIndex, this._lastVisibleIndex + 1);
+
+            animateCascade(animated, { clear: true });
+            this._main.style.opacity = "1";
+        }, delay);
     }
 
     private _shareSelected() {
