@@ -395,7 +395,6 @@ export class StartView extends BaseElement {
 
                         <pl-input
                             id="codeInput"
-                            required
                             select-on-focus
                             no-tab="${open}"
                             class="tap"
@@ -422,7 +421,7 @@ export class StartView extends BaseElement {
                         <span>
                             ${html`${$l(
                                 "Check your inbox! An email was sent to **{0}** containing your login code.",
-                                email
+                                this._emailInput && this._emailInput.value
                             )}`}
                         </span>
                     </div>
@@ -668,10 +667,8 @@ export class StartView extends BaseElement {
         this._codeButton.start();
         try {
             await app.activateSession(this._codeInput.value);
-            const hasData = false;
-            // TODO: Figure out way to check for data
+            this._hasRemoteData = await app.hasRemoteData();
             this._codeButton.success();
-            this._hasRemoteData = hasData;
             return this._connected();
         } catch (e) {
             this._rumble();
@@ -788,7 +785,7 @@ export class StartView extends BaseElement {
 
     private async _finishSetup() {
         this._getStartedButton.start();
-        await app.init(this._newPasswordInput.value);
+        await app.initialize(app.password || this._newPasswordInput.value);
         this._getStartedButton.success();
         this._newPasswordInput.blur();
         track("Setup: Finish");
@@ -939,27 +936,19 @@ export class StartView extends BaseElement {
             return;
         }
 
+        app.password = password;
+
         this._remotePasswordInput.blur();
         this._remotePasswordButton.start();
 
-        // TODO: Restore from cloud
-        // this.collection
-        //     .fetch(this.cloudSource)
-        //     .then(() => {
-        //         this._remotePasswordButton.success();
-        //         this._restoringCloud = false;
-        //         this._currStep = 5;
-        //     })
-        //     .catch(e => {
-        //         this._remotePasswordButton.fail();
-        //         this._restoringCloud = false;
-        //
-        //         if (e.code === "decryption_failed") {
-        //             this._rumble();
-        //         } else {
-        //             this._handleCloudError(e);
-        //         }
-        //     });
+        try {
+            await app.synchronize();
+            this._remotePasswordButton.success();
+            this._currStep = 5;
+        } catch (e) {
+            this._remotePasswordButton.fail();
+            this._rumble();
+        }
 
         track("Setup: Remote Password", { Email: this._emailInput.value });
     }

@@ -81,7 +81,7 @@ export async function getStore(ctx: Context, id?: string) {
     }
 
     if (!id) {
-        ctx.throw(404);
+        throw new Err(ErrorCode.NOT_FOUND);
     }
 
     const container = new Container();

@@ -5,6 +5,7 @@ import { DateString } from "./encoding";
 import { Client } from "./client";
 import { Messages } from "./messages";
 import { localize as $l } from "./locale";
+import { ErrorCode } from "./error";
 
 export interface Stats {
     [key: string]: string | number | boolean;
@@ -70,13 +71,17 @@ export class App extends EventTarget {
         return this;
     }
 
+    dispatch(eventName: string, detail?: any) {
+        this.dispatchEvent(new CustomEvent(eventName, { detail: detail }));
+    }
+
     async load() {
         try {
             await this.storage.get(this);
         } catch (e) {
             await this.storage.set(this);
         }
-        this.dispatchEvent(new CustomEvent("load"));
+        this.dispatch("load");
     }
 
     get password(): string | undefined {
@@ -90,28 +95,28 @@ export class App extends EventTarget {
     async setStats(obj: Partial<Stats>) {
         Object.assign(this.stats, obj);
         this.storage.set(this);
-        this.dispatchEvent(new CustomEvent("stats-changed", { detail: { stats: this.stats } }));
+        this.dispatch("stats-changed", { stats: this.stats });
     }
 
     async setSettings(obj: Partial<Settings>) {
         Object.assign(this.settings, obj);
         this.storage.set(this);
-        this.dispatchEvent(new CustomEvent("settings-changed", { detail: { settings: this.settings } }));
+        this.dispatch("settings-changed", { settings: this.settings });
     }
 
-    async init(password: string) {
+    async initialize(password: string) {
         await this.setPassword(password);
         this.initialized = new Date().toISOString();
         await this.storage.set(this);
-        this.dispatchEvent(new CustomEvent("initialize"));
-        this.dispatchEvent(new CustomEvent("unlock"));
+        this.dispatch("initialize");
+        this.dispatch("unlock");
     }
 
     async unlock(password: string) {
         this.mainStore.password = password;
         await this.storage.get(this.mainStore);
         this.locked = false;
-        this.dispatchEvent(new CustomEvent("unlock"));
+        this.dispatch("unlock");
 
         // for (const id of this.account!.sharedStores) {
         //     const sharedStore = new SharedStore(id);
@@ -130,13 +135,13 @@ export class App extends EventTarget {
         await Promise.all([this.mainStore.clear(), ...this.sharedStores.map(s => s.clear())]);
         this.sharedStores = [];
         this.locked = true;
-        this.dispatchEvent(new CustomEvent("lock"));
+        this.dispatch("lock");
     }
 
     async setPassword(password: string) {
         this.password = password;
         await this.storage.set(this.mainStore);
-        this.dispatchEvent(new CustomEvent("password-changed"));
+        this.dispatch("password-changed");
     }
     //
     // async createSharedStore(): Promise<SharedStore> {
@@ -165,53 +170,14 @@ export class App extends EventTarget {
         delete this.account;
         delete this.session;
         delete this.initialized;
-        this.dispatchEvent(new CustomEvent("reset"));
+        this.dispatch("reset");
         this.loaded = this.load();
-    }
-
-    async login(email: string) {
-        await this.client.createSession(email);
-        await this.save();
-        this.dispatchEvent(new CustomEvent("login"));
-        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
-        this.dispatchEvent(new CustomEvent("session-changed", { detail: { session: this.session } }));
-    }
-
-    async activateSession(code: string) {
-        await this.client.activateSession(code);
-        await this.client.getAccount();
-        await this.save();
-        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
-        this.dispatchEvent(new CustomEvent("session-changed", { detail: { session: this.session } }));
-    }
-
-    async revokeSession(id: string) {
-        await this.client.revokeSession(id);
-        await this.client.getAccount();
-        await this.save();
-        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
-    }
-
-    async refreshAccount() {
-        await this.client.getAccount();
-        await this.save();
-        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
-    }
-
-    async logout() {
-        await this.client.logout();
-        delete this.session;
-        delete this.account;
-        await this.storage.set(this);
-        this.dispatchEvent(new CustomEvent("logout"));
-        this.dispatchEvent(new CustomEvent("account-changed", { detail: { account: this.account } }));
-        this.dispatchEvent(new CustomEvent("session-changed", { detail: { session: this.session } }));
     }
 
     async addRecords(store: Store, records: Record[]) {
         store.addRecords(records);
         await this.storage.set(store);
-        this.dispatchEvent(new CustomEvent("records-added", { detail: { store: store, records: records } }));
+        this.dispatch("records-added", { store: store, records: records });
     }
 
     async createRecord(store: Store, name: string): Promise<Record> {
@@ -221,7 +187,7 @@ export class App extends EventTarget {
         ];
         const record = store.createRecord(name || "", fields);
         await this.addRecords(store, [record]);
-        this.dispatchEvent(new CustomEvent("record-created", { detail: { store: store, record: record } }));
+        this.dispatch("record-created", { store: store, record: record });
         return record;
     }
 
@@ -233,17 +199,82 @@ export class App extends EventTarget {
         }
         record.updated = new Date();
         await this.storage.set(store);
-        this.dispatchEvent(new CustomEvent("record-changed", { detail: { store: store, record: record } }));
+        this.dispatch("record-changed", { store: store, record: record });
     }
 
     async deleteRecords(store: Store, records: Record | Record[]) {
         store.removeRecords(records);
         await this.storage.set(store);
-        this.dispatchEvent(new CustomEvent("records-deleted", { detail: { store: store, records: records } }));
+        this.dispatch("records-deleted", { store: store, records: records });
+    }
+
+    async login(email: string) {
+        await this.client.createSession(email);
+        await this.storage.set(this);
+        this.dispatch("login");
+        this.dispatch("account-changed", { account: this.account });
+        this.dispatch("session-changed", { session: this.session });
+    }
+
+    async activateSession(code: string) {
+        await this.client.activateSession(code);
+        await this.client.getAccount();
+        await this.storage.set(this);
+        this.dispatch("account-changed", { account: this.account });
+        this.dispatch("session-changed", { session: this.session });
+    }
+
+    async revokeSession(id: string) {
+        await this.client.revokeSession(id);
+        await this.client.getAccount();
+        await this.storage.set(this);
+        this.dispatch("account-changed", { account: this.account });
+    }
+
+    async refreshAccount() {
+        await this.client.getAccount();
+        await this.storage.set(this);
+        this.dispatch("account-changed", { account: this.account });
+    }
+
+    async logout() {
+        await this.client.logout();
+        delete this.session;
+        delete this.account;
+        await this.storage.set(this);
+        this.dispatch("logout");
+        this.dispatch("account-changed", { account: this.account });
+        this.dispatch("session-changed", { session: this.session });
+    }
+
+    async hasRemoteData(): Promise<boolean> {
+        try {
+            await this.client.request("GET", "store/main/");
+            return true;
+        } catch (e) {
+            if (e.code === ErrorCode.NOT_FOUND) {
+                return false;
+            }
+            throw e;
+        }
+    }
+
+    async synchronize() {
+        try {
+            await this.remoteStorage.get(this.mainStore);
+        } catch (e) {
+            console.log("error", e.code);
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+        }
+
+        await Promise.all([this.storage.set(this.mainStore), this.remoteStorage.set(this.mainStore)]);
+
+        this.dispatch("synchronize");
     }
 
     async reactivateSubscription() {}
-    async synchronize() {}
 
     buySubscription(_source: string) {}
 

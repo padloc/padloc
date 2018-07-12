@@ -70,9 +70,11 @@ function statusFromCode(code: ErrorCode): number {
         case ErrorCode.INVALID_SESSION:
         case ErrorCode.SESSION_EXPIRED:
             return 401;
+        case ErrorCode.NOT_FOUND:
+            return 404;
         case ErrorCode.DEPRECATED_API_VERSION:
             return 406;
         default:
-            return 0;
+            return 500;
     }
 }

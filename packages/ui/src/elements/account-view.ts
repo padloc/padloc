@@ -25,7 +25,7 @@ export class AccountView extends View {
     _render() {
         const { account } = app;
         const subStatus = (account && account.subscription && account.subscription.status) || "";
-        const email = account && account.email;
+        const email = (account && account.email) || "";
         const promo = account && account.promo;
         // TODO: Compute remaining trial days
         const trialDays = 30;
