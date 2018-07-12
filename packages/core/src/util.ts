@@ -1,6 +1,7 @@
 // @ts-ignore
 import moment from "moment";
 import "moment-duration-format";
+import { DateString } from "./encoding";
 
 // RFC4122-compliant uuid generator
 export function uuid(): string {
@@ -73,7 +74,7 @@ export function applyMixins(baseClass: any, ...mixins: ((cls: any) => any)[]): a
     return mixins.reduce((cls, mixin) => mixin(cls), baseClass);
 }
 
-export function formatDateFromNow(date: Date) {
+export function formatDateFromNow(date: Date | DateString | number) {
     return moment(date).fromNow();
 }
 

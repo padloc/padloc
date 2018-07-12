@@ -1,6 +1,6 @@
 import sharedStyles from "../styles/shared";
 import { animateElement } from "../animation";
-import { BaseElement, html, property, observe } from "./base.js";
+import { BaseElement, html, property, observe, listen } from "./base.js";
 import { Input } from "./input.js";
 
 export class Dialog extends BaseElement {
@@ -84,7 +84,7 @@ export class Dialog extends BaseElement {
 
         <div class="scrim"></div>
 
-        <div class="outer" on-click="dismiss">
+        <div class="outer" on-click="${() => this.dismiss()}">
             <slot name="before"></slot>
             <div id="inner" class="inner" on-click="${(e: Event) => e.stopPropagation()}">
                 <slot></slot>
@@ -94,22 +94,13 @@ export class Dialog extends BaseElement {
 `;
     }
 
-    ready() {
-        super.ready();
-        // window.addEventListener("keydown", (e) => {
-        //     if (this.open && (e.key === "Enter" || e.key === "Escape")) {
-        //         this.dismiss();
-        //         // e.preventDefault();
-        //         // e.stopPropagation();
-        //     }
-        // });
-        window.addEventListener("backbutton", e => {
-            if (this.open) {
-                this.dismiss();
-                e.preventDefault();
-                e.stopPropagation();
-            }
-        });
+    @listen("backbutton", window)
+    _back(e: Event) {
+        if (this.open) {
+            this.dismiss();
+            e.preventDefault();
+            e.stopPropagation();
+        }
     }
 
     rumble() {
@@ -144,7 +135,7 @@ export class Dialog extends BaseElement {
 
     dismiss() {
         if (!this.preventDismiss) {
-            this.dispatchEvent(new CustomEvent("dialog-dismiss"));
+            this.dispatch("dialog-dismiss");
             this.open = false;
         }
     }

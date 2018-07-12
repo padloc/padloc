@@ -8,7 +8,8 @@ import { localize as $l } from "./locale";
 import { ErrorCode } from "./error";
 
 export interface Stats {
-    [key: string]: string | number | boolean;
+    lastSync?: DateString;
+    [key: string]: string | number | boolean | DateString | undefined;
 }
 
 export interface Settings {
@@ -30,8 +31,8 @@ const defaultSettings: Settings = {
 };
 
 export class App extends EventTarget {
-    storageKind: "padlock-app";
-    storageKey: "";
+    storageKind = "padlock-app";
+    storageKey = "";
 
     version = "3.0";
     storage = new LocalStorage();
@@ -82,6 +83,10 @@ export class App extends EventTarget {
             await this.storage.set(this);
         }
         this.dispatch("load");
+    }
+
+    get loggedIn() {
+        return this.session && this.session.active;
     }
 
     get password(): string | undefined {
@@ -271,6 +276,7 @@ export class App extends EventTarget {
 
         await Promise.all([this.storage.set(this.mainStore), this.remoteStorage.set(this.mainStore)]);
 
+        this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");
     }
 

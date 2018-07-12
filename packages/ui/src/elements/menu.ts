@@ -1,5 +1,5 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { wait } from "@padlock/core/lib/util.js";
+import { wait, formatDateFromNow } from "@padlock/core/lib/util.js";
 import { Store } from "@padlock/core/lib/data.js";
 import sharedStyles from "../styles/shared.js";
 import { animateCascade } from "../animation.js";
@@ -19,13 +19,18 @@ export class Menu extends BaseElement {
         this.open = false;
     }
 
+    @listen("stats-changed", app)
+    @listen("account-changed", app)
+    _refresh() {
+        this.requestRender();
+    }
+
     _render({ store }: this) {
-        const settings: any = {};
+        const { loggedIn, stats } = app;
+        const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
         const isTrialExpired = false;
         const isSubUnpaid = false;
         const isSubCanceled = false;
-        const isSubValid = false;
-        const lastSync = new Date();
         const isSyncing = false;
         const tags = store.tags;
 
@@ -172,9 +177,9 @@ export class Menu extends BaseElement {
 
                     <div>
 
-                        <div hidden?="${settings.syncConnected}">${$l("Log In")}</div>
+                        <div hidden?="${loggedIn}">${$l("Log In")}</div>
 
-                        <div hidden?="${!settings.syncConnected}">${$l("My Account")}</div>
+                        <div hidden?="${!loggedIn}">${$l("My Account")}</div>
 
                         <div class="menu-item-hint warning" hidden?="${!isTrialExpired}">${$l("Trial Expired")}</div>
 
@@ -188,15 +193,15 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => this.dispatch("synchronize")}" disabled$="${!isSubValid}">
+                <div class="menu-item tap" on-click="${() => app.synchronize()}" disabled?="${!loggedIn}">
 
                     <div>
 
                         <div>${$l("Synchronize")}</div>
 
-                        <div class="menu-item-hint" hidden?="${settings.syncConnected}">${$l("Log In To Sync")}</div>
+                        <div class="menu-item-hint" hidden?="${loggedIn}">${$l("Log In To Sync")}</div>
 
-                        <div class="menu-item-hint last-sync" hidden?="${!settings.syncConnected}">${lastSync}</div>
+                        <div class="menu-item-hint last-sync" hidden?="${!loggedIn}">${lastSync}</div>
 
                     </div>
 

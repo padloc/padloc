@@ -198,8 +198,8 @@ export interface Participant {
 }
 
 export class Container implements Storage, Storable {
-    id: string;
-    kind: string;
+    id: string = "";
+    kind: string = "";
     cipherText?: CipherText;
     key?: SymmetricKey;
     password?: string;

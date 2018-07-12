@@ -1,5 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Session } from "@padlock/core/lib/auth.js";
+import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
 import * as messages from "../messages.js";
@@ -23,16 +24,15 @@ export class AccountView extends View {
     }
 
     _render() {
-        const { account } = app;
+        const { account, stats, loggedIn } = app;
         const subStatus = (account && account.subscription && account.subscription.status) || "";
         const email = (account && account.email) || "";
         const promo = account && account.promo;
         // TODO: Compute remaining trial days
         const trialDays = 30;
-        const loggedIn = app.session && app.session.active;
         const recordCount = 0;
         const isSynching = false;
-        const lastSync = "";
+        const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
         const sessions = (account && account.sessions) || [];
         const paymentSource = account && account.paymentSource;
         const paymentSourceLabel = paymentSource && `${paymentSource.brand} •••• •••• •••• ${paymentSource.lastFour}`;
@@ -345,13 +345,12 @@ export class AccountView extends View {
                         class="account-sync tap"
                         icon="refresh"
                         spin?="${isSynching}"
-                        on-click="${() => app.synchronize()}"
-                        disabled?="${subStatus !== "active" && subStatus !== "trialing"}">
+                        on-click="${() => app.synchronize()}">
                     </pl-icon>
 
                 </div>
 
-                <div class="unlock-feature-hint" hidden?="${subStatus === "active" || subStatus === "trialing"}">
+                <div class="unlock-feature-hint" hidden>
                     ${$l("Upgrade to enable synchronization!")}
                 </div>
 
@@ -443,7 +442,9 @@ export class AccountView extends View {
 
     _activated() {
         animateCascade(this.$$("section:not([hidden])"), { initialDelay: 200 });
-        app.refreshAccount();
+        if (app.loggedIn) {
+            app.refreshAccount();
+        }
     }
 
     focusEmailInput() {

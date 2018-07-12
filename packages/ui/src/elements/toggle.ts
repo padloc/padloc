@@ -64,6 +64,6 @@ export class Toggle extends BaseElement {
 
     toggle() {
         this.active = !this.active;
-        this.dispatch("change", { prev: this.active, curr: !this.active }, true, true);
+        this.dispatch("change", { value: this.active, prevValue: !this.active }, true, true);
     }
 }

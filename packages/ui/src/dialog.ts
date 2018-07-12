@@ -1,9 +1,12 @@
-import { localize as $l } from "@padlock/core/lib/locale";
+import { localize as $l } from "@padlock/core/lib/locale.js";
+import { Record } from "@padlock/core/lib/data.js";
 import "./elements/generator.js";
 import "./elements/alert-dialog.js";
 import "./elements/prompt-dialog.js";
+import "./elements/export-dialog.js";
 import { AlertDialog, AlertOptions } from "./elements/alert-dialog.js";
 import { PromptDialog, PromptOptions } from "./elements/prompt-dialog.js";
+import { ExportDialog } from "./elements/export-dialog.js";
 import { getSingleton } from "./singleton.js";
 
 let lastDialogPromise = Promise.resolve();
@@ -102,4 +105,8 @@ export function promptForgotPassword() {
             )
         );
     });
+}
+
+export function exportRecords(records: Record[]) {
+    getSingleton("pl-export-dialog").show(records);
 }

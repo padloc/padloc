@@ -14,11 +14,10 @@ import {
 } from "@padlock/core/lib/platform.js";
 import sharedStyles from "../styles/shared.js";
 import { View } from "./view.js";
-import { promptPassword, alert, choose, confirm, prompt } from "../dialog";
+import { promptPassword, alert, choose, confirm, prompt, exportRecords } from "../dialog";
 import { animateCascade } from "../animation";
 import { app } from "../init.js";
 import { element, html, property, query, listen } from "./base.js";
-// import "./dialog-export.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
@@ -156,9 +155,8 @@ export class SettingsView extends View {
                     active="${settings.autoLock}"
                     label="${$l("Lock Automatically")}"
                     class="tap"
-                    reverse
-                    on-change="${() => this._updateSettings()}"
-                ></pl-toggle-button>
+                    reverse>
+                </pl-toggle-button>
 
                 <pl-slider
                     id="autoLockDelaySlider"
@@ -169,8 +167,7 @@ export class SettingsView extends View {
                     unit="${$l(" min")}"
                     label="${$l("After")}"
                     hidden?="${!settings.autoLock}"
-                    on-change="${() => this._updateSettings()}"
-                ></pl-slider>
+                </pl-slider>
 
             </section>
 
@@ -185,9 +182,8 @@ export class SettingsView extends View {
                         active="${settings.autoSync}"
                         label="${$l("Sync Automatically")}"
                         reverse
-                        class="tap"
-                        on-change="${() => this._updateSettings()}"
-                    ></pl-toggle-button>
+                        class="tap">
+                    </pl-toggle-button>
 
                     <div class="feature-locked" hidden?="${loggedIn}">
                         ${$l("Log in to enable auto sync!")}
@@ -208,9 +204,9 @@ export class SettingsView extends View {
                     active="${settings.customServer}"
                     label="${$l("Use Custom Server")}"
                     reverse 
-                    on-change="${() => this._toggleCustomServer()}"
                     class="tap"
-                ></pl-toggle-button>
+                    on-change="${(e: CustomEvent) => this._toggleCustomServer(e)}">
+                </pl-toggle-button>
 
                 <div class="tap" hidden?="${!settings.customServer}" disabled$="${loggedIn}">
 
@@ -219,9 +215,8 @@ export class SettingsView extends View {
                         placeholder="${$l("Enter Custom URL")}"
                         value="${settings.customServerUrl}"
                         pattern="^https://[^\\s/$.?#].[^\\s]*$"
-                        required
-                        on-change="${() => this._updateSettings()}"
-                    ></pl-input>
+                        required>
+                    </pl-input>
 
                     <div class="url-warning">
                         <strong>${$l("Invalid URL")}</strong> -
@@ -320,12 +315,12 @@ export class SettingsView extends View {
             id="importFile"
             on-change="${() => this._importFile()}"
             accept="text/plain,.csv,.pls,.set"
-            hidden
-        >
+            hidden>
 `;
     }
 
     // connectedCallback() {
+    //     // TODO: intergrate electron settings
     //     super.connectedCallback();
     //     if (isElectron()) {
     //         const desktopSettings = getDesktopSettings().get();
@@ -338,6 +333,7 @@ export class SettingsView extends View {
         animateCascade(this.$$("section"), { initialDelay: 200 });
     }
 
+    @listen("change")
     private _updateSettings() {
         app.setSettings({
             autoLock: (this.$("#autoLockButton") as ToggleButton).active,
@@ -529,6 +525,7 @@ export class SettingsView extends View {
                 return;
             }
 
+            // TODO: Does not seem to work
             records = await imp.fromPadlock(rawStr, pwd);
         } else if (isLastPass) {
             records = await imp.fromLastPass(rawStr);
@@ -601,16 +598,19 @@ export class SettingsView extends View {
     }
 
     private _export() {
-        // TODO
+        exportRecords(this.store.records);
     }
 
-    private async _toggleCustomServer() {
+    private async _toggleCustomServer(e: CustomEvent) {
+        const el = e.target as ToggleButton;
         if (app.session && app.session.active) {
-            return alert($l("Please log out of the current server first!"));
+            e.stopPropagation();
+            await alert($l("Please log out of the current server first!"));
+            el.active = !el.active;
+            return;
         }
 
-        const customHost = (this.$("#customServerButton") as ToggleButton).active;
-        if (customHost) {
+        if (el.active) {
             const confirmed = confirm(
                 $l(
                     "Are you sure you want to use a custom server for synchronization? " +
@@ -622,7 +622,7 @@ export class SettingsView extends View {
             if (confirmed) {
                 this._updateSettings();
             } else {
-                this.requestRender();
+                el.active = false;
             }
         } else {
             this._updateSettings();
