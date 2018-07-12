@@ -1,7 +1,7 @@
-import { LitElement, html } from "@polymer/lit-element";
 import sharedStyles from "../styles/shared.js";
+import { BaseElement, html } from "./base.js";
 
-export class TitleBar extends LitElement {
+export class TitleBar extends BaseElement {
     _render() {
         return html`
         <style include="shared">
@@ -139,34 +139,37 @@ export class TitleBar extends LitElement {
         <div class="title">Padlock</div>
 
         <div class="buttons macos-linux">
-            <button class="close" on-click="_close"></button>
-            <button class="minimize" on-click="_minimize"></button>
-            <button class="maximize" on-click="_maximize"></button>
+            <button class="close" on-click="${() => this._close()}"></button>
+            <button class="minimize" on-click="${() => this._minimize()}"></button>
+            <button class="maximize" on-click="${() => this._maximize()}"></button>
         </div>
 
         <div class="buttons windows">
-            <button class="minimize" on-click="_minimize"></button>
-            <button class="maximize" on-click="_maximize"></button>
-            <button class="close" on-click="_close"></button>
+            <button class="minimize" on-click="${() => this._minimize()}"></button>
+            <button class="maximize" on-click="${() => this._maximize()}"></button>
+            <button class="close" on-click="${() => this._close()}"></button>
         </div>
 `;
     }
 
-    _close() {
-        require("electron")
-            .remote.getCurrentWindow()
-            .close();
+    private _close() {
+        // TODO
+        // require("electron")
+        //     .remote.getCurrentWindow()
+        //     .close();
     }
 
-    _minimize() {
-        require("electron")
-            .remote.getCurrentWindow()
-            .minimize();
+    private _minimize() {
+        // TODO
+        // require("electron")
+        //     .remote.getCurrentWindow()
+        //     .minimize();
     }
 
-    _maximize() {
-        var win = require("electron").remote.getCurrentWindow();
-        win.setFullScreen(!win.isFullScreen());
+    private _maximize() {
+        // TODO
+        // var win = require("electron").remote.getCurrentWindow();
+        // win.setFullScreen(!win.isFullScreen());
     }
 }
 

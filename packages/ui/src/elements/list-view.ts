@@ -525,12 +525,19 @@ export class ListView extends BaseElement {
         return count ? $l("{0} records selected", count.toString()) : $l("tap to select");
     }
 
-    search() {
+    search(str?: string) {
+        if (str) {
+            this.filterString = str;
+        }
         this._filterInput.focus();
+        this._updateRecords();
+        this._animateRecords();
     }
 
     clearFilter() {
         this.filterString = "";
+        this._updateRecords();
+        this._animateRecords();
     }
 
     private _updateFilterString() {

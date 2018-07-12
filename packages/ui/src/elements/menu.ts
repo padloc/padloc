@@ -1,24 +1,25 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { toggleAttribute } from "@padlock/core/lib/util.js";
-import { LitElement, html } from "@polymer/lit-element";
+import { wait } from "@padlock/core/lib/util.js";
+import { Store } from "@padlock/core/lib/data.js";
 import sharedStyles from "../styles/shared.js";
 import { animateCascade } from "../animation.js";
 import { app } from "../init.js";
+import { BaseElement, element, html, property, listen, observe } from "./base.js";
 
-class Menu extends LitElement {
-    static get properties() {
-        return {
-            open: Boolean,
-            _showingTags: Boolean
-        };
+@element("pl-menu")
+export class Menu extends BaseElement {
+    @property() store: Store;
+    @property({ reflect: true })
+    open: boolean = false;
+    @property({ reflect: "show-tags" })
+    _showingTags: boolean = false;
+
+    @listen("click")
+    _clickHandler() {
+        this.open = false;
     }
 
-    connectedCallback() {
-        super.connectedCallback();
-        this.addEventListener("click", () => setTimeout(() => (this.open = false), 50));
-    }
-
-    _render() {
+    _render({ store }: this) {
         const settings: any = {};
         const isTrialExpired = false;
         const isSubUnpaid = false;
@@ -26,7 +27,7 @@ class Menu extends LitElement {
         const isSubValid = false;
         const lastSync = new Date();
         const isSyncing = false;
-        const tags: string[] = [];
+        const tags = store.tags;
 
         return html`
         <style>
@@ -167,7 +168,7 @@ class Menu extends LitElement {
 
                 <div class="spacer"></div>
 
-                <div class="account menu-item tap" on-click="${() => this._openAccountView()}">
+                <div class="account menu-item tap" on-click="${() => this.dispatch("open-account-view")}">
 
                     <div>
 
@@ -187,7 +188,7 @@ class Menu extends LitElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => this.synchronize()}" disabled$="${!isSubValid}">
+                <div class="menu-item tap" on-click="${() => this.dispatch("synchronize")}" disabled$="${!isSubValid}">
 
                     <div>
 
@@ -203,7 +204,7 @@ class Menu extends LitElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => this._openSettings()}">
+                <div class="menu-item tap" on-click="${() => this.dispatch("open-settings")}">
 
                     <div>${$l("Settings")}</div>
 
@@ -219,7 +220,7 @@ class Menu extends LitElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => this._enableMultiSelect()}">
+                <div class="menu-item tap" on-click="${() => this.dispatch("multiselect")}">
 
                     <div>${$l("Multi-Select")}</div>
 
@@ -268,11 +269,11 @@ class Menu extends LitElement {
 
                     </div>
                 `
-                )};
+                )}
 
                 </template>
 
-                <div class="no-tags" disabled hidden?="${!tags.length}">
+                <div class="no-tags" disabled hidden?="${tags.length}">
 
                     ${$l("You don't have any tags yet!")}
 
@@ -286,41 +287,26 @@ class Menu extends LitElement {
 `;
     }
 
-    _didRender(_: any, changed: any) {
-        // TODO
-        toggleAttribute((this as any) as Element, "open", this.open);
-        toggleAttribute((this as any) as Element, "show-tags", this._showingTags);
-        if (changed && changed.open === false) {
-            setTimeout(() => (this._showingTags = false), 300);
-            this.dispatchEvent(new CustomEvent("menu-close"));
-        }
-        if (changed && typeof changed.open !== "undefined") {
-            animateCascade(this.shadowRoot.querySelectorAll(".menu .menu-item"), {
-                animation: this.open ? "menuItemIn" : "menuItemOut",
-                duration: 400,
-                fullDuration: 600,
-                initialDelay: 50,
-                fill: "both"
-            });
-        }
+    @observe("open")
+    async _openChanged() {
+        this.dispatch(this.open ? "menu-open" : "menu-close");
+        animateCascade(this.$$(".menu .menu-item"), {
+            animation: this.open ? "menuItemIn" : "menuItemOut",
+            duration: 400,
+            fullDuration: 600,
+            initialDelay: 50,
+            fill: "both"
+        });
     }
 
     toggle() {
         this.open = !this.open;
     }
 
-    _openSettings() {
-        this.dispatchEvent(new CustomEvent("open-settings"));
-    }
-
-    _openAccountView() {
-        this.dispatchEvent(new CustomEvent("open-account-view"));
-    }
-
-    _showTags(e: Event) {
+    private _showTags(e: Event) {
         this.open = true;
         this._showingTags = true;
-        this.animateCascade(this.shadowRoot.querySelectorAll(".tags .menu-item, .no-tags"), {
+        animateCascade(this.$$(".tags .menu-item, .no-tags"), {
             animation: "tagIn",
             duration: 400,
             fullDuration: 600,
@@ -329,16 +315,14 @@ class Menu extends LitElement {
         e.stopPropagation();
     }
 
-    _closeTags(e: Event) {
+    private _closeTags(e: Event) {
         this._showingTags = false;
         e.stopPropagation();
     }
 
-    _selectTag(tag: string) {
-        setTimeout(() => {
-            this.$.listView.filterString = tag;
-        }, 350);
+    private async _selectTag(tag: string) {
+        this.dispatch("select-tag", { tag });
+        await wait(350);
+        this._showingTags = false;
     }
 }
-
-window.customElements.define("pl-menu", Menu);

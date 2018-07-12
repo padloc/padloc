@@ -1,25 +1,19 @@
-import { LitElement, html } from "@polymer/lit-element";
 import { Record, Field } from "@padlock/core/lib/data.js";
-import { isTouch } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { setClipboard } from "../clipboard.js";
 import sharedStyles from "../styles/shared.js";
+import { BaseElement, element, html, property } from "./base.js";
 import "./icon.js";
 
-class RecordItem extends LitElement {
-    static get properties() {
-        return {
-            record: Object
-        };
+@element("pl-record-item")
+export class RecordItem extends BaseElement {
+    @property() record: Record;
+
+    _shouldRender() {
+        return !!this.record;
     }
 
-    _shouldRender(props: { record?: Record }) {
-        return !!props.record;
-    }
-
-    _render(props: { record: Record }) {
-        const record = props.record;
-
+    _render({ record }: this) {
         return html`
         <style>
             ${sharedStyles}
@@ -105,7 +99,7 @@ class RecordItem extends LitElement {
                 content: "\\f00c\\ ";
             }
 
-            :host(:not(.touch):not([multi-select])) .field:hover {
+            :host(:not([multi-select])) .field:hover {
                 @apply --shade-3;
             }
 
@@ -149,7 +143,7 @@ class RecordItem extends LitElement {
                 color: var(--color-background);
             }
 
-            :host(:not(.touch):focus:not([selected])) {
+            :host(:focus:not([selected])) {
                 border-color: var(--color-highlight);
                 color: #4ca8d9;
             }
@@ -202,32 +196,19 @@ class RecordItem extends LitElement {
 `;
     }
 
-    ready() {
-        super.ready();
-        // For some reason the keydown event doesn't bubble if a record item has focus so we have to
-        // re-dispatch it
-        this.addEventListener("keydown", (e: KeyboardEvent) => {
-            if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
-                document.dispatchEvent(new KeyboardEvent("keydown", e));
-                e.preventDefault();
-            }
-        });
-
-        this.classList.toggle("touch", isTouch());
-    }
-
-    _copyField(e: Event, index: number) {
+    private _copyField(e: Event, index: number) {
+        if (!this.record) {
+            return;
+        }
         e.stopPropagation();
         e.preventDefault();
         setClipboard(this.record, this.record.fields[index]);
-        const fieldEl = this.shadowRoot.querySelectorAll(".field")[index];
+        const fieldEl = this.$$(".field")[index] as HTMLElement;
         fieldEl.classList.add("copied");
-        this.record.lastUsed = new Date();
-        // this.saveCollection();
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
     }
 
-    _limitTags() {
+    private _limitTags() {
         const tags = this.record.tags.slice(0, 2);
         const more = this.record.tags.length - tags.length;
 
@@ -238,5 +219,3 @@ class RecordItem extends LitElement {
         return tags;
     }
 }
-
-window.customElements.define("pl-record-item", RecordItem);

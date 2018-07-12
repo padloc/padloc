@@ -13,7 +13,7 @@ import { RecordView } from "./record-view.js";
 import { SettingsView } from "./settings-view.js";
 import { StartView } from "./start-view.js";
 import { TitleBar } from "./title-bar.js";
-import "./menu.js";
+import { Menu } from "./menu.js";
 import { Input } from "./input.js";
 import { clearDialogs } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
@@ -37,6 +37,7 @@ class App extends BaseElement {
     @query("pl-start-view") private _startView: StartView;
     @query("pl-settings-view") private _settingsView: SettingsView;
     @query("pl-account-view") private _accountView: AccountView;
+    @query("pl-menu") private _menu: Menu;
 
     private _currentView: View | null;
 
@@ -47,7 +48,7 @@ class App extends BaseElement {
         this.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
     }
 
-    get _isNarrow() {
+    private get _isNarrow() {
         return this.offsetWidth < 600;
     }
 
@@ -168,7 +169,7 @@ class App extends BaseElement {
                 top: env(safe-area-inset-top);
             }
 
-            #main, #listView {
+            #main, pl-list-view {
                 transform: translate3d(0, 0, 0);
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
@@ -187,7 +188,7 @@ class App extends BaseElement {
                 display: none;
             }
 
-            #listView {
+            pl-list-view {
                 flex: 1;
                 overflow: hidden;
             }
@@ -240,7 +241,7 @@ class App extends BaseElement {
                     --menu-icon-width: 0px;
                 }
 
-                .showing-views #listView {
+                .showing-views pl-list-view {
                     transform: translate3d(0, 0, -150px) rotateX(10deg);
                 }
 
@@ -261,20 +262,21 @@ class App extends BaseElement {
         <pl-start-view id="startView"></pl-start-view>
 
         <pl-menu
-            id="menu"
-            open="${this._showMenu}"
+            store="${this._currentStore}"
+            on-menu-open="${() => (this._showMenu = true)}"
             on-menu-close="${() => (this._showMenu = false)}"
             on-open-settings="${() => this._openView(this._settingsView)}"
-            on-open-account-view="${() => this._openView(this._accountView)}">
+            on-open-account-view="${() => this._openView(this._accountView)}"
+            on-select-tag="${(e: CustomEvent) => this._listView.search(e.detail.tag)}"
+            on-multiselect="${() => (this._listView.multiSelect = true)}">
         </pl-menu>
 
         <div id="main">
 
             <pl-list-view
-                id="listView"
                 store="${this._currentStore}"
                 on-select-record="${(e: CustomEvent) => this._recordSelected(e)}"
-                on-toggle-menu="${() => this._toggleMenu()}">
+                on-toggle-menu="${() => this._menu.toggle()}">
             </pl-list-view>
 
             <div id="views">
@@ -321,7 +323,7 @@ class App extends BaseElement {
         }, 100);
     }
 
-    _recordSelected(e: CustomEvent) {
+    private _recordSelected(e: CustomEvent) {
         const record = e.detail.record;
         if (record) {
             this._recordView.record = record;
@@ -329,7 +331,7 @@ class App extends BaseElement {
         }
     }
 
-    async _openView(view: View | null) {
+    private async _openView(view: View | null) {
         if (view === this._currentView) {
             return;
         }
@@ -410,16 +412,8 @@ class App extends BaseElement {
         }
     }
 
-    _toggleMenu() {
-        this._showMenu = !this._showMenu;
-    }
-
-    _newRecord() {
+    private _newRecord() {
         app.createRecord(this._currentStore, "");
-    }
-
-    _enableMultiSelect() {
-        this._listView.multiSelect = true;
     }
 }
 
