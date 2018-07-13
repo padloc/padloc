@@ -47,6 +47,13 @@ export class Input extends BaseElement {
         return activeInput;
     }
 
+    connectedCallback() {
+        super.connectedCallback();
+        if (this.multiline && this.autosize) {
+            autosize(this._inputElement);
+        }
+    }
+
     _render(props: this) {
         const masked = props.masked && !!props.value && !props.focused;
         const input = props.multiline
@@ -162,6 +169,12 @@ export class Input extends BaseElement {
 
         ${input}
         `;
+    }
+
+    _didRender() {
+        if (this.multiline && this.autosize) {
+            autosize.update(this._inputElement);
+        }
     }
 
     get validationMessage() {
