@@ -5,15 +5,15 @@ import { uuid } from "@padlock/core/src/util";
 import { randomBytes } from "crypto";
 
 export class AuthRequest implements Storable {
-    session: Session;
-    created: DateString;
+    session: Session = new Session();
+    created: DateString = new Date().toISOString();
     storageKind = "auth_request";
 
-    static async create(email: string, device?: Device) {
+    static create(email: string, device?: Device) {
         const req = new AuthRequest(email);
-        req.created = new Date().toISOString();
         req.code = randomBytes(3).toString("hex");
-        req.session = await new Session().deserialize({
+        req.session = new Session();
+        Object.assign(req.session, {
             id: uuid(),
             account: email,
             created: new Date().toISOString(),
@@ -32,7 +32,7 @@ export class AuthRequest implements Storable {
 
     async serialize() {
         return {
-            session: this.session,
+            session: await this.session.serialize(),
             code: this.code,
             created: this.created,
             email: this.email
@@ -40,7 +40,7 @@ export class AuthRequest implements Storable {
     }
 
     async deserialize(raw: any) {
-        this.session = raw.session;
+        this.session = await new Session().deserialize(raw.session);
         this.code = raw.code;
         this.created = raw.created;
         this.email = raw.email;

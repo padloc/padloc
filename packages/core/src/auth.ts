@@ -3,14 +3,21 @@ import { PublicKey } from "./crypto";
 import { Storable } from "./storage";
 import { StoreID } from "./data";
 import { uuid } from "./util";
+import { DeviceInfo } from "./platform";
 
 export type AccountID = string;
 export type SessionID = string;
 export type DeviceID = string;
 
-export class Device implements Serializable {
-    id: DeviceID;
-    userAgent: string;
+export class Device implements Serializable, DeviceInfo {
+    id: string = "";
+    platform: string = "";
+    osVersion: string = "";
+    appVersion: string = "";
+    manufacturer?: string;
+    model?: string;
+    hostName?: string;
+    userAgent: string = "";
 
     get description(): string {
         return this.userAgent;
@@ -19,6 +26,12 @@ export class Device implements Serializable {
     async serialize() {
         return {
             id: this.id,
+            platform: this.platform,
+            osVersion: this.osVersion,
+            appVersion: this.appVersion,
+            manufacturer: this.manufacturer,
+            model: this.model,
+            hostName: this.hostName,
             userAgent: this.userAgent
         };
     }
@@ -32,19 +45,19 @@ export class Device implements Serializable {
 export interface PublicAccount {
     id: AccountID;
     email: string;
-    publicKey: PublicKey;
-    mainStore: StoreID;
+    publicKey?: PublicKey;
+    mainStore?: StoreID;
 }
 
 export class Session implements Serializable {
-    id: string;
-    account: AccountID;
+    id: string = "";
+    account: AccountID = "";
     token?: string;
-    created: DateString;
-    active: boolean;
+    created: DateString = new Date().toISOString();
+    active: boolean = false;
     lastUsed?: DateString;
     expires?: DateString;
-    device: Device;
+    device: Device = new Device();
 
     async serialize() {
         return {
@@ -60,7 +73,7 @@ export class Session implements Serializable {
     }
 
     async deserialize(raw: any) {
-        this.device = await new Device().deserialize(raw.device);
+        await this.device.deserialize(raw.device);
         delete raw.device;
         Object.assign(this, raw);
         return this;
@@ -69,23 +82,16 @@ export class Session implements Serializable {
 
 export class Account implements PublicAccount, Storable {
     storageKind = "account";
-    id: AccountID;
-    created: DateString;
-    mainStore: StoreID;
+    id: AccountID = uuid();
+    created: DateString = new Date().toISOString();
+    mainStore?: StoreID;
     sharedStores: StoreID[] = [];
-    publicKey: PublicKey;
+    publicKey?: PublicKey;
     sessions: Session[] = [];
     // TODO
     subscription?: { status: string };
     promo?: any;
     paymentSource?: any;
-
-    static create(email: string) {
-        const account = new Account(email);
-        account.id = uuid();
-        account.created = new Date().toISOString();
-        return account;
-    }
 
     constructor(public email: string = "") {}
 

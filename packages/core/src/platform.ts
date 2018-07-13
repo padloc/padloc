@@ -227,11 +227,12 @@ export function getLocale(): string {
 export interface DeviceInfo {
     platform: string;
     osVersion: string;
-    uuid: string;
+    id: string;
     appVersion: string;
     manufacturer?: string;
     model?: string;
     hostName?: string;
+    userAgent: string;
 }
 
 export async function getDeviceInfo(): Promise<DeviceInfo> {
@@ -239,7 +240,8 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
         platform: await getPlatformName(),
         osVersion: await getOSVersion(),
         appVersion: await getAppVersion(),
-        uuid: await getDeviceUUID()
+        id: await getDeviceUUID(),
+        userAgent: navigator.userAgent
     };
 
     if (isCordova()) {

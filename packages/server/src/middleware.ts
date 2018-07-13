@@ -1,5 +1,6 @@
 import { Account, Device } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
+import { unmarshal } from "@padlock/core/src/encoding";
 import { Context } from "./server";
 
 export async function authenticate(ctx: Context, next: () => Promise<void>) {
@@ -31,6 +32,10 @@ export async function authenticate(ctx: Context, next: () => Promise<void>) {
     if (session.expires && new Date(session.expires) < new Date()) {
         throw new Err(ErrorCode.SESSION_EXPIRED);
     }
+
+    Object.assign(session.device, ctx.state.device);
+    session.lastUsed = new Date().toISOString();
+    await ctx.storage.set(account);
 
     await next();
 }
@@ -65,8 +70,9 @@ export async function handleError(ctx: Context, next: () => Promise<void>) {
 }
 
 export async function device(ctx: Context, next: () => Promise<void>) {
-    const id = ctx.request.header["x-device-uuid"];
-    const userAgent = ctx.request.header["user-agent"];
-    ctx.state.device = new Device(id, userAgent);
+    const deviceHeader = ctx.request.header["x-device"];
+    if (deviceHeader) {
+        ctx.state.device = await new Device().deserialize(unmarshal(deviceHeader));
+    }
     await next();
 }

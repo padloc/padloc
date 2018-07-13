@@ -37,6 +37,7 @@ export class Server {
                 allowHeaders: [
                     "Authorization",
                     "Content-Type",
+                    "X-Device",
                     "X-Device-App-Version",
                     "X-Device-Platform",
                     "X-Device-UUID",

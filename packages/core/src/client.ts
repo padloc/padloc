@@ -1,7 +1,6 @@
 import { request, Method } from "./ajax";
 import { Session, Account } from "./auth";
-import { getDeviceInfo } from "./platform";
-import { unmarshal } from "./encoding";
+import { marshal, unmarshal } from "./encoding";
 import { App } from "./app";
 
 export class Client {
@@ -24,14 +23,7 @@ export class Client {
             headers.set("Authorization", "AuthToken " + this.app.session.account + ":" + this.app.session.token);
         }
 
-        const { uuid, platform, osVersion, appVersion, manufacturer, model, hostName } = await getDeviceInfo();
-        headers.set("X-Device-App-Version", appVersion || "");
-        headers.set("X-Device-Platform", platform || "");
-        headers.set("X-Device-UUID", uuid || "");
-        headers.set("X-Device-Manufacturer", manufacturer || "");
-        headers.set("X-Device-OS-Version", osVersion || "");
-        headers.set("X-Device-Model", model || "");
-        headers.set("X-Device-Hostname", hostName || "");
+        headers.set("X-Device", marshal(await this.app.device.serialize()));
 
         return request(method, url, data, headers);
     }

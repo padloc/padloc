@@ -1,11 +1,13 @@
 import { LocalStorage, RemoteStorage } from "./storage";
 import { Store, MainStore, SharedStore, Record, Field, Tag } from "./data";
-import { Account, Session } from "./auth";
+import { Account, Session, Device } from "./auth";
 import { DateString } from "./encoding";
 import { Client } from "./client";
 import { Messages } from "./messages";
 import { localize as $l } from "./locale";
 import { ErrorCode } from "./error";
+import { getDeviceInfo } from "./platform";
+import { uuid } from "./util";
 
 export interface Stats {
     lastSync?: DateString;
@@ -44,6 +46,7 @@ export class App extends EventTarget {
     messages = new Messages("https://padlock.io/messages.json");
     locked = true;
     stats: Stats = {};
+    device: Device = new Device();
 
     initialized?: DateString;
     account?: Account;
@@ -58,7 +61,8 @@ export class App extends EventTarget {
             initialized: this.initialized,
             stats: this.stats,
             messages: await this.messages.serialize(),
-            settings: this.settings
+            settings: this.settings,
+            device: await this.device.serialize()
         };
     }
 
@@ -69,6 +73,7 @@ export class App extends EventTarget {
         this.setStats(raw.stats || {});
         await this.messages.deserialize(raw.messages);
         this.setSettings(raw.settings);
+        await this.device.deserialize(Object.assign(raw.device, await getDeviceInfo()));
         return this;
     }
 
@@ -80,6 +85,10 @@ export class App extends EventTarget {
         try {
             await this.storage.get(this);
         } catch (e) {
+            await this.storage.set(this);
+        }
+        if (!this.device.id) {
+            this.device.id = uuid();
             await this.storage.set(this);
         }
         this.dispatch("load");
@@ -175,6 +184,7 @@ export class App extends EventTarget {
         delete this.account;
         delete this.session;
         delete this.initialized;
+        await this.storage.set(this);
         this.dispatch("reset");
         this.loaded = this.load();
     }

@@ -28,24 +28,30 @@ export async function activateSession(ctx: Context, id: string) {
     }
 
     const req = new AuthRequest();
-    req.session = { id: id } as Session;
+    req.session.id = id;
     await ctx.storage.get(req);
 
     if (req.code !== code) {
         throw new Err(ErrorCode.BAD_REQUEST, "Invalid code");
     }
 
-    let acc;
+    const acc = new Account(req.email);
     try {
-        acc = new Account(req.email);
         await ctx.storage.get(acc);
     } catch (e) {
-        // TODO only catch not found error
-        acc = Account.create(req.email);
-        await ctx.storage.set(acc);
+        if (e.code === ErrorCode.NOT_FOUND) {
+            await ctx.storage.set(acc);
+        } else {
+            throw e;
+        }
     }
 
     req.session.active = true;
+
+    const existing = acc.sessions.find(s => s.device.id === req.session.device.id);
+    if (existing) {
+        acc.sessions.splice(acc.sessions.indexOf(existing), 1);
+    }
     acc.sessions.push(req.session);
     await ctx.storage.set(acc);
 
