@@ -190,11 +190,7 @@ export class FieldDialog extends BaseElement {
 `;
     }
 
-    openField(field: Field, edit = false, presets: { name?: string; value?: string } = {}) {
-        console.log(this._nameInput);
-        if (!this._nameInput) {
-            return;
-        }
+    openField(field: Field, edit = false, presets: { name?: string; value?: string } = {}): Promise<FieldDialogResult> {
         this.open = true;
         this.editing = false;
         this.field = field;

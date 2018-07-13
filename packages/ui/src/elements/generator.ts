@@ -9,17 +9,17 @@ import { ToggleButton } from "./toggle-button.js";
 
 class Generator extends BaseElement {
     @property() value: string = "";
-    @property() length: number = 10;
-    @property() lower: boolean = true;
-    @property() upper: boolean = true;
-    @property() numbers: boolean = true;
-    @property() other: boolean = false;
 
     @query("pl-dialog") private _dialog: Dialog;
+    @query("#lower") private _lower: ToggleButton;
+    @query("#upper") private _upper: ToggleButton;
+    @query("#numbers") private _numbers: ToggleButton;
+    @query("#other") private _other: ToggleButton;
+    @query("#length") private _length: Slider;
 
     private _resolve: ((val: string | null) => void) | null;
 
-    _render({ value, length, lower, upper, numbers, other }: this) {
+    _render({ value }: this) {
         return html`
         <style>
 
@@ -107,44 +107,39 @@ class Generator extends BaseElement {
             </div>
 
             <pl-toggle-button
+                id="lower"
                 label="a-z"
-                active="${lower}"
                 class="tap"
-                reverse
-                on-change="${(e: Event) => (this.lower = (e.target as ToggleButton).active)}">
+                reverse>
             </pl-toggle-button>
 
             <pl-toggle-button
+                id="upper"
                 label="A-Z"
-                active="${upper}"
                 class="tap"
-                reverse
-                on-change="${(e: Event) => (this.upper = (e.target as ToggleButton).active)}">
+                reverse>
             </pl-toggle-button>
 
             <pl-toggle-button
+                id="numbers"
                 label="0-9"
-                active="${numbers}"
                 class="tap"
-                reverse
-                on-change="${(e: Event) => (this.numbers = (e.target as ToggleButton).active)}">
+                reverse>
             </pl-toggle-button>
 
             <pl-toggle-button
+                id="other"
                 label="?()/%..."
-                active="${other}"
                 class="tap"
-                reverse
-                on-change="${(e: Event) => (this.other = (e.target as ToggleButton).active)}">
+                reverse>
             </pl-toggle-button>
 
             <pl-slider
+                id="length"
                 label="${$l("length")}"
                 min="5"
-                max="50"
-                value="${length}"
-                on-change="${(e: any) => (this.length = (e.target as Slider).value)}">
-            ></pl-slider>
+                max="50">
+            </pl-slider>
 
             <button class="confirm-button tap" on-click="${() => this._confirm()}">${$l("Apply")}</button>
 
@@ -152,6 +147,12 @@ class Generator extends BaseElement {
 
         </pl-dialog>
 `;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this._lower.active = this._upper.active = this._numbers.active = true;
+        this._length.value = 10;
     }
 
     generate(): Promise<string | null> {
@@ -165,12 +166,12 @@ class Generator extends BaseElement {
     @listen("change")
     _generate() {
         var charSet = "";
-        this.lower && (charSet += chars.lower);
-        this.upper && (charSet += chars.upper);
-        this.numbers && (charSet += chars.numbers);
-        this.other && (charSet += chars.other);
+        this._lower.active && (charSet += chars.lower);
+        this._upper.active && (charSet += chars.upper);
+        this._numbers.active && (charSet += chars.numbers);
+        this._other.active && (charSet += chars.other);
 
-        this.value = charSet ? randomString(this.length, charSet) : "";
+        this.value = charSet ? randomString(this._length.value, charSet) : "";
     }
 
     private _confirm() {

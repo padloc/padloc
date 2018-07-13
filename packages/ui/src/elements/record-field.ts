@@ -8,6 +8,7 @@ import { BaseElement, element, html, property } from "./base.js";
 import "./icon.js";
 import "./input.js";
 import "./field-dialog.js";
+import { FieldDialog, FieldDialogResult } from "./field-dialog.js";
 
 @element("pl-record-field")
 export class RecordField extends BaseElement {
@@ -166,7 +167,7 @@ export class RecordField extends BaseElement {
     }
 
     async _openFieldDialog(edit = false, presets?: any) {
-        const result = await lineUpDialog("pl-field-dialog", d => d.openField(this.field, edit, presets));
+        const result = await lineUpDialog("pl-field-dialog", (d: FieldDialog) => d.openField(this.field, edit, presets)) as FieldDialogResult;
         switch (result.action) {
             case "copy":
                 this._copy();
@@ -178,7 +179,7 @@ export class RecordField extends BaseElement {
             case "delete":
                 this._delete();
                 break;
-            case "edited":
+            case "edit":
                 this.dispatch("field-change", { record: this.record, field: this.field, changes: result });
                 break;
         }
