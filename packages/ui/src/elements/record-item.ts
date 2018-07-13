@@ -152,10 +152,6 @@ export class RecordItem extends BaseElement {
                 transform: scale(1, 1);
                 opacity: 1;
             }
-
-            :host([selected]) .tags {
-                @apply --shade-3;
-            }
         </style>
 
         <div class="highlight"></div>

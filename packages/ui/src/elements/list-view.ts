@@ -7,10 +7,10 @@ import { app } from "../init.js";
 import { confirm } from "../dialog.js";
 import sharedStyles from "../styles/shared.js";
 import { AlertDialog } from "./alert-dialog.js";
-import { BaseElement, html, property, query, listen } from "./base.js";
+import { BaseElement, html, property, query, queryAll, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
-import "./record-item.js";
+import { RecordItem } from "./record-item.js";
 
 function filterByString(fs: string, rec: Record) {
     if (!fs) {
@@ -46,16 +46,25 @@ export class ListView extends BaseElement {
     @query("main") private _main: HTMLDivElement;
     @query("#sectionSelector") private _sectionSelector: AlertDialog;
     @query("#filterInput") private _filterInput: Input;
+    @queryAll("pl-record-item") _recordItems: RecordItem;
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
     private _recentCount: number = 0;
 
     @listen("records-added", app)
     @listen("records-deleted", app)
-    @listen("record-changed", app)
     @listen("record-created", app)
     _changeHandler(e: CustomEvent) {
         if (e.detail.store === this.store) {
+            this._updateRecords();
+        }
+    }
+
+    @listen("record-changed", app)
+    async _recordChanged({ detail: { record, store } }: CustomEvent) {
+        if (store === this.store) {
+            const el = this.$(`pl-record-item[record-id="${record.id}"]`, false) as RecordItem;
+            el && el.requestRender();
             this._updateRecords();
         }
     }
@@ -305,6 +314,7 @@ export class ListView extends BaseElement {
 
                     <pl-record-item
                         record="${item.record}"
+                        record-id$="${item.record.id}"
                         selected?="${item.record === props.selectedRecord}"
                         multi-select="${props.multiSelect}"
                         on-click="${() => this.selectRecord(item.record)}"
@@ -359,7 +369,7 @@ export class ListView extends BaseElement {
         }
         const { top, right, bottom, left } = this._bounds;
         const middle = left + (right - left) / 2;
-        let els = this.shadowRoot!.elementsFromPoint(middle, top + 1);
+        let els = this.shadowRoot!.elementsFromPoint(middle, top + 10);
 
         for (const el of els) {
             if (el.hasAttribute("index")) {
@@ -428,6 +438,7 @@ export class ListView extends BaseElement {
         }
         this._listItems = items;
         this._scrollHandler();
+        this._scrollToSelected();
     }
 
     selectRecord(record: Record | null) {
