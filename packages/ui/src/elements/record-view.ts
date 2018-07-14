@@ -2,7 +2,7 @@ import { Store, Record, Field } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
 import { View } from "./view.js";
-import { confirm, prompt, choose, lineUpDialog, generate, getDialog } from "../dialog.js";
+import { confirm, prompt, choose, openField, generate, getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app } from "../init.js";
 import { html, property, query, listen, observe } from "./base.js";
@@ -260,7 +260,7 @@ export class RecordView extends View {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
-        const result = await lineUpDialog("pl-field-dialog", (d: any) => d.openField(field, true));
+        const result = await openField(field, true);
         switch (result.action) {
             case "generate":
                 const value = await generate();
@@ -268,7 +268,8 @@ export class RecordView extends View {
                 field.name = result.name;
                 this._addField(field);
                 break;
-            case "edited":
+            case "edit":
+                Object.assign(field, result);
                 app.updateRecord(this.store, this.record, { fields: this.record.fields.concat([field]) });
                 break;
         }

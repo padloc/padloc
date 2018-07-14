@@ -2,13 +2,11 @@ import { isTouch } from "@padlock/core/lib/platform.js";
 import { Record, Field } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
-import { lineUpDialog, generate } from "../dialog.js";
+import { openField, generate } from "../dialog.js";
 import { setClipboard } from "../clipboard.js";
 import { BaseElement, element, html, property } from "./base.js";
 import "./icon.js";
 import "./input.js";
-import "./field-dialog.js";
-import { FieldDialog, FieldDialogResult } from "./field-dialog.js";
 
 @element("pl-record-field")
 export class RecordField extends BaseElement {
@@ -167,7 +165,7 @@ export class RecordField extends BaseElement {
     }
 
     async _openFieldDialog(edit = false, presets?: any) {
-        const result = await lineUpDialog("pl-field-dialog", (d: FieldDialog) => d.openField(this.field, edit, presets)) as FieldDialogResult;
+        const result = await openField(this.field, edit, presets);
         switch (result.action) {
             case "copy":
                 this._copy();
