@@ -234,7 +234,7 @@ export class Input extends BaseElement {
 
     @listen("touchend")
     _touchend(e: Event) {
-        e.preventDefault();
+        e.stopPropagation();
     }
 
     private _updateValidity() {

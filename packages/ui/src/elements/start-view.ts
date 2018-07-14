@@ -488,7 +488,7 @@ export class StartView extends BaseElement {
                                 select-on-focus
                                 no-tab="${open}"
                                 on-enter="${() => this._enterNewPassword()}"
-                                on-change="${() => this._updatePwdStrength()}"
+                                on-input="${() => this._updatePwdStrength()}"
                                 placeholder="${$l("Enter Master Password")}">
                             </pl-input>
 
