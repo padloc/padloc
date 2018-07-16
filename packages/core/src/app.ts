@@ -1,13 +1,14 @@
 import { LocalStorage, RemoteStorage } from "./storage";
-import { Store, MainStore, SharedStore, Record, Field, Tag } from "./data";
+import { Store, MainStore, SharedStore, Record, Field, Tag, StoreID } from "./data";
 import { Account, Session, Device } from "./auth";
 import { DateString } from "./encoding";
-import { Client } from "./client";
+import { Client, AccountUpdateParams } from "./client";
 import { Messages } from "./messages";
 import { localize as $l } from "./locale";
 import { ErrorCode } from "./error";
 import { getDeviceInfo } from "./platform";
 import { uuid } from "./util";
+import { getProvider } from "./crypto";
 
 export interface Stats {
     lastSync?: DateString;
@@ -132,17 +133,18 @@ export class App extends EventTarget {
         this.locked = false;
         this.dispatch("unlock");
 
-        // for (const id of this.account!.sharedStores) {
-        //     const sharedStore = new SharedStore(id);
-        //     sharedStore.account = this.account!;
-        //     sharedStore.privateKey = this.privateKey!;
-        //     try {
-        //         await this.storage.get(sharedStore);
-        //         this.sharedStores.push(sharedStore);
-        //     } catch (e) {
-        //         console.error("Failed to decrypt shared store with id", sharedStore.id, e);
-        //     }
-        // }
+        if (this.account) {
+            for (const id of this.account.sharedStores) {
+                const sharedStore = new SharedStore(id);
+                sharedStore.access = { accessorID: this.account.id, privateKey: this.mainStore.privateKey! };
+                try {
+                    await this.storage.get(sharedStore);
+                    this.sharedStores.push(sharedStore);
+                } catch (e) {
+                    console.error("Failed to decrypt shared store with id", sharedStore.id, e);
+                }
+            }
+        }
     }
 
     async lock() {
@@ -157,18 +159,6 @@ export class App extends EventTarget {
         await this.storage.set(this.mainStore);
         this.dispatch("password-changed");
     }
-    //
-    // async createSharedStore(): Promise<SharedStore> {
-    //     const store = new SharedStore();
-    //     store.account = this.account!;
-    //     store.privateKey = this.privateKey;
-    //     await store.addMember(this.account!);
-    //     await this.storage.set(store);
-    //     this.sharedStores.push(store);
-    //     this.account!.sharedStores.push(store.id);
-    //     await this.storage.set(this.mainStore);
-    //     return store;
-    // }
 
     async save() {
         return Promise.all([
@@ -252,6 +242,12 @@ export class App extends EventTarget {
         this.dispatch("account-changed", { account: this.account });
     }
 
+    async updateAccount(params: AccountUpdateParams) {
+        await this.client.updateAccount(params);
+        await this.storage.set(this);
+        this.dispatch("account-changed", { account: this.account });
+    }
+
     async logout() {
         await this.client.logout();
         delete this.session;
@@ -274,6 +270,55 @@ export class App extends EventTarget {
         }
     }
 
+    async generateKeyPair() {
+        if (!this.account) {
+            throw "Not logged in!";
+        }
+        const { publicKey, privateKey } = await getProvider().generateKeyPair();
+        this.account.publicKey = publicKey;
+        this.mainStore.privateKey = privateKey;
+        await Promise.all([this.updateAccount({ publicKey }), this.synchronize()]);
+    }
+
+    async createSharedStore(): Promise<SharedStore> {
+        if (!this.account) {
+            throw "Need to be logged in to create a shared store!";
+        }
+
+        if (!this.account.publicKey || !this.mainStore.privateKey) {
+            await this.generateKeyPair();
+        }
+
+        const store = new SharedStore();
+        store.access = { accessorID: this.account.id, privateKey: this.mainStore.privateKey! };
+        await store.addAccount(this.account, { read: true, write: true, manage: true });
+        await this.remoteStorage.set(store);
+        await this.refreshAccount();
+        await this.synchronize();
+        return store;
+    }
+
+    async syncSharedStore(id: StoreID) {
+        if (!this.account || !this.mainStore.privateKey) {
+            throw "Not logged in";
+        }
+
+        let store = this.sharedStores.find(s => s.id === id);
+        if (!store) {
+            store = new SharedStore(id);
+            this.sharedStores.push(store);
+        }
+        store.access = { accessorID: this.account.id, privateKey: this.mainStore.privateKey };
+        await this.remoteStorage.get(store);
+        await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
+    }
+
+    async deleteSharedStore(id: StoreID) {
+        const store = this.sharedStores.find(s => s.id === id) || new SharedStore(id);
+        await this.remoteStorage.delete(store);
+        await this.refreshAccount();
+    }
+
     async synchronize() {
         try {
             await this.remoteStorage.get(this.mainStore);
@@ -285,6 +330,10 @@ export class App extends EventTarget {
         }
 
         await Promise.all([this.storage.set(this.mainStore), this.remoteStorage.set(this.mainStore)]);
+
+        for (const id of this.account!.sharedStores) {
+            await this.syncSharedStore(id);
+        }
 
         this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");

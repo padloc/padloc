@@ -42,16 +42,9 @@ export class Device implements Serializable, DeviceInfo {
     }
 }
 
-export interface PublicAccount {
-    id: AccountID;
-    email: string;
-    publicKey?: PublicKey;
-    mainStore?: StoreID;
-}
-
 export class Session implements Serializable {
     id: string = "";
-    account: AccountID = "";
+    account: string = "";
     token?: string;
     created: DateString = new Date().toISOString();
     active: boolean = false;
@@ -80,7 +73,7 @@ export class Session implements Serializable {
     }
 }
 
-export class Account implements PublicAccount, Storable {
+export class Account implements Storable {
     storageKind = "account";
     id: AccountID = uuid();
     created: DateString = new Date().toISOString();
@@ -97,15 +90,6 @@ export class Account implements PublicAccount, Storable {
 
     get storageKey() {
         return this.email || "";
-    }
-
-    get publicAccount(): PublicAccount {
-        return {
-            id: this.id,
-            email: this.email,
-            publicKey: this.publicKey,
-            mainStore: this.mainStore
-        };
     }
 
     async serialize() {

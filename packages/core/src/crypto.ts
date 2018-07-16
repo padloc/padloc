@@ -144,9 +144,7 @@ export interface PasswordBasedRawContainer extends BaseRawContainer {
 export interface SharedRawContainer extends BaseRawContainer {
     scheme: "shared";
     wp: AsymmetricCipherParams;
-    ek: {
-        [id: string]: CipherText;
-    };
+    accessors: Accessor[];
 }
 
 export type RawContainer = SimpleRawContainer | PasswordBasedRawContainer | SharedRawContainer;
@@ -190,11 +188,23 @@ export function defaultWrappingParams(): AsymmetricCipherParams {
     };
 }
 
-export interface Participant {
+export interface Permissions {
+    read: boolean;
+    write: boolean;
+    manage: boolean;
+}
+
+export interface Accessor {
     id: string;
+    email: string;
     publicKey: PublicKey;
-    privateKey?: PrivateKey;
+    permissions: Permissions;
     encryptedKey?: CipherText;
+}
+
+export interface Access {
+    accessorID: string;
+    privateKey: PrivateKey;
 }
 
 export class Container implements Storage, Storable {
@@ -203,8 +213,8 @@ export class Container implements Storage, Storable {
     cipherText?: CipherText;
     key?: SymmetricKey;
     password?: string;
-    user?: Participant;
-    private encryptedKeys: { [id: string]: CipherText } = {};
+    access?: Access;
+    accessors: Accessor[] = [];
 
     constructor(
         public scheme: EncryptionScheme = "simple",
@@ -237,12 +247,15 @@ export class Container implements Storage, Storable {
                 }
                 return await provider.deriveKey(this.password, this.keyDerivationParams);
             case "shared":
-                if (!this.user || !this.user.privateKey || !this.encryptedKeys) {
-                    throw new Err(ErrorCode.DECRYPTION_FAILED, "No private key provided");
+                if (!this.access) {
+                    throw new Err(ErrorCode.DECRYPTION_FAILED, "No access parameters provided");
                 }
-                if (Object.keys(this.encryptedKeys).length) {
-                    const encryptedKey = this.encryptedKeys[this.user.id];
-                    return provider.decrypt(this.user.privateKey, encryptedKey, this.wrappingParams);
+                if (this.accessors.length) {
+                    const accessor = this.accessors.find(a => a.id === this.access!.accessorID);
+                    if (!accessor || !accessor.encryptedKey) {
+                        throw new Err(ErrorCode.DECRYPTION_FAILED, "Current accessor does not have access.");
+                    }
+                    return provider.decrypt(this.access.privateKey, accessor.encryptedKey, this.wrappingParams);
                 } else {
                     return await provider.randomKey(this.encryptionParams.keySize);
                 }
@@ -290,7 +303,7 @@ export class Container implements Storage, Storable {
 
         if (this.scheme === "shared") {
             (raw as SharedRawContainer).wp = this.wrappingParams;
-            (raw as SharedRawContainer).ek = this.encryptedKeys;
+            (raw as SharedRawContainer).accessors = this.accessors;
         }
 
         return raw as Marshalable;
@@ -310,27 +323,35 @@ export class Container implements Storage, Storable {
 
         if (raw.scheme === "shared") {
             this.wrappingParams = raw.wp;
-            this.encryptedKeys = raw.ek;
+            this.accessors = raw.accessors;
         }
         return this;
     }
 
-    async addParticipant(p: Participant) {
+    async addAccessor(accessor: Accessor) {
         if (this.scheme !== "shared") {
-            throw new Err(ErrorCode.NOT_SUPPORTED, "Cannot add participant in this scheme");
+            throw new Err(ErrorCode.NOT_SUPPORTED, "Cannot add accessor in this scheme");
         }
+
         const key = await this.getKey();
-        this.encryptedKeys[p.id] = await provider.encrypt(p.publicKey, key, this.wrappingParams);
+        accessor.encryptedKey = await provider.encrypt(accessor.publicKey, key, this.wrappingParams);
+
+        // const existing = this.accessors.find(a => a.id === accessor.id);
+        // if (existing) {
+        //     Object.assign(existing, accessor);
+        // } else {
+        this.accessors.push(accessor);
+        // }
     }
 
     async clear() {
         delete this.password;
-        delete this.user;
+        delete this.access;
         delete this.key;
         delete this.cipherText;
         delete this.id;
         delete this.kind;
-        this.encryptedKeys = {};
+        this.accessors = [];
     }
 }
 

@@ -56,8 +56,11 @@ export class Server {
         this.koa.use(route.delete("/session/:id", handlers.revokeSession));
         this.koa.use(route.post("/session/:id/activate", handlers.activateSession));
         this.koa.use(route.get("/account", handlers.getAccount));
+        this.koa.use(route.put("/account", handlers.updateAccount));
         this.koa.use(route.get("/store/:id", handlers.getStore));
         this.koa.use(route.put("/store/:id", handlers.putStore));
+        this.koa.use(route.delete("/store/:id", handlers.deleteStore));
+        this.koa.use(route.put("/store", handlers.createStore));
     }
 
     start(port: number) {

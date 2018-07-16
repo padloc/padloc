@@ -2,6 +2,7 @@
 import * as level from "level";
 import { marshal, unmarshal } from "@padlock/core/src/encoding";
 import { Storage, Storable } from "@padlock/core/src/storage";
+import { Err, ErrorCode } from "@padlock/core/src/error";
 import { mkdirpSync } from "fs-extra";
 
 export class LevelDBStorage implements Storage {
@@ -23,8 +24,16 @@ export class LevelDBStorage implements Storage {
 
     async get(s: Storable) {
         const db = this.getDB(s);
-        const data = await db.get(s.storageKey);
-        await s.deserialize(unmarshal(data));
+        try {
+            const data = await db.get(s.storageKey);
+            await s.deserialize(unmarshal(data));
+        } catch (e) {
+            if (e.notFound) {
+                throw new Err(ErrorCode.NOT_FOUND);
+            } else {
+                throw e;
+            }
+        }
     }
 
     async set(s: Storable) {

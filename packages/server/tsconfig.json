@@ -9,6 +9,7 @@
         "noUnusedParameters": true,
         "noImplicitThis": true,
         "strictNullChecks": true,
+        "strictPropertyInitialization": true,
         "removeComments": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,

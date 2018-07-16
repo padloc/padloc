@@ -1,7 +1,7 @@
 import { DateString, Marshalable } from "./encoding";
-import { PrivateKey, Container, EncryptionScheme } from "./crypto";
+import { PrivateKey, Container, EncryptionScheme, Access, Permissions } from "./crypto";
 import { Storable } from "./storage";
-import { Account, PublicAccount } from "./auth";
+import { Account } from "./auth";
 import { uuid } from "./util";
 
 export type StoreID = string;
@@ -42,8 +42,9 @@ export function createRecord(name: string, fields?: Field[], tags?: Tag[]) {
 
 export class Store implements Storable {
     id: string;
-    created: DateString;
-    updated: DateString;
+    name = "";
+    created: DateString = new Date().toISOString();
+    updated: DateString = new Date().toISOString();
     protected container: Container;
     private _records = new Map<string, Record>();
     storageKind = "store";
@@ -105,6 +106,7 @@ export class Store implements Storable {
         return {
             created: this.created,
             updated: this.updated,
+            name: this.name,
             records: this.records.map((r: any) => {
                 // For backwards compatibility
                 r.uuid = r.id;
@@ -116,6 +118,7 @@ export class Store implements Storable {
     protected async _deserialize(raw: any) {
         this.created = raw.created;
         this.updated = raw.updated;
+        this.name = raw.name;
         const records = raw.records.map((r: any) => {
             return {
                 tags: r.tags || (r.category && [r.category]) || [],
@@ -140,16 +143,12 @@ export class Store implements Storable {
         };
     }
 
-    protected prepContainer() {}
-
     async serialize(): Promise<Marshalable> {
-        this.prepContainer();
         await this.container.set(this.serializer);
         return this.container.serialize();
     }
 
     async deserialize(raw: any) {
-        this.prepContainer();
         await this.container.deserialize(raw);
         await this.container.get(this.serializer);
         this.id = this.container.id;
@@ -163,8 +162,8 @@ export class Store implements Storable {
 }
 
 export class MainStore extends Store {
-    privateKey: PrivateKey;
-    trustedAccounts: PublicAccount[];
+    privateKey?: PrivateKey;
+    trustedAccounts: Account[] = [];
 
     get storageKey() {
         return "main";
@@ -190,7 +189,7 @@ export class MainStore extends Store {
     }
 
     protected async _deserialize(raw: any) {
-        this.privateKey = raw.privateKey;
+        this.privateKey = this.privateKey || raw.privateKey;
         this.trustedAccounts = raw.trustedAccounts;
         return super._deserialize(raw);
     }
@@ -203,31 +202,27 @@ export class MainStore extends Store {
 }
 
 export class SharedStore extends Store {
-    static create(): SharedStore {
-        const store = new SharedStore(uuid());
-        store.created = new Date().toISOString();
-        store.updated = new Date().toISOString();
-        return store;
-    }
-
-    constructor(public id: string) {
-        super();
-    }
-
     protected get scheme(): EncryptionScheme {
         return "shared";
     }
-    members: PublicAccount[] = [];
 
-    protected async _serialize() {
-        return Object.assign(await super._serialize(), {
-            members: this.members
-        });
+    get access(): Access | undefined {
+        return this.container.access;
     }
 
-    async addMember(member: Account) {
-        this.members.push(member);
-        this.prepContainer();
-        await this.container.addParticipant(member);
+    set access(access: Access | undefined) {
+        this.container.access = access;
+    }
+
+    async addAccount(acc: Account, perms: Permissions = { read: true, write: true, manage: false }) {
+        if (!acc.publicKey) {
+            throw "Public Key is missing on account!";
+        }
+        await this.container.addAccessor({
+            id: acc.id,
+            email: acc.email,
+            publicKey: acc.publicKey!,
+            permissions: perms
+        });
     }
 }

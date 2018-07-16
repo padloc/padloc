@@ -19,6 +19,7 @@ export enum ErrorCode {
     INVALID_SESSION = "invalid_auth_token",
     SESSION_EXPIRED = "expired_auth_token",
     DEPRECATED_API_VERSION = "deprecated_api_version",
+    INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",
@@ -70,6 +71,8 @@ function statusFromCode(code: ErrorCode): number {
         case ErrorCode.INVALID_SESSION:
         case ErrorCode.SESSION_EXPIRED:
             return 401;
+        case ErrorCode.INSUFFICIENT_PERMISSIONS:
+            return 403;
         case ErrorCode.NOT_FOUND:
             return 404;
         case ErrorCode.DEPRECATED_API_VERSION:

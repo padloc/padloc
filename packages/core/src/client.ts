@@ -2,6 +2,11 @@ import { request, Method } from "./ajax";
 import { Session, Account } from "./auth";
 import { marshal, unmarshal } from "./encoding";
 import { App } from "./app";
+import { PublicKey } from "./crypto";
+
+export interface AccountUpdateParams {
+    publicKey: PublicKey;
+}
 
 export class Client {
     constructor(public app: App) {}
@@ -81,7 +86,18 @@ export class Client {
             throw "Need to be logged in to sync account";
         }
         const res = await this.request("GET", "account");
-        this.app.account = await new Account().deserialize(unmarshal(res.responseText));
+        this.app.account = this.app.account || new Account(this.app.session.account);
+        await this.app.account.deserialize(unmarshal(res.responseText));
+        return this.app.account;
+    }
+
+    async updateAccount(params: AccountUpdateParams): Promise<Account> {
+        if (!this.app.session) {
+            throw "Need to be logged in to update account";
+        }
+        this.app.account = this.app.account || new Account(this.app.session.account);
+        const res = await this.request("PUT", "account", marshal(params));
+        await this.app.account.deserialize(unmarshal(res.responseText));
         return this.app.account;
     }
     //
