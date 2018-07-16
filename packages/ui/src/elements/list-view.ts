@@ -1,43 +1,24 @@
-import { Record, Store } from "@padlock/core/lib/data.js";
+import { Store, Record, Field } from "@padlock/core/lib/data.js";
+import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 // import { isIOS } from "@padlock/core/lib/platform.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { animateCascade } from "../animation.js";
+import { setClipboard } from "../clipboard.js";
 import { app } from "../init.js";
-import { confirm } from "../dialog.js";
+// import { confirm } from "../dialog.js";
 import sharedStyles from "../styles/shared.js";
 import { AlertDialog } from "./alert-dialog.js";
-import { BaseElement, html, property, query, queryAll, listen } from "./base.js";
+import { BaseElement, html, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
-import { RecordItem } from "./record-item.js";
-
-function filterByString(fs: string, rec: Record) {
-    if (!fs) {
-        return true;
-    }
-    const words = fs.toLowerCase().split(" ");
-    const content = rec.tags
-        .concat([rec.name])
-        .join(" ")
-        .toLowerCase();
-    return words.some(word => content.search(word) !== -1);
-}
-
-interface ListItem {
-    record: Record;
-    section: string;
-    firstInSection: boolean;
-    lastInSection: boolean;
-}
 
 export class ListView extends BaseElement {
     @property() store?: Store;
     @property() multiSelect: boolean = false;
     @property() filterString: string = "";
-    @property() selectedRecord: Record | null = null;
-    @property() selectedRecords: Record[] = [];
-    @property() private _records: Record[] = [];
+    @property() selectedItem: ListItem | null = null;
+    @property() selectedItems: ListItem[] = [];
     @property() private _listItems: ListItem[] = [];
     @property() private _currentSection: string = "";
     @property() private _firstVisibleIndex: number = 0;
@@ -46,50 +27,39 @@ export class ListView extends BaseElement {
     @query("main") private _main: HTMLDivElement;
     @query("#sectionSelector") private _sectionSelector: AlertDialog;
     @query("#filterInput") private _filterInput: Input;
-    @queryAll("pl-record-item") _recordItems: RecordItem;
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
-    private _recentCount: number = 0;
 
     @listen("records-added", app)
     @listen("records-deleted", app)
-    @listen("record-created", app)
-    _changeHandler(e: CustomEvent) {
-        if (e.detail.store === this.store) {
-            this._updateRecords();
-        }
-    }
-
     @listen("record-changed", app)
-    async _recordChanged({ detail: { record, store } }: CustomEvent) {
-        if (store === this.store) {
-            const el = this.$(`pl-record-item[record-id="${record.id}"]`, false) as RecordItem;
-            el && el.requestRender();
-            this._updateRecords();
-        }
+    _updateListItems() {
+        this._listItems = app.list(this.filterString);
     }
 
     @listen("record-created", app)
     _recordCreated(e: CustomEvent) {
-        this.selectRecord(e.detail.record);
+        this._updateListItems();
+        const item = this._listItems.find(item => item.record.id === e.detail.record.id);
+        this.selectItem(item || null);
     }
 
     @listen("unlock", app)
     _unlocked() {
-        this._updateRecords();
-        this._animateRecords(600);
+        this._updateListItems();
+        this._animateItems(600);
     }
 
     @listen("lock", app)
     async _locked() {
         await wait(500);
-        this._updateRecords();
+        this._updateListItems();
     }
 
     @listen("synchronize", app)
     _synchronized() {
-        this._updateRecords();
-        this._animateRecords();
+        this._updateListItems();
+        this._animateItems();
     }
 
     _didRender() {
@@ -244,6 +214,146 @@ export class ListView extends BaseElement {
                 overflow: hidden;
                 text-align: center;
             }
+
+            .record {
+                display: block;
+                cursor: pointer;
+                vertical-align: top;
+                box-sizing: border-box;
+                flex-direction: row;
+                position: relative;
+                /* transition: color 0.3s; */
+                margin: 6px 6px 0 6px;
+                /* transform: translate3d(0, 0, 0); */
+                @apply --card;
+            }
+
+            .record-header {
+                height: var(--row-height);
+                line-height: var(--row-height);
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .record-name {
+                padding-left: 15px;
+                @apply --ellipsis;
+                font-weight: bold;
+                /* min-width: 150px; */
+            }
+
+            .record-fields {
+                position: relative;
+                display: flex;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .record-fields::after {
+                content: "";
+                display: block;
+                width: 6px;
+                flex: none;
+            }
+
+            .record-field {
+                cursor: pointer;
+                font-size: var(--font-size-tiny);
+                line-height: 35px;
+                height: 35px;
+                text-align: center;
+                position: relative;
+                flex: 1;
+                font-weight: bold;
+                margin: 0 0 6px 6px;
+                border-radius: 8px;
+                @apply --shade-2;
+            }
+
+            .record-field > * {
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+            }
+
+            .copied-message {
+                @apply --fullbleed;
+                border-radius: inherit;
+            }
+
+            .record-field:not(.copied) .copied-message, .record-field.copied .record-field-label {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            .copied-message {
+                font-weight: bold;
+                background: var(--color-primary);
+                color: var(--color-background);
+            }
+
+            .copied-message::before {
+                font-family: "FontAwesome";
+                content: "\\f00c\\ ";
+            }
+
+            :host(:not([multi-select])) .record-field:hover {
+                @apply --shade-3;
+            }
+
+            .record-field-label {
+                padding: 0 15px;
+                pointer-events: none;
+                @apply --ellipsis;
+            }
+
+            .record-tags {
+                display: flex;
+                align-items: center;
+                padding-right: 8px;
+            }
+
+            .record-tag {
+                font-size: 12px;
+                max-width: 60px;
+                border-radius: 6px;
+                padding: 4px 7px;
+                margin-right: 4px;
+                line-height: normal;
+                font-weight: bold;
+                background: var(--color-foreground);
+                color: var(--color-background);
+            }
+
+            .record-tag.store-tag {
+                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+            }
+
+            .record-highlight {
+                content: "";
+                display: block;
+                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+                transition-property: opacity, transform;
+                transition-duration: 0.2s;
+                transition-timing-function: cubic-bezier(0.6, 0, 0.2, 1);
+                @apply --fullbleed;
+                transform: scale(1, 0);
+                opacity: 0;
+                border-radius: 5px;
+            }
+
+            .record[selected] {
+                color: var(--color-background);
+            }
+
+            .record:focus:not([selected]) {
+                border-color: var(--color-highlight);
+                color: #4ca8d9;
+            }
+
+            .record[selected] .record-highlight {
+                transform: scale(1, 1);
+                opacity: 1;
+            }
         </style>
 
         <header hidden?="${props.multiSelect}">
@@ -278,7 +388,7 @@ export class ListView extends BaseElement {
 
             <pl-icon icon="checked" class="tap" on-click="${() => this.selectAll()}"></pl-icon>
 
-            <div class="multi-select-count"><div>${this._multiSelectLabel(props.selectedRecords)}</div></div>
+            <div class="multi-select-count"><div>${this._multiSelectLabel(props.selectedItems)}</div></div>
 
             <pl-icon icon="delete" class="tap" on-click="${() => this._deleteSelected()}"></pl-icon>
 
@@ -288,7 +398,7 @@ export class ListView extends BaseElement {
 
         <div class="current-section tap"
             on-click="${() => this._selectSection()}"
-            hidden?="${!props._records.length}">
+            hidden?="${!props._listItems.length}">
 
             <pl-icon icon="dropdown" class="float-right"></pl-icon>
 
@@ -296,7 +406,7 @@ export class ListView extends BaseElement {
 
         </div>
 
-        <main id="main" hidden?="${!props._records.length}">
+        <main id="main" hidden?="${!props._listItems.length}">
 
             ${props._listItems.map(
                 (item: any, index: number) => html`
@@ -312,14 +422,57 @@ export class ListView extends BaseElement {
 
                     </div>
 
-                    <pl-record-item
+                    <div class="record"
                         record="${item.record}"
                         record-id$="${item.record.id}"
-                        selected?="${item.record === props.selectedRecord}"
+                        selected?="${props.selectedItem && item.record.id === props.selectedItem.record.id}"
                         multi-select="${props.multiSelect}"
-                        on-click="${() => this.selectRecord(item.record)}"
-                        index$="${index}"
-                        >
+                        on-click="${() => this.selectItem(item)}"
+                        index$="${index}">
+
+                            <div class="record-highlight"></div>
+
+                            <div class="record-header">
+
+                                <div class="record-name" disabled?="${!item.record.name}">
+                                    ${item.record.name || $l("No Name")}
+                                </div>
+
+                                <div class="spacer"></div>
+
+                                <div class="record-tags">
+                                    <div class="ellipsis record-tag store-tag">${item.store.name}</div> 
+                                    ${this._tags(item.record).map(
+                                        t => html`
+                                            <div class="ellipsis record-tag">${t}</div>
+                                        `
+                                    )}
+                                </div>
+
+                            </div>
+
+                            <div class="record-fields">
+
+                                ${item.record.fields.map(
+                                    (f: Field, i: number) => html`
+                                        <div
+                                            class="record-field"
+                                            on-click="${(e: MouseEvent) => this._copyField(item.record, i, e)}">
+
+                                            <div class="record-field-label">${f.name}</div>
+
+                                            <div class="copied-message">${$l("copied")}</div>
+
+                                        </div>
+                                    `
+                                )}
+
+                                <div class="field" disabled hidden?="${!!item.record.fields.length}">
+                                    ${$l("No Fields")}
+                                </div>
+
+                            </div>
+
                     </pl-record-item>
 
                     <div class="section-separator" hidden?="${!item.lastInSection}"></div>
@@ -330,7 +483,7 @@ export class ListView extends BaseElement {
 
         </main>
 
-        <div hidden?="${!!props._records.length}" class="empty">
+        <div hidden?="${!!props._listItems.length}" class="empty">
 
             <div class="empty-message">
                 ${$l("You don't have any data yet! Start by creating your first record!")}
@@ -379,78 +532,34 @@ export class ListView extends BaseElement {
             }
         }
         els = this.shadowRoot!.elementsFromPoint(middle, bottom - 1);
-        for (const el of els) {
-            if (el.hasAttribute("index")) {
-                const i = parseInt(el.getAttribute("index") as string);
-                if (i !== this._lastVisibleIndex) {
-                    this._lastVisibleIndex = i;
+        if (els.length) {
+            for (const el of els) {
+                if (el.hasAttribute("index")) {
+                    const i = parseInt(el.getAttribute("index") as string);
+                    if (i !== this._lastVisibleIndex) {
+                        this._lastVisibleIndex = i;
+                    }
+                    break;
                 }
-                break;
             }
+        } else {
+            this._lastVisibleIndex = this._listItems.length - 1;
         }
 
         const currItem = this._listItems[this._firstVisibleIndex];
         this._currentSection = currItem && currItem.section;
     }
 
-    private _filterAndSort() {
-        if (!this.store) {
-            return [];
-        }
-        let records = this.store.records.filter((r: Record) => !r.removed && filterByString(this.filterString, r));
-        this._recentCount = records.length > 10 ? 3 : 0;
-        const recent = records
-            .sort((a: Record, b: Record) => {
-                return (b.lastUsed || b.updated).getTime() - (a.lastUsed || a.updated).getTime();
-            })
-            .slice(0, this._recentCount);
-        records = records.slice(this._recentCount);
-
-        records = recent.concat(
-            records.sort((a: Record, b: Record) => {
-                const x = a.name.toLowerCase();
-                const y = b.name.toLowerCase();
-                return x > y ? 1 : x < y ? -1 : 0;
-            })
-        );
-
-        return records;
-    }
-
-    private _updateRecords() {
-        this._records = this._filterAndSort();
-        const items = this._records.map((record: Record, index: number) => {
-            const section =
-                index < this._recentCount
-                    ? $l("Recently Used")
-                    : (record && record.name[0] && record.name[0].toUpperCase()) || $l("No Name");
-            return {
-                record,
-                section
-            } as ListItem;
-        });
-        for (let i = 0, prev, curr, next; i < items.length; i++) {
-            prev = items[i - 1];
-            curr = items[i];
-            next = items[i + 1];
-            curr.firstInSection = !prev || prev.section !== curr.section;
-            curr.lastInSection = !next || next.section !== curr.section;
-        }
-        this._listItems = items;
-        this._scrollHandler();
-        this._scrollToSelected();
-    }
-
-    selectRecord(record: Record | null) {
-        this.selectedRecord = record;
-        this.dispatchEvent(new CustomEvent("select-record", { detail: { record } }));
+    selectItem(item: ListItem | null) {
+        this.selectedItem = item;
+        this.dispatchEvent(new CustomEvent("select-record", { detail: item || {} }));
         this._scrollToSelected();
     }
 
     selectAll() {}
 
     clearSelection() {
-        this.selectRecord(null);
+        this.selectItem(null);
     }
 
     private _newRecord() {
@@ -472,10 +581,10 @@ export class ListView extends BaseElement {
     }
 
     private _scrollToSelected() {
-        if (!this.selectedRecord) {
+        if (!this.selectedItem) {
             return;
         }
-        const i = this._records.indexOf(this.selectedRecord);
+        const i = this._listItems.indexOf(this.selectedItem);
         if (i !== -1 && (i < this._firstVisibleIndex || i > this._lastVisibleIndex)) {
             this._scrollToIndex(i);
         }
@@ -502,7 +611,7 @@ export class ListView extends BaseElement {
         }
     }
 
-    private _animateRecords(delay = 100) {
+    private _animateItems(delay = 100) {
         this._main.style.opacity = "0";
         setTimeout(() => {
             this._scrollHandler();
@@ -516,22 +625,21 @@ export class ListView extends BaseElement {
 
     private _shareSelected() {
         // const exportDialog = getDialog("pl-dialog-export") as ExportDialog;
-        // exportDialog.export(this.selectedRecords);
+        // exportDialog.export(this.selectedItems);
     }
 
     private async _deleteSelected() {
-        const confirmed = await confirm(
-            $l("Are you sure you want to delete these records? This action can not be undone!"),
-            $l("Delete {0} Records", this.selectedRecords.length.toString())
-        );
-
-        if (confirmed) {
-            app.deleteRecords(this.store!, this.selectedRecords);
-            this.multiSelect = false;
-        }
+        // const confirmed = await confirm(
+        //     $l("Are you sure you want to delete these records? This action can not be undone!"),
+        //     $l("Delete {0} Records", this.selectedItems.length.toString())
+        // );
+        // if (confirmed) {
+        //     app.deleteRecords(this.store!, this.selectedItems);
+        //     this.multiSelect = false;
+        // }
     }
 
-    private _multiSelectLabel(selected: Record[]) {
+    private _multiSelectLabel(selected: ListItem[]) {
         const count = selected && selected.length;
         return count ? $l("{0} records selected", count.toString()) : $l("tap to select");
     }
@@ -541,19 +649,38 @@ export class ListView extends BaseElement {
             this.filterString = str;
         }
         this._filterInput.focus();
-        this._updateRecords();
-        this._animateRecords();
+        this._updateListItems();
+        this._animateItems();
     }
 
     clearFilter() {
         this.filterString = "";
-        this._updateRecords();
-        this._animateRecords();
+        this._updateListItems();
+        this._animateItems();
     }
 
     private _updateFilterString() {
         this.filterString = this._filterInput.value;
-        this._updateRecords();
+        this._updateListItems();
+    }
+
+    private _copyField(record: Record, index: number, e: Event) {
+        e.stopPropagation();
+        setClipboard(record, record.fields[index]);
+        const fieldEl = e.target as HTMLElement;
+        fieldEl.classList.add("copied");
+        setTimeout(() => fieldEl.classList.remove("copied"), 1000);
+    }
+
+    private _tags(record: Record) {
+        const tags = record.tags.slice(0, 2);
+        const more = record.tags.length - tags.length;
+
+        if (more) {
+            tags.push("+" + more);
+        }
+
+        return tags;
     }
 }
 

@@ -324,9 +324,10 @@ class App extends BaseElement {
     }
 
     private _recordSelected(e: CustomEvent) {
-        const record = e.detail.record;
+        const { record, store } = e.detail;
         if (record) {
             this._recordView.record = record;
+            this._recordView.store = store;
             this._openView(this._recordView);
         }
     }

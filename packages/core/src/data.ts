@@ -3,6 +3,7 @@ import { PrivateKey, Container, EncryptionScheme, Access, Permissions } from "./
 import { Storable } from "./storage";
 import { Account } from "./auth";
 import { uuid } from "./util";
+import { localize } from "./locale";
 
 export type StoreID = string;
 export type RecordID = string;
@@ -57,8 +58,9 @@ export class Store implements Storable {
         return "simple";
     }
 
-    constructor(id = "", records: Record[] = []) {
+    constructor(id = "", records: Record[] = [], name = "") {
         this.id = id;
+        this.name = name;
         this.container = new Container(this.scheme);
         this.addRecords(records);
     }
@@ -118,7 +120,7 @@ export class Store implements Storable {
     protected async _deserialize(raw: any) {
         this.created = raw.created;
         this.updated = raw.updated;
-        this.name = raw.name;
+        this.name = raw.name || this.name;
         const records = raw.records.map((r: any) => {
             return {
                 tags: r.tags || (r.category && [r.category]) || [],
@@ -198,6 +200,10 @@ export class MainStore extends Store {
         await super.clear();
         delete this.privateKey;
         delete this.trustedAccounts;
+    }
+
+    constructor(id = "", records: Record[] = []) {
+        super(id, records, localize("Main"));
     }
 }
 

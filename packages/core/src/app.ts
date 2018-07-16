@@ -33,6 +33,23 @@ const defaultSettings: Settings = {
     autoSync: true
 };
 
+function filterByString(fs: string, rec: Record, store: Store) {
+    if (!fs) {
+        return true;
+    }
+    const words = fs.toLowerCase().split(" ");
+    const content = [rec.name, store.name, ...rec.tags, ...rec.fields.map(f => f.name)].join(" ").toLowerCase();
+    return words.some(word => content.search(word) !== -1);
+}
+
+export interface ListItem {
+    record: Record;
+    store: Store;
+    section: string;
+    firstInSection: boolean;
+    lastInSection: boolean;
+}
+
 export class App extends EventTarget {
     storageKind = "padlock-app";
     storageKey = "";
@@ -105,6 +122,67 @@ export class App extends EventTarget {
 
     set password(pwd: string | undefined) {
         this.mainStore.password = pwd;
+    }
+
+    get tags() {
+        const tags = [...this.mainStore.tags];
+        for (const store of this.sharedStores) {
+            tags.push(...store.tags);
+        }
+        return [...new Set(tags)];
+    }
+
+    list(filter = "", recentCount = 3): ListItem[] {
+        let items: ListItem[] = [];
+
+        for (const store of [this.mainStore, ...this.sharedStores]) {
+            items.push(
+                ...store.records.filter((r: Record) => !r.removed && filterByString(filter, r, store)).map(r => {
+                    return {
+                        store: store,
+                        record: r,
+                        section: "",
+                        firstInSection: false,
+                        lastInSection: false
+                    };
+                })
+            );
+        }
+
+        const recent = items
+            .sort((a, b) => {
+                return (
+                    (b.record.lastUsed || b.record.updated).getTime() -
+                    (a.record.lastUsed || a.record.updated).getTime()
+                );
+            })
+            .slice(0, recentCount);
+
+        items = items.slice(recentCount);
+
+        items = recent.concat(
+            items.sort((a, b) => {
+                const x = a.record.name.toLowerCase();
+                const y = b.record.name.toLowerCase();
+                return x > y ? 1 : x < y ? -1 : 0;
+            })
+        );
+
+        for (let i = 0, prev, curr, next; i < items.length; i++) {
+            prev = items[i - 1];
+            curr = items[i];
+            next = items[i + 1];
+
+            curr.section =
+                i < recentCount
+                    ? $l("Recently Used")
+                    : (curr.record && curr.record.name[0] && curr.record.name[0].toUpperCase()) || $l("No Name");
+
+            curr.firstInSection = !prev || prev.section !== curr.section;
+            curr.lastInSection = !next || next.section !== curr.section;
+        }
+
+        return items;
     }
 
     async setStats(obj: Partial<Stats>) {
@@ -280,7 +358,7 @@ export class App extends EventTarget {
         await Promise.all([this.updateAccount({ publicKey }), this.synchronize()]);
     }
 
-    async createSharedStore(): Promise<SharedStore> {
+    async createSharedStore(name: string): Promise<SharedStore> {
         if (!this.account) {
             throw "Need to be logged in to create a shared store!";
         }
@@ -289,7 +367,7 @@ export class App extends EventTarget {
             await this.generateKeyPair();
         }
 
-        const store = new SharedStore();
+        const store = new SharedStore("", [], name);
         store.access = { accessorID: this.account.id, privateKey: this.mainStore.privateKey! };
         await store.addAccount(this.account, { read: true, write: true, manage: true });
         await this.remoteStorage.set(store);

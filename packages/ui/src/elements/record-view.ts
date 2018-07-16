@@ -314,7 +314,7 @@ export class RecordView extends View {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
-        const tags = this.store.tags.filter((tag: string) => !this.record!.tags.includes(tag));
+        const tags = app.tags.filter((tag: string) => !this.record!.tags.includes(tag));
         if (!tags.length) {
             return this._createTag();
         }
