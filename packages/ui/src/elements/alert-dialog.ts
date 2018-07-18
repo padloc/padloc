@@ -67,13 +67,13 @@ export class AlertDialog extends BaseElement {
         <pl-dialog
             open="${props.open}"
             prevent-dismiss="${props.preventDismiss}"
-            on-dialog-dismiss="${() => this._dialogDismiss()}">
+            on-dialog-dismiss="${() => this._selectOption(-1)}">
 
             <div class="info" hidden?="${!this.dialogTitle && !this.message}">
                 <pl-icon class="info-icon" icon="${this._icon(props.type)}"></pl-icon>
                 <div class="info-body">
                     <div class="info-title">${props.dialogTitle}</div>
-                    <div class\$="info-text ${this.dialogTitle ? "small" : ""}">${props.message}</div>
+                    <div class$="info-text ${this.dialogTitle ? "small" : ""}">${props.message}</div>
                 </div>
             </div>
 
@@ -122,12 +122,7 @@ export class AlertDialog extends BaseElement {
 
     _selectOption(i: number) {
         this.open = false;
-        typeof this._resolve === "function" && this._resolve(i);
-        this._resolve = null;
-    }
-
-    _dialogDismiss() {
-        typeof this._resolve === "function" && this._resolve(-1);
+        this._resolve && this._resolve(i);
         this._resolve = null;
     }
 
