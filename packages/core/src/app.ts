@@ -262,18 +262,18 @@ export class App extends EventTarget {
         this.loaded = this.load();
     }
 
-    async addRecords(store: Store, records: Record[]) {
+    async addRecords(store: Store, records: Record | Record[]) {
         store.addRecords(records);
         await this.storage.set(store);
         this.dispatch("records-added", { store: store, records: records });
     }
 
-    async createRecord(store: Store, name: string): Promise<Record> {
-        const fields = [
+    async createRecord(store: Store, name: string, fields?: Field[], tags?: Tag[]): Promise<Record> {
+        fields = fields || [
             { name: $l("Username"), value: "", masked: false },
             { name: $l("Password"), value: "", masked: true }
         ];
-        const record = store.createRecord(name || "", fields);
+        const record = store.createRecord(name || "", fields, tags);
         await this.addRecords(store, [record]);
         this.dispatch("record-created", { store: store, record: record });
         return record;

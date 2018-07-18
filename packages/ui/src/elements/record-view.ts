@@ -5,7 +5,7 @@ import { View } from "./view.js";
 import { confirm, prompt, choose, openField, generate, getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app } from "../init.js";
-import { html, property, query, listen, observe } from "./base.js";
+import { html, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import "./record-field.js";
@@ -159,7 +159,9 @@ export class RecordView extends View {
 
             <div class="tags animate">
 
-                <div class="tag store" hidden?="${store === app.mainStore}" on-click="${() => this._openStore(store)}">
+                <div class="tag store tap"
+                    hidden?="${store === app.mainStore}"
+                    on-click="${() => this._openStore(store)}">
 
                     <pl-icon icon="group"></pl-icon>
 
@@ -351,12 +353,19 @@ export class RecordView extends View {
         this._nameInput.blur();
     }
 
-    @observe("active")
-    _animate() {
-        if (this.active) {
-            setTimeout(() => {
-                animateCascade(this.$$(".animate"), { fullDuration: 800, fill: "both" });
-            }, 100);
+    _activated() {
+        setTimeout(() => {
+            animateCascade(this.$$(".animate"), { fullDuration: 800, fill: "both" });
+        }, 100);
+    }
+
+    private async _share() {
+        const choice = await choose($l("Move to shared store..."), app.sharedStores.map(s => s.name));
+        if (choice !== -1) {
+            const store = app.sharedStores[choice];
+            const { name, fields, tags } = this.record!;
+            await app.deleteRecords(this.store!, this.record!);
+            await app.createRecord(store, name, fields, tags);
         }
     }
 
