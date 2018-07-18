@@ -36,8 +36,9 @@ export class RecordView extends View {
         return super._shouldRender() && !!this.record;
     }
 
-    _render({ record }: this) {
+    _render({ record, store }: this) {
         const { name, fields, tags } = record!;
+        store = store!;
 
         return html`
         <style>
@@ -114,7 +115,7 @@ export class RecordView extends View {
                 font-size: var(--font-size-tiny);
                 white-space: nowrap;
                 line-height: 0;
-                padding-left: 12px;
+                padding-right: 10px;
             }
 
             .tags pl-icon {
@@ -124,10 +125,14 @@ export class RecordView extends View {
 
             .tag.add {
                 padding-left: 0;
-                padding-right: 12px;
                 border: dashed 1px;
                 background: transparent;
                 color: var(--color-foreground);
+            }
+
+            .tag.store {
+                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+                text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
             }
         </style>
 
@@ -154,20 +159,39 @@ export class RecordView extends View {
 
             <div class="tags animate">
 
+                <div class="tag store" hidden?="${store === app.mainStore}" on-click="${() => this._openStore(store)}">
+
+                    <pl-icon icon="group"></pl-icon>
+
+                    <div class="tag-name">${store.name}</div>
+
+                </div>
+
                 ${tags.map(
                     (tag: string) => html`
                     <div class="tag tap" on-click="${() => this._removeTag(tag)}">
+
+                        <pl-icon icon="tag"></pl-icon>
+
                         <div class="tag-name">${tag}</div>
-                        <pl-icon icon="cancel"></pl-icon>
+
                     </div>
                 `
                 )}
 
                 <div class="tag add tap" on-click="${() => this._addTag()}">
 
-                    <pl-icon icon="tag"></pl-icon>
+                    <pl-icon icon="add"></pl-icon>
 
-                    <div>${$l("Add Tag")}</div>
+                    <div>${$l("Tag")}</div>
+
+                </div>
+
+                <div class="tag add tap" hidden?="${this.store !== app.mainStore}" on-click="${() => this._share()}">
+
+                    <pl-icon icon="share"></pl-icon>
+
+                    <div>${$l("Share")}</div>
 
                 </div>
 
@@ -226,7 +250,7 @@ export class RecordView extends View {
         app.updateRecord(this.store, this.record, { name: this._nameInput.value });
     }
 
-    async _deleteField(index: number) {
+    private async _deleteField(index: number) {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
@@ -237,7 +261,7 @@ export class RecordView extends View {
         }
     }
 
-    async _changeField(index: number, changes: { name?: string; value?: string; masked?: boolean }) {
+    private async _changeField(index: number, changes: { name?: string; value?: string; masked?: boolean }) {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
@@ -246,17 +270,18 @@ export class RecordView extends View {
         app.updateRecord(this.store, this.record, { fields: fields });
     }
 
-    async _deleteRecord() {
+    private async _deleteRecord() {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
         const confirmed = await confirm($l("Are you sure you want to delete this record?"), $l("Delete"));
         if (confirmed) {
             app.deleteRecords(this.store, this.record);
+            this._back();
         }
     }
 
-    async _addField(field = { name: "", value: "", masked: false }) {
+    private async _addField(field = { name: "", value: "", masked: false }) {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
@@ -275,15 +300,7 @@ export class RecordView extends View {
         }
     }
 
-    _fieldButtonClicked() {
-        this._addField();
-    }
-
-    _hasTags() {
-        return !!this.record && !!this.record.tags.length;
-    }
-
-    async _removeTag(tag: string) {
+    private async _removeTag(tag: string) {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
@@ -295,7 +312,7 @@ export class RecordView extends View {
         }
     }
 
-    async _createTag() {
+    private async _createTag() {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
@@ -310,7 +327,7 @@ export class RecordView extends View {
         }
     }
 
-    async _addTag() {
+    private async _addTag() {
         if (!this.store || !this.record) {
             throw "store or record member not set";
         }
@@ -330,7 +347,7 @@ export class RecordView extends View {
         }
     }
 
-    _nameEnter() {
+    private _nameEnter() {
         this._nameInput.blur();
     }
 

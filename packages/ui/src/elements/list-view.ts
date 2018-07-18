@@ -33,6 +33,7 @@ export class ListView extends BaseElement {
     @listen("records-added", app)
     @listen("records-deleted", app)
     @listen("record-changed", app)
+    @listen("settings-changed", app)
     _updateListItems() {
         this._listItems = app.list(this.filterString);
     }
@@ -326,6 +327,7 @@ export class ListView extends BaseElement {
 
             .record-tag.store-tag {
                 background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+                text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
             }
 
             .record-highlight {
@@ -441,7 +443,10 @@ export class ListView extends BaseElement {
                                 <div class="spacer"></div>
 
                                 <div class="record-tags">
-                                    <div class="ellipsis record-tag store-tag">${item.store.name}</div> 
+                                    <div class="ellipsis record-tag store-tag" hidden?="${item.store ===
+                                        app.mainStore}">
+                                        ${item.store.name}
+                                    </div> 
                                     ${this._tags(item.record).map(
                                         t => html`
                                             <div class="ellipsis record-tag">${t}</div>
