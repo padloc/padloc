@@ -5,6 +5,7 @@ import sharedStyles from "../styles/shared.js";
 import { animateCascade } from "../animation.js";
 import { app } from "../init.js";
 import { BaseElement, element, html, property, listen, observe } from "./base.js";
+import "./toggle.js";
 
 @element("pl-menu")
 export class Menu extends BaseElement {
@@ -14,13 +15,9 @@ export class Menu extends BaseElement {
     @property({ reflect: "show-tags" })
     _showingTags: boolean = false;
 
-    @listen("click")
-    _clickHandler() {
-        this.open = false;
-    }
-
     @listen("stats-changed", app)
     @listen("account-changed", app)
+    @listen("settings-changed", app)
     _refresh() {
         this.requestRender();
     }
@@ -46,7 +43,7 @@ export class Menu extends BaseElement {
                 from { transform: translate3d(0, 0, 0); }
             }
 
-            @keyframes tagIn {
+            @keyframes subMenuIn {
                 from { transform: translate3d(0, 100px, 0); opacity: 0; }
             }
 
@@ -59,7 +56,7 @@ export class Menu extends BaseElement {
                 z-index: 10;
             }
 
-            .menu, .tags {
+            .menu, .sub-menu {
                 position: absolute;
                 top: var(--title-bar-height);
                 left: var(--main-padding);
@@ -73,7 +70,7 @@ export class Menu extends BaseElement {
                 transition: opacity 0.3s;
             }
 
-            .tags {
+            .sub-menu {
                 @apply --scroll;
             }
 
@@ -85,6 +82,8 @@ export class Menu extends BaseElement {
                 position: relative;
                 text-align: right;
                 flex: none;
+                --toggle-width: 35px;
+                --toggle-height: 25px;
             }
 
             .menu-item > div {
@@ -95,12 +94,19 @@ export class Menu extends BaseElement {
                 transform: translate3d(calc(var(--menu-icon-width) - var(--menu-width)), 0, 0);
             }
 
-            .menu-item.tag {
+            .sub-menu-header {
+                font-size: 120%;
+            }
+            /*
+            .sub-menu .menu-item:not(.sub-menu-header) {
                 font-size: var(--font-size-small);
                 height: 35px;
+                --toggle-width: 30px;
+                --toggle-height: 20px;
             }
+            */
 
-            .menu-item.tag pl-icon {
+            .sub-menu .menu-item pl-icon {
                 font-size: 90%;
                 height: 35px;
                 width: 35px;
@@ -115,6 +121,11 @@ export class Menu extends BaseElement {
                 width: 45px;
                 height: 45px;
                 font-size: 120%;
+            }
+
+            .menu-item > pl-toggle {
+                margin: 0 10px;
+                cursor: pointer;
             }
 
             .menu-item-hint {
@@ -155,12 +166,12 @@ export class Menu extends BaseElement {
                 opacity: 0;
             }
 
-            :host([show-tags]) .menu, :host(:not([show-tags])) .tags {
+            :host([sub-menu]) .menu, :host(:not([sub-menu="tags"])) .tags, :host(:not([sub-menu="stores"])) .stores {
                 opacity: 0;
                 pointer-events: none;
             }
 
-            .no-tags {
+            .placeholder {
                 padding: 0 15px;
                 font-size: var(--font-size-small);
                 text-align: right;
@@ -217,7 +228,15 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${(e: Event) => this._showTags(e)}">
+                <div class="menu-item tap" on-click="${(e: Event) => this._showSubMenu("stores", e)}">
+
+                    <div>${$l("Shared")}</div>
+
+                    <pl-icon icon="group"></pl-icon>
+
+                </div>
+
+                <div class="menu-item tap" on-click="${(e: Event) => this._showSubMenu("tags", e)}">
 
                     <div>${$l("Tags")}</div>
 
@@ -253,11 +272,11 @@ export class Menu extends BaseElement {
 
             </div>
 
-            <div class="tags">
+            <div class="sub-menu tags">
 
                 <div class="spacer"></div>
 
-                <div class="menu-item tap" on-click="${(e: Event) => this._closeTags(e)}">
+                <div class="menu-item sub-menu-header tap" on-click="${(e: Event) => this._closeSubMenu(e)}">
 
                     <div>${$l("Tags")}</div>
 
@@ -278,7 +297,7 @@ export class Menu extends BaseElement {
 
                 </template>
 
-                <div class="no-tags" disabled hidden?="${tags.length}">
+                <div class="placeholder" disabled hidden?="${tags.length}">
 
                     ${$l("You don't have any tags yet!")}
 
@@ -288,8 +307,52 @@ export class Menu extends BaseElement {
 
             </div>
 
+            <div class="sub-menu stores">
+
+                <div class="spacer"></div>
+
+                <div class="menu-item sub-menu-header tap" on-click="${(e: Event) => this._closeSubMenu(e)}">
+
+                    <div>${$l("Shared Stores")}</div>
+
+                    <pl-icon icon="close"></pl-icon>
+
+                </div>
+
+                ${app.sharedStores.map(
+                    store => html`
+                    <div
+                        class="menu-item store tap"
+                        reverse
+                        on-click="${() => this._selectStore(store)}">
+                        <div>${store.name}</div>
+                        <pl-toggle
+                            active="${!app.settings.hideStores.includes(store.id)}"
+                            on-click="${(e: Event) => this._toggleStore(store, e)}"></pl-toggle>
+                    </div>
+                `
+                )}
+
+                </template>
+
+                <div class="no-stores" disabled hidden?="${app.sharedStores.length}">
+
+                    ${$l("You don't have any shared stores yet!")}
+
+                </div>
+
+                <div class="spacer"></div>
+
+            </div>
+
         </div>
 `;
+    }
+
+    @listen("click")
+    _clickHandler() {
+        this.open = false;
+        this._closeSubMenu();
     }
 
     @observe("open")
@@ -308,11 +371,11 @@ export class Menu extends BaseElement {
         this.open = !this.open;
     }
 
-    private _showTags(e: Event) {
+    private _showSubMenu(name: string, e: Event) {
         this.open = true;
-        this._showingTags = true;
-        animateCascade(this.$$(".tags .menu-item, .no-tags"), {
-            animation: "tagIn",
+        this.setAttribute("sub-menu", name);
+        animateCascade(this.$$(`.sub-menu.${name} .menu-item, .sub-menu.${name} .placeholder`, false), {
+            animation: "subMenuIn",
             duration: 400,
             fullDuration: 600,
             fill: "both"
@@ -320,14 +383,26 @@ export class Menu extends BaseElement {
         e.stopPropagation();
     }
 
-    private _closeTags(e: Event) {
-        this._showingTags = false;
-        e.stopPropagation();
+    private _closeSubMenu(e?: Event) {
+        this.removeAttribute("sub-menu");
+        e && e.stopPropagation();
     }
 
     private async _selectTag(tag: string) {
         this.dispatch("select-tag", { tag });
         await wait(350);
-        this._showingTags = false;
+        this._closeSubMenu();
+    }
+
+    private async _selectStore(store: Store) {
+        this.dispatch("select-store", { store });
+        await wait(350);
+        this._closeSubMenu();
+    }
+
+    private _toggleStore(store: Store, e: Event) {
+        e && e.stopPropagation();
+        e && e.stopImmediatePropagation();
+        app.toggleStore(store);
     }
 }

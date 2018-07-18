@@ -124,7 +124,7 @@ class App extends BaseElement {
             :host {
                 --color-gutter: #222;
                 --title-bar-height: 30px;
-                --menu-width: 200px;
+                --menu-width: 250px;
                 --menu-icon-width: 40px;
                 --main-padding: 0px;
                 overflow: hidden;

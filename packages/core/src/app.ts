@@ -22,6 +22,7 @@ export interface Settings {
     customServer: boolean;
     customServerUrl: string;
     autoSync: boolean;
+    hideStores: string[];
 }
 
 const defaultSettings: Settings = {
@@ -30,7 +31,8 @@ const defaultSettings: Settings = {
     defaultFields: ["username", "password"],
     customServer: false,
     customServerUrl: "https://cloud.padlock.io/",
-    autoSync: true
+    autoSync: true,
+    hideStores: []
 };
 
 function filterByString(fs: string, rec: Record, store: Store) {
@@ -135,7 +137,10 @@ export class App extends EventTarget {
     list(filter = "", recentCount = 3): ListItem[] {
         let items: ListItem[] = [];
 
-        for (const store of [this.mainStore, ...this.sharedStores]) {
+        for (const store of [
+            this.mainStore,
+            ...this.sharedStores.filter(s => !this.settings.hideStores.includes(s.id))
+        ]) {
             items.push(
                 ...store.records.filter((r: Record) => !r.removed && filterByString(filter, r, store)).map(r => {
                     return {
@@ -289,6 +294,18 @@ export class App extends EventTarget {
         store.removeRecords(records);
         await this.storage.set(store);
         this.dispatch("records-deleted", { store: store, records: records });
+    }
+
+    toggleStore(store: Store) {
+        const hideStores = this.settings.hideStores;
+        const ind = hideStores.indexOf(store.id);
+        if (ind === -1) {
+            hideStores.push(store.id);
+        } else {
+            hideStores.splice(ind, 1);
+        }
+
+        this.setSettings({ hideStores });
     }
 
     async login(email: string) {

@@ -36,10 +36,15 @@ export class ToggleButton extends BaseElement {
 
             button > div {
                 flex: 1;
+                @apply --ellipsis;
             }
 
             :host(:not([reverse])) button > div {
                 padding-left: 0.5em;
+            }
+
+            :host([reverse]) button > div {
+                padding-right: 0.5em;
             }
 
             :host([reverse]) button {
