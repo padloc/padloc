@@ -1,5 +1,5 @@
 import { DateString, Serializable } from "./encoding";
-import { PublicKey } from "./crypto";
+import { PublicKey, Invite } from "./crypto";
 import { Storable } from "./storage";
 import { StoreID } from "./data";
 import { uuid } from "./util";
@@ -73,23 +73,35 @@ export class Session implements Serializable {
     }
 }
 
-export class Account implements Storable {
+export interface PublicAccount {
+    id: AccountID;
+    email: string;
+    publicKey: PublicKey;
+}
+
+export class Account implements Storable, PublicAccount {
     storageKind = "account";
     id: AccountID = uuid();
     created: DateString = new Date().toISOString();
     mainStore?: StoreID;
     sharedStores: StoreID[] = [];
-    publicKey?: PublicKey;
+    publicKey: PublicKey = "";
     sessions: Session[] = [];
     // TODO
     subscription?: { status: string };
     promo?: any;
     paymentSource?: any;
+    friendRequests: string[] = [];
+    invites: Invite[] = [];
 
     constructor(public email: string = "") {}
 
     get storageKey() {
         return this.email || "";
+    }
+
+    get publicAccount(): PublicAccount {
+        return { id: this.id, email: this.email, publicKey: this.publicKey };
     }
 
     async serialize() {
@@ -100,6 +112,7 @@ export class Account implements Storable {
             mainStore: this.mainStore,
             sharedStores: this.sharedStores,
             publicKey: this.publicKey,
+            invites: this.invites,
             sessions: await Promise.all(this.sessions.map(s => s.serialize()))
         };
     }

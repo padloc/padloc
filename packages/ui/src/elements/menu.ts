@@ -230,7 +230,7 @@ export class Menu extends BaseElement {
 
                 <div class="menu-item tap" on-click="${(e: Event) => this._showSubMenu("stores", e)}">
 
-                    <div>${$l("Shared")}</div>
+                    <div>${$l("Groups")}</div>
 
                     <pl-icon icon="group"></pl-icon>
 
@@ -240,7 +240,7 @@ export class Menu extends BaseElement {
 
                     <div>${$l("Tags")}</div>
 
-                    <pl-icon icon="tag"></pl-icon>
+                    <pl-icon icon="tags"></pl-icon>
 
                 </div>
 
@@ -295,8 +295,6 @@ export class Menu extends BaseElement {
                 `
                 )}
 
-                </template>
-
                 <div class="placeholder" disabled hidden?="${tags.length}">
 
                     ${$l("You don't have any tags yet!")}
@@ -313,7 +311,7 @@ export class Menu extends BaseElement {
 
                 <div class="menu-item sub-menu-header tap" on-click="${(e: Event) => this._closeSubMenu(e)}">
 
-                    <div>${$l("Shared Stores")}</div>
+                    <div>${$l("Groups")}</div>
 
                     <pl-icon icon="close"></pl-icon>
 
@@ -324,7 +322,7 @@ export class Menu extends BaseElement {
                     <div
                         class="menu-item store tap"
                         reverse
-                        on-click="${() => this._selectStore(store)}">
+                        on-click="${() => this._openStore(store)}">
                         <div>${store.name}</div>
                         <pl-toggle
                             active="${!app.settings.hideStores.includes(store.id)}"
@@ -394,8 +392,8 @@ export class Menu extends BaseElement {
         this._closeSubMenu();
     }
 
-    private async _selectStore(store: Store) {
-        this.dispatch("select-store", { store });
+    private async _openStore(store: Store) {
+        this.dispatch("open-store", { store });
         await wait(350);
         this._closeSubMenu();
     }

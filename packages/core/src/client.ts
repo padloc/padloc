@@ -1,8 +1,8 @@
 import { request, Method } from "./ajax";
-import { Session, Account } from "./auth";
+import { Session, Account, PublicAccount } from "./auth";
 import { marshal, unmarshal } from "./encoding";
 import { App } from "./app";
-import { PublicKey } from "./crypto";
+import { PublicKey, Accessor } from "./crypto";
 
 export interface AccountUpdateParams {
     publicKey: PublicKey;
@@ -23,6 +23,9 @@ export class Client {
         const url = this.urlForPath(path);
         headers = headers || new Map<string, string>();
 
+        if (!headers.get("Content-Type")) {
+            headers.set("Content-Type", "application/json");
+        }
         headers.set("Accept", "application/vnd.padlock;version=1");
         if (this.app.session && this.app.session.active) {
             headers.set("Authorization", "AuthToken " + this.app.session.account + ":" + this.app.session.token);
@@ -81,7 +84,7 @@ export class Client {
         delete this.app.account;
     }
 
-    async getAccount(): Promise<Account> {
+    async getOwnAccount(): Promise<Account> {
         if (!this.app.session) {
             throw "Need to be logged in to sync account";
         }
@@ -89,6 +92,11 @@ export class Client {
         this.app.account = this.app.account || new Account(this.app.session.account);
         await this.app.account.deserialize(unmarshal(res.responseText));
         return this.app.account;
+    }
+
+    async getAccount(email: string): Promise<PublicAccount> {
+        const res = await this.request("GET", `account/${encodeURIComponent(email)}`);
+        return unmarshal(res.responseText) as PublicAccount;
     }
 
     async updateAccount(params: AccountUpdateParams): Promise<Account> {
@@ -99,6 +107,22 @@ export class Client {
         const res = await this.request("PUT", "account", marshal(params));
         await this.app.account.deserialize(unmarshal(res.responseText));
         return this.app.account;
+    }
+
+    async createInvite(store: string, accessor: Accessor): Promise<void> {
+        if (!this.app.session || !this.app.account) {
+            throw "Need to be logged in";
+        }
+
+        await this.request("POST", `store/${store}/invite`, marshal(accessor));
+    }
+
+    async joinStore(store: string): Promise<void> {
+        if (!this.app.session || !this.app.account) {
+            throw "Need to be logged in";
+        }
+
+        await this.request("POST", `store/${store}/join`);
     }
     //
     // subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {

@@ -1,6 +1,6 @@
 import { LocalStorage, RemoteStorage } from "./storage";
 import { Store, MainStore, SharedStore, Record, Field, Tag, StoreID } from "./data";
-import { Account, Session, Device } from "./auth";
+import { Account, PublicAccount, Session, Device } from "./auth";
 import { DateString } from "./encoding";
 import { Client, AccountUpdateParams } from "./client";
 import { Messages } from "./messages";
@@ -8,7 +8,7 @@ import { localize as $l } from "./locale";
 import { ErrorCode } from "./error";
 import { getDeviceInfo } from "./platform";
 import { uuid } from "./util";
-import { getProvider } from "./crypto";
+import { getProvider, Permissions } from "./crypto";
 
 export interface Stats {
     lastSync?: DateString;
@@ -219,7 +219,7 @@ export class App extends EventTarget {
         if (this.account) {
             for (const id of this.account.sharedStores) {
                 const sharedStore = new SharedStore(id);
-                sharedStore.access = { accessorID: this.account.id, privateKey: this.mainStore.privateKey! };
+                sharedStore.access = { account: this.account, privateKey: this.mainStore.privateKey! };
                 try {
                     await this.storage.get(sharedStore);
                     this.sharedStores.push(sharedStore);
@@ -318,22 +318,26 @@ export class App extends EventTarget {
 
     async activateSession(code: string) {
         await this.client.activateSession(code);
-        await this.client.getAccount();
-        await this.storage.set(this);
-        this.dispatch("account-changed", { account: this.account });
         this.dispatch("session-changed", { session: this.session });
+        this.syncAccount();
     }
 
     async revokeSession(id: string) {
         await this.client.revokeSession(id);
-        await this.client.getAccount();
+        await this.client.getOwnAccount();
         await this.storage.set(this);
         this.dispatch("account-changed", { account: this.account });
     }
 
-    async refreshAccount() {
-        await this.client.getAccount();
+    async syncAccount() {
+        if (!this.loggedIn) {
+            throw "Not logged in!";
+        }
+        await this.client.getOwnAccount();
         await this.storage.set(this);
+        if (!this.account!.publicKey) {
+            await this.generateKeyPair();
+        }
         this.dispatch("account-changed", { account: this.account });
     }
 
@@ -347,6 +351,7 @@ export class App extends EventTarget {
         await this.client.logout();
         delete this.session;
         delete this.account;
+        this.sharedStores = [];
         await this.storage.set(this);
         this.dispatch("logout");
         this.dispatch("account-changed", { account: this.account });
@@ -367,7 +372,7 @@ export class App extends EventTarget {
 
     async generateKeyPair() {
         if (!this.account) {
-            throw "Not logged in!";
+            throw "Need to create account first!";
         }
         const { publicKey, privateKey } = await getProvider().generateKeyPair();
         this.account.publicKey = publicKey;
@@ -385,10 +390,10 @@ export class App extends EventTarget {
         }
 
         const store = new SharedStore("", [], name);
-        store.access = { accessorID: this.account.id, privateKey: this.mainStore.privateKey! };
+        store.access = { account: this.account, privateKey: this.mainStore.privateKey! };
         await store.addAccount(this.account, { read: true, write: true, manage: true });
         await this.remoteStorage.set(store);
-        await this.refreshAccount();
+        await this.syncAccount();
         await this.synchronize();
         return store;
     }
@@ -403,18 +408,67 @@ export class App extends EventTarget {
             store = new SharedStore(id);
             this.sharedStores.push(store);
         }
-        store.access = { accessorID: this.account.id, privateKey: this.mainStore.privateKey };
-        await this.remoteStorage.get(store);
-        await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
+        store.access = { account: this.account, privateKey: this.mainStore.privateKey };
+
+        try {
+            await this.remoteStorage.get(store);
+        } catch (e) {
+            // TODO Handle
+            console.error(e);
+            if (e.code === ErrorCode.NOT_FOUND) {
+                this.account.sharedStores.splice(this.account.sharedStores.indexOf(store.id), 1);
+                this.sharedStores.splice(this.sharedStores.indexOf(store), 1);
+            }
+            return;
+        }
+
+        await this.storage.set(store);
+
+        try {
+            await this.remoteStorage.set(store);
+        } catch (e) {
+            // TODO Handle
+            console.error(e);
+        }
     }
 
     async deleteSharedStore(id: StoreID) {
         const store = this.sharedStores.find(s => s.id === id) || new SharedStore(id);
         await this.remoteStorage.delete(store);
-        await this.refreshAccount();
+        await this.syncAccount();
+    }
+
+    isTrusted(account: PublicAccount) {
+        return this.mainStore.trustedAccounts.some(acc => acc.id === account.id);
+    }
+
+    async addTrustedAccount(account: PublicAccount) {
+        if (!this.isTrusted(account)) {
+            this.mainStore.trustedAccounts.push(account);
+        }
+        await this.synchronize();
+        this.dispatch("account-changed");
+    }
+
+    async createInvite(
+        store: SharedStore,
+        account: PublicAccount,
+        permissions: Permissions = { read: true, write: false, manage: false }
+    ) {
+        const accessor = Object.assign(
+            {
+                permissions: permissions,
+                encryptedKey: await store.getEncryptedKey(account.publicKey)
+            },
+            account
+        );
+
+        await this.client.createInvite(store.id, accessor);
     }
 
     async synchronize() {
+        await this.syncAccount();
+
         try {
             await this.remoteStorage.get(this.mainStore);
         } catch (e) {
@@ -426,7 +480,9 @@ export class App extends EventTarget {
 
         await Promise.all([this.storage.set(this.mainStore), this.remoteStorage.set(this.mainStore)]);
 
-        for (const id of this.account!.sharedStores) {
+        const sharedStores = [...this.account!.sharedStores];
+
+        for (const id of sharedStores) {
             await this.syncSharedStore(id);
         }
 

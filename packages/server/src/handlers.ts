@@ -70,11 +70,23 @@ export async function revokeSession(ctx: Context, id: string) {
     ctx.body = "";
 }
 
-export async function getAccount(ctx: Context) {
+export async function getOwnAccount(ctx: Context) {
     if (!ctx.state.session) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
     ctx.body = await ctx.state.account!.serialize();
+}
+
+export async function getAccount(ctx: Context, email: string) {
+    if (!ctx.state.session) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const account = new Account(email);
+
+    await ctx.storage.get(account);
+
+    ctx.body = account.publicAccount;
 }
 
 export async function getStore(ctx: Context, id?: string) {
@@ -104,7 +116,7 @@ export async function putStore(ctx: Context, id: string) {
     }
 
     const account = ctx.state.account!;
-    const container = await new Container().deserialize(ctx.request.body);
+    let container = await new Container().deserialize(ctx.request.body);
 
     if (id === "main") {
         if (!account.mainStore) {
@@ -113,14 +125,24 @@ export async function putStore(ctx: Context, id: string) {
         }
         container.id = account.mainStore;
     } else {
-        container.id = id;
-        await ctx.storage.get(container);
+        const existing = new Container();
+        existing.id = id;
+        existing.kind = "store";
+        await ctx.storage.get(existing);
 
-        const accessor = container.accessors.find(a => a.id === account.id);
+        const accessor = existing.accessors.find(a => a.email === account.email);
 
         if (!accessor || !accessor.permissions.write) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Write permissions required");
         }
+
+        Object.assign(existing, {
+            cipherText: container.cipherText,
+            encryptionParams: container.encryptionParams,
+            wrappingParams: container.wrappingParams
+        });
+
+        container = existing;
     }
 
     await ctx.storage.set(container);
@@ -129,27 +151,30 @@ export async function putStore(ctx: Context, id: string) {
 }
 
 export async function createStore(ctx: Context) {
-    if (!ctx.state.session) {
+    if (!ctx.state.session || !ctx.state.account) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
 
+    const account = ctx.state.account;
     const container = await new Container().deserialize(ctx.request.body);
 
     container.id = uuid();
 
-    const accounts = container.accessors.map(a => new Account(a.email));
+    account.sharedStores.push(container.id);
 
-    await ctx.storage.set(container);
+    await Promise.all([ctx.storage.set(account), ctx.storage.set(container)]);
 
-    await Promise.all(accounts.map(a => ctx.storage.get(a)));
-
-    for (const acc of accounts) {
-        if (!acc.sharedStores.includes(container.id)) {
-            acc.sharedStores.push(container.id);
-        }
-    }
-
-    await Promise.all(accounts.map(a => ctx.storage.set(a)));
+    // const accounts = container.accessors.map(a => new Account(a.email));
+    //
+    // await Promise.all(accounts.map(a => ctx.storage.get(a)));
+    //
+    // for (const acc of accounts) {
+    //     if (!acc.sharedStores.includes(container.id)) {
+    //         acc.sharedStores.push(container.id);
+    //     }
+    // }
+    //
+    // await Promise.all(accounts.map(a => ctx.storage.set(a)));
 
     ctx.body = await container.serialize();
 }
@@ -174,24 +199,24 @@ export async function deleteStore(ctx: Context, id: string) {
 
     await ctx.storage.get(container);
 
-    const accessor = container.accessors.find(a => a.id === account.id);
+    const accessor = container.accessors.find(a => a.email === account.email);
 
     if (!accessor || !accessor.permissions.manage) {
         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Mangage permissions required");
     }
 
     await ctx.storage.delete(container);
-
-    const accounts = container.accessors.map(a => new Account(a.email));
-
-    await Promise.all(accounts.map(a => ctx.storage.get(a)));
-
-    for (const acc of accounts) {
-        console.log("updating account", acc.email);
-        acc.sharedStores.splice(acc.sharedStores.indexOf(id), 1);
-    }
-
-    await Promise.all(accounts.map(a => ctx.storage.set(a)));
+    //
+    // const accounts = container.accessors.map(a => new Account(a.email));
+    //
+    // await Promise.all(accounts.map(a => ctx.storage.get(a)));
+    //
+    // for (const acc of accounts) {
+    //     console.log("updating account", acc.email);
+    //     acc.sharedStores.splice(acc.sharedStores.indexOf(id), 1);
+    // }
+    //
+    // await Promise.all(accounts.map(a => ctx.storage.set(a)));
 
     ctx.status = 204;
 }
@@ -216,3 +241,125 @@ export async function updateAccount(ctx: Context) {
 
     ctx.body = await account.serialize();
 }
+
+export async function createInvite(ctx: Context, id: string) {
+    if (!ctx.state.session || !ctx.state.account) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const account = ctx.state.account;
+
+    const container = new Container();
+    container.id = id;
+    container.kind = "store";
+
+    await ctx.storage.get(container);
+
+    const currAccessor = container.accessors.find(a => a.email === account.email);
+
+    if (!currAccessor || !currAccessor.permissions.manage) {
+        throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Mangage permissions required");
+    }
+
+    const accessor = ctx.request.body;
+    const invitee = new Account(accessor.email);
+    await ctx.storage.get(invitee);
+    const invite = {
+        recipient: accessor,
+        sender: account.publicAccount,
+        created: new Date().toISOString(),
+        target: {
+            id: id,
+            meta: container.meta
+        }
+    };
+    invitee.invites.push(invite);
+    container.invites.push(invite);
+
+    await Promise.all([ctx.storage.set(invitee), ctx.storage.set(container)]);
+
+    ctx.status = 204;
+}
+
+export async function joinStore(ctx: Context, id: string) {
+    if (!ctx.state.session || !ctx.state.account) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const account = ctx.state.account;
+    const invite = account.invites.find(inv => inv.target.id === id);
+
+    if (!invite) {
+        throw new Err(ErrorCode.BAD_REQUEST);
+    }
+
+    const container = new Container();
+    container.id = id;
+    container.kind = "store";
+
+    await ctx.storage.get(container);
+
+    const storeInvite = container.invites.find(inv => inv.recipient.email === account.email);
+
+    if (!storeInvite) {
+        throw new Err(ErrorCode.BAD_REQUEST);
+    }
+
+    account.invites.splice(account.invites.indexOf(invite), 1);
+    container.invites.splice(container.invites.indexOf(storeInvite), 1);
+
+    container.accessors.push(invite.recipient);
+    account.sharedStores.push(container.id);
+
+    await Promise.all([ctx.storage.set(account), ctx.storage.set(container)]);
+
+    ctx.status = 204;
+}
+
+//
+// export async function createFriendRequest(ctx: Context) {
+//     if (!ctx.state.session || !ctx.state.account) {
+//         throw new Err(ErrorCode.INVALID_SESSION);
+//     }
+//
+//     const { email } = ctx.request.body;
+//
+//     const sender = ctx.state.account;
+//     const recipient = new Account(email);
+//
+//     const request = new FriendRequest(sender, recipient);
+//
+//     try {
+//         await ctx.storage.get(recipient);
+//         recipient.friendRequests.push(request.id);
+//         await ctx.storage.set(recipient);
+//         ctx.sender.send(
+//             email,
+//             `${request.sender.email} would like to share data on Padlock with you!`,
+//             `
+//             Hi there!
+//
+//             ${request.sender.email} would like to add you to their trusted Padlock accounts, allowing you
+//             to securely and easily share data with eachother!
+//
+//             To complete the process, simply open the Padlock app!
+//
+//             Best,
+//             Martin from Padlock
+//         `
+//         );
+//     } catch (e) {
+//         if (e.code === ErrorCode.NOT_FOUND) {
+//             // TODO
+//         } else {
+//             throw e;
+//         }
+//     }
+//
+//     await ctx.storage.set(request);
+//
+//     sender.friendRequests.push(request.id);
+//     await ctx.storage.set(sender);
+//
+//     ctx.body = await request.serialize();
+// }

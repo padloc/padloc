@@ -16,7 +16,7 @@ export interface PromptOptions {
     confirmLabel?: string;
     cancelLabel?: string;
     preventDismiss?: boolean;
-    validate?: (val: string) => Promise<string>;
+    validate?: (val: string, input: Input) => Promise<string>;
 }
 
 @element("pl-prompt-dialog")
@@ -28,7 +28,7 @@ export class PromptDialog extends BaseElement {
     @property() placeholder: string = defaultPlaceholder;
     @property() preventDismiss: boolean = true;
     @property() type: string = defaultType;
-    @property() validate?: (val: string) => Promise<string>;
+    @property() validate?: (val: string, input: Input) => Promise<string>;
     @property() private _validationMessage: string = "";
 
     @query("#confirmButton") private _confirmButton: LoadingButton;
@@ -103,7 +103,7 @@ export class PromptDialog extends BaseElement {
         if (this.validate) {
             this._confirmButton.start();
             try {
-                val = await this.validate(val);
+                val = await this.validate(val, this._input);
                 this._confirmButton.success();
                 this._success(val);
             } catch (e) {

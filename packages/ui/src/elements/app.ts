@@ -12,6 +12,7 @@ import { ListView } from "./list-view.js";
 import { RecordView } from "./record-view.js";
 import { SettingsView } from "./settings-view.js";
 import { StartView } from "./start-view.js";
+import { StoreView } from "./store-view.js";
 import { TitleBar } from "./title-bar.js";
 import { Menu } from "./menu.js";
 import { Input } from "./input.js";
@@ -37,6 +38,7 @@ class App extends BaseElement {
     @query("pl-start-view") private _startView: StartView;
     @query("pl-settings-view") private _settingsView: SettingsView;
     @query("pl-account-view") private _accountView: AccountView;
+    @query("pl-store-view") private _storeView: StoreView;
     @query("pl-menu") private _menu: Menu;
 
     private _currentView: View | null;
@@ -291,6 +293,8 @@ class App extends BaseElement {
 
                 <pl-account-view></pl-account-view>
 
+                <pl-store-view></pl-store-view>
+
             </div>
 
         </div>
@@ -403,7 +407,7 @@ class App extends BaseElement {
     _back() {
         this._listView.clearSelection();
         if (this._currentView) {
-            this._openView(null);
+            this._openView(this._currentView === this._storeView ? this._accountView : null);
         } else {
             if (this._listView.filterString) {
                 this._listView.clearFilter();
@@ -415,6 +419,12 @@ class App extends BaseElement {
 
     private _newRecord() {
         app.createRecord(this._currentStore, "");
+    }
+
+    @listen("open-store")
+    _openStore({ detail: { store } }: CustomEvent) {
+        this._storeView.store = store;
+        this._openView(this._storeView);
     }
 }
 

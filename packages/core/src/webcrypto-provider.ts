@@ -134,6 +134,11 @@ const WebCryptoProvider: CryptoProvider = {
             privateKey: bytesToBase64(new Uint8Array(privateKey)),
             publicKey: bytesToBase64(new Uint8Array(publicKey))
         };
+    },
+
+    async fingerprint(key: PublicKey): Promise<Base64String> {
+        const bytes = await webCrypto.digest("SHA-256", base64ToBytes(key));
+        return bytesToBase64(new Uint8Array(bytes));
     }
 };
 

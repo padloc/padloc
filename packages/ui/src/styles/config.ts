@@ -7,6 +7,7 @@ export default html`
             --font-family-fallback: sans-serif;
             --font-family-mono: "Inconsolata";
 
+            --font-size-micro: 12px;
             --font-size-tiny: 14px;
             --font-size-small: 16px;
             --font-size-default: 18px;

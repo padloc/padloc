@@ -46,7 +46,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="delete"]) > div::before {
-                content: "\\f014";
+                content: "\\f2ed";
             }
 
             :host([icon="copy"]) > div::before {
@@ -83,6 +83,10 @@ export class PlIcon extends BaseElement {
                 content: "\\f02b";
             }
 
+            :host([icon="tags"]) > div::before {
+                content: "\\f02c";
+            }
+
             :host([icon="dropdown"]) > div::before {
                 content: "\\f0d7";
             }
@@ -93,7 +97,6 @@ export class PlIcon extends BaseElement {
 
             :host([icon="settings"]) > div::before {
                 content: "\\f013";
-                font-size: 110%;
             }
 
             :host([icon="cloud"]) > div::before {
@@ -102,11 +105,10 @@ export class PlIcon extends BaseElement {
 
             :host([icon="lock"]) > div::before {
                 content: "\\f023";
-                font-size: 120%;
             }
 
             :host([icon="refresh"]) > div::before {
-                content: "\\f021";
+                content: "\\f2f1";
             }
 
             :host([icon="unlock"]) > div::before {
@@ -150,7 +152,11 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="checked"]) > div::before {
-                content: "\\f046";
+                content: "\\f14a";
+            }
+
+            :host([icon="checkall"]) > div::before {
+                content: "\\f560";
             }
 
             :host([icon="success"]) > div::before {
@@ -166,7 +172,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="logout"]) > div::before {
-                content: "\\f08b";
+                content: "\\f2f5";
             }
 
             :host([icon="mail"]) > div::before {
@@ -179,7 +185,6 @@ export class PlIcon extends BaseElement {
 
             :host([icon="record"]) > div::before {
                 content: "\\f15b";
-                font-size: 90%;
             }
 
             :host([icon="mobile"]) > div::before {
@@ -214,6 +219,14 @@ export class PlIcon extends BaseElement {
 
             :host([icon="share"]) > div::before {
                 content: "\\f064";
+            }
+
+            :host([icon="invite"]) > div::before {
+                content: "\\f234";
+            }
+
+            :host([icon="trusted"]) > div::before {
+                content: "\\f4fc";
             }
 
             :host([icon="logo"]) > div::before {

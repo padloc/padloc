@@ -161,7 +161,7 @@ export class RecordView extends View {
 
                 <div class="tag store tap"
                     hidden?="${store === app.mainStore}"
-                    on-click="${() => this._openStore(store)}">
+                    on-click="${() => this._openStore(store!)}">
 
                     <pl-icon icon="group"></pl-icon>
 
@@ -367,6 +367,10 @@ export class RecordView extends View {
             await app.deleteRecords(this.store!, this.record!);
             await app.createRecord(store, name, fields, tags);
         }
+    }
+
+    private _openStore(store: Store) {
+        this.dispatch("open-store", { store: store }, true, true);
     }
 
     edit() {

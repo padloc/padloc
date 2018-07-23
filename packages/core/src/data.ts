@@ -1,7 +1,7 @@
 import { DateString, Marshalable } from "./encoding";
-import { PrivateKey, Container, EncryptionScheme, Access, Permissions } from "./crypto";
+import { PrivateKey, PublicKey, Container, EncryptionScheme, Access, Permissions } from "./crypto";
 import { Storable } from "./storage";
-import { Account } from "./auth";
+import { Account, PublicAccount } from "./auth";
 import { uuid } from "./util";
 import { localize } from "./locale";
 
@@ -147,6 +147,9 @@ export class Store implements Storable {
 
     async serialize(): Promise<Marshalable> {
         await this.container.set(this.serializer);
+        this.container.meta = {
+            name: this.name
+        };
         return this.container.serialize();
     }
 
@@ -165,7 +168,7 @@ export class Store implements Storable {
 
 export class MainStore extends Store {
     privateKey?: PrivateKey;
-    trustedAccounts: Account[] = [];
+    trustedAccounts: PublicAccount[] = [];
 
     get storageKey() {
         return "main";
@@ -192,14 +195,20 @@ export class MainStore extends Store {
 
     protected async _deserialize(raw: any) {
         this.privateKey = this.privateKey || raw.privateKey;
-        this.trustedAccounts = raw.trustedAccounts;
+        const newAccounts =
+            (raw.trustedAccounts &&
+                raw.trustedAccounts.filter(
+                    (acc: PublicAccount) => !this.trustedAccounts.some(a => a.email === acc.email)
+                )) ||
+            [];
+        this.trustedAccounts.push(...newAccounts);
         return super._deserialize(raw);
     }
 
     async clear() {
         await super.clear();
         delete this.privateKey;
-        delete this.trustedAccounts;
+        this.trustedAccounts = [];
     }
 
     constructor(id = "", records: Record[] = []) {
@@ -212,6 +221,14 @@ export class SharedStore extends Store {
         return "shared";
     }
 
+    get accessors() {
+        return this.container.accessors;
+    }
+
+    get invites() {
+        return this.container.invites;
+    }
+
     get access(): Access | undefined {
         return this.container.access;
     }
@@ -220,15 +237,22 @@ export class SharedStore extends Store {
         this.container.access = access;
     }
 
+    getEncryptedKey(publicKey: PublicKey) {
+        return this.container.getEncryptedKey(publicKey);
+    }
+
     async addAccount(acc: Account, perms: Permissions = { read: true, write: true, manage: false }) {
         if (!acc.publicKey) {
             throw "Public Key is missing on account!";
         }
-        await this.container.addAccessor({
-            id: acc.id,
-            email: acc.email,
-            publicKey: acc.publicKey!,
-            permissions: perms
-        });
+        await this.container.addAccessor(
+            Object.assign(
+                {
+                    permissions: perms,
+                    encryptedKey: ""
+                },
+                acc.publicAccount
+            )
+        );
     }
 }

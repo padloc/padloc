@@ -388,7 +388,7 @@ export class ListView extends BaseElement {
 
             <pl-icon icon="cancel" class="tap" on-click="${() => this.clearSelection()}"></pl-icon>
 
-            <pl-icon icon="checked" class="tap" on-click="${() => this.selectAll()}"></pl-icon>
+            <pl-icon icon="checkall" class="tap" on-click="${() => this.selectAll()}"></pl-icon>
 
             <div class="multi-select-count"><div>${this._multiSelectLabel(props.selectedItems)}</div></div>
 

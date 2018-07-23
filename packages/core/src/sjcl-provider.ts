@@ -102,6 +102,10 @@ const SJCLProvider: CryptoProvider = {
 
     async generateKeyPair(): Promise<{ privateKey: PrivateKey; publicKey: PublicKey }> {
         throw new Err(ErrorCode.NOT_SUPPORTED);
+    },
+
+    async fingerprint() {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 };
 

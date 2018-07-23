@@ -1,11 +1,14 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Session } from "@padlock/core/lib/auth.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
+import { Store } from "@padlock/core/lib/data.js";
+import { ErrorCode } from "@padlock/core/lib/error.js";
+import { Invite } from "@padlock/core/lib/crypto.js";
 import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
 import * as messages from "../messages.js";
 import { animateCascade } from "../animation.js";
-import { confirm, alert, prompt } from "../dialog.js";
+import { getDialog, confirm, alert, prompt } from "../dialog.js";
 import { html, query, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
@@ -13,6 +16,7 @@ import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
 // import "./promo.js";
 import "./toggle-button.js";
+import "./fingerprint.js";
 
 export class AccountView extends View {
     @query("#emailInput") private _emailInput: Input;
@@ -28,14 +32,16 @@ export class AccountView extends View {
         const subStatus = (account && account.subscription && account.subscription.status) || "";
         const email = (account && account.email) || "";
         const promo = account && account.promo;
+        const publicKey = (account && account.publicKey) || "";
         // TODO: Compute remaining trial days
         const trialDays = 30;
-        const recordCount = 0;
         const isSynching = false;
         const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
         const sessions = (account && account.sessions) || [];
         const paymentSource = account && account.paymentSource;
         const paymentSourceLabel = paymentSource && `${paymentSource.brand} •••• •••• •••• ${paymentSource.lastFour}`;
+        const trustedAccounts = app.mainStore.trustedAccounts;
+        const invites: Invite[] = (app.account && app.account.invites) || [];
 
         return html`
         <style>
@@ -98,8 +104,8 @@ export class AccountView extends View {
             .login .icons > * {
                 @apply --fullbleed;
                 margin: auto;
-                width: 80px;
-                height: 80px;
+                width: 90px;
+                height: 90px;
                 bottom: 0;
                 font-size: 50px;
             }
@@ -149,48 +155,38 @@ export class AccountView extends View {
                 will-change: transform:
             }
 
-            .account {
-                height: 90px;
+            .account-sync {
+                width: 70px;
+                height: auto;
+                font-size: 25px;
+                border-left: solid 1px rgba(0, 0, 0, 0.1);
+                align-self: stretch;
+            }
+
+            .store {
+                height: var(--row-height);
                 display: flex;
+                align-items: center;
+                border-bottom: solid 1px var(--border-color);
             }
 
-            .account-info {
-                flex: 1;
-                width: 0;
-                padding: 15px;
-                text-align: center;
-                border-right: solid 1px rgba(0, 0, 0, 0.1);
+            .store pl-toggle {
+                --toggle-width: 40px;
+                --toggle-height: 30px;
+                margin-right: 10px;
             }
 
-            .account-email {
-                font-size: 110%;
+            .store-name {
+                padding: 10px 15px;
                 font-weight: bold;
                 @apply --ellipsis;
-                margin-bottom: 10px;
             }
 
-            .account-stats {
-                font-size: var(--font-size-tiny);
-                @apply --ellipsis;
-            }
-
-            .account-stats > * {
-                vertical-align: middle;
-            }
-
-            .account-stats pl-icon {
-                width: 16px;
-                height: 20px;
-            }
-
-            .account-stats pl-icon:not(:first-child) {
-                margin-left: 5px;
-            }
-
-            .account-sync {
-                height: auto;
-                width: 70px;
-                font-size: 25px;
+            .store-join {
+                background: var(--color-highlight);
+                color: var(--color-background);
+                height: 40px;
+                border-radius: 40px;
             }
 
             pl-icon[icon=refresh][spin] {
@@ -315,27 +311,25 @@ export class AccountView extends View {
 
             </section>
 
-            <section class="highlight" hidden?="${!loggedIn}">
+            <section hidden?="${!loggedIn}">
 
-                <div class="account tiles">
+                <div class="account">
+
+                    <pl-fingerprint key="${publicKey}"></pl-fingerprint>
 
                     <div class="account-info">
 
                         <div class="account-email">${email}</div>
 
-                        <div class="account-stats">
+                        <div class="stats">
 
-                            <pl-icon icon="record"></pl-icon>
+                            <div class="stat">
 
-                            <span>${recordCount}</span>
+                                <pl-icon icon="refresh"></pl-icon>
 
-                            <pl-icon icon="mobile"></pl-icon>
+                                <div>${lastSync}</div>
 
-                            <span>${sessions.length}</span>
-
-                            <pl-icon icon="refresh"></pl-icon>
-
-                            <span>${lastSync}</span>
+                            </div>
 
                         </div>
 
@@ -353,6 +347,126 @@ export class AccountView extends View {
                 <div class="unlock-feature-hint" hidden>
                     ${$l("Upgrade to enable synchronization!")}
                 </div>
+
+            </section>
+
+            <section hidden?="${!loggedIn}">
+
+                <div class="section-header">
+
+                    <pl-icon icon="group"></pl-icon>
+
+                    <div>${$l("Groups")}</div>
+
+                </div>
+
+                ${app.sharedStores.map(
+                    store => html`
+                    <div class="store tap" on-click="${() => this._openStore(store)}">
+
+                        <div class="store-name">${store.name}</div>
+
+                        <div class="stats">
+
+                            <div class="stat">
+
+                                <pl-icon icon="group"></pl-icon>
+
+                                <div>${store.accessors.length}</div>
+
+                            </div>
+
+                            <div class="stat">
+
+                                <pl-icon icon="record"></pl-icon>
+
+                                <div>${store.records.length}</div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="spacer"></div>
+
+                        <pl-toggle
+                            active="${!app.settings.hideStores.includes(store.id)}"
+                            on-click="${(e: Event) => this._toggleStore(store, e)}"></pl-toggle>
+
+                    </div>
+                `
+                )}
+
+                ${invites.map(
+                    invite => html`
+                    <div class="store tap" on-click="${() => this._acceptInvite(invite)}">
+
+                        <div class="store-name">${invite.target.meta.name}</div>
+
+                        <div class="stats">
+
+                            <div class="stat">
+
+                                <pl-icon icon="time"></pl-icon>
+
+                                <div>${$l("invited by {0}", invite.sender.email)}</div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                    `
+                )}
+
+                <button class="tap" on-click="${() => this._createSharedStore()}">${$l("Create Group")}</button>
+
+            </section>
+
+            <section>
+
+                <div class="section-header">
+
+                    <pl-icon icon="trusted"></pl-icon>
+
+                    <div>${$l("Trusted Users", trustedAccounts.length.toString())}</div>
+
+                </div>
+
+                <div>
+
+                    ${trustedAccounts.map(
+                        ({ email, publicKey }) => html`
+                            <div class="account">
+
+                                <pl-fingerprint key="${publicKey}"></pl-fingerprint>
+
+                                <div class="account-info">
+
+                                    <div class="account-email">${email}</div>
+
+                                    <div class="stats">
+
+                                        ${app.sharedStores.filter(s => s.accessors.some(a => a.account === email)).map(
+                                            s => html`
+                                                <div class="stat">
+
+                                                    <pl-icon icon="group"></pl-icon>
+
+                                                    <div>${s.name}</div>
+
+                                                </div>`
+                                        )}
+
+                                    </div>
+
+                                </div>
+
+                            </div>`
+                    )}
+
+                </div>
+
+                <button class="tap" on-click="${() => this._addTrustedAccount()}">${$l("Add Trusted User")}</button>
 
             </section>
 
@@ -443,7 +557,7 @@ export class AccountView extends View {
     _activated() {
         animateCascade(this.$$("section:not([hidden])"), { initialDelay: 200 });
         if (app.loggedIn) {
-            app.refreshAccount();
+            app.syncAccount();
         }
     }
 
@@ -514,6 +628,75 @@ export class AccountView extends View {
             alert($l("Access for {0} revoked successfully!", session.device.description), {
                 type: "success"
             });
+        }
+    }
+
+    private async _openStore(store: Store) {
+        this.dispatch("open-store", { store });
+    }
+
+    private _toggleStore(store: Store, e: Event) {
+        app.toggleStore(store);
+        e && e.stopPropagation();
+    }
+
+    private _createSharedStore() {
+        prompt($l("Please enter a name for your new group!"), {
+            placeholder: $l("Enter Group Name"),
+            confirmLabel: $l("Create Group"),
+            cancelLabel: "",
+            validate: async name => {
+                if (!name) {
+                    throw "Please enter a name!";
+                }
+
+                await app.createSharedStore(name);
+
+                return name;
+            }
+        });
+    }
+
+    async _addTrustedAccount() {
+        const email = await prompt($l("Enter the email address of the person you would like to add!"), {
+            confirmLabel: $l("Submit"),
+            placeholder: $l("Enter Email Address"),
+            cancelLabel: "",
+            type: "email",
+            validate: async (val, input) => {
+                if (!val || input.invalid) {
+                    throw $l("Please enter a valid email address!");
+                }
+
+                return val;
+            }
+        });
+
+        if (!email) {
+            return;
+        }
+
+        try {
+            const account = await app.client.getAccount(email);
+            await getDialog("pl-account-dialog").show(account);
+            if (app.isTrusted(account)) {
+            }
+        } catch (e) {
+            if (e.code === ErrorCode.NOT_FOUND) {
+                alert("There is no account with this email address!");
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    async _acceptInvite(invite: Invite) {
+        const confirmed = await confirm(
+            $l("Do you want to join the group '{0}'?", invite.target.meta.name),
+            $l("Join")
+        );
+        if (confirmed) {
+            await app.client.joinStore(invite.target.id);
         }
     }
 

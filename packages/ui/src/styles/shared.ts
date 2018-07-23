@@ -159,6 +159,9 @@ const styles = `
         text-align: center;
         font-weight: bold;
         line-height: var(--row-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .section-row {
@@ -222,7 +225,7 @@ const styles = `
         font-weight: bold;
     }
 
-    .spacer {
+    .spacer, [flex], [flex="1"] {
         flex: 1;
     }
 
@@ -328,6 +331,56 @@ const styles = `
 
     .info-text {
         font-size: var(--font-size-small);
+    }
+
+    .account {
+        height: 90px;
+        display: flex;
+        align-items: center;
+    }
+
+    .account pl-fingerprint {
+        width: 50px;
+        height: 50px;
+        border-radius: 100%;
+        border: solid 1px var(--border-color);
+        margin: 15px;
+    }
+
+    .account-info {
+        flex: 1;
+        width: 0;
+    }
+
+    .account-email {
+        font-weight: bold;
+        margin-bottom: 5px;
+        @apply --ellipsis;
+    }
+
+    .stats {
+        display: flex;
+        align-items: center;
+    }
+
+    .stat {
+        background: var(--color-foreground);
+        color: var(--color-background);
+        font-size: var(--font-size-micro);
+        display: flex;
+        align-items: center;
+        border-radius: 20px;
+        margin-right: 5px;
+        padding: 2px 8px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .stat pl-icon {
+        width: 10px;
+        height: 20px;
+        margin-right: 4px;
+        font-size: 10px;
     }
 
     @keyframes spin {

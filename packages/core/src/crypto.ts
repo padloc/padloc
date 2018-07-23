@@ -1,6 +1,7 @@
-import { Base64String, stringToBase64, base64ToString, marshal, unmarshal, Marshalable } from "./encoding";
+import { Base64String, stringToBase64, base64ToString, marshal, unmarshal, Marshalable, DateString } from "./encoding";
 import { Storable, Storage } from "./storage";
 import { Err, ErrorCode } from "./error";
+import { PublicAccount } from "./auth";
 
 // Minimum number of pbkdf2 iterations
 const PBKDF2_ITER_MIN = 1e4;
@@ -66,6 +67,7 @@ export interface CryptoProvider {
     encrypt(key: Key, data: PlainText, params: CipherParams): Promise<CipherText>;
     decrypt(key: Key, data: Base64String, params: CipherParams): Promise<PlainText>;
     generateKeyPair(): Promise<{ privateKey: PrivateKey; publicKey: PublicKey }>;
+    fingerprint(key: PublicKey): Promise<Base64String>;
 }
 
 export function validateCipherParams(params: any): CipherParams {
@@ -128,8 +130,9 @@ export interface BaseRawContainer {
     version: 2;
     scheme: EncryptionScheme;
     id: string;
-    ep: SymmetricCipherParams;
-    ct: CipherText;
+    encryptionParams: SymmetricCipherParams;
+    cipherText: CipherText;
+    meta: any;
 }
 
 export interface SimpleRawContainer extends BaseRawContainer {
@@ -138,32 +141,33 @@ export interface SimpleRawContainer extends BaseRawContainer {
 
 export interface PasswordBasedRawContainer extends BaseRawContainer {
     scheme: "PBES2";
-    kp: KeyDerivationParams;
+    keyDerivationParams: KeyDerivationParams;
 }
 
 export interface SharedRawContainer extends BaseRawContainer {
     scheme: "shared";
-    wp: AsymmetricCipherParams;
+    wrappingParams: AsymmetricCipherParams;
     accessors: Accessor[];
+    invites: Invite[];
 }
 
 export type RawContainer = SimpleRawContainer | PasswordBasedRawContainer | SharedRawContainer;
 
 export function validateRawContainer(raw: any): RawContainer {
-    if (raw.version !== 2 || !raw.ep || !raw.ct) {
+    if (raw.version !== 2 || !raw.encryptionParams || !raw.cipherText) {
         throw new Err(ErrorCode.INVALID_CONTAINER_DATA);
     }
 
-    validateCipherParams(raw.ep);
+    validateCipherParams(raw.encryptionParams);
 
     switch (raw.scheme) {
         case "simple":
             break;
         case "PBES2":
-            validateKeyDerivationParams(raw.kp);
+            validateKeyDerivationParams(raw.keyDerivationParams);
             break;
         case "shared":
-            validateCipherParams(raw.wp);
+            validateCipherParams(raw.wrappingParams);
             break;
         default:
             throw new Err(ErrorCode.INVALID_CONTAINER_DATA);
@@ -194,27 +198,36 @@ export interface Permissions {
     manage: boolean;
 }
 
-export interface Accessor {
-    id: string;
-    email: string;
-    publicKey: PublicKey;
+export interface Accessor extends PublicAccount {
+    encryptedKey: CipherText;
     permissions: Permissions;
-    encryptedKey?: CipherText;
 }
 
 export interface Access {
-    accessorID: string;
+    account: PublicAccount;
     privateKey: PrivateKey;
+}
+
+export interface Invite {
+    sender: PublicAccount;
+    recipient: Accessor;
+    created: DateString;
+    target: {
+        id: string;
+        meta: any;
+    };
 }
 
 export class Container implements Storage, Storable {
     id: string = "";
     kind: string = "";
     cipherText?: CipherText;
+    meta: any = {};
     key?: SymmetricKey;
     password?: string;
     access?: Access;
     accessors: Accessor[] = [];
+    invites: Invite[] = [];
 
     constructor(
         public scheme: EncryptionScheme = "simple",
@@ -251,7 +264,7 @@ export class Container implements Storage, Storable {
                     throw new Err(ErrorCode.DECRYPTION_FAILED, "No access parameters provided");
                 }
                 if (this.accessors.length) {
-                    const accessor = this.accessors.find(a => a.id === this.access!.accessorID);
+                    const accessor = this.accessors.find(a => a.id === this.access!.account.id);
                     if (!accessor || !accessor.encryptedKey) {
                         throw new Err(ErrorCode.DECRYPTION_FAILED, "Current accessor does not have access.");
                     }
@@ -293,17 +306,20 @@ export class Container implements Storage, Storable {
             kind: this.kind,
             version: 2,
             scheme: this.scheme,
-            ep: this.encryptionParams,
-            ct: this.cipherText
+            // TODO: rename to "encryptionParams", "cipterText" etc.
+            encryptionParams: this.encryptionParams,
+            cipherText: this.cipherText,
+            meta: this.meta
         } as RawContainer;
 
         if (this.scheme === "PBES2") {
-            (raw as PasswordBasedRawContainer).kp = this.keyDerivationParams;
+            (raw as PasswordBasedRawContainer).keyDerivationParams = this.keyDerivationParams;
         }
 
         if (this.scheme === "shared") {
-            (raw as SharedRawContainer).wp = this.wrappingParams;
+            (raw as SharedRawContainer).wrappingParams = this.wrappingParams;
             (raw as SharedRawContainer).accessors = this.accessors;
+            (raw as SharedRawContainer).invites = this.invites;
         }
 
         return raw as Marshalable;
@@ -312,20 +328,26 @@ export class Container implements Storage, Storable {
     async deserialize(raw: any) {
         raw = validateRawContainer(raw);
         this.scheme = raw.scheme;
-        this.cipherText = raw.ct;
-        this.encryptionParams = raw.ep;
+        this.cipherText = raw.cipherText;
+        this.encryptionParams = raw.encryptionParams;
         this.id = raw.id;
         this.kind = raw.kind;
+        this.meta = raw.meta || {};
 
         if (raw.scheme === "PBES2") {
-            this.keyDerivationParams = raw.kp;
+            this.keyDerivationParams = raw.keyDerivationParams;
         }
 
         if (raw.scheme === "shared") {
-            this.wrappingParams = raw.wp;
+            this.wrappingParams = raw.wrappingParams;
             this.accessors = raw.accessors;
+            this.invites = raw.invites;
         }
         return this;
+    }
+
+    async getEncryptedKey(publicKey: PublicKey) {
+        return provider.encrypt(publicKey, await this.getKey(), this.wrappingParams);
     }
 
     async addAccessor(accessor: Accessor) {
@@ -333,8 +355,7 @@ export class Container implements Storage, Storable {
             throw new Err(ErrorCode.NOT_SUPPORTED, "Cannot add accessor in this scheme");
         }
 
-        const key = await this.getKey();
-        accessor.encryptedKey = await provider.encrypt(accessor.publicKey, key, this.wrappingParams);
+        accessor.encryptedKey = await this.getEncryptedKey(accessor.publicKey);
 
         // const existing = this.accessors.find(a => a.id === accessor.id);
         // if (existing) {
