@@ -126,7 +126,6 @@ const styles = `
     }
 
     section {
-        --border-color: rgba(0, 0, 0, 0.1);
         margin: 10px 5px;
         @apply --card;
     }

@@ -30,6 +30,7 @@ export default html`
 
             --gutter-width: 4px;
             --border-radius: 8px;
+            --border-color: rgba(0, 0, 0, 0.1);
 
             --toaster-easing: cubic-bezier(1, -0.3, 0, 1.3);
 

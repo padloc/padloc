@@ -53,6 +53,7 @@ export class Dialog extends BaseElement {
             }
 
             .inner {
+                position: relative;
                 width: 100%;
                 box-sizing: border-box;
                 max-width: var(--pl-dialog-max-width, 400px);

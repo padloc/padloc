@@ -55,7 +55,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="edit"]) > div::before {
-                content: "\\f040";
+                content: "\\f303";
             }
 
             :host([icon="forward"]) > div::before {
@@ -180,7 +180,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="user"]) > div::before {
-                content: "\\f2bd";
+                content: "\\f007";
             }
 
             :host([icon="record"]) > div::before {

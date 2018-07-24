@@ -1,5 +1,5 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Session } from "@padlock/core/lib/auth.js";
+import { Session, PublicAccount } from "@padlock/core/lib/auth.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { Store } from "@padlock/core/lib/data.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
@@ -435,19 +435,21 @@ export class AccountView extends View {
                 <div>
 
                     ${trustedAccounts.map(
-                        ({ email, publicKey }) => html`
-                            <div class="account">
+                        acc => html`
+                            <div class="account tap" on-click="${() => this._openAccount(acc)}">
 
-                                <pl-fingerprint key="${publicKey}"></pl-fingerprint>
+                                <pl-fingerprint key="${acc.publicKey}"></pl-fingerprint>
 
                                 <div class="account-info">
 
-                                    <div class="account-email">${email}</div>
+                                    <div class="account-email">${acc.email}</div>
 
                                     <div class="stats">
 
-                                        ${app.sharedStores.filter(s => s.accessors.some(a => a.account === email)).map(
-                                            s => html`
+                                        ${app.sharedStores
+                                            .filter(s => s.accessors.some(a => a.email === acc.email))
+                                            .map(
+                                                s => html`
                                                 <div class="stat">
 
                                                     <pl-icon icon="group"></pl-icon>
@@ -455,7 +457,7 @@ export class AccountView extends View {
                                                     <div>${s.name}</div>
 
                                                 </div>`
-                                        )}
+                                            )}
 
                                     </div>
 
@@ -678,9 +680,7 @@ export class AccountView extends View {
 
         try {
             const account = await app.client.getAccount(email);
-            await getDialog("pl-account-dialog").show(account);
-            if (app.isTrusted(account)) {
-            }
+            this._openAccount(account);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
                 alert("There is no account with this email address!");
@@ -706,6 +706,10 @@ export class AccountView extends View {
 
     private _promoExpired() {
         // TODO: Do something?
+    }
+
+    async _openAccount(account: PublicAccount) {
+        await getDialog("pl-account-dialog").show(account);
     }
 }
 

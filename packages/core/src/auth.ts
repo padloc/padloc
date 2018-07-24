@@ -76,12 +76,14 @@ export class Session implements Serializable {
 export interface PublicAccount {
     id: AccountID;
     email: string;
+    name: string;
     publicKey: PublicKey;
 }
 
 export class Account implements Storable, PublicAccount {
     storageKind = "account";
     id: AccountID = uuid();
+    name = "";
     created: DateString = new Date().toISOString();
     mainStore?: StoreID;
     sharedStores: StoreID[] = [];
@@ -101,7 +103,7 @@ export class Account implements Storable, PublicAccount {
     }
 
     get publicAccount(): PublicAccount {
-        return { id: this.id, email: this.email, publicKey: this.publicKey };
+        return { id: this.id, email: this.email, publicKey: this.publicKey, name: this.name };
     }
 
     async serialize() {
@@ -109,6 +111,7 @@ export class Account implements Storable, PublicAccount {
             id: this.id,
             created: this.created,
             email: this.email,
+            name: this.name,
             mainStore: this.mainStore,
             sharedStores: this.sharedStores,
             publicKey: this.publicKey,

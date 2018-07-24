@@ -12,7 +12,7 @@ export class AccountDialog extends BaseElement {
     @property() account: PublicAccount;
 
     @query("pl-dialog") private _dialog: Dialog;
-    @query("pl-loading-button") private _button: LoadingButton;
+    @query("#addTrustedButton") private _addTrustedButton: LoadingButton;
 
     private _resolve: (() => void) | null;
 
@@ -21,7 +21,9 @@ export class AccountDialog extends BaseElement {
     }
 
     _render({ account }: this) {
-        const { email, publicKey } = account!;
+        const { email, name, publicKey } = account!;
+        const isTrusted = app.isTrusted(account);
+        const isOwnAccount = app.account && app.account.email === account.email;
 
         return html`
         <style>
@@ -34,49 +36,150 @@ export class AccountDialog extends BaseElement {
                 };
             }
 
+            .header {
+                padding: 20px;
+                display: flex;
+                align-items: center;
+            }
+
             .email {
                 font-weight: bold;
+            }
+
+            .email, .name {
+                font-size: 110%;
+                line-height: 30px;
+                word-wrap: break-word;
+                white-space: pre-wrap;
                 text-align: center;
-                padding: 15px;
             }
 
             pl-fingerprint {
                 --color-background: var(--color-foreground);
                 color: var(--color-secondary);
-                width: 250px;
-                height: 250px;
-                margin: 15px auto;
-                border: solid 2px;
-                border-radius: 20px;
+                width: 100px;
+                height: 100px;
+                border: solid 2px var(--color-background);
+                border-radius: 100%;
+                margin: 30px auto 15px auto;
+                box-shadow: rgba(0, 0, 0, 0.2) 0 2px 2px;
+                transition: border-radius 0.3s;
+            }
+
+            pl-fingerprint:hover {
+                border-radius: 5px;
+            }
+
+            pl-fingerprint:not(:hover) + .fingerprint-hint {
+                visibility: hidden;
+            }
+
+            .fingerprint-hint {
+                font-size: var(--font-size-micro);
+                text-decoration: underline;
+                text-align: center;
+                margin-top: -13px;
+                margin-bottom: -2px;
+                text-shadow: none;
+                color: var(--color-highlight);
+                font-weight: bold;
+            }
+
+            .stats {
+                margin: 15px 20px 20px 20px;
+                justify-content: center;
+            }
+
+            .stat {
+                background: var(--color-foreground);
+                color: var(--color-highlight);
+                text-shadow: none;
+                box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px;
+            }
+
+            .close-icon {
+                position: absolute;
+                top: 0;
+                right: 0;
             }
 
         </style>
 
         <pl-dialog on-dialog-dismiss="${() => this._dismiss()}">
 
-            <div class="email">${email}</div>
+            <pl-icon class="close-icon tap" icon="close" on-click="${() => this._dismiss()}"></pl-icon>
 
-            <pl-fingerprint key="${publicKey}" symbols></pl-fingerprint>
+            <pl-fingerprint key="${publicKey}"></pl-fingerprint>
 
-            <pl-loading-button on-click="${() => this._addTrusted()}">${$l("Add To Trusted Users")}</pl-loading-button>
+            <div class="fingerprint-hint">${$l("What is this?")}</div>
+
+            <div>
+
+                <div class="name">${name}</div>
+
+                <div class="email">${email}</div>
+
+                <div class="stats">
+
+                    <div class="stat" hidden?="${!isTrusted}">
+
+                        <pl-icon icon="trusted"></pl-icon>
+
+                        <div>${$l("Trusted")}</div>    
+
+                    </div>
+
+                    <div class="stat" hidden?="${!isOwnAccount}">
+
+                        <pl-icon icon="user"></pl-icon>
+
+                        <div>${$l("This Is You")}</div>    
+
+                    </div>
+
+                    ${app.sharedStores.filter(s => s.accessors.some(a => a.email === email)).map(
+                        s => html`
+                            <div class="stat">
+
+                                <pl-icon icon="group"></pl-icon>
+
+                                <div>${s.name}</div>
+
+                            </div>`
+                    )}
+                </div>
+
+            </div>
+
+            <pl-loading-button
+                id="addTrustedButton"
+                hidden?="${isTrusted || isOwnAccount}"
+                class="tap tiles-2"
+                on-click="${() => this._addTrusted()}">
+
+                <pl-icon icon="trusted"></pl-icon>
+
+                <div>${$l("Add To Trusted Users")}</div>
+
+            </pl-loading-button>
 
         </pl-dialog>
 `;
     }
 
     async _addTrusted() {
-        if (this._button.state === "loading") {
+        if (this._addTrustedButton.state === "loading") {
             return;
         }
 
-        this._button.start();
+        this._addTrustedButton.start();
         try {
             await app.addTrustedAccount(this.account);
-            this._button.success();
-            this._dismiss();
+            this._addTrustedButton.success();
+            this.requestRender();
         } catch (e) {
             // TODO handle error
-            this._button.fail();
+            this._addTrustedButton.fail();
         }
     }
 

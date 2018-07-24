@@ -1,7 +1,8 @@
 import { SharedStore } from "@padlock/core/lib/data.js";
+import { PublicAccount } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
-import { choose, confirm, alert } from "../dialog.js";
+import { choose, confirm, alert, getDialog } from "../dialog.js";
 import { app } from "../init.js";
 import { animateCascade } from "../animation.js";
 import { element, html, property } from "./base.js";
@@ -14,7 +15,7 @@ export class StoreView extends View {
     @property() store: SharedStore | null = null;
 
     _activated() {
-        animateCascade(this.$$("section:not([hidden])"), { initialDelay: 200 });
+        animateCascade(this.$$(".account", false), { initialDelay: 200 });
     }
 
     _shouldRender() {
@@ -39,6 +40,11 @@ export class StoreView extends View {
             main {
                 background: var(--color-quaternary);
             }
+
+            .account {
+                @apply --card;
+                margin: 6px;
+            }
         </style>
 
         <header>
@@ -53,79 +59,75 @@ export class StoreView extends View {
 
         <main>
 
-            <section>
+            ${accounts.map(
+                acc => html`
+                    <div class="account tap" on-click="${() => this._openAccount(acc)}">
 
-                ${accounts.map(
-                    ({ email, publicKey, permissions }) => html`
-                        <div class="account">
+                        <pl-fingerprint key="${acc.publicKey}"></pl-fingerprint>
 
-                            <pl-fingerprint key="${publicKey}"></pl-fingerprint>
+                        <div class="account-info">
 
-                            <div class="account-info">
+                            <div class="account-email">${acc.email}</div>
 
-                                <div class="account-email">${email}</div>
+                            <div class="stats">
 
-                                <div class="stats">
+                                <div class="stat" hidden?="${!acc.permissions.read}">
 
-                                    <div class="stat" hidden?="${!permissions.read}">
+                                    <pl-icon icon="check"></pl-icon>
 
-                                        <pl-icon icon="check"></pl-icon>
+                                    <div>${$l("read")}</div>
 
-                                        <div>${$l("read")}</div>
+                                </div>
 
-                                    </div>
+                                <div class="stat" hidden?="${!acc.permissions.write}">
 
-                                    <div class="stat" hidden?="${!permissions.write}">
+                                    <pl-icon icon="check"></pl-icon>
 
-                                        <pl-icon icon="check"></pl-icon>
+                                    <div>${$l("write")}</div>
 
-                                        <div>${$l("write")}</div>
+                                </div>
 
-                                    </div>
+                                <div class="stat" hidden?="${!acc.permissions.manage}">
 
-                                    <div class="stat" hidden?="${!permissions.manage}">
+                                    <pl-icon icon="check"></pl-icon>
 
-                                        <pl-icon icon="check"></pl-icon>
-
-                                        <div>${$l("manage")}</div>
-
-                                    </div>
+                                    <div>${$l("manage")}</div>
 
                                 </div>
 
                             </div>
 
-                        </div>`
-                )}
+                        </div>
 
-                ${invites.map(
-                    ({ recipient: { email, publicKey } }) => html`
-                        <div class="account">
+                    </div>`
+            )}
 
-                            <pl-fingerprint key="${publicKey}"></pl-fingerprint>
+            ${invites.map(
+                ({ recipient: { email, publicKey } }) => html`
+                    <div class="account">
 
-                            <div class="account-info">
+                        <pl-fingerprint key="${publicKey}"></pl-fingerprint>
 
-                                <div class="account-email">${email}</div>
+                        <div class="account-info">
 
-                                <div class="stats">
+                            <div class="account-email">${email}</div>
 
-                                    <div class="stat">
+                            <div class="stats">
 
-                                        <pl-icon icon="time"></pl-icon>
+                                <div class="stat">
 
-                                        <div>${$l("invited")}</div>
+                                    <pl-icon icon="time"></pl-icon>
 
-                                    </div>
+                                    <div>${$l("invited")}</div>
 
                                 </div>
 
                             </div>
 
-                        </div>`
-                )}
+                        </div>
 
-            </section>
+                    </div>`
+            )}
 
         </main>
 
@@ -158,5 +160,9 @@ export class StoreView extends View {
                 $l("Done! We sent an invite to {0}. Once they accept, they'll have access to this store", account.email)
             );
         }
+    }
+
+    async _openAccount(account: PublicAccount) {
+        await getDialog("pl-account-dialog").show(account);
     }
 }
