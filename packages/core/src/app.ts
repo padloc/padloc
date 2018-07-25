@@ -213,8 +213,6 @@ export class App extends EventTarget {
     async unlock(password: string) {
         this.mainStore.password = password;
         await this.storage.get(this.mainStore);
-        this.locked = false;
-        this.dispatch("unlock");
 
         if (this.account) {
             for (const id of this.account.sharedStores) {
@@ -228,6 +226,9 @@ export class App extends EventTarget {
                 }
             }
         }
+
+        this.locked = false;
+        this.dispatch("unlock");
     }
 
     async lock() {

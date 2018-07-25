@@ -17,6 +17,7 @@ import { LoadingButton } from "./loading-button.js";
 // import "./promo.js";
 import "./toggle-button.js";
 import "./fingerprint.js";
+import "./account-item.js";
 
 export class AccountView extends View {
     @query("#emailInput") private _emailInput: Input;
@@ -153,6 +154,31 @@ export class AccountView extends View {
                 border-radius: 12px;
                 overflow: hidden;
                 will-change: transform:
+            }
+
+            .account {
+                height: 90px;
+                display: flex;
+                align-items: center;
+            }
+
+            .account pl-fingerprint {
+                width: 50px;
+                height: 50px;
+                border-radius: 100%;
+                border: solid 1px var(--border-color);
+                margin: 15px;
+            }
+
+            .account-info {
+                flex: 1;
+                width: 0;
+            }
+
+            .account-email {
+                font-weight: bold;
+                margin-bottom: 5px;
+                @apply --ellipsis;
             }
 
             .account-sync {
@@ -436,34 +462,11 @@ export class AccountView extends View {
 
                     ${trustedAccounts.map(
                         acc => html`
-                            <div class="account tap" on-click="${() => this._openAccount(acc)}">
-
-                                <pl-fingerprint key="${acc.publicKey}"></pl-fingerprint>
-
-                                <div class="account-info">
-
-                                    <div class="account-email">${acc.email}</div>
-
-                                    <div class="stats">
-
-                                        ${app.sharedStores
-                                            .filter(s => s.accessors.some(a => a.email === acc.email))
-                                            .map(
-                                                s => html`
-                                                <div class="stat">
-
-                                                    <pl-icon icon="group"></pl-icon>
-
-                                                    <div>${s.name}</div>
-
-                                                </div>`
-                                            )}
-
-                                    </div>
-
-                                </div>
-
-                            </div>`
+                            <pl-account-item
+                                account="${acc}"
+                                class="tap"
+                                on-click="${() => this._openAccount(acc)}">
+                            </pl-account-item>`
                     )}
 
                 </div>

@@ -15,7 +15,7 @@ export class StoreView extends View {
     @property() store: SharedStore | null = null;
 
     _activated() {
-        animateCascade(this.$$(".account", false), { initialDelay: 200 });
+        animateCascade(this.$$("pl-account-item", false), { initialDelay: 200 });
     }
 
     _shouldRender() {
@@ -41,7 +41,7 @@ export class StoreView extends View {
                 background: var(--color-quaternary);
             }
 
-            .account {
+            pl-account-item {
                 @apply --card;
                 margin: 6px;
             }
@@ -61,72 +61,21 @@ export class StoreView extends View {
 
             ${accounts.map(
                 acc => html`
-                    <div class="account tap" on-click="${() => this._openAccount(acc)}">
-
-                        <pl-fingerprint key="${acc.publicKey}"></pl-fingerprint>
-
-                        <div class="account-info">
-
-                            <div class="account-email">${acc.email}</div>
-
-                            <div class="stats">
-
-                                <div class="stat" hidden?="${!acc.permissions.read}">
-
-                                    <pl-icon icon="check"></pl-icon>
-
-                                    <div>${$l("read")}</div>
-
-                                </div>
-
-                                <div class="stat" hidden?="${!acc.permissions.write}">
-
-                                    <pl-icon icon="check"></pl-icon>
-
-                                    <div>${$l("write")}</div>
-
-                                </div>
-
-                                <div class="stat" hidden?="${!acc.permissions.manage}">
-
-                                    <pl-icon icon="check"></pl-icon>
-
-                                    <div>${$l("manage")}</div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>`
+                    <pl-account-item
+                        account="${acc}"
+                        class="tap"
+                        on-click="${() => this._openAccount(acc)}">
+                    </pl-account-item>`
             )}
 
             ${invites.map(
-                ({ recipient: { email, publicKey } }) => html`
-                    <div class="account">
-
-                        <pl-fingerprint key="${publicKey}"></pl-fingerprint>
-
-                        <div class="account-info">
-
-                            <div class="account-email">${email}</div>
-
-                            <div class="stats">
-
-                                <div class="stat">
-
-                                    <pl-icon icon="time"></pl-icon>
-
-                                    <div>${$l("invited")}</div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>`
+                ({ recipient }) => html`
+                    <pl-account-item
+                        account="${recipient}"
+                        invited
+                        class="tap"
+                        on-click="${() => this._openAccount(recipient)}">
+                    </pl-account-item>`
             )}
 
         </main>

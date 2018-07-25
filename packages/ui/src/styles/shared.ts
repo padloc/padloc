@@ -332,31 +332,6 @@ const styles = `
         font-size: var(--font-size-small);
     }
 
-    .account {
-        height: 90px;
-        display: flex;
-        align-items: center;
-    }
-
-    .account pl-fingerprint {
-        width: 50px;
-        height: 50px;
-        border-radius: 100%;
-        border: solid 1px var(--border-color);
-        margin: 15px;
-    }
-
-    .account-info {
-        flex: 1;
-        width: 0;
-    }
-
-    .account-email {
-        font-weight: bold;
-        margin-bottom: 5px;
-        @apply --ellipsis;
-    }
-
     .stats {
         display: flex;
         align-items: center;
