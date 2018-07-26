@@ -9,6 +9,7 @@ export enum ErrorCode {
     DECRYPTION_FAILED = "decryption_failed",
     ENCRYPTION_FAILED = "encryption_failed",
     NOT_SUPPORTED = "not_supported",
+    PUBLIC_KEY_MISMATCH = "public_key_mismatch",
 
     // HTTP Client Errors
     FAILED_CONNECTION = "failed_connection",

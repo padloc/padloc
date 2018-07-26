@@ -1,39 +1,39 @@
-import { Accessor } from "@padlock/core/lib/crypto.js";
+import { Accessor, Invite } from "@padlock/core/lib/crypto.js";
+import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
 import { BaseElement, element, html, property } from "./base.js";
 
 @element("pl-account-item")
 export class AccountItem extends BaseElement {
-    @property() account: Accessor;
-    @property() invited: boolean = false;
+    @property() account: Accessor | null = null;
+    @property() invite: Invite | null = null;
 
-    _render({ account, invited }: this) {
+    _shouldRender() {
+        return !!this.account;
+    }
+
+    _render({ account, invite }: this) {
+        account = account!;
         let pills = [];
 
-        if (invited) {
-            pills.push({ icon: "time", label: "invited" });
+        if (invite) {
+            pills.push({ icon: "time", label: $l("invited by {0}", invite.sender.email) });
         }
 
         if (app.isTrusted(account)) {
-            pills.push({ icon: "trusted", label: "trusted" });
+            pills.push({ icon: "trusted", label: $l("trusted") });
         }
 
-        if (account.permissions && account.permissions.read) {
-            pills.push({ icon: "check", label: "read" });
-        }
-
-        if (account.permissions && account.permissions.write) {
-            pills.push({ icon: "check", label: "write" });
-        }
-
-        if (account.permissions && account.permissions.manage) {
-            pills.push({ icon: "check", label: "manage" });
+        if (!invite && account.permissions) {
+            account.permissions.read && pills.push({ icon: "check", label: $l("read") });
+            account.permissions.write && pills.push({ icon: "check", label: $l("write") });
+            account.permissions.manage && pills.push({ icon: "check", label: $l("manage") });
         }
 
         if (!account.permissions) {
             pills.push(
-                ...app.sharedStores.filter(s => s.accessors.some(a => a.email === account.email)).map(s => {
+                ...app.sharedStores.filter(s => s.accessors.some(a => a.email === account!.email)).map(s => {
                     return {
                         icon: "group",
                         label: s.name

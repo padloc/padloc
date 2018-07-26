@@ -345,13 +345,13 @@ const styles = `
         align-items: center;
         border-radius: 20px;
         margin-right: 5px;
-        padding: 2px 8px;
+        padding: 1px 8px;
         font-weight: bold;
         text-align: center;
     }
 
     .stat pl-icon {
-        width: 10px;
+        width: 12px;
         height: 20px;
         margin-right: 4px;
         font-size: 10px;

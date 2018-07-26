@@ -5,7 +5,7 @@ import { DateString } from "./encoding";
 import { Client, AccountUpdateParams } from "./client";
 import { Messages } from "./messages";
 import { localize as $l } from "./locale";
-import { ErrorCode } from "./error";
+import { Err, ErrorCode } from "./error";
 import { getDeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { getProvider, Permissions } from "./crypto";
@@ -217,7 +217,10 @@ export class App extends EventTarget {
         if (this.account) {
             for (const id of this.account.sharedStores) {
                 const sharedStore = new SharedStore(id);
-                sharedStore.access = { account: this.account, privateKey: this.mainStore.privateKey! };
+                sharedStore.access = Object.assign(
+                    { privateKey: this.mainStore.privateKey! },
+                    this.account.publicAccount
+                );
                 try {
                     await this.storage.get(sharedStore);
                     this.sharedStores.push(sharedStore);
@@ -391,10 +394,9 @@ export class App extends EventTarget {
         }
 
         const store = new SharedStore("", [], name);
-        store.access = { account: this.account, privateKey: this.mainStore.privateKey! };
-        await store.addAccount(this.account, { read: true, write: true, manage: true });
+        store.access = Object.assign({ privateKey: this.mainStore.privateKey! }, this.account.publicAccount);
+        await store.addAccount(this.account.publicAccount, { read: true, write: true, manage: true });
         await this.remoteStorage.set(store);
-        await this.syncAccount();
         await this.synchronize();
         return store;
     }
@@ -409,7 +411,7 @@ export class App extends EventTarget {
             store = new SharedStore(id);
             this.sharedStores.push(store);
         }
-        store.access = { account: this.account, privateKey: this.mainStore.privateKey };
+        store.access = Object.assign({ privateKey: this.mainStore.privateKey! }, this.account.publicAccount);
 
         try {
             await this.remoteStorage.get(store);
@@ -436,11 +438,19 @@ export class App extends EventTarget {
     async deleteSharedStore(id: StoreID) {
         const store = this.sharedStores.find(s => s.id === id) || new SharedStore(id);
         await this.remoteStorage.delete(store);
-        await this.syncAccount();
+        await this.synchronize();
     }
 
     isTrusted(account: PublicAccount) {
-        return this.mainStore.trustedAccounts.some(acc => acc.id === account.id);
+        const trusted = this.mainStore.trustedAccounts.find(acc => acc.id === account.id);
+        if (trusted && trusted.publicKey !== account.publicKey) {
+            throw new Err(
+                ErrorCode.PUBLIC_KEY_MISMATCH,
+                `The public key for the account ${account.email}, has changed unexpectedly! ` +
+                    `This can be a sign of tempering and should be reported immediately!`
+            );
+        }
+        return !!trusted;
     }
 
     async addTrustedAccount(account: PublicAccount) {
@@ -456,6 +466,18 @@ export class App extends EventTarget {
         account: PublicAccount,
         permissions: Permissions = { read: true, write: false, manage: false }
     ) {
+        if (!this.isTrusted(account)) {
+            throw "Invites can only be created for trusted accounts.";
+        }
+
+        if (store.accessors.some(a => a.email === account.email)) {
+            throw "This account is already in this group.";
+        }
+
+        if (store.invites.some(invite => invite.recipient.email === account.email)) {
+            throw "This account is already invited to this group.";
+        }
+
         const accessor = Object.assign(
             {
                 permissions: permissions,
@@ -465,6 +487,12 @@ export class App extends EventTarget {
         );
 
         await this.client.createInvite(store.id, accessor);
+        await this.syncSharedStore(store.id);
+    }
+
+    async joinStore(store: string) {
+        await this.client.joinStore(store);
+        await this.synchronize();
     }
 
     async synchronize() {

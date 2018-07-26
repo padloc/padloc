@@ -1,18 +1,23 @@
 import { SharedStore } from "@padlock/core/lib/data.js";
 import { PublicAccount } from "@padlock/core/lib/auth.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
-import { choose, confirm, alert, getDialog } from "../dialog.js";
-import { app } from "../init.js";
+import { getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
-import { element, html, property } from "./base.js";
+import { app } from "../init.js";
+import { element, html, property, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
 import "./account-dialog.js";
+import "./invite-dialog.js";
 
 @element("pl-store-view")
 export class StoreView extends View {
     @property() store: SharedStore | null = null;
+
+    @listen("synchronize", app)
+    _refresh() {
+        this.requestRender();
+    }
 
     _activated() {
         animateCascade(this.$$("pl-account-item", false), { initialDelay: 200 });
@@ -69,12 +74,12 @@ export class StoreView extends View {
             )}
 
             ${invites.map(
-                ({ recipient }) => html`
+                invite => html`
                     <pl-account-item
-                        account="${recipient}"
-                        invited
+                        account="${invite.recipient}"
+                        invite="${invite}"
                         class="tap"
-                        on-click="${() => this._openAccount(recipient)}">
+                        on-click="${() => this._openAccount(invite.recipient)}">
                     </pl-account-item>`
             )}
 
@@ -85,30 +90,8 @@ export class StoreView extends View {
     }
 
     async _invite() {
-        const choice = await choose(
-            $l("Who would you like to invite to this store?"),
-            app.mainStore.trustedAccounts.map(a => a.email)
-        );
-
-        if (choice === -1) {
-            return;
-        }
-
-        const account = app.mainStore.trustedAccounts[choice];
-
-        const confirmed = confirm(
-            $l(
-                "Are you sure you want to invite {0} to this store " + "and give them access to all its contents?",
-                account.email
-            )
-        );
-
-        if (confirmed) {
-            await app.createInvite(this.store!, account);
-            alert(
-                $l("Done! We sent an invite to {0}. Once they accept, they'll have access to this store", account.email)
-            );
-        }
+        await getDialog("pl-invite-dialog").show(this.store);
+        this.requestRender();
     }
 
     async _openAccount(account: PublicAccount) {

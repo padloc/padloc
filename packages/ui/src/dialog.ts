@@ -28,19 +28,27 @@ export function lineUpDialog(d: string | any, fn: (d: any) => Promise<any>): Pro
     return promise;
 }
 
-export function alert(message: string, options?: AlertOptions): Promise<number> {
-    return lineUpDialog("pl-alert-dialog", (dialog: AlertDialog) => dialog.show(message, options));
+export function alert(message: string, options?: AlertOptions, instant = false): Promise<number> {
+    return instant
+        ? getDialog("pl-alert-dialog").show(message, options)
+        : lineUpDialog("pl-alert-dialog", (dialog: AlertDialog) => dialog.show(message, options));
 }
 
-export function confirm(message: string, confirmLabel = $l("Confirm"), cancelLabel = $l("Cancel"), options: any = {}) {
+export function confirm(
+    message: string,
+    confirmLabel = $l("Confirm"),
+    cancelLabel = $l("Cancel"),
+    options: any = {},
+    instant?: boolean
+) {
     options.options = [confirmLabel, cancelLabel];
-    return alert(message, options).then(choice => choice === 0);
+    return alert(message, options, instant).then(choice => choice === 0);
 }
 
-export function prompt(message: string, opts: PromptOptions) {
-    return lineUpDialog("pl-prompt-dialog", (dialog: PromptDialog) => {
-        return dialog.show(message, opts);
-    });
+export function prompt(message: string, opts: PromptOptions, instant = false) {
+    return instant
+        ? getDialog("pl-prompt-dialog").show(message, opts)
+        : lineUpDialog("pl-prompt-dialog", (dialog: PromptDialog) => dialog.show(message, opts));
 }
 
 export function choose(

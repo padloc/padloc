@@ -9,19 +9,21 @@ import "./fingerprint.js";
 
 @element("pl-account-dialog")
 export class AccountDialog extends BaseElement {
-    @property() account: PublicAccount;
+    @property() account: PublicAccount | null = null;
+    @property() action: string = "";
 
     @query("pl-dialog") private _dialog: Dialog;
     @query("#addTrustedButton") private _addTrustedButton: LoadingButton;
 
-    private _resolve: (() => void) | null;
+    private _resolve: ((doAction: boolean) => void) | null;
 
     _shouldRender() {
         return !!this.account;
     }
 
-    _render({ account }: this) {
-        const { email, name, publicKey } = account!;
+    _render({ account, action }: this) {
+        account = account!;
+        const { email, name, publicKey } = account;
         const isTrusted = app.isTrusted(account);
         const isOwnAccount = app.account && app.account.email === account.email;
 
@@ -105,9 +107,9 @@ export class AccountDialog extends BaseElement {
 
         </style>
 
-        <pl-dialog on-dialog-dismiss="${() => this._dismiss()}">
+        <pl-dialog on-dialog-dismiss="${() => this._done()}">
 
-            <pl-icon class="close-icon tap" icon="close" on-click="${() => this._dismiss()}"></pl-icon>
+            <pl-icon class="close-icon tap" icon="close" on-click="${() => this._done()}"></pl-icon>
 
             <pl-fingerprint key="${publicKey}"></pl-fingerprint>
 
@@ -159,9 +161,13 @@ export class AccountDialog extends BaseElement {
 
                 <pl-icon icon="trusted"></pl-icon>
 
-                <div>${$l("Add To Trusted Users")}</div>
+                <div>${$l("Trust This User")}</div>
 
             </pl-loading-button>
+
+            <button hidden?="${!isTrusted || !action}" class="tap tiles-2" on-click="${() => this._doAction()}">
+                ${action}
+            </button>
 
         </pl-dialog>
 `;
@@ -174,7 +180,7 @@ export class AccountDialog extends BaseElement {
 
         this._addTrustedButton.start();
         try {
-            await app.addTrustedAccount(this.account);
+            await app.addTrustedAccount(this.account!);
             this._addTrustedButton.success();
             this.requestRender();
         } catch (e) {
@@ -183,17 +189,22 @@ export class AccountDialog extends BaseElement {
         }
     }
 
-    private _dismiss() {
-        this._resolve && this._resolve();
+    private _done(doAction = false) {
+        this._resolve && this._resolve(doAction);
         this._dialog.open = false;
     }
 
-    async show(account: PublicAccount) {
+    async show(account: PublicAccount, action = "") {
         this.account = account;
+        this.action = action;
         await this.renderComplete;
         this._dialog.open = true;
         return new Promise(resolve => {
             this._resolve = resolve;
         });
+    }
+
+    _doAction() {
+        this._done(true);
     }
 }

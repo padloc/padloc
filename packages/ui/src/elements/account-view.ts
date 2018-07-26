@@ -24,6 +24,8 @@ export class AccountView extends View {
     @query("#loginButton") private _loginButton: LoadingButton;
 
     @listen("account-changed", app)
+    @listen("synchronize", app)
+    @listen("stats-changed", app)
     _accountChanged() {
         this.requestRender();
     }
@@ -458,18 +460,14 @@ export class AccountView extends View {
 
                 </div>
 
-                <div>
-
-                    ${trustedAccounts.map(
-                        acc => html`
-                            <pl-account-item
-                                account="${acc}"
-                                class="tap"
-                                on-click="${() => this._openAccount(acc)}">
-                            </pl-account-item>`
-                    )}
-
-                </div>
+                ${trustedAccounts.map(
+                    acc => html`
+                        <pl-account-item
+                            account="${acc}"
+                            class="tap"
+                            on-click="${() => this._openAccount(acc)}">
+                        </pl-account-item>`
+                )}
 
                 <button class="tap" on-click="${() => this._addTrustedAccount()}">${$l("Add Trusted User")}</button>
 
@@ -699,7 +697,7 @@ export class AccountView extends View {
             $l("Join")
         );
         if (confirmed) {
-            await app.client.joinStore(invite.target.id);
+            await app.joinStore(invite.target.id);
         }
     }
 

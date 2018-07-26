@@ -93,7 +93,9 @@ export class ExportDialog extends BaseElement {
     }
 
     private async _downloadCSV() {
-        const confirmed = await confirm(exportCSVWarning, $l("Download"), $l("Cancel"), { type: "warning" });
+        this.open = false;
+        const confirmed = await confirm(exportCSVWarning, $l("Download"), $l("Cancel"), { type: "warning" }, true);
+        this.open = true;
         if (confirmed) {
             const date = new Date().toISOString().substr(0, 10);
             const fileName = `padlock-export-${date}.csv`;
@@ -108,24 +110,33 @@ export class ExportDialog extends BaseElement {
     }
 
     private async _copyCSV() {
-        const confirmed = await confirm(exportCSVWarning, $l("Copy to Clipboard"), $l("Cancel"), {
-            type: "warning"
-        });
+        this.open = false;
+        const confirmed = await confirm(
+            exportCSVWarning,
+            $l("Copy to Clipboard"),
+            $l("Cancel"),
+            {
+                type: "warning"
+            },
+            true
+        );
+        this.open = true;
         if (confirmed) {
             const csv = await toCSV(this.records);
             setClipboard(csv);
+            this.dispatch("data-exported", { format: "csv", target: "clipboard", records: this.records });
+            this._done();
             alert(
                 $l(
                     "Your data has successfully been copied to the system " +
                         "clipboard. You can now paste it into the spreadsheet program of your choice."
                 )
             );
-            this.dispatch("data-exported", { format: "csv", target: "clipboard", records: this.records });
-            this._done();
         }
     }
 
     private async _getEncryptedData(): Promise<string> {
+        this.open = false;
         const pwd = await prompt(
             $l(
                 "Please choose a password to protect your data. This may be the same as " +
@@ -144,7 +155,7 @@ export class ExportDialog extends BaseElement {
         );
 
         if (!pwd) {
-            throw "No password entered";
+            return "";
         }
 
         const strength = await passwordStrength(pwd);
@@ -159,8 +170,10 @@ export class ExportDialog extends BaseElement {
                 ),
                 $l("Use Anyway"),
                 $l("Choose Different Password"),
-                { type: "warning" }
+                { type: "warning" },
+                true
             );
+            this.open = true;
 
             if (confirmed) {
                 return toPadlock(this.records, pwd);
@@ -168,12 +181,16 @@ export class ExportDialog extends BaseElement {
                 return this._getEncryptedData();
             }
         } else {
+            this.open = true;
             return toPadlock(this.records, pwd);
         }
     }
 
     private async _downloadEncrypted() {
         const data = await this._getEncryptedData();
+        if (!data) {
+            return;
+        }
         const a = document.createElement("a");
         const date = new Date().toISOString().substr(0, 10);
         const fileName = `padlock-export-${date}.pls`;
@@ -188,11 +205,14 @@ export class ExportDialog extends BaseElement {
 
     private async _copyEncrypted() {
         const data = await this._getEncryptedData();
+        if (!data) {
+            return;
+        }
         // TODO: Does not work for some reason?
         await setClipboard(data);
-        alert($l("Your data has successfully been copied to the system clipboard."), { type: "success" });
         this.dispatch("data-exported", { format: "encrypted", target: "clipboad", records: this.records });
         this._done();
+        alert($l("Your data has successfully been copied to the system clipboard."), { type: "success" });
     }
 
     private _done() {

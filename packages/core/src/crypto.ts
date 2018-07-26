@@ -203,8 +203,7 @@ export interface Accessor extends PublicAccount {
     permissions: Permissions;
 }
 
-export interface Access {
-    account: PublicAccount;
+export interface Access extends PublicAccount {
     privateKey: PrivateKey;
 }
 
@@ -264,7 +263,7 @@ export class Container implements Storage, Storable {
                     throw new Err(ErrorCode.DECRYPTION_FAILED, "No access parameters provided");
                 }
                 if (this.accessors.length) {
-                    const accessor = this.accessors.find(a => a.id === this.access!.account.id);
+                    const accessor = this.accessors.find(a => a.email === this.access!.email);
                     if (!accessor || !accessor.encryptedKey) {
                         throw new Err(ErrorCode.DECRYPTION_FAILED, "Current accessor does not have access.");
                     }

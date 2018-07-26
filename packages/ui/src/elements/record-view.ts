@@ -10,6 +10,7 @@ import "./icon.js";
 import { Input } from "./input.js";
 import "./record-field.js";
 import "./field-dialog.js";
+import "./share-dialog.js";
 
 export class RecordView extends View {
     @property() store: Store | null = null;
@@ -360,13 +361,7 @@ export class RecordView extends View {
     }
 
     private async _share() {
-        const choice = await choose($l("Move to shared store..."), app.sharedStores.map(s => s.name));
-        if (choice !== -1) {
-            const store = app.sharedStores[choice];
-            const { name, fields, tags } = this.record!;
-            await app.deleteRecords(this.store!, this.record!);
-            await app.createRecord(store, name, fields, tags);
-        }
+        await getDialog("pl-share-dialog").show(this.record, this.store);
     }
 
     private _openStore(store: Store) {

@@ -1,7 +1,7 @@
 import { DateString, Marshalable } from "./encoding";
 import { PrivateKey, PublicKey, Container, EncryptionScheme, Access, Permissions } from "./crypto";
 import { Storable } from "./storage";
-import { Account, PublicAccount } from "./auth";
+import { PublicAccount } from "./auth";
 import { uuid } from "./util";
 import { localize } from "./locale";
 
@@ -241,7 +241,7 @@ export class SharedStore extends Store {
         return this.container.getEncryptedKey(publicKey);
     }
 
-    async addAccount(acc: Account, perms: Permissions = { read: true, write: true, manage: false }) {
+    async addAccount(acc: PublicAccount, perms: Permissions = { read: true, write: true, manage: false }) {
         if (!acc.publicKey) {
             throw "Public Key is missing on account!";
         }
@@ -251,7 +251,7 @@ export class SharedStore extends Store {
                     permissions: perms,
                     encryptedKey: ""
                 },
-                acc.publicAccount
+                acc
             )
         );
     }
