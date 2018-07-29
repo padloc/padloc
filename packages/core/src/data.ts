@@ -237,6 +237,11 @@ export class SharedStore extends Store {
         this.container.access = access;
     }
 
+    get permissions() {
+        const accessor = this.access && this.accessors.find(a => this.access!.email === a.email);
+        return (accessor && accessor.permissions) || { read: false, write: false, manage: false };
+    }
+
     getEncryptedKey(publicKey: PublicKey) {
         return this.container.getEncryptedKey(publicKey);
     }

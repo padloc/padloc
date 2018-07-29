@@ -267,12 +267,18 @@ export class App extends EventTarget {
     }
 
     async addRecords(store: Store, records: Record | Record[]) {
+        if (store instanceof SharedStore && !store.permissions.write) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
         store.addRecords(records);
         await this.storage.set(store);
         this.dispatch("records-added", { store: store, records: records });
     }
 
     async createRecord(store: Store, name: string, fields?: Field[], tags?: Tag[]): Promise<Record> {
+        if (store instanceof SharedStore && !store.permissions.write) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
         fields = fields || [
             { name: $l("Username"), value: "", masked: false },
             { name: $l("Password"), value: "", masked: true }
@@ -284,6 +290,10 @@ export class App extends EventTarget {
     }
 
     async updateRecord(store: Store, record: Record, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
+        if (store instanceof SharedStore && !store.permissions.write) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
         for (const prop of ["name", "fields", "tags"]) {
             if (typeof upd[prop] !== "undefined") {
                 record[prop] = upd[prop];
@@ -295,6 +305,9 @@ export class App extends EventTarget {
     }
 
     async deleteRecords(store: Store, records: Record | Record[]) {
+        if (store instanceof SharedStore && !store.permissions.write) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
         store.removeRecords(records);
         await this.storage.set(store);
         this.dispatch("records-deleted", { store: store, records: records });

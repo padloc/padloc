@@ -122,9 +122,9 @@ export function exportRecords(records: Record[]) {
     dialog.show(records);
 }
 
-export async function openField(field: Field, edit = false, presets = {}) {
+export async function openField(field: Field, edit = false, presets = {}, readonly?: boolean) {
     const result = (await lineUpDialog("pl-field-dialog", (d: FieldDialog) =>
-        d.openField(field, edit, presets)
+        d.openField(field, edit, presets, readonly)
     )) as FieldDialogResult;
     return result;
 }

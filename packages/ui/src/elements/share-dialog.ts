@@ -3,7 +3,7 @@ import { PublicAccount } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
-import { confirm, prompt, choose, getDialog } from "../dialog.js";
+import { confirm, prompt } from "../dialog.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./loading-button.js";
@@ -22,7 +22,7 @@ export class ShareDialog extends BaseElement {
     }
 
     _render({ record }: this) {
-        const trusted = app.mainStore.trustedAccounts;
+        const stores = app.sharedStores.filter(s => s.permissions.write);
         return html`
             <style>
                 ${sharedStyles}
@@ -83,7 +83,7 @@ export class ShareDialog extends BaseElement {
                     <div>${$l("Share '{0}' With...", record!.name)}</div>
                 </div>
 
-                ${app.sharedStores.map(
+                ${stores.map(
                     s => html`
                     <div class="store tap" on-click="${() => this._selectStore(s)}">
 

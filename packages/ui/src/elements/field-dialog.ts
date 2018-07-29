@@ -20,13 +20,14 @@ export class FieldDialog extends BaseElement {
     editing: boolean = false;
     @property() field: Field | null = null;
     @property() open: boolean = false;
+    @property() readonly: boolean = false;
 
     @query("#nameInput") private _nameInput: Input;
     @query("#valueInput") private _valueInput: Input;
 
     private _resolve: ((_: FieldDialogResult) => void) | null;
 
-    _render(props: this) {
+    _render({ readonly, open, editing }: this) {
         return html`
         <style>
             ${sharedStyles}
@@ -118,7 +119,7 @@ export class FieldDialog extends BaseElement {
             }
         </style>
 
-        <pl-dialog open="${props.open}" prevent-dismiss="${props.editing}" on-dialog-dismiss="${() => this._dismiss()}">
+        <pl-dialog open="${open}" prevent-dismiss="${editing}" on-dialog-dismiss="${() => this._dismiss()}">
 
             <div class="header">
 
@@ -126,7 +127,7 @@ export class FieldDialog extends BaseElement {
                     id="nameInput"
                     placeholder="${$l("Enter Field Name")}"
                     class="name"
-                    readonly="${!props.editing}"
+                    readonly="${!editing}"
                     on-click="${(e: MouseEvent) => this._inputClicked(e)}"
                     on-enter="${() => this._nameInputEnter()}">
                 </pl-input>
@@ -135,7 +136,7 @@ export class FieldDialog extends BaseElement {
                     icon="cancel"
                     class="tap"
                     on-click="${() => this._dismiss()}"
-                    hidden?="${props.editing}">
+                    hidden?="${editing}">
                 </pl-icon>
 
             </div>
@@ -149,10 +150,10 @@ export class FieldDialog extends BaseElement {
                     autosize
                     on-click="${(e: MouseEvent) => this._inputClicked(e)}"
                     placeholder="${$l("Enter Content")}"
-                    readonly="${!props.editing}">
+                    readonly="${!editing}">
                 </pl-input>
 
-                <button class="generate-button tap" on-click="${() => this._generate()}" hidden?="${!props.editing}">
+                <button class="generate-button tap" on-click="${() => this._generate()}" hidden?="${!editing}">
 
                     <div>${$l("Generate")}</div>
 
@@ -164,19 +165,29 @@ export class FieldDialog extends BaseElement {
 
             <div class="actions">
 
-                <div class="action-items tiles-3 tiles" hidden?="${props.editing}">
+                <div class="action-items tiles-3 tiles" hidden?="${editing}">
 
                     <pl-icon icon="copy" class="tap" on-click="${() => this._copy()}"></pl-icon>
 
-                    <pl-icon icon="edit" class="tap" on-click="${() => this._edit()}"></pl-icon>
+                    <pl-icon icon="edit" class="tap" on-click="${() => this._edit()}" disabled?="${readonly}"></pl-icon>
 
-                    <pl-icon icon="generate" class="tap" on-click="${() => this._generate()}"></pl-icon>
+                    <pl-icon
+                        icon="generate"
+                        class="tap"
+                        on-click="${() => this._generate()}"
+                        disabled?="${readonly}">
+                    </pl-icon>
 
-                    <pl-icon icon="delete" class="tap" on-click="${() => this._delete()}"></pl-icon>
+                    <pl-icon
+                        icon="delete"
+                        class="tap"
+                        on-click="${() => this._delete()}"
+                        disabled?="${readonly}">
+                    </pl-icon>
 
                 </div>
 
-                <div class="action-items" hidden?="${!props.editing}">
+                <div class="action-items" hidden?="${!editing}">
 
                     <button class="tap" on-click="${() => this._discardChanges()}">${$l("Discard")}</button>
 
@@ -190,8 +201,14 @@ export class FieldDialog extends BaseElement {
 `;
     }
 
-    openField(field: Field, edit = false, presets: { name?: string; value?: string } = {}): Promise<FieldDialogResult> {
+    openField(
+        field: Field,
+        edit = false,
+        presets: { name?: string; value?: string } = {},
+        readonly = false
+    ): Promise<FieldDialogResult> {
         this.open = true;
+        this.readonly = readonly;
         this.editing = false;
         this.field = field;
         this._nameInput.value = presets.name || this.field.name;
@@ -253,7 +270,7 @@ export class FieldDialog extends BaseElement {
     }
 
     _inputClicked(e: any) {
-        if (!e.target.value) {
+        if (!e.target.value && !this.readonly) {
             this.editing = true;
         }
     }

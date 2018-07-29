@@ -1,4 +1,4 @@
-import { Store, Record, Field } from "@padlock/core/lib/data.js";
+import { Store, SharedStore, Record, Field } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
 import { View } from "./view.js";
@@ -40,6 +40,7 @@ export class RecordView extends View {
     _render({ record, store }: this) {
         const { name, fields, tags } = record!;
         store = store!;
+        const permissions = store instanceof SharedStore ? store.permissions : { read: true, write: true };
 
         return html`
         <style>
@@ -135,6 +136,10 @@ export class RecordView extends View {
                 background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
                 text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
             }
+
+            .tag.readonly {
+                background: linear-gradient(90deg, #f49300 0%, #f25b00 100%);
+            }
         </style>
 
         <header>
@@ -148,11 +153,17 @@ export class RecordView extends View {
                 placeholder="${$l("Enter Record Name")}"
                 select-on-focus=""
                 autocapitalize=""
+                readonly?="${!permissions.write}"
                 on-change="${() => this._updateName()}"
                 on-enter="${() => this._nameEnter()}">
             </pl-input>
 
-            <pl-icon icon="delete" class="tap" on-click="${() => this._deleteRecord()}"></pl-icon>
+            <pl-icon
+                icon="delete"
+                class="tap"
+                on-click="${() => this._deleteRecord()}"
+                disabled?="${!permissions.write}">
+            </pl-icon>
 
         </header>
 
@@ -167,6 +178,14 @@ export class RecordView extends View {
                     <pl-icon icon="group"></pl-icon>
 
                     <div class="tag-name">${store.name}</div>
+
+                </div>
+
+                <div class="tag readonly" hidden?="${permissions.write}">
+
+                    <pl-icon icon="show"></pl-icon>
+
+                    <div class="tag-name">${$l("read-only")}</div>
 
                 </div>
 
@@ -210,6 +229,7 @@ export class RecordView extends View {
                         <pl-record-field
                             field="${field}"
                             record="${record}"
+                            readonly="${!permissions.write}"
                             on-field-change="${(e: CustomEvent) => this._changeField(index, e.detail.changes)}"
                             on-field-delete="${() => this._deleteField(index)}">
                         </pl-record-field>
@@ -220,7 +240,7 @@ export class RecordView extends View {
                 )}
             </div>
 
-            <div class="add-button-wrapper animate">
+            <div class="add-button-wrapper animate" hidden?="${!permissions.write}">
 
                 <button class="add-button tap" on-click="${() => this._addField()}">
 

@@ -12,12 +12,13 @@ import "./input.js";
 export class RecordField extends BaseElement {
     @property() record: Record;
     @property() field: Field;
+    @property() readonly: boolean = false;
 
     _shouldRender() {
         return !!this.field;
     }
 
-    _render({ field }: this) {
+    _render({ field, readonly }: this) {
         return html`
         <style>
             ${sharedStyles}
@@ -124,6 +125,7 @@ export class RecordField extends BaseElement {
                 icon="edit"
                 class="field-button tap"
                 on-click="${() => this._edit()}"
+                disabled?="${readonly}"
                 hidden?="${!!field.value}">
             </pl-icon>
 
@@ -131,6 +133,7 @@ export class RecordField extends BaseElement {
                 icon="generate"
                 class="field-button tap"
                 on-click="${() => this._showGenerator()}"
+                disabled?="${readonly}"
                 hidden?="${!!field.value}">
             </pl-icon>
 
@@ -165,7 +168,7 @@ export class RecordField extends BaseElement {
     }
 
     async _openFieldDialog(edit = false, presets?: any) {
-        const result = await openField(this.field, edit, presets);
+        const result = await openField(this.field, edit, presets, this.readonly);
         switch (result.action) {
             case "copy":
                 this._copy();
