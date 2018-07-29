@@ -9,7 +9,6 @@ import "./toggle.js";
 
 @element("pl-menu")
 export class Menu extends BaseElement {
-    @property() store: Store;
     @property({ reflect: true })
     open: boolean = false;
     @property({ reflect: "show-tags" })
@@ -22,14 +21,14 @@ export class Menu extends BaseElement {
         this.requestRender();
     }
 
-    _render({ store }: this) {
+    _render() {
         const { loggedIn, stats } = app;
         const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
         const isTrialExpired = false;
         const isSubUnpaid = false;
         const isSubCanceled = false;
         const isSyncing = false;
-        const tags = store.tags;
+        const tags = app.tags;
 
         return html`
         <style>

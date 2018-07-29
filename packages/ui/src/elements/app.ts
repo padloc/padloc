@@ -264,7 +264,6 @@ class App extends BaseElement {
         <pl-start-view id="startView"></pl-start-view>
 
         <pl-menu
-            store="${this._currentStore}"
             on-menu-open="${() => (this._showMenu = true)}"
             on-menu-close="${() => (this._showMenu = false)}"
             on-open-settings="${() => this._openView(this._settingsView)}"
