@@ -229,6 +229,10 @@ export class ListView extends BaseElement {
                 @apply --card;
             }
 
+            .record .tags {
+                padding: 0 8px;
+            }
+
             .record-header {
                 height: var(--row-height);
                 line-height: var(--row-height);
@@ -305,29 +309,6 @@ export class ListView extends BaseElement {
                 padding: 0 15px;
                 pointer-events: none;
                 @apply --ellipsis;
-            }
-
-            .record-tags {
-                display: flex;
-                align-items: center;
-                padding-right: 8px;
-            }
-
-            .record-tag {
-                font-size: 12px;
-                max-width: 60px;
-                border-radius: 6px;
-                padding: 4px 7px;
-                margin-right: 4px;
-                line-height: normal;
-                font-weight: bold;
-                background: var(--color-foreground);
-                color: var(--color-background);
-            }
-
-            .record-tag.store-tag {
-                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
-                text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
             }
 
             .record-highlight {
@@ -442,14 +423,13 @@ export class ListView extends BaseElement {
 
                                 <div class="spacer"></div>
 
-                                <div class="record-tags">
-                                    <div class="ellipsis record-tag store-tag" hidden?="${item.store ===
-                                        app.mainStore}">
+                                <div class="tags small">
+                                    <div class="ellipsis tag highlight" hidden?="${item.store === app.mainStore}">
                                         ${item.store.name}
                                     </div> 
                                     ${this._tags(item.record).map(
                                         t => html`
-                                            <div class="ellipsis record-tag">${t}</div>
+                                            <div class="ellipsis tag">${t}</div>
                                         `
                                     )}
                                 </div>
@@ -478,7 +458,7 @@ export class ListView extends BaseElement {
 
                             </div>
 
-                    </pl-record-item>
+                    </div>
 
                     <div class="section-separator" hidden?="${!item.lastInSection}"></div>
 

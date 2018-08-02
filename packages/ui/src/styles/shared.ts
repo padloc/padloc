@@ -332,29 +332,82 @@ const styles = `
         font-size: var(--font-size-small);
     }
 
-    .stats {
+    .tags {
         display: flex;
+        overflow-x: auto;
+        margin: 8px 0;
         align-items: center;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .stat {
+    .tags::after {
+        content: "";
+        display: block;
+        width: 1px;
+        flex: none;
+    }
+
+    .tag {
         background: var(--color-foreground);
         color: var(--color-background);
-        font-size: var(--font-size-micro);
-        display: flex;
-        align-items: center;
-        border-radius: 20px;
-        margin-right: 5px;
-        padding: 1px 8px;
         font-weight: bold;
+        border-radius: var(--border-radius);
+        font-size: var(--font-size-tiny);
+        white-space: nowrap;
+        height: 30px;
+        line-height: 30px;
+        padding: 0 8px;
+        background: linear-gradient(90deg, #555 0%, #333 100%);
         text-align: center;
     }
 
-    .stat pl-icon {
-        width: 12px;
-        height: 20px;
+    .tag:not(:last-child) {
+        margin-right: 6px;
+    }
+
+    .tag > * {
+        display: inline-block;
+        vertical-align: top;
+    }
+
+    .tags pl-icon {
+        width: 20px;
+        height: 30px;
         margin-right: 4px;
+        margin-left: -2px;
+    }
+
+    .tag.ghost {
+        border: dashed 1px;
+        background: transparent;
+        color: var(--color-foreground);
+    }
+
+    .tag.highlight {
+        background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+        text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
+    }
+
+    .tag.warning {
+        background: linear-gradient(90deg, #f49300 0%, #f25b00 100%);
+    }
+
+    .tags.small .tag {
+        font-size: var(--font-size-micro);
+        height: 25px;
+        line-height: 25px;
+    }
+
+    .tags.small pl-icon {
         font-size: 10px;
+        margin-right: 4px;
+        width: 16px;
+        height: 25px;
+    }
+
+    .record-tag.store-tag {
+        background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+        text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
     }
 
     @keyframes spin {

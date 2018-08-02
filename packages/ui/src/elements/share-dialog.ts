@@ -1,5 +1,4 @@
 import { Record, SharedStore } from "@padlock/core/lib/data.js";
-import { PublicAccount } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
@@ -71,7 +70,6 @@ export class ShareDialog extends BaseElement {
 
                 .store-name {
                     font-weight: bold;
-                    line-height: 30px;
                 }
 
             </style>
@@ -93,9 +91,9 @@ export class ShareDialog extends BaseElement {
 
                             <div class="store-name">${s.name}</div>
 
-                            <div class="stats">
+                            <div class="tags small">
 
-                                <div class="stat">
+                                <div class="tag">
 
                                     <pl-icon icon="group"></pl-icon>
 
@@ -103,7 +101,7 @@ export class ShareDialog extends BaseElement {
 
                                 </div>
 
-                                <div class="stat">
+                                <div class="tag">
 
                                     <pl-icon icon="record"></pl-icon>
 

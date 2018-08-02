@@ -1,4 +1,4 @@
-import { Accessor, Invite } from "@padlock/core/lib/crypto.js";
+import { Accessor } from "@padlock/core/lib/crypto.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
@@ -7,25 +7,20 @@ import { BaseElement, element, html, property } from "./base.js";
 @element("pl-account-item")
 export class AccountItem extends BaseElement {
     @property() account: Accessor | null = null;
-    @property() invite: Invite | null = null;
 
     _shouldRender() {
         return !!this.account;
     }
 
-    _render({ account, invite }: this) {
+    _render({ account }: this) {
         account = account!;
         let pills = [];
-
-        if (invite) {
-            pills.push({ icon: "time", label: $l("invited by {0}", invite.sender.email) });
-        }
 
         if (app.isTrusted(account)) {
             pills.push({ icon: "trusted", label: $l("trusted") });
         }
 
-        if (!invite && account.permissions) {
+        if (account.permissions) {
             account.permissions.read && pills.push({ icon: "check", label: $l("read") });
             account.permissions.write && pills.push({ icon: "check", label: $l("write") });
             account.permissions.manage && pills.push({ icon: "check", label: $l("manage") });
@@ -67,7 +62,7 @@ export class AccountItem extends BaseElement {
 
                 .account-email {
                     font-weight: bold;
-                    margin-bottom: 5px;
+                    margin: 5px 0;
                     @apply --ellipsis;
                 }
             </style>
@@ -78,11 +73,11 @@ export class AccountItem extends BaseElement {
 
                 <div class="account-email">${account.email}</div>
 
-                <div class="stats">
+                <div class="tags small">
 
                     ${pills.map(
                         pill => html`
-                            <div class="stat">
+                            <div class="tag">
 
                                 <pl-icon icon="${pill.icon}"></pl-icon>
 

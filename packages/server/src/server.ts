@@ -62,7 +62,6 @@ export class Server {
         this.koa.use(route.put("/store/:id", handlers.putStore));
         this.koa.use(route.delete("/store/:id", handlers.deleteStore));
         this.koa.use(route.put("/store", handlers.createStore));
-        this.koa.use(route.post("/store/:id/invite", handlers.createInvite));
         this.koa.use(route.post("/store/:id/join", handlers.joinStore));
     }
 

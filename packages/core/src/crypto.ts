@@ -148,7 +148,6 @@ export interface SharedRawContainer extends BaseRawContainer {
     scheme: "shared";
     wrappingParams: AsymmetricCipherParams;
     accessors: Accessor[];
-    invites: Invite[];
 }
 
 export type RawContainer = SimpleRawContainer | PasswordBasedRawContainer | SharedRawContainer;
@@ -198,23 +197,18 @@ export interface Permissions {
     manage: boolean;
 }
 
+export type AccessorStatus = "invited" | "active" | "left" | "removed";
+
 export interface Accessor extends PublicAccount {
     encryptedKey: CipherText;
     permissions: Permissions;
+    addedBy: string;
+    updated: DateString;
+    status: AccessorStatus;
 }
 
 export interface Access extends PublicAccount {
     privateKey: PrivateKey;
-}
-
-export interface Invite {
-    sender: PublicAccount;
-    recipient: Accessor;
-    created: DateString;
-    target: {
-        id: string;
-        meta: any;
-    };
 }
 
 export class Container implements Storage, Storable {
@@ -226,7 +220,6 @@ export class Container implements Storage, Storable {
     password?: string;
     access?: Access;
     accessors: Accessor[] = [];
-    invites: Invite[] = [];
 
     constructor(
         public scheme: EncryptionScheme = "simple",
@@ -265,7 +258,7 @@ export class Container implements Storage, Storable {
                 if (this.accessors.length) {
                     const accessor = this.accessors.find(a => a.email === this.access!.email);
                     if (!accessor || !accessor.encryptedKey) {
-                        throw new Err(ErrorCode.DECRYPTION_FAILED, "Current accessor does not have access.");
+                        throw new Err(ErrorCode.MISSING_ACCESS, "Current accessor does not have access.");
                     }
                     return provider.decrypt(this.access.privateKey, accessor.encryptedKey, this.wrappingParams);
                 } else {
@@ -318,10 +311,29 @@ export class Container implements Storage, Storable {
         if (this.scheme === "shared") {
             (raw as SharedRawContainer).wrappingParams = this.wrappingParams;
             (raw as SharedRawContainer).accessors = this.accessors;
-            (raw as SharedRawContainer).invites = this.invites;
         }
 
         return raw as Marshalable;
+    }
+
+    mergeAccessors(accessors: Accessor[]) {
+        const merged = new Map<string, Accessor>(this.accessors.map(a => [a.email, a] as [string, Accessor]));
+        const changed: Accessor[] = [];
+        const added: Accessor[] = [];
+
+        for (const acc of accessors) {
+            const existing = merged.get(acc.email);
+            if (!existing) {
+                merged.set(acc.email, acc);
+                added.push(acc);
+            } else if (!existing.updated || new Date(existing.updated) < new Date(acc.updated)) {
+                merged.set(acc.email, acc);
+                changed.push(acc);
+            }
+        }
+
+        this.accessors = Array.from(merged.values());
+        return { changed, added };
     }
 
     async deserialize(raw: any) {
@@ -339,8 +351,7 @@ export class Container implements Storage, Storable {
 
         if (raw.scheme === "shared") {
             this.wrappingParams = raw.wrappingParams;
-            this.accessors = raw.accessors;
-            this.invites = raw.invites;
+            this.mergeAccessors(raw.accessors);
         }
         return this;
     }
@@ -349,19 +360,39 @@ export class Container implements Storage, Storable {
         return provider.encrypt(publicKey, await this.getKey(), this.wrappingParams);
     }
 
-    async addAccessor(accessor: Accessor) {
+    async setAccessor(accessor: Accessor) {
         if (this.scheme !== "shared") {
             throw new Err(ErrorCode.NOT_SUPPORTED, "Cannot add accessor in this scheme");
         }
 
+        accessor.updated = new Date().toISOString();
         accessor.encryptedKey = await this.getEncryptedKey(accessor.publicKey);
 
-        // const existing = this.accessors.find(a => a.id === accessor.id);
-        // if (existing) {
-        //     Object.assign(existing, accessor);
-        // } else {
-        this.accessors.push(accessor);
-        // }
+        const existing = this.accessors.find(a => a.email === accessor.email);
+        if (existing) {
+            Object.assign(existing, accessor);
+        } else {
+            this.accessors.push(accessor);
+        }
+    }
+
+    async removeAccessor(acc: string) {
+        const removedAccessor = this.accessors.find(a => a.email === acc);
+
+        if (!removedAccessor) {
+            throw "Accessor does not exist on this store";
+        }
+
+        const key = await provider.randomKey(this.encryptionParams.keySize);
+        await Promise.all(
+            this.accessors.map(async a => {
+                a.encryptedKey = await provider.encrypt(a.publicKey, key, this.wrappingParams);
+                a.updated = new Date().toISOString();
+            })
+        );
+
+        removedAccessor.encryptedKey = "";
+        removedAccessor.status = "removed";
     }
 
     async clear() {

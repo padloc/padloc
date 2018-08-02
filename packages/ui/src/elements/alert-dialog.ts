@@ -66,7 +66,7 @@ export class AlertDialog extends BaseElement {
 
         <pl-dialog
             open="${props.open}"
-            prevent-dismiss="${props.preventDismiss}"
+            preventDismiss="${props.preventDismiss}"
             on-dialog-dismiss="${() => this._selectOption(-1)}">
 
             <div class="info" hidden?="${!this.dialogTitle && !this.message}">

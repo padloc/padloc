@@ -3,7 +3,6 @@ import { Session, PublicAccount } from "@padlock/core/lib/auth.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { Store } from "@padlock/core/lib/data.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
-import { Invite } from "@padlock/core/lib/crypto.js";
 import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
 import * as messages from "../messages.js";
@@ -44,7 +43,6 @@ export class AccountView extends View {
         const paymentSource = account && account.paymentSource;
         const paymentSourceLabel = paymentSource && `${paymentSource.brand} •••• •••• •••• ${paymentSource.lastFour}`;
         const trustedAccounts = app.mainStore.trustedAccounts;
-        const invites: Invite[] = (app.account && app.account.invites) || [];
 
         return html`
         <style>
@@ -349,9 +347,9 @@ export class AccountView extends View {
 
                         <div class="account-email">${email}</div>
 
-                        <div class="stats">
+                        <div class="tags small">
 
-                            <div class="stat">
+                            <div class="tag">
 
                                 <pl-icon icon="refresh"></pl-icon>
 
@@ -394,9 +392,17 @@ export class AccountView extends View {
 
                         <div class="store-name">${store.name}</div>
 
-                        <div class="stats">
+                        <div class="tags small">
 
-                            <div class="stat">
+                            <div class="tag" hidden?="${store.currentAccessor.status !== "invited"}">
+
+                                <pl-icon icon="time"></pl-icon>
+
+                                <div>${$l("invited")}</div>
+
+                            </div>
+
+                            <div class="tag" hidden?="${store.currentAccessor.status === "removed"}">
 
                                 <pl-icon icon="group"></pl-icon>
 
@@ -404,11 +410,19 @@ export class AccountView extends View {
 
                             </div>
 
-                            <div class="stat">
+                            <div class="tag" hidden?="${store.currentAccessor.status === "removed"}">
 
                                 <pl-icon icon="record"></pl-icon>
 
                                 <div>${store.records.length}</div>
+
+                            </div>
+
+                            <div class="tag warning" hidden?="${store.currentAccessor.status !== "removed"}">
+
+                                <pl-icon icon="removeuser"></pl-icon>
+
+                                <div>${$l("access revoked")}</div>
 
                             </div>
 
@@ -422,28 +436,6 @@ export class AccountView extends View {
 
                     </div>
                 `
-                )}
-
-                ${invites.map(
-                    invite => html`
-                    <div class="store tap" on-click="${() => this._acceptInvite(invite)}">
-
-                        <div class="store-name">${invite.target.meta.name}</div>
-
-                        <div class="stats">
-
-                            <div class="stat">
-
-                                <pl-icon icon="time"></pl-icon>
-
-                                <div>${$l("invited by {0}", invite.sender.email)}</div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-                    `
                 )}
 
                 <button class="tap" on-click="${() => this._createSharedStore()}">${$l("Create Group")}</button>
@@ -688,16 +680,6 @@ export class AccountView extends View {
             } else {
                 throw e;
             }
-        }
-    }
-
-    async _acceptInvite(invite: Invite) {
-        const confirmed = await confirm(
-            $l("Do you want to join the group '{0}'?", invite.target.meta.name),
-            $l("Join")
-        );
-        if (confirmed) {
-            await app.joinStore(invite.target.id);
         }
     }
 

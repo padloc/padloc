@@ -71,6 +71,10 @@ export class RecordView extends View {
                 text-align: center;
             }
 
+            .tags {
+                padding: 0 8px;
+            }
+
             pl-record-field, .add-button-wrapper {
                 transform: translate3d(0, 0, 0);
                 margin: 6px;
@@ -88,57 +92,6 @@ export class RecordView extends View {
                 width: 30px;
                 position: relative;
                 top: 1px;
-            }
-
-            .tags {
-                display: flex;
-                overflow-x: auto;
-                margin: 8px 0;
-                padding: 0 8px;
-                /* align-items: center; */
-                -webkit-overflow-scrolling: touch;
-            }
-
-            .tags::after {
-                content: "";
-                display: block;
-                width: 1px;
-                flex: none;
-            }
-
-            .tag {
-                background: var(--color-foreground);
-                color: var(--color-background);
-                font-weight: bold;
-                border-radius: var(--border-radius);
-                margin-right: 6px;
-                display: flex;
-                align-items: center;
-                font-size: var(--font-size-tiny);
-                white-space: nowrap;
-                line-height: 0;
-                padding-right: 10px;
-            }
-
-            .tags pl-icon {
-                width: 30px;
-                height: 30px;
-            }
-
-            .tag.add {
-                padding-left: 0;
-                border: dashed 1px;
-                background: transparent;
-                color: var(--color-foreground);
-            }
-
-            .tag.store {
-                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
-                text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
-            }
-
-            .tag.readonly {
-                background: linear-gradient(90deg, #f49300 0%, #f25b00 100%);
             }
         </style>
 
@@ -171,7 +124,7 @@ export class RecordView extends View {
 
             <div class="tags animate">
 
-                <div class="tag store tap"
+                <div class="tag highlight tap"
                     hidden?="${store === app.mainStore}"
                     on-click="${() => this._openStore(store!)}">
 
@@ -181,7 +134,7 @@ export class RecordView extends View {
 
                 </div>
 
-                <div class="tag readonly" hidden?="${permissions.write}">
+                <div class="tag warning" hidden?="${permissions.write}">
 
                     <pl-icon icon="show"></pl-icon>
 
@@ -201,7 +154,7 @@ export class RecordView extends View {
                 `
                 )}
 
-                <div class="tag add tap" on-click="${() => this._addTag()}">
+                <div class="tag ghost tap" on-click="${() => this._addTag()}">
 
                     <pl-icon icon="add"></pl-icon>
 
@@ -209,7 +162,7 @@ export class RecordView extends View {
 
                 </div>
 
-                <div class="tag add tap" hidden?="${this.store !== app.mainStore}" on-click="${() => this._share()}">
+                <div class="tag ghost tap" hidden?="${this.store !== app.mainStore}" on-click="${() => this._share()}">
 
                     <pl-icon icon="share"></pl-icon>
 

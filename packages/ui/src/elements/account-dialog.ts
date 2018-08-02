@@ -87,12 +87,12 @@ export class AccountDialog extends BaseElement {
                 font-weight: bold;
             }
 
-            .stats {
+            .tags {
                 margin: 15px 20px 20px 20px;
                 justify-content: center;
             }
 
-            .stat {
+            .tag {
                 background: var(--color-foreground);
                 color: var(--color-highlight);
                 text-shadow: none;
@@ -121,27 +121,27 @@ export class AccountDialog extends BaseElement {
 
                 <div class="email">${email}</div>
 
-                <div class="stats">
+                <div class="tags small">
 
-                    <div class="stat" hidden?="${!isTrusted}">
+                    <div class="tag" hidden?="${!isTrusted}">
 
                         <pl-icon icon="trusted"></pl-icon>
 
-                        <div>${$l("Trusted")}</div>    
+                        <div>${$l("Trusted")}</div>
 
                     </div>
 
-                    <div class="stat" hidden?="${!isOwnAccount}">
+                    <div class="tag" hidden?="${!isOwnAccount}">
 
                         <pl-icon icon="user"></pl-icon>
 
-                        <div>${$l("This Is You")}</div>    
+                        <div>${$l("This Is You")}</div>
 
                     </div>
 
                     ${app.sharedStores.filter(s => s.accessors.some(a => a.email === email)).map(
                         s => html`
-                            <div class="stat">
+                            <div class="tag">
 
                                 <pl-icon icon="group"></pl-icon>
 

@@ -1,5 +1,5 @@
 import { DateString, Serializable } from "./encoding";
-import { PublicKey, Invite } from "./crypto";
+import { PublicKey } from "./crypto";
 import { Storable } from "./storage";
 import { StoreID } from "./data";
 import { uuid } from "./util";
@@ -94,7 +94,6 @@ export class Account implements Storable, PublicAccount {
     promo?: any;
     paymentSource?: any;
     friendRequests: string[] = [];
-    invites: Invite[] = [];
 
     constructor(public email: string = "") {}
 
@@ -115,7 +114,6 @@ export class Account implements Storable, PublicAccount {
             mainStore: this.mainStore,
             sharedStores: this.sharedStores,
             publicKey: this.publicKey,
-            invites: this.invites,
             sessions: await Promise.all(this.sessions.map(s => s.serialize()))
         };
     }

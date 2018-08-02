@@ -3,9 +3,11 @@ import { Session, Account, PublicAccount } from "./auth";
 import { marshal, unmarshal } from "./encoding";
 import { App } from "./app";
 import { PublicKey, Accessor } from "./crypto";
+import { SharedStore } from "./data";
 
 export interface AccountUpdateParams {
-    publicKey: PublicKey;
+    publicKey?: PublicKey;
+    leaveStores?: string[];
 }
 
 export class Client {
@@ -117,12 +119,13 @@ export class Client {
         await this.request("POST", `store/${store}/invite`, marshal(accessor));
     }
 
-    async joinStore(store: string): Promise<void> {
+    async joinStore(store: SharedStore): Promise<void> {
         if (!this.app.session || !this.app.account) {
             throw "Need to be logged in";
         }
 
-        await this.request("POST", `store/${store}/join`);
+        const res = await this.request("POST", `store/${store.id}/join`);
+        await store.deserialize(unmarshal(res.responseText));
     }
     //
     // subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {

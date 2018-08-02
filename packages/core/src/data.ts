@@ -1,5 +1,5 @@
 import { DateString, Marshalable } from "./encoding";
-import { PrivateKey, PublicKey, Container, EncryptionScheme, Access, Permissions } from "./crypto";
+import { PrivateKey, PublicKey, Container, EncryptionScheme, Access, Permissions, AccessorStatus } from "./crypto";
 import { Storable } from "./storage";
 import { PublicAccount } from "./auth";
 import { uuid } from "./util";
@@ -47,7 +47,7 @@ export class Store implements Storable {
     created: DateString = new Date().toISOString();
     updated: DateString = new Date().toISOString();
     protected container: Container;
-    private _records = new Map<string, Record>();
+    protected _records = new Map<string, Record>();
     storageKind = "store";
 
     get storageKey() {
@@ -108,7 +108,6 @@ export class Store implements Storable {
         return {
             created: this.created,
             updated: this.updated,
-            name: this.name,
             records: this.records.map((r: any) => {
                 // For backwards compatibility
                 r.uuid = r.id;
@@ -120,7 +119,6 @@ export class Store implements Storable {
     protected async _deserialize(raw: any) {
         this.created = raw.created;
         this.updated = raw.updated;
-        this.name = raw.name || this.name;
         const records = raw.records.map((r: any) => {
             return {
                 tags: r.tags || (r.category && [r.category]) || [],
@@ -155,8 +153,9 @@ export class Store implements Storable {
 
     async deserialize(raw: any) {
         await this.container.deserialize(raw);
-        await this.container.get(this.serializer);
         this.id = this.container.id;
+        this.name = this.container.meta.name;
+        await this.container.get(this.serializer);
         return this;
     }
 
@@ -225,10 +224,6 @@ export class SharedStore extends Store {
         return this.container.accessors;
     }
 
-    get invites() {
-        return this.container.invites;
-    }
-
     get access(): Access | undefined {
         return this.container.access;
     }
@@ -237,27 +232,69 @@ export class SharedStore extends Store {
         this.container.access = access;
     }
 
+    get currentAccessor() {
+        return this.access && this.accessors.find(a => this.access!.email === a.email);
+    }
+
     get permissions() {
-        const accessor = this.access && this.accessors.find(a => this.access!.email === a.email);
+        const accessor = this.currentAccessor;
         return (accessor && accessor.permissions) || { read: false, write: false, manage: false };
+    }
+
+    get accessorStatus(): AccessorStatus {
+        const accessor = this.currentAccessor;
+        return accessor ? accessor.status : "removed";
     }
 
     getEncryptedKey(publicKey: PublicKey) {
         return this.container.getEncryptedKey(publicKey);
     }
 
-    async addAccount(acc: PublicAccount, perms: Permissions = { read: true, write: true, manage: false }) {
+    async serialize(): Promise<Marshalable> {
+        if (this.accessorStatus === "active") {
+            await this.container.set(this.serializer);
+        }
+        this.container.meta = {
+            name: this.name
+        };
+        return this.container.serialize();
+    }
+
+    async deserialize(raw: any) {
+        await this.container.deserialize(raw);
+        this.id = this.container.id;
+        this.name = this.container.meta.name;
+        if (this.accessorStatus === "active") {
+            await this.container.get(this.serializer);
+        } else {
+            this._records = new Map<string, Record>();
+        }
+        return this;
+    }
+
+    async setAccount(
+        acc: PublicAccount,
+        perms: Permissions = { read: true, write: true, manage: false },
+        status: AccessorStatus
+    ) {
         if (!acc.publicKey) {
             throw "Public Key is missing on account!";
         }
-        await this.container.addAccessor(
+        await this.container.setAccessor(
             Object.assign(
                 {
                     permissions: perms,
-                    encryptedKey: ""
+                    status: status,
+                    encryptedKey: "",
+                    updated: "",
+                    addedBy: this.currentAccessor!.email
                 },
                 acc
             )
         );
+    }
+
+    async removeAccount(acc: PublicAccount) {
+        await this.container.removeAccessor(acc.email);
     }
 }

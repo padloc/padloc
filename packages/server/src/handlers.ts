@@ -2,6 +2,7 @@ import { Container } from "@padlock/core/src/crypto";
 import { Account, Session } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 import { uuid } from "@padlock/core/lib/util.js";
+import { AccountUpdateParams } from "@padlock/core/lib/client.js";
 import { Context } from "./server";
 import { AuthRequest } from "./auth";
 
@@ -142,6 +143,16 @@ export async function putStore(ctx: Context, id: string) {
             wrappingParams: container.wrappingParams
         });
 
+        if (accessor.permissions.manage) {
+            const { added } = existing.mergeAccessors(container.accessors);
+            for (const accessor of added) {
+                const acc = new Account(accessor.email);
+                await ctx.storage.get(acc);
+                acc.sharedStores.push(container.id);
+                await ctx.storage.set(acc);
+            }
+        }
+
         container = existing;
     }
 
@@ -227,58 +238,15 @@ export async function updateAccount(ctx: Context) {
     }
 
     const account = ctx.state.account;
-    const { publicKey, sharedStores } = ctx.request.body;
+    const { publicKey } = ctx.request.body as AccountUpdateParams;
 
     if (publicKey) {
         account.publicKey = publicKey;
     }
 
-    if (sharedStores) {
-        account.sharedStores = sharedStores;
-    }
-
     await ctx.storage.set(account);
 
     ctx.body = await account.serialize();
-}
-
-export async function createInvite(ctx: Context, id: string) {
-    if (!ctx.state.session || !ctx.state.account) {
-        throw new Err(ErrorCode.INVALID_SESSION);
-    }
-
-    const account = ctx.state.account;
-
-    const container = new Container();
-    container.id = id;
-    container.kind = "store";
-
-    await ctx.storage.get(container);
-
-    const currAccessor = container.accessors.find(a => a.email === account.email);
-
-    if (!currAccessor || !currAccessor.permissions.manage) {
-        throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Mangage permissions required");
-    }
-
-    const accessor = ctx.request.body;
-    const invitee = new Account(accessor.email);
-    await ctx.storage.get(invitee);
-    const invite = {
-        recipient: accessor,
-        sender: account.publicAccount,
-        created: new Date().toISOString(),
-        target: {
-            id: id,
-            meta: container.meta
-        }
-    };
-    invitee.invites.push(invite);
-    container.invites.push(invite);
-
-    await Promise.all([ctx.storage.set(invitee), ctx.storage.set(container)]);
-
-    ctx.status = 204;
 }
 
 export async function joinStore(ctx: Context, id: string) {
@@ -287,11 +255,6 @@ export async function joinStore(ctx: Context, id: string) {
     }
 
     const account = ctx.state.account;
-    const invite = account.invites.find(inv => inv.target.id === id);
-
-    if (!invite) {
-        throw new Err(ErrorCode.BAD_REQUEST);
-    }
 
     const container = new Container();
     container.id = id;
@@ -299,21 +262,18 @@ export async function joinStore(ctx: Context, id: string) {
 
     await ctx.storage.get(container);
 
-    const storeInvite = container.invites.find(inv => inv.recipient.email === account.email);
+    const accessor = container.accessors.find(a => a.email === account.email);
 
-    if (!storeInvite) {
+    if (!accessor || accessor.status !== "invited") {
         throw new Err(ErrorCode.BAD_REQUEST);
     }
 
-    account.invites.splice(account.invites.indexOf(invite), 1);
-    container.invites.splice(container.invites.indexOf(storeInvite), 1);
-
-    container.accessors.push(invite.recipient);
-    account.sharedStores.push(container.id);
+    accessor.status = "active";
+    accessor.updated = new Date().toISOString();
 
     await Promise.all([ctx.storage.set(account), ctx.storage.set(container)]);
 
-    ctx.status = 204;
+    ctx.body = await container.serialize();
 }
 
 //

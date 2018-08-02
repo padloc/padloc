@@ -28,9 +28,7 @@ export class InviteDialog extends BaseElement {
 
     _render({ store }: this) {
         const trusted = app.mainStore.trustedAccounts.filter(
-            acc =>
-                !store!.accessors.some(a => a.email === acc.email) &&
-                !store!.invites.some(inv => inv.recipient.email === acc.email)
+            acc => !store!.accessors.some(a => a.email === acc.email && a.status !== "removed")
         );
 
         return html`

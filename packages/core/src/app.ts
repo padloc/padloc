@@ -408,9 +408,11 @@ export class App extends EventTarget {
 
         const store = new SharedStore("", [], name);
         store.access = Object.assign({ privateKey: this.mainStore.privateKey! }, this.account.publicAccount);
-        await store.addAccount(this.account.publicAccount, { read: true, write: true, manage: true });
+        await store.setAccount(this.account.publicAccount, { read: true, write: true, manage: true }, "active");
         await this.remoteStorage.set(store);
-        await this.synchronize();
+        this.sharedStores.push(store);
+        await this.syncAccount();
+        this.dispatch("store-created", { store });
         return store;
     }
 
@@ -429,27 +431,33 @@ export class App extends EventTarget {
         try {
             await this.remoteStorage.get(store);
         } catch (e) {
-            // TODO Handle
-            console.error(e);
-            if (e.code === ErrorCode.NOT_FOUND) {
-                this.account.sharedStores.splice(this.account.sharedStores.indexOf(store.id), 1);
-                this.sharedStores.splice(this.sharedStores.indexOf(store), 1);
-            }
+            console.error(e, store.name, store.id, "removing store...");
+            // switch (e.code) {
+            //     case ErrorCode.NOT_FOUND:
+            //     case ErrorCode.MISSING_ACCESS:
+            //         this.sharedStores.splice(this.sharedStores.indexOf(store), 1);
+            //
+            //         break;
+            //     default:
+            //         throw e;
+            // }
             return;
         }
 
         await this.storage.set(store);
 
-        try {
+        if (store.permissions.write) {
             await this.remoteStorage.set(store);
-        } catch (e) {
-            // TODO Handle
-            console.error(e);
         }
+
+        this.dispatch("store-changed", { store });
     }
 
     async deleteSharedStore(id: StoreID) {
         const store = this.sharedStores.find(s => s.id === id) || new SharedStore(id);
+        if (!store.permissions.manage) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
         await this.remoteStorage.delete(store);
         await this.synchronize();
     }
@@ -468,7 +476,12 @@ export class App extends EventTarget {
 
     async addTrustedAccount(account: PublicAccount) {
         if (!this.isTrusted(account)) {
-            this.mainStore.trustedAccounts.push(account);
+            this.mainStore.trustedAccounts.push({
+                id: account.id,
+                email: account.email,
+                name: account.name,
+                publicKey: account.publicKey
+            });
         }
         await this.synchronize();
         this.dispatch("account-changed");
@@ -479,33 +492,35 @@ export class App extends EventTarget {
         account: PublicAccount,
         permissions: Permissions = { read: true, write: false, manage: false }
     ) {
+        if (!store.permissions.manage) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
         if (!this.isTrusted(account)) {
             throw "Invites can only be created for trusted accounts.";
         }
 
-        if (store.accessors.some(a => a.email === account.email)) {
+        if (store.accessors.some(a => a.email === account.email && a.status === "active")) {
             throw "This account is already in this group.";
         }
 
-        if (store.invites.some(invite => invite.recipient.email === account.email)) {
-            throw "This account is already invited to this group.";
-        }
-
-        const accessor = Object.assign(
-            {
-                permissions: permissions,
-                encryptedKey: await store.getEncryptedKey(account.publicKey)
-            },
-            account
-        );
-
-        await this.client.createInvite(store.id, accessor);
+        store.setAccount(account, permissions, "invited");
         await this.syncSharedStore(store.id);
     }
 
-    async joinStore(store: string) {
+    async removeAccount(store: SharedStore, account: PublicAccount) {
+        if (!store.permissions.manage) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+        await this.remoteStorage.get(store);
+        await store.removeAccount(account);
+        await this.remoteStorage.set(store);
+        this.dispatch("store-changed", { store });
+    }
+
+    async joinStore(store: SharedStore) {
         await this.client.joinStore(store);
-        await this.synchronize();
+        this.dispatch("store-changed", { store });
     }
 
     async synchronize() {
@@ -524,9 +539,7 @@ export class App extends EventTarget {
 
         const sharedStores = [...this.account!.sharedStores];
 
-        for (const id of sharedStores) {
-            await this.syncSharedStore(id);
-        }
+        await Promise.all(sharedStores.map(id => this.syncSharedStore(id)));
 
         this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");
