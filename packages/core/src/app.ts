@@ -173,10 +173,9 @@ export class App extends EventTarget {
             })
         );
 
-        for (let i = 0, prev, curr, next; i < items.length; i++) {
+        for (let i = 0, prev, curr; i < items.length; i++) {
             prev = items[i - 1];
             curr = items[i];
-            next = items[i + 1];
 
             curr.section =
                 i < recentCount
@@ -184,7 +183,7 @@ export class App extends EventTarget {
                     : (curr.record && curr.record.name[0] && curr.record.name[0].toUpperCase()) || $l("No Name");
 
             curr.firstInSection = !prev || prev.section !== curr.section;
-            curr.lastInSection = !next || next.section !== curr.section;
+            prev && (prev.lastInSection = curr.section !== prev.section);
         }
 
         return items;
