@@ -134,6 +134,10 @@ const styles = `
         @apply --card;
     }
 
+    section > button {
+        width: 100%;
+    }
+
     section > :not(:last-child) {
         border-bottom: solid 1px var(--border-color);
     }

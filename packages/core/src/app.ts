@@ -148,7 +148,8 @@ export class App extends EventTarget {
                         record: r,
                         section: "",
                         firstInSection: false,
-                        lastInSection: false
+                        lastInSection: false,
+                        warning: store instanceof SharedStore && !!store.getOldAccessors(r).length
                     };
                 })
             );

@@ -42,6 +42,7 @@ export class RecordView extends View {
         const { name, fields, tags, updated, updatedBy } = record!;
         store = store!;
         const permissions = store instanceof SharedStore ? store.permissions : { read: true, write: true };
+        const oldAccessors = store instanceof SharedStore ? store.getOldAccessors(record!) : [];
 
         return html`
         <style>
@@ -186,6 +187,29 @@ export class RecordView extends View {
 
             </div>
 
+            <section class="highlight tiles warning animate" hidden?="${!oldAccessors.length}">
+
+                <div class="info">
+
+                    <pl-icon class="info-icon" icon="error"></pl-icon>
+
+                    <div class="info-body">
+
+                        <div class="info-text">${$l(
+                            "{0} users have been removed from the '{1}' group since this item was last updated. " +
+                                "Please update any sensitive information as soon as possible!",
+                            oldAccessors.length.toString(),
+                            store.name
+                        )}</div>
+
+                    </div>
+
+                </div>
+
+                <button class="tap" on-click="${() => this._dismissWarning()}">${$l("Dismiss")}</button>
+
+            </section>
+
             <div class="fields">
 
                 ${fields.map(
@@ -271,7 +295,7 @@ export class RecordView extends View {
         }
         const confirmed = await confirm($l("Are you sure you want to delete this record?"), $l("Delete"));
         if (confirmed) {
-            app.deleteRecords(this.store, this.record);
+            app.deleteRecords(this.store, [this.record]);
             this._back();
         }
     }
@@ -350,6 +374,10 @@ export class RecordView extends View {
         setTimeout(() => {
             animateCascade(this.$$(".animate"), { fullDuration: 800, fill: "both" });
         }, 100);
+    }
+
+    private _dismissWarning() {
+        app.updateRecord(this.store!, this.record!, {});
     }
 
     private async _share() {

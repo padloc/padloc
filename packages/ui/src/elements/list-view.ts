@@ -34,6 +34,7 @@ export class ListView extends BaseElement {
     @listen("records-deleted", app)
     @listen("record-changed", app)
     @listen("settings-changed", app)
+    @listen("store-changed", app)
     _updateListItems() {
         this._listItems = app.list(this.filterString);
     }
@@ -245,7 +246,8 @@ export class ListView extends BaseElement {
                 padding-left: 15px;
                 @apply --ellipsis;
                 font-weight: bold;
-                /* min-width: 150px; */
+                flex: 1;
+                width: 0;
             }
 
             .record-fields {
@@ -421,8 +423,6 @@ export class ListView extends BaseElement {
                                     ${item.record.name || $l("No Name")}
                                 </div>
 
-                                <div class="spacer"></div>
-
                                 <div class="tags small">
                                     <div class="ellipsis tag highlight" hidden?="${item.store === app.mainStore}">
                                         ${item.store.name}
@@ -432,6 +432,7 @@ export class ListView extends BaseElement {
                                             <div class="ellipsis tag">${t}</div>
                                         `
                                     )}
+                                    <pl-icon icon="error" class="tag warning" hidden?="${!item.warning}"></pl-icon>
                                 </div>
 
                             </div>

@@ -300,4 +300,8 @@ export class SharedStore extends Store {
     async removeAccount(acc: PublicAccount) {
         await this.container.removeAccessor(acc.email);
     }
+
+    getOldAccessors(record: Record) {
+        return this.accessors.filter(a => a.status === "removed" && new Date(a.updated) > record.updated);
+    }
 }
