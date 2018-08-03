@@ -265,7 +265,7 @@ export class App extends EventTarget {
         this.loaded = this.load();
     }
 
-    async addRecords(store: Store, records: Record | Record[]) {
+    async addRecords(store: Store, records: Record[]) {
         if (store instanceof SharedStore && !store.permissions.write) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
@@ -283,6 +283,9 @@ export class App extends EventTarget {
             { name: $l("Password"), value: "", masked: true }
         ];
         const record = store.createRecord(name || "", fields, tags);
+        if (this.account) {
+            record.updatedBy = this.account.publicAccount;
+        }
         await this.addRecords(store, [record]);
         this.dispatch("record-created", { store: store, record: record });
         return record;
@@ -299,15 +302,23 @@ export class App extends EventTarget {
             }
         }
         record.updated = new Date();
+        if (this.account) {
+            record.updatedBy = this.account.publicAccount;
+        }
         await this.storage.set(store);
         this.dispatch("record-changed", { store: store, record: record });
     }
 
-    async deleteRecords(store: Store, records: Record | Record[]) {
+    async deleteRecords(store: Store, records: Record[]) {
         if (store instanceof SharedStore && !store.permissions.write) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
         store.removeRecords(records);
+        if (this.account) {
+            for (const record of records) {
+                record.updatedBy = this.account.publicAccount;
+            }
+        }
         await this.storage.set(store);
         this.dispatch("records-deleted", { store: store, records: records });
     }

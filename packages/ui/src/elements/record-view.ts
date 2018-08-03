@@ -1,5 +1,6 @@
 import { Store, SharedStore, Record, Field } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
+import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import sharedStyles from "../styles/shared.js";
 import { View } from "./view.js";
 import { confirm, prompt, choose, openField, generate, getDialog } from "../dialog.js";
@@ -38,7 +39,7 @@ export class RecordView extends View {
     }
 
     _render({ record, store }: this) {
-        const { name, fields, tags } = record!;
+        const { name, fields, tags, updated, updatedBy } = record!;
         store = store!;
         const permissions = store instanceof SharedStore ? store.permissions : { read: true, write: true };
 
@@ -92,6 +93,19 @@ export class RecordView extends View {
                 width: 30px;
                 position: relative;
                 top: 1px;
+            }
+
+            .updated {
+                padding: 10px;
+                text-align: center;
+                font-size: var(--font-size-small);
+                color: #888;
+            }
+
+            .updated::before {
+                font-family: FontAwesome;
+                font-size: 80%;
+                content: "\\f303\ ";
             }
         </style>
 
@@ -203,6 +217,11 @@ export class RecordView extends View {
 
                 </button>
 
+            </div>
+
+            <div class="updated animate">
+                ${formatDateFromNow(updated)}
+                ${updatedBy && " " + $l("by {0}", updatedBy.email)}
             </div>
 
         </main>

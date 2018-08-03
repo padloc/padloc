@@ -26,6 +26,7 @@ export interface Record {
     fields: Field[];
     tags: Tag[];
     updated: Date;
+    updatedBy?: PublicAccount;
     lastUsed?: Date;
 }
 
@@ -126,8 +127,9 @@ export class Store implements Storable {
                 fields: r.fields,
                 id: r.id || r.uuid || uuid(),
                 removed: r.removed,
-                updated: raw.updated ? new Date(raw.updated) : new Date(),
-                lastUsed: raw.lastUsed && new Date(raw.lastUsed)
+                updated: r.updated ? new Date(r.updated) : new Date(),
+                updatedBy: r.updatedBy,
+                lastUsed: r.lastUsed && new Date(r.lastUsed)
             } as Record;
         });
         this.addRecords(records);
