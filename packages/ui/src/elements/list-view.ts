@@ -6,29 +6,33 @@ import { wait } from "@padlock/core/lib/util.js";
 import { animateCascade } from "../animation.js";
 import { setClipboard } from "../clipboard.js";
 import { app } from "../init.js";
-// import { confirm } from "../dialog.js";
+import { confirm, getDialog } from "../dialog.js";
 import sharedStyles from "../styles/shared.js";
 import { AlertDialog } from "./alert-dialog.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
-import "./icon.js";
 import { Input } from "./input.js";
+import { ShareDialog } from "./share-dialog.js";
+import "./share-dialog.js";
 
 export class ListView extends BaseElement {
     @property() store?: Store;
     @property() multiSelect: boolean = false;
     @property() filterString: string = "";
-    @property() selectedItem: ListItem | null = null;
-    @property() selectedItems: ListItem[] = [];
     @property() private _listItems: ListItem[] = [];
     @property() private _currentSection: string = "";
     @property() private _firstVisibleIndex: number = 0;
     @property() private _lastVisibleIndex: number = 0;
 
-    @query("main") private _main: HTMLDivElement;
+    @query("main") private _main: HTMLElement;
     @query("#sectionSelector") private _sectionSelector: AlertDialog;
     @query("#filterInput") private _filterInput: Input;
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
+    private _selected = new Map<string, ListItem>();
+
+    private get _selectedRecords() {
+        return [...this._selected.values()].map((item: ListItem) => item.record);
+    }
 
     @listen("records-added", app)
     @listen("records-deleted", app)
@@ -43,7 +47,9 @@ export class ListView extends BaseElement {
     _recordCreated(e: CustomEvent) {
         this._updateListItems();
         const item = this._listItems.find(item => item.record.id === e.detail.record.id);
-        this.selectItem(item || null);
+        if (item) {
+            this.selectItem(item);
+        }
     }
 
     @listen("unlock", app)
@@ -373,7 +379,13 @@ export class ListView extends BaseElement {
 
             <pl-icon icon="checkall" class="tap" on-click="${() => this.selectAll()}"></pl-icon>
 
-            <div class="multi-select-count"><div>${this._multiSelectLabel(props.selectedItems)}</div></div>
+            <div class="multi-select-count"><div>
+                ${
+                    this._selected.size
+                        ? $l("{0} records selected", this._selected.size.toString())
+                        : $l("tap to select")
+                }
+            </div></div>
 
             <pl-icon icon="delete" class="tap" on-click="${() => this._deleteSelected()}"></pl-icon>
 
@@ -410,8 +422,7 @@ export class ListView extends BaseElement {
                     <div class="record"
                         record="${item.record}"
                         record-id$="${item.record.id}"
-                        selected?="${props.selectedItem && item.record.id === props.selectedItem.record.id}"
-                        multi-select="${props.multiSelect}"
+                        selected?="${this._selected.has(item.record.id)}"
                         on-click="${() => this.selectItem(item)}"
                         index$="${index}">
 
@@ -453,7 +464,7 @@ export class ListView extends BaseElement {
                                     `
                                 )}
 
-                                <div class="field" disabled hidden?="${!!item.record.fields.length}">
+                                <div class="record-field" disabled hidden?="${!!item.record.fields.length}">
                                     ${$l("No Fields")}
                                 </div>
 
@@ -536,16 +547,34 @@ export class ListView extends BaseElement {
         this._currentSection = currItem && currItem.section;
     }
 
-    selectItem(item: ListItem | null) {
-        this.selectedItem = item;
-        this.dispatchEvent(new CustomEvent("select-record", { detail: item || {} }));
-        this._scrollToSelected();
+    selectItem(item: ListItem) {
+        if (this.multiSelect) {
+            if (this._selected.has(item.record.id)) {
+                this._selected.delete(item.record.id);
+            } else {
+                this._selected.set(item.record.id, item);
+            }
+        } else {
+            this._selected.clear();
+            this._selected.set(item.record.id, item);
+            this.dispatchEvent(new CustomEvent("select-record", { detail: item || {} }));
+            this._scrollToSelected();
+        }
+        this.requestRender();
     }
 
-    selectAll() {}
+    selectAll() {
+        this.multiSelect = true;
+        for (const item of this._listItems) {
+            this._selected.set(item.record.id, item);
+        }
+        this.requestRender();
+    }
 
     clearSelection() {
-        this.selectItem(null);
+        this._selected.clear();
+        this.multiSelect = false;
+        this.requestRender();
     }
 
     private _newRecord() {
@@ -567,10 +596,8 @@ export class ListView extends BaseElement {
     }
 
     private _scrollToSelected() {
-        if (!this.selectedItem) {
-            return;
-        }
-        const i = this._listItems.indexOf(this.selectedItem);
+        const selected = this._selected.values()[0];
+        const i = this._listItems.indexOf(selected);
         if (i !== -1 && (i < this._firstVisibleIndex || i > this._lastVisibleIndex)) {
             this._scrollToIndex(i);
         }
@@ -609,25 +636,34 @@ export class ListView extends BaseElement {
         }, delay);
     }
 
-    private _shareSelected() {
-        // const exportDialog = getDialog("pl-dialog-export") as ExportDialog;
-        // exportDialog.export(this.selectedItems);
+    private async _shareSelected() {
+        for (const [id, item] of this._selected.entries()) {
+            if (item.store !== app.mainStore) {
+                this._selected.delete(id);
+            }
+        }
+        this.requestRender();
+        const shareDialog = getDialog("pl-share-dialog") as ShareDialog;
+        await shareDialog.show(this._selectedRecords);
+        this.clearSelection();
     }
 
     private async _deleteSelected() {
-        // const confirmed = await confirm(
-        //     $l("Are you sure you want to delete these records? This action can not be undone!"),
-        //     $l("Delete {0} Records", this.selectedItems.length.toString())
-        // );
-        // if (confirmed) {
-        //     app.deleteRecords(this.store!, this.selectedItems);
-        //     this.multiSelect = false;
-        // }
-    }
-
-    private _multiSelectLabel(selected: ListItem[]) {
-        const count = selected && selected.length;
-        return count ? $l("{0} records selected", count.toString()) : $l("tap to select");
+        const confirmed = await confirm(
+            $l("Are you sure you want to delete these records? This action can not be undone!"),
+            $l("Delete {0} Records", this._selectedRecords.length.toString())
+        );
+        if (confirmed) {
+            const stores = new Map<Store, Record[]>();
+            for (const item of this._selected.values()) {
+                if (!stores.has(item.store)) {
+                    stores.set(item.store, []);
+                }
+                stores.get(item.store)!.push(item.record);
+            }
+            await Promise.all([...stores.entries()].map(([store, records]) => app.deleteRecords(store, records)));
+            this.multiSelect = false;
+        }
     }
 
     search(str?: string) {

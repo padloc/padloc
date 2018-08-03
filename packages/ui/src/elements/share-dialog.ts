@@ -10,17 +10,13 @@ import "./account-dialog.js";
 
 @element("pl-share-dialog")
 export class ShareDialog extends BaseElement {
-    @property() record: Record | null = null;
+    @property() records: Record[] = [];
 
     @query("pl-dialog") private _dialog: Dialog;
 
     private _resolve: (() => void) | null;
 
-    _shouldRender() {
-        return !!this.record;
-    }
-
-    _render({ record }: this) {
+    _render({ records }: this) {
         const stores = app.sharedStores.filter(s => s.accessorStatus === "active" && s.permissions.write);
         return html`
             <style>
@@ -78,7 +74,11 @@ export class ShareDialog extends BaseElement {
 
                 <div class="title">
                     <pl-icon icon="share"></pl-icon>
-                    <div>${$l("Share '{0}' With...", record!.name)}</div>
+                    <div>${
+                        records.length === 1
+                            ? $l("Share '{0}' With...", records[0].name)
+                            : $l("Share {0} Items...", records.length.toString())
+                    }</div>
                 </div>
 
                 ${stores.map(
@@ -123,8 +123,8 @@ export class ShareDialog extends BaseElement {
         `;
     }
 
-    async show(record: Record) {
-        this.record = record;
+    async show(records: Record[]) {
+        this.records = records;
         this.requestRender();
         await this.renderComplete;
         this._dialog.open = true;
@@ -141,25 +141,23 @@ export class ShareDialog extends BaseElement {
 
     async _selectStore(store: SharedStore) {
         this._dialog.open = false;
-        const record = this.record!;
         const confirmed =
             store.accessors.length === 1 ||
             (await confirm(
-                $l(
-                    "Do you want to share '{0}' with {1} users in the '{2}' group?",
-                    record.name,
-                    (store.accessors.length - 1).toString(),
-                    store.name
-                ),
+                this.records.length === 1
+                    ? $l("Do you want to share '{0}' with the '{1}' group?", this.records[0].name, store.name)
+                    : $l("Do you want to share {0} items with the '{1}' group?"),
                 $l("Share"),
                 $l("Cancel"),
                 { type: "question" }
             ));
 
         if (confirmed) {
-            const { name, fields, tags } = record;
-            await app.deleteRecords(app.mainStore, record);
-            await app.createRecord(store, name, fields, tags);
+            for (const record of this.records) {
+                const { name, fields, tags } = record;
+                await app.createRecord(store, name, fields, tags);
+            }
+            await app.deleteRecords(app.mainStore, this.records);
             this._done();
         } else {
             this._dialog.open = true;
