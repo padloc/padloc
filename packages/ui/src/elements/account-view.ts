@@ -386,15 +386,16 @@ export class AccountView extends View {
 
                 </div>
 
-                ${app.sharedStores.map(
-                    store => html`
+                ${app.sharedStores.map(store => {
+                    const { accessors, accessorStatus, name, records } = store;
+                    return html`
                     <div class="store tap" on-click="${() => this._openStore(store)}">
 
-                        <div class="store-name">${store.name}</div>
+                        <div class="store-name">${name}</div>
 
                         <div class="tags small">
 
-                            <div class="tag" hidden?="${store.currentAccessor.status !== "invited"}">
+                            <div class="tag highlight" hidden?="${accessorStatus !== "invited"}">
 
                                 <pl-icon icon="time"></pl-icon>
 
@@ -402,23 +403,23 @@ export class AccountView extends View {
 
                             </div>
 
-                            <div class="tag" hidden?="${store.currentAccessor.status === "removed"}">
+                            <div class="tag" hidden?="${accessorStatus === "removed"}">
 
                                 <pl-icon icon="group"></pl-icon>
 
-                                <div>${store.accessors.length}</div>
+                                <div>${accessors.length}</div>
 
                             </div>
 
-                            <div class="tag" hidden?="${store.currentAccessor.status === "removed"}">
+                            <div class="tag" hidden?="${accessorStatus === "removed"}">
 
                                 <pl-icon icon="record"></pl-icon>
 
-                                <div>${store.records.length}</div>
+                                <div>${records.length}</div>
 
                             </div>
 
-                            <div class="tag warning" hidden?="${store.currentAccessor.status !== "removed"}">
+                            <div class="tag warning" hidden?="${accessorStatus !== "removed"}">
 
                                 <pl-icon icon="removeuser"></pl-icon>
 
@@ -431,12 +432,15 @@ export class AccountView extends View {
                         <div class="spacer"></div>
 
                         <pl-toggle
+                            hidden?="${accessorStatus !== "active"}"
                             active="${!app.settings.hideStores.includes(store.id)}"
                             on-click="${(e: Event) => this._toggleStore(store, e)}"></pl-toggle>
 
+                        <pl-icon icon="forward" hidden?="${accessorStatus !== "invited"}"></pl-icon>
+
                     </div>
-                `
-                )}
+                `;
+                })}
 
                 <button class="tap" on-click="${() => this._createSharedStore()}">${$l("Create Group")}</button>
 

@@ -120,6 +120,10 @@ const styles = `
         display: none !important;
     }
 
+    [invisible] {
+        visibility: hidden;
+    }
+
     [disabled] {
         opacity: 0.5;
         pointer-events: none;

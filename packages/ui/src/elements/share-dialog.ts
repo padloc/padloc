@@ -21,7 +21,7 @@ export class ShareDialog extends BaseElement {
     }
 
     _render({ record }: this) {
-        const stores = app.sharedStores.filter(s => s.permissions.write);
+        const stores = app.sharedStores.filter(s => s.accessorStatus === "active" && s.permissions.write);
         return html`
             <style>
                 ${sharedStyles}

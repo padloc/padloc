@@ -30,7 +30,7 @@ export class StoreView extends View {
     }
 
     _render({ store }: this) {
-        const { accessors, permissions, currentAccessor } = store!;
+        const { name, accessors, permissions, currentAccessor, records } = store!;
         const accounts = accessors.filter(a => a.status !== "removed");
         const accessorStatus = currentAccessor ? currentAccessor.status : "";
 
@@ -74,9 +74,14 @@ export class StoreView extends View {
 
             <pl-icon icon="close" class="tap" on-click="${() => this._back()}"></pl-icon>
 
-            <div class="title">${store!.name}</div>
+            <div class="title">${name}</div>
 
-            <pl-icon icon="more" class="tap" on-click="${() => this._more()}"></pl-icon>
+            <pl-icon
+                icon="invite"
+                class="tap"
+                on-click="${() => this._invite()}"
+                invisible?="${!permissions.manage}">
+            </pl-icon>
 
         </header>
 
@@ -89,6 +94,22 @@ export class StoreView extends View {
                     <pl-icon icon="show"></pl-icon>
 
                     <div>${$l("read-only")}</div>
+
+                </div>
+
+                <div class="tag" hidden?="${accessorStatus === "removed"}">
+
+                    <pl-icon icon="group"></pl-icon>
+
+                    <div>${accounts.length}</div>
+
+                </div>
+
+                <div class="tag" hidden?="${accessorStatus === "removed"}">
+
+                    <pl-icon icon="record"></pl-icon>
+
+                    <div>${records.length}</div>
 
                 </div>
 
@@ -147,35 +168,35 @@ export class StoreView extends View {
         await getDialog("pl-account-dialog").show(account);
     }
 
-    private async _delete() {
-        const confirmed = await prompt($l("Are you sure you want to delete the '{0}' group?", this.store!.name), {
-            placeholder: $l("Type 'DELETE' to confirm"),
-            validate: async val => {
-                if (val !== "DELETE") {
-                    throw $l("Type 'DELETE' to confirm");
-                }
-                return val;
-            }
-        });
-
-        if (confirmed) {
-            await app.deleteSharedStore(this.store!.id);
-            alert($l("Group deleted successfully"));
-        }
-    }
-
-    private async _more() {
-        const choice = await choose("", [$l("Invite New User..."), $l("Delete Group...")]);
-
-        switch (choice) {
-            case 0:
-                this._invite();
-                break;
-            case 1:
-                this._delete();
-                break;
-        }
-    }
+    // private async _delete() {
+    //     const confirmed = await prompt($l("Are you sure you want to delete the '{0}' group?", this.store!.name), {
+    //         placeholder: $l("Type 'DELETE' to confirm"),
+    //         validate: async val => {
+    //             if (val !== "DELETE") {
+    //                 throw $l("Type 'DELETE' to confirm");
+    //             }
+    //             return val;
+    //         }
+    //     });
+    //
+    //     if (confirmed) {
+    //         await app.deleteSharedStore(this.store!.id);
+    //         alert($l("Group deleted successfully"));
+    //     }
+    // }
+    //
+    // private async _more() {
+    //     const choice = await choose("", [$l("Invite New User..."), $l("Delete Group...")]);
+    //
+    //     switch (choice) {
+    //         case 0:
+    //             this._invite();
+    //             break;
+    //         case 1:
+    //             this._delete();
+    //             break;
+    //     }
+    // }
 
     private async _removeAccount(account: PublicAccount) {
         const confirmed = await confirm(

@@ -274,20 +274,21 @@ export class SharedStore extends Store {
 
     async setAccount(
         acc: PublicAccount,
-        perms: Permissions = { read: true, write: true, manage: false },
+        permissions: Permissions = { read: true, write: true, manage: false },
         status: AccessorStatus
     ) {
         if (!acc.publicKey) {
             throw "Public Key is missing on account!";
         }
+        const addedBy = this.currentAccessor ? this.currentAccessor.email : acc.email;
         await this.container.setAccessor(
             Object.assign(
                 {
-                    permissions: perms,
-                    status: status,
                     encryptedKey: "",
                     updated: "",
-                    addedBy: this.currentAccessor!.email
+                    permissions,
+                    addedBy,
+                    status
                 },
                 acc
             )

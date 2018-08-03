@@ -165,7 +165,7 @@ export class Menu extends BaseElement {
                 opacity: 0;
             }
 
-            :host([sub-menu]) .menu, :host(:not([sub-menu="tags"])) .tags, :host(:not([sub-menu="stores"])) .stores {
+            :host([sub-menu]) .menu, :host(:not([sub-menu="tags"])) .sub-menu-tags, :host(:not([sub-menu="stores"])) .stores {
                 opacity: 0;
                 pointer-events: none;
             }
@@ -271,7 +271,7 @@ export class Menu extends BaseElement {
 
             </div>
 
-            <div class="sub-menu tags">
+            <div class="sub-menu sub-menu-tags">
 
                 <div class="spacer"></div>
 
@@ -284,7 +284,7 @@ export class Menu extends BaseElement {
 
                 ${tags.map(
                     (tag: string) => html`
-                    <div class="menu-item tag tap" on-click="${() => this._selectTag(tag)}">
+                    <div class="menu-item menu-item-tag tap" on-click="${() => this._selectTag(tag)}">
 
                         <div>${tag}</div>
 
