@@ -442,7 +442,7 @@ export class App extends EventTarget {
         try {
             await this.remoteStorage.get(store);
         } catch (e) {
-            console.error(e, store.name, store.id, "removing store...");
+            console.error(e, store.name, store.id);
             // switch (e.code) {
             //     case ErrorCode.NOT_FOUND:
             //     case ErrorCode.MISSING_ACCESS:
@@ -515,8 +515,9 @@ export class App extends EventTarget {
             throw "This account is already in this group.";
         }
 
-        store.setAccount(account, permissions, "invited");
-        await this.syncSharedStore(store.id);
+        await this.remoteStorage.get(store);
+        await store.setAccount(account, permissions, "invited");
+        await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
     }
 
     async removeAccount(store: SharedStore, account: PublicAccount) {
@@ -525,7 +526,7 @@ export class App extends EventTarget {
         }
         await this.remoteStorage.get(store);
         await store.removeAccount(account);
-        await this.remoteStorage.set(store);
+        await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
         this.dispatch("store-changed", { store });
     }
 

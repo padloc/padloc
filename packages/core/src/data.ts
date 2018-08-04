@@ -4,6 +4,7 @@ import { Storable } from "./storage";
 import { PublicAccount } from "./auth";
 import { uuid } from "./util";
 import { localize } from "./locale";
+import { Err, ErrorCode } from "./error";
 
 export type StoreID = string;
 export type RecordID = string;
@@ -106,9 +107,14 @@ export class Store implements Storable {
     }
 
     protected async _serialize() {
+        const publicKeys: { [email: string]: PublicKey } = {};
+        for (const accessor of this.container.accessors) {
+            publicKeys[accessor.email] = accessor.publicKey;
+        }
         return {
             created: this.created,
             updated: this.updated,
+            publicKeys,
             records: this.records.map((r: any) => {
                 // For backwards compatibility
                 r.uuid = r.id;
@@ -118,6 +124,11 @@ export class Store implements Storable {
     }
 
     protected async _deserialize(raw: any) {
+        for (const accessor of this.container.accessors) {
+            if (accessor.publicKey !== raw.publicKeys[accessor.email]) {
+                throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
+            }
+        }
         this.created = raw.created;
         this.updated = raw.updated;
         const records = raw.records.map((r: any) => {
