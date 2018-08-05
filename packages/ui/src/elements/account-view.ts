@@ -3,7 +3,7 @@ import { Session, PublicAccount } from "@padlock/core/lib/auth.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { Store } from "@padlock/core/lib/data.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import sharedStyles from "../styles/shared.js";
 import * as messages from "../messages.js";
 import { animateCascade } from "../animation.js";
@@ -227,7 +227,7 @@ export class AccountView extends View {
 
         <header>
 
-            <pl-icon icon="close" class="tap" on-click="${() => this._back()}"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="${() => router.back()}"></pl-icon>
 
             <div class="title">${$l("My Account")}</div>
 
@@ -512,7 +512,7 @@ export class AccountView extends View {
 
         <div class="login" hidden?="${loggedIn}">
 
-            <pl-icon icon="close" class="back-button tap" on-click="${() => this._back()}"></pl-icon>
+            <pl-icon icon="close" class="back-button tap" on-click="${() => router.go("")}"></pl-icon>
 
             <div class="spacer"></div>
 

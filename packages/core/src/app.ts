@@ -557,6 +557,26 @@ export class App extends EventTarget {
         this.dispatch("synchronize");
     }
 
+    getRecord(id: string): { record: Record; store: Store } | null {
+        for (const store of [this.mainStore, ...this.sharedStores]) {
+            const record = store.getRecord(id);
+            if (record) {
+                return { record, store };
+            }
+        }
+
+        return null;
+    }
+
+    async getStore(id: string): Promise<SharedStore | null> {
+        const localStore = this.sharedStores.find(s => s.id === id);
+        if (localStore) {
+            return localStore;
+        }
+
+        return null;
+    }
+
     async reactivateSubscription() {}
 
     buySubscription(_source: string) {}

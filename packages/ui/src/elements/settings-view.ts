@@ -16,7 +16,7 @@ import sharedStyles from "../styles/shared.js";
 import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt, exportRecords } from "../dialog";
 import { animateCascade } from "../animation";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { element, html, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
@@ -139,7 +139,7 @@ export class SettingsView extends View {
         </style>
 
         <header>
-            <pl-icon icon="close" class="tap" on-click="${() => this._back()}"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="${() => router.back()}"></pl-icon>
             <div class="title">${$l("Settings")}</div>
             <pl-icon></pl-icon>
         </header>

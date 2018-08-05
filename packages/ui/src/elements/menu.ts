@@ -3,7 +3,7 @@ import { wait, formatDateFromNow } from "@padlock/core/lib/util.js";
 import { Store } from "@padlock/core/lib/data.js";
 import sharedStyles from "../styles/shared.js";
 import { animateCascade } from "../animation.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { BaseElement, element, html, property, listen, observe } from "./base.js";
 import "./toggle.js";
 
@@ -183,7 +183,7 @@ export class Menu extends BaseElement {
 
                 <div class="spacer"></div>
 
-                <div class="account menu-item tap" on-click="${() => this.dispatch("open-account-view")}">
+                <div class="account menu-item tap" on-click="${() => router.go("account")}}">
 
                     <div>
 
@@ -219,7 +219,7 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => this.dispatch("open-settings")}">
+                <div class="menu-item tap" on-click="${() => router.go("settings")}}">
 
                     <div>${$l("Settings")}</div>
 

@@ -1,9 +1,9 @@
-import { Store } from "@padlock/core/lib/data.js";
+import { Store, SharedStore, Record } from "@padlock/core/lib/data.js";
 import { getPlatformName, getDeviceInfo } from "@padlock/core/lib/platform.js";
 import { wait } from "@padlock/core/lib/util.js";
 import config from "../styles/config.js";
 import sharedStyles from "../styles/shared.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
 import { AccountView } from "./account-view.js";
 import "./icon.js";
@@ -101,14 +101,9 @@ class App extends BaseElement {
                 to { transform: translate3d(0, 0, 0); z-index: 1; }
             }
 
-            @keyframes viewOutBack {
+            @keyframes viewOut {
                 from { transform: translate3d(0, 0, 0); }
                 to { transform: translate3d(0, 0, -200px) rotateX(10deg); }
-            }
-
-            @keyframes viewOutSide {
-                from { transform: translate3d(0, 0, 0); }
-                to { transform: translate3d(100%, 0, 0) rotateY(-30deg); }
             }
 
             @keyframes menuItemIn {
@@ -266,8 +261,6 @@ class App extends BaseElement {
         <pl-menu
             on-menu-open="${() => (this._showMenu = true)}"
             on-menu-close="${() => (this._showMenu = false)}"
-            on-open-settings="${() => this._openView(this._settingsView)}"
-            on-open-account-view="${() => this._openView(this._accountView)}"
             on-select-tag="${(e: CustomEvent) => this._listView.search(e.detail.tag)}"
             on-multiselect="${() => (this._listView.multiSelect = true)}">
         </pl-menu>
@@ -276,7 +269,6 @@ class App extends BaseElement {
 
             <pl-list-view
                 store="${this._currentStore}"
-                on-select-record="${(e: CustomEvent) => this._recordSelected(e)}"
                 on-toggle-menu="${() => this._menu.toggle()}">
             </pl-list-view>
 
@@ -326,16 +318,32 @@ class App extends BaseElement {
         }, 100);
     }
 
-    private _recordSelected(e: CustomEvent) {
-        const { record, store } = e.detail;
-        if (record) {
-            this._recordView.record = record;
-            this._recordView.store = store;
-            this._openView(this._recordView);
+    @listen("route-changed", router)
+    async _routeChanged({ detail: { path, direction } }: { detail: { path: string; direction: string } }) {
+        let match;
+        if (path === "settings") {
+            this._openView(this._settingsView, direction);
+        } else if (path === "account") {
+            this._openView(this._accountView, direction);
+        } else if ((match = path.match(/^store\/([^\/]+)$/))) {
+            const store = await app.getStore(match[1]);
+            if (store) {
+                this._storeView.store = store;
+                this._openView(this._storeView, direction);
+            }
+        } else if ((match = path.match(/^record\/([^\/]+)$/))) {
+            const item = app.getRecord(match[1]);
+            if (item) {
+                this._recordView.record = item.record;
+                this._recordView.store = item.store;
+                this._openView(this._recordView, direction);
+            }
+        } else {
+            this._openView(null, direction);
         }
     }
 
-    private async _openView(view: View | null) {
+    private async _openView(view: View | null, direction = "forward") {
         if (view === this._currentView) {
             return;
         }
@@ -343,20 +351,22 @@ class App extends BaseElement {
 
         if (view) {
             animateElement(view, {
-                animation: "viewIn",
+                animation: direction === "backward" ? "viewOut" : "viewIn",
                 duration: 400,
                 easing: "cubic-bezier(0.6, 0, 0.2, 1)",
-                fill: "backwards"
+                fill: "backwards",
+                direction: direction === "backward" ? "reverse" : "normal"
             });
             view.classList.add("showing");
             view.active = true;
         }
         if (this._currentView) {
             animateElement(this._currentView, {
-                animation: !view || this._isNarrow ? "viewOutSide" : "viewOutBack",
+                animation: direction === "backward" ? "viewIn" : "viewOut",
                 duration: 400,
                 easing: "cubic-bezier(0.6, 0, 0.2, 1)",
-                fill: "forwards"
+                fill: "forwards",
+                direction: direction === "backward" ? "reverse" : "normal"
             });
             await wait(350);
             this._currentView.classList.remove("showing");
@@ -418,12 +428,6 @@ class App extends BaseElement {
 
     private _newRecord() {
         app.createRecord(this._currentStore, "");
-    }
-
-    @listen("open-store")
-    _openStore({ detail: { store } }: CustomEvent) {
-        this._storeView.store = store;
-        this._openView(this._storeView);
     }
 }
 

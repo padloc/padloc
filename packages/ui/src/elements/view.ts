@@ -16,10 +16,6 @@ export class View extends BaseElement {
         }
     }
 
-    protected _back() {
-        this.dispatch("back", { view: this }, true, true);
-    }
-
     protected _activated() {}
 
     protected _deactivated() {}

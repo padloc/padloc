@@ -2,9 +2,9 @@ import { SharedStore } from "@padlock/core/lib/data.js";
 import { PublicAccount } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import sharedStyles from "../styles/shared.js";
-import { getDialog, choose, prompt, confirm, alert } from "../dialog.js";
+import { getDialog, confirm, alert } from "../dialog.js";
 import { animateCascade } from "../animation.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { element, html, property, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
@@ -72,7 +72,7 @@ export class StoreView extends View {
 
         <header>
 
-            <pl-icon icon="close" class="tap" on-click="${() => this._back()}"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="${() => router.back()}"></pl-icon>
 
             <div class="title">${name}</div>
 

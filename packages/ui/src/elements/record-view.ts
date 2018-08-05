@@ -5,7 +5,7 @@ import sharedStyles from "../styles/shared.js";
 import { View } from "./view.js";
 import { confirm, prompt, choose, openField, generate, getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { html, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -112,7 +112,7 @@ export class RecordView extends View {
 
         <header>
 
-            <pl-icon icon="close" class="tap" on-click="${() => this._back()}"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="${() => router.back()}"></pl-icon>
 
             <pl-input
                 id="nameInput"
@@ -296,7 +296,7 @@ export class RecordView extends View {
         const confirmed = await confirm($l("Are you sure you want to delete this record?"), $l("Delete"));
         if (confirmed) {
             app.deleteRecords(this.store, [this.record]);
-            this._back();
+            router.back();
         }
     }
 
@@ -385,7 +385,7 @@ export class RecordView extends View {
     }
 
     private _openStore(store: Store) {
-        this.dispatch("open-store", { store: store }, true, true);
+        router.go(`store/${store.id}`);
     }
 
     edit() {

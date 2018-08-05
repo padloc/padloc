@@ -5,7 +5,7 @@ import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { animateCascade } from "../animation.js";
 import { setClipboard } from "../clipboard.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { confirm, getDialog } from "../dialog.js";
 import sharedStyles from "../styles/shared.js";
 import { AlertDialog } from "./alert-dialog.js";
@@ -557,8 +557,8 @@ export class ListView extends BaseElement {
         } else {
             this._selected.clear();
             this._selected.set(item.record.id, item);
-            this.dispatchEvent(new CustomEvent("select-record", { detail: item || {} }));
             this._scrollToSelected();
+            router.go(`record/${item.record.id}`);
         }
         this.requestRender();
     }

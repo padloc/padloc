@@ -106,6 +106,10 @@ export class Store implements Storable {
         return createRecord(name, fields, tags);
     }
 
+    getRecord(id: string) {
+        return this._records.get(id);
+    }
+
     protected async _serialize() {
         const publicKeys: { [email: string]: PublicKey } = {};
         for (const accessor of this.container.accessors) {
