@@ -8,7 +8,7 @@ import { localize as $l } from "./locale";
 import { Err, ErrorCode } from "./error";
 import { getDeviceInfo } from "./platform";
 import { uuid } from "./util";
-import { getProvider, Permissions } from "./crypto";
+import { getProvider, Permissions, AccessorStatus } from "./crypto";
 
 export interface Stats {
     lastSync?: DateString;
@@ -126,6 +126,12 @@ export class App extends EventTarget {
         this.mainStore.password = pwd;
     }
 
+    get access() {
+        return this.account
+            ? Object.assign({ privateKey: this.mainStore.privateKey! }, this.account.publicAccount)
+            : null;
+    }
+
     get tags() {
         const tags = [...this.mainStore.tags];
         for (const store of this.sharedStores) {
@@ -217,10 +223,7 @@ export class App extends EventTarget {
         if (this.account) {
             for (const id of this.account.sharedStores) {
                 const sharedStore = new SharedStore(id);
-                sharedStore.access = Object.assign(
-                    { privateKey: this.mainStore.privateKey! },
-                    this.account.publicAccount
-                );
+                sharedStore.access = this.access;
                 try {
                     await this.storage.get(sharedStore);
                     this.sharedStores.push(sharedStore);
@@ -437,7 +440,7 @@ export class App extends EventTarget {
             store = new SharedStore(id);
             this.sharedStores.push(store);
         }
-        store.access = Object.assign({ privateKey: this.mainStore.privateKey! }, this.account.publicAccount);
+        store.access = this.access;
 
         try {
             await this.remoteStorage.get(store);
@@ -520,6 +523,18 @@ export class App extends EventTarget {
         await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
     }
 
+    async setAccount(
+        store: SharedStore,
+        acc: PublicAccount,
+        permissions: Permissions = { read: true, write: true, manage: false },
+        status: AccessorStatus
+    ) {
+        await this.remoteStorage.get(store);
+        await store.setAccount(acc, permissions, status);
+        await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
+        this.dispatch("store-changed", { store });
+    }
+
     async removeAccount(store: SharedStore, account: PublicAccount) {
         if (!store.permissions.manage) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
@@ -530,8 +545,13 @@ export class App extends EventTarget {
         this.dispatch("store-changed", { store });
     }
 
-    async joinStore(store: SharedStore) {
-        await this.client.joinStore(store);
+    async acceptInvite(store: SharedStore) {
+        await this.client.acceptInvite(store);
+        this.dispatch("store-changed", { store });
+    }
+
+    async requestAccess(store: SharedStore) {
+        await this.client.requestAccess(store);
         this.dispatch("store-changed", { store });
     }
 
@@ -569,10 +589,17 @@ export class App extends EventTarget {
     }
 
     async getStore(id: string): Promise<SharedStore | null> {
-        const localStore = this.sharedStores.find(s => s.id === id);
-        if (localStore) {
-            return localStore;
+        let store = this.sharedStores.find(s => s.id === id);
+        if (store) {
+            return store;
         }
+
+        store = new SharedStore(id);
+        try {
+            store.access = this.access;
+            await this.remoteStorage.get(store);
+            return store;
+        } catch (e) {}
 
         return null;
     }

@@ -1,26 +1,18 @@
 import { SharedStore } from "@padlock/core/lib/data.js";
 import { PublicAccount } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { ErrorCode } from "@padlock/core/lib/error.js";
 import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
-import { alert, prompt, getDialog } from "../dialog.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
-import { ToggleButton } from "./toggle-button.js";
-import "./loading-button.js";
-import "./account-dialog.js";
 
 @element("pl-invite-dialog")
 export class InviteDialog extends BaseElement {
     @property() store: SharedStore | null = null;
 
     @query("pl-dialog") private _dialog: Dialog;
-    @query("#permRead") private _permRead: ToggleButton;
-    @query("#permWrite") private _permWrite: ToggleButton;
-    @query("#permManage") private _permManage: ToggleButton;
 
-    private _resolve: (() => void) | null;
+    private _resolve: ((acc: PublicAccount | null | "new") => void) | null;
 
     _shouldRender() {
         return !!this.store;
@@ -28,8 +20,9 @@ export class InviteDialog extends BaseElement {
 
     _render({ store }: this) {
         const trusted = app.mainStore.trustedAccounts.filter(
-            acc => !store!.accessors.some(a => a.email === acc.email && a.status !== "removed")
+            acc => !store!.accessors.some(a => a.email === acc.email && a.status === "active")
         );
+        const { name } = store!;
 
         return html`
             <style>
@@ -59,53 +52,51 @@ export class InviteDialog extends BaseElement {
                     border-bottom: solid 1px var(--border-color);
                 }
 
-                .permissions {
-                    display: flex;
-                    justify-content: center;
+                .tag.group {
+                    background: var(--color-tertiary);
+                    color: var(--color-secondary);
+                    text-shadow: none;
+                    box-shadow: rgba(0, 0, 0, 0.2) 0 2px 2px;
+                    margin-left: 10px;
                 }
 
-                .permissions pl-toggle-button {
-                    --toggle-width: 33px;
-                    --toggle-height: 22px;
-                    --color-highlight: var(--color-primary);
-                    padding: 0 8px;
-                    font-weight: bold;
+                .hint {
+                    padding: 10px;
+                    text-align: center;
                     font-size: var(--font-size-small);
                 }
 
             </style>
 
-            <pl-dialog>
+            <pl-dialog on-dialog-dismiss="${() => this._done(null)}">
 
                 <div class="title">
 
-                    <pl-icon icon="invite"></pl-icon>
+                    <div>${$l("Add To")}</div>
 
-                    <div>${$l("Invite To '{0}'...", store!.name)}</div>
+                    <div class="tag group">
 
-                </div>
+                        <pl-icon icon="group"></pl-icon>
 
-                <div class="permissions">
+                        <div>${name}</div>
 
-                    <pl-toggle-button id="permRead" label="${$l("read")}" reverse active></pl-toggle-button>
-
-                    <pl-toggle-button id="permWrite" label="${$l("write")}" reverse></pl-toggle-button>
-
-                    <pl-toggle-button id="permManage" label="${$l("manage")}" reverse></pl-toggle-button>
+                    </div>
 
                 </div>
+
+                <div class="hint" hidden?="${!trusted.length}">${$l("Select a user to add them to this group:")}"</div>
 
                 ${trusted.map(
                     acc => html`
                     <pl-account-item
                         class="tap"
                         account="${acc}"
-                        on-click="${() => this._selectAccount(acc)}">
+                        on-click="${() => this._done(acc)}">
                     </pl-account-item>
                 `
                 )}
 
-                <button class="tap" on-click="${() => this._inviteNew()}">
+                <button class="tap" on-click="${() => this._done("new")}">
                     ${$l("Invite New User...")}
                 </button>
 
@@ -113,76 +104,19 @@ export class InviteDialog extends BaseElement {
         `;
     }
 
-    async show(store: SharedStore) {
+    async show(store: SharedStore): Promise<PublicAccount | null | "new"> {
         this.store = store;
         this.requestRender();
         await this.renderComplete;
-        this._permRead.active = true;
-        this._permWrite.active = false;
-        this._permManage.active = false;
         this._dialog.open = true;
-        return new Promise(resolve => {
+        return new Promise<PublicAccount | null | "new">(resolve => {
             this._resolve = resolve;
         });
     }
 
-    private _done() {
-        this._resolve && this._resolve();
+    private _done(account: PublicAccount | null | "new") {
+        this._resolve && this._resolve(account);
         this._resolve = null;
         this._dialog.open = false;
-    }
-
-    async _selectAccount(account: PublicAccount) {
-        this._dialog.open = false;
-        const store = this.store!;
-
-        const confirmed = await getDialog("pl-account-dialog").show(account, $l("Invite To '{0}'", store.name));
-
-        if (!confirmed) {
-            this._dialog.open = true;
-            return;
-        }
-
-        await app.createInvite(store, account, {
-            read: this._permRead.active,
-            write: this._permWrite.active,
-            manage: this._permManage.active
-        });
-
-        this._done();
-    }
-
-    async _inviteNew() {
-        this._dialog.open = false;
-        const email = await prompt(
-            $l("Please enter the email address of the user you would like to share this with!"),
-            {
-                placeholder: $l("Enter Email Address"),
-                confirmLabel: $l("Submit"),
-                validate: async (email, input) => {
-                    if (!email || input.invalid) {
-                        throw $l("Please enter a valid email address!");
-                    }
-                    return email;
-                }
-            }
-        );
-
-        if (!email) {
-            this._dialog.open = true;
-            return;
-        }
-
-        try {
-            const account = await app.client.getAccount(email);
-            await this._selectAccount(account);
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                await alert($l("This account does not exist!"));
-                this._dialog.open = true;
-            } else {
-                throw e;
-            }
-        }
     }
 }

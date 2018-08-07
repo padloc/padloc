@@ -62,7 +62,8 @@ export class Server {
         this.koa.use(route.put("/store/:id", handlers.putStore));
         this.koa.use(route.delete("/store/:id", handlers.deleteStore));
         this.koa.use(route.put("/store", handlers.createStore));
-        this.koa.use(route.post("/store/:id/join", handlers.joinStore));
+        this.koa.use(route.post("/store/:id/accept", handlers.acceptInvite));
+        this.koa.use(route.post("/store/:id/request", handlers.requestAccess));
     }
 
     start(port: number) {

@@ -140,6 +140,7 @@ export class RecordView extends View {
             <div class="tags animate">
 
                 <div class="tag highlight tap"
+                    flex
                     hidden?="${store === app.mainStore}"
                     on-click="${() => this._openStore(store!)}">
 
@@ -149,7 +150,7 @@ export class RecordView extends View {
 
                 </div>
 
-                <div class="tag warning" hidden?="${permissions.write}">
+                <div class="tag warning" flex hidden?="${permissions.write}">
 
                     <pl-icon icon="show"></pl-icon>
 
@@ -159,7 +160,7 @@ export class RecordView extends View {
 
                 ${tags.map(
                     (tag: string) => html`
-                    <div class="tag tap" on-click="${() => this._removeTag(tag)}">
+                    <div class="tag tap" flex on-click="${() => this._removeTag(tag)}">
 
                         <pl-icon icon="tag"></pl-icon>
 
@@ -169,7 +170,7 @@ export class RecordView extends View {
                 `
                 )}
 
-                <div class="tag ghost tap" on-click="${() => this._addTag()}">
+                <div class="tag ghost tap" flex on-click="${() => this._addTag()}">
 
                     <pl-icon icon="add"></pl-icon>
 
@@ -177,7 +178,8 @@ export class RecordView extends View {
 
                 </div>
 
-                <div class="tag ghost tap" hidden?="${this.store !== app.mainStore}" on-click="${() => this._share()}">
+                <div class="tag ghost tap" flex hidden?="${this.store !== app.mainStore}" on-click="${() =>
+            this._share()}">
 
                     <pl-icon icon="share"></pl-icon>
 
@@ -381,7 +383,7 @@ export class RecordView extends View {
     }
 
     private async _share() {
-        await getDialog("pl-share-dialog").show(this.record, this.store);
+        await getDialog("pl-share-dialog").show([this.record], this.store);
     }
 
     private _openStore(store: Store) {

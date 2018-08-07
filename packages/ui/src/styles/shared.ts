@@ -378,7 +378,7 @@ const styles = `
         vertical-align: top;
     }
 
-    .tags pl-icon {
+    .tag pl-icon {
         width: 20px;
         height: 30px;
         margin-right: 4px;

@@ -197,7 +197,7 @@ export interface Permissions {
     manage: boolean;
 }
 
-export type AccessorStatus = "invited" | "active" | "left" | "removed";
+export type AccessorStatus = "invited" | "active" | "left" | "removed" | "requested" | "rejected" | "none";
 
 export interface Accessor extends PublicAccount {
     encryptedKey: CipherText;
@@ -218,7 +218,7 @@ export class Container implements Storage, Storable {
     meta: any = {};
     key?: SymmetricKey;
     password?: string;
-    access?: Access;
+    access: Access | null = null;
     accessors: Accessor[] = [];
 
     constructor(

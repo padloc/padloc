@@ -395,6 +395,22 @@ export class AccountView extends View {
 
                         <div class="tags small">
 
+                            <div class="tag" hidden?="${accessorStatus !== "active"}">
+
+                                <pl-icon icon="group"></pl-icon>
+
+                                <div>${accessors.filter(a => a.status === "active").length}</div>
+
+                            </div>
+
+                            <div class="tag" hidden?="${accessorStatus !== "active"}">
+
+                                <pl-icon icon="record"></pl-icon>
+
+                                <div>${records.length}</div>
+
+                            </div>
+
                             <div class="tag highlight" hidden?="${accessorStatus !== "invited"}">
 
                                 <pl-icon icon="time"></pl-icon>
@@ -403,27 +419,27 @@ export class AccountView extends View {
 
                             </div>
 
-                            <div class="tag" hidden?="${accessorStatus === "removed"}">
-
-                                <pl-icon icon="group"></pl-icon>
-
-                                <div>${accessors.length}</div>
-
-                            </div>
-
-                            <div class="tag" hidden?="${accessorStatus === "removed"}">
-
-                                <pl-icon icon="record"></pl-icon>
-
-                                <div>${records.length}</div>
-
-                            </div>
-
                             <div class="tag warning" hidden?="${accessorStatus !== "removed"}">
 
                                 <pl-icon icon="removeuser"></pl-icon>
 
                                 <div>${$l("access revoked")}</div>
+
+                            </div>
+
+                            <div class="tag warning" hidden?="${accessorStatus !== "rejected"}">
+
+                                <pl-icon icon="removeuser"></pl-icon>
+
+                                <div>${$l("access rejected")}</div>
+
+                            </div>
+
+                            <div class="tag highlight" hidden?="${accessorStatus !== "requested"}">
+
+                                <pl-icon icon="time"></pl-icon>
+
+                                <div>${$l("access requested")}</div>
 
                             </div>
 
@@ -436,7 +452,7 @@ export class AccountView extends View {
                             active="${!app.settings.hideStores.includes(store.id)}"
                             on-click="${(e: Event) => this._toggleStore(store, e)}"></pl-toggle>
 
-                        <pl-icon icon="forward" hidden?="${accessorStatus !== "invited"}"></pl-icon>
+                        <pl-icon icon="forward" hidden?="${accessorStatus === "active"}"></pl-icon>
 
                     </div>
                 `;
@@ -631,7 +647,7 @@ export class AccountView extends View {
     }
 
     private async _openStore(store: Store) {
-        this.dispatch("open-store", { store });
+        router.go(`store/${store.id}`);
     }
 
     private _toggleStore(store: Store, e: Event) {

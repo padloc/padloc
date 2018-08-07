@@ -1,6 +1,6 @@
 import { SharedStore } from "@padlock/core/lib/data.js";
-import { PublicAccount } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
+import { Accessor } from "@padlock/core/lib/crypto.js";
 import sharedStyles from "../styles/shared.js";
 import { getDialog, confirm, alert } from "../dialog.js";
 import { animateCascade } from "../animation.js";
@@ -8,21 +8,93 @@ import { app, router } from "../init.js";
 import { element, html, property, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
-import "./account-dialog.js";
+import "./accessor-dialog.js";
+import { InviteDialog } from "./invite-dialog.js";
 import "./invite-dialog.js";
 
 @element("pl-store-view")
 export class StoreView extends View {
     @property() store: SharedStore | null = null;
 
+    private get _inviteDialog() {
+        return getDialog("pl-invite-dialog") as InviteDialog;
+    }
+
     @listen("synchronize", app)
     @listen("store-changed", app)
     _refresh() {
         this.requestRender();
+        this.$$("pl-account-item", false).forEach((el: any) => el.requestRender());
     }
 
     _activated() {
         animateCascade(this.$$(".animate:not([hidden])", false), { initialDelay: 200 });
+    }
+
+    private async _invite() {
+        const selection = await this._inviteDialog.show(this.store!);
+        if (selection !== "new" && selection !== null) {
+            this._openAccessor(
+                Object.assign(
+                    {
+                        status: "none" as "none",
+                        encryptedKey: "",
+                        addedBy: "",
+                        updated: "",
+                        permissions: { read: true, write: false, manage: false }
+                    },
+                    selection
+                )
+            );
+        }
+    }
+
+    private async _openAccessor(accessor: Accessor) {
+        await getDialog("pl-accessor-dialog").show(accessor, this.store);
+    }
+
+    // private async _delete() {
+    //     const confirmed = await prompt($l("Are you sure you want to delete the '{0}' group?", this.store!.name), {
+    //         placeholder: $l("Type 'DELETE' to confirm"),
+    //         validate: async val => {
+    //             if (val !== "DELETE") {
+    //                 throw $l("Type 'DELETE' to confirm");
+    //             }
+    //             return val;
+    //         }
+    //     });
+    //
+    //     if (confirmed) {
+    //         await app.deleteSharedStore(this.store!.id);
+    //         alert($l("Group deleted successfully"));
+    //     }
+    // }
+
+    private async _requestAccess() {
+        await app.requestAccess(this.store!);
+    }
+
+    private async _acceptInvite() {
+        let confirmed = false;
+        const { accessors, currentAccessor, name } = this.store!;
+        const addedBy = accessors.find(a => a.email === currentAccessor.addedBy);
+        if (!app.isTrusted(addedBy)) {
+            await alert(
+                $l(
+                    "You were invited to this group by {0}, who is not among your trusted users yet. " +
+                        "You'll have to add him to your trusted users first before you can join this store",
+                    addedBy.email
+                ),
+                { options: [$l("Continue")], preventDismiss: true }
+            );
+            confirmed = await getDialog("pl-account-dialog").show(addedBy, $l("Join {0}", name));
+        } else {
+            confirmed = await confirm($l("Do you want to join this group?", this.store!.name), $l("Join"));
+        }
+
+        if (confirmed) {
+            await app.acceptInvite(this.store!);
+        }
     }
 
     _shouldRender() {
@@ -30,9 +102,9 @@ export class StoreView extends View {
     }
 
     _render({ store }: this) {
-        const { name, accessors, permissions, currentAccessor, records } = store!;
-        const accounts = accessors.filter(a => a.status !== "removed");
-        const accessorStatus = currentAccessor ? currentAccessor.status : "";
+        const { name, accessors, permissions, currentAccessor, accessorStatus, records } = store!;
+        const accounts = accessors.filter(({ status }) => ["active", "invited", "requested"].includes(status));
+        const addedBy = currentAccessor && currentAccessor.addedBy;
 
         return html`
         <style>
@@ -53,20 +125,46 @@ export class StoreView extends View {
                 padding: 0 8px;
             }
 
-            .account-wrapper {
+            pl-account-item {
                 @apply --card;
-                display: flex;
                 margin: 6px;
             }
 
-            pl-account-item {
-                flex: 1;
+            .subheader {
+                height: 35px;
+                line-height: 35px;
+                padding: 0 15px;
+                width: 100%;
+                box-sizing: border-box;
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
+                cursor: pointer;
+                background: var(--color-foreground);
+                color: var(--color-background);
+                display: flex;
+                text-align: center;
             }
 
-            .account-wrapper pl-icon {
-                align-self: stretch;
-                height: auto;
-                width: 60px;
+            .subheader button {
+                line-height: inherit;
+                font-size: inherit;
+                height: inherit;
+                margin-right: -15px;
+            }
+
+            .subheader-label {
+                font-weight: normal;
+                text-align: left;
+            }
+
+            .subheader.warning {
+                background: linear-gradient(90deg, #f49300 0%, #f25b00 100%);
+                text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
+            }
+
+            .subheader.highlight{
+                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+                text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
             }
         </style>
 
@@ -87,9 +185,44 @@ export class StoreView extends View {
 
         <main>
 
-            <div class="tags animate" hidden?="${accessorStatus !== "active"}">
+            <div class="subheader warning animate ellipsis" hidden?="${accessorStatus !== "removed"}">
+                <div flex>${$l("You have been removed from this group")}</div>
+            </div>
 
-                <div class="tag warning" hidden?="${permissions.write}">
+            <div class="subheader highlight animate ellipsis" hidden?="${accessorStatus !== "requested"}">
+                <div flex>${$l("Access Request Sent")}</div>
+            </div>
+
+            <div class="subheader warning animate ellipsis" hidden?="${accessorStatus !== "rejected"}">
+                <div flex>${$l("Access Request Rejected")}</div>
+            </div>
+
+            <div class="subheader highlight animate" hidden?="${accessorStatus !== "invited"}">
+
+                <div class="subheader-label ellipsis" flex>${$l("Invited By {0}", addedBy)}</div>
+
+                <button class="tap" on-click="${() => this._acceptInvite()}">
+                    ${$l("Join Group")}
+                </div>
+
+            </div>
+
+            <div
+                class="subheader warning animate tap"
+                hidden?="${accessorStatus !== "none"}"
+                on-click="${() => this._requestAccess()}">
+
+                <div class="subheader-label ellipsis" flex>${$l("You are not a member of this group.")}</div>
+
+                <button>
+                    ${$l("Request Access")}
+                </button>
+
+            </div>
+
+            <div class="tags animate">
+
+                <div class="tag warning" flex hidden?="${accessorStatus !== "active" || permissions.write}">
 
                     <pl-icon icon="show"></pl-icon>
 
@@ -97,39 +230,19 @@ export class StoreView extends View {
 
                 </div>
 
-                <div class="tag" hidden?="${accessorStatus === "removed"}">
+                <div class="tag" flex hidden?="${accessorStatus === "removed"}">
 
                     <pl-icon icon="group"></pl-icon>
 
-                    <div>${accounts.length}</div>
+                    <div>${$l("{0} Members", accounts.length.toString())}</div>
 
                 </div>
 
-                <div class="tag" hidden?="${accessorStatus === "removed"}">
+                <div class="tag" flex hidden?="${accessorStatus === "removed"}">
 
                     <pl-icon icon="record"></pl-icon>
 
-                    <div>${records.length}</div>
-
-                </div>
-
-            </div>
-
-            <div class="tags animate" hidden?="${accessorStatus !== "removed"}">
-
-                <div class="tag warning" flex>${$l("Access Revoked")}</div>
-
-            </div>
-
-            <div class="tags animate" hidden?="${accessorStatus !== "invited"}">
-
-                <div class="tag highlight ellipsis" flex>${$l("invited by {0}", currentAccessor.addedBy)}</div>
-
-                <div class="tag ghost tap" on-click="${() => this._join()}">
-
-                    <pl-icon icon="group"></pl-icon>
-
-                    <div>${$l("Join Group")}</div>
+                    <div>${$l("{0} Records", records.length.toString())}</div>
 
                 </div>
 
@@ -137,19 +250,11 @@ export class StoreView extends View {
 
             ${accounts.map(
                 acc => html`
-                    <div class="account-wrapper animate">
-                        <pl-account-item
-                            account="${acc}"
-                            class="tap"
-                            on-click="${() => this._openAccount(acc)}">
-                        </pl-account-item>
-                        <pl-icon
-                            icon="removeuser"
-                            class="tap"
-                            hidden?="${!permissions.manage || acc.email === app.account!.email}"
-                            on-click="${() => this._removeAccount(acc)}">
-                        </pl-icon>
-                    </div>
+                    <pl-account-item
+                        account="${acc}"
+                        class="animate tap"
+                        on-click="${() => this._openAccessor(acc)}">
+                    </pl-account-item>
                 `
             )}
 
@@ -157,79 +262,5 @@ export class StoreView extends View {
 
         <div class="rounded-corners"></div>
        `;
-    }
-
-    private async _invite() {
-        await getDialog("pl-invite-dialog").show(this.store);
-        this.requestRender();
-    }
-
-    private async _openAccount(account: PublicAccount) {
-        await getDialog("pl-account-dialog").show(account);
-    }
-
-    // private async _delete() {
-    //     const confirmed = await prompt($l("Are you sure you want to delete the '{0}' group?", this.store!.name), {
-    //         placeholder: $l("Type 'DELETE' to confirm"),
-    //         validate: async val => {
-    //             if (val !== "DELETE") {
-    //                 throw $l("Type 'DELETE' to confirm");
-    //             }
-    //             return val;
-    //         }
-    //     });
-    //
-    //     if (confirmed) {
-    //         await app.deleteSharedStore(this.store!.id);
-    //         alert($l("Group deleted successfully"));
-    //     }
-    // }
-    //
-    // private async _more() {
-    //     const choice = await choose("", [$l("Invite New User..."), $l("Delete Group...")]);
-    //
-    //     switch (choice) {
-    //         case 0:
-    //             this._invite();
-    //             break;
-    //         case 1:
-    //             this._delete();
-    //             break;
-    //     }
-    // }
-
-    private async _removeAccount(account: PublicAccount) {
-        const confirmed = await confirm(
-            $l("Are you sure you want to remove this user from the group?"),
-            $l("Remove User")
-        );
-
-        if (confirmed) {
-            await app.removeAccount(this.store!, account);
-            this.requestRender();
-        }
-    }
-
-    private async _join() {
-        let confirmed = false;
-        const { accessors, currentAccessor, name } = this.store!;
-        const addedBy = accessors.find(a => a.email === currentAccessor.addedBy);
-        if (!app.isTrusted(addedBy)) {
-            await alert(
-                $l(
-                    "You were invited to this group by {0}, who is not among your trusted users yet. " +
-                        "You'll have to add him to your trusted users first before you can join this store",
-                    addedBy.email
-                ),
-                { options: [$l("Continue")], preventDismiss: true }
-            );
-            confirmed = await getDialog("pl-account-dialog").show(addedBy, $l("Join {0}", name));
-        } else {
-            confirmed = await confirm($l("Do you want to join this group?", this.store!.name), $l("Join"));
-        }
-
-        if (confirmed) {
-            await app.joinStore(this.store!);
-        }
     }
 }

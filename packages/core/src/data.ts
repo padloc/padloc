@@ -129,7 +129,7 @@ export class Store implements Storable {
 
     protected async _deserialize(raw: any) {
         for (const accessor of this.container.accessors) {
-            if (accessor.publicKey !== raw.publicKeys[accessor.email]) {
+            if (accessor.status === "active" && accessor.publicKey !== raw.publicKeys[accessor.email]) {
                 throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
             }
         }
@@ -241,11 +241,11 @@ export class SharedStore extends Store {
         return this.container.accessors;
     }
 
-    get access(): Access | undefined {
+    get access(): Access | null {
         return this.container.access;
     }
 
-    set access(access: Access | undefined) {
+    set access(access: Access | null) {
         this.container.access = access;
     }
 
@@ -260,7 +260,7 @@ export class SharedStore extends Store {
 
     get accessorStatus(): AccessorStatus {
         const accessor = this.currentAccessor;
-        return accessor ? accessor.status : "removed";
+        return accessor ? accessor.status : "none";
     }
 
     getEncryptedKey(publicKey: PublicKey) {
@@ -298,18 +298,17 @@ export class SharedStore extends Store {
             throw "Public Key is missing on account!";
         }
         const addedBy = this.currentAccessor ? this.currentAccessor.email : acc.email;
-        await this.container.setAccessor(
-            Object.assign(
-                {
-                    encryptedKey: "",
-                    updated: "",
-                    permissions,
-                    addedBy,
-                    status
-                },
-                acc
-            )
-        );
+        await this.container.setAccessor({
+            id: acc.id,
+            email: acc.email,
+            name: acc.name,
+            publicKey: acc.publicKey,
+            encryptedKey: "",
+            updated: "",
+            permissions,
+            addedBy,
+            status
+        });
     }
 
     async removeAccount(acc: PublicAccount) {

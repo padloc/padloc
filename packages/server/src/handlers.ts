@@ -1,4 +1,4 @@
-import { Container } from "@padlock/core/src/crypto";
+import { Container, AccessorStatus } from "@padlock/core/src/crypto";
 import { Account, Session } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 import { uuid } from "@padlock/core/lib/util.js";
@@ -249,7 +249,44 @@ export async function updateAccount(ctx: Context) {
     ctx.body = await account.serialize();
 }
 
-export async function joinStore(ctx: Context, id: string) {
+export async function requestAccess(ctx: Context, id: string) {
+    if (!ctx.state.session || !ctx.state.account) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const account = ctx.state.account;
+
+    const container = new Container();
+    container.id = id;
+    container.kind = "store";
+
+    await ctx.storage.get(container);
+
+    if (container.accessors.some(a => a.email === account.email)) {
+        throw new Err(ErrorCode.BAD_REQUEST);
+    }
+
+    container.accessors.push(
+        Object.assign(
+            {
+                status: "requested" as AccessorStatus,
+                updated: new Date().toISOString(),
+                encryptedKey: "",
+                addedBy: "",
+                permissions: { read: true, write: false, manage: false }
+            },
+            account.publicAccount
+        )
+    );
+
+    account.sharedStores.push(id);
+
+    await Promise.all([ctx.storage.set(account), ctx.storage.set(container)]);
+
+    ctx.body = await container.serialize();
+}
+
+export async function acceptInvite(ctx: Context, id: string) {
     if (!ctx.state.session || !ctx.state.account) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }

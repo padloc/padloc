@@ -14,27 +14,30 @@ export class AccountItem extends BaseElement {
 
     _render({ account }: this) {
         account = account!;
-        let pills = [];
+        const pills = [];
 
-        if (app.isTrusted(account)) {
-            pills.push({ icon: "trusted", label: $l("trusted") });
-        }
-
-        if (account.permissions) {
-            account.permissions.read && pills.push({ icon: "check", label: $l("read") });
-            account.permissions.write && pills.push({ icon: "check", label: $l("write") });
-            account.permissions.manage && pills.push({ icon: "check", label: $l("manage") });
-        }
-
-        if (!account.permissions) {
-            pills.push(
-                ...app.sharedStores.filter(s => s.accessors.some(a => a.email === account!.email)).map(s => {
-                    return {
-                        icon: "group",
-                        label: s.name
-                    };
-                })
-            );
+        switch (account.status) {
+            case "active":
+            case "invited":
+                account.permissions.read && pills.push({ icon: "check", label: $l("read") });
+                account.permissions.write && pills.push({ icon: "check", label: $l("write") });
+                account.permissions.manage && pills.push({ icon: "check", label: $l("manage") });
+                break;
+            case "requested":
+                pills.push({ icon: "time", label: $l("access requested"), class: "highlight" });
+                break;
+            default:
+                if (app.isTrusted(account)) {
+                    pills.push({ icon: "trusted", label: $l("trusted") });
+                }
+                pills.push(
+                    ...app.sharedStores.filter(s => s.accessors.some(a => a.email === account!.email)).map(s => {
+                        return {
+                            icon: "group",
+                            label: s.name
+                        };
+                    })
+                );
         }
 
         return html`

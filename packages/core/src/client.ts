@@ -119,11 +119,12 @@ export class Client {
         await this.request("POST", `store/${store}/invite`, marshal(accessor));
     }
 
-    async joinStore(store: SharedStore): Promise<void> {
-        if (!this.app.session || !this.app.account) {
-            throw "Need to be logged in";
-        }
+    async requestAccess(store: SharedStore): Promise<void> {
+        const res = await this.request("POST", `store/${store.id}/request`);
+        await store.deserialize(unmarshal(res.responseText));
+    }
 
+    async acceptInvite(store: SharedStore): Promise<void> {
         const res = await this.request("POST", `store/${store.id}/join`);
         await store.deserialize(unmarshal(res.responseText));
     }
