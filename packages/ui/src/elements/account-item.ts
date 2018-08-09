@@ -78,7 +78,7 @@ export class AccountItem extends BaseElement {
 
                     ${pills.map(
                         pill => html`
-                            <div class="tag">
+                            <div class$="tag ${pill.class || ""}">
 
                                 <pl-icon icon="${pill.icon}"></pl-icon>
 

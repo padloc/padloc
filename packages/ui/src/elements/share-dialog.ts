@@ -14,7 +14,7 @@ export class ShareDialog extends BaseElement {
 
     @query("pl-dialog") private _dialog: Dialog;
 
-    private _resolve: (() => void) | null;
+    private _resolve: ((store: SharedStore | null) => void) | null;
 
     _render({ records }: this) {
         const stores = app.sharedStores.filter(s => s.accessorStatus === "active" && s.permissions.write);
@@ -70,7 +70,7 @@ export class ShareDialog extends BaseElement {
 
             </style>
 
-            <pl-dialog>
+            <pl-dialog on-dialog-dismiss="() => this._done()">
 
                 <div class="title">
                     <pl-icon icon="share"></pl-icon>
@@ -128,13 +128,13 @@ export class ShareDialog extends BaseElement {
         this.requestRender();
         await this.renderComplete;
         this._dialog.open = true;
-        return new Promise(resolve => {
+        return new Promise<SharedStore | null>(resolve => {
             this._resolve = resolve;
         });
     }
 
-    private _done() {
-        this._resolve && this._resolve();
+    private _done(store?: SharedStore) {
+        this._resolve && this._resolve(store || null);
         this._resolve = null;
         this._dialog.open = false;
     }
@@ -158,7 +158,7 @@ export class ShareDialog extends BaseElement {
                 await app.createRecord(store, name, fields, tags);
             }
             await app.deleteRecords(app.mainStore, this.records);
-            this._done();
+            this._done(store);
         } else {
             this._dialog.open = true;
         }

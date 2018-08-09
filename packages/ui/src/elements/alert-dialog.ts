@@ -10,8 +10,10 @@ export interface AlertOptions {
     title?: string;
     options?: string[];
     type?: AlertType;
+    icon?: string;
     preventDismiss?: boolean;
     hideIcon?: boolean;
+    horizontal?: boolean;
 }
 
 @element("pl-alert-dialog")
@@ -20,10 +22,14 @@ export class AlertDialog extends BaseElement {
     @property() dialogTitle: string = "";
     @property() message: string = "";
     @property() type: AlertType = "info";
+    @property() icon = "";
     @property() options: string[] = [];
     @property() preventDismiss: boolean = false;
-    @property() hideIcon: boolean = false;
+    @property({ reflect: "hide-icon" })
+    hideIcon: boolean = false;
     @property() open: boolean = false;
+    @property({ reflect: true })
+    horizontal: boolean = false;
 
     private _resolve: ((_: number) => void) | null;
 
@@ -59,6 +65,14 @@ export class AlertDialog extends BaseElement {
                 text-align: center;
             }
 
+            :host([horizontal]) .buttons {
+                display: flex;
+            }
+
+            :host([horizontal]) .buttons > * {
+                flex: 1;
+            }
+
             .info-text:not(.small) {
                 font-size: var(--font-size-default);
             }
@@ -70,28 +84,33 @@ export class AlertDialog extends BaseElement {
             on-dialog-dismiss="${() => this._selectOption(-1)}">
 
             <div class="info" hidden?="${!this.dialogTitle && !this.message}">
-                <pl-icon class="info-icon" icon="${this._icon(props.type)}"></pl-icon>
+                <pl-icon class="info-icon" icon="${props.icon}"></pl-icon>
                 <div class="info-body">
                     <div class="info-title">${props.dialogTitle}</div>
                     <div class$="info-text ${this.dialogTitle ? "small" : ""}">${props.message}</div>
                 </div>
             </div>
 
-            ${props.options.map(
-                (o: any, i: number) =>
-                    html`<button
-                        on-click="${() => this._selectOption(i)}"
-                        class$="${this._buttonClass(i)}">
-                            ${o}
-                        </button>`
-            )}
+            <div class="buttons tiles tiles-2">
+                ${props.options.map(
+                    (o: any, i: number) => html`<button on-click="${() => this._selectOption(i)}">${o}</button>`
+                )}
+            </div>
         </pl-dialog>
 `;
     }
 
     show(
         message = "",
-        { title = "", options = ["OK"], type = "info", preventDismiss = false, hideIcon = false }: AlertOptions = {}
+        {
+            title = "",
+            options = ["OK"],
+            type = "info",
+            preventDismiss = false,
+            hideIcon = false,
+            horizontal = false,
+            icon
+        }: AlertOptions = {}
     ): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
@@ -99,6 +118,8 @@ export class AlertDialog extends BaseElement {
         this.preventDismiss = preventDismiss;
         this.options = options;
         this.hideIcon = hideIcon;
+        this.horizontal = horizontal;
+        this.icon = icon || this._icon(type);
 
         setTimeout(() => (this.open = true), 10);
 
@@ -107,7 +128,7 @@ export class AlertDialog extends BaseElement {
         });
     }
 
-    _icon(type: string) {
+    private _icon(type: string) {
         switch (type) {
             case "info":
                 return "info-round";
@@ -117,22 +138,14 @@ export class AlertDialog extends BaseElement {
                 return "success";
             case "question":
                 return "question";
+            default:
+                return "";
         }
     }
 
-    _selectOption(i: number) {
+    private _selectOption(i: number) {
         this.open = false;
         this._resolve && this._resolve(i);
         this._resolve = null;
     }
-
-    _textClass() {
-        return this.dialogTitle ? "small" : "";
-    }
-
-    _buttonClass(index: number) {
-        return "tap tiles-" + (Math.floor((index + 1) % 8) + 1);
-    }
-
-    _hideInfo() {}
 }

@@ -11,6 +11,7 @@ import "./icon.js";
 import { Input } from "./input.js";
 import "./record-field.js";
 import "./field-dialog.js";
+import { ShareDialog } from "./share-dialog.js";
 import "./share-dialog.js";
 
 export class RecordView extends View {
@@ -18,6 +19,10 @@ export class RecordView extends View {
     @property() record: Record | null = null;
 
     @query("#nameInput") _nameInput: Input;
+
+    get _shareDialog() {
+        return getDialog("pl-share-dialog") as ShareDialog;
+    }
 
     @listen("lock", app)
     _locked() {
@@ -178,8 +183,11 @@ export class RecordView extends View {
 
                 </div>
 
-                <div class="tag ghost tap" flex hidden?="${this.store !== app.mainStore}" on-click="${() =>
-            this._share()}">
+                <div
+                    class="tag ghost tap"
+                    flex
+                    hidden?="${this.store !== app.mainStore}"
+                    on-click="${() => this._share()}">
 
                     <pl-icon icon="share"></pl-icon>
 
@@ -383,7 +391,10 @@ export class RecordView extends View {
     }
 
     private async _share() {
-        await getDialog("pl-share-dialog").show([this.record], this.store);
+        const store = await this._shareDialog.show([this.record!]);
+        if (store && store.accessors.length === 1) {
+            router.go(`store/${store.id}`);
+        }
     }
 
     private _openStore(store: Store) {

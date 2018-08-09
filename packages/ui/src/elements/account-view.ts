@@ -388,6 +388,8 @@ export class AccountView extends View {
 
                 ${app.sharedStores.map(store => {
                     const { accessors, accessorStatus, name, records } = store;
+                    const requestCount: number =
+                        accessorStatus === "active" ? accessors.filter(a => a.status === "requested").length : 0;
                     return html`
                     <div class="store tap" on-click="${() => this._openStore(store)}">
 
@@ -440,6 +442,14 @@ export class AccountView extends View {
                                 <pl-icon icon="time"></pl-icon>
 
                                 <div>${$l("access requested")}</div>
+
+                            </div>
+
+                            <div class="tag highlight" hidden?="${!requestCount}">
+
+                                <pl-icon icon="time"></pl-icon>
+
+                                <div>${requestCount}</div>
 
                             </div>
 
@@ -655,8 +665,8 @@ export class AccountView extends View {
         e && e.stopPropagation();
     }
 
-    private _createSharedStore() {
-        prompt($l("Please enter a name for your new group!"), {
+    private async _createSharedStore() {
+        const id = await prompt($l("Please enter a name for your new group!"), {
             placeholder: $l("Enter Group Name"),
             confirmLabel: $l("Create Group"),
             cancelLabel: "",
@@ -665,11 +675,13 @@ export class AccountView extends View {
                     throw "Please enter a name!";
                 }
 
-                await app.createSharedStore(name);
-
-                return name;
+                const store = await app.createSharedStore(name);
+                return store.id;
             }
         });
+        if (id) {
+            router.go(`store/${id}`);
+        }
     }
 
     async _addTrustedAccount() {

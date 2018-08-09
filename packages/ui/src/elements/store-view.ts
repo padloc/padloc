@@ -33,8 +33,22 @@ export class StoreView extends View {
         this.$$("pl-account-item", false).forEach((el: any) => el.requestRender());
     }
 
-    _activated() {
+    async _activated() {
         animateCascade(this.$$(".animate:not([hidden])", false), { initialDelay: 200 });
+        if (this.store && this.store.accessors.length === 1 && this.store.permissions.manage) {
+            const confirmed = await confirm(
+                $l(
+                    "There is nobody else in this group yet. Invite others to give " +
+                        "them access to any data you share with this group!"
+                ),
+                $l("Invite Others"),
+                $l("Stay Lonely"),
+                { icon: "group" }
+            );
+            if (confirmed) {
+                this._invite();
+            }
+        }
     }
 
     private async _invite() {
@@ -116,7 +130,10 @@ export class StoreView extends View {
 
     _render({ store }: this) {
         const { name, accessors, permissions, currentAccessor, accessorStatus, records } = store!;
-        const accounts = accessors.filter(({ status }) => ["active", "invited", "requested"].includes(status));
+        const statuses = ["requested", "invited", "active"];
+        const accounts = accessors
+            .filter(({ status }) => statuses.includes(status))
+            .sort((a, b) => statuses.indexOf(a.status) - statuses.indexOf(b.status));
         const addedBy = currentAccessor && currentAccessor.addedBy;
 
         return html`

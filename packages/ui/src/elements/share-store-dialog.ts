@@ -16,7 +16,7 @@ export class ShareStoreDialog extends BaseElement {
 
     private _resolve: (() => void) | null;
     private get _url() {
-        return this.store && `${window.location.origin}${router.basePath}/store/${this.store.id}`;
+        return this.store && `${window.location.origin}${router.basePath}store/${this.store.id}`;
     }
 
     _shouldRender() {

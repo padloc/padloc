@@ -321,7 +321,7 @@ const styles = `
     .info-icon {
         width: 80px;
         height: 80px;
-        font-size: 60px;
+        font-size: 46px;
         margin: 10px 0 10px 10px;
     }
 

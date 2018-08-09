@@ -42,6 +42,8 @@ export function confirm(
     instant?: boolean
 ) {
     options.options = [confirmLabel, cancelLabel];
+    options.type = options.type || "question";
+    options.horizontal = typeof options.horizontal !== "undefined" ? options.horizontal : true;
     return alert(message, options, instant).then(choice => choice === 0);
 }
 
