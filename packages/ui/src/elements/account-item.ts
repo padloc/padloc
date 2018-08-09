@@ -30,14 +30,12 @@ export class AccountItem extends BaseElement {
                 if (app.isTrusted(account)) {
                     pills.push({ icon: "trusted", label: $l("trusted") });
                 }
-                pills.push(
-                    ...app.sharedStores.filter(s => s.accessors.some(a => a.email === account!.email)).map(s => {
-                        return {
-                            icon: "group",
-                            label: s.name
-                        };
-                    })
+                const commonStores = app.sharedStores.filter(s =>
+                    s.accessors.some(a => a.email === account!.email && a.status === "active")
                 );
+                if (commonStores.length) {
+                    pills.push({ icon: "group", label: $l("{0} common groups", commonStores.length.toString()) });
+                }
         }
 
         return html`

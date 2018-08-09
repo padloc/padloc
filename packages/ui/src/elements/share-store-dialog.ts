@@ -1,27 +1,29 @@
 import { SharedStore } from "@padlock/core/lib/data.js";
-import { PublicAccount } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { app } from "../init.js";
+import { setClipboard } from "@padlock/core/lib/platform.js";
 import sharedStyles from "../styles/shared.js";
+import { router } from "../init.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
+import { LoadingButton } from "./loading-button.js";
 
-@element("pl-invite-dialog")
-export class InviteDialog extends BaseElement {
+@element("pl-share-store-dialog")
+export class ShareStoreDialog extends BaseElement {
     @property() store: SharedStore | null = null;
 
     @query("pl-dialog") private _dialog: Dialog;
+    @query("#copyButton") private _copyButton: LoadingButton;
 
-    private _resolve: ((acc: PublicAccount | null | "new") => void) | null;
+    private _resolve: (() => void) | null;
+    private get _url() {
+        return this.store && `${window.location.origin}${router.basePath}/store/${this.store.id}`;
+    }
 
     _shouldRender() {
         return !!this.store;
     }
 
     _render({ store }: this) {
-        const trusted = app.mainStore.trustedAccounts.filter(
-            acc => !store!.accessors.some(a => a.email === acc.email && a.status === "active")
-        );
         const { name } = store!;
 
         return html`
@@ -54,14 +56,35 @@ export class InviteDialog extends BaseElement {
                 }
 
                 .hint {
-                    padding: 10px;
+                    padding: 15px;
                     text-align: center;
                     font-size: var(--font-size-small);
                 }
 
+                .hint.warning {
+                    color: var(--color-error);
+                    font-weight: bold;
+                }
+
+                .url-wrapper {
+                    display: flex;
+                }
+
+                .url-wrapper #copyButton {
+                    height: auto;
+                    width: 50px;
+                    align-items: center;
+                }
+
+                .url-input {
+                    flex: 1;
+                    padding: 15px;
+                    font-family: var(--font-family-mono);
+                }
+
             </style>
 
-            <pl-dialog on-dialog-dismiss="${() => this._done(null)}">
+            <pl-dialog on-dialog-dismiss="${() => this._done()}">
 
                 <div class="title">
 
@@ -71,39 +94,45 @@ export class InviteDialog extends BaseElement {
 
                 </div>
 
-                <div class="hint" hidden?="${!trusted.length}">${$l("Select a user to add them to this group:")}</div>
+                <div class="hint">
+                    ${$l("Invite people to this group by sharing the following link:")}
+                </div>
 
-                ${trusted.map(
-                    acc => html`
-                    <pl-account-item
-                        class="tap"
-                        account="${acc}"
-                        on-click="${() => this._done(acc)}">
-                    </pl-account-item>
-                `
-                )}
+                <div class="url-wrapper">
+                    <pl-input class="url-input" value="${this._url}" multiline autosize readonly></pl-input>
+                    <pl-loading-button class="tap" id="copyButton">
+                        <pl-icon icon="copy" on-click="${() => this._copyUrl()}"></pl-icon>
+                    </pl-loading-button>
+                </div>
 
-                <button class="tap" on-click="${() => this._done("new")}">
-                    ${$l("Invite New User...")}
-                </button>
+                <div class="hint warning">
+                    ${$l("Never share this link publicly! Only send it to people you trust!")}
+                </div>
 
             </pl-dialog>
         `;
     }
 
-    async show(store: SharedStore): Promise<PublicAccount | null | "new"> {
+    async show(store: SharedStore): Promise<void> {
         this.store = store;
         this.requestRender();
         await this.renderComplete;
         this._dialog.open = true;
-        return new Promise<PublicAccount | null | "new">(resolve => {
+        return new Promise<void>(resolve => {
             this._resolve = resolve;
         });
     }
 
-    private _done(account: PublicAccount | null | "new") {
-        this._resolve && this._resolve(account);
+    private _done() {
+        this._resolve && this._resolve();
         this._resolve = null;
         this._dialog.open = false;
+    }
+
+    private async _copyUrl() {
+        if (this._url) {
+            await setClipboard(this._url);
+            this._copyButton.success();
+        }
     }
 }

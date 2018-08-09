@@ -133,6 +133,10 @@ export class Input extends BaseElement {
                 line-height: inherit;
             }
 
+            textarea {
+                overflow-wrap: break-word;
+            }
+
             ::-webkit-search-cancel-button {
                 display: none;
             }

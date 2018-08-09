@@ -11,6 +11,8 @@ import "./icon.js";
 import "./accessor-dialog.js";
 import { InviteDialog } from "./invite-dialog.js";
 import "./invite-dialog.js";
+import { ShareStoreDialog } from "./share-store-dialog.js";
+import "./share-store-dialog.js";
 
 @element("pl-store-view")
 export class StoreView extends View {
@@ -18,6 +20,10 @@ export class StoreView extends View {
 
     private get _inviteDialog() {
         return getDialog("pl-invite-dialog") as InviteDialog;
+    }
+
+    private get _shareStoreDialog() {
+        return getDialog("pl-share-store-dialog") as ShareStoreDialog;
     }
 
     @listen("synchronize", app)
@@ -33,7 +39,9 @@ export class StoreView extends View {
 
     private async _invite() {
         const selection = await this._inviteDialog.show(this.store!);
-        if (selection !== "new" && selection !== null) {
+        if (selection === "new") {
+            this._shareStoreDialog.show(this.store!);
+        } else if (selection !== null) {
             this._openAccessor(
                 Object.assign(
                     {
@@ -138,7 +146,6 @@ export class StoreView extends View {
                 box-sizing: border-box;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
-                cursor: pointer;
                 background: var(--color-foreground);
                 color: var(--color-background);
                 display: flex;

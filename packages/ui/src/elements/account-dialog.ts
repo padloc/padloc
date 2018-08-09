@@ -90,6 +90,7 @@ export class AccountDialog extends BaseElement {
             .tags {
                 margin: 15px 20px 20px 20px;
                 justify-content: center;
+                flex-wrap: wrap;
             }
 
             .tag {
@@ -97,6 +98,7 @@ export class AccountDialog extends BaseElement {
                 color: var(--color-highlight);
                 text-shadow: none;
                 box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px;
+                margin-bottom: 6px;
             }
 
             .close-icon {
