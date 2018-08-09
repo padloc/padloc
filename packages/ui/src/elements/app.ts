@@ -302,6 +302,7 @@ class App extends BaseElement {
     _unlocked() {
         setTimeout(() => {
             this._main.classList.add("active");
+            this._applyPath(router.path);
         }, 600);
     }
 
@@ -315,7 +316,13 @@ class App extends BaseElement {
     }
 
     @listen("route-changed", router)
-    async _routeChanged({ detail: { path, direction } }: { detail: { path: string; direction: string } }) {
+    _routeChanged({ detail: { path, direction } }: { detail: { path: string; direction: string } }) {
+        if (!app.locked) {
+            this._applyPath(path, direction);
+        }
+    }
+
+    async _applyPath(path: string, direction = "forward") {
         let match;
         if (path === "settings") {
             this._openView(this._settingsView, direction);
