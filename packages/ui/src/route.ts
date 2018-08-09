@@ -1,7 +1,7 @@
 export class Router extends EventTarget {
     history: string[] = [];
 
-    constructor(public basePath = "") {
+    constructor(public basePath = "/") {
         super();
         window.addEventListener("popstate", () => {
             this._pathChanged();
@@ -28,6 +28,10 @@ export class Router extends EventTarget {
         return window.location.pathname.replace(new RegExp("^" + this.basePath), "");
     }
 
+    get canGoBack() {
+        return this.history.length > 1;
+    }
+
     go(path: string) {
         if (path !== this.path) {
             history.pushState({ historyIndex: this.history.length }, "", this.basePath + path);
@@ -40,6 +44,10 @@ export class Router extends EventTarget {
     }
 
     back() {
-        history.back();
+        if (this.canGoBack) {
+            history.back();
+            return true;
+        }
+        return false;
     }
 }

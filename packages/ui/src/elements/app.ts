@@ -1,4 +1,4 @@
-import { Store, SharedStore, Record } from "@padlock/core/lib/data.js";
+import { Store } from "@padlock/core/lib/data.js";
 import { getPlatformName, getDeviceInfo } from "@padlock/core/lib/platform.js";
 import { wait } from "@padlock/core/lib/util.js";
 import config from "../styles/config.js";
@@ -48,10 +48,6 @@ class App extends BaseElement {
 
         this.addEventListener("dialog-open", () => this.classList.add("dialog-open"));
         this.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
-    }
-
-    private get _isNarrow() {
-        return this.offsetWidth < 600;
     }
 
     async connectedCallback() {
@@ -350,23 +346,26 @@ class App extends BaseElement {
         this._main.classList.toggle("showing-views", !!view);
 
         if (view) {
+            const backward = direction === "backward" && this._currentView;
             animateElement(view, {
-                animation: direction === "backward" ? "viewOut" : "viewIn",
+                animation: backward ? "viewOut" : "viewIn",
                 duration: 400,
                 easing: "cubic-bezier(0.6, 0, 0.2, 1)",
                 fill: "backwards",
-                direction: direction === "backward" ? "reverse" : "normal"
+                direction: backward ? "reverse" : "normal"
             });
             view.classList.add("showing");
             view.active = true;
         }
+
         if (this._currentView) {
+            const backward = direction === "backward" || !view;
             animateElement(this._currentView, {
-                animation: direction === "backward" ? "viewIn" : "viewOut",
+                animation: backward ? "viewIn" : "viewOut",
                 duration: 400,
                 easing: "cubic-bezier(0.6, 0, 0.2, 1)",
                 fill: "forwards",
-                direction: direction === "backward" ? "reverse" : "normal"
+                direction: backward ? "reverse" : "normal"
             });
             await wait(350);
             this._currentView.classList.remove("showing");
@@ -391,7 +390,7 @@ class App extends BaseElement {
 
         // ESCAPE -> Back
         if (event.key === "Escape") {
-            shortcut = () => this._back();
+            shortcut = () => router.go("");
         }
         // CTRL/CMD + F -> Filter
         else if (control && event.key === "f") {
@@ -412,17 +411,9 @@ class App extends BaseElement {
     }
 
     @listen("backbutton", document)
-    @listen("back")
-    _back() {
-        this._listView.clearSelection();
-        if (this._currentView) {
-            this._openView(this._currentView === this._storeView ? this._accountView : null);
-        } else {
-            if (this._listView.filterString) {
-                this._listView.clearFilter();
-            } else {
-                navigator.Backbutton && navigator.Backbutton.goBack();
-            }
+    _androidBack() {
+        if (!router.back()) {
+            navigator.Backbutton && navigator.Backbutton.goBack();
         }
     }
 

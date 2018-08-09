@@ -5,4 +5,4 @@ import { Router } from "./route.js";
 
 setProvider(WebCryptoProvider);
 export const app = (window.app = new App());
-export const router = (window.router = new Router("/packages/ui/"));
+export const router = (window.router = new Router());
