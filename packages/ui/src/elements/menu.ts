@@ -316,7 +316,7 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                ${app.sharedStores.map(
+                ${app.sharedStores.filter(s => s.accessorStatus === "active").map(
                     store => html`
                     <div
                         class="menu-item store tap"
@@ -392,7 +392,7 @@ export class Menu extends BaseElement {
     }
 
     private async _openStore(store: Store) {
-        this.dispatch("open-store", { store });
+        router.go(`store/${store.id}`);
         await wait(350);
         this._closeSubMenu();
     }
