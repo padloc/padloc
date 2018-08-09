@@ -38,7 +38,12 @@ export class StoreView extends View {
     }
 
     private async _invite() {
-        const selection = await this._inviteDialog.show(this.store!);
+        const accounts = app.mainStore.trustedAccounts.filter(
+            acc => !this.store!.accessors.some(a => a.email === acc.email && a.status === "active")
+        );
+
+        const selection = accounts.length ? await this._inviteDialog.show(this.store!) : "new";
+
         if (selection === "new") {
             this._shareStoreDialog.show(this.store!);
         } else if (selection !== null) {
@@ -177,7 +182,7 @@ export class StoreView extends View {
 
         <header>
 
-            <pl-icon icon="close" class="tap" on-click="${() => router.back()}"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="${() => router.go("")}"></pl-icon>
 
             <div class="title">${name}</div>
 

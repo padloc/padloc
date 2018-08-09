@@ -139,7 +139,7 @@ export class SettingsView extends View {
         </style>
 
         <header>
-            <pl-icon icon="close" class="tap" on-click="${() => router.back()}"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="${() => router.go("")}"></pl-icon>
             <div class="title">${$l("Settings")}</div>
             <pl-icon></pl-icon>
         </header>

@@ -227,7 +227,7 @@ export class AccountView extends View {
 
         <header>
 
-            <pl-icon icon="close" class="tap" on-click="${() => router.back()}"></pl-icon>
+            <pl-icon icon="close" class="tap" on-click="${() => router.go("")}"></pl-icon>
 
             <div class="title">${$l("My Account")}</div>
 
