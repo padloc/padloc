@@ -213,7 +213,7 @@ export class App extends EventTarget {
         this.initialized = new Date().toISOString();
         await this.storage.set(this);
         this.dispatch("initialize");
-        this.dispatch("unlock");
+        this.unlock(password);
     }
 
     async unlock(password: string) {
@@ -514,7 +514,7 @@ export class App extends EventTarget {
             throw "Invites can only be created for trusted accounts.";
         }
 
-        if (store.accessors.some(a => a.email === account.email && a.status === "active")) {
+        if (store.accessors.some(a => a.id === account.id && a.status === "active")) {
             throw "This account is already in this group.";
         }
 
