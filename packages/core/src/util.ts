@@ -109,7 +109,7 @@ export function loadScript(src: string, global?: string): Promise<any | undefine
 }
 
 export async function passwordStrength(pwd: string): Promise<{ score: number }> {
-    const zxcvbn = await loadScript("../../node_modules/@padlock/core/vendor/zxcvbn.js", "zxcvbn");
+    const zxcvbn = await loadScript("/vendor/zxcvbn.js", "zxcvbn");
     return zxcvbn(pwd);
 }
 
