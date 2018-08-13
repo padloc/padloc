@@ -1,7 +1,13 @@
 import { createTransport, Transporter, TransportOptions } from "nodemailer";
 
+export interface Message {
+    title: string;
+    text: string;
+    html: string;
+}
+
 export interface Sender {
-    send(addr: string, subj: string, msg: string): Promise<void>;
+    send(addr: string, msg: Message): Promise<void>;
 }
 
 export interface EmailOptions {
@@ -27,12 +33,13 @@ export class EmailSender implements Sender {
         } as TransportOptions);
     }
 
-    send(email: string, subject: string, message: string) {
+    send(email: string, message: Message) {
         let opts = {
             from: this.opts.from || this.opts.user,
             to: email,
-            subject: subject,
-            text: message
+            subject: message.title,
+            text: message.text,
+            html: message.html
         };
 
         return this.transporter.sendMail(opts);

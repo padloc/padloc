@@ -5,6 +5,7 @@ import { uuid } from "@padlock/core/lib/util.js";
 import { AccountUpdateParams } from "@padlock/core/lib/client.js";
 import { Context } from "./server";
 import { AuthRequest } from "./auth";
+import { LoginMessage } from "./messages";
 
 export async function createSession(ctx: Context) {
     const email = ctx.request.body.email;
@@ -16,7 +17,7 @@ export async function createSession(ctx: Context) {
     const req = AuthRequest.create(email, ctx.state.device);
     await ctx.storage.set(req);
 
-    ctx.sender.send(email, "Your Padlock Login Code", `Here is your code: ${req.code}`);
+    ctx.sender.send(email, new LoginMessage(req));
 
     ctx.body = req.session;
 }

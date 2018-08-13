@@ -59,11 +59,11 @@ export async function handleError(ctx: Context, next: () => Promise<void>) {
                     "Our team has been notified and will resolve the problem as soon as possible!"
             };
             console.error(e);
-            ctx.sender.send(
-                "support@padlock.io",
-                "Padlock Error Notification",
-                `The following error occurred at ${new Date().toString()}:\n\n${e.stack}`
-            );
+            ctx.sender.send("support@padlock.io", {
+                title: "Padlock Error Notification",
+                text: `The following error occurred at ${new Date().toString()}:\n\n${e.stack}`,
+                html: ""
+            });
         }
         ctx.app.emit("error", e, ctx);
     }
