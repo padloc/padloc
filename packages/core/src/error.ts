@@ -22,6 +22,7 @@ export enum ErrorCode {
     SESSION_EXPIRED = "expired_auth_token",
     DEPRECATED_API_VERSION = "deprecated_api_version",
     INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
+    RATE_LIMIT_EXCEEDED = "rate_limit_exceeded",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",

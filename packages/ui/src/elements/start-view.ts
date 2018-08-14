@@ -651,8 +651,8 @@ export class StartView extends BaseElement {
                 this._codeInput.focus();
             }
         } catch (e) {
-            // TODO: show error message
             this._emailButton.fail();
+            throw e;
         }
 
         track("Setup: Email", { Skipped: false, Email: this._emailInput.value as string });
@@ -673,7 +673,9 @@ export class StartView extends BaseElement {
         } catch (e) {
             this._rumble();
             this._codeButton.fail();
-            // TODO: handle cloud error
+            if (e.code !== ErrorCode.BAD_REQUEST) {
+                throw e;
+            }
         }
 
         track("Setup: Code", { Email: this._emailInput.value });
@@ -899,7 +901,6 @@ export class StartView extends BaseElement {
                     "it. We recommend writing it down on a piece of paper and storing it somewhere safe."
             )
         ][step];
-        //TODO: Make sure <strong> tags are rendered correctly
         return html`${text}`;
     }
 

@@ -618,8 +618,8 @@ export class AccountView extends View {
                 app.synchronize();
             }
         } catch (e) {
-            // TODO: Handle error
             this._loginButton.fail();
+            throw e;
         }
     }
 
@@ -633,8 +633,14 @@ export class AccountView extends View {
                 try {
                     await app.activateSession(code);
                 } catch (e) {
-                    // TODO: Handle Server Error
-                    throw $l("Invalid login code. Try again!");
+                    if (e.code === ErrorCode.BAD_REQUEST) {
+                        throw $l("Invalid login code. Try again!");
+                    } else {
+                        setTimeout(() => {
+                            throw e;
+                        }, 10);
+                        return "";
+                    }
                 }
                 return code;
             }

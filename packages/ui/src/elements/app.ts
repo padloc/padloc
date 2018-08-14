@@ -1,6 +1,8 @@
 import { Store } from "@padlock/core/lib/data.js";
-import { getPlatformName, getDeviceInfo } from "@padlock/core/lib/platform.js";
+import { checkForUpdates, getPlatformName, getDeviceInfo } from "@padlock/core/lib/platform.js";
 import { wait } from "@padlock/core/lib/util.js";
+import { ErrorCode } from "@padlock/core/lib/error.js";
+import { localize as $l } from "@padlock/core/lib/locale.js";
 import config from "../styles/config.js";
 import sharedStyles from "../styles/shared.js";
 import { app, router } from "../init.js";
@@ -16,7 +18,7 @@ import { StoreView } from "./store-view.js";
 import { TitleBar } from "./title-bar.js";
 import { Menu } from "./menu.js";
 import { Input } from "./input.js";
-import { clearDialogs } from "../dialog.js";
+import { alert, confirm, clearDialogs } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { animateElement } from "../animation.js";
 
@@ -42,13 +44,6 @@ class App extends BaseElement {
     @query("pl-menu") private _menu: Menu;
 
     private _currentView: View | null;
-
-    constructor() {
-        super();
-
-        this.addEventListener("dialog-open", () => this.classList.add("dialog-open"));
-        this.addEventListener("dialog-close", () => this.classList.remove("dialog-open"));
-    }
 
     async connectedCallback() {
         super.connectedCallback();
@@ -322,6 +317,16 @@ class App extends BaseElement {
         }
     }
 
+    @listen("dialog-open")
+    _dialogOpen() {
+        this.classList.add("dialog-open");
+    }
+
+    @listen("dialog-close")
+    _dialogClose() {
+        this.classList.remove("dialog-open");
+    }
+
     async _applyPath(path: string, direction = "forward") {
         let match;
         if (path === "settings") {
@@ -421,6 +426,58 @@ class App extends BaseElement {
     _androidBack() {
         if (!router.back()) {
             navigator.Backbutton && navigator.Backbutton.goBack();
+        }
+    }
+
+    @listen("error", window)
+    @listen("unhandledrejection", window)
+    async _handleError(e: any) {
+        const error = e.error || e.reason;
+        switch (error.code) {
+            case ErrorCode.INVALID_SESSION:
+            case ErrorCode.SESSION_EXPIRED:
+                await app.logout();
+                alert($l("You've been logged out of your Padlock online account. Please login in again!"));
+            case ErrorCode.DEPRECATED_API_VERSION:
+                const confirmed = await confirm(
+                    $l(
+                        "A newer version of Padlock is available now! Update now to keep using " +
+                            "online features (you won't be able to sync with your account until then)!"
+                    ),
+                    $l("Update Now"),
+                    $l("Cancel"),
+                    { type: "info" }
+                );
+
+                if (confirmed) {
+                    checkForUpdates();
+                }
+            case ErrorCode.RATE_LIMIT_EXCEEDED:
+                alert($l("It seems are servers are over capacity right now. Please try again later!"), {
+                    type: "warning"
+                });
+            case ErrorCode.FAILED_CONNECTION:
+                alert(
+                    $l(
+                        "Looks like we can't connect to our servers right now. Please check your internet " +
+                            "connection and try again!"
+                    ),
+                    { type: "warning", title: $l("Failed Connection") }
+                );
+                return false;
+            case ErrorCode.SERVER_ERROR:
+                confirm(
+                    error.message ||
+                        $l("Something went wrong while connecting to our servers. Please try again later!"),
+                    $l("Contact Support"),
+                    $l("Dismiss"),
+                    { type: "warning" }
+                ).then(confirmed => {
+                    if (confirmed) {
+                        window.open(`mailto:support@padlock.io?subject=Server+Error+(${error.code})`);
+                    }
+                });
+                return false;
         }
     }
 

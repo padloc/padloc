@@ -65,7 +65,6 @@ export async function handleError(ctx: Context, next: () => Promise<void>) {
                 html: ""
             });
         }
-        ctx.app.emit("error", e, ctx);
     }
 }
 

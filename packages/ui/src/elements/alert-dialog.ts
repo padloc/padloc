@@ -21,7 +21,8 @@ export class AlertDialog extends BaseElement {
     @property() buttonLabel: string = defaultButtonLabel;
     @property() dialogTitle: string = "";
     @property() message: string = "";
-    @property() type: AlertType = "info";
+    @property({ reflect: true })
+    type: AlertType = "info";
     @property() icon = "";
     @property() options: string[] = [];
     @property() preventDismiss: boolean = false;
