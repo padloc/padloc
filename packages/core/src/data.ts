@@ -1,9 +1,8 @@
-import { DateString, Marshalable } from "./encoding";
-import { PrivateKey, PublicKey, Container, EncryptionScheme, Access, Permissions, AccessorStatus } from "./crypto";
+import { Serializable, DateString, Marshalable } from "./encoding";
+import { PublicKey, Container, Permissions, Accessor, AccessorStatus, EncryptionScheme } from "./crypto";
 import { Storable } from "./storage";
-import { PublicAccount } from "./auth";
+import { Account, PublicAccount } from "./auth";
 import { uuid } from "./util";
-import { localize } from "./locale";
 import { Err, ErrorCode } from "./error";
 
 export type StoreID = string;
@@ -43,29 +42,18 @@ export function createRecord(name: string, fields?: Field[], tags?: Tag[]) {
     };
 }
 
-export class Store implements Storable {
-    id: string;
-    name = "";
+export abstract class Store implements Storable {
     created: DateString = new Date().toISOString();
     updated: DateString = new Date().toISOString();
-    protected container: Container;
+    name: string = "";
+
+    abstract kind: string;
+    abstract pk: string;
+
+    protected abstract _hasAccess: boolean;
     protected _records = new Map<string, Record>();
-    storageKind = "store";
 
-    get storageKey() {
-        return this.id;
-    }
-
-    protected get scheme(): EncryptionScheme {
-        return "simple";
-    }
-
-    constructor(id = "", records: Record[] = [], name = "") {
-        this.id = id;
-        this.name = name;
-        this.container = new Container(this.scheme);
-        this.addRecords(records);
-    }
+    constructor(protected _container: Container) {}
 
     get records(): Array<Record> {
         return Array.from(this._records.values());
@@ -111,14 +99,7 @@ export class Store implements Storable {
     }
 
     protected async _serialize() {
-        const publicKeys: { [email: string]: PublicKey } = {};
-        for (const accessor of this.container.accessors) {
-            publicKeys[accessor.email] = accessor.publicKey;
-        }
         return {
-            created: this.created,
-            updated: this.updated,
-            publicKeys,
             records: this.records.map((r: any) => {
                 // For backwards compatibility
                 r.uuid = r.id;
@@ -128,13 +109,6 @@ export class Store implements Storable {
     }
 
     protected async _deserialize(raw: any) {
-        for (const accessor of this.container.accessors) {
-            if (accessor.status === "active" && accessor.publicKey !== raw.publicKeys[accessor.email]) {
-                throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
-            }
-        }
-        this.created = raw.created;
-        this.updated = raw.updated;
         const records = raw.records.map((r: any) => {
             return {
                 tags: r.tags || (r.category && [r.category]) || [],
@@ -151,106 +125,117 @@ export class Store implements Storable {
         return this;
     }
 
-    get serializer(): Storable {
+    protected get _serializer(): Serializable {
         return {
-            storageKey: this.storageKey,
-            storageKind: this.storageKind,
             serialize: async () => this._serialize(),
             deserialize: async (raw: any) => this._deserialize(raw)
         };
     }
 
     async serialize(): Promise<Marshalable> {
-        await this.container.set(this.serializer);
-        this.container.meta = {
-            name: this.name
+        if (this._hasAccess) {
+            await this._container.set(this._serializer);
+        }
+        return {
+            created: this.created,
+            updated: this.updated,
+            encryptedData: await this._container.serialize()
         };
-        return this.container.serialize();
     }
 
     async deserialize(raw: any) {
-        await this.container.deserialize(raw);
-        this.id = this.container.id;
-        this.name = this.container.meta.name;
-        await this.container.get(this.serializer);
+        await this._container.deserialize(raw.encryptedData);
+        if (this._hasAccess) {
+            await this._container.get(this._serializer);
+        }
+        this.created = raw.created;
+        this.updated = raw.updated;
         return this;
     }
 
     async clear() {
         this._records = new Map<string, Record>();
-        await this.container.clear();
+        await this._container.clear();
     }
 }
 
-export class MainStore extends Store {
-    privateKey?: PrivateKey;
-    trustedAccounts: PublicAccount[] = [];
-
-    get storageKey() {
-        return "main";
+export class AccountStore extends Store {
+    constructor(public account?: Account, public local = false, records: Record[] = []) {
+        super(new Container("PBES2"));
+        this.addRecords(records);
     }
 
-    protected get scheme(): EncryptionScheme {
-        return "PBES2";
+    kind = "account-store";
+
+    get pk() {
+        return this.account && !this.local ? this.account.id : "";
     }
 
     set password(pwd: string | undefined) {
-        this.container.password = pwd;
+        this._container.password = pwd;
     }
 
     get password(): string | undefined {
-        return this.container.password;
+        return this._container.password;
+    }
+
+    get _hasAccess() {
+        return !!this.password;
     }
 
     protected async _serialize() {
         return Object.assign(await super._serialize(), {
-            privateKey: this.privateKey,
-            trustedAccounts: this.trustedAccounts
+            privateKey: this.account && this.account.privateKey,
+            trustedAccounts: (this.account && this.account.trustedAccounts) || []
         });
     }
 
     protected async _deserialize(raw: any) {
-        this.privateKey = this.privateKey || raw.privateKey;
-        const newAccounts =
-            (raw.trustedAccounts &&
-                raw.trustedAccounts.filter(
-                    (acc: PublicAccount) => !this.trustedAccounts.some(a => a.email === acc.email)
-                )) ||
-            [];
-        this.trustedAccounts.push(...newAccounts);
+        if (this.account) {
+            this.account.privateKey = raw.privateKey;
+            const newAccounts =
+                (raw.trustedAccounts &&
+                    raw.trustedAccounts.filter(
+                        (acc: PublicAccount) => !this.account!.trustedAccounts.some(a => a.id === acc.id)
+                    )) ||
+                [];
+            this.account.trustedAccounts.push(...newAccounts);
+        }
         return super._deserialize(raw);
     }
 
     async clear() {
         await super.clear();
-        delete this.privateKey;
-        this.trustedAccounts = [];
-    }
-
-    constructor(id = "", records: Record[] = []) {
-        super(id, records, localize("Main"));
+        if (this.account) {
+            delete this.account.privateKey;
+            this.account.trustedAccounts = [];
+        }
     }
 }
 
 export class SharedStore extends Store {
-    protected get scheme(): EncryptionScheme {
-        return "shared";
+    kind = "shared-store";
+    _scheme: EncryptionScheme = "shared";
+
+    constructor(public id: string, public account: Account, public name = "") {
+        super(new Container("shared"));
+        this._container.access = this.account;
+    }
+
+    get pk() {
+        return this.id;
+    }
+
+    get _hasAccess() {
+        return this.accessorStatus === "active" && !!this.account.privateKey;
     }
 
     get accessors() {
-        return this.container.accessors;
-    }
-
-    get access(): Access | null {
-        return this.container.access;
-    }
-
-    set access(access: Access | null) {
-        this.container.access = access;
+        return this._container.accessors;
     }
 
     get currentAccessor() {
-        return this.access && this.accessors.find(a => this.access!.email === a.email);
+        return this.accessors.find(a => this.account.id === a.id);
     }
 
     get permissions() {
@@ -263,33 +248,46 @@ export class SharedStore extends Store {
         return accessor ? accessor.status : "none";
     }
 
+    mergeAccessors(accessors: Accessor[]) {
+        return this._container.mergeAccessors(accessors);
+    }
+
     getEncryptedKey(publicKey: PublicKey) {
-        return this.container.getEncryptedKey(publicKey);
+        return this._container.getEncryptedKey(publicKey);
     }
 
-    async serialize(): Promise<Marshalable> {
-        if (this.accessorStatus === "active") {
-            await this.container.set(this.serializer);
+    async _serialize() {
+        const raw = await super._serialize();
+        const publicKeys: { [id: string]: PublicKey } = {};
+        for (const accessor of this._container.accessors) {
+            publicKeys[accessor.id] = accessor.publicKey;
         }
-        this.container.meta = {
-            name: this.name
-        };
-        return this.container.serialize();
+        return Object.assign(raw, { publicKeys });
     }
 
-    async deserialize(raw: any) {
-        await this.container.deserialize(raw);
-        this.id = this.container.id;
-        this.name = this.container.meta.name;
-        if (this.accessorStatus === "active") {
-            await this.container.get(this.serializer);
-        } else {
-            this._records = new Map<string, Record>();
+    async _deserialize(raw: any) {
+        await super._deserialize(raw);
+
+        for (const accessor of this._container.accessors) {
+            if (accessor.status === "active" && accessor.publicKey !== raw.publicKeys[accessor.id]) {
+                throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
+            }
         }
         return this;
     }
 
-    async setAccount(
+    async deserialize(raw: any) {
+        await super.deserialize(raw);
+        this.name = raw.name;
+        this.id = raw.id || this.id;
+        return this;
+    }
+
+    async serialize() {
+        return Object.assign(await super.serialize(), { name: this.name, id: this.id });
+    }
+
+    async updateAccess(
         acc: PublicAccount,
         permissions: Permissions = { read: true, write: true, manage: false },
         status: AccessorStatus
@@ -297,8 +295,8 @@ export class SharedStore extends Store {
         if (!acc.publicKey) {
             throw "Public Key is missing on account!";
         }
-        const addedBy = this.currentAccessor ? this.currentAccessor.email : acc.email;
-        await this.container.setAccessor({
+        const updatedBy = this.currentAccessor ? this.currentAccessor.id : acc.id;
+        await this._container.setAccessor({
             id: acc.id,
             email: acc.email,
             name: acc.name,
@@ -306,13 +304,13 @@ export class SharedStore extends Store {
             encryptedKey: "",
             updated: "",
             permissions,
-            addedBy,
+            updatedBy,
             status
         });
     }
 
-    async removeAccount(acc: PublicAccount) {
-        await this.container.removeAccessor(acc.email);
+    async revokeAccess(acc: PublicAccount) {
+        await this._container.removeAccessor(acc.id);
     }
 
     getOldAccessors(record: Record) {

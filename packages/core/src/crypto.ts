@@ -1,5 +1,13 @@
-import { Base64String, stringToBase64, base64ToString, marshal, unmarshal, Marshalable, DateString } from "./encoding";
-import { Storable, Storage } from "./storage";
+import {
+    Serializable,
+    Base64String,
+    stringToBase64,
+    base64ToString,
+    marshal,
+    unmarshal,
+    Marshalable,
+    DateString
+} from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { PublicAccount } from "./auth";
 
@@ -129,10 +137,8 @@ export type EncryptionScheme = "simple" | "PBES2" | "shared";
 export interface BaseRawContainer {
     version: 2;
     scheme: EncryptionScheme;
-    id: string;
     encryptionParams: SymmetricCipherParams;
     cipherText: CipherText;
-    meta: any;
 }
 
 export interface SimpleRawContainer extends BaseRawContainer {
@@ -202,7 +208,7 @@ export type AccessorStatus = "invited" | "active" | "left" | "removed" | "reques
 export interface Accessor extends PublicAccount {
     encryptedKey: CipherText;
     permissions: Permissions;
-    addedBy: string;
+    updatedBy: string;
     updated: DateString;
     status: AccessorStatus;
 }
@@ -211,11 +217,8 @@ export interface Access extends PublicAccount {
     privateKey: PrivateKey;
 }
 
-export class Container implements Storage, Storable {
-    id: string = "";
-    kind: string = "";
+export class Container implements Serializable {
     cipherText?: CipherText;
-    meta: any = {};
     key?: SymmetricKey;
     password?: string;
     access: Access | null = null;
@@ -227,14 +230,6 @@ export class Container implements Storage, Storable {
         public keyDerivationParams: KeyDerivationParams = defaultKeyDerivationParams(),
         public wrappingParams: AsymmetricCipherParams = defaultWrappingParams()
     ) {}
-
-    get storageKey() {
-        return this.id;
-    }
-
-    get storageKind() {
-        return this.kind;
-    }
 
     async getKey(): Promise<SymmetricKey> {
         switch (this.scheme) {
@@ -256,7 +251,7 @@ export class Container implements Storage, Storable {
                     throw new Err(ErrorCode.DECRYPTION_FAILED, "No access parameters provided");
                 }
                 if (this.accessors.length) {
-                    const accessor = this.accessors.find(a => a.email === this.access!.email);
+                    const accessor = this.accessors.find(a => a.id === this.access!.id);
                     if (!accessor || !accessor.encryptedKey) {
                         throw new Err(ErrorCode.MISSING_ACCESS, "Current accessor does not have access.");
                     }
@@ -267,9 +262,7 @@ export class Container implements Storage, Storable {
         }
     }
 
-    async set(data: Storable) {
-        this.id = data.storageKey;
-        this.kind = data.storageKind;
+    async set(data: Serializable) {
         this.encryptionParams.iv = provider.randomBytes(16);
         // TODO: useful additional authenticated data?
         this.encryptionParams.additionalData = provider.randomBytes(16);
@@ -279,7 +272,7 @@ export class Container implements Storage, Storable {
         this.cipherText = await provider.encrypt(key, pt, this.encryptionParams);
     }
 
-    async get(data: Storable) {
+    async get(data: Serializable) {
         if (!this.cipherText) {
             throw new Err(ErrorCode.DECRYPTION_FAILED, "Container is empty");
         }
@@ -294,14 +287,11 @@ export class Container implements Storage, Storable {
 
     async serialize() {
         const raw = {
-            id: this.id,
-            kind: this.kind,
             version: 2,
             scheme: this.scheme,
             // TODO: rename to "encryptionParams", "cipterText" etc.
             encryptionParams: this.encryptionParams,
-            cipherText: this.cipherText,
-            meta: this.meta
+            cipherText: this.cipherText
         } as RawContainer;
 
         if (this.scheme === "PBES2") {
@@ -317,17 +307,17 @@ export class Container implements Storage, Storable {
     }
 
     mergeAccessors(accessors: Accessor[]) {
-        const merged = new Map<string, Accessor>(this.accessors.map(a => [a.email, a] as [string, Accessor]));
+        const merged = new Map<string, Accessor>(this.accessors.map(a => [a.id, a] as [string, Accessor]));
         const changed: Accessor[] = [];
         const added: Accessor[] = [];
 
         for (const acc of accessors) {
-            const existing = merged.get(acc.email);
+            const existing = merged.get(acc.id);
             if (!existing) {
-                merged.set(acc.email, acc);
+                merged.set(acc.id, acc);
                 added.push(acc);
             } else if (!existing.updated || new Date(existing.updated) < new Date(acc.updated)) {
-                merged.set(acc.email, acc);
+                merged.set(acc.id, acc);
                 changed.push(acc);
             }
         }
@@ -341,9 +331,6 @@ export class Container implements Storage, Storable {
         this.scheme = raw.scheme;
         this.cipherText = raw.cipherText;
         this.encryptionParams = raw.encryptionParams;
-        this.id = raw.id;
-        this.kind = raw.kind;
-        this.meta = raw.meta || {};
 
         if (raw.scheme === "PBES2") {
             this.keyDerivationParams = raw.keyDerivationParams;
@@ -366,9 +353,11 @@ export class Container implements Storage, Storable {
         }
 
         accessor.updated = new Date().toISOString();
-        accessor.encryptedKey = await this.getEncryptedKey(accessor.publicKey);
+        if (accessor.status === "active" || accessor.status === "invited") {
+            accessor.encryptedKey = await this.getEncryptedKey(accessor.publicKey);
+        }
 
-        const existing = this.accessors.find(a => a.email === accessor.email);
+        const existing = this.accessors.find(a => a.id === accessor.id);
         if (existing) {
             Object.assign(existing, accessor);
         } else {
@@ -377,7 +366,7 @@ export class Container implements Storage, Storable {
     }
 
     async removeAccessor(acc: string) {
-        const removedAccessor = this.accessors.find(a => a.email === acc);
+        const removedAccessor = this.accessors.find(a => a.id === acc);
 
         if (!removedAccessor) {
             throw "Accessor does not exist on this store";
@@ -400,8 +389,6 @@ export class Container implements Storage, Storable {
         delete this.access;
         delete this.key;
         delete this.cipherText;
-        delete this.id;
-        delete this.kind;
         this.accessors = [];
     }
 }

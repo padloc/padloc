@@ -3,8 +3,8 @@ import { Client } from "./client";
 import { Err, ErrorCode } from "./error";
 
 export interface Storable extends Serializable {
-    storageKey: string;
-    storageKind: string;
+    kind: string;
+    pk: string;
 }
 
 export interface Storage {
@@ -15,25 +15,21 @@ export interface Storage {
 }
 
 export class MemoryStorage implements Storage {
-    private _storage: Map<string, any>;
-
-    constructor() {
-        this.clear();
-    }
+    private _storage = new Map<string, any>();
 
     async set(s: Storable) {
-        this._storage.set(s.storageKey, await s.serialize());
+        this._storage.set(s.pk, await s.serialize());
     }
 
     async get(s: Storable) {
-        if (!this._storage.has(s.storageKey)) {
+        if (!this._storage.has(s.pk)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
-        await s.deserialize(this._storage.get(s.storageKey));
+        await s.deserialize(this._storage.get(s.pk));
     }
 
     async delete(s: Storable) {
-        this._storage.delete(s.storageKey);
+        this._storage.delete(s.pk);
     }
 
     async clear() {
@@ -43,7 +39,7 @@ export class MemoryStorage implements Storage {
 
 export class LocalStorage implements Storage {
     keyFor(s: Storable) {
-        return `${s.storageKind || ""}_${s.storageKey || ""}`;
+        return `${s.kind || ""}_${s.pk || ""}`;
     }
 
     async set(s: Storable) {
@@ -76,7 +72,14 @@ export class RemoteStorage implements Storage {
     constructor(public client: Client) {}
 
     pathFor(s: Storable) {
-        return `${s.storageKind}/${s.storageKey}`;
+        switch (s.kind) {
+            case "account-store":
+                return "me/store";
+            case "shared-store":
+                return `store/${s.pk}`;
+            default:
+                throw new Err(ErrorCode.NOT_SUPPORTED);
+        }
     }
 
     async get(s: Storable) {
@@ -103,43 +106,3 @@ export class RemoteStorage implements Storage {
         throw "not supported";
     }
 }
-
-//
-// export class EncryptedStorage implements Storage {
-//     public user?: Participant;
-//     public password?: string;
-//     private containers: Map<string, Container> = new Map<string, Container>();
-//
-//     constructor(public storage: Storage) {}
-//
-//     private getContainer(s: Storable) {
-//         if (!this.containers.has(s.storageKey)) {
-//             const container = new Container();
-//             container.storageKey = s.storageKey;
-//             this.containers.set(s.storageKey, container);
-//         }
-//         return this.containers.get(s.storageKey)!;
-//     }
-//
-//     async get(s: Storable) {
-//         const container = this.getContainer(s);
-//         container.password = this.password;
-//         container.user = this.user;
-//         await this.storage.get(container);
-//         await container.get(s);
-//     }
-//
-//     async set(s: Storable) {
-//         const container = this.getContainer(s);
-//         container.password = this.password;
-//         container.user = this.user;
-//         await container.set(s);
-//         await this.storage.set(container);
-//     }
-//
-//     async setAs(s: Storable, scheme: EncryptionScheme) {
-//         const container = this.getContainer(s);
-//         container.scheme = scheme;
-//         return this.set(s);
-//     }
-// }

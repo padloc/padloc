@@ -16,9 +16,9 @@ export interface Message {
 }
 
 export class Messages implements Storable {
-    storageKind = "messages";
-    storageKey = "";
-    private readMessages: { [id: string]: boolean };
+    kind = "messages";
+    pk = "";
+    private readMessages: { [id: string]: boolean } = {};
 
     constructor(public url: string) {}
 

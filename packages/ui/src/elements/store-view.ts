@@ -52,7 +52,7 @@ export class StoreView extends View {
     }
 
     private async _invite() {
-        const accounts = app.mainStore.trustedAccounts.filter(
+        const accounts = app.account!.trustedAccounts.filter(
             acc => !this.store!.accessors.some(a => a.email === acc.email && a.status === "active")
         );
 
@@ -66,7 +66,7 @@ export class StoreView extends View {
                     {
                         status: "none" as "none",
                         encryptedKey: "",
-                        addedBy: "",
+                        updatedBy: "",
                         updated: "",
                         permissions: { read: true, write: false, manage: false }
                     },
@@ -104,17 +104,17 @@ export class StoreView extends View {
     private async _acceptInvite() {
         let confirmed = false;
         const { accessors, currentAccessor, name } = this.store!;
-        const addedBy = accessors.find(a => a.email === currentAccessor.addedBy);
-        if (!app.isTrusted(addedBy)) {
+        const updatedBy = accessors.find(a => a.id === currentAccessor!.updatedBy)!;
+        if (!app.isTrusted(updatedBy)) {
             await alert(
                 $l(
                     "You were invited to this group by {0}, who is not among your trusted users yet. " +
                         "You'll have to add him to your trusted users first before you can join this store",
-                    addedBy.email
+                    updatedBy.email
                 ),
                 { options: [$l("Continue")], preventDismiss: true }
             );
-            confirmed = await getDialog("pl-account-dialog").show(addedBy, $l("Join {0}", name));
+            confirmed = await getDialog("pl-account-dialog").show(updatedBy, $l("Join {0}", name));
         } else {
             confirmed = await confirm($l("Do you want to join this group?", this.store!.name), $l("Join"));
         }
@@ -134,7 +134,7 @@ export class StoreView extends View {
         const accounts = accessors
             .filter(({ status }) => statuses.includes(status))
             .sort((a, b) => statuses.indexOf(a.status) - statuses.indexOf(b.status));
-        const addedBy = currentAccessor && currentAccessor.addedBy;
+        const updatedBy = currentAccessor && currentAccessor.updatedBy;
 
         return html`
         <style>
@@ -228,7 +228,7 @@ export class StoreView extends View {
 
             <div class="subheader highlight animate" hidden?="${accessorStatus !== "invited"}">
 
-                <div class="subheader-label ellipsis" flex>${$l("Invited By {0}", addedBy)}</div>
+                <div class="subheader-label ellipsis" flex>${$l("Invited By {0}", updatedBy!)}</div>
 
                 <button class="tap" on-click="${() => this._acceptInvite()}">
                     ${$l("Join Group")}

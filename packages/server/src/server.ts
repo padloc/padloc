@@ -55,13 +55,15 @@ export class Server {
         this.koa.use(route.post("/session", handlers.createSession));
         this.koa.use(route.delete("/session/:id", handlers.revokeSession));
         this.koa.use(route.post("/session/:id/activate", handlers.activateSession));
-        this.koa.use(route.get("/account", handlers.getOwnAccount));
+        this.koa.use(route.get("/me", handlers.getOwnAccount));
+        this.koa.use(route.put("/me", handlers.updateAccount));
+        this.koa.use(route.get("/me/store", handlers.getAccountStore));
+        this.koa.use(route.put("/me/store", handlers.putAccountStore));
         this.koa.use(route.get("/account/:id", handlers.getAccount));
-        this.koa.use(route.put("/account", handlers.updateAccount));
-        this.koa.use(route.get("/store/:id", handlers.getStore));
-        this.koa.use(route.put("/store/:id", handlers.putStore));
-        this.koa.use(route.delete("/store/:id", handlers.deleteStore));
-        this.koa.use(route.put("/store", handlers.createStore));
+        this.koa.use(route.get("/store/:id", handlers.getSharedStore));
+        this.koa.use(route.put("/store/:id", handlers.putSharedStore));
+        this.koa.use(route.delete("/store/:id", handlers.deleteSharedStore));
+        this.koa.use(route.put("/store", handlers.createSharedStore));
         this.koa.use(route.post("/store/:id/accept", handlers.acceptInvite));
         this.koa.use(route.post("/store/:id/request", handlers.requestAccess));
     }

@@ -5,9 +5,9 @@ import { uuid } from "@padlock/core/src/util";
 import { randomBytes } from "crypto";
 
 export class AuthRequest implements Storable {
+    kind = "auth_request";
     session: Session = new Session();
     created: DateString = new Date().toISOString();
-    storageKind = "auth_request";
 
     static create(email: string, device?: Device) {
         const req = new AuthRequest(email);
@@ -26,7 +26,7 @@ export class AuthRequest implements Storable {
 
     constructor(public email = "", public code = "") {}
 
-    get storageKey() {
+    get pk() {
         return `${this.session.id}`;
     }
 

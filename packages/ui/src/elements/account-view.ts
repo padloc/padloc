@@ -1,7 +1,7 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Session, PublicAccount } from "@padlock/core/lib/auth.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
-import { Store } from "@padlock/core/lib/data.js";
+import { SharedStore } from "@padlock/core/lib/data.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
 import { app, router } from "../init.js";
 import sharedStyles from "../styles/shared.js";
@@ -42,7 +42,7 @@ export class AccountView extends View {
         const sessions = (account && account.sessions) || [];
         const paymentSource = account && account.paymentSource;
         const paymentSourceLabel = paymentSource && `${paymentSource.brand} •••• •••• •••• ${paymentSource.lastFour}`;
-        const trustedAccounts = app.mainStore.trustedAccounts;
+        const trustedAccounts = (app.account && app.account.trustedAccounts) || [];
 
         return html`
         <style>
@@ -662,11 +662,11 @@ export class AccountView extends View {
         }
     }
 
-    private async _openStore(store: Store) {
+    private async _openStore(store: SharedStore) {
         router.go(`store/${store.id}`);
     }
 
-    private _toggleStore(store: Store, e: Event) {
+    private _toggleStore(store: SharedStore, e: Event) {
         app.toggleStore(store);
         e && e.stopPropagation();
     }

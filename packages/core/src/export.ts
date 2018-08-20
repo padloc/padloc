@@ -1,6 +1,5 @@
-import { Store, Record } from "./data";
+import { AccountStore, Record } from "./data";
 import { loadPapa } from "./import";
-import { Container } from "./crypto";
 import { marshal } from "./encoding";
 
 function recordsToTable(records: Record[]) {
@@ -62,10 +61,8 @@ export async function toCSV(records: Record[]): Promise<string> {
 }
 
 export async function toPadlock(records: Record[], password: string): Promise<string> {
-    const store = new Store(undefined, records);
-    const container = new Container("PBES2");
-    container.password = password;
-    await container.set(store);
-    const data = await container.serialize();
+    const store = new AccountStore(undefined, true, records);
+    store.password = password;
+    const data = await store.serialize();
     return marshal(data);
 }

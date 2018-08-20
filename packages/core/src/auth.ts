@@ -1,8 +1,7 @@
 import { DateString, Serializable } from "./encoding";
-import { PublicKey } from "./crypto";
+import { PublicKey, PrivateKey } from "./crypto";
 import { Storable } from "./storage";
 import { StoreID } from "./data";
-import { uuid } from "./util";
 import { DeviceInfo } from "./platform";
 
 export type AccountID = string;
@@ -81,24 +80,26 @@ export interface PublicAccount {
 }
 
 export class Account implements Storable, PublicAccount {
-    storageKind = "account";
-    id: AccountID = uuid();
+    kind = "account";
+    id: AccountID = "";
     name = "";
     created: DateString = new Date().toISOString();
+    updated: DateString = new Date().toISOString();
     mainStore?: StoreID;
     sharedStores: StoreID[] = [];
     publicKey: PublicKey = "";
+    privateKey: PrivateKey = "";
+    trustedAccounts: PublicAccount[] = [];
     sessions: Session[] = [];
     // TODO
     subscription?: { status: string };
     promo?: any;
     paymentSource?: any;
-    friendRequests: string[] = [];
 
     constructor(public email: string = "") {}
 
-    get storageKey() {
-        return this.email || "";
+    get pk() {
+        return this.email;
     }
 
     get publicAccount(): PublicAccount {
@@ -109,6 +110,7 @@ export class Account implements Storable, PublicAccount {
         return {
             id: this.id,
             created: this.created,
+            updated: this.updated,
             email: this.email,
             name: this.name,
             mainStore: this.mainStore,

@@ -46,8 +46,10 @@ export class RecordView extends View {
     _render({ record, store }: this) {
         const { name, fields, tags, updated, updatedBy } = record!;
         store = store!;
+        const isShared = store instanceof SharedStore;
         const permissions = store instanceof SharedStore ? store.permissions : { read: true, write: true };
         const oldAccessors = store instanceof SharedStore ? store.getOldAccessors(record!) : [];
+        const storeName = store instanceof SharedStore ? store.name : "";
 
         return html`
         <style>
@@ -146,12 +148,12 @@ export class RecordView extends View {
 
                 <div class="tag highlight tap"
                     flex
-                    hidden?="${store === app.mainStore}"
+                    hidden?="${!isShared}"
                     on-click="${() => this._openStore(store!)}">
 
                     <pl-icon icon="group"></pl-icon>
 
-                    <div class="tag-name">${store.name}</div>
+                    <div class="tag-name">${storeName}</div>
 
                 </div>
 
@@ -209,7 +211,7 @@ export class RecordView extends View {
                             "{0} users have been removed from the '{1}' group since this item was last updated. " +
                                 "Please update any sensitive information as soon as possible!",
                             oldAccessors.length.toString(),
-                            store.name
+                            storeName
                         )}</div>
 
                     </div>
@@ -398,7 +400,7 @@ export class RecordView extends View {
     }
 
     private _openStore(store: Store) {
-        router.go(`store/${store.id}`);
+        router.go(`store/${store instanceof SharedStore ? store.id : "main"}`);
     }
 
     edit() {

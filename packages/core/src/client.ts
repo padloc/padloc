@@ -90,7 +90,7 @@ export class Client {
         if (!this.app.session) {
             throw "Need to be logged in to sync account";
         }
-        const res = await this.request("GET", "account");
+        const res = await this.request("GET", "me");
         this.app.account = this.app.account || new Account(this.app.session.account);
         await this.app.account.deserialize(unmarshal(res.responseText));
         return this.app.account;
@@ -106,7 +106,7 @@ export class Client {
             throw "Need to be logged in to update account";
         }
         this.app.account = this.app.account || new Account(this.app.session.account);
-        const res = await this.request("PUT", "account", marshal(params));
+        const res = await this.request("PUT", "me", marshal(params));
         await this.app.account.deserialize(unmarshal(res.responseText));
         return this.app.account;
     }

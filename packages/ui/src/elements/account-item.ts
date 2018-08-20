@@ -31,7 +31,7 @@ export class AccountItem extends BaseElement {
                     pills.push({ icon: "trusted", label: $l("trusted") });
                 }
                 const commonStores = app.sharedStores.filter(s =>
-                    s.accessors.some(a => a.email === account!.email && a.status === "active")
+                    s.accessors.some(a => a.id === account!.id && a.status === "active")
                 );
                 if (commonStores.length) {
                     pills.push({ icon: "group", label: $l("{0} common groups", commonStores.length.toString()) });

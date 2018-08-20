@@ -1,6 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait, formatDateFromNow } from "@padlock/core/lib/util.js";
-import { Store } from "@padlock/core/lib/data.js";
+import { SharedStore } from "@padlock/core/lib/data.js";
 import sharedStyles from "../styles/shared.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
@@ -391,13 +391,13 @@ export class Menu extends BaseElement {
         this._closeSubMenu();
     }
 
-    private async _openStore(store: Store) {
+    private async _openStore(store: SharedStore) {
         router.go(`store/${store.id}`);
         await wait(350);
         this._closeSubMenu();
     }
 
-    private _toggleStore(store: Store, e: Event) {
+    private _toggleStore(store: SharedStore, e: Event) {
         e && e.stopPropagation();
         e && e.stopImmediatePropagation();
         app.toggleStore(store);

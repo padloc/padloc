@@ -1,5 +1,5 @@
-import { LocalStorage, RemoteStorage } from "./storage";
-import { Store, MainStore, SharedStore, Record, Field, Tag, StoreID } from "./data";
+import { Storable, LocalStorage, RemoteStorage } from "./storage";
+import { Store, AccountStore, SharedStore, Record, Field, Tag, StoreID } from "./data";
 import { Account, PublicAccount, Session, Device } from "./auth";
 import { DateString } from "./encoding";
 import { Client, AccountUpdateParams } from "./client";
@@ -40,8 +40,17 @@ function filterByString(fs: string, rec: Record, store: Store) {
         return true;
     }
     const words = fs.toLowerCase().split(" ");
-    const content = [rec.name, store.name, ...rec.tags, ...rec.fields.map(f => f.name)].join(" ").toLowerCase();
-    return words.some(word => content.search(word) !== -1);
+    const content = [rec.name, ...rec.tags, ...rec.fields.map(f => f.name)];
+    if (store instanceof SharedStore) {
+        content.push(store.name);
+    }
+    return words.some(
+        word =>
+            content
+                .join(" ")
+                .toLowerCase()
+                .search(word) !== -1
+    );
 }
 
 export interface ListItem {
@@ -52,15 +61,15 @@ export interface ListItem {
     lastInSection: boolean;
 }
 
-export class App extends EventTarget {
-    storageKind = "padlock-app";
-    storageKey = "";
+export class App extends EventTarget implements Storable {
+    kind = "padlock-app";
+    pk = "";
 
     version = "3.0";
     storage = new LocalStorage();
     client = new Client(this);
     remoteStorage = new RemoteStorage(this.client);
-    mainStore = new MainStore();
+    mainStore = new AccountStore(undefined, true);
     sharedStores: SharedStore[] = [];
     settings = defaultSettings;
     messages = new Messages("https://padlock.io/messages.json");
@@ -69,10 +78,17 @@ export class App extends EventTarget {
     device: Device = new Device();
 
     initialized?: DateString;
-    account?: Account;
     session?: Session;
 
     loaded = this.load();
+
+    get account(): Account | undefined {
+        return this.mainStore.account;
+    }
+
+    set account(account: Account | undefined) {
+        this.mainStore.account = account;
+    }
 
     async serialize() {
         return {
@@ -124,12 +140,6 @@ export class App extends EventTarget {
 
     set password(pwd: string | undefined) {
         this.mainStore.password = pwd;
-    }
-
-    get access() {
-        return this.account
-            ? Object.assign({ privateKey: this.mainStore.privateKey! }, this.account.publicAccount)
-            : null;
     }
 
     get tags() {
@@ -222,8 +232,7 @@ export class App extends EventTarget {
 
         if (this.account) {
             for (const id of this.account.sharedStores) {
-                const sharedStore = new SharedStore(id);
-                sharedStore.access = this.access;
+                const sharedStore = new SharedStore(id, this.account);
                 try {
                     await this.storage.get(sharedStore);
                     this.sharedStores.push(sharedStore);
@@ -327,7 +336,7 @@ export class App extends EventTarget {
         this.dispatch("records-deleted", { store: store, records: records });
     }
 
-    toggleStore(store: Store) {
+    toggleStore(store: SharedStore) {
         const hideStores = this.settings.hideStores;
         const ind = hideStores.indexOf(store.id);
         if (ind === -1) {
@@ -379,7 +388,9 @@ export class App extends EventTarget {
     }
 
     async logout() {
-        await this.client.logout();
+        try {
+            await this.client.logout();
+        } catch (e) {}
         delete this.session;
         delete this.account;
         this.sharedStores = [];
@@ -391,7 +402,7 @@ export class App extends EventTarget {
 
     async hasRemoteData(): Promise<boolean> {
         try {
-            await this.client.request("GET", "store/main/");
+            await this.client.request("GET", "me/store");
             return true;
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
@@ -407,7 +418,7 @@ export class App extends EventTarget {
         }
         const { publicKey, privateKey } = await getProvider().generateKeyPair();
         this.account.publicKey = publicKey;
-        this.mainStore.privateKey = privateKey;
+        this.account.privateKey = privateKey;
         await Promise.all([this.updateAccount({ publicKey }), this.synchronize()]);
     }
 
@@ -416,13 +427,12 @@ export class App extends EventTarget {
             throw "Need to be logged in to create a shared store!";
         }
 
-        if (!this.account.publicKey || !this.mainStore.privateKey) {
+        if (!this.account.publicKey || !this.account.privateKey) {
             await this.generateKeyPair();
         }
 
-        const store = new SharedStore("", [], name);
-        store.access = Object.assign({ privateKey: this.mainStore.privateKey! }, this.account.publicAccount);
-        await store.setAccount(this.account.publicAccount, { read: true, write: true, manage: true }, "active");
+        const store = new SharedStore("", this.account, name);
+        await store.updateAccess(this.account.publicAccount, { read: true, write: true, manage: true }, "active");
         await this.remoteStorage.set(store);
         this.sharedStores.push(store);
         await this.syncAccount();
@@ -431,16 +441,15 @@ export class App extends EventTarget {
     }
 
     async syncSharedStore(id: StoreID) {
-        if (!this.account || !this.mainStore.privateKey) {
+        if (!this.account || !this.account.privateKey) {
             throw "Not logged in";
         }
 
         let store = this.sharedStores.find(s => s.id === id);
         if (!store) {
-            store = new SharedStore(id);
+            store = new SharedStore(id, this.account);
             this.sharedStores.push(store);
         }
-        store.access = this.access;
 
         try {
             await this.remoteStorage.get(store);
@@ -468,7 +477,10 @@ export class App extends EventTarget {
     }
 
     async deleteSharedStore(id: StoreID) {
-        const store = this.sharedStores.find(s => s.id === id) || new SharedStore(id);
+        if (!this.account) {
+            throw "Not logged in";
+        }
+        const store = this.sharedStores.find(s => s.id === id) || new SharedStore(id, this.account);
         if (!store.permissions.manage) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
@@ -477,7 +489,7 @@ export class App extends EventTarget {
     }
 
     isTrusted(account: PublicAccount) {
-        const trusted = this.mainStore.trustedAccounts.find(acc => acc.id === account.id);
+        const trusted = this.account && this.account.trustedAccounts.find(acc => acc.id === account.id);
         if (trusted && trusted.publicKey !== account.publicKey) {
             throw new Err(
                 ErrorCode.PUBLIC_KEY_MISMATCH,
@@ -489,8 +501,12 @@ export class App extends EventTarget {
     }
 
     async addTrustedAccount(account: PublicAccount) {
+        if (!this.account) {
+            throw "not logged in";
+        }
+
         if (!this.isTrusted(account)) {
-            this.mainStore.trustedAccounts.push({
+            this.account.trustedAccounts.push({
                 id: account.id,
                 email: account.email,
                 name: account.name,
@@ -519,28 +535,28 @@ export class App extends EventTarget {
         }
 
         await this.remoteStorage.get(store);
-        await store.setAccount(account, permissions, "invited");
+        await store.updateAccess(account, permissions, "invited");
         await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
     }
 
-    async setAccount(
+    async updateAccess(
         store: SharedStore,
         acc: PublicAccount,
         permissions: Permissions = { read: true, write: true, manage: false },
         status: AccessorStatus
     ) {
         await this.remoteStorage.get(store);
-        await store.setAccount(acc, permissions, status);
+        await store.updateAccess(acc, permissions, status);
         await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
         this.dispatch("store-changed", { store });
     }
 
-    async removeAccount(store: SharedStore, account: PublicAccount) {
+    async revokeAccess(store: SharedStore, account: PublicAccount) {
         if (!store.permissions.manage) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
         await this.remoteStorage.get(store);
-        await store.removeAccount(account);
+        await store.revokeAccess(account);
         await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
         this.dispatch("store-changed", { store });
     }
@@ -561,7 +577,6 @@ export class App extends EventTarget {
         try {
             await this.remoteStorage.get(this.mainStore);
         } catch (e) {
-            console.log("error", e.code);
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
             }
@@ -589,14 +604,16 @@ export class App extends EventTarget {
     }
 
     async getStore(id: string): Promise<SharedStore | null> {
+        if (!this.account) {
+            throw "not logged in";
+        }
         let store = this.sharedStores.find(s => s.id === id);
         if (store) {
             return store;
         }
 
-        store = new SharedStore(id);
+        store = new SharedStore(id, this.account);
         try {
-            store.access = this.access;
             await this.remoteStorage.get(store);
             return store;
         } catch (e) {}

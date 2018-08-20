@@ -438,6 +438,7 @@ class App extends BaseElement {
             case ErrorCode.SESSION_EXPIRED:
                 await app.logout();
                 alert($l("You've been logged out of your Padlock online account. Please login in again!"));
+                break;
             case ErrorCode.DEPRECATED_API_VERSION:
                 const confirmed = await confirm(
                     $l(
@@ -452,10 +453,12 @@ class App extends BaseElement {
                 if (confirmed) {
                     checkForUpdates();
                 }
+                break;
             case ErrorCode.RATE_LIMIT_EXCEEDED:
                 alert($l("It seems are servers are over capacity right now. Please try again later!"), {
                     type: "warning"
                 });
+                break;
             case ErrorCode.FAILED_CONNECTION:
                 alert(
                     $l(
@@ -464,7 +467,7 @@ class App extends BaseElement {
                     ),
                     { type: "warning", title: $l("Failed Connection") }
                 );
-                return false;
+                break;
             case ErrorCode.SERVER_ERROR:
                 confirm(
                     error.message ||
@@ -477,7 +480,7 @@ class App extends BaseElement {
                         window.open(`mailto:support@padlock.io?subject=Server+Error+(${error.code})`);
                     }
                 });
-                return false;
+                break;
         }
     }
 

@@ -1,6 +1,6 @@
 import { unmarshal } from "./encoding";
-import { Record, Field, Store, createRecord } from "./data";
-import { Container, validateRawContainer } from "./crypto";
+import { Record, Field, AccountStore, createRecord } from "./data";
+import { validateRawContainer } from "./crypto";
 import { loadScript } from "./util";
 import { Err, ErrorCode } from "./error";
 
@@ -83,10 +83,9 @@ export function isFromPadlock(data: string): boolean {
 }
 
 export async function fromPadlock(data: string, password: string): Promise<Record[]> {
-    let cont = await new Container().deserialize(unmarshal(data));
-    const store = new Store();
-    cont.password = password;
-    await cont.get(store);
+    const store = new AccountStore();
+    store.password = password;
+    await store.deserialize(data);
     return store.records;
 }
 

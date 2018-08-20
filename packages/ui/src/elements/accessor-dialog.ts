@@ -61,9 +61,9 @@ export class AccessorDialog extends BaseElement {
         this._rejectButton.start();
         try {
             if (status === "active" || status === "invited") {
-                await app.removeAccount(this.store!, this.accessor!);
+                await app.revokeAccess(this.store!, this.accessor!);
             } else if (status === "requested") {
-                await app.setAccount(
+                await app.updateAccess(
                     this.store!,
                     this.accessor!,
                     { read: false, write: false, manage: false },
@@ -87,7 +87,7 @@ export class AccessorDialog extends BaseElement {
         this._loading = true;
         this._approveButton.start();
         try {
-            await app.setAccount(
+            await app.updateAccess(
                 this.store!,
                 this.accessor!,
                 { read: this._permRead.active, write: this._permWrite.active, manage: this._permManage.active },
@@ -109,13 +109,13 @@ export class AccessorDialog extends BaseElement {
 
     _render({ store, accessor, _loading }: this) {
         const storeName = store!.name;
-        const { email, name, publicKey, status, permissions } = accessor!;
+        const { id, email, name, publicKey, status, permissions } = accessor!;
         const permsChanged =
             (this._permRead && this._permRead.active !== permissions.read) ||
             (this._permWrite && this._permWrite.active !== permissions.write) ||
             (this._permManage && this._permManage.active !== permissions.manage);
         // const isTrusted = app.isTrusted(account);
-        const isOwnAccount = app.account && app.account.email === email;
+        const isOwnAccount = app.account && app.account.id === id;
         const disableControls = _loading || isOwnAccount || !store!.permissions.manage;
         const approveIcon = status === "active" || status === "requested" || status === "invited" ? "check" : "invite";
         const approveLabel =

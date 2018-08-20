@@ -1,4 +1,4 @@
-import { Container, AccessorStatus } from "@padlock/core/src/crypto";
+import { AccountStore, SharedStore } from "@padlock/core/src/data";
 import { Account, Session } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 import { uuid } from "@padlock/core/lib/util.js";
@@ -42,6 +42,7 @@ export async function activateSession(ctx: Context, id: string) {
         await ctx.storage.get(acc);
     } catch (e) {
         if (e.code === ErrorCode.NOT_FOUND) {
+            acc.id = uuid();
             await ctx.storage.set(acc);
         } else {
             throw e;
@@ -91,144 +92,104 @@ export async function getAccount(ctx: Context, email: string) {
     ctx.body = account.publicAccount;
 }
 
-export async function getStore(ctx: Context, id?: string) {
+export async function getAccountStore(ctx: Context) {
     if (!ctx.state.session) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
 
-    if (!id || id === "main") {
-        id = ctx.state.account!.mainStore;
-    }
+    const store = new AccountStore(ctx.state.account);
+    await ctx.storage.get(store);
 
-    if (!id) {
-        throw new Err(ErrorCode.NOT_FOUND);
-    }
-
-    const container = new Container();
-    container.id = id!;
-    container.kind = "store";
-    await ctx.storage.get(container);
-
-    ctx.body = await container.serialize();
+    ctx.body = await store.serialize();
 }
 
-export async function putStore(ctx: Context, id: string) {
+export async function putAccountStore(ctx: Context) {
+    if (!ctx.state.session) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const store = await new AccountStore(ctx.state.account).deserialize(ctx.request.body);
+    await ctx.storage.set(store);
+
+    ctx.body = await store.serialize();
+}
+
+export async function getSharedStore(ctx: Context, id: string) {
+    if (!ctx.state.session) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const store = new SharedStore(id, ctx.state.account!);
+    await ctx.storage.get(store);
+
+    ctx.body = await store.serialize();
+}
+
+export async function putSharedStore(ctx: Context, id: string) {
     if (!ctx.state.session) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
 
     const account = ctx.state.account!;
-    let container = await new Container().deserialize(ctx.request.body);
+    const store = await new SharedStore(id, account).deserialize(ctx.request.body);
+    const existing = new SharedStore(id, account);
 
-    if (id === "main") {
-        if (!account.mainStore) {
-            account.mainStore = uuid();
-            await ctx.storage.set(account);
-        }
-        container.id = account.mainStore;
-    } else {
-        const existing = new Container();
-        existing.id = id;
-        existing.kind = "store";
-        await ctx.storage.get(existing);
+    await ctx.storage.get(existing);
 
-        const accessor = existing.accessors.find(a => a.email === account.email);
+    const permissions = existing.permissions;
 
-        if (!accessor || !accessor.permissions.write) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Write permissions required");
-        }
-
-        Object.assign(existing, {
-            cipherText: container.cipherText,
-            encryptionParams: container.encryptionParams,
-            wrappingParams: container.wrappingParams
-        });
-
-        if (accessor.permissions.manage) {
-            const { added } = existing.mergeAccessors(container.accessors);
-            for (const accessor of added) {
-                const acc = new Account(accessor.email);
-                await ctx.storage.get(acc);
-                acc.sharedStores.push(container.id);
-                await ctx.storage.set(acc);
-            }
-        }
-
-        container = existing;
+    if (!permissions.write) {
+        throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Write permissions required to update store contents.");
     }
 
-    await ctx.storage.set(container);
+    const { added, changed } = existing.mergeAccessors(store.accessors);
 
-    ctx.body = await container.serialize();
+    if (added.length || (changed.length && !permissions.manage)) {
+        throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Manage permissions required to update store accessors.");
+    }
+
+    for (const accessor of added) {
+        const acc = new Account(accessor.email);
+        await ctx.storage.get(acc);
+        acc.sharedStores.push(store.id);
+        await ctx.storage.set(acc);
+    }
+
+    await ctx.storage.set(store);
+
+    ctx.body = await store.serialize();
 }
 
-export async function createStore(ctx: Context) {
+export async function createSharedStore(ctx: Context) {
     if (!ctx.state.session || !ctx.state.account) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
 
     const account = ctx.state.account;
-    const container = await new Container().deserialize(ctx.request.body);
+    const store = await new SharedStore(uuid(), account).deserialize(ctx.request.body);
 
-    container.id = uuid();
+    store.id = uuid();
+    account.sharedStores.push(store.id);
 
-    account.sharedStores.push(container.id);
+    await Promise.all([ctx.storage.set(account), ctx.storage.set(store)]);
 
-    await Promise.all([ctx.storage.set(account), ctx.storage.set(container)]);
-
-    // const accounts = container.accessors.map(a => new Account(a.email));
-    //
-    // await Promise.all(accounts.map(a => ctx.storage.get(a)));
-    //
-    // for (const acc of accounts) {
-    //     if (!acc.sharedStores.includes(container.id)) {
-    //         acc.sharedStores.push(container.id);
-    //     }
-    // }
-    //
-    // await Promise.all(accounts.map(a => ctx.storage.set(a)));
-
-    ctx.body = await container.serialize();
+    ctx.body = await store.serialize();
 }
 
-export async function deleteStore(ctx: Context, id: string) {
+export async function deleteSharedStore(ctx: Context, id: string) {
     if (!ctx.state.session) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
 
     const account = ctx.state.account!;
 
-    if (id === "main") {
-        if (!account.mainStore) {
-            throw new Err(ErrorCode.NOT_FOUND);
-        }
-        id = account.mainStore;
+    const store = new SharedStore(id, account);
+    await ctx.storage.get(store);
+
+    if (!store.permissions.manage) {
+        throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Mangage permissions required to delete a shared store!");
     }
-
-    const container = new Container();
-    container.id = id;
-    container.kind = "store";
-
-    await ctx.storage.get(container);
-
-    const accessor = container.accessors.find(a => a.email === account.email);
-
-    if (!accessor || !accessor.permissions.manage) {
-        throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Mangage permissions required");
-    }
-
-    await ctx.storage.delete(container);
-    //
-    // const accounts = container.accessors.map(a => new Account(a.email));
-    //
-    // await Promise.all(accounts.map(a => ctx.storage.get(a)));
-    //
-    // for (const acc of accounts) {
-    //     console.log("updating account", acc.email);
-    //     acc.sharedStores.splice(acc.sharedStores.indexOf(id), 1);
-    // }
-    //
-    // await Promise.all(accounts.map(a => ctx.storage.set(a)));
+    await ctx.storage.delete(store);
 
     ctx.status = 204;
 }
@@ -242,8 +203,18 @@ export async function updateAccount(ctx: Context) {
     const { publicKey } = ctx.request.body as AccountUpdateParams;
 
     if (publicKey) {
+        if (typeof publicKey !== "string") {
+            throw new Err(ErrorCode.BAD_REQUEST);
+        }
         account.publicKey = publicKey;
     }
+    //
+    // if (name) {
+    //     if (typeof name !== "string") {
+    //         throw new Err(ErrorCode.BAD_REQUEST);
+    //     }
+    //     account.name = name;
+    // }
 
     await ctx.storage.set(account);
 
@@ -257,34 +228,20 @@ export async function requestAccess(ctx: Context, id: string) {
 
     const account = ctx.state.account;
 
-    const container = new Container();
-    container.id = id;
-    container.kind = "store";
+    const store = new SharedStore(id, account);
+    await ctx.storage.get(store);
 
-    await ctx.storage.get(container);
-
-    if (container.accessors.some(a => a.email === account.email)) {
+    if (store.accessors.some(a => a.id === account.id)) {
         throw new Err(ErrorCode.BAD_REQUEST);
     }
 
-    container.accessors.push(
-        Object.assign(
-            {
-                status: "requested" as AccessorStatus,
-                updated: new Date().toISOString(),
-                encryptedKey: "",
-                addedBy: "",
-                permissions: { read: true, write: false, manage: false }
-            },
-            account.publicAccount
-        )
-    );
+    store.updateAccess(account.publicAccount, { read: true, write: false, manage: false }, "requested");
 
     account.sharedStores.push(id);
 
-    await Promise.all([ctx.storage.set(account), ctx.storage.set(container)]);
+    await Promise.all([ctx.storage.set(account), ctx.storage.set(store)]);
 
-    ctx.body = await container.serialize();
+    ctx.body = await store.serialize();
 }
 
 export async function acceptInvite(ctx: Context, id: string) {
@@ -294,70 +251,16 @@ export async function acceptInvite(ctx: Context, id: string) {
 
     const account = ctx.state.account;
 
-    const container = new Container();
-    container.id = id;
-    container.kind = "store";
+    const store = new SharedStore(id, account);
+    await ctx.storage.get(store);
 
-    await ctx.storage.get(container);
-
-    const accessor = container.accessors.find(a => a.email === account.email);
-
-    if (!accessor || accessor.status !== "invited") {
+    if (store.accessorStatus !== "invited") {
         throw new Err(ErrorCode.BAD_REQUEST);
     }
 
-    accessor.status = "active";
-    accessor.updated = new Date().toISOString();
+    store.updateAccess(account, store.permissions, "active");
 
-    await Promise.all([ctx.storage.set(account), ctx.storage.set(container)]);
+    await Promise.all([ctx.storage.set(account), ctx.storage.set(store)]);
 
-    ctx.body = await container.serialize();
+    ctx.body = await store.serialize();
 }
-
-//
-// export async function createFriendRequest(ctx: Context) {
-//     if (!ctx.state.session || !ctx.state.account) {
-//         throw new Err(ErrorCode.INVALID_SESSION);
-//     }
-//
-//     const { email } = ctx.request.body;
-//
-//     const sender = ctx.state.account;
-//     const recipient = new Account(email);
-//
-//     const request = new FriendRequest(sender, recipient);
-//
-//     try {
-//         await ctx.storage.get(recipient);
-//         recipient.friendRequests.push(request.id);
-//         await ctx.storage.set(recipient);
-//         ctx.sender.send(
-//             email,
-//             `${request.sender.email} would like to share data on Padlock with you!`,
-//             `
-//             Hi there!
-//
-//             ${request.sender.email} would like to add you to their trusted Padlock accounts, allowing you
-//             to securely and easily share data with eachother!
-//
-//             To complete the process, simply open the Padlock app!
-//
-//             Best,
-//             Martin from Padlock
-//         `
-//         );
-//     } catch (e) {
-//         if (e.code === ErrorCode.NOT_FOUND) {
-//             // TODO
-//         } else {
-//             throw e;
-//         }
-//     }
-//
-//     await ctx.storage.set(request);
-//
-//     sender.friendRequests.push(request.id);
-//     await ctx.storage.set(sender);
-//
-//     ctx.body = await request.serialize();
-// }

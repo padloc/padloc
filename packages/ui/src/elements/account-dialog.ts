@@ -23,9 +23,9 @@ export class AccountDialog extends BaseElement {
 
     _render({ account, action }: this) {
         account = account!;
-        const { email, name, publicKey } = account;
+        const { id, email, name, publicKey } = account;
         const isTrusted = app.isTrusted(account);
-        const isOwnAccount = app.account && app.account.email === account.email;
+        const isOwnAccount = app.account && app.account.id === account.id;
 
         return html`
         <style>
@@ -141,7 +141,7 @@ export class AccountDialog extends BaseElement {
 
                     </div>
 
-                    ${app.sharedStores.filter(s => s.accessors.some(a => a.email === email)).map(
+                    ${app.sharedStores.filter(s => s.accessors.some(a => a.id === id)).map(
                         s => html`
                             <div class="tag">
 
