@@ -52,11 +52,13 @@ export class StoreView extends View {
     }
 
     private async _invite() {
-        const accounts = app.account!.trustedAccounts.filter(
-            acc => !this.store!.accessors.some(a => a.email === acc.email && a.status === "active")
+        const accounts = app.knownAccounts.filter(
+            acc =>
+                acc.id !== app.account!.id &&
+                !this.store!.accessors.some(a => a.email === acc.email && a.status === "active")
         );
 
-        const selection = accounts.length ? await this._inviteDialog.show(this.store!) : "new";
+        const selection = accounts.length ? await this._inviteDialog.show(accounts) : "new";
 
         if (selection === "new") {
             this._shareStoreDialog.show(this.store!);

@@ -3,6 +3,7 @@ import { SharedStore } from "@padlock/core/lib/data.js";
 import { Accessor, AccessorStatus } from "@padlock/core/lib/crypto.js";
 import sharedStyles from "../styles/shared.js";
 import { app } from "../init.js";
+import { confirm } from "../dialog.js";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { ToggleButton } from "./toggle-button.js";
@@ -52,11 +53,25 @@ export class AccessorDialog extends BaseElement {
         const { status } = this.accessor!;
         if (status !== "active" && status !== "requested" && status !== "invited") {
             this._done();
+            return;
         }
 
         if (this._loading) {
             return;
         }
+
+        const confirmMessage =
+            status === "requested"
+                ? $l("Reject access for this user?")
+                : $l("Are you sure you want to remove this user from this group?");
+        this._dialog.open = false;
+        const confirmed = await confirm(confirmMessage);
+        this._dialog.open = false;
+
+        if (!confirmed) {
+            return;
+        }
+
         this._loading = true;
         this._rejectButton.start();
         try {

@@ -1,29 +1,18 @@
-import { SharedStore } from "@padlock/core/lib/data.js";
 import { PublicAccount } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { app } from "../init.js";
 import sharedStyles from "../styles/shared.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 
 @element("pl-invite-dialog")
 export class InviteDialog extends BaseElement {
-    @property() store: SharedStore | null = null;
+    @property() accounts: PublicAccount[] = [];
 
     @query("pl-dialog") private _dialog: Dialog;
 
     private _resolve: ((acc: PublicAccount | null | "new") => void) | null;
 
-    _shouldRender() {
-        return !!this.store;
-    }
-
-    _render({ store }: this) {
-        const trusted = app.account!.trustedAccounts.filter(
-            acc => !store!.accessors.some(a => a.id === acc.id && a.status === "active")
-        );
-        const { name } = store!;
-
+    _render({ accounts }: this) {
         return html`
             <style>
                 ${sharedStyles}
@@ -38,7 +27,6 @@ export class InviteDialog extends BaseElement {
                     background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
                     text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
                     color: var(--color-tertiary);
-                    font-size: 110%;
                 }
 
                 pl-dialog > * {
@@ -65,15 +53,13 @@ export class InviteDialog extends BaseElement {
 
                 <div class="title">
 
-                    <pl-icon icon="group"></pl-icon>
+                    <pl-icon icon="user"></pl-icon>
 
-                    <div>${name}</div>
+                    <div>${$l("Select An Account:")}</div>
 
                 </div>
 
-                <div class="hint" hidden?="${!trusted.length}">${$l("Select a user to add them to this group:")}</div>
-
-                ${trusted.map(
+                ${accounts.map(
                     acc => html`
                     <pl-account-item
                         class="tap"
@@ -91,8 +77,8 @@ export class InviteDialog extends BaseElement {
         `;
     }
 
-    async show(store: SharedStore): Promise<PublicAccount | null | "new"> {
-        this.store = store;
+    async show(accounts: PublicAccount[]): Promise<PublicAccount | null | "new"> {
+        this.accounts = accounts;
         this.requestRender();
         await this.renderComplete;
         this._dialog.open = true;

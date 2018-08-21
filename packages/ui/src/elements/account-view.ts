@@ -42,7 +42,7 @@ export class AccountView extends View {
         const sessions = (account && account.sessions) || [];
         const paymentSource = account && account.paymentSource;
         const paymentSourceLabel = paymentSource && `${paymentSource.brand} •••• •••• •••• ${paymentSource.lastFour}`;
-        const trustedAccounts = (app.account && app.account.trustedAccounts) || [];
+        // const trustedAccounts = (app.account && app.account.trustedAccounts) || [];
 
         return html`
         <style>
@@ -469,29 +469,6 @@ export class AccountView extends View {
                 })}
 
                 <button class="tap" on-click="${() => this._createSharedStore()}">${$l("Create Group")}</button>
-
-            </section>
-
-            <section>
-
-                <div class="section-header">
-
-                    <pl-icon icon="trusted"></pl-icon>
-
-                    <div>${$l("Trusted Users", trustedAccounts.length.toString())}</div>
-
-                </div>
-
-                ${trustedAccounts.map(
-                    acc => html`
-                        <pl-account-item
-                            account="${acc}"
-                            class="tap"
-                            on-click="${() => this._openAccount(acc)}">
-                        </pl-account-item>`
-                )}
-
-                <button class="tap" on-click="${() => this._addTrustedAccount()}">${$l("Add Trusted User")}</button>
 
             </section>
 

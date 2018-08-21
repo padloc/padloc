@@ -623,6 +623,19 @@ export class App extends EventTarget implements Storable {
 
     async reactivateSubscription() {}
 
+    get knownAccounts(): PublicAccount[] {
+        const accounts = new Map<string, PublicAccount>();
+        for (const store of this.sharedStores) {
+            for (const { id, email, name, publicKey } of store.accessors) {
+                if (id !== this.account!.id) {
+                    accounts.set(id, { id, email, name, publicKey });
+                }
+            }
+        }
+
+        return Array.from(accounts.values());
+    }
+
     buySubscription(_source: string) {}
 
     cancelSubscription() {}
