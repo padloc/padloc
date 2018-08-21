@@ -171,23 +171,6 @@ const styles = `
         justify-content: center;
     }
 
-    .section-row {
-        display: flex;
-        align-items: center;
-        border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-    }
-
-    .section-row-label {
-        padding: 0 15px;
-        flex: 1;
-        @apply --ellipsis;
-    }
-
-    .section-row pl-icon {
-        width: 50px;
-        height: 50px;
-    }
-
     header {
         display: flex;
         height: var(--row-height);

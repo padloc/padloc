@@ -1,6 +1,13 @@
+import { loadScript } from "./util.js";
+
 declare var cordova: any | undefined;
 declare var chrome: any | undefined;
 declare var device: any | undefined;
+
+const browserInfo = (async () => {
+    const uaparser = await loadScript("/vendor/ua-parser.js", "UAParser");
+    return uaparser(navigator.userAgent);
+})();
 
 const nodeRequire = window.require;
 const electron = nodeRequire && nodeRequire("electron");
@@ -51,6 +58,10 @@ export async function isAndroid(): Promise<boolean> {
 
 export async function isChromeOS(): Promise<boolean> {
     return (await getPlatformName()).toLowerCase() === "chromeos";
+}
+
+export async function isBrowser(): Promise<boolean> {
+    return !isCordova() && !isChromeApp() && !isIOS() && !isAndroid() && !isChromeOS() && !isElectron();
 }
 
 //* Checks if the current environment supports touch events
@@ -124,7 +135,7 @@ export function hasNode(): Boolean {
 }
 
 export function isElectron(): Boolean {
-    return !!electron;
+    return false;
 }
 
 export async function getAppVersion(): Promise<string> {
@@ -168,7 +179,7 @@ export async function getPlatformName(): Promise<string> {
             }[info.os] || info.os
         );
     } else {
-        return "";
+        return (await browserInfo).os.name.replace(" ", "");
     }
 }
 
@@ -194,7 +205,7 @@ export async function getOSVersion(): Promise<string> {
     } else if (hasNode()) {
         return nodeRequire("os").release();
     } else {
-        return "";
+        return (await browserInfo).os.version.replace(" ", "");
     }
 }
 
@@ -231,7 +242,7 @@ export interface DeviceInfo {
     appVersion: string;
     manufacturer?: string;
     model?: string;
-    hostName?: string;
+    browser?: string;
     userAgent: string;
 }
 
@@ -244,14 +255,14 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
         userAgent: navigator.userAgent
     };
 
+    if (isBrowser()) {
+        info.browser = (await browserInfo).browser.name;
+    }
+
     if (isCordova()) {
         await cordovaReady;
         info.model = device.model;
         info.manufacturer = device.manufacturer;
-    }
-
-    if (isElectron()) {
-        info.hostName = nodeRequire("os").hostname();
     }
 
     return info;

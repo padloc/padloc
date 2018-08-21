@@ -15,11 +15,11 @@ export class Device implements Serializable, DeviceInfo {
     appVersion: string = "";
     manufacturer?: string;
     model?: string;
-    hostName?: string;
+    browser?: string;
     userAgent: string = "";
 
     get description(): string {
-        return this.userAgent;
+        return this.browser ? `${this.browser} on ${this.platform}` : `${this.platform + " Device"}`;
     }
 
     async serialize() {
@@ -30,7 +30,7 @@ export class Device implements Serializable, DeviceInfo {
             appVersion: this.appVersion,
             manufacturer: this.manufacturer,
             model: this.model,
-            hostName: this.hostName,
+            browser: this.browser,
             userAgent: this.userAgent
         };
     }

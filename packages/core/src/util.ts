@@ -93,19 +93,23 @@ export function isFuture(date: Date | string | number, duration: number) {
         .isAfter();
 }
 
-export function loadScript(src: string, global?: string): Promise<any | undefined> {
-    if (document.querySelector(`script[src="${src}"]`) !== null) {
-        return Promise.resolve(global ? window[global] : undefined);
+const loaded: Map<string, Promise<any>> = new Map<string, Promise<any>>();
+export function loadScript(src: string, global?: string): Promise<any> {
+    if (loaded.has(src)) {
+        return loaded.get(src)!;
     }
+
     const s = document.createElement("script");
     s.src = src;
     s.type = "text/javascript";
-    return new Promise(resolve => {
-        s.onload = () => {
-            resolve(global ? window[global] : undefined);
-        };
-        document.body.appendChild(s);
+    const p = new Promise((resolve, reject) => {
+        s.onload = () => resolve(global ? window[global] : undefined);
+        s.onerror = e => reject(e);
+        document.body!.appendChild(s);
     });
+
+    loaded.set(src, p);
+    return p;
 }
 
 export async function passwordStrength(pwd: string): Promise<{ score: number }> {

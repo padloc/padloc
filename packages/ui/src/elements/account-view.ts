@@ -208,11 +208,29 @@ export class AccountView extends View {
                 @apply --ellipsis;
             }
 
-            .store-join {
-                background: var(--color-highlight);
-                color: var(--color-background);
-                height: 40px;
-                border-radius: 40px;
+            .session {
+                display: flex;
+                align-items: center;
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+            }
+
+            .session-label {
+                padding: 10px 15px;
+                flex: 1;
+            }
+
+            .session-description {
+                @apply --ellipsis;
+            }
+
+            .session pl-icon {
+                width: 50px;
+                height: auto;
+                align-self: stretch;
+            }
+
+            .session-hint {
+                font-size: var(--font-size-tiny);
             }
 
             pl-icon[icon=refresh][spin] {
@@ -474,15 +492,22 @@ export class AccountView extends View {
 
             <section hidden?="${!loggedIn}">
 
-                <div class="section-header">${$l("{0} Sessions Connected", sessions.length.toString())}</div>
+                <div class="section-header">${$l("{0} Active Sessions", sessions.length.toString())}</div>
 
                 <div class="sessions">
 
                     ${sessions.map(
                         (session: Session) => html`
-                        <div class="section-row">
+                        <div class="session">
 
-                            <div class="section-row-label">${session.device.description}</div>
+                            <div class="session-label">
+                                <div class="session-description">${session.device.description}</div>
+                                <div class="session-hint">${
+                                    app.session && session.id == app.session.id
+                                        ? $l("Current Session")
+                                        : $l("last active {0}", formatDateFromNow(session.lastUsed || ""))
+                                }</div>
+                            </div>
 
                             <pl-icon
                                 icon="delete"
