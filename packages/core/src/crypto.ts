@@ -1,15 +1,5 @@
-import {
-    Serializable,
-    Base64String,
-    stringToBase64,
-    base64ToString,
-    marshal,
-    unmarshal,
-    Marshalable,
-    DateString
-} from "./encoding";
+import { Serializable, Base64String, stringToBase64, base64ToString, marshal, unmarshal, DateString } from "./encoding";
 import { Err, ErrorCode } from "./error";
-import { PublicAccount } from "./auth";
 
 // Minimum number of pbkdf2 iterations
 const PBKDF2_ITER_MIN = 1e4;
@@ -18,104 +8,110 @@ const PBKDF2_ITER_DEFAULT = 5e4;
 // Maximum number of pbkdf2 iterations
 const PBKDF2_ITER_MAX = 1e7;
 
-export type CipherText = Base64String;
-export type PlainText = Base64String;
+export type AESKey = Base64String;
+export type HMACKey = Base64String;
+export type SymmetricKey = AESKey | HMACKey;
+export type RSAPublicKey = Base64String;
+export type RSAPrivateKey = Base64String;
 
-// Available Symmetric Key Sizes
-export type KeySize = 128 | 192 | 256;
-// Available authentication tag sizes
-export type TagSize = 64 | 96 | 128;
-
-export type SymmetricKey = Base64String;
-export type PublicKey = Base64String;
-export type PrivateKey = Base64String;
-
-export type Key = SymmetricKey | PublicKey | PrivateKey;
-
-export type CipherType = "symmetric" | "asymmetric";
-
-export interface BaseCipherParams {
-    cipherType: CipherType;
-    algorithm: string;
-}
-
-export interface SymmetricCipherParams extends BaseCipherParams {
-    cipherType: "symmetric";
+export interface AESEncryptionParams {
     algorithm: "AES-GCM" | "AES-CCM";
-    tagSize: TagSize;
-    keySize: KeySize;
-    iv?: Base64String;
-    additionalData?: Base64String;
+    tagSize: 64 | 96 | 128;
+    keySize: 256;
+    iv: Base64String;
+    additionalData: Base64String;
 }
 
-export interface AsymmetricCipherParams extends BaseCipherParams {
-    cipherType: "asymmetric";
-    algorithm: "RSA-OAEP";
+export interface AESKeyParams {
+    algorithm: "AES";
+    keySize: 256;
 }
 
-export type CipherParams = SymmetricCipherParams | AsymmetricCipherParams;
+export interface HMACKeyParams {
+    algorithm: "HMAC";
+    keySize: 256;
+}
 
-export interface KeyDerivationParams {
+export interface RSAKeyParams {
+    algorithm: "RSA";
+    modulusLength: 2048;
+    publicExponent: Uint8Array;
+    hash: "SHA-1";
+}
+
+export interface PBKDF2Params {
     algorithm: "PBKDF2";
-    hash: "SHA-256" | "SHA-512";
-    keySize: KeySize;
+    hash: "SHA-256";
+    keySize: 256;
     iterations: number;
-    salt?: string;
+    salt: string;
 }
 
-export interface WrapKeyParams {
+export interface RSAEncryptionParams {
     algorithm: "RSA-OAEP";
+    hash: "SHA-1";
+}
+
+export interface HMACParams {
+    algorithm: "HMAC";
+    hash: "SHA-256";
+    keySize: 256;
 }
 
 export interface CryptoProvider {
     isAvailable(): boolean;
     randomBytes(n: number): Base64String;
-    randomKey(n: KeySize): Promise<SymmetricKey>;
-    deriveKey(password: string, params: KeyDerivationParams): Promise<SymmetricKey>;
-    encrypt(key: Key, data: PlainText, params: CipherParams): Promise<CipherText>;
-    decrypt(key: Key, data: Base64String, params: CipherParams): Promise<PlainText>;
-    generateKeyPair(): Promise<{ privateKey: PrivateKey; publicKey: PublicKey }>;
-    fingerprint(key: PublicKey): Promise<Base64String>;
+
+    generateKey(params: AESKeyParams): Promise<AESKey>;
+    generateKey(params: HMACKeyParams): Promise<HMACKey>;
+    generateKey(params: RSAKeyParams): Promise<{ privateKey: RSAPrivateKey; publicKey: RSAPublicKey }>;
+
+    deriveKey(password: string, params: PBKDF2Params): Promise<SymmetricKey>;
+
+    encrypt(key: AESKey, data: Base64String, params: AESEncryptionParams): Promise<Base64String>;
+    encrypt(publicKey: RSAPublicKey, data: Base64String, params: RSAEncryptionParams): Promise<Base64String>;
+
+    decrypt(key: AESKey, data: Base64String, params: AESEncryptionParams): Promise<Base64String>;
+    decrypt(privateKey: RSAPrivateKey, data: Base64String, params: RSAEncryptionParams): Promise<Base64String>;
+
+    sign(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String>;
+    verify(key: HMACKey, signature: Base64String, data: Base64String, params: HMACParams): Promise<boolean>;
+
+    fingerprint(key: RSAPublicKey): Promise<Base64String>;
 }
 
-export function validateCipherParams(params: any): CipherParams {
-    switch (params.cipherType) {
-        case "symmetric":
-            if (
-                !["AES-GCM", "AES-CCM"].includes(params.algorithm) ||
-                // TODO: validate base 64
-                !params.iv ||
-                typeof params.iv !== "string" ||
-                !params.additionalData ||
-                typeof params.additionalData !== "string" ||
-                !params.tagSize ||
-                ![64, 96, 128].includes(params.tagSize)
-            ) {
-                throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
-            }
-            break;
-        case "asymmetric":
-            if (params.algorithm !== "RSA-OAEP") {
-                throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
-            }
-            break;
-        default:
-            throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
+export function validateAESEncryptionParams(params: any): AESEncryptionParams {
+    if (
+        !["AES-GCM", "AES-CCM"].includes(params.algorithm) ||
+        // TODO: validate base64
+        typeof params.iv !== "string" ||
+        typeof params.additionalData !== "string" ||
+        ![64, 96, 128].includes(params.tagSize)
+    ) {
+        throw new Err(ErrorCode.INVALID_ENCRYPTION_PARAMS);
     }
 
-    return params as CipherParams;
+    return params as AESEncryptionParams;
 }
 
-export function defaultKeyDerivationParams(): KeyDerivationParams {
+export function validateRSAEncryptionParams(params: any): RSAEncryptionParams {
+    if (params.algorithm !== "RSA-OAEP") {
+        throw new Err(ErrorCode.INVALID_KEY_WRAP_PARAMS);
+    }
+    return params as RSAEncryptionParams;
+}
+
+export function defaultPBKDF2Params(): PBKDF2Params {
     return {
         algorithm: "PBKDF2",
         hash: "SHA-256",
         keySize: 256,
-        iterations: PBKDF2_ITER_DEFAULT
+        iterations: PBKDF2_ITER_DEFAULT,
+        salt: ""
     };
 }
 
-export function validateKeyDerivationParams(params: any): KeyDerivationParams {
+export function validatePBKDF2Params(params: any): PBKDF2Params {
     if (
         params.algorithm !== "PBKDF2" ||
         !params.salt ||
@@ -126,10 +122,10 @@ export function validateKeyDerivationParams(params: any): KeyDerivationParams {
         ![192, 256, 512].includes(params.keySize) ||
         !["SHA-256", "SHA-512"].includes(params.hash)
     ) {
-        throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
+        throw new Err(ErrorCode.INVALID_KEY_PARAMS);
     }
 
-    return params as KeyDerivationParams;
+    return params as PBKDF2Params;
 }
 
 export type EncryptionScheme = "simple" | "PBES2" | "shared";
@@ -137,64 +133,116 @@ export type EncryptionScheme = "simple" | "PBES2" | "shared";
 export interface BaseRawContainer {
     version: 2;
     scheme: EncryptionScheme;
-    encryptionParams: SymmetricCipherParams;
-    cipherText: CipherText;
+    encryptionParams: AESEncryptionParams;
+    encryptedData: Base64String;
 }
 
 export interface SimpleRawContainer extends BaseRawContainer {
     scheme: "simple";
 }
 
-export interface PasswordBasedRawContainer extends BaseRawContainer {
+export interface PBES2RawContainer extends BaseRawContainer {
     scheme: "PBES2";
-    keyDerivationParams: KeyDerivationParams;
+    keyParams: PBKDF2Params;
 }
 
 export interface SharedRawContainer extends BaseRawContainer {
     scheme: "shared";
-    wrappingParams: AsymmetricCipherParams;
+    keyParams: RSAEncryptionParams;
     accessors: Accessor[];
 }
 
-export type RawContainer = SimpleRawContainer | PasswordBasedRawContainer | SharedRawContainer;
+export type RawContainer = SimpleRawContainer | PBES2RawContainer | SharedRawContainer;
 
-export function validateRawContainer(raw: any): RawContainer {
-    if (raw.version !== 2 || !raw.encryptionParams || !raw.cipherText) {
-        throw new Err(ErrorCode.INVALID_CONTAINER_DATA);
-    }
-
-    validateCipherParams(raw.encryptionParams);
-
-    switch (raw.scheme) {
-        case "simple":
-            break;
-        case "PBES2":
-            validateKeyDerivationParams(raw.keyDerivationParams);
-            break;
-        case "shared":
-            validateCipherParams(raw.wrappingParams);
-            break;
-        default:
-            throw new Err(ErrorCode.INVALID_CONTAINER_DATA);
-    }
-
-    return raw as RawContainer;
-}
-
-export function defaultEncryptionParams(): SymmetricCipherParams {
+export function defaultEncryptionParams(): AESEncryptionParams {
     return {
-        cipherType: "symmetric",
         algorithm: "AES-GCM",
         tagSize: 64,
-        keySize: 256
+        keySize: 256,
+        iv: "",
+        additionalData: ""
     };
 }
 
-export function defaultWrappingParams(): AsymmetricCipherParams {
+export function defaultKeyWrapParams(): RSAEncryptionParams {
     return {
-        cipherType: "asymmetric",
-        algorithm: "RSA-OAEP"
+        algorithm: "RSA-OAEP",
+        hash: "SHA-1"
     };
+}
+
+export abstract class Container implements Serializable {
+    encryptedData: Base64String = "";
+    constructor(public encryptionParams: AESEncryptionParams = defaultEncryptionParams()) {}
+
+    protected abstract _getKey(): Promise<AESKey>;
+
+    async set(data: Serializable) {
+        this.encryptionParams.iv = provider.randomBytes(16);
+        // TODO: useful additional authenticated data?
+        this.encryptionParams.additionalData = provider.randomBytes(16);
+
+        const key = await this._getKey();
+        const pt = stringToBase64(marshal(await data.serialize()));
+        this.encryptedData = await provider.encrypt(key, pt, this.encryptionParams);
+    }
+
+    async get(data: Serializable) {
+        const key = await this._getKey();
+        const pt = base64ToString(await provider.decrypt(key, this.encryptedData, this.encryptionParams));
+        await data.deserialize(unmarshal(pt));
+    }
+
+    async serialize() {
+        const raw = {
+            version: 2,
+            encryptionParams: this.encryptionParams,
+            encryptedData: this.encryptedData
+        };
+
+        return raw as any;
+    }
+
+    async deserialize(raw: any) {
+        validateAESEncryptionParams(raw.encryptionParams);
+        this.encryptionParams = raw.encryptionParams;
+        this.encryptedData = raw.encryptedData;
+        return this;
+    }
+}
+
+export class PBES2Container extends Container {
+    password?: string;
+
+    constructor(
+        public encryptionParams: AESEncryptionParams = defaultEncryptionParams(),
+        public keyParams: PBKDF2Params = defaultPBKDF2Params()
+    ) {
+        super(encryptionParams);
+    }
+
+    async _getKey() {
+        if (!this.keyParams.salt) {
+            this.keyParams.salt = provider.randomBytes(16);
+        }
+        if (!this.password) {
+            throw new Err(ErrorCode.DECRYPTION_FAILED, "No password provided");
+        }
+        return await provider.deriveKey(this.password, this.keyParams);
+    }
+
+    async serialize() {
+        const raw = await super.serialize();
+        (raw as PBES2RawContainer).keyParams = this.keyParams;
+        return raw;
+    }
+
+    async deserialize(raw: PBES2RawContainer) {
+        validatePBKDF2Params(raw.keyParams);
+        this.keyParams = raw.keyParams;
+        await super.deserialize(raw);
+        return this;
+    }
 }
 
 export interface Permissions {
@@ -205,191 +253,125 @@ export interface Permissions {
 
 export type AccessorStatus = "invited" | "active" | "left" | "removed" | "requested" | "rejected" | "none";
 
-export interface Accessor extends PublicAccount {
-    encryptedKey: CipherText;
+export interface Accessor {
+    id: string;
+    email: string;
+    name: string;
+    publicKey: RSAPublicKey;
+    encryptedKey: Base64String;
     permissions: Permissions;
     updatedBy: string;
     updated: DateString;
     status: AccessorStatus;
 }
 
-export interface Access extends PublicAccount {
-    privateKey: PrivateKey;
+export interface Access {
+    id: string;
+    privateKey: RSAPrivateKey;
 }
 
-export class Container implements Serializable {
-    cipherText?: CipherText;
-    key?: SymmetricKey;
-    password?: string;
-    access: Access | null = null;
-    accessors: Accessor[] = [];
+export class SharedContainer extends Container {
+    _accessors = new Map<string, Accessor>();
 
     constructor(
-        public scheme: EncryptionScheme = "simple",
-        public encryptionParams: SymmetricCipherParams = defaultEncryptionParams(),
-        public keyDerivationParams: KeyDerivationParams = defaultKeyDerivationParams(),
-        public wrappingParams: AsymmetricCipherParams = defaultWrappingParams()
-    ) {}
+        public access: Access,
+        public encryptionParams: AESEncryptionParams = defaultEncryptionParams(),
+        public keyParams: RSAEncryptionParams = defaultKeyWrapParams()
+    ) {
+        super(encryptionParams);
+    }
 
-    async getKey(): Promise<SymmetricKey> {
-        switch (this.scheme) {
-            case "simple":
-                if (!this.key) {
-                    this.key = await provider.randomKey(this.encryptionParams.keySize);
+    private _key: AESKey = "";
+
+    async _getKey() {
+        if (!this._key) {
+            if (this._accessors.size) {
+                const accessor = this._accessors.get(this.access.id);
+                if (!accessor || !accessor.encryptedKey) {
+                    throw new Err(ErrorCode.MISSING_ACCESS, "Current accessor does not have access.");
                 }
-                return this.key;
-            case "PBES2":
-                if (!this.keyDerivationParams.salt) {
-                    this.keyDerivationParams.salt = provider.randomBytes(16);
-                }
-                if (!this.password) {
-                    throw new Err(ErrorCode.DECRYPTION_FAILED, "No password provided");
-                }
-                return await provider.deriveKey(this.password, this.keyDerivationParams);
-            case "shared":
-                if (!this.access) {
-                    throw new Err(ErrorCode.DECRYPTION_FAILED, "No access parameters provided");
-                }
-                if (this.accessors.length) {
-                    const accessor = this.accessors.find(a => a.id === this.access!.id);
-                    if (!accessor || !accessor.encryptedKey) {
-                        throw new Err(ErrorCode.MISSING_ACCESS, "Current accessor does not have access.");
-                    }
-                    return provider.decrypt(this.access.privateKey, accessor.encryptedKey, this.wrappingParams);
-                } else {
-                    return await provider.randomKey(this.encryptionParams.keySize);
-                }
+                return provider.decrypt(this.access.privateKey, accessor.encryptedKey, this.keyParams);
+            } else {
+                return await provider.generateKey({
+                    algorithm: "AES",
+                    keySize: this.encryptionParams.keySize
+                } as AESKeyParams);
+            }
         }
-    }
-
-    async set(data: Serializable) {
-        this.encryptionParams.iv = provider.randomBytes(16);
-        // TODO: useful additional authenticated data?
-        this.encryptionParams.additionalData = provider.randomBytes(16);
-
-        const key = await this.getKey();
-        const pt = stringToBase64(marshal(await data.serialize()));
-        this.cipherText = await provider.encrypt(key, pt, this.encryptionParams);
-    }
-
-    async get(data: Serializable) {
-        if (!this.cipherText) {
-            throw new Err(ErrorCode.DECRYPTION_FAILED, "Container is empty");
-        }
-        const key = await this.getKey();
-        const pt = base64ToString(await provider.decrypt(key, this.cipherText, this.encryptionParams));
-        await data.deserialize(unmarshal(pt));
-    }
-
-    async delete() {
-        await this.clear();
+        return this._key;
     }
 
     async serialize() {
-        const raw = {
-            version: 2,
-            scheme: this.scheme,
-            // TODO: rename to "encryptionParams", "cipterText" etc.
-            encryptionParams: this.encryptionParams,
-            cipherText: this.cipherText
-        } as RawContainer;
+        const raw = await super.serialize();
+        (raw as SharedRawContainer).keyParams = this.keyParams;
+        (raw as SharedRawContainer).accessors = this.accessors;
+        return raw;
+    }
 
-        if (this.scheme === "PBES2") {
-            (raw as PasswordBasedRawContainer).keyDerivationParams = this.keyDerivationParams;
+    async deserialize(raw: SharedRawContainer) {
+        await super.deserialize(raw);
+        this.keyParams = raw.keyParams;
+        this.mergeAccessors(raw.accessors);
+        this._key = "";
+        return this;
+    }
+
+    get accessors() {
+        return Array.from(this._accessors.values());
+    }
+
+    getAccessor(id: string) {
+        return this._accessors.get(id);
+    }
+
+    async updateAccessor(accessor: Accessor) {
+        if (accessor.status === "active" || accessor.status === "invited") {
+            accessor.encryptedKey = await provider.encrypt(accessor.publicKey, await this._getKey(), this.keyParams);
+        } else {
+            accessor.encryptedKey = "";
         }
 
-        if (this.scheme === "shared") {
-            (raw as SharedRawContainer).wrappingParams = this.wrappingParams;
-            (raw as SharedRawContainer).accessors = this.accessors;
-        }
-
-        return raw as Marshalable;
+        accessor.updated = new Date().toISOString();
+        accessor.updatedBy = this.access.id;
+        this._accessors.set(accessor.id, accessor);
     }
 
     mergeAccessors(accessors: Accessor[]) {
-        const merged = new Map<string, Accessor>(this.accessors.map(a => [a.id, a] as [string, Accessor]));
         const changed: Accessor[] = [];
         const added: Accessor[] = [];
 
         for (const acc of accessors) {
-            const existing = merged.get(acc.id);
+            const existing = this._accessors.get(acc.id);
             if (!existing) {
-                merged.set(acc.id, acc);
+                this._accessors.set(acc.id, acc);
                 added.push(acc);
             } else if (!existing.updated || new Date(existing.updated) < new Date(acc.updated)) {
-                merged.set(acc.id, acc);
+                this._accessors.set(acc.id, acc);
                 changed.push(acc);
             }
         }
 
-        this.accessors = Array.from(merged.values());
         return { changed, added };
     }
 
-    async deserialize(raw: any) {
-        raw = validateRawContainer(raw);
-        this.scheme = raw.scheme;
-        this.cipherText = raw.cipherText;
-        this.encryptionParams = raw.encryptionParams;
+    private async _reencrypt() {
+        this._key = await provider.generateKey({
+            algorithm: "AES",
+            keySize: this.encryptionParams.keySize
+        } as AESKeyParams);
 
-        if (raw.scheme === "PBES2") {
-            this.keyDerivationParams = raw.keyDerivationParams;
-        }
-
-        if (raw.scheme === "shared") {
-            this.wrappingParams = raw.wrappingParams;
-            this.mergeAccessors(raw.accessors);
-        }
-        return this;
+        await Promise.all(this.accessors.map(async a => this.updateAccessor(a)));
     }
 
-    async getEncryptedKey(publicKey: PublicKey) {
-        return provider.encrypt(publicKey, await this.getKey(), this.wrappingParams);
-    }
-
-    async setAccessor(accessor: Accessor) {
-        if (this.scheme !== "shared") {
-            throw new Err(ErrorCode.NOT_SUPPORTED, "Cannot add accessor in this scheme");
-        }
-
-        accessor.updated = new Date().toISOString();
-        if (accessor.status === "active" || accessor.status === "invited") {
-            accessor.encryptedKey = await this.getEncryptedKey(accessor.publicKey);
-        }
-
-        const existing = this.accessors.find(a => a.id === accessor.id);
-        if (existing) {
-            Object.assign(existing, accessor);
-        } else {
-            this.accessors.push(accessor);
-        }
-    }
-
-    async removeAccessor(acc: string) {
-        const removedAccessor = this.accessors.find(a => a.id === acc);
-
-        if (!removedAccessor) {
+    async removeAccessor(id: string) {
+        const acc = this._accessors.get(id);
+        if (!acc) {
             throw "Accessor does not exist on this store";
         }
 
-        const key = await provider.randomKey(this.encryptionParams.keySize);
-        await Promise.all(
-            this.accessors.map(async a => {
-                a.encryptedKey = await provider.encrypt(a.publicKey, key, this.wrappingParams);
-                a.updated = new Date().toISOString();
-            })
-        );
+        acc.status = "removed";
 
-        removedAccessor.encryptedKey = "";
-        removedAccessor.status = "removed";
-    }
-
-    async clear() {
-        delete this.password;
-        delete this.access;
-        delete this.key;
-        delete this.cipherText;
-        this.accessors = [];
+        await this._reencrypt();
     }
 }
 

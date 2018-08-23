@@ -1,5 +1,5 @@
 import { DateString, Serializable } from "./encoding";
-import { PublicKey, PrivateKey } from "./crypto";
+import { getProvider, RSAPublicKey, RSAPrivateKey } from "./crypto";
 import { Storable } from "./storage";
 import { StoreID } from "./data";
 import { DeviceInfo } from "./platform";
@@ -76,7 +76,7 @@ export interface PublicAccount {
     id: AccountID;
     email: string;
     name: string;
-    publicKey: PublicKey;
+    publicKey: RSAPublicKey;
 }
 
 export class Account implements Storable, PublicAccount {
@@ -85,10 +85,9 @@ export class Account implements Storable, PublicAccount {
     name = "";
     created: DateString = new Date().toISOString();
     updated: DateString = new Date().toISOString();
-    mainStore?: StoreID;
     sharedStores: StoreID[] = [];
-    publicKey: PublicKey = "";
-    privateKey: PrivateKey = "";
+    publicKey: RSAPublicKey = "";
+    privateKey: RSAPrivateKey = "";
     trustedAccounts: PublicAccount[] = [];
     sessions: Session[] = [];
     // TODO
@@ -113,7 +112,6 @@ export class Account implements Storable, PublicAccount {
             updated: this.updated,
             email: this.email,
             name: this.name,
-            mainStore: this.mainStore,
             sharedStores: this.sharedStores,
             publicKey: this.publicKey,
             sessions: await Promise.all(this.sessions.map(s => s.serialize()))
@@ -127,5 +125,16 @@ export class Account implements Storable, PublicAccount {
         delete raw.sessions;
         Object.assign(this, raw);
         return this;
+    }
+
+    async generateKeyPair() {
+        const { publicKey, privateKey } = await getProvider().generateKey({
+            algorithm: "RSA",
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+            hash: "SHA-1"
+        });
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
     }
 }

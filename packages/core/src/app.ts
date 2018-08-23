@@ -8,7 +8,7 @@ import { localize as $l } from "./locale";
 import { Err, ErrorCode } from "./error";
 import { getDeviceInfo } from "./platform";
 import { uuid } from "./util";
-import { getProvider, Permissions, AccessorStatus } from "./crypto";
+import { Permissions, AccessorStatus } from "./crypto";
 
 export interface Stats {
     lastSync?: DateString;
@@ -69,24 +69,23 @@ export class App extends EventTarget implements Storable {
     storage = new LocalStorage();
     client = new Client(this);
     remoteStorage = new RemoteStorage(this.client);
-    mainStore = new AccountStore(undefined, true);
+    mainStore = new AccountStore(new Account(), true);
     sharedStores: SharedStore[] = [];
     settings = defaultSettings;
     messages = new Messages("https://padlock.io/messages.json");
     locked = true;
     stats: Stats = {};
     device: Device = new Device();
-
-    initialized?: DateString;
-    session?: Session;
+    initialized: DateString = "";
+    session: Session | null = null;
 
     loaded = this.load();
 
-    get account(): Account | undefined {
+    get account(): Account {
         return this.mainStore.account;
     }
 
-    set account(account: Account | undefined) {
+    set account(account: Account) {
         this.mainStore.account = account;
     }
 
@@ -247,7 +246,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async lock() {
-        await Promise.all([this.mainStore.clear(), ...this.sharedStores.map(s => s.clear())]);
+        this.mainStore = new AccountStore(this.account, true);
         this.sharedStores = [];
         this.locked = true;
         this.dispatch("lock");
@@ -268,12 +267,10 @@ export class App extends EventTarget implements Storable {
     }
 
     async reset() {
-        await this.lock();
+        this.mainStore = new AccountStore(new Account(), true);
+        this.sharedStores = [];
+        this.initialized = "";
         await this.storage.clear();
-        delete this.account;
-        delete this.session;
-        delete this.initialized;
-        await this.storage.set(this);
         this.dispatch("reset");
         this.loaded = this.load();
     }
@@ -373,11 +370,17 @@ export class App extends EventTarget implements Storable {
         if (!this.loggedIn) {
             throw "Not logged in!";
         }
+        const account = this.account!;
         await this.client.getOwnAccount();
-        await this.storage.set(this);
-        if (!this.account!.publicKey) {
-            await this.generateKeyPair();
+        if (!account.publicKey || !account.privateKey) {
+            await account.generateKeyPair();
+            await Promise.all([
+                this.client.updateAccount(account),
+                this.remoteStorage.set(this.mainStore),
+                this.storage.set(this.mainStore)
+            ]);
         }
+        await this.storage.set(this);
         this.dispatch("account-changed", { account: this.account });
     }
 
@@ -392,7 +395,7 @@ export class App extends EventTarget implements Storable {
             await this.client.logout();
         } catch (e) {}
         delete this.session;
-        delete this.account;
+        this.account = new Account();
         this.sharedStores = [];
         await this.storage.set(this);
         this.dispatch("logout");
@@ -412,25 +415,12 @@ export class App extends EventTarget implements Storable {
         }
     }
 
-    async generateKeyPair() {
-        if (!this.account) {
-            throw "Need to create account first!";
-        }
-        const { publicKey, privateKey } = await getProvider().generateKeyPair();
-        this.account.publicKey = publicKey;
-        this.account.privateKey = privateKey;
-        await Promise.all([this.updateAccount({ publicKey }), this.synchronize()]);
-    }
-
     async createSharedStore(name: string): Promise<SharedStore> {
         if (!this.account) {
             throw "Need to be logged in to create a shared store!";
         }
 
-        if (!this.account.publicKey || !this.account.privateKey) {
-            await this.generateKeyPair();
-        }
-
+        await this.syncAccount();
         const store = new SharedStore("", this.account, name);
         await store.updateAccess(this.account.publicAccount, { read: true, write: true, manage: true }, "active");
         await this.remoteStorage.set(store);

@@ -2,12 +2,10 @@ import { request, Method } from "./ajax";
 import { Session, Account, PublicAccount } from "./auth";
 import { marshal, unmarshal } from "./encoding";
 import { App } from "./app";
-import { PublicKey, Accessor } from "./crypto";
 import { SharedStore } from "./data";
 
 export interface AccountUpdateParams {
-    publicKey?: PublicKey;
-    leaveStores?: string[];
+    publicKey?: string;
 }
 
 export class Client {
@@ -109,14 +107,6 @@ export class Client {
         const res = await this.request("PUT", "me", marshal(params));
         await this.app.account.deserialize(unmarshal(res.responseText));
         return this.app.account;
-    }
-
-    async createInvite(store: string, accessor: Accessor): Promise<void> {
-        if (!this.app.session || !this.app.account) {
-            throw "Need to be logged in";
-        }
-
-        await this.request("POST", `store/${store}/invite`, marshal(accessor));
     }
 
     async requestAccess(store: SharedStore): Promise<void> {

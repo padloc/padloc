@@ -1,6 +1,6 @@
 import { unmarshal } from "./encoding";
 import { Record, Field, AccountStore, createRecord } from "./data";
-import { validateRawContainer } from "./crypto";
+import { Account } from "./auth";
 import { loadScript } from "./util";
 import { Err, ErrorCode } from "./error";
 
@@ -75,7 +75,8 @@ export async function fromCSV(data: string, nameColIndex?: number, tagsColIndex?
  */
 export function isFromPadlock(data: string): boolean {
     try {
-        validateRawContainer(unmarshal(data));
+        // TODO: add a more robust check
+        return typeof unmarshal(data).version === "string";
         return true;
     } catch (e) {
         return false;
@@ -83,7 +84,7 @@ export function isFromPadlock(data: string): boolean {
 }
 
 export async function fromPadlock(data: string, password: string): Promise<Record[]> {
-    const store = new AccountStore();
+    const store = new AccountStore(new Account());
     store.password = password;
     await store.deserialize(data);
     return store.records;

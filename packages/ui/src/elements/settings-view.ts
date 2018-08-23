@@ -35,10 +35,9 @@ export class SettingsView extends View {
     }
 
     _render() {
-        const { settings, account, session } = app;
+        const { settings, account, loggedIn } = app;
         const isDesktop = isElectron();
         const subStatus = (account && account.subscription && account.subscription.status) || "";
-        const loggedIn = session && session.active;
         // const dbPath = desktopSettings.dbPath;
         const dbPath = "";
 
@@ -208,7 +207,7 @@ export class SettingsView extends View {
                     on-change="${(e: CustomEvent) => this._toggleCustomServer(e)}">
                 </pl-toggle-button>
 
-                <div class="tap" hidden?="${!settings.customServer}" disabled$="${loggedIn}">
+                <div class="tap" hidden?="${!settings.customServer}" disabled?="${loggedIn}">
 
                     <pl-input
                         id="customServerUrlInput"
@@ -340,7 +339,7 @@ export class SettingsView extends View {
             autoLockDelay: (this.$("#autoLockDelaySlider") as Slider).value,
             autoSync: (this.$("#autoSyncButton") as ToggleButton).active,
             customServer: (this.$("#customServerButton") as ToggleButton).active,
-            customServerUrl: (this.$("#customServerUrlInput") as Input).value
+            customServerUrl: ((this.$("#customServerUrlInput") as any) as Input).value
         });
     }
 

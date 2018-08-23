@@ -4,7 +4,8 @@ export enum ErrorCode {
     // Crypto Errors
     INVALID_CONTAINER_DATA = "invalid_container_data",
     UNSUPPORTED_CONTAINER_VERSION = "unsupported_container_version",
-    INVALID_CIPHER_PARAMS = "invalid_cipher_params",
+    INVALID_ENCRYPTION_PARAMS = "invalid_encryption_params",
+    INVALID_KEY_WRAP_PARAMS = "invalid_key_wrap_params",
     INVALID_KEY_PARAMS = "invalid_key_params",
     DECRYPTION_FAILED = "decryption_failed",
     ENCRYPTION_FAILED = "encryption_failed",

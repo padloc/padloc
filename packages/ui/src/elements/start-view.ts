@@ -786,9 +786,17 @@ export class StartView extends BaseElement {
     }
 
     private async _finishSetup() {
+        if (this._getStartedButton.state === "loading") {
+            return;
+        }
         this._getStartedButton.start();
-        await app.initialize(app.password || this._newPasswordInput.value);
-        this._getStartedButton.success();
+        try {
+            await app.initialize(app.password || this._newPasswordInput.value);
+            this._getStartedButton.success();
+        } catch (e) {
+            this._getStartedButton.fail();
+            throw e;
+        }
         this._newPasswordInput.blur();
         track("Setup: Finish");
     }

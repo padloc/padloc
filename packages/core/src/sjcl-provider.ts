@@ -1,17 +1,5 @@
 import { Base64String } from "./encoding";
-import {
-    CryptoProvider,
-    CipherText,
-    PlainText,
-    KeyDerivationParams,
-    CipherParams,
-    Key,
-    SymmetricKey,
-    PublicKey,
-    PrivateKey,
-    validateKeyDerivationParams,
-    validateCipherParams
-} from "./crypto";
+import { PBKDF2Params, AESKey, AESEncryptionParams, validatePBKDF2Params, validateAESEncryptionParams } from "./crypto";
 import { Err, ErrorCode } from "./error";
 import { sjcl } from "../vendor/sjcl";
 
@@ -26,7 +14,7 @@ const base64ToBits = (base64: Base64String): any => {
 };
 const utf8ToBits = sjcl.codec.utf8String.toBits;
 
-const SJCLProvider: CryptoProvider = {
+const SJCLProvider = {
     isAvailable() {
         return true;
     },
@@ -38,8 +26,8 @@ const SJCLProvider: CryptoProvider = {
         return bitsToBase64(sjcl.random.randomWords(bytes / 4, 0));
     },
 
-    async deriveKey(password: string, params: KeyDerivationParams): Promise<SymmetricKey> {
-        validateKeyDerivationParams(params);
+    async deriveKey(password: string, params: PBKDF2Params): Promise<AESKey> {
+        validatePBKDF2Params(params);
 
         const k = sjcl.misc.pbkdf2(utf8ToBits(password), base64ToBits(params.salt!), params.iterations, params.keySize);
         return bitsToBase64(k);
@@ -49,11 +37,11 @@ const SJCLProvider: CryptoProvider = {
         return sjcl.randomBytes(n / 8);
     },
 
-    async decrypt(key: Key, ct: CipherText, params: CipherParams): Promise<PlainText> {
-        if (params.cipherType !== "symmetric" || params.algorithm !== "AES-CCM") {
-            throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
+    async decrypt(key: AESKey, ct: Base64String, params: AESEncryptionParams): Promise<Base64String> {
+        if (params.algorithm !== "AES-CCM") {
+            throw new Err(ErrorCode.INVALID_ENCRYPTION_PARAMS);
         }
-        validateCipherParams(params);
+        validateAESEncryptionParams(params);
 
         // Only AES and CCM are supported
         const algorithm = "aes";
@@ -74,12 +62,12 @@ const SJCLProvider: CryptoProvider = {
         }
     },
 
-    async encrypt(key: Key, pt: PlainText, params: CipherParams): Promise<CipherText> {
-        if (params.cipherType !== "symmetric" || params.algorithm !== "AES-CCM") {
-            throw new Err(ErrorCode.INVALID_CIPHER_PARAMS);
+    async encrypt(key: AESKey, pt: Base64String, params: AESEncryptionParams): Promise<Base64String> {
+        if (params.algorithm !== "AES-CCM") {
+            throw new Err(ErrorCode.INVALID_ENCRYPTION_PARAMS);
         }
 
-        validateCipherParams(params);
+        validateAESEncryptionParams(params);
 
         // Only AES and CCM are supported
         const algorithm = "aes";
@@ -98,14 +86,6 @@ const SJCLProvider: CryptoProvider = {
         } catch (e) {
             throw new Err(ErrorCode.ENCRYPTION_FAILED);
         }
-    },
-
-    async generateKeyPair(): Promise<{ privateKey: PrivateKey; publicKey: PublicKey }> {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
-    },
-
-    async fingerprint() {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 };
 

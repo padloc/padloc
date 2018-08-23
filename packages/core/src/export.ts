@@ -1,4 +1,5 @@
 import { AccountStore, Record } from "./data";
+import { Account } from "./auth";
 import { loadPapa } from "./import";
 import { marshal } from "./encoding";
 
@@ -61,7 +62,7 @@ export async function toCSV(records: Record[]): Promise<string> {
 }
 
 export async function toPadlock(records: Record[], password: string): Promise<string> {
-    const store = new AccountStore(undefined, true, records);
+    const store = new AccountStore(new Account(), true, records);
     store.password = password;
     const data = await store.serialize();
     return marshal(data);

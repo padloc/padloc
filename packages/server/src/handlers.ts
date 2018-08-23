@@ -33,7 +33,7 @@ export async function activateSession(ctx: Context, id: string) {
     req.session.id = id;
     await ctx.storage.get(req);
 
-    if (req.code !== code) {
+    if (req.code.toLowerCase() !== code.toLowerCase()) {
         throw new Err(ErrorCode.BAD_REQUEST, "Invalid code");
     }
 
@@ -97,7 +97,7 @@ export async function getAccountStore(ctx: Context) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
 
-    const store = new AccountStore(ctx.state.account);
+    const store = new AccountStore(ctx.state.account!);
     await ctx.storage.get(store);
 
     ctx.body = await store.serialize();
@@ -108,7 +108,7 @@ export async function putAccountStore(ctx: Context) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
 
-    const store = await new AccountStore(ctx.state.account).deserialize(ctx.request.body);
+    const store = await new AccountStore(ctx.state.account!).deserialize(ctx.request.body);
     await ctx.storage.set(store);
 
     ctx.body = await store.serialize();

@@ -16,7 +16,7 @@ export function marshal(obj: Marshalable): string {
     return JSON.stringify(obj);
 }
 
-export function unmarshal(str: string): Marshalable {
+export function unmarshal(str: string): any {
     return JSON.parse(str);
 }
 
