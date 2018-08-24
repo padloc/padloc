@@ -1,5 +1,5 @@
 import { AccountStore, SharedStore } from "@padlock/core/src/data";
-import { Account, Session } from "@padlock/core/src/auth";
+import { Account, Session, Organization } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 import { uuid } from "@padlock/core/lib/util.js";
 import { AccountUpdateParams } from "@padlock/core/lib/client.js";
@@ -144,7 +144,7 @@ export async function putSharedStore(ctx: Context, id: string) {
 
     const { added, changed } = existing.mergeAccessors(store.accessors);
 
-    if (added.length || (changed.length && !permissions.manage)) {
+    if ((added.length || changed.length) && !permissions.manage) {
         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Manage permissions required to update store accessors.");
     }
 
@@ -165,10 +165,11 @@ export async function createSharedStore(ctx: Context) {
         throw new Err(ErrorCode.INVALID_SESSION);
     }
 
+    const { name } = ctx.request.body;
     const account = ctx.state.account;
-    const store = await new SharedStore(uuid(), account).deserialize(ctx.request.body);
+    const store = await new SharedStore(uuid(), account, name);
+    store.owner = account.id;
 
-    store.id = uuid();
     account.sharedStores.push(store.id);
 
     await Promise.all([ctx.storage.set(account), ctx.storage.set(store)]);
@@ -263,4 +264,60 @@ export async function acceptInvite(ctx: Context, id: string) {
     await Promise.all([ctx.storage.set(account), ctx.storage.set(store)]);
 
     ctx.body = await store.serialize();
+}
+
+export async function getOrganization(ctx: Context, id: string) {
+    if (!ctx.state.session) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const account = ctx.state.account!;
+
+    const store = new Organization(id, ctx.state.account!);
+    await ctx.storage.get(store);
+
+    if (!store.isMember(account)) {
+        throw new Err(ErrorCode.NOT_FOUND);
+    }
+
+    ctx.body = await store.serialize();
+}
+
+export async function putOrganization(ctx: Context, id: string) {
+    if (!ctx.state.session) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const account = ctx.state.account!;
+
+    const org = await new Organization(id, account).deserialize(ctx.request.body);
+
+    const existing = new Organization(id, account);
+    await ctx.storage.get(existing);
+
+    if (!existing.isAdmin(account)) {
+        throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Only admins can update organizations");
+    }
+
+    await ctx.storage.set(org);
+
+    ctx.body = await org.serialize();
+}
+
+export async function createOrganization(ctx: Context) {
+    if (!ctx.state.session || !ctx.state.account) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const { name } = ctx.request.body;
+
+    const account = ctx.state.account;
+    const org = await new Organization(uuid(), account, name);
+    org.owner = account.id;
+
+    account.organizations.push(org.id);
+
+    await Promise.all([ctx.storage.set(account), ctx.storage.set(org)]);
+
+    ctx.body = await org.serialize();
 }

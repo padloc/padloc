@@ -10,7 +10,7 @@ import {
     AccessorStatus
 } from "./crypto";
 import { Storable } from "./storage";
-import { Account, PublicAccount } from "./auth";
+import { Account, PublicAccount, AccountID } from "./auth";
 import { uuid } from "./util";
 import { Err, ErrorCode } from "./error";
 
@@ -35,6 +35,7 @@ export interface Record {
     fields: Field[];
     tags: Tag[];
     updated: Date;
+    // TODO: Use the account id instead to save space
     updatedBy?: PublicAccount;
     lastUsed?: Date;
 }
@@ -253,6 +254,7 @@ export class Invite {
 
 export class SharedStore extends Store {
     kind = "shared-store";
+    owner: AccountID = "";
 
     private _container: SharedContainer;
 
@@ -265,26 +267,36 @@ export class SharedStore extends Store {
         return this.id;
     }
 
-    get hasAccess() {
-        return this.accessorStatus === "active" && !!this.account.privateKey;
-    }
-
     get accessors() {
         return this._container.accessors;
     }
 
     get currentAccessor() {
-        return this._container.getAccessor(this.account.id);
+        return this._container.currentAccessor;
     }
 
-    get permissions() {
+    get permissions(): Permissions {
+        if (this.isOwner(this.account)) {
+            return { read: true, write: true, manage: true };
+        }
         const accessor = this.currentAccessor;
         return (accessor && accessor.permissions) || { read: false, write: false, manage: false };
     }
 
-    get accessorStatus(): AccessorStatus {
-        const accessor = this.currentAccessor;
-        return accessor ? accessor.status : "none";
+    get accessorStatus() {
+        return this._container.accessorStatus;
+    }
+
+    get hasAccess() {
+        return this._container.hasAccess;
+    }
+
+    isOwner(account: PublicAccount) {
+        return this.owner === account.id;
+    }
+
+    initialize() {
+        return this._container.initialize(this.account.publicAccount);
     }
 
     mergeAccessors(accessors: Accessor[]) {
@@ -316,6 +328,7 @@ export class SharedStore extends Store {
             await this._container.set(this._serializer);
         }
         return Object.assign(await super.serialize(), await this._container.serialize(), {
+            owner: this.owner,
             name: this.name,
             id: this.id
         });
@@ -323,6 +336,7 @@ export class SharedStore extends Store {
 
     async deserialize(raw: any) {
         await super.deserialize(raw);
+        this.owner = raw.owner;
         this.name = raw.name;
         this.id = raw.id || this.id;
         await this._container.deserialize(raw);
@@ -340,7 +354,6 @@ export class SharedStore extends Store {
         if (!acc.publicKey) {
             throw "Public Key is missing on account!";
         }
-        const updatedBy = this.currentAccessor ? this.currentAccessor.id : acc.id;
         await this._container.updateAccessor({
             id: acc.id,
             email: acc.email,
@@ -348,8 +361,8 @@ export class SharedStore extends Store {
             publicKey: acc.publicKey,
             encryptedKey: "",
             updated: "",
+            updatedBy: "",
             permissions,
-            updatedBy,
             status
         });
     }

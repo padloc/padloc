@@ -1,5 +1,6 @@
 import { Serializable, Base64String, stringToBase64, base64ToString, marshal, unmarshal, DateString } from "./encoding";
 import { Err, ErrorCode } from "./error";
+import { PublicAccount } from "./auth";
 
 // Minimum number of pbkdf2 iterations
 const PBKDF2_ITER_MIN = 1e4;
@@ -52,6 +53,12 @@ export interface RSAEncryptionParams {
     hash: "SHA-1";
 }
 
+export interface RSASigningParams {
+    algorithm: "RSA-PSS";
+    hash: "SHA-1";
+    saltLength: 128;
+}
+
 export interface HMACParams {
     algorithm: "HMAC";
     hash: "SHA-256";
@@ -75,7 +82,10 @@ export interface CryptoProvider {
     decrypt(privateKey: RSAPrivateKey, data: Base64String, params: RSAEncryptionParams): Promise<Base64String>;
 
     sign(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String>;
+    sign(key: RSAPrivateKey, data: Base64String, params: RSASigningParams): Promise<Base64String>;
+
     verify(key: HMACKey, signature: Base64String, data: Base64String, params: HMACParams): Promise<boolean>;
+    verify(key: RSAPublicKey, signature: Base64String, data: Base64String, params: RSASigningParams): Promise<boolean>;
 
     fingerprint(key: RSAPublicKey): Promise<Base64String>;
 }
@@ -253,11 +263,7 @@ export interface Permissions {
 
 export type AccessorStatus = "invited" | "active" | "left" | "removed" | "requested" | "rejected" | "none";
 
-export interface Accessor {
-    id: string;
-    email: string;
-    name: string;
-    publicKey: RSAPublicKey;
+export interface Accessor extends PublicAccount {
     encryptedKey: Base64String;
     permissions: Permissions;
     updatedBy: string;
@@ -271,7 +277,8 @@ export interface Access {
 }
 
 export class SharedContainer extends Container {
-    _accessors = new Map<string, Accessor>();
+    private _accessors = new Map<string, Accessor>();
+    private _key: AESKey = "";
 
     constructor(
         public access: Access,
@@ -281,22 +288,29 @@ export class SharedContainer extends Container {
         super(encryptionParams);
     }
 
-    private _key: AESKey = "";
+    async initialize(account: PublicAccount) {
+        this._key = await provider.generateKey({
+            algorithm: "AES",
+            keySize: this.encryptionParams.keySize
+        } as AESKeyParams);
+        await this.updateAccessor(
+            Object.assign({}, account, {
+                status: "active" as AccessorStatus,
+                permissions: { read: true, write: true, manage: true },
+                encryptedKey: "",
+                updated: "",
+                updatedBy: ""
+            })
+        );
+    }
 
     async _getKey() {
         if (!this._key) {
-            if (this._accessors.size) {
-                const accessor = this._accessors.get(this.access.id);
-                if (!accessor || !accessor.encryptedKey) {
-                    throw new Err(ErrorCode.MISSING_ACCESS, "Current accessor does not have access.");
-                }
-                return provider.decrypt(this.access.privateKey, accessor.encryptedKey, this.keyParams);
-            } else {
-                return await provider.generateKey({
-                    algorithm: "AES",
-                    keySize: this.encryptionParams.keySize
-                } as AESKeyParams);
+            const accessor = this._accessors.get(this.access.id);
+            if (!accessor || !accessor.encryptedKey) {
+                throw new Err(ErrorCode.MISSING_ACCESS, "Current accessor does not have access.");
             }
+            this._key = await provider.decrypt(this.access.privateKey, accessor.encryptedKey, this.keyParams);
         }
         return this._key;
     }
@@ -318,6 +332,19 @@ export class SharedContainer extends Container {
 
     get accessors() {
         return Array.from(this._accessors.values());
+    }
+
+    get currentAccessor() {
+        return this.getAccessor(this.access.id);
+    }
+
+    get accessorStatus(): AccessorStatus {
+        const accessor = this.currentAccessor;
+        return accessor ? accessor.status : "none";
+    }
+
+    get hasAccess() {
+        return this.accessorStatus === "active" && !!this.access.privateKey;
     }
 
     getAccessor(id: string) {

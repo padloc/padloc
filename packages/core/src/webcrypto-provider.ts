@@ -14,7 +14,8 @@ import {
     RSAEncryptionParams,
     validatePBKDF2Params,
     validateAESEncryptionParams,
-    validateRSAEncryptionParams
+    validateRSAEncryptionParams,
+    RSASigningParams
 } from "./crypto";
 import { Err, ErrorCode } from "./error";
 import SJCLProvider from "./sjcl-provider";
@@ -203,16 +204,79 @@ class WebCryptoProvider implements CryptoProvider {
         return bytesToBase64(new Uint8Array(bytes));
     }
 
-    async sign(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String> {
+    async sign(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String>;
+    async sign(key: RSAPrivateKey, data: Base64String, params: RSASigningParams): Promise<Base64String>;
+    async sign(
+        key: HMACKey | RSAPrivateKey,
+        data: Base64String,
+        params: HMACParams | RSASigningParams
+    ): Promise<Base64String> {
+        switch (params.algorithm) {
+            case "HMAC":
+                return this._signHMAC(key, data, params);
+            case "RSA-PSS":
+                return this._signRSA(key, data, params);
+            default:
+                throw new Err(ErrorCode.NOT_SUPPORTED);
+        }
+    }
+
+    async verify(key: HMACKey, signature: Base64String, data: Base64String, params: HMACParams): Promise<boolean>;
+    async verify(
+        key: RSAPrivateKey,
+        signature: Base64String,
+        data: Base64String,
+        params: RSASigningParams
+    ): Promise<boolean>;
+    async verify(
+        key: HMACKey | RSAPrivateKey,
+        signature: Base64String,
+        data: Base64String,
+        params: HMACParams | RSASigningParams
+    ): Promise<boolean> {
+        switch (params.algorithm) {
+            case "HMAC":
+                return this._verifyHMAC(key, signature, data, params);
+            case "RSA-PSS":
+                return this._verifyRSA(key, signature, data, params);
+            default:
+                throw new Err(ErrorCode.NOT_SUPPORTED);
+        }
+    }
+
+    private async _signHMAC(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String> {
         const p = Object.assign({}, params, { name: params.algorithm, length: params.keySize });
         const k = await webCrypto.importKey("raw", base64ToBytes(key), p, false, ["sign"]);
         const signature = await webCrypto.sign(p, k, base64ToBytes(data));
         return bytesToBase64(new Uint8Array(signature));
     }
 
-    async verify(key: HMACKey, signature: Base64String, data: Base64String, params: HMACParams): Promise<boolean> {
+    private async _verifyHMAC(
+        key: HMACKey,
+        signature: Base64String,
+        data: Base64String,
+        params: HMACParams
+    ): Promise<boolean> {
         const p = Object.assign({}, params, { name: params.algorithm, length: params.keySize });
         const k = await webCrypto.importKey("raw", base64ToBytes(key), p, false, ["verify"]);
+        return await webCrypto.verify(p, k, base64ToBytes(signature), base64ToBytes(data));
+    }
+
+    private async _signRSA(key: RSAPrivateKey, data: Base64String, params: RSASigningParams): Promise<Base64String> {
+        const p = Object.assign({}, params, { name: params.algorithm });
+        const k = await webCrypto.importKey("pkcs8", base64ToBytes(key), p, false, ["sign"]);
+        const signature = await webCrypto.sign(p, k, base64ToBytes(data));
+        return bytesToBase64(new Uint8Array(signature));
+    }
+
+    private async _verifyRSA(
+        key: RSAPublicKey,
+        signature: Base64String,
+        data: Base64String,
+        params: RSASigningParams
+    ): Promise<boolean> {
+        const p = Object.assign({}, params, { name: params.algorithm });
+        const k = await webCrypto.importKey("spki", base64ToBytes(key), p, false, ["verify"]);
         return await webCrypto.verify(p, k, base64ToBytes(signature), base64ToBytes(data));
     }
 }

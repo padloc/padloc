@@ -1,6 +1,6 @@
 import { Storable, LocalStorage, RemoteStorage } from "./storage";
 import { Store, AccountStore, SharedStore, Record, Field, Tag, StoreID } from "./data";
-import { Account, PublicAccount, Session, Device } from "./auth";
+import { Account, PublicAccount, Session, Device, Organization } from "./auth";
 import { DateString } from "./encoding";
 import { Client, AccountUpdateParams } from "./client";
 import { Messages } from "./messages";
@@ -71,6 +71,7 @@ export class App extends EventTarget implements Storable {
     remoteStorage = new RemoteStorage(this.client);
     mainStore = new AccountStore(new Account(), true);
     sharedStores: SharedStore[] = [];
+    organizations: Organization[] = [];
     settings = defaultSettings;
     messages = new Messages("https://padlock.io/messages.json");
     locked = true;
@@ -237,6 +238,16 @@ export class App extends EventTarget implements Storable {
                     this.sharedStores.push(sharedStore);
                 } catch (e) {
                     console.error("Failed to decrypt shared store with id", sharedStore.id, e);
+                }
+            }
+
+            for (const id of this.account.organizations) {
+                const org = new Organization(id, this.account);
+                try {
+                    await this.storage.get(org);
+                    this.organizations.push(org);
+                } catch (e) {
+                    console.error("Failed to load organization with id", org.id, e);
                 }
             }
         }
@@ -421,9 +432,9 @@ export class App extends EventTarget implements Storable {
         }
 
         await this.syncAccount();
-        const store = new SharedStore("", this.account, name);
-        await store.updateAccess(this.account.publicAccount, { read: true, write: true, manage: true }, "active");
-        await this.remoteStorage.set(store);
+        const store = await this.client.createSharedStore({ name });
+        await store.initialize();
+        await Promise.all([this.remoteStorage.set(store), this.storage.set(store)]);
         this.sharedStores.push(store);
         await this.syncAccount();
         this.dispatch("store-created", { store });
@@ -624,6 +635,22 @@ export class App extends EventTarget implements Storable {
         }
 
         return Array.from(accounts.values());
+    }
+
+    async createOrganization(name: string): Promise<Organization> {
+        if (!this.account) {
+            throw "Need to be logged in to create an organization!";
+        }
+
+        await this.syncAccount();
+
+        const org = await this.client.createOrganization({ name });
+        await org.initialize();
+        await Promise.all([this.remoteStorage.set(org), this.storage.set(org)]);
+        this.organizations.push(org);
+        await this.syncAccount();
+        this.dispatch("organization-created", { organization: org });
+        return org;
     }
 
     buySubscription(_source: string) {}

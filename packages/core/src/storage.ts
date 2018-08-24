@@ -77,6 +77,8 @@ export class RemoteStorage implements Storage {
                 return "me/store";
             case "shared-store":
                 return `store/${s.pk}`;
+            case "organization":
+                return `org/${s.pk}`;
             default:
                 throw new Err(ErrorCode.NOT_SUPPORTED);
         }

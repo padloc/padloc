@@ -1,11 +1,19 @@
 import { request, Method } from "./ajax";
-import { Session, Account, PublicAccount } from "./auth";
+import { Session, Account, PublicAccount, Organization } from "./auth";
 import { marshal, unmarshal } from "./encoding";
 import { App } from "./app";
 import { SharedStore } from "./data";
 
 export interface AccountUpdateParams {
     publicKey?: string;
+}
+
+export interface CreateSharedStoreParams {
+    name: string;
+}
+
+export interface CreateOrganizationParams {
+    name: string;
 }
 
 export class Client {
@@ -117,6 +125,16 @@ export class Client {
     async acceptInvite(store: SharedStore): Promise<void> {
         const res = await this.request("POST", `store/${store.id}/join`);
         await store.deserialize(unmarshal(res.responseText));
+    }
+
+    async createSharedStore(params: CreateSharedStoreParams): Promise<SharedStore> {
+        const res = await this.request("POST", "store", marshal(params));
+        return new SharedStore("", this.app.account).deserialize(unmarshal(res.responseText));
+    }
+
+    async createOrganization(params: CreateOrganizationParams): Promise<Organization> {
+        const res = await this.request("POST", "org", marshal(params));
+        return new Organization("", this.app.account).deserialize(unmarshal(res.responseText));
     }
     //
     // subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {

@@ -1,12 +1,14 @@
-import { DateString, Serializable } from "./encoding";
-import { getProvider, RSAPublicKey, RSAPrivateKey } from "./crypto";
+import { DateString, Base64String, Serializable } from "./encoding";
+import { getProvider, RSAPublicKey, RSAPrivateKey, SharedContainer, AccessorStatus } from "./crypto";
 import { Storable } from "./storage";
 import { StoreID } from "./data";
 import { DeviceInfo } from "./platform";
+import { Err, ErrorCode } from "./error";
 
 export type AccountID = string;
 export type SessionID = string;
 export type DeviceID = string;
+export type OrganizationID = string;
 
 export class Device implements Serializable, DeviceInfo {
     id: string = "";
@@ -86,6 +88,7 @@ export class Account implements Storable, PublicAccount {
     created: DateString = new Date().toISOString();
     updated: DateString = new Date().toISOString();
     sharedStores: StoreID[] = [];
+    organizations: OrganizationID[] = [];
     publicKey: RSAPublicKey = "";
     privateKey: RSAPrivateKey = "";
     trustedAccounts: PublicAccount[] = [];
@@ -136,5 +139,160 @@ export class Account implements Storable, PublicAccount {
         });
         this.publicKey = publicKey;
         this.privateKey = privateKey;
+    }
+
+    // TODO: omit private key?
+    // toJSON() {
+    //     return JSON.stringify(Object.assign({}, this, { privateKey: "[omitted]" }));
+    // }
+}
+
+export interface OrganizationMember extends PublicAccount {
+    signedPublicKey: Base64String;
+}
+
+export class Organization implements Storable {
+    kind = "organization";
+
+    owner: AccountID = "";
+    privateKey: RSAPrivateKey = "";
+    publicKey: RSAPublicKey = "";
+    members: OrganizationMember[] = [];
+
+    private _container: SharedContainer;
+
+    get pk() {
+        return this.id;
+    }
+
+    constructor(public id: OrganizationID, public account: Account, public name = "") {
+        this._container = new SharedContainer(this.account);
+    }
+
+    private get _secretSerializer(): Serializable {
+        return {
+            serialize: async () => {
+                return {
+                    privateKey: this.privateKey
+                };
+            },
+            deserialize: async (raw: any) => {
+                this.privateKey = raw.privateKey;
+                return this;
+            }
+        };
+    }
+
+    async initialize() {
+        await this._container.initialize(this.account.publicAccount);
+        await this.addMember(this.account.publicAccount);
+    }
+
+    async serialize() {
+        if (this._container.hasAccess) {
+            await this._container.set(this._secretSerializer);
+        }
+        return {
+            id: this.id,
+            owner: this.owner,
+            name: this.name,
+            publicKey: this.publicKey,
+            members: this.members
+        };
+    }
+
+    async deserialize(raw: any) {
+        this.id = raw.id;
+        this.owner = raw.owner;
+        this.name = raw.name;
+        this.publicKey = raw.publicKey;
+        this.members = raw.members;
+        if (this._container.hasAccess) {
+            await this._container.get(this._secretSerializer);
+        }
+        return this;
+    }
+
+    isOwner(account: PublicAccount) {
+        return this.owner === account.id;
+    }
+
+    isAdmin(account: PublicAccount) {
+        if (this.isOwner(account)) {
+            return true;
+        }
+        const accessor = this._container.getAccessor(account.id);
+        return accessor && accessor.status === "active";
+    }
+
+    isMember(account: PublicAccount) {
+        return !!this.members.find(m => m.id === account.id);
+    }
+
+    async generateKeyPair() {
+        const { publicKey, privateKey } = await getProvider().generateKey({
+            algorithm: "RSA",
+            modulusLength: 2048,
+            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+            hash: "SHA-1"
+        });
+        this.publicKey = publicKey;
+        this.privateKey = privateKey;
+    }
+
+    async addMember(account: PublicAccount) {
+        if (!this._container.hasAccess) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        if (!this.publicKey || !this.privateKey) {
+            await this.generateKeyPair();
+        }
+
+        if (this.members.find(m => m.id === account.id)) {
+            throw "Already a member";
+        }
+
+        const member = Object.assign({}, account, {
+            signedPublicKey: await getProvider().sign(this.privateKey, account.publicKey, {
+                algorithm: "RSA-PSS",
+                hash: "SHA-1",
+                saltLength: 128
+            })
+        });
+
+        this.members.push(member);
+    }
+
+    async addAdmin(account: PublicAccount) {
+        if (!this._container.hasAccess) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        await this._container.updateAccessor(
+            Object.assign({}, account, {
+                status: "active" as AccessorStatus,
+                permissions: { read: true, write: true, manage: true },
+                encryptedKey: "",
+                updated: "",
+                updatedBy: ""
+            })
+        );
+
+        if (!this.members.find(m => m.id === account.id)) {
+            await this.addMember(account);
+        }
+    }
+
+    async verifyMember(member: OrganizationMember) {
+        let verified = false;
+        try {
+            verified = await getProvider().verify(this.publicKey, member.signedPublicKey, member.publicKey, {
+                algorithm: "RSA-PSS",
+                hash: "SHA-1",
+                saltLength: 128
+            });
+        } catch (e) {}
+        return verified;
     }
 }

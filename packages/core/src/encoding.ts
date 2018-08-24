@@ -9,7 +9,7 @@ export interface Marshalable {}
 
 export interface Serializable {
     serialize: () => Promise<Marshalable>;
-    deserialize: (data: Marshalable) => Promise<this>;
+    deserialize: (data: any) => Promise<this>;
 }
 
 export function marshal(obj: Marshalable): string {
