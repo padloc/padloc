@@ -42,7 +42,6 @@ export class AccountView extends View {
         const sessions = (account && account.sessions) || [];
         const paymentSource = account && account.paymentSource;
         const paymentSourceLabel = paymentSource && `${paymentSource.brand} •••• •••• •••• ${paymentSource.lastFour}`;
-        // const trustedAccounts = (app.account && app.account.trustedAccounts) || [];
 
         return html`
         <style>
@@ -689,37 +688,6 @@ export class AccountView extends View {
         });
         if (id) {
             router.go(`store/${id}`);
-        }
-    }
-
-    async _addTrustedAccount() {
-        const email = await prompt($l("Enter the email address of the person you would like to add!"), {
-            confirmLabel: $l("Submit"),
-            placeholder: $l("Enter Email Address"),
-            cancelLabel: "",
-            type: "email",
-            validate: async (val, input) => {
-                if (!val || input.invalid) {
-                    throw $l("Please enter a valid email address!");
-                }
-
-                return val;
-            }
-        });
-
-        if (!email) {
-            return;
-        }
-
-        try {
-            const account = await app.client.getAccount(email);
-            this._openAccount(account);
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                alert("There is no account with this email address!");
-            } else {
-                throw e;
-            }
         }
     }
 

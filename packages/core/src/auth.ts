@@ -45,18 +45,19 @@ export class Device implements Serializable, DeviceInfo {
 
 export class Session implements Serializable {
     id: string = "";
-    account: string = "";
-    token?: string;
+    token: string = "";
+    email: string = "";
     created: DateString = new Date().toISOString();
     active: boolean = false;
     lastUsed?: DateString;
     expires?: DateString;
     device: Device = new Device();
+    account?: Account;
 
     async serialize() {
         return {
             id: this.id,
-            account: this.account,
+            email: this.email,
             token: this.token,
             created: this.created,
             active: this.active,

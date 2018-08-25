@@ -15,11 +15,11 @@ export class AuthRequest implements Storable {
         req.session = new Session();
         Object.assign(req.session, {
             id: uuid(),
-            account: email,
             created: new Date().toISOString(),
             token: randomBytes(16).toString("hex"),
             active: false,
-            device: device
+            email,
+            device
         });
         return req;
     }

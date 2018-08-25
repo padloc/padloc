@@ -1,8 +1,8 @@
-import { Storable, LocalStorage, RemoteStorage } from "./storage";
+import { Storable, LocalStorage } from "./storage";
 import { Store, AccountStore, SharedStore, Record, Field, Tag, StoreID } from "./data";
 import { Account, PublicAccount, Session, Device, Organization } from "./auth";
 import { DateString } from "./encoding";
-import { Client, AccountUpdateParams } from "./client";
+import { Client } from "./client";
 import { Messages } from "./messages";
 import { localize as $l } from "./locale";
 import { Err, ErrorCode } from "./error";
@@ -67,8 +67,7 @@ export class App extends EventTarget implements Storable {
 
     version = "3.0";
     storage = new LocalStorage();
-    client = new Client(this);
-    remoteStorage = new RemoteStorage(this.client);
+    api = new Client(this);
     mainStore = new AccountStore(new Account(), true);
     sharedStores: SharedStore[] = [];
     organizations: Organization[] = [];
@@ -357,7 +356,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async login(email: string) {
-        await this.client.createSession(email);
+        await this.api.createSession(email);
         await this.storage.set(this);
         this.dispatch("login");
         this.dispatch("account-changed", { account: this.account });
@@ -365,14 +364,14 @@ export class App extends EventTarget implements Storable {
     }
 
     async activateSession(code: string) {
-        await this.client.activateSession(code);
+        await this.api.activateSession(this.session!.id, code);
         this.dispatch("session-changed", { session: this.session });
-        this.syncAccount();
+        await this.syncAccount();
     }
 
     async revokeSession(id: string) {
-        await this.client.revokeSession(id);
-        await this.client.getOwnAccount();
+        await this.api.revokeSession(id);
+        await this.api.getAccount(this.account);
         await this.storage.set(this);
         this.dispatch("account-changed", { account: this.account });
     }
@@ -382,12 +381,12 @@ export class App extends EventTarget implements Storable {
             throw "Not logged in!";
         }
         const account = this.account!;
-        await this.client.getOwnAccount();
-        if (!account.publicKey || !account.privateKey) {
+        await this.api.getAccount(this.account);
+        if (this.initialized && (!account.publicKey || !account.privateKey)) {
             await account.generateKeyPair();
             await Promise.all([
-                this.client.updateAccount(account),
-                this.remoteStorage.set(this.mainStore),
+                this.api.updateAccount(account),
+                this.api.updateAccountStore(this.mainStore),
                 this.storage.set(this.mainStore)
             ]);
         }
@@ -395,17 +394,11 @@ export class App extends EventTarget implements Storable {
         this.dispatch("account-changed", { account: this.account });
     }
 
-    async updateAccount(params: AccountUpdateParams) {
-        await this.client.updateAccount(params);
-        await this.storage.set(this);
-        this.dispatch("account-changed", { account: this.account });
-    }
-
     async logout() {
         try {
-            await this.client.logout();
+            await this.api.revokeSession(this.session!.id);
         } catch (e) {}
-        delete this.session;
+        this.session = null;
         this.account = new Account();
         this.sharedStores = [];
         await this.storage.set(this);
@@ -416,7 +409,7 @@ export class App extends EventTarget implements Storable {
 
     async hasRemoteData(): Promise<boolean> {
         try {
-            await this.client.request("GET", "me/store");
+            await this.api.getAccountStore(this.mainStore);
             return true;
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
@@ -432,9 +425,9 @@ export class App extends EventTarget implements Storable {
         }
 
         await this.syncAccount();
-        const store = await this.client.createSharedStore({ name });
+        const store = await this.api.createSharedStore({ name });
         await store.initialize();
-        await Promise.all([this.remoteStorage.set(store), this.storage.set(store)]);
+        await Promise.all([this.api.updateSharedStore(store), this.storage.set(store)]);
         this.sharedStores.push(store);
         await this.syncAccount();
         this.dispatch("store-created", { store });
@@ -453,7 +446,7 @@ export class App extends EventTarget implements Storable {
         }
 
         try {
-            await this.remoteStorage.get(store);
+            await this.api.getSharedStore(store);
         } catch (e) {
             console.error(e, store.name, store.id);
             // switch (e.code) {
@@ -471,22 +464,10 @@ export class App extends EventTarget implements Storable {
         await this.storage.set(store);
 
         if (store.permissions.write) {
-            await this.remoteStorage.set(store);
+            await this.api.updateSharedStore(store);
         }
 
         this.dispatch("store-changed", { store });
-    }
-
-    async deleteSharedStore(id: StoreID) {
-        if (!this.account) {
-            throw "Not logged in";
-        }
-        const store = this.sharedStores.find(s => s.id === id) || new SharedStore(id, this.account);
-        if (!store.permissions.manage) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-        await this.remoteStorage.delete(store);
-        await this.synchronize();
     }
 
     isTrusted(account: PublicAccount) {
@@ -535,9 +516,9 @@ export class App extends EventTarget implements Storable {
             throw "This account is already in this group.";
         }
 
-        await this.remoteStorage.get(store);
+        await this.api.getSharedStore(store);
         await store.updateAccess(account, permissions, "invited");
-        await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
+        await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
     }
 
     async updateAccess(
@@ -546,9 +527,9 @@ export class App extends EventTarget implements Storable {
         permissions: Permissions = { read: true, write: true, manage: false },
         status: AccessorStatus
     ) {
-        await this.remoteStorage.get(store);
+        await this.api.getSharedStore(store);
         await store.updateAccess(acc, permissions, status);
-        await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
+        await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
         this.dispatch("store-changed", { store });
     }
 
@@ -556,19 +537,9 @@ export class App extends EventTarget implements Storable {
         if (!store.permissions.manage) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
-        await this.remoteStorage.get(store);
+        await this.api.getSharedStore(store);
         await store.revokeAccess(account);
-        await Promise.all([this.storage.set(store), this.remoteStorage.set(store)]);
-        this.dispatch("store-changed", { store });
-    }
-
-    async acceptInvite(store: SharedStore) {
-        await this.client.acceptInvite(store);
-        this.dispatch("store-changed", { store });
-    }
-
-    async requestAccess(store: SharedStore) {
-        await this.client.requestAccess(store);
+        await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
         this.dispatch("store-changed", { store });
     }
 
@@ -576,14 +547,14 @@ export class App extends EventTarget implements Storable {
         await this.syncAccount();
 
         try {
-            await this.remoteStorage.get(this.mainStore);
+            await this.api.getAccountStore(this.mainStore);
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
             }
         }
 
-        await Promise.all([this.storage.set(this.mainStore), this.remoteStorage.set(this.mainStore)]);
+        await Promise.all([this.storage.set(this.mainStore), this.api.updateAccountStore(this.mainStore)]);
 
         const sharedStores = [...this.account!.sharedStores];
 
@@ -615,7 +586,7 @@ export class App extends EventTarget implements Storable {
 
         store = new SharedStore(id, this.account);
         try {
-            await this.remoteStorage.get(store);
+            await this.api.getSharedStore(store);
             return store;
         } catch (e) {}
 
@@ -644,9 +615,9 @@ export class App extends EventTarget implements Storable {
 
         await this.syncAccount();
 
-        const org = await this.client.createOrganization({ name });
+        const org = await this.api.createOrganization({ name });
         await org.initialize();
-        await Promise.all([this.remoteStorage.set(org), this.storage.set(org)]);
+        await Promise.all([this.api.updateOrganization(org), this.storage.set(org)]);
         this.organizations.push(org);
         await this.syncAccount();
         this.dispatch("organization-created", { organization: org });

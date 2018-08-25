@@ -1,8 +1,8 @@
+import { API, CreateAccountParams, CreateSharedStoreParams, CreateOrganizationParams } from "./api";
 import { request, Method } from "./ajax";
-import { Session, Account, PublicAccount, Organization } from "./auth";
+import { Session, Account, Device, Organization } from "./auth";
 import { marshal, unmarshal } from "./encoding";
-import { App } from "./app";
-import { SharedStore } from "./data";
+import { AccountStore, SharedStore } from "./data";
 
 export interface AccountUpdateParams {
     publicKey?: string;
@@ -16,11 +16,27 @@ export interface CreateOrganizationParams {
     name: string;
 }
 
-export class Client {
-    constructor(public app: App) {}
+export interface ClientSettings {
+    customServer: boolean;
+    customServerUrl: string;
+}
+
+export interface ClientState {
+    session: Session | null;
+    account: Account | null;
+    device: Device;
+    settings: ClientSettings;
+}
+
+export class Client implements API {
+    constructor(public state: ClientState) {}
+
+    get session() {
+        return this.state.session;
+    }
 
     get basePath() {
-        return this.app.settings.customServer ? this.app.settings.customServerUrl : "https://cloud.padlock.io";
+        return this.state.settings.customServer ? this.state.settings.customServerUrl : "https://cloud.padlock.io";
     }
 
     urlForPath(path: string): string {
@@ -35,11 +51,11 @@ export class Client {
             headers.set("Content-Type", "application/json");
         }
         headers.set("Accept", "application/vnd.padlock;version=1");
-        if (this.app.session && this.app.session.active) {
-            headers.set("Authorization", "AuthToken " + this.app.session.account + ":" + this.app.session.token);
+        if (this.state.session && this.state.session.active) {
+            headers.set("Authorization", "AuthToken " + this.state.session.email + ":" + this.state.session.token);
         }
 
-        headers.set("X-Device", marshal(await this.app.device.serialize()));
+        headers.set("X-Device", marshal(await this.state.device.serialize()));
 
         return request(method, url, data, headers);
     }
@@ -55,86 +71,81 @@ export class Client {
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
 
-        this.app.session = await new Session().deserialize(unmarshal(req.responseText));
-        return this.app.session;
+        this.state.session = await new Session().deserialize(unmarshal(req.responseText));
+        return this.state.session;
     }
 
-    async activateSession(code: string): Promise<Session> {
-        if (!this.app.session) {
-            throw "No valid session object found. Need to call 'createSession' first!";
-        }
-
+    async activateSession(id: string, code: string): Promise<Session> {
         const params = new URLSearchParams();
         params.set("code", code);
 
         const req = await this.request(
             "POST",
-            `session/${this.app.session.id}/activate`,
+            `session/${id}/activate`,
             params.toString(),
             new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
         );
-        await this.app.session.deserialize(unmarshal(req.responseText));
-        return this.app.session;
+        this.state.session = await new Session().deserialize(unmarshal(req.responseText));
+        return this.state.session;
     }
 
-    async revokeSession(id: string): Promise<XMLHttpRequest> {
-        return this.request("DELETE", `session/${id}`);
+    async revokeSession(id: string): Promise<void> {
+        await this.request("DELETE", `session/${id}`, undefined);
     }
 
-    async logout(): Promise<void> {
-        if (!this.app.session) {
-            throw "Not logged in";
-        }
-        if (this.app.session.active) {
-            await this.revokeSession(this.app.session.id);
-        }
-        delete this.app.session;
-        delete this.app.account;
+    async createAccount(params: CreateAccountParams): Promise<Account> {
+        const res = await this.request("POST", "account", marshal(params));
+        return new Account().deserialize(unmarshal(res.responseText));
     }
 
-    async getOwnAccount(): Promise<Account> {
-        if (!this.app.session) {
-            throw "Need to be logged in to sync account";
-        }
-        const res = await this.request("GET", "me");
-        this.app.account = this.app.account || new Account(this.app.session.account);
-        await this.app.account.deserialize(unmarshal(res.responseText));
-        return this.app.account;
+    async getAccount(account: Account): Promise<Account> {
+        const res = await this.request("GET", "account");
+        return await account.deserialize(unmarshal(res.responseText));
     }
 
-    async getAccount(email: string): Promise<PublicAccount> {
-        const res = await this.request("GET", `account/${encodeURIComponent(email)}`);
-        return unmarshal(res.responseText) as PublicAccount;
+    async updateAccount(account: Account): Promise<Account> {
+        const res = await this.request("PUT", "account", marshal(await account.serialize()));
+        return account.deserialize(unmarshal(res.responseText));
     }
 
-    async updateAccount(params: AccountUpdateParams): Promise<Account> {
-        if (!this.app.session) {
-            throw "Need to be logged in to update account";
-        }
-        this.app.account = this.app.account || new Account(this.app.session.account);
-        const res = await this.request("PUT", "me", marshal(params));
-        await this.app.account.deserialize(unmarshal(res.responseText));
-        return this.app.account;
+    async getAccountStore(store: AccountStore): Promise<AccountStore> {
+        const res = await this.request("GET", "account-store", undefined);
+        return store.deserialize(unmarshal(res.responseText));
     }
 
-    async requestAccess(store: SharedStore): Promise<void> {
-        const res = await this.request("POST", `store/${store.id}/request`);
-        await store.deserialize(unmarshal(res.responseText));
-    }
-
-    async acceptInvite(store: SharedStore): Promise<void> {
-        const res = await this.request("POST", `store/${store.id}/join`);
-        await store.deserialize(unmarshal(res.responseText));
+    async updateAccountStore(store: AccountStore): Promise<AccountStore> {
+        const res = await this.request("PUT", "account-store", marshal(await store.serialize()));
+        return store.deserialize(unmarshal(res.responseText));
     }
 
     async createSharedStore(params: CreateSharedStoreParams): Promise<SharedStore> {
         const res = await this.request("POST", "store", marshal(params));
-        return new SharedStore("", this.app.account).deserialize(unmarshal(res.responseText));
+        return new SharedStore("", this.state.account!).deserialize(unmarshal(res.responseText));
+    }
+
+    async getSharedStore(store: SharedStore): Promise<SharedStore> {
+        const res = await this.request("GET", `store/${store.pk}`, undefined);
+        return store.deserialize(unmarshal(res.responseText));
+    }
+
+    async updateSharedStore(store: SharedStore): Promise<SharedStore> {
+        const res = await this.request("PUT", `store/${store.pk}`, marshal(await store.serialize()));
+        return store.deserialize(unmarshal(res.responseText));
     }
 
     async createOrganization(params: CreateOrganizationParams): Promise<Organization> {
         const res = await this.request("POST", "org", marshal(params));
-        return new Organization("", this.app.account).deserialize(unmarshal(res.responseText));
+        return new Organization("", this.state.account!).deserialize(unmarshal(res.responseText));
+    }
+
+    async getOrganization(org: Organization): Promise<Organization> {
+        const res = await this.request("GET", `org/${org.pk}`, undefined);
+        return org.deserialize(unmarshal(res.responseText));
+    }
+
+    async updateOrganization(org: Organization): Promise<Organization> {
+        const res = await this.request("PUT", `org/${org.pk}`, marshal(await org.serialize()));
+        return org.deserialize(unmarshal(res.responseText));
     }
     //
     // subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {

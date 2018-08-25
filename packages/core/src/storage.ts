@@ -1,5 +1,4 @@
 import { Serializable, marshal, unmarshal } from "./encoding";
-import { Client } from "./client";
 import { Err, ErrorCode } from "./error";
 
 export interface Storable extends Serializable {
@@ -65,46 +64,5 @@ export class LocalStorage implements Storage {
                 localStorage.removeItem(key);
             }
         }
-    }
-}
-
-export class RemoteStorage implements Storage {
-    constructor(public client: Client) {}
-
-    pathFor(s: Storable) {
-        switch (s.kind) {
-            case "account-store":
-                return "me/store";
-            case "shared-store":
-                return `store/${s.pk}`;
-            case "organization":
-                return `org/${s.pk}`;
-            default:
-                throw new Err(ErrorCode.NOT_SUPPORTED);
-        }
-    }
-
-    async get(s: Storable) {
-        const req = await this.client.request("GET", this.pathFor(s));
-        await s.deserialize(unmarshal(req.responseText));
-    }
-
-    async set(s: Storable) {
-        const data = await s.serialize();
-        const response = await this.client.request(
-            "PUT",
-            this.pathFor(s),
-            marshal(data),
-            new Map<string, string>([["Content-Type", "application/json"]])
-        );
-        await s.deserialize(unmarshal(response.responseText));
-    }
-
-    async delete(s: Storable) {
-        await this.client.request("DELETE", this.pathFor(s));
-    }
-
-    async clear() {
-        throw "not supported";
     }
 }

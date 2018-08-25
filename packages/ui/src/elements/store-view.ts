@@ -2,7 +2,7 @@ import { SharedStore } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Accessor } from "@padlock/core/lib/crypto.js";
 import sharedStyles from "../styles/shared.js";
-import { getDialog, confirm, alert } from "../dialog.js";
+import { getDialog, confirm } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { element, html, property, listen } from "./base.js";
@@ -99,44 +99,16 @@ export class StoreView extends View {
     //     }
     // }
 
-    private async _requestAccess() {
-        await app.requestAccess(this.store!);
-    }
-
-    private async _acceptInvite() {
-        let confirmed = false;
-        const { accessors, currentAccessor, name } = this.store!;
-        const updatedBy = accessors.find(a => a.id === currentAccessor!.updatedBy)!;
-        if (!app.isTrusted(updatedBy)) {
-            await alert(
-                $l(
-                    "You were invited to this group by {0}, who is not among your trusted users yet. " +
-                        "You'll have to add him to your trusted users first before you can join this store",
-                    updatedBy.email
-                ),
-                { options: [$l("Continue")], preventDismiss: true }
-            );
-            confirmed = await getDialog("pl-account-dialog").show(updatedBy, $l("Join {0}", name));
-        } else {
-            confirmed = await confirm($l("Do you want to join this group?", this.store!.name), $l("Join"));
-        }
-
-        if (confirmed) {
-            await app.acceptInvite(this.store!);
-        }
-    }
-
     _shouldRender() {
         return !!this.store;
     }
 
     _render({ store }: this) {
-        const { name, accessors, permissions, currentAccessor, accessorStatus, records } = store!;
+        const { name, accessors, permissions, accessorStatus, records } = store!;
         const statuses = ["requested", "invited", "active"];
         const accounts = accessors
             .filter(({ status }) => statuses.includes(status))
             .sort((a, b) => statuses.indexOf(a.status) - statuses.indexOf(b.status));
-        const updatedBy = currentAccessor && currentAccessor.updatedBy;
 
         return html`
         <style>
@@ -226,29 +198,6 @@ export class StoreView extends View {
 
             <div class="subheader warning animate ellipsis" hidden?="${accessorStatus !== "rejected"}">
                 <div flex>${$l("Access Request Rejected")}</div>
-            </div>
-
-            <div class="subheader highlight animate" hidden?="${accessorStatus !== "invited"}">
-
-                <div class="subheader-label ellipsis" flex>${$l("Invited By {0}", updatedBy!)}</div>
-
-                <button class="tap" on-click="${() => this._acceptInvite()}">
-                    ${$l("Join Group")}
-                </div>
-
-            </div>
-
-            <div
-                class="subheader warning animate tap"
-                hidden?="${accessorStatus !== "none"}"
-                on-click="${() => this._requestAccess()}">
-
-                <div class="subheader-label ellipsis" flex>${$l("You are not a member of this group.")}</div>
-
-                <button>
-                    ${$l("Request Access")}
-                </button>
-
             </div>
 
             <div class="tags animate">
