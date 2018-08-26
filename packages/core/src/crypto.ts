@@ -1,4 +1,13 @@
-import { Serializable, Base64String, stringToBase64, base64ToString, marshal, unmarshal, DateString } from "./encoding";
+import {
+    Serializable,
+    Base64String,
+    stringToBase64,
+    base64ToString,
+    base64ToHex,
+    marshal,
+    unmarshal,
+    DateString
+} from "./encoding";
 import { Err, ErrorCode } from "./error";
 import { PublicAccount } from "./auth";
 
@@ -399,6 +408,105 @@ export class SharedContainer extends Container {
         acc.status = "removed";
 
         await this._reencrypt();
+    }
+}
+
+export interface SignedAccount extends PublicAccount {
+    signedPublicKey: Base64String;
+}
+
+export class KeyExchange implements Serializable {
+    id: string = "";
+    created: DateString = "";
+    expires: DateString = "";
+
+    keyParams: PBKDF2Params = {
+        algorithm: "PBKDF2",
+        hash: "SHA-256",
+        keySize: 256,
+        iterations: 1e6,
+        salt: ""
+    };
+
+    signingParams: HMACParams = {
+        algorithm: "HMAC",
+        hash: "SHA-256",
+        keySize: 256
+    };
+
+    email: string = "";
+
+    sender?: SignedAccount;
+    receiver?: SignedAccount;
+
+    private _secret: string = "";
+    set secret(s: string) {
+        this._secret = s;
+        this._key = "";
+    }
+    get secret() {
+        return this._secret;
+    }
+
+    async initialize(email: string, sender: PublicAccount, duration = 1, secret?: string) {
+        this.email = email;
+        this.created = new Date().toISOString();
+        this.expires = new Date(new Date().getTime() + 1000 * 60 * 60 * duration).toISOString();
+        this.secret = secret || base64ToHex(await provider.randomBytes(4));
+        this.keyParams.salt = provider.randomBytes(16);
+        this.sender = await this._sign(sender);
+    }
+
+    private _key: HMACKey = "";
+    private async _getKey() {
+        if (!this._key) {
+            this._key = (await provider.deriveKey(this.secret, this.keyParams)) as HMACKey;
+        }
+        return this._key;
+    }
+
+    private async _sign(p: PublicAccount): Promise<SignedAccount> {
+        const signedPublicKey = await provider.sign(await this._getKey(), p.publicKey, this.signingParams);
+        return Object.assign({ signedPublicKey }, p);
+    }
+
+    private async _verify(a: SignedAccount): Promise<boolean> {
+        return await provider.verify(await this._getKey(), a.signedPublicKey, a.publicKey, this.signingParams);
+    }
+
+    async serialize() {
+        return {
+            created: this.created,
+            expires: this.expires,
+            keyParams: this.keyParams,
+            signingParams: this.signingParams,
+            sender: this.sender,
+            receiver: this.receiver,
+            email: this.email
+        };
+    }
+
+    async deserialize(raw: any) {
+        this.created = raw.created;
+        this.expires = raw.expires;
+        this.keyParams = raw.keyParams;
+        this.signingParams = raw.signingParams;
+        this.sender = raw.sender;
+        this.receiver = raw.receiver;
+        this.email = raw.email;
+        return this;
+    }
+
+    async accept(receiver: PublicAccount, secret: string): Promise<boolean> {
+        this.secret = secret;
+        this.receiver = await this._sign(receiver);
+        return await this.verify();
+    }
+
+    async verify(): Promise<boolean> {
+        return (
+            !!this.sender && !!this.receiver && (await this._verify(this.sender)) && (await this._verify(this.receiver))
+        );
     }
 }
 

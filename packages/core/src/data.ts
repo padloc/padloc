@@ -1,14 +1,5 @@
-import { Serializable, DateString, Marshalable, Base64String } from "./encoding";
-import {
-    getProvider,
-    RSAPublicKey,
-    HMACKey,
-    PBES2Container,
-    SharedContainer,
-    Permissions,
-    Accessor,
-    AccessorStatus
-} from "./crypto";
+import { Serializable, DateString, Marshalable } from "./encoding";
+import { RSAPublicKey, PBES2Container, SharedContainer, Permissions, Accessor, AccessorStatus } from "./crypto";
 import { Storable } from "./storage";
 import { Account, PublicAccount, AccountID } from "./auth";
 import { uuid } from "./util";
@@ -214,41 +205,6 @@ export class AccountStore extends Store {
             await this._container.get(this._serializer);
         }
         return this;
-    }
-}
-
-export class Invite {
-    created: DateString = new Date().toISOString();
-    publicKey: RSAPublicKey = "";
-    signedPublicKey: Base64String = "";
-
-    private async _getKey(code: string) {
-        return (await getProvider().deriveKey(code, {
-            algorithm: "PBKDF2",
-            hash: "SHA-256",
-            salt: this.email,
-            iterations: 1,
-            keySize: 256
-        })) as HMACKey;
-    }
-
-    constructor(public email: string, public code = "") {}
-
-    async accept(publicKey: RSAPublicKey, code: string) {
-        this.publicKey = publicKey;
-        this.signedPublicKey = await getProvider().sign(await this._getKey(code), this.publicKey, {
-            algorithm: "HMAC",
-            hash: "SHA-256",
-            keySize: 256
-        });
-    }
-
-    async verify(code: string) {
-        return await getProvider().verify(await this._getKey(code), this.signedPublicKey, this.publicKey, {
-            algorithm: "HMAC",
-            hash: "SHA-256",
-            keySize: 256
-        });
     }
 }
 
