@@ -1,9 +1,10 @@
 import { DateString, Base64String, Serializable } from "./encoding";
-import { getProvider, RSAPublicKey, RSAPrivateKey, SharedContainer, AccessorStatus } from "./crypto";
+import { getProvider, RSAPublicKey, RSAPrivateKey, SharedContainer, AccessorStatus, KeyExchange } from "./crypto";
 import { Storable } from "./storage";
 import { StoreID } from "./data";
 import { DeviceInfo } from "./platform";
 import { Err, ErrorCode } from "./error";
+import { uuid } from "./util";
 
 export type AccountID = string;
 export type SessionID = string;
@@ -152,6 +153,22 @@ export interface OrganizationMember extends PublicAccount {
     signedPublicKey: Base64String;
 }
 
+export class Invite extends KeyExchange {
+    id: string = "";
+    sent: boolean = false;
+
+    async serialize() {
+        return Object.assign({ id: this.id, sent: this.sent }, await super.serialize());
+    }
+
+    async deserialize(raw: any) {
+        await super.deserialize(raw);
+        this.id = raw.id;
+        this.sent = raw.sent;
+        return this;
+    }
+}
+
 export class Organization implements Storable {
     kind = "organization";
 
@@ -161,6 +178,12 @@ export class Organization implements Storable {
     members: OrganizationMember[] = [];
 
     private _container: SharedContainer;
+
+    private _invites = new Map<string, Invite>();
+
+    get invites() {
+        return Array.from(this._invites.values());
+    }
 
     get pk() {
         return this.id;
@@ -174,11 +197,18 @@ export class Organization implements Storable {
         return {
             serialize: async () => {
                 return {
-                    privateKey: this.privateKey
+                    privateKey: this.privateKey,
+                    invites: this.invites.map(({ id, expires, secret }) => {
+                        return { id, expires, secret };
+                    })
                 };
             },
             deserialize: async (raw: any) => {
                 this.privateKey = raw.privateKey;
+                for (const { id, expires, secret } of raw.invites) {
+                    const invite = this._invites.get(id);
+                    invite && Object.assign(invite, { expires, secret });
+                }
                 return this;
             }
         };
@@ -198,7 +228,9 @@ export class Organization implements Storable {
             owner: this.owner,
             name: this.name,
             publicKey: this.publicKey,
-            members: this.members
+            members: this.members,
+            invites: await Promise.all(this.invites.map(i => i.serialize())),
+            encryptedData: await this._container.serialize()
         };
     }
 
@@ -208,6 +240,12 @@ export class Organization implements Storable {
         this.name = raw.name;
         this.publicKey = raw.publicKey;
         this.members = raw.members;
+        await Promise.all(
+            raw.invites.map(async (i: any) => {
+                this._invites.set(i.id, await new Invite().deserialize(i));
+            })
+        );
+        await this._container.deserialize(raw.encryptedData);
         if (this._container.hasAccess) {
             await this._container.get(this._secretSerializer);
         }
@@ -295,5 +333,19 @@ export class Organization implements Storable {
             });
         } catch (e) {}
         return verified;
+    }
+
+    getInvite(id: string) {
+        return this._invites.get(id);
+    }
+
+    async createInvite(email: string) {
+        if (!this.isAdmin(this.account)) {
+            return new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+        const invite = new Invite();
+        invite.id = uuid();
+        await invite.initialize(email, this.account.publicAccount);
+        this._invites.set(invite.id, invite);
     }
 }

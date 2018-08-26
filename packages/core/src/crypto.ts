@@ -416,7 +416,6 @@ export interface SignedAccount extends PublicAccount {
 }
 
 export class KeyExchange implements Serializable {
-    id: string = "";
     created: DateString = "";
     expires: DateString = "";
 
