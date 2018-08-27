@@ -433,8 +433,6 @@ export class KeyExchange implements Serializable {
         keySize: 256
     };
 
-    email: string = "";
-
     sender?: SignedAccount;
     receiver?: SignedAccount;
 
@@ -447,8 +445,7 @@ export class KeyExchange implements Serializable {
         return this._secret;
     }
 
-    async initialize(email: string, sender: PublicAccount, duration = 1, secret?: string) {
-        this.email = email;
+    async initialize(sender: PublicAccount, duration = 1, secret?: string) {
         this.created = new Date().toISOString();
         this.expires = new Date(new Date().getTime() + 1000 * 60 * 60 * duration).toISOString();
         this.secret = secret || base64ToHex(await provider.randomBytes(4));
@@ -480,8 +477,7 @@ export class KeyExchange implements Serializable {
             keyParams: this.keyParams,
             signingParams: this.signingParams,
             sender: this.sender,
-            receiver: this.receiver,
-            email: this.email
+            receiver: this.receiver
         };
     }
 
@@ -492,7 +488,6 @@ export class KeyExchange implements Serializable {
         this.signingParams = raw.signingParams;
         this.sender = raw.sender;
         this.receiver = raw.receiver;
-        this.email = raw.email;
         return this;
     }
 

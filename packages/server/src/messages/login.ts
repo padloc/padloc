@@ -13,7 +13,7 @@ export class LoginMessage implements Message {
         return `
 Hi there!
 
-you are receiving this email because you tried to log into KEEEP
+you are receiving this email because you tried to log into Padlock
 using the email address ${email}
 
 Here is your login code:

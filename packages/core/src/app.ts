@@ -576,7 +576,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async getStore(id: string): Promise<SharedStore | null> {
-        if (!this.account) {
+        if (!this.loggedIn) {
             throw "not logged in";
         }
         let store = this.sharedStores.find(s => s.id === id);
@@ -588,6 +588,24 @@ export class App extends EventTarget implements Storable {
         try {
             await this.api.getSharedStore(store);
             return store;
+        } catch (e) {}
+
+        return null;
+    }
+
+    async getOrganization(id: string): Promise<Organization | null> {
+        if (!this.loggedIn) {
+            throw "not logged in";
+        }
+        let org = this.organizations.find(o => o.id === id);
+        if (org) {
+            return org;
+        }
+
+        org = new Organization(id, this.account);
+        try {
+            await this.api.getOrganization(org);
+            return org;
         } catch (e) {}
 
         return null;

@@ -333,12 +333,16 @@ class App extends BaseElement {
             this._openView(this._settingsView, direction);
         } else if (path === "account") {
             this._openView(this._accountView, direction);
-        } else if ((match = path.match(/^store\/([^\/]+)$/))) {
+        } else if ((match = path.match(/^store\/([^\/]+)(?:\/invite\/([^\/]+))?$/))) {
             const store = await app.getStore(match[1]);
             if (store) {
                 this._storeView.store = store;
                 this._openView(this._storeView, direction);
             }
+        } else if ((match = path.match(/^org\/([^\/]+)(?:\/invite\/([^\/]+))?$/))) {
+            const org = await app.getOrganization(match[1]);
+            const invite = org && match[2] && org.getInvite(match[2]);
+            console.log(org, invite);
         } else if ((match = path.match(/^record\/([^\/]+)$/))) {
             const item = app.getRecord(match[1]);
             if (item) {

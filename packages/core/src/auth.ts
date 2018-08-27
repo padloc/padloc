@@ -153,18 +153,22 @@ export interface OrganizationMember extends PublicAccount {
     signedPublicKey: Base64String;
 }
 
+export type InviteStatus = "none" | "initialized" | "sent" | "accepted" | "canceled" | "rejected" | "failed";
+
 export class Invite extends KeyExchange {
     id: string = "";
-    sent: boolean = false;
+    email: string = "";
+    status: InviteStatus = "none";
 
     async serialize() {
-        return Object.assign({ id: this.id, sent: this.sent }, await super.serialize());
+        return Object.assign({ id: this.id, status: this.status, email: this.email }, await super.serialize());
     }
 
     async deserialize(raw: any) {
         await super.deserialize(raw);
         this.id = raw.id;
-        this.sent = raw.sent;
+        this.status = raw.status;
+        this.email = raw.email;
         return this;
     }
 }
@@ -268,6 +272,10 @@ export class Organization implements Storable {
         return !!this.members.find(m => m.id === account.id);
     }
 
+    isInvited(account: PublicAccount) {
+        return !!this.invites.find(({ email }) => email === account.email);
+    }
+
     async generateKeyPair() {
         const { publicKey, privateKey } = await getProvider().generateKey({
             algorithm: "RSA",
@@ -345,7 +353,9 @@ export class Organization implements Storable {
         }
         const invite = new Invite();
         invite.id = uuid();
-        await invite.initialize(email, this.account.publicAccount);
+        invite.email = email;
+        await invite.initialize(this.account.publicAccount);
+        invite.status = "initialized";
         this._invites.set(invite.id, invite);
     }
 }

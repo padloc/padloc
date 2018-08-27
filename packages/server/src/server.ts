@@ -75,6 +75,7 @@ export class Server {
         this.koa.use(route.post("/org", handlers.createOrganization));
         this.koa.use(route.get("/org/:id", handlers.getOrganization));
         this.koa.use(route.put("/org/:id", handlers.updateOrganization));
+        this.koa.use(route.put("/org/:id/invite", handlers.updateOrganizationInvite));
     }
 
     start(port: number) {

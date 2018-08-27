@@ -1,6 +1,6 @@
 import { API, CreateAccountParams, CreateSharedStoreParams, CreateOrganizationParams } from "./api";
 import { request, Method } from "./ajax";
-import { Session, Account, Device, Organization } from "./auth";
+import { Session, Account, Device, Organization, Invite } from "./auth";
 import { marshal, unmarshal } from "./encoding";
 import { AccountStore, SharedStore } from "./data";
 
@@ -145,6 +145,11 @@ export class Client implements API {
 
     async updateOrganization(org: Organization): Promise<Organization> {
         const res = await this.request("PUT", `org/${org.pk}`, marshal(await org.serialize()));
+        return org.deserialize(unmarshal(res.responseText));
+    }
+
+    async updateInvite(org: Organization, invite: Invite): Promise<Organization> {
+        const res = await this.request("PUT", `org/${org.pk}/invite`, marshal(await invite.serialize()));
         return org.deserialize(unmarshal(res.responseText));
     }
     //

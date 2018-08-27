@@ -18,7 +18,7 @@ export function paragraph(content: string, styles = "") {
     `;
 }
 
-export function button(content: string) {
+export function button(content: string, url: string) {
     return `
 <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
   <tbody>
@@ -27,7 +27,7 @@ export function button(content: string) {
         <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
           <tbody>
             <tr>
-              <td style="font-family: ${fontFamily}; font-size: ${fontSize}; vertical-align: top; background-color: ${colorHighlight}; border-radius: 5px; text-align: center;"> <a href="http://htmlemail.io" target="_blank" style="display: inline-block; color: #ffffff; background-color: ${colorHighlight}; border: solid 1px ${colorHighlight}; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: ${fontSize}; font-weight: bold; margin: 0; padding: 12px 25px; text-transform: capitalize; border-color: ${colorHighlight};">${content}</a> </td>
+              <td style="font-family: ${fontFamily}; font-size: ${fontSize}; vertical-align: top; background-color: ${colorHighlight}; border-radius: 5px; text-align: center;"> <a href="${url}" target="_blank" style="display: inline-block; color: #ffffff; background-color: ${colorHighlight}; border: solid 1px ${colorHighlight}; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: ${fontSize}; font-weight: bold; margin: 0; padding: 12px 25px; text-transform: capitalize; border-color: ${colorHighlight};">${content}</a> </td>
             </tr>
           </tbody>
         </table>

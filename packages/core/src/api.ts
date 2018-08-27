@@ -1,4 +1,4 @@
-import { Session, Account, Organization } from "./auth";
+import { Session, Account, Organization, Invite } from "./auth";
 import { AccountStore, SharedStore } from "./data";
 
 export interface CreateAccountParams {
@@ -34,4 +34,7 @@ export interface API {
     createOrganization(params: CreateOrganizationParams): Promise<Organization>;
     getOrganization(org: Organization): Promise<Organization>;
     updateOrganization(store: Organization): Promise<Organization>;
+
+    updateInvite(org: Organization, invite: Invite): Promise<Organization>;
+    // updateInvite(invite: Invite, store: SharedStore): Promise<SharedStore>;
 }

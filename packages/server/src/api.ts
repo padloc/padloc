@@ -1,12 +1,12 @@
 import { API, CreateAccountParams, CreateSharedStoreParams, CreateOrganizationParams } from "@padlock/core/src/api";
 import { Storage } from "@padlock/core/src/storage";
 import { AccountStore, SharedStore } from "@padlock/core/src/data";
-import { Account, Session, Organization } from "@padlock/core/src/auth";
+import { Account, Session, Organization, Invite } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 import { uuid } from "@padlock/core/lib/util.js";
 import { Sender } from "./sender";
 import { AuthRequest } from "./auth";
-import { LoginMessage } from "./messages";
+import { LoginMessage, InviteMessage } from "./messages";
 import { RequestState } from "./server";
 
 export class ServerAPI implements API {
@@ -210,7 +210,7 @@ export class ServerAPI implements API {
 
         await this.storage.get(org);
 
-        if (!org.isMember(account)) {
+        if (!org.isMember(account) && !org.isInvited(account)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
@@ -231,8 +231,40 @@ export class ServerAPI implements API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Only admins can update organizations");
         }
 
+        for (const invite of org.invites) {
+            if (invite.status === "initialized") {
+                this.sender.send(
+                    invite.email,
+                    new InviteMessage({
+                        name: org.name,
+                        kind: "organization",
+                        sender: invite.sender!.name || invite.sender!.email,
+                        url: `https://127.0.0.1:3000/org/${org.pk}/invite/${invite.id}`
+                    })
+                );
+            }
+            invite.status === "sent";
+        }
+
         await this.storage.set(org);
 
         return org;
+    }
+
+    async updateInvite(target: Organization, invite: Invite): Promise<Organization> {
+        if (!this.state.session || !this.state.account) {
+            throw new Err(ErrorCode.INVALID_SESSION);
+        }
+        const account = this.state.account;
+        await this.storage.get(target);
+        const existing = target.getInvite(invite.id);
+        if (!existing || existing.email !== account.email) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        existing.status = invite.status;
+        existing.receiver = invite.receiver;
+        await this.storage.set(target);
+        return target;
     }
 }

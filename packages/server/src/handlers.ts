@@ -1,5 +1,5 @@
 import { AccountStore, SharedStore } from "@padlock/core/src/data";
-import { Account, Organization } from "@padlock/core/src/auth";
+import { Account, Organization, Invite } from "@padlock/core/src/auth";
 import { CreateSharedStoreParams, CreateOrganizationParams } from "@padlock/core/src/api";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 import { Context } from "./server";
@@ -80,5 +80,12 @@ export async function updateOrganization(ctx: Context, id: string) {
 
 export async function createOrganization(ctx: Context) {
     const org = await ctx.api.createOrganization(ctx.request.body as CreateOrganizationParams);
+    ctx.body = await org.serialize();
+}
+
+export async function updateOrganizationInvite(ctx: Context, id: string) {
+    const org = await new Organization(id, ctx.state.account!);
+    const invite = await new Invite().deserialize(ctx.request.body);
+    await ctx.api.updateInvite(invite, org);
     ctx.body = await org.serialize();
 }
