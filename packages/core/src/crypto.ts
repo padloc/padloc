@@ -9,10 +9,7 @@ import {
     DateString
 } from "./encoding";
 import { Err, ErrorCode } from "./error";
-import { PublicAccount } from "./auth";
 
-// Minimum number of pbkdf2 iterations
-const PBKDF2_ITER_MIN = 1e4;
 // Default number of pbkdf2 iterations
 const PBKDF2_ITER_DEFAULT = 5e4;
 // Maximum number of pbkdf2 iterations
@@ -136,7 +133,6 @@ export function validatePBKDF2Params(params: any): PBKDF2Params {
         !params.salt ||
         typeof params.salt !== "string" ||
         !params.iterations ||
-        params.iterations < PBKDF2_ITER_MIN ||
         params.iterations > PBKDF2_ITER_MAX ||
         ![192, 256, 512].includes(params.keySize) ||
         !["SHA-256", "SHA-512"].includes(params.hash)
@@ -264,20 +260,10 @@ export class PBES2Container extends Container {
     }
 }
 
-export interface Permissions {
-    read: boolean;
-    write: boolean;
-    manage: boolean;
-}
-
-export type AccessorStatus = "invited" | "active" | "left" | "removed" | "requested" | "rejected" | "none";
-
-export interface Accessor extends PublicAccount {
+export interface Accessor {
+    id: string;
+    publicKey: RSAPublicKey;
     encryptedKey: Base64String;
-    permissions: Permissions;
-    updatedBy: string;
-    updated: DateString;
-    status: AccessorStatus;
 }
 
 export interface Access {
@@ -288,130 +274,73 @@ export interface Access {
 export class SharedContainer extends Container {
     private _accessors = new Map<string, Accessor>();
     private _key: AESKey = "";
+    private _access: Access | null = null;
 
     constructor(
-        public access: Access,
         public encryptionParams: AESEncryptionParams = defaultEncryptionParams(),
         public keyParams: RSAEncryptionParams = defaultKeyWrapParams()
     ) {
         super(encryptionParams);
     }
 
-    async initialize(account: PublicAccount) {
+    access({ id, privateKey }: Access) {
+        this._access = { id, privateKey };
+    }
+
+    hasAccess({ id }: { id: string }) {
+        return !!this._accessors.get(id);
+    }
+
+    async setAccessors(accessors: Accessor[]) {
+        this._accessors.clear();
         this._key = await provider.generateKey({
             algorithm: "AES",
             keySize: this.encryptionParams.keySize
         } as AESKeyParams);
-        await this.updateAccessor(
-            Object.assign({}, account, {
-                status: "active" as AccessorStatus,
-                permissions: { read: true, write: true, manage: true },
-                encryptedKey: "",
-                updated: "",
-                updatedBy: ""
+
+        await Promise.all(
+            accessors.map(async a => {
+                a.encryptedKey = await provider.encrypt(a.publicKey, await this._getKey(), this.keyParams);
+                this._accessors.set(a.id, a);
             })
         );
-    }
-
-    async _getKey() {
-        if (!this._key) {
-            const accessor = this._accessors.get(this.access.id);
-            if (!accessor || !accessor.encryptedKey) {
-                throw new Err(ErrorCode.MISSING_ACCESS, "Current accessor does not have access.");
-            }
-            this._key = await provider.decrypt(this.access.privateKey, accessor.encryptedKey, this.keyParams);
-        }
-        return this._key;
     }
 
     async serialize() {
         const raw = await super.serialize();
         (raw as SharedRawContainer).keyParams = this.keyParams;
-        (raw as SharedRawContainer).accessors = this.accessors;
+        (raw as SharedRawContainer).accessors = Array.from(this._accessors.values());
         return raw;
     }
 
     async deserialize(raw: SharedRawContainer) {
         await super.deserialize(raw);
         this.keyParams = raw.keyParams;
-        this.mergeAccessors(raw.accessors);
+        this._accessors.clear();
+        for (const a of raw.accessors) {
+            this._accessors.set(a.id, a);
+        }
         this._key = "";
         return this;
     }
 
-    get accessors() {
-        return Array.from(this._accessors.values());
-    }
-
-    get currentAccessor() {
-        return this.getAccessor(this.access.id);
-    }
-
-    get accessorStatus(): AccessorStatus {
-        const accessor = this.currentAccessor;
-        return accessor ? accessor.status : "none";
-    }
-
-    get hasAccess() {
-        return this.accessorStatus === "active" && !!this.access.privateKey;
-    }
-
-    getAccessor(id: string) {
-        return this._accessors.get(id);
-    }
-
-    async updateAccessor(accessor: Accessor) {
-        if (accessor.status === "active" || accessor.status === "invited") {
-            accessor.encryptedKey = await provider.encrypt(accessor.publicKey, await this._getKey(), this.keyParams);
-        } else {
-            accessor.encryptedKey = "";
+    protected async _getKey() {
+        if (!this._access) {
+            throw new Err(ErrorCode.MISSING_ACCESS);
         }
-
-        accessor.updated = new Date().toISOString();
-        accessor.updatedBy = this.access.id;
-        this._accessors.set(accessor.id, accessor);
-    }
-
-    mergeAccessors(accessors: Accessor[]) {
-        const changed: Accessor[] = [];
-        const added: Accessor[] = [];
-
-        for (const acc of accessors) {
-            const existing = this._accessors.get(acc.id);
-            if (!existing) {
-                this._accessors.set(acc.id, acc);
-                added.push(acc);
-            } else if (!existing.updated || new Date(existing.updated) < new Date(acc.updated)) {
-                this._accessors.set(acc.id, acc);
-                changed.push(acc);
+        if (!this._key) {
+            const accessor = this._accessors.get(this._access.id);
+            if (!accessor || !accessor.encryptedKey) {
+                throw new Err(ErrorCode.MISSING_ACCESS);
             }
+            this._key = await provider.decrypt(this._access.privateKey, accessor.encryptedKey, this.keyParams);
         }
-
-        return { changed, added };
-    }
-
-    private async _reencrypt() {
-        this._key = await provider.generateKey({
-            algorithm: "AES",
-            keySize: this.encryptionParams.keySize
-        } as AESKeyParams);
-
-        await Promise.all(this.accessors.map(async a => this.updateAccessor(a)));
-    }
-
-    async removeAccessor(id: string) {
-        const acc = this._accessors.get(id);
-        if (!acc) {
-            throw "Accessor does not exist on this store";
-        }
-
-        acc.status = "removed";
-
-        await this._reencrypt();
+        return this._key;
     }
 }
 
-export interface SignedAccount extends PublicAccount {
+export interface SignedPublicKey {
+    publicKey: RSAPublicKey;
     signedPublicKey: Base64String;
 }
 
@@ -433,8 +362,8 @@ export class KeyExchange implements Serializable {
         keySize: 256
     };
 
-    sender?: SignedAccount;
-    receiver?: SignedAccount;
+    initiator?: SignedPublicKey;
+    recipient?: SignedPublicKey;
 
     private _secret: string = "";
     set secret(s: string) {
@@ -445,12 +374,12 @@ export class KeyExchange implements Serializable {
         return this._secret;
     }
 
-    async initialize(sender: PublicAccount, duration = 1, secret?: string) {
+    async initiate(publicKey: RSAPublicKey, duration = 1, secret?: string) {
         this.created = new Date().toISOString();
         this.expires = new Date(new Date().getTime() + 1000 * 60 * 60 * duration).toISOString();
         this.secret = secret || base64ToHex(await provider.randomBytes(4));
         this.keyParams.salt = provider.randomBytes(16);
-        this.sender = await this._sign(sender);
+        this.initiator = await this._sign(publicKey);
     }
 
     private _key: HMACKey = "";
@@ -461,12 +390,12 @@ export class KeyExchange implements Serializable {
         return this._key;
     }
 
-    private async _sign(p: PublicAccount): Promise<SignedAccount> {
-        const signedPublicKey = await provider.sign(await this._getKey(), p.publicKey, this.signingParams);
-        return Object.assign({ signedPublicKey }, p);
+    private async _sign(publicKey: RSAPublicKey): Promise<SignedPublicKey> {
+        const signedPublicKey = await provider.sign(await this._getKey(), publicKey, this.signingParams);
+        return { publicKey, signedPublicKey };
     }
 
-    private async _verify(a: SignedAccount): Promise<boolean> {
+    private async _verify(a: SignedPublicKey): Promise<boolean> {
         return await provider.verify(await this._getKey(), a.signedPublicKey, a.publicKey, this.signingParams);
     }
 
@@ -476,8 +405,8 @@ export class KeyExchange implements Serializable {
             expires: this.expires,
             keyParams: this.keyParams,
             signingParams: this.signingParams,
-            sender: this.sender,
-            receiver: this.receiver
+            initiator: this.initiator,
+            recipient: this.recipient
         };
     }
 
@@ -486,20 +415,23 @@ export class KeyExchange implements Serializable {
         this.expires = raw.expires;
         this.keyParams = raw.keyParams;
         this.signingParams = raw.signingParams;
-        this.sender = raw.sender;
-        this.receiver = raw.receiver;
+        this.initiator = raw.initiator;
+        this.recipient = raw.recipient;
         return this;
     }
 
-    async accept(receiver: PublicAccount, secret: string): Promise<boolean> {
+    async complete(publicKey: RSAPublicKey, secret: string): Promise<boolean> {
         this.secret = secret;
-        this.receiver = await this._sign(receiver);
+        this.recipient = await this._sign(publicKey);
         return await this.verify();
     }
 
     async verify(): Promise<boolean> {
         return (
-            !!this.sender && !!this.receiver && (await this._verify(this.sender)) && (await this._verify(this.receiver))
+            !!this.initiator &&
+            !!this.recipient &&
+            (await this._verify(this.initiator)) &&
+            (await this._verify(this.recipient))
         );
     }
 }

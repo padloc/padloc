@@ -1,15 +1,11 @@
-import { DateString, Base64String, Serializable } from "./encoding";
-import { getProvider, RSAPublicKey, RSAPrivateKey, SharedContainer, AccessorStatus, KeyExchange } from "./crypto";
+import { DateString, Base64String, Serializable, stringToBase64 } from "./encoding";
+import { getProvider, RSAPublicKey, RSAPrivateKey, defaultPBKDF2Params, defaultEncryptionParams } from "./crypto";
 import { Storable } from "./storage";
-import { StoreID } from "./data";
 import { DeviceInfo } from "./platform";
-import { Err, ErrorCode } from "./error";
-import { uuid } from "./util";
 
 export type AccountID = string;
 export type SessionID = string;
 export type DeviceID = string;
-export type OrganizationID = string;
 
 export class Device implements Serializable, DeviceInfo {
     id: string = "";
@@ -76,29 +72,30 @@ export class Session implements Serializable {
     }
 }
 
-export interface PublicAccount {
+export interface AccountInfo {
     id: AccountID;
     email: string;
     name: string;
     publicKey: RSAPublicKey;
 }
 
-export class Account implements Storable, PublicAccount {
+export class Account implements Storable, AccountInfo {
     kind = "account";
     id: AccountID = "";
     name = "";
     created: DateString = new Date().toISOString();
     updated: DateString = new Date().toISOString();
-    sharedStores: StoreID[] = [];
-    organizations: OrganizationID[] = [];
     publicKey: RSAPublicKey = "";
     privateKey: RSAPrivateKey = "";
-    trustedAccounts: PublicAccount[] = [];
     sessions: Session[] = [];
-    // TODO
-    subscription?: { status: string };
-    promo?: any;
-    paymentSource?: any;
+    store = "";
+    authKey: Base64String = "";
+
+    private _keyDerivationParams = defaultPBKDF2Params();
+    private _encryptionParams = defaultEncryptionParams();
+
+    private _encPrivateKey: Base64String = "";
+    private _masterKey: Base64String = "";
 
     constructor(public email: string = "") {}
 
@@ -106,8 +103,26 @@ export class Account implements Storable, PublicAccount {
         return this.email;
     }
 
-    get publicAccount(): PublicAccount {
+    get info(): AccountInfo {
         return { id: this.id, email: this.email, publicKey: this.publicKey, name: this.name };
+    }
+
+    async initialize(password: string) {
+        await this._generateKeyPair();
+        await this.setPassword(password);
+    }
+
+    async setPassword(password: string) {
+        this._keyDerivationParams.salt = await getProvider().randomBytes(16);
+        await this._generateKeys(password);
+        this._encryptionParams.iv = await getProvider().randomBytes(16);
+        this._encryptionParams.additionalData = stringToBase64(this.email);
+        this._encPrivateKey = await getProvider().encrypt(this._masterKey, this.privateKey, this._encryptionParams);
+    }
+
+    async unlock(password: string) {
+        await this._generateKeys(password);
+        this.privateKey = await getProvider().decrypt(this._masterKey, this._encPrivateKey, this._encryptionParams);
     }
 
     async serialize() {
@@ -117,22 +132,29 @@ export class Account implements Storable, PublicAccount {
             updated: this.updated,
             email: this.email,
             name: this.name,
-            sharedStores: this.sharedStores,
+            store: this.store,
             publicKey: this.publicKey,
+            encPrivateKey: this._encPrivateKey,
             sessions: await Promise.all(this.sessions.map(s => s.serialize()))
         };
     }
 
     async deserialize(raw: any) {
+        this.id = this.id;
+        this.created = raw.created;
+        this.updated = raw.updated;
+        this.email = raw.email;
+        this.name = raw.name;
+        this.store = raw.store;
+        this.publicKey = raw.publicKey;
+        this._encPrivateKey = raw.encPrivateKey;
         this.sessions = ((await Promise.all(
             raw.sessions.map((s: any) => new Session().deserialize(s))
         )) as any) as Session[];
-        delete raw.sessions;
-        Object.assign(this, raw);
         return this;
     }
 
-    async generateKeyPair() {
+    private async _generateKeyPair() {
         const { publicKey, privateKey } = await getProvider().generateKey({
             algorithm: "RSA",
             modulusLength: 2048,
@@ -143,219 +165,10 @@ export class Account implements Storable, PublicAccount {
         this.privateKey = privateKey;
     }
 
-    // TODO: omit private key?
-    // toJSON() {
-    //     return JSON.stringify(Object.assign({}, this, { privateKey: "[omitted]" }));
-    // }
-}
-
-export interface OrganizationMember extends PublicAccount {
-    signedPublicKey: Base64String;
-}
-
-export type InviteStatus = "none" | "initialized" | "sent" | "accepted" | "canceled" | "rejected" | "failed";
-
-export class Invite extends KeyExchange {
-    id: string = "";
-    email: string = "";
-    status: InviteStatus = "none";
-
-    async serialize() {
-        return Object.assign({ id: this.id, status: this.status, email: this.email }, await super.serialize());
-    }
-
-    async deserialize(raw: any) {
-        await super.deserialize(raw);
-        this.id = raw.id;
-        this.status = raw.status;
-        this.email = raw.email;
-        return this;
-    }
-}
-
-export class Organization implements Storable {
-    kind = "organization";
-
-    owner: AccountID = "";
-    privateKey: RSAPrivateKey = "";
-    publicKey: RSAPublicKey = "";
-    members: OrganizationMember[] = [];
-
-    private _container: SharedContainer;
-
-    private _invites = new Map<string, Invite>();
-
-    get invites() {
-        return Array.from(this._invites.values());
-    }
-
-    get pk() {
-        return this.id;
-    }
-
-    constructor(public id: OrganizationID, public account: Account, public name = "") {
-        this._container = new SharedContainer(this.account);
-    }
-
-    private get _secretSerializer(): Serializable {
-        return {
-            serialize: async () => {
-                return {
-                    privateKey: this.privateKey,
-                    invites: this.invites.map(({ id, expires, secret }) => {
-                        return { id, expires, secret };
-                    })
-                };
-            },
-            deserialize: async (raw: any) => {
-                this.privateKey = raw.privateKey;
-                for (const { id, expires, secret } of raw.invites) {
-                    const invite = this._invites.get(id);
-                    invite && Object.assign(invite, { expires, secret });
-                }
-                return this;
-            }
-        };
-    }
-
-    async initialize() {
-        await this._container.initialize(this.account.publicAccount);
-        await this.addMember(this.account.publicAccount);
-    }
-
-    async serialize() {
-        if (this._container.hasAccess) {
-            await this._container.set(this._secretSerializer);
-        }
-        return {
-            id: this.id,
-            owner: this.owner,
-            name: this.name,
-            publicKey: this.publicKey,
-            members: this.members,
-            invites: await Promise.all(this.invites.map(i => i.serialize())),
-            encryptedData: await this._container.serialize()
-        };
-    }
-
-    async deserialize(raw: any) {
-        this.id = raw.id;
-        this.owner = raw.owner;
-        this.name = raw.name;
-        this.publicKey = raw.publicKey;
-        this.members = raw.members;
-        await Promise.all(
-            raw.invites.map(async (i: any) => {
-                this._invites.set(i.id, await new Invite().deserialize(i));
-            })
-        );
-        await this._container.deserialize(raw.encryptedData);
-        if (this._container.hasAccess) {
-            await this._container.get(this._secretSerializer);
-        }
-        return this;
-    }
-
-    isOwner(account: PublicAccount) {
-        return this.owner === account.id;
-    }
-
-    isAdmin(account: PublicAccount) {
-        if (this.isOwner(account)) {
-            return true;
-        }
-        const accessor = this._container.getAccessor(account.id);
-        return accessor && accessor.status === "active";
-    }
-
-    isMember(account: PublicAccount) {
-        return !!this.members.find(m => m.id === account.id);
-    }
-
-    isInvited(account: PublicAccount) {
-        return !!this.invites.find(({ email }) => email === account.email);
-    }
-
-    async generateKeyPair() {
-        const { publicKey, privateKey } = await getProvider().generateKey({
-            algorithm: "RSA",
-            modulusLength: 2048,
-            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-            hash: "SHA-1"
-        });
-        this.publicKey = publicKey;
-        this.privateKey = privateKey;
-    }
-
-    async addMember(account: PublicAccount) {
-        if (!this._container.hasAccess) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        if (!this.publicKey || !this.privateKey) {
-            await this.generateKeyPair();
-        }
-
-        if (this.members.find(m => m.id === account.id)) {
-            throw "Already a member";
-        }
-
-        const member = Object.assign({}, account, {
-            signedPublicKey: await getProvider().sign(this.privateKey, account.publicKey, {
-                algorithm: "RSA-PSS",
-                hash: "SHA-1",
-                saltLength: 128
-            })
-        });
-
-        this.members.push(member);
-    }
-
-    async addAdmin(account: PublicAccount) {
-        if (!this._container.hasAccess) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        await this._container.updateAccessor(
-            Object.assign({}, account, {
-                status: "active" as AccessorStatus,
-                permissions: { read: true, write: true, manage: true },
-                encryptedKey: "",
-                updated: "",
-                updatedBy: ""
-            })
-        );
-
-        if (!this.members.find(m => m.id === account.id)) {
-            await this.addMember(account);
-        }
-    }
-
-    async verifyMember(member: OrganizationMember) {
-        let verified = false;
-        try {
-            verified = await getProvider().verify(this.publicKey, member.signedPublicKey, member.publicKey, {
-                algorithm: "RSA-PSS",
-                hash: "SHA-1",
-                saltLength: 128
-            });
-        } catch (e) {}
-        return verified;
-    }
-
-    getInvite(id: string) {
-        return this._invites.get(id);
-    }
-
-    async createInvite(email: string) {
-        if (!this.isAdmin(this.account)) {
-            return new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-        const invite = new Invite();
-        invite.id = uuid();
-        invite.email = email;
-        await invite.initialize(this.account.publicAccount);
-        invite.status = "initialized";
-        this._invites.set(invite.id, invite);
+    private async _generateKeys(password: string) {
+        const interKey = await getProvider().deriveKey(password, this._keyDerivationParams);
+        const p = Object.assign({}, this._keyDerivationParams, { iterations: 1 });
+        this._masterKey = await getProvider().deriveKey(interKey, p);
+        this.authKey = await getProvider().deriveKey(interKey, p);
     }
 }

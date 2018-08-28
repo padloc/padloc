@@ -1,6 +1,6 @@
 import { Storable, LocalStorage } from "./storage";
 import { Store, AccountStore, SharedStore, Record, Field, Tag, StoreID } from "./data";
-import { Account, PublicAccount, Session, Device, Organization } from "./auth";
+import { Account, AccountInfo, Session, Device, Organization } from "./auth";
 import { DateString } from "./encoding";
 import { Client } from "./client";
 import { Messages } from "./messages";
@@ -304,7 +304,7 @@ export class App extends EventTarget implements Storable {
         ];
         const record = store.createRecord(name || "", fields, tags);
         if (this.account) {
-            record.updatedBy = this.account.publicAccount;
+            record.updatedBy = this.account.info;
         }
         await this.addRecords(store, [record]);
         this.dispatch("record-created", { store: store, record: record });
@@ -323,7 +323,7 @@ export class App extends EventTarget implements Storable {
         }
         record.updated = new Date();
         if (this.account) {
-            record.updatedBy = this.account.publicAccount;
+            record.updatedBy = this.account.info;
         }
         await this.storage.set(store);
         this.dispatch("record-changed", { store: store, record: record });
@@ -336,7 +336,7 @@ export class App extends EventTarget implements Storable {
         store.removeRecords(records);
         if (this.account) {
             for (const record of records) {
-                record.updatedBy = this.account.publicAccount;
+                record.updatedBy = this.account.info;
             }
         }
         await this.storage.set(store);
@@ -470,7 +470,7 @@ export class App extends EventTarget implements Storable {
         this.dispatch("store-changed", { store });
     }
 
-    isTrusted(account: PublicAccount) {
+    isTrusted(account: AccountInfo) {
         const trusted = this.account && this.account.trustedAccounts.find(acc => acc.id === account.id);
         if (trusted && trusted.publicKey !== account.publicKey) {
             throw new Err(
@@ -482,7 +482,7 @@ export class App extends EventTarget implements Storable {
         return !!trusted;
     }
 
-    async addTrustedAccount(account: PublicAccount) {
+    async addTrustedAccount(account: AccountInfo) {
         if (!this.account) {
             throw "not logged in";
         }
@@ -501,7 +501,7 @@ export class App extends EventTarget implements Storable {
 
     async createInvite(
         store: SharedStore,
-        account: PublicAccount,
+        account: AccountInfo,
         permissions: Permissions = { read: true, write: false, manage: false }
     ) {
         if (!store.permissions.manage) {
@@ -523,7 +523,7 @@ export class App extends EventTarget implements Storable {
 
     async updateAccess(
         store: SharedStore,
-        acc: PublicAccount,
+        acc: AccountInfo,
         permissions: Permissions = { read: true, write: true, manage: false },
         status: AccessorStatus
     ) {
@@ -533,7 +533,7 @@ export class App extends EventTarget implements Storable {
         this.dispatch("store-changed", { store });
     }
 
-    async revokeAccess(store: SharedStore, account: PublicAccount) {
+    async revokeAccess(store: SharedStore, account: AccountInfo) {
         if (!store.permissions.manage) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
@@ -613,8 +613,8 @@ export class App extends EventTarget implements Storable {
 
     async reactivateSubscription() {}
 
-    get knownAccounts(): PublicAccount[] {
-        const accounts = new Map<string, PublicAccount>();
+    get knownAccounts(): AccountInfo[] {
+        const accounts = new Map<string, AccountInfo>();
         for (const store of this.sharedStores) {
             for (const { id, email, name, publicKey } of store.accessors) {
                 if (id !== this.account!.id) {
