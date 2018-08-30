@@ -12,6 +12,7 @@ import {
     HMACParams,
     AESEncryptionParams,
     RSAEncryptionParams,
+    HashParams,
     validatePBKDF2Params,
     validateAESEncryptionParams,
     validateRSAEncryptionParams,
@@ -22,14 +23,15 @@ import SJCLProvider from "./sjcl-provider";
 
 const webCrypto = window.crypto && window.crypto.subtle;
 
-class WebCryptoProvider implements CryptoProvider {
-    isAvailable() {
-        return !!webCrypto;
-    }
-
-    randomBytes(n: number): Base64String {
+export class WebCryptoProvider implements CryptoProvider {
+    async randomBytes(n: number): Promise<Base64String> {
         const bytes = window.crypto.getRandomValues(new Uint8Array(n));
         return bytesToBase64(bytes as Uint8Array);
+    }
+
+    async hash(input: Base64String, params: HashParams): Promise<Base64String> {
+        const bytes = await webCrypto.digest({ name: params.algorithm }, base64ToBytes(input));
+        return bytesToBase64(new Uint8Array(bytes));
     }
 
     generateKey(params: AESKeyParams): Promise<AESKey>;
@@ -41,11 +43,10 @@ class WebCryptoProvider implements CryptoProvider {
             case "HMAC":
                 return this.randomBytes(params.keySize / 8);
             case "RSA":
-                const keyPair = await window.crypto.subtle.generateKey(
-                    Object.assign(params, { name: "RSA-OAEP" }),
-                    true,
-                    ["encrypt", "decrypt"]
-                );
+                const keyPair = await webCrypto.generateKey(Object.assign(params, { name: "RSA-OAEP" }), true, [
+                    "encrypt",
+                    "decrypt"
+                ]);
 
                 const privateKey = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
                 const publicKey = await crypto.subtle.exportKey("spki", keyPair.publicKey);

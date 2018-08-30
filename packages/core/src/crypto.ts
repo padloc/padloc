@@ -71,9 +71,14 @@ export interface HMACParams {
     keySize: 256;
 }
 
+export interface HashParams {
+    algorithm: "SHA-1" | "SHA-256";
+}
+
 export interface CryptoProvider {
-    isAvailable(): boolean;
-    randomBytes(n: number): Base64String;
+    randomBytes(n: number): Promise<Base64String>;
+
+    hash(input: Base64String, params: HashParams): Promise<Base64String>;
 
     generateKey(params: AESKeyParams): Promise<AESKey>;
     generateKey(params: HMACKeyParams): Promise<HMACKey>;
@@ -143,6 +148,14 @@ export function validatePBKDF2Params(params: any): PBKDF2Params {
     return params as PBKDF2Params;
 }
 
+export function defaultHMACParams(): HMACParams {
+    return {
+        algorithm: "HMAC",
+        hash: "SHA-256",
+        keySize: 256
+    };
+}
+
 export type EncryptionScheme = "simple" | "PBES2" | "shared";
 
 export interface BaseRawContainer {
@@ -193,9 +206,9 @@ export abstract class Container implements Serializable {
     protected abstract _getKey(): Promise<AESKey>;
 
     async set(data: Serializable) {
-        this.encryptionParams.iv = provider.randomBytes(16);
+        this.encryptionParams.iv = await provider.randomBytes(16);
         // TODO: useful additional authenticated data?
-        this.encryptionParams.additionalData = provider.randomBytes(16);
+        this.encryptionParams.additionalData = await provider.randomBytes(16);
 
         const key = await this._getKey();
         const pt = stringToBase64(marshal(await data.serialize()));
@@ -238,7 +251,7 @@ export class PBES2Container extends Container {
 
     async _getKey() {
         if (!this.keyParams.salt) {
-            this.keyParams.salt = provider.randomBytes(16);
+            this.keyParams.salt = await provider.randomBytes(16);
         }
         if (!this.password) {
             throw new Err(ErrorCode.DECRYPTION_FAILED, "No password provided");
@@ -378,7 +391,7 @@ export class KeyExchange implements Serializable {
         this.created = new Date().toISOString();
         this.expires = new Date(new Date().getTime() + 1000 * 60 * 60 * duration).toISOString();
         this.secret = secret || base64ToHex(await provider.randomBytes(4));
-        this.keyParams.salt = provider.randomBytes(16);
+        this.keyParams.salt = await provider.randomBytes(16);
         this.initiator = await this._sign(publicKey);
     }
 
