@@ -1,5 +1,13 @@
-import { DateString, Base64String, Serializable, stringToBase64 } from "./encoding";
-import { getProvider, RSAPublicKey, RSAPrivateKey, defaultPBKDF2Params, defaultEncryptionParams } from "./crypto";
+import { DateString, Base64String, stringToBase64 } from "./encoding";
+import {
+    getProvider,
+    RSAPublicKey,
+    RSAPrivateKey,
+    PBKDF2Params,
+    defaultPBKDF2Params,
+    defaultEncryptionParams,
+    defaultHMACParams
+} from "./crypto";
 import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
 
@@ -7,67 +15,69 @@ export type AccountID = string;
 export type SessionID = string;
 export type DeviceID = string;
 
-export class Device implements Serializable, DeviceInfo {
-    id: string = "";
-    platform: string = "";
-    osVersion: string = "";
-    appVersion: string = "";
-    manufacturer?: string;
-    model?: string;
-    browser?: string;
-    userAgent: string = "";
-
-    get description(): string {
-        return this.browser ? `${this.browser} on ${this.platform}` : `${this.platform + " Device"}`;
-    }
-
-    async serialize() {
-        return {
-            id: this.id,
-            platform: this.platform,
-            osVersion: this.osVersion,
-            appVersion: this.appVersion,
-            manufacturer: this.manufacturer,
-            model: this.model,
-            browser: this.browser,
-            userAgent: this.userAgent
-        };
-    }
-
-    async deserialize(raw: any) {
-        Object.assign(this, raw);
-        return this;
-    }
+export interface SessionInfo {
+    id: string;
+    account: AccountID;
+    created: DateString;
+    lastUsed: DateString;
+    expires: DateString;
+    device?: DeviceInfo;
 }
 
-export class Session implements Serializable {
-    id: string = "";
-    token: string = "";
-    email: string = "";
+export class Session implements SessionInfo, Storable {
+    kind = "session";
+    account: AccountID = "";
     created: DateString = new Date().toISOString();
-    active: boolean = false;
-    lastUsed?: DateString;
-    expires?: DateString;
-    device: Device = new Device();
-    account?: Account;
+    lastUsed: DateString = new Date().toISOString();
+    expires: DateString = "";
+    key: Base64String = "";
+    device?: DeviceInfo;
 
-    async serialize() {
+    get info(): SessionInfo {
         return {
             id: this.id,
-            email: this.email,
-            token: this.token,
+            account: this.account,
             created: this.created,
-            active: this.active,
             lastUsed: this.lastUsed,
             expires: this.expires,
-            device: this.device && (await this.device.serialize())
+            device: this.device
         };
     }
 
+    get pk() {
+        return this.id;
+    }
+
+    constructor(public id = "") {}
+
+    async getAuthHeader() {
+        const msg = new Date().toISOString();
+        const signature = await this.sign(msg);
+        return `${this.id}:${stringToBase64(msg)}:${signature}`;
+    }
+
+    async sign(message: string): Promise<Base64String> {
+        return await getProvider().sign(this.key, stringToBase64(message), defaultHMACParams());
+    }
+
+    async verify(signature: Base64String, message: string): Promise<boolean> {
+        return await getProvider().verify(this.key, signature, stringToBase64(message), defaultHMACParams());
+    }
+
+    async serialize() {
+        const raw = this.info as any;
+        raw.key = this.key;
+        return raw;
+    }
+
     async deserialize(raw: any) {
-        await this.device.deserialize(raw.device);
-        delete raw.device;
-        Object.assign(this, raw);
+        this.id = raw.id;
+        this.account = raw.account;
+        this.created = raw.created;
+        this.lastUsed = raw.lastUsed;
+        this.expires = raw.expires;
+        this.device = raw.device;
+        this.key = raw.key || "";
         return this;
     }
 }
@@ -81,31 +91,29 @@ export interface AccountInfo {
 
 export class Account implements Storable, AccountInfo {
     kind = "account";
-    id: AccountID = "";
+    email = "";
     name = "";
     created: DateString = new Date().toISOString();
     updated: DateString = new Date().toISOString();
     publicKey: RSAPublicKey = "";
     privateKey: RSAPrivateKey = "";
-    sessions: Session[] = [];
     store = "";
     authKey: Base64String = "";
-
-    private _keyDerivationParams = defaultPBKDF2Params();
-    private _encryptionParams = defaultEncryptionParams();
-
-    private _encPrivateKey: Base64String = "";
-    private _masterKey: Base64String = "";
-
-    constructor(public email: string = "") {}
+    sessions = new Set<SessionID>();
+    keyParams = defaultPBKDF2Params();
+    encryptionParams = defaultEncryptionParams();
+    encPrivateKey: Base64String = "";
+    masterKey: Base64String = "";
 
     get pk() {
-        return this.email;
+        return this.id;
     }
 
     get info(): AccountInfo {
         return { id: this.id, email: this.email, publicKey: this.publicKey, name: this.name };
     }
+
+    constructor(public id: AccountID = "") {}
 
     async initialize(password: string) {
         await this._generateKeyPair();
@@ -113,16 +121,23 @@ export class Account implements Storable, AccountInfo {
     }
 
     async setPassword(password: string) {
-        this._keyDerivationParams.salt = await getProvider().randomBytes(16);
-        await this._generateKeys(password);
-        this._encryptionParams.iv = await getProvider().randomBytes(16);
-        this._encryptionParams.additionalData = stringToBase64(this.email);
-        this._encPrivateKey = await getProvider().encrypt(this._masterKey, this.privateKey, this._encryptionParams);
+        this.keyParams.salt = await getProvider().randomBytes(16);
+        await this.generateKeys(password);
+        this.encryptionParams.iv = await getProvider().randomBytes(16);
+        this.encryptionParams.additionalData = stringToBase64(this.email);
+        this.encPrivateKey = await getProvider().encrypt(this.masterKey, this.privateKey, this.encryptionParams);
     }
 
     async unlock(password: string) {
-        await this._generateKeys(password);
-        this.privateKey = await getProvider().decrypt(this._masterKey, this._encPrivateKey, this._encryptionParams);
+        await this.generateKeys(password);
+        this.privateKey = await getProvider().decrypt(this.masterKey, this.encPrivateKey, this.encryptionParams);
+    }
+
+    async generateKeys(password: string) {
+        this.masterKey = await getProvider().deriveKey(password, this.keyParams);
+        const p = Object.assign({}, this.keyParams, { iterations: 1 });
+        // TODO: Use more secure method to derive auth key
+        this.authKey = await getProvider().deriveKey(this.masterKey, p);
     }
 
     async serialize() {
@@ -134,23 +149,25 @@ export class Account implements Storable, AccountInfo {
             name: this.name,
             store: this.store,
             publicKey: this.publicKey,
-            encPrivateKey: this._encPrivateKey,
-            sessions: await Promise.all(this.sessions.map(s => s.serialize()))
+            encPrivateKey: this.encPrivateKey,
+            keyParams: this.keyParams,
+            encryptionParams: this.encryptionParams,
+            sessions: Array.from(this.sessions)
         };
     }
 
     async deserialize(raw: any) {
-        this.id = this.id;
+        this.id = raw.id;
         this.created = raw.created;
         this.updated = raw.updated;
         this.email = raw.email;
         this.name = raw.name;
         this.store = raw.store;
         this.publicKey = raw.publicKey;
-        this._encPrivateKey = raw.encPrivateKey;
-        this.sessions = ((await Promise.all(
-            raw.sessions.map((s: any) => new Session().deserialize(s))
-        )) as any) as Session[];
+        this.encPrivateKey = raw.encPrivateKey;
+        this.keyParams = raw.keyParams;
+        this.encryptionParams = raw.encryptionParams;
+        this.sessions = new Set<SessionID>(raw.sessions);
         return this;
     }
 
@@ -164,11 +181,34 @@ export class Account implements Storable, AccountInfo {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
+}
 
-    private async _generateKeys(password: string) {
-        const interKey = await getProvider().deriveKey(password, this._keyDerivationParams);
-        const p = Object.assign({}, this._keyDerivationParams, { iterations: 1 });
-        this._masterKey = await getProvider().deriveKey(interKey, p);
-        this.authKey = await getProvider().deriveKey(interKey, p);
+export class AuthInfo implements Storable {
+    kind = "auth-info";
+    account: AccountID = "";
+    verifier: Base64String = "";
+    keyParams: PBKDF2Params = defaultPBKDF2Params();
+
+    constructor(public email: string) {}
+
+    get pk() {
+        return this.email;
+    }
+
+    async serialize() {
+        return {
+            email: this.email,
+            account: this.account,
+            verifier: this.verifier,
+            keyParams: this.keyParams
+        };
+    }
+
+    async deserialize(raw: any) {
+        this.email = raw.email;
+        this.account = raw.account;
+        this.verifier = raw.verifier;
+        this.keyParams = raw.keyParams;
+        return this;
     }
 }

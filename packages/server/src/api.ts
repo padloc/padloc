@@ -1,106 +1,192 @@
-import { API, CreateAccountParams, CreateSharedStoreParams, CreateOrganizationParams } from "@padlock/core/src/api";
-import { Storage } from "@padlock/core/src/storage";
-import { AccountStore, SharedStore } from "@padlock/core/src/data";
-import { Account, Session, Organization, Invite } from "@padlock/core/src/auth";
+import { API, CreateAccountParams, CreateStoreParams } from "@padlock/core/src/api";
+import { Storage, Storable } from "@padlock/core/src/storage";
+import { Store } from "@padlock/core/src/store";
+import { DateString, Base64String } from "@padlock/core/src/encoding";
+import { AuthInfo, Account, AccountID, Session } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
-import { uuid } from "@padlock/core/lib/util.js";
+import { uuid } from "@padlock/core/src/util";
+import { Server as SRPServer } from "@padlock/core/src/srp";
+import { defaultPBKDF2Params } from "@padlock/core/src/crypto";
+import { NodeCryptoProvider } from "@padlock/core/src/node-crypto-provider";
 import { Sender } from "./sender";
-import { AuthRequest } from "./auth";
-import { LoginMessage, InviteMessage } from "./messages";
+import { EmailVerificationMessage } from "./messages";
 import { RequestState } from "./server";
+import { randomBytes } from "crypto";
+
+const crypto = new NodeCryptoProvider();
+
+export class EmailVerification implements Storable {
+    kind = "email-verification";
+    code: string = "";
+    created: DateString = new Date().toISOString();
+
+    get pk() {
+        return this.email;
+    }
+
+    constructor(public email: string) {
+        this.code = randomBytes(3).toString("hex");
+    }
+
+    async serialize() {
+        return {
+            email: this.email,
+            code: this.code
+        };
+    }
+
+    async deserialize(raw: any) {
+        this.email = raw.email;
+        this.code = raw.code;
+        return this;
+    }
+}
+
+const pendingAuths = new Map<string, SRPServer>();
 
 export class ServerAPI implements API {
     constructor(private storage: Storage, private sender: Sender, private state: RequestState) {}
 
-    async createSession(email: string) {
-        const req = AuthRequest.create(email);
-        await this.storage.set(req);
-
-        this.sender.send(email, new LoginMessage(req));
-
-        return req.session;
+    async verifyEmail({ email }: { email: string }) {
+        const v = new EmailVerification(email);
+        await this.storage.set(v);
+        this.sender.send(email, new EmailVerificationMessage(v));
     }
 
-    async activateSession(id: string, code: string) {
-        const req = new AuthRequest();
-        req.session.id = id;
-        await this.storage.get(req);
+    async initAuth({ email }: { email: string }) {
+        const authInfo = new AuthInfo(email);
 
-        if (req.code.toLowerCase() !== code.toLowerCase()) {
-            throw new Err(ErrorCode.BAD_REQUEST, "Invalid code");
-        }
-
-        const acc = new Account(req.email);
         try {
-            await this.storage.get(acc);
+            await this.storage.get(authInfo);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
-                acc.id = uuid();
-                await this.storage.set(acc);
-            } else {
+                const keyParams = defaultPBKDF2Params();
+                keyParams.salt = await crypto.randomBytes(32);
+                // Account does not exist. Send randomized values
+                return {
+                    account: uuid(),
+                    keyParams,
+                    B: await crypto.randomBytes(32)
+                };
+            }
+            throw e;
+        }
+
+        const srp = new SRPServer();
+        await srp.initialize(authInfo.verifier);
+
+        pendingAuths.set(authInfo.account, srp);
+
+        return {
+            B: srp.B!,
+            account: authInfo.account,
+            keyParams: authInfo.keyParams
+        };
+    }
+
+    async createSession({ account, A, M }: { account: AccountID; A: Base64String; M: Base64String }): Promise<Session> {
+        const srp = pendingAuths.get(account);
+
+        if (!srp) {
+            throw new Err(ErrorCode.BAD_REQUEST);
+        }
+
+        await srp.setA(A);
+
+        if (M !== srp.M1) {
+            throw new Err(ErrorCode.BAD_REQUEST);
+        }
+
+        const acc = new Account(account);
+
+        await this.storage.get(acc);
+
+        const session = new Session(uuid());
+        session.account = account;
+        session.device = this.state.device;
+        session.key = srp.K!;
+
+        acc.sessions.add(session.id);
+
+        await Promise.all([this.storage.set(session), this.storage.set(acc)]);
+
+        pendingAuths.delete(account);
+
+        // Delete key before returning session
+        session.key = "";
+        return session;
+    }
+
+    async revokeSession(session: Session) {
+        const { account } = this._requireAuth();
+
+        await this.storage.get(session);
+
+        account.sessions.delete(session.id);
+
+        await Promise.all([this.storage.delete(session), this.storage.set(account)]);
+    }
+
+    async createAccount(params: CreateAccountParams): Promise<Account> {
+        const { email, emailVerification, verifier, keyParams } = params;
+
+        const ev = new EmailVerification(email);
+        await this.storage.get(ev);
+        if (ev.email !== email || ev.code !== emailVerification.toLowerCase()) {
+            throw new Err(ErrorCode.BAD_REQUEST, "Email verification failed");
+        }
+
+        const authInfo = new AuthInfo(email);
+
+        // Make sure account does not exist yet
+        try {
+            await this.storage.get(authInfo);
+            throw new Err(ErrorCode.BAD_REQUEST, "Account already exists");
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
             }
         }
 
-        req.session.active = true;
+        const account = await new Account().deserialize(params);
+        account.id = uuid();
 
-        const existing = acc.sessions.find(s => s.device.id === req.session.device.id);
-        if (existing) {
-            acc.sessions.splice(acc.sessions.indexOf(existing), 1);
-        }
-        acc.sessions.push(req.session);
-        await this.storage.set(acc);
+        const store = new Store(uuid(), "Main");
+        account.store = store.id;
 
-        await this.storage.delete(req);
+        authInfo.account = account.id;
+        authInfo.verifier = verifier;
+        authInfo.keyParams = keyParams;
 
-        return req.session;
-    }
+        await Promise.all([this.storage.set(account), this.storage.set(store), this.storage.set(authInfo)]);
 
-    async revokeSession(id: string) {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
-        const account = this.state.account;
-        account.sessions = account.sessions.filter((s: Session) => s.id !== id);
-        await this.storage.set(account);
-    }
-
-    async createAccount(_: CreateAccountParams): Promise<Account> {
-        throw new Err(ErrorCode.NOT_FOUND);
+        return account;
     }
 
     async getAccount() {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
-        return this.state.account;
+        const { account } = this._requireAuth();
+        return account;
     }
 
-    async getAccountStore() {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
+    async updateAccount(account: Account) {
+        const existing = this._requireAuth().account;
+        const { name } = account;
+
+        if (name) {
+            if (typeof name !== "string") {
+                throw new Err(ErrorCode.BAD_REQUEST);
+            }
+            account.name = name;
         }
-        const store = new AccountStore(this.state.account);
-        await this.storage.get(store);
-        return store;
+
+        await this.storage.set(existing);
+        return existing;
     }
 
-    async updateAccountStore(store: AccountStore) {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
-        await this.storage.set(store);
-        return store;
-    }
+    async getStore(store: Store) {
+        const { account } = this._requireAuth();
 
-    async getSharedStore(store: SharedStore) {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
-
-        store.account = this.state.account;
-
-        if (!store.permissions.read) {
+        if (!store.isMember(account)) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
@@ -108,48 +194,42 @@ export class ServerAPI implements API {
         return store;
     }
 
-    async updateSharedStore(store: SharedStore) {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
+    async updateStore(store: Store) {
+        const { account } = this._requireAuth();
 
-        const account = (store.account = this.state.account);
-        const existing = new SharedStore(store.id, account);
-
+        const existing = new Store(store.id);
         await this.storage.get(existing);
 
-        const permissions = existing.permissions;
+        const member = existing.getMember(account);
+        const permissions = (member && member.permissions) || { read: false, write: false, manage: false };
 
         if (!permissions.write) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Write permissions required to update store contents.");
         }
 
-        const { added, changed } = existing.mergeAccessors(store.accessors);
-
-        if ((added.length || changed.length) && !permissions.manage) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Manage permissions required to update store accessors.");
-        }
-
-        for (const accessor of added) {
-            const acc = new Account(accessor.email);
-            await this.storage.get(acc);
-            acc.sharedStores.push(store.id);
-            await this.storage.set(acc);
-        }
+        // const { added, changed } = existing.mergeAccessors(store.accessors);
+        //
+        // if ((added.length || changed.length) && !permissions.manage) {
+        //     throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Manage permissions required to update store accessors.");
+        // }
+        //
+        // for (const accessor of added) {
+        //     const acc = new Account(accessor.email);
+        //     await this.storage.get(acc);
+        //     acc.sharedStores.push(store.id);
+        //     await this.storage.set(acc);
+        // }
 
         await this.storage.set(store);
 
         return store;
     }
 
-    async createSharedStore(params: CreateSharedStoreParams) {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
+    async createStore(params: CreateStoreParams) {
+        const { account } = this._requireAuth();
 
         const { name } = params;
-        const account = this.state.account;
-        const store = await new SharedStore(uuid(), account, name);
+        const store = await new Store(uuid(), name);
         store.owner = account.id;
 
         await Promise.all([this.storage.set(account), this.storage.set(store)]);
@@ -157,114 +237,13 @@ export class ServerAPI implements API {
         return store;
     }
 
-    async updateAccount(account: Account) {
-        if (!this.state.session || !this.state.account) {
+    private _requireAuth(): { account: Account; session: Session } {
+        const { account, session } = this.state;
+
+        if (!session || !account) {
             throw new Err(ErrorCode.INVALID_SESSION);
         }
 
-        const existing = this.state.account;
-        const { publicKey } = account;
-
-        if (publicKey) {
-            if (typeof publicKey !== "string") {
-                throw new Err(ErrorCode.BAD_REQUEST);
-            }
-            existing.publicKey = publicKey;
-        }
-        //
-        // if (name) {
-        //     if (typeof name !== "string") {
-        //         throw new Err(ErrorCode.BAD_REQUEST);
-        //     }
-        //     account.name = name;
-        // }
-
-        await this.storage.set(existing);
-        return existing;
-    }
-
-    async createOrganization(params: CreateOrganizationParams) {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
-
-        const { name } = params;
-
-        const account = this.state.account;
-        const org = await new Organization(uuid(), account, name);
-        org.owner = account.id;
-
-        account.organizations.push(org.id);
-
-        await Promise.all([this.storage.set(account), this.storage.set(org)]);
-
-        return org;
-    }
-
-    async getOrganization(org: Organization) {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
-
-        const account = this.state.account!;
-
-        await this.storage.get(org);
-
-        if (!org.isMember(account) && !org.isInvited(account)) {
-            throw new Err(ErrorCode.NOT_FOUND);
-        }
-
-        return org;
-    }
-
-    async updateOrganization(org: Organization) {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
-
-        const account = (org.account = this.state.account);
-
-        const existing = new Organization(org.id, account);
-        await this.storage.get(existing);
-
-        if (!existing.isAdmin(account)) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Only admins can update organizations");
-        }
-
-        for (const invite of org.invites) {
-            if (invite.status === "initialized") {
-                this.sender.send(
-                    invite.email,
-                    new InviteMessage({
-                        name: org.name,
-                        kind: "organization",
-                        sender: invite.sender!.name || invite.sender!.email,
-                        url: `https://127.0.0.1:3000/org/${org.pk}/invite/${invite.id}`
-                    })
-                );
-            }
-            invite.status === "sent";
-        }
-
-        await this.storage.set(org);
-
-        return org;
-    }
-
-    async updateInvite(target: Organization, invite: Invite): Promise<Organization> {
-        if (!this.state.session || !this.state.account) {
-            throw new Err(ErrorCode.INVALID_SESSION);
-        }
-        const account = this.state.account;
-        await this.storage.get(target);
-        const existing = target.getInvite(invite.id);
-        if (!existing || existing.email !== account.email) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        existing.status = invite.status;
-        existing.receiver = invite.receiver;
-        await this.storage.set(target);
-        return target;
+        return { account, session };
     }
 }

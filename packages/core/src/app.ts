@@ -1,14 +1,16 @@
 import { Storable, LocalStorage } from "./storage";
-import { Store, AccountStore, SharedStore, Record, Field, Tag, StoreID } from "./data";
-import { Account, AccountInfo, Session, Device, Organization } from "./auth";
+import { Record, Field, Tag, StoreID } from "./data";
+import { Store } from "./store";
+import { Account, AccountInfo, Session } from "./auth";
 import { DateString } from "./encoding";
+import { API } from "./api";
 import { Client } from "./client";
 import { Messages } from "./messages";
 import { localize as $l } from "./locale";
-import { Err, ErrorCode } from "./error";
-import { getDeviceInfo } from "./platform";
+import { ErrorCode } from "./error";
+import { DeviceInfo, getDeviceInfo } from "./platform";
 import { uuid } from "./util";
-import { Permissions, AccessorStatus } from "./crypto";
+import { Client as SRPClient } from "./srp";
 
 export interface Stats {
     lastSync?: DateString;
@@ -41,9 +43,8 @@ function filterByString(fs: string, rec: Record, store: Store) {
     }
     const words = fs.toLowerCase().split(" ");
     const content = [rec.name, ...rec.tags, ...rec.fields.map(f => f.name)];
-    if (store instanceof SharedStore) {
-        content.push(store.name);
-    }
+    // TODO: Don't filter for main store name
+    content.push(store.name);
     return words.some(
         word =>
             content
@@ -67,48 +68,39 @@ export class App extends EventTarget implements Storable {
 
     version = "3.0";
     storage = new LocalStorage();
-    api = new Client(this);
-    mainStore = new AccountStore(new Account(), true);
-    sharedStores: SharedStore[] = [];
-    organizations: Organization[] = [];
+    api: API = new Client(this);
+    account = new Account();
+    stores: Store[] = [];
     settings = defaultSettings;
     messages = new Messages("https://padlock.io/messages.json");
     locked = true;
     stats: Stats = {};
-    device: Device = new Device();
+    device: DeviceInfo = {} as DeviceInfo;
     initialized: DateString = "";
     session: Session | null = null;
-
     loaded = this.load();
-
-    get account(): Account {
-        return this.mainStore.account;
-    }
-
-    set account(account: Account) {
-        this.mainStore.account = account;
-    }
+    mainStore = new Store();
 
     async serialize() {
         return {
-            account: this.account,
-            session: this.session,
+            account: await this.account.serialize(),
+            session: this.session ? await this.session.serialize() : null,
             initialized: this.initialized,
             stats: this.stats,
             messages: await this.messages.serialize(),
             settings: this.settings,
-            device: await this.device.serialize()
+            device: this.device
         };
     }
 
     async deserialize(raw: any) {
-        this.account = raw.account && (await new Account().deserialize(raw.account));
+        await this.account.deserialize(raw.account);
         this.session = raw.session && (await new Session().deserialize(raw.session));
         this.initialized = raw.initialized;
         this.setStats(raw.stats || {});
         await this.messages.deserialize(raw.messages);
         this.setSettings(raw.settings);
-        await this.device.deserialize(Object.assign(raw.device, await getDeviceInfo()));
+        this.device = Object.assign(raw.device, await getDeviceInfo());
         return this;
     }
 
@@ -130,21 +122,13 @@ export class App extends EventTarget implements Storable {
     }
 
     get loggedIn() {
-        return this.session && this.session.active;
-    }
-
-    get password(): string | undefined {
-        return this.mainStore.password;
-    }
-
-    set password(pwd: string | undefined) {
-        this.mainStore.password = pwd;
+        return !!this.session;
     }
 
     get tags() {
-        const tags = [...this.mainStore.tags];
-        for (const store of this.sharedStores) {
-            tags.push(...store.tags);
+        const tags = this.mainStore.collection.tags;
+        for (const store of this.stores) {
+            tags.push(...store.collection.tags);
         }
         return [...new Set(tags)];
     }
@@ -152,22 +136,24 @@ export class App extends EventTarget implements Storable {
     list(filter = "", recentCount = 3): ListItem[] {
         let items: ListItem[] = [];
 
-        for (const store of [
-            this.mainStore,
-            ...this.sharedStores.filter(s => !this.settings.hideStores.includes(s.id))
-        ]) {
-            items.push(
-                ...store.records.filter((r: Record) => !r.removed && filterByString(filter, r, store)).map(r => {
-                    return {
+        for (const store of [this.mainStore, ...this.stores]) {
+            if (this.settings.hideStores.includes(store.id)) {
+                continue;
+            }
+
+            for (const record of store.collection) {
+                if (!record.removed && filterByString(filter, record, store)) {
+                    items.push({
                         store: store,
-                        record: r,
+                        record: record,
                         section: "",
                         firstInSection: false,
-                        lastInSection: false,
-                        warning: store instanceof SharedStore && !!store.getOldAccessors(r).length
-                    };
-                })
-            );
+                        lastInSection: false
+                        // TODO: reimplement
+                        // warning: !!store.getOldMembers(record).length
+                    });
+                }
+            }
         }
 
         const recent = items
@@ -226,59 +212,40 @@ export class App extends EventTarget implements Storable {
     }
 
     async unlock(password: string) {
-        this.mainStore.password = password;
+        await this.account.unlock(password);
+        this.mainStore.id = this.account.store;
+        this.mainStore.access(this.account);
         await this.storage.get(this.mainStore);
-
-        if (this.account) {
-            for (const id of this.account.sharedStores) {
-                const sharedStore = new SharedStore(id, this.account);
-                try {
-                    await this.storage.get(sharedStore);
-                    this.sharedStores.push(sharedStore);
-                } catch (e) {
-                    console.error("Failed to decrypt shared store with id", sharedStore.id, e);
-                }
-            }
-
-            for (const id of this.account.organizations) {
-                const org = new Organization(id, this.account);
-                try {
-                    await this.storage.get(org);
-                    this.organizations.push(org);
-                } catch (e) {
-                    console.error("Failed to load organization with id", org.id, e);
-                }
-            }
-        }
 
         this.locked = false;
         this.dispatch("unlock");
     }
 
     async lock() {
-        this.mainStore = new AccountStore(this.account, true);
-        this.sharedStores = [];
+        this.mainStore = new Store(this.account.store);
+        this.stores = [];
         this.locked = true;
         this.dispatch("lock");
     }
 
-    async setPassword(password: string) {
-        this.password = password;
-        await this.storage.set(this.mainStore);
-        this.dispatch("password-changed");
+    async setPassword(_password: string) {
+        // TODO
+        // this.password = password;
+        // await this.storage.set(this.mainStore);
+        // this.dispatch("password-changed");
     }
 
     async save() {
         return Promise.all([
             this.storage.set(this),
             this.storage.set(this.mainStore),
-            ...this.sharedStores.map(s => this.storage.set(s))
+            ...this.stores.map(s => this.storage.set(s))
         ]);
     }
 
     async reset() {
-        this.mainStore = new AccountStore(new Account(), true);
-        this.sharedStores = [];
+        this.mainStore = new Store(this.account.store);
+        this.stores = [];
         this.initialized = "";
         await this.storage.clear();
         this.dispatch("reset");
@@ -286,25 +253,19 @@ export class App extends EventTarget implements Storable {
     }
 
     async addRecords(store: Store, records: Record[]) {
-        if (store instanceof SharedStore && !store.permissions.write) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-        store.addRecords(records);
+        store.collection.add(records);
         await this.storage.set(store);
         this.dispatch("records-added", { store: store, records: records });
     }
 
     async createRecord(store: Store, name: string, fields?: Field[], tags?: Tag[]): Promise<Record> {
-        if (store instanceof SharedStore && !store.permissions.write) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
         fields = fields || [
             { name: $l("Username"), value: "", masked: false },
             { name: $l("Password"), value: "", masked: true }
         ];
-        const record = store.createRecord(name || "", fields, tags);
+        const record = store.collection.create(name || "", fields, tags);
         if (this.account) {
-            record.updatedBy = this.account.info;
+            record.updatedBy = this.account.id;
         }
         await this.addRecords(store, [record]);
         this.dispatch("record-created", { store: store, record: record });
@@ -312,10 +273,6 @@ export class App extends EventTarget implements Storable {
     }
 
     async updateRecord(store: Store, record: Record, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
-        if (store instanceof SharedStore && !store.permissions.write) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
         for (const prop of ["name", "fields", "tags"]) {
             if (typeof upd[prop] !== "undefined") {
                 record[prop] = upd[prop];
@@ -323,27 +280,24 @@ export class App extends EventTarget implements Storable {
         }
         record.updated = new Date();
         if (this.account) {
-            record.updatedBy = this.account.info;
+            record.updatedBy = this.account.id;
         }
         await this.storage.set(store);
         this.dispatch("record-changed", { store: store, record: record });
     }
 
     async deleteRecords(store: Store, records: Record[]) {
-        if (store instanceof SharedStore && !store.permissions.write) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-        store.removeRecords(records);
+        store.collection.remove(records);
         if (this.account) {
             for (const record of records) {
-                record.updatedBy = this.account.info;
+                record.updatedBy = this.account.id;
             }
         }
         await this.storage.set(store);
         this.dispatch("records-deleted", { store: store, records: records });
     }
 
-    toggleStore(store: SharedStore) {
+    toggleStore(store: Store) {
         const hideStores = this.settings.hideStores;
         const ind = hideStores.indexOf(store.id);
         if (ind === -1) {
@@ -355,24 +309,58 @@ export class App extends EventTarget implements Storable {
         this.setSettings({ hideStores });
     }
 
-    async login(email: string) {
-        await this.api.createSession(email);
+    async verifyEmail(email: string) {
+        await this.api.verifyEmail({ email });
+    }
+
+    async register(email: string, password: string, verificationCode: string) {
+        const acc = this.account;
+        acc.email = email;
+        await acc.initialize(password);
+
+        const srp = new SRPClient();
+        await srp.initialize(acc.authKey);
+
+        const account = await this.api.createAccount({
+            email: email,
+            name: acc.name,
+            publicKey: acc.publicKey,
+            encPrivateKey: acc.encPrivateKey,
+            keyParams: acc.keyParams,
+            encryptionParams: acc.encryptionParams,
+            verifier: srp.v!,
+            emailVerification: verificationCode
+        });
+
+        await acc.deserialize(await account.serialize());
         await this.storage.set(this);
+    }
+
+    async login(email: string, password: string) {
+        const { account, keyParams, B } = await this.api.initAuth({ email });
+        this.account.id = account;
+        this.account.keyParams = keyParams;
+        await this.account.generateKeys(password);
+
+        const srp = new SRPClient();
+
+        await srp.initialize(this.account.authKey);
+        await srp.setB(B);
+
+        console.log(srp.v, "\n", srp.A, "\n", B, "\n", srp.M1);
+
+        this.session = await this.api.createSession({ account: this.account.id, A: srp.A!, M: srp.M1! });
+        this.session.key = srp.K!;
+
+        await this.storage.set(this);
+
         this.dispatch("login");
         this.dispatch("account-changed", { account: this.account });
         this.dispatch("session-changed", { session: this.session });
     }
 
-    async activateSession(code: string) {
-        await this.api.activateSession(this.session!.id, code);
-        this.dispatch("session-changed", { session: this.session });
-        await this.syncAccount();
-    }
-
-    async revokeSession(id: string) {
-        await this.api.revokeSession(id);
-        await this.api.getAccount(this.account);
-        await this.storage.set(this);
+    async revokeSession(session: Session) {
+        await this.api.revokeSession(session);
         this.dispatch("account-changed", { account: this.account });
     }
 
@@ -380,73 +368,58 @@ export class App extends EventTarget implements Storable {
         if (!this.loggedIn) {
             throw "Not logged in!";
         }
-        const account = this.account!;
         await this.api.getAccount(this.account);
-        if (this.initialized && (!account.publicKey || !account.privateKey)) {
-            await account.generateKeyPair();
-            await Promise.all([
-                this.api.updateAccount(account),
-                this.api.updateAccountStore(this.mainStore),
-                this.storage.set(this.mainStore)
-            ]);
-        }
         await this.storage.set(this);
         this.dispatch("account-changed", { account: this.account });
     }
 
     async logout() {
+        if (!this.session) {
+            throw "Not logged in";
+        }
+
         try {
-            await this.api.revokeSession(this.session!.id);
+            await this.api.revokeSession(this.session);
         } catch (e) {}
+
         this.session = null;
         this.account = new Account();
-        this.sharedStores = [];
+        this.stores = [];
         await this.storage.set(this);
         this.dispatch("logout");
         this.dispatch("account-changed", { account: this.account });
         this.dispatch("session-changed", { session: this.session });
     }
 
-    async hasRemoteData(): Promise<boolean> {
-        try {
-            await this.api.getAccountStore(this.mainStore);
-            return true;
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                return false;
-            }
-            throw e;
-        }
-    }
-
-    async createSharedStore(name: string): Promise<SharedStore> {
+    async createStore(name: string): Promise<Store> {
         if (!this.account) {
             throw "Need to be logged in to create a shared store!";
         }
 
         await this.syncAccount();
-        const store = await this.api.createSharedStore({ name });
-        await store.initialize();
-        await Promise.all([this.api.updateSharedStore(store), this.storage.set(store)]);
-        this.sharedStores.push(store);
+        const store = await this.api.createStore({ name });
+        await store.initialize(this.account);
+        await Promise.all([this.api.updateStore(store), this.storage.set(store)]);
+        this.stores.push(store);
         await this.syncAccount();
         this.dispatch("store-created", { store });
         return store;
     }
 
     async syncSharedStore(id: StoreID) {
-        if (!this.account || !this.account.privateKey) {
+        if (!this.account) {
             throw "Not logged in";
         }
 
-        let store = this.sharedStores.find(s => s.id === id);
+        let store = this.stores.find(s => s.id === id);
         if (!store) {
-            store = new SharedStore(id, this.account);
-            this.sharedStores.push(store);
+            store = new Store(id);
+            store.access(this.account);
+            this.stores.push(store);
         }
 
         try {
-            await this.api.getSharedStore(store);
+            await this.api.getStore(store);
         } catch (e) {
             console.error(e, store.name, store.id);
             // switch (e.code) {
@@ -463,110 +436,60 @@ export class App extends EventTarget implements Storable {
 
         await this.storage.set(store);
 
-        if (store.permissions.write) {
-            await this.api.updateSharedStore(store);
+        const member = store.getMember(this.account);
+        if (member && member.permissions.write) {
+            await this.api.updateStore(store);
         }
 
         this.dispatch("store-changed", { store });
     }
-
-    isTrusted(account: AccountInfo) {
-        const trusted = this.account && this.account.trustedAccounts.find(acc => acc.id === account.id);
-        if (trusted && trusted.publicKey !== account.publicKey) {
-            throw new Err(
-                ErrorCode.PUBLIC_KEY_MISMATCH,
-                `The public key for the account ${account.email}, has changed unexpectedly! ` +
-                    `This can be a sign of tempering and should be reported immediately!`
-            );
-        }
-        return !!trusted;
-    }
-
-    async addTrustedAccount(account: AccountInfo) {
-        if (!this.account) {
-            throw "not logged in";
-        }
-
-        if (!this.isTrusted(account)) {
-            this.account.trustedAccounts.push({
-                id: account.id,
-                email: account.email,
-                name: account.name,
-                publicKey: account.publicKey
-            });
-        }
-        await this.synchronize();
-        this.dispatch("account-changed");
-    }
-
-    async createInvite(
-        store: SharedStore,
-        account: AccountInfo,
-        permissions: Permissions = { read: true, write: false, manage: false }
-    ) {
-        if (!store.permissions.manage) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        if (!this.isTrusted(account)) {
-            throw "Invites can only be created for trusted accounts.";
-        }
-
-        if (store.accessors.some(a => a.id === account.id && a.status === "active")) {
-            throw "This account is already in this group.";
-        }
-
-        await this.api.getSharedStore(store);
-        await store.updateAccess(account, permissions, "invited");
-        await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
-    }
-
-    async updateAccess(
-        store: SharedStore,
-        acc: AccountInfo,
-        permissions: Permissions = { read: true, write: true, manage: false },
-        status: AccessorStatus
-    ) {
-        await this.api.getSharedStore(store);
-        await store.updateAccess(acc, permissions, status);
-        await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
-        this.dispatch("store-changed", { store });
-    }
-
-    async revokeAccess(store: SharedStore, account: AccountInfo) {
-        if (!store.permissions.manage) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-        await this.api.getSharedStore(store);
-        await store.revokeAccess(account);
-        await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
-        this.dispatch("store-changed", { store });
-    }
+    //
+    // async updateAccess(
+    //     store: SharedStore,
+    //     acc: AccountInfo,
+    //     permissions: Permissions = { read: true, write: true, manage: false },
+    //     status: AccessorStatus
+    // ) {
+    //     await this.api.getSharedStore(store);
+    //     await store.updateAccess(acc, permissions, status);
+    //     await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
+    //     this.dispatch("store-changed", { store });
+    // }
+    //
+    // async revokeAccess(store: SharedStore, account: AccountInfo) {
+    //     if (!store.permissions.manage) {
+    //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+    //     }
+    //     await this.api.getSharedStore(store);
+    //     await store.revokeAccess(account);
+    //     await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
+    //     this.dispatch("store-changed", { store });
+    // }
 
     async synchronize() {
         await this.syncAccount();
 
         try {
-            await this.api.getAccountStore(this.mainStore);
+            await this.api.getStore(this.mainStore);
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
             }
         }
 
-        await Promise.all([this.storage.set(this.mainStore), this.api.updateAccountStore(this.mainStore)]);
+        await Promise.all([this.storage.set(this.mainStore), this.api.updateStore(this.mainStore)]);
 
-        const sharedStores = [...this.account!.sharedStores];
-
-        await Promise.all(sharedStores.map(id => this.syncSharedStore(id)));
+        // const stores = [...this.account!.stores];
+        //
+        // await Promise.all(stores.map(id => this.syncStore(id)));
 
         this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");
     }
 
     getRecord(id: string): { record: Record; store: Store } | null {
-        for (const store of [this.mainStore, ...this.sharedStores]) {
-            const record = store.getRecord(id);
+        for (const store of [this.mainStore, ...this.stores]) {
+            const record = store.collection.get(id);
             if (record) {
                 return { record, store };
             }
@@ -575,48 +498,26 @@ export class App extends EventTarget implements Storable {
         return null;
     }
 
-    async getStore(id: string): Promise<SharedStore | null> {
+    async getStore(id: string): Promise<Store | null> {
         if (!this.loggedIn) {
             throw "not logged in";
         }
-        let store = this.sharedStores.find(s => s.id === id);
+        let store = this.stores.find(s => s.id === id);
         if (store) {
             return store;
         }
 
-        store = new SharedStore(id, this.account);
         try {
-            await this.api.getSharedStore(store);
-            return store;
+            return await this.api.getStore(new Store(id));
         } catch (e) {}
 
         return null;
     }
-
-    async getOrganization(id: string): Promise<Organization | null> {
-        if (!this.loggedIn) {
-            throw "not logged in";
-        }
-        let org = this.organizations.find(o => o.id === id);
-        if (org) {
-            return org;
-        }
-
-        org = new Organization(id, this.account);
-        try {
-            await this.api.getOrganization(org);
-            return org;
-        } catch (e) {}
-
-        return null;
-    }
-
-    async reactivateSubscription() {}
 
     get knownAccounts(): AccountInfo[] {
         const accounts = new Map<string, AccountInfo>();
-        for (const store of this.sharedStores) {
-            for (const { id, email, name, publicKey } of store.accessors) {
+        for (const store of this.stores) {
+            for (const { id, email, name, publicKey } of store.members) {
                 if (id !== this.account!.id) {
                     accounts.set(id, { id, email, name, publicKey });
                 }
@@ -625,26 +526,4 @@ export class App extends EventTarget implements Storable {
 
         return Array.from(accounts.values());
     }
-
-    async createOrganization(name: string): Promise<Organization> {
-        if (!this.account) {
-            throw "Need to be logged in to create an organization!";
-        }
-
-        await this.syncAccount();
-
-        const org = await this.api.createOrganization({ name });
-        await org.initialize();
-        await Promise.all([this.api.updateOrganization(org), this.storage.set(org)]);
-        this.organizations.push(org);
-        await this.syncAccount();
-        this.dispatch("organization-created", { organization: org });
-        return org;
-    }
-
-    buySubscription(_source: string) {}
-
-    cancelSubscription() {}
-
-    updatePaymentMethod(_source: String) {}
 }

@@ -1,5 +1,5 @@
 import { randomBytes, createHash, createHmac } from "crypto";
-import { Base64String } from "./encoding";
+import { Base64String, bytesToBase64, base64ToBytes } from "./encoding";
 import {
     CryptoProvider,
     AESKey,
@@ -24,7 +24,7 @@ export class NodeCryptoProvider implements CryptoProvider {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(buf.toString("base64"));
+                    resolve(bytesToBase64(new Uint8Array(buf)));
                 }
             });
         });
@@ -33,8 +33,8 @@ export class NodeCryptoProvider implements CryptoProvider {
     async hash(input: Base64String, params: HashParams) {
         const alg = params.algorithm.replace("-", "").toLowerCase();
         const hash = createHash(alg);
-        hash.update(input);
-        return hash.digest("base64");
+        hash.update(Buffer.from(base64ToBytes(input)));
+        return bytesToBase64(new Uint8Array(hash.digest()));
     }
 
     generateKey(params: AESKeyParams): Promise<AESKey>;

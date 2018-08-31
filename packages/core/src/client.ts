@@ -1,20 +1,9 @@
-import { API, CreateAccountParams, CreateSharedStoreParams, CreateOrganizationParams } from "./api";
+import { API, CreateAccountParams, CreateStoreParams } from "./api";
 import { request, Method } from "./ajax";
-import { Session, Account, Device, Organization, Invite } from "./auth";
-import { marshal, unmarshal } from "./encoding";
-import { AccountStore, SharedStore } from "./data";
-
-export interface AccountUpdateParams {
-    publicKey?: string;
-}
-
-export interface CreateSharedStoreParams {
-    name: string;
-}
-
-export interface CreateOrganizationParams {
-    name: string;
-}
+import { DeviceInfo } from "./platform";
+import { Session, Account, AccountID } from "./auth";
+import { marshal, unmarshal, Base64String } from "./encoding";
+import { Store } from "./store";
 
 export interface ClientSettings {
     customServer: boolean;
@@ -24,7 +13,7 @@ export interface ClientSettings {
 export interface ClientState {
     session: Session | null;
     account: Account | null;
-    device: Device;
+    device: DeviceInfo;
     settings: ClientSettings;
 }
 
@@ -46,51 +35,43 @@ export class Client implements API {
     async request(method: Method, path: string, data?: string, headers?: Map<string, string>): Promise<XMLHttpRequest> {
         const url = this.urlForPath(path);
         headers = headers || new Map<string, string>();
+        const { session } = this.state;
 
         if (!headers.get("Content-Type")) {
             headers.set("Content-Type", "application/json");
         }
-        headers.set("Accept", "application/vnd.padlock;version=1");
-        if (this.state.session && this.state.session.active) {
-            headers.set("Authorization", "AuthToken " + this.state.session.email + ":" + this.state.session.token);
+
+        headers.set("Accept", "application/vnd.padlock;version=2");
+
+        if (session) {
+            headers.set("Authorization", await session.getAuthHeader());
+
+            if (data) {
+                headers.set("X-Signature", await session.sign(data));
+            }
         }
 
-        headers.set("X-Device", marshal(await this.state.device.serialize()));
+        headers.set("X-Device", marshal(this.state.device));
 
         return request(method, url, data, headers);
     }
 
-    async createSession(email: string): Promise<Session> {
-        const params = new URLSearchParams();
-        params.set("email", email);
-
-        const req = await this.request(
-            "POST",
-            "session",
-            params.toString(),
-            new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
-        );
-
-        this.state.session = await new Session().deserialize(unmarshal(req.responseText));
-        return this.state.session;
+    async verifyEmail(params: { email: string }) {
+        await this.request("POST", "verify", marshal(params));
     }
 
-    async activateSession(id: string, code: string): Promise<Session> {
-        const params = new URLSearchParams();
-        params.set("code", code);
-
-        const req = await this.request(
-            "POST",
-            `session/${id}/activate`,
-            params.toString(),
-            new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
-        );
-        this.state.session = await new Session().deserialize(unmarshal(req.responseText));
-        return this.state.session;
+    async initAuth(params: { email: string }) {
+        const res = await this.request("POST", "auth", marshal(params));
+        return unmarshal(res.responseText);
     }
 
-    async revokeSession(id: string): Promise<void> {
-        await this.request("DELETE", `session/${id}`, undefined);
+    async createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session> {
+        const res = await this.request("POST", "session", marshal(params));
+        return new Session().deserialize(unmarshal(res.responseText));
+    }
+
+    async revokeSession(session: Session): Promise<void> {
+        await this.request("DELETE", `session/${session.id}`, undefined);
     }
 
     async createAccount(params: CreateAccountParams): Promise<Account> {
@@ -108,50 +89,40 @@ export class Client implements API {
         return account.deserialize(unmarshal(res.responseText));
     }
 
-    async getAccountStore(store: AccountStore): Promise<AccountStore> {
-        const res = await this.request("GET", "account-store", undefined);
+    async getStore(store: Store): Promise<Store> {
+        const res = await this.request("GET", "store", undefined);
         return store.deserialize(unmarshal(res.responseText));
     }
 
-    async updateAccountStore(store: AccountStore): Promise<AccountStore> {
-        const res = await this.request("PUT", "account-store", marshal(await store.serialize()));
-        return store.deserialize(unmarshal(res.responseText));
-    }
-
-    async createSharedStore(params: CreateSharedStoreParams): Promise<SharedStore> {
+    async createStore(params: CreateStoreParams): Promise<Store> {
         const res = await this.request("POST", "store", marshal(params));
-        return new SharedStore("", this.state.account!).deserialize(unmarshal(res.responseText));
+        return new Store("").deserialize(unmarshal(res.responseText));
     }
 
-    async getSharedStore(store: SharedStore): Promise<SharedStore> {
-        const res = await this.request("GET", `store/${store.pk}`, undefined);
-        return store.deserialize(unmarshal(res.responseText));
-    }
-
-    async updateSharedStore(store: SharedStore): Promise<SharedStore> {
+    async updateStore(store: Store): Promise<Store> {
         const res = await this.request("PUT", `store/${store.pk}`, marshal(await store.serialize()));
         return store.deserialize(unmarshal(res.responseText));
     }
+    //
+    // async createOrganization(params: CreateOrganizationParams): Promise<Organization> {
+    //     const res = await this.request("POST", "org", marshal(params));
+    //     return new Organization("", this.state.account!).deserialize(unmarshal(res.responseText));
+    // }
+    //
+    // async getOrganization(org: Organization): Promise<Organization> {
+    //     const res = await this.request("GET", `org/${org.pk}`, undefined);
+    //     return org.deserialize(unmarshal(res.responseText));
+    // }
+    //
+    // async updateOrganization(org: Organization): Promise<Organization> {
+    //     const res = await this.request("PUT", `org/${org.pk}`, marshal(await org.serialize()));
+    //     return org.deserialize(unmarshal(res.responseText));
+    // }
 
-    async createOrganization(params: CreateOrganizationParams): Promise<Organization> {
-        const res = await this.request("POST", "org", marshal(params));
-        return new Organization("", this.state.account!).deserialize(unmarshal(res.responseText));
-    }
-
-    async getOrganization(org: Organization): Promise<Organization> {
-        const res = await this.request("GET", `org/${org.pk}`, undefined);
-        return org.deserialize(unmarshal(res.responseText));
-    }
-
-    async updateOrganization(org: Organization): Promise<Organization> {
-        const res = await this.request("PUT", `org/${org.pk}`, marshal(await org.serialize()));
-        return org.deserialize(unmarshal(res.responseText));
-    }
-
-    async updateInvite(org: Organization, invite: Invite): Promise<Organization> {
-        const res = await this.request("PUT", `org/${org.pk}/invite`, marshal(await invite.serialize()));
-        return org.deserialize(unmarshal(res.responseText));
-    }
+    // async updateInvite(org: Organization, invite: Invite): Promise<Organization> {
+    //     const res = await this.request("PUT", `org/${org.pk}/invite`, marshal(await invite.serialize()));
+    //     return org.deserialize(unmarshal(res.responseText));
+    // }
     //
     // subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {
     //     const params = new URLSearchParams();

@@ -1,21 +1,30 @@
 import * as Koa from "koa";
 import * as route from "koa-route";
 // @ts-ignore
-import * as body from "koa-body";
+import * as body from "koa-bodyparser";
 // @ts-ignore
 import * as cors from "@koa/cors";
 import { Storage } from "@padlock/core/src/storage";
-import { Session, Account, Device } from "@padlock/core/src/auth";
+import { Session, Account } from "@padlock/core/src/auth";
+import { DeviceInfo } from "@padlock/core/src/platform";
 import { API } from "@padlock/core/src/api";
+import { setProvider } from "@padlock/core/src/crypto";
+import { NodeCryptoProvider } from "@padlock/core/src/node-crypto-provider";
 import { LevelDBStorage } from "./storage";
 import { Sender, EmailSender } from "./sender";
 import * as middleware from "./middleware";
 import * as handlers from "./handlers";
 
+setProvider(new NodeCryptoProvider());
+
 export interface RequestState {
     session?: Session;
     account?: Account;
-    device?: Device;
+    device?: DeviceInfo;
+}
+
+export interface Request extends Koa.Request {
+    rawBody: string;
 }
 
 export interface Context extends Koa.Context {
@@ -23,6 +32,7 @@ export interface Context extends Koa.Context {
     sender: Sender;
     api: API;
     state: RequestState;
+    request: Request;
 }
 
 export class Server {
@@ -41,6 +51,7 @@ export class Server {
                 allowHeaders: [
                     "Authorization",
                     "Content-Type",
+                    "X-Signature",
                     "X-Device",
                     "X-Device-App-Version",
                     "X-Device-Platform",
@@ -58,24 +69,19 @@ export class Server {
         this.koa.use(middleware.authenticate);
         this.koa.use(middleware.api);
 
+        this.koa.use(route.post("/verify", handlers.verifyEmail));
+        this.koa.use(route.post("/auth", handlers.initAuth));
+
         this.koa.use(route.post("/session", handlers.createSession));
         this.koa.use(route.delete("/session/:id", handlers.revokeSession));
-        this.koa.use(route.post("/session/:id/activate", handlers.activateSession));
 
+        this.koa.use(route.post("/account", handlers.createAccount));
         this.koa.use(route.get("/account", handlers.getAccount));
         this.koa.use(route.put("/account", handlers.updateAccount));
 
-        this.koa.use(route.get("/account-store", handlers.getAccountStore));
-        this.koa.use(route.put("/account-store", handlers.updateAccountStore));
-
-        this.koa.use(route.post("/store", handlers.createSharedStore));
-        this.koa.use(route.get("/store/:id", handlers.getSharedStore));
-        this.koa.use(route.put("/store/:id", handlers.updateSharedStore));
-
-        this.koa.use(route.post("/org", handlers.createOrganization));
-        this.koa.use(route.get("/org/:id", handlers.getOrganization));
-        this.koa.use(route.put("/org/:id", handlers.updateOrganization));
-        this.koa.use(route.put("/org/:id/invite", handlers.updateOrganizationInvite));
+        this.koa.use(route.post("/store", handlers.createStore));
+        this.koa.use(route.get("/store/:id", handlers.getStore));
+        this.koa.use(route.put("/store/:id", handlers.updateStore));
     }
 
     start(port: number) {

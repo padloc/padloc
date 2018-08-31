@@ -37,14 +37,14 @@ export class Group {
 
     private _members: Map<string, GroupMember> = new Map<string, GroupMember>();
     private _adminContainer: SharedContainer = new SharedContainer();
-    private _invites = new Map<string, Invite>();
+    private _invites = new Map<string, GroupInvite>();
     private _signingParams: RSASigningParams = {
         algorithm: "RSA-PSS",
         hash: "SHA-1",
         saltLength: 128
     };
 
-    constructor(public id: string, public name = "") {
+    constructor(public id = "", public name = "") {
         this._adminContainer = new SharedContainer();
     }
 
@@ -122,7 +122,7 @@ export class Group {
             return new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        const invite = new Invite();
+        const invite = new GroupInvite();
         invite.id = uuid();
         invite.email = email;
         await invite.initialize(this);
@@ -162,7 +162,7 @@ export class Group {
         this._signingParams = raw.signingParams;
         await Promise.all(
             raw.invites.map(async (i: any) => {
-                this._invites.set(i.id, await new Invite().deserialize(i));
+                this._invites.set(i.id, await new GroupInvite().deserialize(i));
             })
         );
         await this._adminContainer.deserialize(raw.adminData);
@@ -223,7 +223,7 @@ export class Group {
 
 export type InviteStatus = "none" | "initialized" | "sent" | "accepted" | "canceled" | "rejected" | "failed";
 
-export class Invite {
+export class GroupInvite {
     id: string = "";
     email: string = "";
     status: InviteStatus = "none";

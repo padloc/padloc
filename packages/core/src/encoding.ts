@@ -53,8 +53,8 @@ export function base64ByteLength(inp: Base64String): number {
 
 export function hexToBytes(str: HexString): Bytes {
     const bytes = new Uint8Array(str.length / 2);
-    for (let i = 0; i < str.length; i += 2) {
-        bytes[i] = parseInt(str.substring(i, i + 2), 16);
+    for (let i = 0; i < bytes.length; i++) {
+        bytes[i] = parseInt(str.substring(i * 2, i * 2 + 2), 16);
     }
     return bytes;
 }
@@ -62,7 +62,8 @@ export function hexToBytes(str: HexString): Bytes {
 export function bytesToHex(bytes: Bytes): HexString {
     let str = "";
     for (const b of bytes) {
-        str += b.toString(16);
+        const s = b.toString(16);
+        str += s.length == 1 ? "0" + s : s;
     }
     return str;
 }

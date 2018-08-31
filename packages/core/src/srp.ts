@@ -30,12 +30,6 @@ function b2i(b: Uint8Array): BigInteger {
     return new BigInteger(bytesToHex(b), 16);
 }
 
-async function randomBytes(len: number): Promise<Uint8Array> {
-    const bytes = new Uint8Array(len);
-    await window.crypto.getRandomValues(bytes);
-    return bytes;
-}
-
 export class Client {
     get v() {
         return this._v ? bytesToBase64(i2b(this._v)) : null;
@@ -74,7 +68,7 @@ export class Client {
     async initialize(secret: Base64String) {
         this._x = b2i(base64ToBytes(secret));
         this._v = this._srp.v(this._x);
-        this._a = b2i(await randomBytes(32));
+        this._a = b2i(base64ToBytes(await getProvider().randomBytes(32)));
         this._A = this._srp.A(this._a);
     }
 
@@ -136,7 +130,7 @@ export class Server {
 
     async initialize(verifier: Base64String) {
         this._v = b2i(base64ToBytes(verifier));
-        this._b = b2i(await randomBytes(32));
+        this._b = b2i(base64ToBytes(await getProvider().randomBytes(32)));
         this._B = await this._srp.B(this._v, this._b);
     }
 
