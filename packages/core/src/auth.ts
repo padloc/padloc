@@ -1,4 +1,4 @@
-import { DateString, Base64String, stringToBase64 } from "./encoding";
+import { DateString, Base64String, stringToBase64, base64ToString } from "./encoding";
 import {
     getProvider,
     RSAPublicKey,
@@ -10,6 +10,19 @@ import {
 } from "./crypto";
 import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
+import { Err, ErrorCode } from "./error";
+
+export function parseAuthHeader(header: string) {
+    const creds = header.match(/^SRP-HMAC sid=(.+),msg=(.+),sig=(.+)$/);
+
+    if (!creds) {
+        throw new Err(ErrorCode.INVALID_SESSION);
+    }
+
+    const [sid, msg, sig] = creds.slice(1);
+
+    return { sid, msg, sig };
+}
 
 export type AccountID = string;
 export type SessionID = string;
@@ -50,10 +63,15 @@ export class Session implements SessionInfo, Storable {
 
     constructor(public id = "") {}
 
-    async getAuthHeader() {
+    async getAuthHeader(): Promise<string> {
         const msg = new Date().toISOString();
-        const signature = await this.sign(msg);
-        return `${this.id}:${stringToBase64(msg)}:${signature}`;
+        const sig = await this.sign(msg);
+        return `SRP-HMAC sid=${this.id},msg=${stringToBase64(msg)},sig=${sig}`;
+    }
+
+    async verifyAuthHeader(header: string) {
+        const { msg, sig } = parseAuthHeader(header);
+        return this.verify(sig, base64ToString(msg));
     }
 
     async sign(message: string): Promise<Base64String> {

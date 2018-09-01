@@ -1,26 +1,19 @@
-import { Account, Session } from "@padlock/core/src/auth";
+import { Account, Session, parseAuthHeader } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
-import { unmarshal } from "@padlock/core/src/encoding";
-import { defaultHMACParams } from "@padlock/core/src/crypto";
-import { NodeCryptoProvider } from "@padlock/core/src/node-crypto-provider";
+import { marshal, unmarshal } from "@padlock/core/src/encoding";
 import { Context } from "./server";
 import { ServerAPI } from "./api";
 
-const crypto = new NodeCryptoProvider();
-
 export async function authenticate(ctx: Context, next: () => Promise<void>) {
     const authHeader = ctx.headers["authorization"];
-    const creds = authHeader && authHeader.match(/^(.+):(.+):(.+)$/);
-    const signature = ctx.headers["X-Signature"];
-
-    if (!creds) {
+    if (!authHeader) {
         await next();
         return;
     }
 
-    let [sessionID, b64Date, signedDate] = creds.slice(1);
+    const { sid } = parseAuthHeader(authHeader);
 
-    const session = new Session(sessionID);
+    const session = new Session(sid);
 
     try {
         await ctx.storage.get(session);
@@ -37,13 +30,14 @@ export async function authenticate(ctx: Context, next: () => Promise<void>) {
     }
 
     // TODO: Check date to prevent replay attacks
-    if (!crypto.verify(session.key, signedDate, b64Date, defaultHMACParams())) {
-        throw new Err(ErrorCode.INVALID_SESSION);
+    if (!(await session.verifyAuthHeader(authHeader))) {
+        throw new Err(ErrorCode.INVALID_SESSION, "Failed to verify Authorization header");
     }
 
-    console.log(ctx.request.rawBody);
-    if (ctx.request.rawBody && !crypto.verify(session.key, signature, ctx.request.rawBody, defaultHMACParams())) {
-        throw new Err(ErrorCode.INVALID_SESSION);
+    const signature = ctx.headers["x-signature"];
+    if (ctx.request.rawBody && !(await session.verify(signature, ctx.request.rawBody))) {
+        // TODO: Better error code
+        throw new Err(ErrorCode.INVALID_SESSION, "Failed to verify signature" + signature + ctx.request.rawBody);
     }
 
     const account = new Account(session.account);
@@ -58,6 +52,9 @@ export async function authenticate(ctx: Context, next: () => Promise<void>) {
     await ctx.storage.set(session);
 
     await next();
+
+    ctx.set("Authorization", await session.getAuthHeader());
+    ctx.set("X-Signature", await session.sign(marshal(ctx.body)));
 }
 
 export async function handleError(ctx: Context, next: () => Promise<void>) {

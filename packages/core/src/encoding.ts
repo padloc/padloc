@@ -30,11 +30,13 @@ export function base64ToBytes(inp: Base64String): Bytes {
 }
 
 export function stringToBytes(str: string): Bytes {
-    return new TextEncoder().encode(str);
+    const Encoder = typeof TextEncoder !== "undefined" ? TextEncoder : require("util").TextEncoder;
+    return new Encoder().encode(str);
 }
 
 export function bytesToString(bytes: Bytes, encoding = "utf-8") {
-    return new TextDecoder(encoding).decode(bytes);
+    const Decoder = typeof TextDecoder !== "undefined" ? TextDecoder : require("util").TextDecoder;
+    return new Decoder(encoding).decode(bytes);
 }
 
 export function stringToBase64(str: string, urlSafe = true): Base64String {

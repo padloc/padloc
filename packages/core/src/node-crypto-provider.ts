@@ -102,9 +102,9 @@ export class NodeCryptoProvider implements CryptoProvider {
 
     private async _signHMAC(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String> {
         const hash = params.hash.replace("-", "").toLowerCase();
-        const hmac = createHmac(hash, Buffer.from(key, "base64"));
-        hmac.update(Buffer.from(data, "base64"));
-        return hmac.digest("base64");
+        const hmac = createHmac(hash, Buffer.from(base64ToBytes(key)));
+        hmac.update(Buffer.from(base64ToBytes(data)));
+        return bytesToBase64(new Uint8Array(hmac.digest()));
     }
 
     private async _verifyHMAC(
@@ -113,10 +113,7 @@ export class NodeCryptoProvider implements CryptoProvider {
         data: Base64String,
         params: HMACParams
     ): Promise<boolean> {
-        const hash = params.hash.replace("-", "").toLowerCase();
-        const hmac = createHmac(hash, Buffer.from(key, "base64"));
-        hmac.update(data);
-        const sig = hmac.digest("base64");
+        const sig = await this._signHMAC(key, data, params);
         return signature === sig;
     }
 }

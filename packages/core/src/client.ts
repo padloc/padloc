@@ -4,6 +4,7 @@ import { DeviceInfo } from "./platform";
 import { Session, Account, AccountID } from "./auth";
 import { marshal, unmarshal, Base64String } from "./encoding";
 import { Store } from "./store";
+import { Err, ErrorCode } from "./error";
 
 export interface ClientSettings {
     customServer: boolean;
@@ -32,7 +33,7 @@ export class Client implements API {
         return `${this.basePath}/${path}/`.replace(/([^:]\/)\/+/g, "$1");
     }
 
-    async request(method: Method, path: string, data?: string, headers?: Map<string, string>): Promise<XMLHttpRequest> {
+    async request(method: Method, path: string, data?: string, headers?: Map<string, string>): Promise<string> {
         const url = this.urlForPath(path);
         headers = headers || new Map<string, string>();
         const { session } = this.state;
@@ -53,7 +54,23 @@ export class Client implements API {
 
         headers.set("X-Device", marshal(this.state.device));
 
-        return request(method, url, data, headers);
+        const res = await request(method, url, data, headers);
+
+        const body = res.responseText;
+
+        if (session) {
+            if (!(await session.verifyAuthHeader(res.getResponseHeader("Authorization") || ""))) {
+                // TODO: Better error code
+                throw new Err(ErrorCode.INVALID_SESSION);
+            }
+
+            if (body && !(await session.verify(res.getResponseHeader("X-Signature") || "", body))) {
+                // TODO: Better error code
+                throw new Err(ErrorCode.INVALID_SESSION);
+            }
+        }
+
+        return body;
     }
 
     async verifyEmail(params: { email: string }) {
@@ -62,12 +79,12 @@ export class Client implements API {
 
     async initAuth(params: { email: string }) {
         const res = await this.request("POST", "auth", marshal(params));
-        return unmarshal(res.responseText);
+        return unmarshal(res);
     }
 
     async createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session> {
         const res = await this.request("POST", "session", marshal(params));
-        return new Session().deserialize(unmarshal(res.responseText));
+        return new Session().deserialize(unmarshal(res));
     }
 
     async revokeSession(session: Session): Promise<void> {
@@ -76,52 +93,52 @@ export class Client implements API {
 
     async createAccount(params: CreateAccountParams): Promise<Account> {
         const res = await this.request("POST", "account", marshal(params));
-        return new Account().deserialize(unmarshal(res.responseText));
+        return new Account().deserialize(unmarshal(res));
     }
 
     async getAccount(account: Account): Promise<Account> {
         const res = await this.request("GET", "account");
-        return await account.deserialize(unmarshal(res.responseText));
+        return await account.deserialize(unmarshal(res));
     }
 
     async updateAccount(account: Account): Promise<Account> {
         const res = await this.request("PUT", "account", marshal(await account.serialize()));
-        return account.deserialize(unmarshal(res.responseText));
+        return account.deserialize(unmarshal(res));
     }
 
     async getStore(store: Store): Promise<Store> {
         const res = await this.request("GET", "store", undefined);
-        return store.deserialize(unmarshal(res.responseText));
+        return store.deserialize(unmarshal(res));
     }
 
     async createStore(params: CreateStoreParams): Promise<Store> {
         const res = await this.request("POST", "store", marshal(params));
-        return new Store("").deserialize(unmarshal(res.responseText));
+        return new Store("").deserialize(unmarshal(res));
     }
 
     async updateStore(store: Store): Promise<Store> {
         const res = await this.request("PUT", `store/${store.pk}`, marshal(await store.serialize()));
-        return store.deserialize(unmarshal(res.responseText));
+        return store.deserialize(unmarshal(res));
     }
     //
     // async createOrganization(params: CreateOrganizationParams): Promise<Organization> {
     //     const res = await this.request("POST", "org", marshal(params));
-    //     return new Organization("", this.state.account!).deserialize(unmarshal(res.responseText));
+    //     return new Organization("", this.state.account!).deserialize(unmarshal(res));
     // }
     //
     // async getOrganization(org: Organization): Promise<Organization> {
     //     const res = await this.request("GET", `org/${org.pk}`, undefined);
-    //     return org.deserialize(unmarshal(res.responseText));
+    //     return org.deserialize(unmarshal(res));
     // }
     //
     // async updateOrganization(org: Organization): Promise<Organization> {
     //     const res = await this.request("PUT", `org/${org.pk}`, marshal(await org.serialize()));
-    //     return org.deserialize(unmarshal(res.responseText));
+    //     return org.deserialize(unmarshal(res));
     // }
 
     // async updateInvite(org: Organization, invite: Invite): Promise<Organization> {
     //     const res = await this.request("PUT", `org/${org.pk}/invite`, marshal(await invite.serialize()));
-    //     return org.deserialize(unmarshal(res.responseText));
+    //     return org.deserialize(unmarshal(res));
     // }
     //
     // subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {
@@ -142,6 +159,6 @@ export class Client implements API {
     // }
     //
     // getPlans(): Promise<any[]> {
-    //     return this.request("GET", this.urlForPath("plans")).then(res => <any[]>JSON.parse(res.responseText));
+    //     return this.request("GET", this.urlForPath("plans")).then(res => <any[]>JSON.parse(res));
     // }
 }

@@ -47,7 +47,7 @@ export class Server {
 
         this.koa.use(
             cors({
-                exposeHeaders: ["X-Sub-Status", "X-Stripe-Pub-Key", "X-Sub-Trial-End"],
+                exposeHeaders: ["Authorization", "X-Signature", "X-Sub-Status", "X-Stripe-Pub-Key", "X-Sub-Trial-End"],
                 allowHeaders: [
                     "Authorization",
                     "Content-Type",
