@@ -1,5 +1,14 @@
 import { Base64String, DateString, Serializable } from "./encoding";
-import { SharedContainer, KeyExchange, RSAPublicKey, RSAPrivateKey, RSASigningParams, getProvider } from "./crypto";
+import {
+    SharedContainer,
+    KeyExchange,
+    RSAPublicKey,
+    RSAPrivateKey,
+    RSASigningParams,
+    getProvider,
+    defaultRSAKeyParams,
+    defaultRSASigningParams
+} from "./crypto";
 import { Account, AccountInfo, AccountID } from "./auth";
 import { Err, ErrorCode } from "./error";
 import { uuid } from "./util";
@@ -19,7 +28,16 @@ export interface GroupMember extends AccountInfo {
     updated: DateString;
 }
 
-export class Group {
+export interface SubGroup {
+    id: string;
+    kind: string;
+    publicKey: RSAPublicKey;
+    updated: DateString;
+    signedPublicKey: Base64String;
+}
+
+export abstract class Group {
+    abstract kind: string;
     owner: AccountID = "";
     privateKey: RSAPrivateKey = "";
     publicKey: RSAPublicKey = "";
@@ -29,6 +47,10 @@ export class Group {
         return Array.from(this._members.values());
     }
 
+    get groups() {
+        return Array.from(this._groups.values());
+    }
+
     get invites() {
         return Array.from(this._invites.values());
     }
@@ -36,13 +58,10 @@ export class Group {
     protected _account: Account | null = null;
 
     private _members: Map<string, GroupMember> = new Map<string, GroupMember>();
-    private _adminContainer: SharedContainer = new SharedContainer();
+    private _groups: Map<string, SubGroup> = new Map<string, SubGroup>();
     private _invites = new Map<string, GroupInvite>();
-    private _signingParams: RSASigningParams = {
-        algorithm: "RSA-PSS",
-        hash: "SHA-1",
-        saltLength: 128
-    };
+    private _adminContainer: SharedContainer = new SharedContainer();
+    private _signingParams: RSASigningParams = defaultRSASigningParams();
 
     constructor(public id = "", public name = "") {
         this._adminContainer = new SharedContainer();
@@ -51,7 +70,7 @@ export class Group {
     async initialize(account: Account) {
         this.access(account);
         await this._generateKeyPair();
-        await this.setMember(this._account!, "active", { read: true, write: true, manage: true });
+        await this._setMember(this._account!, "active", { read: true, write: true, manage: true });
     }
 
     access(account: Account) {
@@ -80,33 +99,44 @@ export class Group {
         return this._members.get(account.id);
     }
 
-    async setMember(account: AccountInfo, status: MemberStatus, permissions: Permissions) {
-        if (this.members.length && (!this._account || !this.isAdmin(this._account))) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+    getPermissions(acc: AccountInfo) {
+        if (this.isOwner(acc)) {
+            return { read: true, write: true, manage: true };
+        } else if (this.isMember(acc)) {
+            return this.getMember(acc)!.permissions;
+        } else {
+            return { read: false, write: false, manage: false };
         }
-
-        const signedPublicKey = await getProvider().sign(this.privateKey, account.publicKey, this._signingParams);
-
-        const member = Object.assign(
-            {
-                permissions,
-                status,
-                signedPublicKey,
-                updated: new Date().toISOString()
-            },
-            account
-        );
-
-        this._members.set(member.id, member);
     }
 
-    async verifyMember(member: GroupMember) {
+    async addMember(account: AccountInfo, permissions: Permissions) {
+        if (this.isMember(account)) {
+            throw "Account is already a member";
+        }
+        return this._setMember(account, "active", permissions);
+    }
+
+    async updateMember(account: AccountInfo, status: MemberStatus, permissions: Permissions) {
+        if (!this.isMember(account)) {
+            throw "Not a member!";
+        }
+        return this._setMember(account, status, permissions);
+    }
+
+    async removeMember(account: AccountInfo) {
+        if (!this.isMember(account)) {
+            throw "Not a member!";
+        }
+        return this._setMember(account, "removed", { read: false, write: false, manage: false });
+    }
+
+    async verify(subj: GroupMember | SubGroup) {
         let verified = false;
         try {
             verified = await getProvider().verify(
                 this.publicKey,
-                member.signedPublicKey,
-                member.publicKey,
+                subj.signedPublicKey,
+                subj.publicKey,
                 this._signingParams
             );
         } catch (e) {}
@@ -129,6 +159,27 @@ export class Group {
         this._invites.set(invite.id, invite);
     }
 
+    async addGroup(group: Group) {
+        if (this._groups.has(group.id)) {
+            throw "Already a subgroup";
+        }
+        return this._setGroup(group);
+    }
+
+    async updateGroup(group: Group) {
+        if (this._groups.has(group.id)) {
+            throw "Not a subgroup";
+        }
+        return this._setGroup(group);
+    }
+
+    async removeGroup(group: Group) {
+        if (this._groups.has(group.id)) {
+            throw "Not a subgroup";
+        }
+        this._groups.delete(group.id);
+    }
+
     async serialize(): Promise<any> {
         if (this._account && this.isAdmin(this._account)) {
             // TODO: Do something about removed admins
@@ -146,6 +197,7 @@ export class Group {
             name: this.name,
             publicKey: this.publicKey,
             members: this.members,
+            groups: this.groups,
             invites: await Promise.all(this.invites.map(i => i.serialize())),
             signingParams: this._signingParams,
             adminData: await this._adminContainer.serialize()
@@ -153,12 +205,19 @@ export class Group {
     }
 
     async deserialize(raw: any) {
+        // Verify signatures
+        for (const subj of raw.members.concat(raw.groups)) {
+            if (!this.verify(subj)) {
+                throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
+            }
+        }
         this.id = raw.id;
         this.created = raw.created;
         this.owner = raw.owner;
         this.name = raw.name;
         this.publicKey = raw.publicKey;
         this._mergeMembers(raw.members);
+        this._mergeGroups(raw.groups);
         this._signingParams = raw.signingParams;
         await Promise.all(
             raw.invites.map(async (i: any) => {
@@ -181,13 +240,17 @@ export class Group {
         }
     }
 
+    private _mergeGroups(groups: SubGroup[]) {
+        for (const group of groups) {
+            const existing = this._groups.get(group.id);
+            if (!existing || new Date(group.updated) > new Date(existing.updated)) {
+                this._groups.set(group.id, group);
+            }
+        }
+    }
+
     private async _generateKeyPair() {
-        const { publicKey, privateKey } = await getProvider().generateKey({
-            algorithm: "RSA",
-            modulusLength: 2048,
-            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-            hash: "SHA-1"
-        });
+        const { publicKey, privateKey } = await getProvider().generateKey(defaultRSAKeyParams());
         this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
@@ -218,6 +281,45 @@ export class Group {
                 return this;
             }
         };
+    }
+
+    private async _setMember(account: AccountInfo, status: MemberStatus, permissions: Permissions) {
+        if (this.members.length && (!this._account || !this.isAdmin(this._account))) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        const signedPublicKey = await getProvider().sign(this.privateKey, account.publicKey, this._signingParams);
+
+        const member = Object.assign(
+            {
+                permissions,
+                status,
+                signedPublicKey,
+                updated: new Date().toISOString()
+            },
+            account
+        );
+
+        this._members.set(member.id, member);
+    }
+
+    private async _setGroup(group: Group) {
+        if (!this._account || !this.isAdmin(this._account)) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        const signedPublicKey = await getProvider().sign(this.privateKey, group.publicKey, this._signingParams);
+
+        this._groups.set(
+            group.id,
+            Object.assign(
+                {
+                    signedPublicKey,
+                    updated: new Date().toISOString()
+                },
+                group
+            )
+        );
     }
 }
 

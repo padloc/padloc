@@ -1,4 +1,5 @@
-import { randomBytes, createHash, createHmac } from "crypto";
+// @ts-ignore
+import { randomBytes, createHash, createHmac, createSign, createVerify, constants } from "crypto";
 import { Base64String, bytesToBase64, base64ToBytes } from "./encoding";
 import {
     CryptoProvider,
@@ -74,6 +75,8 @@ export class NodeCryptoProvider implements CryptoProvider {
         switch (params.algorithm) {
             case "HMAC":
                 return this._signHMAC(key, data, params);
+            case "RSA-PSS":
+                return this._signRSA(key, data, params);
             default:
                 throw new Err(ErrorCode.NOT_SUPPORTED);
         }
@@ -95,6 +98,8 @@ export class NodeCryptoProvider implements CryptoProvider {
         switch (params.algorithm) {
             case "HMAC":
                 return this._verifyHMAC(key, signature, data, params);
+            case "RSA-PSS":
+                return this._verifyRSA(key, signature, data, params);
             default:
                 throw new Err(ErrorCode.NOT_SUPPORTED);
         }
@@ -115,5 +120,41 @@ export class NodeCryptoProvider implements CryptoProvider {
     ): Promise<boolean> {
         const sig = await this._signHMAC(key, data, params);
         return signature === sig;
+    }
+
+    _signRSA(key: RSAPrivateKey, data: Base64String, params: RSASigningParams) {
+        key = `-----BEGIN PRIVATE KEY-----
+${Buffer.from(base64ToBytes(key)).toString("base64")}
+-----END PRIVATE KEY-----`;
+        const hash = params.hash.replace("-", "").toLowerCase();
+        const signer = createSign(hash);
+        signer.update(Buffer.from(base64ToBytes(data)));
+        const sig = signer.sign({
+            key: key,
+            // @ts-ignore
+            saltLength: params.saltLength,
+            padding: constants.RSA_PKCS1_PSS_PADDING
+        });
+
+        return bytesToBase64(new Uint8Array(sig));
+    }
+
+    _verifyRSA(key: RSAPublicKey, signature: Base64String, data: Base64String, params: RSASigningParams) {
+        key = `-----BEGIN PUBLIC KEY-----
+${Buffer.from(base64ToBytes(key)).toString("base64")}
+-----END PUBLIC KEY-----`;
+        const hash = params.hash.replace("-", "").toLowerCase();
+        const verifier = createVerify(hash);
+        verifier.update(Buffer.from(base64ToBytes(data)));
+        const verified = verifier.verify(
+            {
+                key: key,
+                saltLength: params.saltLength,
+                padding: constants.RSA_PKCS1_PSS_PADDING
+            },
+            Buffer.from(base64ToBytes(signature))
+        );
+
+        return verified;
     }
 }

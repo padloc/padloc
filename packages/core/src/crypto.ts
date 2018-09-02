@@ -43,7 +43,7 @@ export interface RSAKeyParams {
     algorithm: "RSA";
     modulusLength: 2048;
     publicExponent: Uint8Array;
-    hash: "SHA-1";
+    hash: "SHA-256";
 }
 
 export interface PBKDF2Params {
@@ -56,12 +56,12 @@ export interface PBKDF2Params {
 
 export interface RSAEncryptionParams {
     algorithm: "RSA-OAEP";
-    hash: "SHA-1";
+    hash: "SHA-256";
 }
 
 export interface RSASigningParams {
     algorithm: "RSA-PSS";
-    hash: "SHA-1";
+    hash: "SHA-256";
     saltLength: 128;
 }
 
@@ -195,7 +195,24 @@ export function defaultEncryptionParams(): AESEncryptionParams {
 export function defaultKeyWrapParams(): RSAEncryptionParams {
     return {
         algorithm: "RSA-OAEP",
-        hash: "SHA-1"
+        hash: "SHA-256"
+    };
+}
+
+export function defaultRSAKeyParams(): RSAKeyParams {
+    return {
+        algorithm: "RSA",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: "SHA-256"
+    };
+}
+
+export function defaultRSASigningParams(): RSASigningParams {
+    return {
+        algorithm: "RSA-PSS",
+        hash: "SHA-256",
+        saltLength: 128
     };
 }
 

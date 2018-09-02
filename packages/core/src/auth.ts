@@ -6,7 +6,8 @@ import {
     PBKDF2Params,
     defaultPBKDF2Params,
     defaultEncryptionParams,
-    defaultHMACParams
+    defaultHMACParams,
+    defaultRSAKeyParams
 } from "./crypto";
 import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
@@ -190,12 +191,7 @@ export class Account implements Storable, AccountInfo {
     }
 
     private async _generateKeyPair() {
-        const { publicKey, privateKey } = await getProvider().generateKey({
-            algorithm: "RSA",
-            modulusLength: 2048,
-            publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-            hash: "SHA-1"
-        });
+        const { publicKey, privateKey } = await getProvider().generateKey(defaultRSAKeyParams());
         this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
