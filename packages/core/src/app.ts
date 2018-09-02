@@ -310,10 +310,10 @@ export class App extends EventTarget implements Storable {
     }
 
     async verifyEmail(email: string) {
-        await this.api.verifyEmail({ email });
+        return this.api.verifyEmail({ email });
     }
 
-    async register(email: string, password: string, verificationCode: string) {
+    async register(email: string, password: string, emailVerification: { id: string; code: string }) {
         const acc = this.account;
         acc.email = email;
         await acc.initialize(password);
@@ -329,11 +329,23 @@ export class App extends EventTarget implements Storable {
             keyParams: acc.keyParams,
             encryptionParams: acc.encryptionParams,
             verifier: srp.v!,
-            emailVerification: verificationCode
+            emailVerification
         });
 
         await acc.deserialize(await account.serialize());
-        await this.storage.set(this);
+
+        await this.login(email, password);
+
+        this.mainStore.id = acc.store;
+        await this.api.getStore(this.mainStore);
+
+        await this.mainStore.initialize(acc);
+
+        await Promise.all([
+            this.api.updateStore(this.mainStore),
+            this.storage.set(this.mainStore),
+            this.storage.set(this)
+        ]);
     }
 
     async login(email: string, password: string) {
@@ -346,8 +358,6 @@ export class App extends EventTarget implements Storable {
 
         await srp.initialize(this.account.authKey);
         await srp.setB(B);
-
-        console.log(srp.v, "\n", srp.A, "\n", B, "\n", srp.M1);
 
         this.session = await this.api.createSession({ account: this.account.id, A: srp.A!, M: srp.M1! });
         this.session.key = srp.K!;

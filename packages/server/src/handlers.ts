@@ -11,8 +11,7 @@ export async function verifyEmail(ctx: Context) {
         throw new Err(ErrorCode.BAD_REQUEST, "No email provided!");
     }
 
-    await ctx.api.verifyEmail({ email });
-    ctx.status = 200;
+    ctx.body = await ctx.api.verifyEmail({ email });
 }
 
 export async function initAuth(ctx: Context) {

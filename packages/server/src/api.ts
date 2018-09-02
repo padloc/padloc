@@ -16,6 +16,7 @@ import { randomBytes } from "crypto";
 const crypto = new NodeCryptoProvider();
 
 export class EmailVerification implements Storable {
+    id = uuid();
     kind = "email-verification";
     code: string = "";
     created: DateString = new Date().toISOString();
@@ -30,12 +31,14 @@ export class EmailVerification implements Storable {
 
     async serialize() {
         return {
+            id: this.id,
             email: this.email,
             code: this.code
         };
     }
 
     async deserialize(raw: any) {
+        this.id = raw.id;
         this.email = raw.email;
         this.code = raw.code;
         return this;
@@ -51,6 +54,7 @@ export class ServerAPI implements API {
         const v = new EmailVerification(email);
         await this.storage.set(v);
         this.sender.send(email, new EmailVerificationMessage(v));
+        return { id: v.id };
     }
 
     async initAuth({ email }: { email: string }) {
@@ -128,11 +132,24 @@ export class ServerAPI implements API {
     }
 
     async createAccount(params: CreateAccountParams): Promise<Account> {
-        const { email, emailVerification, verifier, keyParams } = params;
+        const {
+            email,
+            verifier,
+            keyParams,
+            emailVerification: { id, code }
+        } = params;
 
         const ev = new EmailVerification(email);
-        await this.storage.get(ev);
-        if (ev.email !== email || ev.code !== emailVerification.toLowerCase()) {
+        try {
+            await this.storage.get(ev);
+        } catch (e) {
+            if (e.code === ErrorCode.NOT_FOUND) {
+                throw new Err(ErrorCode.BAD_REQUEST, "Email verification failed");
+            } else {
+                throw e;
+            }
+        }
+        if (ev.id !== id || ev.code !== code.toLowerCase()) {
             throw new Err(ErrorCode.BAD_REQUEST, "Email verification failed");
         }
 
@@ -152,6 +169,7 @@ export class ServerAPI implements API {
         account.id = uuid();
 
         const store = new Store(uuid(), "Main");
+        store.owner = account.id;
         account.store = store.id;
 
         authInfo.account = account.id;
@@ -186,11 +204,12 @@ export class ServerAPI implements API {
     async getStore(store: Store) {
         const { account } = this._requireAuth();
 
-        if (!store.isMember(account)) {
+        await this.storage.get(store);
+
+        if (!store.isOwner(account) && !store.isMember(account)) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        await this.storage.get(store);
         return store;
     }
 
@@ -200,8 +219,7 @@ export class ServerAPI implements API {
         const existing = new Store(store.id);
         await this.storage.get(existing);
 
-        const member = existing.getMember(account);
-        const permissions = (member && member.permissions) || { read: false, write: false, manage: false };
+        const permissions = store.getPermissions(account);
 
         if (!permissions.write) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Write permissions required to update store contents.");

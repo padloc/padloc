@@ -30,7 +30,7 @@ export class Client implements API {
     }
 
     urlForPath(path: string): string {
-        return `${this.basePath}/${path}/`.replace(/([^:]\/)\/+/g, "$1");
+        return `${this.basePath}/${path}`.replace(/([^:]\/)\/+/g, "$1");
     }
 
     async request(method: Method, path: string, data?: string, headers?: Map<string, string>): Promise<string> {
@@ -74,7 +74,8 @@ export class Client implements API {
     }
 
     async verifyEmail(params: { email: string }) {
-        await this.request("POST", "verify", marshal(params));
+        const res = await this.request("POST", "verify", marshal(params));
+        return unmarshal(res);
     }
 
     async initAuth(params: { email: string }) {
@@ -107,7 +108,7 @@ export class Client implements API {
     }
 
     async getStore(store: Store): Promise<Store> {
-        const res = await this.request("GET", "store", undefined);
+        const res = await this.request("GET", `store/${store.pk}`, undefined);
         return store.deserialize(unmarshal(res));
     }
 

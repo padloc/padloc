@@ -24,6 +24,7 @@ export interface RequestState {
 }
 
 export interface Request extends Koa.Request {
+    body: any;
     rawBody: string;
 }
 

@@ -11,7 +11,10 @@ export interface CreateAccountParams {
     keyParams: PBKDF2Params;
     encryptionParams: AESEncryptionParams;
     verifier: Base64String;
-    emailVerification: string;
+    emailVerification: {
+        id: string;
+        code: string;
+    };
 }
 
 export interface CreateStoreParams {
@@ -19,7 +22,7 @@ export interface CreateStoreParams {
 }
 
 export interface API {
-    verifyEmail(params: { email: string }): Promise<void>;
+    verifyEmail(params: { email: string }): Promise<{ id: string }>;
     initAuth(params: { email: string }): Promise<{ account: AccountID; keyParams: PBKDF2Params; B: Base64String }>;
 
     createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session>;
