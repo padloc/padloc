@@ -55,6 +55,10 @@ export abstract class Group {
         return Array.from(this._invites.values());
     }
 
+    get initialized() {
+        return !!this.publicKey;
+    }
+
     protected _account: Account | null = null;
 
     private _members: Map<string, GroupMember> = new Map<string, GroupMember>();
@@ -139,7 +143,9 @@ export abstract class Group {
                 subj.publicKey,
                 this._signingParams
             );
-        } catch (e) {}
+        } catch (e) {
+            console.log("verify error", e);
+        }
         return verified;
     }
 
@@ -205,17 +211,17 @@ export abstract class Group {
     }
 
     async deserialize(raw: any) {
-        // Verify signatures
-        for (const subj of raw.members.concat(raw.groups)) {
-            if (!this.verify(subj)) {
-                throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
-            }
-        }
         this.id = raw.id;
         this.created = raw.created;
         this.owner = raw.owner;
         this.name = raw.name;
         this.publicKey = raw.publicKey;
+        // Verify signatures
+        for (const subj of raw.members.concat(raw.groups)) {
+            if (!(await this.verify(subj))) {
+                throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
+            }
+        }
         this._mergeMembers(raw.members);
         this._mergeGroups(raw.groups);
         this._signingParams = raw.signingParams;
@@ -310,16 +316,13 @@ export abstract class Group {
 
         const signedPublicKey = await getProvider().sign(this.privateKey, group.publicKey, this._signingParams);
 
-        this._groups.set(
-            group.id,
-            Object.assign(
-                {
-                    signedPublicKey,
-                    updated: new Date().toISOString()
-                },
-                group
-            )
-        );
+        this._groups.set(group.id, {
+            id: group.id,
+            kind: group.kind,
+            publicKey: group.publicKey,
+            signedPublicKey,
+            updated: new Date().toISOString()
+        });
     }
 }
 

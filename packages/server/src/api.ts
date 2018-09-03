@@ -225,19 +225,6 @@ export class ServerAPI implements API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Write permissions required to update store contents.");
         }
 
-        // const { added, changed } = existing.mergeAccessors(store.accessors);
-        //
-        // if ((added.length || changed.length) && !permissions.manage) {
-        //     throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Manage permissions required to update store accessors.");
-        // }
-        //
-        // for (const accessor of added) {
-        //     const acc = new Account(accessor.email);
-        //     await this.storage.get(acc);
-        //     acc.sharedStores.push(store.id);
-        //     await this.storage.set(acc);
-        // }
-
         await this.storage.set(store);
 
         return store;

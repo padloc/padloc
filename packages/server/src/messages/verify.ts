@@ -31,8 +31,6 @@ The Padlock Team`;
 
             ${p(`Your email verifiation code is:`)}
 
-            ${p(`Here is your login code:`)}
-
             ${p(
                 code.toUpperCase(),
                 `

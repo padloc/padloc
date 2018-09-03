@@ -7,10 +7,10 @@ import { API } from "./api";
 import { Client } from "./client";
 import { Messages } from "./messages";
 import { localize as $l } from "./locale";
-import { ErrorCode } from "./error";
 import { DeviceInfo, getDeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
+import { ErrorCode } from "./error";
 
 export interface Stats {
     lastSync?: DateString;
@@ -70,7 +70,6 @@ export class App extends EventTarget implements Storable {
     storage = new LocalStorage();
     api: API = new Client(this);
     account = new Account();
-    stores: Store[] = [];
     settings = defaultSettings;
     messages = new Messages("https://padlock.io/messages.json");
     locked = true;
@@ -80,6 +79,12 @@ export class App extends EventTarget implements Storable {
     session: Session | null = null;
     loaded = this.load();
     mainStore = new Store();
+
+    get stores() {
+        return Array.from(this._stores.values());
+    }
+
+    private _stores = new Map<string, Store>();
 
     async serialize() {
         return {
@@ -213,17 +218,41 @@ export class App extends EventTarget implements Storable {
 
     async unlock(password: string) {
         await this.account.unlock(password);
-        this.mainStore.id = this.account.store;
-        this.mainStore.access(this.account);
-        await this.storage.get(this.mainStore);
+        await this.loadStores();
 
         this.locked = false;
         this.dispatch("unlock");
     }
 
+    async loadStores() {
+        this._stores.clear();
+
+        this.mainStore.id = this.account.store;
+        try {
+            await this.storage.get(this.mainStore);
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+        }
+        if (this.mainStore.initialized) {
+            this.mainStore.access(this.account);
+        } else {
+            await this.mainStore.initialize(this.account);
+            await this.storage.set(this.mainStore);
+        }
+
+        for (const { id } of this.mainStore.groups) {
+            const store = new Store(id);
+            store.access(this.account);
+            await this.storage.get(store);
+            this._stores.set(id, store);
+        }
+    }
+
     async lock() {
         this.mainStore = new Store(this.account.store);
-        this.stores = [];
+        this._stores.clear();
         this.locked = true;
         this.dispatch("lock");
     }
@@ -245,7 +274,7 @@ export class App extends EventTarget implements Storable {
 
     async reset() {
         this.mainStore = new Store(this.account.store);
-        this.stores = [];
+        this._stores.clear();
         this.initialized = "";
         await this.storage.clear();
         this.dispatch("reset");
@@ -336,11 +365,6 @@ export class App extends EventTarget implements Storable {
 
         await this.login(email, password);
 
-        this.mainStore.id = acc.store;
-        await this.api.getStore(this.mainStore);
-
-        await this.mainStore.initialize(acc);
-
         await Promise.all([
             this.api.updateStore(this.mainStore),
             this.storage.set(this.mainStore),
@@ -363,6 +387,8 @@ export class App extends EventTarget implements Storable {
         this.session.key = srp.K!;
 
         await this.storage.set(this);
+
+        await this.loadStores();
 
         this.dispatch("login");
         this.dispatch("account-changed", { account: this.account });
@@ -394,7 +420,7 @@ export class App extends EventTarget implements Storable {
 
         this.session = null;
         this.account = new Account();
-        this.stores = [];
+        this._stores.clear();
         await this.storage.set(this);
         this.dispatch("logout");
         this.dispatch("account-changed", { account: this.account });
@@ -406,52 +432,18 @@ export class App extends EventTarget implements Storable {
             throw "Need to be logged in to create a shared store!";
         }
 
-        await this.syncAccount();
         const store = await this.api.createStore({ name });
         await store.initialize(this.account);
-        await Promise.all([this.api.updateStore(store), this.storage.set(store)]);
-        this.stores.push(store);
-        await this.syncAccount();
+        await this.mainStore.addGroup(store);
+        await Promise.all([
+            this.api.updateStore(store),
+            this.storage.set(store),
+            this.api.updateStore(this.mainStore),
+            this.storage.set(this.mainStore)
+        ]);
+        this._stores.set(store.id, store);
         this.dispatch("store-created", { store });
         return store;
-    }
-
-    async syncSharedStore(id: StoreID) {
-        if (!this.account) {
-            throw "Not logged in";
-        }
-
-        let store = this.stores.find(s => s.id === id);
-        if (!store) {
-            store = new Store(id);
-            store.access(this.account);
-            this.stores.push(store);
-        }
-
-        try {
-            await this.api.getStore(store);
-        } catch (e) {
-            console.error(e, store.name, store.id);
-            // switch (e.code) {
-            //     case ErrorCode.NOT_FOUND:
-            //     case ErrorCode.MISSING_ACCESS:
-            //         this.sharedStores.splice(this.sharedStores.indexOf(store), 1);
-            //
-            //         break;
-            //     default:
-            //         throw e;
-            // }
-            return;
-        }
-
-        await this.storage.set(store);
-
-        const member = store.getMember(this.account);
-        if (member && member.permissions.write) {
-            await this.api.updateStore(store);
-        }
-
-        this.dispatch("store-changed", { store });
     }
     //
     // async updateAccess(
@@ -478,23 +470,47 @@ export class App extends EventTarget implements Storable {
 
     async synchronize() {
         await this.syncAccount();
-
-        try {
-            await this.api.getStore(this.mainStore);
-        } catch (e) {
-            if (e.code !== ErrorCode.NOT_FOUND) {
-                throw e;
-            }
-        }
-
-        await Promise.all([this.storage.set(this.mainStore), this.api.updateStore(this.mainStore)]);
-
-        // const stores = [...this.account!.stores];
-        //
-        // await Promise.all(stores.map(id => this.syncStore(id)));
-
+        await this.syncStores();
         this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");
+    }
+
+    async syncStores() {
+        await this.syncStore(this.mainStore.id);
+        await Promise.all(this.mainStore.groups.map(({ id }) => this.syncStore(id)));
+    }
+
+    async syncStore(id: StoreID): Promise<void> {
+        let store = this._stores.get(id);
+        if (!store) {
+            store = new Store(id);
+            store.access(this.account);
+            this._stores.set(id, store);
+        }
+
+        try {
+            await this.api.getStore(store);
+        } catch (e) {
+            console.error(e, store.name, store.id);
+            // switch (e.code) {
+            //     case ErrorCode.NOT_FOUND:
+            //     case ErrorCode.MISSING_ACCESS:
+            //         this.sharedStores.splice(this.sharedStores.indexOf(store), 1);
+            //
+            //         break;
+            //     default:
+            //         throw e;
+            // }
+            return;
+        }
+
+        await this.storage.set(store);
+
+        if (store.getPermissions(this.account).write) {
+            await this.api.updateStore(store);
+        }
+
+        this.dispatch("store-changed", { store });
     }
 
     getRecord(id: string): { record: Record; store: Store } | null {
@@ -509,9 +525,6 @@ export class App extends EventTarget implements Storable {
     }
 
     async getStore(id: string): Promise<Store | null> {
-        if (!this.loggedIn) {
-            throw "not logged in";
-        }
         let store = this.stores.find(s => s.id === id);
         if (store) {
             return store;
