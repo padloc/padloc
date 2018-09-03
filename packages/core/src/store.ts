@@ -6,7 +6,6 @@ import { Account } from "./auth";
 
 export class Store extends Group implements Storable {
     kind = "store";
-    name: string = "";
     collection = new Collection();
 
     get pk() {

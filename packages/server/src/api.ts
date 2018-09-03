@@ -4,12 +4,13 @@ import { Store } from "@padlock/core/src/store";
 import { DateString, Base64String } from "@padlock/core/src/encoding";
 import { AuthInfo, Account, AccountID, Session } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
+import { Invite } from "@padlock/core/src/invite";
 import { uuid } from "@padlock/core/src/util";
 import { Server as SRPServer } from "@padlock/core/src/srp";
 import { defaultPBKDF2Params } from "@padlock/core/src/crypto";
 import { NodeCryptoProvider } from "@padlock/core/src/node-crypto-provider";
 import { Sender } from "./sender";
-import { EmailVerificationMessage } from "./messages";
+import { EmailVerificationMessage, InviteMessage } from "./messages";
 import { RequestState } from "./server";
 import { randomBytes } from "crypto";
 
@@ -205,9 +206,10 @@ export class ServerAPI implements API {
         const { account } = this._requireAuth();
 
         await this.storage.get(store);
+        const { read } = store.getPermissions(account);
 
-        if (!store.isOwner(account) && !store.isMember(account)) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        if (!read) {
+            throw new Err(ErrorCode.NOT_FOUND);
         }
 
         return store;
@@ -219,10 +221,21 @@ export class ServerAPI implements API {
         const existing = new Store(store.id);
         await this.storage.get(existing);
 
-        const permissions = store.getPermissions(account);
+        existing.access(account);
+        existing.update(store);
 
-        if (!permissions.write) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Write permissions required to update store contents.");
+        for (const invite of store.invites) {
+            if ((invite.status = "initialized")) {
+                this.sender.send(
+                    invite.email,
+                    new InviteMessage({
+                        name: store.name,
+                        kind: "store",
+                        sender: invite.invitor ? invite.invitor.name || invite.invitor.email : "someone",
+                        url: `https://127.0.0.1:3000/store/${store.pk}/invite/${invite.id}`
+                    })
+                );
+            }
         }
 
         await this.storage.set(store);
@@ -240,6 +253,26 @@ export class ServerAPI implements API {
         await Promise.all([this.storage.set(account), this.storage.set(store)]);
 
         return store;
+    }
+
+    async updateInvite(invite: Invite) {
+        const { account } = this._requireAuth();
+
+        const group = new Store(invite.group!.id);
+        await this.storage.get(group);
+
+        const existing = group.getInvite(invite.id);
+        if (!existing || existing.email !== account.email) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        group.updateInvite(invite);
+
+        await this.storage.set(group);
+
+        // TODO: Send email
+
+        return invite;
     }
 
     private _requireAuth(): { account: Account; session: Session } {

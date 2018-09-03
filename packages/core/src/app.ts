@@ -1,7 +1,9 @@
 import { Storable, LocalStorage } from "./storage";
 import { Record, Field, Tag, StoreID } from "./data";
+import { Group } from "./group";
 import { Store } from "./store";
 import { Account, AccountInfo, Session } from "./auth";
+import { Invite } from "./invite";
 import { DateString } from "./encoding";
 import { API } from "./api";
 import { Client } from "./client";
@@ -445,6 +447,29 @@ export class App extends EventTarget implements Storable {
         this.dispatch("store-created", { store });
         return store;
     }
+
+    async createInvite(group: Group, email: string) {
+        await group.createInvite(email);
+        if (group instanceof Store) {
+            await this.api.updateStore(group);
+        }
+    }
+
+    async acceptInvite(invite: Invite, secret: string) {
+        await invite.accept(this.account.info, secret);
+        await this.mainStore.addGroup(invite.group!);
+    }
+
+    async rejectInvite(invite: Invite) {
+        invite.status = "rejected";
+        await this.api.updateInvite(invite);
+    }
+
+    async cancelInvite(invite: Invite) {
+        invite.status = "canceled";
+        await this.api.updateInvite(invite);
+    }
+
     //
     // async updateAccess(
     //     store: SharedStore,
@@ -506,7 +531,7 @@ export class App extends EventTarget implements Storable {
 
         await this.storage.set(store);
 
-        if (store.getPermissions(this.account).write) {
+        if (store.getPermissions().write) {
             await this.api.updateStore(store);
         }
 

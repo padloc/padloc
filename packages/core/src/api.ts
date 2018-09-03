@@ -1,5 +1,6 @@
 import { Session, Account, AccountID } from "./auth";
 import { Store } from "./store";
+import { Invite } from "./invite";
 import { Base64String } from "./encoding";
 import { RSAPublicKey, PBKDF2Params, AESEncryptionParams } from "./crypto";
 
@@ -40,6 +41,5 @@ export interface API {
     // getOrganization(org: Organization): Promise<Organization>;
     // updateOrganization(store: Organization): Promise<Organization>;
 
-    // updateInvite(org: Organization, invite: Invite): Promise<Organization>;
-    // updateInvite(invite: Invite, store: SharedStore): Promise<SharedStore>;
+    updateInvite(invite: Invite): Promise<Invite>;
 }

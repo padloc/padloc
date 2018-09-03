@@ -2,6 +2,7 @@ import { API, CreateAccountParams, CreateStoreParams } from "./api";
 import { request, Method } from "./ajax";
 import { DeviceInfo } from "./platform";
 import { Session, Account, AccountID } from "./auth";
+import { Invite } from "./invite";
 import { marshal, unmarshal, Base64String } from "./encoding";
 import { Store } from "./store";
 import { Err, ErrorCode } from "./error";
@@ -121,6 +122,12 @@ export class Client implements API {
         const res = await this.request("PUT", `store/${store.pk}`, marshal(await store.serialize()));
         return store.deserialize(unmarshal(res));
     }
+
+    async updateInvite(invite: Invite): Promise<Invite> {
+        const res = await this.request("PUT", `invite`, marshal(await invite.serialize()));
+        return invite.deserialize(unmarshal(res));
+    }
+
     //
     // async createOrganization(params: CreateOrganizationParams): Promise<Organization> {
     //     const res = await this.request("POST", "org", marshal(params));

@@ -108,6 +108,10 @@ export interface AccountInfo {
     publicKey: RSAPublicKey;
 }
 
+export interface SignedAccountInfo extends AccountInfo {
+    signedPublicKey: Base64String;
+}
+
 export class Account implements Storable, AccountInfo {
     kind = "account";
     email = "";

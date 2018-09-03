@@ -1,7 +1,6 @@
 import { Base64String, DateString, Serializable } from "./encoding";
 import {
     SharedContainer,
-    KeyExchange,
     RSAPublicKey,
     RSAPrivateKey,
     RSASigningParams,
@@ -9,9 +8,9 @@ import {
     defaultRSAKeyParams,
     defaultRSASigningParams
 } from "./crypto";
-import { Account, AccountInfo, AccountID } from "./auth";
+import { Account, AccountInfo, SignedAccountInfo, AccountID } from "./auth";
+import { Invite } from "./invite";
 import { Err, ErrorCode } from "./error";
-import { uuid } from "./util";
 
 export type MemberStatus = "active" | "removed";
 
@@ -21,19 +20,25 @@ export interface Permissions {
     manage: boolean;
 }
 
-export interface GroupMember extends AccountInfo {
-    signedPublicKey: Base64String;
+export interface GroupMember extends SignedAccountInfo {
     permissions: Permissions;
     status: MemberStatus;
     updated: DateString;
 }
 
-export interface SubGroup {
+export interface GroupInfo {
     id: string;
     kind: string;
+    name: string;
     publicKey: RSAPublicKey;
-    updated: DateString;
+}
+
+export interface SignedGroupInfo extends GroupInfo {
     signedPublicKey: Base64String;
+}
+
+export interface SubGroup extends SignedGroupInfo {
+    updated: DateString;
 }
 
 export abstract class Group {
@@ -42,6 +47,15 @@ export abstract class Group {
     privateKey: RSAPrivateKey = "";
     publicKey: RSAPublicKey = "";
     created: DateString = new Date().toISOString();
+
+    get info() {
+        return {
+            id: this.id,
+            kind: this.kind,
+            name: this.name,
+            publicKey: this.publicKey
+        };
+    }
 
     get members() {
         return Array.from(this._members.values());
@@ -63,7 +77,7 @@ export abstract class Group {
 
     private _members: Map<string, GroupMember> = new Map<string, GroupMember>();
     private _groups: Map<string, SubGroup> = new Map<string, SubGroup>();
-    private _invites = new Map<string, GroupInvite>();
+    private _invites = new Map<string, Invite>();
     private _adminContainer: SharedContainer = new SharedContainer();
     private _signingParams: RSASigningParams = defaultRSASigningParams();
 
@@ -103,11 +117,17 @@ export abstract class Group {
         return this._members.get(account.id);
     }
 
-    getPermissions(acc: AccountInfo) {
-        if (this.isOwner(acc)) {
+    getPermissions(acc?: AccountInfo | null) {
+        acc = acc || this._account;
+
+        if (!acc) {
+            return { read: false, write: false, manage: false };
+        } else if (this.isOwner(acc)) {
             return { read: true, write: true, manage: true };
         } else if (this.isMember(acc)) {
             return this.getMember(acc)!.permissions;
+        } else if (this.isInvited(acc)) {
+            return { read: true, write: false, manage: false };
         } else {
             return { read: false, write: false, manage: false };
         }
@@ -153,37 +173,52 @@ export abstract class Group {
         return this._invites.get(id);
     }
 
+    updateInvite(invite: Invite) {
+        return this._invites.set(invite.id, invite);
+    }
+
     async createInvite(email: string) {
         if (!this._account || !this.isAdmin(this._account)) {
             return new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        const invite = new GroupInvite();
-        invite.id = uuid();
-        invite.email = email;
-        await invite.initialize(this);
+        const invite = new Invite(email);
+        await invite.initialize(this.info, this._account.info);
         this._invites.set(invite.id, invite);
+        return invite;
     }
 
-    async addGroup(group: Group) {
+    async addGroup(group: GroupInfo) {
         if (this._groups.has(group.id)) {
             throw "Already a subgroup";
         }
         return this._setGroup(group);
     }
 
-    async updateGroup(group: Group) {
+    async updateGroup(group: GroupInfo) {
         if (this._groups.has(group.id)) {
             throw "Not a subgroup";
         }
         return this._setGroup(group);
     }
 
-    async removeGroup(group: Group) {
+    async removeGroup(group: GroupInfo) {
         if (this._groups.has(group.id)) {
             throw "Not a subgroup";
         }
         this._groups.delete(group.id);
+    }
+
+    async update(group: Group) {
+        const { manage } = this.getPermissions();
+
+        if (manage) {
+            this.name = group.name;
+            this._adminContainer = group._adminContainer;
+            this._members = group._members;
+            this._groups = group._groups;
+            this._invites = group._invites;
+        }
     }
 
     async serialize(): Promise<any> {
@@ -196,18 +231,16 @@ export abstract class Group {
             );
             await this._adminContainer.set(this._adminSerializer);
         }
-        return {
-            id: this.id,
+
+        return Object.assign(this.info, {
             created: this.created,
             owner: this.owner,
-            name: this.name,
-            publicKey: this.publicKey,
             members: this.members,
             groups: this.groups,
             invites: await Promise.all(this.invites.map(i => i.serialize())),
             signingParams: this._signingParams,
             adminData: await this._adminContainer.serialize()
-        };
+        });
     }
 
     async deserialize(raw: any) {
@@ -227,7 +260,7 @@ export abstract class Group {
         this._signingParams = raw.signingParams;
         await Promise.all(
             raw.invites.map(async (i: any) => {
-                this._invites.set(i.id, await new GroupInvite().deserialize(i));
+                this._invites.set(i.id, await new Invite().deserialize(i));
             })
         );
         await this._adminContainer.deserialize(raw.adminData);
@@ -267,7 +300,7 @@ export abstract class Group {
                 return {
                     publicKey: this.publicKey,
                     privateKey: this.privateKey,
-                    pendingKeyExchanges: this.invites.map(({ id, keyExchange: { expires, secret } }) => {
+                    pendingInvites: this.invites.map(({ id, expires, secret }) => {
                         return { id, expires, secret };
                     })
                 };
@@ -277,12 +310,9 @@ export abstract class Group {
                 if (raw.publicKey !== this.publicKey) {
                     throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
                 }
-                for (const {
-                    id,
-                    keyExchange: { expires, secret }
-                } of raw.pendingKeyExchanges) {
+                for (const { id, expires, secret } of raw.pendingInvites) {
                     const invite = this._invites.get(id);
-                    invite && Object.assign(invite.keyExchange, { expires, secret });
+                    invite && Object.assign(invite, { expires, secret });
                 }
                 return this;
             }
@@ -296,75 +326,29 @@ export abstract class Group {
 
         const signedPublicKey = await getProvider().sign(this.privateKey, account.publicKey, this._signingParams);
 
-        const member = Object.assign(
-            {
-                permissions,
-                status,
-                signedPublicKey,
-                updated: new Date().toISOString()
-            },
-            account
-        );
+        const member = Object.assign({}, account, {
+            permissions,
+            status,
+            signedPublicKey,
+            updated: new Date().toISOString()
+        });
 
         this._members.set(member.id, member);
     }
 
-    private async _setGroup(group: Group) {
+    private async _setGroup(group: GroupInfo) {
         if (!this._account || !this.isAdmin(this._account)) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
         const signedPublicKey = await getProvider().sign(this.privateKey, group.publicKey, this._signingParams);
 
-        this._groups.set(group.id, {
-            id: group.id,
-            kind: group.kind,
-            publicKey: group.publicKey,
-            signedPublicKey,
-            updated: new Date().toISOString()
-        });
-    }
-}
-
-export type InviteStatus = "none" | "initialized" | "sent" | "accepted" | "canceled" | "rejected" | "failed";
-
-export class GroupInvite {
-    id: string = "";
-    email: string = "";
-    status: InviteStatus = "none";
-    invitee?: AccountInfo;
-    invitor?: AccountInfo;
-    keyExchange = new KeyExchange();
-
-    async initialize(group: Group) {
-        await this.keyExchange.initiate(group.publicKey);
-        this.status = "initialized";
-    }
-
-    async accept(invitee: AccountInfo, secret: string): Promise<boolean> {
-        this.invitee = invitee;
-        return await this.keyExchange.complete(invitee.publicKey, secret);
-        this.status = "accepted";
-    }
-
-    async serialize() {
-        return {
-            id: this.id,
-            status: this.status,
-            email: this.email,
-            invite: this.invitee,
-            invitor: this.invitor,
-            keyExchange: await this.keyExchange.serialize()
-        };
-    }
-
-    async deserialize(raw: any) {
-        this.id = raw.id;
-        this.status = raw.status;
-        this.email = raw.email;
-        this.invitee = raw.invitee;
-        this.invitor = raw.invitor;
-        await this.keyExchange.deserialize(raw.keyExchange);
-        return this;
+        this._groups.set(
+            group.id,
+            Object.assign(group, {
+                signedPublicKey,
+                updated: new Date().toISOString()
+            })
+        );
     }
 }

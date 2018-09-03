@@ -2,6 +2,7 @@ import { Store } from "@padlock/core/src/store";
 import { Account, Session } from "@padlock/core/src/auth";
 import { CreateStoreParams, CreateAccountParams } from "@padlock/core/src/api";
 import { Err, ErrorCode } from "@padlock/core/src/error";
+import { Invite } from "@padlock/core/src/invite";
 import { Context } from "./server";
 
 export async function verifyEmail(ctx: Context) {
@@ -47,8 +48,8 @@ export async function createAccount(ctx: Context) {
 
 export async function updateAccount(ctx: Context) {
     const account = await new Account().deserialize(ctx.request.body);
-    await ctx.api.updateAccount(account);
-    ctx.body = await account.serialize();
+    const res = await ctx.api.updateAccount(account);
+    ctx.body = await res.serialize();
 }
 
 export async function getStore(ctx: Context, id: string) {
@@ -58,11 +59,17 @@ export async function getStore(ctx: Context, id: string) {
 
 export async function updateStore(ctx: Context, id: string) {
     const store = await new Store(id).deserialize(ctx.request.body);
-    await ctx.api.updateStore(store);
-    ctx.body = await store.serialize();
+    const res = await ctx.api.updateStore(store);
+    ctx.body = await res.serialize();
 }
 
 export async function createStore(ctx: Context) {
     const store = await ctx.api.createStore(ctx.request.body as CreateStoreParams);
     ctx.body = await store.serialize();
+}
+
+export async function updateInvite(ctx: Context) {
+    const invite = await new Invite().deserialize(ctx.request.body);
+    const res = await ctx.api.updateInvite(invite);
+    ctx.body = await res.serialize();
 }
