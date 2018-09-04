@@ -1,6 +1,5 @@
 import { unmarshal } from "./encoding";
-import { Record, Field, AccountStore, createRecord } from "./data";
-import { Account } from "./auth";
+import { Record, Field, createRecord } from "./data";
 import { loadScript } from "./util";
 import { Err, ErrorCode } from "./error";
 
@@ -83,11 +82,9 @@ export function isFromPadlock(data: string): boolean {
     }
 }
 
-export async function fromPadlock(data: string, password: string): Promise<Record[]> {
-    const store = new AccountStore(new Account());
-    store.password = password;
-    await store.deserialize(data);
-    return store.records;
+export async function fromPadlock(_data: string, _password: string): Promise<Record[]> {
+    // TODO
+    throw "not implemented";
 }
 
 /*

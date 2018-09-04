@@ -1,4 +1,4 @@
-import { Store } from "@padlock/core/lib/data.js";
+import { Store } from "@padlock/core/lib/store.js";
 import { checkForUpdates, getPlatformName, getDeviceInfo } from "@padlock/core/lib/platform.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
@@ -339,10 +339,10 @@ class App extends BaseElement {
                 this._storeView.store = store;
                 this._openView(this._storeView, direction);
             }
-        } else if ((match = path.match(/^org\/([^\/]+)(?:\/invite\/([^\/]+))?$/))) {
-            const org = await app.getOrganization(match[1]);
-            const invite = org && match[2] && org.getInvite(match[2]);
-            console.log(org, invite);
+            // } else if ((match = path.match(/^org\/([^\/]+)(?:\/invite\/([^\/]+))?$/))) {
+            //     const org = await app.getOrganization(match[1]);
+            //     const invite = org && match[2] && org.getInvite(match[2]);
+            //     console.log(org, invite);
         } else if ((match = path.match(/^record\/([^\/]+)$/))) {
             const item = app.getRecord(match[1]);
             if (item) {

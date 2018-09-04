@@ -136,6 +136,10 @@ export class Account implements Storable, AccountInfo {
         return { id: this.id, email: this.email, publicKey: this.publicKey, name: this.name };
     }
 
+    get locked(): boolean {
+        return !this.privateKey;
+    }
+
     constructor(public id: AccountID = "") {}
 
     async initialize(password: string) {
@@ -154,6 +158,12 @@ export class Account implements Storable, AccountInfo {
     async unlock(password: string) {
         await this.generateKeys(password);
         this.privateKey = await getProvider().decrypt(this.masterKey, this.encPrivateKey, this.encryptionParams);
+    }
+
+    lock() {
+        this.masterKey = "";
+        this.authKey = "";
+        this.privateKey = "";
     }
 
     async generateKeys(password: string) {

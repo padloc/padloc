@@ -24,6 +24,7 @@ export enum ErrorCode {
     DEPRECATED_API_VERSION = "deprecated_api_version",
     INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
     RATE_LIMIT_EXCEEDED = "rate_limit_exceeded",
+    INVALID_CREDENTIALS = "invalid_credentials",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",
@@ -33,20 +34,34 @@ export enum ErrorCode {
     INVALID_CSV = "invalid_csv"
 }
 
+const messages = {
+    [ErrorCode.INVALID_CREDENTIALS]: "Username or password incorrect."
+};
+
+const statusCodes = {
+    [ErrorCode.BAD_REQUEST]: 400,
+    [ErrorCode.INVALID_SESSION]: 401,
+    [ErrorCode.SESSION_EXPIRED]: 401,
+    [ErrorCode.INVALID_CREDENTIALS]: 401,
+    [ErrorCode.INSUFFICIENT_PERMISSIONS]: 403,
+    [ErrorCode.NOT_FOUND]: 404,
+    [ErrorCode.DEPRECATED_API_VERSION]: 406
+};
+
 export class Err extends Error {
     report = false;
     display = false;
-    private _status?: number;
+    status = 500;
 
-    constructor(public code: ErrorCode, message = "", opts?: { report?: boolean; display?: boolean; status?: number }) {
-        super(message);
-        if (opts) {
-            Object.assign(this, { report: opts.report, display: opts.display, _status: opts.status });
-        }
-    }
-
-    get status(): number {
-        return this._status || statusFromCode(this.code);
+    constructor(
+        public code: ErrorCode,
+        message?: string,
+        opts: { report?: boolean; display?: boolean; status?: number } = {}
+    ) {
+        super(message || messages[code] || "");
+        this.status = opts.status || statusCodes[code] || 500;
+        this.report = opts.report || false;
+        this.display = opts.report || false;
     }
 }
 
@@ -65,23 +80,5 @@ export function errFromRequest(request: XMLHttpRequest): Err {
             default:
                 return new Err(ErrorCode.SERVER_ERROR, request.responseText, { status: request.status });
         }
-    }
-}
-
-function statusFromCode(code: ErrorCode): number {
-    switch (code) {
-        case ErrorCode.BAD_REQUEST:
-            return 400;
-        case ErrorCode.INVALID_SESSION:
-        case ErrorCode.SESSION_EXPIRED:
-            return 401;
-        case ErrorCode.INSUFFICIENT_PERMISSIONS:
-            return 403;
-        case ErrorCode.NOT_FOUND:
-            return 404;
-        case ErrorCode.DEPRECATED_API_VERSION:
-            return 406;
-        default:
-            return 500;
     }
 }

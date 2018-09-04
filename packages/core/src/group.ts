@@ -41,7 +41,7 @@ export interface SubGroup extends SignedGroupInfo {
     updated: DateString;
 }
 
-export abstract class Group {
+export abstract class Group implements GroupInfo {
     abstract kind: string;
     owner: AccountID = "";
     privateKey: RSAPrivateKey = "";

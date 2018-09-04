@@ -80,7 +80,7 @@ export function track(event: string, props?: { [prop: string]: number | string |
         })
         .then(() => client.request("POST", "track", JSON.stringify(data)))
         .then(r => {
-            const res = JSON.parse(r.responseText);
+            const res = JSON.parse(r);
             return setTrackingID(res.trackingID);
         })
         .catch(() => {});

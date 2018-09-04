@@ -93,13 +93,13 @@ export class ServerAPI implements API {
         const srp = pendingAuths.get(account);
 
         if (!srp) {
-            throw new Err(ErrorCode.BAD_REQUEST);
+            throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
         await srp.setA(A);
 
         if (M !== srp.M1) {
-            throw new Err(ErrorCode.BAD_REQUEST);
+            throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
         const acc = new Account(account);

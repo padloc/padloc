@@ -71,16 +71,31 @@ export class App extends EventTarget implements Storable {
     version = "3.0";
     storage = new LocalStorage();
     api: API = new Client(this);
-    account = new Account();
     settings = defaultSettings;
     messages = new Messages("https://padlock.io/messages.json");
-    locked = true;
     stats: Stats = {};
     device: DeviceInfo = {} as DeviceInfo;
     initialized: DateString = "";
     session: Session | null = null;
+    account: Account | null = null;
     loaded = this.load();
     mainStore = new Store();
+
+    get locked() {
+        return !this.account || !!this.account.locked;
+    }
+
+    get loggedIn() {
+        return !!this.session;
+    }
+
+    get tags() {
+        const tags = this.mainStore.collection.tags;
+        for (const store of this.stores) {
+            tags.push(...store.collection.tags);
+        }
+        return [...new Set(tags)];
+    }
 
     get stores() {
         return Array.from(this._stores.values());
@@ -90,7 +105,7 @@ export class App extends EventTarget implements Storable {
 
     async serialize() {
         return {
-            account: await this.account.serialize(),
+            account: this.account ? await this.account.serialize() : null,
             session: this.session ? await this.session.serialize() : null,
             initialized: this.initialized,
             stats: this.stats,
@@ -101,7 +116,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async deserialize(raw: any) {
-        await this.account.deserialize(raw.account);
+        this.account = raw.account && (await new Account().deserialize(raw.account));
         this.session = raw.session && (await new Session().deserialize(raw.session));
         this.initialized = raw.initialized;
         this.setStats(raw.stats || {});
@@ -126,18 +141,6 @@ export class App extends EventTarget implements Storable {
             await this.storage.set(this);
         }
         this.dispatch("load");
-    }
-
-    get loggedIn() {
-        return !!this.session;
-    }
-
-    get tags() {
-        const tags = this.mainStore.collection.tags;
-        for (const store of this.stores) {
-            tags.push(...store.collection.tags);
-        }
-        return [...new Set(tags)];
     }
 
     list(filter = "", recentCount = 3): ListItem[] {
@@ -219,17 +222,15 @@ export class App extends EventTarget implements Storable {
     }
 
     async unlock(password: string) {
-        await this.account.unlock(password);
+        await this.account!.unlock(password);
         await this.loadStores();
-
-        this.locked = false;
         this.dispatch("unlock");
     }
 
     async loadStores() {
         this._stores.clear();
 
-        this.mainStore.id = this.account.store;
+        this.mainStore.id = this.account!.store;
         try {
             await this.storage.get(this.mainStore);
         } catch (e) {
@@ -238,24 +239,23 @@ export class App extends EventTarget implements Storable {
             }
         }
         if (this.mainStore.initialized) {
-            this.mainStore.access(this.account);
+            this.mainStore.access(this.account!);
         } else {
-            await this.mainStore.initialize(this.account);
+            await this.mainStore.initialize(this.account!);
             await this.storage.set(this.mainStore);
         }
 
         for (const { id } of this.mainStore.groups) {
             const store = new Store(id);
-            store.access(this.account);
+            store.access(this.account!);
             await this.storage.get(store);
             this._stores.set(id, store);
         }
     }
 
     async lock() {
-        this.mainStore = new Store(this.account.store);
+        this.mainStore = new Store(this.account!.store);
         this._stores.clear();
-        this.locked = true;
         this.dispatch("lock");
     }
 
@@ -275,7 +275,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async reset() {
-        this.mainStore = new Store(this.account.store);
+        this.mainStore = new Store(this.account!.store!);
         this._stores.clear();
         this.initialized = "";
         await this.storage.clear();
@@ -345,14 +345,14 @@ export class App extends EventTarget implements Storable {
     }
 
     async register(email: string, password: string, emailVerification: { id: string; code: string }) {
-        const acc = this.account;
+        const acc = new Account();
         acc.email = email;
         await acc.initialize(password);
 
         const srp = new SRPClient();
         await srp.initialize(acc.authKey);
 
-        const account = await this.api.createAccount({
+        await this.api.createAccount({
             email: email,
             name: acc.name,
             publicKey: acc.publicKey,
@@ -362,8 +362,6 @@ export class App extends EventTarget implements Storable {
             verifier: srp.v!,
             emailVerification
         });
-
-        await acc.deserialize(await account.serialize());
 
         await this.login(email, password);
 
@@ -376,7 +374,7 @@ export class App extends EventTarget implements Storable {
 
     async login(email: string, password: string) {
         const { account, keyParams, B } = await this.api.initAuth({ email });
-        this.account.id = account;
+        this.account = new Account(account);
         this.account.keyParams = keyParams;
         await this.account.generateKeys(password);
 
@@ -388,8 +386,7 @@ export class App extends EventTarget implements Storable {
         this.session = await this.api.createSession({ account: this.account.id, A: srp.A!, M: srp.M1! });
         this.session.key = srp.K!;
 
-        await this.storage.set(this);
-
+        await this.syncAccount();
         await this.loadStores();
 
         this.dispatch("login");
@@ -403,25 +400,18 @@ export class App extends EventTarget implements Storable {
     }
 
     async syncAccount() {
-        if (!this.loggedIn) {
-            throw "Not logged in!";
-        }
-        await this.api.getAccount(this.account);
+        await this.api.getAccount(this.account!);
         await this.storage.set(this);
         this.dispatch("account-changed", { account: this.account });
     }
 
     async logout() {
-        if (!this.session) {
-            throw "Not logged in";
-        }
-
         try {
-            await this.api.revokeSession(this.session);
+            await this.api.revokeSession(this.session!);
         } catch (e) {}
 
         this.session = null;
-        this.account = new Account();
+        this.account = null;
         this._stores.clear();
         await this.storage.set(this);
         this.dispatch("logout");
@@ -430,12 +420,8 @@ export class App extends EventTarget implements Storable {
     }
 
     async createStore(name: string): Promise<Store> {
-        if (!this.account) {
-            throw "Need to be logged in to create a shared store!";
-        }
-
         const store = await this.api.createStore({ name });
-        await store.initialize(this.account);
+        await store.initialize(this.account!);
         await this.mainStore.addGroup(store);
         await Promise.all([
             this.api.updateStore(store),
@@ -456,7 +442,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async acceptInvite(invite: Invite, secret: string) {
-        await invite.accept(this.account.info, secret);
+        await invite.accept(this.account!.info, secret);
         await this.mainStore.addGroup(invite.group!);
     }
 
@@ -509,7 +495,7 @@ export class App extends EventTarget implements Storable {
         let store = this._stores.get(id);
         if (!store) {
             store = new Store(id);
-            store.access(this.account);
+            store.access(this.account!);
             this._stores.set(id, store);
         }
 

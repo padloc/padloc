@@ -1,7 +1,5 @@
-import { AccountStore, Record } from "./data";
-import { Account } from "./auth";
+import { Record } from "./data";
 import { loadPapa } from "./import";
-import { marshal } from "./encoding";
 
 function recordsToTable(records: Record[]) {
     // Array of column names
@@ -61,9 +59,11 @@ export async function toCSV(records: Record[]): Promise<string> {
     return papa.unparse(recordsToTable(records));
 }
 
-export async function toPadlock(records: Record[], password: string): Promise<string> {
-    const store = new AccountStore(new Account(), true, records);
-    store.password = password;
-    const data = await store.serialize();
-    return marshal(data);
+export async function toPadlock(_records: Record[], _password: string): Promise<string> {
+    // TODO
+    throw "Not implemented";
+    // const store = new AccountStore(new Account(), true, records);
+    // store.password = password;
+    // const data = await store.serialize();
+    // return marshal(data);
 }
