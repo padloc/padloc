@@ -1,13 +1,4 @@
-import {
-    Serializable,
-    Base64String,
-    stringToBase64,
-    base64ToString,
-    base64ToHex,
-    marshal,
-    unmarshal,
-    DateString
-} from "./encoding";
+import { Serializable, Base64String, stringToBase64, base64ToString, marshal, unmarshal } from "./encoding";
 import { Err, ErrorCode } from "./error";
 
 // Default number of pbkdf2 iterations
