@@ -25,6 +25,8 @@ export enum ErrorCode {
     INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
     RATE_LIMIT_EXCEEDED = "rate_limit_exceeded",
     INVALID_CREDENTIALS = "invalid_credentials",
+    ACCOUNT_EXISTS = "account_exists",
+    EMAIL_VERIFICATION_FAILED = "email_verification_failed",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",
@@ -35,17 +37,21 @@ export enum ErrorCode {
 }
 
 const messages = {
-    [ErrorCode.INVALID_CREDENTIALS]: "Username or password incorrect."
+    [ErrorCode.EMAIL_VERIFICATION_FAILED]: "Email verification failed.",
+    [ErrorCode.INVALID_CREDENTIALS]: "Username or password incorrect.",
+    [ErrorCode.ACCOUNT_EXISTS]: "This account already exists."
 };
 
 const statusCodes = {
     [ErrorCode.BAD_REQUEST]: 400,
+    [ErrorCode.EMAIL_VERIFICATION_FAILED]: 400,
     [ErrorCode.INVALID_SESSION]: 401,
     [ErrorCode.SESSION_EXPIRED]: 401,
     [ErrorCode.INVALID_CREDENTIALS]: 401,
     [ErrorCode.INSUFFICIENT_PERMISSIONS]: 403,
     [ErrorCode.NOT_FOUND]: 404,
-    [ErrorCode.DEPRECATED_API_VERSION]: 406
+    [ErrorCode.DEPRECATED_API_VERSION]: 406,
+    [ErrorCode.ACCOUNT_EXISTS]: 409
 };
 
 export class Err extends Error {

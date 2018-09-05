@@ -30,6 +30,7 @@ export class Input extends BaseElement {
     @property() multiline: boolean = false;
     @property() pattern: string = "";
     @property() placeholder: string = "";
+    @property() label: string = "";
     @property() noTab: boolean = false;
     @property({ reflect: true })
     readonly: boolean = false;
@@ -54,51 +55,67 @@ export class Input extends BaseElement {
         }
     }
 
-    _render(props: this) {
-        const masked = props.masked && !!props.value && !props.focused;
-        const input = props.multiline
+    _render() {
+        const {
+            value,
+            masked,
+            focused,
+            label,
+            multiline,
+            placeholder,
+            readonly,
+            noTab,
+            disabled,
+            autocapitalize,
+            required,
+            type,
+            pattern
+        } = this;
+        const doMask = masked && !!value && !focused;
+
+        const input = multiline
             ? html`
                 <textarea
                     id="input"
-                    value="${props.value}"
-                    placeholder$="${props.placeholder}"
-                    readonly?="${props.readonly}"
-                    tabindex$="${props.noTab ? "-1" : ""}"
-                    invisible?="${masked}"
-                    disabled?="${props.disabled}"
-                    autocapitalize$="${props.autocapitalize ? "" : "off"}"
-                    required?="${props.required}"
+                    value="${value}"
+                    placeholder$="${placeholder}"
+                    readonly?="${readonly}"
+                    tabindex$="${noTab ? "-1" : ""}"
+                    invisible?="${doMask}"
+                    disabled?="${disabled}"
+                    autocapitalize$="${autocapitalize ? "" : "off"}"
+                    required?="${required}"
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
                     rows="1"></textarea>
 
                 <textarea
-                    value="${mask(props.value)}"
-                    invisible?="${!masked}"
+                    value="${mask(value)}"
+                    invisible?="${!doMask}"
                     class="mask"
                     tabindex="-1"
                     disabled></textarea>`
             : html`
                 <input
                     id="input"
-                    value="${props.value}"
-                    placeholder$="${props.placeholder}"
-                    readonly?="${props.readonly}"
-                    tabindex$="${props.noTab ? "-1" : ""}"
-                    invisible?="${masked}"
-                    disabled?="${props.disabled}"
-                    autocapitalize$="${props.autocapitalize ? "" : "off"}"
-                    required?="${props.required}"
+                    value="${value}"
+                    placeholder$="${placeholder}"
+                    readonly?="${readonly}"
+                    tabindex$="${noTab ? "-1" : ""}"
+                    invisible?="${doMask}"
+                    disabled?="${disabled}"
+                    autocapitalize$="${autocapitalize ? "" : "off"}"
+                    required?="${required}"
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
-                    type$="${props.type}"
-                    pattern$="${props.pattern || ".*"}">
+                    type$="${type}"
+                    pattern$="${pattern || ".*"}">
 
                 <input
-                    value="${mask(props.value)}"
-                    invisible?="${!masked}"
+                    value="${mask(value)}"
+                    invisible?="${!doMask}"
                     class="mask"
                     tabindex="-1"
                     disabled>`;
@@ -141,7 +158,7 @@ export class Input extends BaseElement {
                 display: none;
             }
 
-            ::-webkit-input-placeholder {
+            ::-webkit-placeholder {
                 text-shadow: inherit;
                 color: inherit;
                 opacity: 0.5;
@@ -161,6 +178,24 @@ export class Input extends BaseElement {
                 margin-left: -4px;
             }
 
+            label {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                padding: 13px;
+                opacity: 0.5;
+                transition: transform 0.2s, color 0.2s, opacity 0.5s;
+                cursor: text;
+            }
+
+            label[float] {
+                transform: scale(0.8) translate(0, -32px);
+                color: var(--color-highlight);
+                font-weight: bold;
+                opacity: 1;
+            }
+
             input[disabled], textarea[disabled] {
                 opacity: 1;
                 -webkit-text-fill-color: currentColor;
@@ -172,6 +207,8 @@ export class Input extends BaseElement {
         </style>
 
         ${input}
+
+        <label for="input" float?="${focused || !!value || !!placeholder}">${label}</label>
         `;
     }
 

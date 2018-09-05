@@ -1,6 +1,6 @@
 import { html } from "@polymer/lit-element";
 
-export default html`
+export const config = html`
     <style>
         :host {
             --font-family: "Clear Sans";
@@ -24,7 +24,7 @@ export default html`
             --color-background: var(--color-tertiary);
             --color-foreground: var(--color-secondary);
             --color-highlight: var(--color-primary);
-            --color-error: red;
+            --color-error: #cc2929;
 
             --row-height: 50px;
 
@@ -132,3 +132,5 @@ export default html`
             }
         }
 </style>`;
+
+export default config;

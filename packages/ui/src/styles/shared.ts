@@ -1,6 +1,7 @@
-import "./config";
+import { html } from "@polymer/lit-element";
 
-const styles = `
+export const shared = html`
+<style>
     :host {
         user-select: none;
         -webkit-user-select: none;
@@ -415,6 +416,7 @@ const styles = `
         50% {transform: translate(-5px, -3px);}
         75% {transform: translate(5px, 2px);}
     }
+</style>
 `;
 
 const _documentContainer = document.createElement("template");
@@ -423,11 +425,11 @@ _documentContainer.setAttribute("style", "display: none;");
 _documentContainer.innerHTML = `<dom-module id="shared">
     <template>
         <style>
-${styles}
+${shared}
         </style>
     </template>
 </dom-module>`;
 
 document.head.appendChild(_documentContainer.content);
 
-export default styles;
+export default shared;

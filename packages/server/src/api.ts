@@ -145,13 +145,13 @@ export class ServerAPI implements API {
             await this.storage.get(ev);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.BAD_REQUEST, "Email verification failed");
+                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Email verification required.");
             } else {
                 throw e;
             }
         }
         if (ev.id !== id || ev.code !== code.toLowerCase()) {
-            throw new Err(ErrorCode.BAD_REQUEST, "Email verification failed");
+            throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
         }
 
         const authInfo = new AuthInfo(email);
@@ -159,7 +159,7 @@ export class ServerAPI implements API {
         // Make sure account does not exist yet
         try {
             await this.storage.get(authInfo);
-            throw new Err(ErrorCode.BAD_REQUEST, "Account already exists");
+            throw new Err(ErrorCode.ACCOUNT_EXISTS, "This account already exists!");
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
                 throw e;
