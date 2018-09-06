@@ -89,7 +89,10 @@ export class App extends EventTarget implements Storable {
     }
 
     get tags() {
-        const tags = this.mainStore!.collection.tags;
+        if (!this.mainStore) {
+            return [];
+        }
+        const tags = this.mainStore.collection.tags;
         for (const store of this.stores) {
             tags.push(...store.collection.tags);
         }
@@ -141,6 +144,9 @@ export class App extends EventTarget implements Storable {
     }
 
     list(filter = "", recentCount = 3): ListItem[] {
+        if (!this.mainStore) {
+            return [];
+        }
         let items: ListItem[] = [];
 
         for (const store of [this.mainStore!, ...this.stores]) {
@@ -276,7 +282,8 @@ export class App extends EventTarget implements Storable {
         this.dispatch("records-added", { store: store, records: records });
     }
 
-    async createRecord(store: Store, name: string, fields?: Field[], tags?: Tag[]): Promise<Record> {
+    async createRecord(name: string, store_?: Store, fields?: Field[], tags?: Tag[]): Promise<Record> {
+        const store = store_ || this.mainStore!;
         fields = fields || [
             { name: $l("Username"), value: "", masked: false },
             { name: $l("Password"), value: "", masked: true }
@@ -286,7 +293,7 @@ export class App extends EventTarget implements Storable {
             record.updatedBy = this.account.id;
         }
         await this.addRecords(store, [record]);
-        this.dispatch("record-created", { store: store, record: record });
+        this.dispatch("record-created", { store, record });
         return record;
     }
 
@@ -358,6 +365,9 @@ export class App extends EventTarget implements Storable {
             this.storage.set(this.mainStore!),
             this.storage.set(this)
         ]);
+
+        this.dispatch("login");
+        this.dispatch("unlock");
     }
 
     async login(email: string, password: string) {
@@ -398,6 +408,7 @@ export class App extends EventTarget implements Storable {
         await this.loadStores();
 
         this.dispatch("login");
+        this.dispatch("unlock");
         this.dispatch("account-changed", { account: this.account });
         this.dispatch("session-changed", { session: this.session });
     }
@@ -424,6 +435,7 @@ export class App extends EventTarget implements Storable {
         await this.storage.set(this);
         this.mainStore && (await this.storage.delete(this.mainStore!));
         this.mainStore = null;
+        this.dispatch("lock");
         this.dispatch("logout");
         this.dispatch("account-changed", { account: this.account });
         this.dispatch("session-changed", { session: this.session });

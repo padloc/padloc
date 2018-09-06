@@ -1,21 +1,22 @@
-import { PublicAccount } from "@padlock/core/lib/auth.js";
+import { AccountInfo } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 
 @element("pl-invite-dialog")
 export class InviteDialog extends BaseElement {
-    @property() accounts: PublicAccount[] = [];
+    @property() accounts: AccountInfo[] = [];
 
     @query("pl-dialog") private _dialog: Dialog;
 
-    private _resolve: ((acc: PublicAccount | null | "new") => void) | null;
+    private _resolve: ((acc: AccountInfo | null | "new") => void) | null;
 
     _render({ accounts }: this) {
         return html`
+            ${shared}
+
             <style>
-                ${sharedStyles}
 
                 .title {
                     padding: 10px 15px;
@@ -77,17 +78,17 @@ export class InviteDialog extends BaseElement {
         `;
     }
 
-    async show(accounts: PublicAccount[]): Promise<PublicAccount | null | "new"> {
+    async show(accounts: AccountInfo[]): Promise<AccountInfo | null | "new"> {
         this.accounts = accounts;
         this.requestRender();
         await this.renderComplete;
         this._dialog.open = true;
-        return new Promise<PublicAccount | null | "new">(resolve => {
+        return new Promise<AccountInfo | null | "new">(resolve => {
             this._resolve = resolve;
         });
     }
 
-    private _done(account: PublicAccount | null | "new") {
+    private _done(account: AccountInfo | null | "new") {
         this._resolve && this._resolve(account);
         this._resolve = null;
         this._dialog.open = false;

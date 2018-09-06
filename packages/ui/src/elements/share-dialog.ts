@@ -1,7 +1,8 @@
-import { Record, SharedStore } from "@padlock/core/lib/data.js";
+import { Record } from "@padlock/core/lib/data.js";
+import { Store } from "@padlock/core/lib/store.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { confirm, prompt } from "../dialog.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
@@ -14,13 +15,14 @@ export class ShareDialog extends BaseElement {
 
     @query("pl-dialog") private _dialog: Dialog;
 
-    private _resolve: ((store: SharedStore | null) => void) | null;
+    private _resolve: ((store: Store | null) => void) | null;
 
     _render({ records }: this) {
-        const stores = app.sharedStores.filter(s => s.accessorStatus === "active" && s.permissions.write);
+        const stores = app.stores.filter(s => s.isMember() && s.getPermissions().write);
         return html`
+            ${shared}
+
             <style>
-                ${sharedStyles}
 
                 .title {
                     padding: 10px 15px;
@@ -97,7 +99,7 @@ export class ShareDialog extends BaseElement {
 
                                     <pl-icon icon="group"></pl-icon>
 
-                                    <div>${s.accessors.length}</div>
+                                    <div>${s.members.length}</div>
 
                                 </div>
 
@@ -105,7 +107,7 @@ export class ShareDialog extends BaseElement {
 
                                     <pl-icon icon="record"></pl-icon>
 
-                                    <div>${s.records.length}</div>
+                                    <div>${s.collection.size}</div>
 
                                 </div>
 
@@ -128,23 +130,23 @@ export class ShareDialog extends BaseElement {
         this.requestRender();
         await this.renderComplete;
         this._dialog.open = true;
-        return new Promise<SharedStore | null>(resolve => {
+        return new Promise<Store | null>(resolve => {
             this._resolve = resolve;
         });
     }
 
-    private _done(store?: SharedStore) {
+    private _done(store?: Store) {
         this._resolve && this._resolve(store || null);
         this._resolve = null;
         this._dialog.open = false;
     }
 
-    async _selectStore(store: SharedStore) {
+    async _selectStore(store: Store) {
         this._dialog.open = false;
         const confirmed =
-            store.accessors.length === 1 ||
+            store.members.length === 1 ||
             (await confirm(
-                this.records.length === 1
+                store.collection.size === 1
                     ? $l("Do you want to share '{0}' with the '{1}' group?", this.records[0].name, store.name)
                     : $l("Do you want to share {0} items with the '{1}' group?"),
                 $l("Share"),
@@ -155,9 +157,9 @@ export class ShareDialog extends BaseElement {
         if (confirmed) {
             for (const record of this.records) {
                 const { name, fields, tags } = record;
-                await app.createRecord(store, name, fields, tags);
+                await app.createRecord(name, store, fields, tags);
             }
-            await app.deleteRecords(app.mainStore, this.records);
+            await app.deleteRecords(app.mainStore!, this.records);
             this._done(store);
         } else {
             this._dialog.open = true;
@@ -182,7 +184,7 @@ export class ShareDialog extends BaseElement {
             return;
         }
 
-        const store = await app.createSharedStore(storeName);
+        const store = await app.createStore(storeName);
         this._selectStore(store);
     }
 }

@@ -1,6 +1,6 @@
 import { randomString, chars } from "@padlock/core/lib/util.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { BaseElement, html, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
@@ -21,9 +21,9 @@ class Generator extends BaseElement {
 
     _render({ value }: this) {
         return html`
-        <style>
+        ${shared}
 
-            ${sharedStyles}
+        <style>
 
             :host {
                 --pl-dialog-inner: {

@@ -1,7 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait, formatDateFromNow } from "@padlock/core/lib/util.js";
-import { SharedStore } from "@padlock/core/lib/data.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, listen, observe } from "./base.js";
@@ -31,8 +30,9 @@ export class Menu extends BaseElement {
         const tags = app.tags;
 
         return html`
+        ${shared}
+
         <style>
-            ${sharedStyles}
 
             @keyframes menuItemIn {
                 to { transform: translate3d(0, 0, 0); }
@@ -304,44 +304,6 @@ export class Menu extends BaseElement {
 
             </div>
 
-            <div class="sub-menu stores">
-
-                <div class="spacer"></div>
-
-                <div class="menu-item sub-menu-header tap" on-click="${(e: Event) => this._closeSubMenu(e)}">
-
-                    <div>${$l("Groups")}</div>
-
-                    <pl-icon icon="close"></pl-icon>
-
-                </div>
-
-                ${app.sharedStores.filter(s => s.accessorStatus === "active").map(
-                    store => html`
-                    <div
-                        class="menu-item store tap"
-                        reverse
-                        on-click="${() => this._openStore(store)}">
-                        <div>${store.name}</div>
-                        <pl-toggle
-                            active="${!app.settings.hideStores.includes(store.id)}"
-                            on-click="${(e: Event) => this._toggleStore(store, e)}"></pl-toggle>
-                    </div>
-                `
-                )}
-
-                </template>
-
-                <div class="no-stores" disabled hidden?="${app.sharedStores.length}">
-
-                    ${$l("You don't have any shared stores yet!")}
-
-                </div>
-
-                <div class="spacer"></div>
-
-            </div>
-
         </div>
 `;
     }
@@ -389,17 +351,5 @@ export class Menu extends BaseElement {
         this.dispatch("select-tag", { tag });
         await wait(350);
         this._closeSubMenu();
-    }
-
-    private async _openStore(store: SharedStore) {
-        router.go(`store/${store.id}`);
-        await wait(350);
-        this._closeSubMenu();
-    }
-
-    private _toggleStore(store: SharedStore, e: Event) {
-        e && e.stopPropagation();
-        e && e.stopImmediatePropagation();
-        app.toggleStore(store);
     }
 }

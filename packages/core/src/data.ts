@@ -43,6 +43,10 @@ export function createRecord(name: string, fields?: Field[], tags?: Tag[]): Reco
 export class Collection implements Iterable<Record>, Serializable {
     private _records: Map<string, Record> = new Map<string, Record>();
 
+    get size() {
+        return this._records.size;
+    }
+
     get tags(): string[] {
         const tags = new Set<string>();
         for (const r of this) {

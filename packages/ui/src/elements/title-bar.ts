@@ -1,11 +1,12 @@
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { BaseElement, html } from "./base.js";
 
 export class TitleBar extends BaseElement {
     _render() {
         return html`
-        <style include="shared">
-            ${sharedStyles}
+        ${shared}
+
+        <style>
 
             :host {
                 height: var(--title-bar-height);

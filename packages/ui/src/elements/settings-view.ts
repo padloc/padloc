@@ -1,6 +1,7 @@
 import { getClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Record, Store } from "@padlock/core/lib/data.js";
+import { Record } from "@padlock/core/lib/data.js";
+import { Store } from "@padlock/core/lib/store.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import * as imp from "@padlock/core/lib/import.js";
 import {
@@ -12,7 +13,7 @@ import {
     loadDB,
     isElectron
 } from "@padlock/core/lib/platform.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt, exportRecords } from "../dialog";
 import { animateCascade } from "../animation";
@@ -35,15 +36,14 @@ export class SettingsView extends View {
     }
 
     _render() {
-        const { settings, account, loggedIn } = app;
+        const { settings, loggedIn } = app;
         const isDesktop = isElectron();
-        const subStatus = (account && account.subscription && account.subscription.status) || "";
-        // const dbPath = desktopSettings.dbPath;
         const dbPath = "";
 
         return html`
+        ${shared}
+
         <style>
-            ${sharedStyles}
 
             @keyframes beat {
                 0% { transform: scale(1); }
@@ -174,7 +174,7 @@ export class SettingsView extends View {
 
                 <div class="section-header">${$l("Synchronization")}</div>
 
-                <div disabled$="${subStatus !== "active" && subStatus !== "trialing"}">
+                <div>
 
                     <pl-toggle-button
                         id="autoSyncButton"
@@ -184,25 +184,13 @@ export class SettingsView extends View {
                         class="tap">
                     </pl-toggle-button>
 
-                    <div class="feature-locked" hidden?="${loggedIn}">
-                        ${$l("Log in to enable auto sync!")}
-                    </div>
-
-                    <div class="feature-locked" hidden?="${subStatus !== "trial_expired"}">
-                        ${$l("Upgrade to enable auto sync!")}
-                    </div>
-
-                    <div class="feature-locked" hidden?="${subStatus !== "canceled"}">
-                        ${$l("Upgrade to enable auto sync!")}
-                    </div>
-
                 </div>
 
                 <pl-toggle-button
                     id="customServerButton"
                     active="${settings.customServer}"
                     label="${$l("Use Custom Server")}"
-                    reverse 
+                    reverse
                     class="tap"
                     on-change="${(e: CustomEvent) => this._toggleCustomServer(e)}">
                 </pl-toggle-button>
@@ -345,14 +333,16 @@ export class SettingsView extends View {
 
     //* Opens the change password dialog and resets the corresponding input elements
     private async _changePassword() {
-        const success =
-            !app.password ||
-            (await promptPassword(
-                app.password,
-                $l("Are you sure you want to change your master password? Enter your current password to continue!"),
-                $l("Confirm"),
-                $l("Cancel")
-            ));
+        // TODO
+        const success = false;
+        // const success =
+        //     !app.password ||
+        //     (await promptPassword(
+        //         app.password,
+        //         $l("Are you sure you want to change your master password? Enter your current password to continue!"),
+        //         $l("Confirm"),
+        //         $l("Cancel")
+        //     ));
 
         if (!success) {
             return;
@@ -412,18 +402,19 @@ export class SettingsView extends View {
     }
 
     private async _resetData() {
-        const confirmed = await promptPassword(
-            app.password!,
-            $l(
-                "Are you sure you want to delete all your data and reset the app? Enter your " +
-                    "master password to continue!"
-            ),
-            $l("Reset App")
-        );
-
-        if (confirmed) {
-            return app.reset();
-        }
+        // TODO
+        // const confirmed = await promptPassword(
+        //     app.password!,
+        //     $l(
+        //         "Are you sure you want to delete all your data and reset the app? Enter your " +
+        //             "master password to continue!"
+        //     ),
+        //     $l("Reset App")
+        // );
+        //
+        // if (confirmed) {
+        //     return app.reset();
+        // }
     }
 
     private async _import() {
@@ -597,12 +588,12 @@ export class SettingsView extends View {
     }
 
     private _export() {
-        exportRecords(this.store.records);
+        exportRecords(Array.from(this.store.collection));
     }
 
     private async _toggleCustomServer(e: CustomEvent) {
         const el = e.target as ToggleButton;
-        if (app.session && app.session.active) {
+        if (app.loggedIn) {
             e.stopPropagation();
             await alert($l("Please log out of the current server first!"));
             el.active = !el.active;

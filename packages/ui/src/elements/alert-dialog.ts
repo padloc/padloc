@@ -1,5 +1,5 @@
 import { localize } from "@padlock/core/lib/locale.js";
-import sharedStyles from "../styles/shared";
+import { shared } from "../styles";
 import { BaseElement, element, html, property } from "./base.js";
 import "./dialog.js";
 
@@ -36,8 +36,9 @@ export class AlertDialog extends BaseElement {
 
     _render(props: this) {
         return html`
+        ${shared}
+
         <style>
-            ${sharedStyles}
 
             :host {
                 --pl-dialog-inner: {

@@ -132,5 +132,3 @@ export const config = html`
             }
         }
 </style>`;
-
-export default config;

@@ -1,7 +1,7 @@
 import { isTouch } from "@padlock/core/lib/platform.js";
 import { Record, Field } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { openField, generate } from "../dialog.js";
 import { setClipboard } from "../clipboard.js";
 import { BaseElement, element, html, property } from "./base.js";
@@ -20,9 +20,9 @@ export class RecordField extends BaseElement {
 
     _render({ field, readonly }: this) {
         return html`
-        <style>
-            ${sharedStyles}
+        ${ shared }
 
+        <style>
             :host {
                 display: block;
                 color: inherit;

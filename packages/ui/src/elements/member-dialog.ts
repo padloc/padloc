@@ -1,7 +1,7 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { SharedStore } from "@padlock/core/lib/data.js";
-import { Accessor, AccessorStatus } from "@padlock/core/lib/crypto.js";
-import sharedStyles from "../styles/shared.js";
+import { Store } from "@padlock/core/lib/store.js";
+import { GroupMember } from "@padlock/core/lib/group.js";
+import { shared } from "../styles";
 import { app } from "../init.js";
 import { confirm } from "../dialog.js";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
@@ -10,10 +10,10 @@ import { ToggleButton } from "./toggle-button.js";
 import { LoadingButton } from "./loading-button.js";
 import "./fingerprint.js";
 
-@element("pl-accessor-dialog")
-export class AccessorDialog extends BaseElement {
-    @property() store: SharedStore | null = null;
-    @property() accessor: Accessor | null = null;
+@element("pl-member-dialog")
+export class MemberDialog extends BaseElement {
+    @property() store: Store | null = null;
+    @property() member: GroupMember | null = null;
     @property() private _loading = false;
 
     @query("pl-dialog") private _dialog: Dialog;
@@ -30,13 +30,13 @@ export class AccessorDialog extends BaseElement {
         this._dialog.open = false;
     }
 
-    async show(accessor: Accessor, store: SharedStore): Promise<number> {
-        this.accessor = accessor;
+    async show(member: GroupMember, store: Store): Promise<number> {
+        this.member = member;
         this.store = store;
         await this.renderComplete;
-        this._permRead.active = accessor.permissions.read;
-        this._permWrite.active = accessor.permissions.write;
-        this._permManage.active = accessor.permissions.manage;
+        this._permRead.active = member.permissions.read;
+        this._permWrite.active = member.permissions.write;
+        this._permManage.active = member.permissions.manage;
         this.requestRender();
         this._dialog.open = true;
         return new Promise<number>(resolve => {
@@ -49,9 +49,9 @@ export class AccessorDialog extends BaseElement {
         this.requestRender();
     }
 
-    async _rejectAccessor() {
-        const { status } = this.accessor!;
-        if (status !== "active" && status !== "requested" && status !== "invited") {
+    async _rejectMember() {
+        const { status } = this.member!;
+        if (status !== "active") {
             this._done();
             return;
         }
@@ -60,12 +60,8 @@ export class AccessorDialog extends BaseElement {
             return;
         }
 
-        const confirmMessage =
-            status === "requested"
-                ? $l("Reject access for this user?")
-                : $l("Are you sure you want to remove this user from this group?");
         this._dialog.open = false;
-        const confirmed = await confirm(confirmMessage);
+        const confirmed = await confirm($l("Are you sure you want to remove this user from this group?"));
         this._dialog.open = false;
 
         if (!confirmed) {
@@ -75,16 +71,16 @@ export class AccessorDialog extends BaseElement {
         this._loading = true;
         this._rejectButton.start();
         try {
-            if (status === "active" || status === "invited") {
-                await app.revokeAccess(this.store!, this.accessor!);
-            } else if (status === "requested") {
-                await app.updateAccess(
-                    this.store!,
-                    this.accessor!,
-                    { read: false, write: false, manage: false },
-                    "rejected" as AccessorStatus
-                );
-            }
+            // if (status === "active" || status === "invited") {
+            //     await app.revokeAccess(this.store!, this.member!);
+            // } else if (status === "requested") {
+            //     await app.updateAccess(
+            //         this.store!,
+            //         this.member!,
+            //         { read: false, write: false, manage: false },
+            //         "rejected" as MemberStatus
+            //     );
+            // }
             this._rejectButton.success();
             this._loading = false;
             this._done();
@@ -95,19 +91,19 @@ export class AccessorDialog extends BaseElement {
         }
     }
 
-    async _approveAccessor() {
+    async _approveMember() {
         if (this._loading) {
             return;
         }
         this._loading = true;
         this._approveButton.start();
         try {
-            await app.updateAccess(
-                this.store!,
-                this.accessor!,
-                { read: this._permRead.active, write: this._permWrite.active, manage: this._permManage.active },
-                "active"
-            );
+            // await app.updateAccess(
+            //     this.store!,
+            //     this.member!,
+            //     { read: this._permRead.active, write: this._permWrite.active, manage: this._permManage.active },
+            //     "active"
+            // );
             this._approveButton.success();
             this._loading = false;
             this._done();
@@ -119,38 +115,28 @@ export class AccessorDialog extends BaseElement {
     }
 
     _shouldRender() {
-        return !!this.store && !!this.accessor;
+        return !!this.store && !!this.member;
     }
 
-    _render({ store, accessor, _loading }: this) {
+    _render({ store, member, _loading }: this) {
         const storeName = store!.name;
-        const { id, email, name, publicKey, status, permissions } = accessor!;
+        const { id, email, name, publicKey, status, permissions } = member!;
         const permsChanged =
             (this._permRead && this._permRead.active !== permissions.read) ||
             (this._permWrite && this._permWrite.active !== permissions.write) ||
             (this._permManage && this._permManage.active !== permissions.manage);
         // const isTrusted = app.isTrusted(account);
         const isOwnAccount = app.account && app.account.id === id;
-        const disableControls = _loading || isOwnAccount || !store!.permissions.manage;
-        const approveIcon = status === "active" || status === "requested" || status === "invited" ? "check" : "invite";
-        const approveLabel =
-            status === "active" || status === "invited"
-                ? $l("Update")
-                : status === "requested"
-                    ? $l("Approve")
-                    : $l("Add");
-        const rejectIcon = status === "active" || status === "invited" ? "removeuser" : "cancel";
-        const rejectLabel =
-            status === "active" || status === "invited"
-                ? $l("Remove")
-                : status === "requested"
-                    ? $l("Reject")
-                    : $l("Cancel");
+        const disableControls = _loading || isOwnAccount || !store!.getPermissions().manage;
+        const approveIcon = status === "active" ? "check" : "invite";
+        const approveLabel = status === "active" ? $l("Update") : $l("Add");
+        const rejectIcon = status === "active" ? "removeuser" : "cancel";
+        const rejectLabel = status === "active" ? $l("Remove") : $l("Cancel");
 
         return html`
-        <style>
+        ${shared}
 
-            ${sharedStyles}
+        <style>
 
             :host {
                 --pl-dialog-inner: {
@@ -288,8 +274,6 @@ export class AccessorDialog extends BaseElement {
 
             </div>
 
-            <div class="text" hidden?="${status !== "requested"}">${$l("wants to join")}</div>
-
             <div class="tags">
                 <div class="store tag">
                     <pl-icon icon="group"></pl-icon>
@@ -332,7 +316,7 @@ export class AccessorDialog extends BaseElement {
                 <pl-loading-button
                     id="approveButton"
                     disabled?="${disableControls || _loading || (status === "active" && !permsChanged)}"
-                    on-click="${() => this._approveAccessor()}">
+                    on-click="${() => this._approveMember()}">
 
                     <pl-icon icon="${approveIcon}"></pl-icon>
 
@@ -343,7 +327,7 @@ export class AccessorDialog extends BaseElement {
                 <pl-loading-button
                     id="rejectButton"
                     disabled?="${disableControls || _loading}"
-                    on-click="${() => this._rejectAccessor()}">
+                    on-click="${() => this._rejectMember()}">
 
                     <pl-icon icon="${rejectIcon}"></pl-icon>
 

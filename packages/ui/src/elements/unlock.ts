@@ -16,6 +16,7 @@ export class Unlock extends StartForm {
         this._passwordInput.value = "";
         this._unlockButton.stop();
         super.reset();
+        setTimeout(() => this._passwordInput.focus(), 100);
     }
 
     _render() {

@@ -431,5 +431,3 @@ ${shared}
 </dom-module>`;
 
 document.head.appendChild(_documentContainer.content);
-
-export default shared;

@@ -1,5 +1,5 @@
 import { BaseElement, element, html, property, listen } from "./base.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 
 @element("pl-toggle")
 export class Toggle extends BaseElement {
@@ -9,8 +9,8 @@ export class Toggle extends BaseElement {
 
     _render() {
         return html`
+        ${shared}
         <style>
-            ${sharedStyles}
 
             :host {
                 --width: var(--toggle-width, 45px);

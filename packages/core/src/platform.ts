@@ -1,4 +1,5 @@
 import { loadScript } from "./util.js";
+import { localize as $l } from "./locale.js";
 
 declare var cordova: any | undefined;
 declare var chrome: any | undefined;
@@ -266,4 +267,11 @@ export async function getDeviceInfo(): Promise<DeviceInfo> {
     }
 
     return info;
+}
+
+export function deviceDescription(device?: DeviceInfo) {
+    if (!device) {
+        return $l("Unknown Device");
+    }
+    return device.browser ? $l("{0} on {1}", device.browser, device.platform) : $l("{0} Device", device.platform);
 }

@@ -1,6 +1,6 @@
 // @ts-ignore
 import autosize from "autosize/src/autosize.js";
-import sharedStyles from "../styles/shared";
+import { shared } from "../styles";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
 
 let activeInput: Input | null = null;
@@ -120,8 +120,10 @@ export class Input extends BaseElement {
                     tabindex="-1"
                     disabled>`;
 
-        return html`<style>
-            ${sharedStyles}
+        return html`
+        ${shared}
+
+        <style>
 
             :host {
                 display: block;

@@ -1,12 +1,12 @@
-import { Accessor } from "@padlock/core/lib/crypto.js";
+import { GroupMember } from "@padlock/core/lib/group.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { BaseElement, element, html, property } from "./base.js";
 
 @element("pl-account-item")
 export class AccountItem extends BaseElement {
-    @property() account: Accessor | null = null;
+    @property() account: GroupMember | null = null;
 
     _shouldRender() {
         return !!this.account;
@@ -18,29 +18,21 @@ export class AccountItem extends BaseElement {
 
         switch (account.status) {
             case "active":
-            case "invited":
                 account.permissions.read && pills.push({ icon: "check", label: $l("read") });
                 account.permissions.write && pills.push({ icon: "check", label: $l("write") });
                 account.permissions.manage && pills.push({ icon: "check", label: $l("manage") });
                 break;
-            case "requested":
-                pills.push({ icon: "time", label: $l("access requested"), class: "highlight" });
-                break;
             default:
-                if (app.isTrusted(account)) {
-                    pills.push({ icon: "trusted", label: $l("trusted") });
-                }
-                const commonStores = app.sharedStores.filter(s =>
-                    s.accessors.some(a => a.id === account!.id && a.status === "active")
-                );
+                const commonStores = app.stores.filter(s => s.isMember(account!));
                 if (commonStores.length) {
                     pills.push({ icon: "group", label: $l("{0} common groups", commonStores.length.toString()) });
                 }
         }
 
         return html`
+            ${shared}
+
             <style>
-                ${sharedStyles}
 
                 :host {
                     height: 80px;
@@ -78,7 +70,7 @@ export class AccountItem extends BaseElement {
 
                     ${pills.map(
                         pill => html`
-                            <div class$="tag ${pill.class || ""}">
+                            <div class="tag">
 
                                 <pl-icon icon="${pill.icon}"></pl-icon>
 

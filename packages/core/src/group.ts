@@ -105,7 +105,7 @@ export abstract class Group implements GroupInfo {
         return member && member.permissions.manage;
     }
 
-    isMember(account: AccountInfo) {
+    isMember(account?: AccountInfo) {
         return !!this.getMember(account);
     }
 
@@ -113,8 +113,12 @@ export abstract class Group implements GroupInfo {
         return !!this.invites.find(({ email }) => email === account.email);
     }
 
-    getMember(account: AccountInfo) {
-        return this._members.get(account.id);
+    getMember(account?: AccountInfo) {
+        const acc = account || this._account;
+        if (!acc) {
+            return null;
+        }
+        return this._members.get(acc.id);
     }
 
     getPermissions(acc?: AccountInfo | null) {

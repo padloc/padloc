@@ -83,7 +83,7 @@ export class Start extends BaseElement {
 
                 .form:not(.showing) {
                     opacity: 0;
-                    transition: opacity 0.2s;
+                    transition: opacity 1s;
                     pointer-events: none;
                 }
 

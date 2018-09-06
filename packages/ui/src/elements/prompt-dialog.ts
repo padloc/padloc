@@ -1,5 +1,5 @@
 import { localize } from "@padlock/core/lib/locale.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
@@ -39,8 +39,9 @@ export class PromptDialog extends BaseElement {
 
     _render({ open, message, confirmLabel, cancelLabel, placeholder, preventDismiss, type, _validationMessage }: this) {
         return html`
+        ${shared}
+
         <style include="shared">
-            ${sharedStyles}
 
             :host {
                 --pl-dialog-inner: {

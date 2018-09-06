@@ -1,7 +1,9 @@
-import { Store, SharedStore, Record, Field } from "@padlock/core/lib/data.js";
+import { AccountInfo } from "@padlock/core/lib/auth.js";
+import { Record, Field } from "@padlock/core/lib/data.js";
+import { Store } from "@padlock/core/lib/store.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { View } from "./view.js";
 import { confirm, prompt, choose, openField, generate, getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
@@ -46,15 +48,18 @@ export class RecordView extends View {
     _render({ record, store }: this) {
         const { name, fields, tags, updated, updatedBy } = record!;
         store = store!;
-        const isShared = store instanceof SharedStore;
-        const permissions = store instanceof SharedStore ? store.permissions : { read: true, write: true };
-        const oldAccessors = store instanceof SharedStore ? store.getOldAccessors(record!) : [];
-        const storeName = store instanceof SharedStore ? store.name : "";
+        const isShared = app.mainStore && store.id !== app.mainStore.id;
+        const permissions = store.getPermissions();
+        // TODO
+        // const removedMembers = store instanceof SharedStore ? store.getOldAccessors(record!) : [];
+        const removedMembers: any[] = [];
+        const storeName = store.name;
+        const updatedByMember = store.getMember({ id: updatedBy } as AccountInfo);
 
         return html`
-        <style>
+        ${shared}
 
-            ${sharedStyles}
+        <style>
 
             :host {
                 box-sizing: border-box;
@@ -199,7 +204,7 @@ export class RecordView extends View {
 
             </div>
 
-            <section class="highlight tiles warning animate" hidden?="${!oldAccessors.length}">
+            <section class="highlight tiles warning animate" hidden?="${!removedMembers.length}">
 
                 <div class="info">
 
@@ -210,7 +215,7 @@ export class RecordView extends View {
                         <div class="info-text">${$l(
                             "{0} users have been removed from the '{1}' group since this item was last updated. " +
                                 "Please update any sensitive information as soon as possible!",
-                            oldAccessors.length.toString(),
+                            removedMembers.length.toString(),
                             storeName
                         )}</div>
 
@@ -257,7 +262,7 @@ export class RecordView extends View {
 
             <div class="updated animate">
                 ${formatDateFromNow(updated)}
-                ${updatedBy && " " + $l("by {0}", updatedBy.email)}
+                ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
             </div>
 
         </main>
@@ -394,13 +399,13 @@ export class RecordView extends View {
 
     private async _share() {
         const store = await this._shareDialog.show([this.record!]);
-        if (store && store.accessors.length === 1) {
+        if (store && store.members.length === 1) {
             router.go(`store/${store.id}`);
         }
     }
 
     private _openStore(store: Store) {
-        router.go(`store/${store instanceof SharedStore ? store.id : "main"}`);
+        router.go(`store/${store.id}`);
     }
 
     edit() {

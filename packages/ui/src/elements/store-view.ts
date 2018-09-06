@@ -1,14 +1,14 @@
-import { SharedStore } from "@padlock/core/lib/data.js";
+import { Store } from "@padlock/core/lib/store.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Accessor } from "@padlock/core/lib/crypto.js";
-import sharedStyles from "../styles/shared.js";
+import { GroupMember } from "@padlock/core/lib/group.js";
+import { shared } from "../styles";
 import { getDialog, confirm } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { element, html, property, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
-import "./accessor-dialog.js";
+import "./member-dialog.js";
 import { InviteDialog } from "./invite-dialog.js";
 import "./invite-dialog.js";
 import { ShareStoreDialog } from "./share-store-dialog.js";
@@ -16,7 +16,7 @@ import "./share-store-dialog.js";
 
 @element("pl-store-view")
 export class StoreView extends View {
-    @property() store: SharedStore | null = null;
+    @property() store: Store | null = null;
 
     private get _inviteDialog() {
         return getDialog("pl-invite-dialog") as InviteDialog;
@@ -35,7 +35,7 @@ export class StoreView extends View {
 
     async _activated() {
         animateCascade(this.$$(".animate:not([hidden])", false), { initialDelay: 200 });
-        if (this.store && this.store.accessors.length === 1 && this.store.permissions.manage) {
+        if (this.store && this.store.members.length === 1 && this.store.getPermissions().manage) {
             const confirmed = await confirm(
                 $l(
                     "There is nobody else in this group yet. Invite others to give " +
@@ -55,7 +55,7 @@ export class StoreView extends View {
         const accounts = app.knownAccounts.filter(
             acc =>
                 acc.id !== app.account!.id &&
-                !this.store!.accessors.some(a => a.email === acc.email && a.status === "active")
+                !this.store!.members.some(a => a.email === acc.email && a.status === "active")
         );
 
         const selection = accounts.length ? await this._inviteDialog.show(accounts) : "new";
@@ -63,23 +63,24 @@ export class StoreView extends View {
         if (selection === "new") {
             this._shareStoreDialog.show(this.store!);
         } else if (selection !== null) {
-            this._openAccessor(
-                Object.assign(
-                    {
-                        status: "none" as "none",
-                        encryptedKey: "",
-                        updatedBy: "",
-                        updated: "",
-                        permissions: { read: true, write: false, manage: false }
-                    },
-                    selection
-                )
-            );
+            // TODO
+            // this._showMember(
+            //     Object.assign(
+            //         {
+            //             status: "none" as "none",
+            //             encryptedKey: "",
+            //             updatedBy: "",
+            //             updated: "",
+            //             permissions: { read: true, write: false, manage: false }
+            //         },
+            //         selection
+            //     )
+            // );
         }
     }
 
-    private async _openAccessor(accessor: Accessor) {
-        await getDialog("pl-accessor-dialog").show(accessor, this.store);
+    private async _showMember(member: GroupMember) {
+        await getDialog("pl-member-dialog").show(member, this.store);
     }
 
     // private async _delete() {
@@ -104,16 +105,16 @@ export class StoreView extends View {
     }
 
     _render({ store }: this) {
-        const { name, accessors, permissions, accessorStatus, records } = store!;
-        const statuses = ["requested", "invited", "active"];
-        const accounts = accessors
-            .filter(({ status }) => statuses.includes(status))
-            .sort((a, b) => statuses.indexOf(a.status) - statuses.indexOf(b.status));
+        store = store!;
+        const { name, members, collection } = store;
+        const member = store.getMember();
+        const memberStatus = member ? member.status : "";
+        const permissions = store.getPermissions();
 
         return html`
-        <style>
-            ${sharedStyles}
+        ${shared}
 
+        <style>
 
             :host {
                 display: flex;
@@ -188,21 +189,13 @@ export class StoreView extends View {
 
         <main>
 
-            <div class="subheader warning animate ellipsis" hidden?="${accessorStatus !== "removed"}">
+            <div class="subheader warning animate ellipsis" hidden?="${memberStatus !== "removed"}">
                 <div flex>${$l("You have been removed from this group")}</div>
-            </div>
-
-            <div class="subheader highlight animate ellipsis" hidden?="${accessorStatus !== "requested"}">
-                <div flex>${$l("Access Request Sent")}</div>
-            </div>
-
-            <div class="subheader warning animate ellipsis" hidden?="${accessorStatus !== "rejected"}">
-                <div flex>${$l("Access Request Rejected")}</div>
             </div>
 
             <div class="tags animate">
 
-                <div class="tag warning" flex hidden?="${accessorStatus !== "active" || permissions.write}">
+                <div class="tag warning" flex hidden?="${memberStatus !== "active" || permissions.write}">
 
                     <pl-icon icon="show"></pl-icon>
 
@@ -210,30 +203,30 @@ export class StoreView extends View {
 
                 </div>
 
-                <div class="tag" flex hidden?="${accessorStatus === "removed"}">
+                <div class="tag" flex hidden?="${memberStatus === "removed"}">
 
                     <pl-icon icon="group"></pl-icon>
 
-                    <div>${$l("{0} Members", accounts.length.toString())}</div>
+                    <div>${$l("{0} Members", members.length.toString())}</div>
 
                 </div>
 
-                <div class="tag" flex hidden?="${accessorStatus === "removed"}">
+                <div class="tag" flex hidden?="${memberStatus === "removed"}">
 
                     <pl-icon icon="record"></pl-icon>
 
-                    <div>${$l("{0} Records", records.length.toString())}</div>
+                    <div>${$l("{0} Records", collection.size.toString())}</div>
 
                 </div>
 
             </div>
 
-            ${accounts.map(
+            ${members.map(
                 acc => html`
                     <pl-account-item
                         account="${acc}"
                         class="animate tap"
-                        on-click="${() => this._openAccessor(acc)}">
+                        on-click="${() => this._showMember(acc)}">
                     </pl-account-item>
                 `
             )}

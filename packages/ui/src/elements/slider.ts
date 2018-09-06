@@ -1,5 +1,5 @@
 import { BaseElement, element, html, property, query } from "./base.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 
 @element("pl-slider")
 export class Slider extends BaseElement {
@@ -15,8 +15,9 @@ export class Slider extends BaseElement {
 
     _render(props: this) {
         return html`
+        ${shared}
+
         <style include="shared">
-            ${sharedStyles}
 
             :host {
                 display: flex;

@@ -1,19 +1,17 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { PublicAccount } from "@padlock/core/lib/auth.js";
-import sharedStyles from "../styles/shared.js";
+import { AccountInfo } from "@padlock/core/lib/auth.js";
+import { shared } from "../styles";
 import { app } from "../init.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
-import { LoadingButton } from "./loading-button.js";
 import "./fingerprint.js";
 
 @element("pl-account-dialog")
 export class AccountDialog extends BaseElement {
-    @property() account: PublicAccount | null = null;
+    @property() account: AccountInfo | null = null;
     @property() action: string = "";
 
     @query("pl-dialog") private _dialog: Dialog;
-    @query("#addTrustedButton") private _addTrustedButton: LoadingButton;
 
     private _resolve: ((doAction: boolean) => void) | null;
 
@@ -21,16 +19,15 @@ export class AccountDialog extends BaseElement {
         return !!this.account;
     }
 
-    _render({ account, action }: this) {
+    _render({ account }: this) {
         account = account!;
         const { id, email, name, publicKey } = account;
-        const isTrusted = app.isTrusted(account);
-        const isOwnAccount = app.account && app.account.id === account.id;
+        const isOwnAccount = app.account && app.account.id === id;
 
         return html`
-        <style>
+        ${shared}
 
-            ${sharedStyles}
+        <style>
 
             :host {
                 --pl-dialog-inner: {
@@ -125,14 +122,6 @@ export class AccountDialog extends BaseElement {
 
                 <div class="tags small">
 
-                    <div class="tag" hidden?="${!isTrusted}">
-
-                        <pl-icon icon="trusted"></pl-icon>
-
-                        <div>${$l("Trusted")}</div>
-
-                    </div>
-
                     <div class="tag" hidden?="${!isOwnAccount}">
 
                         <pl-icon icon="user"></pl-icon>
@@ -141,7 +130,7 @@ export class AccountDialog extends BaseElement {
 
                     </div>
 
-                    ${app.sharedStores.filter(s => s.accessors.some(a => a.id === id)).map(
+                    ${app.stores.filter(s => s.isMember(account!)).map(
                         s => html`
                             <div class="tag">
 
@@ -155,40 +144,8 @@ export class AccountDialog extends BaseElement {
 
             </div>
 
-            <pl-loading-button
-                id="addTrustedButton"
-                hidden?="${isTrusted || isOwnAccount}"
-                class="tap tiles-2"
-                on-click="${() => this._addTrusted()}">
-
-                <pl-icon icon="trusted"></pl-icon>
-
-                <div>${$l("Trust This User")}</div>
-
-            </pl-loading-button>
-
-            <button hidden?="${!isTrusted || !action}" class="tap tiles-2" on-click="${() => this._doAction()}">
-                ${action}
-            </button>
-
         </pl-dialog>
 `;
-    }
-
-    async _addTrusted() {
-        if (this._addTrustedButton.state === "loading") {
-            return;
-        }
-
-        this._addTrustedButton.start();
-        try {
-            await app.addTrustedAccount(this.account!);
-            this._addTrustedButton.success();
-            this.requestRender();
-        } catch (e) {
-            // TODO handle error
-            this._addTrustedButton.fail();
-        }
     }
 
     private _done(doAction = false) {
@@ -196,7 +153,7 @@ export class AccountDialog extends BaseElement {
         this._dialog.open = false;
     }
 
-    async show(account: PublicAccount, action = "") {
+    async show(account: AccountInfo, action = "") {
         this.account = account;
         this.action = action;
         await this.renderComplete;
@@ -204,9 +161,5 @@ export class AccountDialog extends BaseElement {
         return new Promise(resolve => {
             this._resolve = resolve;
         });
-    }
-
-    _doAction() {
-        this._done(true);
     }
 }

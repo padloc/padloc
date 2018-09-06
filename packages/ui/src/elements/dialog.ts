@@ -1,4 +1,4 @@
-import sharedStyles from "../styles/shared";
+import { shared } from "../styles";
 import { animateElement } from "../animation";
 import { BaseElement, html, property, observe, listen } from "./base.js";
 import { Input } from "./input.js";
@@ -12,8 +12,9 @@ export class Dialog extends BaseElement {
 
     _render() {
         return html`
+        ${shared}
+
         <style>
-            ${sharedStyles}
 
             :host {
                 display: block;

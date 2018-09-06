@@ -1,7 +1,7 @@
 import { Record, Field } from "@padlock/core/lib/data.js";
 import { setClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { BaseElement, html, property } from "./base.js";
 
 export class Clipboard extends BaseElement {
@@ -19,8 +19,9 @@ export class Clipboard extends BaseElement {
 
     _render(props: this) {
         return html`
+        ${ shared }
+
         <style>
-            ${ sharedStyles }
 
             :host {
                 display: flex;

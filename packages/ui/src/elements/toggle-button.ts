@@ -1,4 +1,4 @@
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Toggle } from "./toggle.js";
 
@@ -14,8 +14,9 @@ export class ToggleButton extends BaseElement {
 
     _render({ active, label }: this) {
         return html`
+        ${shared}
+
         <style>
-            ${sharedStyles}
 
             :host {
                 display: inline-block;

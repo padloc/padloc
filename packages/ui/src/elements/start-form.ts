@@ -18,8 +18,9 @@ export const sharedStyles = html`
 
         :host {
             @apply --fullbleed;
-
+            @apply --scroll;
             display: flex;
+            flex-direction: column;
             align-items: center;
         }
 
@@ -40,13 +41,14 @@ export const sharedStyles = html`
 
         .title {
             font-size: 250%;
+            margin-bottom: 20px;
             margin-bottom: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        pl-button {
+        pl-loading-button {
             overflow: hidden;
             font-weight: bold;
         }

@@ -1,7 +1,7 @@
-import { SharedStore } from "@padlock/core/lib/data.js";
+import { Store } from "@padlock/core/lib/store.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { setClipboard } from "@padlock/core/lib/platform.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { router } from "../init.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
@@ -9,7 +9,7 @@ import { LoadingButton } from "./loading-button.js";
 
 @element("pl-share-store-dialog")
 export class ShareStoreDialog extends BaseElement {
-    @property() store: SharedStore | null = null;
+    @property() store: Store | null = null;
 
     @query("pl-dialog") private _dialog: Dialog;
     @query("#copyButton") private _copyButton: LoadingButton;
@@ -27,8 +27,9 @@ export class ShareStoreDialog extends BaseElement {
         const { name } = store!;
 
         return html`
+            ${shared}
+
             <style>
-                ${sharedStyles}
 
                 .title {
                     padding: 10px 15px;
@@ -113,7 +114,7 @@ export class ShareStoreDialog extends BaseElement {
         `;
     }
 
-    async show(store: SharedStore): Promise<void> {
+    async show(store: Store): Promise<void> {
         this.store = store;
         this.requestRender();
         await this.renderComplete;

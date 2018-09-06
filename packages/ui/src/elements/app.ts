@@ -1,10 +1,8 @@
-import { Store } from "@padlock/core/lib/store.js";
 import { checkForUpdates, getPlatformName, getDeviceInfo } from "@padlock/core/lib/platform.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import config from "../styles/config.js";
-import sharedStyles from "../styles/shared.js";
+import { config, shared } from "../styles";
 import { app, router } from "../init.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
 import { AccountView } from "./account-view.js";
@@ -13,7 +11,7 @@ import { View } from "./view.js";
 import { ListView } from "./list-view.js";
 import { RecordView } from "./record-view.js";
 import { SettingsView } from "./settings-view.js";
-import { StartView } from "./start-view.js";
+import { Start } from "./start.js";
 import { StoreView } from "./store-view.js";
 import { TitleBar } from "./title-bar.js";
 import { Menu } from "./menu.js";
@@ -31,13 +29,12 @@ const cordovaReady = new Promise(resolve => {
 class App extends BaseElement {
     @property({ reflect: "show-menu" })
     private _showMenu: boolean = false;
-    @property() private _currentStore: Store = app.mainStore;
 
     @query("#main") private _main: HTMLDivElement;
     @query("pl-title-bar") private _titleBar: TitleBar;
     @query("pl-list-view") private _listView: ListView;
     @query("pl-record-view") private _recordView: RecordView;
-    @query("pl-start-view") private _startView: StartView;
+    @query("pl-start") private _startView: Start;
     @query("pl-settings-view") private _settingsView: SettingsView;
     @query("pl-account-view") private _accountView: AccountView;
     @query("pl-store-view") private _storeView: StoreView;
@@ -78,9 +75,9 @@ class App extends BaseElement {
     _render() {
         return html`
         ${config}
+        ${shared}
 
         <style>
-            ${sharedStyles}
 
             @keyframes fadeIn {
                 from { opacity: 0; }
@@ -247,7 +244,7 @@ class App extends BaseElement {
             }
         </style>
 
-        <pl-start-view id="startView"></pl-start-view>
+        <pl-start id="startView"></pl-start>
 
         <pl-menu
             on-menu-open="${() => (this._showMenu = true)}"
@@ -258,10 +255,7 @@ class App extends BaseElement {
 
         <div id="main">
 
-            <pl-list-view
-                store="${this._currentStore}"
-                on-toggle-menu="${() => this._menu.toggle()}">
-            </pl-list-view>
+            <pl-list-view on-toggle-menu="${() => this._menu.toggle()}"></pl-list-view>
 
             <div id="views">
 
@@ -269,9 +263,9 @@ class App extends BaseElement {
                     <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
                 </div>
 
-                <pl-record-view store="${this._currentStore}"></pl-record-view>
+                <pl-record-view></pl-record-view>
 
-                <pl-settings-view store="${this._currentStore}"></pl-settings-view>
+                <pl-settings-view></pl-settings-view>
 
                 <pl-account-view></pl-account-view>
 
@@ -489,7 +483,7 @@ class App extends BaseElement {
     }
 
     private _newRecord() {
-        app.createRecord(this._currentStore, "");
+        app.createRecord("");
     }
 }
 

@@ -1,6 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Field } from "@padlock/core/lib/data.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Input } from "./input.js";
 import "./dialog.js";
@@ -29,8 +29,9 @@ export class FieldDialog extends BaseElement {
 
     _render({ readonly, open, editing }: this) {
         return html`
+        ${shared}
+
         <style>
-            ${sharedStyles}
 
             :host {
                 --pl-dialog-inner: {

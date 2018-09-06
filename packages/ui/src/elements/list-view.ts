@@ -1,4 +1,5 @@
-import { Store, Record, Field } from "@padlock/core/lib/data.js";
+import { Record, Field } from "@padlock/core/lib/data.js";
+import { Store } from "@padlock/core/lib/store.js";
 import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 // import { isIOS } from "@padlock/core/lib/platform.js";
@@ -7,7 +8,7 @@ import { animateCascade } from "../animation.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { confirm, getDialog } from "../dialog.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { AlertDialog } from "./alert-dialog.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
 import { Input } from "./input.js";
@@ -15,7 +16,6 @@ import { ShareDialog } from "./share-dialog.js";
 import "./share-dialog.js";
 
 export class ListView extends BaseElement {
-    @property() store?: Store;
     @property() multiSelect: boolean = false;
     @property() filterString: string = "";
     @property() private _listItems: ListItem[] = [];
@@ -77,8 +77,9 @@ export class ListView extends BaseElement {
     _render(props: this) {
         const filterActive = !!props.filterString;
         return html`
+        ${shared}
+
         <style>
-            ${sharedStyles}
 
             :host {
                 box-sizing: border-box;
@@ -578,10 +579,7 @@ export class ListView extends BaseElement {
     }
 
     private _newRecord() {
-        if (!this.store) {
-            return;
-        }
-        app.createRecord(this.store, "");
+        app.createRecord("");
     }
 
     private _toggleMenu() {

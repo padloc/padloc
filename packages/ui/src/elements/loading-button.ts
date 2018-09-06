@@ -1,5 +1,5 @@
 import "@polymer/paper-spinner/paper-spinner-lite.js";
-import sharedStyles from "../styles/shared.js";
+import { shared } from "../styles";
 import { BaseElement, element, html, property, listen } from "./base.js";
 import "./icon.js";
 
@@ -16,8 +16,9 @@ export class LoadingButton extends BaseElement {
 
     _render({ state, noTab }: this) {
         return html`
+        ${shared}
+
         <style>
-            ${sharedStyles}
 
             :host {
                 display: flex;
