@@ -66,7 +66,11 @@ export abstract class Group implements GroupInfo {
     }
 
     get invites() {
-        return Array.from(this._invites.values());
+        return (
+            Array.from(this._invites.values())
+                // Filter out invites that have been expired for longer than a day
+                .filter(i => new Date().getTime() - new Date(i.expires).getTime() < 1000 * 60 * 60 * 24)
+        );
     }
 
     get initialized() {
@@ -96,11 +100,12 @@ export abstract class Group implements GroupInfo {
         this._adminContainer.access(account);
     }
 
-    isOwner(account: AccountInfo) {
-        return this.owner === account.id;
+    isOwner(account?: AccountInfo) {
+        const acc = account || this._account;
+        return !!acc && this.owner === acc.id;
     }
 
-    isAdmin(account: AccountInfo) {
+    isAdmin(account?: AccountInfo) {
         const member = this.getMember(account);
         return member && member.permissions.manage;
     }
@@ -167,28 +172,27 @@ export abstract class Group implements GroupInfo {
                 subj.publicKey,
                 this._signingParams
             );
-        } catch (e) {
-            console.log("verify error", e);
-        }
+        } catch (e) {}
         return verified;
     }
 
-    getInvite(id: string) {
-        return this._invites.get(id);
+    getInvite(email: string) {
+        return this._invites.get(email);
     }
 
     updateInvite(invite: Invite) {
-        return this._invites.set(invite.id, invite);
+        invite.updated = new Date().toISOString();
+        this._invites.set(invite.email, invite);
     }
 
     async createInvite(email: string) {
         if (!this._account || !this.isAdmin(this._account)) {
-            return new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
         const invite = new Invite(email);
         await invite.initialize(this.info, this._account.info);
-        this._invites.set(invite.id, invite);
+        this.updateInvite(invite);
         return invite;
     }
 
@@ -262,11 +266,7 @@ export abstract class Group implements GroupInfo {
         this._mergeMembers(raw.members);
         this._mergeGroups(raw.groups);
         this._signingParams = raw.signingParams;
-        await Promise.all(
-            raw.invites.map(async (i: any) => {
-                this._invites.set(i.id, await new Invite().deserialize(i));
-            })
-        );
+        this._mergeInvites(raw.invites);
         await this._adminContainer.deserialize(raw.adminData);
         if (this._account && this.isAdmin(this._account)) {
             await this._adminContainer.get(this._adminSerializer);
@@ -292,6 +292,15 @@ export abstract class Group implements GroupInfo {
         }
     }
 
+    private async _mergeInvites(invites: any[]) {
+        for (const invite of invites) {
+            const existing = this.getInvite(invite.email);
+            if (!existing || new Date(invite.updated) > new Date(existing.updated)) {
+                this._invites.set(invite.email, await new Invite().deserialize(invite));
+            }
+        }
+    }
+
     private async _generateKeyPair() {
         const { publicKey, privateKey } = await getProvider().generateKey(defaultRSAKeyParams());
         this.publicKey = publicKey;
@@ -304,8 +313,8 @@ export abstract class Group implements GroupInfo {
                 return {
                     publicKey: this.publicKey,
                     privateKey: this.privateKey,
-                    pendingInvites: this.invites.map(({ id, expires, secret }) => {
-                        return { id, expires, secret };
+                    pendingInvites: this.invites.map(({ email, expires, secret }) => {
+                        return { email, expires, secret };
                     })
                 };
             },
@@ -314,8 +323,8 @@ export abstract class Group implements GroupInfo {
                 if (raw.publicKey !== this.publicKey) {
                     throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
                 }
-                for (const { id, expires, secret } of raw.pendingInvites) {
-                    const invite = this._invites.get(id);
+                for (const { email, expires, secret } of raw.pendingInvites) {
+                    const invite = this._invites.get(email);
                     invite && Object.assign(invite, { expires, secret });
                 }
                 return this;

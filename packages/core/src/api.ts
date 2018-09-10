@@ -28,6 +28,7 @@ export interface API {
 
     createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session>;
     revokeSession(params: Session): Promise<void>;
+    getSessions(): Promise<SessionInfo[]>;
 
     createAccount(params: CreateAccountParams): Promise<Account>;
     getAccount(account: Account): Promise<Account>;

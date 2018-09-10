@@ -9,6 +9,7 @@ export type InviteStatus = "created" | "initialized" | "sent" | "accepted" | "ca
 export class Invite implements Serializable {
     id: string = "";
     created: DateString = "";
+    updated: DateString = "";
     expires: DateString = "";
     status = "created";
 
@@ -27,6 +28,10 @@ export class Invite implements Serializable {
 
     get expired(): boolean {
         return new Date() > new Date(this.expires);
+    }
+
+    get canceled(): boolean {
+        return this.status === "canceled";
     }
 
     private _secret: string = "";
@@ -50,7 +55,7 @@ export class Invite implements Serializable {
 
     async initialize(group: GroupInfo, invitor: AccountInfo, duration = 1, secret?: string) {
         this.id = uuid();
-        this.created = new Date().toISOString();
+        this.created = this.updated = new Date().toISOString();
         this.expires = new Date(new Date().getTime() + 1000 * 60 * 60 * duration).toISOString();
         this.secret = secret || base64ToHex(await getProvider().randomBytes(4));
         this._keyParams.salt = await getProvider().randomBytes(16);
@@ -94,13 +99,9 @@ export class Invite implements Serializable {
     }
 
     async verify(): Promise<boolean> {
-        return (
-            !this.expired &&
-            !!this.group &&
-            !!this.invitee &&
-            (await this._verify(this.group)) &&
-            (await this._verify(this.invitee))
-        );
+        const groupVerified = !!this.group && (await this._verify(this.group));
+        const inviteeVerified = !!this.invitee && (await this._verify(this.invitee));
+        return status === "accepted" ? groupVerified && inviteeVerified : groupVerified;
     }
 
     private async _getKey() {

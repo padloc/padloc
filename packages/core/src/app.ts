@@ -244,8 +244,14 @@ export class App extends EventTarget implements Storable {
         for (const { id } of this.mainStore.groups) {
             const store = new Store(id);
             store.access(this.account!);
-            await this.storage.get(store);
-            this._stores.set(id, store);
+            try {
+                await this.storage.get(store);
+                this._stores.set(id, store);
+            } catch (e) {
+                if (e.code !== ErrorCode.NOT_FOUND) {
+                    throw e;
+                }
+            }
         }
     }
 
@@ -264,11 +270,12 @@ export class App extends EventTarget implements Storable {
     }
 
     async save() {
-        return Promise.all([
-            this.storage.set(this),
-            this.storage.set(this.mainStore!),
-            ...this.stores.map(s => this.storage.set(s))
-        ]);
+        const promises = [this.storage.set(this)];
+        if (this.mainStore) {
+            promises.push(this.storage.set(this.mainStore), ...this.stores.map(s => this.storage.set(s)));
+        }
+
+        return promises;
     }
 
     async reset() {
@@ -410,6 +417,7 @@ export class App extends EventTarget implements Storable {
         }
 
         await this.loadStores();
+        await this.syncStores();
 
         this.dispatch("login");
         this.dispatch("unlock");
@@ -462,25 +470,21 @@ export class App extends EventTarget implements Storable {
     }
 
     async createInvite(group: Group, email: string) {
-        await group.createInvite(email);
-        if (group instanceof Store) {
-            await this.api.updateStore(group);
-        }
-    }
-
-    async acceptInvite(invite: Invite, secret: string) {
-        await invite.accept(this.account!.info, secret);
-        await this.mainStore!.addGroup(invite.group!);
-    }
-
-    async rejectInvite(invite: Invite) {
-        invite.status = "rejected";
-        await this.api.updateInvite(invite);
+        const invite = await group.createInvite(email);
+        await this.syncStore(group.id);
+        return invite;
     }
 
     async cancelInvite(invite: Invite) {
         invite.status = "canceled";
         await this.api.updateInvite(invite);
+        this.syncStore(invite.group!.id);
+    }
+
+    async acceptInvite(invite: Invite, secret: string) {
+        await invite.accept(this.account!.info, secret);
+        await this.api.updateInvite(invite);
+        await this.mainStore!.addGroup(invite.group!);
     }
 
     //

@@ -99,6 +99,27 @@ export const shared = html`
         font-weight: var(--font-weight-bold);
     }
 
+    h1, h2 {
+        margin: 20px 15px 10px 15px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    h1 pl-icon, h2 pl-icon {
+        height: 0;
+        position: relative;
+    }
+
+    h1 {
+        font-size: 140%;
+    }
+
+    h2 {
+        font-size: 110%;
+    }
+
     ::-webkit-search-cancel-button {
         display: none;
     }
@@ -214,6 +235,22 @@ export const shared = html`
         width: 100%;
         box-sizing: border-box;
         font-weight: bold;
+    }
+
+    [layout] {
+        display: flex;
+    }
+
+    [layout][vertical] {
+        direction: column;
+    }
+
+    [layout][align-center] {
+        align-items: center;
+    }
+
+    [layout][justify-center] {
+        justify-content: center;
     }
 
     .spacer, [flex], [flex="1"] {
@@ -381,6 +418,7 @@ export const shared = html`
     }
 
     .tag.warning {
+        color: var(--color-tertiary);
         background: linear-gradient(90deg, #f49300 0%, #f25b00 100%);
     }
 
@@ -392,7 +430,7 @@ export const shared = html`
 
     .tags.small pl-icon {
         font-size: 10px;
-        margin-right: 4px;
+        margin-right: 0;
         width: 16px;
         height: 25px;
     }

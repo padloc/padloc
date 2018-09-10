@@ -1,29 +1,32 @@
 import { Store } from "@padlock/core/lib/store.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { GroupMember } from "@padlock/core/lib/group.js";
+import { Invite } from "@padlock/core/lib/invite.js";
+import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { shared } from "../styles";
-import { getDialog, confirm } from "../dialog.js";
+import { getDialog, confirm, prompt } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { element, html, property, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
+import { MemberDialog } from "./member-dialog.js";
 import "./member-dialog.js";
 import { InviteDialog } from "./invite-dialog.js";
 import "./invite-dialog.js";
-import { ShareStoreDialog } from "./share-store-dialog.js";
 import "./share-store-dialog.js";
+import { Input } from "./input.js";
 
 @element("pl-store-view")
 export class StoreView extends View {
     @property() store: Store | null = null;
 
-    private get _inviteDialog() {
-        return getDialog("pl-invite-dialog") as InviteDialog;
+    private get _memberDialog() {
+        return getDialog("pl-member-dialog") as MemberDialog;
     }
 
-    private get _shareStoreDialog() {
-        return getDialog("pl-share-store-dialog") as ShareStoreDialog;
+    private get _inviteDialog() {
+        return getDialog("pl-invite-dialog") as InviteDialog;
     }
 
     @listen("synchronize", app)
@@ -35,7 +38,12 @@ export class StoreView extends View {
 
     async _activated() {
         animateCascade(this.$$(".animate:not([hidden])", false), { initialDelay: 200 });
-        if (this.store && this.store.members.length === 1 && this.store.getPermissions().manage) {
+        if (
+            this.store &&
+            this.store.members.length === 1 &&
+            !this.store.invites.length &&
+            this.store.getPermissions().manage
+        ) {
             const confirmed = await confirm(
                 $l(
                     "There is nobody else in this group yet. Invite others to give " +
@@ -52,35 +60,32 @@ export class StoreView extends View {
     }
 
     private async _invite() {
-        const accounts = app.knownAccounts.filter(
-            acc =>
-                acc.id !== app.account!.id &&
-                !this.store!.members.some(a => a.email === acc.email && a.status === "active")
-        );
+        const email = await prompt($l("Who would you like to invite to this group?"), {
+            type: "email",
+            placeholder: $l("Enter Email Address"),
+            validate: async (val: string, input: Input) => {
+                if (input.invalid) {
+                    throw $l("Please enter a valid email address!");
+                }
+                return val;
+            }
+        });
 
-        const selection = accounts.length ? await this._inviteDialog.show(accounts) : "new";
-
-        if (selection === "new") {
-            this._shareStoreDialog.show(this.store!);
-        } else if (selection !== null) {
-            // TODO
-            // this._showMember(
-            //     Object.assign(
-            //         {
-            //             status: "none" as "none",
-            //             encryptedKey: "",
-            //             updatedBy: "",
-            //             updated: "",
-            //             permissions: { read: true, write: false, manage: false }
-            //         },
-            //         selection
-            //     )
-            // );
+        if (!email) {
+            return;
         }
+
+        const invite = await app.createInvite(this.store!, email);
+        console.log(invite);
+        await this._inviteDialog.show(invite);
     }
 
     private async _showMember(member: GroupMember) {
-        await getDialog("pl-member-dialog").show(member, this.store);
+        await this._memberDialog.show(member, this.store!);
+    }
+
+    private async _showInvite(invite: Invite) {
+        this._inviteDialog.show(invite);
     }
 
     // private async _delete() {
@@ -110,6 +115,7 @@ export class StoreView extends View {
         const member = store.getMember();
         const memberStatus = member ? member.status : "";
         const permissions = store.getPermissions();
+        const invites = store.isAdmin() ? store.invites : [];
 
         return html`
         ${shared}
@@ -166,9 +172,45 @@ export class StoreView extends View {
                 text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
             }
 
-            .subheader.highlight{
+            .subheader.highlight {
                 background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
                 text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
+            }
+
+            .invite {
+                @apply --card;
+                padding: 15px 17px;
+                margin: 8px;
+            }
+
+            .invite .tags {
+                padding: 0;
+                margin: 0;
+            }
+
+            .invite-email {
+                font-weight: bold;
+                @apply --ellipsis;
+                margin-bottom: 8px;
+            }
+
+            .invite-code {
+                text-align: center;
+            }
+
+            .invite-code-label {
+                font-weight: bold;
+                font-size: var(--font-size-micro);
+            }
+
+            .invite-code-value {
+                font-size: 140%;
+                font-family: var(--font-family-mono);
+                font-weight: bold;
+                text-transform: uppercase;
+                cursor: text;
+                user-select: text;
+                letter-spacing: 2px;
             }
         </style>
 
@@ -220,6 +262,72 @@ export class StoreView extends View {
                 </div>
 
             </div>
+
+            <h2>
+
+                <pl-icon icon="mail"></pl-icon>
+
+                <div>${$l("Invites")}</div>
+
+            </h2>
+
+            ${invites.map(
+                inv => html`
+                <div layout align-center class="invite tap" on-click="${() => this._showInvite(inv)}">
+
+                    <div flex>
+
+                        <div class="invite-email">${inv.email}</div> 
+
+                        <div class="tags small">
+
+                            <div class="tag highlight" hidden?="${inv.expired || inv.status !== "accepted"}">
+
+                                <pl-icon icon="check"></pl-icon>
+
+                                <div>${$l("accepted")}</div>
+
+                            </div>
+
+                            <div class="tag warning" hidden?="${!inv.expired}">
+
+                                <pl-icon icon="time"></pl-icon>
+
+                                <div>${$l("expired")}</div>
+
+                            </div>
+
+                            <div class="tag" hidden?="${inv.expired}">
+
+                                <pl-icon icon="time"></pl-icon>
+
+                                <div>${$l("expires {0}", formatDateFromNow(inv.expires))}</div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="invite-code">
+
+                        <div class="invite-code-label">${$l("Confirmation Code:")}</div>
+
+                        <div class="invite-code-value">${inv.secret}</div>
+
+                    </div>
+
+                </div>
+            `
+            )}
+
+            <h2>
+
+                <pl-icon icon="group"></pl-icon>
+
+                <div>${$l("Members")}</div>
+
+            </h2>
 
             ${members.map(
                 acc => html`
