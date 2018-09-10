@@ -1,4 +1,4 @@
-import { Session, Account, AccountID } from "./auth";
+import { Session, SessionInfo, Account, AccountID } from "./auth";
 import { Store } from "./store";
 import { Invite } from "./invite";
 import { Base64String } from "./encoding";

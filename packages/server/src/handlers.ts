@@ -34,6 +34,10 @@ export async function revokeSession(ctx: Context, id: string) {
     ctx.body = "";
 }
 
+export async function getSessions(ctx: Context) {
+    ctx.body = await ctx.api.getSessions();
+}
+
 export async function getAccount(ctx: Context) {
     const account = await ctx.api.getAccount(ctx.state.account!);
     ctx.body = await account.serialize();

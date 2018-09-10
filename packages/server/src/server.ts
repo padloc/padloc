@@ -75,6 +75,7 @@ export class Server {
 
         this.koa.use(route.post("/session", handlers.createSession));
         this.koa.use(route.delete("/session/:id", handlers.revokeSession));
+        this.koa.use(route.get("/account/sessions", handlers.getSessions));
 
         this.koa.use(route.post("/account", handlers.createAccount));
         this.koa.use(route.get("/account", handlers.getAccount));

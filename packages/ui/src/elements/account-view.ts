@@ -27,12 +27,11 @@ export class AccountView extends View {
     }
 
     _render() {
-        const { stats } = app;
+        const { stats, sessions } = app;
         const account = app.account!;
         const isSynching = false;
         const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
         const stores = app.stores.filter(s => s.isMember(account));
-        const sessions: any[] = [];
 
         return html`
         ${shared}

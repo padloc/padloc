@@ -93,6 +93,11 @@ export class Client implements API {
         await this.request("DELETE", `session/${session.id}`, undefined);
     }
 
+    async getSessions() {
+        const res = await this.request("GET", `account/sessions`);
+        return unmarshal(res);
+    }
+
     async createAccount(params: CreateAccountParams): Promise<Account> {
         const res = await this.request("POST", "account", marshal(params));
         return new Account().deserialize(unmarshal(res));

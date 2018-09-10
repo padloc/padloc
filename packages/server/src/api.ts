@@ -132,6 +132,28 @@ export class ServerAPI implements API {
         await Promise.all([this.storage.delete(session), this.storage.set(account)]);
     }
 
+    async getSessions() {
+        const { account } = this._requireAuth();
+        console.log("get sessions", account.sessions);
+        const sessions = Promise.all(
+            Array.from(account.sessions).map(async id => {
+                const session = new Session(id);
+                try {
+                    await this.storage.get(session);
+                } catch (e) {
+                    if (e.code === ErrorCode.NOT_FOUND) {
+                        account.sessions.delete(id);
+                    } else {
+                        throw e;
+                    }
+                }
+                return session;
+            })
+        );
+        await this.storage.set(account);
+        return sessions;
+    }
+
     async createAccount(params: CreateAccountParams): Promise<Account> {
         const {
             email,
@@ -261,8 +283,12 @@ export class ServerAPI implements API {
         const group = new Store(invite.group!.id);
         await this.storage.get(group);
 
-        const existing = group.getInvite(invite.id);
-        if (!existing || existing.email !== account.email) {
+        const existing = group.getInvite(invite.email);
+        if (!existing) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
+
+        if (!group.isAdmin(account) && existing.email !== account.email) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 

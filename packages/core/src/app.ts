@@ -2,7 +2,7 @@ import { Storable, LocalStorage } from "./storage";
 import { Record, Field, Tag, StoreID } from "./data";
 import { Group } from "./group";
 import { Store } from "./store";
-import { Account, AccountInfo, Session } from "./auth";
+import { Account, AccountInfo, Session, SessionInfo } from "./auth";
 import { Invite } from "./invite";
 import { DateString } from "./encoding";
 import { API } from "./api";
@@ -12,6 +12,7 @@ import { localize as $l } from "./locale";
 import { DeviceInfo, getDeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
+import { ErrorCode } from "./error";
 
 export interface Stats {
     lastSync?: DateString;
@@ -78,6 +79,7 @@ export class App extends EventTarget implements Storable {
     session: Session | null = null;
     account: Account | null = null;
     mainStore: Store | null = null;
+    sessions: SessionInfo[] = [];
     loaded = this.load();
 
     get locked() {
@@ -113,7 +115,8 @@ export class App extends EventTarget implements Storable {
             stats: this.stats,
             messages: await this.messages.serialize(),
             settings: this.settings,
-            device: this.device
+            device: this.device,
+            sessions: this.sessions
         };
     }
 
@@ -125,6 +128,7 @@ export class App extends EventTarget implements Storable {
         await this.messages.deserialize(raw.messages);
         this.setSettings(raw.settings);
         this.device = Object.assign(raw.device, await getDeviceInfo());
+        this.sessions = raw.sessions || [];
         return this;
     }
 
@@ -415,6 +419,7 @@ export class App extends EventTarget implements Storable {
 
     async revokeSession(session: Session) {
         await this.api.revokeSession(session);
+        await this.loadSessions();
         this.dispatch("account-changed", { account: this.account });
     }
 
@@ -504,6 +509,7 @@ export class App extends EventTarget implements Storable {
     async synchronize() {
         await this.syncAccount();
         await this.syncStores();
+        await this.loadSessions();
         this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");
     }
@@ -581,5 +587,10 @@ export class App extends EventTarget implements Storable {
         }
 
         return Array.from(accounts.values());
+    }
+
+    async loadSessions() {
+        this.sessions = await this.api.getSessions();
+        this.dispatch("account-changed");
     }
 }
