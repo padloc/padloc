@@ -2,7 +2,7 @@ import { Storable, LocalStorage } from "./storage";
 import { Record, Field, Tag, StoreID } from "./data";
 import { Group } from "./group";
 import { Store } from "./store";
-import { Account, AccountInfo, Session, SessionInfo } from "./auth";
+import { Account, AccountInfo, Auth, Session, SessionInfo } from "./auth";
 import { Invite } from "./invite";
 import { DateString } from "./encoding";
 import { API } from "./api";
@@ -350,22 +350,22 @@ export class App extends EventTarget implements Storable {
     }
 
     async signup(email: string, password: string, name: string, emailVerification: { id: string; code: string }) {
-        const acc = new Account();
-        acc.email = email;
-        acc.name = name;
-        await acc.initialize(password);
+        const account = new Account();
+        account.email = email;
+        account.name = name;
+        await account.initialize(password);
+
+        const auth = new Auth(email);
+        const authKey = await auth.getAuthKey(password);
 
         const srp = new SRPClient();
-        await srp.initialize(acc.authKey);
+        await srp.initialize(authKey);
+
+        auth.verifier = srp.v!;
 
         await this.api.createAccount({
-            email: email,
-            name: acc.name,
-            publicKey: acc.publicKey,
-            encPrivateKey: acc.encPrivateKey,
-            keyParams: acc.keyParams,
-            encryptionParams: acc.encryptionParams,
-            verifier: srp.v!,
+            account,
+            auth,
             emailVerification
         });
 
@@ -382,20 +382,18 @@ export class App extends EventTarget implements Storable {
     }
 
     async login(email: string, password: string) {
-        const { account, keyParams, B } = await this.api.initAuth({ email });
-        this.account = new Account(account);
-        this.account.keyParams = keyParams;
-        await this.account.generateKeys(password);
+        const { auth, B } = await this.api.initAuth({ email });
+        const authKey = await auth.getAuthKey(password);
 
         const srp = new SRPClient();
 
-        await srp.initialize(this.account.authKey);
+        await srp.initialize(authKey);
         await srp.setB(B);
 
-        this.session = await this.api.createSession({ account: this.account.id, A: srp.A!, M: srp.M1! });
+        this.session = await this.api.createSession({ account: auth.account, A: srp.A!, M: srp.M1! });
         this.session.key = srp.K!;
 
-        await this.syncAccount();
+        this.account = await this.api.getAccount(new Account(auth.account));
 
         await this.account.unlock(password);
 
@@ -471,20 +469,23 @@ export class App extends EventTarget implements Storable {
 
     async createInvite(group: Group, email: string) {
         const invite = await group.createInvite(email);
+        await this.api.updateInvite(invite);
         await this.syncStore(group.id);
         return invite;
     }
 
-    async cancelInvite(invite: Invite) {
-        invite.status = "canceled";
-        await this.api.updateInvite(invite);
-        this.syncStore(invite.group!.id);
+    async acceptInvite(invite: Invite, secret: string) {
+        const success = await invite.accept(this.account!.info, secret);
+        if (success) {
+            await this.api.updateInvite(invite);
+            await this.mainStore!.addGroup(Object.assign({}, invite.group!));
+        }
+        return success;
     }
 
-    async acceptInvite(invite: Invite, secret: string) {
-        await invite.accept(this.account!.info, secret);
-        await this.api.updateInvite(invite);
-        await this.mainStore!.addGroup(invite.group!);
+    async deleteInvite(invite: Invite) {
+        await this.api.deleteInvite(invite);
+        this.syncStore(invite.group!.id);
     }
 
     //

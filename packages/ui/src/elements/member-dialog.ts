@@ -50,8 +50,7 @@ export class MemberDialog extends BaseElement {
     }
 
     async _rejectMember() {
-        const { status } = this.member!;
-        if (status !== "active") {
+        if (!this.store!.isMember(this.member!)) {
             this._done();
             return;
         }
@@ -71,6 +70,7 @@ export class MemberDialog extends BaseElement {
         this._loading = true;
         this._rejectButton.start();
         try {
+            // TODO: Implement removing members
             // if (status === "active" || status === "invited") {
             //     await app.revokeAccess(this.store!, this.member!);
             // } else if (status === "requested") {
@@ -98,12 +98,11 @@ export class MemberDialog extends BaseElement {
         this._loading = true;
         this._approveButton.start();
         try {
-            // await app.updateAccess(
-            //     this.store!,
-            //     this.member!,
-            //     { read: this._permRead.active, write: this._permWrite.active, manage: this._permManage.active },
-            //     "active"
-            // );
+            await this.store!.updateMember(this.member!, "active", {
+                read: this._permRead.active,
+                write: this._permWrite.active,
+                manage: this._permManage.active
+            });
             this._approveButton.success();
             this._loading = false;
             this._done();
@@ -119,8 +118,10 @@ export class MemberDialog extends BaseElement {
     }
 
     _render({ store, member, _loading }: this) {
+        store = store!;
+        member = member!;
         const storeName = store!.name;
-        const { id, email, name, publicKey, status, permissions } = member!;
+        const { id, email, name, publicKey, permissions } = member!;
         const permsChanged =
             (this._permRead && this._permRead.active !== permissions.read) ||
             (this._permWrite && this._permWrite.active !== permissions.write) ||
@@ -128,10 +129,11 @@ export class MemberDialog extends BaseElement {
         // const isTrusted = app.isTrusted(account);
         const isOwnAccount = app.account && app.account.id === id;
         const disableControls = _loading || isOwnAccount || !store!.getPermissions().manage;
-        const approveIcon = status === "active" ? "check" : "invite";
-        const approveLabel = status === "active" ? $l("Update") : $l("Add");
-        const rejectIcon = status === "active" ? "removeuser" : "cancel";
-        const rejectLabel = status === "active" ? $l("Remove") : $l("Cancel");
+        const isMember = store.isMember(member);
+        const approveIcon = isMember ? "check" : "invite";
+        const approveLabel = isMember ? $l("Update") : $l("Add");
+        const rejectIcon = isMember ? "removeuser" : "cancel";
+        const rejectLabel = isMember ? $l("Remove") : $l("Cancel");
 
         return html`
         ${shared}
@@ -315,7 +317,7 @@ export class MemberDialog extends BaseElement {
 
                 <pl-loading-button
                     id="approveButton"
-                    disabled?="${disableControls || _loading || (status === "active" && !permsChanged)}"
+                    disabled?="${disableControls || _loading || (isMember && !permsChanged)}"
                     on-click="${() => this._approveMember()}">
 
                     <pl-icon icon="${approveIcon}"></pl-icon>

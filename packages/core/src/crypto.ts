@@ -247,6 +247,14 @@ export abstract class Container implements Serializable {
     }
 }
 
+export class SimpleContainer extends Container {
+    key: AESKey = "";
+
+    async _getKey() {
+        return this.key;
+    }
+}
+
 export class PBES2Container extends Container {
     password?: string;
 

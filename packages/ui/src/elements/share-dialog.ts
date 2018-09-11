@@ -148,7 +148,11 @@ export class ShareDialog extends BaseElement {
             (await confirm(
                 store.collection.size === 1
                     ? $l("Do you want to share '{0}' with the '{1}' group?", this.records[0].name, store.name)
-                    : $l("Do you want to share {0} items with the '{1}' group?"),
+                    : $l(
+                          "Do you want to share {0} items with the '{1}' group?",
+                          this.records.length.toString(),
+                          store.name
+                      ),
                 $l("Share"),
                 $l("Cancel"),
                 { type: "question" }

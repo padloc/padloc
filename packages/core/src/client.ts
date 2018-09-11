@@ -1,7 +1,7 @@
 import { API, CreateAccountParams, CreateStoreParams } from "./api";
 import { request, Method } from "./ajax";
 import { DeviceInfo } from "./platform";
-import { Session, Account, AccountID } from "./auth";
+import { Session, Account, AccountID, Auth } from "./auth";
 import { Invite } from "./invite";
 import { marshal, unmarshal, Base64String } from "./encoding";
 import { Store } from "./store";
@@ -81,7 +81,11 @@ export class Client implements API {
 
     async initAuth(params: { email: string }) {
         const res = await this.request("POST", "auth", marshal(params));
-        return unmarshal(res);
+        const raw = unmarshal(res);
+        return {
+            auth: await new Auth(params.email).deserialize(raw.auth),
+            B: raw.B
+        };
     }
 
     async createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session> {
@@ -99,7 +103,12 @@ export class Client implements API {
     }
 
     async createAccount(params: CreateAccountParams): Promise<Account> {
-        const res = await this.request("POST", "account", marshal(params));
+        const raw = {
+            auth: await params.auth.serialize(),
+            account: await params.account.serialize(),
+            emailVerification: params.emailVerification
+        };
+        const res = await this.request("POST", "account", marshal(raw));
         return new Account().deserialize(unmarshal(res));
     }
 
@@ -131,6 +140,10 @@ export class Client implements API {
     async updateInvite(invite: Invite): Promise<Invite> {
         const res = await this.request("PUT", `invite`, marshal(await invite.serialize()));
         return invite.deserialize(unmarshal(res));
+    }
+
+    async deleteInvite(invite: Invite): Promise<void> {
+        await this.request("DELETE", `invite`, marshal(await invite.serialize()));
     }
 
     //

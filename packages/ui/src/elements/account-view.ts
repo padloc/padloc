@@ -31,7 +31,7 @@ export class AccountView extends View {
         const account = app.account!;
         const isSynching = false;
         const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
-        const stores = app.stores.filter(s => s.isMember(account));
+        const stores = app.stores.filter(s => s.isMember(account) && s.id !== account.store);
 
         return html`
         ${shared}

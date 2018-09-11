@@ -4,7 +4,7 @@ import { GroupMember } from "@padlock/core/lib/group.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { shared } from "../styles";
-import { getDialog, confirm, prompt } from "../dialog.js";
+import { getDialog, confirm, prompt, alert } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { element, html, property, listen } from "./base.js";
@@ -57,6 +57,15 @@ export class StoreView extends View {
                 this._invite();
             }
         }
+
+        const invite = this.store!.getInvite(app.account!.email);
+        if (invite) {
+            this._showInvite(invite);
+        }
+
+        for (const invite of this.store!.invites.filter(i => i.accepted)) {
+            this._showInvite(invite);
+        }
     }
 
     private async _invite() {
@@ -75,6 +84,11 @@ export class StoreView extends View {
             return;
         }
 
+        if (this.store!.members.some(m => m.email === email)) {
+            await alert($l("This user is already a member!"), { type: "warning" });
+            return;
+        }
+
         const invite = await app.createInvite(this.store!, email);
         console.log(invite);
         await this._inviteDialog.show(invite);
@@ -85,7 +99,23 @@ export class StoreView extends View {
     }
 
     private async _showInvite(invite: Invite) {
-        this._inviteDialog.show(invite);
+        if (invite.email !== app.account!.email && invite.accepted && !invite.expired && (await invite.verify())) {
+            await this._showMember(Object.assign(
+                {
+                    status: "active",
+                    permissions: { read: true, write: false, manage: false },
+                    signedPublicKey: "",
+                    updated: ""
+                },
+                invite.invitee!
+            ) as GroupMember);
+            if (this.store!.isMember(invite.invitee! as GroupMember)) {
+                await app.deleteInvite(invite);
+            }
+        } else {
+            await this._inviteDialog.show(invite);
+        }
+        app.syncStore(this.store!.id);
     }
 
     // private async _delete() {
@@ -116,6 +146,7 @@ export class StoreView extends View {
         const memberStatus = member ? member.status : "";
         const permissions = store.getPermissions();
         const invites = store.isAdmin() ? store.invites : [];
+        const myInvite = store.invites.find(inv => inv.email == app.account!.email);
 
         return html`
         ${shared}
@@ -231,8 +262,18 @@ export class StoreView extends View {
 
         <main>
 
+            <div class="subheader highlight animate ellipsis tap"
+                hidden?="${!myInvite}"
+                on-click="${() => this._showInvite(myInvite!)}">
+
+                <div flex>${$l("View Invite")}</div>
+
+            </div>
+
             <div class="subheader warning animate ellipsis" hidden?="${memberStatus !== "removed"}">
+
                 <div flex>${$l("You have been removed from this group")}</div>
+
             </div>
 
             <div class="tags animate">
@@ -263,7 +304,7 @@ export class StoreView extends View {
 
             </div>
 
-            <h2>
+            <h2 hidden?="${!invites.length}">
 
                 <pl-icon icon="mail"></pl-icon>
 
@@ -271,8 +312,14 @@ export class StoreView extends View {
 
             </h2>
 
-            ${invites.map(
-                inv => html`
+            ${invites.map(inv => {
+                const status = inv.expired
+                    ? { icon: "time", class: "warning", text: $l("expired") }
+                    : inv.accepted
+                        ? { icon: "check", class: "highlight", text: $l("accepted") }
+                        : { icon: "time", class: "", text: $l("expires {0}", formatDateFromNow(inv.expires)) };
+
+                return html`
                 <div layout align-center class="invite tap" on-click="${() => this._showInvite(inv)}">
 
                     <div flex>
@@ -281,27 +328,11 @@ export class StoreView extends View {
 
                         <div class="tags small">
 
-                            <div class="tag highlight" hidden?="${inv.expired || inv.status !== "accepted"}">
+                            <div class$="tag ${status.class}">
 
-                                <pl-icon icon="check"></pl-icon>
+                                <pl-icon icon="${status.icon}"></pl-icon>
 
-                                <div>${$l("accepted")}</div>
-
-                            </div>
-
-                            <div class="tag warning" hidden?="${!inv.expired}">
-
-                                <pl-icon icon="time"></pl-icon>
-
-                                <div>${$l("expired")}</div>
-
-                            </div>
-
-                            <div class="tag" hidden?="${inv.expired}">
-
-                                <pl-icon icon="time"></pl-icon>
-
-                                <div>${$l("expires {0}", formatDateFromNow(inv.expires))}</div>
+                                <div>${status.text}</div>
 
                             </div>
 
@@ -318,8 +349,8 @@ export class StoreView extends View {
                     </div>
 
                 </div>
-            `
-            )}
+            `;
+            })}
 
             <h2>
 

@@ -86,6 +86,7 @@ export class Server {
         this.koa.use(route.put("/store/:id", handlers.updateStore));
 
         this.koa.use(route.put("/invite", handlers.updateInvite));
+        this.koa.use(route.delete("/invite", handlers.deleteInvite));
     }
 
     start(port: number) {

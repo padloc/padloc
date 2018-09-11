@@ -121,7 +121,6 @@ export class Account implements Storable, AccountInfo {
     publicKey: RSAPublicKey = "";
     privateKey: RSAPrivateKey = "";
     store = "";
-    authKey: Base64String = "";
     sessions = new Set<SessionID>();
     keyParams = defaultPBKDF2Params();
     encryptionParams = defaultEncryptionParams();
@@ -149,28 +148,24 @@ export class Account implements Storable, AccountInfo {
 
     async setPassword(password: string) {
         this.keyParams.salt = await getProvider().randomBytes(16);
-        await this.generateKeys(password);
+        const key = await this._getMasterKey(password);
         this.encryptionParams.iv = await getProvider().randomBytes(16);
         this.encryptionParams.additionalData = stringToBase64(this.email);
-        this.encPrivateKey = await getProvider().encrypt(this.masterKey, this.privateKey, this.encryptionParams);
+        this.encPrivateKey = await getProvider().encrypt(key, this.privateKey, this.encryptionParams);
     }
 
     async unlock(password: string) {
-        await this.generateKeys(password);
-        this.privateKey = await getProvider().decrypt(this.masterKey, this.encPrivateKey, this.encryptionParams);
+        const key = await this._getMasterKey(password);
+        this.privateKey = await getProvider().decrypt(key, this.encPrivateKey, this.encryptionParams);
     }
 
     lock() {
-        this.masterKey = "";
-        this.authKey = "";
         this.privateKey = "";
     }
 
-    async generateKeys(password: string) {
-        this.masterKey = await getProvider().deriveKey(password, this.keyParams);
-        const p = Object.assign({}, this.keyParams, { iterations: 1 });
-        // TODO: Use more secure method to derive auth key
-        this.authKey = await getProvider().deriveKey(this.masterKey, p);
+    update(account: Account) {
+        this.name = account.name;
+        this.keyParams = account.keyParams;
     }
 
     async serialize() {
@@ -204,6 +199,10 @@ export class Account implements Storable, AccountInfo {
         return this;
     }
 
+    private async _getMasterKey(password: string) {
+        return getProvider().deriveKey(password, this.keyParams);
+    }
+
     private async _generateKeyPair() {
         const { publicKey, privateKey } = await getProvider().generateKey(defaultRSAKeyParams());
         this.publicKey = publicKey;
@@ -211,13 +210,13 @@ export class Account implements Storable, AccountInfo {
     }
 }
 
-export class AuthInfo implements Storable {
-    kind = "auth-info";
+export class Auth implements Storable {
+    kind = "auth";
     account: AccountID = "";
     verifier: Base64String = "";
     keyParams: PBKDF2Params = defaultPBKDF2Params();
 
-    constructor(public email: string) {}
+    constructor(public email: string = "") {}
 
     get pk() {
         return this.email;
@@ -238,5 +237,12 @@ export class AuthInfo implements Storable {
         this.verifier = raw.verifier;
         this.keyParams = raw.keyParams;
         return this;
+    }
+
+    async getAuthKey(password: string) {
+        if (!this.keyParams.salt) {
+            this.keyParams.salt = await getProvider().randomBytes(16);
+        }
+        return getProvider().deriveKey(password, this.keyParams);
     }
 }

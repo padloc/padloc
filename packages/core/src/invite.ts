@@ -1,17 +1,14 @@
-import { getProvider, PBKDF2Params, HMACParams, HMACKey } from "./crypto";
+import { getProvider, PBKDF2Params, HMACParams, HMACKey, SimpleContainer, AESKey } from "./crypto";
 import { DateString, Serializable, base64ToHex } from "./encoding";
 import { GroupInfo, SignedGroupInfo } from "./group";
 import { AccountInfo, SignedAccountInfo } from "./auth";
 import { uuid } from "./util";
 
-export type InviteStatus = "created" | "initialized" | "sent" | "accepted" | "canceled" | "rejected" | "failed";
-
 export class Invite implements Serializable {
     id: string = "";
-    created: DateString = "";
-    updated: DateString = "";
+    created: DateString = new Date().toISOString();
+    updated: DateString = new Date().toISOString();
     expires: DateString = "";
-    status = "created";
 
     group: SignedGroupInfo | null = null;
     invitee: SignedAccountInfo | null = null;
@@ -30,8 +27,8 @@ export class Invite implements Serializable {
         return new Date() > new Date(this.expires);
     }
 
-    get canceled(): boolean {
-        return this.status === "canceled";
+    get accepted(): boolean {
+        return !!this.invitee;
     }
 
     private _secret: string = "";
@@ -51,17 +48,34 @@ export class Invite implements Serializable {
         keySize: 256
     };
 
+    private _secretData = new SimpleContainer();
+    private get _secretSerializer() {
+        return {
+            serialize: async () => {
+                return {
+                    secret: this.secret,
+                    expires: this.expires
+                };
+            },
+            deserialize: async (raw: any) => {
+                this.secret = raw.secret;
+                this.expires = raw.expires;
+                return this;
+            }
+        };
+    }
+
     constructor(public email = "") {}
 
-    async initialize(group: GroupInfo, invitor: AccountInfo, duration = 1, secret?: string) {
+    async initialize(group: GroupInfo, invitor: AccountInfo, encKey: AESKey, duration = 1) {
         this.id = uuid();
-        this.created = this.updated = new Date().toISOString();
         this.expires = new Date(new Date().getTime() + 1000 * 60 * 60 * duration).toISOString();
-        this.secret = secret || base64ToHex(await getProvider().randomBytes(4));
+        this.secret = base64ToHex(await getProvider().randomBytes(4));
+        this._secretData.key = encKey;
+        await this._secretData.set(this._secretSerializer);
         this._keyParams.salt = await getProvider().randomBytes(16);
         this.group = await this._sign(group);
         this.invitor = invitor;
-        this.status = "initialized";
     }
 
     async serialize() {
@@ -69,12 +83,14 @@ export class Invite implements Serializable {
             id: this.id,
             created: this.created,
             expires: this.expires,
+            updated: this.updated,
             email: this.email,
             keyParams: this._keyParams,
             signingParams: this._signingParams,
             group: this.group,
             invitee: this.invitee,
-            invitor: this.invitor
+            invitor: this.invitor,
+            secretData: await this._secretData.serialize()
         };
     }
 
@@ -82,26 +98,34 @@ export class Invite implements Serializable {
         this.id = raw.id;
         this.created = raw.created;
         this.expires = raw.expires;
+        this.updated = raw.updated;
         this.email = raw.email;
         this._keyParams = raw.keyParams;
         this._signingParams = raw.signingParams;
         this.group = raw.group;
         this.invitee = raw.invitee;
         this.invitor = raw.invitor;
+        await this._secretData.deserialize(raw.secretData);
         return this;
     }
 
     async accept(account: AccountInfo, secret: string): Promise<boolean> {
         this.secret = secret;
         this.invitee = await this._sign(account);
-        return await this.verify();
-        this.status = "accepted";
+        const verified = await this.verify();
+        return verified === true;
     }
 
-    async verify(): Promise<boolean> {
-        const groupVerified = !!this.group && (await this._verify(this.group));
-        const inviteeVerified = !!this.invitee && (await this._verify(this.invitee));
-        return status === "accepted" ? groupVerified && inviteeVerified : groupVerified;
+    async verify(): Promise<boolean | undefined> {
+        if (!this.secret || !this.group || !this.invitee) {
+            return undefined;
+        }
+        return (await this._verify(this.group)) && (await this._verify(this.invitee));
+    }
+
+    async accessSecret(key: AESKey) {
+        this._secretData.key = key;
+        await this._secretData.get(this._secretSerializer);
     }
 
     private async _getKey() {

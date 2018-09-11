@@ -65,14 +65,18 @@ export async function isBrowser(): Promise<boolean> {
     return !isCordova() && !isChromeApp() && !isIOS() && !isAndroid() && !isChromeOS() && !isElectron();
 }
 
+let _isTouch: boolean | undefined = undefined;
 //* Checks if the current environment supports touch events
-export function isTouch() {
-    try {
-        document.createEvent("TouchEvent");
-        return true;
-    } catch (e) {
-        return false;
+export function isTouch(): boolean {
+    if (_isTouch === undefined) {
+        try {
+            document.createEvent("TouchEvent");
+            _isTouch = true;
+        } catch (e) {
+            _isTouch = false;
+        }
     }
+    return _isTouch;
 }
 
 //* Sets the clipboard text to a given string

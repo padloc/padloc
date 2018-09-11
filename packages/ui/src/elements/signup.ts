@@ -252,10 +252,15 @@ export class Signup extends StartForm {
                             return;
                     }
                 case ErrorCode.ACCOUNT_EXISTS:
-                    await choose($l("An account with this email address already exists!"), [
+                    const choice = await choose($l("An account with this email address already exists!"), [
                         $l("Login"),
                         $l("Change Email")
                     ]);
+                    if (choice === 0) {
+                        this.dispatch("cancel");
+                    } else {
+                        this._emailInput.focus();
+                    }
                     return;
                 default:
                     throw e;

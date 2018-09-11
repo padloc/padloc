@@ -415,7 +415,7 @@ class App extends BaseElement {
         if (shortcut) {
             shortcut();
             event.preventDefault();
-        } else if (event.key.length === 1) {
+        } else if (!control && event.key.length === 1) {
             this._listView.search();
         }
     }

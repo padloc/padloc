@@ -2,12 +2,11 @@ import { API, CreateAccountParams, CreateStoreParams } from "@padlock/core/src/a
 import { Storage, Storable } from "@padlock/core/src/storage";
 import { Store } from "@padlock/core/src/store";
 import { DateString, Base64String } from "@padlock/core/src/encoding";
-import { AuthInfo, Account, AccountID, Session } from "@padlock/core/src/auth";
+import { Auth, Account, AccountID, Session } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 import { Invite } from "@padlock/core/src/invite";
 import { uuid } from "@padlock/core/src/util";
 import { Server as SRPServer } from "@padlock/core/src/srp";
-import { defaultPBKDF2Params } from "@padlock/core/src/crypto";
 import { NodeCryptoProvider } from "@padlock/core/src/node-crypto-provider";
 import { Sender } from "./sender";
 import { EmailVerificationMessage, InviteMessage } from "./messages";
@@ -58,19 +57,19 @@ export class ServerAPI implements API {
         return { id: v.id };
     }
 
-    async initAuth({ email }: { email: string }) {
-        const authInfo = new AuthInfo(email);
+    async initAuth({ email }: { email: string }): Promise<{ auth: Auth; B: Base64String }> {
+        const auth = new Auth(email);
 
         try {
-            await this.storage.get(authInfo);
+            await this.storage.get(auth);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
-                const keyParams = defaultPBKDF2Params();
-                keyParams.salt = await crypto.randomBytes(32);
                 // Account does not exist. Send randomized values
+                const auth = new Auth(email);
+                auth.keyParams.salt = await crypto.randomBytes(32);
+                auth.account = uuid();
                 return {
-                    account: uuid(),
-                    keyParams,
+                    auth,
                     B: await crypto.randomBytes(32)
                 };
             }
@@ -78,14 +77,13 @@ export class ServerAPI implements API {
         }
 
         const srp = new SRPServer();
-        await srp.initialize(authInfo.verifier);
+        await srp.initialize(auth.verifier);
 
-        pendingAuths.set(authInfo.account, srp);
+        pendingAuths.set(auth.account, srp);
 
         return {
-            B: srp.B!,
-            account: authInfo.account,
-            keyParams: authInfo.keyParams
+            auth,
+            B: srp.B!
         };
     }
 
@@ -156,13 +154,12 @@ export class ServerAPI implements API {
 
     async createAccount(params: CreateAccountParams): Promise<Account> {
         const {
-            email,
-            verifier,
-            keyParams,
+            account,
+            auth,
             emailVerification: { id, code }
         } = params;
 
-        const ev = new EmailVerification(email);
+        const ev = new EmailVerification(auth.email);
         try {
             await this.storage.get(ev);
         } catch (e) {
@@ -176,11 +173,9 @@ export class ServerAPI implements API {
             throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
         }
 
-        const authInfo = new AuthInfo(email);
-
         // Make sure account does not exist yet
         try {
-            await this.storage.get(authInfo);
+            await this.storage.get(auth);
             throw new Err(ErrorCode.ACCOUNT_EXISTS, "This account already exists!");
         } catch (e) {
             if (e.code !== ErrorCode.NOT_FOUND) {
@@ -188,18 +183,14 @@ export class ServerAPI implements API {
             }
         }
 
-        const account = await new Account().deserialize(params);
         account.id = uuid();
+        auth.account = account.id;
 
         const store = new Store(uuid(), "Main");
         store.owner = account.id;
         account.store = store.id;
 
-        authInfo.account = account.id;
-        authInfo.verifier = verifier;
-        authInfo.keyParams = keyParams;
-
-        await Promise.all([this.storage.set(account), this.storage.set(store), this.storage.set(authInfo)]);
+        await Promise.all([this.storage.set(account), this.storage.set(store), this.storage.set(auth)]);
 
         return account;
     }
@@ -211,15 +202,7 @@ export class ServerAPI implements API {
 
     async updateAccount(account: Account) {
         const existing = this._requireAuth().account;
-        const { name } = account;
-
-        if (name) {
-            if (typeof name !== "string") {
-                throw new Err(ErrorCode.BAD_REQUEST);
-            }
-            account.name = name;
-        }
-
+        existing.update(account);
         await this.storage.set(existing);
         return existing;
     }
@@ -246,20 +229,6 @@ export class ServerAPI implements API {
         existing.access(account);
         existing.update(store);
 
-        for (const invite of store.invites) {
-            if ((invite.status = "initialized")) {
-                this.sender.send(
-                    invite.email,
-                    new InviteMessage({
-                        name: store.name,
-                        kind: "store",
-                        sender: invite.invitor ? invite.invitor.name || invite.invitor.email : "someone",
-                        url: `https://127.0.0.1:3000/store/${store.pk}/invite/${invite.id}`
-                    })
-                );
-            }
-        }
-
         await this.storage.set(store);
 
         return store;
@@ -284,11 +253,8 @@ export class ServerAPI implements API {
         await this.storage.get(group);
 
         const existing = group.getInvite(invite.email);
-        if (!existing) {
-            throw new Err(ErrorCode.NOT_FOUND);
-        }
 
-        if (!group.isAdmin(account) && existing.email !== account.email) {
+        if (!group.isAdmin(account) && existing && existing.email !== account.email) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
@@ -296,9 +262,34 @@ export class ServerAPI implements API {
 
         await this.storage.set(group);
 
-        // TODO: Send email
+        if (!invite.accepted) {
+            this.sender.send(
+                invite.email,
+                new InviteMessage({
+                    name: invite.group!.name,
+                    kind: "store",
+                    sender: invite.invitor ? invite.invitor.name || invite.invitor.email : "someone",
+                    url: `https://127.0.0.1:3000/store/${invite.group!.id}`
+                })
+            );
+        }
 
         return invite;
+    }
+
+    async deleteInvite(invite: Invite) {
+        const { account } = this._requireAuth();
+
+        const group = new Store(invite.group!.id);
+        await this.storage.get(group);
+
+        if (!group.isAdmin(account)) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        group.deleteInvite(invite);
+
+        await this.storage.set(group);
     }
 
     private _requireAuth(): { account: Account; session: Session } {

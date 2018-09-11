@@ -3,6 +3,7 @@ import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { app } from "../init";
 import { shared } from "../styles";
+import { alert } from "../dialog.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { LoadingButton } from "./loading-button.js";
@@ -15,14 +16,14 @@ export class InviteDialog extends BaseElement {
     @query("pl-dialog") private _dialog: Dialog;
     @query("#acceptButton") private _acceptButton: LoadingButton;
     @query("#resendButton") private _resendButton: LoadingButton;
-    @query("#cancelButton") private _cancelButton: LoadingButton;
+    @query("#deleteButton") private _deleteButton: LoadingButton;
     @query("#codeInput") private _codeInput: Input;
 
     private _resolve: (() => void) | null;
-    @property() private _verified: boolean;
+    @property() private _verified: boolean | undefined;
 
-    private get _valid(): boolean {
-        return !!this.invite && !this.invite.expired && this.invite.status !== "canceled" && this._verified;
+    private get _enableActions(): boolean {
+        return !!this.invite && !this.invite.expired && !this.invite.accepted && this._verified !== false;
     }
 
     async show(invite: Invite): Promise<void> {
@@ -41,16 +42,18 @@ export class InviteDialog extends BaseElement {
     }
 
     _render() {
-        const { email, expires, expired, canceled, group } = this.invite!;
+        const { email, expires, expired, group, accepted } = this.invite!;
         const forMe = email === app.account!.email;
 
-        const status = !this._verified
-            ? { icon: "error", class: "warning", text: $l("The invite could not be validated.") }
-            : canceled
-                ? { icon: "cancel", class: "warning", text: $l("The invite was canceled") }
+        const status =
+            this._verified === false
+                ? { icon: "error", class: "warning", text: $l("The invite could not be validated.") }
                 : expired
                     ? { icon: "time", class: "warning", text: $l("This invite has expired") }
-                    : { icon: "time", class: "", text: $l("expires {0}", formatDateFromNow(expires)) };
+                    : accepted
+                        ? { icon: "check", class: "", text: $l("You have accepted the invite.") }
+                        : { icon: "time", class: "", text: $l("expires {0}", formatDateFromNow(expires)) };
+
         return html`
             ${shared}
 
@@ -66,7 +69,7 @@ export class InviteDialog extends BaseElement {
 
                 .invite-text {
                     font-size: var(--font-size-small);
-                    margin: 10px 20px;
+                    margin: 20px;
                 }
 
                 .invite-text.small {
@@ -153,6 +156,13 @@ export class InviteDialog extends BaseElement {
 
                     </div>
 
+                    <div class="invite-text" hidden?="${!forMe || !accepted}">
+                        ${$l(
+                            "Please wait for an admin to complete the process. " +
+                                "You will be notified as soon as you receive access."
+                        )}
+                    </div>
+
                     <div layout class="tiles tiles-2">
 
                     ${forMe ? this._inviteeActions() : this._adminActions()}
@@ -167,24 +177,21 @@ export class InviteDialog extends BaseElement {
 
     private _inviteeBody() {
         const { group } = this.invite!;
-        const { _valid } = this;
+        const { _enableActions } = this;
         return html`
             <div class="invite-text">
-                ${$l(
-                    "You've been invited to join the {0} group. To accept the invite, " +
-                        "please enter the confirmation code:",
-                    group!.name
-                )}
+                ${$l("You've been invited to join the {0} group.", group!.name)}
             </div>
 
             <pl-input
                 class="code-input tiles-2"
                 id="codeInput"
-                disabled?="${!_valid}"
+                hidden?="${!_enableActions}"
+                on-enter="${() => this._accept()}"
                 label="${$l("Enter Confirmation Code")}">
             </pl-input>
 
-            <div class="invite-text small">
+            <div class="invite-text small" hidden?="${!_enableActions}">
                 ${$l(
                     "If you haven't received the confirmation code yet, please ask an " +
                         "admin of the group to provide it to you!"
@@ -198,7 +205,7 @@ export class InviteDialog extends BaseElement {
             <pl-loading-button
                 id="acceptButton"
                 class="tap"
-                disabled?="${!this._valid}"
+                hidden?="${!this._enableActions}"
                 on-click="${() => this._accept()}">
                 ${$l("Accept")}
             </pl-loading-button>
@@ -206,20 +213,21 @@ export class InviteDialog extends BaseElement {
     }
 
     _adminBody() {
+        const { _enableActions } = this;
         const { email, secret } = this.invite!;
         return html`
-                <div class="invite-text">${$l("An invite was sent to:")}</div>
+            <div class="invite-text">${$l("An invite was sent to:")}</div>
 
-                <div class="invite-email">${email}</div>
+            <div class="invite-email">${email}</div>
 
-                <div class="invite-text">
-                    ${$l(
-                        "They will also need the following confirmation code, which " +
-                            "you should communicate to them separately:"
-                    )}
-                </div>
+            <div class="invite-text" hidden?="${!_enableActions}">
+                ${$l(
+                    "They will also need the following confirmation code, which " +
+                        "you should communicate to them separately:"
+                )}
+            </div>
 
-                <div class="invite-code">${secret}</div>
+            <div class="invite-code" hidden?="${!_enableActions}">${secret}</div>
         `;
     }
 
@@ -237,14 +245,13 @@ export class InviteDialog extends BaseElement {
             </pl-loading-button>
 
             <pl-loading-button
-                id="cancelButton"
+                id="deleteButton"
                 class="tap"
-                disabled?="${!this._valid}"
-                on-click="${() => this._cancel()}">
+                on-click="${() => this._delete()}">
 
-                <pl-icon icon="cancel"></pl-icon>
+                <pl-icon icon="delete"></pl-icon>
 
-                <div>${$l("Cancel")}</div>
+                <div>${$l("Delete")}</div>
 
             </pl-loading-button>
         `;
@@ -256,13 +263,14 @@ export class InviteDialog extends BaseElement {
         this._dialog.open = false;
     }
 
-    private async _cancel() {
-        this._cancelButton.start();
+    private async _delete() {
+        this._deleteButton.start();
         try {
-            await app.cancelInvite(this.invite!);
-            this._cancelButton.success();
+            await app.deleteInvite(this.invite!);
+            this._deleteButton.success();
+            this._done();
         } catch (e) {
-            this._cancelButton.fail();
+            this._deleteButton.fail();
             throw e;
         }
         this._done();
@@ -273,6 +281,7 @@ export class InviteDialog extends BaseElement {
         const store = await app.getStore(this.invite!.group!.id);
         try {
             this.invite = await app.createInvite(store!, this.invite!.email);
+            this._verified = await this.invite.verify();
             this._resendButton.success();
         } catch (e) {
             this._resendButton.fail();
@@ -282,11 +291,19 @@ export class InviteDialog extends BaseElement {
 
     private async _accept() {
         this._acceptButton.start();
-        try {
-            await app.acceptInvite(this.invite!, this._codeInput.value);
+        const success = await app.acceptInvite(this.invite!, this._codeInput.value.toLowerCase());
+        if (success) {
             this._acceptButton.success();
-        } catch (e) {
+            this._done();
+            alert(
+                $l("You have successfully accepted the invite. You'll be notified once you've been granted access."),
+                { type: "success" }
+            );
+        } else {
             this._acceptButton.fail();
+            this._dialog.open = false;
+            await alert($l("Verification failed! Did you enter the correct confirmation code?"), { type: "warning" });
+            this._dialog.open = true;
         }
     }
 }

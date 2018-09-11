@@ -1,17 +1,11 @@
-import { Session, SessionInfo, Account, AccountID } from "./auth";
+import { Session, SessionInfo, Account, Auth, AccountID } from "./auth";
 import { Store } from "./store";
 import { Invite } from "./invite";
 import { Base64String } from "./encoding";
-import { RSAPublicKey, PBKDF2Params, AESEncryptionParams } from "./crypto";
 
 export interface CreateAccountParams {
-    email: string;
-    name: string;
-    publicKey: RSAPublicKey;
-    encPrivateKey: Base64String;
-    keyParams: PBKDF2Params;
-    encryptionParams: AESEncryptionParams;
-    verifier: Base64String;
+    account: Account;
+    auth: Auth;
     emailVerification: {
         id: string;
         code: string;
@@ -24,7 +18,8 @@ export interface CreateStoreParams {
 
 export interface API {
     verifyEmail(params: { email: string }): Promise<{ id: string }>;
-    initAuth(params: { email: string }): Promise<{ account: AccountID; keyParams: PBKDF2Params; B: Base64String }>;
+
+    initAuth(params: { email: string }): Promise<{ auth: Auth; B: Base64String }>;
 
     createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session>;
     revokeSession(params: Session): Promise<void>;
@@ -43,4 +38,5 @@ export interface API {
     // updateOrganization(store: Organization): Promise<Organization>;
 
     updateInvite(invite: Invite): Promise<Invite>;
+    deleteInvite(invite: Invite): Promise<void>;
 }

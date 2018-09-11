@@ -6,7 +6,8 @@ import {
     RSASigningParams,
     getProvider,
     defaultRSAKeyParams,
-    defaultRSASigningParams
+    defaultRSASigningParams,
+    AESKey
 } from "./crypto";
 import { Account, AccountInfo, SignedAccountInfo, AccountID } from "./auth";
 import { Invite } from "./invite";
@@ -44,7 +45,6 @@ export interface SubGroup extends SignedGroupInfo {
 export abstract class Group implements GroupInfo {
     abstract kind: string;
     owner: AccountID = "";
-    privateKey: RSAPrivateKey = "";
     publicKey: RSAPublicKey = "";
     created: DateString = new Date().toISOString();
 
@@ -66,11 +66,7 @@ export abstract class Group implements GroupInfo {
     }
 
     get invites() {
-        return (
-            Array.from(this._invites.values())
-                // Filter out invites that have been expired for longer than a day
-                .filter(i => new Date().getTime() - new Date(i.expires).getTime() < 1000 * 60 * 60 * 24)
-        );
+        return Array.from(this._invites.values());
     }
 
     get initialized() {
@@ -79,9 +75,11 @@ export abstract class Group implements GroupInfo {
 
     protected _account: Account | null = null;
 
+    private _privateKey: RSAPrivateKey = "";
     private _members: Map<string, GroupMember> = new Map<string, GroupMember>();
     private _groups: Map<string, SubGroup> = new Map<string, SubGroup>();
     private _invites = new Map<string, Invite>();
+    private _invitesKey: AESKey = "";
     private _adminContainer: SharedContainer = new SharedContainer();
     private _signingParams: RSASigningParams = defaultRSASigningParams();
 
@@ -91,6 +89,10 @@ export abstract class Group implements GroupInfo {
 
     async initialize(account: Account) {
         this.access(account);
+        this._invitesKey = await getProvider().generateKey({
+            algorithm: "AES",
+            keySize: 256
+        });
         await this._generateKeyPair();
         await this._setMember(this._account!, "active", { read: true, write: true, manage: true });
     }
@@ -142,17 +144,7 @@ export abstract class Group implements GroupInfo {
         }
     }
 
-    async addMember(account: AccountInfo, permissions: Permissions) {
-        if (this.isMember(account)) {
-            throw "Account is already a member";
-        }
-        return this._setMember(account, "active", permissions);
-    }
-
     async updateMember(account: AccountInfo, status: MemberStatus, permissions: Permissions) {
-        if (!this.isMember(account)) {
-            throw "Not a member!";
-        }
         return this._setMember(account, status, permissions);
     }
 
@@ -191,9 +183,12 @@ export abstract class Group implements GroupInfo {
         }
 
         const invite = new Invite(email);
-        await invite.initialize(this.info, this._account.info);
-        this.updateInvite(invite);
+        await invite.initialize(this.info, this._account.info, this._invitesKey);
         return invite;
+    }
+
+    deleteInvite(invite: Invite) {
+        this._invites.delete(invite.email);
     }
 
     async addGroup(group: GroupInfo) {
@@ -223,9 +218,8 @@ export abstract class Group implements GroupInfo {
         if (manage) {
             this.name = group.name;
             this._adminContainer = group._adminContainer;
-            this._members = group._members;
-            this._groups = group._groups;
-            this._invites = group._invites;
+            this._mergeMembers(group.members);
+            this._mergeGroups(group.groups);
         }
     }
 
@@ -266,7 +260,12 @@ export abstract class Group implements GroupInfo {
         this._mergeMembers(raw.members);
         this._mergeGroups(raw.groups);
         this._signingParams = raw.signingParams;
-        this._mergeInvites(raw.invites);
+        this._invites.clear();
+        await Promise.all(
+            raw.invites.map(async (invite: any) => {
+                this._invites.set(invite.email, await new Invite().deserialize(invite));
+            })
+        );
         await this._adminContainer.deserialize(raw.adminData);
         if (this._account && this.isAdmin(this._account)) {
             await this._adminContainer.get(this._adminSerializer);
@@ -292,19 +291,10 @@ export abstract class Group implements GroupInfo {
         }
     }
 
-    private async _mergeInvites(invites: any[]) {
-        for (const invite of invites) {
-            const existing = this.getInvite(invite.email);
-            if (!existing || new Date(invite.updated) > new Date(existing.updated)) {
-                this._invites.set(invite.email, await new Invite().deserialize(invite));
-            }
-        }
-    }
-
     private async _generateKeyPair() {
         const { publicKey, privateKey } = await getProvider().generateKey(defaultRSAKeyParams());
         this.publicKey = publicKey;
-        this.privateKey = privateKey;
+        this._privateKey = privateKey;
     }
 
     private get _adminSerializer(): Serializable {
@@ -312,21 +302,17 @@ export abstract class Group implements GroupInfo {
             serialize: async () => {
                 return {
                     publicKey: this.publicKey,
-                    privateKey: this.privateKey,
-                    pendingInvites: this.invites.map(({ email, expires, secret }) => {
-                        return { email, expires, secret };
-                    })
+                    privateKey: this._privateKey,
+                    invitesKey: this._invitesKey
                 };
             },
             deserialize: async (raw: any) => {
-                this.privateKey = raw.privateKey;
+                this._privateKey = raw.privateKey;
                 if (raw.publicKey !== this.publicKey) {
                     throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
                 }
-                for (const { email, expires, secret } of raw.pendingInvites) {
-                    const invite = this._invites.get(email);
-                    invite && Object.assign(invite, { expires, secret });
-                }
+                this._invitesKey = raw.invitesKey;
+                await Promise.all(this.invites.map(invite => invite.accessSecret(this._invitesKey)));
                 return this;
             }
         };
@@ -337,7 +323,7 @@ export abstract class Group implements GroupInfo {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        const signedPublicKey = await getProvider().sign(this.privateKey, account.publicKey, this._signingParams);
+        const signedPublicKey = await getProvider().sign(this._privateKey, account.publicKey, this._signingParams);
 
         const member = Object.assign({}, account, {
             permissions,
@@ -354,7 +340,7 @@ export abstract class Group implements GroupInfo {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        const signedPublicKey = await getProvider().sign(this.privateKey, group.publicKey, this._signingParams);
+        const signedPublicKey = await getProvider().sign(this._privateKey, group.publicKey, this._signingParams);
 
         this._groups.set(
             group.id,
