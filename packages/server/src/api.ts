@@ -9,7 +9,7 @@ import { uuid } from "@padlock/core/src/util";
 import { Server as SRPServer } from "@padlock/core/src/srp";
 import { NodeCryptoProvider } from "@padlock/core/src/node-crypto-provider";
 import { Sender } from "./sender";
-import { EmailVerificationMessage, InviteMessage } from "./messages";
+import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { RequestState } from "./server";
 import { randomBytes } from "crypto";
 
@@ -226,10 +226,15 @@ export class ServerAPI implements API {
         const existing = new Store(store.id);
         await this.storage.get(existing);
 
+        const addedMembers = store.members.filter(m => !existing.isMember(m));
+        for (const member of addedMembers) {
+            this.sender.send(member.email, new MemberAddedMessage(store));
+        }
+
         existing.access(account);
         existing.update(store);
 
-        await this.storage.set(store);
+        await this.storage.set(existing);
 
         return store;
     }
@@ -263,15 +268,9 @@ export class ServerAPI implements API {
         await this.storage.set(group);
 
         if (!invite.accepted) {
-            this.sender.send(
-                invite.email,
-                new InviteMessage({
-                    name: invite.group!.name,
-                    kind: "store",
-                    sender: invite.invitor ? invite.invitor.name || invite.invitor.email : "someone",
-                    url: `https://127.0.0.1:3000/store/${invite.group!.id}`
-                })
-            );
+            this.sender.send(invite.email, new InviteCreatedMessage(invite));
+        } else if (invite.invitor) {
+            this.sender.send(invite.invitor.email, new InviteAcceptedMessage(invite));
         }
 
         return invite;

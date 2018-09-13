@@ -74,13 +74,13 @@ export abstract class Group implements GroupInfo {
     }
 
     protected _account: Account | null = null;
+    protected _adminContainer: SharedContainer = new SharedContainer();
 
     private _privateKey: RSAPrivateKey = "";
     private _members: Map<string, GroupMember> = new Map<string, GroupMember>();
     private _groups: Map<string, SubGroup> = new Map<string, SubGroup>();
     private _invites = new Map<string, Invite>();
     private _invitesKey: AESKey = "";
-    private _adminContainer: SharedContainer = new SharedContainer();
     private _signingParams: RSASigningParams = defaultRSASigningParams();
 
     constructor(public id = "", public name = "") {
@@ -172,11 +172,6 @@ export abstract class Group implements GroupInfo {
         return this._invites.get(email);
     }
 
-    updateInvite(invite: Invite) {
-        invite.updated = new Date().toISOString();
-        this._invites.set(invite.email, invite);
-    }
-
     async createInvite(email: string) {
         if (!this._account || !this.isAdmin(this._account)) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
@@ -185,6 +180,10 @@ export abstract class Group implements GroupInfo {
         const invite = new Invite(email);
         await invite.initialize(this.info, this._account.info, this._invitesKey);
         return invite;
+    }
+
+    updateInvite(invite: Invite) {
+        this._invites.set(invite.email, invite);
     }
 
     deleteInvite(invite: Invite) {
@@ -212,19 +211,8 @@ export abstract class Group implements GroupInfo {
         this._groups.delete(group.id);
     }
 
-    async update(group: Group) {
-        const { manage } = this.getPermissions();
-
-        if (manage) {
-            this.name = group.name;
-            this._adminContainer = group._adminContainer;
-            this._mergeMembers(group.members);
-            this._mergeGroups(group.groups);
-        }
-    }
-
     async serialize(): Promise<any> {
-        if (this._account && this.isAdmin(this._account)) {
+        if (this._account && this.isAdmin(this._account) && this._account.privateKey) {
             // TODO: Do something about removed admins
             await this._adminContainer.setAccessors(
                 this.members.filter(m => m.status === "active" && m.permissions.manage).map(({ id, publicKey }) => {
@@ -267,13 +255,13 @@ export abstract class Group implements GroupInfo {
             })
         );
         await this._adminContainer.deserialize(raw.adminData);
-        if (this._account && this.isAdmin(this._account)) {
+        if (this._account && this.isAdmin(this._account) && this._account.privateKey) {
             await this._adminContainer.get(this._adminSerializer);
         }
         return this;
     }
 
-    private _mergeMembers(members: GroupMember[]) {
+    protected _mergeMembers(members: GroupMember[]) {
         for (const member of members) {
             const existing = this.getMember(member);
             if (!existing || new Date(member.updated) > new Date(existing.updated)) {
@@ -282,7 +270,7 @@ export abstract class Group implements GroupInfo {
         }
     }
 
-    private _mergeGroups(groups: SubGroup[]) {
+    protected _mergeGroups(groups: SubGroup[]) {
         for (const group of groups) {
             const existing = this._groups.get(group.id);
             if (!existing || new Date(group.updated) > new Date(existing.updated)) {

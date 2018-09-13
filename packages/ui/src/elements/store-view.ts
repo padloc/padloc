@@ -59,12 +59,14 @@ export class StoreView extends View {
         }
 
         const invite = this.store!.getInvite(app.account!.email);
-        if (invite) {
+        if (invite && !invite.accepted) {
             this._showInvite(invite);
         }
 
-        for (const invite of this.store!.invites.filter(i => i.accepted)) {
-            this._showInvite(invite);
+        if (this.store!.isAdmin()) {
+            for (const invite of this.store!.invites.filter(i => i.accepted)) {
+                this._showInvite(invite);
+            }
         }
     }
 
@@ -304,7 +306,7 @@ export class StoreView extends View {
 
             </div>
 
-            <h2 hidden?="${!invites.length}">
+            <h2 hidden?="${!invites.length}" class="animate">
 
                 <pl-icon icon="mail"></pl-icon>
 
@@ -320,7 +322,7 @@ export class StoreView extends View {
                         : { icon: "time", class: "", text: $l("expires {0}", formatDateFromNow(inv.expires)) };
 
                 return html`
-                <div layout align-center class="invite tap" on-click="${() => this._showInvite(inv)}">
+                <div layout align-center class="invite tap animate" on-click="${() => this._showInvite(inv)}">
 
                     <div flex>
 
@@ -352,7 +354,7 @@ export class StoreView extends View {
             `;
             })}
 
-            <h2>
+            <h2 class="animate">
 
                 <pl-icon icon="group"></pl-icon>
 

@@ -138,12 +138,16 @@ export class Client implements API {
     }
 
     async updateInvite(invite: Invite): Promise<Invite> {
-        const res = await this.request("PUT", `invite`, marshal(await invite.serialize()));
+        const res = await this.request(
+            "PUT",
+            `store/${invite.group!.id}/invite/${invite.id}`,
+            marshal(await invite.serialize())
+        );
         return invite.deserialize(unmarshal(res));
     }
 
     async deleteInvite(invite: Invite): Promise<void> {
-        await this.request("DELETE", `invite`, marshal(await invite.serialize()));
+        await this.request("DELETE", `store/${invite.group!.id}/invite/${invite.id}`);
     }
 
     //

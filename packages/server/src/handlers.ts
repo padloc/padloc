@@ -86,8 +86,12 @@ export async function updateInvite(ctx: Context) {
     ctx.body = await res.serialize();
 }
 
-export async function deleteInvite(ctx: Context) {
-    const invite = await new Invite().deserialize(ctx.request.body);
+export async function deleteInvite(ctx: Context, storeID: string, inviteID: string) {
+    const store = await ctx.api.getStore(new Store(storeID));
+    const invite = store.invites.find(inv => inv.id === inviteID);
+    if (!invite) {
+        throw new Err(ErrorCode.NOT_FOUND);
+    }
     await ctx.api.deleteInvite(invite);
     ctx.status = 204;
 }

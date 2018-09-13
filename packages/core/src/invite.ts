@@ -112,6 +112,7 @@ export class Invite implements Serializable {
     async accept(account: AccountInfo, secret: string): Promise<boolean> {
         this.secret = secret;
         this.invitee = await this._sign(account);
+        this.updated = new Date().toISOString();
         const verified = await this.verify();
         return verified === true;
     }

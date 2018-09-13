@@ -19,11 +19,26 @@ export class Store extends Group implements Storable {
         this._collectionContainer.access(account);
     }
 
+    update(store: Store) {
+        const { manage, write } = this.getPermissions();
+
+        if (manage) {
+            this.name = store.name;
+            this._adminContainer = store._adminContainer;
+            this._mergeMembers(store.members);
+            this._mergeGroups(store.groups);
+        }
+
+        if (write) {
+            this._collectionContainer = store._collectionContainer;
+        }
+    }
+
     async serialize(): Promise<any> {
         const raw = await super.serialize();
         const member = this._account && this.getMember(this._account);
 
-        if (member && member.permissions.write) {
+        if (member && member.permissions.write && this._account!.privateKey) {
             // TODO: Do something about removed members
             await this._collectionContainer.setAccessors(
                 this.members.filter(m => m.status === "active").map(({ id, publicKey }) => {
@@ -43,7 +58,7 @@ export class Store extends Group implements Storable {
         await this._collectionContainer.deserialize(raw.collectionData);
         const member = this._account && this.getMember(this._account);
 
-        if (member && member.permissions.read) {
+        if (member && member.permissions.read && this._account!.privateKey) {
             await this._collectionContainer.get(this.collection);
         }
 
