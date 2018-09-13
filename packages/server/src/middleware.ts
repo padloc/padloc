@@ -46,7 +46,7 @@ export async function authenticate(ctx: Context, next: () => Promise<void>) {
     ctx.state.session = session;
     ctx.state.account = account;
 
-    session.device, ctx.state.device;
+    session.device = ctx.state.device;
     session.lastUsed = new Date().toISOString();
 
     await ctx.storage.set(session);
