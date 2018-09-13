@@ -78,7 +78,6 @@ export class App extends EventTarget implements Storable {
     initialized: DateString = "";
     session: Session | null = null;
     account: Account | null = null;
-    mainStore: Store | null = null;
     sessions: SessionInfo[] = [];
     loaded = this.load();
 
@@ -99,6 +98,10 @@ export class App extends EventTarget implements Storable {
             tags.push(...store.collection.tags);
         }
         return [...new Set(tags)];
+    }
+
+    get mainStore() {
+        return this.account && this._stores.get(this.account!.store);
     }
 
     get stores() {
@@ -153,7 +156,7 @@ export class App extends EventTarget implements Storable {
         }
         let items: ListItem[] = [];
 
-        for (const store of [this.mainStore!, ...this.stores]) {
+        for (const store of this.stores) {
             if (this.settings.hideStores.includes(store.id)) {
                 continue;
             }
@@ -235,15 +238,20 @@ export class App extends EventTarget implements Storable {
     }
 
     async loadStores() {
+        if (!this.account) {
+            return;
+        }
+
         this._stores.clear();
 
-        this.mainStore = new Store(this.account!.store);
-        this.mainStore.access(this.account!);
-        await this.storage.get(this.mainStore);
+        const mainStore = new Store(this.account.store);
+        mainStore.access(this.account);
+        await this.storage.get(mainStore);
+        this._stores.set(mainStore.id, mainStore);
 
-        for (const { id } of this.mainStore.groups) {
+        for (const { id } of mainStore.groups) {
             const store = new Store(id);
-            store.access(this.account!);
+            store.access(this.account);
             try {
                 await this.storage.get(store);
                 this._stores.set(id, store);
@@ -257,7 +265,6 @@ export class App extends EventTarget implements Storable {
 
     async lock() {
         this.account!.lock();
-        this.mainStore = new Store(this.account!.store);
         this._stores.clear();
         this.dispatch("lock");
     }
@@ -271,15 +278,11 @@ export class App extends EventTarget implements Storable {
 
     async save() {
         const promises = [this.storage.set(this)];
-        if (this.mainStore) {
-            promises.push(this.storage.set(this.mainStore), ...this.stores.map(s => this.storage.set(s)));
-        }
-
+        promises.push(...this.stores.map(s => this.storage.set(s)));
         return promises;
     }
 
     async reset() {
-        this.mainStore! = new Store(this.account!.store!);
         this._stores.clear();
         this.initialized = "";
         await this.storage.clear();
@@ -444,8 +447,6 @@ export class App extends EventTarget implements Storable {
         this.account = null;
         this._stores.clear();
         await this.storage.set(this);
-        this.mainStore && (await this.storage.delete(this.mainStore!));
-        this.mainStore = null;
         this.dispatch("lock");
         this.dispatch("logout");
         this.dispatch("account-changed", { account: this.account });
@@ -479,6 +480,7 @@ export class App extends EventTarget implements Storable {
         if (success) {
             await this.api.updateInvite(invite);
             await this.mainStore!.addGroup(Object.assign({}, invite.group!));
+            await Promise.all([this.storage.set(this.mainStore!), this.api.updateStore(this.mainStore!)]);
         }
         return success;
     }
