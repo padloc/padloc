@@ -193,7 +193,7 @@ export class RecordView extends View {
                 <div
                     class="tag ghost tap"
                     flex
-                    hidden?="${this.store !== app.mainStore}"
+                    hidden?="${!permissions.write || this.store !== app.mainStore}"
                     on-click="${() => this._share()}">
 
                     <pl-icon icon="share"></pl-icon>
