@@ -5,5 +5,8 @@
   "main": "index.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPLv3",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "node-static": "^0.7.10"
+  }
 }
