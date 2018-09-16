@@ -20,7 +20,7 @@ export class Login extends StartForm {
         super.reset();
     }
 
-    _render() {
+    render() {
         return html`
             ${sharedStyles}
 
@@ -56,21 +56,21 @@ export class Login extends StartForm {
                     id="emailInput"
                     type="email"
                     required
-                    label="${$l("Email Adress")}"
+                    .label=${$l("Email Adress")}
                     class="tiles-2"
-                    on-enter="${() => this._submit()}">
+                    @enter=${() => this._submit()}>
                 </pl-input>
 
                 <pl-input
                     id="passwordInput"
                     type="password"
                     required
-                    label="${$l("Master Password")}"
+                    label.=${$l("Master Password")}
                     class="tiles-2"
-                    on-enter="${() => this._submit()}">
+                    @enter=${() => this._submit()}>
                 </pl-input>
 
-                <pl-loading-button id="loginButton" class="tap tiles-3" on-click="${() => this._submit()}">
+                <pl-loading-button id="loginButton" class="tap tiles-3" @click=${() => this._submit()}>
                     ${$l("Login")}
                 </pl-loading-button>
 
@@ -80,7 +80,7 @@ export class Login extends StartForm {
 
                 <button
                     type="button"
-                    class="tap signup" on-click="${() => this.dispatch("signup")}">
+                    class="tap signup" @click=${() => this.dispatch("signup")}>
                         ${$l("Sign Up Now")}
                 </button>
 

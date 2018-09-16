@@ -37,7 +37,7 @@ export class PromptDialog extends BaseElement {
 
     private _resolve: ((val: string | null) => void) | null;
 
-    _render({ open, message, confirmLabel, cancelLabel, placeholder, preventDismiss, type, _validationMessage }: this) {
+    render() {
         return html`
         ${shared}
 
@@ -65,28 +65,28 @@ export class PromptDialog extends BaseElement {
         </style>
 
         <pl-dialog
-            open="${open}"
-            prevent-dismiss="${preventDismiss}"
-            on-dialog-dismiss="${() => this._dismiss()}">
+            .open=${this.open}
+            .preventDismiss=${this.preventDismiss}
+            @dialog-dismiss=${() => this._dismiss()}>
 
-            <div class="message tiles-1" hidden?="${!message}">${message}</div>
+            <div class="message tiles-1" ?hidden=${!this.message}>${this.message}</div>
 
             <pl-input
                 class="tiles-2"
-                type="${type}"
-                placeholder="${placeholder}"
-                on-enter="${() => this._confirmButton.click()}">
+                .type=${this.type}
+                .placeholder=${this.placeholder}
+                @enter=${() => this._confirmButton.click()}>
             </pl-input>
 
-            <pl-loading-button id="confirmButton" class="tap tiles-3" on-click="${() => this._confirm()}">
-                ${confirmLabel}
+            <pl-loading-button id="confirmButton" class="tap tiles-3" @click=${() => this._confirm()}>
+                ${this.confirmLabel}
             </pl-loading-button>
 
-            <button class="tap tiles-4" on-click="${() => this._dismiss()}" hidden?="${!cancelLabel}">
-                ${cancelLabel}
+            <button class="tap tiles-4" @click=${() => this._dismiss()} ?hidden=${!this.cancelLabel}>
+                ${this.cancelLabel}
             </button>
 
-            <div class="validation-message" slot="after">${_validationMessage}</div>
+            <div class="validation-message" slot="after">${this._validationMessage}</div>
 
         </pl-dialog>
 `;

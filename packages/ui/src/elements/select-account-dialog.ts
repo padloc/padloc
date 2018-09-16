@@ -12,7 +12,7 @@ export class SelectAccountDialog extends BaseElement {
 
     private _resolve: ((acc: AccountInfo | null | "new") => void) | null;
 
-    _render({ accounts }: this) {
+    render() {
         return html`
             ${shared}
 
@@ -50,7 +50,7 @@ export class SelectAccountDialog extends BaseElement {
 
             </style>
 
-            <pl-dialog on-dialog-dismiss="${() => this._done(null)}">
+            <pl-dialog @dialog-dismiss=${() => this._done(null)}>
 
                 <div class="title">
 
@@ -60,17 +60,17 @@ export class SelectAccountDialog extends BaseElement {
 
                 </div>
 
-                ${accounts.map(
+                ${this.accounts.map(
                     acc => html`
                     <pl-account-item
                         class="tap"
-                        account="${acc}"
-                        on-click="${() => this._done(acc)}">
+                        .account=${acc}
+                        @click=${() => this._done(acc)}>
                     </pl-account-item>
                 `
                 )}
 
-                <button class="tap" on-click="${() => this._done("new")}">
+                <button class="tap" @click=${() => this._done("new")}>
                     ${$l("Invite New User...")}
                 </button>
 
@@ -80,8 +80,8 @@ export class SelectAccountDialog extends BaseElement {
 
     async show(accounts: AccountInfo[]): Promise<AccountInfo | null | "new"> {
         this.accounts = accounts;
-        this.requestRender();
-        await this.renderComplete;
+        this.requestUpdate();
+        await this.updateComplete;
         this._dialog.open = true;
         return new Promise<AccountInfo | null | "new">(resolve => {
             this._resolve = resolve;

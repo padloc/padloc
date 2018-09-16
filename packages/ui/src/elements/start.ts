@@ -1,5 +1,5 @@
 import { app } from "../init.js";
-import { config, shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, listen, query } from "./base.js";
 import { Unlock } from "./unlock.js";
 import { Login } from "./login.js";
@@ -46,10 +46,8 @@ export class Start extends BaseElement {
         }
     }
 
-    _render() {
+    render() {
         return html`
-
-            ${config}
             ${shared}
 
             <style>
@@ -58,8 +56,8 @@ export class Start extends BaseElement {
                     --color-background: var(--color-primary);
                     --color-foreground: var(--color-tertiary);
                     --color-highlight: var(--color-secondary);
-                    @apply --fullbleed;
-                    @apply --scroll;
+                    ${mixins.fullbleed()}
+                    ${mixins.scroll()}
                     color: var(--color-foreground);
                     display: flex;
                     flex-direction: column;
@@ -72,7 +70,7 @@ export class Start extends BaseElement {
                 }
 
                 main {
-                    @apply --fullbleed;
+                    ${mixins.fullbleed()}
                     background: transparent;
                     min-height: 510px;
                     display: flex;
@@ -98,8 +96,8 @@ export class Start extends BaseElement {
             </style>
 
             <pl-unlock class="form"></pl-unlock>
-            <pl-login class="form" on-signup="${() => this._showForm(this._signupForm)}"></pl-login>
-            <pl-signup class="form" on-cancel="${() => this._showForm(this._loginForm)}"></pl-signup>
+            <pl-login class="form" @signup=${() => this._showForm(this._signupForm)}></pl-login>
+            <pl-signup class="form" @cancel=${() => this._showForm(this._loginForm)}></pl-signup>
         `;
     }
 }

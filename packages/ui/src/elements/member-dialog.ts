@@ -33,11 +33,11 @@ export class MemberDialog extends BaseElement {
     async show(member: GroupMember, store: Store): Promise<number> {
         this.member = member;
         this.store = store;
-        await this.renderComplete;
+        await this.updateComplete;
         this._permRead.active = member.permissions.read;
         this._permWrite.active = member.permissions.write;
         this._permManage.active = member.permissions.manage;
-        this.requestRender();
+        this.requestUpdate();
         this._dialog.open = true;
         return new Promise<number>(resolve => {
             this._resolve = resolve;
@@ -46,7 +46,7 @@ export class MemberDialog extends BaseElement {
 
     @listen("change")
     _permsChanged() {
-        this.requestRender();
+        this.requestUpdate();
     }
 
     async _rejectMember() {
@@ -113,22 +113,23 @@ export class MemberDialog extends BaseElement {
         }
     }
 
-    _shouldRender() {
+    shouldUpdate() {
         return !!this.store && !!this.member;
     }
 
-    _render({ store, member, _loading }: this) {
-        store = store!;
-        member = member!;
-        const storeName = store!.name;
-        const { id, email, name, publicKey, permissions } = member!;
+    render() {
+        const store = this.store!;
+        const member = this.member!;
+        const _loading = this._loading;
+        const storeName = store.name;
+        const { id, email, name, publicKey, permissions } = member;
         const permsChanged =
             (this._permRead && this._permRead.active !== permissions.read) ||
             (this._permWrite && this._permWrite.active !== permissions.write) ||
             (this._permManage && this._permManage.active !== permissions.manage);
         // const isTrusted = app.isTrusted(account);
         const isOwnAccount = app.account && app.account.id === id;
-        const disableControls = _loading || isOwnAccount || !store!.getPermissions().manage;
+        const disableControls = _loading || isOwnAccount || !store.getPermissions().manage;
         const isMember = store.isMember(member);
         const approveIcon = isMember ? "check" : "invite";
         const approveLabel = isMember ? $l("Update") : $l("Add");
@@ -256,11 +257,11 @@ export class MemberDialog extends BaseElement {
 
         </style>
 
-        <pl-dialog on-dialog-dismiss="${() => this._done()}">
+        <pl-dialog @dialog-dismiss=${() => this._done()}>
 
             <div>
 
-                <pl-icon class="close-icon tap" icon="close" on-click="${() => this._done()}"></pl-icon>
+                <pl-icon class="close-icon tap" icon="close" @click=${() => this._done()}></pl-icon>
 
                 <pl-fingerprint key="${publicKey}"></pl-fingerprint>
 
@@ -291,7 +292,7 @@ export class MemberDialog extends BaseElement {
                     class="tag tap"
                     id="permRead"
                     label="${$l("read")}"
-                    disabled?="${disableControls}"
+                    ?disabled=${disableControls}
                     reverse>
                 </pl-toggle-button>
 
@@ -299,7 +300,7 @@ export class MemberDialog extends BaseElement {
                     class="tag tap"
                     id="permWrite"
                     label="${$l("write")}"
-                    disabled?="${disableControls}"
+                    ?disabled=${disableControls}
                     reverse>
                 </pl-toggle-button>
 
@@ -307,7 +308,7 @@ export class MemberDialog extends BaseElement {
                     class="tag tap"
                     id="permManage"
                     label="${$l("manage")}"
-                    disabled?="${disableControls}"
+                    ?disabled=${disableControls}
                     reverse>
                 </pl-toggle-button>
 
@@ -317,8 +318,8 @@ export class MemberDialog extends BaseElement {
 
                 <pl-loading-button
                     id="approveButton"
-                    disabled?="${disableControls || _loading || (isMember && !permsChanged)}"
-                    on-click="${() => this._approveMember()}">
+                    ?disabled=${disableControls || _loading || (isMember && !permsChanged)}
+                    @click=${() => this._approveMember()}>
 
                     <pl-icon icon="${approveIcon}"></pl-icon>
 
@@ -328,8 +329,8 @@ export class MemberDialog extends BaseElement {
 
                 <pl-loading-button
                     id="rejectButton"
-                    disabled?="${disableControls || _loading}"
-                    on-click="${() => this._rejectMember()}">
+                    ?disabled=${disableControls || _loading}
+                    @click=${() => this._rejectMember()}>
 
                     <pl-icon icon="${rejectIcon}"></pl-icon>
 

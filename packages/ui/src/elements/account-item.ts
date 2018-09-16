@@ -1,19 +1,19 @@
 import { GroupMember } from "@padlock/core/lib/group.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property } from "./base.js";
 
 @element("pl-account-item")
 export class AccountItem extends BaseElement {
     @property() account: GroupMember | null = null;
 
-    _shouldRender() {
+    shouldUpdate() {
         return !!this.account;
     }
 
-    _render({ account }: this) {
-        account = account!;
+    render() {
+        const account = this.account!;
         const pills = [];
 
         switch (account.status) {
@@ -56,11 +56,11 @@ export class AccountItem extends BaseElement {
                 .account-email {
                     font-weight: bold;
                     margin: 5px 0;
-                    @apply --ellipsis;
+                    ${mixins.ellipsis()}
                 }
             </style>
 
-            <pl-fingerprint key="${account.publicKey}"></pl-fingerprint>
+            <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
 
             <div class="account-info">
 

@@ -4,7 +4,7 @@ export class PlIcon extends BaseElement {
     @property({ reflect: true })
     icon: string = "";
 
-    _render() {
+    render() {
         return html`
         <style>
             :host {

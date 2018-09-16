@@ -13,7 +13,7 @@ import {
     loadDB,
     isElectron
 } from "@padlock/core/lib/platform.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt, exportRecords } from "../dialog";
 import { animateCascade } from "../animation";
@@ -32,10 +32,10 @@ export class SettingsView extends View {
 
     @listen("settings-changed", app)
     _settingsChanged() {
-        this.requestRender();
+        this.requestUpdate();
     }
 
-    _render() {
+    render() {
         const { settings, loggedIn } = app;
         const isDesktop = isElectron();
         const dbPath = "";
@@ -52,7 +52,7 @@ export class SettingsView extends View {
             }
 
             :host {
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 display: flex;
                 flex-direction: column;
             }
@@ -138,7 +138,7 @@ export class SettingsView extends View {
         </style>
 
         <header>
-            <pl-icon icon="close" class="tap" on-click="${() => router.go("")}"></pl-icon>
+            <pl-icon icon="close" class="tap" @click=${() => router.go("")}></pl-icon>
             <div class="title">${$l("Settings")}</div>
             <pl-icon></pl-icon>
         </header>
@@ -165,7 +165,7 @@ export class SettingsView extends View {
                     value="${settings.autoLockDelay}"
                     unit="${$l(" min")}"
                     label="${$l("After")}"
-                    hidden?="${!settings.autoLock}"
+                    ?hidden=${!settings.autoLock}
                 </pl-slider>
 
             </section>
@@ -192,10 +192,10 @@ export class SettingsView extends View {
                     label="${$l("Use Custom Server")}"
                     reverse
                     class="tap"
-                    on-change="${(e: CustomEvent) => this._toggleCustomServer(e)}">
+                    @change=${(e: CustomEvent) => this._toggleCustomServer(e)}>
                 </pl-toggle-button>
 
-                <div class="tap" hidden?="${!settings.customServer}" disabled?="${loggedIn}">
+                <div class="tap" ?hidden=${!settings.customServer} ?disabled=${loggedIn}>
 
                     <pl-input
                         id="customServerUrlInput"
@@ -218,17 +218,17 @@ export class SettingsView extends View {
 
             <section>
 
-                <button on-click="${() => this._changePassword()}" class="tap">${$l("Change Master Password")}</button>
+                <button @click=${() => this._changePassword()} class="tap">${$l("Change Master Password")}</button>
 
-                <button on-click="${() => this._resetData()}" class="tap">${$l("Reset App")}</button>
+                <button @click=${() => this._resetData()} class="tap">${$l("Reset App")}</button>
 
-                <button class="tap" on-click="${() => this._import()}">${$l("Import...")}</button>
+                <button class="tap" @click=${() => this._import()}>${$l("Import...")}</button>
 
-                <button class="tap" on-click="${() => this._export()}">${$l("Export...")}
+                <button class="tap" @click=${() => this._export()}>${$l("Export...")}
 
             </button></section>
 
-            <section hidden?="${!isDesktop}">
+            <section ?hidden=${!isDesktop}>
 
                 <div class="section-header">${$l("Updates")}</div>
 
@@ -237,7 +237,7 @@ export class SettingsView extends View {
                     label="${$l("Automatically Install Updates")}"
                     class="tap"
                     reverse
-                    on-change="${() => this._desktopSettingsChanged()}">
+                    @change=${() => this._desktopSettingsChanged()}>
                 </pl-toggle-button>
 
                 <pl-toggle-button
@@ -245,14 +245,14 @@ export class SettingsView extends View {
                     label="${$l("Install Beta Releases")}"
                     class="tap"
                     reverse
-                    on-change="${() => this._desktopSettingsChanged()}">
+                    @change=${() => this._desktopSettingsChanged()}>
                 </pl-toggle-button>
 
-                <button on-click="${() => this._checkForUpdates()}" class="tap">${$l("Check For Updates...")}</button>
+                <button @click=${() => this._checkForUpdates()} class="tap">${$l("Check For Updates...")}</button>
 
             </section>
 
-            <section hidden?="${!isDesktop}">
+            <section ?hidden=${!isDesktop}>
 
                 <div class="section-header">${$l("Database")}</div>
 
@@ -264,15 +264,15 @@ export class SettingsView extends View {
 
                 </div>
 
-                <button on-click="${() => this._saveDBAs()}" class="tap">${$l("Change Location...")}</button>
+                <button @click=${() => this._saveDBAs()} class="tap">${$l("Change Location...")}</button>
 
-                <button on-click="${() => this._loadDB()}" class="tap">${$l("Load Different Database...")}</button>
+                <button @click=${() => this._loadDB()} class="tap">${$l("Load Different Database...")}</button>
 
             </section>
 
             <section>
 
-                <button class="info tap" on-click="${() => this._openSource()}">
+                <button class="info tap" @click=${() => this._openSource()}>
 
                     <div><strong>Padlock ${app.version}</strong></div>
 
@@ -280,11 +280,11 @@ export class SettingsView extends View {
 
                 </button>
 
-                <button on-click="${() => this._openWebsite()}" class="tap">${$l("Website")}</button>
+                <button @click=${() => this._openWebsite()} class="tap">${$l("Website")}</button>
 
-                <button on-click="${() => this._sendMail()}" class="tap">${$l("Support")}</button>
+                <button @click=${() => this._sendMail()} class="tap">${$l("Support")}</button>
 
-                <button on-click="${() => this._promptReview()}" class="tap">
+                <button @click=${() => this._promptReview()} class="tap">
 
                     <span>${$l("I")}</span><div class="padlock-heart"></div><span>Padlock</span>
 
@@ -300,7 +300,7 @@ export class SettingsView extends View {
             type="file"
             name="importFile"
             id="importFile"
-            on-change="${() => this._importFile()}"
+            @change=${() => this._importFile()}
             accept="text/plain,.csv,.pls,.set"
             hidden>
 `;

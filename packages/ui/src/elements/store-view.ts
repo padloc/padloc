@@ -3,7 +3,7 @@ import { localize as $l } from "@padlock/core/lib/locale.js";
 import { GroupMember } from "@padlock/core/lib/group.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { getDialog, confirm, prompt, alert } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
@@ -32,8 +32,8 @@ export class StoreView extends View {
     @listen("synchronize", app)
     @listen("store-changed", app)
     _refresh() {
-        this.requestRender();
-        this.$$("pl-account-item", false).forEach((el: any) => el.requestRender());
+        this.requestUpdate();
+        this.$$("pl-account-item", false).forEach((el: any) => el.requestUpdate());
     }
 
     async _activated() {
@@ -137,12 +137,12 @@ export class StoreView extends View {
     //     }
     // }
 
-    _shouldRender() {
+    shouldUpdate() {
         return !!this.store;
     }
 
-    _render({ store }: this) {
-        store = store!;
+    render() {
+        const store = this.store!;
         const { name, members, collection } = store;
         const member = store.getMember();
         const memberStatus = member ? member.status : "";
@@ -158,7 +158,7 @@ export class StoreView extends View {
             :host {
                 display: flex;
                 flex-direction: column;
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
             }
 
             main {
@@ -170,7 +170,7 @@ export class StoreView extends View {
             }
 
             pl-account-item {
-                @apply --card;
+                ${mixins.card()}
                 margin: 6px;
             }
 
@@ -211,7 +211,7 @@ export class StoreView extends View {
             }
 
             .invite {
-                @apply --card;
+                ${mixins.card()}
                 padding: 15px 17px;
                 margin: 8px;
             }
@@ -223,7 +223,7 @@ export class StoreView extends View {
 
             .invite-email {
                 font-weight: bold;
-                @apply --ellipsis;
+                ${mixins.ellipsis()}
                 margin-bottom: 8px;
             }
 
@@ -249,15 +249,15 @@ export class StoreView extends View {
 
         <header>
 
-            <pl-icon icon="close" class="tap" on-click="${() => router.go("")}"></pl-icon>
+            <pl-icon icon="close" class="tap" @click=${() => router.go("")}></pl-icon>
 
             <div class="title">${name}</div>
 
             <pl-icon
                 icon="invite"
                 class="tap"
-                on-click="${() => this._invite()}"
-                invisible?="${!permissions.manage}">
+                @click=${() => this._invite()}
+                ?invisible=${!permissions.manage}>
             </pl-icon>
 
         </header>
@@ -265,14 +265,14 @@ export class StoreView extends View {
         <main>
 
             <div class="subheader highlight animate ellipsis tap"
-                hidden?="${!myInvite}"
-                on-click="${() => this._showInvite(myInvite!)}">
+                ?hidden=${!myInvite}
+                @click=${() => this._showInvite(myInvite!)}>
 
                 <div flex>${$l("View Invite")}</div>
 
             </div>
 
-            <div class="subheader warning animate ellipsis" hidden?="${memberStatus !== "removed"}">
+            <div class="subheader warning animate ellipsis" ?hidden=${memberStatus !== "removed"}>
 
                 <div flex>${$l("You have been removed from this group")}</div>
 
@@ -280,7 +280,7 @@ export class StoreView extends View {
 
             <div class="tags animate">
 
-                <div class="tag warning" flex hidden?="${memberStatus !== "active" || permissions.write}">
+                <div class="tag warning" flex ?hidden=${memberStatus !== "active" || permissions.write}>
 
                     <pl-icon icon="show"></pl-icon>
 
@@ -288,7 +288,7 @@ export class StoreView extends View {
 
                 </div>
 
-                <div class="tag" flex hidden?="${memberStatus === "removed"}">
+                <div class="tag" flex ?hidden=${memberStatus === "removed"}>
 
                     <pl-icon icon="group"></pl-icon>
 
@@ -296,7 +296,7 @@ export class StoreView extends View {
 
                 </div>
 
-                <div class="tag" flex hidden?="${memberStatus === "removed"}">
+                <div class="tag" flex ?hidden=${memberStatus === "removed"}>
 
                     <pl-icon icon="record"></pl-icon>
 
@@ -306,7 +306,7 @@ export class StoreView extends View {
 
             </div>
 
-            <h2 hidden?="${!invites.length}" class="animate">
+            <h2 ?hidden=${!invites.length} class="animate">
 
                 <pl-icon icon="mail"></pl-icon>
 
@@ -322,7 +322,7 @@ export class StoreView extends View {
                         : { icon: "time", class: "", text: $l("expires {0}", formatDateFromNow(inv.expires)) };
 
                 return html`
-                <div layout align-center class="invite tap animate" on-click="${() => this._showInvite(inv)}">
+                <div layout align-center class="invite tap animate" @click=${() => this._showInvite(inv)}>
 
                     <div flex>
 
@@ -330,7 +330,7 @@ export class StoreView extends View {
 
                         <div class="tags small">
 
-                            <div class$="tag ${status.class}">
+                            <div class="tag ${status.class}">
 
                                 <pl-icon icon="${status.icon}"></pl-icon>
 
@@ -365,9 +365,9 @@ export class StoreView extends View {
             ${members.map(
                 acc => html`
                     <pl-account-item
-                        account="${acc}"
+                        .account=${acc}
                         class="animate tap"
-                        on-click="${() => this._showMember(acc)}">
+                        @click=${() => this._showMember(acc)}>
                     </pl-account-item>
                 `
             )}

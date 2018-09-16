@@ -1,4 +1,5 @@
 import { html } from "@polymer/lit-element";
+import { mixins } from "./";
 
 export const shared = html`
 <style>
@@ -153,7 +154,7 @@ export const shared = html`
 
     section {
         margin: 10px 5px;
-        @apply --card;
+        ${ mixins.card() }
     }
 
     section > button {
@@ -209,7 +210,7 @@ export const shared = html`
         flex: 1;
         font-weight: bold;
         text-align: center;
-        @apply --ellipsis;
+        ${mixins.ellipsis()}
     }
 
     header pl-icon {
@@ -222,7 +223,7 @@ export const shared = html`
         flex: 1;
         position: relative;
         box-sizing: border-box;
-        @apply --scroll;
+        ${mixins.scroll()}
         overflow-x: hidden;
     }
 
@@ -258,51 +259,51 @@ export const shared = html`
     }
 
     .tap {
-        @apply --tap-highlight;
+        ${mixins.tapHighlight()}
     }
 
     .tap::after {
-        @apply --tap-highlight-after;
+        ${mixins.tapHighlightAfter()}
     }
 
     .tap:active::after {
-        @apply --tap-highlight-active-after;
+        ${mixins.tapHighlightActiveAfter()}
     }
 
     .tiles > :nth-child(8n + 1), .tiles-1 {
-        @apply --shade-1;
+        ${mixins.shade1()}
     }
 
     .tiles > :nth-child(8n + 2), .tiles-2 {
-        @apply --shade-2;
+        ${mixins.shade2()}
     }
 
     .tiles > :nth-child(8n + 3), .tiles-3 {
-        @apply --shade-3;
+        ${mixins.shade3()}
     }
 
     .tiles > :nth-child(8n + 4), .tiles-4 {
-        @apply --shade-4;
+        ${mixins.shade4()}
     }
 
     .tiles > :nth-child(8n + 5), .tiles-5 {
-        @apply --shade-5;
+        ${mixins.shade5()}
     }
 
     .tiles > :nth-child(8n + 6), .tiles-6 {
-        @apply --shade-4;
+        ${mixins.shade4()}
     }
 
     .tiles > :nth-child(8n + 7), .tiles-7 {
-        @apply --shade-3;
+        ${mixins.shade3()}
     }
 
     .tiles > :nth-child(8n + 8), .tiles-8 {
-        @apply --shade-2;
+        ${mixins.shade2()}
     }
 
     .ellipsis {
-        @apply --ellipsis;
+        ${mixins.ellipsis()}
     }
 
     .rounded-corners {

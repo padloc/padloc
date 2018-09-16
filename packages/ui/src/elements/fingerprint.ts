@@ -1,6 +1,6 @@
-// import { PublicKey, getProvider } from "@padlock/core/lib/crypto.js";
 import { randomArt } from "@padlock/core/lib/randomart.js";
 import { getProvider } from "@padlock/core/lib/crypto.js";
+import { mixins } from "../styles";
 import { BaseElement, html, element, property } from "./base";
 
 @element("pl-fingerprint")
@@ -17,7 +17,7 @@ export class Fingerprint extends BaseElement {
                     <div class="row">
                         ${line.map(
                             (val, j) => html`<div class="cell">
-                            <div class="cell-background" style$="opacity: ${val / 10}"></div>
+                            <div class="cell-background" style="opacity: ${val / 10}"></div>
                             <div class="cell-symbol">${art.symbols[i][j]}</div>
                         </div>`
                         )}
@@ -26,11 +26,11 @@ export class Fingerprint extends BaseElement {
         )}`;
     }
 
-    _shouldRender() {
+    shouldUpdate() {
         return !!this.key;
     }
 
-    _render() {
+    render() {
         return html`
             <style>
                 :host {
@@ -76,7 +76,7 @@ export class Fingerprint extends BaseElement {
                 }
 
                 .cell-background, .cell-symbol {
-                    @apply --fullbleed;
+                    ${mixins.fullbleed()}
                 }
 
                 :host(:not([symbols])) .cell-symbol {

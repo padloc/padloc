@@ -4,7 +4,7 @@ import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { deviceDescription } from "@padlock/core/lib/platform.js";
 import { Store } from "@padlock/core/lib/store.js";
 import { app, router } from "../init.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { animateCascade } from "../animation.js";
 import { getDialog, confirm, alert, prompt } from "../dialog.js";
 import { html, listen } from "./base.js";
@@ -19,14 +19,14 @@ export class AccountView extends View {
     @listen("synchronize", app)
     @listen("stats-changed", app)
     _accountChanged() {
-        this.requestRender();
+        this.requestUpdate();
     }
 
-    _shouldRender() {
+    shouldUpdate() {
         return !!app.account;
     }
 
-    _render() {
+    render() {
         const { stats, sessions } = app;
         const account = app.account!;
         const isSynching = false;
@@ -41,7 +41,7 @@ export class AccountView extends View {
             :host {
                 display: flex;
                 flex-direction: column;
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
             }
 
             main {
@@ -76,7 +76,7 @@ export class AccountView extends View {
             .account-email {
                 font-weight: bold;
                 margin-bottom: 5px;
-                @apply --ellipsis;
+                ${mixins.ellipsis()}
             }
 
             .account-sync {
@@ -103,7 +103,7 @@ export class AccountView extends View {
             .store-name {
                 padding: 10px 15px;
                 font-weight: bold;
-                @apply --ellipsis;
+                ${mixins.ellipsis()}
             }
 
             .session {
@@ -118,7 +118,7 @@ export class AccountView extends View {
             }
 
             .session-description {
-                @apply --ellipsis;
+                ${mixins.ellipsis()}
             }
 
             .session pl-icon {
@@ -143,11 +143,11 @@ export class AccountView extends View {
 
         <header>
 
-            <pl-icon icon="close" class="tap" on-click="${() => router.go("")}"></pl-icon>
+            <pl-icon icon="close" class="tap" @click=${() => router.go("")}></pl-icon>
 
             <div class="title">${$l("My Account")}</div>
 
-            <pl-icon icon="logout" class="tap" on-click="${() => this._logout()}"></pl-icon>
+            <pl-icon icon="logout" class="tap" @click=${() => this._logout()}></pl-icon>
 
         </header>
 
@@ -157,7 +157,7 @@ export class AccountView extends View {
 
                 <div class="account">
 
-                    <pl-fingerprint key="${account.publicKey}"></pl-fingerprint>
+                    <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
 
                     <div class="account-info">
 
@@ -180,8 +180,8 @@ export class AccountView extends View {
                     <pl-icon
                         class="account-sync tap"
                         icon="refresh"
-                        spin?="${isSynching}"
-                        on-click="${() => app.synchronize()}">
+                        ?spin=${isSynching}
+                        @click=${() => app.synchronize()}>
                     </pl-icon>
 
                 </div>
@@ -206,7 +206,7 @@ export class AccountView extends View {
                     const { members, name, collection } = store;
                     const currMember = store.getMember(account)!;
                     return html`
-                    <div class="store tap" on-click="${() => this._openStore(store)}">
+                    <div class="store tap" @click=${() => this._openStore(store)}>
 
                         <div class="store-name">${name}</div>
 
@@ -228,7 +228,7 @@ export class AccountView extends View {
 
                             </div>
 
-                            <div class="tag warning" hidden?="${currMember.status !== "removed"}">
+                            <div class="tag warning" ?hidden=${currMember.status !== "removed"}>
 
                                 <pl-icon icon="removeuser"></pl-icon>
 
@@ -241,17 +241,17 @@ export class AccountView extends View {
                         <div class="spacer"></div>
 
                         <pl-toggle
-                            hidden?="${currMember.status !== "active"}"
-                            active="${!app.settings.hideStores.includes(store.id)}"
-                            on-click="${(e: Event) => this._toggleStore(store, e)}"></pl-toggle>
+                            ?hidden=${currMember.status !== "active"}
+                            .active=${!app.settings.hideStores.includes(store.id)}
+                            @click=${(e: Event) => this._toggleStore(store, e)}></pl-toggle>
 
-                        <pl-icon icon="forward" hidden?="${currMember.status === "active"}"></pl-icon>
+                        <pl-icon icon="forward" ?hidden=${currMember.status === "active"}></pl-icon>
 
                     </div>
                 `;
                 })}
 
-                <button class="tap" on-click="${() => this._createStore()}">${$l("Create Group")}</button>
+                <button class="tap" @click=${() => this._createStore()}>${$l("Create Group")}</button>
 
             </section>
 
@@ -277,8 +277,8 @@ export class AccountView extends View {
                             <pl-icon
                                 icon="delete"
                                 class="tap"
-                                on-click="${() => this._revokeSession(session)}"
-                                disabled?="${app.session && session.id === app.session.id}">
+                                @click=${() => this._revokeSession(session)}
+                                ?disabled=${app.session && session.id === app.session.id}>
                             </pl-icon>
 
                         </div>`

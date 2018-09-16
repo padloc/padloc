@@ -27,7 +27,8 @@ export class FieldDialog extends BaseElement {
 
     private _resolve: ((_: FieldDialogResult) => void) | null;
 
-    _render({ readonly, open, editing }: this) {
+    render() {
+        const { readonly, open, editing } = this;
         return html`
         ${shared}
 
@@ -120,7 +121,7 @@ export class FieldDialog extends BaseElement {
             }
         </style>
 
-        <pl-dialog open="${open}" prevent-dismiss="${editing}" on-dialog-dismiss="${() => this._dismiss()}">
+        <pl-dialog .open=${open} .preventDismiss=${editing} @dialog-dismiss=${() => this._dismiss()}>
 
             <div class="header">
 
@@ -129,15 +130,15 @@ export class FieldDialog extends BaseElement {
                     placeholder="${$l("Enter Field Name")}"
                     class="name"
                     readonly="${!editing}"
-                    on-click="${(e: MouseEvent) => this._inputClicked(e)}"
-                    on-enter="${() => this._nameInputEnter()}">
+                    @click=${(e: MouseEvent) => this._inputClicked(e)}
+                    @enter=${() => this._nameInputEnter()}>
                 </pl-input>
 
                 <pl-icon
                     icon="cancel"
                     class="tap"
-                    on-click="${() => this._dismiss()}"
-                    hidden?="${editing}">
+                    @click=${() => this._dismiss()}
+                    ?hidden=${editing}>
                 </pl-icon>
 
             </div>
@@ -149,12 +150,12 @@ export class FieldDialog extends BaseElement {
                     multiline
                     class="value"
                     autosize
-                    on-click="${(e: MouseEvent) => this._inputClicked(e)}"
+                    @click=${(e: MouseEvent) => this._inputClicked(e)}
                     placeholder="${$l("Enter Content")}"
                     readonly="${!editing}">
                 </pl-input>
 
-                <button class="generate-button tap" on-click="${() => this._generate()}" hidden?="${!editing}">
+                <button class="generate-button tap" @click=${() => this._generate()} ?hidden=${!editing}>
 
                     <div>${$l("Generate")}</div>
 
@@ -166,33 +167,33 @@ export class FieldDialog extends BaseElement {
 
             <div class="actions">
 
-                <div class="action-items tiles-3 tiles" hidden?="${editing}">
+                <div class="action-items tiles-3 tiles" ?hidden=${editing}>
 
-                    <pl-icon icon="copy" class="tap" on-click="${() => this._copy()}"></pl-icon>
+                    <pl-icon icon="copy" class="tap" @click=${() => this._copy()}></pl-icon>
 
-                    <pl-icon icon="edit" class="tap" on-click="${() => this._edit()}" disabled?="${readonly}"></pl-icon>
+                    <pl-icon icon="edit" class="tap" @click=${() => this._edit()} ?disabled=${readonly}></pl-icon>
 
                     <pl-icon
                         icon="generate"
                         class="tap"
-                        on-click="${() => this._generate()}"
-                        disabled?="${readonly}">
+                        @click=${() => this._generate()}
+                        ?disabled=${readonly}>
                     </pl-icon>
 
                     <pl-icon
                         icon="delete"
                         class="tap"
-                        on-click="${() => this._delete()}"
-                        disabled?="${readonly}">
+                        @click=${() => this._delete()}
+                        ?disabled=${readonly}>
                     </pl-icon>
 
                 </div>
 
-                <div class="action-items" hidden?="${!editing}">
+                <div class="action-items" ?hidden=${!editing}>
 
-                    <button class="tap" on-click="${() => this._discardChanges()}">${$l("Discard")}</button>
+                    <button class="tap" @click=${() => this._discardChanges()}>${$l("Discard")}</button>
 
-                    <button class="tap" on-click="${() => this._saveChanges()}">${$l("Save")}</button>
+                    <button class="tap" @click=${() => this._saveChanges()}>${$l("Save")}</button>
 
                 </div>
 

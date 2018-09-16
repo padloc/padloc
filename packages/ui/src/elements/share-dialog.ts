@@ -17,7 +17,8 @@ export class ShareDialog extends BaseElement {
 
     private _resolve: ((store: Store | null) => void) | null;
 
-    _render({ records }: this) {
+    render() {
+        const { records } = this;
         const stores = app.stores.filter(s => s.isMember() && s.getPermissions().write);
         return html`
             ${shared}
@@ -72,7 +73,7 @@ export class ShareDialog extends BaseElement {
 
             </style>
 
-            <pl-dialog on-dialog-dismiss="() => this._done()">
+            <pl-dialog @dialog-dismiss=() => this._done()>
 
                 <div class="title">
                     <pl-icon icon="share"></pl-icon>
@@ -85,7 +86,7 @@ export class ShareDialog extends BaseElement {
 
                 ${stores.map(
                     s => html`
-                    <div class="store tap" on-click="${() => this._selectStore(s)}">
+                    <div class="store tap" @click=${() => this._selectStore(s)}>
 
                         <pl-icon icon="group"></pl-icon>
 
@@ -119,7 +120,7 @@ export class ShareDialog extends BaseElement {
                 `
                 )}
 
-                <button class="tap" on-click="${() => this._createStore()}">${$l("Create New Group...")}</button>
+                <button class="tap" @click=${() => this._createStore()}>${$l("Create New Group...")}</button>
 
             </pl-dialog>
         `;
@@ -127,8 +128,8 @@ export class ShareDialog extends BaseElement {
 
     async show(records: Record[]) {
         this.records = records;
-        this.requestRender();
-        await this.renderComplete;
+        this.requestUpdate();
+        await this.updateComplete;
         this._dialog.open = true;
         return new Promise<Store | null>(resolve => {
             this._resolve = resolve;

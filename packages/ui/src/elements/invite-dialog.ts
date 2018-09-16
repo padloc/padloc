@@ -29,19 +29,19 @@ export class InviteDialog extends BaseElement {
     async show(invite: Invite): Promise<void> {
         this.invite = invite;
         this._verified = await invite.verify();
-        this.requestRender();
-        await this.renderComplete;
+        this.requestUpdate();
+        await this.updateComplete;
         this._dialog.open = true;
         return new Promise<void>(resolve => {
             this._resolve = resolve;
         });
     }
 
-    _shouldRender() {
+    shouldUpdate() {
         return !!this.invite;
     }
 
-    _render() {
+    render() {
         const { email, expires, expired, group, accepted } = this.invite!;
         const forMe = email === app.account!.email;
 
@@ -123,10 +123,10 @@ export class InviteDialog extends BaseElement {
                 }
             </style>
 
-            <pl-dialog on-dialog-dismiss="${() => this._done()}">
+            <pl-dialog @dialog-dismiss=${() => this._done()}>
                 <div class="invite">
 
-                    <pl-icon icon="cancel" class="tap close-button" on-click="${() => this._done()}"></pl-icon>
+                    <pl-icon icon="cancel" class="tap close-button" @click=${() => this._done()}></pl-icon>
 
                     <h1>${$l("Group Invite")}</h1>
 
@@ -146,7 +146,7 @@ export class InviteDialog extends BaseElement {
 
                     <div class="tags">
 
-                        <div class$="tag ${status.class}">
+                        <div class="tag ${status.class}">
 
                             <pl-icon icon="${status.icon}"></pl-icon>
 
@@ -156,7 +156,7 @@ export class InviteDialog extends BaseElement {
 
                     </div>
 
-                    <div class="invite-text" hidden?="${!forMe || !accepted}">
+                    <div class="invite-text" ?hidden=${!forMe || !accepted}>
                         ${$l(
                             "Please wait for an admin to complete the process. " +
                                 "You will be notified as soon as you receive access."
@@ -186,12 +186,12 @@ export class InviteDialog extends BaseElement {
             <pl-input
                 class="code-input tiles-2"
                 id="codeInput"
-                hidden?="${!_enableActions}"
-                on-enter="${() => this._accept()}"
+                ?hidden=${!_enableActions}
+                @enter=${() => this._accept()}
                 label="${$l("Enter Confirmation Code")}">
             </pl-input>
 
-            <div class="invite-text small" hidden?="${!_enableActions}">
+            <div class="invite-text small" ?hidden=${!_enableActions}>
                 ${$l(
                     "If you haven't received the confirmation code yet, please ask an " +
                         "admin of the group to provide it to you!"
@@ -205,8 +205,8 @@ export class InviteDialog extends BaseElement {
             <pl-loading-button
                 id="acceptButton"
                 class="tap"
-                hidden?="${!this._enableActions}"
-                on-click="${() => this._accept()}">
+                ?hidden=${!this._enableActions}
+                @click=${() => this._accept()}>
                 ${$l("Accept")}
             </pl-loading-button>
         `;
@@ -220,14 +220,14 @@ export class InviteDialog extends BaseElement {
 
             <div class="invite-email">${email}</div>
 
-            <div class="invite-text" hidden?="${!_enableActions}">
+            <div class="invite-text" ?hidden=${!_enableActions}>
                 ${$l(
                     "They will also need the following confirmation code, which " +
                         "you should communicate to them separately:"
                 )}
             </div>
 
-            <div class="invite-code" hidden?="${!_enableActions}">${secret}</div>
+            <div class="invite-code" ?hidden=${!_enableActions}>${secret}</div>
         `;
     }
 
@@ -236,7 +236,7 @@ export class InviteDialog extends BaseElement {
             <pl-loading-button
                 id="resendButton"
                 class="tap"
-                on-click="${() => this._resend()}">
+                @click=${() => this._resend()}>
 
                 <pl-icon icon="mail"></pl-icon>
 
@@ -247,7 +247,7 @@ export class InviteDialog extends BaseElement {
             <pl-loading-button
                 id="deleteButton"
                 class="tap"
-                on-click="${() => this._delete()}">
+                @click=${() => this._delete()}>
 
                 <pl-icon icon="delete"></pl-icon>
 

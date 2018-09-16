@@ -1,4 +1,4 @@
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, html } from "./base.js";
 import { animateCascade } from "../animation.js";
 import "./icon.js";
@@ -17,8 +17,8 @@ export const sharedStyles = html`
         }
 
         :host {
-            @apply --fullbleed;
-            @apply --scroll;
+            ${mixins.fullbleed()}
+            ${mixins.scroll()}
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -55,7 +55,7 @@ export const sharedStyles = html`
     </style>
 `;
 
-export class StartForm extends BaseElement {
+export abstract class StartForm extends BaseElement {
     reset() {
         animateCascade(this.$$("form > *"), {
             animation: "reveal",
@@ -65,7 +65,7 @@ export class StartForm extends BaseElement {
             fill: "backwards",
             clear: 3000
         });
-        this.requestRender();
+        this.requestUpdate();
     }
 
     done() {

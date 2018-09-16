@@ -26,7 +26,7 @@ export class AlertDialog extends BaseElement {
     @property() icon = "";
     @property() options: string[] = [];
     @property() preventDismiss: boolean = false;
-    @property({ reflect: "hide-icon" })
+    @property({ attribute: "hide-icon", reflect: true })
     hideIcon: boolean = false;
     @property() open: boolean = false;
     @property({ reflect: true })
@@ -34,7 +34,8 @@ export class AlertDialog extends BaseElement {
 
     private _resolve: ((_: number) => void) | null;
 
-    _render(props: this) {
+    render() {
+        const { open, preventDismiss, message, dialogTitle, options, icon } = this;
         return html`
         ${shared}
 
@@ -81,22 +82,20 @@ export class AlertDialog extends BaseElement {
         </style>
 
         <pl-dialog
-            open="${props.open}"
-            preventDismiss="${props.preventDismiss}"
-            on-dialog-dismiss="${() => this._selectOption(-1)}">
+            .open=${open}
+            .preventDismiss=${preventDismiss}
+            @dialog-dismiss=${() => this._selectOption(-1)}>
 
-            <div class="info" hidden?="${!this.dialogTitle && !this.message}">
-                <pl-icon class="info-icon" icon="${props.icon}"></pl-icon>
+            <div class="info" ?hidden=${!dialogTitle && !message}>
+                <pl-icon class="info-icon" icon="${icon}"></pl-icon>
                 <div class="info-body">
-                    <div class="info-title">${props.dialogTitle}</div>
-                    <div class$="info-text ${this.dialogTitle ? "small" : ""}">${props.message}</div>
+                    <div class="info-title">${dialogTitle}</div>
+                    <div class="info-text ${this.dialogTitle ? "small" : ""}">${message}</div>
                 </div>
             </div>
 
             <div class="buttons tiles tiles-2">
-                ${props.options.map(
-                    (o: any, i: number) => html`<button on-click="${() => this._selectOption(i)}">${o}</button>`
-                )}
+                ${options.map((o: any, i: number) => html`<button @click=${() => this._selectOption(i)}>${o}</button>`)}
             </div>
         </pl-dialog>
 `;

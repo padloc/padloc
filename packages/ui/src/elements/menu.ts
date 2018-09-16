@@ -1,6 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait, formatDateFromNow } from "@padlock/core/lib/util.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, listen, observe } from "./base.js";
@@ -10,17 +10,17 @@ import "./toggle.js";
 export class Menu extends BaseElement {
     @property({ reflect: true })
     open: boolean = false;
-    @property({ reflect: "show-tags" })
+    @property({ attribute: "show-tags", reflect: true })
     _showingTags: boolean = false;
 
     @listen("stats-changed", app)
     @listen("account-changed", app)
     @listen("settings-changed", app)
     _refresh() {
-        this.requestRender();
+        this.requestUpdate();
     }
 
-    _render() {
+    render() {
         const { loggedIn, stats } = app;
         const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
         const isTrialExpired = false;
@@ -47,7 +47,7 @@ export class Menu extends BaseElement {
             }
 
             :host {
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 z-index: -1;
             }
 
@@ -70,7 +70,7 @@ export class Menu extends BaseElement {
             }
 
             .sub-menu {
-                @apply --scroll;
+                ${mixins.scroll()}
             }
 
             .menu-item {
@@ -86,7 +86,7 @@ export class Menu extends BaseElement {
             }
 
             .menu-item > div {
-                @apply --ellipsis;
+                ${mixins.ellipsis()}
             }
 
             .menu .menu-item {
@@ -183,19 +183,19 @@ export class Menu extends BaseElement {
 
                 <div class="spacer"></div>
 
-                <div class="account menu-item tap" on-click="${() => router.go("account")}}">
+                <div class="account menu-item tap" @click=${() => router.go("account")}}>
 
                     <div>
 
-                        <div hidden?="${loggedIn}">${$l("Log In")}</div>
+                        <div ?hidden=${loggedIn}>${$l("Log In")}</div>
 
-                        <div hidden?="${!loggedIn}">${$l("My Account")}</div>
+                        <div ?hidden=${!loggedIn}>${$l("My Account")}</div>
 
-                        <div class="menu-item-hint warning" hidden?="${!isTrialExpired}">${$l("Trial Expired")}</div>
+                        <div class="menu-item-hint warning" ?hidden=${!isTrialExpired}>${$l("Trial Expired")}</div>
 
-                        <div class="menu-item-hint warning" hidden?="${!isSubUnpaid}">${$l("Payment Failed")}</div>
+                        <div class="menu-item-hint warning" ?hidden=${!isSubUnpaid}>${$l("Payment Failed")}</div>
 
-                        <div class="menu-item-hint warning" hidden?="${!isSubCanceled}">${$l("Subscr. Canceled")}</div>
+                        <div class="menu-item-hint warning" ?hidden=${!isSubCanceled}>${$l("Subscr. Canceled")}</div>
 
                     </div>
 
@@ -203,23 +203,23 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => app.synchronize()}" disabled?="${!loggedIn}">
+                <div class="menu-item tap" @click=${() => app.synchronize()} ?disabled=${!loggedIn}>
 
                     <div>
 
                         <div>${$l("Synchronize")}</div>
 
-                        <div class="menu-item-hint" hidden?="${loggedIn}">${$l("Log In To Sync")}</div>
+                        <div class="menu-item-hint" ?hidden=${loggedIn}>${$l("Log In To Sync")}</div>
 
-                        <div class="menu-item-hint last-sync" hidden?="${!loggedIn}">${lastSync}</div>
+                        <div class="menu-item-hint last-sync" ?hidden=${!loggedIn}>${lastSync}</div>
 
                     </div>
 
-                    <pl-icon icon="refresh" spin?="${isSyncing}"></pl-icon>
+                    <pl-icon icon="refresh" ?spin=${isSyncing}></pl-icon>
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => router.go("settings")}}">
+                <div class="menu-item tap" @click=${() => router.go("settings")}}>
 
                     <div>${$l("Settings")}</div>
 
@@ -227,7 +227,7 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${(e: Event) => this._showSubMenu("stores", e)}">
+                <div class="menu-item tap" @click=${(e: Event) => this._showSubMenu("stores", e)}>
 
                     <div>${$l("Groups")}</div>
 
@@ -235,7 +235,7 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${(e: Event) => this._showSubMenu("tags", e)}">
+                <div class="menu-item tap" @click=${(e: Event) => this._showSubMenu("tags", e)}>
 
                     <div>${$l("Tags")}</div>
 
@@ -243,7 +243,7 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => this.dispatch("multiselect")}">
+                <div class="menu-item tap" @click=${() => this.dispatch("multiselect")}>
 
                     <div>${$l("Multi-Select")}</div>
 
@@ -251,7 +251,7 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                <div class="menu-item tap" on-click="${() => app.lock()}">
+                <div class="menu-item tap" @click=${() => app.lock()}>
 
                     <div>${$l("Lock App")}</div>
 
@@ -275,7 +275,7 @@ export class Menu extends BaseElement {
 
                 <div class="spacer"></div>
 
-                <div class="menu-item sub-menu-header tap" on-click="${(e: Event) => this._closeSubMenu(e)}">
+                <div class="menu-item sub-menu-header tap" @click=${(e: Event) => this._closeSubMenu(e)}>
 
                     <div>${$l("Tags")}</div>
 
@@ -284,7 +284,7 @@ export class Menu extends BaseElement {
 
                 ${tags.map(
                     (tag: string) => html`
-                    <div class="menu-item menu-item-tag tap" on-click="${() => this._selectTag(tag)}">
+                    <div class="menu-item menu-item-tag tap" @click=${() => this._selectTag(tag)}>
 
                         <div>${tag}</div>
 
@@ -294,7 +294,7 @@ export class Menu extends BaseElement {
                 `
                 )}
 
-                <div class="placeholder" disabled hidden?="${tags.length}">
+                <div class="placeholder" disabled ?hidden=${tags.length}>
 
                     ${$l("You don't have any tags yet!")}
 

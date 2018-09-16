@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import { LitElement, html } from "@polymer/lit-element";
+import { UpdatingElement, PropertyDeclaration } from "@polymer/lit-element/lib/updating-element.js";
 export { html };
 
 export { TemplateResult } from "lit-html";
@@ -9,7 +10,8 @@ export interface BasePrototype extends BaseElement {}
 export interface EventListenerDeclaration {
     eventName: string;
     target?: string | EventTarget;
-    handler: (event?: Event) => void;
+    handler: (e?: Event) => void;
+    _attachedHandler?: (e?: Event) => void;
 }
 
 export interface ChangeRecord {
@@ -20,8 +22,7 @@ export interface ChangeRecord {
 
 export type ObserveHandler = (changeRecords: ChangeRecord[]) => void;
 
-export class BaseElement extends LitElement {
-    static properties?: { [prop: string]: { type: any; reflect: string | boolean } };
+export abstract class BaseElement extends LitElement {
     static __listeners?: EventListenerDeclaration[];
     static __observers?: { [name: string]: ObserveHandler[] };
 
@@ -88,45 +89,48 @@ export class BaseElement extends LitElement {
         }
         for (const listener of listeners) {
             if (listener.eventName && listener.handler) {
-                const target = listener.target
+                const target = (listener.target = listener.target
                     ? typeof listener.target === "string"
                         ? this.$(listener.target)
                         : listener.target
-                    : this;
+                    : this);
                 if (target && target.addEventListener) {
-                    target.addEventListener(listener.eventName, e => {
+                    listener._attachedHandler = e => {
                         listener.handler.call(this, e);
-                    });
+                    };
+                    target.addEventListener(listener.eventName, listener._attachedHandler);
                 }
             }
         }
     }
 
-    _propertiesChanged(currentProps: object, changedProps: object, oldProps: object): void {
-        const observers = (<typeof BaseElement>this.constructor).__observers;
-        const properties = (<typeof BaseElement>this.constructor).properties;
-        const map = new Map<ObserveHandler, ChangeRecord[]>();
-        for (const propName in changedProps) {
-            const property = properties && properties[propName];
-
-            if (property && property.reflect) {
-                const attr = property.reflect === true ? propName : property.reflect;
-                const value = changedProps[propName];
-                if (value === true) {
-                    this.setAttribute(attr, "");
-                } else if (value === false) {
-                    this.removeAttribute(attr);
-                } else {
-                    this.setAttribute(attr, value);
-                }
+    disconnectedCallback() {
+        super.connectedCallback();
+        const listeners = (<typeof BaseElement>this.constructor).__listeners;
+        if (!listeners) {
+            return;
+        }
+        for (const listener of listeners) {
+            if (listener._attachedHandler) {
+                (listener.target as EventTarget).removeEventListener(listener.eventName, listener._attachedHandler);
             }
+        }
+    }
 
+    updated(changedProps: any): void {
+        super.updated(changedProps);
+
+        const observers = (<typeof BaseElement>this.constructor).__observers;
+
+        const map = new Map<ObserveHandler, ChangeRecord[]>();
+
+        for (const propName in changedProps) {
             const handlers = observers && observers[propName];
             if (handlers && handlers.length) {
                 const changeRecord: ChangeRecord = {
                     path: propName,
-                    value: changedProps[propName],
-                    oldValue: oldProps[propName]
+                    value: this[propName],
+                    oldValue: changedProps[propName]
                 };
                 for (const handler of handlers) {
                     if (!map.has(handler)) {
@@ -137,10 +141,6 @@ export class BaseElement extends LitElement {
                 }
             }
         }
-        for (const handler of map.keys()) {
-            handler.call(this, map.get(handler));
-        }
-        super._propertiesChanged(currentProps, changedProps, oldProps);
     }
 }
 
@@ -156,19 +156,13 @@ export function element(name: string) {
     };
 }
 
-/**
- * Decorator to declate a property
- */
-export function property(opts: { reflect: boolean | string } = { reflect: false }) {
-    return (prototype: any, propertyName: string) => {
-        const constructor = prototype.constructor;
-        if (!constructor.hasOwnProperty("properties")) {
-            Object.defineProperty(constructor, "properties", { value: {} });
+export function property(options?: PropertyDeclaration) {
+    return (proto: Object, name: string) => {
+        options = options || {};
+        if (!options.type) {
+            options.type = getType(proto, name);
         }
-        constructor.properties[propertyName] = {
-            type: getType(prototype, propertyName) || String,
-            reflect: opts.reflect
-        };
+        (proto.constructor as typeof UpdatingElement).createProperty(name, options);
     };
 }
 

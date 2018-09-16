@@ -1,5 +1,5 @@
 import "@polymer/paper-spinner/paper-spinner-lite.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, listen } from "./base.js";
 import "./icon.js";
 
@@ -14,7 +14,8 @@ export class LoadingButton extends BaseElement {
 
     private _stopTimeout: number;
 
-    _render({ state, noTab }: this) {
+    render() {
+        const { state, noTab } = this;
         return html`
         ${shared}
 
@@ -34,12 +35,12 @@ export class LoadingButton extends BaseElement {
             }
 
             button > * {
-                @apply --absolute-center;
+                ${mixins.absoluteCenter()}
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
             }
 
             button > .label {
-                @appy --fullbleed;
+                ${mixins.fullbleed()}
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -64,7 +65,7 @@ export class LoadingButton extends BaseElement {
             }
         </style>
 
-        <button type="button" class$="${state}" tabindex$="${noTab ? "-1" : ""}">
+        <button type="button" class="${state}" tabindex="${noTab ? "-1" : ""}">
 
             <div class="label"><slot></slot></div>
 

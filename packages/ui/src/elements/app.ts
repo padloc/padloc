@@ -2,7 +2,7 @@ import { checkForUpdates, getPlatformName, getDeviceInfo } from "@padlock/core/l
 import { wait } from "@padlock/core/lib/util.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { config, shared } from "../styles";
+import { config, shared, mixins } from "../styles";
 import { app, router } from "../init.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
 import { AccountView } from "./account-view.js";
@@ -27,7 +27,7 @@ const cordovaReady = new Promise(resolve => {
 });
 
 class App extends BaseElement {
-    @property({ reflect: "show-menu" })
+    @property({ attribute: "show-menu", reflect: true })
     private _showMenu: boolean = false;
 
     @query("#main") private _main: HTMLDivElement;
@@ -72,7 +72,7 @@ class App extends BaseElement {
         }
     }
 
-    _render() {
+    render() {
         return html`
         ${config}
         ${shared}
@@ -135,7 +135,7 @@ class App extends BaseElement {
             }
 
             #main {
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 display: flex;
                 overflow: hidden;
                 perspective: 1000px;
@@ -200,7 +200,7 @@ class App extends BaseElement {
             }
 
             #placeholderView {
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -231,7 +231,7 @@ class App extends BaseElement {
                 }
 
                 #views {
-                    @apply --fullbleed;
+                    ${mixins.fullbleed()}
                     box-shadow: none;
                     z-index: 1;
                     margin-left: 0;
@@ -247,15 +247,15 @@ class App extends BaseElement {
         <pl-start id="startView"></pl-start>
 
         <pl-menu
-            on-menu-open="${() => (this._showMenu = true)}"
-            on-menu-close="${() => (this._showMenu = false)}"
-            on-select-tag="${(e: CustomEvent) => this._listView.search(e.detail.tag)}"
-            on-multiselect="${() => (this._listView.multiSelect = true)}">
+            @menu-open=${() => (this._showMenu = true)}
+            @menu-close=${() => (this._showMenu = false)}
+            @select-tag=${(e: CustomEvent) => this._listView.search(e.detail.tag)}
+            @multiselect=${() => (this._listView.multiSelect = true)}>
         </pl-menu>
 
         <div id="main">
 
-            <pl-list-view on-toggle-menu="${() => this._menu.toggle()}"></pl-list-view>
+            <pl-list-view @toggle-menu=${() => this._menu.toggle()}></pl-list-view>
 
             <div id="views">
 

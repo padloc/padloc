@@ -1,4 +1,4 @@
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { animateElement } from "../animation";
 import { BaseElement, html, property, observe, listen } from "./base.js";
 import { Input } from "./input.js";
@@ -10,7 +10,7 @@ export class Dialog extends BaseElement {
     isShowing: boolean = false;
     private _hideTimeout?: number;
 
-    _render() {
+    render() {
         return html`
         ${shared}
 
@@ -18,10 +18,10 @@ export class Dialog extends BaseElement {
 
             :host {
                 display: block;
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 position: fixed;
                 z-index: 10;
-                @apply --scroll;
+                ${mixins.scroll()}
             }
 
             :host(:not([open])) {
@@ -45,7 +45,7 @@ export class Dialog extends BaseElement {
                 opacity: 0;
                 transition: opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
                 transform: translate3d(0, 0, 0);
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 position: fixed;
             }
 
@@ -68,8 +68,6 @@ export class Dialog extends BaseElement {
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
                 box-shadow: rgba(0, 0, 0, 0.25) 0 0 5px;
                 overflow: hidden;
-
-                @apply --pl-dialog-inner;
             }
 
             .outer {
@@ -86,9 +84,9 @@ export class Dialog extends BaseElement {
 
         <div class="scrim"></div>
 
-        <div class="outer" on-click="${() => this.dismiss()}">
+        <div class="outer" @click=${() => this.dismiss()}>
             <slot name="before"></slot>
-            <div id="inner" class="inner" on-click="${(e: Event) => e.stopPropagation()}">
+            <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>
                 <slot></slot>
             </div>
             <slot name="after"></slot>

@@ -1,4 +1,4 @@
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Toggle } from "./toggle.js";
 
@@ -12,7 +12,8 @@ export class ToggleButton extends BaseElement {
 
     @query("pl-toggle") _toggle: Toggle;
 
-    _render({ active, label }: this) {
+    render() {
+        const { active, label } = this;
         return html`
         ${shared}
 
@@ -37,7 +38,7 @@ export class ToggleButton extends BaseElement {
 
             button > div {
                 flex: 1;
-                @apply --ellipsis;
+                ${mixins.ellipsis()}
             }
 
             :host(:not([reverse])) button > div {
@@ -58,7 +59,7 @@ export class ToggleButton extends BaseElement {
             }
         </style>
 
-        <button on-click="${() => this.toggle()}">
+        <button @click=${() => this.toggle()}>
             <pl-toggle active="${active}" on-change=${() => (this.active = this._toggle.active)}"></pl-toggle>
             <div>${label}</div>
         </button>

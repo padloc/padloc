@@ -13,11 +13,12 @@ export class Clipboard extends BaseElement {
     private _interval: number;
     private _resolve: (() => void) | null = null;
 
-    _shouldRender() {
+    shouldUpdate() {
         return !!this.record && !!this.field;
     }
 
-    _render(props: this) {
+    render() {
+        const { record, field, _tMinusClear } = this;
         return html`
         ${ shared }
 
@@ -69,12 +70,12 @@ export class Clipboard extends BaseElement {
 
         <div class="content">
             <div class="title">${ $l("Copied To Clipboard:") }</div>
-            <div class="name">${ props.record!.name } / ${ props.field!.name }</div>
+            <div class="name">${ record!.name } / ${ field!.name }</div>
         </div>
 
-        <button class="tiles-2 tap" on-click="${ () => this.clear() }">
+        <button class="tiles-2 tap" @click=${ () => this.clear() }>
             <div><strong>${ $l("Clear") }</strong></div>
-            <div class="countdown">${ props._tMinusClear }s</div>
+            <div class="countdown">${ _tMinusClear }s</div>
         </button>
 `;
     }

@@ -19,7 +19,7 @@ export class Unlock extends StartForm {
         setTimeout(() => this._passwordInput.focus(), 100);
     }
 
-    _render() {
+    render() {
         const email = app.account && app.account.email;
         return html`
             ${sharedStyles}
@@ -51,7 +51,7 @@ export class Unlock extends StartForm {
 
                     <strong>${email}</strong>.
 
-                    <span class="logout" on-click="${() => this._logout()}">Log Out</span>
+                    <span class="logout" @click=${() => this._logout()}>Log Out</span>
 
                 </div>
 
@@ -59,12 +59,12 @@ export class Unlock extends StartForm {
                     id="passwordInput"
                     type="password"
                     required
-                    label="${$l("Enter Master Password")}"
+                    .label=${$l("Enter Master Password")}
                     class="tiles-2"
-                    on-enter="${() => this._submit()}">
+                    @enter=${() => this._submit()}>
                 </pl-input>
 
-                <pl-loading-button id="unlockButton" class="tap tiles-3" on-click="${() => this._submit()}">
+                <pl-loading-button id="unlockButton" class="tap tiles-3" @click=${() => this._submit()}>
                     ${$l("Unlock")}
                 </pl-loading-button>
 

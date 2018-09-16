@@ -1,6 +1,6 @@
 // @ts-ignore
 import autosize from "autosize/src/autosize.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
 
 let activeInput: Input | null = null;
@@ -31,13 +31,15 @@ export class Input extends BaseElement {
     @property() pattern: string = "";
     @property() placeholder: string = "";
     @property() label: string = "";
-    @property() noTab: boolean = false;
+    @property({ attribute: "no-tab" })
+    noTab: boolean = false;
     @property({ reflect: true })
     readonly: boolean = false;
     @property({ reflect: true })
     required: boolean = false;
     @property() type: string = "text";
-    @property() selectOnFocus: boolean = false;
+    @property({ attribute: "select-on-focus" })
+    selectOnFocus: boolean = false;
     @property() value: string = "";
 
     @query("textarea, input") private _inputElement: HTMLInputElement;
@@ -55,7 +57,7 @@ export class Input extends BaseElement {
         }
     }
 
-    _render() {
+    render() {
         const {
             value,
             masked,
@@ -77,45 +79,45 @@ export class Input extends BaseElement {
             ? html`
                 <textarea
                     id="input"
-                    value="${value}"
-                    placeholder$="${placeholder}"
-                    readonly?="${readonly}"
-                    tabindex$="${noTab ? "-1" : ""}"
-                    invisible?="${doMask}"
-                    disabled?="${disabled}"
-                    autocapitalize$="${autocapitalize ? "" : "off"}"
-                    required?="${required}"
+                    .value=${value}
+                    placeholder="${placeholder}"
+                    ?readonly=${readonly}
+                    tabindex="${noTab ? "-1" : ""}"
+                    ?invisible=${doMask}
+                    ?disabled=${disabled}
+                    autocapitalize="${autocapitalize ? "" : "off"}"
+                    ?required=${required}
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
                     rows="1"></textarea>
 
                 <textarea
-                    value="${mask(value)}"
-                    invisible?="${!doMask}"
+                    .value=${mask(value)}
+                    ?invisible=${!doMask}
                     class="mask"
                     tabindex="-1"
                     disabled></textarea>`
             : html`
                 <input
                     id="input"
-                    value="${value}"
-                    placeholder$="${placeholder}"
-                    readonly?="${readonly}"
-                    tabindex$="${noTab ? "-1" : ""}"
-                    invisible?="${doMask}"
-                    disabled?="${disabled}"
-                    autocapitalize$="${autocapitalize ? "" : "off"}"
-                    required?="${required}"
+                    .value=${value}
+                    .placeholder=${placeholder}
+                    ?readonly=${readonly}
+                    tabindex="${noTab ? "-1" : ""}"
+                    ?invisible=${doMask}
+                    ?disabled=${disabled}
+                    autocapitalize="${autocapitalize ? "" : "off"}"
+                    ?required=${required}
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
-                    type$="${type}"
-                    pattern$="${pattern || ".*"}">
+                    type="${type}"
+                    pattern="${pattern || ".*"}">
 
                 <input
-                    value="${mask(value)}"
-                    invisible?="${!doMask}"
+                    .value=${mask(value)}
+                    ?invisible=${!doMask}
                     class="mask"
                     tabindex="-1"
                     disabled>`;
@@ -164,7 +166,6 @@ export class Input extends BaseElement {
                 text-shadow: inherit;
                 color: inherit;
                 opacity: 0.5;
-                @apply --pl-input-placeholder;
             }
 
             --fullbleed: {
@@ -172,7 +173,7 @@ export class Input extends BaseElement {
             }
 
             .mask {
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 pointer-events: none;
                 font-size: 150%;
                 line-height: 22px;
@@ -210,7 +211,7 @@ export class Input extends BaseElement {
 
         ${input}
 
-        <label for="input" float?="${focused || !!value || !!placeholder}">${label}</label>
+        <label for="input" ?float=${focused || !!value || !!placeholder}>${label}</label>
         `;
     }
 

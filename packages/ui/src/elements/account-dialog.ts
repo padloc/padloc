@@ -15,12 +15,12 @@ export class AccountDialog extends BaseElement {
 
     private _resolve: ((doAction: boolean) => void) | null;
 
-    _shouldRender() {
+    shouldUpdate() {
         return !!this.account;
     }
 
-    _render({ account }: this) {
-        account = account!;
+    render() {
+        const account = this.account!;
         const { id, email, name, publicKey } = account;
         const isOwnAccount = app.account && app.account.id === id;
 
@@ -106,11 +106,11 @@ export class AccountDialog extends BaseElement {
 
         </style>
 
-        <pl-dialog on-dialog-dismiss="${() => this._done()}">
+        <pl-dialog @dialog-dismiss=${() => this._done()}>
 
-            <pl-icon class="close-icon tap" icon="close" on-click="${() => this._done()}"></pl-icon>
+            <pl-icon class="close-icon tap" icon="close" @click=${() => this._done()}></pl-icon>
 
-            <pl-fingerprint key="${publicKey}"></pl-fingerprint>
+            <pl-fingerprint .key=${publicKey}></pl-fingerprint>
 
             <div class="fingerprint-hint">${$l("What is this?")}</div>
 
@@ -122,7 +122,7 @@ export class AccountDialog extends BaseElement {
 
                 <div class="tags small">
 
-                    <div class="tag" hidden?="${!isOwnAccount}">
+                    <div class="tag" ?hidden=${!isOwnAccount}>
 
                         <pl-icon icon="user"></pl-icon>
 
@@ -156,7 +156,7 @@ export class AccountDialog extends BaseElement {
     async show(account: AccountInfo, action = "") {
         this.account = account;
         this.action = action;
-        await this.renderComplete;
+        await this.updateComplete;
         this._dialog.open = true;
         return new Promise(resolve => {
             this._resolve = resolve;

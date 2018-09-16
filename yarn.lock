@@ -47,12 +47,11 @@
   dependencies:
     "@polymer/polymer" "^3.0.0"
 
-"@polymer/lit-element@^0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@polymer/lit-element/-/lit-element-0.5.2.tgz#8d4e2d1ada27cf0f1a38b7b0eb9fadae92eb63df"
+"@polymer/lit-element@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@polymer/lit-element/-/lit-element-0.6.0.tgz#6ad8ae0f0c749624ad5c5523384d5cd64db30d18"
   dependencies:
-    "@polymer/polymer" "^3.0.2"
-    lit-html "^0.10.0"
+    lit-html "^0.11.2"
 
 "@polymer/paper-spinner@^3.0.0-pre.18":
   version "3.0.0-pre.19"
@@ -72,12 +71,6 @@
 "@polymer/polymer@^3.0.0":
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/@polymer/polymer/-/polymer-3.0.2.tgz#626e6f9fae9716b0962ce0211e21df242153eab2"
-  dependencies:
-    "@webcomponents/shadycss" "^1.2.0"
-
-"@polymer/polymer@^3.0.2":
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/@polymer/polymer/-/polymer-3.0.5.tgz#eaa42e70df7de818b5e1839452c82a5f83e39929"
   dependencies:
     "@webcomponents/shadycss" "^1.2.0"
 
@@ -1857,9 +1850,13 @@ levelup@^3.0.0:
     level-iterator-stream "~2.0.0"
     xtend "~4.0.0"
 
-lit-html@^0.10.0, lit-html@^0.10.2:
+lit-html@^0.10.2:
   version "0.10.2"
   resolved "https://registry.yarnpkg.com/lit-html/-/lit-html-0.10.2.tgz#53c846afcf91bb1e6623179ef22e327ab8ac0e0e"
+
+lit-html@^0.11.2:
+  version "0.11.3"
+  resolved "https://registry.yarnpkg.com/lit-html/-/lit-html-0.11.3.tgz#34d6eb27ef0c7fdae542c7b50762526704605681"
 
 load-json-file@^1.0.0:
   version "1.1.0"
@@ -2931,10 +2928,6 @@ typedarray@^0.0.6:
 typescript@^2.9.2:
   version "2.9.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.9.2.tgz#1cbf61d05d6b96269244eb6a3bce4bd914e0f00c"
-
-typescript@^3.1.0-dev.20180801:
-  version "3.1.0-dev.20180801"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.1.0-dev.20180801.tgz#e6fa5c284afb10445f0c4ca0a1c0c16329fea351"
 
 underscore@^1.8.3:
   version "1.9.1"

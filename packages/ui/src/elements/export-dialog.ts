@@ -21,7 +21,8 @@ export class ExportDialog extends BaseElement {
 
     private _resolve: (() => void) | null;
 
-    _render({ open, records }: this) {
+    render() {
+        const { open, records } = this;
         return html`
         ${shared}
 
@@ -55,8 +56,8 @@ export class ExportDialog extends BaseElement {
         </style>
 
         <pl-dialog
-            open="${open}"
-            on-dialog-dismiss="${() => this._done()}">
+            .open=${open}
+            @dialog-dismiss=${() => this._done()}>
 
             <div class="message tiles-1">${$l("Export {0} Records", records.length.toString())}</div>
 
@@ -64,12 +65,12 @@ export class ExportDialog extends BaseElement {
 
                 <div class="label">${$l("As CSV")}</div>
 
-                <pl-icon icon="copy" class="tap" on-click="${() => this._copyCSV()}"></pl-icon>
+                <pl-icon icon="copy" class="tap" @click=${() => this._copyCSV()}></pl-icon>
 
                 <pl-icon
                     icon="download"
-                    class="tap" on-click="${() => this._downloadCSV()}"
-                    hidden?="${isCordova()}">
+                    class="tap" @click=${() => this._downloadCSV()}
+                    ?hidden=${isCordova()}>
                 </pl-icon>
 
             </div>
@@ -78,13 +79,13 @@ export class ExportDialog extends BaseElement {
 
                 <div class="label">${$l("As Encrypted File")}</div>
 
-                <pl-icon icon="copy" class="tap" on-click="${() => this._copyEncrypted()}"></pl-icon>
+                <pl-icon icon="copy" class="tap" @click=${() => this._copyEncrypted()}></pl-icon>
 
                 <pl-icon
                     icon="download"
                     class="tap"
-                    on-click="${() => this._downloadEncrypted()}"
-                    hidden?="${isCordova()}">
+                    @click=${() => this._downloadEncrypted()}
+                    ?hidden=${isCordova()}>
                 </pl-icon>
 
             </div>

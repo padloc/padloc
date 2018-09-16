@@ -1,8 +1,8 @@
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, html } from "./base.js";
 
 export class TitleBar extends BaseElement {
-    _render() {
+    render() {
         return html`
         ${shared}
 
@@ -20,7 +20,7 @@ export class TitleBar extends BaseElement {
             }
 
             .title {
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 text-align: center;
                 line-height: var(--title-bar-height);
                 pointer-events: none;
@@ -32,7 +32,7 @@ export class TitleBar extends BaseElement {
             .buttons {
                 display: flex;
                 align-items: center;
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
             }
 
             :host(:not(.macos):not(.linux)) .buttons.macos-linux,
@@ -64,7 +64,7 @@ export class TitleBar extends BaseElement {
                 width: 10px;
                 height: 10px;
                 line-height: 10px;
-                @apply --absolute-center;
+                ${mixins.absoluteCenter()}
             }
 
             .buttons.macos-linux button:not(:hover)::after {
@@ -140,15 +140,15 @@ export class TitleBar extends BaseElement {
         <div class="title">Padlock</div>
 
         <div class="buttons macos-linux">
-            <button class="close" on-click="${() => this._close()}"></button>
-            <button class="minimize" on-click="${() => this._minimize()}"></button>
-            <button class="maximize" on-click="${() => this._maximize()}"></button>
+            <button class="close" @click=${() => this._close()}></button>
+            <button class="minimize" @click=${() => this._minimize()}></button>
+            <button class="maximize" @click=${() => this._maximize()}></button>
         </div>
 
         <div class="buttons windows">
-            <button class="minimize" on-click="${() => this._minimize()}"></button>
-            <button class="maximize" on-click="${() => this._maximize()}"></button>
-            <button class="close" on-click="${() => this._close()}"></button>
+            <button class="minimize" @click=${() => this._minimize()}></button>
+            <button class="maximize" @click=${() => this._maximize()}></button>
+            <button class="close" @click=${() => this._close()}></button>
         </div>
 `;
     }

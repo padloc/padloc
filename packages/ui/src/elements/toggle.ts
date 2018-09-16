@@ -7,7 +7,7 @@ export class Toggle extends BaseElement {
     active: boolean = false;
     @property() notap: boolean = false;
 
-    _render() {
+    render() {
         return html`
         ${shared}
         <style>

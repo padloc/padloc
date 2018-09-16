@@ -13,7 +13,7 @@ export class Slider extends BaseElement {
 
     @query("input") private _input: HTMLInputElement;
 
-    _render(props: this) {
+    render() {
         return html`
         ${shared}
 
@@ -85,17 +85,17 @@ export class Slider extends BaseElement {
 
         </style>
 
-        <label>${props.label}</label>
+        <label>${this.label}</label>
 
         <input
             type="range"
-            value="${props.value}"
-            min="${props.min}"
-            max="${props.max}"
-            step="${props.step}"
-            on-input="${() => this._inputChange()}">
+            .value=${this.value}
+            .min=${this.min}
+            .max=${this.max}
+            .step=${this.step}
+            @input=${() => this._inputChange()}>
 
-        <span class="value-display" hidden?="${props.hideValue}">${props.value}${props.unit}</span>
+        <span class="value-display" ?hidden=${this.hideValue}>${this.value}${this.unit}</span>
 `;
     }
 

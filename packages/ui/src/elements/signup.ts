@@ -27,7 +27,7 @@ export class Signup extends StartForm {
         super.reset();
     }
 
-    _render() {
+    render() {
         const { _weakPassword } = this;
         return html`
             ${sharedStyles}
@@ -75,7 +75,7 @@ export class Signup extends StartForm {
 
                     <div>${$l("Create Account")}</div>
 
-                    <pl-icon icon="cancel" class="tap" on-click="${() => this._cancel()}"></pl-icon>
+                    <pl-icon icon="cancel" class="tap" @click=${() => this._cancel()}></pl-icon>
 
                 </div>
 
@@ -83,9 +83,9 @@ export class Signup extends StartForm {
                     id="emailInput"
                     type="email"
                     required
-                    label="${$l("Email Address")}"
+                    .label=${$l("Email Address")}
                     class="tiles-2"
-                    on-enter="${() => this._submit()}">
+                    @enter=${() => this._submit()}>
                 </pl-input>
 
                 <div class="hint">
@@ -97,9 +97,9 @@ export class Signup extends StartForm {
 
                 <pl-input
                     id="nameInput"
-                    label="${$l("Your Name")}"
+                    .label=${$l("Your Name")}
                     class="tiles-2"
-                    on-enter="${() => this._submit()}">
+                    @enter=${() => this._submit()}>
                 </pl-input>
 
                 <div class="hint">
@@ -110,13 +110,13 @@ export class Signup extends StartForm {
                     id="passwordInput"
                     type="password"
                     required
-                    label="${$l("Master Password")}"
+                    .label=${$l("Master Password")}
                     class="tiles-2"
-                    on-change="${() => this._updatePwdStrength()}"
-                    on-enter="${() => this._submit()}">
+                    @change=${() => this._updatePwdStrength()}
+                    @enter=${() => this._submit()}>
                 </pl-input>
 
-                <div class="hint warning" hidden?="${!_weakPassword}">${$l("WARNING: Weak Password!")}</div>
+                <div class="hint warning" ?hidden=${!_weakPassword}>${$l("WARNING: Weak Password!")}</div>
 
                 <div class="hint">
                     ${$l(
@@ -129,9 +129,9 @@ export class Signup extends StartForm {
                     id="repeatPasswordInput"
                     type="password"
                     required
-                    label="${$l("Repeat Master Password")}"
+                    .label=${$l("Repeat Master Password")}
                     class="tiles-2"
-                    on-enter="${() => this._submit()}">
+                    @enter=${() => this._submit()}>
                 </pl-input>
 
                 <div class="hint">
@@ -142,7 +142,7 @@ export class Signup extends StartForm {
                     )}
                 </div>
 
-                <pl-loading-button id="submitButton" class="tap tiles-3" on-click="${() => this._submit()}">
+                <pl-loading-button id="submitButton" class="tap tiles-3" @click=${() => this._submit()}>
                     ${$l("Submit")}
                 </pl-loading-button>
 

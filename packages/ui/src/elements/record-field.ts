@@ -14,13 +14,14 @@ export class RecordField extends BaseElement {
     @property() field: Field;
     @property() readonly: boolean = false;
 
-    _shouldRender() {
+    shouldUpdate() {
         return !!this.field;
     }
 
-    _render({ field, readonly }: this) {
+    render() {
+        const { field, readonly } = this;
         return html`
-        ${ shared }
+        ${shared}
 
         <style>
             :host {
@@ -90,7 +91,7 @@ export class RecordField extends BaseElement {
             }
         </style>
 
-        <div class="container tap" on-click="${() => this._openFieldDialog()}">
+        <div class="container tap" @click=${() => this._openFieldDialog()}>
 
             <div class="name">${field.name}</div>
 
@@ -110,31 +111,31 @@ export class RecordField extends BaseElement {
             <pl-icon
                 icon="${field.masked ? "show" : "hide"}"
                 class="field-button tap"
-                on-click="${() => this._toggleMask()}"
-                hidden?="${!field.value}">
+                @click=${() => this._toggleMask()}
+                ?hidden=${!field.value}>
             </pl-icon>
 
             <pl-icon
                 icon="copy"
                 class="field-button tap"
-                on-click="${() => this._copy()}"
-                hidden?="${!field.value}">
+                @click=${() => this._copy()}
+                ?hidden=${!field.value}>
             </pl-icon>
 
             <pl-icon
                 icon="edit"
                 class="field-button tap"
-                on-click="${() => this._edit()}"
-                disabled?="${readonly}"
-                hidden?="${!!field.value}">
+                @click=${() => this._edit()}
+                ?disabled=${readonly}
+                ?hidden=${!!field.value}>
             </pl-icon>
 
             <pl-icon
                 icon="generate"
                 class="field-button tap"
-                on-click="${() => this._showGenerator()}"
-                disabled?="${readonly}"
-                hidden?="${!!field.value}">
+                @click=${() => this._showGenerator()}
+                ?disabled=${readonly}
+                ?hidden=${!!field.value}>
             </pl-icon>
 
         </div>

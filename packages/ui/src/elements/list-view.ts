@@ -8,7 +8,7 @@ import { animateCascade } from "../animation.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { confirm, getDialog } from "../dialog.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { AlertDialog } from "./alert-dialog.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
 import { Input } from "./input.js";
@@ -70,12 +70,12 @@ export class ListView extends BaseElement {
         this._animateItems();
     }
 
-    _didRender() {
+    firstUpdated() {
         this._resizeHandler();
     }
 
-    _render(props: this) {
-        const filterActive = !!props.filterString;
+    render() {
+        const filterActive = !!this.filterString;
         return html`
         ${shared}
 
@@ -114,10 +114,10 @@ export class ListView extends BaseElement {
             }
 
             .empty {
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 display: flex;
                 flex-direction: column;
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 top: var(--row-height);
                 z-index: 1;
                 overflow: visible;
@@ -234,7 +234,7 @@ export class ListView extends BaseElement {
                 /* transition: color 0.3s; */
                 margin: 6px 6px 0 6px;
                 /* transform: translate3d(0, 0, 0); */
-                @apply --card;
+                ${mixins.card()}
             }
 
             .record .tags {
@@ -251,7 +251,7 @@ export class ListView extends BaseElement {
 
             .record-name {
                 padding-left: 15px;
-                @apply --ellipsis;
+                ${mixins.ellipsis()}
                 font-weight: bold;
                 flex: 1;
                 width: 0;
@@ -282,7 +282,7 @@ export class ListView extends BaseElement {
                 font-weight: bold;
                 margin: 0 0 6px 6px;
                 border-radius: 8px;
-                @apply --shade-2;
+                ${mixins.shade2()}
             }
 
             .record-field > * {
@@ -290,7 +290,7 @@ export class ListView extends BaseElement {
             }
 
             .copied-message {
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 border-radius: inherit;
             }
 
@@ -311,13 +311,13 @@ export class ListView extends BaseElement {
             }
 
             :host(:not([multi-select])) .record-field:hover {
-                @apply --shade-3;
+                ${mixins.shade3()}
             }
 
             .record-field-label {
                 padding: 0 15px;
                 pointer-events: none;
-                @apply --ellipsis;
+                ${mixins.ellipsis()}
             }
 
             .record-highlight {
@@ -327,7 +327,7 @@ export class ListView extends BaseElement {
                 transition-property: opacity, transform;
                 transition-duration: 0.2s;
                 transition-timing-function: cubic-bezier(0.6, 0, 0.2, 1);
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 transform: scale(1, 0);
                 opacity: 0;
                 border-radius: 5px;
@@ -348,37 +348,37 @@ export class ListView extends BaseElement {
             }
         </style>
 
-        <header hidden?="${props.multiSelect}">
+        <header ?hidden=${this.multiSelect}>
 
-            <pl-icon icon="menu" class="tap" on-click="${() => this._toggleMenu()}" hidden?="${filterActive}"></pl-icon>
+            <pl-icon icon="menu" class="tap" @click=${() => this._toggleMenu()} ?hidden=${filterActive}></pl-icon>
 
             <pl-input
                 id="filterInput"
                 class="filter-input tap"
                 placeholder="${$l("Type To Search")}"
-                active?="${filterActive}"
-                value="${props.filterString}"
-                on-escape="${() => this.clearFilter()}"
-                on-input="${() => this._updateFilterString()}"
+                ?active=${filterActive}
+                .value=${this.filterString}
+                @escape=${() => this.clearFilter()}
+                @input=${() => this._updateFilterString()}
                 no-tab>
             </pl-input>
 
-            <pl-icon icon="add" class="tap" on-click="${() => this._newRecord()}" hidden?="${filterActive}"></pl-icon>
+            <pl-icon icon="add" class="tap" @click=${() => this._newRecord()} ?hidden=${filterActive}></pl-icon>
 
             <pl-icon
                 icon="cancel"
                 class="tap"
-                on-click="${() => this.clearFilter()}"
-                hidden?="${!filterActive}">
+                @click=${() => this.clearFilter()}
+                ?hidden=${!filterActive}>
             </pl-icon>
 
         </header>
 
-        <header hidden?="${!props.multiSelect}">
+        <header ?hidden=${!this.multiSelect}>
 
-            <pl-icon icon="cancel" class="tap" on-click="${() => this.clearSelection()}"></pl-icon>
+            <pl-icon icon="cancel" class="tap" @click=${() => this.clearSelection()}></pl-icon>
 
-            <pl-icon icon="checkall" class="tap" on-click="${() => this.selectAll()}"></pl-icon>
+            <pl-icon icon="checkall" class="tap" @click=${() => this.selectAll()}></pl-icon>
 
             <div class="multi-select-count"><div>
                 ${
@@ -388,29 +388,29 @@ export class ListView extends BaseElement {
                 }
             </div></div>
 
-            <pl-icon icon="delete" class="tap" on-click="${() => this._deleteSelected()}"></pl-icon>
+            <pl-icon icon="delete" class="tap" @click=${() => this._deleteSelected()}></pl-icon>
 
-            <pl-icon icon="share" class="tap" on-click="${() => this._shareSelected()}"></pl-icon>
+            <pl-icon icon="share" class="tap" @click=${() => this._shareSelected()}></pl-icon>
 
         </header>
 
         <div class="current-section tap"
-            on-click="${() => this._selectSection()}"
-            hidden?="${!props._listItems.length}">
+            @click=${() => this._selectSection()}
+            ?hidden=${!this._listItems.length}>
 
             <pl-icon icon="dropdown" class="float-right"></pl-icon>
 
-            <div>${props._currentSection}</div>
+            <div>${this._currentSection}</div>
 
         </div>
 
-        <main id="main" hidden?="${!props._listItems.length}">
+        <main id="main" ?hidden=${!this._listItems.length}>
 
-            ${props._listItems.map(
+            ${this._listItems.map(
                 (item: any, index: number) => html`
-                <div class="list-item" index$="${index}">
+                <div class="list-item" index="${index}">
 
-                    <div class="section-header" hidden?="${index === 0 || !item.firstInSection}">
+                    <div class="section-header" ?hidden=${index === 0 || !item.firstInSection}>
 
                         <div>${item.section}</div>
 
@@ -421,22 +421,22 @@ export class ListView extends BaseElement {
                     </div>
 
                     <div class="record"
-                        record="${item.record}"
-                        record-id$="${item.record.id}"
-                        selected?="${this._selected.has(item.record.id)}"
-                        on-click="${() => this.selectItem(item)}"
-                        index$="${index}">
+                        .record=${item.record}
+                        record-id="${item.record.id}"
+                        ?selected=${this._selected.has(item.record.id)}
+                        @click=${() => this.selectItem(item)}
+                        index="${index}">
 
                             <div class="record-highlight"></div>
 
                             <div class="record-header">
 
-                                <div class="record-name" disabled?="${!item.record.name}">
+                                <div class="record-name" ?disabled=${!item.record.name}>
                                     ${item.record.name || $l("No Name")}
                                 </div>
 
                                 <div class="tags small">
-                                    <div class="ellipsis tag highlight" hidden?="${item.store === app.mainStore}">
+                                    <div class="ellipsis tag highlight" ?hidden=${item.store === app.mainStore}>
                                         ${item.store.name}
                                     </div> 
                                     ${this._tags(item.record).map(
@@ -444,7 +444,7 @@ export class ListView extends BaseElement {
                                             <div class="ellipsis tag">${t}</div>
                                         `
                                     )}
-                                    <pl-icon icon="error" class="tag warning" hidden?="${!item.warning}"></pl-icon>
+                                    <pl-icon icon="error" class="tag warning" ?hidden=${!item.warning}></pl-icon>
                                 </div>
 
                             </div>
@@ -455,7 +455,7 @@ export class ListView extends BaseElement {
                                     (f: Field, i: number) => html`
                                         <div
                                             class="record-field"
-                                            on-click="${(e: MouseEvent) => this._copyField(item.record, i, e)}">
+                                            @click=${(e: MouseEvent) => this._copyField(item.record, i, e)}>
 
                                             <div class="record-field-label">${f.name}</div>
 
@@ -465,7 +465,7 @@ export class ListView extends BaseElement {
                                     `
                                 )}
 
-                                <div class="record-field" disabled hidden?="${!!item.record.fields.length}">
+                                <div class="record-field" disabled ?hidden=${!!item.record.fields.length}>
                                     ${$l("No Fields")}
                                 </div>
 
@@ -473,7 +473,7 @@ export class ListView extends BaseElement {
 
                     </div>
 
-                    <div class="section-separator" hidden?="${!item.lastInSection}"></div>
+                    <div class="section-separator" ?hidden=${!item.lastInSection}></div>
 
                 </div>
                 `
@@ -481,7 +481,7 @@ export class ListView extends BaseElement {
 
         </main>
 
-        <div hidden?="${!!props._listItems.length}" class="empty">
+        <div ?hidden=${!!this._listItems.length} class="empty">
 
             <div class="empty-message">
                 ${$l("You don't have any data yet! Start by creating your first record!")}
@@ -493,8 +493,8 @@ export class ListView extends BaseElement {
 
         <pl-alert-dialog
             id="sectionSelector"
-            on-dialog-open="${(e: Event) => e.stopPropagation()}"
-            on-dialog-close="${(e: Event) => e.stopPropagation()}">
+            @dialog-open=${(e: Event) => e.stopPropagation()}
+            @dialog-close=${(e: Event) => e.stopPropagation()}>
         </pl-alert-dialog>
 
         <div class="rounded-corners"></div>
@@ -561,7 +561,7 @@ export class ListView extends BaseElement {
             this._scrollToSelected();
             router.go(`record/${item.record.id}`);
         }
-        this.requestRender();
+        this.requestUpdate();
     }
 
     selectAll() {
@@ -569,13 +569,13 @@ export class ListView extends BaseElement {
         for (const item of this._listItems) {
             this._selected.set(item.record.id, item);
         }
-        this.requestRender();
+        this.requestUpdate();
     }
 
     clearSelection() {
         this._selected.clear();
         this.multiSelect = false;
-        this.requestRender();
+        this.requestUpdate();
     }
 
     private _newRecord() {
@@ -640,7 +640,7 @@ export class ListView extends BaseElement {
                 this._selected.delete(id);
             }
         }
-        this.requestRender();
+        this.requestUpdate();
         const shareDialog = getDialog("pl-share-dialog") as ShareDialog;
         await shareDialog.show(this._selectedRecords);
         this.clearSelection();

@@ -132,7 +132,6 @@ export class ServerAPI implements API {
 
     async getSessions() {
         const { account } = this._requireAuth();
-        console.log("get sessions", account.sessions);
         const sessions = Promise.all(
             Array.from(account.sessions).map(async id => {
                 const session = new Session(id);

@@ -19,7 +19,8 @@ class Generator extends BaseElement {
 
     private _resolve: ((val: string | null) => void) | null;
 
-    _render({ value }: this) {
+    render() {
+        const { value } = this;
         return html`
         ${shared}
 
@@ -94,9 +95,9 @@ class Generator extends BaseElement {
             }
         </style>
 
-        <pl-dialog on-dialog-dismiss="${() => this._dismiss()}">
+        <pl-dialog @dialog-dismiss=${() => this._dismiss()}>
 
-            <div class="generate-button tap" on-click="${() => this._generate()}">
+            <div class="generate-button tap" @click=${() => this._generate()}>
 
                 <div class="header">${$l("Generate Random Value")}</div>
 
@@ -141,9 +142,9 @@ class Generator extends BaseElement {
                 max="50">
             </pl-slider>
 
-            <button class="confirm-button tap" on-click="${() => this._confirm()}">${$l("Apply")}</button>
+            <button class="confirm-button tap" @click=${() => this._confirm()}>${$l("Apply")}</button>
 
-            <pl-icon icon="cancel" class="close-button tap" on-click="${() => this._dismiss()}"></pl-icon>
+            <pl-icon icon="cancel" class="close-button tap" @click=${() => this._dismiss()}></pl-icon>
 
         </pl-dialog>
 `;

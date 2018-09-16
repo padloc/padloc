@@ -3,7 +3,7 @@ import { Record, Field } from "@padlock/core/lib/data.js";
 import { Store } from "@padlock/core/lib/store.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { View } from "./view.js";
 import { confirm, prompt, choose, openField, generate, getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
@@ -37,17 +37,18 @@ export class RecordView extends View {
     @listen("record-changed", app)
     _recordChanged(e: CustomEvent) {
         if (e.detail.record === this.record) {
-            this.requestRender();
+            this.requestUpdate();
         }
     }
 
-    _shouldRender() {
-        return super._shouldRender() && !!this.record;
+    shouldUpdate() {
+        return super.shouldUpdate() && !!this.record;
     }
 
-    _render({ record, store }: this) {
-        const { name, fields, tags, updated, updatedBy } = record!;
-        store = store!;
+    render() {
+        const record = this.record!;
+        const store = this.store!;
+        const { name, fields, tags, updated, updatedBy } = record;
         const isShared = app.mainStore && store.id !== app.mainStore.id;
         const permissions = store.getPermissions();
         // TODO
@@ -66,13 +67,13 @@ export class RecordView extends View {
                 display: flex;
                 flex-direction: column;
                 position: relative;
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
                 transition: background 0.5s;
                 background: var(--color-quaternary);
             }
 
             #background {
-                @apply --fullbleed;
+                ${mixins.fullbleed()}
             }
 
             header > pl-input {
@@ -92,7 +93,7 @@ export class RecordView extends View {
             pl-record-field, .add-button-wrapper {
                 transform: translate3d(0, 0, 0);
                 margin: 6px;
-                @apply --card;
+                ${mixins.card()}
             }
 
             .add-button {
@@ -124,7 +125,7 @@ export class RecordView extends View {
 
         <header>
 
-            <pl-icon icon="close" class="tap" on-click="${() => router.go("")}"></pl-icon>
+            <pl-icon icon="close" class="tap" @click=${() => router.go("")}></pl-icon>
 
             <pl-input
                 id="nameInput"
@@ -133,16 +134,16 @@ export class RecordView extends View {
                 placeholder="${$l("Enter Record Name")}"
                 select-on-focus=""
                 autocapitalize=""
-                readonly?="${!permissions.write}"
-                on-change="${() => this._updateName()}"
-                on-enter="${() => this._nameEnter()}">
+                ?readonly=${!permissions.write}
+                @change=${() => this._updateName()}
+                @enter=${() => this._nameEnter()}>
             </pl-input>
 
             <pl-icon
                 icon="delete"
                 class="tap"
-                on-click="${() => this._deleteRecord()}"
-                disabled?="${!permissions.write}">
+                @click=${() => this._deleteRecord()}
+                ?disabled=${!permissions.write}>
             </pl-icon>
 
         </header>
@@ -153,8 +154,8 @@ export class RecordView extends View {
 
                 <div class="tag highlight tap"
                     flex
-                    hidden?="${!isShared}"
-                    on-click="${() => this._openStore(store!)}">
+                    ?hidden=${!isShared}
+                    @click=${() => this._openStore(store!)}>
 
                     <pl-icon icon="group"></pl-icon>
 
@@ -162,7 +163,7 @@ export class RecordView extends View {
 
                 </div>
 
-                <div class="tag warning" flex hidden?="${permissions.write}">
+                <div class="tag warning" flex ?hidden=${permissions.write}>
 
                     <pl-icon icon="show"></pl-icon>
 
@@ -172,7 +173,7 @@ export class RecordView extends View {
 
                 ${tags.map(
                     (tag: string) => html`
-                    <div class="tag tap" flex on-click="${() => this._removeTag(tag)}">
+                    <div class="tag tap" flex @click=${() => this._removeTag(tag)}>
 
                         <pl-icon icon="tag"></pl-icon>
 
@@ -182,7 +183,7 @@ export class RecordView extends View {
                 `
                 )}
 
-                <div class="tag ghost tap" flex on-click="${() => this._addTag()}">
+                <div class="tag ghost tap" flex @click=${() => this._addTag()}>
 
                     <pl-icon icon="add"></pl-icon>
 
@@ -193,8 +194,8 @@ export class RecordView extends View {
                 <div
                     class="tag ghost tap"
                     flex
-                    hidden?="${!permissions.write || this.store !== app.mainStore}"
-                    on-click="${() => this._share()}">
+                    ?hidden=${!permissions.write || this.store !== app.mainStore}
+                    @click=${() => this._share()}>
 
                     <pl-icon icon="share"></pl-icon>
 
@@ -204,7 +205,7 @@ export class RecordView extends View {
 
             </div>
 
-            <section class="highlight tiles warning animate" hidden?="${!removedMembers.length}">
+            <section class="highlight tiles warning animate" ?hidden=${!removedMembers.length}>
 
                 <div class="info">
 
@@ -223,7 +224,7 @@ export class RecordView extends View {
 
                 </div>
 
-                <button class="tap" on-click="${() => this._dismissWarning()}">${$l("Dismiss")}</button>
+                <button class="tap" @click=${() => this._dismissWarning()}>${$l("Dismiss")}</button>
 
             </section>
 
@@ -238,8 +239,8 @@ export class RecordView extends View {
                             field="${field}"
                             record="${record}"
                             readonly="${!permissions.write}"
-                            on-field-change="${(e: CustomEvent) => this._changeField(index, e.detail.changes)}"
-                            on-field-delete="${() => this._deleteField(index)}">
+                            @field-change=${(e: CustomEvent) => this._changeField(index, e.detail.changes)}
+                            @field-delete=${() => this._deleteField(index)}>
                         </pl-record-field>
 
                     </div>
@@ -248,9 +249,9 @@ export class RecordView extends View {
                 )}
             </div>
 
-            <div class="add-button-wrapper animate" hidden?="${!permissions.write}">
+            <div class="add-button-wrapper animate" ?hidden=${!permissions.write}>
 
-                <button class="add-button tap" on-click="${() => this._addField()}">
+                <button class="add-button tap" @click=${() => this._addField()}>
 
                     <pl-icon icon="add"></pl-icon>
 
