@@ -7,27 +7,30 @@ export { TemplateResult } from "lit-html";
 
 export interface BasePrototype extends BaseElement {}
 
-export interface EventListenerDeclaration {
-    eventName: string;
-    target?: string | EventTarget;
+export interface ListenerDeclaration {
+    name: string;
     handler: (e?: Event) => void;
-    _attachedHandler?: (e?: Event) => void;
+    target?: string | EventTarget;
 }
 
-export interface ChangeRecord {
-    path: string;
-    value: any;
-    oldValue: any;
+export interface Listener {
+    name: string;
+    target: EventTarget;
+    handler: (e: Event) => void;
 }
 
-export type ObserveHandler = (changeRecords: ChangeRecord[]) => void;
+export interface Observer {
+    props: string[];
+    handler: (changed: Map<string, any>) => void;
+}
 
 export abstract class BaseElement extends LitElement {
-    static __listeners?: EventListenerDeclaration[];
-    static __observers?: { [name: string]: ObserveHandler[] };
+    private static _listeners?: ListenerDeclaration[];
+    private static _observers?: Observer[];
 
     private _$: { [id: string]: HTMLElement } = {};
     private _$$: { [id: string]: NodeList } = {};
+    private _listeners: Listener[] = [];
 
     /**
      * Find first element macthing the selector in the element's shadow root, caching the result
@@ -35,7 +38,7 @@ export abstract class BaseElement extends LitElement {
      */
     $(sel: string, cached = true): HTMLElement {
         if (!cached || !this._$[sel]) {
-            const e = this.shadowRoot!.querySelector(sel);
+            const e = this.renderRoot!.querySelector(sel);
             if (e) {
                 this._$[sel] = e as HTMLElement;
             }
@@ -49,7 +52,7 @@ export abstract class BaseElement extends LitElement {
      */
     $$(sel: string, cached = true): NodeList {
         if (!cached || !this._$[sel]) {
-            const e = this.shadowRoot!.querySelectorAll(sel);
+            const e = this.renderRoot!.querySelectorAll(sel);
             if (e) {
                 this._$$[sel] = e;
             }
@@ -83,62 +86,62 @@ export abstract class BaseElement extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        const listeners = (<typeof BaseElement>this.constructor).__listeners;
-        if (!listeners) {
+
+        const declarations = (<typeof BaseElement>this.constructor)._listeners;
+        if (!declarations) {
             return;
         }
-        for (const listener of listeners) {
-            if (listener.eventName && listener.handler) {
-                const target = (listener.target = listener.target
-                    ? typeof listener.target === "string"
-                        ? this.$(listener.target)
-                        : listener.target
-                    : this);
-                if (target && target.addEventListener) {
-                    listener._attachedHandler = e => {
-                        listener.handler.call(this, e);
-                    };
-                    target.addEventListener(listener.eventName, listener._attachedHandler);
+
+        for (const decl of declarations) {
+            (async () => {
+                let target: EventTarget | undefined = undefined;
+
+                if (!decl.target) {
+                    target = this;
+                } else if (typeof decl.target === "string") {
+                    // a string target property indicates that the target is a child of this element,
+                    // so we have to make sure the renderRoot is created first
+                    await this.updateComplete;
+                    target = this.$(decl.target);
+                } else if (typeof decl.target.addEventListener === "function") {
+                    target = decl.target;
                 }
-            }
+
+                if (!target) {
+                    throw "invalid event target: " + decl.target;
+                }
+
+                const handler = (e: Event) => {
+                    decl.handler.call(this, e);
+                };
+                target.addEventListener(decl.name, handler);
+                this._listeners.push({
+                    target,
+                    handler,
+                    name: decl.name
+                });
+            })();
         }
     }
 
     disconnectedCallback() {
-        super.connectedCallback();
-        const listeners = (<typeof BaseElement>this.constructor).__listeners;
-        if (!listeners) {
-            return;
-        }
-        for (const listener of listeners) {
-            if (listener._attachedHandler) {
-                (listener.target as EventTarget).removeEventListener(listener.eventName, listener._attachedHandler);
-            }
+        let listener;
+        while ((listener = this._listeners.pop())) {
+            listener.target.removeEventListener(listener.name, listener.handler);
         }
     }
 
-    updated(changedProps: any): void {
-        super.updated(changedProps);
+    updated(changed: Map<string, any>): void {
+        super.updated(changed);
 
-        const observers = (<typeof BaseElement>this.constructor).__observers;
+        const observers = (<typeof BaseElement>this.constructor)._observers;
+        if (!observers) {
+            return;
+        }
 
-        const map = new Map<ObserveHandler, ChangeRecord[]>();
-
-        for (const propName in changedProps) {
-            const handlers = observers && observers[propName];
-            if (handlers && handlers.length) {
-                const changeRecord: ChangeRecord = {
-                    path: propName,
-                    value: this[propName],
-                    oldValue: changedProps[propName]
-                };
-                for (const handler of handlers) {
-                    if (!map.has(handler)) {
-                        map.set(handler, [changeRecord]);
-                    } else {
-                        map.get(handler)!.push(changeRecord);
-                    }
-                }
+        for (const observer of observers) {
+            if (observer.props.some(p => changed.has(p))) {
+                observer.handler.call(this, changed);
             }
         }
     }
@@ -210,18 +213,17 @@ export function queryAll(selector: string, cached = true) {
 
 /**
  * Decorator to add event handlers
- * @param eventName name of event, e.g. 'click'
+ * @param name name of event, e.g. 'click'
  * @param selector EventTarget or a selector to the node to listen to e.g. '#myButton'
  */
-export function listen(eventName: string, target?: string | EventTarget) {
+export function listen(name: string, target?: string | EventTarget) {
     return (prototype: any, methodName: string) => {
-        const constructor = prototype.constructor;
-        if (!constructor.hasOwnProperty("__listeners")) {
-            Object.defineProperty(constructor, "__listeners", { value: [] });
+        const { constructor } = prototype;
+        if (!constructor.hasOwnProperty("_listeners")) {
+            Object.defineProperty(constructor, "_listeners", { value: [] });
         }
-        const listeners: EventListenerDeclaration[] = constructor.__listeners;
-        listeners.push({
-            eventName,
+        constructor._listeners.push({
+            name,
             target,
             handler: prototype[methodName]
         });
@@ -235,16 +237,13 @@ export function listen(eventName: string, target?: string | EventTarget) {
  */
 export function observe(...properties: string[]) {
     return (prototype: any, methodName: string) => {
-        const constructor = prototype.constructor;
-        if (!constructor.hasOwnProperty("__observers")) {
-            Object.defineProperty(constructor, "__observers", { value: {} });
+        const { constructor } = prototype;
+        if (!constructor.hasOwnProperty("_observers")) {
+            Object.defineProperty(constructor, "_observers", { value: [] });
         }
-        const observers: { [name: string]: ObserveHandler[] } = constructor.__observers;
-        for (const prop of properties) {
-            if (!observers[prop]) {
-                observers[prop] = [];
-            }
-            observers[prop].push(prototype[methodName]);
-        }
+        constructor._observers.push({
+            props: properties,
+            handler: prototype[methodName]
+        });
     };
 }

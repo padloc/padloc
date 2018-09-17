@@ -50,8 +50,7 @@ export class Input extends BaseElement {
         return activeInput;
     }
 
-    connectedCallback() {
-        super.connectedCallback();
+    firstUpdated() {
         if (this.multiline && this.autosize) {
             autosize(this._inputElement);
         }

@@ -65,7 +65,7 @@ export class Login extends StartForm {
                     id="passwordInput"
                     type="password"
                     required
-                    label.=${$l("Master Password")}
+                    .label=${$l("Master Password")}
                     class="tiles-2"
                     @enter=${() => this._submit()}>
                 </pl-input>
@@ -107,6 +107,7 @@ export class Login extends StartForm {
 
         if (!this._passwordInput.value) {
             await alert($l("Please enter a master password!"), { type: "warning" });
+            return;
         }
 
         this._loginButton.start();
