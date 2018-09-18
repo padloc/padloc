@@ -11,5 +11,10 @@
     "url": "git+https://github.com/maklesoft/padlock.git"
   },
   "main": "main.js",
-  "workspaces": ["packages/*"]
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "typescript": "^3.0.3"
+  }
 }
