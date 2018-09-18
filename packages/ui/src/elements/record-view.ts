@@ -236,9 +236,9 @@ export class RecordView extends View {
                     <div class="animate">
 
                         <pl-record-field
-                            field="${field}"
-                            record="${record}"
-                            readonly="${!permissions.write}"
+                            .field=${field}
+                            .record=${record}
+                            .readonly=${!permissions.write}
                             @field-change=${(e: CustomEvent) => this._changeField(index, e.detail.changes)}
                             @field-delete=${() => this._deleteField(index)}>
                         </pl-record-field>

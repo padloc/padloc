@@ -96,12 +96,12 @@ export class RecordField extends BaseElement {
             <div class="name">${field.name}</div>
 
             <pl-input
-                multiline
                 id="valueInput"
-                value="${field.value}"
+                .value=${field.value}
+                multiline
                 disabled
-                placeholder="${$l("No Content")}"
-                masked="${field.masked}">
+                .placeholder=${$l("No Content")}
+                .masked=${field.masked}>
             </pl-input>
 
         </div>

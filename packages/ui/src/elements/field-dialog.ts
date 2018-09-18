@@ -127,9 +127,9 @@ export class FieldDialog extends BaseElement {
 
                 <pl-input
                     id="nameInput"
-                    placeholder="${$l("Enter Field Name")}"
                     class="name"
-                    readonly="${!editing}"
+                    .placeholder=${$l("Enter Field Name")}
+                    .readonly=${!editing}
                     @click=${(e: MouseEvent) => this._inputClicked(e)}
                     @enter=${() => this._nameInputEnter()}>
                 </pl-input>
@@ -151,8 +151,8 @@ export class FieldDialog extends BaseElement {
                     class="value"
                     autosize
                     @click=${(e: MouseEvent) => this._inputClicked(e)}
-                    placeholder="${$l("Enter Content")}"
-                    readonly="${!editing}">
+                    .placeholder=${$l("Enter Content")}
+                    .readonly=${!editing}>
                 </pl-input>
 
                 <button class="generate-button tap" @click=${() => this._generate()} ?hidden=${!editing}>
@@ -203,7 +203,7 @@ export class FieldDialog extends BaseElement {
 `;
     }
 
-    openField(
+    async openField(
         field: Field,
         edit = false,
         presets: { name?: string; value?: string } = {},
@@ -213,12 +213,13 @@ export class FieldDialog extends BaseElement {
         this.readonly = readonly;
         this.editing = false;
         this.field = field;
+        await this.updateComplete;
         this._nameInput.value = presets.name || this.field.name;
         this._valueInput.value = presets.value || this.field.value;
         if (edit) {
             this._edit();
         }
-        return new Promise(resolve => {
+        return new Promise<FieldDialogResult>(resolve => {
             this._resolve = resolve;
         });
     }

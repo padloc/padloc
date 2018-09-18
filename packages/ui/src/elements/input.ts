@@ -40,7 +40,22 @@ export class Input extends BaseElement {
     @property() type: string = "text";
     @property({ attribute: "select-on-focus" })
     selectOnFocus: boolean = false;
-    @property() value: string = "";
+
+    @property()
+    get value(): string {
+        return (this._inputElement && this._inputElement.value) || "";
+    }
+    set value(val: string) {
+        (async () => {
+            if (!this._inputElement) {
+                await this.updateComplete;
+            }
+            this._inputElement.value = val;
+            if (this.multiline && this.autosize) {
+                autosize.update(this._inputElement);
+            }
+        })();
+    }
 
     @query("textarea, input") private _inputElement: HTMLInputElement;
 
@@ -79,13 +94,13 @@ export class Input extends BaseElement {
                 <textarea
                     id="input"
                     .value=${value}
-                    placeholder="${placeholder}"
+                    .placeholder=${placeholder}
+                    .tabIndex=${noTab ? "-1" : ""}
                     ?readonly=${readonly}
-                    tabindex="${noTab ? "-1" : ""}"
                     ?invisible=${doMask}
                     ?disabled=${disabled}
-                    autocapitalize="${autocapitalize ? "" : "off"}"
                     ?required=${required}
+                    autocapitalize="${autocapitalize ? "" : "off"}"
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
@@ -95,7 +110,7 @@ export class Input extends BaseElement {
                     .value=${mask(value)}
                     ?invisible=${!doMask}
                     class="mask"
-                    tabindex="-1"
+                    .tabIndex="-1"
                     disabled></textarea>`
             : html`
                 <input
@@ -103,7 +118,7 @@ export class Input extends BaseElement {
                     .value=${value}
                     .placeholder=${placeholder}
                     ?readonly=${readonly}
-                    tabindex="${noTab ? "-1" : ""}"
+                    .tabIndex=${noTab ? "-1" : ""}
                     ?invisible=${doMask}
                     ?disabled=${disabled}
                     autocapitalize="${autocapitalize ? "" : "off"}"
@@ -118,7 +133,7 @@ export class Input extends BaseElement {
                     .value=${mask(value)}
                     ?invisible=${!doMask}
                     class="mask"
-                    tabindex="-1"
+                    .tabIndex="-1"
                     disabled>`;
 
         return html`
@@ -241,17 +256,6 @@ export class Input extends BaseElement {
         if (activeInput === this) {
             activeInput = null;
         }
-    }
-
-    @listen("input", "input, textarea")
-    _inputHandler(e: Event) {
-        if (e.target === this) {
-            return;
-        }
-        e.stopPropagation();
-        const oldVal = this.value;
-        this.value = this._inputElement.value;
-        this.dispatch("input", { prevValue: oldVal, value: this.value }, true, true);
     }
 
     @listen("change", "input, textarea")
