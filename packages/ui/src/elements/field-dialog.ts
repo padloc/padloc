@@ -1,6 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Field } from "@padlock/core/lib/data.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Input } from "./input.js";
 import "./dialog.js";
@@ -36,7 +36,7 @@ export class FieldDialog extends BaseElement {
 
             :host {
                 --pl-dialog-inner: {
-                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                    ${mixins.gradientHighlight()}
                     transition: background 0.3s, color 0.3s;
                 };
             }

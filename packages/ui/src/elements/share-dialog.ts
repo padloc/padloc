@@ -2,7 +2,7 @@ import { Record } from "@padlock/core/lib/data.js";
 import { Store } from "@padlock/core/lib/store.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { confirm, prompt } from "../dialog.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
@@ -32,7 +32,7 @@ export class ShareDialog extends BaseElement {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                    ${mixins.gradientHighlight()}
                     text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
                     color: var(--color-tertiary);
                 }

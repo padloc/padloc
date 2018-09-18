@@ -1,6 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { AccountInfo } from "@padlock/core/lib/auth.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { app } from "../init.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
@@ -31,7 +31,7 @@ export class AccountDialog extends BaseElement {
 
             :host {
                 --pl-dialog-inner: {
-                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                    ${mixins.gradientHighlight()}
                 };
             }
 

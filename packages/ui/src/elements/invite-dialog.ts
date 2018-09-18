@@ -2,7 +2,7 @@ import { Invite } from "@padlock/core/lib/invite.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { app } from "../init";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { alert } from "../dialog.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
@@ -64,7 +64,7 @@ export class InviteDialog extends BaseElement {
 
                 .invite {
                     overflow: hidden;
-                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                    ${mixins.gradientHighlight()}
                 }
 
                 .invite-text {

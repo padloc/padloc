@@ -88,3 +88,21 @@ export const card = () => `
     border-bottom-width: 2px;
     overflow: hidden;
 `;
+
+export const gradientHighlight = (horizontal = false) => `
+    background: linear-gradient(${
+        horizontal ? "90deg" : "0"
+    }, var(--color-gradient-highlight-from) 0%, var(--color-gradient-highlight-to) 100%);
+`;
+
+export const gradientWarning = (horizontal = false) => `
+    background: linear-gradient(${
+        horizontal ? "90deg" : "0"
+    }, var(--color-gradient-warning-from) 0%, var(--color-gradient-warning-to) 100%);
+`;
+
+export const gradientDark = (horizontal = false) => `
+    background: linear-gradient(${
+        horizontal ? "90deg" : "0"
+    }, var(--color-gradient-dark-from) 0%, var(--color-gradient-dark-to) 100%);
+`;

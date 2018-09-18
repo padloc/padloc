@@ -1,7 +1,7 @@
 import { Record, Field } from "@padlock/core/lib/data.js";
 import { setClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, html, property } from "./base.js";
 
 export class Clipboard extends BaseElement {
@@ -36,9 +36,9 @@ export class Clipboard extends BaseElement {
                 max-width: 400px;
                 margin: 0 auto;
                 border-radius: var(--border-radius);
-                background: linear-gradient(90deg, rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
                 color: var(--color-background);
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
+                ${ mixins.gradientHighlight(true) }
             }
 
             :host(:not(.showing)) {

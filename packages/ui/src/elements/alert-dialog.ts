@@ -1,5 +1,5 @@
 import { localize } from "@padlock/core/lib/locale.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property } from "./base.js";
 import "./dialog.js";
 
@@ -43,7 +43,7 @@ export class AlertDialog extends BaseElement {
 
             :host {
                 --pl-dialog-inner: {
-                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                    ${mixins.gradientHighlight()}
                 };
             }
 

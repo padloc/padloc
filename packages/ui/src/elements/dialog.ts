@@ -62,7 +62,7 @@ export class Dialog extends BaseElement {
                 --color-background: var(--color-primary);
                 --color-foreground: var(--color-tertiary);
                 --color-highlight: var(--color-secondary);
-                background: var(--color-background);
+                ${mixins.gradientHighlight()}
                 color: var(--color-foreground);
                 border-radius: var(--border-radius);
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;

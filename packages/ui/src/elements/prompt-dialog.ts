@@ -43,12 +43,6 @@ export class PromptDialog extends BaseElement {
 
         <style include="shared">
 
-            :host {
-                --pl-dialog-inner: {
-                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
-                };
-            }
-
             pl-input {
                 text-align: center;
             }

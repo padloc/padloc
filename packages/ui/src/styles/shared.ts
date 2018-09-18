@@ -154,7 +154,7 @@ export const shared = html`
 
     section {
         margin: 10px 5px;
-        ${ mixins.card() }
+        ${mixins.card()}
     }
 
     section > button {
@@ -166,7 +166,7 @@ export const shared = html`
     }
 
     section.highlight {
-        background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+        ${mixins.gradientHighlight()}
         color: var(--color-background);
         text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
         border: none;
@@ -178,11 +178,11 @@ export const shared = html`
     }
 
     section.highlight.warning {
-        background: linear-gradient(180deg, #f49300 0%, #f25b00 100%);
+        ${mixins.gradientWarning()}
     }
 
     section.highlight.dark {
-        background: linear-gradient(180deg, #555 0%, #222 100%);
+        ${mixins.gradientDark()}
     }
 
     .section-header {
@@ -387,8 +387,8 @@ export const shared = html`
         height: 30px;
         line-height: 30px;
         padding: 0 8px;
-        background: linear-gradient(90deg, #555 0%, #333 100%);
         text-align: center;
+        ${mixins.gradientDark(true)}
     }
 
     .tag:not(:last-child) {
@@ -414,13 +414,13 @@ export const shared = html`
     }
 
     .tag.highlight {
-        background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+        ${mixins.gradientHighlight(true)}
         text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
     }
 
     .tag.warning {
         color: var(--color-tertiary);
-        background: linear-gradient(90deg, #f49300 0%, #f25b00 100%);
+        ${mixins.gradientWarning(true)}
     }
 
     .tags.small .tag {
@@ -437,7 +437,7 @@ export const shared = html`
     }
 
     .record-tag.store-tag {
-        background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+        ${mixins.gradientDark(true)}
         text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
     }
 

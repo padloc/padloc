@@ -1,6 +1,6 @@
 import { randomString, chars } from "@padlock/core/lib/util.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, html, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
@@ -48,7 +48,7 @@ class Generator extends BaseElement {
 
             .generate-button {
                 padding: 25px 15px;
-                background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                ${mixins.gradientHighlight()}
                 color: var(--color-quaternary);
                 text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
             }

@@ -201,11 +201,12 @@ export class StoreView extends View {
             }
 
             .subheader.warning {
-                background: linear-gradient(90deg, #f49300 0%, #f25b00 100%);
+                ${mixins.gradientWarning(true)}
                 text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
             }
 
             .subheader.highlight {
+                ${mixins.gradientHighlight(true)}
                 background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
                 text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
             }

@@ -1,6 +1,6 @@
 import { AccountInfo } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 
@@ -25,7 +25,7 @@ export class SelectAccountDialog extends BaseElement {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                    ${mixins.gradientHighlight()}
                     text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
                     color: var(--color-tertiary);
                 }

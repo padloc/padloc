@@ -1,7 +1,7 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Store } from "@padlock/core/lib/store.js";
 import { GroupMember } from "@padlock/core/lib/group.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { app } from "../init.js";
 import { confirm } from "../dialog.js";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
@@ -143,7 +143,7 @@ export class MemberDialog extends BaseElement {
 
             :host {
                 --pl-dialog-inner: {
-                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                    ${mixins.gradientHighlight()}
                 };
             }
 

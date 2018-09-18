@@ -24,7 +24,14 @@ export const config = html`
             --color-background: var(--color-tertiary);
             --color-foreground: var(--color-secondary);
             --color-highlight: var(--color-primary);
-            --color-error: #cc2929;
+            --color-error: #D7322D;
+
+            --color-gradient-highlight-from: rgb(7, 124, 185);
+            --color-gradient-highlight-to: rgb(89, 198, 255);
+            --color-gradient-warning-from: #f49300;
+            --color-gradient-warning-to: #f25b00;
+            --color-gradient-dark-from: #555;
+            --color-gradient-dark-to: #222;
 
             --row-height: 50px;
 

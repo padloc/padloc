@@ -3,7 +3,7 @@ import { passwordStrength } from "@padlock/core/lib/util.js";
 import { isCordova, setClipboard } from "@padlock/core/lib/platform.js";
 import { toPadlock, toCSV } from "@padlock/core/lib/export.js";
 import { Record } from "@padlock/core/lib/data.js";
-import { shared } from "../styles";
+import { shared, mixins } from "../styles";
 import { confirm, alert, prompt } from "../dialog.js";
 import { BaseElement, element, html, property } from "./base.js";
 import "./icon.js";
@@ -31,7 +31,7 @@ export class ExportDialog extends BaseElement {
             :host {
                 display: block;
                 --pl-dialog-inner: {
-                    background: linear-gradient(rgb(89, 198, 255) 0%, rgb(7, 124, 185) 100%);
+                    ${mixins.gradientHighlight()}
                 };
             }
 
