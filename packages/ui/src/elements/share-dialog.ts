@@ -73,7 +73,7 @@ export class ShareDialog extends BaseElement {
 
             </style>
 
-            <pl-dialog @dialog-dismiss=() => this._done()>
+            <pl-dialog @dialog-dismiss=${() => this._done()}>
 
                 <div class="title">
                     <pl-icon icon="share"></pl-icon>

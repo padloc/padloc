@@ -117,7 +117,7 @@ export class PromptDialog extends BaseElement {
         this.open = false;
     }
 
-    show(
+    async show(
         message = "",
         {
             placeholder = defaultPlaceholder,
@@ -128,7 +128,6 @@ export class PromptDialog extends BaseElement {
             validate
         }: PromptOptions = {}
     ) {
-        this._confirmButton.stop();
         this.message = message;
         this.type = type;
         this.placeholder = placeholder;
@@ -137,6 +136,8 @@ export class PromptDialog extends BaseElement {
         this.preventDismiss = preventDismiss;
         this.validate = validate;
         this._validationMessage = "";
+        await this.updateComplete;
+        this._confirmButton.stop();
         this._input.value = "";
         this.open = true;
 

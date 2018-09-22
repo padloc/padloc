@@ -6,7 +6,7 @@ import { BaseElement, html, element, property } from "./base";
 @element("pl-fingerprint")
 export class Fingerprint extends BaseElement {
     @property({ reflect: true })
-    symbols = false;
+    symbols: boolean = false;
     @property() key: string = "";
 
     private async _grid() {
