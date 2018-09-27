@@ -39,14 +39,12 @@ const defaultSettings: Settings = {
     hideStores: []
 };
 
-function filterByString(fs: string, rec: Record, store: Store) {
+function filterByString(fs: string, rec: Record) {
     if (!fs) {
         return true;
     }
     const words = fs.toLowerCase().split(" ");
-    const content = [rec.name, ...rec.tags, ...rec.fields.map(f => f.name)];
-    // TODO: Don't filter for main store name
-    content.push(store.name);
+    const content = [rec.name, ...rec.fields.map(f => f.name)];
     return words.some(
         word =>
             content
@@ -62,6 +60,7 @@ export interface ListItem {
     section: string;
     firstInSection: boolean;
     lastInSection: boolean;
+    warning?: boolean;
 }
 
 export class App extends EventTarget implements Storable {
@@ -150,21 +149,32 @@ export class App extends EventTarget implements Storable {
         this.dispatch("load");
     }
 
-    list(filter = "", recentCount = 3): ListItem[] {
+    list({
+        store,
+        tag,
+        filterString,
+        recentCount
+    }: {
+        store: Store | null;
+        tag: Tag | null;
+        filterString: string;
+        recentCount?: number;
+    }): ListItem[] {
+        recentCount = recentCount || 3;
         if (!this.mainStore) {
             return [];
         }
         let items: ListItem[] = [];
 
-        for (const store of this.stores) {
-            if (this.settings.hideStores.includes(store.id)) {
+        for (const s of store ? [store] : this.stores) {
+            if (!store && this.settings.hideStores.includes(s.id)) {
                 continue;
             }
 
-            for (const record of store.collection) {
-                if (!record.removed && filterByString(filter, record, store)) {
+            for (const record of s.collection) {
+                if (!record.removed && (!tag || record.tags.includes(tag)) && filterByString(filterString, record)) {
                     items.push({
-                        store: store,
+                        store: s,
                         record: record,
                         section: "",
                         firstInSection: false,

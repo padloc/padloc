@@ -545,7 +545,7 @@ export class SettingsView extends View {
         }
 
         if (records.length) {
-            app.addRecords(this.store, records);
+            app.addRecords(app.mainStore!, records);
             // this.dispatch("data-imported", { records: records });
             alert($l("Successfully imported {0} records.", records.length.toString()), { type: "success" });
         }

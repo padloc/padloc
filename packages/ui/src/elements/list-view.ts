@@ -1,3 +1,4 @@
+import { when } from "lit-html/directives/when.js";
 import { Record, Field } from "@padlock/core/lib/data.js";
 import { Store } from "@padlock/core/lib/store.js";
 import { ListItem } from "@padlock/core/lib/app.js";
@@ -11,21 +12,21 @@ import { confirm, getDialog } from "../dialog.js";
 import { shared, mixins } from "../styles";
 import { AlertDialog } from "./alert-dialog.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
-import { Input } from "./input.js";
 import { ShareDialog } from "./share-dialog.js";
 import "./share-dialog.js";
+import { FilterInput } from "./filter-input.js";
 
 export class ListView extends BaseElement {
     @property() multiSelect: boolean = false;
-    @property() filterString: string = "";
     @property() private _listItems: ListItem[] = [];
     @property() private _currentSection: string = "";
     @property() private _firstVisibleIndex: number = 0;
     @property() private _lastVisibleIndex: number = 0;
+    @property() private _filterShowing: boolean = false;
 
-    @query("main") private _main: HTMLElement;
+    @query("#main") private _main: HTMLElement;
     @query("#sectionSelector") private _sectionSelector: AlertDialog;
-    @query("#filterInput") private _filterInput: Input;
+    @query("#filterInput") private _filterInput: FilterInput;
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
     private _selected = new Map<string, ListItem>();
@@ -40,7 +41,7 @@ export class ListView extends BaseElement {
     @listen("settings-changed", app)
     @listen("store-changed", app)
     _updateListItems() {
-        this._listItems = app.list(this.filterString);
+        this._listItems = app.list(this._filterInput);
     }
 
     @listen("record-created", app)
@@ -70,12 +71,58 @@ export class ListView extends BaseElement {
         this._animateItems();
     }
 
+    async search(str?: string) {
+        this._filterShowing = true;
+        if (str) {
+            this._filterInput.filterString = str;
+        }
+        this._updateListItems();
+        await this.updateComplete;
+        this._animateItems();
+        this._filterInput.focus();
+    }
+
+    clearFilter() {
+        this._filterInput.clear();
+        this._updateListItems();
+        this._animateItems();
+    }
+
+    selectItem(item: ListItem) {
+        if (this.multiSelect) {
+            if (this._selected.has(item.record.id)) {
+                this._selected.delete(item.record.id);
+            } else {
+                this._selected.set(item.record.id, item);
+            }
+        } else {
+            this._selected.clear();
+            this._selected.set(item.record.id, item);
+            this._scrollToSelected();
+            router.go(`record/${item.record.id}`);
+        }
+        this.requestUpdate();
+    }
+
+    selectAll() {
+        this.multiSelect = true;
+        for (const item of this._listItems) {
+            this._selected.set(item.record.id, item);
+        }
+        this.requestUpdate();
+    }
+
+    clearSelection() {
+        this._selected.clear();
+        this.multiSelect = false;
+        this.requestUpdate();
+    }
+
     firstUpdated() {
         this._resizeHandler();
     }
 
     render() {
-        const filterActive = !!this.filterString;
         return html`
         ${shared}
 
@@ -90,15 +137,6 @@ export class ListView extends BaseElement {
                 background: var(--color-quaternary);
             }
 
-            .filter-input {
-                flex: 1;
-                padding-left: 15px;
-            }
-
-            .filter-input:not([active]) {
-                text-align: center;
-            }
-
             header {
                 --color-background: var(--color-primary);
                 --color-foreground: var(--color-tertiary);
@@ -107,20 +145,24 @@ export class ListView extends BaseElement {
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
                 border-bottom: none;
                 background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+                text-align: center;
             }
 
             header pl-icon[icon=logo] {
                 font-size: 140%;
             }
 
-            .empty {
+            .empty, .no-results {
                 ${mixins.fullbleed()}
                 display: flex;
                 flex-direction: column;
                 ${mixins.fullbleed()}
                 top: var(--row-height);
-                z-index: 1;
                 overflow: visible;
+            }
+
+            .empty {
+                z-index: 1;
             }
 
             .empty-message {
@@ -143,6 +185,19 @@ export class ListView extends BaseElement {
                 transform: rotate(45deg);
                 background: var(--color-background);
                 pointer-events: none;
+            }
+
+            .no-results {
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 20px;
+            }
+
+            .no-results pl-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 60px;
             }
 
             .cloud-icon-wrapper {
@@ -232,7 +287,7 @@ export class ListView extends BaseElement {
                 flex-direction: row;
                 position: relative;
                 /* transition: color 0.3s; */
-                margin: 6px 6px 0 6px;
+                margin: 6px;
                 /* transform: translate3d(0, 0, 0); */
                 ${mixins.card()}
             }
@@ -348,29 +403,13 @@ export class ListView extends BaseElement {
             }
         </style>
 
-        <header ?hidden=${this.multiSelect}>
+        <header ?hidden=${this.multiSelect || this._filterShowing}>
 
-            <pl-icon icon="menu" class="tap" @click=${() => this._toggleMenu()} ?hidden=${filterActive}></pl-icon>
+            <pl-icon icon="menu" class="tap" @click=${() => this._toggleMenu()}></pl-icon>
 
-            <pl-input
-                id="filterInput"
-                class="filter-input tap"
-                placeholder="${$l("Type To Search")}"
-                ?active=${filterActive}
-                .value=${this.filterString}
-                @escape=${() => this.clearFilter()}
-                @input=${() => this._updateFilterString()}
-                no-tab>
-            </pl-input>
+            <div class="tap flex" @click=${() => this.search()}>${$l("Type To Filter")}</div>
 
-            <pl-icon icon="add" class="tap" @click=${() => this._newRecord()} ?hidden=${filterActive}></pl-icon>
-
-            <pl-icon
-                icon="cancel"
-                class="tap"
-                @click=${() => this.clearFilter()}
-                ?hidden=${!filterActive}>
-            </pl-icon>
+            <pl-icon icon="add" class="tap" @click=${() => this._newRecord()}></pl-icon>
 
         </header>
 
@@ -394,6 +433,12 @@ export class ListView extends BaseElement {
 
         </header>
 
+        <pl-filter-input
+            ?hidden=${!this._filterShowing || this.multiSelect}
+            id="filterInput"
+            @input=${() => this._filterUpdated()}>
+        </pl-filter-input>
+
         <div class="current-section tap"
             @click=${() => this._selectSection()}
             ?hidden=${!this._listItems.length}>
@@ -404,90 +449,27 @@ export class ListView extends BaseElement {
 
         </div>
 
-        <main id="main" ?hidden=${!this._listItems.length}>
+        <main id="main">
 
-            ${this._listItems.map(
-                (item: any, index: number) => html`
-                <div class="list-item" index="${index}">
-
-                    <div class="section-header" ?hidden=${index === 0 || !item.firstInSection}>
-
-                        <div>${item.section}</div>
-
-                        <div class="spacer"></div>
-
-                        <div>${item.section}</div>
-
-                    </div>
-
-                    <div class="record"
-                        .record=${item.record}
-                        record-id="${item.record.id}"
-                        ?selected=${this._selected.has(item.record.id)}
-                        @click=${() => this.selectItem(item)}
-                        index="${index}">
-
-                            <div class="record-highlight"></div>
-
-                            <div class="record-header">
-
-                                <div class="record-name" ?disabled=${!item.record.name}>
-                                    ${item.record.name || $l("No Name")}
-                                </div>
-
-                                <div class="tags small">
-                                    <div class="ellipsis tag highlight" ?hidden=${item.store === app.mainStore}>
-                                        ${item.store.name}
-                                    </div> 
-                                    ${this._tags(item.record).map(
-                                        t => html`
-                                            <div class="ellipsis tag">${t}</div>
-                                        `
-                                    )}
-                                    <pl-icon icon="error" class="tag warning" ?hidden=${!item.warning}></pl-icon>
-                                </div>
-
-                            </div>
-
-                            <div class="record-fields">
-
-                                ${item.record.fields.map(
-                                    (f: Field, i: number) => html`
-                                        <div
-                                            class="record-field"
-                                            @click=${(e: MouseEvent) => this._copyField(item.record, i, e)}>
-
-                                            <div class="record-field-label">${f.name}</div>
-
-                                            <div class="copied-message">${$l("copied")}</div>
-
-                                        </div>
-                                    `
-                                )}
-
-                                <div class="record-field" disabled ?hidden=${!!item.record.fields.length}>
-                                    ${$l("No Fields")}
-                                </div>
-
-                            </div>
-
-                    </div>
-
-                    <div class="section-separator" ?hidden=${!item.lastInSection}></div>
-
-                </div>
-                `
-            )}
+            ${this._listItems.map((_: any, index: number) => this._renderItem(index))}
 
         </main>
 
-        <div ?hidden=${!!this._listItems.length} class="empty">
+        <div ?hidden=${!!this._listItems.length || this._filterShowing} class="empty">
 
             <div class="empty-message">
                 ${$l("You don't have any data yet! Start by creating your first record!")}
             </div>
 
             <div class="spacer tiles-2"></div>
+
+        </div>
+
+        <div class="no-results" ?hidden=${!!this._listItems.length || !this._filterShowing}>
+
+            <pl-icon icon="search"></pl-icon>
+
+            <div>${$l("Your search did not match any items.")}</div>
 
         </div>
 
@@ -499,6 +481,15 @@ export class ListView extends BaseElement {
 
         <div class="rounded-corners"></div>
 `;
+    }
+
+    _filterUpdated() {
+        this._updateListItems();
+        this._filterShowing =
+            !!this._filterInput.store ||
+            !!this._filterInput.tag ||
+            !!this._filterInput.filterString ||
+            this._filterInput.focused;
     }
 
     @listen("resize", window)
@@ -513,7 +504,7 @@ export class ListView extends BaseElement {
         return this._cachedBounds;
     }
 
-    @listen("scroll", "main")
+    @listen("scroll", "#main")
     _scrollHandler() {
         if (!this._bounds) {
             return;
@@ -546,36 +537,6 @@ export class ListView extends BaseElement {
 
         const currItem = this._listItems[this._firstVisibleIndex];
         this._currentSection = currItem && currItem.section;
-    }
-
-    selectItem(item: ListItem) {
-        if (this.multiSelect) {
-            if (this._selected.has(item.record.id)) {
-                this._selected.delete(item.record.id);
-            } else {
-                this._selected.set(item.record.id, item);
-            }
-        } else {
-            this._selected.clear();
-            this._selected.set(item.record.id, item);
-            this._scrollToSelected();
-            router.go(`record/${item.record.id}`);
-        }
-        this.requestUpdate();
-    }
-
-    selectAll() {
-        this.multiSelect = true;
-        for (const item of this._listItems) {
-            this._selected.set(item.record.id, item);
-        }
-        this.requestUpdate();
-    }
-
-    clearSelection() {
-        this._selected.clear();
-        this.multiSelect = false;
-        this.requestUpdate();
     }
 
     private _newRecord() {
@@ -622,7 +583,8 @@ export class ListView extends BaseElement {
         }
     }
 
-    private _animateItems(delay = 100) {
+    private async _animateItems(delay = 100) {
+        await this.updateComplete;
         this._main.style.opacity = "0";
         setTimeout(() => {
             this._scrollHandler();
@@ -664,26 +626,6 @@ export class ListView extends BaseElement {
         }
     }
 
-    search(str?: string) {
-        if (str) {
-            this.filterString = str;
-        }
-        this._filterInput.focus();
-        this._updateListItems();
-        this._animateItems();
-    }
-
-    clearFilter() {
-        this.filterString = "";
-        this._updateListItems();
-        this._animateItems();
-    }
-
-    private _updateFilterString() {
-        this.filterString = this._filterInput.value;
-        this._updateListItems();
-    }
-
     private _copyField(record: Record, index: number, e: Event) {
         e.stopPropagation();
         setClipboard(record, record.fields[index]);
@@ -692,15 +634,98 @@ export class ListView extends BaseElement {
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
     }
 
-    private _tags(record: Record) {
-        const tags = record.tags.slice(0, 2);
-        const more = record.tags.length - tags.length;
+    private _renderItem(index: number) {
+        const item = this._listItems[index];
 
-        if (more) {
-            tags.push("+" + more);
+        // const tags = [{ name: "", class: "warning", icon: "org" }];
+        const tags = [];
+
+        if (item.store !== app.mainStore) {
+            tags.push({ name: item.store.name, icon: "group", class: "highlight" });
         }
 
-        return tags;
+        if (item.warning) {
+            tags.push({ icon: "error", class: "tag warning", name: "" });
+        }
+
+        const t = item.record.tags.find(t => t === this._filterInput.tag) || item.record.tags[0];
+        if (t) {
+            tags.push({
+                name: item.record.tags.length > 1 ? `${t} (+${item.record.tags.length - 1})` : t,
+                icon: "tag",
+                class: ""
+            });
+        }
+
+        return html`
+
+            ${when(
+                item.firstInSection && index !== 0,
+                () => html`
+                    <div class="section-header">
+
+                        <div>${item.section}</div>
+
+                        <div class="spacer"></div>
+
+                        <div>${item.section}</div>
+
+                    </div>`,
+                () => ""
+            )}
+
+                <div class="record"
+                    .record=${item.record}
+                    record-id="${item.record.id}"
+                    ?selected=${this._selected.has(item.record.id)}
+                    @click=${() => this.selectItem(item)}
+                    index="${index}">
+
+                        <div class="record-highlight"></div>
+
+                        <div class="record-header">
+
+                            <div class="record-name" ?disabled=${!item.record.name}>
+                                ${item.record.name || $l("No Name")}
+                            </div>
+
+                            <div class="tags small">
+                                ${tags.map(
+                                    tag => html`
+                                        <div class="ellipsis tag ${tag.class}">
+                                            <pl-icon icon=${tag.icon}></pl-icon>
+                                            <div>${tag.name}</div>
+                                        </div>
+                                    `
+                                )}
+                            </div>
+
+                        </div>
+
+                        <div class="record-fields">
+
+                            ${item.record.fields.map(
+                                (f: Field, i: number) => html`
+                                    <div
+                                        class="record-field"
+                                        @click=${(e: MouseEvent) => this._copyField(item.record, i, e)}>
+
+                                        <div class="record-field-label">${f.name}</div>
+
+                                        <div class="copied-message">${$l("copied")}</div>
+
+                                    </div>
+                                `
+                            )}
+
+                            <div class="record-field" disabled ?hidden=${!!item.record.fields.length}>
+                                ${$l("No Fields")}
+                            </div>
+
+                        </div>
+
+                </div>
+        `;
     }
 }
 

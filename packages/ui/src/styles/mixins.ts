@@ -44,8 +44,8 @@ export const fullbleed = () => `
     overflow: hidden;
 `;
 
-export const scroll = () => `
-    overflow: auto;
+export const scroll = (direction?: "vertical" | "horizontal") => `
+    ${direction === "vertical" ? "overflow-y" : direction === "horizontal" ? "overflow-x" : "overflow"}: auto;
     -webkit-overflow-scrolling: touch;
 `;
 
@@ -106,3 +106,8 @@ export const gradientDark = (horizontal = false) => `
         horizontal ? "90deg" : "0"
     }, var(--color-gradient-dark-from) 0%, var(--color-gradient-dark-to) 100%);
 `;
+
+export const textShadow = () => `
+    text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
+`;
+

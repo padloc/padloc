@@ -202,6 +202,7 @@ export const shared = html`
         position: relative;
         z-index: 1;
         border-bottom: solid 1px rgba(0, 0, 0, 0.15);
+        line-height: var(--row-height);
     }
 
     header > .title {
@@ -238,23 +239,23 @@ export const shared = html`
         font-weight: bold;
     }
 
-    [layout] {
+    .layout {
         display: flex;
     }
 
-    [layout][vertical] {
+    .layout.vertical {
         direction: column;
     }
 
-    [layout][align-center] {
+    .layout.align-center {
         align-items: center;
     }
 
-    [layout][justify-center] {
+    .layout.justify-center {
         justify-content: center;
     }
 
-    .spacer, [flex], [flex="1"] {
+    .spacer, .flex, [flex] {
         flex: 1;
     }
 
