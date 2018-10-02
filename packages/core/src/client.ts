@@ -1,10 +1,11 @@
-import { API, CreateAccountParams, CreateStoreParams } from "./api";
+import { API, CreateAccountParams, CreateStoreParams, CreateOrgParams } from "./api";
 import { request, Method } from "./ajax";
 import { DeviceInfo } from "./platform";
 import { Session, Account, AccountID, Auth } from "./auth";
 import { Invite } from "./invite";
 import { marshal, unmarshal, Base64String } from "./encoding";
 import { Store } from "./store";
+import { Org } from "./org";
 import { Err, ErrorCode } from "./error";
 
 export interface ClientSettings {
@@ -137,10 +138,25 @@ export class Client implements API {
         return store.deserialize(unmarshal(res));
     }
 
+    async getOrg(org: Org): Promise<Org> {
+        const res = await this.request("GET", `org/${org.pk}`, undefined);
+        return org.deserialize(unmarshal(res));
+    }
+
+    async createOrg(params: CreateOrgParams): Promise<Org> {
+        const res = await this.request("POST", "org", marshal(params));
+        return new Org("").deserialize(unmarshal(res));
+    }
+
+    async updateOrg(org: Org): Promise<Org> {
+        const res = await this.request("PUT", `org/${org.pk}`, marshal(await org.serialize()));
+        return org.deserialize(unmarshal(res));
+    }
+
     async updateInvite(invite: Invite): Promise<Invite> {
         const res = await this.request(
             "PUT",
-            `store/${invite.group!.id}/invite/${invite.id}`,
+            `org/${invite.group!.id}/invite/${invite.id}`,
             marshal(await invite.serialize())
         );
         return invite.deserialize(unmarshal(res));

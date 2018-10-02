@@ -1,6 +1,7 @@
 import { Store } from "@padlock/core/src/store";
+import { Org } from "@padlock/core/src/org";
 import { Account, Auth, Session } from "@padlock/core/src/auth";
-import { CreateStoreParams } from "@padlock/core/src/api";
+import { CreateStoreParams, CreateOrgParams } from "@padlock/core/src/api";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 import { Invite } from "@padlock/core/src/invite";
 import { Context } from "./server";
@@ -80,15 +81,41 @@ export async function createStore(ctx: Context) {
     ctx.body = await store.serialize();
 }
 
+export async function getOrg(ctx: Context, id: string) {
+    const org = await ctx.api.getOrg(new Org(id));
+    ctx.body = await org.serialize();
+}
+
+export async function updateOrg(ctx: Context, id: string) {
+    const org = await new Org(id).deserialize(ctx.request.body);
+    const res = await ctx.api.updateOrg(org);
+    ctx.body = await res.serialize();
+}
+
+export async function createOrg(ctx: Context) {
+    const org = await ctx.api.createOrg(ctx.request.body as CreateOrgParams);
+    ctx.body = await org.serialize();
+}
+
 export async function updateInvite(ctx: Context) {
     const invite = await new Invite().deserialize(ctx.request.body);
     const res = await ctx.api.updateInvite(invite);
     ctx.body = await res.serialize();
 }
 
-export async function deleteInvite(ctx: Context, storeID: string, inviteID: string) {
+export async function deleteStoreInvite(ctx: Context, storeID: string, inviteID: string) {
     const store = await ctx.api.getStore(new Store(storeID));
     const invite = store.invites.find(inv => inv.id === inviteID);
+    if (!invite) {
+        throw new Err(ErrorCode.NOT_FOUND);
+    }
+    await ctx.api.deleteInvite(invite);
+    ctx.status = 204;
+}
+
+export async function deleteOrgInvite(ctx: Context, storeID: string, inviteID: string) {
+    const org = await ctx.api.getOrg(new Org(storeID));
+    const invite = org.invites.find(inv => inv.id === inviteID);
     if (!invite) {
         throw new Err(ErrorCode.NOT_FOUND);
     }

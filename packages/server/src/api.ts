@@ -1,6 +1,7 @@
-import { API, CreateAccountParams, CreateStoreParams } from "@padlock/core/src/api";
+import { API, CreateAccountParams, CreateStoreParams, CreateOrgParams } from "@padlock/core/src/api";
 import { Storage, Storable } from "@padlock/core/src/storage";
 import { Store } from "@padlock/core/src/store";
+import { Org } from "@padlock/core/src/org";
 import { DateString, Base64String } from "@padlock/core/src/encoding";
 import { Auth, Account, AccountID, Session } from "@padlock/core/src/auth";
 import { Err, ErrorCode } from "@padlock/core/src/error";
@@ -227,7 +228,13 @@ export class ServerAPI implements API {
 
         const addedMembers = store.members.filter(m => !existing.isMember(m));
         for (const member of addedMembers) {
-            this.sender.send(member.email, new MemberAddedMessage(store));
+            const acc = new Account(member.id);
+            await this.storage.get(acc);
+            acc.groups.push(store.info);
+            if (!acc.id !== account.id) {
+                this.sender.send(member.email, new MemberAddedMessage(store));
+            }
+            await this.storage.set(acc);
         }
 
         existing.access(account);
@@ -250,10 +257,61 @@ export class ServerAPI implements API {
         return store;
     }
 
+    async getOrg(org: Org) {
+        const { account } = this._requireAuth();
+
+        await this.storage.get(org);
+
+        if (!org.isMember(account)) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
+
+        return org;
+    }
+
+    async updateOrg(org: Org) {
+        const { account } = this._requireAuth();
+
+        const existing = new Org(org.id);
+        await this.storage.get(existing);
+
+        const addedMembers = org.members.filter(m => !existing.isMember(m));
+        for (const member of addedMembers) {
+            const acc = new Account(member.id);
+            await this.storage.get(acc);
+            acc.groups.push(org.info);
+            if (!acc.id !== account.id) {
+                this.sender.send(member.email, new MemberAddedMessage(org));
+            }
+            await this.storage.set(acc);
+        }
+
+        existing.access(account);
+        existing.update(org);
+
+        await this.storage.set(existing);
+
+        return org;
+    }
+
+    async createOrg(params: CreateOrgParams) {
+        const { account } = this._requireAuth();
+
+        const { name } = params;
+        const org = await new Org(uuid(), name);
+        org.owner = account.id;
+
+        await Promise.all([this.storage.set(account), this.storage.set(org)]);
+
+        return org;
+    }
+
     async updateInvite(invite: Invite) {
         const { account } = this._requireAuth();
 
-        const group = new Store(invite.group!.id);
+        const { kind, id } = invite.group!;
+        const group = kind === "store" ? new Store(id) : new Org(id);
+
         await this.storage.get(group);
 
         const existing = group.getInvite(invite.email);
@@ -278,7 +336,9 @@ export class ServerAPI implements API {
     async deleteInvite(invite: Invite) {
         const { account } = this._requireAuth();
 
-        const group = new Store(invite.group!.id);
+        const { kind, id } = invite.group!;
+        const group = kind === "store" ? new Store(id) : new Org(id);
+
         await this.storage.get(group);
 
         if (!group.isAdmin(account)) {

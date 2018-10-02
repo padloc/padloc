@@ -1,7 +1,8 @@
 import { Storable, LocalStorage } from "./storage";
-import { Record, Field, Tag, StoreID } from "./data";
-import { Group } from "./group";
+import { Record, Field, Tag } from "./data";
+import { Group, GroupKind } from "./group";
 import { Store } from "./store";
+import { Org } from "./org";
 import { Account, AccountInfo, Auth, Session, SessionInfo } from "./auth";
 import { Invite } from "./invite";
 import { DateString } from "./encoding";
@@ -12,7 +13,7 @@ import { localize as $l } from "./locale";
 import { DeviceInfo, getDeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
-import { ErrorCode } from "./error";
+import { Err, ErrorCode } from "./error";
 
 export interface Stats {
     lastSync?: DateString;
@@ -100,14 +101,18 @@ export class App extends EventTarget implements Storable {
     }
 
     get mainStore() {
-        return this.account && this._stores.get(this.account!.store);
+        return this.account && (this._groups.get(this.account!.store) as Store);
     }
 
     get stores() {
-        return Array.from(this._stores.values());
+        return Array.from(this._groups.values()).filter(g => g instanceof Store) as Store[];
     }
 
-    private _stores = new Map<string, Store>();
+    get orgs() {
+        return Array.from(this._groups.values()).filter(g => g instanceof Org) as Org[];
+    }
+
+    private _groups = new Map<string, Store | Org>();
 
     async serialize() {
         return {
@@ -150,11 +155,13 @@ export class App extends EventTarget implements Storable {
     }
 
     list({
+        org,
         store,
         tag,
         filterString,
         recentCount
     }: {
+        org: Org | null;
         store: Store | null;
         tag: Tag | null;
         filterString: string;
@@ -167,7 +174,7 @@ export class App extends EventTarget implements Storable {
         let items: ListItem[] = [];
 
         for (const s of store ? [store] : this.stores) {
-            if (!store && this.settings.hideStores.includes(s.id)) {
+            if ((org && (!s.parent || s.parent.id !== org.id)) || (!store && this.settings.hideStores.includes(s.id))) {
                 continue;
             }
 
@@ -243,39 +250,74 @@ export class App extends EventTarget implements Storable {
 
     async unlock(password: string) {
         await this.account!.unlock(password);
-        await this.loadStores();
+        await this.loadGroups();
         this.dispatch("unlock");
     }
 
-    async loadStores() {
-        if (!this.account) {
-            return;
-        }
+    async getGroup({ kind, id }: { kind: GroupKind; id: string }, fetch = false): Promise<Store | Org | null> {
+        let group = this._groups.get(id);
 
-        this._stores.clear();
+        if (!group) {
+            group = kind === "store" ? new Store(id) : new Org(id);
+            group.access(this.account!);
 
-        const mainStore = new Store(this.account.store);
-        mainStore.access(this.account);
-        await this.storage.get(mainStore);
-        this._stores.set(mainStore.id, mainStore);
-
-        for (const { id } of mainStore.groups) {
-            const store = new Store(id);
-            store.access(this.account);
             try {
-                await this.storage.get(store);
-                this._stores.set(id, store);
+                await this.storage.get(group);
             } catch (e) {
                 if (e.code !== ErrorCode.NOT_FOUND) {
                     throw e;
                 }
+                if (!fetch) {
+                    return null;
+                }
+            }
+        }
+
+        if (fetch) {
+            try {
+                if (group instanceof Store) {
+                    await this.api.getStore(group);
+                } else {
+                    await this.api.getOrg(group);
+                }
+            } catch (e) {
+                if (e.code !== ErrorCode.NOT_FOUND) {
+                    throw e;
+                }
+                return null;
+            }
+        }
+
+        this._groups.set(id, group);
+
+        return group;
+    }
+
+    async loadGroups() {
+        if (!this.account) {
+            return;
+        }
+
+        this._groups.clear();
+
+        for (const groupInfo of this.account.groups) {
+            await this.getGroup(groupInfo);
+        }
+
+        for (const group of this._groups.values()) {
+            if (group === this.mainStore) {
+                continue;
+            }
+            const parent = group.parent ? await this.getGroup(group.parent) : this.mainStore;
+            if (!(await parent!.verifySubGroup(group))) {
+                throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
             }
         }
     }
 
     async lock() {
         this.account!.lock();
-        this._stores.clear();
+        this._groups.clear();
         this.dispatch("lock");
     }
 
@@ -293,7 +335,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async reset() {
-        this._stores.clear();
+        this._groups.clear();
         this.initialized = "";
         await this.storage.clear();
         this.dispatch("reset");
@@ -416,19 +458,10 @@ export class App extends EventTarget implements Storable {
             await mainStore.initialize(this.account);
         }
 
-        try {
-            await this.storage.set(mainStore);
-        } catch (e) {
-            console.log(e);
-        }
-        try {
-            await this.api.updateStore(mainStore);
-        } catch (e) {
-            console.log(e);
-        }
+        await this.storage.set(mainStore);
+        await this.api.updateStore(mainStore);
 
-        await this.loadStores();
-        await this.syncStores();
+        await this.syncGroups();
 
         this.dispatch("login");
         this.dispatch("unlock");
@@ -455,7 +488,7 @@ export class App extends EventTarget implements Storable {
 
         this.session = null;
         this.account = null;
-        this._stores.clear();
+        this._groups.clear();
         await this.storage.set(this);
         this.dispatch("lock");
         this.dispatch("logout");
@@ -463,25 +496,47 @@ export class App extends EventTarget implements Storable {
         this.dispatch("session-changed", { session: this.session });
     }
 
-    async createStore(name: string): Promise<Store> {
+    async createStore(name: string, parent?: Org): Promise<Store> {
         const store = await this.api.createStore({ name });
         await store.initialize(this.account!);
-        await this.mainStore!.addGroup(store);
+        if (parent) {
+            store.parent = parent.info;
+        }
+
+        parent = parent || this.mainStore!;
+
+        await parent.addGroup(store);
+
         await Promise.all([
             this.api.updateStore(store),
             this.storage.set(store),
+            parent instanceof Store ? this.api.updateStore(parent) : this.api.updateOrg(parent),
+            this.storage.set(parent)
+        ]);
+        this._groups.set(store.id, store);
+        this.dispatch("store-created", { store });
+        return store;
+    }
+
+    async createOrg(name: string): Promise<Org> {
+        const org = await this.api.createOrg({ name });
+        await org.initialize(this.account!);
+        await this.mainStore!.addGroup(org);
+        await Promise.all([
+            this.api.updateOrg(org),
+            this.storage.set(org),
             this.api.updateStore(this.mainStore!),
             this.storage.set(this.mainStore!)
         ]);
-        this._stores.set(store.id, store);
-        this.dispatch("store-created", { store });
-        return store;
+        this._groups.set(org.id, org);
+        this.dispatch("org-created", { org });
+        return org;
     }
 
     async createInvite(group: Group, email: string) {
         const invite = await group.createInvite(email);
         await this.api.updateInvite(invite);
-        await this.syncStore(group.id);
+        await this.syncGroup(group);
         return invite;
     }
 
@@ -497,7 +552,7 @@ export class App extends EventTarget implements Storable {
 
     async deleteInvite(invite: Invite) {
         await this.api.deleteInvite(invite);
-        this.syncStore(invite.group!.id);
+        this.syncGroup(invite.group!);
     }
 
     //
@@ -525,48 +580,33 @@ export class App extends EventTarget implements Storable {
 
     async synchronize() {
         await this.syncAccount();
-        await this.syncStores();
+        await this.syncGroups();
         await this.loadSessions();
         this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");
     }
 
-    async syncStores() {
-        await this.syncStore(this.mainStore!.id);
-        await Promise.all(this.mainStore!.groups.map(({ id }) => this.syncStore(id)));
+    async syncGroups() {
+        await this.syncGroup({ kind: "store", id: this.account!.store });
+        await Promise.all(this.mainStore!.groups.map(g => this.syncGroup(g)));
     }
 
-    async syncStore(id: StoreID): Promise<void> {
-        let store = this._stores.get(id);
-        if (!store) {
-            store = new Store(id);
-            store.access(this.account!);
-            this._stores.set(id, store);
-        }
+    async syncGroup(groupInfo: { kind: GroupKind; id: string }): Promise<void> {
+        const group = await this.getGroup(groupInfo, true);
 
-        try {
-            await this.api.getStore(store);
-        } catch (e) {
-            console.error(e, store.name, store.id);
-            // switch (e.code) {
-            //     case ErrorCode.NOT_FOUND:
-            //     case ErrorCode.MISSING_ACCESS:
-            //         this.sharedStores.splice(this.sharedStores.indexOf(store), 1);
-            //
-            //         break;
-            //     default:
-            //         throw e;
-            // }
+        if (!group) {
             return;
         }
 
-        await this.storage.set(store);
+        await this.storage.set(group);
 
-        if (store.getPermissions().write) {
-            await this.api.updateStore(store);
+        if (group instanceof Store && group.getPermissions().write) {
+            await this.api.updateStore(group);
+        } else if (group instanceof Org && group.getPermissions().manage) {
+            await this.api.updateOrg(group);
         }
 
-        this.dispatch("store-changed", { store });
+        this.dispatch("group-changed", { group });
     }
 
     getRecord(id: string): { record: Record; store: Store } | null {

@@ -27,9 +27,11 @@ export interface GroupMember extends SignedAccountInfo {
     updated: DateString;
 }
 
+export type GroupKind = "store" | "org";
+
 export interface GroupInfo {
     id: string;
-    kind: string;
+    kind: GroupKind;
     name: string;
     publicKey: RSAPublicKey;
 }
@@ -43,12 +45,13 @@ export interface SubGroup extends SignedGroupInfo {
 }
 
 export abstract class Group implements GroupInfo {
-    abstract kind: string;
+    abstract kind: GroupKind;
     owner: AccountID = "";
     publicKey: RSAPublicKey = "";
     created: DateString = new Date().toISOString();
+    parent: GroupInfo | null = null;
 
-    get info() {
+    get info(): GroupInfo {
         return {
             id: this.id,
             kind: this.kind,
@@ -94,7 +97,7 @@ export abstract class Group implements GroupInfo {
             keySize: 256
         });
         await this._generateKeyPair();
-        await this._setMember(this._account!, "active", { read: true, write: true, manage: true });
+        await this._setMember(this._account!.info, "active", { read: true, write: true, manage: true });
     }
 
     access(account: Account) {
@@ -155,7 +158,7 @@ export abstract class Group implements GroupInfo {
         return this._setMember(account, "removed", { read: false, write: false, manage: false });
     }
 
-    async verify(subj: GroupMember | SubGroup) {
+    async verify(subj: GroupMember | SubGroup): Promise<boolean> {
         let verified = false;
         try {
             verified = await getProvider().verify(
@@ -166,6 +169,11 @@ export abstract class Group implements GroupInfo {
             );
         } catch (e) {}
         return verified;
+    }
+
+    async verifySubGroup(info: GroupInfo): Promise<boolean> {
+        const subGroup = this._groups.get(info.id);
+        return !!subGroup && subGroup.publicKey === info.publicKey && (await this.verify(subGroup));
     }
 
     getInvite(email: string) {
@@ -211,6 +219,19 @@ export abstract class Group implements GroupInfo {
         this._groups.delete(group.id);
     }
 
+    update(group: this) {
+        const { manage } = this.getPermissions();
+
+        if (manage) {
+            this.name = group.name;
+            this.publicKey = group.publicKey;
+            this.parent = group.parent;
+            this._adminContainer = group._adminContainer;
+            this._mergeMembers(group.members);
+            this._mergeGroups(group.groups);
+        }
+    }
+
     async serialize(): Promise<any> {
         if (this._account && this.isAdmin(this._account) && this._account.privateKey) {
             // TODO: Do something about removed admins
@@ -225,6 +246,7 @@ export abstract class Group implements GroupInfo {
         return Object.assign(this.info, {
             created: this.created,
             owner: this.owner,
+            parent: this.parent,
             members: this.members,
             groups: this.groups,
             invites: await Promise.all(this.invites.map(i => i.serialize())),
@@ -237,6 +259,7 @@ export abstract class Group implements GroupInfo {
         this.id = raw.id;
         this.created = raw.created;
         this.owner = raw.owner;
+        this.parent = raw.parent;
         this.name = raw.name;
         this.publicKey = raw.publicKey;
         // Verify signatures

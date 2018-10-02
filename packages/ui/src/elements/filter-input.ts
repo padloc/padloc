@@ -1,4 +1,5 @@
 import { Store } from "@padlock/core/lib/store.js";
+import { Org } from "@padlock/core/lib/org.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
 import { shared, mixins } from "../styles";
@@ -10,11 +11,12 @@ interface Result {
     icon: string;
     name: string;
     class: string;
-    val: Store | string;
+    val: Org | Store | string;
 }
 
 @element("pl-filter-input")
 export class FilterInput extends BaseElement {
+    @property() org: Org | null = null;
     @property() store: Store | null = null;
     @property() tag: string | null = null;
 
@@ -31,6 +33,7 @@ export class FilterInput extends BaseElement {
     }
 
     @property() private _showResults: boolean = false;
+    @property() private _orgs: Org[] = [];
     @property() private _stores: Store[] = [];
     @property() private _tags: string[] = [];
 
@@ -41,6 +44,7 @@ export class FilterInput extends BaseElement {
     }
 
     clear() {
+        this.org = null;
         this.store = null;
         this.tag = null;
         this._input.value = "";
@@ -49,16 +53,24 @@ export class FilterInput extends BaseElement {
     }
 
     render() {
-        const { store, tag, _showResults } = this;
+        const { org, store, tag, _showResults } = this;
         const results: Result[] = [];
 
-        if (!this.store) {
-            for (const store of this._stores) {
-                results.push({ icon: "group", name: store.name, class: "highlight", val: store });
+        if (!org && !store) {
+            for (const org of this._orgs) {
+                results.push({ icon: "org", name: org.name, class: "warning", val: org });
             }
         }
 
-        if (!this.tag) {
+        if (!store) {
+            for (const store of this._stores) {
+                if (!org || (store.parent && store.parent.id === org.id)) {
+                    results.push({ icon: "group", name: store.name, class: "highlight", val: store });
+                }
+            }
+        }
+
+        if (!tag) {
             for (const tag of this._tags) {
                 results.push({ icon: "tag", name: tag, class: "", val: tag });
             }
@@ -82,7 +94,11 @@ export class FilterInput extends BaseElement {
                     margin-top: 0;
                     background: inherit;
                     box-shadow: inherit;
-                    ${mixins.scroll("horizontal")}
+                    flex-wrap: wrap;
+                }
+
+                .results .tag {
+                    margin-top: 6px;
                 }
 
                 pl-input {
@@ -103,6 +119,14 @@ export class FilterInput extends BaseElement {
             <div class="input-wrapper layout horizontal align-center">
 
                 <div class="tags small filters">
+
+                    <div class="tag warning" ?hidden=${!org} @click=${() => (this.org = null)}>
+
+                        <pl-icon icon="org"></pl-icon>
+
+                        <div>${org && org.name}</div>
+
+                    </div>
 
                     <div class="tag highlight" ?hidden=${!store} @click=${() => (this.store = null)}>
 
@@ -170,11 +194,14 @@ export class FilterInput extends BaseElement {
 
     private _updateResults() {
         this._stores = app.stores.filter(s => s.name.toLowerCase().startsWith(this.filterString));
+        this._orgs = app.orgs.filter(s => s.name.toLowerCase().startsWith(this.filterString));
         this._tags = app.tags.filter(t => t.toLowerCase().startsWith(this.filterString));
     }
 
     private _select(res: Result) {
-        if (res.val instanceof Store) {
+        if (res.val instanceof Org) {
+            this.org = res.val;
+        } else if (res.val instanceof Store) {
             this.store = res.val;
         } else {
             this.tag = res.val;

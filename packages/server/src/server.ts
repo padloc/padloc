@@ -86,7 +86,14 @@ export class Server {
         this.koa.use(route.put("/store/:id", handlers.updateStore));
 
         this.koa.use(route.put("/store/:sid/invite/:iid", handlers.updateInvite));
-        this.koa.use(route.delete("/store/:sid/invite/:iid", handlers.deleteInvite));
+        this.koa.use(route.delete("/store/:sid/invite/:iid", handlers.deleteStoreInvite));
+
+        this.koa.use(route.post("/org", handlers.createOrg));
+        this.koa.use(route.get("/org/:id", handlers.getOrg));
+        this.koa.use(route.put("/org/:id", handlers.updateOrg));
+
+        this.koa.use(route.put("/org/:sid/invite/:iid", handlers.updateInvite));
+        this.koa.use(route.delete("/org/:sid/invite/:iid", handlers.deleteOrgInvite));
     }
 
     start(port: number) {

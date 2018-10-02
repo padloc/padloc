@@ -1,11 +1,11 @@
-import { Group } from "./group";
+import { Group, GroupKind } from "./group";
 import { Collection } from "./data";
 import { Storable } from "./storage";
 import { SharedContainer } from "./crypto";
 import { Account } from "./auth";
 
 export class Store extends Group implements Storable {
-    kind = "store";
+    kind = "store" as GroupKind;
     collection = new Collection();
 
     get pk() {
@@ -19,15 +19,10 @@ export class Store extends Group implements Storable {
         this._collectionContainer.access(account);
     }
 
-    update(store: Store) {
-        const { manage, write } = this.getPermissions();
+    update(store: this) {
+        super.update(store);
 
-        if (manage) {
-            this.name = store.name;
-            this._adminContainer = store._adminContainer;
-            this._mergeMembers(store.members);
-            this._mergeGroups(store.groups);
-        }
+        const { write } = this.getPermissions();
 
         if (write) {
             this._collectionContainer = store._collectionContainer;

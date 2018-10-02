@@ -12,6 +12,7 @@ import {
 import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
 import { Err, ErrorCode } from "./error";
+import { GroupInfo } from "./group";
 
 export function parseAuthHeader(header: string) {
     const creds = header.match(/^SRP-HMAC sid=(.+),msg=(.+),sig=(.+)$/);
@@ -126,6 +127,7 @@ export class Account implements Storable, AccountInfo {
     encryptionParams = defaultEncryptionParams();
     encPrivateKey: Base64String = "";
     masterKey: Base64String = "";
+    groups: GroupInfo[] = [];
 
     get pk() {
         return this.id;
@@ -180,6 +182,7 @@ export class Account implements Storable, AccountInfo {
             encPrivateKey: this.encPrivateKey,
             keyParams: this.keyParams,
             encryptionParams: this.encryptionParams,
+            groups: this.groups,
             sessions: Array.from(this.sessions)
         };
     }
@@ -195,6 +198,7 @@ export class Account implements Storable, AccountInfo {
         this.encPrivateKey = raw.encPrivateKey;
         this.keyParams = raw.keyParams;
         this.encryptionParams = raw.encryptionParams;
+        this.groups = raw.groups || [];
         this.sessions = new Set<SessionID>(raw.sessions);
         return this;
     }

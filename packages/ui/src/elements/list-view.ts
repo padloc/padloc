@@ -486,6 +486,7 @@ export class ListView extends BaseElement {
     _filterUpdated() {
         this._updateListItems();
         this._filterShowing =
+            !!this._filterInput.org ||
             !!this._filterInput.store ||
             !!this._filterInput.tag ||
             !!this._filterInput.filterString ||
@@ -641,6 +642,9 @@ export class ListView extends BaseElement {
         const tags = [];
 
         if (item.store !== app.mainStore) {
+            if (item.store.parent) {
+                tags.push({ name: item.store.parent.name, icon: "org", class: "warning" });
+            }
             tags.push({ name: item.store.name, icon: "group", class: "highlight" });
         }
 
