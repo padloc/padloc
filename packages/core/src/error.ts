@@ -27,6 +27,8 @@ export enum ErrorCode {
     INVALID_CREDENTIALS = "invalid_credentials",
     ACCOUNT_EXISTS = "account_exists",
     EMAIL_VERIFICATION_FAILED = "email_verification_failed",
+    INVALID_RESPONSE = "invalid_response",
+    INVALID_REQUEST = "invalid_request",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",

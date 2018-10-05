@@ -1,11 +1,11 @@
 import { API, CreateAccountParams, CreateStoreParams, CreateOrgParams } from "./api";
-import { request, Method } from "./ajax";
+import { Sender } from "./transport";
 import { DeviceInfo } from "./platform";
 import { Session, Account, AccountID, Auth } from "./auth";
 import { Invite } from "./invite";
-import { marshal, unmarshal, Base64String } from "./encoding";
-import { Store } from "./store";
+import { Base64String } from "./encoding";
 import { Org } from "./org";
+import { Store } from "./store";
 import { Err, ErrorCode } from "./error";
 
 export interface ClientSettings {
@@ -21,190 +21,118 @@ export interface ClientState {
 }
 
 export class Client implements API {
-    constructor(public state: ClientState) {}
+    constructor(public state: ClientState, private sender: Sender) {}
 
     get session() {
         return this.state.session;
     }
 
-    get basePath() {
-        return this.state.settings.customServer ? this.state.settings.customServerUrl : "https://cloud.padlock.io";
-    }
-
-    urlForPath(path: string): string {
-        return `${this.basePath}/${path}`.replace(/([^:]\/)\/+/g, "$1");
-    }
-
-    async request(method: Method, path: string, data?: string, headers?: Map<string, string>): Promise<string> {
-        const url = this.urlForPath(path);
-        headers = headers || new Map<string, string>();
+    async call(method: string, params?: any[]) {
         const { session } = this.state;
 
-        if (!headers.get("Content-Type")) {
-            headers.set("Content-Type", "application/json");
-        }
-
-        headers.set("Accept", "application/vnd.padlock;version=2");
+        const req = { method, params };
 
         if (session) {
-            headers.set("Authorization", await session.getAuthHeader());
-
-            if (data) {
-                headers.set("X-Signature", await session.sign(data));
-            }
+            await session.authenticate(req);
         }
 
-        headers.set("X-Device", marshal(this.state.device));
+        // headers.set("X-Device", marshal(this.state.device));
 
-        const res = await request(method, url, data, headers);
+        const res = await this.sender.send(req);
 
-        const body = res.responseText;
-
-        if (session) {
-            if (!(await session.verifyAuthHeader(res.getResponseHeader("Authorization") || ""))) {
-                // TODO: Better error code
-                throw new Err(ErrorCode.INVALID_SESSION);
-            }
-
-            if (body && !(await session.verify(res.getResponseHeader("X-Signature") || "", body))) {
-                // TODO: Better error code
-                throw new Err(ErrorCode.INVALID_SESSION);
-            }
+        if (res.error) {
+            throw new Err((res.error.code as any) as ErrorCode, res.error.message);
         }
 
-        return body;
+        if (session && !(await session.verify(res))) {
+            throw new Err(ErrorCode.INVALID_RESPONSE);
+        }
+
+        return res;
     }
 
     async verifyEmail(params: { email: string }) {
-        const res = await this.request("POST", "verify", marshal(params));
-        return unmarshal(res);
+        const res = await this.call("verifyEmail", [params]);
+        return res.result;
     }
 
     async initAuth(params: { email: string }) {
-        const res = await this.request("POST", "auth", marshal(params));
-        const raw = unmarshal(res);
-        return {
-            auth: await new Auth(params.email).deserialize(raw.auth),
-            B: raw.B
-        };
+        const res = await this.call("initAuth", [params]);
+        const { auth, B } = res.result;
+        return { auth: await new Auth(params.email).deserialize(auth), B };
     }
 
     async createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session> {
-        const res = await this.request("POST", "session", marshal(params));
-        return new Session().deserialize(unmarshal(res));
+        const res = await this.call("createSession", [params]);
+        return new Session().deserialize(res.result);
     }
 
     async revokeSession(session: Session): Promise<void> {
-        await this.request("DELETE", `session/${session.id}`, undefined);
+        await this.call("revokeSession", [await session.serialize()]);
     }
 
     async getSessions() {
-        const res = await this.request("GET", `account/sessions`);
-        return unmarshal(res);
+        const res = await this.call("getSessions");
+        return res.result;
     }
 
     async createAccount(params: CreateAccountParams): Promise<Account> {
-        const raw = {
-            auth: await params.auth.serialize(),
-            account: await params.account.serialize(),
-            emailVerification: params.emailVerification
-        };
-        const res = await this.request("POST", "account", marshal(raw));
-        return new Account().deserialize(unmarshal(res));
+        const res = await this.call("createAccount", [
+            {
+                auth: await params.auth.serialize(),
+                account: await params.account.serialize(),
+                emailVerification: params.emailVerification
+            }
+        ]);
+        return new Account().deserialize(res.result);
     }
 
     async getAccount(account: Account): Promise<Account> {
-        const res = await this.request("GET", "account");
-        return await account.deserialize(unmarshal(res));
+        const res = await this.call("getAccount");
+        return await account.deserialize(res.result);
     }
 
     async updateAccount(account: Account): Promise<Account> {
-        const res = await this.request("PUT", "account", marshal(await account.serialize()));
-        return account.deserialize(unmarshal(res));
+        const res = await this.call("updateAccount", [await account.serialize()]);
+        return account.deserialize(res.result);
     }
 
     async getStore(store: Store): Promise<Store> {
-        const res = await this.request("GET", `store/${store.pk}`, undefined);
-        return store.deserialize(unmarshal(res));
+        const res = await this.call("getStore", [await store.serialize()]);
+        return store.deserialize(res.result);
     }
 
     async createStore(params: CreateStoreParams): Promise<Store> {
-        const res = await this.request("POST", "store", marshal(params));
-        return new Store("").deserialize(unmarshal(res));
+        const res = await this.call("createStore", [params]);
+        return new Store("").deserialize(res.result);
     }
 
     async updateStore(store: Store): Promise<Store> {
-        const res = await this.request("PUT", `store/${store.pk}`, marshal(await store.serialize()));
-        return store.deserialize(unmarshal(res));
+        const res = await this.call("updateStore", [await store.serialize()]);
+        return store.deserialize(res.result);
     }
 
     async getOrg(org: Org): Promise<Org> {
-        const res = await this.request("GET", `org/${org.pk}`, undefined);
-        return org.deserialize(unmarshal(res));
+        const res = await this.call("getOrg", [await org.serialize()]);
+        return org.deserialize(res.result);
     }
 
     async createOrg(params: CreateOrgParams): Promise<Org> {
-        const res = await this.request("POST", "org", marshal(params));
-        return new Org("").deserialize(unmarshal(res));
+        const res = await this.call("createOrg", [params]);
+        return new Org("").deserialize(res.result);
     }
 
     async updateOrg(org: Org): Promise<Org> {
-        const res = await this.request("PUT", `org/${org.pk}`, marshal(await org.serialize()));
-        return org.deserialize(unmarshal(res));
+        const res = await this.call("updateOrg", [await org.serialize()]);
+        return org.deserialize(res.result);
     }
 
     async updateInvite(invite: Invite): Promise<Invite> {
-        const res = await this.request(
-            "PUT",
-            `org/${invite.group!.id}/invite/${invite.id}`,
-            marshal(await invite.serialize())
-        );
-        return invite.deserialize(unmarshal(res));
+        const res = await this.call("updateInvite", [await invite.serialize()]);
+        return invite.deserialize(res.result);
     }
 
     async deleteInvite(invite: Invite): Promise<void> {
-        await this.request("DELETE", `store/${invite.group!.id}/invite/${invite.id}`);
+        await this.call("deleteInvite", [await invite.serialize()]);
     }
-
-    //
-    // async createOrganization(params: CreateOrganizationParams): Promise<Organization> {
-    //     const res = await this.request("POST", "org", marshal(params));
-    //     return new Organization("", this.state.account!).deserialize(unmarshal(res));
-    // }
-    //
-    // async getOrganization(org: Organization): Promise<Organization> {
-    //     const res = await this.request("GET", `org/${org.pk}`, undefined);
-    //     return org.deserialize(unmarshal(res));
-    // }
-    //
-    // async updateOrganization(org: Organization): Promise<Organization> {
-    //     const res = await this.request("PUT", `org/${org.pk}`, marshal(await org.serialize()));
-    //     return org.deserialize(unmarshal(res));
-    // }
-
-    // async updateInvite(org: Organization, invite: Invite): Promise<Organization> {
-    //     const res = await this.request("PUT", `org/${org.pk}/invite`, marshal(await invite.serialize()));
-    //     return org.deserialize(unmarshal(res));
-    // }
-    //
-    // subscribe(stripeToken = "", coupon = "", source = ""): Promise<XMLHttpRequest> {
-    //     const params = new URLSearchParams();
-    //     params.set("stripeToken", stripeToken);
-    //     params.set("coupon", coupon);
-    //     params.set("source", source);
-    //     return this.request(
-    //         "POST",
-    //         "subscribe",
-    //         params.toString(),
-    //         new Map<string, string>().set("Content-Type", "application/x-www-form-urlencoded")
-    //     );
-    // }
-    //
-    // cancelSubscription(): Promise<XMLHttpRequest> {
-    //     return this.request("POST", "unsubscribe");
-    // }
-    //
-    // getPlans(): Promise<any[]> {
-    //     return this.request("GET", this.urlForPath("plans")).then(res => <any[]>JSON.parse(res));
-    // }
 }

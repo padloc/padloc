@@ -9,9 +9,9 @@ import { Invite } from "@padlock/core/src/invite";
 import { uuid } from "@padlock/core/src/util";
 import { Server as SRPServer } from "@padlock/core/src/srp";
 import { NodeCryptoProvider } from "@padlock/core/src/node-crypto-provider";
+import { DeviceInfo } from "@padlock/core/src/platform";
 import { Sender } from "./sender";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
-import { RequestState } from "./server";
 import { randomBytes } from "crypto";
 
 const crypto = new NodeCryptoProvider();
@@ -48,8 +48,12 @@ export class EmailVerification implements Storable {
 
 const pendingAuths = new Map<string, SRPServer>();
 
-export class ServerAPI implements API {
-    constructor(private storage: Storage, private sender: Sender, private state: RequestState) {}
+export class Context implements API {
+    session?: Session;
+    account?: Account;
+    device?: DeviceInfo;
+
+    constructor(public storage: Storage, public sender: Sender) {}
 
     async verifyEmail({ email }: { email: string }) {
         const v = new EmailVerification(email);
@@ -107,7 +111,7 @@ export class ServerAPI implements API {
 
         const session = new Session(uuid());
         session.account = account;
-        session.device = this.state.device;
+        session.device = this.device;
         session.key = srp.K!;
 
         acc.sessions.add(session.id);
@@ -231,7 +235,7 @@ export class ServerAPI implements API {
             const acc = new Account(member.id);
             await this.storage.get(acc);
             acc.groups.push(store.info);
-            if (!acc.id !== account.id) {
+            if (acc.id !== account.id) {
                 this.sender.send(member.email, new MemberAddedMessage(store));
             }
             await this.storage.set(acc);
@@ -280,7 +284,7 @@ export class ServerAPI implements API {
             const acc = new Account(member.id);
             await this.storage.get(acc);
             acc.groups.push(org.info);
-            if (!acc.id !== account.id) {
+            if (acc.id !== account.id) {
                 this.sender.send(member.email, new MemberAddedMessage(org));
             }
             await this.storage.set(acc);
@@ -351,7 +355,7 @@ export class ServerAPI implements API {
     }
 
     private _requireAuth(): { account: Account; session: Session } {
-        const { account, session } = this.state;
+        const { account, session } = this;
 
         if (!session || !account) {
             throw new Err(ErrorCode.INVALID_SESSION);

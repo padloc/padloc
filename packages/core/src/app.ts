@@ -8,6 +8,7 @@ import { Invite } from "./invite";
 import { DateString } from "./encoding";
 import { API } from "./api";
 import { Client } from "./client";
+import { AjaxSender } from "./ajax";
 import { Messages } from "./messages";
 import { localize as $l } from "./locale";
 import { DeviceInfo, getDeviceInfo } from "./platform";
@@ -70,7 +71,7 @@ export class App extends EventTarget implements Storable {
 
     version = "3.0";
     storage = new LocalStorage();
-    api: API = new Client(this);
+    api: API = new Client(this, new AjaxSender("http://127.0.0.1:3000/"));
     settings = defaultSettings;
     messages = new Messages("https://padlock.io/messages.json");
     stats: Stats = {};

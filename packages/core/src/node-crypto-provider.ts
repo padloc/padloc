@@ -131,6 +131,7 @@ ${Buffer.from(base64ToBytes(key)).toString("base64")}
         signer.update(Buffer.from(base64ToBytes(data)));
         const sig = signer.sign({
             key: key,
+            passphrase: "",
             // @ts-ignore
             saltLength: params.saltLength,
             padding: constants.RSA_PKCS1_PSS_PADDING

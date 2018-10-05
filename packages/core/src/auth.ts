@@ -1,4 +1,5 @@
-import { DateString, Base64String, stringToBase64, base64ToString } from "./encoding";
+import { Request, Response } from "./transport";
+import { marshal, DateString, Base64String, stringToBase64 } from "./encoding";
 import {
     getProvider,
     RSAPublicKey,
@@ -65,23 +66,28 @@ export class Session implements SessionInfo, Storable {
 
     constructor(public id = "") {}
 
-    async getAuthHeader(): Promise<string> {
-        const msg = new Date().toISOString();
-        const sig = await this.sign(msg);
-        return `SRP-HMAC sid=${this.id},msg=${stringToBase64(msg)},sig=${sig}`;
+    async authenticate(r: Request | Response): Promise<void> {
+        const session = this.id;
+        const time = new Date().toISOString();
+        const data = (<Request>r).params || (<Response>r).result;
+        const signature = await this._sign(session + "_" + time + "_" + marshal(data));
+        r.auth = { session, time, signature };
     }
 
-    async verifyAuthHeader(header: string) {
-        const { msg, sig } = parseAuthHeader(header);
-        return this.verify(sig, base64ToString(msg));
-    }
+    async verify(r: Request | Response): Promise<boolean> {
+        if (!r.auth) {
+            return false;
+        }
+        const { signature, session, time } = r.auth;
+        const data = (<Request>r).params || (<Response>r).result;
 
-    async sign(message: string): Promise<Base64String> {
-        return await getProvider().sign(this.key, stringToBase64(message), defaultHMACParams());
-    }
+        // Make sure message isn't older than 1 minute to prevent replay attacks
+        const age = Date.now() - new Date(time).getTime();
+        if (age > 60 * 1000) {
+            return false;
+        }
 
-    async verify(signature: Base64String, message: string): Promise<boolean> {
-        return await getProvider().verify(this.key, signature, stringToBase64(message), defaultHMACParams());
+        return this._verify(signature, session + "_" + time + "_" + marshal(data));
     }
 
     async serialize() {
@@ -99,6 +105,14 @@ export class Session implements SessionInfo, Storable {
         this.device = raw.device;
         this.key = raw.key || "";
         return this;
+    }
+
+    private async _sign(message: string): Promise<Base64String> {
+        return await getProvider().sign(this.key, stringToBase64(message), defaultHMACParams());
+    }
+
+    private async _verify(signature: Base64String, message: string): Promise<boolean> {
+        return await getProvider().verify(this.key, signature, stringToBase64(message), defaultHMACParams());
     }
 }
 
