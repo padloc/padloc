@@ -264,3 +264,29 @@ export class Auth implements Storable {
         return getProvider().deriveKey(password, this.keyParams);
     }
 }
+
+export class EmailVerification implements Storable {
+    kind = "email-verification";
+    created: DateString = new Date().toISOString();
+
+    get pk() {
+        return this.email;
+    }
+
+    constructor(public email: string, public code: string = "", public id: string = "") {}
+
+    async serialize() {
+        return {
+            email: this.email,
+            code: this.code,
+            created: this.created
+        };
+    }
+
+    async deserialize(raw: any) {
+        this.email = raw.email;
+        this.code = raw.code;
+        this.created = raw.created;
+        return this;
+    }
+}

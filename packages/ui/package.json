@@ -8,14 +8,15 @@
   "dependencies": {
     "@padlock/core": "^1.0.0",
     "@polymer/iron-list": "^3.0.0-pre.18",
-    "@polymer/lit-element": "^0.6.0",
+    "@polymer/lit-element": "^0.6.1",
     "@polymer/paper-spinner": "^3.0.0-pre.18",
     "@polymer/polymer": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
-    "autosize": "^4.0.2"
+    "autosize": "^4.0.2",
+    "lit-html": "^0.11.4",
+    "virtual-scroller": "git+https://github.com/valdrinkoshi/virtual-scroller.git"
   },
   "devDependencies": {
-    "lit-html": "^0.10.2",
     "reflect-metadata": "^0.1.12"
   },
   "description": "Padlock UI",

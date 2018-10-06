@@ -1,6 +1,6 @@
-import { Group } from "@padlock/core/src/group";
+import { Group } from "../group";
+import { Message } from "../messenger";
 import { base as baseHTML, paragraph as p, button } from "./base-html";
-import { Message } from "../sender";
 
 export class MemberAddedMessage implements Message {
     constructor(private group: Group) {}

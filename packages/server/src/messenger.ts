@@ -1,14 +1,5 @@
+import { Message, Messenger } from "@padlock/core/src/messenger";
 import { createTransport, Transporter, TransportOptions } from "nodemailer";
-
-export interface Message {
-    title: string;
-    text: string;
-    html: string;
-}
-
-export interface Sender {
-    send(addr: string, msg: Message): Promise<void>;
-}
 
 export interface EmailOptions {
     host: string;
@@ -18,7 +9,7 @@ export interface EmailOptions {
     from?: string;
 }
 
-export class EmailSender implements Sender {
+export class EmailMessenger implements Messenger {
     private transporter: Transporter;
 
     constructor(private opts: EmailOptions) {

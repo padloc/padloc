@@ -1,6 +1,6 @@
 // @ts-ignore
 import { randomBytes, createHash, createHmac, createSign, createVerify, constants } from "crypto";
-import { Base64String, bytesToBase64, base64ToBytes } from "./encoding";
+import { Base64String, bytesToBase64, base64ToBytes } from "@padlock/core/src/encoding";
 import {
     CryptoProvider,
     AESKey,
@@ -15,8 +15,8 @@ import {
     RSAEncryptionParams,
     HashParams,
     RSASigningParams
-} from "./crypto";
-import { Err, ErrorCode } from "./error";
+} from "@padlock/core/src/crypto";
+import { Err, ErrorCode } from "@padlock/core/src/error";
 
 export class NodeCryptoProvider implements CryptoProvider {
     async randomBytes(n: number) {

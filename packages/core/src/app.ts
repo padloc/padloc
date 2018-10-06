@@ -8,8 +8,7 @@ import { Invite } from "./invite";
 import { DateString } from "./encoding";
 import { API } from "./api";
 import { Client } from "./client";
-import { AjaxSender } from "./ajax";
-import { Messages } from "./messages";
+import { Sender } from "./transport";
 import { localize as $l } from "./locale";
 import { DeviceInfo, getDeviceInfo } from "./platform";
 import { uuid } from "./util";
@@ -71,9 +70,8 @@ export class App extends EventTarget implements Storable {
 
     version = "3.0";
     storage = new LocalStorage();
-    api: API = new Client(this, new AjaxSender("http://127.0.0.1:3000/"));
+    api: API;
     settings = defaultSettings;
-    messages = new Messages("https://padlock.io/messages.json");
     stats: Stats = {};
     device: DeviceInfo = {} as DeviceInfo;
     initialized: DateString = "";
@@ -81,6 +79,11 @@ export class App extends EventTarget implements Storable {
     account: Account | null = null;
     sessions: SessionInfo[] = [];
     loaded = this.load();
+
+    constructor(sender: Sender) {
+        super();
+        this.api = new Client(this, sender);
+    }
 
     get locked() {
         return !this.account || !!this.account.locked;
@@ -121,7 +124,6 @@ export class App extends EventTarget implements Storable {
             session: this.session ? await this.session.serialize() : null,
             initialized: this.initialized,
             stats: this.stats,
-            messages: await this.messages.serialize(),
             settings: this.settings,
             device: this.device,
             sessions: this.sessions
@@ -133,7 +135,6 @@ export class App extends EventTarget implements Storable {
         this.session = raw.session && (await new Session().deserialize(raw.session));
         this.initialized = raw.initialized;
         this.setStats(raw.stats || {});
-        await this.messages.deserialize(raw.messages);
         this.setSettings(raw.settings);
         this.device = Object.assign(raw.device, await getDeviceInfo());
         this.sessions = raw.sessions || [];

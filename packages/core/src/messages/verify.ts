@@ -1,6 +1,6 @@
+import { Message } from "../messenger";
+import { EmailVerification } from "../auth";
 import { base as baseHTML, paragraph as p, colorBackground } from "./base-html";
-import { Message } from "../sender";
-import { EmailVerification } from "../api";
 
 export class EmailVerificationMessage implements Message {
     constructor(public verification: EmailVerification) {}

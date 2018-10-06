@@ -1,22 +1,24 @@
-import { Invite } from "@padlock/core/src/invite";
+import { Invite } from "../invite";
+import { Message } from "../messenger";
 import { base as baseHTML, paragraph as p, button } from "./base-html";
-import { Message } from "../sender";
 
-export class InviteAcceptedMessage implements Message {
+export class InviteCreatedMessage implements Message {
     constructor(private invite: Invite) {}
 
     get title() {
-        return `${this.invite.invitee!.name || this.invite.invitee!.email} has accepted your invite!`;
+        const { group, invitor } = this.invite;
+        return `${invitor!.name || invitor!.email} wants you to join the "${group!.name}" ${group!.kind} on Padlock!`;
     }
 
     get text() {
-        const { invitee, group } = this.invite;
+        const { group, invitor } = this.invite;
         const url = `https://127.0.0.1:8081/store/${group!.id}`;
+
         return `
 Hi there!
 
-Good news! ${ invitee!.name || invitee!.email } has accepted your invite to join ${group!.name}!
-Visit the following link to add them:
+You have been invited by ${invitor!.name || invitor!.email} to join the "${group!.name}" ${group!.kind} on Padlock! To accept the invite,
+please visit the link below:
 
 ${url}
 
@@ -27,18 +29,18 @@ Martin`;
     }
 
     get html() {
-        const { invitee, group } = this.invite;
+        const { group, invitor } = this.invite;
         const url = `https://127.0.0.1:8081/store/${group!.id}`;
         return baseHTML(`
 
             ${p("Hi there!")}
 
             ${p(`
-                Good news! <strong>${ invitee!.name || invitee!.email }</strong> has
-                accepted your invite to join <strong>${group!.name}</strong>!
+                You have been invited by <strong>${invitor!.name || invitor!.email}</strong> to join the <strong>${group!.name}</strong>
+                ${group!.kind} on Padlock!
             `)}
 
-            ${button("Add Them Now", url)}
+            ${button(`Join ${group!.name}`, url)}
 
             ${p(`
                 If you believe you may have received this email in error, please contact us at <strong>support@padlock.io</strong>

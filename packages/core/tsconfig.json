@@ -19,12 +19,8 @@
         "pretty": true,
         "experimentalDecorators": true,
         "baseUrl": ".",
-        "paths": {
-            "*": ["typings/*"],
-            "zxcvbn/dist/zxcvbn": ["node_modules/@types/zxcvbn"]
-        },
         "outDir": "lib"
     },
-    "include": ["src/*.ts", "typings/*"],
+    "include": ["src/*.ts"],
     "exclude": ["node_modules/**/*.ts"]
 }
