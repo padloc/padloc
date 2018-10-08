@@ -1,5 +1,5 @@
 import { resolveLanguage } from "./util";
-import { getLocale } from "./platform";
+import { getDeviceInfo } from "./platform";
 
 export interface Translations {
     [lang: string]: { [msg: string]: string };
@@ -21,7 +21,7 @@ export function localize(msg: string, ...fmtArgs: string[]) {
     return res;
 }
 
-export function loadTranslations(t: Translations) {
+export async function loadTranslations(t: Translations) {
     translations = t;
-    language = resolveLanguage(getLocale(), translations);
+    language = resolveLanguage((await getDeviceInfo()).locale, translations);
 }

@@ -1,4 +1,4 @@
-import { checkForUpdates, getPlatformName, getDeviceInfo } from "@padlock/core/lib/platform.js";
+import { checkForUpdates, getDeviceInfo } from "@padlock/core/lib/platform.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
@@ -64,7 +64,7 @@ class App extends BaseElement {
         // }
         // navigator.splashscreen.hide();
 
-        const platform = await getPlatformName();
+        const { platform } = await getDeviceInfo();
         const className = platform.toLowerCase().replace(/ /g, "-");
         if (className) {
             this.classList.add(className);
@@ -85,7 +85,8 @@ class App extends BaseElement {
             }
 
             @keyframes viewIn {
-                from { transform: translate3d(100%, 0, 0) rotateY(-30deg); z-index: 1; }
+                from { transform: translate3d(300px, 0, 0) rotateY(-10deg); opacity: 0; z-index: 1; }
+                50% { opacity: 1; }
                 to { transform: translate3d(0, 0, 0); z-index: 1; }
             }
 

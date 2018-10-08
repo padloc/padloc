@@ -2,7 +2,7 @@ import { Store } from "@padlock/core/lib/store.js";
 import { Org } from "@padlock/core/lib/org.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
-import { shared, mixins } from "../styles";
+import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Input } from "./input";
 import "./icon.js";

@@ -1,0 +1,53 @@
+import { loadScript } from "@padlock/core/lib/util.js";
+import { Platform } from "@padlock/core/lib/platform.js";
+
+const browserInfo = (async () => {
+    const uaparser = await loadScript("/vendor/ua-parser.js", "UAParser");
+    return uaparser(navigator.userAgent);
+})();
+
+// Textarea used for copying/pasting using the dom
+let clipboardTextArea: HTMLTextAreaElement;
+
+export class WebPlatform implements Platform {
+    // Set clipboard text using `document.execCommand("cut")`.
+    // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
+    async setClipboard(text: string): Promise<void> {
+        clipboardTextArea = clipboardTextArea || document.createElement("textarea");
+        clipboardTextArea.value = text;
+        document.body.appendChild(clipboardTextArea);
+        clipboardTextArea.select();
+        document.execCommand("cut");
+        document.body.removeChild(clipboardTextArea);
+    }
+
+    // Get clipboard text using `document.execCommand("paste")`
+    // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
+    async getClipboard(): Promise<string> {
+        clipboardTextArea = clipboardTextArea || document.createElement("textarea");
+        document.body.appendChild(clipboardTextArea);
+        clipboardTextArea.value = "";
+        clipboardTextArea.select();
+        document.execCommand("paste");
+        document.body.removeChild(clipboardTextArea);
+        return clipboardTextArea.value;
+    }
+
+    async getDeviceInfo() {
+        const { os, browser } = await browserInfo;
+        return {
+            platform: os.name.replace(" ", ""),
+            osVersion: os.version.replace(" ", ""),
+            id: "",
+            appVersion: "",
+            manufacturer: "",
+            model: "",
+            browser: browser.name,
+            userAgent: navigator.userAgent,
+            locale: navigator.language || "en"
+        };
+    }
+
+    // TODO
+    async checkForUpdates() {}
+}

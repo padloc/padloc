@@ -4,15 +4,7 @@ import { Record } from "@padlock/core/lib/data.js";
 import { Store } from "@padlock/core/lib/store.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import * as imp from "@padlock/core/lib/import.js";
-import {
-    isCordova,
-    getReviewLink,
-    getDesktopSettings,
-    checkForUpdates,
-    saveDBAs,
-    loadDB,
-    isElectron
-} from "@padlock/core/lib/platform.js";
+import { getReviewLink, checkForUpdates } from "@padlock/core/lib/platform.js";
 import { shared, mixins } from "../styles";
 import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt, exportRecords } from "../dialog";
@@ -37,7 +29,9 @@ export class SettingsView extends View {
 
     render() {
         const { settings, loggedIn } = app;
-        const isDesktop = isElectron();
+        // TODO
+        // const isDesktop = isElectron();
+        const isDesktop = false;
         const dbPath = "";
 
         return html`
@@ -419,9 +413,10 @@ export class SettingsView extends View {
 
     private async _import() {
         const options = [$l("From Clipboard")];
-        if (!isCordova()) {
-            options.push($l("From File"));
-        }
+        // TODO
+        // if (!isCordova()) {
+        //     options.push($l("From File"));
+        // }
         const choice = await choose($l("Please choose an import method!"), options, {
             preventDismiss: false,
             type: "question"
@@ -569,10 +564,11 @@ export class SettingsView extends View {
     }
 
     private _desktopSettingsChanged() {
-        getDesktopSettings().set({
-            autoDownloadUpdates: (this.$("autoUpdatesButton") as ToggleButton).active,
-            allowPrerelease: (this.$("betaReleasesButton") as ToggleButton).active
-        });
+        // TODO
+        // getDesktopSettings().set({
+        //     autoDownloadUpdates: (this.$("autoUpdatesButton") as ToggleButton).active,
+        //     allowPrerelease: (this.$("betaReleasesButton") as ToggleButton).active
+        // });
     }
 
     private _checkForUpdates() {
@@ -580,11 +576,13 @@ export class SettingsView extends View {
     }
 
     private _saveDBAs() {
-        saveDBAs();
+        // TODO
+        // saveDBAs();
     }
 
     private _loadDB() {
-        loadDB();
+        // TODO
+        // loadDB();
     }
 
     private _export() {

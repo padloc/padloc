@@ -1,6 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { passwordStrength } from "@padlock/core/lib/util.js";
-import { isCordova, setClipboard } from "@padlock/core/lib/platform.js";
+import { setClipboard } from "@padlock/core/lib/platform.js";
 import { toPadlock, toCSV } from "@padlock/core/lib/export.js";
 import { Record } from "@padlock/core/lib/data.js";
 import { shared, mixins } from "../styles";
@@ -69,8 +69,7 @@ export class ExportDialog extends BaseElement {
 
                 <pl-icon
                     icon="download"
-                    class="tap" @click=${() => this._downloadCSV()}
-                    ?hidden=${isCordova()}>
+                    class="tap" @click=${() => this._downloadCSV()}>
                 </pl-icon>
 
             </div>

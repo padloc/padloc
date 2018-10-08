@@ -117,7 +117,7 @@ export class StoreView extends View {
         } else {
             await this._inviteDialog.show(invite);
         }
-        app.syncStore(this.store!.id);
+        app.syncGroup(this.store!);
     }
 
     // private async _delete() {
