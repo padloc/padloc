@@ -3,14 +3,46 @@ import * as level from "level";
 import { marshal, unmarshal } from "@padlock/core/src/encoding";
 import { Storage, Storable } from "@padlock/core/src/storage";
 import { Err, ErrorCode } from "@padlock/core/src/error";
-import { mkdirpSync } from "fs-extra";
+import * as path from "path";
+import * as fs from "fs";
+
+function mkdir(targetDir: string, { isRelativeToScript = false } = {}) {
+    const sep = path.sep;
+    const initDir = path.isAbsolute(targetDir) ? sep : "";
+    const baseDir = isRelativeToScript ? __dirname : ".";
+
+    return targetDir.split(sep).reduce((parentDir, childDir) => {
+        const curDir = path.resolve(baseDir, parentDir, childDir);
+        try {
+            fs.mkdirSync(curDir);
+        } catch (err) {
+            if (err.code === "EEXIST") {
+                // curDir already exists!
+                return curDir;
+            }
+
+            // To avoid `EISDIR` error on Mac and `EACCES`-->`ENOENT` and `EPERM` on Windows.
+            if (err.code === "ENOENT") {
+                // Throw the original parentDir error on curDir `ENOENT` failure.
+                throw new Error(`EACCES: permission denied, mkdir '${parentDir}'`);
+            }
+
+            const caughtErr = ["EACCES", "EPERM", "EISDIR"].indexOf(err.code) > -1;
+            if (!caughtErr || (caughtErr && targetDir === curDir)) {
+                throw err; // Throw if it's just the last created dir.
+            }
+        }
+
+        return curDir;
+    }, initDir);
+}
 
 export class LevelDBStorage implements Storage {
     private _dbs = new Map<string, any>();
     // private _index = new Map<string, string>();
 
     constructor(public path: string) {
-        mkdirpSync(this.path);
+        mkdir(this.path);
     }
     //
     // private async _buildIndex(db: any, s: Storable) {
