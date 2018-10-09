@@ -41,7 +41,9 @@ export class ListView extends BaseElement {
     @listen("settings-changed", app)
     @listen("store-changed", app)
     _updateListItems() {
-        this._listItems = app.list(this._filterInput);
+        if (this._filterInput) {
+            this._listItems = app.list(this._filterInput);
+        }
     }
 
     @listen("record-created", app)

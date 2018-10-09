@@ -1,6 +1,6 @@
 import { Invite } from "@padlock/core/lib/invite.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { formatDateFromNow } from "@padlock/core/lib/util.js";
+import { formatDateFromNow } from "../util.js";
 import { app } from "../init";
 import { shared, mixins } from "../styles";
 import { alert } from "../dialog.js";
@@ -52,7 +52,13 @@ export class InviteDialog extends BaseElement {
                     ? { icon: "time", class: "warning", text: $l("This invite has expired") }
                     : accepted
                         ? { icon: "check", class: "", text: $l("You have accepted the invite.") }
-                        : { icon: "time", class: "", text: $l("expires {0}", formatDateFromNow(expires)) };
+                        : {
+                              icon: "time",
+                              class: "",
+                              text: (async () => {
+                                  return $l("expires {0}", await formatDateFromNow(expires));
+                              })()
+                          };
 
         return html`
             ${shared}

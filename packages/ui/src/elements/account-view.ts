@@ -1,8 +1,8 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Session, AccountInfo } from "@padlock/core/lib/auth.js";
-import { formatDateFromNow } from "@padlock/core/lib/util.js";
 import { deviceDescription } from "@padlock/core/lib/platform.js";
 import { Store } from "@padlock/core/lib/store.js";
+import { formatDateFromNow } from "../util.js";
 import { app, router } from "../init.js";
 import { shared, mixins } from "../styles";
 import { animateCascade } from "../animation.js";
@@ -262,7 +262,7 @@ export class AccountView extends View {
                 <div class="sessions">
 
                     ${sessions.map(
-                        (session: Session) => html`
+                        async (session: Session) => html`
                         <div class="session">
 
                             <div class="session-label">
@@ -270,7 +270,7 @@ export class AccountView extends View {
                                 <div class="session-hint">${
                                     app.session && session.id == app.session.id
                                         ? $l("Current Session")
-                                        : $l("last active {0}", formatDateFromNow(session.lastUsed || ""))
+                                        : $l("last active {0}", await formatDateFromNow(session.lastUsed || ""))
                                 }</div>
                             </div>
 

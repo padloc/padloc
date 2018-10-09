@@ -1,4 +1,4 @@
-import { Record } from "./data";
+import { Record } from "@padlock/core/lib/data.js";
 import { loadPapa } from "./import";
 
 function recordsToTable(records: Record[]) {

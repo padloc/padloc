@@ -2,7 +2,7 @@ import { Store } from "@padlock/core/lib/store.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { GroupMember } from "@padlock/core/lib/group.js";
 import { Invite } from "@padlock/core/lib/invite.js";
-import { formatDateFromNow } from "@padlock/core/lib/util.js";
+import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
 import { getDialog, confirm, prompt, alert } from "../dialog.js";
 import { animateCascade } from "../animation.js";
@@ -315,12 +315,12 @@ export class StoreView extends View {
 
             </h2>
 
-            ${invites.map(inv => {
+            ${invites.map(async inv => {
                 const status = inv.expired
                     ? { icon: "time", class: "warning", text: $l("expired") }
                     : inv.accepted
                         ? { icon: "check", class: "highlight", text: $l("accepted") }
-                        : { icon: "time", class: "", text: $l("expires {0}", formatDateFromNow(inv.expires)) };
+                        : { icon: "time", class: "", text: $l("expires {0}", await formatDateFromNow(inv.expires)) };
 
                 return html`
                 <div layout align-center class="invite tap animate" @click=${() => this._showInvite(inv)}>

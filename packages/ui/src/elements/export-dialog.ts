@@ -1,8 +1,8 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { passwordStrength } from "@padlock/core/lib/util.js";
 import { setClipboard } from "@padlock/core/lib/platform.js";
-import { toPadlock, toCSV } from "@padlock/core/lib/export.js";
 import { Record } from "@padlock/core/lib/data.js";
+import { toPadlock, toCSV } from "../export.js";
+import { passwordStrength } from "../util.js";
 import { shared, mixins } from "../styles";
 import { confirm, alert, prompt } from "../dialog.js";
 import { BaseElement, element, html, property } from "./base.js";
@@ -84,7 +84,7 @@ export class ExportDialog extends BaseElement {
                     icon="download"
                     class="tap"
                     @click=${() => this._downloadEncrypted()}
-                    ?hidden=${isCordova()}>
+                    hidden>
                 </pl-icon>
 
             </div>

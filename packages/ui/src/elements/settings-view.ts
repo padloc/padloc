@@ -3,7 +3,7 @@ import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Record } from "@padlock/core/lib/data.js";
 import { Store } from "@padlock/core/lib/store.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
-import * as imp from "@padlock/core/lib/import.js";
+import * as imp from "../import.js";
 import { getReviewLink, checkForUpdates } from "@padlock/core/lib/platform.js";
 import { shared, mixins } from "../styles";
 import { View } from "./view.js";

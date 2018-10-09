@@ -1,6 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
-import { passwordStrength } from "@padlock/core/lib/util.js";
+import { passwordStrength } from "../util.js";
 import { app } from "../init.js";
 import { element, html, property, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form.js";

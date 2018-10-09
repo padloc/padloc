@@ -1,5 +1,5 @@
-import { loadScript } from "@padlock/core/lib/util.js";
 import { Platform } from "@padlock/core/lib/platform.js";
+import { loadScript } from "./util.js";
 
 const browserInfo = (async () => {
     const uaparser = await loadScript("/vendor/ua-parser.js", "UAParser");
@@ -50,4 +50,8 @@ export class WebPlatform implements Platform {
 
     // TODO
     async checkForUpdates() {}
+
+    async getReviewLink() {
+        return "";
+    }
 }

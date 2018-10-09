@@ -1,5 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { wait, formatDateFromNow } from "@padlock/core/lib/util.js";
+import { wait } from "@padlock/core/lib/util.js";
+import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";

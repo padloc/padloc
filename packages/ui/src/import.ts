@@ -1,7 +1,7 @@
-import { unmarshal } from "./encoding";
-import { Record, Field, createRecord } from "./data";
+import { unmarshal } from "@padlock/core/lib/encoding.js";
+import { Record, Field, createRecord } from "@padlock/core/lib/data.js";
+import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import { loadScript } from "./util";
-import { Err, ErrorCode } from "./error";
 
 export function loadPapa(): Promise<any> {
     return loadScript("vendor/papaparse.js", "Papa");

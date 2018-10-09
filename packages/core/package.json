@@ -5,14 +5,5 @@
   "main": "index.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPLv3",
-  "private": false,
-  "dependencies": {
-    "moment": "^2.22.2",
-    "moment-duration-format": "^2.2.2"
-  },
-  "devDependencies": {
-    "@types/papaparse": "^4.1.34",
-    "@types/semver": "^5.3.33",
-    "@types/zxcvbn": "^4.4.0"
-  }
+  "private": false
 }

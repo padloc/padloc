@@ -2,7 +2,7 @@ import { AccountInfo } from "@padlock/core/lib/auth.js";
 import { Record, Field } from "@padlock/core/lib/data.js";
 import { Store } from "@padlock/core/lib/store.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { formatDateFromNow } from "@padlock/core/lib/util.js";
+import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
 import { View } from "./view.js";
 import { confirm, prompt, choose, openField, generate, getDialog } from "../dialog.js";

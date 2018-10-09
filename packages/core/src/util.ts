@@ -1,8 +1,3 @@
-// @ts-ignore
-import moment from "moment";
-import "moment-duration-format";
-import { DateString } from "./encoding";
-
 // RFC4122-compliant uuid generator
 export function uuid(): string {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
@@ -72,55 +67,4 @@ export function resolveLanguage(locale: string, supportedLanguages: { [lang: str
 
 export function applyMixins(baseClass: any, ...mixins: ((cls: any) => any)[]): any {
     return mixins.reduce((cls, mixin) => mixin(cls), baseClass);
-}
-
-export function formatDateFromNow(date: Date | DateString | number) {
-    return moment(date).fromNow();
-}
-
-export function formatDateUntil(startDate: Date | string | number, duration: number) {
-    const d = moment.duration(
-        moment(startDate)
-            .add(duration, "hours")
-            .diff(moment())
-    );
-    return d.format("hh:mm:ss");
-}
-
-export function isFuture(date: Date | string | number, duration: number) {
-    return moment(date)
-        .add(duration, "hours")
-        .isAfter();
-}
-
-const loaded: Map<string, Promise<any>> = new Map<string, Promise<any>>();
-export function loadScript(src: string, global?: string): Promise<any> {
-    if (loaded.has(src)) {
-        return loaded.get(src)!;
-    }
-
-    const s = document.createElement("script");
-    s.src = src;
-    s.type = "text/javascript";
-    const p = new Promise((resolve, reject) => {
-        s.onload = () => resolve(global ? window[global] : undefined);
-        s.onerror = e => reject(e);
-        document.body!.appendChild(s);
-    });
-
-    loaded.set(src, p);
-    return p;
-}
-
-export async function passwordStrength(pwd: string): Promise<{ score: number }> {
-    const zxcvbn = await loadScript("/vendor/zxcvbn.js", "zxcvbn");
-    return zxcvbn(pwd);
-}
-
-export function toggleAttribute(el: Element, attr: string, on: boolean) {
-    if (on) {
-        el.setAttribute(attr, "");
-    } else {
-        el.removeAttribute(attr);
-    }
 }
