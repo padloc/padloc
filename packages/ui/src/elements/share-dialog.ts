@@ -1,5 +1,5 @@
 import { Record } from "@padlock/core/lib/data.js";
-import { Store } from "@padlock/core/lib/store.js";
+import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
 import { shared, mixins } from "../styles";
@@ -15,11 +15,11 @@ export class ShareDialog extends BaseElement {
 
     @query("pl-dialog") private _dialog: Dialog;
 
-    private _resolve: ((store: Store | null) => void) | null;
+    private _resolve: ((vault: Vault | null) => void) | null;
 
     render() {
         const { records } = this;
-        const stores = app.stores.filter(s => s.isMember() && s.getPermissions().write);
+        const vaults = app.vaults.filter(s => s.isMember() && s.getPermissions().write);
         return html`
             ${shared}
 
@@ -49,25 +49,25 @@ export class ShareDialog extends BaseElement {
                     border-bottom: solid 1px var(--border-color);
                 }
 
-                .store {
+                .vault {
                     display: flex;
                     align-items: center;
                     height: 80px;
                     padding: 0 15px;
                 }
 
-                .store > pl-icon {
+                .vault > pl-icon {
                     width: 52px;
                     height: 50px;
                     font-size: 26px;
                     margin-right: 15px;
                 }
 
-                .store-info {
+                .vault-info {
                     flex: 1;
                 }
 
-                .store-name {
+                .vault-name {
                     font-weight: bold;
                 }
 
@@ -84,15 +84,15 @@ export class ShareDialog extends BaseElement {
                     }</div>
                 </div>
 
-                ${stores.map(
+                ${vaults.map(
                     s => html`
-                    <div class="store tap" @click=${() => this._selectStore(s)}>
+                    <div class="vault tap" @click=${() => this._selectVault(s)}>
 
                         <pl-icon icon="group"></pl-icon>
 
-                        <div class="store-info">
+                        <div class="vault-info">
 
-                            <div class="store-name">${s.name}</div>
+                            <div class="vault-name">${s.name}</div>
 
                             <div class="tags small">
 
@@ -120,7 +120,7 @@ export class ShareDialog extends BaseElement {
                 `
                 )}
 
-                <button class="tap" @click=${() => this._createStore()}>${$l("Create New Group...")}</button>
+                <button class="tap" @click=${() => this._createVault()}>${$l("Create New Group...")}</button>
 
             </pl-dialog>
         `;
@@ -131,28 +131,28 @@ export class ShareDialog extends BaseElement {
         this.requestUpdate();
         await this.updateComplete;
         this._dialog.open = true;
-        return new Promise<Store | null>(resolve => {
+        return new Promise<Vault | null>(resolve => {
             this._resolve = resolve;
         });
     }
 
-    private _done(store?: Store) {
-        this._resolve && this._resolve(store || null);
+    private _done(vault?: Vault) {
+        this._resolve && this._resolve(vault || null);
         this._resolve = null;
         this._dialog.open = false;
     }
 
-    async _selectStore(store: Store) {
+    async _selectVault(vault: Vault) {
         this._dialog.open = false;
         const confirmed =
-            store.members.length === 1 ||
+            vault.members.length === 1 ||
             (await confirm(
-                store.collection.size === 1
-                    ? $l("Do you want to share '{0}' with the '{1}' group?", this.records[0].name, store.name)
+                vault.collection.size === 1
+                    ? $l("Do you want to share '{0}' with the '{1}' group?", this.records[0].name, vault.name)
                     : $l(
                           "Do you want to share {0} items with the '{1}' group?",
                           this.records.length.toString(),
-                          store.name
+                          vault.name
                       ),
                 $l("Share"),
                 $l("Cancel"),
@@ -162,34 +162,34 @@ export class ShareDialog extends BaseElement {
         if (confirmed) {
             for (const record of this.records) {
                 const { name, fields, tags } = record;
-                await app.createRecord(name, store, fields, tags);
+                await app.createRecord(name, vault, fields, tags);
             }
-            await app.deleteRecords(app.mainStore!, this.records);
-            this._done(store);
+            await app.deleteRecords(app.mainVault!, this.records);
+            this._done(vault);
         } else {
             this._dialog.open = true;
         }
     }
 
-    async _createStore() {
+    async _createVault() {
         this._dialog.open = false;
-        const storeName = await prompt($l("Please choose a name for the new group!"), {
+        const vaultName = await prompt($l("Please choose a name for the new group!"), {
             confirmLabel: $l("Create Group"),
             placeholder: $l("Enter Group Name (e.g.: 'Family')"),
-            validate: async storeName => {
-                if (!storeName) {
+            validate: async vaultName => {
+                if (!vaultName) {
                     throw $l("Please enter a group name!");
                 }
-                return storeName;
+                return vaultName;
             }
         });
 
-        if (!storeName) {
+        if (!vaultName) {
             this._dialog.open = true;
             return;
         }
 
-        const store = await app.createStore(storeName);
-        this._selectStore(store);
+        const vault = await app.createVault(vaultName);
+        this._selectVault(vault);
     }
 }

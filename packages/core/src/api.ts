@@ -1,6 +1,5 @@
 import { Session, SessionInfo, Account, Auth, AccountID } from "./auth";
-import { Store } from "./store";
-import { Org } from "./org";
+import { Vault } from "./vault";
 import { Invite } from "./invite";
 import { Base64String } from "./encoding";
 
@@ -13,7 +12,7 @@ export interface CreateAccountParams {
     };
 }
 
-export interface CreateStoreParams {
+export interface CreateVaultParams {
     name: string;
 }
 
@@ -34,13 +33,9 @@ export interface API {
     getAccount(account: Account): Promise<Account>;
     updateAccount(account: Account): Promise<Account>;
 
-    createStore(params: CreateStoreParams): Promise<Store>;
-    getStore(store: Store): Promise<Store>;
-    updateStore(store: Store): Promise<Store>;
-
-    createOrg(params: CreateOrgParams): Promise<Org>;
-    getOrg(org: Org): Promise<Org>;
-    updateOrg(store: Org): Promise<Org>;
+    createVault(params: CreateVaultParams): Promise<Vault>;
+    getVault(vault: Vault): Promise<Vault>;
+    updateVault(vault: Vault): Promise<Vault>;
 
     updateInvite(invite: Invite): Promise<Invite>;
     deleteInvite(invite: Invite): Promise<void>;

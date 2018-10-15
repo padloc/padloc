@@ -1,6 +1,6 @@
 import { AccountInfo } from "@padlock/core/lib/auth.js";
 import { Record, Field } from "@padlock/core/lib/data.js";
-import { Store } from "@padlock/core/lib/store.js";
+import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
@@ -17,7 +17,7 @@ import { ShareDialog } from "./share-dialog.js";
 import "./share-dialog.js";
 
 export class RecordView extends View {
-    @property() store: Store | null = null;
+    @property() vault: Vault | null = null;
     @property() record: Record | null = null;
 
     @query("#nameInput") _nameInput: Input;
@@ -47,15 +47,15 @@ export class RecordView extends View {
 
     render() {
         const record = this.record!;
-        const store = this.store!;
+        const vault = this.vault!;
         const { name, fields, tags, updated, updatedBy } = record;
-        const isShared = app.mainStore && store.id !== app.mainStore.id;
-        const permissions = store.getPermissions();
+        const isShared = app.mainVault && vault.id !== app.mainVault.id;
+        const permissions = vault.getPermissions();
         // TODO
-        // const removedMembers = store instanceof SharedStore ? store.getOldAccessors(record!) : [];
+        // const removedMembers = vault instanceof SharedVault ? vault.getOldAccessors(record!) : [];
         const removedMembers: any[] = [];
-        const storeName = store.name;
-        const updatedByMember = store.getMember({ id: updatedBy } as AccountInfo);
+        const vaultName = vault.name;
+        const updatedByMember = vault.getMember({ id: updatedBy } as AccountInfo);
 
         return html`
         ${shared}
@@ -155,11 +155,11 @@ export class RecordView extends View {
                 <div class="tag highlight tap"
                     flex
                     ?hidden=${!isShared}
-                    @click=${() => this._openStore(store!)}>
+                    @click=${() => this._openVault(vault!)}>
 
-                    <pl-icon icon="group"></pl-icon>
+                    <pl-icon icon="vault"></pl-icon>
 
-                    <div class="tag-name">${storeName}</div>
+                    <div class="tag-name">${vaultName}</div>
 
                 </div>
 
@@ -194,7 +194,7 @@ export class RecordView extends View {
                 <div
                     class="tag ghost tap"
                     flex
-                    ?hidden=${!permissions.write || this.store !== app.mainStore}
+                    ?hidden=${!permissions.write || this.vault !== app.mainVault}
                     @click=${() => this._share()}>
 
                     <pl-icon icon="share"></pl-icon>
@@ -214,10 +214,10 @@ export class RecordView extends View {
                     <div class="info-body">
 
                         <div class="info-text">${$l(
-                            "{0} users have been removed from the '{1}' group since this item was last updated. " +
+                            "{0} users have been removed from the '{1}' vault since this item was last updated. " +
                                 "Please update any sensitive information as soon as possible!",
                             removedMembers.length.toString(),
-                            storeName
+                            vaultName
                         )}</div>
 
                     </div>
@@ -281,46 +281,46 @@ export class RecordView extends View {
     }
 
     _updateName() {
-        if (!this.store || !this.record) {
-            throw "store or record member not set";
+        if (!this.vault || !this.record) {
+            throw "vault or record member not set";
         }
-        app.updateRecord(this.store, this.record, { name: this._nameInput.value });
+        app.updateRecord(this.vault, this.record, { name: this._nameInput.value });
     }
 
     private async _deleteField(index: number) {
-        if (!this.store || !this.record) {
-            throw "store or record member not set";
+        if (!this.vault || !this.record) {
+            throw "vault or record member not set";
         }
         const confirmed = await confirm($l("Are you sure you want to delete this field?"), $l("Delete"));
         const fields = this.record.fields.filter((_, i) => i !== index);
         if (confirmed) {
-            app.updateRecord(this.store, this.record, { fields: fields });
+            app.updateRecord(this.vault, this.record, { fields: fields });
         }
     }
 
     private async _changeField(index: number, changes: { name?: string; value?: string; masked?: boolean }) {
-        if (!this.store || !this.record) {
-            throw "store or record member not set";
+        if (!this.vault || !this.record) {
+            throw "vault or record member not set";
         }
         const fields = [...this.record.fields];
         fields[index] = Object.assign({}, fields[index], changes);
-        app.updateRecord(this.store, this.record, { fields: fields });
+        app.updateRecord(this.vault, this.record, { fields: fields });
     }
 
     private async _deleteRecord() {
-        if (!this.store || !this.record) {
-            throw "store or record member not set";
+        if (!this.vault || !this.record) {
+            throw "vault or record member not set";
         }
         const confirmed = await confirm($l("Are you sure you want to delete this record?"), $l("Delete"));
         if (confirmed) {
-            app.deleteRecords(this.store, [this.record]);
+            app.deleteRecords(this.vault, [this.record]);
             router.back();
         }
     }
 
     private async _addField(field = { name: "", value: "", masked: false }) {
-        if (!this.store || !this.record) {
-            throw "store or record member not set";
+        if (!this.vault || !this.record) {
+            throw "vault or record member not set";
         }
         const result = await openField(field, true);
         switch (result.action) {
@@ -332,26 +332,26 @@ export class RecordView extends View {
                 break;
             case "edit":
                 Object.assign(field, result);
-                app.updateRecord(this.store, this.record, { fields: this.record.fields.concat([field]) });
+                app.updateRecord(this.vault, this.record, { fields: this.record.fields.concat([field]) });
                 break;
         }
     }
 
     private async _removeTag(tag: string) {
-        if (!this.store || !this.record) {
-            throw "store or record member not set";
+        if (!this.vault || !this.record) {
+            throw "vault or record member not set";
         }
         const confirmed = await confirm($l("Do you want to remove this tag?"), $l("Remove"), $l("Cancel"), {
             title: $l("Remove Tag")
         });
         if (confirmed) {
-            app.updateRecord(this.store, this.record, { tags: this.record.tags.filter(t => t !== tag) });
+            app.updateRecord(this.vault, this.record, { tags: this.record.tags.filter(t => t !== tag) });
         }
     }
 
     private async _createTag() {
-        if (!this.store || !this.record) {
-            throw "store or record member not set";
+        if (!this.vault || !this.record) {
+            throw "vault or record member not set";
         }
         const tag = await prompt("", {
             placeholder: $l("Enter Tag Name"),
@@ -360,13 +360,13 @@ export class RecordView extends View {
             cancelLabel: ""
         });
         if (tag && !this.record.tags.includes(tag)) {
-            app.updateRecord(this.store, this.record, { tags: this.record.tags.concat([tag]) });
+            app.updateRecord(this.vault, this.record, { tags: this.record.tags.concat([tag]) });
         }
     }
 
     private async _addTag() {
-        if (!this.store || !this.record) {
-            throw "store or record member not set";
+        if (!this.vault || !this.record) {
+            throw "vault or record member not set";
         }
         const tags = app.tags.filter((tag: string) => !this.record!.tags.includes(tag));
         if (!tags.length) {
@@ -380,7 +380,7 @@ export class RecordView extends View {
 
         const tag = tags[choice];
         if (tag) {
-            app.updateRecord(this.store, this.record, { tags: this.record.tags.concat([tag]) });
+            app.updateRecord(this.vault, this.record, { tags: this.record.tags.concat([tag]) });
         }
     }
 
@@ -395,18 +395,18 @@ export class RecordView extends View {
     }
 
     private _dismissWarning() {
-        app.updateRecord(this.store!, this.record!, {});
+        app.updateRecord(this.vault!, this.record!, {});
     }
 
     private async _share() {
-        const store = await this._shareDialog.show([this.record!]);
-        if (store && store.members.length === 1) {
-            router.go(`store/${store.id}`);
+        const vault = await this._shareDialog.show([this.record!]);
+        if (vault && vault.members.length === 1) {
+            router.go(`vault/${vault.id}`);
         }
     }
 
-    private _openStore(store: Store) {
-        router.go(`store/${store.id}`);
+    private _openVault(vault: Vault) {
+        router.go(`vault/${vault.id}`);
     }
 
     edit() {

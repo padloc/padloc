@@ -1,6 +1,6 @@
-import { Store } from "@padlock/core/lib/store.js";
+import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { GroupMember } from "@padlock/core/lib/group.js";
+import { VaultMember } from "@padlock/core/lib/vault.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
@@ -14,12 +14,12 @@ import { MemberDialog } from "./member-dialog.js";
 import "./member-dialog.js";
 import { InviteDialog } from "./invite-dialog.js";
 import "./invite-dialog.js";
-import "./share-store-dialog.js";
 import { Input } from "./input.js";
 
-@element("pl-store-view")
-export class StoreView extends View {
-    @property() store: Store | null = null;
+@element("pl-vault-view")
+export class VaultView extends View {
+    @property()
+    vault: Vault | null = null;
 
     private get _memberDialog() {
         return getDialog("pl-member-dialog") as MemberDialog;
@@ -30,7 +30,7 @@ export class StoreView extends View {
     }
 
     @listen("synchronize", app)
-    @listen("store-changed", app)
+    @listen("vault-changed", app)
     _refresh() {
         this.requestUpdate();
         this.$$("pl-account-item", false).forEach((el: any) => el.requestUpdate());
@@ -39,39 +39,39 @@ export class StoreView extends View {
     async _activated() {
         animateCascade(this.$$(".animate:not([hidden])", false), { initialDelay: 200 });
         if (
-            this.store &&
-            this.store.members.length === 1 &&
-            !this.store.invites.length &&
-            this.store.getPermissions().manage
+            this.vault &&
+            this.vault.members.length === 1 &&
+            !this.vault.invites.length &&
+            this.vault.getPermissions().manage
         ) {
             const confirmed = await confirm(
                 $l(
-                    "There is nobody else in this group yet. Invite others to give " +
-                        "them access to any data you share with this group!"
+                    "There is nobody else in this vault yet. Invite others to give " +
+                        "them access to any data you share with this vault!"
                 ),
                 $l("Invite Others"),
                 $l("Stay Lonely"),
-                { icon: "group" }
+                { icon: "vault" }
             );
             if (confirmed) {
                 this._invite();
             }
         }
 
-        const invite = this.store!.getInvite(app.account!.email);
+        const invite = this.vault!.getInvite(app.account!.email);
         if (invite && !invite.accepted) {
             this._showInvite(invite);
         }
 
-        if (this.store!.isAdmin()) {
-            for (const invite of this.store!.invites.filter(i => i.accepted)) {
+        if (this.vault!.isAdmin()) {
+            for (const invite of this.vault!.invites.filter(i => i.accepted)) {
                 this._showInvite(invite);
             }
         }
     }
 
     private async _invite() {
-        const email = await prompt($l("Who would you like to invite to this group?"), {
+        const email = await prompt($l("Who would you like to invite to this vault?"), {
             type: "email",
             placeholder: $l("Enter Email Address"),
             validate: async (val: string, input: Input) => {
@@ -86,18 +86,18 @@ export class StoreView extends View {
             return;
         }
 
-        if (this.store!.members.some(m => m.email === email)) {
+        if (this.vault!.members.some(m => m.email === email)) {
             await alert($l("This user is already a member!"), { type: "warning" });
             return;
         }
 
-        const invite = await app.createInvite(this.store!, email);
+        const invite = await app.createInvite(this.vault!, email);
         console.log(invite);
         await this._inviteDialog.show(invite);
     }
 
-    private async _showMember(member: GroupMember) {
-        await this._memberDialog.show(member, this.store!);
+    private async _showMember(member: VaultMember) {
+        await this._memberDialog.show(member, this.vault!);
     }
 
     private async _showInvite(invite: Invite) {
@@ -110,18 +110,18 @@ export class StoreView extends View {
                     updated: ""
                 },
                 invite.invitee!
-            ) as GroupMember);
-            if (this.store!.isMember(invite.invitee! as GroupMember)) {
+            ) as VaultMember);
+            if (this.vault!.isMember(invite.invitee! as VaultMember)) {
                 await app.deleteInvite(invite);
             }
         } else {
             await this._inviteDialog.show(invite);
         }
-        app.syncGroup(this.store!);
+        app.syncVault(this.vault!);
     }
 
     // private async _delete() {
-    //     const confirmed = await prompt($l("Are you sure you want to delete the '{0}' group?", this.store!.name), {
+    //     const confirmed = await prompt($l("Are you sure you want to delete the '{0}' vault?", this.vault!.name), {
     //         placeholder: $l("Type 'DELETE' to confirm"),
     //         validate: async val => {
     //             if (val !== "DELETE") {
@@ -132,23 +132,23 @@ export class StoreView extends View {
     //     });
     //
     //     if (confirmed) {
-    //         await app.deleteSharedStore(this.store!.id);
-    //         alert($l("Group deleted successfully"));
+    //         await app.deleteSharedVault(this.vault!.id);
+    //         alert($l("Vault deleted successfully"));
     //     }
     // }
 
     shouldUpdate() {
-        return !!this.store;
+        return !!this.vault;
     }
 
     render() {
-        const store = this.store!;
-        const { name, members, collection } = store;
-        const member = store.getMember();
+        const vault = this.vault!;
+        const { name, members, collection } = vault;
+        const member = vault.getMember();
         const memberStatus = member ? member.status : "";
-        const permissions = store.getPermissions();
-        const invites = store.isAdmin() ? store.invites : [];
-        const myInvite = store.invites.find(inv => inv.email == app.account!.email);
+        const permissions = vault.getPermissions();
+        const invites = vault.isAdmin() ? vault.invites : [];
+        const myInvite = vault.invites.find(inv => inv.email == app.account!.email);
 
         return html`
         ${shared}
@@ -275,7 +275,7 @@ export class StoreView extends View {
 
             <div class="subheader warning animate ellipsis" ?hidden=${memberStatus !== "removed"}>
 
-                <div flex>${$l("You have been removed from this group")}</div>
+                <div flex>${$l("You have been removed from this vault")}</div>
 
             </div>
 
@@ -291,7 +291,7 @@ export class StoreView extends View {
 
                 <div class="tag" flex ?hidden=${memberStatus === "removed"}>
 
-                    <pl-icon icon="group"></pl-icon>
+                    <pl-icon icon="vault"></pl-icon>
 
                     <div>${$l("{0} Members", members.length.toString())}</div>
 
@@ -323,7 +323,7 @@ export class StoreView extends View {
                         : { icon: "time", class: "", text: $l("expires {0}", await formatDateFromNow(inv.expires)) };
 
                 return html`
-                <div layout align-center class="invite tap animate" @click=${() => this._showInvite(inv)}>
+                <div class="invite layout align-center tap animate" @click=${() => this._showInvite(inv)}>
 
                     <div flex>
 
@@ -357,7 +357,7 @@ export class StoreView extends View {
 
             <h2 class="animate">
 
-                <pl-icon icon="group"></pl-icon>
+                <pl-icon icon="vault"></pl-icon>
 
                 <div>${$l("Members")}</div>
 

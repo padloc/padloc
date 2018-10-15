@@ -1,11 +1,10 @@
-import { API, CreateAccountParams, CreateStoreParams, CreateOrgParams } from "./api";
+import { API, CreateAccountParams, CreateVaultParams } from "./api";
 import { Sender } from "./transport";
 import { DeviceInfo } from "./platform";
 import { Session, Account, AccountID, Auth } from "./auth";
 import { Invite } from "./invite";
 import { Base64String } from "./encoding";
-import { Org } from "./org";
-import { Store } from "./store";
+import { Vault } from "./vault";
 import { Err, ErrorCode } from "./error";
 
 export interface ClientSettings {
@@ -97,34 +96,19 @@ export class Client implements API {
         return account.deserialize(res.result);
     }
 
-    async getStore(store: Store): Promise<Store> {
-        const res = await this.call("getStore", [await store.serialize()]);
-        return store.deserialize(res.result);
+    async getVault(vault: Vault): Promise<Vault> {
+        const res = await this.call("getVault", [await vault.serialize()]);
+        return vault.deserialize(res.result);
     }
 
-    async createStore(params: CreateStoreParams): Promise<Store> {
-        const res = await this.call("createStore", [params]);
-        return new Store("").deserialize(res.result);
+    async createVault(params: CreateVaultParams): Promise<Vault> {
+        const res = await this.call("createVault", [params]);
+        return new Vault("").deserialize(res.result);
     }
 
-    async updateStore(store: Store): Promise<Store> {
-        const res = await this.call("updateStore", [await store.serialize()]);
-        return store.deserialize(res.result);
-    }
-
-    async getOrg(org: Org): Promise<Org> {
-        const res = await this.call("getOrg", [await org.serialize()]);
-        return org.deserialize(res.result);
-    }
-
-    async createOrg(params: CreateOrgParams): Promise<Org> {
-        const res = await this.call("createOrg", [params]);
-        return new Org("").deserialize(res.result);
-    }
-
-    async updateOrg(org: Org): Promise<Org> {
-        const res = await this.call("updateOrg", [await org.serialize()]);
-        return org.deserialize(res.result);
+    async updateVault(vault: Vault): Promise<Vault> {
+        const res = await this.call("updateVault", [await vault.serialize()]);
+        return vault.deserialize(res.result);
     }
 
     async updateInvite(invite: Invite): Promise<Invite> {

@@ -23,9 +23,9 @@ export class AccountItem extends BaseElement {
                 account.permissions.manage && pills.push({ icon: "check", label: $l("manage") });
                 break;
             default:
-                const commonStores = app.stores.filter(s => s.isMember(account!));
-                if (commonStores.length) {
-                    pills.push({ icon: "group", label: $l("{0} common groups", commonStores.length.toString()) });
+                const commonVaults = app.vaults.filter(s => s.isMember(account!));
+                if (commonVaults.length) {
+                    pills.push({ icon: "group", label: $l("{0} common groups", commonVaults.length.toString()) });
                 }
         }
 

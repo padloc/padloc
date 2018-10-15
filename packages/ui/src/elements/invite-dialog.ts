@@ -11,16 +11,23 @@ import { Input } from "./input.js";
 
 @element("pl-invite-dialog")
 export class InviteDialog extends BaseElement {
-    @property() invite: Invite | null = null;
+    @property()
+    invite: Invite | null = null;
 
-    @query("pl-dialog") private _dialog: Dialog;
-    @query("#acceptButton") private _acceptButton: LoadingButton;
-    @query("#resendButton") private _resendButton: LoadingButton;
-    @query("#deleteButton") private _deleteButton: LoadingButton;
-    @query("#codeInput") private _codeInput: Input;
+    @query("pl-dialog")
+    private _dialog: Dialog;
+    @query("#acceptButton")
+    private _acceptButton: LoadingButton;
+    @query("#resendButton")
+    private _resendButton: LoadingButton;
+    @query("#deleteButton")
+    private _deleteButton: LoadingButton;
+    @query("#codeInput")
+    private _codeInput: Input;
 
     private _resolve: (() => void) | null;
-    @property() private _verified: boolean | undefined;
+    @property()
+    private _verified: boolean | undefined;
 
     private get _enableActions(): boolean {
         return !!this.invite && !this.invite.expired && !this.invite.accepted && this._verified !== false;
@@ -42,7 +49,7 @@ export class InviteDialog extends BaseElement {
     }
 
     render() {
-        const { email, expires, expired, group, accepted } = this.invite!;
+        const { email, expires, expired, vault, accepted } = this.invite!;
         const forMe = email === app.account!.email;
 
         const status =
@@ -112,7 +119,7 @@ export class InviteDialog extends BaseElement {
                     box-shadow: rgba(0, 0, 0, 0.2) 0 2px 2px;
                 }
 
-                .tag.group {
+                .tag.vault {
                     font-size: var(--font-size-small);
                     padding: 4px 16px;
                 }
@@ -134,15 +141,15 @@ export class InviteDialog extends BaseElement {
 
                     <pl-icon icon="cancel" class="tap close-button" @click=${() => this._done()}></pl-icon>
 
-                    <h1>${$l("Group Invite")}</h1>
+                    <h1>${$l("Vault Invite")}</h1>
 
                     <div class="tags">
 
-                        <div class="tag group">
+                        <div class="tag vault">
 
-                            <pl-icon icon="group"></pl-icon>
+                            <pl-icon icon="vault"></pl-icon>
 
-                            <div>${group!.name}</div>
+                            <div>${vault!.name}</div>
 
                         </div>
 
@@ -182,11 +189,11 @@ export class InviteDialog extends BaseElement {
     }
 
     private _inviteeBody() {
-        const { group } = this.invite!;
+        const { vault } = this.invite!;
         const { _enableActions } = this;
         return html`
             <div class="invite-text">
-                ${$l("You've been invited to join the {0} group.", group!.name)}
+                ${$l("You've been invited to join the {0} vault.", vault!.name)}
             </div>
 
             <pl-input
@@ -200,7 +207,7 @@ export class InviteDialog extends BaseElement {
             <div class="invite-text small" ?hidden=${!_enableActions}>
                 ${$l(
                     "If you haven't received the confirmation code yet, please ask an " +
-                        "admin of the group to provide it to you!"
+                        "admin of the vault to provide it to you!"
                 )}
             </div>
         `;
@@ -284,9 +291,9 @@ export class InviteDialog extends BaseElement {
 
     private async _resend() {
         this._resendButton.start();
-        const store = await app.getStore(this.invite!.group!.id);
+        const vault = await app.getVault(this.invite!.vault!);
         try {
-            this.invite = await app.createInvite(store!, this.invite!.email);
+            this.invite = await app.createInvite(vault!, this.invite!.email);
             this._verified = await this.invite.verify();
             this._resendButton.success();
         } catch (e) {

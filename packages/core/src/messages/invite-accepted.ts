@@ -10,12 +10,12 @@ export class InviteAcceptedMessage implements Message {
     }
 
     get text() {
-        const { invitee, group } = this.invite;
-        const url = `https://127.0.0.1:8081/store/${group!.id}`;
+        const { invitee, vault } = this.invite;
+        const url = `https://127.0.0.1:8081/store/${vault!.id}`;
         return `
 Hi there!
 
-Good news! ${ invitee!.name || invitee!.email } has accepted your invite to join ${group!.name}!
+Good news! ${ invitee!.name || invitee!.email } has accepted your invite to join ${vault!.name}!
 Visit the following link to add them:
 
 ${url}
@@ -27,15 +27,15 @@ Martin`;
     }
 
     get html() {
-        const { invitee, group } = this.invite;
-        const url = `https://127.0.0.1:8081/store/${group!.id}`;
+        const { invitee, vault } = this.invite;
+        const url = `https://127.0.0.1:8081/store/${vault!.id}`;
         return baseHTML(`
 
             ${p("Hi there!")}
 
             ${p(`
                 Good news! <strong>${ invitee!.name || invitee!.email }</strong> has
-                accepted your invite to join <strong>${group!.name}</strong>!
+                accepted your invite to join <strong>${vault!.name}</strong>!
             `)}
 
             ${button("Add Them Now", url)}

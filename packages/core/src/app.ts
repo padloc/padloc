@@ -1,8 +1,6 @@
 import { Storable, LocalStorage } from "./storage";
 import { Record, Field, Tag } from "./data";
-import { Group, GroupKind } from "./group";
-import { Store } from "./store";
-import { Org } from "./org";
+import { Vault } from "./vault";
 import { Account, AccountInfo, Auth, Session, SessionInfo } from "./auth";
 import { Invite } from "./invite";
 import { DateString } from "./encoding";
@@ -27,7 +25,7 @@ export interface Settings {
     customServer: boolean;
     customServerUrl: string;
     autoSync: boolean;
-    hideStores: string[];
+    hideVaults: string[];
 }
 
 const defaultSettings: Settings = {
@@ -37,7 +35,7 @@ const defaultSettings: Settings = {
     customServer: false,
     customServerUrl: "https://cloud.padlock.io/",
     autoSync: true,
-    hideStores: []
+    hideVaults: []
 };
 
 function filterByString(fs: string, rec: Record) {
@@ -57,7 +55,7 @@ function filterByString(fs: string, rec: Record) {
 
 export interface ListItem {
     record: Record;
-    store: Store;
+    vault: Vault;
     section: string;
     firstInSection: boolean;
     lastInSection: boolean;
@@ -94,29 +92,25 @@ export class App extends EventTarget implements Storable {
     }
 
     get tags() {
-        if (!this.mainStore) {
+        if (!this.mainVault) {
             return [];
         }
-        const tags = this.mainStore.collection.tags;
-        for (const store of this.stores) {
-            tags.push(...store.collection.tags);
+        const tags = this.mainVault.collection.tags;
+        for (const vault of this.vaults) {
+            tags.push(...vault.collection.tags);
         }
         return [...new Set(tags)];
     }
 
-    get mainStore() {
-        return this.account && (this._groups.get(this.account!.store) as Store);
+    get mainVault() {
+        return this.account && this._vaults.get(this.account.vault);
     }
 
-    get stores() {
-        return Array.from(this._groups.values()).filter(g => g instanceof Store) as Store[];
+    get vaults() {
+        return Array.from(this._vaults.values());
     }
 
-    get orgs() {
-        return Array.from(this._groups.values()).filter(g => g instanceof Org) as Org[];
-    }
-
-    private _groups = new Map<string, Store | Org>();
+    private _vaults = new Map<string, Vault>();
 
     async serialize() {
         return {
@@ -157,39 +151,34 @@ export class App extends EventTarget implements Storable {
     }
 
     list({
-        org,
-        store,
+        vault,
         tag,
         filterString,
         recentCount
     }: {
-        org: Org | null;
-        store: Store | null;
+        org: Vault | null;
+        vault: Vault | null;
         tag: Tag | null;
         filterString: string;
         recentCount?: number;
     }): ListItem[] {
         recentCount = recentCount || 3;
-        if (!this.mainStore) {
+        if (!this.mainVault) {
             return [];
         }
         let items: ListItem[] = [];
 
-        for (const s of store ? [store] : this.stores) {
-            if ((org && (!s.parent || s.parent.id !== org.id)) || (!store && this.settings.hideStores.includes(s.id))) {
-                continue;
-            }
-
+        for (const s of vault ? [vault] : this.vaults) {
             for (const record of s.collection) {
                 if (!record.removed && (!tag || record.tags.includes(tag)) && filterByString(filterString, record)) {
                     items.push({
-                        store: s,
+                        vault: s,
                         record: record,
                         section: "",
                         firstInSection: false,
                         lastInSection: false
                         // TODO: reimplement
-                        // warning: !!store.getOldMembers(record).length
+                        // warning: !!vault.getOldMembers(record).length
                     });
                 }
             }
@@ -252,19 +241,19 @@ export class App extends EventTarget implements Storable {
 
     async unlock(password: string) {
         await this.account!.unlock(password);
-        await this.loadGroups();
+        await this.loadVaults();
         this.dispatch("unlock");
     }
 
-    async getGroup({ kind, id }: { kind: GroupKind; id: string }, fetch = false): Promise<Store | Org | null> {
-        let group = this._groups.get(id);
+    async getVault({ id }: { id: string }, fetch = false): Promise<Vault | null> {
+        let vault = this._vaults.get(id);
 
-        if (!group) {
-            group = kind === "store" ? new Store(id) : new Org(id);
-            group.access(this.account!);
+        if (!vault) {
+            vault = new Vault(id);
+            vault.access(this.account!);
 
             try {
-                await this.storage.get(group);
+                await this.storage.get(vault);
             } catch (e) {
                 if (e.code !== ErrorCode.NOT_FOUND) {
                     throw e;
@@ -277,11 +266,7 @@ export class App extends EventTarget implements Storable {
 
         if (fetch) {
             try {
-                if (group instanceof Store) {
-                    await this.api.getStore(group);
-                } else {
-                    await this.api.getOrg(group);
-                }
+                await this.api.getVault(vault);
             } catch (e) {
                 if (e.code !== ErrorCode.NOT_FOUND) {
                     throw e;
@@ -290,28 +275,28 @@ export class App extends EventTarget implements Storable {
             }
         }
 
-        this._groups.set(id, group);
+        this._vaults.set(id, vault);
 
-        return group;
+        return vault;
     }
 
-    async loadGroups() {
+    async loadVaults() {
         if (!this.account) {
             return;
         }
 
-        this._groups.clear();
+        this._vaults.clear();
 
-        for (const groupInfo of this.account.groups) {
-            await this.getGroup(groupInfo);
+        for (const vaultInfo of this.account.vaults) {
+            await this.getVault(vaultInfo);
         }
 
-        for (const group of this._groups.values()) {
-            if (group === this.mainStore) {
+        for (const vault of this._vaults.values()) {
+            if (vault === this.mainVault) {
                 continue;
             }
-            const parent = group.parent ? await this.getGroup(group.parent) : this.mainStore;
-            if (!(await parent!.verifySubGroup(group))) {
+            const parent = vault.parent ? await this.getVault(vault.parent) : this.mainVault;
+            if (!(await parent!.verifySubVault(vault))) {
                 throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
             }
         }
@@ -319,53 +304,53 @@ export class App extends EventTarget implements Storable {
 
     async lock() {
         this.account!.lock();
-        this._groups.clear();
+        this._vaults.clear();
         this.dispatch("lock");
     }
 
     async setPassword(_password: string) {
         // TODO
         // this.password = password;
-        // await this.storage.set(this.mainStore!);
+        // await this.storage.set(this.mainVault!);
         // this.dispatch("password-changed");
     }
 
     async save() {
         const promises = [this.storage.set(this)];
-        promises.push(...this.stores.map(s => this.storage.set(s)));
+        promises.push(...this.vaults.map(s => this.storage.set(s)));
         return promises;
     }
 
     async reset() {
-        this._groups.clear();
+        this._vaults.clear();
         this.initialized = "";
         await this.storage.clear();
         this.dispatch("reset");
         this.loaded = this.load();
     }
 
-    async addRecords(store: Store, records: Record[]) {
-        store.collection.add(records);
-        await this.storage.set(store);
-        this.dispatch("records-added", { store: store, records: records });
+    async addRecords(vault: Vault, records: Record[]) {
+        vault.collection.add(records);
+        await this.storage.set(vault);
+        this.dispatch("records-added", { vault: vault, records: records });
     }
 
-    async createRecord(name: string, store_?: Store, fields?: Field[], tags?: Tag[]): Promise<Record> {
-        const store = store_ || this.mainStore!;
+    async createRecord(name: string, vault_?: Vault, fields?: Field[], tags?: Tag[]): Promise<Record> {
+        const vault = vault_ || this.mainVault!;
         fields = fields || [
             { name: $l("Username"), value: "", masked: false },
             { name: $l("Password"), value: "", masked: true }
         ];
-        const record = store.collection.create(name || "", fields, tags);
+        const record = vault.collection.create(name || "", fields, tags);
         if (this.account) {
             record.updatedBy = this.account.id;
         }
-        await this.addRecords(store, [record]);
-        this.dispatch("record-created", { store, record });
+        await this.addRecords(vault, [record]);
+        this.dispatch("record-created", { vault, record });
         return record;
     }
 
-    async updateRecord(store: Store, record: Record, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
+    async updateRecord(vault: Vault, record: Record, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
         for (const prop of ["name", "fields", "tags"]) {
             if (typeof upd[prop] !== "undefined") {
                 record[prop] = upd[prop];
@@ -375,31 +360,31 @@ export class App extends EventTarget implements Storable {
         if (this.account) {
             record.updatedBy = this.account.id;
         }
-        await this.storage.set(store);
-        this.dispatch("record-changed", { store: store, record: record });
+        await this.storage.set(vault);
+        this.dispatch("record-changed", { vault: vault, record: record });
     }
 
-    async deleteRecords(store: Store, records: Record[]) {
-        store.collection.remove(records);
+    async deleteRecords(vault: Vault, records: Record[]) {
+        vault.collection.remove(records);
         if (this.account) {
             for (const record of records) {
                 record.updatedBy = this.account.id;
             }
         }
-        await this.storage.set(store);
-        this.dispatch("records-deleted", { store: store, records: records });
+        await this.storage.set(vault);
+        this.dispatch("records-deleted", { vault: vault, records: records });
     }
 
-    toggleStore(store: Store) {
-        const hideStores = this.settings.hideStores;
-        const ind = hideStores.indexOf(store.id);
+    toggleVault(vault: Vault) {
+        const hideVaults = this.settings.hideVaults;
+        const ind = hideVaults.indexOf(vault.id);
         if (ind === -1) {
-            hideStores.push(store.id);
+            hideVaults.push(vault.id);
         } else {
-            hideStores.splice(ind, 1);
+            hideVaults.splice(ind, 1);
         }
 
-        this.setSettings({ hideStores });
+        this.setSettings({ hideVaults });
     }
 
     async verifyEmail(email: string) {
@@ -429,8 +414,8 @@ export class App extends EventTarget implements Storable {
         await this.login(email, password);
 
         await Promise.all([
-            this.api.updateStore(this.mainStore!),
-            this.storage.set(this.mainStore!),
+            this.api.updateVault(this.mainVault!),
+            this.storage.set(this.mainVault!),
             this.storage.set(this)
         ]);
 
@@ -454,16 +439,16 @@ export class App extends EventTarget implements Storable {
 
         await this.account.unlock(password);
 
-        const mainStore = new Store(this.account.store);
-        await this.api.getStore(mainStore);
-        if (!mainStore.initialized) {
-            await mainStore.initialize(this.account);
+        const mainVault = new Vault(this.account.vault);
+        await this.api.getVault(mainVault);
+        if (!mainVault.initialized) {
+            await mainVault.initialize(this.account);
         }
 
-        await this.storage.set(mainStore);
-        await this.api.updateStore(mainStore);
+        await this.storage.set(mainVault);
+        await this.api.updateVault(mainVault);
 
-        await this.syncGroups();
+        await this.syncVaults();
 
         this.dispatch("login");
         this.dispatch("unlock");
@@ -490,7 +475,7 @@ export class App extends EventTarget implements Storable {
 
         this.session = null;
         this.account = null;
-        this._groups.clear();
+        this._vaults.clear();
         await this.storage.set(this);
         this.dispatch("lock");
         this.dispatch("logout");
@@ -498,47 +483,32 @@ export class App extends EventTarget implements Storable {
         this.dispatch("session-changed", { session: this.session });
     }
 
-    async createStore(name: string, parent?: Org): Promise<Store> {
-        const store = await this.api.createStore({ name });
-        await store.initialize(this.account!);
+    async createVault(name: string, parent?: Vault): Promise<Vault> {
+        const vault = await this.api.createVault({ name });
+        await vault.initialize(this.account!);
         if (parent) {
-            store.parent = parent.info;
+            vault.parent = parent.info;
         }
 
-        parent = parent || this.mainStore!;
+        parent = parent || this.mainVault!;
 
-        await parent.addGroup(store);
+        await parent.addVault(vault);
 
         await Promise.all([
-            this.api.updateStore(store),
-            this.storage.set(store),
-            parent instanceof Store ? this.api.updateStore(parent) : this.api.updateOrg(parent),
+            this.api.updateVault(vault),
+            this.storage.set(vault),
+            this.api.updateVault(parent),
             this.storage.set(parent)
         ]);
-        this._groups.set(store.id, store);
-        this.dispatch("store-created", { store });
-        return store;
+        this._vaults.set(vault.id, vault);
+        this.dispatch("vault-created", { vault });
+        return vault;
     }
 
-    async createOrg(name: string): Promise<Org> {
-        const org = await this.api.createOrg({ name });
-        await org.initialize(this.account!);
-        await this.mainStore!.addGroup(org);
-        await Promise.all([
-            this.api.updateOrg(org),
-            this.storage.set(org),
-            this.api.updateStore(this.mainStore!),
-            this.storage.set(this.mainStore!)
-        ]);
-        this._groups.set(org.id, org);
-        this.dispatch("org-created", { org });
-        return org;
-    }
-
-    async createInvite(group: Group, email: string) {
-        const invite = await group.createInvite(email);
+    async createInvite(vault: Vault, email: string) {
+        const invite = await vault.createInvite(email);
         await this.api.updateInvite(invite);
-        await this.syncGroup(group);
+        await this.syncVault(vault);
         return invite;
     }
 
@@ -546,99 +516,81 @@ export class App extends EventTarget implements Storable {
         const success = await invite.accept(this.account!.info, secret);
         if (success) {
             await this.api.updateInvite(invite);
-            await this.mainStore!.addGroup(Object.assign({}, invite.group!));
-            await Promise.all([this.storage.set(this.mainStore!), this.api.updateStore(this.mainStore!)]);
+            await this.mainVault!.addVault(Object.assign({}, invite.vault!));
+            await Promise.all([this.storage.set(this.mainVault!), this.api.updateVault(this.mainVault!)]);
         }
         return success;
     }
 
     async deleteInvite(invite: Invite) {
         await this.api.deleteInvite(invite);
-        this.syncGroup(invite.group!);
+        this.syncVault(invite.vault!);
     }
 
     //
     // async updateAccess(
-    //     store: SharedStore,
+    //     vault: SharedVault,
     //     acc: AccountInfo,
     //     permissions: Permissions = { read: true, write: true, manage: false },
     //     status: AccessorStatus
     // ) {
-    //     await this.api.getSharedStore(store);
-    //     await store.updateAccess(acc, permissions, status);
-    //     await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
-    //     this.dispatch("store-changed", { store });
+    //     await this.api.getSharedVault(vault);
+    //     await vault.updateAccess(acc, permissions, status);
+    //     await Promise.all([this.storage.set(vault), this.api.updateSharedVault(vault)]);
+    //     this.dispatch("vault-changed", { vault });
     // }
     //
-    // async revokeAccess(store: SharedStore, account: AccountInfo) {
-    //     if (!store.permissions.manage) {
+    // async revokeAccess(vault: SharedVault, account: AccountInfo) {
+    //     if (!vault.permissions.manage) {
     //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
     //     }
-    //     await this.api.getSharedStore(store);
-    //     await store.revokeAccess(account);
-    //     await Promise.all([this.storage.set(store), this.api.updateSharedStore(store)]);
-    //     this.dispatch("store-changed", { store });
+    //     await this.api.getSharedVault(vault);
+    //     await vault.revokeAccess(account);
+    //     await Promise.all([this.storage.set(vault), this.api.updateSharedVault(vault)]);
+    //     this.dispatch("vault-changed", { vault });
     // }
 
     async synchronize() {
         await this.syncAccount();
-        await this.syncGroups();
+        await this.syncVaults();
         await this.loadSessions();
         this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");
     }
 
-    async syncGroups() {
-        await this.syncGroup({ kind: "store", id: this.account!.store });
-        await Promise.all(this.mainStore!.groups.map(g => this.syncGroup(g)));
+    async syncVaults() {
+        await Promise.all(this.account!.vaults.map(g => this.syncVault(g)));
     }
 
-    async syncGroup(groupInfo: { kind: GroupKind; id: string }): Promise<void> {
-        const group = await this.getGroup(groupInfo, true);
+    async syncVault(vaultInfo: { id: string }): Promise<void> {
+        const vault = await this.getVault(vaultInfo, true);
 
-        if (!group) {
+        if (!vault) {
             return;
         }
 
-        await this.storage.set(group);
+        await this.storage.set(vault);
 
-        if (group instanceof Store && group.getPermissions().write) {
-            await this.api.updateStore(group);
-        } else if (group instanceof Org && group.getPermissions().manage) {
-            await this.api.updateOrg(group);
-        }
+        await this.api.updateVault(vault);
 
-        this.dispatch("group-changed", { group });
+        this.dispatch("vault-changed", { vault });
     }
 
-    getRecord(id: string): { record: Record; store: Store } | null {
-        for (const store of [this.mainStore!, ...this.stores]) {
-            const record = store.collection.get(id);
+    getRecord(id: string): { record: Record; vault: Vault } | null {
+        for (const vault of [this.mainVault!, ...this.vaults]) {
+            const record = vault.collection.get(id);
             if (record) {
-                return { record, store };
+                return { record, vault };
             }
         }
 
         return null;
     }
 
-    async getStore(id: string): Promise<Store | null> {
-        let store = this.stores.find(s => s.id === id);
-        if (store) {
-            return store;
-        }
-
-        try {
-            return await this.api.getStore(new Store(id));
-        } catch (e) {}
-
-        return null;
-    }
-
     get knownAccounts(): AccountInfo[] {
         const accounts = new Map<string, AccountInfo>();
-        for (const store of this.stores) {
-            for (const { id, email, name, publicKey } of store.members) {
+        for (const vault of this.vaults) {
+            for (const { id, email, name, publicKey } of vault.members) {
                 if (id !== this.account!.id) {
                     accounts.set(id, { id, email, name, publicKey });
                 }

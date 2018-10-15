@@ -12,7 +12,7 @@ import { ListView } from "./list-view.js";
 import { RecordView } from "./record-view.js";
 import { SettingsView } from "./settings-view.js";
 import { Start } from "./start.js";
-import { StoreView } from "./store-view.js";
+import { VaultView } from "./vault-view.js";
 import { TitleBar } from "./title-bar.js";
 import { Menu } from "./menu.js";
 import { Input } from "./input.js";
@@ -37,7 +37,7 @@ class App extends BaseElement {
     @query("pl-start") private _startView: Start;
     @query("pl-settings-view") private _settingsView: SettingsView;
     @query("pl-account-view") private _accountView: AccountView;
-    @query("pl-store-view") private _storeView: StoreView;
+    @query("pl-vault-view") private _vaultView: VaultView;
     @query("pl-menu") private _menu: Menu;
 
     private _currentView: View | null;
@@ -270,7 +270,7 @@ class App extends BaseElement {
 
                 <pl-account-view></pl-account-view>
 
-                <pl-store-view></pl-store-view>
+                <pl-vault-view></pl-vault-view>
 
             </div>
 
@@ -328,11 +328,11 @@ class App extends BaseElement {
             this._openView(this._settingsView, direction);
         } else if (path === "account") {
             this._openView(this._accountView, direction);
-        } else if ((match = path.match(/^store\/([^\/]+)(?:\/invite\/([^\/]+))?$/))) {
-            const store = await app.getStore(match[1]);
-            if (store) {
-                this._storeView.store = store;
-                this._openView(this._storeView, direction);
+        } else if ((match = path.match(/^vault\/([^\/]+)(?:\/invite\/([^\/]+))?$/))) {
+            const vault = await app.getVault({ id: match[1] });
+            if (vault) {
+                this._vaultView.vault = vault;
+                this._openView(this._vaultView, direction);
             }
             // } else if ((match = path.match(/^org\/([^\/]+)(?:\/invite\/([^\/]+))?$/))) {
             //     const org = await app.getOrganization(match[1]);
@@ -342,7 +342,7 @@ class App extends BaseElement {
             const item = app.getRecord(match[1]);
             if (item) {
                 this._recordView.record = item.record;
-                this._recordView.store = item.store;
+                this._recordView.vault = item.vault;
                 this._openView(this._recordView, direction);
             }
         } else {

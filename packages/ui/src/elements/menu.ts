@@ -166,7 +166,7 @@ export class Menu extends BaseElement {
                 opacity: 0;
             }
 
-            :host([sub-menu]) .menu, :host(:not([sub-menu="tags"])) .sub-menu-tags, :host(:not([sub-menu="stores"])) .stores {
+            :host([sub-menu]) .menu, :host(:not([sub-menu="tags"])) .sub-menu-tags, :host(:not([sub-menu="vaults"])) .vaults {
                 opacity: 0;
                 pointer-events: none;
             }
@@ -228,7 +228,7 @@ export class Menu extends BaseElement {
 
                 </div>
 
-                <div class="menu-item tap" @click=${(e: Event) => this._showSubMenu("stores", e)}>
+                <div class="menu-item tap" @click=${(e: Event) => this._showSubMenu("vaults", e)}>
 
                     <div>${$l("Groups")}</div>
 

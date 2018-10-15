@@ -218,6 +218,10 @@ export class PlIcon extends BaseElement {
                 content: "\\f0c0";
             }
 
+            :host([icon="vault"]) > div::before {
+                content: "\\f0c0";
+            }
+
             :host([icon="share"]) > div::before {
                 content: "\\f064";
             }

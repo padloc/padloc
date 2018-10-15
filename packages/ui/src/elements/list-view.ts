@@ -1,6 +1,6 @@
 import { when } from "lit-html/directives/when.js";
 import { Record, Field } from "@padlock/core/lib/data.js";
-import { Store } from "@padlock/core/lib/store.js";
+import { Vault } from "@padlock/core/lib/vault.js";
 import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 // import { isIOS } from "@padlock/core/lib/platform.js";
@@ -17,16 +17,25 @@ import "./share-dialog.js";
 import { FilterInput } from "./filter-input.js";
 
 export class ListView extends BaseElement {
-    @property() multiSelect: boolean = false;
-    @property() private _listItems: ListItem[] = [];
-    @property() private _currentSection: string = "";
-    @property() private _firstVisibleIndex: number = 0;
-    @property() private _lastVisibleIndex: number = 0;
-    @property() private _filterShowing: boolean = false;
+    @property()
+    multiSelect: boolean = false;
+    @property()
+    private _listItems: ListItem[] = [];
+    @property()
+    private _currentSection: string = "";
+    @property()
+    private _firstVisibleIndex: number = 0;
+    @property()
+    private _lastVisibleIndex: number = 0;
+    @property()
+    private _filterShowing: boolean = false;
 
-    @query("#main") private _main: HTMLElement;
-    @query("#sectionSelector") private _sectionSelector: AlertDialog;
-    @query("#filterInput") private _filterInput: FilterInput;
+    @query("#main")
+    private _main: HTMLElement;
+    @query("#sectionSelector")
+    private _sectionSelector: AlertDialog;
+    @query("#filterInput")
+    private _filterInput: FilterInput;
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
     private _selected = new Map<string, ListItem>();
@@ -39,7 +48,7 @@ export class ListView extends BaseElement {
     @listen("records-deleted", app)
     @listen("record-changed", app)
     @listen("settings-changed", app)
-    @listen("store-changed", app)
+    @listen("vault-changed", app)
     _updateListItems() {
         if (this._filterInput) {
             this._listItems = app.list(this._filterInput);
@@ -488,8 +497,7 @@ export class ListView extends BaseElement {
     _filterUpdated() {
         this._updateListItems();
         this._filterShowing =
-            !!this._filterInput.org ||
-            !!this._filterInput.store ||
+            !!this._filterInput.vault ||
             !!this._filterInput.tag ||
             !!this._filterInput.filterString ||
             this._filterInput.focused;
@@ -601,7 +609,7 @@ export class ListView extends BaseElement {
 
     private async _shareSelected() {
         for (const [id, item] of this._selected.entries()) {
-            if (item.store !== app.mainStore) {
+            if (item.vault !== app.mainVault) {
                 this._selected.delete(id);
             }
         }
@@ -617,14 +625,14 @@ export class ListView extends BaseElement {
             $l("Delete {0} Records", this._selectedRecords.length.toString())
         );
         if (confirmed) {
-            const stores = new Map<Store, Record[]>();
+            const vaults = new Map<Vault, Record[]>();
             for (const item of this._selected.values()) {
-                if (!stores.has(item.store)) {
-                    stores.set(item.store, []);
+                if (!vaults.has(item.vault)) {
+                    vaults.set(item.vault, []);
                 }
-                stores.get(item.store)!.push(item.record);
+                vaults.get(item.vault)!.push(item.record);
             }
-            await Promise.all([...stores.entries()].map(([store, records]) => app.deleteRecords(store, records)));
+            await Promise.all([...vaults.entries()].map(([vault, records]) => app.deleteRecords(vault, records)));
             this.multiSelect = false;
         }
     }
@@ -643,12 +651,8 @@ export class ListView extends BaseElement {
         // const tags = [{ name: "", class: "warning", icon: "org" }];
         const tags = [];
 
-        if (item.store !== app.mainStore) {
-            if (item.store.parent) {
-                tags.push({ name: item.store.parent.name, icon: "org", class: "warning" });
-            }
-            tags.push({ name: item.store.name, icon: "group", class: "highlight" });
-        }
+        const vaultName = item.vault.parent ? `${item.vault.parent.name}/${item.vault.name}` : item.vault.name;
+        tags.push({ name: vaultName, icon: "vault", class: "highlight" });
 
         if (item.warning) {
             tags.push({ icon: "error", class: "tag warning", name: "" });

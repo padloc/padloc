@@ -1,5 +1,4 @@
-import { Store } from "@padlock/core/lib/store.js";
-import { Org } from "@padlock/core/lib/org.js";
+import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
 import { shared } from "../styles";
@@ -11,14 +10,15 @@ interface Result {
     icon: string;
     name: string;
     class: string;
-    val: Org | Store | string;
+    val: Vault | string;
 }
 
 @element("pl-filter-input")
 export class FilterInput extends BaseElement {
-    @property() org: Org | null = null;
-    @property() store: Store | null = null;
-    @property() tag: string | null = null;
+    @property()
+    vault: Vault | null = null;
+    @property()
+    tag: string | null = null;
 
     get filterString(): string {
         return (this._input && this._input.value.toLowerCase()) || "";
@@ -32,20 +32,22 @@ export class FilterInput extends BaseElement {
         return this._input.focused;
     }
 
-    @property() private _showResults: boolean = false;
-    @property() private _orgs: Org[] = [];
-    @property() private _stores: Store[] = [];
-    @property() private _tags: string[] = [];
+    @property()
+    private _showResults: boolean = false;
+    @property()
+    private _vaults: Vault[] = [];
+    @property()
+    private _tags: string[] = [];
 
-    @query("pl-input") private _input: Input;
+    @query("pl-input")
+    private _input: Input;
 
     focus() {
         this._input.focus();
     }
 
     clear() {
-        this.org = null;
-        this.store = null;
+        this.vault = null;
         this.tag = null;
         this._input.value = "";
         this._input.blur();
@@ -53,20 +55,13 @@ export class FilterInput extends BaseElement {
     }
 
     render() {
-        const { org, store, tag, _showResults } = this;
+        const { vault, tag, _showResults } = this;
         const results: Result[] = [];
 
-        if (!org && !store) {
-            for (const org of this._orgs) {
-                results.push({ icon: "org", name: org.name, class: "warning", val: org });
-            }
-        }
-
-        if (!store) {
-            for (const store of this._stores) {
-                if (!org || (store.parent && store.parent.id === org.id)) {
-                    results.push({ icon: "group", name: store.name, class: "highlight", val: store });
-                }
+        if (!vault) {
+            for (const vault of this._vaults) {
+                const name = vault.parent ? `${vault.parent.name}/${vault.name}` : vault.name;
+                results.push({ icon: "group", name: name, class: "highlight", val: vault });
             }
         }
 
@@ -114,25 +109,23 @@ export class FilterInput extends BaseElement {
                     height: 50px;
                     width: 50px;
                 }
+
+                .filters pl-icon[icon="cancel"] {
+                    margin: 1px -4px 0 0;
+                }
             </style>
 
             <div class="input-wrapper layout horizontal align-center">
 
                 <div class="tags small filters">
 
-                    <div class="tag warning" ?hidden=${!org} @click=${() => (this.org = null)}>
-
-                        <pl-icon icon="org"></pl-icon>
-
-                        <div>${org && org.name}</div>
-
-                    </div>
-
-                    <div class="tag highlight" ?hidden=${!store} @click=${() => (this.store = null)}>
+                    <div class="tag highlight" ?hidden=${!vault} @click=${() => (this.vault = null)}>
 
                         <pl-icon icon="group"></pl-icon>
 
-                        <div>${store && store.name}</div>
+                        <div>${vault && (vault.parent ? `${vault.parent.name}/${vault.name}` : vault.name)}</div>
+
+                        <pl-icon icon="cancel"></pl-icon>
 
                     </div>
 
@@ -141,6 +134,8 @@ export class FilterInput extends BaseElement {
                         <pl-icon icon="tag"></pl-icon>
 
                         <div>${tag}</div>
+
+                        <pl-icon icon="cancel"></pl-icon>
 
                     </div>
 
@@ -193,16 +188,13 @@ export class FilterInput extends BaseElement {
     }
 
     private _updateResults() {
-        this._stores = app.stores.filter(s => s.name.toLowerCase().startsWith(this.filterString));
-        this._orgs = app.orgs.filter(s => s.name.toLowerCase().startsWith(this.filterString));
+        this._vaults = app.vaults.filter(s => s.name.toLowerCase().startsWith(this.filterString));
         this._tags = app.tags.filter(t => t.toLowerCase().startsWith(this.filterString));
     }
 
     private _select(res: Result) {
-        if (res.val instanceof Org) {
-            this.org = res.val;
-        } else if (res.val instanceof Store) {
-            this.store = res.val;
+        if (res.val instanceof Vault) {
+            this.vault = res.val;
         } else {
             this.tag = res.val;
         }
@@ -217,7 +209,7 @@ export class FilterInput extends BaseElement {
             if (this.tag) {
                 this.tag = null;
             } else {
-                this.store = null;
+                this.vault = null;
             }
             this.dispatch("input");
         }

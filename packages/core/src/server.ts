@@ -1,10 +1,9 @@
-import { API, CreateAccountParams, CreateStoreParams, CreateOrgParams } from "./api";
+import { API, CreateAccountParams, CreateVaultParams } from "./api";
 import { Storage } from "./storage";
 import { Session, Account, Auth } from "./auth";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
-import { Store } from "./store";
-import { Org } from "./org";
+import { Vault } from "./vault";
 import { Invite } from "./invite";
 import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
@@ -142,6 +141,7 @@ export class Context implements API {
                 throw e;
             }
         }
+
         if (ev.id !== id || ev.code !== code.toLowerCase()) {
             throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
         }
@@ -159,11 +159,11 @@ export class Context implements API {
         account.id = uuid();
         auth.account = account.id;
 
-        const store = new Store(uuid(), "Main");
-        store.owner = account.id;
-        account.store = store.id;
+        const vault = new Vault(uuid(), "Main");
+        vault.owner = account.id;
+        account.vault = vault.id;
 
-        await Promise.all([this.storage.set(account), this.storage.set(store), this.storage.set(auth)]);
+        await Promise.all([this.storage.set(account), this.storage.set(vault), this.storage.set(auth)]);
 
         return account;
     }
@@ -180,122 +180,72 @@ export class Context implements API {
         return existing;
     }
 
-    async getStore(store: Store) {
+    async getVault(vault: Vault) {
         const { account } = this._requireAuth();
 
-        await this.storage.get(store);
-        const { read } = store.getPermissions(account);
+        await this.storage.get(vault);
+        const { read } = vault.getPermissions(account);
 
         if (!read) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
-        return store;
+        return vault;
     }
 
-    async updateStore(store: Store) {
+    async updateVault(vault: Vault) {
         const { account } = this._requireAuth();
 
-        const existing = new Store(store.id);
+        const existing = new Vault(vault.id);
         await this.storage.get(existing);
 
-        const addedMembers = store.members.filter(m => !existing.isMember(m));
+        const addedMembers = vault.members.filter(m => !existing.isMember(m));
         for (const member of addedMembers) {
             const acc = new Account(member.id);
             await this.storage.get(acc);
-            acc.groups.push(store.info);
+            acc.vaults.push(vault.info);
             if (acc.id !== account.id) {
-                this.messenger.send(member.email, new MemberAddedMessage(store));
+                this.messenger.send(member.email, new MemberAddedMessage(vault));
             }
             await this.storage.set(acc);
         }
 
         existing.access(account);
-        existing.update(store);
+        existing.update(vault);
 
         await this.storage.set(existing);
 
-        return store;
+        return vault;
     }
 
-    async createStore(params: CreateStoreParams) {
+    async createVault(params: CreateVaultParams) {
         const { account } = this._requireAuth();
 
         const { name } = params;
-        const store = await new Store(uuid(), name);
-        store.owner = account.id;
+        const vault = await new Vault(uuid(), name);
+        vault.owner = account.id;
 
-        await Promise.all([this.storage.set(account), this.storage.set(store)]);
+        await Promise.all([this.storage.set(account), this.storage.set(vault)]);
 
-        return store;
-    }
-
-    async getOrg(org: Org) {
-        const { account } = this._requireAuth();
-
-        await this.storage.get(org);
-
-        if (!org.isMember(account)) {
-            throw new Err(ErrorCode.NOT_FOUND);
-        }
-
-        return org;
-    }
-
-    async updateOrg(org: Org) {
-        const { account } = this._requireAuth();
-
-        const existing = new Org(org.id);
-        await this.storage.get(existing);
-
-        const addedMembers = org.members.filter(m => !existing.isMember(m));
-        for (const member of addedMembers) {
-            const acc = new Account(member.id);
-            await this.storage.get(acc);
-            acc.groups.push(org.info);
-            if (acc.id !== account.id) {
-                this.messenger.send(member.email, new MemberAddedMessage(org));
-            }
-            await this.storage.set(acc);
-        }
-
-        existing.access(account);
-        existing.update(org);
-
-        await this.storage.set(existing);
-
-        return org;
-    }
-
-    async createOrg(params: CreateOrgParams) {
-        const { account } = this._requireAuth();
-
-        const { name } = params;
-        const org = await new Org(uuid(), name);
-        org.owner = account.id;
-
-        await Promise.all([this.storage.set(account), this.storage.set(org)]);
-
-        return org;
+        return vault;
     }
 
     async updateInvite(invite: Invite) {
         const { account } = this._requireAuth();
 
-        const { kind, id } = invite.group!;
-        const group = kind === "store" ? new Store(id) : new Org(id);
+        const vault = new Vault(invite.vault!.id);
 
-        await this.storage.get(group);
+        await this.storage.get(vault);
 
-        const existing = group.getInvite(invite.email);
+        const existing = vault.getInvite(invite.email);
 
-        if (!group.isAdmin(account) && existing && existing.email !== account.email) {
+        if (!vault.isAdmin(account) && existing && existing.email !== account.email) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        group.updateInvite(invite);
+        vault.updateInvite(invite);
 
-        await this.storage.set(group);
+        await this.storage.set(vault);
 
         if (!invite.accepted) {
             this.messenger.send(invite.email, new InviteCreatedMessage(invite));
@@ -309,18 +259,17 @@ export class Context implements API {
     async deleteInvite(invite: Invite) {
         const { account } = this._requireAuth();
 
-        const { kind, id } = invite.group!;
-        const group = kind === "store" ? new Store(id) : new Org(id);
+        const vault = new Vault(invite.vault!.id);
 
-        await this.storage.get(group);
+        await this.storage.get(vault);
 
-        if (!group.isAdmin(account)) {
+        if (!vault.isAdmin(account)) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        group.deleteInvite(invite);
+        vault.deleteInvite(invite);
 
-        await this.storage.set(group);
+        await this.storage.set(vault);
     }
 
     private _requireAuth(): { account: Account; session: Session } {
@@ -358,8 +307,7 @@ export class Server {
 
         let session: Session;
         let acc: Account;
-        let store: Store;
-        let org: Org;
+        let vault: Vault;
         let invite: Invite;
 
         switch (method) {
@@ -432,54 +380,29 @@ export class Server {
                 res.result = await acc.serialize();
                 break;
 
-            case "getStore":
+            case "getVault":
                 if (!params || params.length !== 1) {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
-                store = await ctx.getStore(await new Store().deserialize(params[0]));
-                res.result = await store.serialize();
+                vault = await ctx.getVault(await new Vault().deserialize(params[0]));
+                res.result = await vault.serialize();
                 break;
 
-            case "updateStore":
+            case "updateVault":
                 if (!params || params.length !== 1) {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
-                store = await ctx.updateStore(await new Store().deserialize(params[0]));
-                res.result = await store.serialize();
+                vault = await ctx.updateVault(await new Vault().deserialize(params[0]));
+                res.result = await vault.serialize();
                 break;
 
-            case "createStore":
+            case "createVault":
                 // TODO: Validate params
                 if (!params || params.length !== 1) {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
-                store = await ctx.createStore(params[0]);
-                res.result = await store.serialize();
-                break;
-
-            case "getOrg":
-                // TODO: Validate params
-                if (!params || params.length !== 1) {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                org = await ctx.getOrg(new Org(params[0].id));
-                res.result = await org.serialize();
-                break;
-
-            case "updateOrg":
-                if (!params || params.length !== 1) {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                org = await ctx.updateOrg(await new Org().deserialize(params[0]));
-                res.result = await org.serialize();
-                break;
-
-            case "createOrg":
-                if (!params || params.length !== 1) {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                org = await ctx.createOrg(params[0]);
-                res.result = await org.serialize();
+                vault = await ctx.createVault(params[0]);
+                res.result = await vault.serialize();
                 break;
 
             case "updateInvite":

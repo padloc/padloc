@@ -1,7 +1,7 @@
 import { getClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Record } from "@padlock/core/lib/data.js";
-import { Store } from "@padlock/core/lib/store.js";
+import { Vault } from "@padlock/core/lib/vault.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import * as imp from "../import.js";
 import { getReviewLink, checkForUpdates } from "@padlock/core/lib/platform.js";
@@ -18,7 +18,7 @@ import { Input } from "./input.js";
 
 @element("pl-settings-view")
 export class SettingsView extends View {
-    @property() store: Store;
+    @property() vault: Vault;
 
     @query("#importFile") _fileInput: HTMLInputElement;
 
@@ -540,7 +540,7 @@ export class SettingsView extends View {
         }
 
         if (records.length) {
-            app.addRecords(app.mainStore!, records);
+            app.addRecords(app.mainVault!, records);
             // this.dispatch("data-imported", { records: records });
             alert($l("Successfully imported {0} records.", records.length.toString()), { type: "success" });
         }
@@ -586,7 +586,7 @@ export class SettingsView extends View {
     }
 
     private _export() {
-        exportRecords(Array.from(this.store.collection));
+        exportRecords(Array.from(this.vault.collection));
     }
 
     private async _toggleCustomServer(e: CustomEvent) {

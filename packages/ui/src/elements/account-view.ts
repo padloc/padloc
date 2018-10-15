@@ -1,7 +1,7 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Session, AccountInfo } from "@padlock/core/lib/auth.js";
 import { deviceDescription } from "@padlock/core/lib/platform.js";
-import { Store } from "@padlock/core/lib/store.js";
+import { Vault } from "@padlock/core/lib/vault.js";
 import { formatDateFromNow } from "../util.js";
 import { app, router } from "../init.js";
 import { shared, mixins } from "../styles";
@@ -31,7 +31,7 @@ export class AccountView extends View {
         const account = app.account!;
         const isSynching = false;
         const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
-        const stores = app.stores.filter(s => s.isMember(account) && s.id !== account.store);
+        const vaults = app.vaults.filter(s => s.isMember(account) && s.id !== account.vault);
 
         return html`
         ${shared}
@@ -87,20 +87,20 @@ export class AccountView extends View {
                 align-self: stretch;
             }
 
-            .store {
+            .vault {
                 height: var(--row-height);
                 display: flex;
                 align-items: center;
                 border-bottom: solid 1px var(--border-color);
             }
 
-            .store pl-toggle {
+            .vault pl-toggle {
                 --toggle-width: 40px;
                 --toggle-height: 30px;
                 margin-right: 10px;
             }
 
-            .store-name {
+            .vault-name {
                 padding: 10px 15px;
                 font-weight: bold;
                 ${mixins.ellipsis()}
@@ -202,13 +202,13 @@ export class AccountView extends View {
 
                 </div>
 
-                ${stores.map(store => {
-                    const { members, name, collection } = store;
-                    const currMember = store.getMember(account)!;
+                ${vaults.map(vault => {
+                    const { members, name, collection } = vault;
+                    const currMember = vault.getMember(account)!;
                     return html`
-                    <div class="store tap" @click=${() => this._openStore(store)}>
+                    <div class="vault tap" @click=${() => this._openVault(vault)}>
 
-                        <div class="store-name">${name}</div>
+                        <div class="vault-name">${name}</div>
 
                         <div class="tags small">
 
@@ -242,8 +242,8 @@ export class AccountView extends View {
 
                         <pl-toggle
                             ?hidden=${currMember.status !== "active"}
-                            .active=${!app.settings.hideStores.includes(store.id)}
-                            @click=${(e: Event) => this._toggleStore(store, e)}></pl-toggle>
+                            .active=${!app.settings.hideVaults.includes(vault.id)}
+                            @click=${(e: Event) => this._toggleVault(vault, e)}></pl-toggle>
 
                         <pl-icon icon="forward" ?hidden=${currMember.status === "active"}></pl-icon>
 
@@ -251,7 +251,7 @@ export class AccountView extends View {
                 `;
                 })}
 
-                <button class="tap" @click=${() => this._createStore()}>${$l("Create Group")}</button>
+                <button class="tap" @click=${() => this._createVault()}>${$l("Create Group")}</button>
 
             </section>
 
@@ -320,16 +320,16 @@ export class AccountView extends View {
         }
     }
 
-    private async _openStore(store: Store) {
-        router.go(`store/${store.id}`);
+    private async _openVault(vault: Vault) {
+        router.go(`vault/${vault.id}`);
     }
 
-    private _toggleStore(store: Store, e: Event) {
-        app.toggleStore(store);
+    private _toggleVault(vault: Vault, e: Event) {
+        app.toggleVault(vault);
         e && e.stopPropagation();
     }
 
-    private async _createStore() {
+    private async _createVault() {
         const id = await prompt($l("Please enter a name for your new group!"), {
             placeholder: $l("Enter Group Name"),
             confirmLabel: $l("Create Group"),
@@ -339,12 +339,12 @@ export class AccountView extends View {
                     throw "Please enter a name!";
                 }
 
-                const store = await app.createStore(name);
-                return store.id;
+                const vault = await app.createVault(name);
+                return vault.id;
             }
         });
         if (id) {
-            router.go(`store/${id}`);
+            router.go(`vault/${id}`);
         }
     }
 

@@ -1,6 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Store } from "@padlock/core/lib/store.js";
-import { GroupMember } from "@padlock/core/lib/group.js";
+import { Vault } from "@padlock/core/lib/vault.js";
+import { VaultMember } from "@padlock/core/lib/vault.js";
 import { shared, mixins } from "../styles";
 import { app } from "../init.js";
 import { confirm } from "../dialog.js";
@@ -12,8 +12,8 @@ import "./fingerprint.js";
 
 @element("pl-member-dialog")
 export class MemberDialog extends BaseElement {
-    @property() store: Store | null = null;
-    @property() member: GroupMember | null = null;
+    @property() vault: Vault | null = null;
+    @property() member: VaultMember | null = null;
     @property() private _loading = false;
 
     @query("pl-dialog") private _dialog: Dialog;
@@ -30,9 +30,9 @@ export class MemberDialog extends BaseElement {
         this._dialog.open = false;
     }
 
-    async show(member: GroupMember, store: Store): Promise<number> {
+    async show(member: VaultMember, vault: Vault): Promise<number> {
         this.member = member;
-        this.store = store;
+        this.vault = vault;
         await this.updateComplete;
         this._permRead.active = member.permissions.read;
         this._permWrite.active = member.permissions.write;
@@ -50,7 +50,7 @@ export class MemberDialog extends BaseElement {
     }
 
     async _rejectMember() {
-        if (!this.store!.isMember(this.member!)) {
+        if (!this.vault!.isMember(this.member!)) {
             this._done();
             return;
         }
@@ -60,7 +60,7 @@ export class MemberDialog extends BaseElement {
         }
 
         this._dialog.open = false;
-        const confirmed = await confirm($l("Are you sure you want to remove this user from this group?"));
+        const confirmed = await confirm($l("Are you sure you want to remove this user from this vault?"));
         this._dialog.open = false;
 
         if (!confirmed) {
@@ -72,10 +72,10 @@ export class MemberDialog extends BaseElement {
         try {
             // TODO: Implement removing members
             // if (status === "active" || status === "invited") {
-            //     await app.revokeAccess(this.store!, this.member!);
+            //     await app.revokeAccess(this.vault!, this.member!);
             // } else if (status === "requested") {
             //     await app.updateAccess(
-            //         this.store!,
+            //         this.vault!,
             //         this.member!,
             //         { read: false, write: false, manage: false },
             //         "rejected" as MemberStatus
@@ -98,7 +98,7 @@ export class MemberDialog extends BaseElement {
         this._loading = true;
         this._approveButton.start();
         try {
-            await this.store!.updateMember(this.member!, "active", {
+            await this.vault!.updateMember(this.member!, "active", {
                 read: this._permRead.active,
                 write: this._permWrite.active,
                 manage: this._permManage.active
@@ -114,14 +114,14 @@ export class MemberDialog extends BaseElement {
     }
 
     shouldUpdate() {
-        return !!this.store && !!this.member;
+        return !!this.vault && !!this.member;
     }
 
     render() {
-        const store = this.store!;
+        const vault = this.vault!;
         const member = this.member!;
         const _loading = this._loading;
-        const storeName = store.name;
+        const vaultName = vault.name;
         const { id, email, name, publicKey, permissions } = member;
         const permsChanged =
             (this._permRead && this._permRead.active !== permissions.read) ||
@@ -129,8 +129,8 @@ export class MemberDialog extends BaseElement {
             (this._permManage && this._permManage.active !== permissions.manage);
         // const isTrusted = app.isTrusted(account);
         const isOwnAccount = app.account && app.account.id === id;
-        const disableControls = _loading || isOwnAccount || !store.getPermissions().manage;
-        const isMember = store.isMember(member);
+        const disableControls = _loading || isOwnAccount || !vault.getPermissions().manage;
+        const isMember = vault.isMember(member);
         const approveIcon = isMember ? "check" : "invite";
         const approveLabel = isMember ? $l("Update") : $l("Add");
         const rejectIcon = isMember ? "removeuser" : "cancel";
@@ -278,9 +278,9 @@ export class MemberDialog extends BaseElement {
             </div>
 
             <div class="tags">
-                <div class="store tag">
-                    <pl-icon icon="group"></pl-icon>
-                    <div>${storeName}</div>
+                <div class="vault tag">
+                    <pl-icon icon="vault"></pl-icon>
+                    <div>${vaultName}</div>
                 </div>
             </div>
 

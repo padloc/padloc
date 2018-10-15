@@ -1,6 +1,6 @@
 import { getProvider, PBKDF2Params, HMACParams, HMACKey, SimpleContainer, AESKey } from "./crypto";
 import { DateString, Serializable, base64ToHex } from "./encoding";
-import { GroupInfo, SignedGroupInfo } from "./group";
+import { VaultInfo, SignedVaultInfo } from "./vault";
 import { AccountInfo, SignedAccountInfo } from "./auth";
 import { uuid } from "./util";
 
@@ -10,7 +10,7 @@ export class Invite implements Serializable {
     updated: DateString = new Date().toISOString();
     expires: DateString = "";
 
-    group: SignedGroupInfo | null = null;
+    vault: SignedVaultInfo | null = null;
     invitee: SignedAccountInfo | null = null;
     invitor: AccountInfo | null = null;
 
@@ -67,14 +67,14 @@ export class Invite implements Serializable {
 
     constructor(public email = "") {}
 
-    async initialize(group: GroupInfo, invitor: AccountInfo, encKey: AESKey, duration = 1) {
+    async initialize(vault: VaultInfo, invitor: AccountInfo, encKey: AESKey, duration = 1) {
         this.id = uuid();
         this.expires = new Date(new Date().getTime() + 1000 * 60 * 60 * duration).toISOString();
         this.secret = base64ToHex(await getProvider().randomBytes(4));
         this._secretData.key = encKey;
         await this._secretData.set(this._secretSerializer);
         this._keyParams.salt = await getProvider().randomBytes(16);
-        this.group = await this._sign(group);
+        this.vault = await this._sign(vault);
         this.invitor = invitor;
     }
 
@@ -87,7 +87,7 @@ export class Invite implements Serializable {
             email: this.email,
             keyParams: this._keyParams,
             signingParams: this._signingParams,
-            group: this.group,
+            vault: this.vault,
             invitee: this.invitee,
             invitor: this.invitor,
             secretData: await this._secretData.serialize()
@@ -102,7 +102,7 @@ export class Invite implements Serializable {
         this.email = raw.email;
         this._keyParams = raw.keyParams;
         this._signingParams = raw.signingParams;
-        this.group = raw.group;
+        this.vault = raw.vault;
         this.invitee = raw.invitee;
         this.invitor = raw.invitor;
         await this._secretData.deserialize(raw.secretData);
@@ -111,17 +111,17 @@ export class Invite implements Serializable {
 
     async accept(account: AccountInfo, secret: string): Promise<boolean> {
         this.secret = secret;
-        this.invitee = await this._sign(account);
+        this.invitee = (await this._sign(account)) as SignedAccountInfo;
         this.updated = new Date().toISOString();
         const verified = await this.verify();
         return verified === true;
     }
 
     async verify(): Promise<boolean | undefined> {
-        if (!this.secret || !this.group || !this.invitee) {
+        if (!this.secret || !this.vault || !this.invitee) {
             return undefined;
         }
-        return (await this._verify(this.group)) && (await this._verify(this.invitee));
+        return (await this._verify(this.vault)) && (await this._verify(this.invitee));
     }
 
     async accessSecret(key: AESKey) {
@@ -136,14 +136,14 @@ export class Invite implements Serializable {
         return this._key;
     }
 
-    private async _sign(obj: GroupInfo): Promise<SignedGroupInfo>;
+    private async _sign(obj: VaultInfo): Promise<SignedVaultInfo>;
     private async _sign(obj: AccountInfo): Promise<SignedAccountInfo>;
-    private async _sign(obj: GroupInfo | AccountInfo): Promise<SignedGroupInfo | SignedAccountInfo> {
+    private async _sign(obj: VaultInfo | AccountInfo): Promise<SignedVaultInfo | SignedAccountInfo> {
         const signedPublicKey = await getProvider().sign(await this._getKey(), obj.publicKey, this._signingParams);
         return Object.assign(obj, { signedPublicKey });
     }
 
-    private async _verify(obj: SignedGroupInfo | SignedAccountInfo): Promise<boolean> {
+    private async _verify(obj: SignedVaultInfo | SignedAccountInfo): Promise<boolean> {
         return await getProvider().verify(
             await this._getKey(),
             obj.signedPublicKey,

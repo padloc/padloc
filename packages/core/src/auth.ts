@@ -13,7 +13,7 @@ import {
 import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
 import { Err, ErrorCode } from "./error";
-import { GroupInfo } from "./group";
+import { VaultInfo } from "./vault";
 
 export function parseAuthHeader(header: string) {
     const creds = header.match(/^SRP-HMAC sid=(.+),msg=(.+),sig=(.+)$/);
@@ -135,13 +135,13 @@ export class Account implements Storable, AccountInfo {
     updated: DateString = new Date().toISOString();
     publicKey: RSAPublicKey = "";
     privateKey: RSAPrivateKey = "";
-    store = "";
+    vault = "";
     sessions = new Set<SessionID>();
     keyParams = defaultPBKDF2Params();
     encryptionParams = defaultEncryptionParams();
     encPrivateKey: Base64String = "";
     masterKey: Base64String = "";
-    groups: GroupInfo[] = [];
+    vaults: VaultInfo[] = [];
 
     get pk() {
         return this.id;
@@ -191,12 +191,12 @@ export class Account implements Storable, AccountInfo {
             updated: this.updated,
             email: this.email,
             name: this.name,
-            store: this.store,
+            vault: this.vault,
             publicKey: this.publicKey,
             encPrivateKey: this.encPrivateKey,
             keyParams: this.keyParams,
             encryptionParams: this.encryptionParams,
-            groups: this.groups,
+            vaults: this.vaults,
             sessions: Array.from(this.sessions)
         };
     }
@@ -207,12 +207,12 @@ export class Account implements Storable, AccountInfo {
         this.updated = raw.updated;
         this.email = raw.email;
         this.name = raw.name;
-        this.store = raw.store;
+        this.vault = raw.vault;
         this.publicKey = raw.publicKey;
         this.encPrivateKey = raw.encPrivateKey;
         this.keyParams = raw.keyParams;
         this.encryptionParams = raw.encryptionParams;
-        this.groups = raw.groups || [];
+        this.vaults = raw.vaults || [];
         this.sessions = new Set<SessionID>(raw.sessions);
         return this;
     }
@@ -277,6 +277,7 @@ export class EmailVerification implements Storable {
 
     async serialize() {
         return {
+            id: this.id,
             email: this.email,
             code: this.code,
             created: this.created
@@ -284,6 +285,7 @@ export class EmailVerification implements Storable {
     }
 
     async deserialize(raw: any) {
+        this.id = raw.id;
         this.email = raw.email;
         this.code = raw.code;
         this.created = raw.created;

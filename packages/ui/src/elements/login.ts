@@ -13,7 +13,8 @@ export class Login extends StartForm {
     @query("#passwordInput") private _passwordInput: Input;
     @query("#loginButton") private _loginButton: LoadingButton;
 
-    reset() {
+    async reset() {
+        await this.updateComplete;
         this._emailInput.value = "";
         this._passwordInput.value = "";
         this._loginButton.stop();

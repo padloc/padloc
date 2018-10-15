@@ -130,7 +130,7 @@ export class AccountDialog extends BaseElement {
 
                     </div>
 
-                    ${app.stores.filter(s => s.isMember(account!)).map(
+                    ${app.vaults.filter(s => s.isMember(account!)).map(
                         s => html`
                             <div class="tag">
 
