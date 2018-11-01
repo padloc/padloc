@@ -1,7 +1,6 @@
 import { getClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Record } from "@padlock/core/lib/data.js";
-import { Vault } from "@padlock/core/lib/vault.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import * as imp from "../import.js";
 import { getReviewLink, checkForUpdates } from "@padlock/core/lib/platform.js";
@@ -10,17 +9,16 @@ import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt, exportRecords } from "../dialog";
 import { animateCascade } from "../animation";
 import { app, router } from "../init.js";
-import { element, html, property, query, listen } from "./base.js";
+import { element, html, query, listen } from "./base.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 import { Input } from "./input.js";
 
-@element("pl-settings-view")
-export class SettingsView extends View {
-    @property() vault: Vault;
-
-    @query("#importFile") _fileInput: HTMLInputElement;
+@element("pl-settings")
+export class Settings extends View {
+    @query("#importFile")
+    _fileInput: HTMLInputElement;
 
     @listen("settings-changed", app)
     _settingsChanged() {
@@ -129,12 +127,21 @@ export class SettingsView extends View {
                 color: var(--color-error);
                 margin: -14px 15px 12px 15px;
             }
+
+            .back-button > pl-icon[icon="forward"] {
+                font-size: 80%;
+                width: 30px;
+                margin-left: -20px;
+            }
         </style>
 
         <header>
-            <pl-icon icon="close" class="tap" @click=${() => router.go("")}></pl-icon>
-            <div class="title">${$l("Settings")}</div>
             <pl-icon></pl-icon>
+            <div class="title">${$l("Settings")}</div>
+            <div class="back-button tap" @click=${() => router.go("")}>
+                <pl-icon icon="list"></pl-icon>
+                <pl-icon icon="forward"></pl-icon>
+            </div>
         </header>
 
         <main>
@@ -309,10 +316,6 @@ export class SettingsView extends View {
     //         this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
     //     }
     // }
-
-    _activated() {
-        animateCascade(this.$$("section"), { initialDelay: 200 });
-    }
 
     @listen("change")
     private _updateSettings() {
@@ -586,7 +589,7 @@ export class SettingsView extends View {
     }
 
     private _export() {
-        exportRecords(Array.from(this.vault.collection));
+        exportRecords(Array.from(app.mainVault!.collection));
     }
 
     private async _toggleCustomServer(e: CustomEvent) {

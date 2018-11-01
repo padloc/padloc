@@ -42,15 +42,8 @@ function filterByString(fs: string, rec: Record) {
     if (!fs) {
         return true;
     }
-    const words = fs.toLowerCase().split(" ");
-    const content = [rec.name, ...rec.fields.map(f => f.name)];
-    return words.some(
-        word =>
-            content
-                .join(" ")
-                .toLowerCase()
-                .search(word) !== -1
-    );
+    const content = [rec.name, ...rec.fields.map(f => f.name)].join(" ").toLowerCase();
+    return content.search(fs) !== -1;
 }
 
 export interface ListItem {
@@ -60,6 +53,12 @@ export interface ListItem {
     firstInSection: boolean;
     lastInSection: boolean;
     warning?: boolean;
+}
+
+export interface FilterParams {
+    vault?: Vault | null;
+    tag?: Tag | null;
+    text?: string;
 }
 
 export class App extends EventTarget implements Storable {
@@ -107,10 +106,24 @@ export class App extends EventTarget implements Storable {
     }
 
     get vaults() {
-        return Array.from(this._vaults.values());
+        return Array.from(this._vaults.values()).sort((a, b) => {
+            const nameA = a.parent ? `${a.parent.name}/a.name}` : a.name;
+            const nameB = b.parent ? `${b.parent.name}/b.name}` : b.name;
+            return b === this.mainVault || nameA > nameB ? 1 : a === this.mainVault || nameA < nameB ? -1 : 0;
+        });
+    }
+
+    get filter() {
+        return this._filter;
+    }
+
+    set filter(filter: FilterParams) {
+        this._filter = filter;
+        this.dispatch("filter-changed", filter);
     }
 
     private _vaults = new Map<string, Vault>();
+    private _filter: FilterParams = {};
 
     async serialize() {
         return {
@@ -150,19 +163,11 @@ export class App extends EventTarget implements Storable {
         this.dispatch("load");
     }
 
-    list({
-        vault,
-        tag,
-        filterString,
-        recentCount
-    }: {
-        org: Vault | null;
-        vault: Vault | null;
-        tag: Tag | null;
-        filterString: string;
-        recentCount?: number;
-    }): ListItem[] {
-        recentCount = recentCount || 3;
+    get items(): ListItem[] {
+        const recentCount = 3;
+
+        const { vault, tag, text } = this.filter;
+
         if (!this.mainVault) {
             return [];
         }
@@ -170,7 +175,7 @@ export class App extends EventTarget implements Storable {
 
         for (const s of vault ? [vault] : this.vaults) {
             for (const record of s.collection) {
-                if (!record.removed && (!tag || record.tags.includes(tag)) && filterByString(filterString, record)) {
+                if (!record.removed && (!tag || record.tags.includes(tag)) && filterByString(text || "", record)) {
                     items.push({
                         vault: s,
                         record: record,
@@ -576,7 +581,7 @@ export class App extends EventTarget implements Storable {
         this.dispatch("vault-changed", { vault });
     }
 
-    getRecord(id: string): { record: Record; vault: Vault } | null {
+    getItem(id: string): { record: Record; vault: Vault } | null {
         for (const vault of [this.mainVault!, ...this.vaults]) {
             const record = vault.collection.get(id);
             if (record) {

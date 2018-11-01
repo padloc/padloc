@@ -218,8 +218,12 @@ export class PlIcon extends BaseElement {
                 content: "\\f0c0";
             }
 
+            :host([icon="vaults"]) > div::before {
+                content: "\\f1b3";
+            }
+
             :host([icon="vault"]) > div::before {
-                content: "\\f0c0";
+                content: "\\f1b2";
             }
 
             :host([icon="share"]) > div::before {
@@ -243,10 +247,18 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="logo"]) > div::before {
-                font-family: "Padlock";
-                content: "\\0041";
-                font-size: 110%;
+                content: "\\f447";
             }
+
+            :host([icon="list"]) > div::before {
+                content: "\\f0ca";
+            }
+
+            // :host([icon="logo"]) > div::before {
+            //     font-family: "Padlock";
+            //     content: "\\0041";
+            //     font-size: 110%;
+            // }
         </style>
 
         <div></div>

@@ -199,10 +199,9 @@ export const shared = html`
         height: var(--row-height);
         background: var(--color-background);
         font-size: var(--font-size-default);
-        position: relative;
         z-index: 1;
-        border-bottom: solid 1px rgba(0, 0, 0, 0.15);
-        line-height: var(--row-height);
+        border-bottom: solid 2px #eee;
+        align-items: center;
     }
 
     header > .title {
@@ -222,7 +221,6 @@ export const shared = html`
 
     main {
         flex: 1;
-        position: relative;
         box-sizing: border-box;
         ${mixins.scroll()}
         overflow-x: hidden;

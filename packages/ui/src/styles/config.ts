@@ -1,6 +1,8 @@
 import { html } from "@polymer/lit-element";
 
-export const config = html`
+export const narrowWidth = 800;
+
+export const cssVars = html`
     <style>
         :host {
             --font-family: "Clear Sans";
@@ -30,8 +32,10 @@ export const config = html`
             --color-gradient-highlight-to: rgb(89, 198, 255);
             --color-gradient-warning-from: #f49300;
             --color-gradient-warning-to: #f25b00;
-            --color-gradient-dark-from: #555;
-            --color-gradient-dark-to: #222;
+            --color-gradient-dark-from: #222;
+            --color-gradient-dark-to: #555;
+
+            --color-scrim: rgba(255, 255, 255, 0.9);
 
             --row-height: 50px;
 

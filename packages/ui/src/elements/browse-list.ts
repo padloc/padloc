@@ -10,35 +10,32 @@ import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { confirm, getDialog } from "../dialog.js";
 import { shared, mixins } from "../styles";
-import { AlertDialog } from "./alert-dialog.js";
-import { BaseElement, html, property, query, listen } from "./base.js";
+import { BaseElement, element, html, property, query, listen } from "./base.js";
 import { ShareDialog } from "./share-dialog.js";
+import { Input } from "./input.js";
 import "./share-dialog.js";
-import { FilterInput } from "./filter-input.js";
 
-export class ListView extends BaseElement {
+@element("pl-browse-list")
+export class BrowseList extends BaseElement {
     @property()
     multiSelect: boolean = false;
     @property()
     private _listItems: ListItem[] = [];
     @property()
-    private _currentSection: string = "";
-    @property()
     private _firstVisibleIndex: number = 0;
     @property()
     private _lastVisibleIndex: number = 0;
-    @property()
-    private _filterShowing: boolean = false;
 
     @query("#main")
     private _main: HTMLElement;
-    @query("#sectionSelector")
-    private _sectionSelector: AlertDialog;
     @query("#filterInput")
-    private _filterInput: FilterInput;
+    private _filterInput: Input;
+    @query(".filter-wrapper")
+    private _filterWrapper: HTMLDivElement;
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
     private _selected = new Map<string, ListItem>();
+    private _lastScrollTop: number = 0;
 
     private get _selectedRecords() {
         return [...this._selected.values()].map((item: ListItem) => item.record);
@@ -49,10 +46,9 @@ export class ListView extends BaseElement {
     @listen("record-changed", app)
     @listen("settings-changed", app)
     @listen("vault-changed", app)
+    @listen("filter-changed", app)
     _updateListItems() {
-        if (this._filterInput) {
-            this._listItems = app.list(this._filterInput);
-        }
+        this._listItems = app.items;
     }
 
     @listen("record-created", app)
@@ -82,21 +78,10 @@ export class ListView extends BaseElement {
         this._animateItems();
     }
 
-    async search(str?: string) {
-        this._filterShowing = true;
-        if (str) {
-            this._filterInput.filterString = str;
-        }
-        this._updateListItems();
-        await this.updateComplete;
-        this._animateItems();
-        this._filterInput.focus();
-    }
-
     clearFilter() {
-        this._filterInput.clear();
-        this._updateListItems();
-        this._animateItems();
+        this._filterInput.value = "";
+        this._updateFilter();
+        this._scrollHandler();
     }
 
     selectItem(item: ListItem) {
@@ -110,7 +95,7 @@ export class ListView extends BaseElement {
             this._selected.clear();
             this._selected.set(item.record.id, item);
             this._scrollToSelected();
-            router.go(`record/${item.record.id}`);
+            router.go(`browse/${item.record.id}`);
         }
         this.requestUpdate();
     }
@@ -140,131 +125,72 @@ export class ListView extends BaseElement {
         <style>
 
             :host {
-                box-sizing: border-box;
                 display: flex;
-                flex-direction: column;
+                box-sizing: border-box;
                 height: 100%;
                 position: relative;
                 background: var(--color-quaternary);
             }
 
-            header {
-                --color-background: var(--color-primary);
-                --color-foreground: var(--color-tertiary);
-                --color-highlight: var(--color-secondary);
-                color: var(--color-foreground);
-                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-                border-bottom: none;
-                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
+            #main {
+                padding-top: 56px;
+            }
+
+            .filter-wrapper {
+                display: flex;
+                font-size: var(--font-size-small);
+                height: 40px;
+                position: absolute;
+                top: 8px;
+                left: 8px;
+                right: 8px;
+                background: var(--color-tertiary);
+                border: solid 1px #eee;
+                border-radius: 20px;
+                z-index: 2;
+                overflow: hidden;
+            }
+
+            .filter-wrapper pl-input {
+                font-size: inherit;
+                padding: 0;
+                height: 40px;
+                line-height: 40px;
                 text-align: center;
             }
 
-            header pl-icon[icon=logo] {
-                font-size: 140%;
-            }
-
-            .empty, .no-results {
+            .empty{
                 ${mixins.fullbleed()}
                 display: flex;
                 flex-direction: column;
                 ${mixins.fullbleed()}
                 top: var(--row-height);
                 overflow: visible;
-            }
-
-            .empty {
-                z-index: 1;
-            }
-
-            .empty-message {
-                padding: 15px 20px;
-                text-align: center;
-                position: relative;
-                background: var(--color-background);
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-            }
-
-            .empty-message::before {
-                content: "";
-                display: block;
-                width: 15px;
-                height: 15px;
-                position: absolute;
-                top: -7px;
-                right: 18px;
-                margin: 0 auto;
-                transform: rotate(45deg);
-                background: var(--color-background);
-                pointer-events: none;
-            }
-
-            .no-results {
                 align-items: center;
                 justify-content: center;
                 text-align: center;
                 padding: 20px;
             }
 
-            .no-results pl-icon {
+            .empty pl-icon {
                 width: 100px;
                 height: 100px;
                 font-size: 60px;
             }
 
-            .cloud-icon-wrapper {
-                position: relative;
-            }
-
-            header pl-icon.syncing-icon {
-                position: absolute;
-                font-size: 55%;
-                top: 1px;
-                left: 0px;
-                color: var(--color-highlight);
-                text-shadow: none;
-                animation: spin 1s infinite;
-                transform-origin: center 49%;
-            }
-
-            .current-section {
-                height: 35px;
-                line-height: 35px;
-                padding: 0 15px;
-                width: 100%;
-                box-sizing: border-box;
-                font-size: var(--font-size-tiny);
-                font-weight: bold;
-                cursor: pointer;
-                background: var(--color-foreground);
-                color: var(--color-background);
-            }
-
-            .current-section pl-icon {
-                float: right;
-                height: 35px;
-                width: 10px;
-            }
-
-            .section-separator {
-                height: 6px;
-            }
-
             .section-header {
+                position: sticky;
+                top: -56px;
+                z-index: 1;
                 display: flex;
                 height: 35px;
                 line-height: 35px;
                 padding: 0 15px;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
-                box-sizing: border-box;
-            }
-
-            #sectionSelector {
-                --row-height: 40px;
-                --font-size-default: var(--font-size-small);
-                --pl-dialog-inner: {
-                    background: var(--color-secondary);
-                };
+                margin-bottom: -5px;
+                border-bottom: solid 1px #eee;
+                background: var(--color-quaternary);
             }
 
             .multi-select {
@@ -297,10 +223,10 @@ export class ListView extends BaseElement {
                 box-sizing: border-box;
                 flex-direction: row;
                 position: relative;
-                /* transition: color 0.3s; */
-                margin: 6px;
-                /* transform: translate3d(0, 0, 0); */
-                ${mixins.card()}
+                background: var(--color-background);
+                margin-top: 4px;
+                border-top: solid 1px #eee;
+                border-bottom: solid 1px #eee;
             }
 
             .record .tags {
@@ -346,7 +272,7 @@ export class ListView extends BaseElement {
                 position: relative;
                 flex: 1;
                 font-weight: bold;
-                margin: 0 0 6px 6px;
+                margin: 0 0 8px 8px;
                 border-radius: 8px;
                 ${mixins.shade2()}
             }
@@ -386,77 +312,45 @@ export class ListView extends BaseElement {
                 ${mixins.ellipsis()}
             }
 
-            .record-highlight {
-                content: "";
-                display: block;
-                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
-                transition-property: opacity, transform;
-                transition-duration: 0.2s;
-                transition-timing-function: cubic-bezier(0.6, 0, 0.2, 1);
-                ${mixins.fullbleed()}
-                transform: scale(1, 0);
-                opacity: 0;
-                border-radius: 5px;
-            }
-
-            .record[selected] {
-                color: var(--color-background);
-            }
-
             .record:focus:not([selected]) {
                 border-color: var(--color-highlight);
                 color: #4ca8d9;
             }
 
-            .record[selected] .record-highlight {
-                transform: scale(1, 1);
-                opacity: 1;
+            .record[selected] {
+                background: #e6e6e6;
+                border-color: #ddd;
+            }
+
+            .add-icon {
+                border-radius: 100%;
+                position: absolute;
+                z-index: 2;
+                bottom: 10px;
+                right: 10px;
+                background: var(--color-secondary);
+                color: var(--color-tertiary);
             }
         </style>
 
-        <header ?hidden=${this.multiSelect || this._filterShowing}>
+        <div class="filter-wrapper">
 
-            <pl-icon icon="menu" class="tap" @click=${() => this._toggleMenu()}></pl-icon>
+            <pl-icon icon="search"></pl-icon>
 
-            <div class="tap flex" @click=${() => this.search()}>${$l("Type To Filter")}</div>
+            <pl-input
+                class="flex"
+                .placeholder=${$l("Type To Filter")}
+                id="filterInput"
+                @input=${() => this._updateFilter()}
+                @escape=${() => this.clearFilter()}>
+            </pl-input>
 
-            <pl-icon icon="add" class="tap" @click=${() => this._newRecord()}></pl-icon>
-
-        </header>
-
-        <header ?hidden=${!this.multiSelect}>
-
-            <pl-icon icon="cancel" class="tap" @click=${() => this.clearSelection()}></pl-icon>
-
-            <pl-icon icon="checkall" class="tap" @click=${() => this.selectAll()}></pl-icon>
-
-            <div class="multi-select-count"><div>
-                ${
-                    this._selected.size
-                        ? $l("{0} records selected", this._selected.size.toString())
-                        : $l("tap to select")
-                }
-            </div></div>
-
-            <pl-icon icon="delete" class="tap" @click=${() => this._deleteSelected()}></pl-icon>
-
-            <pl-icon icon="share" class="tap" @click=${() => this._shareSelected()}></pl-icon>
-
-        </header>
-
-        <pl-filter-input
-            ?hidden=${!this._filterShowing || this.multiSelect}
-            id="filterInput"
-            @input=${() => this._filterUpdated()}>
-        </pl-filter-input>
-
-        <div class="current-section tap"
-            @click=${() => this._selectSection()}
-            ?hidden=${!this._listItems.length}>
-
-            <pl-icon icon="dropdown" class="float-right"></pl-icon>
-
-            <div>${this._currentSection}</div>
+            <pl-icon
+                class="tap"
+                icon="cancel"
+                ?invisible=${!app.filter.text}
+                @click=${() => this.clearFilter()}>
+            </pl-icon>
 
         </div>
 
@@ -466,17 +360,15 @@ export class ListView extends BaseElement {
 
         </main>
 
-        <div ?hidden=${!!this._listItems.length || this._filterShowing} class="empty">
+        <div class="empty" ?hidden=${!!this._listItems.length || app.filter.text}>
 
-            <div class="empty-message">
-                ${$l("You don't have any data yet! Start by creating your first record!")}
-            </div>
+            <pl-icon icon="logo"></pl-icon>
 
-            <div class="spacer tiles-2"></div>
+            <div>${$l("You don't have any items yet!")}</div>
 
         </div>
 
-        <div class="no-results" ?hidden=${!!this._listItems.length || !this._filterShowing}>
+        <div class="empty" ?hidden=${!!this._listItems.length || !app.filter.text}>
 
             <pl-icon icon="search"></pl-icon>
 
@@ -484,23 +376,12 @@ export class ListView extends BaseElement {
 
         </div>
 
-        <pl-alert-dialog
-            id="sectionSelector"
-            @dialog-open=${(e: Event) => e.stopPropagation()}
-            @dialog-close=${(e: Event) => e.stopPropagation()}>
-        </pl-alert-dialog>
-
-        <div class="rounded-corners"></div>
+        <pl-icon icon="add" class="add-icon"></pl-icon>
 `;
     }
 
-    _filterUpdated() {
-        this._updateListItems();
-        this._filterShowing =
-            !!this._filterInput.vault ||
-            !!this._filterInput.tag ||
-            !!this._filterInput.filterString ||
-            this._filterInput.focused;
+    _updateFilter() {
+        app.filter = { text: this._filterInput.value, vault: app.filter.vault, tag: app.filter.tag };
     }
 
     @listen("resize", window)
@@ -517,45 +398,17 @@ export class ListView extends BaseElement {
 
     @listen("scroll", "#main")
     _scrollHandler() {
-        if (!this._bounds) {
-            return;
-        }
-        const { top, right, bottom, left } = this._bounds;
-        const middle = left + (right - left) / 2;
-        let els = this.shadowRoot!.elementsFromPoint(middle, top + 10);
+        const st = this._main.scrollTop;
+        const scrollingUp = this._lastScrollTop > st;
+        this._lastScrollTop = st;
 
-        for (const el of els) {
-            if (el.hasAttribute("index")) {
-                const i = parseInt(el.getAttribute("index") as string);
-                this._firstVisibleIndex = i;
-                break;
-            }
-        }
-        els = this.shadowRoot!.elementsFromPoint(middle, bottom - 1);
-        if (els.length) {
-            for (const el of els) {
-                if (el.hasAttribute("index")) {
-                    const i = parseInt(el.getAttribute("index") as string);
-                    if (i !== this._lastVisibleIndex) {
-                        this._lastVisibleIndex = i;
-                    }
-                    break;
-                }
-            }
-        } else {
-            this._lastVisibleIndex = this._listItems.length - 1;
-        }
-
-        const currItem = this._listItems[this._firstVisibleIndex];
-        this._currentSection = currItem && currItem.section;
+        const pos = scrollingUp || this._filterInput.focused || this._filterInput.value ? 0 : Math.max(-st, -60);
+        this._filterWrapper.style.transform = `translate(0, ${pos}px)`;
+        this._filterWrapper.style.transition = scrollingUp || st > 56 ? "transform 0.2s" : "none";
     }
 
     private _newRecord() {
         app.createRecord("");
-    }
-
-    private _toggleMenu() {
-        this.dispatchEvent(new CustomEvent("toggle-menu"));
     }
 
     private _scrollToIndex(i: number) {
@@ -582,17 +435,6 @@ export class ListView extends BaseElement {
     //         }
     //     });
     // }
-
-    private async _selectSection() {
-        const sections = [...new Set(this._listItems.map((i: any) => i.section))];
-        if (sections.length > 1) {
-            const i = await this._sectionSelector.show("", { options: sections });
-            const item = this._listItems.find((item: any) => item.section === sections[i] && item.firstInSection);
-            if (item) {
-                this._scrollToIndex(this._listItems.indexOf(item));
-            }
-        }
-    }
 
     private async _animateItems(delay = 100) {
         await this.updateComplete;
@@ -658,7 +500,7 @@ export class ListView extends BaseElement {
             tags.push({ icon: "error", class: "tag warning", name: "" });
         }
 
-        const t = item.record.tags.find(t => t === this._filterInput.tag) || item.record.tags[0];
+        const t = item.record.tags.find(t => t === app.filter.tag) || item.record.tags[0];
         if (t) {
             tags.push({
                 name: item.record.tags.length > 1 ? `${t} (+${item.record.tags.length - 1})` : t,
@@ -670,7 +512,7 @@ export class ListView extends BaseElement {
         return html`
 
             ${when(
-                item.firstInSection && index !== 0,
+                item.firstInSection,
                 () => html`
                     <div class="section-header">
 
@@ -690,8 +532,6 @@ export class ListView extends BaseElement {
                     ?selected=${this._selected.has(item.record.id)}
                     @click=${() => this.selectItem(item)}
                     index="${index}">
-
-                        <div class="record-highlight"></div>
 
                         <div class="record-header">
 
@@ -738,5 +578,3 @@ export class ListView extends BaseElement {
         `;
     }
 }
-
-window.customElements.define("pl-list-view", ListView);

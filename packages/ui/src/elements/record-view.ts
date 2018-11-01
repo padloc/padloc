@@ -3,12 +3,11 @@ import { Record, Field } from "@padlock/core/lib/data.js";
 import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
-import { shared, mixins } from "../styles";
-import { View } from "./view.js";
+import { shared, mixins, config } from "../styles";
 import { confirm, prompt, choose, openField, generate, getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
-import { html, property, query, listen } from "./base.js";
+import { BaseElement, element, html, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import "./record-field.js";
@@ -16,11 +15,15 @@ import "./field-dialog.js";
 import { ShareDialog } from "./share-dialog.js";
 import "./share-dialog.js";
 
-export class RecordView extends View {
-    @property() vault: Vault | null = null;
-    @property() record: Record | null = null;
+@element("pl-record-view")
+export class RecordView extends BaseElement {
+    @property()
+    vault: Vault | null = null;
+    @property()
+    record: Record | null = null;
 
-    @query("#nameInput") _nameInput: Input;
+    @query("#nameInput")
+    _nameInput: Input;
 
     get _shareDialog() {
         return getDialog("pl-share-dialog") as ShareDialog;
@@ -42,7 +45,7 @@ export class RecordView extends View {
     }
 
     shouldUpdate() {
-        return super.shouldUpdate() && !!this.record;
+        return !!this.record;
     }
 
     render() {
@@ -67,9 +70,9 @@ export class RecordView extends View {
                 display: flex;
                 flex-direction: column;
                 position: relative;
-                ${mixins.fullbleed()}
                 transition: background 0.5s;
-                background: var(--color-quaternary);
+                background: var(--color-tertiary);
+                padding: 10px;
             }
 
             #background {
@@ -81,19 +84,24 @@ export class RecordView extends View {
                 width: 0;
             }
 
+            .title {
+                display: flex;
+                align-items: center;
+            }
+
             .name {
-                font-weight: bold;
-                text-align: center;
+                flex: 1;
+                font-size: 150%;
             }
 
             .tags {
                 padding: 0 8px;
             }
 
-            pl-record-field, .add-button-wrapper {
+            pl-record-field {
                 transform: translate3d(0, 0, 0);
                 margin: 6px;
-                ${mixins.card()}
+                border-bottom: solid 1px #eee;
             }
 
             .add-button {
@@ -121,12 +129,19 @@ export class RecordView extends View {
                 font-size: 80%;
                 content: "\\f303\ ";
             }
+
+            @media (min-width: ${config.narrowWidth}px) {
+                header {
+                    display: none;
+                }
+            }
         </style>
 
         <header>
+            <pl-icon icon="list" class="tap" @click=${() => router.go("")}></pl-icon>
+        </header>
 
-            <pl-icon icon="close" class="tap" @click=${() => router.go("")}></pl-icon>
-
+        <div class="title">
             <pl-input
                 id="nameInput"
                 class="name tap"
@@ -145,8 +160,7 @@ export class RecordView extends View {
                 @click=${() => this._deleteRecord()}
                 ?disabled=${!permissions.write}>
             </pl-icon>
-
-        </header>
+        </div>
 
         <main id="main">
 
@@ -261,14 +275,14 @@ export class RecordView extends View {
 
             </div>
 
+            <div class="flex"></div>
+
             <div class="updated animate">
                 ${formatDateFromNow(updated)}
                 ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
             </div>
 
         </main>
-
-        <div class="rounded-corners"></div>
 `;
     }
 
@@ -413,5 +427,3 @@ export class RecordView extends View {
         this._nameInput.focus();
     }
 }
-
-window.customElements.define("pl-record-view", RecordView);

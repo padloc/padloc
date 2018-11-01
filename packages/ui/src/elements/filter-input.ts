@@ -1,5 +1,6 @@
 import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
+import { FilterParams } from "@padlock/core/lib/app.js";
 import { app } from "../init.js";
 import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
@@ -14,17 +15,17 @@ interface Result {
 }
 
 @element("pl-filter-input")
-export class FilterInput extends BaseElement {
+export class FilterInput extends BaseElement implements FilterParams {
     @property()
     vault: Vault | null = null;
     @property()
     tag: string | null = null;
 
-    get filterString(): string {
+    get text(): string {
         return (this._input && this._input.value.toLowerCase()) || "";
     }
 
-    set filterString(val: string) {
+    set text(val: string) {
         this._input.value = val;
     }
 
@@ -78,17 +79,17 @@ export class FilterInput extends BaseElement {
                 :host {
                     background: var(--color-tertiary);
                     position: relative;
-                    z-index: 1;
-                    height: var(--row-height);
                     overflow: visible;
-                    box-shadow: rgba(0, 0, 0, 0.2) 0 1px 1px;
+                    border-radius: 20px;
+                    border: solid 1px #eee;
+                    margin: 8px;
+                    font-size: var(--font-size-small);
+                    overflow: hidden;
                 }
 
                 .results {
-                    padding: 0 10px 10px 10px;
+                    padding: 0 10px;
                     margin-top: 0;
-                    background: inherit;
-                    box-shadow: inherit;
                     flex-wrap: wrap;
                 }
 
@@ -98,24 +99,19 @@ export class FilterInput extends BaseElement {
 
                 pl-input {
                     padding: 0;
-                    font-size: var(--font-size-small);
+                    height: 40px;
+                    line-height: 40px;
+                    font-size: inherit;
                 }
 
-                .input-wrapper {
-                    padding-left: 10px;
-                }
-
-                .input-wrapper pl-icon {
-                    height: 50px;
-                    width: 50px;
-                }
-
-                .filters pl-icon[icon="cancel"] {
-                    margin: 1px -4px 0 0;
+                pl-icon[icon="search"] {
+                    opacity: 0.5;
                 }
             </style>
 
             <div class="input-wrapper layout horizontal align-center">
+
+                <pl-icon icon="search"></pl-icon>
 
                 <div class="tags small filters">
 
@@ -188,8 +184,8 @@ export class FilterInput extends BaseElement {
     }
 
     private _updateResults() {
-        this._vaults = app.vaults.filter(s => s.name.toLowerCase().startsWith(this.filterString));
-        this._tags = app.tags.filter(t => t.toLowerCase().startsWith(this.filterString));
+        this._vaults = app.vaults.filter(s => s.name.toLowerCase().startsWith(this.text));
+        this._tags = app.tags.filter(t => t.toLowerCase().startsWith(this.text));
     }
 
     private _select(res: Result) {
@@ -205,7 +201,7 @@ export class FilterInput extends BaseElement {
     }
 
     private _keydown(e: KeyboardEvent) {
-        if (e.key === "Backspace" && this.filterString === "") {
+        if (e.key === "Backspace" && this.text === "") {
             if (this.tag) {
                 this.tag = null;
             } else {

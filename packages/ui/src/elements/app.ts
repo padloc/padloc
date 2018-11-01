@@ -2,23 +2,21 @@ import { checkForUpdates, getDeviceInfo } from "@padlock/core/lib/platform.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
+import { FilterParams } from "@padlock/core/lib/app.js";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../init.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
-import { AccountView } from "./account-view.js";
 import "./icon.js";
-import { View } from "./view.js";
-import { ListView } from "./list-view.js";
-import { RecordView } from "./record-view.js";
-import { SettingsView } from "./settings-view.js";
-import { Start } from "./start.js";
-import { VaultView } from "./vault-view.js";
-import { TitleBar } from "./title-bar.js";
-import { Menu } from "./menu.js";
 import { Input } from "./input.js";
+import { View } from "./view.js";
+import { Browse } from "./browse.js";
+import { Settings } from "./settings.js";
+import { Manage } from "./manage.js";
+import { Start } from "./start.js";
 import { alert, confirm, clearDialogs } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { animateElement } from "../animation.js";
+import "./menu.js";
 
 // TODO: auto lock, auto sync, hints, tracking
 
@@ -27,20 +25,19 @@ const cordovaReady = new Promise(resolve => {
 });
 
 class App extends BaseElement {
-    @property({ attribute: "show-menu", reflect: true })
-    private _showMenu: boolean = false;
+    @query("#views")
+    private _views: HTMLDivElement;
+    @query("pl-start")
+    private _startView: Start;
+    @query("pl-browse")
+    private _browse: Browse;
+    @query("pl-settings")
+    private _settings: Settings;
+    @query("pl-mangage")
+    private _manage: Manage;
 
-    @query("#main") private _main: HTMLDivElement;
-    @query("pl-title-bar") private _titleBar: TitleBar;
-    @query("pl-list-view") private _listView: ListView;
-    @query("pl-record-view") private _recordView: RecordView;
-    @query("pl-start") private _startView: Start;
-    @query("pl-settings-view") private _settingsView: SettingsView;
-    @query("pl-account-view") private _accountView: AccountView;
-    @query("pl-vault-view") private _vaultView: VaultView;
-    @query("pl-menu") private _menu: Menu;
-
-    private _currentView: View | null;
+    @property()
+    private _view: View | null;
 
     async connectedCallback() {
         super.connectedCallback();
@@ -72,47 +69,19 @@ class App extends BaseElement {
         }
     }
 
+    @listen("filter")
+    filter(e: CustomEvent) {
+        this._browse.filter(e.detail as FilterParams);
+    }
+
     render() {
         return html`
-        ${config}
+        ${config.cssVars}
         ${shared}
 
         <style>
-
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-
-            @keyframes viewIn {
-                from { transform: translate3d(300px, 0, 0) rotateY(-10deg); opacity: 0; z-index: 1; }
-                50% { opacity: 1; }
-                to { transform: translate3d(0, 0, 0); z-index: 1; }
-            }
-
-            @keyframes viewOut {
-                from { transform: translate3d(0, 0, 0); }
-                to { transform: translate3d(0, 0, -200px) rotateX(10deg); }
-            }
-
-            @keyframes menuItemIn {
-                to { transform: translate3d(0, 0, 0); }
-            }
-
-            @keyframes menuItemOut {
-                from { transform: translate3d(0, 0, 0); }
-            }
-
-            @keyframes tagIn {
-                from { transform: translate3d(0, 100px, 0); opacity: 0; }
-            }
-
             :host {
-                --color-gutter: #222;
-                --title-bar-height: 30px;
-                --menu-width: 250px;
-                --menu-icon-width: 40px;
-                --main-padding: 0px;
+                --color-gutter: #eee;
                 overflow: hidden;
                 color: var(--color-foreground);
                 background: var(--color-gutter);
@@ -123,167 +92,60 @@ class App extends BaseElement {
                 perspective: 1000px;
             }
 
-            :host(:not(.ios):not(.android)) {
-                --main-padding: var(--gutter-width);
-            }
-
-            :host(.windows) {
-                --title-bar-height: 40px;
-            }
-
-            :host(.ios), :host(.android) {
-                --color-gutter: black;
-            }
-
-            #main {
+            #views {
                 ${mixins.fullbleed()}
-                display: flex;
                 overflow: hidden;
                 perspective: 1000px;
-                top: var(--main-padding);
-                left: calc(var(--main-padding) + var(--menu-icon-width));
-                right: var(--main-padding);
-                bottom: var(--main-padding);
-            }
-
-            :host(.macos) #main, :host(.windows) #main, :host(.linux) #main {
-                top: var(--title-bar-height) !important;
-            }
-
-            :host(.ios) #main {
-                top: constant(safe-area-inset-top);
-                top: env(safe-area-inset-top);
-            }
-
-            #main, pl-list-view {
                 transform: translate3d(0, 0, 0);
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
-            #main:not(.active),
-            :host(.dialog-open) #main {
+            #views:not(.active),
+            :host(.dialog-open) #views {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
             }
 
-            :host([show-menu]) #main {
-                transform: translate3d(calc(var(--menu-width) - var(--menu-icon-width)), 0, 0) rotateY(-5deg);
-            }
-
-            :host(:not(.macos):not(.windows):not(.linux)) pl-title-bar {
-                display: none;
-            }
-
-            pl-list-view {
-                flex: 1;
-                overflow: hidden;
-            }
-
-            #views {
-                position: relative;
-                flex: 1.62; /* Golden Ratio ;) */
-                margin-left: var(--gutter-width);
-                pointer-events: none;
-                perspective: 1000px;
-            }
-
             #views > * {
+                ${mixins.fullbleed()}
                 transform: translate3d(0, 0, 0);
                 overflow: hidden;
+                transition: transform 0.3s, opacity 0.3s;
             }
 
-            #views > *.showing {
-                pointer-events: auto;
-            }
-
-            #views > *:not(.showing) {
+            #views > .left {
+                transform: translate3d(-200px, 0, 0);
+                pointer-events: none;
                 opacity: 0;
             }
 
-            #placeholderView {
-                ${mixins.fullbleed()}
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
+            #views > .right {
+                transform: translate3d(200px, 0, 0);
+                pointer-events: none;
+                opacity: 0;
             }
 
-            .placeholder-icon {
-                display: block;
-                font-size: 120px;
-                width: 150px;
-                color: var(--color-foreground);
-                opacity: 0.5;
-            }
-
-            @media (max-width: 900px) {
-                #views {
-                    flex: 1;
-                }
-            }
-
-            @media (max-width: 700px) {
-                :host {
-                    --menu-icon-width: 0px;
-                }
-
-                .showing-views pl-list-view {
-                    transform: translate3d(0, 0, -150px) rotateX(10deg);
-                }
-
-                #views {
-                    ${mixins.fullbleed()}
-                    box-shadow: none;
-                    z-index: 1;
-                    margin-left: 0;
-                    overflow: visible;
-                }
-
-                #placeholderView {
-                    display: none;
-                }
-            }
         </style>
 
         <pl-start id="startView"></pl-start>
 
-        <pl-menu
-            @menu-open=${() => (this._showMenu = true)}
-            @menu-close=${() => (this._showMenu = false)}
-            @select-tag=${(e: CustomEvent) => this._listView.search(e.detail.tag)}
-            @multiselect=${() => (this._listView.multiSelect = true)}>
-        </pl-menu>
+        <div id="views">
 
-        <div id="main">
+            <pl-settings class="${this._view === this._settings ? "" : "left"}"></pl-settings>
 
-            <pl-list-view @toggle-menu=${() => this._menu.toggle()}></pl-list-view>
+            <pl-browse class="${
+                this._view === this._settings ? "right" : this._view === this._manage ? "left" : ""
+            }"></pl-browse>
 
-            <div id="views">
-
-                <div id="placeholderView">
-                    <pl-icon icon="logo" class="placeholder-icon"></pl-icon>
-                </div>
-
-                <pl-record-view></pl-record-view>
-
-                <pl-settings-view></pl-settings-view>
-
-                <pl-account-view></pl-account-view>
-
-                <pl-vault-view></pl-vault-view>
-
-            </div>
+            <pl-manage class="${this._view === this._manage ? "" : "right"}"></pl-manage>
 
         </div>
-
-        <pl-title-bar></pl-title-bar>
 `;
     }
 
     @listen("lock", app)
     _locked() {
-        this._main.classList.remove("active");
-        this._showMenu = false;
+        this._views.classList.remove("active");
         clearDialogs();
         clearClipboard();
     }
@@ -291,7 +153,7 @@ class App extends BaseElement {
     @listen("unlock", app)
     _unlocked() {
         setTimeout(() => {
-            this._main.classList.add("active");
+            this._views.classList.add("active");
             this._applyPath(router.path);
         }, 600);
     }
@@ -322,72 +184,59 @@ class App extends BaseElement {
         this.classList.remove("dialog-open");
     }
 
-    async _applyPath(path: string, direction = "forward") {
+    async _applyPath(path: string) {
         let match;
         if (path === "settings") {
-            this._openView(this._settingsView, direction);
-        } else if (path === "account") {
-            this._openView(this._accountView, direction);
-        } else if ((match = path.match(/^vault\/([^\/]+)(?:\/invite\/([^\/]+))?$/))) {
+            this._openView(this._settings);
+        } else if ((match = path.match(/^manage\/(?:([^\/]+)(?:\/invite\/([^\/]+))?)?$/))) {
             const vault = await app.getVault({ id: match[1] });
             if (vault) {
-                this._vaultView.vault = vault;
-                this._openView(this._vaultView, direction);
+                this._manage.vault = vault;
             }
-            // } else if ((match = path.match(/^org\/([^\/]+)(?:\/invite\/([^\/]+))?$/))) {
-            //     const org = await app.getOrganization(match[1]);
-            //     const invite = org && match[2] && org.getInvite(match[2]);
-            //     console.log(org, invite);
-        } else if ((match = path.match(/^record\/([^\/]+)$/))) {
-            const item = app.getRecord(match[1]);
-            if (item) {
-                this._recordView.record = item.record;
-                this._recordView.vault = item.vault;
-                this._openView(this._recordView, direction);
-            }
+            this._openView(this._manage);
+        } else if ((match = path.match(/^browse(?:\/([^\/]+))?$/))) {
+            const item = (match[1] && app.getItem(match[1])) || null;
+            this._browse.item = item;
+            this._openView(this._browse);
         } else {
-            this._openView(null, direction);
+            this._browse.item = null;
+            this._openView(this._browse);
         }
     }
 
-    private async _openView(view: View | null, direction = "forward") {
-        if (view === this._currentView) {
+    private async _openView(view: View | null) {
+        if (view === this._view) {
             return;
         }
-        this._main.classList.toggle("showing-views", !!view);
 
         if (view) {
-            const backward = direction === "backward" && this._currentView;
-            animateElement(view, {
-                animation: backward ? "viewOut" : "viewIn",
-                duration: 400,
-                easing: "cubic-bezier(0.6, 0, 0.2, 1)",
-                fill: "backwards",
-                direction: backward ? "reverse" : "normal"
-            });
+            // const backward = direction === "backward" && this._view;
+            // animateElement(view, {
+            //     animation: backward ? "viewOut" : "viewIn",
+            //     duration: 400,
+            //     easing: "cubic-bezier(0.6, 0, 0.2, 1)",
+            //     fill: "backwards",
+            //     direction: backward ? "reverse" : "normal"
+            // });
             view.classList.add("showing");
             view.active = true;
         }
 
-        if (this._currentView) {
-            const backward = direction === "backward" || !view;
-            animateElement(this._currentView, {
-                animation: backward ? "viewIn" : "viewOut",
-                duration: 400,
-                easing: "cubic-bezier(0.6, 0, 0.2, 1)",
-                fill: "forwards",
-                direction: backward ? "reverse" : "normal"
-            });
-            await wait(350);
-            this._currentView.classList.remove("showing");
-            this._currentView.active = false;
+        if (this._view) {
+            // const backward = direction === "backward" || !view;
+            // animateElement(this._view, {
+            //     animation: backward ? "viewIn" : "viewOut",
+            //     duration: 400,
+            //     easing: "cubic-bezier(0.6, 0, 0.2, 1)",
+            //     fill: "forwards",
+            //     direction: backward ? "reverse" : "normal"
+            // });
+            // await wait(350);
+            this._view.classList.remove("showing");
+            this._view.active = false;
         }
 
-        if (view !== this._recordView) {
-            this._listView.clearSelection();
-        }
-
-        this._currentView = view;
+        this._view = view;
     }
 
     @listen("keydown", document)
@@ -404,9 +253,9 @@ class App extends BaseElement {
             shortcut = () => router.go("");
         }
         // CTRL/CMD + F -> Filter
-        else if (control && event.key === "f") {
-            shortcut = () => this._listView.search();
-        }
+        // else if (control && event.key === "f") {
+        //     shortcut = () => this._listView.search();
+        // }
         // CTRL/CMD + N -> New Record
         else if (control && event.key === "n") {
             shortcut = () => this._newRecord();
@@ -417,7 +266,7 @@ class App extends BaseElement {
             shortcut();
             event.preventDefault();
         } else if (!control && event.key.length === 1) {
-            this._listView.search();
+            // this._listView.search();
         }
     }
 

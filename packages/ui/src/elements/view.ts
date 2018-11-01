@@ -1,11 +1,8 @@
 import { BaseElement, property, observe } from "./base.js";
 
 export abstract class View extends BaseElement {
-    @property() active: boolean = false;
-
-    shouldUpdate() {
-        return this.active;
-    }
+    @property()
+    active: boolean = false;
 
     @observe("active")
     _activeChanged() {

@@ -1,356 +1,144 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { wait } from "@padlock/core/lib/util.js";
-import { formatDateFromNow } from "../util.js";
-import { shared, mixins } from "../styles";
-import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
-import { BaseElement, element, html, property, listen, observe } from "./base.js";
-import "./toggle.js";
+import { shared, mixins } from "../styles";
+import { BaseElement, element, html, listen } from "./base.js";
 
 @element("pl-menu")
 export class Menu extends BaseElement {
-    @property({ reflect: true })
-    open: boolean = false;
-    @property({ attribute: "show-tags", reflect: true })
-    _showingTags: boolean = false;
+    _mainMenu = [
+        { path: "", label: $l("Home"), icon: "logo" },
+        { path: "settings", label: $l("Settings"), icon: "settings" },
+        { path: "account", label: $l("Account"), icon: "user" }
+    ];
 
-    @listen("stats-changed", app)
-    @listen("account-changed", app)
-    @listen("settings-changed", app)
+    @listen("unlock", app)
     _refresh() {
         this.requestUpdate();
     }
 
     render() {
-        const { loggedIn, stats } = app;
-        const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
-        const isTrialExpired = false;
-        const isSubUnpaid = false;
-        const isSubCanceled = false;
-        const isSyncing = false;
-        const tags = app.tags;
-
         return html`
         ${shared}
 
         <style>
-
-            @keyframes menuItemIn {
-                to { transform: translate3d(0, 0, 0); }
-            }
-
-            @keyframes menuItemOut {
-                from { transform: translate3d(0, 0, 0); }
-            }
-
-            @keyframes subMenuIn {
-                from { transform: translate3d(0, 100px, 0); opacity: 0; }
-            }
-
             :host {
-                ${mixins.fullbleed()}
-                z-index: -1;
+                color: var(--color-tertiary);
+                padding: 10px 0;
+                font-size: var(--font-size-small);
             }
 
-            :host([open]) {
-                z-index: 10;
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
             }
 
-            .menu, .sub-menu {
-                position: absolute;
-                top: var(--title-bar-height);
-                left: var(--main-padding);
-                bottom: 0;
-                z-index: -2;
-                display: flex;
-                flex-direction: column;
-                width: var(--menu-width);
-                box-sizing: border-box;
-                color: var(--color-background);
-                transition: opacity 0.3s;
-            }
-
-            .sub-menu {
-                ${mixins.scroll()}
-            }
-
-            .menu-item {
+            li {
                 display: flex;
                 align-items: center;
-                height: 45px;
-                justify-content: flex-end;
-                position: relative;
-                text-align: right;
-                flex: none;
-                --toggle-width: 35px;
-                --toggle-height: 25px;
+                height: 40px;
+                padding: 0 10px;
             }
 
-            .menu-item > div {
-                ${mixins.ellipsis()}
-            }
-
-            .menu .menu-item {
-                transform: translate3d(calc(var(--menu-icon-width) - var(--menu-width)), 0, 0);
-            }
-
-            .sub-menu-header {
-                font-size: 120%;
-            }
-            /*
-            .sub-menu .menu-item:not(.sub-menu-header) {
-                font-size: var(--font-size-small);
-                height: 35px;
-                --toggle-width: 30px;
-                --toggle-height: 20px;
-            }
-            */
-
-            .sub-menu .menu-item pl-icon {
-                font-size: 90%;
-                height: 35px;
-                width: 35px;
-                margin-right: 5px;
-            }
-
-            .menu-item:hover {
+            li:hover {
                 background: rgba(255, 255, 255, 0.1);
             }
 
-            .menu-item > pl-icon {
-                width: 45px;
-                height: 45px;
-                font-size: 120%;
+            li div {
+                flex: 1;
+                ${mixins.ellipsis()}
             }
 
-            .menu-item > pl-toggle {
-                margin: 0 10px;
-                cursor: pointer;
+            h3 {
+                font-size: 100%;
+                padding: 0 20px;
+                opacity: 0.8;
+                font-weight: normal;
             }
 
-            .menu-item-hint {
-                font-size: 12px;
-            }
-
-            .last-sync {
-                opacity: 0.6;
-            }
-
-            .last-sync::before {
-                font-family: "FontAwesome";
-                font-size: 90%;
-                content: "\\f017\\ ";
-            }
-
-            .menu-item-hint.warning {
-                color: var(--color-error);
-            }
-
-            .menu-item-hint.warning::before {
-                font-family: "FontAwesome";
-                font-size: 85%;
-                content: "\\f071\\ ";
-                position: relative;
-                top: -1px;
-            }
-
-            .menu-info {
+            .subvault {
                 font-size: var(--font-size-tiny);
-                text-align: center;
-                padding: 20px;
-                color: rgba(255, 255, 255, 0.5);
-                transition: opacity 400ms;
+                height: 35px;
+                padding-left: 30px;
             }
 
-            :host(:not([open])) .menu-info {
-                opacity: 0;
-            }
-
-            :host([sub-menu]) .menu, :host(:not([sub-menu="tags"])) .sub-menu-tags, :host(:not([sub-menu="vaults"])) .vaults {
-                opacity: 0;
-                pointer-events: none;
-            }
-
-            .placeholder {
-                padding: 0 15px;
-                font-size: var(--font-size-small);
-                text-align: right;
-                width: 130px;
-                align-self: flex-end;
+            .menu-tag {
+                font-size: var(--font-size-tiny);
+                height: 35px;
             }
         </style>
 
-            <div id="menu" class="menu">
+        <nav>
 
-                <div class="spacer"></div>
+            <ul>
 
-                <div class="account menu-item tap" @click=${() => router.go("account")}}>
+                ${this._mainMenu.map(
+                    ({ path, label, icon }) => html`
+                <li class="tap" @click=${() => router.go(path)}>
 
-                    <div>
+                    <pl-icon icon="${icon}"></pl-icon>
 
-                        <div ?hidden=${loggedIn}>${$l("Log In")}</div>
+                    <div>${label}</div>
 
-                        <div ?hidden=${!loggedIn}>${$l("My Account")}</div>
-
-                        <div class="menu-item-hint warning" ?hidden=${!isTrialExpired}>${$l("Trial Expired")}</div>
-
-                        <div class="menu-item-hint warning" ?hidden=${!isSubUnpaid}>${$l("Payment Failed")}</div>
-
-                        <div class="menu-item-hint warning" ?hidden=${!isSubCanceled}>${$l("Subscr. Canceled")}</div>
-
-                    </div>
-
-                    <pl-icon icon="cloud" class="account-icon"></pl-icon>
-
-                </div>
-
-                <div class="menu-item tap" @click=${() => app.synchronize()} ?disabled=${!loggedIn}>
-
-                    <div>
-
-                        <div>${$l("Synchronize")}</div>
-
-                        <div class="menu-item-hint" ?hidden=${loggedIn}>${$l("Log In To Sync")}</div>
-
-                        <div class="menu-item-hint last-sync" ?hidden=${!loggedIn}>${lastSync}</div>
-
-                    </div>
-
-                    <pl-icon icon="refresh" ?spin=${isSyncing}></pl-icon>
-
-                </div>
-
-                <div class="menu-item tap" @click=${() => router.go("settings")}}>
-
-                    <div>${$l("Settings")}</div>
-
-                    <pl-icon icon="settings"></pl-icon>
-
-                </div>
-
-                <div class="menu-item tap" @click=${(e: Event) => this._showSubMenu("vaults", e)}>
-
-                    <div>${$l("Groups")}</div>
-
-                    <pl-icon icon="group"></pl-icon>
-
-                </div>
-
-                <div class="menu-item tap" @click=${(e: Event) => this._showSubMenu("tags", e)}>
-
-                    <div>${$l("Tags")}</div>
-
-                    <pl-icon icon="tags"></pl-icon>
-
-                </div>
-
-                <div class="menu-item tap" @click=${() => this.dispatch("multiselect")}>
-
-                    <div>${$l("Multi-Select")}</div>
-
-                    <pl-icon icon="checked"></pl-icon>
-
-                </div>
-
-                <div class="menu-item tap" @click=${() => app.lock()}>
-
-                    <div>${$l("Lock App")}</div>
-
-                    <pl-icon icon="lock"></pl-icon>
-
-                </div>
-
-                <div class="spacer"></div>
-
-                <div class="menu-info">
-
-                    <div><strong>Padlock ${app.version}</strong></div>
-
-                    <div>Made with ♥ in Germany</div>
-
-                </div>
-
-            </div>
-
-            <div class="sub-menu sub-menu-tags">
-
-                <div class="spacer"></div>
-
-                <div class="menu-item sub-menu-header tap" @click=${(e: Event) => this._closeSubMenu(e)}>
-
-                    <div>${$l("Tags")}</div>
-
-                    <pl-icon icon="close"></pl-icon>
-                </div>
-
-                ${tags.map(
-                    (tag: string) => html`
-                    <div class="menu-item menu-item-tag tap" @click=${() => this._selectTag(tag)}>
-
-                        <div>${tag}</div>
-
-                        <pl-icon icon="tag"></pl-icon>
-
-                    </div>
+                </li>
                 `
                 )}
 
-                <div class="placeholder" disabled ?hidden=${tags.length}>
+            </ul>
 
-                    ${$l("You don't have any tags yet!")}
+        </nav>
 
-                </div>
+        <h3>${$l("Vaults")}</h3>
 
-                <div class="spacer"></div>
+        <ul>
 
-            </div>
+            <li
+                class="vault tap"
+                @click=${() => this.dispatch("filter", {})}>
 
-        </div>
+                <pl-icon icon="supervault"></pl-icon>
+
+                <div>${$l("All Vaults")}</div> 
+
+            </li>
+
+            ${app.vaults.map(
+                vault => html`
+                <li
+                    class="vault tap ${vault.parent ? "subvault" : ""}"
+                    @click=${() => this.dispatch("filter", { vault })}>
+
+                    <pl-icon icon="${vault === app.mainVault ? "user" : "vault"}"></pl-icon>
+
+                    <div>${vault.name}</div> 
+
+                    <pl-icon icon="settings"></pl-icon>
+
+                </li>
+            `
+            )}
+
+        </ul>
+
+        <h3>${$l("Tags")}</h3>
+
+        <ul>
+
+            ${app.tags.map(
+                tag => html`
+                <li
+                    class="menu-tag tap"
+                    @click=${() => this.dispatch("filter", { tag })}>
+
+                    <pl-icon icon="tag"></pl-icon>
+
+                    <div>${tag}</div> 
+
+                </li>
+            `
+            )}
+
+        </ul>
 `;
-    }
-
-    @listen("click")
-    _clickHandler() {
-        this.open = false;
-        this._closeSubMenu();
-    }
-
-    @observe("open")
-    async _openChanged() {
-        this.dispatch(this.open ? "menu-open" : "menu-close");
-        animateCascade(this.$$(".menu .menu-item"), {
-            animation: this.open ? "menuItemIn" : "menuItemOut",
-            duration: 400,
-            fullDuration: 600,
-            initialDelay: 50,
-            fill: "both"
-        });
-    }
-
-    toggle() {
-        this.open = !this.open;
-    }
-
-    private _showSubMenu(name: string, e: Event) {
-        this.open = true;
-        this.setAttribute("sub-menu", name);
-        animateCascade(this.$$(`.sub-menu.${name} .menu-item, .sub-menu.${name} .placeholder`, false), {
-            animation: "subMenuIn",
-            duration: 400,
-            fullDuration: 600,
-            fill: "both"
-        });
-        e.stopPropagation();
-    }
-
-    private _closeSubMenu(e?: Event) {
-        this.removeAttribute("sub-menu");
-        e && e.stopPropagation();
-    }
-
-    private async _selectTag(tag: string) {
-        this.dispatch("select-tag", { tag });
-        await wait(350);
-        this._closeSubMenu();
     }
 }
