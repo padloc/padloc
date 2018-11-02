@@ -8,9 +8,11 @@ export class ToggleButton extends BaseElement {
     active: boolean = false;
     @property({ reflect: true })
     reverse: boolean = false;
-    @property() label: string = "";
+    @property()
+    label: string = "";
 
-    @query("pl-toggle") _toggle: Toggle;
+    @query("pl-toggle")
+    _toggle: Toggle;
 
     render() {
         const { active, label } = this;
@@ -60,8 +62,11 @@ export class ToggleButton extends BaseElement {
         </style>
 
         <button @click=${() => this.toggle()}>
-            <pl-toggle active="${active}" on-change=${() => (this.active = this._toggle.active)}"></pl-toggle>
+
+            <pl-toggle .active="${active}" @change=${() => (this.active = this._toggle.active)}"></pl-toggle>
+
             <div>${label}</div>
+
         </button>
 `;
     }

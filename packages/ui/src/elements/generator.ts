@@ -8,14 +8,21 @@ import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 
 class Generator extends BaseElement {
-    @property() value: string = "";
+    @property()
+    value: string = "";
 
-    @query("pl-dialog") private _dialog: Dialog;
-    @query("#lower") private _lower: ToggleButton;
-    @query("#upper") private _upper: ToggleButton;
-    @query("#numbers") private _numbers: ToggleButton;
-    @query("#other") private _other: ToggleButton;
-    @query("#length") private _length: Slider;
+    @query("pl-dialog")
+    private _dialog: Dialog;
+    @query("#lower")
+    private _lower: ToggleButton;
+    @query("#upper")
+    private _upper: ToggleButton;
+    @query("#numbers")
+    private _numbers: ToggleButton;
+    @query("#other")
+    private _other: ToggleButton;
+    @query("#length")
+    private _length: Slider;
 
     private _resolve: ((val: string | null) => void) | null;
 
@@ -150,23 +157,23 @@ class Generator extends BaseElement {
 `;
     }
 
-    connectedCallback() {
-        super.connectedCallback();
+    firstUpdated() {
         this._lower.active = this._upper.active = this._numbers.active = true;
         this._length.value = 10;
     }
 
-    generate(): Promise<string | null> {
-        this._generate();
+    async generate(): Promise<string | null> {
+        await this.updateComplete;
         this._dialog.open = true;
-        return new Promise(resolve => {
+        this._generate();
+        return new Promise<string | null>(resolve => {
             this._resolve = resolve;
         });
     }
 
     @listen("change")
     _generate() {
-        var charSet = "";
+        let charSet = "";
         this._lower.active && (charSet += chars.lower);
         this._upper.active && (charSet += chars.upper);
         this._numbers.active && (charSet += chars.numbers);

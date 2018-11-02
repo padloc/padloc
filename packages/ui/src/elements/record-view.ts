@@ -3,11 +3,11 @@ import { Record, Field } from "@padlock/core/lib/data.js";
 import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
-import { shared, mixins, config } from "../styles";
-import { confirm, prompt, choose, openField, generate, getDialog } from "../dialog.js";
+import { shared, config } from "../styles";
+import { confirm, prompt, choose, generate, getDialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
-import { BaseElement, element, html, property, query, listen } from "./base.js";
+import { BaseElement, element, html, property, query, queryAll, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import "./record-field.js";
@@ -21,9 +21,15 @@ export class RecordView extends BaseElement {
     vault: Vault | null = null;
     @property()
     record: Record | null = null;
+    @property()
+    private _editing: Boolean = false;
 
     @query("#nameInput")
     _nameInput: Input;
+    @queryAll("pl-input.field-name")
+    _fieldNameInputs: Input[];
+    @queryAll("pl-input.field-value")
+    _fieldValueInputs: Input[];
 
     get _shareDialog() {
         return getDialog("pl-share-dialog") as ShareDialog;
@@ -52,7 +58,6 @@ export class RecordView extends BaseElement {
         const record = this.record!;
         const vault = this.vault!;
         const { name, fields, tags, updated, updatedBy } = record;
-        const isShared = app.mainVault && vault.id !== app.mainVault.id;
         const permissions = vault.getPermissions();
         // TODO
         // const removedMembers = vault instanceof SharedVault ? vault.getOldAccessors(record!) : [];
@@ -72,11 +77,6 @@ export class RecordView extends BaseElement {
                 position: relative;
                 transition: background 0.5s;
                 background: var(--color-tertiary);
-                padding: 10px;
-            }
-
-            #background {
-                ${mixins.fullbleed()}
             }
 
             header > pl-input {
@@ -84,24 +84,61 @@ export class RecordView extends BaseElement {
                 width: 0;
             }
 
+            main {
+                display: flex;
+                flex-direction: column;
+                padding: 15px;
+            }
+
+            pl-input {
+                height: auto;
+                --line-height: 30px;
+                line-height: var(--line-height);
+            }
+
             .title {
                 display: flex;
                 align-items: center;
+                margin-bottom: 10px;
             }
 
             .name {
+                --line-height: 50px;
                 flex: 1;
-                font-size: 150%;
+                font-size: 140%;
+                padding: 0 10px;
             }
 
             .tags {
                 padding: 0 8px;
             }
 
-            pl-record-field {
+            .field {
                 transform: translate3d(0, 0, 0);
-                margin: 6px;
-                border-bottom: solid 1px #eee;
+                padding: 10px 0;
+                display: flex;
+                align-items: center;
+            }
+
+            .field-buttons {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .field-name {
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
+                color: var(--color-highlight);
+                padding: 0 10px;
+            }
+
+            .field-value {
+                font-family: var(--font-family-mono);
+                font-size: 110%;
+                flex: 1;
+                padding: 0 10px;
+                opacity: 1;
             }
 
             .add-button {
@@ -120,7 +157,7 @@ export class RecordView extends BaseElement {
             .updated {
                 padding: 10px;
                 text-align: center;
-                font-size: var(--font-size-small);
+                font-size: var(--font-size-tiny);
                 color: #888;
             }
 
@@ -128,6 +165,15 @@ export class RecordView extends BaseElement {
                 font-family: FontAwesome;
                 font-size: 80%;
                 content: "\\f303\ ";
+            }
+
+            pl-input {
+                line-height: var(--line-height);
+            }
+
+            pl-input:not([readonly]) {
+                background-image: linear-gradient(white, white calc(var(--line-height) - 1px), rgb(204, 204, 204) calc(var(--line-height) - 1px), rgb(204, 204, 204) var(--line-height), white var(--line-height));
+                background-size: 100% var(--line-height);
             }
 
             @media (min-width: ${config.narrowWidth}px) {
@@ -141,35 +187,21 @@ export class RecordView extends BaseElement {
             <pl-icon icon="list" class="tap" @click=${() => router.go("")}></pl-icon>
         </header>
 
-        <div class="title">
-            <pl-input
-                id="nameInput"
-                class="name tap"
-                value="${name}"
-                placeholder="${$l("Enter Record Name")}"
-                select-on-focus=""
-                autocapitalize=""
-                ?readonly=${!permissions.write}
-                @change=${() => this._updateName()}
-                @enter=${() => this._nameEnter()}>
-            </pl-input>
+        <main>
 
-            <pl-icon
-                icon="delete"
-                class="tap"
-                @click=${() => this._deleteRecord()}
-                ?disabled=${!permissions.write}>
-            </pl-icon>
-        </div>
+            <div class="title">
 
-        <main id="main">
+                <pl-input id="nameInput" class="name" .value=${name} ?readonly=${!this._editing}></pl-input>
 
-            <div class="tags animate">
+                <button class="tap" @click=${() => this.save()} ?hidden=${!this._editing}>${$l("Done")}</button>
 
-                <div class="tag highlight tap"
-                    flex
-                    ?hidden=${!isShared}
-                    @click=${() => this._openVault(vault!)}>
+                <pl-icon icon="edit" class="tap" @click=${() => this.edit()} ?hidden=${this._editing}></pl-icon>
+
+            </div>
+
+            <div class="tags small">
+
+                <div class="tag highlight tap" @click=${() => this._openVault(vault!)}>
 
                     <pl-icon icon="vault"></pl-icon>
 
@@ -177,7 +209,7 @@ export class RecordView extends BaseElement {
 
                 </div>
 
-                <div class="tag warning" flex ?hidden=${permissions.write}>
+                <div class="tag warning" ?hidden=${permissions.write}>
 
                     <pl-icon icon="show"></pl-icon>
 
@@ -187,7 +219,7 @@ export class RecordView extends BaseElement {
 
                 ${tags.map(
                     (tag: string) => html`
-                    <div class="tag tap" flex @click=${() => this._removeTag(tag)}>
+                    <div class="tag tap" @click=${() => this._removeTag(tag)}>
 
                         <pl-icon icon="tag"></pl-icon>
 
@@ -197,29 +229,9 @@ export class RecordView extends BaseElement {
                 `
                 )}
 
-                <div class="tag ghost tap" flex @click=${() => this._addTag()}>
-
-                    <pl-icon icon="add"></pl-icon>
-
-                    <div>${$l("Tag")}</div>
-
-                </div>
-
-                <div
-                    class="tag ghost tap"
-                    flex
-                    ?hidden=${!permissions.write || this.vault !== app.mainVault}
-                    @click=${() => this._share()}>
-
-                    <pl-icon icon="share"></pl-icon>
-
-                    <div>${$l("Share")}</div>
-
-                </div>
-
             </div>
 
-            <section class="highlight tiles warning animate" ?hidden=${!removedMembers.length}>
+            <section class="highlight" ?hidden=${!removedMembers.length}>
 
                 <div class="info">
 
@@ -247,15 +259,44 @@ export class RecordView extends BaseElement {
                 ${fields.map(
                     (field: Field, index: number) => html`
 
-                    <div class="animate">
+                    <div class="field">
 
-                        <pl-record-field
-                            .field=${field}
-                            .record=${record}
-                            .readonly=${!permissions.write}
-                            @field-change=${(e: CustomEvent) => this._changeField(index, e.detail.changes)}
-                            @field-delete=${() => this._deleteField(index)}>
-                        </pl-record-field>
+                        <div class="field-buttons">
+
+                            <pl-icon
+                                icon="remove"
+                                class="tap"
+                                ?hidden=${!this._editing}
+                                @click=${() => this._removeField(index)}>
+                            </pl-icon>
+
+                            <pl-icon
+                                icon="generate"
+                                class="tap"
+                                ?hidden=${!this._editing}
+                                @click=${() => this._generateValue(index)}>
+                            </pl-icon>
+
+                        </div>
+
+                        <div class="flex">
+
+                            <pl-input class="field-name"
+                                placeholder="${$l("Field Name")}"
+                                .value=${field.name}
+                                ?readonly=${!this._editing}>
+                            </pl-input>
+
+                            <pl-input
+                                class="field-value"
+                                placeholder="${$l("Field Content")}"
+                                .value=${field.value}
+                                multiline
+                                autosize
+                                ?readonly=${!this._editing}>
+                            </pl-input>
+
+                        </div>
 
                     </div>
 
@@ -263,17 +304,13 @@ export class RecordView extends BaseElement {
                 )}
             </div>
 
-            <div class="add-button-wrapper animate" ?hidden=${!permissions.write}>
+            <button class="add-button tap" @click=${() => this._addField()} ?hidden=${!this._editing}>
 
-                <button class="add-button tap" @click=${() => this._addField()}>
+                <pl-icon icon="add"></pl-icon>
 
-                    <pl-icon icon="add"></pl-icon>
+                <div>${$l("Add Field")}</div>
 
-                    <div>${$l("Add Field")}</div>
-
-                </button>
-
-            </div>
+            </button>
 
             <div class="flex"></div>
 
@@ -286,30 +323,9 @@ export class RecordView extends BaseElement {
 `;
     }
 
-    _didRender() {
-        setTimeout(() => {
-            if (this.record && !this.record.name) {
-                this._nameInput.focus();
-            }
-        }, 500);
-    }
-
-    _updateName() {
-        if (!this.vault || !this.record) {
-            throw "vault or record member not set";
-        }
-        app.updateRecord(this.vault, this.record, { name: this._nameInput.value });
-    }
-
-    private async _deleteField(index: number) {
-        if (!this.vault || !this.record) {
-            throw "vault or record member not set";
-        }
-        const confirmed = await confirm($l("Are you sure you want to delete this field?"), $l("Delete"));
-        const fields = this.record.fields.filter((_, i) => i !== index);
-        if (confirmed) {
-            app.updateRecord(this.vault, this.record, { fields: fields });
-        }
+    private _removeField(index: number) {
+        this.record!.fields = this.record!.fields.filter((_, i) => i !== index);
+        this.requestUpdate();
     }
 
     private async _changeField(index: number, changes: { name?: string; value?: string; masked?: boolean }) {
@@ -333,22 +349,24 @@ export class RecordView extends BaseElement {
     }
 
     private async _addField(field = { name: "", value: "", masked: false }) {
-        if (!this.vault || !this.record) {
-            throw "vault or record member not set";
-        }
-        const result = await openField(field, true);
-        switch (result.action) {
-            case "generate":
-                const value = await generate();
-                field.value = value;
-                field.name = result.name;
-                this._addField(field);
-                break;
-            case "edit":
-                Object.assign(field, result);
-                app.updateRecord(this.vault, this.record, { fields: this.record.fields.concat([field]) });
-                break;
-        }
+        this.record!.fields.push(field);
+        this.requestUpdate();
+        // if (!this.vault || !this.record) {
+        //     throw "vault or record member not set";
+        // }
+        // const result = await openField(field, true);
+        // switch (result.action) {
+        //     case "generate":
+        //         const value = await generate();
+        //         field.value = value;
+        //         field.name = result.name;
+        //         this._addField(field);
+        //         break;
+        //     case "edit":
+        //         Object.assign(field, result);
+        //         app.updateRecord(this.vault, this.record, { fields: this.record.fields.concat([field]) });
+        //         break;
+        // }
     }
 
     private async _removeTag(tag: string) {
@@ -423,7 +441,24 @@ export class RecordView extends BaseElement {
         router.go(`vault/${vault.id}`);
     }
 
+    private async _generateValue(index: number) {
+        const value = await generate();
+        if (value) {
+            this._fieldValueInputs[index].value = value;
+        }
+    }
+
     edit() {
-        this._nameInput.focus();
+        this._editing = true;
+    }
+
+    save() {
+        app.updateRecord(this.vault!, this.record!, {
+            name: this._nameInput.value,
+            fields: [...this._fieldNameInputs].map((inp: Input, i: number) => {
+                return { name: inp.value, value: this._fieldValueInputs[i].value };
+            })
+        });
+        this._editing = false;
     }
 }
