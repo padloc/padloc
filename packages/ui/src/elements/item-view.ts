@@ -1,26 +1,23 @@
 import { AccountInfo } from "@padlock/core/lib/auth.js";
-import { Record, Field } from "@padlock/core/lib/data.js";
+import { VaultItem, Field } from "@padlock/core/lib/data.js";
 import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
-import { shared, config } from "../styles";
-import { confirm, prompt, choose, generate, getDialog } from "../dialog.js";
+import { shared, config, mixins } from "../styles";
+import { confirm, prompt, choose, generate } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, query, queryAll, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
-import "./record-field.js";
-import "./field-dialog.js";
-import { ShareDialog } from "./share-dialog.js";
-import "./share-dialog.js";
 
-@element("pl-record-view")
-export class RecordView extends BaseElement {
+@element("pl-item-view")
+export class ItemView extends BaseElement {
     @property()
-    vault: Vault | null = null;
-    @property()
-    record: Record | null = null;
+    item: {
+        vault: Vault;
+        item: VaultItem;
+    } | null = null;
     @property()
     private _editing: Boolean = false;
 
@@ -31,36 +28,29 @@ export class RecordView extends BaseElement {
     @queryAll("pl-input.field-value")
     _fieldValueInputs: Input[];
 
-    get _shareDialog() {
-        return getDialog("pl-share-dialog") as ShareDialog;
-    }
-
     @listen("lock", app)
     _locked() {
-        this.record = null;
-        const fieldDialog = getDialog("pl-field-dialog");
-        fieldDialog.open = false;
-        fieldDialog.field = null;
+        this.item = null;
     }
 
-    @listen("record-changed", app)
-    _recordChanged(e: CustomEvent) {
-        if (e.detail.record === this.record) {
+    @listen("item-changed", app)
+    _itemChanged(e: CustomEvent) {
+        if (e.detail.item === this.item) {
             this.requestUpdate();
         }
     }
 
     shouldUpdate() {
-        return !!this.record;
+        return !!this.item;
     }
 
     render() {
-        const record = this.record!;
-        const vault = this.vault!;
-        const { name, fields, tags, updated, updatedBy } = record;
+        const item = this.item!;
+        const { name, fields, tags, updated, updatedBy } = item.item;
+        const vault = item.vault;
         const permissions = vault.getPermissions();
         // TODO
-        // const removedMembers = vault instanceof SharedVault ? vault.getOldAccessors(record!) : [];
+        // const removedMembers = vault instanceof SharedVault ? vault.getOldAccessors(item!) : [];
         const removedMembers: any[] = [];
         const vaultName = vault.name;
         const updatedByMember = vault.getMember({ id: updatedBy } as AccountInfo);
@@ -76,7 +66,7 @@ export class RecordView extends BaseElement {
                 flex-direction: column;
                 position: relative;
                 transition: background 0.5s;
-                background: var(--color-tertiary);
+                ${mixins.scroll()}
             }
 
             header > pl-input {
@@ -85,9 +75,9 @@ export class RecordView extends BaseElement {
             }
 
             main {
-                display: flex;
                 flex-direction: column;
                 padding: 15px;
+                ${mixins.card()}
             }
 
             pl-input {
@@ -115,15 +105,24 @@ export class RecordView extends BaseElement {
 
             .field {
                 transform: translate3d(0, 0, 0);
-                padding: 10px 0;
+                margin: 10px 0;
                 display: flex;
                 align-items: center;
+                border-radius: 8px;
+            }
+
+            .field:hover {
+                background: #eee;
             }
 
             .field-buttons {
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
+            }
+
+            .field:not(:hover) .field-buttons.right {
+                visibility: hidden;
             }
 
             .field-name {
@@ -172,7 +171,7 @@ export class RecordView extends BaseElement {
             }
 
             pl-input:not([readonly]) {
-                background-image: linear-gradient(white, white calc(var(--line-height) - 1px), rgb(204, 204, 204) calc(var(--line-height) - 1px), rgb(204, 204, 204) var(--line-height), white var(--line-height));
+                background-image: linear-gradient(transparent, transparent calc(var(--line-height) - 1px), rgb(204, 204, 204) calc(var(--line-height) - 1px), rgb(204, 204, 204) var(--line-height), transparent var(--line-height));
                 background-size: 100% var(--line-height);
             }
 
@@ -261,19 +260,17 @@ export class RecordView extends BaseElement {
 
                     <div class="field">
 
-                        <div class="field-buttons">
+                        <div class="field-buttons" ?hidden=${!this._editing}>
 
                             <pl-icon
                                 icon="remove"
                                 class="tap"
-                                ?hidden=${!this._editing}
                                 @click=${() => this._removeField(index)}>
                             </pl-icon>
 
                             <pl-icon
                                 icon="generate"
                                 class="tap"
-                                ?hidden=${!this._editing}
                                 @click=${() => this._generateValue(index)}>
                             </pl-icon>
 
@@ -295,6 +292,22 @@ export class RecordView extends BaseElement {
                                 autosize
                                 ?readonly=${!this._editing}>
                             </pl-input>
+
+                        </div>
+
+                        <div class="field-buttons right" ?hidden=${this._editing}>
+
+                            <pl-icon
+                                icon="copy"
+                                class="tap"
+                                @click=${() => this._copyField(index)}>
+                            </pl-icon>
+
+                            <pl-icon
+                                icon="hide"
+                                class="tap"
+                                @click=${() => this._toggleMask(index)}>
+                            </pl-icon>
 
                         </div>
 
@@ -324,83 +337,50 @@ export class RecordView extends BaseElement {
     }
 
     private _removeField(index: number) {
-        this.record!.fields = this.record!.fields.filter((_, i) => i !== index);
+        this.item!.item.fields = this.item!.item.fields.filter((_, i) => i !== index);
         this.requestUpdate();
     }
 
-    private async _changeField(index: number, changes: { name?: string; value?: string; masked?: boolean }) {
-        if (!this.vault || !this.record) {
-            throw "vault or record member not set";
-        }
-        const fields = [...this.record.fields];
-        fields[index] = Object.assign({}, fields[index], changes);
-        app.updateRecord(this.vault, this.record, { fields: fields });
-    }
-
-    private async _deleteRecord() {
-        if (!this.vault || !this.record) {
-            throw "vault or record member not set";
-        }
-        const confirmed = await confirm($l("Are you sure you want to delete this record?"), $l("Delete"));
+    private async _deleteItem() {
+        const { vault, item } = this.item!;
+        const confirmed = await confirm($l("Are you sure you want to delete this item?"), $l("Delete"));
         if (confirmed) {
-            app.deleteRecords(this.vault, [this.record]);
+            app.deleteItems(vault, [item]);
             router.back();
         }
     }
 
     private async _addField(field = { name: "", value: "", masked: false }) {
-        this.record!.fields.push(field);
+        this.item!.item.fields.push(field);
         this.requestUpdate();
-        // if (!this.vault || !this.record) {
-        //     throw "vault or record member not set";
-        // }
-        // const result = await openField(field, true);
-        // switch (result.action) {
-        //     case "generate":
-        //         const value = await generate();
-        //         field.value = value;
-        //         field.name = result.name;
-        //         this._addField(field);
-        //         break;
-        //     case "edit":
-        //         Object.assign(field, result);
-        //         app.updateRecord(this.vault, this.record, { fields: this.record.fields.concat([field]) });
-        //         break;
-        // }
     }
 
     private async _removeTag(tag: string) {
-        if (!this.vault || !this.record) {
-            throw "vault or record member not set";
-        }
+        const { vault, item } = this.item!;
         const confirmed = await confirm($l("Do you want to remove this tag?"), $l("Remove"), $l("Cancel"), {
             title: $l("Remove Tag")
         });
         if (confirmed) {
-            app.updateRecord(this.vault, this.record, { tags: this.record.tags.filter(t => t !== tag) });
+            app.updateItem(vault, item, { tags: item.tags.filter(t => t !== tag) });
         }
     }
 
     private async _createTag() {
-        if (!this.vault || !this.record) {
-            throw "vault or record member not set";
-        }
+        const { vault, item } = this.item!;
         const tag = await prompt("", {
             placeholder: $l("Enter Tag Name"),
             confirmLabel: $l("Add Tag"),
             preventDismiss: false,
             cancelLabel: ""
         });
-        if (tag && !this.record.tags.includes(tag)) {
-            app.updateRecord(this.vault, this.record, { tags: this.record.tags.concat([tag]) });
+        if (tag && !item.tags.includes(tag)) {
+            app.updateItem(vault, item, { tags: item.tags.concat([tag]) });
         }
     }
 
     private async _addTag() {
-        if (!this.vault || !this.record) {
-            throw "vault or record member not set";
-        }
-        const tags = app.tags.filter((tag: string) => !this.record!.tags.includes(tag));
+        const { vault, item } = this.item!;
+        const tags = app.tags.filter((tag: string) => !item.tags.includes(tag));
         if (!tags.length) {
             return this._createTag();
         }
@@ -412,12 +392,8 @@ export class RecordView extends BaseElement {
 
         const tag = tags[choice];
         if (tag) {
-            app.updateRecord(this.vault, this.record, { tags: this.record.tags.concat([tag]) });
+            app.updateItem(vault, item, { tags: item.tags.concat([tag]) });
         }
-    }
-
-    private _nameEnter() {
-        this._nameInput.blur();
     }
 
     _activated() {
@@ -427,14 +403,7 @@ export class RecordView extends BaseElement {
     }
 
     private _dismissWarning() {
-        app.updateRecord(this.vault!, this.record!, {});
-    }
-
-    private async _share() {
-        const vault = await this._shareDialog.show([this.record!]);
-        if (vault && vault.members.length === 1) {
-            router.go(`vault/${vault.id}`);
-        }
+        app.updateItem(this.item!.vault, this.item!.item, {});
     }
 
     private _openVault(vault: Vault) {
@@ -453,7 +422,7 @@ export class RecordView extends BaseElement {
     }
 
     save() {
-        app.updateRecord(this.vault!, this.record!, {
+        app.updateItem(this.item!.vault, this.item!.item, {
             name: this._nameInput.value,
             fields: [...this._fieldNameInputs].map((inp: Input, i: number) => {
                 return { name: inp.value, value: this._fieldValueInputs[i].value };

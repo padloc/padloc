@@ -76,8 +76,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="generate"]) > div::before {
-                /* content: "\\f0d0"; */
-                content: "\\f522";
+                content: "\\f0d0";
             }
 
             :host([icon="tag"]) > div::before {

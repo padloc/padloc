@@ -1,7 +1,7 @@
 import { Storable, LocalStorage } from "./storage";
-import { Record, Field, Tag } from "./data";
+import { VaultItem, Field, Tag, createVaultItem } from "./data";
 import { Vault } from "./vault";
-import { Account, AccountInfo, Auth, Session, SessionInfo } from "./auth";
+import { Account, Auth, Session, SessionInfo } from "./auth";
 import { Invite } from "./invite";
 import { DateString } from "./encoding";
 import { API } from "./api";
@@ -25,7 +25,6 @@ export interface Settings {
     customServer: boolean;
     customServerUrl: string;
     autoSync: boolean;
-    hideVaults: string[];
 }
 
 const defaultSettings: Settings = {
@@ -34,11 +33,10 @@ const defaultSettings: Settings = {
     defaultFields: ["username", "password"],
     customServer: false,
     customServerUrl: "https://cloud.padlock.io/",
-    autoSync: true,
-    hideVaults: []
+    autoSync: true
 };
 
-function filterByString(fs: string, rec: Record) {
+function filterByString(fs: string, rec: VaultItem) {
     if (!fs) {
         return true;
     }
@@ -47,7 +45,7 @@ function filterByString(fs: string, rec: Record) {
 }
 
 export interface ListItem {
-    record: Record;
+    item: VaultItem;
     vault: Vault;
     section: string;
     firstInSection: boolean;
@@ -94,15 +92,15 @@ export class App extends EventTarget implements Storable {
         if (!this.mainVault) {
             return [];
         }
-        const tags = this.mainVault.collection.tags;
+        const tags = this.mainVault.items.tags;
         for (const vault of this.vaults) {
-            tags.push(...vault.collection.tags);
+            tags.push(...vault.items.tags);
         }
         return [...new Set(tags)];
     }
 
     get mainVault() {
-        return this.account && this._vaults.get(this.account.vault);
+        return this.account && this._vaults.get(this.account.mainVault);
     }
 
     get vaults() {
@@ -174,16 +172,16 @@ export class App extends EventTarget implements Storable {
         let items: ListItem[] = [];
 
         for (const s of vault ? [vault] : this.vaults) {
-            for (const record of s.collection) {
-                if (!record.removed && (!tag || record.tags.includes(tag)) && filterByString(text || "", record)) {
+            for (const item of s.items) {
+                if ((!tag || item.tags.includes(tag)) && filterByString(text || "", item)) {
                     items.push({
                         vault: s,
-                        record: record,
+                        item: item,
                         section: "",
                         firstInSection: false,
                         lastInSection: false
                         // TODO: reimplement
-                        // warning: !!vault.getOldMembers(record).length
+                        // warning: !!vault.getOldMembers(item).length
                     });
                 }
             }
@@ -191,10 +189,7 @@ export class App extends EventTarget implements Storable {
 
         const recent = items
             .sort((a, b) => {
-                return (
-                    (b.record.lastUsed || b.record.updated).getTime() -
-                    (a.record.lastUsed || a.record.updated).getTime()
-                );
+                return (b.item.lastUsed || b.item.updated).getTime() - (a.item.lastUsed || a.item.updated).getTime();
             })
             .slice(0, recentCount);
 
@@ -202,8 +197,8 @@ export class App extends EventTarget implements Storable {
 
         items = recent.concat(
             items.sort((a, b) => {
-                const x = a.record.name.toLowerCase();
-                const y = b.record.name.toLowerCase();
+                const x = a.item.name.toLowerCase();
+                const y = b.item.name.toLowerCase();
                 return x > y ? 1 : x < y ? -1 : 0;
             })
         );
@@ -215,7 +210,7 @@ export class App extends EventTarget implements Storable {
             curr.section =
                 i < recentCount
                     ? $l("Recently Used")
-                    : (curr.record && curr.record.name[0] && curr.record.name[0].toUpperCase()) || $l("No Name");
+                    : (curr.item && curr.item.name[0] && curr.item.name[0].toUpperCase()) || $l("No Name");
 
             curr.firstInSection = !prev || prev.section !== curr.section;
             prev && (prev.lastInSection = curr.section !== prev.section);
@@ -271,7 +266,10 @@ export class App extends EventTarget implements Storable {
 
         if (fetch) {
             try {
-                await this.api.getVault(vault);
+                const remoteVault = new Vault(id);
+                remoteVault.access(this.account!);
+                await this.api.getVault(remoteVault);
+                vault.merge(remoteVault);
             } catch (e) {
                 if (e.code !== ErrorCode.NOT_FOUND) {
                     throw e;
@@ -334,62 +332,50 @@ export class App extends EventTarget implements Storable {
         this.loaded = this.load();
     }
 
-    async addRecords(vault: Vault, records: Record[]) {
-        vault.collection.add(records);
+    async addItems(items: VaultItem[], vault: Vault = this.mainVault!) {
+        vault.items.update(...items);
         await this.storage.set(vault);
-        this.dispatch("records-added", { vault: vault, records: records });
+        this.dispatch("items-added", { vault, items });
     }
 
-    async createRecord(name: string, vault_?: Vault, fields?: Field[], tags?: Tag[]): Promise<Record> {
+    async createItem(name: string, vault_?: Vault, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
         const vault = vault_ || this.mainVault!;
         fields = fields || [
             { name: $l("Username"), value: "", masked: false },
             { name: $l("Password"), value: "", masked: true }
         ];
-        const record = vault.collection.create(name || "", fields, tags);
+        const item = createVaultItem(name || "", fields, tags);
         if (this.account) {
-            record.updatedBy = this.account.id;
+            item.updatedBy = this.account.id;
         }
-        await this.addRecords(vault, [record]);
-        this.dispatch("record-created", { vault, record });
-        return record;
+        await this.addItems([item], vault);
+        this.dispatch("item-created", { vault, item });
+        return item;
     }
 
-    async updateRecord(vault: Vault, record: Record, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
+    async updateItem(vault: Vault, item: VaultItem, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
         for (const prop of ["name", "fields", "tags"]) {
             if (typeof upd[prop] !== "undefined") {
-                record[prop] = upd[prop];
+                item[prop] = upd[prop];
             }
         }
-        record.updated = new Date();
+        item.updated = new Date();
         if (this.account) {
-            record.updatedBy = this.account.id;
+            item.updatedBy = this.account.id;
         }
         await this.storage.set(vault);
-        this.dispatch("record-changed", { vault: vault, record: record });
+        this.dispatch("item-changed", { vault: vault, item: item });
     }
 
-    async deleteRecords(vault: Vault, records: Record[]) {
-        vault.collection.remove(records);
+    async deleteItems(vault: Vault, items: VaultItem[]) {
+        vault.items.remove(...items);
         if (this.account) {
-            for (const record of records) {
-                record.updatedBy = this.account.id;
+            for (const item of items) {
+                item.updatedBy = this.account.id;
             }
         }
         await this.storage.set(vault);
-        this.dispatch("records-deleted", { vault: vault, records: records });
-    }
-
-    toggleVault(vault: Vault) {
-        const hideVaults = this.settings.hideVaults;
-        const ind = hideVaults.indexOf(vault.id);
-        if (ind === -1) {
-            hideVaults.push(vault.id);
-        } else {
-            hideVaults.splice(ind, 1);
-        }
-
-        this.setSettings({ hideVaults });
+        this.dispatch("items-deleted", { vault: vault, items: items });
     }
 
     async verifyEmail(email: string) {
@@ -417,15 +403,6 @@ export class App extends EventTarget implements Storable {
         });
 
         await this.login(email, password);
-
-        await Promise.all([
-            this.api.updateVault(this.mainVault!),
-            this.storage.set(this.mainVault!),
-            this.storage.set(this)
-        ]);
-
-        this.dispatch("login");
-        this.dispatch("unlock");
     }
 
     async login(email: string, password: string) {
@@ -444,16 +421,13 @@ export class App extends EventTarget implements Storable {
 
         await this.account.unlock(password);
 
-        const mainVault = new Vault(this.account.vault);
-        await this.api.getVault(mainVault);
-        if (!mainVault.initialized) {
-            await mainVault.initialize(this.account);
+        const mainVault = await this.getVault({ id: this.account.mainVault }, true);
+        if (!mainVault!.initialized) {
+            await mainVault!.initialize(this.account);
+            await this.api.updateVault(mainVault!);
         }
 
-        await this.storage.set(mainVault);
-        await this.api.updateVault(mainVault);
-
-        await this.syncVaults();
+        await this.synchronize();
 
         this.dispatch("login");
         this.dispatch("unlock");
@@ -467,7 +441,7 @@ export class App extends EventTarget implements Storable {
         this.dispatch("account-changed", { account: this.account });
     }
 
-    async syncAccount() {
+    async loadAccount() {
         await this.api.getAccount(this.account!);
         await this.storage.set(this);
         this.dispatch("account-changed", { account: this.account });
@@ -480,6 +454,7 @@ export class App extends EventTarget implements Storable {
 
         this.session = null;
         this.account = null;
+        await this.storage.clear();
         this._vaults.clear();
         await this.storage.set(this);
         this.dispatch("lock");
@@ -491,28 +466,29 @@ export class App extends EventTarget implements Storable {
     async createVault(name: string, parent?: Vault): Promise<Vault> {
         const vault = await this.api.createVault({ name });
         await vault.initialize(this.account!);
+
         if (parent) {
             vault.parent = parent.info;
         }
 
-        parent = parent || this.mainVault!;
-
-        await parent.addVault(vault);
-
-        await Promise.all([
-            this.api.updateVault(vault),
-            this.storage.set(vault),
-            this.api.updateVault(parent),
-            this.storage.set(parent)
-        ]);
         this._vaults.set(vault.id, vault);
+
+        await this.syncVault(vault);
+
+        const addToVault = parent || this.mainVault;
+
+        if (addToVault) {
+            await addToVault.updateSubVault(vault.info);
+            await this.syncVault(addToVault);
+        }
+
         this.dispatch("vault-created", { vault });
         return vault;
     }
 
     async createInvite(vault: Vault, email: string) {
         const invite = await vault.createInvite(email);
-        await this.api.updateInvite(invite);
+        await vault.invites.update(invite);
         await this.syncVault(vault);
         return invite;
     }
@@ -520,45 +496,27 @@ export class App extends EventTarget implements Storable {
     async acceptInvite(invite: Invite, secret: string) {
         const success = await invite.accept(this.account!.info, secret);
         if (success) {
-            await this.api.updateInvite(invite);
-            await this.mainVault!.addVault(Object.assign({}, invite.vault!));
+            await this.api.acceptInvite(invite);
+            await this.mainVault!.updateSubVault(Object.assign({}, invite.vault!));
             await Promise.all([this.storage.set(this.mainVault!), this.api.updateVault(this.mainVault!)]);
         }
         return success;
     }
 
     async deleteInvite(invite: Invite) {
-        await this.api.deleteInvite(invite);
-        this.syncVault(invite.vault!);
+        const vault = await this.getVault(invite.vault!);
+        if (!vault) {
+            throw "Vault not found";
+        }
+        await vault.invites.remove(invite);
+        await this.syncVault(vault);
     }
 
-    //
-    // async updateAccess(
-    //     vault: SharedVault,
-    //     acc: AccountInfo,
-    //     permissions: Permissions = { read: true, write: true, manage: false },
-    //     status: AccessorStatus
-    // ) {
-    //     await this.api.getSharedVault(vault);
-    //     await vault.updateAccess(acc, permissions, status);
-    //     await Promise.all([this.storage.set(vault), this.api.updateSharedVault(vault)]);
-    //     this.dispatch("vault-changed", { vault });
-    // }
-    //
-    // async revokeAccess(vault: SharedVault, account: AccountInfo) {
-    //     if (!vault.permissions.manage) {
-    //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    //     }
-    //     await this.api.getSharedVault(vault);
-    //     await vault.revokeAccess(account);
-    //     await Promise.all([this.storage.set(vault), this.api.updateSharedVault(vault)]);
-    //     this.dispatch("vault-changed", { vault });
-    // }
-
     async synchronize() {
-        await this.syncAccount();
+        await this.loadAccount();
         await this.syncVaults();
         await this.loadSessions();
+        await this.storage.set(this);
         this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");
     }
@@ -568,41 +526,40 @@ export class App extends EventTarget implements Storable {
     }
 
     async syncVault(vaultInfo: { id: string }): Promise<void> {
-        const vault = await this.getVault(vaultInfo, true);
+        const localVault = await this.getVault(vaultInfo);
+        const copy = new Vault();
+        copy.access(this.account!);
+        await copy.deserialize(await localVault!.serialize());
+        const remoteVault = new Vault(vaultInfo.id);
+        remoteVault.access(this.account!);
+        await this.api.getVault(remoteVault);
 
-        if (!vault) {
-            return;
+        copy.merge(remoteVault);
+
+        try {
+            await this.api.updateVault(copy);
+        } catch (e) {
+            if (e.code === ErrorCode.MERGE_CONFLICT) {
+                return this.syncVault(vaultInfo);
+            }
+            throw e;
         }
 
-        await this.storage.set(vault);
+        await this.storage.set(copy);
+        this._vaults.set(vaultInfo.id, copy);
 
-        await this.api.updateVault(vault);
-
-        this.dispatch("vault-changed", { vault });
+        this.dispatch("vault-changed", { copy });
     }
 
-    getItem(id: string): { record: Record; vault: Vault } | null {
+    getItem(id: string): { item: VaultItem; vault: Vault } | null {
         for (const vault of [this.mainVault!, ...this.vaults]) {
-            const record = vault.collection.get(id);
-            if (record) {
-                return { record, vault };
+            const item = vault.items.get(id);
+            if (item) {
+                return { item, vault };
             }
         }
 
         return null;
-    }
-
-    get knownAccounts(): AccountInfo[] {
-        const accounts = new Map<string, AccountInfo>();
-        for (const vault of this.vaults) {
-            for (const { id, email, name, publicKey } of vault.members) {
-                if (id !== this.account!.id) {
-                    accounts.set(id, { id, email, name, publicKey });
-                }
-            }
-        }
-
-        return Array.from(accounts.values());
     }
 
     async loadSessions() {

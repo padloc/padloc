@@ -1,4 +1,4 @@
-import { Record, Field } from "@padlock/core/lib/data.js";
+import { VaultItem, Field } from "@padlock/core/lib/data.js";
 import { setClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { shared, mixins } from "../styles";
@@ -6,7 +6,7 @@ import { BaseElement, html, property } from "./base.js";
 
 export class Clipboard extends BaseElement {
 
-    @property() record: Record | null = null;
+    @property() item: VaultItem | null = null;
     @property() field: Field | null = null;
     @property() private _tMinusClear: number = 0;
 
@@ -14,11 +14,11 @@ export class Clipboard extends BaseElement {
     private _resolve: (() => void) | null = null;
 
     shouldUpdate() {
-        return !!this.record && !!this.field;
+        return !!this.item && !!this.field;
     }
 
     render() {
-        const { record, field, _tMinusClear } = this;
+        const { item, field, _tMinusClear } = this;
         return html`
         ${ shared }
 
@@ -70,7 +70,7 @@ export class Clipboard extends BaseElement {
 
         <div class="content">
             <div class="title">${ $l("Copied To Clipboard:") }</div>
-            <div class="name">${ record!.name } / ${ field!.name }</div>
+            <div class="name">${ item!.name } / ${ field!.name }</div>
         </div>
 
         <button class="tiles-2 tap" @click=${ () => this.clear() }>
@@ -80,10 +80,10 @@ export class Clipboard extends BaseElement {
 `;
     }
 
-    set(record: Record, field: Field, duration = 60) {
+    set(item: VaultItem, field: Field, duration = 60) {
         clearInterval(this._interval);
 
-        this.record = record;
+        this.item = item;
         this.field = field;
         setClipboard(field.value);
 

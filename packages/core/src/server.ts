@@ -16,6 +16,8 @@ import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, 
 
 const pendingAuths = new Map<string, SRPServer>();
 
+console.log("server!!");
+
 export class Context implements API {
     session?: Session;
     account?: Account;
@@ -159,9 +161,11 @@ export class Context implements API {
         account.id = uuid();
         auth.account = account.id;
 
-        const vault = new Vault(uuid(), "Main");
+        const vault = new Vault(uuid(), "My Vault");
         vault.owner = account.id;
-        account.vault = vault.id;
+        vault.created = new Date();
+        vault.updated = new Date();
+        account.mainVault = vault.id;
 
         await Promise.all([this.storage.set(account), this.storage.set(vault), this.storage.set(auth)]);
 
@@ -199,8 +203,19 @@ export class Context implements API {
         const existing = new Vault(vault.id);
         await this.storage.get(existing);
 
-        const addedMembers = vault.members.filter(m => !existing.isMember(m));
-        for (const member of addedMembers) {
+        if (
+            vault.revision.id !== existing.revision.id &&
+            (!vault.revision.mergedFrom || !vault.revision.mergedFrom.includes(existing.revision.id))
+        ) {
+            throw new Err(ErrorCode.MERGE_CONFLICT);
+        }
+
+        existing.access(account);
+        const changes = existing.merge(vault, existing.getPermissions());
+
+        // TODO: Handle "removed" members?
+        for (const member of (changes.members && changes.members.added) || []) {
+            console.log("member added", member);
             const acc = new Account(member.id);
             await this.storage.get(acc);
             acc.vaults.push(vault.info);
@@ -210,8 +225,9 @@ export class Context implements API {
             await this.storage.set(acc);
         }
 
-        existing.access(account);
-        existing.update(vault);
+        for (const invite of (changes.invites && changes.invites.added) || []) {
+            this.messenger.send(invite.email, new InviteCreatedMessage(invite));
+        }
 
         await this.storage.set(existing);
 
@@ -224,50 +240,40 @@ export class Context implements API {
         const { name } = params;
         const vault = await new Vault(uuid(), name);
         vault.owner = account.id;
+        vault.created = new Date();
+        vault.updated = new Date();
 
-        await Promise.all([this.storage.set(account), this.storage.set(vault)]);
+        await this.storage.set(vault);
 
         return vault;
     }
 
-    async updateInvite(invite: Invite) {
+    async acceptInvite(invite: Invite) {
+        if (!invite.accepted) {
+            throw new Err(ErrorCode.BAD_REQUEST);
+        }
+
         const { account } = this._requireAuth();
 
         const vault = new Vault(invite.vault!.id);
 
         await this.storage.get(vault);
 
-        const existing = vault.getInvite(invite.email);
+        const existing = vault.invites.get(invite.id);
 
-        if (!vault.isAdmin(account) && existing && existing.email !== account.email) {
+        if (!existing) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
+
+        if (existing.email !== account.email) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        vault.updateInvite(invite);
-
-        await this.storage.set(vault);
-
-        if (!invite.accepted) {
-            this.messenger.send(invite.email, new InviteCreatedMessage(invite));
-        } else if (invite.invitor) {
+        if (!existing.accepted && invite.invitor) {
             this.messenger.send(invite.invitor.email, new InviteAcceptedMessage(invite));
         }
 
-        return invite;
-    }
-
-    async deleteInvite(invite: Invite) {
-        const { account } = this._requireAuth();
-
-        const vault = new Vault(invite.vault!.id);
-
-        await this.storage.get(vault);
-
-        if (!vault.isAdmin(account)) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        vault.deleteInvite(invite);
+        vault.invites.update(invite);
 
         await this.storage.set(vault);
     }
@@ -308,7 +314,6 @@ export class Server {
         let session: Session;
         let acc: Account;
         let vault: Vault;
-        let invite: Invite;
 
         switch (method) {
             case "verifyEmail":
@@ -405,20 +410,11 @@ export class Server {
                 res.result = await vault.serialize();
                 break;
 
-            case "updateInvite":
+            case "acceptInvite":
                 if (!params || params.length !== 1) {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
-                invite = await ctx.updateInvite(await new Invite().deserialize(params[0]));
-                res.result = await invite.serialize();
-                break;
-
-            case "deleteInvite":
-                if (!params || params.length !== 1) {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                invite = await new Invite().deserialize(params[0]);
-                await ctx.deleteInvite(invite);
+                await ctx.acceptInvite(await new Invite().deserialize(params[0]));
                 break;
 
             default:

@@ -13,14 +13,14 @@ export enum ErrorCode {
     PUBLIC_KEY_MISMATCH = "public_key_mismatch",
     MISSING_ACCESS = "missing_access",
 
-    // HTTP Client Errors
+    // Client Errors
     FAILED_CONNECTION = "failed_connection",
     UNEXPECTED_REDIRECT = "unexpected_redirect",
 
-    // HTTP Server Errors
+    // Server Errors
     BAD_REQUEST = "bad_request",
-    INVALID_SESSION = "invalid_auth_token",
-    SESSION_EXPIRED = "expired_auth_token",
+    INVALID_SESSION = "invalid_session",
+    SESSION_EXPIRED = "session_expired",
     DEPRECATED_API_VERSION = "deprecated_api_version",
     INSUFFICIENT_PERMISSIONS = "insufficient_permissions",
     RATE_LIMIT_EXCEEDED = "rate_limit_exceeded",
@@ -29,6 +29,7 @@ export enum ErrorCode {
     EMAIL_VERIFICATION_FAILED = "email_verification_failed",
     INVALID_RESPONSE = "invalid_response",
     INVALID_REQUEST = "invalid_request",
+    MERGE_CONFLICT = "merge_conflict",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",

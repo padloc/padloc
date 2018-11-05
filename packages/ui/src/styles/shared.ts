@@ -197,10 +197,8 @@ export const shared = html`
     header {
         display: flex;
         height: var(--row-height);
-        background: var(--color-background);
         font-size: var(--font-size-default);
         z-index: 1;
-        border-bottom: solid 2px #eee;
         align-items: center;
     }
 

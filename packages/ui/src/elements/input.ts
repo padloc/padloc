@@ -18,26 +18,34 @@ function mask(value: string): string {
 
 @element("pl-input")
 export class Input extends BaseElement {
-    @property() autosize: boolean = false;
-    @property() autocapitalize: boolean = false;
+    @property()
+    autosize: boolean = false;
+    @property()
+    autocapitalize: boolean = false;
     @property({ reflect: true })
     disabled: boolean = false;
     @property({ reflect: true })
     focused: boolean = false;
     @property({ reflect: true })
     invalid: boolean = false;
-    @property() masked: boolean = false;
-    @property() multiline: boolean = false;
-    @property() pattern: string = "";
-    @property() placeholder: string = "";
-    @property() label: string = "";
+    @property()
+    masked: boolean = false;
+    @property()
+    multiline: boolean = false;
+    @property()
+    pattern: string = "";
+    @property()
+    placeholder: string = "";
+    @property()
+    label: string = "";
     @property({ attribute: "no-tab" })
     noTab: boolean = false;
     @property({ reflect: true })
     readonly: boolean = false;
     @property({ reflect: true })
     required: boolean = false;
-    @property() type: string = "text";
+    @property()
+    type: string = "text";
     @property({ attribute: "select-on-focus" })
     selectOnFocus: boolean = false;
 
@@ -57,7 +65,8 @@ export class Input extends BaseElement {
         })();
     }
 
-    @query("textarea, input") private _inputElement: HTMLInputElement;
+    @query("textarea, input")
+    private _inputElement: HTMLInputElement;
 
     private _prevValue: string = this.value;
 
@@ -225,7 +234,7 @@ export class Input extends BaseElement {
 
         ${input}
 
-        <label for="input" ?float=${focused || !!value || !!placeholder}>${label}</label>
+        <label for="input" ?float=${focused || !!value || !!placeholder} ?hidden=${!label}>${label}</label>
         `;
     }
 

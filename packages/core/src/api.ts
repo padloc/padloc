@@ -16,10 +16,6 @@ export interface CreateVaultParams {
     name: string;
 }
 
-export interface CreateOrgParams {
-    name: string;
-}
-
 export interface API {
     verifyEmail(params: { email: string }): Promise<{ id: string }>;
 
@@ -37,6 +33,5 @@ export interface API {
     getVault(vault: Vault): Promise<Vault>;
     updateVault(vault: Vault): Promise<Vault>;
 
-    updateInvite(invite: Invite): Promise<Invite>;
-    deleteInvite(invite: Invite): Promise<void>;
+    acceptInvite(invite: Invite): Promise<void>;
 }

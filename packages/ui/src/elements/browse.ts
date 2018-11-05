@@ -1,23 +1,20 @@
-import { FilterParams } from "@padlock/core/lib/app.js";
-import { Record } from "@padlock/core/lib/data.js";
+import { VaultItem } from "@padlock/core/lib/data.js";
 import { Vault } from "@padlock/core/lib/vault.js";
 import { shared, mixins, config } from "../styles";
 import { router } from "../init";
 import { element, property, html, query } from "./base.js";
 import { View } from "./view.js";
-import { BrowseList } from "./browse-list.js";
-import { RecordView } from "./record-view.js";
+import { ItemView } from "./item-view.js";
 import "./icon.js";
+import "./browse-list.js";
 import "./browse-filter.js";
 
 @element("pl-browse")
 export class Browse extends View {
     @property()
-    item: { record: Record; vault: Vault } | null = null;
-    @query("pl-browse-list")
-    private _list: BrowseList;
-    @query("pl-record-view")
-    private _recordView: RecordView;
+    item: { item: VaultItem; vault: Vault } | null = null;
+    @query("pl-item-view")
+    private _itemView: ItemView;
 
     render() {
         return html`
@@ -38,7 +35,7 @@ export class Browse extends View {
                     margin-right: 2px;
                 }
 
-                pl-record-view {
+                pl-item-view {
                     flex: 1;
                 }
 
@@ -53,7 +50,7 @@ export class Browse extends View {
                 }
 
                 @media (max-width: ${config.narrowWidth}px) {
-                    pl-record-view {
+                    pl-item-view {
                         ${mixins.fullbleed()};
                         z-index: 10;
                     }
@@ -63,11 +60,11 @@ export class Browse extends View {
                         margin-right: 0;
                     }
 
-                    pl-record-view, pl-browse-list, header {
+                    pl-item-view, pl-browse-list, header {
                         transition: transform 0.3s;
                     }
 
-                    pl-record-view:not([active]) {
+                    pl-item-view:not([active]) {
                         transform: translate(100%, 0);
                     }
 
@@ -93,17 +90,12 @@ export class Browse extends View {
 
                 <pl-browse-list ?active=${!this.item}></pl-browse-list>
 
-                <pl-record-view
+                <pl-item-view
                     ?active=${!!this.item}
-                    .record=${this.item && this.item.record}
-                    .vault=${this.item && this.item.vault}>
-                </pl-record-view>
+                    .item=${this.item}
+                </pl-item-view>
 
             </main>
         `;
-    }
-
-    filter(params: FilterParams) {
-        this._list.filter(params);
     }
 }

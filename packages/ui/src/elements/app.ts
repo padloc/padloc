@@ -1,5 +1,4 @@
 import { checkForUpdates, getDeviceInfo } from "@padlock/core/lib/platform.js";
-import { wait } from "@padlock/core/lib/util.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { FilterParams } from "@padlock/core/lib/app.js";
@@ -15,14 +14,13 @@ import { Manage } from "./manage.js";
 import { Start } from "./start.js";
 import { alert, confirm, clearDialogs } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
-import { animateElement } from "../animation.js";
 import "./menu.js";
 
 // TODO: auto lock, auto sync, hints, tracking
 
-const cordovaReady = new Promise(resolve => {
-    document.addEventListener("deviceready", resolve);
-});
+// const cordovaReady = new Promise(resolve => {
+//     document.addEventListener("deviceready", resolve);
+// });
 
 class App extends BaseElement {
     @query("#views")
@@ -52,7 +50,7 @@ class App extends BaseElement {
             });
         }
 
-        await cordovaReady;
+        // await cordovaReady;
 
         // Replace window.open method with the inappbrowser equivalent
         // window.open = cordova.InAppBrowser.open;
@@ -61,12 +59,11 @@ class App extends BaseElement {
         // }
         // navigator.splashscreen.hide();
 
-        const { platform } = await getDeviceInfo();
-        const className = platform.toLowerCase().replace(/ /g, "-");
-        if (className) {
-            this.classList.add(className);
-            this._titleBar.classList.add(className);
-        }
+        // const { platform } = await getDeviceInfo();
+        // const className = platform.toLowerCase().replace(/ /g, "-");
+        // if (className) {
+        //     this.classList.add(className);
+        // }
     }
 
     @listen("filter")
@@ -84,7 +81,7 @@ class App extends BaseElement {
                 --color-gutter: #eee;
                 overflow: hidden;
                 color: var(--color-foreground);
-                background: var(--color-gutter);
+                background: var(--color-quaternary);
                 position: absolute;
                 width: 100%;
                 height: 100%;
@@ -184,7 +181,7 @@ class App extends BaseElement {
         this.classList.remove("dialog-open");
     }
 
-    async _applyPath(path: string) {
+    async _applyPath(path: string, _direction: string = "forward") {
         let match;
         if (path === "settings") {
             this._openView(this._settings);
@@ -256,9 +253,9 @@ class App extends BaseElement {
         // else if (control && event.key === "f") {
         //     shortcut = () => this._listView.search();
         // }
-        // CTRL/CMD + N -> New Record
+        // CTRL/CMD + N -> New Item
         else if (control && event.key === "n") {
-            shortcut = () => this._newRecord();
+            shortcut = () => this._newItem();
         }
 
         // If one of the shortcuts matches, execute it and prevent the default behaviour
@@ -332,8 +329,8 @@ class App extends BaseElement {
         }
     }
 
-    private _newRecord() {
-        app.createRecord("");
+    private _newItem() {
+        app.createItem("");
     }
 }
 

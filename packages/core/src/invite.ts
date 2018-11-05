@@ -1,14 +1,15 @@
 import { getProvider, PBKDF2Params, HMACParams, HMACKey, SimpleContainer, AESKey } from "./crypto";
-import { DateString, Serializable, base64ToHex } from "./encoding";
+import { base64ToHex } from "./encoding";
+import { Collection, CollectionItem } from "./collection";
 import { VaultInfo, SignedVaultInfo } from "./vault";
 import { AccountInfo, SignedAccountInfo } from "./auth";
 import { uuid } from "./util";
 
-export class Invite implements Serializable {
+export class Invite implements CollectionItem {
     id: string = "";
-    created: DateString = new Date().toISOString();
-    updated: DateString = new Date().toISOString();
-    expires: DateString = "";
+    created = new Date();
+    updated = new Date();
+    expires = new Date();
 
     vault: SignedVaultInfo | null = null;
     invitee: SignedAccountInfo | null = null;
@@ -69,7 +70,7 @@ export class Invite implements Serializable {
 
     async initialize(vault: VaultInfo, invitor: AccountInfo, encKey: AESKey, duration = 1) {
         this.id = uuid();
-        this.expires = new Date(new Date().getTime() + 1000 * 60 * 60 * duration).toISOString();
+        this.expires = new Date(Date.now() + 1000 * 60 * 60 * duration);
         this.secret = base64ToHex(await getProvider().randomBytes(4));
         this._secretData.key = encKey;
         await this._secretData.set(this._secretSerializer);
@@ -112,7 +113,7 @@ export class Invite implements Serializable {
     async accept(account: AccountInfo, secret: string): Promise<boolean> {
         this.secret = secret;
         this.invitee = (await this._sign(account)) as SignedAccountInfo;
-        this.updated = new Date().toISOString();
+        this.updated = new Date();
         const verified = await this.verify();
         return verified === true;
     }
@@ -150,5 +151,21 @@ export class Invite implements Serializable {
             obj.publicKey,
             this._signingParams
         );
+    }
+}
+
+export class InviteCollection extends Collection<Invite> {
+    async serialize() {
+        return {
+            ...(await super.serialize()),
+            items: await Promise.all([...this].map(item => item.serialize()))
+        };
+    }
+
+    async deserialize(raw: any) {
+        return super.deserialize({
+            ...raw,
+            items: await Promise.all(raw.items.map((item: any) => new Invite().deserialize(item)))
+        });
     }
 }

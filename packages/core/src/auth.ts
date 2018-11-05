@@ -131,11 +131,11 @@ export class Account implements Storable, AccountInfo {
     kind = "account";
     email = "";
     name = "";
-    created: DateString = new Date().toISOString();
-    updated: DateString = new Date().toISOString();
+    created = new Date();
+    updated = new Date();
     publicKey: RSAPublicKey = "";
     privateKey: RSAPrivateKey = "";
-    vault = "";
+    mainVault = "";
     sessions = new Set<SessionID>();
     keyParams = defaultPBKDF2Params();
     encryptionParams = defaultEncryptionParams();
@@ -181,7 +181,9 @@ export class Account implements Storable, AccountInfo {
 
     update(account: Account) {
         this.name = account.name;
+        this.mainVault = account.mainVault;
         this.keyParams = account.keyParams;
+        this.updated = new Date();
     }
 
     async serialize() {
@@ -191,7 +193,7 @@ export class Account implements Storable, AccountInfo {
             updated: this.updated,
             email: this.email,
             name: this.name,
-            vault: this.vault,
+            mainVault: this.mainVault,
             publicKey: this.publicKey,
             encPrivateKey: this.encPrivateKey,
             keyParams: this.keyParams,
@@ -203,11 +205,11 @@ export class Account implements Storable, AccountInfo {
 
     async deserialize(raw: any) {
         this.id = raw.id;
-        this.created = raw.created;
-        this.updated = raw.updated;
+        this.created = new Date(raw.created);
+        this.updated = new Date(raw.updated);
         this.email = raw.email;
         this.name = raw.name;
-        this.vault = raw.vault;
+        this.mainVault = raw.mainVault;
         this.publicKey = raw.publicKey;
         this.encPrivateKey = raw.encPrivateKey;
         this.keyParams = raw.keyParams;

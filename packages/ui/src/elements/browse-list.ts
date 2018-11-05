@@ -1,9 +1,8 @@
 import { when } from "lit-html/directives/when.js";
-import { Record, Field } from "@padlock/core/lib/data.js";
+import { Field } from "@padlock/core/lib/data.js";
 import { Vault } from "@padlock/core/lib/vault.js";
 import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-// import { isIOS } from "@padlock/core/lib/platform.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { animateCascade } from "../animation.js";
 import { setClipboard } from "../clipboard.js";
@@ -37,13 +36,13 @@ export class BrowseList extends BaseElement {
     private _selected = new Map<string, ListItem>();
     private _lastScrollTop: number = 0;
 
-    private get _selectedRecords() {
-        return [...this._selected.values()].map((item: ListItem) => item.record);
+    private get _selectedItems() {
+        return [...this._selected.values()].map((item: ListItem) => item.item);
     }
 
-    @listen("records-added", app)
-    @listen("records-deleted", app)
-    @listen("record-changed", app)
+    @listen("items-added", app)
+    @listen("items-deleted", app)
+    @listen("item-changed", app)
     @listen("settings-changed", app)
     @listen("vault-changed", app)
     @listen("filter-changed", app)
@@ -51,10 +50,10 @@ export class BrowseList extends BaseElement {
         this._listItems = app.items;
     }
 
-    @listen("record-created", app)
-    _recordCreated(e: CustomEvent) {
+    @listen("item-created", app)
+    _itemCreated(e: CustomEvent) {
         this._updateListItems();
-        const item = this._listItems.find(item => item.record.id === e.detail.record.id);
+        const item = this._listItems.find(item => item.item.id === e.detail.item.id);
         if (item) {
             this.selectItem(item);
         }
@@ -86,16 +85,16 @@ export class BrowseList extends BaseElement {
 
     selectItem(item: ListItem) {
         if (this.multiSelect) {
-            if (this._selected.has(item.record.id)) {
-                this._selected.delete(item.record.id);
+            if (this._selected.has(item.item.id)) {
+                this._selected.delete(item.item.id);
             } else {
-                this._selected.set(item.record.id, item);
+                this._selected.set(item.item.id, item);
             }
         } else {
             this._selected.clear();
-            this._selected.set(item.record.id, item);
+            this._selected.set(item.item.id, item);
             this._scrollToSelected();
-            router.go(`browse/${item.record.id}`);
+            router.go(`browse/${item.item.id}`);
         }
         this.requestUpdate();
     }
@@ -103,7 +102,7 @@ export class BrowseList extends BaseElement {
     selectAll() {
         this.multiSelect = true;
         for (const item of this._listItems) {
-            this._selected.set(item.record.id, item);
+            this._selected.set(item.item.id, item);
         }
         this.requestUpdate();
     }
@@ -129,15 +128,14 @@ export class BrowseList extends BaseElement {
                 box-sizing: border-box;
                 height: 100%;
                 position: relative;
-                background: var(--color-quaternary);
             }
 
             #main {
-                padding-top: 56px;
+                padding-top: 50px;
             }
 
             .filter-wrapper {
-                display: flex;
+                display: none;
                 font-size: var(--font-size-small);
                 height: 40px;
                 position: absolute;
@@ -179,18 +177,12 @@ export class BrowseList extends BaseElement {
             }
 
             .section-header {
-                position: sticky;
-                top: -56px;
-                z-index: 1;
                 display: flex;
                 height: 35px;
                 line-height: 35px;
                 padding: 0 15px;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
-                margin-bottom: -5px;
-                border-bottom: solid 1px #eee;
-                background: var(--color-quaternary);
             }
 
             .multi-select {
@@ -216,7 +208,7 @@ export class BrowseList extends BaseElement {
                 text-align: center;
             }
 
-            .record {
+            .item {
                 display: block;
                 cursor: pointer;
                 vertical-align: top;
@@ -224,16 +216,16 @@ export class BrowseList extends BaseElement {
                 flex-direction: row;
                 position: relative;
                 background: var(--color-background);
-                margin-top: 4px;
-                border-top: solid 1px #eee;
-                border-bottom: solid 1px #eee;
+                margin: 6px;
+                border: solid 1px #eee;
+                border-radius: 8px;
             }
 
-            .record .tags {
+            .item .tags {
                 padding: 0 8px;
             }
 
-            .record-header {
+            .item-header {
                 height: var(--row-height);
                 line-height: var(--row-height);
                 position: relative;
@@ -241,7 +233,7 @@ export class BrowseList extends BaseElement {
                 align-items: center;
             }
 
-            .record-name {
+            .item-name {
                 padding-left: 15px;
                 ${mixins.ellipsis()}
                 font-weight: bold;
@@ -249,21 +241,21 @@ export class BrowseList extends BaseElement {
                 width: 0;
             }
 
-            .record-fields {
+            .item-fields {
                 position: relative;
                 display: flex;
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
 
-            .record-fields::after {
+            .item-fields::after {
                 content: "";
                 display: block;
                 width: 6px;
                 flex: none;
             }
 
-            .record-field {
+            .item-field {
                 cursor: pointer;
                 font-size: var(--font-size-tiny);
                 line-height: 35px;
@@ -277,7 +269,7 @@ export class BrowseList extends BaseElement {
                 ${mixins.shade2()}
             }
 
-            .record-field > * {
+            .item-field > * {
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
             }
 
@@ -286,7 +278,7 @@ export class BrowseList extends BaseElement {
                 border-radius: inherit;
             }
 
-            .record-field:not(.copied) .copied-message, .record-field.copied .record-field-label {
+            .item-field:not(.copied) .copied-message, .item-field.copied .item-field-label {
                 opacity: 0;
                 transform: scale(0);
             }
@@ -302,22 +294,22 @@ export class BrowseList extends BaseElement {
                 content: "\\f00c\\ ";
             }
 
-            :host(:not([multi-select])) .record-field:hover {
+            :host(:not([multi-select])) .item-field:hover {
                 ${mixins.shade3()}
             }
 
-            .record-field-label {
+            .item-field-label {
                 padding: 0 15px;
                 pointer-events: none;
                 ${mixins.ellipsis()}
             }
 
-            .record:focus:not([selected]) {
+            .item:focus:not([selected]) {
                 border-color: var(--color-highlight);
                 color: #4ca8d9;
             }
 
-            .record[selected] {
+            .item[selected] {
                 background: #e6e6e6;
                 border-color: #ddd;
             }
@@ -407,12 +399,12 @@ export class BrowseList extends BaseElement {
         this._filterWrapper.style.transition = scrollingUp || st > 56 ? "transform 0.2s" : "none";
     }
 
-    private _newRecord() {
-        app.createRecord("");
+    private _newItem() {
+        app.createItem("");
     }
 
     private _scrollToIndex(i: number) {
-        const el = this.$(`pl-record-item[index="${i}"]`);
+        const el = this.$(`pl-item-item[index="${i}"]`);
         if (el) {
             this._main.scrollTop = el.offsetTop - 6;
         }
@@ -457,31 +449,31 @@ export class BrowseList extends BaseElement {
         }
         this.requestUpdate();
         const shareDialog = getDialog("pl-share-dialog") as ShareDialog;
-        await shareDialog.show(this._selectedRecords);
+        await shareDialog.show(this._selectedItems);
         this.clearSelection();
     }
 
     private async _deleteSelected() {
         const confirmed = await confirm(
-            $l("Are you sure you want to delete these records? This action can not be undone!"),
-            $l("Delete {0} Records", this._selectedRecords.length.toString())
+            $l("Are you sure you want to delete these items? This action can not be undone!"),
+            $l("Delete {0} Items", this._selectedItems.length.toString())
         );
         if (confirmed) {
-            const vaults = new Map<Vault, Record[]>();
+            const vaults = new Map<Vault, Item[]>();
             for (const item of this._selected.values()) {
                 if (!vaults.has(item.vault)) {
                     vaults.set(item.vault, []);
                 }
-                vaults.get(item.vault)!.push(item.record);
+                vaults.get(item.vault)!.push(item.item);
             }
-            await Promise.all([...vaults.entries()].map(([vault, records]) => app.deleteRecords(vault, records)));
+            await Promise.all([...vaults.entries()].map(([vault, items]) => app.deleteItems(vault, items)));
             this.multiSelect = false;
         }
     }
 
-    private _copyField(record: Record, index: number, e: Event) {
+    private _copyField(item: Item, index: number, e: Event) {
         e.stopPropagation();
-        setClipboard(record, record.fields[index]);
+        setClipboard(item, item.fields[index]);
         const fieldEl = e.target as HTMLElement;
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
@@ -500,10 +492,10 @@ export class BrowseList extends BaseElement {
             tags.push({ icon: "error", class: "tag warning", name: "" });
         }
 
-        const t = item.record.tags.find(t => t === app.filter.tag) || item.record.tags[0];
+        const t = item.item.tags.find(t => t === app.filter.tag) || item.item.tags[0];
         if (t) {
             tags.push({
-                name: item.record.tags.length > 1 ? `${t} (+${item.record.tags.length - 1})` : t,
+                name: item.item.tags.length > 1 ? `${t} (+${item.item.tags.length - 1})` : t,
                 icon: "tag",
                 class: ""
             });
@@ -526,17 +518,15 @@ export class BrowseList extends BaseElement {
                 () => ""
             )}
 
-                <div class="record"
-                    .record=${item.record}
-                    record-id="${item.record.id}"
-                    ?selected=${this._selected.has(item.record.id)}
+                <div class="item"
+                    ?selected=${this._selected.has(item.item.id)}
                     @click=${() => this.selectItem(item)}
                     index="${index}">
 
-                        <div class="record-header">
+                        <div class="item-header">
 
-                            <div class="record-name" ?disabled=${!item.record.name}>
-                                ${item.record.name || $l("No Name")}
+                            <div class="item-name" ?disabled=${!item.item.name}>
+                                ${item.item.name || $l("No Name")}
                             </div>
 
                             <div class="tags small">
@@ -552,15 +542,15 @@ export class BrowseList extends BaseElement {
 
                         </div>
 
-                        <div class="record-fields">
+                        <div class="item-fields">
 
-                            ${item.record.fields.map(
+                            ${item.item.fields.map(
                                 (f: Field, i: number) => html`
                                     <div
-                                        class="record-field"
-                                        @click=${(e: MouseEvent) => this._copyField(item.record, i, e)}>
+                                        class="item-field"
+                                        @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}>
 
-                                        <div class="record-field-label">${f.name}</div>
+                                        <div class="item-field-label">${f.name}</div>
 
                                         <div class="copied-message">${$l("copied")}</div>
 
@@ -568,7 +558,7 @@ export class BrowseList extends BaseElement {
                                 `
                             )}
 
-                            <div class="record-field" disabled ?hidden=${!!item.record.fields.length}>
+                            <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
                                 ${$l("No Fields")}
                             </div>
 

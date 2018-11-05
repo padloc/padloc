@@ -1,5 +1,5 @@
 import { unmarshal } from "@padlock/core/lib/encoding.js";
-import { Record, Field, createRecord } from "@padlock/core/lib/data.js";
+import { VaultItem, Field, createVaultItem } from "@padlock/core/lib/data.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import { loadScript } from "./util";
 
@@ -9,15 +9,15 @@ export function loadPapa(): Promise<any> {
 
 /**
  * Takes a data table (represented by a two-dimensional array) and converts it
- * into an array of records
- * @param  Array    data         Two-dimensional array containing tabular record data; The first 'row'
- *                               should contain field names. All other rows represent records, containing
- *                               the record name, field values and optionally a list of tags.
- * @param  Integer  nameColIndex Index of the column containing the record names. Defaults to 0
- * @param  Integer  tagsColIndex  Index of the column containing the record categories. If left empty
+ * into an array of items
+ * @param  Array    data         Two-dimensional array containing tabular item data; The first 'row'
+ *                               should contain field names. All other rows represent items, containing
+ *                               the item name, field values and optionally a list of tags.
+ * @param  Integer  nameColIndex Index of the column containing the item names. Defaults to 0
+ * @param  Integer  tagsColIndex  Index of the column containing the item categories. If left empty
  *                               no categories will be used
  */
-export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?: number): Record[] {
+export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?: number): VaultItem[] {
     // Use first row for column names
     const colNames = data[0];
 
@@ -34,7 +34,7 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
     }
 
     // All subsequent rows should contain values
-    let records = data.slice(1).map(function(row) {
+    let items = data.slice(1).map(function(row) {
         // Construct an array of field object from column names and values
         let fields = [];
         for (let i = 0; i < row.length; i++) {
@@ -49,10 +49,10 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
 
         const name = row[nameColIndex!];
         const tags = row[tagsColIndex!];
-        return createRecord(name, fields, (tags && tags.split(",")) || []);
+        return createVaultItem(name, fields, (tags && tags.split(",")) || []);
     });
 
-    return records;
+    return items;
 }
 
 export async function isCSV(data: string): Promise<Boolean> {
@@ -60,7 +60,7 @@ export async function isCSV(data: string): Promise<Boolean> {
     return papa.parse(data).errors.length === 0;
 }
 
-export async function fromCSV(data: string, nameColIndex?: number, tagsColIndex?: number): Promise<Record[]> {
+export async function fromCSV(data: string, nameColIndex?: number, tagsColIndex?: number): Promise<VaultItem[]> {
     const papa = await loadPapa();
     const parsed = papa.parse(data);
     if (parsed.errors.length) {
@@ -82,7 +82,7 @@ export function isFromPadlock(data: string): boolean {
     }
 }
 
-export async function fromPadlock(_data: string, _password: string): Promise<Record[]> {
+export async function fromPadlock(_data: string, _password: string): Promise<VaultItem[]> {
     // TODO
     throw "not implemented";
 }
@@ -112,7 +112,7 @@ function lpParseNotes(str: string): Field[] {
  * the 'extra' column for 'special notes' and remove any special fields that are not needed outside of
  * LastPass
  */
-function lpParseRow(row: string[]): Record {
+function lpParseRow(row: string[]): VaultItem {
     const nameIndex = 4;
     const categoryIndex = 5;
     const urlIndex = 0;
@@ -140,12 +140,12 @@ function lpParseRow(row: string[]): Record {
 
     const dir = row[categoryIndex];
     // Create a basic item using the standard fields
-    return createRecord(row[nameIndex], fields, dir ? [dir] : []);
+    return createVaultItem(row[nameIndex], fields, dir ? [dir] : []);
 }
 
-export async function fromLastPass(data: string): Promise<Record[]> {
+export async function fromLastPass(data: string): Promise<VaultItem[]> {
     const papa = await loadPapa();
-    let records = papa
+    let items = papa
         .parse(data)
         .data // Remove first row as it only contains field names
         .slice(1)
@@ -153,7 +153,7 @@ export async function fromLastPass(data: string): Promise<Record[]> {
         .filter((row: string[]) => row.length > 1)
         .map(lpParseRow);
 
-    return records;
+    return items;
 }
 
 /**
