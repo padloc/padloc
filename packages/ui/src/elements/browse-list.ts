@@ -48,6 +48,7 @@ export class BrowseList extends BaseElement {
     @listen("filter-changed", app)
     _updateListItems() {
         this._listItems = app.items;
+        this._toggleFilterInput();
     }
 
     @listen("item-created", app)
@@ -62,7 +63,7 @@ export class BrowseList extends BaseElement {
     @listen("unlock", app)
     _unlocked() {
         this._updateListItems();
-        this._animateItems(600);
+        // this._animateItems(600);
     }
 
     @listen("lock", app)
@@ -74,13 +75,17 @@ export class BrowseList extends BaseElement {
     @listen("synchronize", app)
     _synchronized() {
         this._updateListItems();
-        this._animateItems();
+        // this._animateItems();
+    }
+
+    search() {
+        this._filterInput.focus();
     }
 
     clearFilter() {
         this._filterInput.value = "";
         this._updateFilter();
-        this._scrollHandler();
+        // this._scrollHandler();
     }
 
     selectItem(item: ListItem) {
@@ -94,7 +99,7 @@ export class BrowseList extends BaseElement {
             this._selected.clear();
             this._selected.set(item.item.id, item);
             this._scrollToSelected();
-            router.go(`browse/${item.item.id}`);
+            router.go(`items/${item.item.id}`);
         }
         this.requestUpdate();
     }
@@ -125,28 +130,36 @@ export class BrowseList extends BaseElement {
 
             :host {
                 display: flex;
+                flex-direction: column;
                 box-sizing: border-box;
                 height: 100%;
                 position: relative;
+                background: var(--color-quaternary);
             }
 
-            #main {
-                padding-top: 50px;
+            header {
+                overflow: visible;
+                z-index: 10;
+            }
+
+            pl-browse-filter {
+                flex: 1;
+                width: 0;
             }
 
             .filter-wrapper {
-                display: none;
+                display: flex;
                 font-size: var(--font-size-small);
                 height: 40px;
                 position: absolute;
-                top: 8px;
-                left: 8px;
-                right: 8px;
-                background: var(--color-tertiary);
-                border: solid 1px #eee;
-                border-radius: 20px;
+                top: 50px;
+                left: 0;
+                right: 0;
+                background: var(--color-secondary);
+                color: var(--color-tertiary);
                 z-index: 2;
                 overflow: hidden;
+                transition: transform 0.2s;
             }
 
             .filter-wrapper pl-input {
@@ -177,35 +190,18 @@ export class BrowseList extends BaseElement {
             }
 
             .section-header {
+                position: sticky;
+                top: 0;
+                background: #fafafa;
+                z-index: 1;
                 display: flex;
-                height: 35px;
-                line-height: 35px;
+                height: 40px;
+                line-height: 40px;
                 padding: 0 15px;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
-            }
-
-            .multi-select {
-                background: var(--color-background);
-                height: var(--row-height);
-                border-top: solid 1px rgba(0, 0, 0, 0.2);
-                display: flex;
-            }
-
-            .multi-select > pl-icon {
-                width: var(--row-height);
-                height: var(--row-height);
-            }
-
-            .multi-select-count {
-                flex: 1;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: var(--font-size-small);
-                font-weight: bold;
-                overflow: hidden;
-                text-align: center;
+                border-bottom: solid 1px #ddd;
+                box-sizing: border-box;
             }
 
             .item {
@@ -214,11 +210,8 @@ export class BrowseList extends BaseElement {
                 vertical-align: top;
                 box-sizing: border-box;
                 flex-direction: row;
-                position: relative;
                 background: var(--color-background);
-                margin: 6px;
-                border: solid 1px #eee;
-                border-radius: 8px;
+                border-bottom: solid 1px #ddd;
             }
 
             .item .tags {
@@ -258,8 +251,8 @@ export class BrowseList extends BaseElement {
             .item-field {
                 cursor: pointer;
                 font-size: var(--font-size-tiny);
-                line-height: 35px;
-                height: 35px;
+                line-height: 32px;
+                height: 32px;
                 text-align: center;
                 position: relative;
                 flex: 1;
@@ -294,10 +287,6 @@ export class BrowseList extends BaseElement {
                 content: "\\f00c\\ ";
             }
 
-            :host(:not([multi-select])) .item-field:hover {
-                ${mixins.shade3()}
-            }
-
             .item-field-label {
                 padding: 0 15px;
                 pointer-events: none;
@@ -325,6 +314,16 @@ export class BrowseList extends BaseElement {
             }
         </style>
 
+        <header>
+
+            <pl-icon icon="" class="tap"></pl-icon>
+
+            <pl-browse-filter></pl-browse-filter>
+
+            <pl-icon icon="search" class="tap" @click=${() => this.search()}></pl-icon>
+
+        </header>
+
         <div class="filter-wrapper">
 
             <pl-icon icon="search"></pl-icon>
@@ -333,6 +332,8 @@ export class BrowseList extends BaseElement {
                 class="flex"
                 .placeholder=${$l("Type To Filter")}
                 id="filterInput"
+                @focus=${() => this._toggleFilterInput()}
+                @blur=${() => this._toggleFilterInput()}
                 @input=${() => this._updateFilter()}
                 @escape=${() => this.clearFilter()}>
             </pl-input>
@@ -340,7 +341,6 @@ export class BrowseList extends BaseElement {
             <pl-icon
                 class="tap"
                 icon="cancel"
-                ?invisible=${!app.filter.text}
                 @click=${() => this.clearFilter()}>
             </pl-icon>
 
@@ -374,6 +374,12 @@ export class BrowseList extends BaseElement {
 
     _updateFilter() {
         app.filter = { text: this._filterInput.value, vault: app.filter.vault, tag: app.filter.tag };
+        this._toggleFilterInput();
+    }
+
+    _toggleFilterInput() {
+        const pos = this._filterInput.focused || this._filterInput.value ? 0 : -60;
+        this._filterWrapper.style.transform = `translate(0, ${pos}px)`;
     }
 
     @listen("resize", window)
@@ -388,16 +394,16 @@ export class BrowseList extends BaseElement {
         return this._cachedBounds;
     }
 
-    @listen("scroll", "#main")
-    _scrollHandler() {
-        const st = this._main.scrollTop;
-        const scrollingUp = this._lastScrollTop > st;
-        this._lastScrollTop = st;
-
-        const pos = scrollingUp || this._filterInput.focused || this._filterInput.value ? 0 : Math.max(-st, -60);
-        this._filterWrapper.style.transform = `translate(0, ${pos}px)`;
-        this._filterWrapper.style.transition = scrollingUp || st > 56 ? "transform 0.2s" : "none";
-    }
+    // @listen("scroll", "#main")
+    // _scrollHandler() {
+    //     const st = this._main.scrollTop;
+    //     const scrollingUp = this._lastScrollTop > st;
+    //     this._lastScrollTop = st;
+    //
+    //     const pos = scrollingUp || this._filterInput.focused || this._filterInput.value ? 0 : Math.max(-st, -60);
+    //     this._filterWrapper.style.transform = `translate(0, ${pos}px)`;
+    //     this._filterWrapper.style.transition = scrollingUp || st > 56 ? "transform 0.2s" : "none";
+    // }
 
     private _newItem() {
         app.createItem("");
@@ -428,18 +434,18 @@ export class BrowseList extends BaseElement {
     //     });
     // }
 
-    private async _animateItems(delay = 100) {
-        await this.updateComplete;
-        this._main.style.opacity = "0";
-        setTimeout(() => {
-            this._scrollHandler();
-            const elements = Array.from(this.$$(".list-item"));
-            const animated = elements.slice(this._firstVisibleIndex, this._lastVisibleIndex + 1);
-
-            animateCascade(animated, { clear: true });
-            this._main.style.opacity = "1";
-        }, delay);
-    }
+    // private async _animateItems(delay = 100) {
+    //     await this.updateComplete;
+    //     this._main.style.opacity = "0";
+    //     setTimeout(() => {
+    //         this._scrollHandler();
+    //         const elements = Array.from(this.$$(".list-item"));
+    //         const animated = elements.slice(this._firstVisibleIndex, this._lastVisibleIndex + 1);
+    //
+    //         animateCascade(animated, { clear: true });
+    //         this._main.style.opacity = "1";
+    //     }, delay);
+    // }
 
     private async _shareSelected() {
         for (const [id, item] of this._selected.entries()) {

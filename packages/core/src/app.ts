@@ -162,7 +162,7 @@ export class App extends EventTarget implements Storable {
     }
 
     get items(): ListItem[] {
-        const recentCount = 3;
+        const recentCount = 0;
 
         const { vault, tag, text } = this.filter;
 

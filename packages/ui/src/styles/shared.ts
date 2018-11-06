@@ -197,8 +197,10 @@ export const shared = html`
     header {
         display: flex;
         height: var(--row-height);
+        background: var(--color-background);
         font-size: var(--font-size-default);
         z-index: 1;
+        border-bottom: solid 1px #ddd;
         align-items: center;
     }
 
@@ -212,8 +214,9 @@ export const shared = html`
     }
 
     header pl-icon {
-        height: var(--row-height);
-        width: var(--row-height);
+        margin: 5px;
+        border-radius: 100%;
+        overflow: hidden;
         font-size: 120%;
     }
 

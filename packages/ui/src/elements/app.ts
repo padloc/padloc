@@ -14,7 +14,7 @@ import { Manage } from "./manage.js";
 import { Start } from "./start.js";
 import { alert, confirm, clearDialogs } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
-import "./menu.js";
+import { Menu } from "./menu.js";
 
 // TODO: auto lock, auto sync, hints, tracking
 
@@ -33,6 +33,8 @@ class App extends BaseElement {
     private _settings: Settings;
     @query("pl-mangage")
     private _manage: Manage;
+    @query("pl-menu")
+    private _menu: Menu;
 
     @property()
     private _view: View | null;
@@ -78,10 +80,9 @@ class App extends BaseElement {
 
         <style>
             :host {
-                --color-gutter: #eee;
+                background: linear-gradient(var(--color-gradient-highlight-to) 0%, var(--color-gradient-highlight-from) 100%);
                 overflow: hidden;
                 color: var(--color-foreground);
-                background: var(--color-quaternary);
                 position: absolute;
                 width: 100%;
                 height: 100%;
@@ -89,25 +90,32 @@ class App extends BaseElement {
                 perspective: 1000px;
             }
 
-            #views {
+            .wrapper {
                 ${mixins.fullbleed()}
+                max-width: 1200px;
+                max-height: 900px;
+                margin: auto;
                 overflow: hidden;
-                perspective: 1000px;
+                display: grid;
+                grid-template-columns: 200px 1fr;
                 transform: translate3d(0, 0, 0);
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
-            #views:not(.active),
-            :host(.dialog-open) #views {
+            #views {
+                position: relative;
+                perspective: 1000px;
+            }
+
+            .wrapper:not(.active),
+            :host(.dialog-open) .wrapper {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
             }
 
             #views > * {
                 ${mixins.fullbleed()}
-                transform: translate3d(0, 0, 0);
-                overflow: hidden;
-                transition: transform 0.3s, opacity 0.3s;
+                background: #eee;
             }
 
             #views > .left {
@@ -122,19 +130,37 @@ class App extends BaseElement {
                 opacity: 0;
             }
 
+            @media (min-width: 1200px), (min-height: 900px) {
+                .wrapper {
+                    top: 20px;
+                    left: 20px;
+                    right: 20px;
+                    bottom: 20px;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
+                }
+            }
+
         </style>
 
         <pl-start id="startView"></pl-start>
 
-        <div id="views">
+        <div class="wrapper">
 
-            <pl-settings class="${this._view === this._settings ? "" : "left"}"></pl-settings>
+            <pl-menu></pl-menu>
 
-            <pl-browse class="${
-                this._view === this._settings ? "right" : this._view === this._manage ? "left" : ""
-            }"></pl-browse>
+            <div id="views">
 
-            <pl-manage class="${this._view === this._manage ? "" : "right"}"></pl-manage>
+                <pl-settings class="${this._view === this._settings ? "" : "left"}"></pl-settings>
+
+                <pl-browse class="${
+                    this._view === this._settings ? "right" : this._view === this._manage ? "left" : ""
+                }"></pl-browse>
+
+                <pl-manage class="${this._view === this._manage ? "" : "right"}"></pl-manage>
+
+            </div>
 
         </div>
 `;
@@ -142,7 +168,7 @@ class App extends BaseElement {
 
     @listen("lock", app)
     _locked() {
-        this._views.classList.remove("active");
+        this.$(".wrapper").classList.remove("active");
         clearDialogs();
         clearClipboard();
     }
@@ -150,7 +176,7 @@ class App extends BaseElement {
     @listen("unlock", app)
     _unlocked() {
         setTimeout(() => {
-            this._views.classList.add("active");
+            this.$(".wrapper").classList.add("active");
             this._applyPath(router.path);
         }, 600);
     }
@@ -182,22 +208,27 @@ class App extends BaseElement {
     }
 
     async _applyPath(path: string, _direction: string = "forward") {
+        const params = new URLSearchParams(window.location.search);
+        console.log(params.get("vault"));
+
         let match;
         if (path === "settings") {
             this._openView(this._settings);
-        } else if ((match = path.match(/^manage\/(?:([^\/]+)(?:\/invite\/([^\/]+))?)?$/))) {
+            this._menu.selected = "settings";
+        } else if ((match = path.match(/^vaults\/(?:([^\/]+)(?:\/invite\/([^\/]+))?)?$/))) {
             const vault = await app.getVault({ id: match[1] });
             if (vault) {
                 this._manage.vault = vault;
             }
             this._openView(this._manage);
-        } else if ((match = path.match(/^browse(?:\/([^\/]+))?$/))) {
+            this._menu.selected = "vaults";
+        } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const item = (match[1] && app.getItem(match[1])) || null;
             this._browse.item = item;
             this._openView(this._browse);
+            this._menu.selected = "items";
         } else {
-            this._browse.item = null;
-            this._openView(this._browse);
+            router.go("items");
         }
     }
 

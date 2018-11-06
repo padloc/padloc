@@ -1,19 +1,22 @@
+import { FilterParams } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app, router } from "../init.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, listen } from "./base.js";
+import { BaseElement, element, property, html, listen } from "./base.js";
 
 @element("pl-menu")
 export class Menu extends BaseElement {
-    _mainMenu = [
-        { path: "", label: $l("Home"), icon: "logo" },
-        { path: "settings", label: $l("Settings"), icon: "settings" },
-        { path: "account", label: $l("Account"), icon: "user" }
-    ];
+    @property()
+    selected: string = "items";
 
     @listen("unlock", app)
     _refresh() {
         this.requestUpdate();
+    }
+
+    private _filter(params: FilterParams) {
+        app.filter = params;
+        router.go("items");
     }
 
     render() {
@@ -22,9 +25,13 @@ export class Menu extends BaseElement {
 
         <style>
             :host {
+                display: block;
+                flex-direction: column;
+                ${mixins.gradientDark()}
                 color: var(--color-tertiary);
-                padding: 10px 0;
                 font-size: var(--font-size-small);
+                ${mixins.scroll()}
+                padding: 10px 0;
             }
 
             ul {
@@ -37,11 +44,18 @@ export class Menu extends BaseElement {
                 display: flex;
                 align-items: center;
                 height: 40px;
-                padding: 0 10px;
+                margin: 0 10px;
+                padding-right: 10px;
+                border-radius: 8px;
+                overflow: hidden;
             }
 
-            li:hover {
-                background: rgba(255, 255, 255, 0.1);
+            li:not([selected]):hover {
+                background: rgba(0, 0, 0, 0.1);
+            }
+
+            li[selected] {
+                background: rgba(255, 255, 255, 0.2);
             }
 
             li div {
@@ -51,38 +65,81 @@ export class Menu extends BaseElement {
 
             h3 {
                 font-size: 100%;
+                margin-top: 30px;
                 padding: 0 20px;
                 opacity: 0.8;
                 font-weight: normal;
             }
 
-            .subvault {
+            .vault, .subvault, .menu-tag {
                 font-size: var(--font-size-tiny);
                 height: 35px;
-                padding-left: 30px;
             }
 
-            .menu-tag {
+            .vault pl-icon, .subvault pl-icon, .menu-tag pl-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 90%;
+            }
+
+            .subvault {
+                padding-left: 15px;
+            }
+
+            .subvault pl-icon {
+                font-size: 80%;
+            }
+
+            .logo {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 150%;
+                color: rgba(0, 0, 0, 0.3);
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+
+            .logo .version {
+                font-weight: normal;
+                padding: 0 5px;
                 font-size: var(--font-size-tiny);
-                height: 35px;
             }
         </style>
+
+        <div class="logo">
+            <pl-icon icon="logo"></pl-icon>
+            <div>Padlock</div>
+            <div class="version">v3.0</div>
+        </div>
 
         <nav>
 
             <ul>
 
-                ${this._mainMenu.map(
-                    ({ path, label, icon }) => html`
-                <li class="tap" @click=${() => router.go(path)}>
+                <li class="tap" @click=${() => this._filter({})} ?selected=${this.selected === "items"}>
 
-                    <pl-icon icon="${icon}"></pl-icon>
+                    <pl-icon icon="list"></pl-icon>
 
-                    <div>${label}</div>
+                    <div>${$l("Items")}</div>
 
                 </li>
-                `
-                )}
+
+                <li class="tap" @click=${() => router.go("settings")} ?selected=${this.selected === "settings"}>
+
+                    <pl-icon icon="settings"></pl-icon>
+
+                    <div>${$l("Settings")}</div>
+
+                </li>
+
+                <li class="tap" @click=${() => router.go("manage")} ?selected=${this.selected === "manage"}>
+
+                    <pl-icon icon="vaults"></pl-icon>
+
+                    <div>${$l("Manage")}</div>
+
+                </li>
 
             </ul>
 
@@ -92,27 +149,15 @@ export class Menu extends BaseElement {
 
         <ul>
 
-            <li
-                class="vault tap"
-                @click=${() => this.dispatch("filter", {})}>
-
-                <pl-icon icon="supervault"></pl-icon>
-
-                <div>${$l("All Vaults")}</div> 
-
-            </li>
-
             ${app.vaults.map(
                 vault => html`
                 <li
                     class="vault tap ${vault.parent ? "subvault" : ""}"
-                    @click=${() => this.dispatch("filter", { vault })}>
+                    @click=${() => this._filter({ vault })}>
 
-                    <pl-icon icon="${vault === app.mainVault ? "user" : "vault"}"></pl-icon>
+                    <pl-icon icon="vault"></pl-icon>
 
                     <div>${vault.name}</div> 
-
-                    <pl-icon icon="settings"></pl-icon>
 
                 </li>
             `
@@ -128,7 +173,7 @@ export class Menu extends BaseElement {
                 tag => html`
                 <li
                     class="menu-tag tap"
-                    @click=${() => this.dispatch("filter", { tag })}>
+                    @click=${() => this._filter({ tag })}>
 
                     <pl-icon icon="tag"></pl-icon>
 

@@ -31,22 +31,12 @@ export class Browse extends View {
                 }
 
                 pl-browse-list {
-                    width: 400px;
-                    margin-right: 2px;
+                    width: 350px;
+                    border-right: solid 2px #ddd;
                 }
 
                 pl-item-view {
                     flex: 1;
-                }
-
-                header {
-                    overflow: visible;
-                    z-index: 10;
-                }
-
-                pl-browse-filter {
-                    flex: 1;
-                    width: 0;
                 }
 
                 @media (max-width: ${config.narrowWidth}px) {
@@ -57,7 +47,7 @@ export class Browse extends View {
 
                     pl-browse-list {
                         flex: 1;
-                        margin-right: 0;
+                        border: none;
                     }
 
                     pl-item-view, pl-browse-list, header {
@@ -75,16 +65,6 @@ export class Browse extends View {
                 }
 
             </style>
-
-            <header ?active=${!this.item}>
-
-                <pl-icon icon="settings" class="tap" @click=${() => router.go("settings")}></pl-icon>
-
-                <pl-browse-filter></pl-browse-filter>
-
-                <pl-icon icon="vaults" class="tap" @click=${() => router.go("vaults")}></pl-icon>
-
-            </header>
 
             <main>
 

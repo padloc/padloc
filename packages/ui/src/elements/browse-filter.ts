@@ -10,7 +10,7 @@ export class BrowseFilter extends BaseElement {
     @property()
     private _selecting: Boolean = false;
 
-    @listen("filter-changed")
+    @listen("filter-changed", app)
     _update() {
         this.requestUpdate();
     }

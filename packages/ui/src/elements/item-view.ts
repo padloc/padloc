@@ -65,7 +65,7 @@ export class ItemView extends BaseElement {
                 display: flex;
                 flex-direction: column;
                 position: relative;
-                transition: background 0.5s;
+                background: var(--color-background);
                 ${mixins.scroll()}
             }
 
@@ -77,12 +77,13 @@ export class ItemView extends BaseElement {
             main {
                 flex-direction: column;
                 padding: 15px;
-                ${mixins.card()}
             }
 
             pl-input {
                 height: auto;
                 --line-height: 30px;
+                --rule-width: 2px;
+                --rule-color: #ddd;
                 line-height: var(--line-height);
             }
 
@@ -138,6 +139,7 @@ export class ItemView extends BaseElement {
                 flex: 1;
                 padding: 0 10px;
                 opacity: 1;
+                --rule-width: 1px;
             }
 
             .add-button {
@@ -171,7 +173,7 @@ export class ItemView extends BaseElement {
             }
 
             pl-input:not([readonly]) {
-                background-image: linear-gradient(transparent, transparent calc(var(--line-height) - 1px), rgb(204, 204, 204) calc(var(--line-height) - 1px), rgb(204, 204, 204) var(--line-height), transparent var(--line-height));
+                background-image: linear-gradient(transparent, transparent calc(var(--line-height) - var(--rule-width)), var(--rule-color) calc(var(--line-height) - var(--rule-width)), var(--rule-color) var(--line-height), transparent var(--line-height));
                 background-size: 100% var(--line-height);
             }
 

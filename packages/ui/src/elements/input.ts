@@ -249,9 +249,12 @@ export class Input extends BaseElement {
     }
 
     @listen("focus")
-    _focused() {
+    _focused(e: FocusEvent) {
+        e.stopPropagation();
         this.focused = true;
         activeInput = this;
+
+        this.dispatch("focus");
 
         if (this.selectOnFocus) {
             setTimeout(() => this.selectAll(), 10);
@@ -259,9 +262,13 @@ export class Input extends BaseElement {
     }
 
     @listen("blur")
-    _blurred() {
+    _blurred(e: FocusEvent) {
+        e.stopPropagation();
         this._updateValidity();
         this.focused = false;
+
+        this.dispatch("blur");
+
         if (activeInput === this) {
             activeInput = null;
         }
