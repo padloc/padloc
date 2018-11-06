@@ -1,5 +1,5 @@
 import { html } from "@polymer/lit-element";
-import { mixins } from "./";
+import { mixins, config } from "./";
 
 export const shared = html`
 <style>
@@ -225,6 +225,12 @@ export const shared = html`
         box-sizing: border-box;
         ${mixins.scroll()}
         overflow-x: hidden;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
     }
 
     pl-dialog .message {
@@ -454,6 +460,12 @@ export const shared = html`
         25% {transform: translate(5px, 0);}
         50% {transform: translate(-5px, -3px);}
         75% {transform: translate(5px, 2px);}
+    }
+
+    @media (min-width: ${config.narrowWidth}px) {
+        .menu-button {
+            visibility: hidden;
+        }
     }
 </style>
 `;

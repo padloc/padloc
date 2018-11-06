@@ -127,21 +127,16 @@ export class Settings extends View {
                 color: var(--color-error);
                 margin: -14px 15px 12px 15px;
             }
-
-            .back-button > pl-icon[icon="forward"] {
-                font-size: 80%;
-                width: 30px;
-                margin-left: -20px;
-            }
         </style>
 
         <header>
-            <pl-icon></pl-icon>
+
+            <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
+
             <div class="title">${$l("Settings")}</div>
-            <div class="back-button tap" @click=${() => router.go("")}>
-                <pl-icon icon="list"></pl-icon>
-                <pl-icon icon="forward"></pl-icon>
-            </div>
+
+            <pl-icon></pl-icon>
+
         </header>
 
         <main>

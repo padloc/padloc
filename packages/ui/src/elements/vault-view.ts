@@ -7,17 +7,17 @@ import { shared, mixins } from "../styles";
 import { getDialog, confirm, prompt, alert } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
-import { element, html, property, listen } from "./base.js";
-import { View } from "./view.js";
+import { BaseElement, element, html, property, listen } from "./base.js";
 import "./icon.js";
 import { MemberDialog } from "./member-dialog.js";
 import "./member-dialog.js";
 import { InviteDialog } from "./invite-dialog.js";
 import "./invite-dialog.js";
 import { Input } from "./input.js";
+import "./account-item.js";
 
 @element("pl-vault-view")
-export class VaultView extends View {
+export class VaultView extends BaseElement {
     @property()
     vault: Vault | null = null;
 
@@ -40,8 +40,8 @@ export class VaultView extends View {
         animateCascade(this.$$(".animate:not([hidden])", false), { initialDelay: 200 });
         if (
             this.vault &&
-            this.vault.members.length === 1 &&
-            !this.vault.invites.length &&
+            this.vault.members.size === 1 &&
+            !this.vault.invites.size &&
             this.vault.getPermissions().manage
         ) {
             const confirmed = await confirm(
@@ -58,13 +58,13 @@ export class VaultView extends View {
             }
         }
 
-        const invite = this.vault!.getInvite(app.account!.email);
+        const invite = this.vault!.getInviteByEmail(app.account!.email);
         if (invite && !invite.accepted) {
             this._showInvite(invite);
         }
 
         if (this.vault!.isAdmin()) {
-            for (const invite of this.vault!.invites.filter(i => i.accepted)) {
+            for (const invite of [...this.vault!.invites].filter(i => i.accepted)) {
                 this._showInvite(invite);
             }
         }
@@ -86,7 +86,7 @@ export class VaultView extends View {
             return;
         }
 
-        if (this.vault!.members.some(m => m.email === email)) {
+        if ([...this.vault!.members].some(m => m.email === email)) {
             await alert($l("This user is already a member!"), { type: "warning" });
             return;
         }
@@ -102,15 +102,11 @@ export class VaultView extends View {
 
     private async _showInvite(invite: Invite) {
         if (invite.email !== app.account!.email && invite.accepted && !invite.expired && (await invite.verify())) {
-            await this._showMember(Object.assign(
-                {
-                    status: "active",
-                    permissions: { read: true, write: false, manage: false },
-                    signedPublicKey: "",
-                    updated: ""
-                },
-                invite.invitee!
-            ) as VaultMember);
+            await this._showMember({
+                ...invite.invitee,
+                status: "active",
+                permissions: { read: true, write: false, manage: false }
+            } as VaultMember);
             if (this.vault!.isMember(invite.invitee! as VaultMember)) {
                 await app.deleteInvite(invite);
             }
@@ -143,12 +139,12 @@ export class VaultView extends View {
 
     render() {
         const vault = this.vault!;
-        const { name, members, collection } = vault;
-        const member = vault.getMember();
+        const { name, members, items } = vault;
+        const member = vault.getMember(app.account!);
         const memberStatus = member ? member.status : "";
         const permissions = vault.getPermissions();
-        const invites = vault.isAdmin() ? vault.invites : [];
-        const myInvite = vault.invites.find(inv => inv.email == app.account!.email);
+        const invites = vault.isAdmin() ? [...vault.invites] : [];
+        const myInvite = vault.getInviteByEmail(app.account!.email);
 
         return html`
         ${shared}
@@ -158,20 +154,15 @@ export class VaultView extends View {
             :host {
                 display: flex;
                 flex-direction: column;
-                ${mixins.fullbleed()}
-            }
-
-            main {
-                background: var(--color-quaternary);
+                background: var(--color-tertiary);
             }
 
             .tags {
                 padding: 0 8px;
             }
 
-            pl-account-item {
-                ${mixins.card()}
-                margin: 6px;
+            pl-account-item:not(:last-of-kind) {
+                border-bottom: solid 1px #ddd;
             }
 
             .subheader {
@@ -291,9 +282,9 @@ export class VaultView extends View {
 
                 <div class="tag" flex ?hidden=${memberStatus === "removed"}>
 
-                    <pl-icon icon="vault"></pl-icon>
+                    <pl-icon icon="group"></pl-icon>
 
-                    <div>${$l("{0} Members", members.length.toString())}</div>
+                    <div>${$l("{0} Members", members.size.toString())}</div>
 
                 </div>
 
@@ -301,7 +292,7 @@ export class VaultView extends View {
 
                     <pl-icon icon="record"></pl-icon>
 
-                    <div>${$l("{0} Records", collection.size.toString())}</div>
+                    <div>${$l("{0} Records", items.size.toString())}</div>
 
                 </div>
 
@@ -363,7 +354,7 @@ export class VaultView extends View {
 
             </h2>
 
-            ${members.map(
+            ${[...members].map(
                 acc => html`
                     <pl-account-item
                         .account=${acc}
@@ -374,8 +365,6 @@ export class VaultView extends View {
             )}
 
         </main>
-
-        <div class="rounded-corners"></div>
        `;
     }
 }

@@ -23,11 +23,6 @@ export class Browse extends View {
             <style>
                 :host {
                     display: flex;
-                    flex-direction: column;
-                }
-
-                main {
-                    display: flex;
                 }
 
                 pl-browse-list {
@@ -46,6 +41,7 @@ export class Browse extends View {
                     }
 
                     pl-browse-list {
+                        width: 0;
                         flex: 1;
                         border: none;
                     }
@@ -66,16 +62,12 @@ export class Browse extends View {
 
             </style>
 
-            <main>
+            <pl-browse-list ?active=${!this.item}></pl-browse-list>
 
-                <pl-browse-list ?active=${!this.item}></pl-browse-list>
-
-                <pl-item-view
-                    ?active=${!!this.item}
-                    .item=${this.item}
-                </pl-item-view>
-
-            </main>
+            <pl-item-view
+                ?active=${!!this.item}
+                .item=${this.item}
+            </pl-item-view>
         `;
     }
 }

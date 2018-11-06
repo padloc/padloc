@@ -113,7 +113,9 @@ export class Input extends BaseElement {
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
-                    rows="1"></textarea>
+                    rows="1"
+                    @focus=${(e: FocusEvent) => this._focused(e)}
+                    @blur=${(e: FocusEvent) => this._blurred(e)}></textarea>
 
                 <textarea
                     .value=${mask(value)}
@@ -136,7 +138,9 @@ export class Input extends BaseElement {
                     spellcheck="false"
                     autocorrect="off"
                     type="${type}"
-                    pattern="${pattern || ".*"}">
+                    pattern="${pattern || ".*"}"
+                    @focus=${(e: FocusEvent) => this._focused(e)}
+                    @blur=${(e: FocusEvent) => this._blurred(e)}>
 
                 <input
                     .value=${mask(value)}
@@ -248,7 +252,6 @@ export class Input extends BaseElement {
         return this._inputElement.validationMessage;
     }
 
-    @listen("focus")
     _focused(e: FocusEvent) {
         e.stopPropagation();
         this.focused = true;
@@ -261,7 +264,6 @@ export class Input extends BaseElement {
         }
     }
 
-    @listen("blur")
     _blurred(e: FocusEvent) {
         e.stopPropagation();
         this._updateValidity();

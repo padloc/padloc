@@ -1,10 +1,10 @@
 import { when } from "lit-html/directives/when.js";
 import { Field } from "@padlock/core/lib/data.js";
 import { Vault } from "@padlock/core/lib/vault.js";
+import { VaultItem } from "@padlock/core/lib/data.js";
 import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";
-import { animateCascade } from "../animation.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { confirm, getDialog } from "../dialog.js";
@@ -34,7 +34,6 @@ export class BrowseList extends BaseElement {
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
     private _selected = new Map<string, ListItem>();
-    private _lastScrollTop: number = 0;
 
     private get _selectedItems() {
         return [...this._selected.values()].map((item: ListItem) => item.item);
@@ -316,7 +315,7 @@ export class BrowseList extends BaseElement {
 
         <header>
 
-            <pl-icon icon="" class="tap"></pl-icon>
+            <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
             <pl-browse-filter></pl-browse-filter>
 
@@ -368,7 +367,7 @@ export class BrowseList extends BaseElement {
 
         </div>
 
-        <pl-icon icon="add" class="add-icon"></pl-icon>
+        <pl-icon icon="add" class="tap add-icon" @click=${() => this._newItem()}></pl-icon>
 `;
     }
 
@@ -386,24 +385,6 @@ export class BrowseList extends BaseElement {
     _resizeHandler() {
         delete this._cachedBounds;
     }
-
-    private get _bounds(): DOMRect | ClientRect | null {
-        if (this._main && !this._cachedBounds) {
-            this._cachedBounds = this._main.getBoundingClientRect();
-        }
-        return this._cachedBounds;
-    }
-
-    // @listen("scroll", "#main")
-    // _scrollHandler() {
-    //     const st = this._main.scrollTop;
-    //     const scrollingUp = this._lastScrollTop > st;
-    //     this._lastScrollTop = st;
-    //
-    //     const pos = scrollingUp || this._filterInput.focused || this._filterInput.value ? 0 : Math.max(-st, -60);
-    //     this._filterWrapper.style.transform = `translate(0, ${pos}px)`;
-    //     this._filterWrapper.style.transition = scrollingUp || st > 56 ? "transform 0.2s" : "none";
-    // }
 
     private _newItem() {
         app.createItem("");
@@ -477,7 +458,7 @@ export class BrowseList extends BaseElement {
         }
     }
 
-    private _copyField(item: Item, index: number, e: Event) {
+    private _copyField(item: VaultItem, index: number, e: Event) {
         e.stopPropagation();
         setClipboard(item, item.fields[index]);
         const fieldEl = e.target as HTMLElement;

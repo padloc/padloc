@@ -10,6 +10,8 @@ export class Menu extends BaseElement {
     selected: string = "items";
 
     @listen("unlock", app)
+    @listen("vault-created", app)
+    @listen("vault-changed", app)
     _refresh() {
         this.requestUpdate();
     }
@@ -34,20 +36,15 @@ export class Menu extends BaseElement {
                 padding: 10px 0;
             }
 
-            ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-
             li {
                 display: flex;
                 align-items: center;
                 height: 40px;
-                margin: 0 10px;
+                margin: 2px 10px;
                 padding-right: 10px;
                 border-radius: 8px;
                 overflow: hidden;
+                height: 40px;
             }
 
             li:not([selected]):hover {
@@ -72,8 +69,8 @@ export class Menu extends BaseElement {
             }
 
             .vault, .subvault, .menu-tag {
-                font-size: var(--font-size-tiny);
                 height: 35px;
+                font-size: var(--font-size-tiny);
             }
 
             .vault pl-icon, .subvault pl-icon, .menu-tag pl-icon {
@@ -108,9 +105,13 @@ export class Menu extends BaseElement {
         </style>
 
         <div class="logo">
+
             <pl-icon icon="logo"></pl-icon>
+
             <div>Padlock</div>
+
             <div class="version">v3.0</div>
+
         </div>
 
         <nav>
@@ -133,7 +134,7 @@ export class Menu extends BaseElement {
 
                 </li>
 
-                <li class="tap" @click=${() => router.go("manage")} ?selected=${this.selected === "manage"}>
+                <li class="tap" @click=${() => router.go("vaults")} ?selected=${this.selected === "vaults"}>
 
                     <pl-icon icon="vaults"></pl-icon>
 

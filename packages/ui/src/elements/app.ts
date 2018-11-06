@@ -1,7 +1,6 @@
 import { checkForUpdates, getDeviceInfo } from "@padlock/core/lib/platform.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { FilterParams } from "@padlock/core/lib/app.js";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../init.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
@@ -23,21 +22,22 @@ import { Menu } from "./menu.js";
 // });
 
 class App extends BaseElement {
-    @query("#views")
-    private _views: HTMLDivElement;
     @query("pl-start")
     private _startView: Start;
     @query("pl-browse")
     private _browse: Browse;
     @query("pl-settings")
     private _settings: Settings;
-    @query("pl-mangage")
+    @query("pl-manage")
     private _manage: Manage;
     @query("pl-menu")
     private _menu: Menu;
 
     @property()
     private _view: View | null;
+
+    @property({ reflect: true, attribute: "menu-open" })
+    _menuOpen: boolean = false;
 
     async connectedCallback() {
         super.connectedCallback();
@@ -66,11 +66,6 @@ class App extends BaseElement {
         // if (className) {
         //     this.classList.add(className);
         // }
-    }
-
-    @listen("filter")
-    filter(e: CustomEvent) {
-        this._browse.filter(e.detail as FilterParams);
     }
 
     render() {
@@ -103,31 +98,19 @@ class App extends BaseElement {
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
             }
 
-            #views {
+            .views {
                 position: relative;
                 perspective: 1000px;
+            }
+
+            .views > * {
+                ${mixins.fullbleed()}
+                background: #eee;
             }
 
             .wrapper:not(.active),
             :host(.dialog-open) .wrapper {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
-            }
-
-            #views > * {
-                ${mixins.fullbleed()}
-                background: #eee;
-            }
-
-            #views > .left {
-                transform: translate3d(-200px, 0, 0);
-                pointer-events: none;
-                opacity: 0;
-            }
-
-            #views > .right {
-                transform: translate3d(200px, 0, 0);
-                pointer-events: none;
-                opacity: 0;
             }
 
             @media (min-width: 1200px), (min-height: 900px) {
@@ -142,6 +125,25 @@ class App extends BaseElement {
                 }
             }
 
+            @media (max-width: ${config.narrowWidth}px) {
+                .views {
+                    ${mixins.fullbleed()}
+                    transition: transform 0.3s;
+                }
+
+                :host([menu-open]) .views {
+                    transform: translate(200px, 0);
+                }
+
+                pl-menu {
+                    transition: transform 0.3s;
+                }
+
+                :host(:not([menu-open])) pl-menu {
+                    transform: translate(-100px, 0);
+                }
+            }
+
         </style>
 
         <pl-start id="startView"></pl-start>
@@ -150,20 +152,23 @@ class App extends BaseElement {
 
             <pl-menu></pl-menu>
 
-            <div id="views">
+            <div class="views">
 
-                <pl-settings class="${this._view === this._settings ? "" : "left"}"></pl-settings>
+                <pl-settings ?hidden=${this._view !== this._settings}></pl-settings>
 
-                <pl-browse class="${
-                    this._view === this._settings ? "right" : this._view === this._manage ? "left" : ""
-                }"></pl-browse>
+                <pl-browse ?hidden=${this._view !== this._browse}></pl-browse>
 
-                <pl-manage class="${this._view === this._manage ? "" : "right"}"></pl-manage>
+                <pl-manage ?hidden=${this._view !== this._manage}></pl-manage>
 
             </div>
 
         </div>
 `;
+    }
+
+    @listen("toggle-menu")
+    _toggleMenu() {
+        this._menuOpen = !this._menuOpen;
     }
 
     @listen("lock", app)
@@ -215,7 +220,7 @@ class App extends BaseElement {
         if (path === "settings") {
             this._openView(this._settings);
             this._menu.selected = "settings";
-        } else if ((match = path.match(/^vaults\/(?:([^\/]+)(?:\/invite\/([^\/]+))?)?$/))) {
+        } else if ((match = path.match(/^vaults(?:\/([^\/]+)(?:\/invite\/([^\/]+))?)?$/))) {
             const vault = await app.getVault({ id: match[1] });
             if (vault) {
                 this._manage.vault = vault;
@@ -236,6 +241,8 @@ class App extends BaseElement {
         if (view === this._view) {
             return;
         }
+
+        this._menuOpen = false;
 
         if (view) {
             // const backward = direction === "backward" && this._view;
