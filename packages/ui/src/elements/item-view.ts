@@ -10,6 +10,7 @@ import { app, router } from "../init.js";
 import { BaseElement, element, html, property, query, queryAll, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
+import { TagsInput } from "./tags-input.js";
 
 @element("pl-item-view")
 export class ItemView extends BaseElement {
@@ -18,11 +19,13 @@ export class ItemView extends BaseElement {
         vault: Vault;
         item: VaultItem;
     } | null = null;
-    @property()
+    @property({ reflect: true, attribute: "editing" })
     private _editing: Boolean = false;
 
     @query("#nameInput")
     _nameInput: Input;
+    @query("pl-tags-input")
+    _tagsInput: TagsInput;
     @queryAll("pl-input.field-name")
     _fieldNameInputs: Input[];
     @queryAll("pl-input.field-value")
@@ -75,6 +78,7 @@ export class ItemView extends BaseElement {
             }
 
             main {
+                display: flex;
                 flex-direction: column;
                 padding: 15px;
             }
@@ -83,7 +87,7 @@ export class ItemView extends BaseElement {
                 height: auto;
                 --line-height: 30px;
                 --rule-width: 2px;
-                --rule-color: #ddd;
+                --rule-color: currentColor;
                 line-height: var(--line-height);
             }
 
@@ -112,7 +116,7 @@ export class ItemView extends BaseElement {
                 border-radius: 8px;
             }
 
-            .field:hover {
+            :host(:not([editing])) .field:hover {
                 background: #eee;
             }
 
@@ -131,6 +135,10 @@ export class ItemView extends BaseElement {
                 font-weight: bold;
                 color: var(--color-highlight);
                 padding: 0 10px;
+            }
+
+            .field-name:not([readonly]) {
+                margin-bottom: 4px;
             }
 
             .field-value {
@@ -170,11 +178,17 @@ export class ItemView extends BaseElement {
 
             pl-input {
                 line-height: var(--line-height);
+                box-sizing: border-box;
             }
 
             pl-input:not([readonly]) {
+                background: #fafafa;
+                border: solid 1px #eee;
+                border-radius: 8px;
+                /*
                 background-image: linear-gradient(transparent, transparent calc(var(--line-height) - var(--rule-width)), var(--rule-color) calc(var(--line-height) - var(--rule-width)), var(--rule-color) var(--line-height), transparent var(--line-height));
                 background-size: 100% var(--line-height);
+                */
             }
 
             @media (min-width: ${config.narrowWidth}px) {
@@ -185,7 +199,9 @@ export class ItemView extends BaseElement {
         </style>
 
         <header>
-            <pl-icon icon="list" class="tap" @click=${() => router.go("")}></pl-icon>
+
+            <pl-icon icon="back" class="tap" @click=${() => router.go("items")}></pl-icon>
+
         </header>
 
         <main>
@@ -194,43 +210,13 @@ export class ItemView extends BaseElement {
 
                 <pl-input id="nameInput" class="name" .value=${name} ?readonly=${!this._editing}></pl-input>
 
-                <button class="tap" @click=${() => this.save()} ?hidden=${!this._editing}>${$l("Done")}</button>
-
-                <pl-icon icon="edit" class="tap" @click=${() => this.edit()} ?hidden=${this._editing}></pl-icon>
-
             </div>
 
-            <div class="tags small">
-
-                <div class="tag highlight tap" @click=${() => this._openVault(vault!)}>
-
-                    <pl-icon icon="vault"></pl-icon>
-
-                    <div class="tag-name">${vaultName}</div>
-
-                </div>
-
-                <div class="tag warning" ?hidden=${permissions.write}>
-
-                    <pl-icon icon="show"></pl-icon>
-
-                    <div class="tag-name">${$l("read-only")}</div>
-
-                </div>
-
-                ${tags.map(
-                    (tag: string) => html`
-                    <div class="tag tap" @click=${() => this._removeTag(tag)}>
-
-                        <pl-icon icon="tag"></pl-icon>
-
-                        <div class="tag-name">${tag}</div>
-
-                    </div>
-                `
-                )}
-
-            </div>
+            <pl-tags-input
+                .editing=${this._editing}
+                .vault=${this.item!.vault}
+                .tags=${this.item!.item.tags}>
+            </pl-tags-input>
 
             <section class="highlight" ?hidden=${!removedMembers.length}>
 
@@ -334,6 +320,15 @@ export class ItemView extends BaseElement {
                 ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
             </div>
 
+            <pl-icon icon="edit"
+                class="tap fab"
+                @click=${() => this.edit()}
+                ?hidden=${this._editing}
+                ?disabled=${!permissions.write}>
+            </pl-icon>
+
+            <pl-icon icon="check" class="tap fab" @click=${() => this.save()} ?hidden=${!this._editing}></pl-icon>
+
         </main>
 `;
     }
@@ -428,7 +423,8 @@ export class ItemView extends BaseElement {
             name: this._nameInput.value,
             fields: [...this._fieldNameInputs].map((inp: Input, i: number) => {
                 return { name: inp.value, value: this._fieldValueInputs[i].value };
-            })
+            }),
+            tags: this._tagsInput.tags
         });
         this._editing = false;
     }

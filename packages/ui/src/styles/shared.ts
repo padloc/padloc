@@ -102,23 +102,25 @@ export const shared = html`
 
     h1, h2 {
         margin: 20px 15px 10px 15px;
-        text-align: center;
         display: flex;
         align-items: center;
-        justify-content: center;
     }
 
     h1 pl-icon, h2 pl-icon {
         height: 0;
         position: relative;
+        font-size: 90%;
     }
 
     h1 {
         font-size: 140%;
+        justify-content: center;
+        text-align: center;
     }
 
     h2 {
-        font-size: 110%;
+        font-size: 120%;
+        font-weight: normal;
     }
 
     ::-webkit-search-cancel-button {
@@ -445,6 +447,16 @@ export const shared = html`
     .record-tag.store-tag {
         ${mixins.gradientDark(true)}
         text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
+    }
+
+    .fab {
+        border-radius: 100%;
+        position: absolute;
+        z-index: 2;
+        bottom: 10px;
+        right: 10px;
+        background: var(--color-secondary);
+        color: var(--color-tertiary);
     }
 
     @keyframes spin {

@@ -301,16 +301,6 @@ export class BrowseList extends BaseElement {
                 background: #e6e6e6;
                 border-color: #ddd;
             }
-
-            .add-icon {
-                border-radius: 100%;
-                position: absolute;
-                z-index: 2;
-                bottom: 10px;
-                right: 10px;
-                background: var(--color-secondary);
-                color: var(--color-tertiary);
-            }
         </style>
 
         <header>
@@ -367,7 +357,7 @@ export class BrowseList extends BaseElement {
 
         </div>
 
-        <pl-icon icon="add" class="tap add-icon" @click=${() => this._newItem()}></pl-icon>
+        <pl-icon icon="add" class="tap fab" @click=${() => this._newItem()}></pl-icon>
 `;
     }
 

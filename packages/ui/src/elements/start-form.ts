@@ -36,13 +36,12 @@ export const sharedStyles = html`
 
         .logo {
             width: 90px;
+            height: 90px;
             font-size: 125%;
         }
 
         .title {
             font-size: 250%;
-            margin-bottom: 20px;
-            margin-bottom: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
