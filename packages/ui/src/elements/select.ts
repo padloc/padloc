@@ -1,19 +1,17 @@
 import { shared } from "../styles";
-import { BaseElement, element, html, property } from "./base.js";
-
-export interface Option {
-    name: string;
-    value?: any;
-}
+import { BaseElement, element, html, property, query } from "./base.js";
 
 @element("pl-select")
-export class Select extends BaseElement {
+export class Select<T> extends BaseElement {
     @property()
-    options: Option[] = [];
+    options: T[] = [];
     @property()
-    selected: Option | null = null;
+    selected: T | null = null;
     @property()
     label: string = "";
+
+    @query("select")
+    private _select: HTMLSelectElement;
 
     render() {
         const { options, selected, label } = this;
@@ -53,10 +51,10 @@ export class Select extends BaseElement {
                 }
             </style>
 
-            <select id="selectEl">
+            <select id="selectEl" @change=${() => this._changed()}>
                 ${options.map(
                     o => html`
-                    <option ?selected=${selected === o}>${o.name}</option>
+                    <option ?selected=${selected === o}>${o}</option>
                 `
                 )}
             </select>
@@ -64,5 +62,9 @@ export class Select extends BaseElement {
             <label for="selectEl" float>${label}</label>
 
         `;
+    }
+
+    _changed() {
+        this.selected = this.options[this._select.selectedIndex];
     }
 }

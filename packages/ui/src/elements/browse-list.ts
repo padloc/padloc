@@ -7,10 +7,11 @@ import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
-import { confirm, getDialog } from "../dialog.js";
+import { confirm, dialog, getDialog } from "../dialog.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
 import { ShareDialog } from "./share-dialog.js";
+import { CreateItemDialog } from "./create-item-dialog.js";
 import { Input } from "./input.js";
 import "./share-dialog.js";
 
@@ -34,6 +35,9 @@ export class BrowseList extends BaseElement {
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
     private _selected = new Map<string, ListItem>();
+
+    @dialog("pl-create-item-dialog")
+    private _createItemDialog: CreateItemDialog;
 
     private get _selectedItems() {
         return [...this._selected.values()].map((item: ListItem) => item.item);
@@ -377,7 +381,7 @@ export class BrowseList extends BaseElement {
     }
 
     private _newItem() {
-        app.createItem("");
+        this._createItemDialog.show();
     }
 
     private _scrollToIndex(i: number) {
@@ -462,7 +466,7 @@ export class BrowseList extends BaseElement {
         // const tags = [{ name: "", class: "warning", icon: "org" }];
         const tags = [];
 
-        const vaultName = item.vault.parent ? `${item.vault.parent.name}/${item.vault.name}` : item.vault.name;
+        const vaultName = item.vault.toString();
         tags.push({ name: vaultName, icon: "vault", class: "highlight" });
 
         if (item.warning) {

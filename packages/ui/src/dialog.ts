@@ -1,5 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Record, Field } from "@padlock/core/lib/data.js";
+import { VaultItem, Field } from "@padlock/core/lib/data.js";
+import { BaseElement } from "./elements/base.js";
 import "./elements/generator.js";
 import "./elements/alert-dialog.js";
 import "./elements/prompt-dialog.js";
@@ -119,7 +120,7 @@ export function promptForgotPassword() {
     });
 }
 
-export function exportRecords(records: Record[]) {
+export function exportRecords(records: VaultItem[]) {
     const dialog = getSingleton("pl-export-dialog") as ExportDialog;
     dialog.show(records);
 }
@@ -129,4 +130,16 @@ export async function openField(field: Field, edit = false, presets = {}, readon
         d.openField(field, edit, presets, readonly)
     )) as FieldDialogResult;
     return result;
+}
+
+export function dialog(name: string) {
+    return (prototype: BaseElement, propertyName: string) => {
+        Object.defineProperty(prototype, propertyName, {
+            get() {
+                return getDialog(name);
+            },
+            enumerable: true,
+            configurable: true
+        });
+    };
 }

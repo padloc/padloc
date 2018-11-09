@@ -375,4 +375,8 @@ export class Vault implements VaultInfo, Storable {
             }
         };
     }
+
+    toString() {
+        return this.parent ? `${this.parent.name}/${this.name}` : this.name;
+    }
 }

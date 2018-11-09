@@ -208,7 +208,13 @@ export class ItemView extends BaseElement {
 
             <div class="title">
 
-                <pl-input id="nameInput" class="name" .value=${name} ?readonly=${!this._editing}></pl-input>
+                <pl-input
+                    id="nameInput"
+                    class="name"
+                    .value=${name}
+                    .placeholder=${$l("Enter Item Name")}
+                    ?readonly=${!this._editing}>
+                </pl-input>
 
             </div>
 

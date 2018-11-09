@@ -25,7 +25,6 @@ export class TagsInput extends BaseElement {
 
     render() {
         const { tags, editing, vault, _showResults } = this;
-        const vaultName = (vault && vault.name) || "";
         const { value } = this._input || { value: "" };
         const results = app.tags.filter(
             t => !this.tags.includes(t) && t !== value && t.toLowerCase().startsWith(value)
@@ -112,7 +111,7 @@ export class TagsInput extends BaseElement {
 
                     <pl-icon icon="vault"></pl-icon>
 
-                    <div class="tag-name">${vaultName}</div>
+                    <div class="tag-name">${vault}</div>
 
                 </div>
 

@@ -228,6 +228,10 @@ export class Account implements Storable, AccountInfo {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
     }
+
+    toString() {
+        return this.name || this.email;
+    }
 }
 
 export class Auth implements Storable {

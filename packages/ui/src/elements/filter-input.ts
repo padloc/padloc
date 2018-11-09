@@ -61,7 +61,7 @@ export class FilterInput extends BaseElement implements FilterParams {
 
         if (!vault) {
             for (const vault of this._vaults) {
-                const name = vault.parent ? `${vault.parent.name}/${vault.name}` : vault.name;
+                const name = vault.toString();
                 results.push({ icon: "group", name: name, class: "highlight", val: vault });
             }
         }
@@ -119,7 +119,7 @@ export class FilterInput extends BaseElement implements FilterParams {
 
                         <pl-icon icon="group"></pl-icon>
 
-                        <div>${vault && (vault.parent ? `${vault.parent.name}/${vault.name}` : vault.name)}</div>
+                        <div>${vault}</div>
 
                         <pl-icon icon="cancel"></pl-icon>
 

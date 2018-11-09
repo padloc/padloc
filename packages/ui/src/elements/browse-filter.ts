@@ -18,12 +18,8 @@ export class BrowseFilter extends BaseElement {
     render() {
         const { vault, tag } = app.filter;
         const cl = vault ? "vault" : tag ? "filter-tag" : "all";
-        const icon = vault ? "vault" : tag ? "tag" : "menu";
-        const label = vault
-            ? vault.parent
-                ? `${vault.parent.name}/${vault.name}`
-                : vault.name
-            : tag || $l("All Items");
+        const icon = vault ? "vault" : tag ? "tag" : "list";
+        const label = vault ? vault.toString() : tag || $l("All Items");
 
         return html`
             ${shared}
@@ -137,7 +133,7 @@ export class BrowseFilter extends BaseElement {
 
                         <div class="option tap" @click=${() => this._select({ tag: null, vault: null })}>
 
-                            <pl-icon icon="menu"></pl-icon>
+                            <pl-icon icon="list"></pl-icon>
 
                             <div>${$l("All Items")}</div>
 
