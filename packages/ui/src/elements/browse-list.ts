@@ -54,15 +54,6 @@ export class BrowseList extends BaseElement {
         this._toggleFilterInput();
     }
 
-    @listen("item-created", app)
-    _itemCreated(e: CustomEvent) {
-        this._updateListItems();
-        const item = this._listItems.find(item => item.item.id === e.detail.item.id);
-        if (item) {
-            this.selectItem(item);
-        }
-    }
-
     @listen("unlock", app)
     _unlocked() {
         this._updateListItems();
@@ -380,8 +371,11 @@ export class BrowseList extends BaseElement {
         delete this._cachedBounds;
     }
 
-    private _newItem() {
-        this._createItemDialog.show();
+    private async _newItem() {
+        const item = await this._createItemDialog.show();
+        if (item) {
+            router.go(`items/${item.id}`);
+        }
     }
 
     private _scrollToIndex(i: number) {

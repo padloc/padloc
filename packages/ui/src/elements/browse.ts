@@ -1,20 +1,17 @@
 import { VaultItem } from "@padlock/core/lib/data.js";
 import { Vault } from "@padlock/core/lib/vault.js";
 import { shared, mixins, config } from "../styles";
-import { router } from "../init";
-import { element, property, html, query } from "./base.js";
+import { element, property, html } from "./base.js";
 import { View } from "./view.js";
-import { ItemView } from "./item-view.js";
 import "./icon.js";
 import "./browse-list.js";
+import "./item-view.js";
 import "./browse-filter.js";
 
 @element("pl-browse")
 export class Browse extends View {
     @property()
     item: { item: VaultItem; vault: Vault } | null = null;
-    @query("pl-item-view")
-    private _itemView: ItemView;
 
     render() {
         return html`

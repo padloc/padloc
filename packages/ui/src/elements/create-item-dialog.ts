@@ -1,75 +1,71 @@
 import { VaultItem } from "@padlock/core/lib/data.js";
 import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { shared } from "../styles";
 import { app } from "../init.js";
-import { BaseElement, element, html, query } from "./base.js";
+import { element, html, query } from "./base.js";
 import { Input } from "./input.js";
 import { Select } from "./select.js";
 import { Dialog } from "./dialog.js";
 
 @element("pl-create-item-dialog")
-export class CreateItemDialog extends BaseElement {
-    @query("pl-dialog")
-    private _dialog: Dialog;
+export class CreateItemDialog extends Dialog<undefined, VaultItem> {
     @query("#nameInput")
     private _nameInput: Input;
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
-    private _resolve: ((val: VaultItem | null) => void) | null;
-
-    render() {
+    renderContent() {
         return html`
-        ${shared}
 
-        <style include="shared">
+        <style>
 
-            pl-input, pl-select {
+            .inner {
+                display: flex;
+                flex-direction: column;
+            }
+
+            pl-input, pl-select, button {
                 text-align: center;
+                margin: 0 10px 10px 10px;
+                background: var(--shade-2-color);
+                border-radius: 8px;
+            }
+
+            h1 {
+                margin: 20px;
+            }
+
+            button {
+                display: block;
+                font-weight: bold;
+                background: var(--shade-4-color);
+                overflow: hidden;
             }
 
         </style>
 
-        <pl-dialog @dialog-dismiss=${() => this._dismiss()}>
+        <h1>${$l("Create Vault Item")}</h1>
 
-            <div class="message">${$l("New Vault Item")}</div>
+        <pl-input
+            id="nameInput"
+            .label=${$l("Item Name")}
+            @enter=${() => this._enter()}>
+        </pl-input>
 
-            <pl-input
-                id="nameInput"
-                .label=${$l("Item Name")}
-                @enter=${() => this._enter()}>
-            </pl-input>
+        <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Vault")}></pl-select>
 
-            <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Vault")}></pl-select>
-
-            <button @click=${() => this._enter()}>${$l("Create Item")}</button>
-
-        </pl-dialog>
+        <button @click=${() => this._enter()} class="tap">${$l("Create Item")}</button>
 `;
     }
 
     private async _enter() {
-        this._resolve && this._resolve(await app.createItem(this._nameInput.value, this._vaultSelect.selected!));
-        this._resolve = null;
-        this._dialog.open = false;
-    }
-
-    private _dismiss() {
-        this._resolve && this._resolve(null);
-        this._resolve = null;
-        this._dialog.open = false;
+        this.done(await app.createItem(this._nameInput.value, this._vaultSelect.selected!));
     }
 
     async show() {
         await this.updateComplete;
         this._nameInput.value = "";
-        this._dialog.open = true;
-
         setTimeout(() => this._nameInput.focus(), 100);
-
-        return new Promise<VaultItem | null>(resolve => {
-            this._resolve = resolve;
-        });
+        return super.show();
     }
 }

@@ -3,12 +3,29 @@ import { animateElement } from "../animation";
 import { BaseElement, html, property, observe, listen } from "./base.js";
 import { Input } from "./input.js";
 
-export class Dialog extends BaseElement {
-    @property() open: boolean = false;
-    @property() preventDismiss: boolean = false;
+export class Dialog<I, R> extends BaseElement {
+    @property()
+    open: boolean = false;
+    @property()
+    preventDismiss: boolean = false;
 
     isShowing: boolean = false;
     private _hideTimeout?: number;
+    private _resolve: ((result?: R) => void) | null;
+
+    protected done(result?: R) {
+        this._resolve && this._resolve(result);
+        this._resolve = null;
+        this.open = false;
+    }
+
+    async show(_input: I = (undefined as any) as I) {
+        this.open = true;
+
+        return new Promise<R>(resolve => {
+            this._resolve = resolve;
+        });
+    }
 
     render() {
         return html`
@@ -84,14 +101,18 @@ export class Dialog extends BaseElement {
 
         <div class="scrim"></div>
 
-        <div class="outer" @click=${() => this.dismiss()}>
+        <div class="outer" @click=${() => this.done()}>
             <slot name="before"></slot>
             <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>
-                <slot></slot>
+                ${this.renderContent()}
             </div>
             <slot name="after"></slot>
         </div>
 `;
+    }
+
+    renderContent() {
+        return html`<slot></slot>`;
     }
 
     @listen("backbutton", window)
