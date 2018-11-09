@@ -493,6 +493,10 @@ export class App extends EventTarget implements Storable {
         return invite;
     }
 
+    async getInvite(vault: string, id: string) {
+        return await this.api.getInvite({ vault, id });
+    }
+
     async acceptInvite(invite: Invite, secret: string) {
         const success = await invite.accept(this.account!.info, secret);
         if (success) {
@@ -527,17 +531,24 @@ export class App extends EventTarget implements Storable {
 
     async syncVault(vaultInfo: { id: string }): Promise<void> {
         const localVault = await this.getVault(vaultInfo);
-        const copy = new Vault();
-        copy.access(this.account!);
-        await copy.deserialize(await localVault!.serialize());
+
         const remoteVault = new Vault(vaultInfo.id);
         remoteVault.access(this.account!);
         await this.api.getVault(remoteVault);
 
-        copy.merge(remoteVault);
+        let result: Vault;
+
+        if (localVault) {
+            result = new Vault();
+            result.access(this.account!);
+            await result.deserialize(await localVault!.serialize());
+            result.merge(remoteVault);
+        } else {
+            result = remoteVault;
+        }
 
         try {
-            await this.api.updateVault(copy);
+            await this.api.updateVault(result);
         } catch (e) {
             if (e.code === ErrorCode.MERGE_CONFLICT) {
                 return this.syncVault(vaultInfo);
@@ -545,10 +556,10 @@ export class App extends EventTarget implements Storable {
             throw e;
         }
 
-        await this.storage.set(copy);
-        this._vaults.set(vaultInfo.id, copy);
+        await this.storage.set(result);
+        this._vaults.set(vaultInfo.id, result);
 
-        this.dispatch("vault-changed", { copy });
+        this.dispatch("vault-changed", { result });
     }
 
     getItem(id: string): { item: VaultItem; vault: Vault } | null {

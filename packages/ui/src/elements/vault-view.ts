@@ -348,7 +348,7 @@ export class VaultView extends BaseElement {
 
             <h2 class="animate">
 
-                <pl-icon icon="vault"></pl-icon>
+                <pl-icon icon="group"></pl-icon>
 
                 <div>${$l("Members")}</div>
 

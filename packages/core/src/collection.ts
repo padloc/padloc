@@ -94,9 +94,12 @@ export class Collection<T extends CollectionItem> implements Iterable<T>, Serial
     }
 
     async deserialize(raw: any) {
-        this._items = new Map(
-            raw.items.map((item: any) => [item.id, { ...item, updated: new Date(item.updated) }] as [string, T])
-        );
+        for (const item of raw.items) {
+            if (!(item.updated instanceof Date)) {
+                item.updated = new Date(item.updated);
+            }
+        }
+        this._items = new Map(raw.items.map((item: any) => [item.id, item] as [string, T]));
         this.revision = { ...raw.revision, date: new Date(raw.revision.date) };
         return this;
     }

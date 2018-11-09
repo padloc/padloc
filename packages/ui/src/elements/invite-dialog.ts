@@ -277,6 +277,9 @@ export class InviteDialog extends BaseElement {
     }
 
     private async _delete() {
+        if (this._deleteButton.state === "loading") {
+            return;
+        }
         this._deleteButton.start();
         try {
             await app.deleteInvite(this.invite!);
@@ -290,6 +293,9 @@ export class InviteDialog extends BaseElement {
     }
 
     private async _resend() {
+        if (this._resendButton.state === "loading") {
+            return;
+        }
         this._resendButton.start();
         const vault = await app.getVault(this.invite!.vault!);
         try {
@@ -303,20 +309,32 @@ export class InviteDialog extends BaseElement {
     }
 
     private async _accept() {
+        if (this._acceptButton.state === "loading") {
+            return;
+        }
         this._acceptButton.start();
-        const success = await app.acceptInvite(this.invite!, this._codeInput.value.toLowerCase());
-        if (success) {
-            this._acceptButton.success();
-            this._done();
-            alert(
-                $l("You have successfully accepted the invite. You'll be notified once you've been granted access."),
-                { type: "success" }
-            );
-        } else {
+        try {
+            const success = await app.acceptInvite(this.invite!, this._codeInput.value.toLowerCase());
+            if (success) {
+                this._acceptButton.success();
+                this._done();
+                alert(
+                    $l(
+                        "You have successfully accepted the invite. You'll be notified once you've been granted access."
+                    ),
+                    { type: "success" }
+                );
+            } else {
+                this._acceptButton.fail();
+                this._dialog.open = false;
+                await alert($l("Verification failed! Did you enter the correct confirmation code?"), {
+                    type: "warning"
+                });
+                this._dialog.open = true;
+            }
+        } catch (e) {
             this._acceptButton.fail();
-            this._dialog.open = false;
-            await alert($l("Verification failed! Did you enter the correct confirmation code?"), { type: "warning" });
-            this._dialog.open = true;
+            throw e;
         }
     }
 }

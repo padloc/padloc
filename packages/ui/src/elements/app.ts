@@ -11,9 +11,10 @@ import { Browse } from "./browse.js";
 import { Settings } from "./settings.js";
 import { Manage } from "./manage.js";
 import { Start } from "./start.js";
-import { alert, confirm, clearDialogs } from "../dialog.js";
+import { alert, confirm, clearDialogs, getDialog } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { Menu } from "./menu.js";
+import { InviteDialog } from "./invite-dialog.js";
 
 // TODO: auto lock, auto sync, hints, tracking
 
@@ -35,6 +36,10 @@ class App extends BaseElement {
 
     @property()
     private _view: View | null;
+
+    private get _inviteDialog() {
+        return getDialog("pl-invite-dialog") as InviteDialog;
+    }
 
     @property({ reflect: true, attribute: "menu-open" })
     _menuOpen: boolean = false;
@@ -213,15 +218,16 @@ class App extends BaseElement {
     }
 
     async _applyPath(path: string, _direction: string = "forward") {
-        const params = new URLSearchParams(window.location.search);
-        console.log(params.get("vault"));
+        // const params = new URLSearchParams(window.location.search);
+        // console.log(params.get("vault"));
 
         let match;
         if (path === "settings") {
             this._openView(this._settings);
             this._menu.selected = "settings";
-        } else if ((match = path.match(/^vaults(?:\/([^\/]+)(?:\/invite\/([^\/]+))?)?$/))) {
-            const vault = await app.getVault({ id: match[1] });
+        } else if ((match = path.match(/^vaults(?:\/([^\/]+))?$/))) {
+            const [, id] = match;
+            const vault = id && (await app.getVault({ id }));
             if (vault) {
                 this._manage.vault = vault;
             }
@@ -232,6 +238,16 @@ class App extends BaseElement {
             this._browse.item = item;
             this._openView(this._browse);
             this._menu.selected = "items";
+        } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
+            const [, vault, id] = match;
+            const invite = await app.getInvite(vault, id);
+            if (invite) {
+                await this._inviteDialog.show(invite);
+                router.go("items");
+            } else {
+                await alert($l("Could not find invite! Did you use the correct link?"), { type: "warning" });
+                router.go("items");
+            }
         } else {
             router.go("items");
         }

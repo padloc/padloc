@@ -248,6 +248,21 @@ export class Context implements API {
         return vault;
     }
 
+    async getInvite({ vault, id }: { vault: string; id: string }) {
+        const { account } = this._requireAuth();
+
+        const v = new Vault(vault);
+        await this.storage.get(v);
+
+        const invite = v.invites.get(id);
+
+        if (!invite || invite.email !== account.email) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
+
+        return invite;
+    }
+
     async acceptInvite(invite: Invite) {
         if (!invite.accepted) {
             throw new Err(ErrorCode.BAD_REQUEST);
@@ -408,6 +423,15 @@ export class Server {
                 }
                 vault = await ctx.createVault(params[0]);
                 res.result = await vault.serialize();
+                break;
+
+            case "getInvite":
+                // TODO: Validate params
+                if (!params || params.length !== 1) {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                const invite = await ctx.getInvite(params[0]);
+                res.result = await invite.serialize();
                 break;
 
             case "acceptInvite":

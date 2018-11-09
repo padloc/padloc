@@ -111,6 +111,11 @@ export class Client implements API {
         return vault.deserialize(res.result);
     }
 
+    async getInvite(params: { vault: string; id: string }): Promise<Invite> {
+        const res = await this.call("getInvite", [params]);
+        return new Invite().deserialize(res.result);
+    }
+
     async acceptInvite(invite: Invite): Promise<void> {
         await this.call("acceptInvite", [await invite.serialize()]);
     }
