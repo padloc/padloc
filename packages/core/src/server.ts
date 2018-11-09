@@ -308,16 +308,16 @@ export class Server {
     constructor(private storage: Storage, private messenger: Messenger) {}
 
     async handle(req: Request) {
-        const context = new Context(this.storage, this.messenger);
-        await this._authenticate(req, context);
         const res = { result: null };
         try {
+            const context = new Context(this.storage, this.messenger);
+            await this._authenticate(req, context);
             await this._process(req, res, context);
+            if (context.session) {
+                await context.session.authenticate(res);
+            }
         } catch (e) {
             this._handleError(e, res);
-        }
-        if (context.session) {
-            await context.session.authenticate(res);
         }
         return res;
     }
