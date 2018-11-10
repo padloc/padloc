@@ -1,12 +1,12 @@
 import { Request, Response } from "./transport";
 import { marshal, DateString, Base64String, stringToBase64 } from "./encoding";
 import {
+    PBES2Container,
     getProvider,
     RSAPublicKey,
     RSAPrivateKey,
     PBKDF2Params,
     defaultPBKDF2Params,
-    defaultEncryptionParams,
     defaultHMACParams,
     defaultRSAKeyParams
 } from "./crypto";
@@ -127,7 +127,7 @@ export interface SignedAccountInfo extends AccountInfo {
     signedPublicKey: Base64String;
 }
 
-export class Account implements Storable, AccountInfo {
+export class Account extends PBES2Container implements Storable, AccountInfo {
     kind = "account";
     email = "";
     name = "";
@@ -137,10 +137,6 @@ export class Account implements Storable, AccountInfo {
     privateKey: RSAPrivateKey = "";
     mainVault = "";
     sessions = new Set<SessionID>();
-    keyParams = defaultPBKDF2Params();
-    encryptionParams = defaultEncryptionParams();
-    encPrivateKey: Base64String = "";
-    masterKey: Base64String = "";
     vaults: VaultInfo[] = [];
 
     get pk() {
@@ -155,7 +151,21 @@ export class Account implements Storable, AccountInfo {
         return !this.privateKey;
     }
 
-    constructor(public id: AccountID = "") {}
+    private get _encSerializer() {
+        return {
+            serialize: async () => {
+                return { privateKey: this.privateKey };
+            },
+            deserialize: async ({ privateKey }: { privateKey: string }) => {
+                this.privateKey = privateKey;
+                return this;
+            }
+        };
+    }
+
+    constructor(public id: AccountID = "") {
+        super();
+    }
 
     async initialize(password: string) {
         await this._generateKeyPair();
@@ -163,19 +173,17 @@ export class Account implements Storable, AccountInfo {
     }
 
     async setPassword(password: string) {
-        this.keyParams.salt = await getProvider().randomBytes(16);
-        const key = await this._getMasterKey(password);
-        this.encryptionParams.iv = await getProvider().randomBytes(16);
-        this.encryptionParams.additionalData = stringToBase64(this.email);
-        this.encPrivateKey = await getProvider().encrypt(key, this.privateKey, this.encryptionParams);
+        this.password = password;
+        await this.set(this._encSerializer);
     }
 
     async unlock(password: string) {
-        const key = await this._getMasterKey(password);
-        this.privateKey = await getProvider().decrypt(key, this.encPrivateKey, this.encryptionParams);
+        this.password = password;
+        await this.get(this._encSerializer);
     }
 
     lock() {
+        this.password = "";
         this.privateKey = "";
     }
 
@@ -188,6 +196,7 @@ export class Account implements Storable, AccountInfo {
 
     async serialize() {
         return {
+            ...(await super.serialize()),
             id: this.id,
             created: this.created,
             updated: this.updated,
@@ -195,15 +204,13 @@ export class Account implements Storable, AccountInfo {
             name: this.name,
             mainVault: this.mainVault,
             publicKey: this.publicKey,
-            encPrivateKey: this.encPrivateKey,
-            keyParams: this.keyParams,
-            encryptionParams: this.encryptionParams,
             vaults: this.vaults,
             sessions: Array.from(this.sessions)
         };
     }
 
     async deserialize(raw: any) {
+        await super.deserialize(raw);
         this.id = raw.id;
         this.created = new Date(raw.created);
         this.updated = new Date(raw.updated);
@@ -211,16 +218,9 @@ export class Account implements Storable, AccountInfo {
         this.name = raw.name;
         this.mainVault = raw.mainVault;
         this.publicKey = raw.publicKey;
-        this.encPrivateKey = raw.encPrivateKey;
-        this.keyParams = raw.keyParams;
-        this.encryptionParams = raw.encryptionParams;
         this.vaults = raw.vaults || [];
         this.sessions = new Set<SessionID>(raw.sessions);
         return this;
-    }
-
-    private async _getMasterKey(password: string) {
-        return getProvider().deriveKey(password, this.keyParams);
     }
 
     private async _generateKeyPair() {
