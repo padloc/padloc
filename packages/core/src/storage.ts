@@ -58,11 +58,9 @@ export class LocalStorage implements Storage {
     }
 
     async clear() {
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key) {
-                localStorage.removeItem(key);
-            }
+        let key;
+        while ((key = localStorage.key(0))) {
+            localStorage.removeItem(key);
         }
     }
 }

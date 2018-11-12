@@ -1,3 +1,4 @@
+import { Err, ErrorCode } from "./error";
 import { toByteArray, fromByteArray, byteLength } from "./base64";
 
 export type Bytes = Uint8Array;
@@ -14,29 +15,53 @@ export interface Serializable {
 }
 
 export function marshal(obj: Marshalable): string {
-    return JSON.stringify(obj);
+    try {
+        return JSON.stringify(obj);
+    } catch (e) {
+        throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
+    }
 }
 
 export function unmarshal(str: string): any {
-    return JSON.parse(str);
+    try {
+        return JSON.parse(str);
+    } catch (e) {
+        throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
+    }
 }
 
 export function bytesToBase64(inp: Bytes, urlSafe = true): Base64String {
-    return fromByteArray(inp, urlSafe);
+    try {
+        return fromByteArray(inp, urlSafe);
+    } catch (e) {
+        throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
+    }
 }
 
 export function base64ToBytes(inp: Base64String): Bytes {
-    return toByteArray(inp);
+    try {
+        return toByteArray(inp);
+    } catch (e) {
+        throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
+    }
 }
 
 export function stringToBytes(str: string): Bytes {
-    const Encoder = typeof TextEncoder !== "undefined" ? TextEncoder : require("util").TextEncoder;
-    return new Encoder().encode(str);
+    try {
+        const Encoder = typeof TextEncoder !== "undefined" ? TextEncoder : require("util").TextEncoder;
+        return new Encoder().encode(str);
+    } catch (e) {
+        throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
+    }
 }
 
 export function bytesToString(bytes: Bytes, encoding = "utf-8") {
-    const Decoder = typeof TextDecoder !== "undefined" ? TextDecoder : require("util").TextDecoder;
-    return new Decoder(encoding).decode(bytes);
+    try {
+        const Decoder = typeof TextDecoder !== "undefined" ? TextDecoder : require("util").TextDecoder;
+        return new Decoder(encoding).decode(bytes);
+    } catch (e) {
+        throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
+    }
 }
 
 export function stringToBase64(str: string, urlSafe = true): Base64String {
@@ -54,20 +79,28 @@ export function base64ByteLength(inp: Base64String): number {
 }
 
 export function hexToBytes(str: HexString): Bytes {
-    const bytes = new Uint8Array(str.length / 2);
-    for (let i = 0; i < bytes.length; i++) {
-        bytes[i] = parseInt(str.substring(i * 2, i * 2 + 2), 16);
+    try {
+        const bytes = new Uint8Array(str.length / 2);
+        for (let i = 0; i < bytes.length; i++) {
+            bytes[i] = parseInt(str.substring(i * 2, i * 2 + 2), 16);
+        }
+        return bytes;
+    } catch (e) {
+        throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
     }
-    return bytes;
 }
 
 export function bytesToHex(bytes: Bytes): HexString {
-    let str = "";
-    for (const b of bytes) {
-        const s = b.toString(16);
-        str += s.length == 1 ? "0" + s : s;
+    try {
+        let str = "";
+        for (const b of bytes) {
+            const s = b.toString(16);
+            str += s.length == 1 ? "0" + s : s;
+        }
+        return str;
+    } catch (e) {
+        throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
     }
-    return str;
 }
 
 export function base64ToHex(b64: Base64String): HexString {

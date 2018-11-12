@@ -84,7 +84,7 @@ export class Context implements API {
         session.device = this.device;
         session.key = srp.K!;
 
-        acc.sessions.add(session.id);
+        acc.sessions.update(session);
 
         await Promise.all([this.storage.set(session), this.storage.set(acc)]);
 
@@ -100,30 +100,9 @@ export class Context implements API {
 
         await this.storage.get(session);
 
-        account.sessions.delete(session.id);
+        account.sessions.remove(session);
 
         await Promise.all([this.storage.delete(session), this.storage.set(account)]);
-    }
-
-    async getSessions() {
-        const { account } = this._requireAuth();
-        const sessions = Promise.all(
-            Array.from(account.sessions).map(async id => {
-                const session = new Session(id);
-                try {
-                    await this.storage.get(session);
-                } catch (e) {
-                    if (e.code === ErrorCode.NOT_FOUND) {
-                        account.sessions.delete(id);
-                    } else {
-                        throw e;
-                    }
-                }
-                return session;
-            })
-        );
-        await this.storage.set(account);
-        return sessions;
     }
 
     async createAccount(params: CreateAccountParams): Promise<Account> {
@@ -179,7 +158,7 @@ export class Context implements API {
 
     async updateAccount(account: Account) {
         const existing = this._requireAuth().account;
-        existing.update(account);
+        existing.merge(account);
         await this.storage.set(existing);
         return existing;
     }
@@ -189,9 +168,7 @@ export class Context implements API {
 
         await this.storage.get(vault);
 
-        const member = vault.getMember(account);
-
-        if (!member || member.status !== "active") {
+        if (!vault.isOwner(account) && !vault.isMember(account)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
@@ -214,23 +191,36 @@ export class Context implements API {
         existing.access(account);
         const changes = existing.merge(vault, existing.getPermissions());
 
-        // TODO: Handle "removed" members?
-        for (const member of (changes.members && changes.members.added) || []) {
-            console.log("member added", member);
-            const acc = new Account(member.id);
-            await this.storage.get(acc);
-            acc.vaults.push(vault.info);
-            if (acc.id !== account.id) {
-                this.messenger.send(member.email, new MemberAddedMessage(vault));
+        const promises = [];
+
+        if (changes.members) {
+            for (const member of changes.members.added) {
+                console.log("member added", member);
+
+                const acc = new Account(member.id);
+                await this.storage.get(acc);
+                acc.vaults.update({ ...vault.info, updated: new Date() });
+                if (acc.id !== account.id) {
+                    this.messenger.send(member.email, new MemberAddedMessage(vault));
+                }
+                promises.push(this.storage.set(acc));
             }
-            await this.storage.set(acc);
+
+            for (const member of changes.members.removed) {
+                console.log("member removed", member);
+
+                const acc = new Account(member.id);
+                await this.storage.get(acc);
+                acc.vaults.remove({ ...vault.info, updated: new Date() });
+                promises.push(this.storage.set(acc));
+            }
         }
 
         for (const invite of (changes.invites && changes.invites.added) || []) {
             this.messenger.send(invite.email, new InviteCreatedMessage(invite));
         }
 
-        await this.storage.set(existing);
+        await [...promises, this.storage.set(existing)];
 
         return vault;
     }
@@ -369,10 +359,6 @@ export class Server {
                 res.result = null;
                 break;
 
-            case "getSessions":
-                res.result = await ctx.getSessions();
-                break;
-
             case "getAccount":
                 if (!account) {
                     throw new Err(ErrorCode.BAD_REQUEST);
@@ -464,7 +450,7 @@ export class Server {
             }
         }
 
-        if (session.expires && new Date(session.expires) < new Date()) {
+        if (session.expires && session.expires < new Date()) {
             throw new Err(ErrorCode.SESSION_EXPIRED);
         }
 
@@ -480,9 +466,12 @@ export class Server {
 
         // TODO
         // session.device = req.device;
-        session.lastUsed = new Date().toISOString();
+        session.lastUsed = new Date();
+        session.updated = new Date();
 
-        await ctx.storage.set(session);
+        account.sessions.update(session.info);
+
+        await Promise.all([ctx.storage.set(session), ctx.storage.set(account)]);
     }
 
     _handleError(e: Error, res: Response) {

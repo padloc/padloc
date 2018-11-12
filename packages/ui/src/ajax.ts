@@ -41,7 +41,11 @@ export class AjaxSender implements Sender {
             marshal(req),
             new Map<string, string>([["Content-Type", "application/json"], ["Accept", "application/json"]])
         );
-        return unmarshal(res.responseText);
+        try {
+            return unmarshal(res.responseText);
+        } catch (e) {
+            throw new Err(ErrorCode.SERVER_ERROR);
+        }
     }
 
     async receive(): Promise<Response> {

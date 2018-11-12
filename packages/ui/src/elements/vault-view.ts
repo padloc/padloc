@@ -3,11 +3,10 @@ import { Vault, VaultInfo, VaultMember } from "@padlock/core/lib/vault.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
-import { dialog, confirm, prompt, alert } from "../dialog.js";
+import { dialog, confirm, prompt, alert, choose } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, listen } from "./base.js";
-import { MemberDialog } from "./member-dialog.js";
 import { InviteDialog } from "./invite-dialog.js";
 import { SelectAccountDialog } from "./select-account-dialog.js";
 import { Input } from "./input.js";
@@ -18,9 +17,6 @@ import "./icon.js";
 export class VaultView extends BaseElement {
     @property()
     vault: Vault | null = null;
-
-    @dialog("pl-member-dialog")
-    private _memberDialog: MemberDialog;
 
     @dialog("pl-invite-dialog")
     private _inviteDialog: InviteDialog;
@@ -96,11 +92,8 @@ export class VaultView extends BaseElement {
     private async _addParentMember() {
         const parent = await app.getVault(this.vault!.parent!);
         const acc = await this._selectAccountDialog.show([...parent!.members].filter(m => !this.vault!.isMember(m)));
-        await this.vault!.updateMember(acc, "active", {
-            read: true,
-            write: true,
-            manage: false
-        });
+        await this.vault!.addMember(acc);
+        await app.syncVault(this.vault!);
     }
 
     private async _addMember() {
@@ -111,20 +104,23 @@ export class VaultView extends BaseElement {
         }
     }
 
-    private async _showMember(member: VaultMember) {
-        await this._memberDialog.show(member, this.vault!);
-    }
-
     private async _showInvite(invite: Invite) {
+        const vault = this.vault!;
+        const invitee = invite.invitee!;
+
         if (invite.email !== app.account!.email && invite.accepted && !invite.expired && (await invite.verify())) {
-            await this._showMember({
-                ...invite.invitee,
-                status: "active",
-                permissions: { read: true, write: false, manage: false }
-            } as VaultMember);
-            if (this.vault!.isMember(invite.invitee! as VaultMember)) {
-                await app.deleteInvite(invite);
+            const choice = await choose(
+                $l("Do you want to add {0} to the {1} vault?", invitee.name || invitee.email, vault.toString()),
+                [$l("Add Them"), $l("Cancel Invite")]
+            );
+            switch (choice) {
+                case 0:
+                    await vault.addMember(invitee);
+                case 1:
+                    await vault.invites.remove(invite);
+                    break;
             }
+            await app.syncVault(vault);
         } else {
             await this._inviteDialog.show(invite);
         }
@@ -141,19 +137,31 @@ export class VaultView extends BaseElement {
             confirmLabel: $l("Create")
         });
         if (vaultName) {
-            app.createVault(vaultName, this.vault!);
+            await app.createVault(vaultName, this.vault!);
         }
     }
 
     private async _removeMember(member: VaultMember) {
+        const vault = this.vault!;
+
         const confirmed = await confirm(
-            $l("Are you sure you want to remove {0} from this vault?", member.name || member.email)
+            $l(
+                vault.parent
+                    ? "Are you sure you want to remove {0} from {1}?"
+                    : "Are you sure you want to remove {0} from {1} and all of its subvaults?",
+                member.name || member.email,
+                vault.toString()
+            )
         );
 
         if (confirmed) {
-            await this.vault!.removeMember(member);
-            await app.syncVault(this.vault!);
-            this.requestUpdate();
+            this.vault!.members.remove(member);
+            for (const { id } of vault.vaults) {
+                const vault = app._vaults.get(id);
+                vault.members.remove(member);
+                app.syncVault(vault);
+            }
+            app.syncVault(this.vault!);
         }
     }
 
@@ -182,12 +190,10 @@ export class VaultView extends BaseElement {
         const vault = this.vault!;
         const { name, members, items, vaults } = vault;
         const subvaults = vault === app.mainVault ? [] : [...vaults].map(v => app._vaults.get(v.id));
-        const member = vault.getMember(app.account!);
-        const memberStatus = member ? member.status : "";
         const permissions = vault.getPermissions();
         const invites = vault.isAdmin() ? [...vault.invites] : [];
         const admins = [...members].filter(m => vault.isAdmin(m));
-        const nonAdmins = [...members].filter(m => m.status === "active" && !vault.isAdmin(m));
+        const nonAdmins = [...members].filter(m => !vault.isAdmin(m));
 
         return html`
         ${shared}
@@ -234,47 +240,8 @@ export class VaultView extends BaseElement {
                 display: none;
             }
 
-            .subheader {
-                height: 35px;
-                line-height: 35px;
-                padding: 0 15px;
-                width: 100%;
-                box-sizing: border-box;
-                font-size: var(--font-size-tiny);
-                font-weight: bold;
-                background: var(--color-foreground);
-                color: var(--color-background);
-                display: flex;
-                text-align: center;
-            }
-
-            .subheader button {
-                line-height: inherit;
-                font-size: inherit;
-                height: inherit;
-                margin-right: -15px;
-            }
-
-            .subheader-label {
-                font-weight: normal;
-                text-align: left;
-            }
-
-            .subheader.warning {
-                ${mixins.gradientWarning(true)}
-                text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
-            }
-
-            .subheader.highlight {
-                ${mixins.gradientHighlight(true)}
-                background: linear-gradient(90deg, #59c6ff 0%, #077cb9 100%);
-                text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
-            }
-
             .invite {
-                ${mixins.card()}
                 padding: 15px 17px;
-                margin: 8px;
             }
 
             .invite .tags {
@@ -318,12 +285,6 @@ export class VaultView extends BaseElement {
 
         <main>
 
-            <div class="subheader warning animate ellipsis" ?hidden=${memberStatus !== "removed"}>
-
-                <div flex>${$l("You have been removed from this vault")}</div>
-
-            </div>
-
             <div class="tags animate">
 
                 <div
@@ -337,7 +298,7 @@ export class VaultView extends BaseElement {
 
                 </div>
 
-                <div class="tag warning" flex ?hidden=${memberStatus !== "active" || permissions.write}>
+                <div class="tag warning" flex ?hidden=${permissions.write}>
 
                     <pl-icon icon="show"></pl-icon>
 
@@ -345,7 +306,7 @@ export class VaultView extends BaseElement {
 
                 </div>
 
-                <div class="tag" flex ?hidden=${memberStatus === "removed"}>
+                <div class="tag" flex>
 
                     <pl-icon icon="group"></pl-icon>
 
@@ -353,7 +314,7 @@ export class VaultView extends BaseElement {
 
                 </div>
 
-                <div class="tag" flex ?hidden=${memberStatus === "removed"}>
+                <div class="tag" flex>
 
                     <pl-icon icon="record"></pl-icon>
 
@@ -459,6 +420,7 @@ export class VaultView extends BaseElement {
                             <pl-icon
                                 icon="remove"
                                 class="remove-button tap"
+                                ?hidden=${acc.id === app.account!.id || !permissions.manage}
                                 @click=${() => this._removeMember(acc)}>
                             </pl-icon>
 
@@ -468,7 +430,7 @@ export class VaultView extends BaseElement {
 
             </ul>
 
-            <h2 class="animate" ?hidden=${vault === app.mainVault || !!vault.parent || !permissions.manage}>
+            <h2 class="animate" ?hidden=${vault === app.mainVault || !!vault.parent}>
 
                 <pl-icon icon="vaults"></pl-icon>
 

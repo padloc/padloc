@@ -1,7 +1,7 @@
 import { Storable, LocalStorage } from "./storage";
 import { VaultItem, Field, Tag, createVaultItem } from "./data";
-import { Vault } from "./vault";
-import { Account, Auth, Session, SessionInfo } from "./auth";
+import { Vault, VaultInfo } from "./vault";
+import { Account, Auth, Session } from "./auth";
 import { Invite } from "./invite";
 import { DateString } from "./encoding";
 import { API } from "./api";
@@ -72,7 +72,6 @@ export class App extends EventTarget implements Storable {
     initialized: DateString = "";
     session: Session | null = null;
     account: Account | null = null;
-    sessions: SessionInfo[] = [];
     loaded = this.load();
 
     constructor(sender: Sender) {
@@ -105,8 +104,8 @@ export class App extends EventTarget implements Storable {
 
     get vaults() {
         return Array.from(this._vaults.values()).sort((a, b) => {
-            const nameA = a.parent ? `${a.parent.name}/a.name}` : a.name;
-            const nameB = b.parent ? `${b.parent.name}/b.name}` : b.name;
+            const nameA = a.toString();
+            const nameB = b.toString();
             return b === this.mainVault || nameA > nameB ? 1 : a === this.mainVault || nameA < nameB ? -1 : 0;
         });
     }
@@ -130,8 +129,7 @@ export class App extends EventTarget implements Storable {
             initialized: this.initialized,
             stats: this.stats,
             settings: this.settings,
-            device: this.device,
-            sessions: this.sessions
+            device: this.device
         };
     }
 
@@ -142,7 +140,6 @@ export class App extends EventTarget implements Storable {
         this.setStats(raw.stats || {});
         this.setSettings(raw.settings);
         this.device = Object.assign(raw.device, await getDeviceInfo());
-        this.sessions = raw.sessions || [];
         return this;
     }
 
@@ -437,12 +434,19 @@ export class App extends EventTarget implements Storable {
 
     async revokeSession(session: Session) {
         await this.api.revokeSession(session);
-        await this.loadSessions();
+        await this.syncAccount();
         this.dispatch("account-changed", { account: this.account });
     }
 
-    async loadAccount() {
-        await this.api.getAccount(this.account!);
+    async syncAccount() {
+        const account = this.account!;
+        const remoteAccount = await this.api.getAccount(new Account(account.id));
+        const changes = account.merge(remoteAccount);
+        for (const vault of changes.vaults.removed) {
+            this._vaults.delete(vault.id);
+            await this.storage.delete(new Vault(vault.id));
+            this.account!.vaults.remove(vault);
+        }
         await this.storage.set(this);
         this.dispatch("account-changed", { account: this.account });
     }
@@ -478,9 +482,11 @@ export class App extends EventTarget implements Storable {
         const addToVault = parent || this.mainVault;
 
         if (addToVault) {
-            await addToVault.updateSubVault(vault.info);
+            await addToVault.addSubVault(vault.info);
             await this.syncVault(addToVault);
         }
+
+        await this.syncAccount();
 
         this.dispatch("vault-created", { vault });
         return vault;
@@ -501,7 +507,7 @@ export class App extends EventTarget implements Storable {
         const success = await invite.accept(this.account!.info, secret);
         if (success) {
             await this.api.acceptInvite(invite);
-            await this.mainVault!.updateSubVault(Object.assign({}, invite.vault!));
+            await this.mainVault!.addSubVault({ ...invite.vault! } as VaultInfo);
             await Promise.all([this.storage.set(this.mainVault!), this.api.updateVault(this.mainVault!)]);
         }
         return success;
@@ -517,16 +523,15 @@ export class App extends EventTarget implements Storable {
     }
 
     async synchronize() {
-        await this.loadAccount();
+        await this.syncAccount();
         await this.syncVaults();
-        await this.loadSessions();
         await this.storage.set(this);
         this.setStats({ lastSync: new Date().toISOString() });
         this.dispatch("synchronize");
     }
 
     async syncVaults() {
-        await Promise.all(this.account!.vaults.map(g => this.syncVault(g)));
+        await Promise.all([...this.account!.vaults].map(g => this.syncVault(g)));
     }
 
     async syncVault(vaultInfo: { id: string }): Promise<void> {
@@ -534,7 +539,16 @@ export class App extends EventTarget implements Storable {
 
         const remoteVault = new Vault(vaultInfo.id);
         remoteVault.access(this.account!);
-        await this.api.getVault(remoteVault);
+
+        try {
+            await this.api.getVault(remoteVault);
+        } catch (e) {
+            if (e.code === ErrorCode.NOT_FOUND && localVault) {
+                this._vaults.delete(localVault.id);
+                await this.storage.delete(localVault);
+                this.account!.vaults.remove(localVault);
+            }
+        }
 
         let result: Vault;
 
@@ -571,10 +585,5 @@ export class App extends EventTarget implements Storable {
         }
 
         return null;
-    }
-
-    async loadSessions() {
-        this.sessions = await this.api.getSessions();
-        this.dispatch("account-changed");
     }
 }

@@ -1,5 +1,5 @@
 import { Request, Response } from "./transport";
-import { marshal, DateString, Base64String, stringToBase64 } from "./encoding";
+import { marshal, Base64String, stringToBase64 } from "./encoding";
 import {
     PBES2Container,
     getProvider,
@@ -14,6 +14,7 @@ import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
 import { Err, ErrorCode } from "./error";
 import { VaultInfo } from "./vault";
+import { Collection, CollectionItem } from "./collection";
 
 export function parseAuthHeader(header: string) {
     const creds = header.match(/^SRP-HMAC sid=(.+),msg=(.+),sig=(.+)$/);
@@ -34,18 +35,20 @@ export type DeviceID = string;
 export interface SessionInfo {
     id: string;
     account: AccountID;
-    created: DateString;
-    lastUsed: DateString;
-    expires: DateString;
+    created: Date;
+    updated: Date;
+    lastUsed: Date;
+    expires?: Date;
     device?: DeviceInfo;
 }
 
 export class Session implements SessionInfo, Storable {
     kind = "session";
     account: AccountID = "";
-    created: DateString = new Date().toISOString();
-    lastUsed: DateString = new Date().toISOString();
-    expires: DateString = "";
+    created = new Date();
+    updated = new Date();
+    lastUsed = new Date();
+    expires?: Date;
     key: Base64String = "";
     device?: DeviceInfo;
 
@@ -54,6 +57,7 @@ export class Session implements SessionInfo, Storable {
             id: this.id,
             account: this.account,
             created: this.created,
+            updated: this.updated,
             lastUsed: this.lastUsed,
             expires: this.expires,
             device: this.device
@@ -91,17 +95,19 @@ export class Session implements SessionInfo, Storable {
     }
 
     async serialize() {
-        const raw = this.info as any;
-        raw.key = this.key;
-        return raw;
+        return {
+            ...this.info,
+            key: this.key
+        };
     }
 
     async deserialize(raw: any) {
         this.id = raw.id;
         this.account = raw.account;
-        this.created = raw.created;
-        this.lastUsed = raw.lastUsed;
-        this.expires = raw.expires;
+        this.created = new Date(raw.created);
+        this.updated = new Date(raw.updated);
+        this.lastUsed = new Date(raw.lastUsed);
+        this.expires = raw.expires && new Date(raw.expires);
         this.device = raw.device;
         this.key = raw.key || "";
         return this;
@@ -136,8 +142,8 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
     publicKey: RSAPublicKey = "";
     privateKey: RSAPrivateKey = "";
     mainVault = "";
-    sessions = new Set<SessionID>();
-    vaults: VaultInfo[] = [];
+    sessions = new Collection<SessionInfo>();
+    vaults = new Collection<VaultInfo & CollectionItem>();
 
     get pk() {
         return this.id;
@@ -187,11 +193,22 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
         this.privateKey = "";
     }
 
-    update(account: Account) {
-        this.name = account.name;
-        this.mainVault = account.mainVault;
-        this.keyParams = account.keyParams;
-        this.updated = new Date();
+    merge(account: Account) {
+        if (account.updated > this.updated) {
+            this.name = account.name;
+            this.mainVault = account.mainVault;
+            this.keyParams = account.keyParams;
+            this.encryptionParams = account.encryptionParams;
+            this.encryptedData = account.encryptedData;
+            this.updated = account.updated;
+            this.created = account.created;
+            this.publicKey = account.publicKey;
+        }
+
+        return {
+            vaults: this.vaults.merge(account.vaults),
+            sessions: this.sessions.merge(account.sessions)
+        };
     }
 
     async serialize() {
@@ -204,8 +221,8 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
             name: this.name,
             mainVault: this.mainVault,
             publicKey: this.publicKey,
-            vaults: this.vaults,
-            sessions: Array.from(this.sessions)
+            vaults: await this.vaults.serialize(),
+            sessions: await this.sessions.serialize()
         };
     }
 
@@ -218,8 +235,8 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
         this.name = raw.name;
         this.mainVault = raw.mainVault;
         this.publicKey = raw.publicKey;
-        this.vaults = raw.vaults || [];
-        this.sessions = new Set<SessionID>(raw.sessions);
+        this.vaults = await new Collection<VaultInfo & CollectionItem>().deserialize(raw.vaults);
+        this.sessions = await new Collection<SessionInfo>().deserialize(raw.sessions);
         return this;
     }
 
@@ -273,7 +290,7 @@ export class Auth implements Storable {
 
 export class EmailVerification implements Storable {
     kind = "email-verification";
-    created: DateString = new Date().toISOString();
+    created = new Date();
 
     get pk() {
         return this.email;
@@ -294,7 +311,7 @@ export class EmailVerification implements Storable {
         this.id = raw.id;
         this.email = raw.email;
         this.code = raw.code;
-        this.created = raw.created;
+        this.created = new Date(raw.created);
         return this;
     }
 }

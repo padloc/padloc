@@ -15,7 +15,7 @@ import { Invite, InviteCollection } from "./invite";
 import { Err, ErrorCode } from "./error";
 import { Storable } from "./storage";
 import { Collection, CollectionItem, CollectionChanges } from "./collection";
-import { VaultItemCollection } from "./data";
+import { VaultItem, VaultItemCollection } from "./data";
 
 export type MemberStatus = "active" | "removed" | "left";
 
@@ -26,7 +26,6 @@ export interface Permissions {
 }
 
 export interface VaultMember extends SignedAccountInfo, CollectionItem {
-    status: MemberStatus;
     permissions: Permissions;
 }
 
@@ -110,7 +109,7 @@ export class Vault implements VaultInfo, Storable {
             keySize: 256
         });
         await this._generateKeyPair();
-        await this.updateMember(this._account!.info, "active", { read: true, write: true, manage: true });
+        await this.addMember(this._account!.info, { read: true, write: true, manage: true });
     }
 
     access(account: Account) {
@@ -133,8 +132,7 @@ export class Vault implements VaultInfo, Storable {
     }
 
     isMember(account: AccountInfo | null = this._account) {
-        const member = account && this.getMember(account);
-        return !!member && member.status === "active";
+        return account && !!this.getMember(account);
     }
 
     isInvited(account: AccountInfo | null = this._account) {
@@ -161,35 +159,18 @@ export class Vault implements VaultInfo, Storable {
         }
     }
 
-    async updateMember(account: AccountInfo, status: MemberStatus, permissions: Permissions) {
-        if (!this.isAdmin()) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
+    async addMember(account: AccountInfo, permissions: Permissions = { read: true, write: true, manage: false }) {
         const signedPublicKey = await getProvider().sign(this._privateKey, account.publicKey, this._signingParams);
 
-        const member = Object.assign({}, account, {
-            permissions,
-            status,
+        this.members.update({
+            ...account,
             signedPublicKey,
+            permissions,
             updated: new Date()
         });
-
-        this.members.update(member);
     }
 
-    async removeMember(account: AccountInfo) {
-        if (!this.isMember(account)) {
-            throw "Not a member!";
-        }
-        return this.updateMember(account, "removed", { read: false, write: false, manage: false });
-    }
-
-    async updateSubVault(vault: VaultInfo) {
-        if (!this.isAdmin()) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
+    async addSubVault(vault: VaultInfo) {
         const signedPublicKey = await getProvider().sign(this._privateKey, vault.publicKey, this._signingParams);
 
         this.vaults.update({
@@ -222,10 +203,6 @@ export class Vault implements VaultInfo, Storable {
     }
 
     async createInvite(email: string) {
-        if (!this.isAdmin()) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
         const invite = new Invite(email);
         await invite.initialize(this.info, this._account!.info, this._invitesKey);
         return invite;
@@ -236,6 +213,7 @@ export class Vault implements VaultInfo, Storable {
             members?: CollectionChanges<VaultMember>;
             vaults?: CollectionChanges<SubVault>;
             invites?: CollectionChanges<Invite>;
+            items?: CollectionChanges<VaultItem>;
         } = {};
 
         if (manage) {
@@ -264,7 +242,7 @@ export class Vault implements VaultInfo, Storable {
             if (!this._account || this._account.locked) {
                 this._itemsContainer = vault._itemsContainer;
             } else {
-                this.items.merge(vault.items);
+                changes.items = this.items.merge(vault.items);
             }
         }
 
@@ -280,11 +258,9 @@ export class Vault implements VaultInfo, Storable {
         if (manage && !account.locked) {
             // TODO: Do something about removed admins
             await this._adminContainer.setAccessors(
-                [...this.members]
-                    .filter(m => m.status === "active" && m.permissions.manage)
-                    .map(({ id, publicKey }) => {
-                        return { id, publicKey, encryptedKey: "" };
-                    })
+                [...this.members].filter(m => m.permissions.manage).map(({ id, publicKey }) => {
+                    return { id, publicKey, encryptedKey: "" };
+                })
             );
             await this._adminContainer.set(this._adminSerializer);
         }
@@ -292,7 +268,7 @@ export class Vault implements VaultInfo, Storable {
         if (write && !account.locked) {
             // TODO: Do something about removed members
             await this._itemsContainer.setAccessors(
-                [...this.members].filter(m => m.status === "active").map(({ id, publicKey }) => {
+                [...this.members].map(({ id, publicKey }) => {
                     return { id, publicKey, encryptedKey: "" };
                 })
             );
@@ -354,6 +330,10 @@ export class Vault implements VaultInfo, Storable {
         return this;
     }
 
+    toString() {
+        return this.parent ? `${this.parent.name}/${this.name}` : this.name;
+    }
+
     private async _generateKeyPair() {
         const { publicKey, privateKey } = await getProvider().generateKey(defaultRSAKeyParams());
         this.publicKey = publicKey;
@@ -379,9 +359,5 @@ export class Vault implements VaultInfo, Storable {
                 return this;
             }
         };
-    }
-
-    toString() {
-        return this.parent ? `${this.parent.name}/${this.name}` : this.name;
     }
 }

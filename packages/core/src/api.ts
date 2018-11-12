@@ -1,4 +1,4 @@
-import { Session, SessionInfo, Account, Auth, AccountID } from "./auth";
+import { Session, Account, Auth, AccountID } from "./auth";
 import { Vault } from "./vault";
 import { Invite } from "./invite";
 import { Base64String } from "./encoding";
@@ -23,7 +23,6 @@ export interface API {
 
     createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session>;
     revokeSession(params: Session): Promise<void>;
-    getSessions(): Promise<SessionInfo[]>;
 
     createAccount(params: CreateAccountParams): Promise<Account>;
     getAccount(account: Account): Promise<Account>;

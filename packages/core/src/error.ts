@@ -35,6 +35,8 @@ export enum ErrorCode {
     CLIENT_ERROR = "client_error",
     SERVER_ERROR = "server_error",
 
+    ENCODING_ERROR = "encoding_error",
+
     NOT_FOUND = "not_found",
     INVALID_CSV = "invalid_csv"
 }

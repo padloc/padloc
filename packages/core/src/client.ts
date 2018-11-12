@@ -70,11 +70,6 @@ export class Client implements API {
         await this.call("revokeSession", [await session.serialize()]);
     }
 
-    async getSessions() {
-        const res = await this.call("getSessions");
-        return res.result;
-    }
-
     async createAccount(params: CreateAccountParams): Promise<Account> {
         const res = await this.call("createAccount", [
             {
