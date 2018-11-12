@@ -48,7 +48,7 @@ export function confirm(
     return alert(message, options, instant).then(choice => choice === 0);
 }
 
-export function prompt(message: string, opts: PromptOptions, instant = false) {
+export function prompt(message: string, opts?: PromptOptions, instant = false) {
     return instant
         ? getDialog("pl-prompt-dialog").show(message, opts)
         : lineUpDialog("pl-prompt-dialog", (dialog: PromptDialog) => dialog.show(message, opts));

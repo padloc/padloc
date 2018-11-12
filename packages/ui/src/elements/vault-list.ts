@@ -3,7 +3,9 @@ import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
 import { shared, mixins } from "../styles";
 import { router } from "../init";
+import { prompt } from "../dialog";
 import { BaseElement, element, listen, property, html } from "./base.js";
+import "./vault-list-item.js";
 
 @element("pl-vault-list")
 export class VaultList extends BaseElement {
@@ -21,6 +23,13 @@ export class VaultList extends BaseElement {
         router.go(`vaults/${vault.id}`);
     }
 
+    private async _createVault() {
+        const vaultName = await prompt($l("Enter Vault Name"));
+        if (vaultName) {
+            await app.createVault(vaultName);
+        }
+    }
+
     render() {
         return html`
 
@@ -29,6 +38,7 @@ export class VaultList extends BaseElement {
             <style>
 
                 :host {
+                    position: relative;
                     display: flex;
                     flex-direction: column;
                     background: var(--color-quaternary);
@@ -70,6 +80,14 @@ export class VaultList extends BaseElement {
                     font-size: 80%;
                 }
 
+                pl-vault-list-item {
+                    border-top: solid 1px #ddd;
+                }
+
+                pl-vault-list-item[selected] {
+                    background: #eee;
+                }
+
             </style>
 
             <header>
@@ -88,20 +106,18 @@ export class VaultList extends BaseElement {
 
                     ${app.vaults.map(
                         vault => html`
-                        <li
+                        <pl-vault-list-item
+                            .vault=${vault}
                             ?selected=${vault === this.vault}
                             class="vault tap ${vault.parent ? "subvault" : ""}"
                             @click=${() => this._select(vault)}>
-
-                            <pl-icon icon="vault"></pl-icon>
-
-                            <div>${vault.name}</div> 
-
-                        </li>
+                        </pl-vault-list-item>
                     `
                     )}
 
                 </ul>
+
+                <pl-icon icon="add" class="tap fab" @click=${() => this._createVault()}></pl-icon>
 
             </main>
         `;

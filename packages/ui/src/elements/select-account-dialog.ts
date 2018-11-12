@@ -1,22 +1,28 @@
 import { AccountInfo } from "@padlock/core/lib/auth.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, property, query } from "./base.js";
+import { element, html, property } from "./base.js";
 import { Dialog } from "./dialog.js";
 
 @element("pl-select-account-dialog")
-export class SelectAccountDialog extends BaseElement {
-    @property() accounts: AccountInfo[] = [];
+export class SelectAccountDialog extends Dialog<AccountInfo[], AccountInfo> {
+    @property()
+    accounts: AccountInfo[] = [];
 
-    @query("pl-dialog") private _dialog: Dialog;
-
-    private _resolve: ((acc: AccountInfo | null | "new") => void) | null;
-
-    render() {
+    renderContent() {
         return html`
             ${shared}
 
             <style>
+
+                .inner {
+                    --color-background: var(--color-tertiary);
+                    --color-foreground: var(--var-secondary);
+                    text-shadow: none;
+                    background: var(--color-background);
+                    width: auto;
+                    max-width: 100%;
+                }
 
                 .title {
                     padding: 10px 15px;
@@ -50,47 +56,24 @@ export class SelectAccountDialog extends BaseElement {
 
             </style>
 
-            <pl-dialog @dialog-dismiss=${() => this._done(null)}>
+            <h1>${$l("Select a User")}</h1>
 
-                <div class="title">
+            ${this.accounts.map(
+                acc => html`
+                <pl-account-item
+                    class="tap"
+                    .account=${acc}
+                    @click=${() => this.done(acc)}>
+                </pl-account-item>
+            `
+            )}
 
-                    <pl-icon icon="user"></pl-icon>
-
-                    <div>${$l("Select An Account:")}</div>
-
-                </div>
-
-                ${this.accounts.map(
-                    acc => html`
-                    <pl-account-item
-                        class="tap"
-                        .account=${acc}
-                        @click=${() => this._done(acc)}>
-                    </pl-account-item>
-                `
-                )}
-
-                <button class="tap" @click=${() => this._done("new")}>
-                    ${$l("Invite New User...")}
-                </button>
-
-            </pl-dialog>
         `;
     }
 
-    async show(accounts: AccountInfo[]): Promise<AccountInfo | null | "new"> {
+    async show(accounts: AccountInfo[]): Promise<AccountInfo> {
         this.accounts = accounts;
-        this.requestUpdate();
         await this.updateComplete;
-        this._dialog.open = true;
-        return new Promise<AccountInfo | null | "new">(resolve => {
-            this._resolve = resolve;
-        });
-    }
-
-    private _done(account: AccountInfo | null | "new") {
-        this._resolve && this._resolve(account);
-        this._resolve = null;
-        this._dialog.open = false;
+        return super.show();
     }
 }

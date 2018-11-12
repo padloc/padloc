@@ -101,7 +101,7 @@ export class Dialog<I, R> extends BaseElement {
 
         <div class="scrim"></div>
 
-        <div class="outer" @click=${() => this.done()}>
+        <div class="outer" @click=${() => this.dismiss()}>
             <slot name="before"></slot>
             <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>
                 ${this.renderContent()}
@@ -157,7 +157,7 @@ export class Dialog<I, R> extends BaseElement {
     dismiss() {
         if (!this.preventDismiss) {
             this.dispatch("dialog-dismiss");
-            this.open = false;
+            this.done();
         }
     }
 }

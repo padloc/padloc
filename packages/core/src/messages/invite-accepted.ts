@@ -11,7 +11,7 @@ export class InviteAcceptedMessage implements Message {
 
     get text() {
         const { invitee, vault } = this.invite;
-        const url = `https://127.0.0.1:8081/vault/${vault!.id}`;
+        const url = `https://127.0.0.1:8081/vaults/${vault!.id}`;
         return `
 Hi there!
 
@@ -28,7 +28,7 @@ Martin`;
 
     get html() {
         const { invitee, vault } = this.invite;
-        const url = `https://127.0.0.1:8081/store/${vault!.id}`;
+        const url = `https://127.0.0.1:8081/vaults/${vault!.id}`;
         return baseHTML(`
 
             ${p("Hi there!")}

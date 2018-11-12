@@ -124,12 +124,17 @@ export class Vault implements VaultInfo, Storable {
     }
 
     isAdmin(account: AccountInfo | null = this._account) {
+        if (this.isOwner(account)) {
+            return true;
+        }
+
         const member = account && this.getMember(account);
-        return this.isOwner() || (!!member && member.permissions.manage);
+        return !!member && member.permissions.manage;
     }
 
     isMember(account: AccountInfo | null = this._account) {
-        return !!account && !!this.getMember(account);
+        const member = account && this.getMember(account);
+        return !!member && member.status === "active";
     }
 
     isInvited(account: AccountInfo | null = this._account) {

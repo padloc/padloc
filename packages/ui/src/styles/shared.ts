@@ -107,7 +107,6 @@ export const shared = html`
     }
 
     h1 pl-icon, h2 pl-icon {
-        height: 0;
         position: relative;
         font-size: 90%;
     }
@@ -387,7 +386,7 @@ export const shared = html`
 
     .tag {
         background: var(--color-foreground);
-        color: var(--color-background);
+        // color: var(--color-background);
         font-weight: bold;
         border-radius: var(--border-radius);
         font-size: var(--font-size-tiny);
@@ -396,7 +395,8 @@ export const shared = html`
         line-height: 30px;
         padding: 0 8px;
         text-align: center;
-        ${mixins.gradientDark(true)}
+        // ${mixins.gradientDark(true)}
+        background: #ddd;
     }
 
     .tag:not(:last-child) {
@@ -423,6 +423,7 @@ export const shared = html`
 
     .tag.highlight {
         ${mixins.gradientHighlight(true)}
+        color: var(--color-tertiary);
         text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
     }
 

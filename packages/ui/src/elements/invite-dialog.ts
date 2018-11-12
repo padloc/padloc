@@ -4,18 +4,16 @@ import { formatDateFromNow } from "../util.js";
 import { app } from "../init";
 import { shared, mixins } from "../styles";
 import { alert } from "../dialog.js";
-import { BaseElement, element, html, property, query } from "./base.js";
+import { element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { LoadingButton } from "./loading-button.js";
 import { Input } from "./input.js";
 
 @element("pl-invite-dialog")
-export class InviteDialog extends BaseElement {
+export class InviteDialog extends Dialog<Invite, void> {
     @property()
     invite: Invite | null = null;
 
-    @query("pl-dialog")
-    private _dialog: Dialog;
     @query("#acceptButton")
     private _acceptButton: LoadingButton;
     @query("#resendButton")
@@ -25,7 +23,6 @@ export class InviteDialog extends BaseElement {
     @query("#codeInput")
     private _codeInput: Input;
 
-    private _resolve: (() => void) | null;
     @property()
     private _verified: boolean | undefined;
 
@@ -36,19 +33,14 @@ export class InviteDialog extends BaseElement {
     async show(invite: Invite): Promise<void> {
         this.invite = invite;
         this._verified = await invite.verify();
-        this.requestUpdate();
-        await this.updateComplete;
-        this._dialog.open = true;
-        return new Promise<void>(resolve => {
-            this._resolve = resolve;
-        });
+        super.show();
     }
 
     shouldUpdate() {
         return !!this.invite;
     }
 
-    render() {
+    renderContent() {
         const { email, expires, expired, vault, accepted } = this.invite!;
         const forMe = email === app.account!.email;
 
@@ -136,55 +128,52 @@ export class InviteDialog extends BaseElement {
                 }
             </style>
 
-            <pl-dialog @dialog-dismiss=${() => this._done()}>
-                <div class="invite">
+            <div class="invite">
 
-                    <pl-icon icon="cancel" class="tap close-button" @click=${() => this._done()}></pl-icon>
+                <pl-icon icon="cancel" class="tap close-button" @click=${() => this.done()}></pl-icon>
 
-                    <h1>${$l("Vault Invite")}</h1>
+                <h1>${$l("Vault Invite")}</h1>
 
-                    <div class="tags">
+                <div class="tags">
 
-                        <div class="tag vault">
+                    <div class="tag vault">
 
-                            <pl-icon icon="vault"></pl-icon>
+                        <pl-icon icon="vault"></pl-icon>
 
-                            <div>${vault!.name}</div>
-
-                        </div>
-
-                    </div>
-
-                    ${forMe ? this._inviteeBody() : this._adminBody()}
-
-                    <div class="tags">
-
-                        <div class="tag ${status.class}">
-
-                            <pl-icon icon="${status.icon}"></pl-icon>
-
-                            <div>${status.text}</div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="invite-text" ?hidden=${!forMe || !accepted}>
-                        ${$l(
-                            "Please wait for an admin to complete the process. " +
-                                "You will be notified as soon as you receive access."
-                        )}
-                    </div>
-
-                    <div layout class="tiles tiles-2">
-
-                    ${forMe ? this._inviteeActions() : this._adminActions()}
+                        <div>${vault!.name}</div>
 
                     </div>
 
                 </div>
 
-            </pl-dialog>
+                ${forMe ? this._inviteeBody() : this._adminBody()}
+
+                <div class="tags">
+
+                    <div class="tag ${status.class}">
+
+                        <pl-icon icon="${status.icon}"></pl-icon>
+
+                        <div>${status.text}</div>
+
+                    </div>
+
+                </div>
+
+                <div class="invite-text" ?hidden=${!forMe || !accepted}>
+                    ${$l(
+                        "Please wait for an admin to complete the process. " +
+                            "You will be notified as soon as you receive access."
+                    )}
+                </div>
+
+                <div layout class="tiles tiles-2">
+
+                ${forMe ? this._inviteeActions() : this._adminActions()}
+
+                </div>
+
+            </div>
         `;
     }
 
@@ -270,12 +259,6 @@ export class InviteDialog extends BaseElement {
         `;
     }
 
-    private _done() {
-        this._resolve && this._resolve();
-        this._resolve = null;
-        this._dialog.open = false;
-    }
-
     private async _delete() {
         if (this._deleteButton.state === "loading") {
             return;
@@ -284,12 +267,12 @@ export class InviteDialog extends BaseElement {
         try {
             await app.deleteInvite(this.invite!);
             this._deleteButton.success();
-            this._done();
+            this.done();
         } catch (e) {
             this._deleteButton.fail();
             throw e;
         }
-        this._done();
+        this.done();
     }
 
     private async _resend() {
@@ -299,6 +282,7 @@ export class InviteDialog extends BaseElement {
         this._resendButton.start();
         const vault = await app.getVault(this.invite!.vault!);
         try {
+            await app.deleteInvite(this.invite!);
             this.invite = await app.createInvite(vault!, this.invite!.email);
             this._verified = await this.invite.verify();
             this._resendButton.success();
@@ -317,7 +301,7 @@ export class InviteDialog extends BaseElement {
             const success = await app.acceptInvite(this.invite!, this._codeInput.value.toLowerCase());
             if (success) {
                 this._acceptButton.success();
-                this._done();
+                this.done();
                 alert(
                     $l(
                         "You have successfully accepted the invite. You'll be notified once you've been granted access."
@@ -326,11 +310,11 @@ export class InviteDialog extends BaseElement {
                 );
             } else {
                 this._acceptButton.fail();
-                this._dialog.open = false;
+                this.open = false;
                 await alert($l("Verification failed! Did you enter the correct confirmation code?"), {
                     type: "warning"
                 });
-                this._dialog.open = true;
+                this.open = true;
             }
         } catch (e) {
             this._acceptButton.fail();

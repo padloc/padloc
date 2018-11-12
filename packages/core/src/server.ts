@@ -188,9 +188,10 @@ export class Context implements API {
         const { account } = this._requireAuth();
 
         await this.storage.get(vault);
-        const { read } = vault.getPermissions(account);
 
-        if (!read) {
+        const member = vault.getMember(account);
+
+        if (!member || member.status !== "active") {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 

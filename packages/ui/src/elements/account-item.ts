@@ -6,7 +6,8 @@ import { BaseElement, element, html, property } from "./base.js";
 
 @element("pl-account-item")
 export class AccountItem extends BaseElement {
-    @property() account: GroupMember | null = null;
+    @property()
+    account: GroupMember | null = null;
 
     shouldUpdate() {
         return !!this.account;
@@ -41,8 +42,8 @@ export class AccountItem extends BaseElement {
                 }
 
                 pl-fingerprint {
-                    width: 50px;
-                    height: 50px;
+                    width: 46px;
+                    height: 46px;
                     border-radius: 100%;
                     border: solid 1px var(--border-color);
                     margin: 15px;
@@ -50,12 +51,15 @@ export class AccountItem extends BaseElement {
 
                 .account-info {
                     flex: 1;
-                    width: 0;
+                    padding-right: 18px;
+                }
+
+                .account-email {
+                    ${mixins.ellipsis()}
                 }
 
                 .account-email {
                     font-weight: bold;
-                    margin: 5px 0;
                     ${mixins.ellipsis()}
                 }
             </style>
@@ -64,22 +68,9 @@ export class AccountItem extends BaseElement {
 
             <div class="account-info">
 
+                <div class="account-name">${account.name}</div>
+
                 <div class="account-email">${account.email}</div>
-
-                <div class="tags small">
-
-                    ${pills.map(
-                        pill => html`
-                            <div class="tag">
-
-                                <pl-icon icon="${pill.icon}"></pl-icon>
-
-                                <div>${pill.label}</div>
-
-                            </div>`
-                    )}
-
-                </div>
 
             </div>
         `;

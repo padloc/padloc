@@ -1,33 +1,32 @@
-import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { VaultMember } from "@padlock/core/lib/vault.js";
+import { Vault, VaultInfo, VaultMember } from "@padlock/core/lib/vault.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
-import { getDialog, confirm, prompt, alert } from "../dialog.js";
+import { dialog, confirm, prompt, alert } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, listen } from "./base.js";
-import "./icon.js";
 import { MemberDialog } from "./member-dialog.js";
-import "./member-dialog.js";
 import { InviteDialog } from "./invite-dialog.js";
-import "./invite-dialog.js";
+import { SelectAccountDialog } from "./select-account-dialog.js";
 import { Input } from "./input.js";
 import "./account-item.js";
+import "./icon.js";
 
 @element("pl-vault-view")
 export class VaultView extends BaseElement {
     @property()
     vault: Vault | null = null;
 
-    private get _memberDialog() {
-        return getDialog("pl-member-dialog") as MemberDialog;
-    }
+    @dialog("pl-member-dialog")
+    private _memberDialog: MemberDialog;
 
-    private get _inviteDialog() {
-        return getDialog("pl-invite-dialog") as InviteDialog;
-    }
+    @dialog("pl-invite-dialog")
+    private _inviteDialog: InviteDialog;
+
+    @dialog("pl-select-account-dialog")
+    private _selectAccountDialog: SelectAccountDialog;
 
     @listen("synchronize", app)
     @listen("vault-changed", app)
@@ -40,15 +39,13 @@ export class VaultView extends BaseElement {
         animateCascade(this.$$(".animate:not([hidden])", false), { initialDelay: 200 });
         if (
             this.vault &&
+            this.vault != app.mainVault &&
             this.vault.members.size === 1 &&
             !this.vault.invites.size &&
             this.vault.getPermissions().manage
         ) {
             const confirmed = await confirm(
-                $l(
-                    "There is nobody else in this vault yet. Invite others to give " +
-                        "them access to any data you share with this vault!"
-                ),
+                $l("There is nobody else here yet. Do you want to add somebody else to this vault?"),
                 $l("Invite Others"),
                 $l("Stay Lonely"),
                 { icon: "vault" }
@@ -96,6 +93,24 @@ export class VaultView extends BaseElement {
         await this._inviteDialog.show(invite);
     }
 
+    private async _addParentMember() {
+        const parent = await app.getVault(this.vault!.parent!);
+        const acc = await this._selectAccountDialog.show([...parent!.members].filter(m => !this.vault!.isMember(m)));
+        await this.vault!.updateMember(acc, "active", {
+            read: true,
+            write: true,
+            manage: false
+        });
+    }
+
+    private async _addMember() {
+        if (this.vault!.parent) {
+            this._addParentMember();
+        } else {
+            this._invite();
+        }
+    }
+
     private async _showMember(member: VaultMember) {
         await this._memberDialog.show(member, this.vault!);
     }
@@ -114,6 +129,32 @@ export class VaultView extends BaseElement {
             await this._inviteDialog.show(invite);
         }
         app.syncVault(this.vault!);
+    }
+
+    private _openVault(vault: VaultInfo) {
+        router.go(`vaults/${vault.id}`);
+    }
+
+    private async _addSubVault() {
+        const vaultName = await prompt($l("Enter a vault name!"), {
+            placeholder: $l("Vault Name"),
+            confirmLabel: $l("Create")
+        });
+        if (vaultName) {
+            app.createVault(vaultName, this.vault!);
+        }
+    }
+
+    private async _removeMember(member: VaultMember) {
+        const confirmed = await confirm(
+            $l("Are you sure you want to remove {0} from this vault?", member.name || member.email)
+        );
+
+        if (confirmed) {
+            await this.vault!.removeMember(member);
+            await app.syncVault(this.vault!);
+            this.requestUpdate();
+        }
     }
 
     // private async _delete() {
@@ -139,12 +180,14 @@ export class VaultView extends BaseElement {
 
     render() {
         const vault = this.vault!;
-        const { name, members, items } = vault;
+        const { name, members, items, vaults } = vault;
+        const subvaults = vault === app.mainVault ? [] : [...vaults].map(v => app._vaults.get(v.id));
         const member = vault.getMember(app.account!);
         const memberStatus = member ? member.status : "";
         const permissions = vault.getPermissions();
         const invites = vault.isAdmin() ? [...vault.invites] : [];
-        const myInvite = vault.getInviteByEmail(app.account!.email);
+        const admins = [...members].filter(m => vault.isAdmin(m));
+        const nonAdmins = [...members].filter(m => m.status === "active" && !vault.isAdmin(m));
 
         return html`
         ${shared}
@@ -163,6 +206,32 @@ export class VaultView extends BaseElement {
 
             pl-account-item:not(:last-of-kind) {
                 border-bottom: solid 1px #ddd;
+            }
+
+            .add-icon {
+                background: var(--color-secondary);
+                color: var(--color-tertiary);
+                font-size: var(--font-size-small);
+                width: 30px;
+                height: 30px;
+            }
+
+            .remove-button {
+                font-size: 120%;
+                margin: 10px;
+            }
+
+            li {
+                display: flex;
+                align-items: center;
+            }
+
+            li:hover {
+                background: #fafafa;
+            }
+
+            li:not(:hover) .remove-button {
+                display: none;
             }
 
             .subheader {
@@ -245,24 +314,9 @@ export class VaultView extends BaseElement {
 
             <div class="title">${name}</div>
 
-            <pl-icon
-                icon="invite"
-                class="tap"
-                @click=${() => this._invite()}
-                ?invisible=${!permissions.manage}>
-            </pl-icon>
-
         </header>
 
         <main>
-
-            <div class="subheader highlight animate ellipsis tap"
-                ?hidden=${!myInvite}
-                @click=${() => this._showInvite(myInvite!)}>
-
-                <div flex>${$l("View Invite")}</div>
-
-            </div>
 
             <div class="subheader warning animate ellipsis" ?hidden=${memberStatus !== "removed"}>
 
@@ -271,6 +325,17 @@ export class VaultView extends BaseElement {
             </div>
 
             <div class="tags animate">
+
+                <div
+                    class="tag highlight tap"
+                    flex ?hidden=${!vault.parent}
+                    @click=${() => this._openVault(vault.parent!)}>
+
+                    <pl-icon icon="vault"></pl-icon>
+
+                    <div>${vault.parent && vault.parent.name}</div>
+
+                </div>
 
                 <div class="tag warning" flex ?hidden=${memberStatus !== "active" || permissions.write}>
 
@@ -348,21 +413,93 @@ export class VaultView extends BaseElement {
 
             <h2 class="animate">
 
-                <pl-icon icon="group"></pl-icon>
+                <pl-icon icon="admins"></pl-icon>
 
-                <div>${$l("Members")}</div>
+                <div class="flex">${$l("Admins")}</div>
 
             </h2>
 
-            ${[...members].map(
-                acc => html`
-                    <pl-account-item
-                        .account=${acc}
-                        class="animate tap"
-                        @click=${() => this._showMember(acc)}>
-                    </pl-account-item>
-                `
-            )}
+            <ul>
+
+                    ${admins.map(
+                        acc => html`
+                        <li>
+
+                            <pl-account-item .account=${acc} class="flex"> </pl-account-item>
+
+                        </li>
+                        `
+                    )}
+
+            </ul>
+
+            <h2 class="animate">
+
+                <pl-icon icon="group"></pl-icon>
+
+                <div class="flex">${$l("Members")}</div>
+
+                <pl-icon
+                    icon="add"
+                    class="add-icon tap"
+                    @click=${() => this._addMember()}
+                    ?hidden=${vault === app.mainVault || !permissions.manage}>
+                ></pl-icon>
+
+            </h2>
+
+            <ul>
+
+                ${nonAdmins.map(
+                    acc => html`
+                        <li>
+
+                            <pl-account-item .account=${acc} class="flex"> </pl-account-item>
+
+                            <pl-icon
+                                icon="remove"
+                                class="remove-button tap"
+                                @click=${() => this._removeMember(acc)}>
+                            </pl-icon>
+
+                        </li>
+                    `
+                )}
+
+            </ul>
+
+            <h2 class="animate" ?hidden=${vault === app.mainVault || !!vault.parent || !permissions.manage}>
+
+                <pl-icon icon="vaults"></pl-icon>
+
+                <div class="flex">${$l("Subvaults")}</div>
+
+                <pl-icon
+                    icon="add"
+                    class="add-icon tap"
+                    @click=${() => this._addSubVault()}
+                    ?hidden=${vault === app.mainVault || !permissions.manage}>
+                ></pl-icon>
+
+            </h2>
+
+            <ul>
+
+                ${subvaults.map(
+                    vault => html`
+                    <li>
+
+                        <pl-vault-list-item
+                            .vault=${vault}
+                            class="animate tap flex"
+                            @click=${() => this._openVault(vault)}>
+                        </pl-vault-list-item>
+
+                    </li>
+                    `
+                )}
+
+            </ul>
 
         </main>
        `;

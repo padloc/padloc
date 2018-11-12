@@ -11,7 +11,7 @@ export class MemberAddedMessage implements Message {
 
     get text() {
         const { name, id } = this.vault;
-        const url = `https://127.0.0.1:8081/vault/${id}`;
+        const url = `https://127.0.0.1:8081/vaults/${id}`;
 
         return `
 Hi there!
@@ -28,7 +28,7 @@ Martin`;
 
     get html() {
         const { name, id } = this.vault;
-        const url = `https://127.0.0.1:8081/vault/${id}`;
+        const url = `https://127.0.0.1:8081/vaults/${id}`;
         return baseHTML(`
 
             ${p("Hi there!")}
