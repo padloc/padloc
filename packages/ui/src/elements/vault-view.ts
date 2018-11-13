@@ -1,5 +1,5 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Vault, VaultInfo, VaultMember } from "@padlock/core/lib/vault.js";
+import { VaultInfo, VaultMember } from "@padlock/core/lib/vault.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
@@ -16,7 +16,11 @@ import "./icon.js";
 @element("pl-vault-view")
 export class VaultView extends BaseElement {
     @property()
-    vault: Vault | null = null;
+    selected: string = "";
+
+    get vault() {
+        return this.selected ? app.getVault(this.selected) : null;
+    }
 
     @dialog("pl-invite-dialog")
     private _inviteDialog: InviteDialog;
@@ -90,7 +94,7 @@ export class VaultView extends BaseElement {
     }
 
     private async _addParentMember() {
-        const parent = await app.getVault(this.vault!.parent!);
+        const parent = app.getVault(this.vault!.parent!.id);
         const acc = await this._selectAccountDialog.show([...parent!.members].filter(m => !this.vault!.isMember(m)));
         await this.vault!.addMember(acc);
         await app.syncVault(this.vault!);
@@ -157,7 +161,7 @@ export class VaultView extends BaseElement {
         if (confirmed) {
             this.vault!.members.remove(member);
             for (const { id } of vault.vaults) {
-                const vault = app._vaults.get(id);
+                const vault = app.getVault(id)!;
                 vault.members.remove(member);
                 app.syncVault(vault);
             }
@@ -189,7 +193,7 @@ export class VaultView extends BaseElement {
     render() {
         const vault = this.vault!;
         const { name, members, items, vaults } = vault;
-        const subvaults = vault === app.mainVault ? [] : [...vaults].map(v => app._vaults.get(v.id));
+        const subvaults = vault === app.mainVault ? [] : [...vaults].map(v => app.getVault(v.id)!);
         const permissions = vault.getPermissions();
         const invites = vault.isAdmin() ? [...vault.invites] : [];
         const admins = [...members].filter(m => vault.isAdmin(m));
@@ -430,7 +434,8 @@ export class VaultView extends BaseElement {
 
             </ul>
 
-            <h2 class="animate" ?hidden=${vault === app.mainVault || !!vault.parent}>
+            <h2 class="animate"
+                ?hidden=${vault === app.mainVault || !!vault.parent || (!permissions.manage && !subvaults.length)}>
 
                 <pl-icon icon="vaults"></pl-icon>
 

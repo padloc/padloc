@@ -1,16 +1,14 @@
 import { when } from "lit-html/directives/when.js";
 import { Field } from "@padlock/core/lib/data.js";
-import { Vault } from "@padlock/core/lib/vault.js";
 import { VaultItem } from "@padlock/core/lib/data.js";
 import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
-import { confirm, dialog, getDialog } from "../dialog.js";
+import { dialog } from "../dialog.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
-import { ShareDialog } from "./share-dialog.js";
 import { CreateItemDialog } from "./create-item-dialog.js";
 import { Input } from "./input.js";
 import "./share-dialog.js";
@@ -18,30 +16,32 @@ import "./share-dialog.js";
 @element("pl-browse-list")
 export class BrowseList extends BaseElement {
     @property()
+    selected: string = "";
+    @property()
     multiSelect: boolean = false;
     @property()
     private _listItems: ListItem[] = [];
-    @property()
-    private _firstVisibleIndex: number = 0;
-    @property()
-    private _lastVisibleIndex: number = 0;
+    // @property()
+    // private _firstVisibleIndex: number = 0;
+    // @property()
+    // private _lastVisibleIndex: number = 0;
 
-    @query("#main")
-    private _main: HTMLElement;
+    // @query("#main")
+    // private _main: HTMLElement;
     @query("#filterInput")
     private _filterInput: Input;
     @query(".filter-wrapper")
     private _filterWrapper: HTMLDivElement;
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
-    private _selected = new Map<string, ListItem>();
+    // private _selected = new Map<string, ListItem>();
 
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
 
-    private get _selectedItems() {
-        return [...this._selected.values()].map((item: ListItem) => item.item);
-    }
+    // private get _selectedItems() {
+    //     return [...this._selected.values()].map((item: ListItem) => item.item);
+    // }
 
     @listen("items-added", app)
     @listen("items-deleted", app)
@@ -83,34 +83,34 @@ export class BrowseList extends BaseElement {
     }
 
     selectItem(item: ListItem) {
-        if (this.multiSelect) {
-            if (this._selected.has(item.item.id)) {
-                this._selected.delete(item.item.id);
-            } else {
-                this._selected.set(item.item.id, item);
-            }
-        } else {
-            this._selected.clear();
-            this._selected.set(item.item.id, item);
-            this._scrollToSelected();
-            router.go(`items/${item.item.id}`);
-        }
-        this.requestUpdate();
+        // if (this.multiSelect) {
+        //     if (this._selected.has(item.item.id)) {
+        //         this._selected.delete(item.item.id);
+        //     } else {
+        //         this._selected.set(item.item.id, item);
+        //     }
+        // } else {
+        //     this._selected.clear();
+        //     this._selected.set(item.item.id, item);
+        //     this._scrollToSelected();
+        // }
+
+        router.go(`items/${item.item.id}`);
     }
 
-    selectAll() {
-        this.multiSelect = true;
-        for (const item of this._listItems) {
-            this._selected.set(item.item.id, item);
-        }
-        this.requestUpdate();
-    }
+    // selectAll() {
+    //     this.multiSelect = true;
+    //     for (const item of this._listItems) {
+    //         this._selected.set(item.item.id, item);
+    //     }
+    //     this.requestUpdate();
+    // }
 
-    clearSelection() {
-        this._selected.clear();
-        this.multiSelect = false;
-        this.requestUpdate();
-    }
+    // clearSelection() {
+    //     this._selected.clear();
+    //     this.multiSelect = false;
+    //     this.requestUpdate();
+    // }
 
     firstUpdated() {
         this._resizeHandler();
@@ -377,21 +377,21 @@ export class BrowseList extends BaseElement {
             router.go(`items/${item.id}`);
         }
     }
-
-    private _scrollToIndex(i: number) {
-        const el = this.$(`pl-item-item[index="${i}"]`);
-        if (el) {
-            this._main.scrollTop = el.offsetTop - 6;
-        }
-    }
-
-    private _scrollToSelected() {
-        const selected = this._selected.values()[0];
-        const i = this._listItems.indexOf(selected);
-        if (i !== -1 && (i < this._firstVisibleIndex || i > this._lastVisibleIndex)) {
-            this._scrollToIndex(i);
-        }
-    }
+    //
+    // private _scrollToIndex(i: number) {
+    //     const el = this.$(`pl-item-item[index="${i}"]`);
+    //     if (el) {
+    //         this._main.scrollTop = el.offsetTop - 6;
+    //     }
+    // }
+    //
+    // private _scrollToSelected() {
+    //     const selected = this._selected.values()[0];
+    //     const i = this._listItems.indexOf(selected);
+    //     if (i !== -1 && (i < this._firstVisibleIndex || i > this._lastVisibleIndex)) {
+    //         this._scrollToIndex(i);
+    //     }
+    // }
     //
     // private _fixScroll() {
     //     // Workaround for list losing scrollability on iOS after resetting filter
@@ -416,35 +416,35 @@ export class BrowseList extends BaseElement {
     //     }, delay);
     // }
 
-    private async _shareSelected() {
-        for (const [id, item] of this._selected.entries()) {
-            if (item.vault !== app.mainVault) {
-                this._selected.delete(id);
-            }
-        }
-        this.requestUpdate();
-        const shareDialog = getDialog("pl-share-dialog") as ShareDialog;
-        await shareDialog.show(this._selectedItems);
-        this.clearSelection();
-    }
-
-    private async _deleteSelected() {
-        const confirmed = await confirm(
-            $l("Are you sure you want to delete these items? This action can not be undone!"),
-            $l("Delete {0} Items", this._selectedItems.length.toString())
-        );
-        if (confirmed) {
-            const vaults = new Map<Vault, Item[]>();
-            for (const item of this._selected.values()) {
-                if (!vaults.has(item.vault)) {
-                    vaults.set(item.vault, []);
-                }
-                vaults.get(item.vault)!.push(item.item);
-            }
-            await Promise.all([...vaults.entries()].map(([vault, items]) => app.deleteItems(vault, items)));
-            this.multiSelect = false;
-        }
-    }
+    // private async _shareSelected() {
+    //     for (const [id, item] of this._selected.entries()) {
+    //         if (item.vault !== app.mainVault) {
+    //             this._selected.delete(id);
+    //         }
+    //     }
+    //     this.requestUpdate();
+    //     const shareDialog = getDialog("pl-share-dialog") as ShareDialog;
+    //     await shareDialog.show(this._selectedItems);
+    //     this.clearSelection();
+    // }
+    //
+    // private async _deleteSelected() {
+    //     const confirmed = await confirm(
+    //         $l("Are you sure you want to delete these items? This action can not be undone!"),
+    //         $l("Delete {0} Items", this._selectedItems.length.toString())
+    //     );
+    //     if (confirmed) {
+    //         const vaults = new Map<Vault, Item[]>();
+    //         for (const item of this._selected.values()) {
+    //             if (!vaults.has(item.vault)) {
+    //                 vaults.set(item.vault, []);
+    //             }
+    //             vaults.get(item.vault)!.push(item.item);
+    //         }
+    //         await Promise.all([...vaults.entries()].map(([vault, items]) => app.deleteItems(vault, items)));
+    //         this.multiSelect = false;
+    //     }
+    // }
 
     private _copyField(item: VaultItem, index: number, e: Event) {
         e.stopPropagation();
@@ -494,7 +494,7 @@ export class BrowseList extends BaseElement {
             )}
 
                 <div class="item"
-                    ?selected=${this._selected.has(item.item.id)}
+                    ?selected=${item.item.id === this.selected}
                     @click=${() => this.selectItem(item)}
                     index="${index}">
 

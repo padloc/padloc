@@ -1,10 +1,9 @@
 import { AccountInfo } from "@padlock/core/lib/auth.js";
-import { VaultItem, Field } from "@padlock/core/lib/data.js";
-import { Vault } from "@padlock/core/lib/vault.js";
+import { Field } from "@padlock/core/lib/data.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, config, mixins } from "../styles";
-import { confirm, prompt, choose, generate } from "../dialog.js";
+import { confirm, generate } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, query, queryAll, listen } from "./base.js";
@@ -15,10 +14,18 @@ import { TagsInput } from "./tags-input.js";
 @element("pl-item-view")
 export class ItemView extends BaseElement {
     @property()
-    item: {
-        vault: Vault;
-        item: VaultItem;
-    } | null = null;
+    selected: string = "";
+
+    get item() {
+        const found = (this.selected && app.getItem(this.selected)) || null;
+        return found && found.item;
+    }
+
+    get vault() {
+        const found = (this.selected && app.getItem(this.selected)) || null;
+        return found && found.vault;
+    }
+
     @property({ reflect: true, attribute: "editing" })
     private _editing: Boolean = false;
 
@@ -33,24 +40,22 @@ export class ItemView extends BaseElement {
 
     @listen("lock", app)
     _locked() {
-        this.item = null;
+        this.selected = "";
     }
 
     @listen("item-changed", app)
-    _itemChanged(e: CustomEvent) {
-        if (e.detail.item === this.item) {
-            this.requestUpdate();
-        }
+    @listen("vault-changed", app)
+    _refresh() {
+        this.requestUpdate();
     }
 
     shouldUpdate() {
-        return !!this.item;
+        return !!this.item && !!this.vault;
     }
 
     render() {
-        const item = this.item!;
-        const { name, fields, tags, updated, updatedBy } = item.item;
-        const vault = item.vault;
+        const { name, fields, tags, updated, updatedBy } = this.item!;
+        const vault = this.vault!;
         const permissions = vault.getPermissions();
         // TODO
         // const removedMembers = vault instanceof SharedVault ? vault.getOldAccessors(item!) : [];
@@ -220,8 +225,8 @@ export class ItemView extends BaseElement {
 
             <pl-tags-input
                 .editing=${this._editing}
-                .vault=${this.item!.vault}
-                .tags=${this.item!.item.tags}>
+                .vault=${vault}
+                .tags=${tags}>
             </pl-tags-input>
 
             <section class="highlight" ?hidden=${!removedMembers.length}>
@@ -340,7 +345,8 @@ export class ItemView extends BaseElement {
     }
 
     private _removeField(index: number) {
-        this.item!.item.fields = this.item!.item.fields.filter((_, i) => i !== index);
+        const item = this.item!;
+        item.fields = item.fields.filter((_, i) => i !== index);
         this.requestUpdate();
     }
 
@@ -354,49 +360,8 @@ export class ItemView extends BaseElement {
     }
 
     private async _addField(field = { name: "", value: "", masked: false }) {
-        this.item!.item.fields.push(field);
+        this.item!.fields.push(field);
         this.requestUpdate();
-    }
-
-    private async _removeTag(tag: string) {
-        const { vault, item } = this.item!;
-        const confirmed = await confirm($l("Do you want to remove this tag?"), $l("Remove"), $l("Cancel"), {
-            title: $l("Remove Tag")
-        });
-        if (confirmed) {
-            app.updateItem(vault, item, { tags: item.tags.filter(t => t !== tag) });
-        }
-    }
-
-    private async _createTag() {
-        const { vault, item } = this.item!;
-        const tag = await prompt("", {
-            placeholder: $l("Enter Tag Name"),
-            confirmLabel: $l("Add Tag"),
-            preventDismiss: false,
-            cancelLabel: ""
-        });
-        if (tag && !item.tags.includes(tag)) {
-            app.updateItem(vault, item, { tags: item.tags.concat([tag]) });
-        }
-    }
-
-    private async _addTag() {
-        const { vault, item } = this.item!;
-        const tags = app.tags.filter((tag: string) => !item.tags.includes(tag));
-        if (!tags.length) {
-            return this._createTag();
-        }
-
-        const choice = await choose("", tags.concat([$l("New Tag")]), { preventDismiss: false });
-        if (choice == tags.length) {
-            return this._createTag();
-        }
-
-        const tag = tags[choice];
-        if (tag) {
-            app.updateItem(vault, item, { tags: item.tags.concat([tag]) });
-        }
     }
 
     _activated() {
@@ -406,11 +371,7 @@ export class ItemView extends BaseElement {
     }
 
     private _dismissWarning() {
-        app.updateItem(this.item!.vault, this.item!.item, {});
-    }
-
-    private _openVault(vault: Vault) {
-        router.go(`vault/${vault.id}`);
+        app.updateItem(this.vault!, this.item!, {});
     }
 
     private async _generateValue(index: number) {
@@ -425,7 +386,7 @@ export class ItemView extends BaseElement {
     }
 
     save() {
-        app.updateItem(this.item!.vault, this.item!.item, {
+        app.updateItem(this.vault!, this.item!, {
             name: this._nameInput.value,
             fields: [...this._fieldNameInputs].map((inp: Input, i: number) => {
                 return { name: inp.value, value: this._fieldValueInputs[i].value };

@@ -10,7 +10,7 @@ import "./vault-list-item.js";
 @element("pl-vault-list")
 export class VaultList extends BaseElement {
     @property()
-    vault: Vault | null = null;
+    selected: string = "";
 
     @listen("unlock", app)
     @listen("vault-created", app)
@@ -108,7 +108,7 @@ export class VaultList extends BaseElement {
                         vault => html`
                         <pl-vault-list-item
                             .vault=${vault}
-                            ?selected=${vault === this.vault}
+                            ?selected=${vault.id === this.selected}
                             class="vault tap ${vault.parent ? "subvault" : ""}"
                             @click=${() => this._select(vault)}>
                         </pl-vault-list-item>

@@ -242,7 +242,11 @@ export class App extends EventTarget implements Storable {
         this.dispatch("unlock");
     }
 
-    async getVault({ id }: { id: string }, fetch = false): Promise<Vault | null> {
+    getVault(id: string) {
+        return this._vaults.get(id);
+    }
+
+    async loadVault({ id }: { id: string }, fetch = false): Promise<Vault | null> {
         let vault = this._vaults.get(id);
 
         if (!vault) {
@@ -288,14 +292,14 @@ export class App extends EventTarget implements Storable {
         this._vaults.clear();
 
         for (const vaultInfo of this.account.vaults) {
-            await this.getVault(vaultInfo);
+            await this.loadVault(vaultInfo);
         }
 
         for (const vault of this._vaults.values()) {
             if (vault === this.mainVault) {
                 continue;
             }
-            const parent = vault.parent ? await this.getVault(vault.parent) : this.mainVault;
+            const parent = vault.parent ? this.getVault(vault.parent.id) : this.mainVault;
             if (!(await parent!.verifySubVault(vault))) {
                 throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
             }
@@ -418,7 +422,7 @@ export class App extends EventTarget implements Storable {
 
         await this.account.unlock(password);
 
-        const mainVault = await this.getVault({ id: this.account.mainVault }, true);
+        const mainVault = await this.loadVault({ id: this.account.mainVault }, true);
         if (!mainVault!.initialized) {
             await mainVault!.initialize(this.account);
             await this.api.updateVault(mainVault!);
@@ -514,10 +518,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async deleteInvite(invite: Invite) {
-        const vault = await this.getVault(invite.vault!);
-        if (!vault) {
-            throw "Vault not found";
-        }
+        const vault = this.getVault(invite.vault!.id)!;
         await vault.invites.remove(invite);
         await this.syncVault(vault);
     }
@@ -535,7 +536,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async syncVault(vaultInfo: { id: string }): Promise<void> {
-        const localVault = await this.getVault(vaultInfo);
+        const localVault = this.getVault(vaultInfo.id);
 
         const remoteVault = new Vault(vaultInfo.id);
         remoteVault.access(this.account!);
@@ -573,7 +574,7 @@ export class App extends EventTarget implements Storable {
         await this.storage.set(result);
         this._vaults.set(vaultInfo.id, result);
 
-        this.dispatch("vault-changed", { result });
+        this.dispatch("vault-changed", { vault: result });
     }
 
     getItem(id: string): { item: VaultItem; vault: Vault } | null {

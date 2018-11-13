@@ -227,15 +227,12 @@ class App extends BaseElement {
             this._menu.selected = "settings";
         } else if ((match = path.match(/^vaults(?:\/([^\/]+))?$/))) {
             const [, id] = match;
-            const vault = id && (await app.getVault({ id }));
-            if (vault) {
-                this._manage.vault = vault;
-            }
+            this._manage.selected = id;
             this._openView(this._manage);
             this._menu.selected = "vaults";
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
-            const item = (match[1] && app.getItem(match[1])) || null;
-            this._browse.item = item;
+            const [, id] = match;
+            this._browse.selected = id;
             this._openView(this._browse);
             this._menu.selected = "items";
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {

@@ -1,5 +1,3 @@
-import { VaultItem } from "@padlock/core/lib/data.js";
-import { Vault } from "@padlock/core/lib/vault.js";
 import { shared, mixins, config } from "../styles";
 import { element, property, html } from "./base.js";
 import { View } from "./view.js";
@@ -11,7 +9,7 @@ import "./browse-filter.js";
 @element("pl-browse")
 export class Browse extends View {
     @property()
-    item: { item: VaultItem; vault: Vault } | null = null;
+    selected: string = "";
 
     render() {
         return html`
@@ -59,11 +57,11 @@ export class Browse extends View {
 
             </style>
 
-            <pl-browse-list ?active=${!this.item}></pl-browse-list>
+            <pl-browse-list ?active=${!this.selected} .selected=${this.selected}></pl-browse-list>
 
             <pl-item-view
-                ?active=${!!this.item}
-                .item=${this.item}
+                ?active=${!!this.selected}
+                .selected=${this.selected}
             </pl-item-view>
         `;
     }
