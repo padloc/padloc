@@ -1,5 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Session, AccountInfo } from "@padlock/core/lib/auth.js";
+import { Session } from "@padlock/core/lib/session.js";
+import { AccountInfo } from "@padlock/core/lib/account.js";
 import { deviceDescription } from "@padlock/core/lib/platform.js";
 import { Vault } from "@padlock/core/lib/vault.js";
 import { formatDateFromNow } from "../util.js";

@@ -1,7 +1,9 @@
 import { API, CreateAccountParams, CreateVaultParams } from "./api";
 import { Sender } from "./transport";
 import { DeviceInfo } from "./platform";
-import { Session, Account, AccountID, Auth } from "./auth";
+import { Session } from "./session";
+import { Account, AccountID } from "./account";
+import { Auth } from "./auth";
 import { Invite } from "./invite";
 import { Base64String } from "./encoding";
 import { Vault } from "./vault";

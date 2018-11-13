@@ -10,12 +10,11 @@ import {
     AESKey
 } from "./crypto";
 import { uuid } from "./util";
-import { Account, AccountInfo, SignedAccountInfo, AccountID } from "./auth";
+import { Account, AccountInfo, SignedAccountInfo, AccountID } from "./account";
 import { Invite, InviteCollection } from "./invite";
 import { Err, ErrorCode } from "./error";
 import { Storable } from "./storage";
 import { Collection, CollectionItem, CollectionChanges } from "./collection";
-import { VaultItem, VaultItemCollection } from "./data";
 
 export type MemberStatus = "active" | "removed" | "left";
 
@@ -40,6 +39,61 @@ export interface SignedVaultInfo extends VaultInfo {
 }
 
 export interface SubVault extends SignedVaultInfo, CollectionItem {}
+
+export type Tag = string;
+export type ItemID = string;
+
+export interface Field {
+    name: string;
+    value: string;
+    masked?: boolean;
+}
+
+export function normalizeTag(tag: string): Tag {
+    return tag.replace(",", "");
+}
+
+export interface VaultItem extends CollectionItem {
+    id: ItemID;
+    name: string;
+    fields: Field[];
+    tags: Tag[];
+    updatedBy: AccountID;
+    lastUsed: Date;
+}
+
+export function createVaultItem(name: string, fields?: Field[], tags?: Tag[]): VaultItem {
+    return {
+        id: uuid(),
+        name: name,
+        fields: fields || [],
+        tags: tags || [],
+        updated: new Date(),
+        updatedBy: "",
+        lastUsed: new Date()
+    };
+}
+
+export class VaultItemCollection extends Collection<VaultItem> {
+    get tags(): string[] {
+        const tags = new Set<string>();
+        for (const r of this) {
+            for (const t of r.tags) {
+                tags.add(t);
+            }
+        }
+        return [...tags];
+    }
+
+    deserialize(raw: any) {
+        return super.deserialize({
+            ...raw,
+            items: raw.items.map((item: any) => {
+                return { ...item, lastUsed: new Date(item.lastUsed) };
+            })
+        });
+    }
+}
 
 export class Vault implements VaultInfo, Storable {
     kind = "vault";

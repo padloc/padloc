@@ -1,5 +1,5 @@
-import { AccountInfo } from "@padlock/core/lib/auth.js";
-import { Field } from "@padlock/core/lib/data.js";
+import { AccountInfo } from "@padlock/core/lib/account.js";
+import { Field } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, config, mixins } from "../styles";

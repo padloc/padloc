@@ -1,5 +1,5 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { AccountInfo } from "@padlock/core/lib/auth.js";
+import { AccountInfo } from "@padlock/core/lib/account.js";
 import { shared, mixins } from "../styles";
 import { app } from "../init.js";
 import { BaseElement, element, html, property, query } from "./base.js";
@@ -8,10 +8,13 @@ import "./fingerprint.js";
 
 @element("pl-account-dialog")
 export class AccountDialog extends BaseElement {
-    @property() account: AccountInfo | null = null;
-    @property() action: string = "";
+    @property()
+    account: AccountInfo | null = null;
+    @property()
+    action: string = "";
 
-    @query("pl-dialog") private _dialog: Dialog;
+    @query("pl-dialog")
+    private _dialog: Dialog;
 
     private _resolve: ((doAction: boolean) => void) | null;
 

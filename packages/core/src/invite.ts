@@ -2,7 +2,7 @@ import { getProvider, PBKDF2Params, HMACParams, HMACKey, SimpleContainer, AESKey
 import { base64ToHex } from "./encoding";
 import { Collection, CollectionItem } from "./collection";
 import { VaultInfo, SignedVaultInfo } from "./vault";
-import { AccountInfo, SignedAccountInfo } from "./auth";
+import { AccountInfo, SignedAccountInfo } from "./account";
 import { uuid } from "./util";
 
 export class Invite implements CollectionItem {

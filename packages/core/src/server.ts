@@ -1,6 +1,8 @@
 import { API, CreateAccountParams, CreateVaultParams } from "./api";
 import { Storage } from "./storage";
-import { Session, Account, Auth } from "./auth";
+import { Session } from "./session";
+import { Account } from "./account";
+import { Auth, EmailVerification } from "./auth";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault } from "./vault";
@@ -8,7 +10,6 @@ import { Invite } from "./invite";
 import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
-import { EmailVerification } from "./auth";
 import { Base64String, base64ToHex } from "./encoding";
 import { getProvider } from "./crypto";
 import { uuid } from "./util";

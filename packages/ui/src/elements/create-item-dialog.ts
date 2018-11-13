@@ -1,5 +1,4 @@
-import { VaultItem } from "@padlock/core/lib/data.js";
-import { Vault } from "@padlock/core/lib/vault.js";
+import { Vault, VaultItem } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
 import { element, html, query } from "./base.js";

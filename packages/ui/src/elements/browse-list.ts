@@ -1,6 +1,6 @@
 import { when } from "lit-html/directives/when.js";
 import { Field } from "@padlock/core/lib/data.js";
-import { VaultItem } from "@padlock/core/lib/data.js";
+import { VaultItem } from "@padlock/core/lib/vault.js";
 import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";

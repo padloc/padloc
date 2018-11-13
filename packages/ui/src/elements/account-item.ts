@@ -1,13 +1,12 @@
-import { GroupMember } from "@padlock/core/lib/group.js";
+import { VaultMember } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { app } from "../init.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property } from "./base.js";
 
 @element("pl-account-item")
 export class AccountItem extends BaseElement {
     @property()
-    account: GroupMember | null = null;
+    account: VaultMember | null = null;
 
     shouldUpdate() {
         return !!this.account;
@@ -17,18 +16,9 @@ export class AccountItem extends BaseElement {
         const account = this.account!;
         const pills = [];
 
-        switch (account.status) {
-            case "active":
-                account.permissions.read && pills.push({ icon: "check", label: $l("read") });
-                account.permissions.write && pills.push({ icon: "check", label: $l("write") });
-                account.permissions.manage && pills.push({ icon: "check", label: $l("manage") });
-                break;
-            default:
-                const commonVaults = app.vaults.filter(s => s.isMember(account!));
-                if (commonVaults.length) {
-                    pills.push({ icon: "group", label: $l("{0} common groups", commonVaults.length.toString()) });
-                }
-        }
+        account.permissions.read && pills.push({ icon: "check", label: $l("read") });
+        account.permissions.write && pills.push({ icon: "check", label: $l("write") });
+        account.permissions.manage && pills.push({ icon: "check", label: $l("manage") });
 
         return html`
             ${shared}
