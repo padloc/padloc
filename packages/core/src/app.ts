@@ -508,7 +508,7 @@ export class App extends EventTarget implements Storable {
         if (success) {
             await this.api.acceptInvite(invite);
             await this.mainVault!.addSubVault({ ...invite.vault! } as VaultInfo);
-            await Promise.all([this.storage.set(this.mainVault!), this.api.updateVault(this.mainVault!)]);
+            await this.syncVault(this.mainVault!);
         }
         return success;
     }

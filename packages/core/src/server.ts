@@ -195,8 +195,6 @@ export class Context implements API {
 
         if (changes.members) {
             for (const member of changes.members.added) {
-                console.log("member added", member);
-
                 const acc = new Account(member.id);
                 await this.storage.get(acc);
                 acc.vaults.update({ ...vault.info, updated: new Date() });
@@ -207,8 +205,6 @@ export class Context implements API {
             }
 
             for (const member of changes.members.removed) {
-                console.log("member removed", member);
-
                 const acc = new Account(member.id);
                 await this.storage.get(acc);
                 acc.vaults.remove({ ...vault.info, updated: new Date() });
@@ -356,7 +352,6 @@ export class Server {
                 }
                 session = await new Session().deserialize(params[0]);
                 await ctx.revokeSession(session);
-                res.result = null;
                 break;
 
             case "getAccount":
