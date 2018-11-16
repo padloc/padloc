@@ -20,6 +20,8 @@ export class InviteDialog extends Dialog<Invite, void> {
     private _resendButton: LoadingButton;
     @query("#deleteButton")
     private _deleteButton: LoadingButton;
+    @query("#confirmButton")
+    private _confirmButton: LoadingButton;
     @query("#codeInput")
     private _codeInput: Input;
 
@@ -50,7 +52,7 @@ export class InviteDialog extends Dialog<Invite, void> {
                 : expired
                     ? { icon: "time", class: "warning", text: $l("This invite has expired") }
                     : accepted
-                        ? { icon: "check", class: "", text: $l("You have accepted the invite.") }
+                        ? { icon: "check", class: "", text: $l("Accepted") }
                         : {
                               icon: "time",
                               class: "",
@@ -64,6 +66,11 @@ export class InviteDialog extends Dialog<Invite, void> {
 
             <style>
                 :host {
+                    text-align: center;
+                }
+
+                h1 {
+                    display: block;
                     text-align: center;
                 }
 
@@ -167,7 +174,7 @@ export class InviteDialog extends Dialog<Invite, void> {
                     )}
                 </div>
 
-                <div layout class="tiles tiles-2">
+                <div class="layout horizontal">
 
                 ${forMe ? this._inviteeActions() : this._adminActions()}
 
@@ -206,7 +213,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         return html`
             <pl-loading-button
                 id="acceptButton"
-                class="tap"
+                class="tap flex tiles-2"
                 ?hidden=${!this._enableActions}
                 @click=${() => this._accept()}>
                 ${$l("Accept")}
@@ -236,8 +243,9 @@ export class InviteDialog extends Dialog<Invite, void> {
     _adminActions() {
         return html`
             <pl-loading-button
+                ?hidden=${this.invite!.accepted}
                 id="resendButton"
-                class="tap"
+                class="tap flex tiles-3"
                 @click=${() => this._resend()}>
 
                 <pl-icon icon="mail"></pl-icon>
@@ -247,8 +255,20 @@ export class InviteDialog extends Dialog<Invite, void> {
             </pl-loading-button>
 
             <pl-loading-button
+                ?hidden=${!this.invite!.accepted}
+                id="confirmButton"
+                class="tap flex tiles-3"
+                @click=${() => this._confirm()}>
+
+                <pl-icon icon="invite"></pl-icon>
+
+                <div>${$l("Add Member")}</div>
+
+            </pl-loading-button>
+
+            <pl-loading-button
                 id="deleteButton"
-                class="tap"
+                class="tap flex tiles-2"
                 @click=${() => this._delete()}>
 
                 <pl-icon icon="delete"></pl-icon>
@@ -265,7 +285,9 @@ export class InviteDialog extends Dialog<Invite, void> {
         }
         this._deleteButton.start();
         try {
-            await app.deleteInvite(this.invite!);
+            const vault = app.getVault(this.invite!.vault!.id)!;
+            await vault!.invites.remove(this.invite!);
+            await app.syncVault(vault!);
             this._deleteButton.success();
             this.done();
         } catch (e) {
@@ -280,7 +302,7 @@ export class InviteDialog extends Dialog<Invite, void> {
             return;
         }
         this._resendButton.start();
-        const vault = await app.getVault(this.invite!.vault!);
+        const vault = app.getVault(this.invite!.vault!.id);
         try {
             await app.deleteInvite(this.invite!);
             this.invite = await app.createInvite(vault!, this.invite!.email);
@@ -318,6 +340,24 @@ export class InviteDialog extends Dialog<Invite, void> {
             }
         } catch (e) {
             this._acceptButton.fail();
+            throw e;
+        }
+    }
+
+    private async _confirm() {
+        if (this._confirmButton.state === "loading") {
+            return;
+        }
+        this._confirmButton.start();
+        const vault = app.getVault(this.invite!.vault!.id);
+        try {
+            await vault!.addMember(this.invite!.invitee!);
+            vault!.invites.remove(this.invite!);
+            await app.syncVault(vault!);
+            this._confirmButton.success();
+            this.done();
+        } catch (e) {
+            this._confirmButton.fail();
             throw e;
         }
     }

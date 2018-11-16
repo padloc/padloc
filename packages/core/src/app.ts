@@ -528,12 +528,6 @@ export class App extends EventTarget implements Storable {
         return success;
     }
 
-    async deleteInvite(invite: Invite) {
-        const vault = this.getVault(invite.vault!.id)!;
-        await vault.invites.remove(invite);
-        await this.syncVault(vault);
-    }
-
     // SETTINGS / STATS
 
     async setStats(obj: Partial<Stats>) {

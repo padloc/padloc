@@ -109,30 +109,16 @@ export class VaultView extends BaseElement {
     }
 
     private async _showInvite(invite: Invite) {
-        const vault = this.vault!;
-        const invitee = invite.invitee!;
-
-        if (invite.email !== app.account!.email && invite.accepted && !invite.expired && (await invite.verify())) {
-            const choice = await choose(
-                $l("Do you want to add {0} to the {1} vault?", invitee.name || invitee.email, vault.toString()),
-                [$l("Add Them"), $l("Cancel Invite")]
-            );
-            switch (choice) {
-                case 0:
-                    await vault.addMember(invitee);
-                case 1:
-                    await vault.invites.remove(invite);
-                    break;
-            }
-            await app.syncVault(vault);
-        } else {
-            await this._inviteDialog.show(invite);
-        }
-        app.syncVault(this.vault!);
+        await this._inviteDialog.show(invite);
     }
 
     private _openVault(vault: VaultInfo) {
         router.go(`vaults/${vault.id}`);
+    }
+
+    private _showItems() {
+        app.filter = { vault: this.vault };
+        router.go("items");
     }
 
     private async _addSubVault() {
@@ -299,8 +285,8 @@ export class VaultView extends BaseElement {
             <div class="tags animate">
 
                 <div
-                    class="tag highlight tap"
-                    flex ?hidden=${!vault.parent}
+                    class="tag highlight tap flex"
+                    ?hidden=${!vault.parent}
                     @click=${() => this._openVault(vault.parent!)}>
 
                     <pl-icon icon="vault"></pl-icon>
@@ -309,15 +295,7 @@ export class VaultView extends BaseElement {
 
                 </div>
 
-                <div class="tag warning" flex ?hidden=${permissions.write}>
-
-                    <pl-icon icon="show"></pl-icon>
-
-                    <div>${$l("read-only")}</div>
-
-                </div>
-
-                <div class="tag" flex>
+                <div class="tag flex">
 
                     <pl-icon icon="group"></pl-icon>
 
@@ -325,11 +303,19 @@ export class VaultView extends BaseElement {
 
                 </div>
 
-                <div class="tag" flex>
+                <div class="tag flex tap" @click=${() => this._showItems()}>
 
                     <pl-icon icon="list"></pl-icon>
 
                     <div>${$l("{0} Items", items.size.toString())}</div>
+
+                </div>
+
+                <div class="tag flex tap" @click=${() => app.syncVault(vault)}>
+
+                    <pl-icon icon="refresh"></pl-icon>
+
+                    <div>${formatDateFromNow(vault.revision.date)}</div>
 
                 </div>
 
