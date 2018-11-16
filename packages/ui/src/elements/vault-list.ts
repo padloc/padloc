@@ -24,10 +24,18 @@ export class VaultList extends BaseElement {
     }
 
     private async _createVault() {
-        const vaultName = await prompt($l("Enter Vault Name"));
-        if (vaultName) {
-            await app.createVault(vaultName);
-        }
+        await prompt($l("Please choose a vault name!"), {
+            title: $l("Create Vault"),
+            label: $l("Vault Name"),
+            confirmLabel: $l("Create"),
+            validate: async (name: string) => {
+                if (!name) {
+                    throw $l("Please enter a vault name!");
+                }
+                await app.createVault(name);
+                return name;
+            }
+        });
     }
 
     render() {

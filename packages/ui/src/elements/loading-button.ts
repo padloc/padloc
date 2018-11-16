@@ -9,8 +9,8 @@ type ButtonState = "idle" | "loading" | "success" | "fail";
 export class LoadingButton extends BaseElement {
     @property({ reflect: true })
     state: ButtonState = "idle";
-    @property() label: string = "";
-    @property() noTab: boolean = false;
+    @property()
+    noTab: boolean = false;
 
     private _stopTimeout: number;
 
@@ -23,6 +23,7 @@ export class LoadingButton extends BaseElement {
 
             :host {
                 display: flex;
+                height: var(--row-height);
             }
 
             :host([state="loading"]) button {

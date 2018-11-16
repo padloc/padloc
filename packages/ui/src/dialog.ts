@@ -30,9 +30,11 @@ export function lineUpDialog(d: string | any, fn: (d: any) => Promise<any>): Pro
 }
 
 export function alert(message: string, options?: AlertOptions, instant = false): Promise<number> {
+    options = options || {};
+    options.message = message;
     return instant
-        ? getDialog("pl-alert-dialog").show(message, options)
-        : lineUpDialog("pl-alert-dialog", (dialog: AlertDialog) => dialog.show(message, options));
+        ? getDialog("pl-alert-dialog").show(options)
+        : lineUpDialog("pl-alert-dialog", (dialog: AlertDialog) => dialog.show(options));
 }
 
 export function confirm(
@@ -48,10 +50,11 @@ export function confirm(
     return alert(message, options, instant).then(choice => choice === 0);
 }
 
-export function prompt(message: string, opts?: PromptOptions, instant = false) {
+export function prompt(message: string, opts: PromptOptions = {}, instant = false) {
+    opts.message = message;
     return instant
-        ? getDialog("pl-prompt-dialog").show(message, opts)
-        : lineUpDialog("pl-prompt-dialog", (dialog: PromptDialog) => dialog.show(message, opts));
+        ? getDialog("pl-prompt-dialog").show(opts)
+        : lineUpDialog("pl-prompt-dialog", (dialog: PromptDialog) => dialog.show(opts));
 }
 
 export function choose(

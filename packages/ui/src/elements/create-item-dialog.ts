@@ -31,7 +31,8 @@ export class CreateItemDialog extends Dialog<undefined, VaultItem> {
             }
 
             h1 {
-                margin: 20px;
+                display: block;
+                text-align: center;
             }
 
             button {

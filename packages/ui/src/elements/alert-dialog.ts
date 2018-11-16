@@ -1,12 +1,13 @@
 import { localize } from "@padlock/core/lib/locale.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, property } from "./base.js";
-import "./dialog.js";
+import { element, html, property } from "./base.js";
+import { Dialog } from "./dialog.js";
 
 const defaultButtonLabel = localize("OK");
 
 export type AlertType = "info" | "warning" | "plain" | "question" | "success";
 export interface AlertOptions {
+    message?: string;
     title?: string;
     options?: string[];
     type?: AlertType;
@@ -17,46 +18,36 @@ export interface AlertOptions {
 }
 
 @element("pl-alert-dialog")
-export class AlertDialog extends BaseElement {
-    @property() buttonLabel: string = defaultButtonLabel;
-    @property() dialogTitle: string = "";
-    @property() message: string = "";
-    @property({ reflect: true })
+export class AlertDialog extends Dialog<AlertOptions, number> {
+    @property()
+    buttonLabel: string = defaultButtonLabel;
+    @property()
+    dialogTitle: string = "";
+    @property()
+    message: string = "";
+    @property({ reflect: true, attribute: "type" })
     type: AlertType = "info";
-    @property() icon = "";
-    @property() options: string[] = [];
-    @property() preventDismiss: boolean = false;
+    @property()
+    icon = "";
+    @property()
+    options: string[] = [];
     @property({ attribute: "hide-icon", reflect: true })
     hideIcon: boolean = false;
-    @property() open: boolean = false;
     @property({ reflect: true })
     horizontal: boolean = false;
 
-    private _resolve: ((_: number) => void) | null;
-
-    render() {
-        const { open, preventDismiss, message, dialogTitle, options, icon } = this;
+    renderContent() {
+        const { message, dialogTitle, options, icon } = this;
         return html`
         ${shared}
 
         <style>
-
-            :host {
-                --pl-dialog-inner: {
-                    ${mixins.gradientHighlight()}
-                };
+            :host([type="warning"]) .inner {
+                ${mixins.gradientWarning()}
             }
 
-            :host([type="warning"]) {
-                --pl-dialog-inner: {
-                    background: linear-gradient(180deg, #f49300 0%, #f25b00 100%);
-                };
-            }
-
-            :host([type="plain"]) {
-                --pl-dialog-inner: {
-                    background: var(--color-background);
-                };
+            :host([type="plain"]) .inner {
+                background: var(--color-background);
             }
 
             :host([hide-icon]) .info-icon {
@@ -68,11 +59,16 @@ export class AlertDialog extends BaseElement {
                 text-align: center;
             }
 
-            :host([horizontal]) .buttons {
+            .buttons {
                 display: flex;
+                flex-direction: column;
+            }
+            
+            :host([horizontal]) .buttons {
+                flex-direction: row;
             }
 
-            :host([horizontal]) .buttons > * {
+            :host([horizontal]) button {
                 flex: 1;
             }
 
@@ -81,38 +77,34 @@ export class AlertDialog extends BaseElement {
             }
         </style>
 
-        <pl-dialog
-            .open=${open}
-            .preventDismiss=${preventDismiss}
-            @dialog-dismiss=${() => this._selectOption(-1)}>
-
-            <div class="info" ?hidden=${!dialogTitle && !message}>
-                <pl-icon class="info-icon" icon="${icon}"></pl-icon>
-                <div class="info-body">
-                    <div class="info-title">${dialogTitle}</div>
-                    <div class="info-text ${this.dialogTitle ? "small" : ""}">${message}</div>
-                </div>
+        <div class="info" ?hidden=${!dialogTitle && !message}>
+            <pl-icon class="info-icon" icon="${icon}"></pl-icon>
+            <div class="info-body">
+                <div class="info-title">${dialogTitle}</div>
+                <div class="info-text ${this.dialogTitle ? "small" : ""}">${message}</div>
             </div>
+        </div>
 
-            <div class="buttons tiles tiles-2">
-                ${options.map((o: any, i: number) => html`<button @click=${() => this._selectOption(i)}>${o}</button>`)}
-            </div>
-        </pl-dialog>
+        <div class="buttons tiles tiles-2">
+            ${options.map((o: any, i: number) => html`<button class="tap" @click=${() => this.done(i)}>${o}</button>`)}
+        </div>
 `;
     }
 
-    show(
+    done(i: number = -1) {
+        super.done(i);
+    }
+
+    show({
         message = "",
-        {
-            title = "",
-            options = ["OK"],
-            type = "info",
-            preventDismiss = false,
-            hideIcon = false,
-            horizontal = false,
-            icon
-        }: AlertOptions = {}
-    ): Promise<number> {
+        title = "",
+        options = ["OK"],
+        type = "info",
+        preventDismiss = false,
+        hideIcon = false,
+        horizontal = false,
+        icon
+    }: AlertOptions = {}): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
         this.type = type;
@@ -122,11 +114,7 @@ export class AlertDialog extends BaseElement {
         this.horizontal = horizontal;
         this.icon = icon || this._icon(type);
 
-        setTimeout(() => (this.open = true), 10);
-
-        return new Promise(resolve => {
-            this._resolve = resolve;
-        });
+        return super.show();
     }
 
     private _icon(type: string) {
@@ -142,11 +130,5 @@ export class AlertDialog extends BaseElement {
             default:
                 return "";
         }
-    }
-
-    private _selectOption(i: number) {
-        this.open = false;
-        this._resolve && this._resolve(i);
-        this._resolve = null;
     }
 }

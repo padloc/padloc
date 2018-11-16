@@ -102,17 +102,25 @@ export class Dialog<I, R> extends BaseElement {
         <div class="scrim"></div>
 
         <div class="outer" @click=${() => this.dismiss()}>
-            <slot name="before"></slot>
+            ${this.renderBefore()}
             <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>
                 ${this.renderContent()}
             </div>
-            <slot name="after"></slot>
+            ${this.renderAfter()}
         </div>
 `;
     }
 
-    renderContent() {
+    protected renderBefore() {
+        return html`<slot name="before"></slot>`;
+    }
+
+    protected renderContent() {
         return html`<slot></slot>`;
+    }
+
+    protected renderAfter() {
+        return html`<slot name="after"></slot>`;
     }
 
     @listen("backbutton", window)

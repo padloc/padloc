@@ -31,8 +31,8 @@ export const cssVars = html`
 
             --color-gradient-highlight-from: rgb(7, 124, 185);
             --color-gradient-highlight-to: rgb(89, 198, 255);
-            --color-gradient-warning-from: #f49300;
-            --color-gradient-warning-to: #f25b00;
+            --color-gradient-warning-from: #f25b00;
+            --color-gradient-warning-to: #f49300;
             --color-gradient-dark-from: #222;
             --color-gradient-dark-to: #555;
 

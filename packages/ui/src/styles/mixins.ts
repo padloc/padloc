@@ -28,6 +28,7 @@ export const tapHighlightAfter = () => `
     opacity: 0;
     transition: opacity 1s;
     pointer-events: none;
+    border-radius: inherit;
 `;
 
 export const tapHighlightActiveAfter = () => `
@@ -110,4 +111,3 @@ export const gradientDark = (horizontal = false) => `
 export const textShadow = () => `
     text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
 `;
-
