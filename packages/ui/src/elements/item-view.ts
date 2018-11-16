@@ -329,10 +329,6 @@ export class ItemView extends BaseElement {
         }, 100);
     }
 
-    private _dismissWarning() {
-        app.updateItem(this.vault!, this.item!, {});
-    }
-
     private async _generateValue(index: number) {
         const value = await generate();
         if (value) {
@@ -340,8 +336,10 @@ export class ItemView extends BaseElement {
         }
     }
 
-    edit() {
+    async edit() {
         this._editing = true;
+        await this.updateComplete;
+        this._nameInput.focus();
     }
 
     save() {

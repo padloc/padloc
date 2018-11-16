@@ -372,10 +372,7 @@ export class BrowseList extends BaseElement {
     }
 
     private async _newItem() {
-        const item = await this._createItemDialog.show();
-        if (item) {
-            router.go(`items/${item.id}`);
-        }
+        await this._createItemDialog.show();
     }
     //
     // private _scrollToIndex(i: number) {
