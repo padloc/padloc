@@ -37,6 +37,7 @@ export class TagsInput extends BaseElement {
 
             <style>
                 :host {
+                    display: block;
                     background: var(--color-tertiary);
                     position: relative;
                     z-index: 1;

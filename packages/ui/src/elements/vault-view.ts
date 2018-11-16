@@ -211,7 +211,12 @@ export class VaultView extends BaseElement {
             }
 
             .tags {
-                padding: 0 8px;
+                margin: 15px;
+            }
+
+            .name {
+                font-size: 140%;
+                padding: 6px 12px;
             }
 
             pl-account-item:not(:last-of-kind) {
@@ -279,15 +284,17 @@ export class VaultView extends BaseElement {
             }
         </style>
 
-        <header>
+        <header class="narrow back-header">
 
-            <pl-icon icon="close" class="tap" @click=${() => router.go("")}></pl-icon>
-
-            <div class="title">${name}</div>
+            <pl-icon icon="backward" @click=${() => router.go("vaults")}></pl-icon>
+            
+            <div @click=${() => router.go("vaults")}>${$l("Vaults")}</div>
 
         </header>
 
         <main>
+
+            <h1>${name}</h1>
 
             <div class="tags animate">
 
@@ -320,9 +327,9 @@ export class VaultView extends BaseElement {
 
                 <div class="tag" flex>
 
-                    <pl-icon icon="record"></pl-icon>
+                    <pl-icon icon="list"></pl-icon>
 
-                    <div>${$l("{0} Records", items.size.toString())}</div>
+                    <div>${$l("{0} Items", items.size.toString())}</div>
 
                 </div>
 

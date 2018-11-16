@@ -1,4 +1,4 @@
-import { shared } from "../styles";
+import { shared, listLayout } from "../styles";
 import { View } from "./view.js";
 import { element, property, html } from "./base.js";
 import "./vault-list.js";
@@ -13,27 +13,15 @@ export class Manage extends View {
         return html`
 
             ${shared}
+            ${listLayout}
 
-            <style>
+            <div class="list-layout" ?show-detail=${!!this.selected}>
 
-                :host {
-                    display: flex;
-                }
+                <pl-vault-list .selected=${this.selected}></pl-vault-list>
 
-                pl-vault-list {
-                    width: 350px;
-                    border-right: solid 2px #ddd;
-                }
+                <pl-vault-view .selected=${this.selected}></pl-vault-view>
 
-                pl-vault-view {
-                    flex: 1;
-                }
-
-            </style>
-
-            <pl-vault-list .selected=${this.selected}></pl-vault-list>
-
-            <pl-vault-view .selected=${this.selected}></pl-vault-view>
+            </div>
         `;
     }
 }

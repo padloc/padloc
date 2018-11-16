@@ -2,7 +2,7 @@ import { AccountInfo } from "@padlock/core/lib/account.js";
 import { Field } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
-import { shared, config, mixins } from "../styles";
+import { shared, mixins } from "../styles";
 import { confirm, generate } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
@@ -57,10 +57,6 @@ export class ItemView extends BaseElement {
         const { name, fields, tags, updated, updatedBy } = this.item!;
         const vault = this.vault!;
         const permissions = vault.getPermissions();
-        // TODO
-        // const removedMembers = vault instanceof SharedVault ? vault.getOldAccessors(item!) : [];
-        const removedMembers: any[] = [];
-        const vaultName = vault.name;
         const updatedByMember = vault.getMember({ id: updatedBy } as AccountInfo);
 
         return html`
@@ -69,53 +65,44 @@ export class ItemView extends BaseElement {
         <style>
 
             :host {
-                box-sizing: border-box;
                 display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
                 flex-direction: column;
                 position: relative;
                 background: var(--color-background);
                 ${mixins.scroll()}
             }
 
-            header > pl-input {
-                flex: 1;
-                width: 0;
-            }
-
             main {
-                display: flex;
+                flex: 1;
                 flex-direction: column;
                 padding: 15px;
             }
 
             pl-input {
                 height: auto;
-                --line-height: 30px;
-                --rule-width: 2px;
-                --rule-color: currentColor;
-                line-height: var(--line-height);
+                line-height: 30px;
+                box-sizing: border-box;
             }
 
-            .title {
-                display: flex;
-                align-items: center;
-                margin-bottom: 10px;
+            pl-input:not([readonly]), .add-button {
+                background: #fafafa;
+                border: solid 1px #eee;
+                border-radius: 8px;
             }
 
             .name {
-                --line-height: 50px;
-                flex: 1;
-                font-size: 140%;
-                padding: 0 10px;
+                font-size: 150%;
+                padding: 6px 10px;
             }
 
-            .tags {
-                padding: 0 8px;
+            pl-tags-input {
+                margin: 0 10px;
             }
 
             .field {
                 transform: translate3d(0, 0, 0);
-                margin: 10px 0;
                 display: flex;
                 align-items: center;
                 border-radius: 8px;
@@ -155,20 +142,28 @@ export class ItemView extends BaseElement {
                 --rule-width: 1px;
             }
 
-            .add-button {
+            button {
                 width: 100%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                margin-top: 10px;
             }
 
-            .add-button pl-icon {
+            button pl-icon {
                 width: 30px;
                 position: relative;
                 top: 1px;
             }
 
+            .delete-button {
+                ${mixins.gradientWarning(true)}
+                color: var(--color-tertiary);
+                border-radius: 8px;
+            }
+
             .updated {
+                margin-top: 50px;
                 padding: 10px;
                 text-align: center;
                 font-size: var(--font-size-tiny);
@@ -180,77 +175,33 @@ export class ItemView extends BaseElement {
                 font-size: 80%;
                 content: "\\f303\ ";
             }
-
-            pl-input {
-                line-height: var(--line-height);
-                box-sizing: border-box;
-            }
-
-            pl-input:not([readonly]) {
-                background: #fafafa;
-                border: solid 1px #eee;
-                border-radius: 8px;
-                /*
-                background-image: linear-gradient(transparent, transparent calc(var(--line-height) - var(--rule-width)), var(--rule-color) calc(var(--line-height) - var(--rule-width)), var(--rule-color) var(--line-height), transparent var(--line-height));
-                background-size: 100% var(--line-height);
-                */
-            }
-
-            @media (min-width: ${config.narrowWidth}px) {
-                header {
-                    display: none;
-                }
-            }
         </style>
 
-        <header>
+        <header class="narrow back-header">
 
-            <pl-icon icon="back" class="tap" @click=${() => router.go("items")}></pl-icon>
+            <pl-icon icon="backward" class="tap" @click=${() => router.go("items")}></pl-icon>
+            
+            <div @click=${() => router.go("items")}>
+                ${(app.filter.vault && app.filter.vault.name) || $l("All Items")}
+            </div>
 
         </header>
 
         <main>
 
-            <div class="title">
-
-                <pl-input
-                    id="nameInput"
-                    class="name"
-                    .value=${name}
-                    .placeholder=${$l("Enter Item Name")}
-                    ?readonly=${!this._editing}>
-                </pl-input>
-
-            </div>
+            <pl-input
+                id="nameInput"
+                class="name"
+                .value=${name}
+                .placeholder=${$l("Enter Item Name")}
+                ?readonly=${!this._editing}>
+            </pl-input>
 
             <pl-tags-input
                 .editing=${this._editing}
                 .vault=${vault}
                 .tags=${tags}>
             </pl-tags-input>
-
-            <section class="highlight" ?hidden=${!removedMembers.length}>
-
-                <div class="info">
-
-                    <pl-icon class="info-icon" icon="error"></pl-icon>
-
-                    <div class="info-body">
-
-                        <div class="info-text">${$l(
-                            "{0} users have been removed from the '{1}' vault since this item was last updated. " +
-                                "Please update any sensitive information as soon as possible!",
-                            removedMembers.length.toString(),
-                            vaultName
-                        )}</div>
-
-                    </div>
-
-                </div>
-
-                <button class="tap" @click=${() => this._dismissWarning()}>${$l("Dismiss")}</button>
-
-            </section>
 
             <div class="fields">
 
@@ -324,7 +275,13 @@ export class ItemView extends BaseElement {
 
             </button>
 
-            <div class="flex"></div>
+            <button class="delete-button tap" @click=${() => this._deleteItem()} ?hidden=${!this._editing}>
+
+                <pl-icon icon="delete"></pl-icon>
+
+                <div>${$l("Delete Item")}</div>
+
+            </button>
 
             <div class="updated animate">
                 ${formatDateFromNow(updated)}
@@ -351,11 +308,13 @@ export class ItemView extends BaseElement {
     }
 
     private async _deleteItem() {
-        const { vault, item } = this.item!;
-        const confirmed = await confirm($l("Are you sure you want to delete this item?"), $l("Delete"));
+        const confirmed = await confirm($l("Are you sure you want to delete this item?"), $l("Delete"), $l("Cancel"), {
+            type: "warning",
+            icon: "question"
+        });
         if (confirmed) {
-            app.deleteItems(vault, [item]);
-            router.back();
+            app.deleteItems(this.vault!, [this.item!]);
+            router.go("items");
         }
     }
 

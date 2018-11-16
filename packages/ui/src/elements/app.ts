@@ -92,8 +92,6 @@ class App extends BaseElement {
 
             .wrapper {
                 ${mixins.fullbleed()}
-                max-width: 1200px;
-                max-height: 900px;
                 margin: auto;
                 overflow: hidden;
                 display: grid;
@@ -118,7 +116,7 @@ class App extends BaseElement {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
             }
 
-            @media (min-width: 1200px), (min-height: 900px) {
+            @media (min-width: ${config.wideWidth}px) {
                 .wrapper {
                     top: 20px;
                     left: 20px;
@@ -127,6 +125,8 @@ class App extends BaseElement {
                     border-radius: 8px;
                     overflow: hidden;
                     box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
+                    max-width: 1200px;
+                    max-height: 900px;
                 }
             }
 
@@ -227,12 +227,12 @@ class App extends BaseElement {
             this._menu.selected = "settings";
         } else if ((match = path.match(/^vaults(?:\/([^\/]+))?$/))) {
             const [, id] = match;
-            this._manage.selected = id;
+            this._manage.selected = id || "";
             this._openView(this._manage);
             this._menu.selected = "vaults";
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
-            this._browse.selected = id;
+            this._browse.selected = id || "";
             this._openView(this._browse);
             this._menu.selected = "items";
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {

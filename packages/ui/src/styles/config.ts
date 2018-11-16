@@ -1,6 +1,7 @@
 import { html } from "@polymer/lit-element";
 
-export const narrowWidth = 800;
+export const narrowWidth = 900;
+export const wideWidth = 1200;
 
 export const cssVars = html`
     <style>

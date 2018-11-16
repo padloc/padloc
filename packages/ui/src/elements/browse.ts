@@ -1,4 +1,4 @@
-import { shared, mixins, config } from "../styles";
+import { shared, listLayout } from "../styles";
 import { element, property, html } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
@@ -14,55 +14,15 @@ export class Browse extends View {
     render() {
         return html`
             ${shared}
+            ${listLayout}
 
-            <style>
-                :host {
-                    display: flex;
-                }
+            <div class="list-layout" ?show-detail=${!!this.selected}>
 
-                pl-browse-list {
-                    width: 350px;
-                    border-right: solid 2px #ddd;
-                }
+                <pl-browse-list .selected=${this.selected}></pl-browse-list>
 
-                pl-item-view {
-                    flex: 1;
-                }
+                <pl-item-view .selected=${this.selected}></pl-item-view>
 
-                @media (max-width: ${config.narrowWidth}px) {
-                    pl-item-view {
-                        ${mixins.fullbleed()};
-                        z-index: 10;
-                    }
-
-                    pl-browse-list {
-                        width: 0;
-                        flex: 1;
-                        border: none;
-                    }
-
-                    pl-item-view, pl-browse-list, header {
-                        transition: transform 0.3s;
-                    }
-
-                    pl-item-view:not([active]) {
-                        transform: translate(100%, 0);
-                    }
-
-                    pl-browse-list:not([active]),
-                    header:not([active]) {
-                        transform: translate(-50%, 0);
-                    }
-                }
-
-            </style>
-
-            <pl-browse-list ?active=${!this.selected} .selected=${this.selected}></pl-browse-list>
-
-            <pl-item-view
-                ?active=${!!this.selected}
-                .selected=${this.selected}
-            </pl-item-view>
+            </div>
         `;
     }
 }

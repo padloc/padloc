@@ -101,9 +101,11 @@ export const shared = html`
     }
 
     h1, h2 {
-        margin: 20px 15px 10px 15px;
+        margin: 20px;
         display: flex;
         align-items: center;
+        text-align: left;
+        font-weight: normal;
     }
 
     h1 pl-icon, h2 pl-icon {
@@ -112,14 +114,12 @@ export const shared = html`
     }
 
     h1 {
-        font-size: 140%;
-        justify-content: center;
-        text-align: center;
+        font-size: 150%;
     }
 
     h2 {
         font-size: 120%;
-        font-weight: normal;
+        margin: 20px 15px 0 15px;
     }
 
     ::-webkit-search-cancel-button {
@@ -219,6 +219,22 @@ export const shared = html`
         border-radius: 100%;
         overflow: hidden;
         font-size: 120%;
+    }
+
+    header.back-header {
+        border:none ;
+        align-items: center;
+        padding-left: 20px;
+        color: var(--color-primary);
+        margin-bottom: -20px;
+        z-index: 2;
+    }
+
+    header.back-header pl-icon {
+        font-size: 90%;
+        width: 20px;
+        top: 1px;
+        margin: 0;
     }
 
     main {
@@ -478,6 +494,16 @@ export const shared = html`
     @media (min-width: ${config.narrowWidth}px) {
         .menu-button {
             visibility: hidden;
+        }
+
+        .narrow {
+            display: none;
+        }
+    }
+
+    @media (max-width: ${config.narrowWidth}px) {
+        .wide {
+            display: none;
         }
     }
 </style>

@@ -157,6 +157,9 @@ export class Input extends BaseElement {
             :host {
                 display: block;
                 position: relative;
+                font-size: inherit;
+                font-weight: inherit;
+                font-family: inherit;
             }
 
             :host(:not([multiline])) {
