@@ -356,6 +356,14 @@ export class InviteDialog extends Dialog<Invite, void> {
             await app.syncVault(vault!);
             this._confirmButton.success();
             this.done();
+            alert(
+                $l(
+                    "You have successfully added {0} to the {1} vault!",
+                    this.invite!.invitee!.name || this.invite!.invitee!.email,
+                    this.invite!.vault!.name
+                ),
+                { type: "success" }
+            );
         } catch (e) {
             this._confirmButton.fail();
             throw e;

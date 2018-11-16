@@ -244,7 +244,7 @@ export class Context implements API {
 
         const invite = v.invites.get(id);
 
-        if (!invite || invite.email !== account.email) {
+        if (!invite || (!v.isAdmin(account) && invite.email !== account.email)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 

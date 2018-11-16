@@ -16,7 +16,7 @@ export class MemberAddedMessage implements Message {
         return `
 Hi there!
 
-You know have access to ${name} on Padlock! You can view it using the following link:
+You now have access to ${name} on Padlock! You can view it using the following link:
 
 ${url}
 
@@ -34,7 +34,7 @@ Martin`;
             ${p("Hi there!")}
 
             ${p(`
-                You know have access to <strong>${name}</strong> on Padlock!
+                You now have access to <strong>${name}</strong> on Padlock!
             `)}
 
             ${button(`View ${name}`, url)}
