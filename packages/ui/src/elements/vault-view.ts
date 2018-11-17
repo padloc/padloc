@@ -122,13 +122,18 @@ export class VaultView extends BaseElement {
     }
 
     private async _addSubVault() {
-        const vaultName = await prompt($l("Enter a vault name!"), {
-            placeholder: $l("Vault Name"),
-            confirmLabel: $l("Create")
+        await prompt($l("Please choose a vault name!"), {
+            title: $l("Create Subvault"),
+            label: $l("Vault Name"),
+            confirmLabel: $l("Create"),
+            validate: async (name: string) => {
+                if (!name) {
+                    throw $l("Please enter a vault name!");
+                }
+                await app.createVault(name, this.vault!);
+                return name;
+            }
         });
-        if (vaultName) {
-            await app.createVault(vaultName, this.vault!);
-        }
     }
 
     private async _removeMember(member: VaultMember) {
