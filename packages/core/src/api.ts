@@ -33,6 +33,7 @@ export interface API {
     createVault(params: CreateVaultParams): Promise<Vault>;
     getVault(vault: Vault): Promise<Vault>;
     updateVault(vault: Vault): Promise<Vault>;
+    deleteVault(vault: Vault): Promise<void>;
 
     getInvite(params: { vault: string; id: string }): Promise<Invite>;
     acceptInvite(invite: Invite): Promise<void>;

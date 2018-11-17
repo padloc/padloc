@@ -108,6 +108,10 @@ export class Client implements API {
         return vault.deserialize(res.result);
     }
 
+    async deleteVault(vault: Vault): Promise<void> {
+        await this.call("deleteVault", [{ id: vault.id }]);
+    }
+
     async getInvite(params: { vault: string; id: string }): Promise<Invite> {
         const res = await this.call("getInvite", [params]);
         return new Invite().deserialize(res.result);

@@ -1,5 +1,6 @@
 import { Storable, LocalStorage } from "./storage";
 import { Vault, VaultInfo, VaultItem, Field, Tag, createVaultItem } from "./vault";
+import { CollectionItem } from "./collection";
 import { Account } from "./account";
 import { Auth } from "./auth";
 import { Session } from "./session";
@@ -338,7 +339,10 @@ export class App extends EventTarget implements Storable {
 
     async updateVault(_: Vault): Promise<void> {}
 
-    async deleteVault(_: Vault): Promise<void> {}
+    async deleteVault(vault: Vault): Promise<void> {
+        await this.api.deleteVault(vault);
+        await this.synchronize();
+    }
 
     async loadVault({ id }: { id: string }, fetch = false): Promise<Vault | null> {
         let vault = this._vaults.get(id);
@@ -400,7 +404,7 @@ export class App extends EventTarget implements Storable {
         }
     }
 
-    async syncVault(vaultInfo: { id: string }): Promise<void> {
+    async syncVault(vaultInfo: VaultInfo): Promise<void> {
         const localVault = this.getVault(vaultInfo.id);
 
         const remoteVault = new Vault(vaultInfo.id);
@@ -409,10 +413,12 @@ export class App extends EventTarget implements Storable {
         try {
             await this.api.getVault(remoteVault);
         } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND && localVault) {
-                this._vaults.delete(localVault.id);
-                await this.storage.delete(localVault);
-                this.account!.vaults.remove(localVault);
+            if (e.code === ErrorCode.NOT_FOUND) {
+                if (localVault) {
+                    await this.storage.delete(localVault);
+                }
+                this._vaults.delete(vaultInfo.id);
+                this.account!.vaults.remove(vaultInfo as VaultInfo & CollectionItem);
             }
         }
 
@@ -496,13 +502,8 @@ export class App extends EventTarget implements Storable {
 
     async deleteItems(vault: Vault, items: VaultItem[]) {
         vault.items.remove(...items);
-        if (this.account) {
-            for (const item of items) {
-                item.updatedBy = this.account.id;
-            }
-        }
         await this.storage.set(vault);
-        this.dispatch("items-deleted", { vault: vault, items: items });
+        this.dispatch("vault-changed", { vault: vault });
     }
 
     // INVITES

@@ -17,8 +17,6 @@ import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, 
 
 const pendingAuths = new Map<string, SRPServer>();
 
-console.log("server!!");
-
 export class Context implements API {
     session?: Session;
     account?: Account;
@@ -236,6 +234,25 @@ export class Context implements API {
         return vault;
     }
 
+    async deleteVault(vault: Vault) {
+        const { account } = this._requireAuth();
+        await this.storage.get(vault);
+
+        if (!vault.isOwner(account) || vault.id === account.mainVault) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        const promises = [this.storage.delete(vault)];
+
+        for (const { id } of vault.vaults) {
+            promises.push(this.deleteVault(new Vault(id)));
+        }
+
+        // TODO: remove vault from all member accounts?
+
+        await Promise.all(promises);
+    }
+
     async getInvite({ vault, id }: { vault: string; id: string }) {
         const { account } = this._requireAuth();
 
@@ -406,6 +423,14 @@ export class Server {
                 }
                 vault = await ctx.createVault(params[0]);
                 res.result = await vault.serialize();
+                break;
+
+            case "deleteVault":
+                if (!params || (params.length !== 1 && typeof params[0].id !== "string")) {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                vault = new Vault(params[0].id);
+                await ctx.deleteVault(vault);
                 break;
 
             case "getInvite":
