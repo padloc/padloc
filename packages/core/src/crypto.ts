@@ -256,7 +256,7 @@ export class SimpleContainer extends Container {
 }
 
 export class PBES2Container extends Container {
-    password?: string;
+    password: string = "";
 
     constructor(
         public encryptionParams: AESEncryptionParams = defaultEncryptionParams(),

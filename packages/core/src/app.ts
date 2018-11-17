@@ -190,6 +190,12 @@ export class App extends EventTarget implements Storable {
             this.device.id = uuid();
         }
         await this.storage.set(this);
+
+        // Try syncing account so user can unlock with new password in case it has changed
+        if (this.account) {
+            this.syncAccount();
+        }
+
         this.dispatch("load");
     }
 
@@ -280,11 +286,19 @@ export class App extends EventTarget implements Storable {
         this.dispatch("session-changed", { session: this.session });
     }
 
-    async setPassword(_password: string) {
-        // TODO
-        // this.password = password;
-        // await this.storage.set(this.mainVault!);
-        // this.dispatch("password-changed");
+    async changePassword(password: string) {
+        const account = this.account!;
+        await account.setPassword(password);
+        await this.syncAccount();
+
+        const auth = new Auth(account.email);
+        auth.account = account.id;
+        const authKey = await auth.getAuthKey(password);
+        const srp = new SRPClient();
+        await srp.initialize(authKey);
+        auth.verifier = srp.v!;
+
+        await this.api.updateAuth(auth);
     }
 
     async syncAccount() {
@@ -296,6 +310,7 @@ export class App extends EventTarget implements Storable {
             await this.storage.delete(new Vault(vault.id));
             this.account!.vaults.remove(vault);
         }
+        await this.api.updateAccount(account);
         await this.storage.set(this);
         this.dispatch("account-changed", { account: this.account });
     }

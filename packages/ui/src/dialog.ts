@@ -80,16 +80,15 @@ export function clearDialogs() {
     lastDialogPromise = Promise.resolve();
 }
 
-export function promptPassword(password: string, msg: string, confirmLabel?: string, cancelLabel?: string) {
-    return prompt(msg, {
+export function promptPassword(password: string, opts: PromptOptions = {}) {
+    return prompt(opts.message || $l("Please enter your password!"), {
+        ...opts,
         placeholder: $l("Enter Password"),
         type: "password",
-        confirmLabel,
-        cancelLabel,
         preventDismiss: true,
         validate: async (pwd: string) => {
             if (!pwd) {
-                throw $l("Please enter a password!");
+                throw $l("Please enter your password!");
             }
 
             if (pwd !== password) {

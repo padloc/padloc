@@ -22,6 +22,7 @@ export interface API {
     verifyEmail(params: { email: string }): Promise<{ id: string }>;
 
     initAuth(params: { email: string }): Promise<{ auth: Auth; B: Base64String }>;
+    updateAuth(params: Auth): Promise<void>;
 
     createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session>;
     revokeSession(params: Session): Promise<void>;

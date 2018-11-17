@@ -61,6 +61,16 @@ export class Context implements API {
         };
     }
 
+    async updateAuth(auth: Auth): Promise<void> {
+        const { account } = this._requireAuth();
+
+        if (account.email !== auth.email) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        await this.storage.set(auth);
+    }
+
     async createSession({ account, A, M }: { account: string; A: Base64String; M: Base64String }): Promise<Session> {
         const srp = pendingAuths.get(account);
 
@@ -353,6 +363,15 @@ export class Server {
                     auth: await _auth.serialize(),
                     B
                 };
+                break;
+
+            case "updateAuth":
+                if (!params || params.length !== 1) {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+
+                const auth = await new Auth().deserialize(params[0]);
+                await ctx.updateAuth(auth);
                 break;
 
             case "createSession":

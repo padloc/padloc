@@ -63,6 +63,10 @@ export class Client implements API {
         return { auth: await new Auth(params.email).deserialize(auth), B };
     }
 
+    async updateAuth(auth: Auth): Promise<void> {
+        await this.call("updateAuth", [await auth.serialize()]);
+    }
+
     async createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session> {
         const res = await this.call("createSession", [params]);
         return new Session().deserialize(res.result);

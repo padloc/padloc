@@ -66,6 +66,7 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
     async setPassword(password: string) {
         this.password = password;
         await this.set(this._encSerializer);
+        this.updated = new Date();
     }
 
     async unlock(password: string) {
@@ -81,13 +82,13 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
     merge(account: Account) {
         if (account.updated > this.updated) {
             this.name = account.name;
-            this.mainVault = account.mainVault;
+
+            // These effectively updates the password
             this.keyParams = account.keyParams;
             this.encryptionParams = account.encryptionParams;
             this.encryptedData = account.encryptedData;
+
             this.updated = account.updated;
-            this.created = account.created;
-            this.publicKey = account.publicKey;
         }
 
         return {

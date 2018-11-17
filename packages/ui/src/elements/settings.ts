@@ -10,7 +10,6 @@ import { BaseElement, element, html, query, listen } from "./base.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
-import { Input } from "./input.js";
 
 @element("pl-settings")
 export class Settings extends BaseElement {
@@ -159,28 +158,8 @@ export class Settings extends BaseElement {
             </section>
 
         </main>
-
-        <div class="rounded-corners"></div>
-
-        <input
-            type="file"
-            name="importFile"
-            id="importFile"
-            @change=${() => this._importFile()}
-            accept="text/plain,.csv,.pls,.set"
-            hidden>
 `;
     }
-
-    // connectedCallback() {
-    //     // TODO: intergrate electron settings
-    //     super.connectedCallback();
-    //     if (isElectron()) {
-    //         const desktopSettings = getDesktopSettings().get();
-    //         this.$.autoUpdatesButton.active = desktopSettings.autoDownloadUpdates;
-    //         this.$.betaReleasesButton.active = desktopSettings.allowPrerelease;
-    //     }
-    // }
 
     @listen("change")
     _updateSettings() {
@@ -192,22 +171,17 @@ export class Settings extends BaseElement {
 
     //* Opens the change password dialog and resets the corresponding input elements
     private async _changePassword() {
-        // TODO
-        const success = false;
-        // const success =
-        //     !app.password ||
-        //     (await promptPassword(
-        //         app.password,
-        //         $l("Are you sure you want to change your master password? Enter your current password to continue!"),
-        //         $l("Confirm"),
-        //         $l("Cancel")
-        //     ));
+        const success = await promptPassword(app.account!.password, {
+            title: $l("Change Master Password"),
+            message: $l("Please enter your current password!")
+        });
 
         if (!success) {
             return;
         }
 
         const newPwd = await prompt($l("Now choose a new master password!"), {
+            title: $l("Change Master Password"),
             placeholder: $l("Enter New Password"),
             type: "password",
             validate: async (val: string) => {
@@ -222,18 +196,16 @@ export class Settings extends BaseElement {
             return;
         }
 
-        const confirmed = await promptPassword(
-            newPwd,
-            $l("Confirm your new master password!"),
-            $l("Confirm"),
-            $l("Cancel")
-        );
+        const confirmed = await promptPassword(newPwd, {
+            title: $l("Change Master Password"),
+            message: $l("Confirm your new master password!")
+        });
 
         if (!confirmed) {
             return;
         }
 
-        await app.setPassword(newPwd);
+        await app.changePassword(newPwd);
         alert($l("Master password changed successfully."), { type: "success" });
     }
 
