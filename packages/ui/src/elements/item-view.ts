@@ -6,6 +6,7 @@ import { shared, mixins } from "../styles";
 import { confirm, generate } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
+import { setClipboard } from "../clipboard.js";
 import { BaseElement, element, html, property, query, queryAll, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -179,7 +180,7 @@ export class ItemView extends BaseElement {
 
         <header class="narrow back-header">
 
-            <pl-icon icon="backward" class="tap" @click=${() => router.go("items")}></pl-icon>
+            <pl-icon icon="backward" @click=${() => router.go("items")}></pl-icon>
             
             <div @click=${() => router.go("items")}>
                 ${(app.filter.vault && app.filter.vault.name) || $l("All Items")}
@@ -238,6 +239,7 @@ export class ItemView extends BaseElement {
                                 class="field-value"
                                 placeholder="${$l("Field Content")}"
                                 .value=${field.value}
+                                .masked=${field.masked}
                                 multiline
                                 autosize
                                 ?readonly=${!this._editing}>
@@ -250,7 +252,7 @@ export class ItemView extends BaseElement {
                             <pl-icon
                                 icon="copy"
                                 class="tap"
-                                @click=${() => this._copyField(index)}>
+                                @click=${() => setClipboard(this.item!, field)}>
                             </pl-icon>
 
                             <pl-icon
@@ -301,6 +303,27 @@ export class ItemView extends BaseElement {
 `;
     }
 
+    async edit() {
+        this._editing = true;
+        await this.updateComplete;
+        this._nameInput.focus();
+    }
+
+    save() {
+        app.updateItem(this.vault!, this.item!, {
+            name: this._nameInput.value,
+            fields: [...this._fieldNameInputs].map((inp: Input, i: number) => {
+                return {
+                    ...this.item!.fields[i],
+                    name: inp.value,
+                    value: this._fieldValueInputs[i].value
+                };
+            }),
+            tags: this._tagsInput.tags
+        });
+        this._editing = false;
+    }
+
     private _removeField(index: number) {
         const item = this.item!;
         item.fields = item.fields.filter((_, i) => i !== index);
@@ -336,20 +359,11 @@ export class ItemView extends BaseElement {
         }
     }
 
-    async edit() {
-        this._editing = true;
-        await this.updateComplete;
-        this._nameInput.focus();
-    }
-
-    save() {
-        app.updateItem(this.vault!, this.item!, {
-            name: this._nameInput.value,
-            fields: [...this._fieldNameInputs].map((inp: Input, i: number) => {
-                return { name: inp.value, value: this._fieldValueInputs[i].value };
-            }),
-            tags: this._tagsInput.tags
+    _toggleMask(index: number) {
+        const item = this.item!;
+        item.fields[index].masked = !item.fields[index].masked;
+        app.updateItem(this.vault!, item, {
+            fields: item.fields
         });
-        this._editing = false;
     }
 }

@@ -62,6 +62,7 @@ export class Input extends BaseElement {
             if (this.multiline && this.autosize) {
                 autosize.update(this._inputElement);
             }
+            this.requestUpdate();
         })();
     }
 
@@ -206,7 +207,8 @@ export class Input extends BaseElement {
                 ${mixins.fullbleed()}
                 pointer-events: none;
                 font-size: 150%;
-                line-height: 22px;
+                padding: inherit;
+                line-height: inherit;
                 letter-spacing: -4.5px;
                 margin-left: -4px;
             }

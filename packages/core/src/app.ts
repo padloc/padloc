@@ -288,17 +288,23 @@ export class App extends EventTarget implements Storable {
 
     async changePassword(password: string) {
         const account = this.account!;
+        const oldPassword = account.password;
         await account.setPassword(password);
-        await this.syncAccount();
 
-        const auth = new Auth(account.email);
-        auth.account = account.id;
-        const authKey = await auth.getAuthKey(password);
-        const srp = new SRPClient();
-        await srp.initialize(authKey);
-        auth.verifier = srp.v!;
-
-        await this.api.updateAuth(auth);
+        try {
+            await this.syncAccount();
+            const auth = new Auth(account.email);
+            auth.account = account.id;
+            const authKey = await auth.getAuthKey(password);
+            const srp = new SRPClient();
+            await srp.initialize(authKey);
+            auth.verifier = srp.v!;
+            await this.api.updateAuth(auth);
+        } catch (e) {
+            // something went wrong. roll back password
+            account.setPassword(oldPassword);
+            throw e;
+        }
     }
 
     async syncAccount() {
