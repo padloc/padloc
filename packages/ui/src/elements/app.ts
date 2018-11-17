@@ -3,6 +3,7 @@ import { ErrorCode } from "@padlock/core/lib/error.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../init.js";
+import { AutoLock } from "../mixins/auto-lock.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -22,7 +23,7 @@ import { InviteDialog } from "./invite-dialog.js";
 //     document.addEventListener("deviceready", resolve);
 // });
 
-class App extends BaseElement {
+class App extends AutoLock(BaseElement) {
     @query("pl-start")
     private _startView: Start;
     @query("pl-browse")

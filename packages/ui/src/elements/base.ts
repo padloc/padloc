@@ -24,7 +24,7 @@ export interface Observer {
     handler: (changed: Map<string, any>) => void;
 }
 
-export abstract class BaseElement extends LitElement {
+export class BaseElement extends LitElement {
     private static _listeners?: ListenerDeclaration[];
     private static _observers?: Observer[];
 
@@ -144,6 +144,12 @@ export abstract class BaseElement extends LitElement {
                 observer.handler.call(this, changed);
             }
         }
+    }
+
+    // TODO after upgrading to lit-element > 0.12
+    render() {
+        throw "Not Implemented";
+        return html``;
     }
 }
 
