@@ -108,7 +108,6 @@ class App extends BaseElement {
 
             .views > * {
                 ${mixins.fullbleed()}
-                background: #eee;
             }
 
             .wrapper:not(.active),

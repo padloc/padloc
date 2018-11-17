@@ -1,22 +1,19 @@
 import { getClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Record } from "@padlock/core/lib/data.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import * as imp from "../import.js";
 import { getReviewLink, checkForUpdates } from "@padlock/core/lib/platform.js";
 import { shared, mixins } from "../styles";
-import { View } from "./view.js";
 import { promptPassword, alert, choose, confirm, prompt, exportRecords } from "../dialog";
-import { animateCascade } from "../animation";
-import { app, router } from "../init.js";
-import { element, html, query, listen } from "./base.js";
+import { app } from "../init.js";
+import { BaseElement, element, html, query, listen } from "./base.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 import { Input } from "./input.js";
 
 @element("pl-settings")
-export class Settings extends View {
+export class Settings extends BaseElement {
     @query("#importFile")
     _fileInput: HTMLInputElement;
 
@@ -26,11 +23,7 @@ export class Settings extends View {
     }
 
     render() {
-        const { settings, loggedIn } = app;
-        // TODO
-        // const isDesktop = isElectron();
-        const isDesktop = false;
-        const dbPath = "";
+        const { settings } = app;
 
         return html`
         ${shared}
@@ -47,23 +40,27 @@ export class Settings extends View {
                 ${mixins.fullbleed()}
                 display: flex;
                 flex-direction: column;
+                background: var(--color-tertiary);
             }
 
             main {
-                background: var(--color-quaternary);
+                width: 100%;
+                max-width: 500px;
+                margin: 0 auto;
+                padding: 15px;
             }
 
             section {
-                transform: translate3d(0, 0, 0);
+                margin: 20px 0;
+                display: flex;
+                flex-direction: column;
             }
 
-            section .info {
-                display: block;
-                font-size: var(--font-size-small);
-                text-align: center;
-                line-height: normal;
-                padding: 15px;
-                height: auto;
+            section > * {
+                background: #fafafa;
+                border-radius: 8px;
+                border: solid 1px #eee;
+                margin-bottom: 8px;
             }
 
             button {
@@ -73,14 +70,6 @@ export class Settings extends View {
 
             button > pl-icon {
                 position: absolute;
-            }
-
-            pl-toggle-button {
-                display: block;
-            }
-
-            input[type="file"] {
-                display: none;
             }
 
             label {
@@ -102,34 +91,9 @@ export class Settings extends View {
                 font-size: var(--font-size-tiny);
                 margin-top: 3px;
             }
-
-            .db-path {
-                font-weight: bold;
-                margin-top: 5px;
-                word-wrap: break-word;
-                font-size: var(--font-size-tiny);
-            }
-
-            #customServerUrlInput:not([invalid]) + .url-warning {
-                display: none;
-            }
-
-            .url-warning {
-                font-size: var(--font-size-small);
-                text-align: center;
-                padding: 15px;
-                border-top: solid 1px var(--border-color);
-                color: var(--color-error);
-            }
-
-            .feature-locked {
-                font-size: var(--font-size-tiny);
-                color: var(--color-error);
-                margin: -14px 15px 12px 15px;
-            }
         </style>
 
-        <header>
+        <header class="narrow">
 
             <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
@@ -141,13 +105,13 @@ export class Settings extends View {
 
         <main>
 
-            <section>
+            <h1 class="wide">${$l("Settings")}</h1>
 
-                <div class="section-header">${$l("Auto Lock")}</div>
+            <section>
 
                 <pl-toggle-button
                     id="autoLockButton"
-                    active="${settings.autoLock}"
+                    .active="${settings.autoLock}"
                     label="${$l("Lock Automatically")}"
                     class="tap"
                     reverse>
@@ -158,7 +122,7 @@ export class Settings extends View {
                     min="1"
                     max="10"
                     step="1"
-                    value="${settings.autoLockDelay}"
+                    .value="${settings.autoLockDelay}"
                     unit="${$l(" min")}"
                     label="${$l("After")}"
                     ?hidden=${!settings.autoLock}
@@ -168,119 +132,25 @@ export class Settings extends View {
 
             <section>
 
-                <div class="section-header">${$l("Synchronization")}</div>
-
-                <div>
-
-                    <pl-toggle-button
-                        id="autoSyncButton"
-                        active="${settings.autoSync}"
-                        label="${$l("Sync Automatically")}"
-                        reverse
-                        class="tap">
-                    </pl-toggle-button>
-
-                </div>
-
-                <pl-toggle-button
-                    id="customServerButton"
-                    active="${settings.customServer}"
-                    label="${$l("Use Custom Server")}"
-                    reverse
-                    class="tap"
-                    @change=${(e: CustomEvent) => this._toggleCustomServer(e)}>
-                </pl-toggle-button>
-
-                <div class="tap" ?hidden=${!settings.customServer} ?disabled=${loggedIn}>
-
-                    <pl-input
-                        id="customServerUrlInput"
-                        placeholder="${$l("Enter Custom URL")}"
-                        value="${settings.customServerUrl}"
-                        pattern="^https://[^\\s/$.?#].[^\\s]*$"
-                        required>
-                    </pl-input>
-
-                    <div class="url-warning">
-                        <strong>${$l("Invalid URL")}</strong> -
-                        ${$l(
-                            "Make sure that the URL is of the form https://myserver.tld:port. Note that a https connection is required."
-                        )}
-                    </div>
-
-                </div>
+                <button @click=${() => this._changePassword()} class="tap">${$l("Change Master Password")}</button>
 
             </section>
 
             <section>
-
-                <button @click=${() => this._changePassword()} class="tap">${$l("Change Master Password")}</button>
-
-                <button @click=${() => this._resetData()} class="tap">${$l("Reset App")}</button>
 
                 <button class="tap" @click=${() => this._import()}>${$l("Import...")}</button>
 
-                <button class="tap" @click=${() => this._export()}>${$l("Export...")}
-
-            </button></section>
-
-            <section ?hidden=${!isDesktop}>
-
-                <div class="section-header">${$l("Updates")}</div>
-
-                <pl-toggle-button
-                    id="autoUpdatesButton"
-                    label="${$l("Automatically Install Updates")}"
-                    class="tap"
-                    reverse
-                    @change=${() => this._desktopSettingsChanged()}>
-                </pl-toggle-button>
-
-                <pl-toggle-button
-                    id="betaReleasesButton"
-                    label="${$l("Install Beta Releases")}"
-                    class="tap"
-                    reverse
-                    @change=${() => this._desktopSettingsChanged()}>
-                </pl-toggle-button>
-
-                <button @click=${() => this._checkForUpdates()} class="tap">${$l("Check For Updates...")}</button>
-
-            </section>
-
-            <section ?hidden=${!isDesktop}>
-
-                <div class="section-header">${$l("Database")}</div>
-
-                <div class="info">
-
-                    <div>${$l("Current Location:")}</div>
-
-                    <div class="db-path">${dbPath}</div>
-
-                </div>
-
-                <button @click=${() => this._saveDBAs()} class="tap">${$l("Change Location...")}</button>
-
-                <button @click=${() => this._loadDB()} class="tap">${$l("Load Different Database...")}</button>
-
+                <button class="tap" @click=${() => this._export()}>${$l("Export...")}</button>
+            
             </section>
 
             <section>
-
-                <button class="info tap" @click=${() => this._openSource()}>
-
-                    <div><strong>Padlock ${app.version}</strong></div>
-
-                    <div class="made-in">Made with ♥ in Germany</div>
-
-                </button>
 
                 <button @click=${() => this._openWebsite()} class="tap">${$l("Website")}</button>
 
                 <button @click=${() => this._sendMail()} class="tap">${$l("Support")}</button>
 
-                <button @click=${() => this._promptReview()} class="tap">
+                <button @click=${() => this._promptReview()} class="tap" hidden>
 
                     <span>${$l("I")}</span><div class="padlock-heart"></div><span>Padlock</span>
 
@@ -313,13 +183,10 @@ export class Settings extends View {
     // }
 
     @listen("change")
-    private _updateSettings() {
+    _updateSettings() {
         app.setSettings({
             autoLock: (this.$("#autoLockButton") as ToggleButton).active,
-            autoLockDelay: (this.$("#autoLockDelaySlider") as Slider).value,
-            autoSync: (this.$("#autoSyncButton") as ToggleButton).active,
-            customServer: (this.$("#customServerButton") as ToggleButton).active,
-            customServerUrl: ((this.$("#customServerUrlInput") as any) as Input).value
+            autoLockDelay: (this.$("#autoLockDelaySlider") as Slider).value
         });
     }
 
@@ -367,21 +234,6 @@ export class Settings extends View {
         }
 
         await app.setPassword(newPwd);
-        // if (this.settings.syncConnected) {
-        //         return this.confirm(
-        //             $l(
-        //                 "Do you want to update the password for you online account {0} as well?",
-        //                 this.settings.syncEmail
-        //             ),
-        //             $l("Yes"),
-        //             $l("No")
-        //         ).then(confirmed => {
-        //             if (confirmed) {
-        //                 return this.setRemotePassword(this.password);
-        //             }
-        //         });
-        //     }
-        // })
         alert($l("Master password changed successfully."), { type: "success" });
     }
 
@@ -391,22 +243,6 @@ export class Settings extends View {
 
     private _sendMail() {
         window.open("mailto:support@padlock.io", "_system");
-    }
-
-    private async _resetData() {
-        // TODO
-        // const confirmed = await promptPassword(
-        //     app.password!,
-        //     $l(
-        //         "Are you sure you want to delete all your data and reset the app? Enter your " +
-        //             "master password to continue!"
-        //     ),
-        //     $l("Reset App")
-        // );
-        //
-        // if (confirmed) {
-        //     return app.reset();
-        // }
     }
 
     private async _import() {
@@ -561,57 +397,7 @@ export class Settings extends View {
         }
     }
 
-    private _desktopSettingsChanged() {
-        // TODO
-        // getDesktopSettings().set({
-        //     autoDownloadUpdates: (this.$("autoUpdatesButton") as ToggleButton).active,
-        //     allowPrerelease: (this.$("betaReleasesButton") as ToggleButton).active
-        // });
-    }
-
-    private _checkForUpdates() {
-        checkForUpdates();
-    }
-
-    private _saveDBAs() {
-        // TODO
-        // saveDBAs();
-    }
-
-    private _loadDB() {
-        // TODO
-        // loadDB();
-    }
-
     private _export() {
         exportRecords(Array.from(app.mainVault!.collection));
-    }
-
-    private async _toggleCustomServer(e: CustomEvent) {
-        const el = e.target as ToggleButton;
-        if (app.loggedIn) {
-            e.stopPropagation();
-            await alert($l("Please log out of the current server first!"));
-            el.active = !el.active;
-            return;
-        }
-
-        if (el.active) {
-            const confirmed = confirm(
-                $l(
-                    "Are you sure you want to use a custom server for synchronization? " +
-                        "This option is only recommended for advanced users!"
-                ),
-                $l("Continue")
-            );
-
-            if (confirmed) {
-                this._updateSettings();
-            } else {
-                el.active = false;
-            }
-        } else {
-            this._updateSettings();
-        }
     }
 }

@@ -6,6 +6,7 @@ export const listLayout = html`
 
     .list-layout {
         ${mixins.fullbleed()}
+        background: #eee;
     }
 
     @media (min-width: ${config.narrowWidth}px) {
@@ -21,6 +22,7 @@ export const listLayout = html`
 
         .list-layout :last-child {
             flex: 1;
+            width: 0;
         }
 
         .list-layout:not([show-detail]) :last-child {

@@ -155,44 +155,10 @@ export const shared = html`
 
     section {
         margin: 10px 5px;
-        ${mixins.card()}
     }
 
     section > button {
         width: 100%;
-    }
-
-    section > :not(:last-child) {
-        border-bottom: solid 1px var(--border-color);
-    }
-
-    section.highlight {
-        ${mixins.gradientHighlight()}
-        color: var(--color-background);
-        text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
-        border: none;
-        --border-color: transparent;
-    }
-
-    section.highlight button, section.highlight pl-loading-button {
-        font-weight: bold;
-    }
-
-    section.highlight.warning {
-        ${mixins.gradientWarning()}
-    }
-
-    section.highlight.dark {
-        ${mixins.gradientDark()}
-    }
-
-    .section-header {
-        text-align: center;
-        font-weight: bold;
-        line-height: var(--row-height);
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
     header {
@@ -226,7 +192,7 @@ export const shared = html`
         align-items: center;
         padding-left: 20px;
         color: var(--color-primary);
-        margin-bottom: -20px;
+        margin-bottom: -15px;
         z-index: 2;
     }
 
