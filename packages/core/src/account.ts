@@ -69,6 +69,11 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
         this.updated = new Date();
     }
 
+    setName(name: string) {
+        this.name = name;
+        this.updated = new Date();
+    }
+
     async unlock(password: string) {
         this.password = password;
         await this.get(this._encSerializer);

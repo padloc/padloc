@@ -232,7 +232,7 @@ export const shared = html`
     }
 
     .layout.vertical {
-        direction: column;
+        flex-direction: column;
     }
 
     .layout.align-center {

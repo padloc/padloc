@@ -19,6 +19,7 @@ export interface PromptOptions {
     cancelLabel?: string;
     preventDismiss?: boolean;
     validate?: (val: string, input: Input) => Promise<string>;
+    value?: string;
 }
 
 @element("pl-prompt-dialog")
@@ -143,6 +144,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
         message = "",
         placeholder = defaultPlaceholder,
         label = "",
+        value = "",
         type = defaultType,
         confirmLabel = defaultConfirmLabel,
         cancelLabel = defaultCancelLabel,
@@ -161,7 +163,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
         this._validationMessage = "";
         await this.updateComplete;
         this._confirmButton.stop();
-        this._input.value = "";
+        this._input.value = value;
 
         setTimeout(() => this._input.focus(), 100);
 

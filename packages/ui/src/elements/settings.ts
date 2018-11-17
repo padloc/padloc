@@ -17,29 +17,33 @@ export class Settings extends BaseElement {
     _fileInput: HTMLInputElement;
 
     @listen("settings-changed", app)
-    _settingsChanged() {
+    @listen("account-changed", app)
+    _refresh() {
         this.requestUpdate();
+    }
+
+    shouldUpdate() {
+        return !!app.account;
     }
 
     render() {
         const { settings } = app;
+        const account = app.account!;
 
         return html`
         ${shared}
 
         <style>
-
-            @keyframes beat {
-                0% { transform: scale(1); }
-                5% { transform: scale(1.4); }
-                15% { transform: scale(1); }
-            }
-
             :host {
                 ${mixins.fullbleed()}
                 display: flex;
                 flex-direction: column;
                 background: var(--color-tertiary);
+            }
+
+            h1 {
+                display: block;
+                text-align: center;
             }
 
             main {
@@ -49,46 +53,51 @@ export class Settings extends BaseElement {
                 padding: 15px;
             }
 
-            section {
-                margin: 20px 0;
-                display: flex;
-                flex-direction: column;
+            button {
+                display: block;
             }
 
-            section > * {
+            .box {
                 background: #fafafa;
                 border-radius: 8px;
                 border: solid 1px #eee;
                 margin-bottom: 8px;
-            }
-
-            button {
-                width: 100%;
                 box-sizing: border-box;
+                width: 100%;
             }
 
-            button > pl-icon {
-                position: absolute;
+            .account {
+                font-size: 110%;
+                display: flex;
+                align-items: center;
             }
 
-            label {
-                line-height: 0;
+            pl-fingerprint {
+                width: 60px;
+                height: 60px;
+                border-radius: 100%;
+                border: solid 1px var(--border-color);
+                margin: 15px;
             }
 
-            .padlock-heart {
-                display: inline-block;
-                margin: 0 5px;
-                animation: beat 5s infinite;
+            .account-info {
+                flex: 1;
+                padding-right: 18px;
             }
 
-            .padlock-heart::before {
-                font-family: "FontAwesome";
-                content: "\\f004";
+            .account-email {
+                ${mixins.ellipsis()}
             }
 
-            .made-in {
-                font-size: var(--font-size-tiny);
-                margin-top: 3px;
+            .account-email {
+                font-weight: bold;
+                ${mixins.ellipsis()}
+            }
+
+            .account pl-icon {
+                width: 50px;
+                height: 50px;
+                margin: 5px;
             }
         </style>
 
@@ -104,58 +113,69 @@ export class Settings extends BaseElement {
 
         <main>
 
-            <h1 class="wide">${$l("Settings")}</h1>
+            <h1>${$l("Account")}</h1>
 
-            <section>
+            <div class="account box">
 
-                <pl-toggle-button
-                    id="autoLockButton"
-                    .active="${settings.autoLock}"
-                    label="${$l("Lock Automatically")}"
-                    class="tap"
-                    reverse>
-                </pl-toggle-button>
+                <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
 
-                <pl-slider
-                    id="autoLockDelaySlider"
-                    min="1"
-                    max="10"
-                    step="1"
-                    .value="${settings.autoLockDelay}"
-                    unit="${$l(" min")}"
-                    label="${$l("After")}"
-                    ?hidden=${!settings.autoLock}
-                </pl-slider>
+                <div class="account-info">
 
-            </section>
+                    <div class="account-name">${account.name}</div>
 
-            <section>
+                    <div class="account-email">${account.email}</div>
 
-                <button @click=${() => this._changePassword()} class="tap">${$l("Change Master Password")}</button>
+                </div>
 
-            </section>
+                <pl-icon class="tap" icon="edit" @click=${() => this._editAccount()}></pl-icon>
 
-            <section>
+                </div>
 
-                <button class="tap" @click=${() => this._import()}>${$l("Import...")}</button>
+            </div>
 
-                <button class="tap" @click=${() => this._export()}>${$l("Export...")}</button>
-            
-            </section>
+            <button class="tap box" @click=${() => this._logout()}>${$l("Log Out")}</button>
 
-            <section>
+            <button class="tap box" @click=${() => this._changePassword()}>${$l("Change Master Password")}</button>
 
-                <button @click=${() => this._openWebsite()} class="tap">${$l("Website")}</button>
+            <h1>${$l("Auto Lock")}</h1>
 
-                <button @click=${() => this._sendMail()} class="tap">${$l("Support")}</button>
+            <pl-toggle-button
+                id="autoLockButton"
+                .active="${settings.autoLock}"
+                label="${$l("Lock Automatically")}"
+                class="box tap"
+                reverse>
+            </pl-toggle-button>
 
-                <button @click=${() => this._promptReview()} class="tap" hidden>
+            <pl-slider
+                id="autoLockDelaySlider"
+                min="1"
+                max="10"
+                step="1"
+                .value="${settings.autoLockDelay}"
+                unit="${$l(" min")}"
+                label="${$l("After")}"
+                ?hidden=${!settings.autoLock}
+                class="box">
+            </pl-slider>
 
-                    <span>${$l("I")}</span><div class="padlock-heart"></div><span>Padlock</span>
+            <h1>${$l("Import / Export")}</h1>
 
-                </button>
+            <button class="box tap" @click=${() => this._import()}>${$l("Import...")}</button>
 
-            </section>
+            <button class="box tap" @click=${() => this._export()}>${$l("Export...")}</button>
+
+            <h1>${$l("Support")}</h1>
+
+            <button @click=${() => this._openWebsite()} class="box tap">${$l("Website")}</button>
+
+            <button @click=${() => this._sendMail()} class="box tap">${$l("Contact Support")}</button>
+
+            <button @click=${() => this._promptReview()} class="box tap" hidden>
+
+                <span>${$l("I")}</span><div class="padlock-heart"></div><span>Padlock</span>
+
+            </button>
 
         </main>
 `;
@@ -167,6 +187,35 @@ export class Settings extends BaseElement {
             autoLock: (this.$("#autoLockButton") as ToggleButton).active,
             autoLockDelay: (this.$("#autoLockDelaySlider") as Slider).value
         });
+    }
+
+    _editAccount() {
+        const account = app.account!;
+
+        prompt("", {
+            title: $l("Edit Profile"),
+            confirmLabel: $l("Save"),
+            value: account.name,
+            label: $l("Name"),
+            validate: async (name: string) => {
+                if (!name) {
+                    throw $l("Please enter a name!");
+                }
+                if (name === account.name) {
+                    return name;
+                }
+                account.setName(name);
+                await app.syncAccount();
+                return name;
+            }
+        });
+    }
+
+    async _logout() {
+        const confirmed = await confirm($l("Do you really want to log out?"), $l("Log Out"));
+        if (confirmed) {
+            app.logout();
+        }
     }
 
     //* Opens the change password dialog and resets the corresponding input elements
