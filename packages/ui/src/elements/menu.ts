@@ -1,3 +1,4 @@
+import "@polymer/paper-spinner/paper-spinner-lite.js";
 import { FilterParams } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app, router } from "../init.js";
@@ -12,6 +13,8 @@ export class Menu extends BaseElement {
     @listen("unlock", app)
     @listen("vault-created", app)
     @listen("vault-changed", app)
+    @listen("start-sync", app)
+    @listen("finish-sync", app)
     _refresh() {
         this.requestUpdate();
     }
@@ -108,6 +111,16 @@ export class Menu extends BaseElement {
                 opacity: 0.5;
                 width: 100px;
             }
+
+            .syncing {
+                position: absolute;
+                left: 10px;
+                bottom: 10px;
+                width: 20px;
+                height: 20px;
+                --paper-spinner-color: currentColor;
+                --paper-spinner-stroke-width: 2px;
+            }
         </style>
 
         <div class="logo">
@@ -193,6 +206,8 @@ export class Menu extends BaseElement {
             )}
 
         </ul>
+
+        <paper-spinner-lite .active=${app.syncing} class="syncing"></paper-spinner-lite>
 `;
     }
 }
