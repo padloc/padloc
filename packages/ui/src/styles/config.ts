@@ -40,7 +40,7 @@ export const cssVars = html`
 
             --row-height: 50px;
 
-            --gutter-width: 4px;
+            --gutter-size: 4px;
             --border-radius: 8px;
             --border-color: rgba(0, 0, 0, 0.1);
 

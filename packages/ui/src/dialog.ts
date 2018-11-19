@@ -70,7 +70,7 @@ export function choose(
 }
 
 export function generate() {
-    return lineUpDialog("pl-generator", dialog => dialog.generate());
+    return lineUpDialog("pl-generator", dialog => dialog.show());
 }
 
 export function clearDialogs() {

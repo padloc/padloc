@@ -93,13 +93,13 @@ class App extends AutoLock(BaseElement) {
 
             .wrapper {
                 ${mixins.fullbleed()}
-                margin: auto;
-                overflow: hidden;
+                ${mixins.gradientDark()}
                 display: grid;
                 grid-template-columns: 200px 1fr;
                 transform: translate3d(0, 0, 0);
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
+                padding: var(--gutter-size);
             }
 
             .views {
@@ -116,24 +116,10 @@ class App extends AutoLock(BaseElement) {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
             }
 
-            @media (min-width: ${config.wideWidth}px) {
-                .wrapper {
-                    top: 20px;
-                    left: 20px;
-                    right: 20px;
-                    bottom: 20px;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
-                    max-width: 1200px;
-                    max-height: 900px;
-                }
-            }
-
             @media (max-width: ${config.narrowWidth}px) {
                 .views {
                     ${mixins.fullbleed()}
-                    transition: transform 0.3s;
+                    transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
                 }
 
                 :host([menu-open]) .views {
@@ -141,11 +127,27 @@ class App extends AutoLock(BaseElement) {
                 }
 
                 pl-menu {
-                    transition: transform 0.3s;
+                    transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
                 }
 
                 :host(:not([menu-open])) pl-menu {
                     transform: translate(-100px, 0);
+                }
+            }
+
+            @media (min-width: ${config.wideWidth}px) {
+                .wrapper {
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
+                    margin: auto;
+                    overflow: hidden;
+                    top: 20px;
+                    left: 20px;
+                    right: 20px;
+                    bottom: 20px;
+                    max-width: 1200px;
+                    max-height: 900px;
                 }
             }
 

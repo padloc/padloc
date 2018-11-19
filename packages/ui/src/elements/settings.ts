@@ -6,13 +6,14 @@ import { getReviewLink, checkForUpdates } from "@padlock/core/lib/platform.js";
 import { shared, mixins } from "../styles";
 import { promptPassword, alert, choose, confirm, prompt, exportRecords } from "../dialog";
 import { app } from "../init.js";
-import { BaseElement, element, html, query, listen } from "./base.js";
+import { element, html, query, listen } from "./base.js";
+import { View } from "./view.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 
 @element("pl-settings")
-export class Settings extends BaseElement {
+export class Settings extends View {
     @query("#importFile")
     _fileInput: HTMLInputElement;
 
@@ -39,6 +40,7 @@ export class Settings extends BaseElement {
                 display: flex;
                 flex-direction: column;
                 background: var(--color-tertiary);
+                border-radius: var(--border-radius);
             }
 
             h1 {
@@ -82,6 +84,7 @@ export class Settings extends BaseElement {
 
             .account-info {
                 flex: 1;
+                width: 0;
                 padding-right: 18px;
             }
 

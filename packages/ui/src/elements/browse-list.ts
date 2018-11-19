@@ -149,8 +149,8 @@ export class BrowseList extends BaseElement {
                 top: 50px;
                 left: 0;
                 right: 0;
-                background: var(--color-secondary);
-                color: var(--color-tertiary);
+                background: #eee;
+                border: solid 1px #ddd;
                 z-index: 2;
                 overflow: hidden;
                 transition: transform 0.2s;

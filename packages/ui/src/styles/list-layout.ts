@@ -6,23 +6,18 @@ export const listLayout = html`
 
     .list-layout {
         ${mixins.fullbleed()}
-        background: #eee;
+    }
+
+    .list-layout > * {
+        border-radius: var(--border-radius);
+        overflow: hidden;
     }
 
     @media (min-width: ${config.narrowWidth}px) {
-
         .list-layout {
-            display: flex;
-        }
-
-        .list-layout :first-child {
-            width: 350px;
-            border-right: solid 2px #ddd;
-        }
-
-        .list-layout :last-child {
-            flex: 1;
-            width: 0;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            grid-gap: var(--gutter-size);
         }
 
         .list-layout:not([show-detail]) :last-child {
@@ -34,7 +29,6 @@ export const listLayout = html`
     @media (max-width: ${config.narrowWidth}px) {
         .list-layout :first-child {
             ${mixins.fullbleed()}
-            border: none;
         }
 
         .list-layout :last-child {
@@ -44,11 +38,11 @@ export const listLayout = html`
 
         .list-layout :first-child,
         .list-layout :last-child {
-            transition: transform 0.3s;
+            transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
         }
 
         .list-layout[show-detail] :first-child {
-            transform: translate(-50%, 0);
+            transform: translate3d(0, 0, -50px);
         }
 
         .list-layout:not([show-detail]) :last-child {

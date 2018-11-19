@@ -1,18 +1,16 @@
 import { randomString, chars } from "@padlock/core/lib/util.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, html, property, query, listen } from "./base.js";
+import { html, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 
-class Generator extends BaseElement {
+class Generator extends Dialog<void, string> {
     @property()
     value: string = "";
 
-    @query("pl-dialog")
-    private _dialog: Dialog;
     @query("#lower")
     private _lower: ToggleButton;
     @query("#upper")
@@ -24,25 +22,21 @@ class Generator extends BaseElement {
     @query("#length")
     private _length: Slider;
 
-    private _resolve: ((val: string | null) => void) | null;
-
-    render() {
+    renderContent() {
         const { value } = this;
         return html`
         ${shared}
 
         <style>
-
-            :host {
-                --pl-dialog-inner: {
-                    --color-background: var(--color-quaternary);
-                    --color-foreground: var(--color-secondary);
-                    --color-highlight: var(--color-primary);
-                    text-shadow: none;
-                    border: none;
-                    overflow: hidden;
-                    position: relative;
-                };
+            .inner {
+                --color-background: var(--color-tertiary);
+                --color-foreground: var(--color-secondary);
+                --color-highlight: var(--color-primary);
+                background: var(--color-background);
+                text-shadow: none;
+                border: none;
+                overflow: hidden;
+                position: relative;
             }
 
             .charsets {
@@ -91,6 +85,8 @@ class Generator extends BaseElement {
 
             .confirm-button {
                 font-weight: bold;
+                text-align: center;
+                width: 100%;
             }
 
             .close-button {
@@ -102,58 +98,54 @@ class Generator extends BaseElement {
             }
         </style>
 
-        <pl-dialog @dialog-dismiss=${() => this._dismiss()}>
+        <div class="generate-button tap" @click=${() => this._generate()}>
 
-            <div class="generate-button tap" @click=${() => this._generate()}>
+            <div class="header">${$l("Generate Random Value")}</div>
 
-                <div class="header">${$l("Generate Random Value")}</div>
-
-                <div class="value tiles-1">
-                    ${value}
-                </div>
-
+            <div class="value tiles-1">
+                ${value}
             </div>
 
-            <pl-toggle-button
-                id="lower"
-                label="a-z"
-                class="tap"
-                reverse>
-            </pl-toggle-button>
+        </div>
 
-            <pl-toggle-button
-                id="upper"
-                label="A-Z"
-                class="tap"
-                reverse>
-            </pl-toggle-button>
+        <pl-toggle-button
+            id="lower"
+            label="a-z"
+            class="tap"
+            reverse>
+        </pl-toggle-button>
 
-            <pl-toggle-button
-                id="numbers"
-                label="0-9"
-                class="tap"
-                reverse>
-            </pl-toggle-button>
+        <pl-toggle-button
+            id="upper"
+            label="A-Z"
+            class="tap"
+            reverse>
+        </pl-toggle-button>
 
-            <pl-toggle-button
-                id="other"
-                label="?()/%..."
-                class="tap"
-                reverse>
-            </pl-toggle-button>
+        <pl-toggle-button
+            id="numbers"
+            label="0-9"
+            class="tap"
+            reverse>
+        </pl-toggle-button>
 
-            <pl-slider
-                id="length"
-                label="${$l("length")}"
-                min="5"
-                max="50">
-            </pl-slider>
+        <pl-toggle-button
+            id="other"
+            label="?()/%..."
+            class="tap"
+            reverse>
+        </pl-toggle-button>
 
-            <button class="confirm-button tap" @click=${() => this._confirm()}>${$l("Apply")}</button>
+        <pl-slider
+            id="length"
+            label="${$l("length")}"
+            min="5"
+            max="50">
+        </pl-slider>
 
-            <pl-icon icon="cancel" class="close-button tap" @click=${() => this._dismiss()}></pl-icon>
+        <button class="confirm-button tap" @click=${() => this._confirm()}>${$l("Apply")}</button>
 
-        </pl-dialog>
+        <pl-icon icon="cancel" class="close-button tap" @click=${() => this._dismiss()}></pl-icon>
 `;
     }
 
@@ -162,13 +154,10 @@ class Generator extends BaseElement {
         this._length.value = 10;
     }
 
-    async generate(): Promise<string | null> {
+    async show(): Promise<string> {
         await this.updateComplete;
-        this._dialog.open = true;
         this._generate();
-        return new Promise<string | null>(resolve => {
-            this._resolve = resolve;
-        });
+        return super.show();
     }
 
     @listen("change")
@@ -183,13 +172,11 @@ class Generator extends BaseElement {
     }
 
     private _confirm() {
-        typeof this._resolve === "function" && this._resolve(this.value);
-        this._dialog.open = false;
+        this.done(this.value);
     }
 
     private _dismiss() {
-        typeof this._resolve === "function" && this._resolve(null);
-        this._dialog.open = false;
+        this.done("");
     }
 }
 

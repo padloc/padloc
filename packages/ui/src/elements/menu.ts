@@ -29,7 +29,6 @@ export class Menu extends BaseElement {
             :host {
                 display: block;
                 flex-direction: column;
-                ${mixins.gradientDark()}
                 color: var(--color-tertiary);
                 font-size: var(--font-size-small);
                 ${mixins.scroll()}
