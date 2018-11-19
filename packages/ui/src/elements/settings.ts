@@ -1,21 +1,22 @@
-import { getClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Err, ErrorCode } from "@padlock/core/lib/error.js";
-import * as imp from "../import.js";
-import { getReviewLink, checkForUpdates } from "@padlock/core/lib/platform.js";
+import { checkForUpdates } from "@padlock/core/lib/platform.js";
 import { shared, mixins } from "../styles";
-import { promptPassword, alert, choose, confirm, prompt, exportRecords } from "../dialog";
+import { promptPassword, alert, confirm, prompt, exportRecords, dialog } from "../dialog";
 import { app } from "../init.js";
 import { element, html, query, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
+import { ImportDialog } from "./import-dialog.js";
 
 @element("pl-settings")
 export class Settings extends View {
-    @query("#importFile")
+    @query("input[type='file']")
     _fileInput: HTMLInputElement;
+
+    @dialog("pl-import-dialog")
+    _importDialog: ImportDialog;
 
     @listen("settings-changed", app)
     @listen("account-changed", app)
@@ -174,13 +175,9 @@ export class Settings extends View {
 
             <button @click=${() => this._sendMail()} class="box tap">${$l("Contact Support")}</button>
 
-            <button @click=${() => this._promptReview()} class="box tap" hidden>
-
-                <span>${$l("I")}</span><div class="padlock-heart"></div><span>Padlock</span>
-
-            </button>
-
         </main>
+
+         <input type="file" accept="text/plain,.csv,.pls,.set" hidden @change=${() => this._importFile()}>
 `;
     }
 
@@ -270,59 +267,60 @@ export class Settings extends View {
     }
 
     private async _import() {
-        const options = [$l("From Clipboard")];
-        // TODO
-        // if (!isCordova()) {
-        //     options.push($l("From File"));
+        this._fileInput.click();
+        // const options = [$l("From Clipboard")];
+        // // TODO
+        // // if (!isCordova()) {
+        // //     options.push($l("From File"));
+        // // }
+        // const choice = await choose($l("Please choose an import method!"), options, {
+        //     preventDismiss: false,
+        //     type: "question"
+        // });
+        // switch (choice) {
+        //     case 0:
+        //         this._importFromClipboard();
+        //         break;
+        //     case 1:
+        //         this._fileInput.click();
+        //         break;
         // }
-        const choice = await choose($l("Please choose an import method!"), options, {
-            preventDismiss: false,
-            type: "question"
-        });
-        switch (choice) {
-            case 0:
-                this._importFromClipboard();
-                break;
-            case 1:
-                this._fileInput.click();
-                break;
-        }
     }
 
     private async _importFile() {
         const file = this._fileInput.files![0];
         const reader = new FileReader();
         reader.onload = async () => {
-            try {
-                await this._importString(reader.result as string);
-            } catch (e) {
-                switch (e.code) {
-                    case "decryption_failed":
-                        alert($l("Failed to open file. Did you enter the correct password?"), { type: "warning" });
-                        break;
-                    case "unsupported_container_version":
-                        const confirmed = await confirm(
-                            $l(
-                                "It seems the data you are trying to import was exported from a " +
-                                    "newer version of Padlock and can not be opened with the version you are " +
-                                    "currently running."
-                            ),
-                            $l("Check For Updates"),
-                            $l("Cancel"),
-                            { type: "info" }
-                        );
-                        if (confirmed) {
-                            checkForUpdates();
-                        }
-                        break;
-                    case "invalid_csv":
-                        alert($l("Failed to recognize file format."), { type: "warning" });
-                        break;
-                    default:
-                        alert($l("Failed to open file."), { type: "warning" });
-                        throw e;
-                }
-            }
+            // try {
+            await this._importDialog.show(reader.result as string);
+            // } catch (e) {
+            //     switch (e.code) {
+            //         case "decryption_failed":
+            //             alert($l("Failed to open file. Did you enter the correct password?"), { type: "warning" });
+            //             break;
+            //         case "unsupported_container_version":
+            //             const confirmed = await confirm(
+            //                 $l(
+            //                     "It seems the data you are trying to import was exported from a " +
+            //                         "newer version of Padlock and can not be opened with the version you are " +
+            //                         "currently running."
+            //                 ),
+            //                 $l("Check For Updates"),
+            //                 $l("Cancel"),
+            //                 { type: "info" }
+            //             );
+            //             if (confirmed) {
+            //                 checkForUpdates();
+            //             }
+            //             break;
+            //         case "invalid_csv":
+            //             alert($l("Failed to recognize file format."), { type: "warning" });
+            //             break;
+            //         default:
+            //             alert($l("Failed to open file."), { type: "warning" });
+            //             throw e;
+            //     }
+            // }
 
             this._fileInput.value = "";
         };
@@ -330,98 +328,7 @@ export class Settings extends View {
         reader.readAsText(file);
     }
 
-    private async _importFromClipboard() {
-        try {
-            await this._importString(await getClipboard());
-        } catch (e) {
-            switch (e.code) {
-                case "decryption_failed":
-                    alert($l("Failed to decrypt data. Did you enter the correct password?"), {
-                        type: "warning"
-                    });
-                    break;
-                default:
-                    alert(
-                        $l(
-                            "No supported data found in clipboard. Please make sure to copy " +
-                                "you data to the clipboard first (e.g. via ctrl + C)."
-                        ),
-                        { type: "warning" }
-                    );
-            }
-        }
-    }
-
-    private async _importString(rawStr: string): Promise<void> {
-        const isPadlock = imp.isFromPadlock(rawStr);
-        const isLastPass = imp.isFromLastPass(rawStr);
-        const isCSV = await imp.isCSV(rawStr);
-        let records: Record[] = [];
-
-        if (isPadlock) {
-            const pwd = await prompt($l("This file is protected by a password."), {
-                placeholder: $l("Enter Password"),
-                type: "password"
-            });
-
-            if (pwd === null) {
-                return;
-            }
-
-            // TODO: Does not seem to work
-            records = await imp.fromPadlock(rawStr, pwd);
-        } else if (isLastPass) {
-            records = await imp.fromLastPass(rawStr);
-        } else if (isCSV) {
-            const choice = await choose(
-                $l(
-                    "The data you want to import seems to be in CSV format. Before you continue, " +
-                        "please make sure that the data is structured according to Padlocks specific " +
-                        "requirements!"
-                ),
-                [$l("Review Import Guidelines"), $l("Continue"), $l("Cancel")],
-                { type: "info" }
-            );
-            switch (choice) {
-                case 0:
-                    window.open("https://padlock.io/howto/import/#importing-from-csv", "_system");
-                    // Reopen dialog for when the user comes back from the web page
-                    return this._importString(rawStr);
-                case 1:
-                    records = await imp.fromCSV(rawStr);
-                    break;
-                case 2:
-                    return;
-            }
-        } else {
-            throw new Err(ErrorCode.INVALID_CSV);
-        }
-
-        if (records.length) {
-            app.addRecords(app.mainVault!, records);
-            // this.dispatch("data-imported", { records: records });
-            alert($l("Successfully imported {0} records.", records.length.toString()), { type: "success" });
-        }
-    }
-
-    private _openSource() {
-        window.open("https://github.com/maklesoft/padlock/", "_system");
-    }
-
-    private async _promptReview() {
-        const choice = await choose(
-            $l(
-                "So glad to hear you like our app! Would you mind taking a second to " +
-                    "let others know what you think about Padlock?"
-            ),
-            [$l("Rate Padlock"), $l("No Thanks")]
-        );
-        if (choice === 0) {
-            window.open(await getReviewLink(0), "_system");
-        }
-    }
-
     private _export() {
-        exportRecords(Array.from(app.mainVault!.collection));
+        exportRecords(Array.from(app.mainVault!.items));
     }
 }
