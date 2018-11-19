@@ -126,7 +126,6 @@ export class BrowseList extends BaseElement {
                 display: flex;
                 flex-direction: column;
                 box-sizing: border-box;
-                height: 100%;
                 position: relative;
                 background: var(--color-quaternary);
             }
@@ -164,25 +163,6 @@ export class BrowseList extends BaseElement {
                 text-align: center;
             }
 
-            .empty{
-                ${mixins.fullbleed()}
-                display: flex;
-                flex-direction: column;
-                ${mixins.fullbleed()}
-                top: var(--row-height);
-                overflow: visible;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-                padding: 20px;
-            }
-
-            .empty pl-icon {
-                width: 100px;
-                height: 100px;
-                font-size: 60px;
-            }
-
             .section-header {
                 position: sticky;
                 top: 0;
@@ -196,6 +176,7 @@ export class BrowseList extends BaseElement {
                 font-weight: bold;
                 border-bottom: solid 1px #ddd;
                 box-sizing: border-box;
+                margin-bottom: -7px;
             }
 
             .item {
@@ -205,6 +186,8 @@ export class BrowseList extends BaseElement {
                 box-sizing: border-box;
                 flex-direction: row;
                 background: var(--color-background);
+                margin: 6px 0;
+                border-top: solid 1px #ddd;
                 border-bottom: solid 1px #ddd;
             }
 
@@ -336,15 +319,15 @@ export class BrowseList extends BaseElement {
 
         </main>
 
-        <div class="empty" ?hidden=${!!this._listItems.length || app.filter.text}>
+        <div class="empty-placeholder" ?hidden=${!!this._listItems.length || app.filter.text}>
 
-            <pl-icon icon="logo"></pl-icon>
+            <pl-icon icon="list"></pl-icon>
 
             <div>${$l("You don't have any items yet!")}</div>
 
         </div>
 
-        <div class="empty" ?hidden=${!!this._listItems.length || !app.filter.text}>
+        <div class="empty-placeholder" ?hidden=${!!this._listItems.length || !app.filter.text}>
 
             <pl-icon icon="search"></pl-icon>
 

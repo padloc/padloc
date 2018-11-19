@@ -39,6 +39,8 @@ export class VaultList extends BaseElement {
     }
 
     render() {
+        const vaults = app.vaults.filter(v => v !== app.mainVault);
+
         return html`
 
             ${shared}
@@ -52,33 +54,31 @@ export class VaultList extends BaseElement {
                     background: var(--color-quaternary);
                 }
 
-                ul {
+                li {
+                    border-bottom: solid 1px #ddd;
+                    margin: 6px 0;
                     background: var(--color-tertiary);
                     border-bottom: solid 1px #ddd;
                 }
 
-                li {
-                    display: flex;
-                    align-items: center;
-                    height: 60px;
-                    padding: 0 10px;
-                    border-top: solid 1px #ddd;
-                }
-
                 li:not([selected]):hover {
-                    background: rgba(0, 0, 0, 0.1);
+                    background: rgba(0, 0, 0, 0.05);
                 }
 
                 li[selected] {
                     background: #eee;
                 }
 
-                li div {
-                    flex: 1;
-                    ${mixins.ellipsis()}
+                li[selected] {
+                    background: #eee;
+                }
+
+                pl-vault-list-item {
+                    border-top: solid 1px #ddd;
                 }
 
                 .subvault {
+                    margin-top: -10px;
                     margin-left: 30px;
                     padding-left: 0;
                     height: 50px;
@@ -88,17 +88,9 @@ export class VaultList extends BaseElement {
                     font-size: 80%;
                 }
 
-                pl-vault-list-item {
-                    border-top: solid 1px #ddd;
-                }
-
-                pl-vault-list-item[selected] {
-                    background: #eee;
-                }
-
             </style>
 
-            <header>
+            <header class="narrow">
 
                 <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
@@ -112,18 +104,29 @@ export class VaultList extends BaseElement {
 
                 <ul>
 
-                    ${app.vaults.map(
+                    ${vaults.map(
                         vault => html`
-                        <pl-vault-list-item
-                            .vault=${vault}
-                            ?selected=${vault.id === this.selected}
-                            class="vault tap ${vault.parent ? "subvault" : ""}"
-                            @click=${() => this._select(vault)}>
-                        </pl-vault-list-item>
+                        <li ?selected=${vault.id === this.selected}>
+
+                            <pl-vault-list-item
+                                .vault=${vault}
+                                class="vault tap ${vault.parent ? "subvault" : ""}"
+                                @click=${() => this._select(vault)}>
+                            </pl-vault-list-item>
+
+                        </li>
                     `
                     )}
 
                 </ul>
+
+                <div class="empty-placeholder" ?hidden=${!!vaults.length}>
+
+                    <pl-icon icon="vaults"></pl-icon>
+
+                    <div>${$l("You don't have any shared vaults yet.")}</div>
+
+                </div>
 
                 <pl-icon icon="add" class="tap fab" @click=${() => this._createVault()}></pl-icon>
 

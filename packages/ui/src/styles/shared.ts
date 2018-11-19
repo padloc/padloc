@@ -442,6 +442,29 @@ export const shared = html`
         color: var(--color-tertiary);
     }
 
+    .empty-placeholder {
+        ${mixins.fullbleed()}
+        display: flex;
+        flex-direction: column;
+        ${mixins.fullbleed()}
+        top: var(--row-height);
+        overflow: visible;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .empty-placeholder pl-icon {
+        width: 100px;
+        height: 100px;
+        font-size: 50px;
+    }
+
+    .empty-placeholder > div {
+        width: 200px;
+    }
+
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
