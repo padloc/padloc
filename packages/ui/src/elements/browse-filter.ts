@@ -112,6 +112,12 @@ export class BrowseFilter extends BaseElement {
                     text-align: left;
                     opacity: 0.8;
                 }
+
+                .no-tags {
+                    font-size: var(--font-size-micro);
+                    padding: 5px 10px 15px 10px;
+                    opacity: 0.5;
+                }
             </style>
 
             <button class="tap ${cl}" @click=${() => (this._selecting = true)} ?hidden=${this._selecting}>
@@ -163,6 +169,10 @@ export class BrowseFilter extends BaseElement {
                         <div>
 
                             <h4>${$l("Tags")}</h4>
+
+                            <div class="no-tags" ?hidden=${!!app.tags.length}>
+                                ${$l("You don't have any tags yet.")}
+                            </div>
 
                             ${app.tags.map(
                                 tag => html`

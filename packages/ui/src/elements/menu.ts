@@ -101,6 +101,13 @@ export class Menu extends BaseElement {
                 padding: 0 5px;
                 font-size: var(--font-size-tiny);
             }
+
+            .no-tags {
+                font-size: var(--font-size-micro);
+                padding: 0 20px;
+                opacity: 0.5;
+                width: 100px;
+            }
         </style>
 
         <div class="logo">
@@ -166,6 +173,8 @@ export class Menu extends BaseElement {
         </ul>
 
         <h3>${$l("Tags")}</h3>
+
+        <div class="no-tags" ?hidden=${!!app.tags.length}>${$l("You don't have any tags yet.")}</div>
 
         <ul>
 
