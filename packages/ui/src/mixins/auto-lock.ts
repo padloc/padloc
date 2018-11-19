@@ -15,7 +15,7 @@ export function AutoLock<B extends Constructor<HTMLElement>>(baseClass: B) {
 
         constructor(...args: any[]) {
             super(...args);
-            const moved = debounce(() => this._autoLockChanged(), 300);
+            const moved = debounce(() => this._startTimer(), 300);
             document.addEventListener("touchstart", moved, { passive: true });
             document.addEventListener("keydown", moved);
             document.addEventListener("mousemove", moved);
@@ -52,15 +52,20 @@ export function AutoLock<B extends Constructor<HTMLElement>>(baseClass: B) {
             ) {
                 this._doLock();
             }
-            this._autoLockChanged();
+            this._startTimer();
         }
 
         _doLock() {
-            // TODO: don't lock if app is synching
+            // if app is currently syncing restart the timer
+            if (app.syncing) {
+                this._startTimer();
+                return;
+            }
+
             app.lock();
         }
 
-        _autoLockChanged() {
+        _startTimer() {
             this._cancelAutoLock();
             if (app.settings.autoLock && !app.locked) {
                 this._lockTimeout = setTimeout(() => this._doLock(), this._lockDelay);
