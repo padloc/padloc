@@ -99,12 +99,13 @@ class App extends AutoLock(BaseElement) {
                 transform: translate3d(0, 0, 0);
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
-                padding: var(--gutter-size);
             }
 
             .views {
                 position: relative;
                 perspective: 1000px;
+                margin: var(--gutter-size);
+                margin-left: 0;
             }
 
             .views > * {
@@ -119,6 +120,7 @@ class App extends AutoLock(BaseElement) {
             @media (max-width: ${config.narrowWidth}px) {
                 .views {
                     ${mixins.fullbleed()}
+                    margin-left: var(--gutter-size);
                     transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
                 }
 
@@ -127,10 +129,11 @@ class App extends AutoLock(BaseElement) {
                 }
 
                 pl-menu {
-                    transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+                    transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
                 }
 
                 :host(:not([menu-open])) pl-menu {
+                    opacity: 0;
                     transform: translate(-100px, 0);
                 }
             }
