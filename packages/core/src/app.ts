@@ -181,6 +181,8 @@ export class App extends EventTarget implements Storable {
 
     private _vaults = new Map<string, Vault>();
     private _filter: FilterParams = {};
+    private _queuedSyncPromises = new Map<string, Promise<void>>();
+    private _activeSyncPromises = new Map<string, Promise<void>>();
 
     async load() {
         try {
@@ -426,6 +428,41 @@ export class App extends EventTarget implements Storable {
     }
 
     async syncVault(vaultInfo: VaultInfo): Promise<void> {
+        let queued = this._queuedSyncPromises.get(vaultInfo.id);
+        let active = this._activeSyncPromises.get(vaultInfo.id);
+
+        if (queued) {
+            // There is already a queued sync promise, so just return that one
+            console.log("found queued sync");
+            return queued;
+        }
+
+        if (active) {
+            console.log("found active sync");
+            // There is already a synchronization in process. wait for the current sync to finish
+            // before starting a new one.
+            queued = active.then(() => {
+                this._queuedSyncPromises.delete(vaultInfo.id);
+                return this.syncVault(vaultInfo);
+            });
+            this._queuedSyncPromises.set(vaultInfo.id, queued);
+            return queued;
+        }
+
+        console.log("starting actual sync");
+        active = this._syncVault(vaultInfo).then(
+            () => {
+                this._activeSyncPromises.delete(vaultInfo.id);
+            },
+            () => {
+                this._activeSyncPromises.delete(vaultInfo.id);
+            }
+        );
+        this._activeSyncPromises.set(vaultInfo.id, active);
+        return active;
+    }
+
+    async _syncVault(vaultInfo: VaultInfo): Promise<void> {
         const localVault = this.getVault(vaultInfo.id);
 
         const remoteVault = new Vault(vaultInfo.id);
