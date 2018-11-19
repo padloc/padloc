@@ -28,7 +28,7 @@ export const shared = html`
     }
 
     a {
-        text-decoration: none;
+        text-decoration: underline;
         color: inherit;
     }
 

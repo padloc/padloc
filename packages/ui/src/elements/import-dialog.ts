@@ -1,4 +1,3 @@
-import { Err, ErrorCode } from "@padlock/core/lib/error.js";
 import { Vault, VaultItem } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import * as imp from "../import.js";
@@ -8,15 +7,13 @@ import { element, html, query, property } from "./base.js";
 import { Select } from "./select.js";
 import { Dialog } from "./dialog.js";
 
-const formats = ["CSV", "Padlock v2"];
-
 @element("pl-import-dialog")
 export class ImportDialog extends Dialog<string, void> {
     @property()
     private _items: VaultItem[] = [];
 
     @query("#formatSelect")
-    private _formatSelect: Select<string>;
+    private _formatSelect: Select<imp.ImportFormat>;
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
@@ -49,84 +46,76 @@ export class ImportDialog extends Dialog<string, void> {
                 overflow: hidden;
             }
 
+            .csv-note {
+                font-size: var(--font-size-micro);
+                text-align: center;
+                padding: 0px 20px 20px 20px;
+            }
+
         </style>
 
         <h1>${$l("Import Data")}</h1>
 
-        <pl-select id="formatSelect" .options=${formats} .label=${$l("Format")} disabled></pl-select>
+        <pl-select id="formatSelect" .options=${imp.supportedFormats} .label=${$l("Format")} disabled></pl-select>
 
-        <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Import Into Vault")}></pl-select>
+        <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== imp.CSV}>
+            ${$l(
+                "IMPORTANT: Before importing, please make sure that your CSV data " +
+                    "is structured according to Padlocks specific requirements!"
+            )}
+            <a href="https://padlock.io/howto/import/#importing-from-csv" target="_blank">${$l("Learn More")}</a>
+        </div>
 
-        <button @click=${() => this._enter()} class="tap">
+        <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Target Vault")}></pl-select>
+
+        <button @click=${() => this._import()} class="tap">
             ${$l("Import {0} Items", this._items.length.toString())}
         </button>
 `;
     }
 
-    private async _parseString(rawStr: string): Promise<void> {
-        const isPadlock = imp.isFromPadlock(rawStr);
-        // const isLastPass = imp.isFromLastPass(rawStr);
-        const isCSV = await imp.isCSV(rawStr);
-
-        if (isPadlock) {
-            this.open = false;
-            const pwd = await prompt($l("This file is protected by a password."), {
-                label: $l("Enter Password"),
-                type: "password",
-                validate: async (pwd: string) => {
-                    try {
-                        this._items = await imp.fromPadlock(rawStr, pwd);
-                    } catch (e) {
-                        throw $l("Wrong Password");
-                    }
-                    return pwd;
-                }
-            });
-            this.open = true;
-
-            if (pwd === null) {
-                this.done();
-                return;
-            }
-
-            this._formatSelect.selected = formats[1];
-            // } else if (isLastPass) {
-            //     items = await imp.fromLastPass(rawStr);
-        } else if (isCSV) {
-            // const choice = await choose(
-            //     $l(
-            //         "The data you want to import seems to be in CSV format. Before you continue, " +
-            //             "please make sure that the data is structured according to Padlocks specific " +
-            //             "requirements!"
-            //     ),
-            //     [$l("Review Import Guidelines"), $l("Continue"), $l("Cancel")],
-            //     { type: "info" }
-            // );
-            // switch (choice) {
-            //     case 0:
-            //         window.open("https://padlock.io/howto/import/#importing-from-csv", "_system");
-            //         // Reopen dialog for when the user comes back from the web page
-            //         return this._importString(rawStr);
-            //     case 1:
-            this._items = await imp.fromCSV(rawStr);
-            this._formatSelect.selected = formats[0];
-            //         break;
-            //     case 2:
-            //         return;
-            // }
-        } else {
-            throw new Err(ErrorCode.INVALID_CSV);
-        }
-    }
-
     async show(input: string) {
         await this.updateComplete;
+        this._formatSelect.selected = imp.guessFormat(input);
         this._parseString(input);
         this._vaultSelect.selected = app.mainVault!;
         return super.show();
     }
 
-    private async _enter() {
+    private async _parseString(rawStr: string): Promise<void> {
+        switch (this._formatSelect.selected!.format) {
+            case imp.PADLOCK_LEGACY.format:
+                this.open = false;
+                const pwd = await prompt($l("This file is protected by a password."), {
+                    label: $l("Enter Password"),
+                    type: "password",
+                    validate: async (pwd: string) => {
+                        try {
+                            this._items = await imp.asPadlockLegacy(rawStr, pwd);
+                        } catch (e) {
+                            throw $l("Wrong Password");
+                        }
+                        return pwd;
+                    }
+                });
+                this.open = true;
+
+                if (pwd === null) {
+                    this.done();
+                }
+                break;
+            case imp.LASTPASS.format:
+                this._items = await imp.asLastPass(rawStr);
+                break;
+            case imp.CSV.format:
+                this._items = await imp.asCSV(rawStr);
+                break;
+            default:
+                this._items = [];
+        }
+    }
+
+    private async _import() {
         this.done();
         if (this._items.length) {
             app.addItems(this._items, this._vaultSelect.selected!);

@@ -1,7 +1,38 @@
 import { unmarshal } from "@padlock/core/lib/encoding.js";
+import { validateLegacyContainer, parseLegacyContainer } from "@padlock/core/lib/legacy.js";
 import { VaultItem, Field, createVaultItem } from "@padlock/core/lib/data.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
+import { PBES2Container } from "@padlock/core/lib/crypto.js";
+import { uuid } from "@padlock/core/lib/util.js";
 import { loadScript } from "./util";
+
+export interface ImportFormat {
+    format: "csv" | "padlock-legacy" | "lastpass";
+    toString(): string;
+}
+
+export const CSV: ImportFormat = {
+    format: "csv",
+    toString() {
+        return "CSV";
+    }
+};
+
+export const PADLOCK_LEGACY: ImportFormat = {
+    format: "padlock-legacy",
+    toString() {
+        return "Padlock (v2)";
+    }
+};
+
+export const LASTPASS: ImportFormat = {
+    format: "lastpass",
+    toString() {
+        return "LastPass";
+    }
+};
+
+export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS];
 
 export function loadPapa(): Promise<any> {
     return loadScript("vendor/papaparse.js", "Papa");
@@ -60,7 +91,7 @@ export async function isCSV(data: string): Promise<Boolean> {
     return papa.parse(data).errors.length === 0;
 }
 
-export async function fromCSV(data: string, nameColIndex?: number, tagsColIndex?: number): Promise<VaultItem[]> {
+export async function asCSV(data: string, nameColIndex?: number, tagsColIndex?: number): Promise<VaultItem[]> {
     const papa = await loadPapa();
     const parsed = papa.parse(data);
     if (parsed.errors.length) {
@@ -72,19 +103,43 @@ export async function fromCSV(data: string, nameColIndex?: number, tagsColIndex?
 /**
  * Checks if a given string represents a Padlock enrypted backup
  */
-export function isFromPadlock(data: string): boolean {
+export function isPadlockV1(data: string): boolean {
     try {
-        // TODO: add a more robust check
-        return typeof unmarshal(data).version === "string";
+        return validateLegacyContainer(unmarshal(data));
         return true;
     } catch (e) {
         return false;
     }
 }
 
-export async function fromPadlock(_data: string, _password: string): Promise<VaultItem[]> {
-    // TODO
-    throw "not implemented";
+export async function asPadlockLegacy(data: string, password: string): Promise<VaultItem[]> {
+    const raw = parseLegacyContainer(unmarshal(data));
+    const container = await new PBES2Container().deserialize(raw);
+    container.password = password;
+    let items: VaultItem[] = [];
+    const serializer = {
+        async serialize() {
+            return {};
+        },
+        async deserialize(records: any[]) {
+            items = records.filter(({ removed }) => !removed).map(record => {
+                return {
+                    id: uuid(),
+                    name: record.name,
+                    fields: record.fields,
+                    tags: record.tags || [record.category],
+                    updated: new Date(record.updated),
+                    lastUsed: new Date(record.lastUsed),
+                    updatedBy: ""
+                };
+            });
+            return this;
+        }
+    };
+
+    await container.get(serializer);
+
+    return items;
 }
 
 /*
@@ -143,7 +198,7 @@ function lpParseRow(row: string[]): VaultItem {
     return createVaultItem(row[nameIndex], fields, dir ? [dir] : []);
 }
 
-export async function fromLastPass(data: string): Promise<VaultItem[]> {
+export async function asLastPass(data: string): Promise<VaultItem[]> {
     const papa = await loadPapa();
     let items = papa
         .parse(data)
@@ -159,6 +214,10 @@ export async function fromLastPass(data: string): Promise<VaultItem[]> {
 /**
  * Checks if a given string represents a LastPass CSV file
  */
-export function isFromLastPass(data: string): boolean {
+export function isLastPass(data: string): boolean {
     return data.split("\n")[0] === "url,username,password,extra,name,grouping,fav";
+}
+
+export function guessFormat(data: string): ImportFormat | null {
+    return isPadlockV1(data) ? PADLOCK_LEGACY : isLastPass(data) ? LASTPASS : isCSV(data) ? CSV : null;
 }

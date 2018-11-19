@@ -2,9 +2,9 @@ import { Serializable, Base64String, stringToBase64, base64ToString, marshal, un
 import { Err, ErrorCode } from "./error";
 
 // Default number of pbkdf2 iterations
-const PBKDF2_ITER_DEFAULT = 5e4;
+export const PBKDF2_ITER_DEFAULT = 5e4;
 // Maximum number of pbkdf2 iterations
-const PBKDF2_ITER_MAX = 1e7;
+export const PBKDF2_ITER_MAX = 1e7;
 
 export type AESKey = Base64String;
 export type HMACKey = Base64String;
