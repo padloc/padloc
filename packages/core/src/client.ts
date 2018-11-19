@@ -31,7 +31,7 @@ export class Client implements API {
     async call(method: string, params?: any[]) {
         const { session } = this.state;
 
-        const req = { method, params };
+        const req = { method, params, device: this.state.device };
 
         if (session) {
             await session.authenticate(req);

@@ -1,7 +1,10 @@
+import { DeviceInfo } from "./platform";
+
 export interface Request {
     method: string;
     params?: any[];
     auth?: Authentication;
+    device?: DeviceInfo;
 }
 
 export interface Response {

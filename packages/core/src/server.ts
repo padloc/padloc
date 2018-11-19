@@ -326,9 +326,11 @@ export class Server {
         const res = { result: null };
         try {
             const context = new Context(this.storage, this.messenger);
+            context.device = req.device;
             await this._authenticate(req, context);
             await this._process(req, res, context);
             if (context.session) {
+                console.log(context.session.device);
                 await context.session.authenticate(res);
             }
         } catch (e) {
@@ -507,6 +509,7 @@ export class Server {
         // TODO
         // session.device = req.device;
         session.lastUsed = new Date();
+        session.device = ctx.device;
         session.updated = new Date();
 
         account.sessions.update(session.info);
