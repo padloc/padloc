@@ -3,7 +3,7 @@ import { VaultInfo, VaultMember } from "@padlock/core/lib/vault.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
-import { dialog, confirm, prompt, alert, choose } from "../dialog.js";
+import { dialog, confirm, prompt, alert } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, listen } from "./base.js";
@@ -20,6 +20,10 @@ export class VaultView extends BaseElement {
 
     get vault() {
         return this.selected ? app.getVault(this.selected) : null;
+    }
+
+    get parentVault() {
+        return this.vault && this.vault.parent && app.getVault(this.vault.parent.id);
     }
 
     @dialog("pl-invite-dialog")
@@ -96,8 +100,10 @@ export class VaultView extends BaseElement {
     private async _addParentMember() {
         const parent = app.getVault(this.vault!.parent!.id);
         const acc = await this._selectAccountDialog.show([...parent!.members].filter(m => !this.vault!.isMember(m)));
-        await this.vault!.addMember(acc);
-        await app.syncVault(this.vault!);
+        if (acc) {
+            await this.vault!.addMember(acc);
+            await app.syncVault(this.vault!);
+        }
     }
 
     private async _addMember() {
@@ -278,7 +284,7 @@ export class VaultView extends BaseElement {
         <header class="narrow back-header">
 
             <pl-icon icon="backward" @click=${() => router.go("vaults")}></pl-icon>
-            
+
             <div @click=${() => router.go("vaults")}>${$l("Vaults")}</div>
 
         </header>
@@ -406,7 +412,8 @@ export class VaultView extends BaseElement {
                     icon="add"
                     class="add-icon tap"
                     @click=${() => this._addMember()}
-                    ?hidden=${vault === app.mainVault || !permissions.manage}>
+                    ?hidden=${vault === app.mainVault || !permissions.manage}
+                    ?disabled=${this.parentVault && vault.members.size === this.parentVault.members.size}>
                 ></pl-icon>
 
             </h2>
