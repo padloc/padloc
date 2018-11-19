@@ -89,6 +89,10 @@ export class App extends EventTarget implements Storable {
         return !!this.session;
     }
 
+    get syncing() {
+        return !!this._activeSyncPromises.size;
+    }
+
     get tags() {
         if (!this.mainVault) {
             return [];
@@ -310,6 +314,10 @@ export class App extends EventTarget implements Storable {
     }
 
     async syncAccount() {
+        this._queueSync(this.account!, () => this._syncAccount());
+    }
+
+    async _syncAccount() {
         const account = this.account!;
         const remoteAccount = await this.api.getAccount(new Account(account.id));
         const changes = account.merge(remoteAccount);
@@ -427,39 +435,12 @@ export class App extends EventTarget implements Storable {
         }
     }
 
-    async syncVault(vaultInfo: VaultInfo): Promise<void> {
-        let queued = this._queuedSyncPromises.get(vaultInfo.id);
-        let active = this._activeSyncPromises.get(vaultInfo.id);
+    async syncVault(vaultInfo: VaultInfo) {
+        return this._queueSync(vaultInfo, (vaultInfo: VaultInfo) => this._syncVault(vaultInfo));
+    }
 
-        if (queued) {
-            // There is already a queued sync promise, so just return that one
-            console.log("found queued sync");
-            return queued;
-        }
-
-        if (active) {
-            console.log("found active sync");
-            // There is already a synchronization in process. wait for the current sync to finish
-            // before starting a new one.
-            queued = active.then(() => {
-                this._queuedSyncPromises.delete(vaultInfo.id);
-                return this.syncVault(vaultInfo);
-            });
-            this._queuedSyncPromises.set(vaultInfo.id, queued);
-            return queued;
-        }
-
-        console.log("starting actual sync");
-        active = this._syncVault(vaultInfo).then(
-            () => {
-                this._activeSyncPromises.delete(vaultInfo.id);
-            },
-            () => {
-                this._activeSyncPromises.delete(vaultInfo.id);
-            }
-        );
-        this._activeSyncPromises.set(vaultInfo.id, active);
-        return active;
+    async syncVaults() {
+        await Promise.all([...this.account!.vaults].map(g => this.syncVault(g)));
     }
 
     async _syncVault(vaultInfo: VaultInfo): Promise<void> {
@@ -506,10 +487,6 @@ export class App extends EventTarget implements Storable {
         this.dispatch("vault-changed", { vault: result });
     }
 
-    async syncVaults() {
-        await Promise.all([...this.account!.vaults].map(g => this.syncVault(g)));
-    }
-
     // VAULT ITEMS
 
     getItem(id: string): { item: VaultItem; vault: Vault } | null {
@@ -527,6 +504,7 @@ export class App extends EventTarget implements Storable {
         vault.items.update(...items);
         await this.storage.set(vault);
         this.dispatch("items-added", { vault, items });
+        this.syncVault(vault);
     }
 
     async createItem(name: string, vault_?: Vault, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
@@ -541,6 +519,7 @@ export class App extends EventTarget implements Storable {
         }
         await this.addItems([item], vault);
         this.dispatch("item-created", { vault, item });
+        this.syncVault(vault);
         return item;
     }
 
@@ -555,12 +534,14 @@ export class App extends EventTarget implements Storable {
             item.updatedBy = this.account.id;
         }
         await this.storage.set(vault);
+        this.syncVault(vault);
         this.dispatch("item-changed", { vault: vault, item: item });
     }
 
     async deleteItems(vault: Vault, items: VaultItem[]) {
         vault.items.remove(...items);
         await this.storage.set(vault);
+        this.syncVault(vault);
         this.dispatch("vault-changed", { vault: vault });
     }
 
@@ -634,5 +615,40 @@ export class App extends EventTarget implements Storable {
 
     dispatch(eventName: string, detail?: any) {
         this.dispatchEvent(new CustomEvent(eventName, { detail: detail }));
+    }
+
+    async _queueSync(obj: { id: string }, fn: (obj: { id: string }) => Promise<void>): Promise<void> {
+        let queued = this._queuedSyncPromises.get(obj.id);
+        let active = this._activeSyncPromises.get(obj.id);
+
+        if (queued) {
+            // There is already a queued sync promise, so just return that one
+            return queued;
+        }
+
+        if (active) {
+            // There is already a synchronization in process. wait for the current sync to finish
+            // before starting a new one.
+            queued = active.then(() => {
+                this._queuedSyncPromises.delete(obj.id);
+                return this._queueSync(obj, fn);
+            });
+            this._queuedSyncPromises.set(obj.id, queued);
+            return queued;
+        }
+
+        this.dispatch("start-sync", obj);
+        active = fn(obj).then(
+            () => {
+                this._activeSyncPromises.delete(obj.id);
+                this.dispatch("finish-sync", obj);
+            },
+            () => {
+                this._activeSyncPromises.delete(obj.id);
+                this.dispatch("finish-sync", obj);
+            }
+        );
+        this._activeSyncPromises.set(obj.id, active);
+        return active;
     }
 }
