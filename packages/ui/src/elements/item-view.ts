@@ -7,7 +7,7 @@ import { confirm, generate } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { setClipboard } from "../clipboard.js";
-import { BaseElement, element, html, property, query, queryAll, listen } from "./base.js";
+import { BaseElement, element, html, property, query, queryAll, listen, observe } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import { TagsInput } from "./tags-input.js";
@@ -48,6 +48,11 @@ export class ItemView extends BaseElement {
     @listen("vault-changed", app)
     _refresh() {
         this.requestUpdate();
+    }
+
+    @observe("selected")
+    _selectedChanged() {
+        this._editing = false;
     }
 
     shouldUpdate() {
@@ -344,6 +349,8 @@ export class ItemView extends BaseElement {
     private async _addField(field = { name: "", value: "", masked: false }) {
         this.item!.fields.push(field);
         this.requestUpdate();
+        await this.updateComplete;
+        setTimeout(() => this._fieldNameInputs[this._fieldNameInputs.length - 1].focus(), 100);
     }
 
     _activated() {
