@@ -39,13 +39,10 @@ export class ItemView extends BaseElement {
     @queryAll("pl-input.field-value")
     _fieldValueInputs: Input[];
 
-    @listen("lock", app)
-    _locked() {
-        this.selected = "";
-    }
-
     @listen("item-changed", app)
     @listen("vault-changed", app)
+    @listen("lock", app)
+    @listen("unlock", app)
     _refresh() {
         this.requestUpdate();
     }
@@ -56,10 +53,14 @@ export class ItemView extends BaseElement {
     }
 
     shouldUpdate() {
-        return !!this.item && !!this.vault;
+        return app.locked || (!!this.item && !!this.vault);
     }
 
     render() {
+        if (app.locked || !this.item || !this.vault) {
+            return html``;
+        }
+
         const { name, fields, tags, updated, updatedBy } = this.item!;
         const vault = this.vault!;
         const permissions = vault.getPermissions();
