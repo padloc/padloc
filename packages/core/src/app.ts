@@ -144,8 +144,6 @@ export class App extends EventTarget implements Storable {
                         section: "",
                         firstInSection: false,
                         lastInSection: false
-                        // TODO: reimplement
-                        // warning: !!vault.getOldMembers(item).length
                     });
                 }
             }

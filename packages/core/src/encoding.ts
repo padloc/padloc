@@ -48,8 +48,7 @@ export function base64ToBytes(inp: Base64String): Bytes {
 
 export function stringToBytes(str: string): Bytes {
     try {
-        const Encoder = typeof TextEncoder !== "undefined" ? TextEncoder : require("util").TextEncoder;
-        return new Encoder().encode(str);
+        return new TextEncoder().encode(str);
     } catch (e) {
         throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
     }
@@ -57,8 +56,7 @@ export function stringToBytes(str: string): Bytes {
 
 export function bytesToString(bytes: Bytes, encoding = "utf-8") {
     try {
-        const Decoder = typeof TextDecoder !== "undefined" ? TextDecoder : require("util").TextDecoder;
-        return new Decoder(encoding).decode(bytes);
+        return new TextDecoder(encoding).decode(bytes);
     } catch (e) {
         throw new Err(ErrorCode.ENCODING_ERROR, e.toString());
     }

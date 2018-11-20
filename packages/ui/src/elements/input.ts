@@ -21,7 +21,7 @@ export class Input extends BaseElement {
     @property()
     autosize: boolean = false;
     @property()
-    autocapitalize: boolean = false;
+    autocapitalize: string = "off";
     @property({ reflect: true })
     disabled: boolean = false;
     @property({ reflect: true })
@@ -110,7 +110,7 @@ export class Input extends BaseElement {
                     ?invisible=${doMask}
                     ?disabled=${disabled}
                     ?required=${required}
-                    autocapitalize="${autocapitalize ? "" : "off"}"
+                    autocapitalize=${autocapitalize}
                     autocomplete="off"
                     spellcheck="false"
                     autocorrect="off"
@@ -166,10 +166,6 @@ export class Input extends BaseElement {
             :host(:not([multiline])) {
                 padding: 0 10px;
                 height: var(--row-height);
-            }
-
-            :host([invalid]) {
-                color: var(--color-error);
             }
 
             input {

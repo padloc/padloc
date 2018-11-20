@@ -330,7 +330,6 @@ export class Server {
             await this._authenticate(req, context);
             await this._process(req, res, context);
             if (context.session) {
-                console.log(context.session.device);
                 await context.session.authenticate(res);
             }
         } catch (e) {
@@ -506,8 +505,6 @@ export class Server {
         ctx.session = session;
         ctx.account = account;
 
-        // TODO
-        // session.device = req.device;
         session.lastUsed = new Date();
         session.device = ctx.device;
         session.updated = new Date();

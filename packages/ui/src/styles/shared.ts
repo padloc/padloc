@@ -497,16 +497,3 @@ export const shared = html`
     }
 </style>
 `;
-
-const _documentContainer = document.createElement("template");
-_documentContainer.setAttribute("style", "display: none;");
-
-_documentContainer.innerHTML = `<dom-module id="shared">
-    <template>
-        <style>
-${shared}
-        </style>
-    </template>
-</dom-module>`;
-
-document.head.appendChild(_documentContainer.content);

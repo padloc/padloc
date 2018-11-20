@@ -1,7 +1,7 @@
 import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app } from "../init.js";
-import { shared, mixins } from "../styles";
+import { shared } from "../styles";
 import { router } from "../init";
 import { prompt } from "../dialog";
 import { BaseElement, element, listen, property, html } from "./base.js";
@@ -90,7 +90,7 @@ export class VaultList extends BaseElement {
 
             </style>
 
-            <header class="narrow">
+            <header>
 
                 <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 

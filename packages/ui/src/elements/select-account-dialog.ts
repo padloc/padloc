@@ -1,4 +1,4 @@
-import { AccountInfo } from "@padlock/core/lib/auth.js";
+import { AccountInfo } from "@padlock/core/lib/account.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { shared, mixins } from "../styles";
 import { element, html, property } from "./base.js";

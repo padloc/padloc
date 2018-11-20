@@ -1,4 +1,4 @@
-import { checkForUpdates, getDeviceInfo } from "@padlock/core/lib/platform.js";
+import { getDeviceInfo } from "@padlock/core/lib/platform.js";
 import { ErrorCode } from "@padlock/core/lib/error.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { config, shared, mixins } from "../styles";
@@ -16,8 +16,6 @@ import { alert, confirm, clearDialogs, getDialog } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { Menu } from "./menu.js";
 import { InviteDialog } from "./invite-dialog.js";
-
-// TODO: auto lock, auto sync, hints, tracking
 
 // const cordovaReady = new Promise(resolve => {
 //     document.addEventListener("deviceready", resolve);
@@ -223,9 +221,6 @@ class App extends AutoLock(BaseElement) {
     }
 
     async _applyPath(path: string, _direction: string = "forward") {
-        // const params = new URLSearchParams(window.location.search);
-        // console.log(params.get("vault"));
-
         let match;
         if (path === "settings") {
             this._openView(this._settings);
@@ -352,7 +347,8 @@ class App extends AutoLock(BaseElement) {
                 );
 
                 if (confirmed) {
-                    checkForUpdates();
+                    // checkForUpdates();
+                    window.open("https://padlock.io/downloads/", "_blank");
                 }
                 break;
             case ErrorCode.RATE_LIMIT_EXCEEDED:

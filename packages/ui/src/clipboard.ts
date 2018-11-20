@@ -1,11 +1,11 @@
-import { Record, Field } from "@padlock/core/lib/data.js";
+import { VaultItem, Field } from "@padlock/core/lib/vault.js";
 import "./elements/clipboard";
 import { Clipboard } from "./elements/clipboard.js";
 import { getSingleton } from "./singleton.js"
 
-export function setClipboard(record: Record, field: Field, duration?: number) {
+export function setClipboard(item: VaultItem, field: Field, duration?: number) {
     const singleton = getSingleton("pl-clipboard") as Clipboard;
-    return singleton.set(record, field, duration);
+    return singleton.set(item, field, duration);
 }
 
 export function clearClipboard() {

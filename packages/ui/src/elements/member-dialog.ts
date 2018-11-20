@@ -1,36 +1,36 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { Vault } from "@padlock/core/lib/vault.js";
 import { VaultMember } from "@padlock/core/lib/vault.js";
-import { shared, mixins } from "../styles";
+import { shared } from "../styles";
 import { app } from "../init.js";
 import { confirm } from "../dialog.js";
-import { BaseElement, element, html, property, query, listen } from "./base.js";
+import { element, html, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { ToggleButton } from "./toggle-button.js";
 import { LoadingButton } from "./loading-button.js";
 import "./fingerprint.js";
 
 @element("pl-member-dialog")
-export class MemberDialog extends BaseElement {
-    @property() vault: Vault | null = null;
-    @property() member: VaultMember | null = null;
-    @property() private _loading = false;
+export class MemberDialog extends Dialog<{ member: VaultMember; vault: Vault }, void> {
+    @property()
+    vault: Vault | null = null;
+    @property()
+    member: VaultMember | null = null;
+    @property()
+    private _loading = false;
 
-    @query("pl-dialog") private _dialog: Dialog;
-    @query("#permRead") private _permRead: ToggleButton;
-    @query("#permWrite") private _permWrite: ToggleButton;
-    @query("#permManage") private _permManage: ToggleButton;
-    @query("#approveButton") private _approveButton: LoadingButton;
-    @query("#rejectButton") private _rejectButton: LoadingButton;
+    @query("#permRead")
+    private _permRead: ToggleButton;
+    @query("#permWrite")
+    private _permWrite: ToggleButton;
+    @query("#permManage")
+    private _permManage: ToggleButton;
+    @query("#approveButton")
+    private _approveButton: LoadingButton;
+    @query("#rejectButton")
+    private _rejectButton: LoadingButton;
 
-    private _resolve: (() => void) | null;
-
-    private _done() {
-        this._resolve && this._resolve();
-        this._dialog.open = false;
-    }
-
-    async show(member: VaultMember, vault: Vault): Promise<number> {
+    async show({ member, vault }: { member: VaultMember; vault: Vault }): Promise<void> {
         this.member = member;
         this.vault = vault;
         await this.updateComplete;
@@ -38,10 +38,7 @@ export class MemberDialog extends BaseElement {
         this._permWrite.active = member.permissions.write;
         this._permManage.active = member.permissions.manage;
         this.requestUpdate();
-        this._dialog.open = true;
-        return new Promise<number>(resolve => {
-            this._resolve = resolve;
-        });
+        return super.show();
     }
 
     @listen("change")
@@ -51,7 +48,7 @@ export class MemberDialog extends BaseElement {
 
     async _rejectMember() {
         if (!this.vault!.isMember(this.member!)) {
-            this._done();
+            this.done();
             return;
         }
 
@@ -59,9 +56,9 @@ export class MemberDialog extends BaseElement {
             return;
         }
 
-        this._dialog.open = false;
+        this.open = false;
         const confirmed = await confirm($l("Are you sure you want to remove this user from this vault?"));
-        this._dialog.open = false;
+        this.open = false;
 
         if (!confirmed) {
             return;
@@ -70,20 +67,9 @@ export class MemberDialog extends BaseElement {
         this._loading = true;
         this._rejectButton.start();
         try {
-            // TODO: Implement removing members
-            // if (status === "active" || status === "invited") {
-            //     await app.revokeAccess(this.vault!, this.member!);
-            // } else if (status === "requested") {
-            //     await app.updateAccess(
-            //         this.vault!,
-            //         this.member!,
-            //         { read: false, write: false, manage: false },
-            //         "rejected" as MemberStatus
-            //     );
-            // }
             this._rejectButton.success();
             this._loading = false;
-            this._done();
+            this.done();
         } catch (e) {
             this._rejectButton.fail();
             this._loading = false;
@@ -98,14 +84,17 @@ export class MemberDialog extends BaseElement {
         this._loading = true;
         this._approveButton.start();
         try {
-            await this.vault!.updateMember(this.member!, "active", {
-                read: this._permRead.active,
-                write: this._permWrite.active,
-                manage: this._permManage.active
+            await this.vault!.members.update({
+                ...this.member!,
+                permissions: {
+                    read: this._permRead.active,
+                    write: this._permWrite.active,
+                    manage: this._permManage.active
+                }
             });
             this._approveButton.success();
             this._loading = false;
-            this._done();
+            this.done();
         } catch (e) {
             this._approveButton.fail();
             this._loading = false;
@@ -117,7 +106,7 @@ export class MemberDialog extends BaseElement {
         return !!this.vault && !!this.member;
     }
 
-    render() {
+    renderContent() {
         const vault = this.vault!;
         const member = this.member!;
         const _loading = this._loading;
@@ -140,13 +129,6 @@ export class MemberDialog extends BaseElement {
         ${shared}
 
         <style>
-
-            :host {
-                --pl-dialog-inner: {
-                    ${mixins.gradientHighlight()}
-                };
-            }
-
             .header {
                 padding: 20px;
                 display: flex;
@@ -257,90 +239,86 @@ export class MemberDialog extends BaseElement {
 
         </style>
 
-        <pl-dialog @dialog-dismiss=${() => this._done()}>
+        <div>
+
+            <pl-icon class="close-icon tap" icon="close" @click=${() => this.done()}></pl-icon>
+
+            <pl-fingerprint key="${publicKey}"></pl-fingerprint>
+
+            <div class="fingerprint-hint">${$l("What is this?")}</div>
 
             <div>
 
-                <pl-icon class="close-icon tap" icon="close" @click=${() => this._done()}></pl-icon>
+                <div class="name">${name}</div>
 
-                <pl-fingerprint key="${publicKey}"></pl-fingerprint>
-
-                <div class="fingerprint-hint">${$l("What is this?")}</div>
-
-                <div>
-
-                    <div class="name">${name}</div>
-
-                    <div class="email">${email}</div>
-
-                </div>
+                <div class="email">${email}</div>
 
             </div>
 
-            <div class="tags">
-                <div class="vault tag">
-                    <pl-icon icon="vault"></pl-icon>
-                    <div>${vaultName}</div>
-                </div>
+        </div>
+
+        <div class="tags">
+            <div class="vault tag">
+                <pl-icon icon="vault"></pl-icon>
+                <div>${vaultName}</div>
             </div>
+        </div>
 
-            <div class="permissions-label">${$l("Permissions:")}</div>
+        <div class="permissions-label">${$l("Permissions:")}</div>
 
-            <div class="permissions tags">
+        <div class="permissions tags">
 
-                <pl-toggle-button
-                    class="tag tap"
-                    id="permRead"
-                    label="${$l("read")}"
-                    ?disabled=${disableControls}
-                    reverse>
-                </pl-toggle-button>
+            <pl-toggle-button
+                class="tag tap"
+                id="permRead"
+                label="${$l("read")}"
+                ?disabled=${disableControls}
+                reverse>
+            </pl-toggle-button>
 
-                <pl-toggle-button
-                    class="tag tap"
-                    id="permWrite"
-                    label="${$l("write")}"
-                    ?disabled=${disableControls}
-                    reverse>
-                </pl-toggle-button>
+            <pl-toggle-button
+                class="tag tap"
+                id="permWrite"
+                label="${$l("write")}"
+                ?disabled=${disableControls}
+                reverse>
+            </pl-toggle-button>
 
-                <pl-toggle-button
-                    class="tag tap"
-                    id="permManage"
-                    label="${$l("manage")}"
-                    ?disabled=${disableControls}
-                    reverse>
-                </pl-toggle-button>
+            <pl-toggle-button
+                class="tag tap"
+                id="permManage"
+                label="${$l("manage")}"
+                ?disabled=${disableControls}
+                reverse>
+            </pl-toggle-button>
 
-            </div>
+        </div>
 
-            <div class="buttons tiles tiles-2">
+        <div class="buttons tiles tiles-2">
 
-                <pl-loading-button
-                    id="approveButton"
-                    ?disabled=${disableControls || _loading || (isMember && !permsChanged)}
-                    @click=${() => this._approveMember()}>
+            <pl-loading-button
+                id="approveButton"
+                ?disabled=${disableControls || _loading || (isMember && !permsChanged)}
+                @click=${() => this._approveMember()}>
 
-                    <pl-icon icon="${approveIcon}"></pl-icon>
+                <pl-icon icon="${approveIcon}"></pl-icon>
 
-                    <div>${approveLabel}</div>
+                <div>${approveLabel}</div>
 
-                </pl-loading-button>
+            </pl-loading-button>
 
-                <pl-loading-button
-                    id="rejectButton"
-                    ?disabled=${disableControls || _loading}
-                    @click=${() => this._rejectMember()}>
+            <pl-loading-button
+                id="rejectButton"
+                ?disabled=${disableControls || _loading}
+                @click=${() => this._rejectMember()}>
 
-                    <pl-icon icon="${rejectIcon}"></pl-icon>
+                <pl-icon icon="${rejectIcon}"></pl-icon>
 
-                    <div>${rejectLabel}</div>
+                <div>${rejectLabel}</div>
 
-                </pl-loading-button>
+            </pl-loading-button>
 
-            </div>
-
-        </pl-dialog>
+        </div>
 `;
     }
 }

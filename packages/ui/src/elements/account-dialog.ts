@@ -2,27 +2,22 @@ import { localize as $l } from "@padlock/core/lib/locale.js";
 import { AccountInfo } from "@padlock/core/lib/account.js";
 import { shared, mixins } from "../styles";
 import { app } from "../init.js";
-import { BaseElement, element, html, property, query } from "./base.js";
+import { element, html, property } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./fingerprint.js";
 
 @element("pl-account-dialog")
-export class AccountDialog extends BaseElement {
+export class AccountDialog extends Dialog<AccountInfo, void> {
     @property()
     account: AccountInfo | null = null;
     @property()
     action: string = "";
 
-    @query("pl-dialog")
-    private _dialog: Dialog;
-
-    private _resolve: ((doAction: boolean) => void) | null;
-
     shouldUpdate() {
         return !!this.account;
     }
 
-    render() {
+    renderContent() {
         const account = this.account!;
         const { id, email, name, publicKey } = account;
         const isOwnAccount = app.account && app.account.id === id;
@@ -109,60 +104,48 @@ export class AccountDialog extends BaseElement {
 
         </style>
 
-        <pl-dialog @dialog-dismiss=${() => this._done()}>
+        <pl-icon class="close-icon tap" icon="close" @click=${() => this.done()}></pl-icon>
 
-            <pl-icon class="close-icon tap" icon="close" @click=${() => this._done()}></pl-icon>
+        <pl-fingerprint .key=${publicKey}></pl-fingerprint>
 
-            <pl-fingerprint .key=${publicKey}></pl-fingerprint>
+        <div class="fingerprint-hint">${$l("What is this?")}</div>
 
-            <div class="fingerprint-hint">${$l("What is this?")}</div>
+        <div>
 
-            <div>
+            <div class="name">${name}</div>
 
-                <div class="name">${name}</div>
+            <div class="email">${email}</div>
 
-                <div class="email">${email}</div>
+            <div class="tags small">
 
-                <div class="tags small">
+                <div class="tag" ?hidden=${!isOwnAccount}>
 
-                    <div class="tag" ?hidden=${!isOwnAccount}>
+                    <pl-icon icon="user"></pl-icon>
 
-                        <pl-icon icon="user"></pl-icon>
+                    <div>${$l("This Is You")}</div>
 
-                        <div>${$l("This Is You")}</div>
-
-                    </div>
-
-                    ${app.vaults.filter(s => s.isMember(account!)).map(
-                        s => html`
-                            <div class="tag">
-
-                                <pl-icon icon="group"></pl-icon>
-
-                                <div>${s.name}</div>
-
-                            </div>`
-                    )}
                 </div>
 
+                ${app.vaults.filter(s => s.isMember(account!)).map(
+                    s => html`
+                        <div class="tag">
+
+                            <pl-icon icon="group"></pl-icon>
+
+                            <div>${s.name}</div>
+
+                        </div>`
+                )}
             </div>
 
-        </pl-dialog>
+        </div>
 `;
-    }
-
-    private _done(doAction = false) {
-        this._resolve && this._resolve(doAction);
-        this._dialog.open = false;
     }
 
     async show(account: AccountInfo, action = "") {
         this.account = account;
         this.action = action;
         await this.updateComplete;
-        this._dialog.open = true;
-        return new Promise(resolve => {
-            this._resolve = resolve;
-        });
+        return super.show();
     }
 }

@@ -28,11 +28,12 @@ export class AccountView extends View {
     }
 
     render() {
-        const { stats, sessions } = app;
+        const { stats } = app;
         const account = app.account!;
+        const sessions = [...account.sessions];
         const isSynching = false;
         const lastSync = stats.lastSync && formatDateFromNow(stats.lastSync);
-        const vaults = app.vaults.filter(s => s.isMember(account) && s.id !== account.vault);
+        const vaults = app.vaults;
 
         return html`
         ${shared}
@@ -204,8 +205,7 @@ export class AccountView extends View {
                 </div>
 
                 ${vaults.map(vault => {
-                    const { members, name, collection } = vault;
-                    const currMember = vault.getMember(account)!;
+                    const { members, name, items } = vault;
                     return html`
                     <div class="vault tap" @click=${() => this._openVault(vault)}>
 
@@ -217,7 +217,7 @@ export class AccountView extends View {
 
                                 <pl-icon icon="group"></pl-icon>
 
-                                <div>${members.filter(m => m.status === "active").length}</div>
+                                <div>${members.size}</div>
 
                             </div>
 
@@ -225,28 +225,13 @@ export class AccountView extends View {
 
                                 <pl-icon icon="record"></pl-icon>
 
-                                <div>${collection.size}</div>
-
-                            </div>
-
-                            <div class="tag warning" ?hidden=${currMember.status !== "removed"}>
-
-                                <pl-icon icon="removeuser"></pl-icon>
-
-                                <div>${$l("access revoked")}</div>
+                                <div>${items.size}</div>
 
                             </div>
 
                         </div>
 
                         <div class="spacer"></div>
-
-                        <pl-toggle
-                            ?hidden=${currMember.status !== "active"}
-                            .active=${!app.settings.hideVaults.includes(vault.id)}
-                            @click=${(e: Event) => this._toggleVault(vault, e)}></pl-toggle>
-
-                        <pl-icon icon="forward" ?hidden=${currMember.status === "active"}></pl-icon>
 
                     </div>
                 `;
@@ -323,11 +308,6 @@ export class AccountView extends View {
 
     private async _openVault(vault: Vault) {
         router.go(`vault/${vault.id}`);
-    }
-
-    private _toggleVault(vault: Vault, e: Event) {
-        app.toggleVault(vault);
-        e && e.stopPropagation();
     }
 
     private async _createVault() {

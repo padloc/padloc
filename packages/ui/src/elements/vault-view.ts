@@ -93,7 +93,6 @@ export class VaultView extends BaseElement {
         }
 
         const invite = await app.createInvite(this.vault!, email);
-        console.log(invite);
         await this._inviteDialog.show(invite);
     }
 

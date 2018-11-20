@@ -2,10 +2,8 @@ import { Vault } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { CSV, ImportFormat } from "../import.js";
 import { supportedFormats, asCSV } from "../export.js";
-import { passwordStrength } from "../util.js";
-import { prompt, alert } from "../dialog.js";
 import { app } from "../init.js";
-import { element, html, query, property } from "./base.js";
+import { element, html, query } from "./base.js";
 import { Select } from "./select.js";
 import { Dialog } from "./dialog.js";
 

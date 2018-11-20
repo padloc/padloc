@@ -16,8 +16,6 @@ export interface Platform {
     setClipboard(val: string): Promise<void>;
     getClipboard(): Promise<string>;
     getDeviceInfo(): Promise<DeviceInfo>;
-    checkForUpdates(): Promise<void>;
-    getReviewLink(rating: number): Promise<string>;
 }
 
 class DummyPlatform implements Platform {
@@ -60,14 +58,6 @@ export function setClipboard(val: string) {
 
 export function getDeviceInfo() {
     return platform.getDeviceInfo();
-}
-
-export function checkForUpdates() {
-    return platform.checkForUpdates();
-}
-
-export function getReviewLink(rating: number) {
-    return platform.getReviewLink(rating);
 }
 
 export function deviceDescription(device?: DeviceInfo) {

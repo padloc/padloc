@@ -47,11 +47,4 @@ export class WebPlatform implements Platform {
             locale: navigator.language || "en"
         };
     }
-
-    // TODO
-    async checkForUpdates() {}
-
-    async getReviewLink() {
-        return "";
-    }
 }
