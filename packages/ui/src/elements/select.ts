@@ -66,5 +66,6 @@ export class Select<T> extends BaseElement {
 
     _changed() {
         this.selected = this.options[this._select.selectedIndex];
+        this.dispatch("change");
     }
 }

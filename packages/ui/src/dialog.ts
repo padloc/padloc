@@ -1,5 +1,4 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { VaultItem, Field } from "@padlock/core/lib/data.js";
 import { BaseElement } from "./elements/base.js";
 import "./elements/generator.js";
 import "./elements/alert-dialog.js";
@@ -8,8 +7,6 @@ import "./elements/export-dialog.js";
 import "./elements/field-dialog.js";
 import { AlertDialog, AlertOptions } from "./elements/alert-dialog.js";
 import { PromptDialog, PromptOptions } from "./elements/prompt-dialog.js";
-import { ExportDialog } from "./elements/export-dialog.js";
-import { FieldDialog, FieldDialogResult } from "./elements/field-dialog.js";
 import { getSingleton } from "./singleton.js";
 
 let lastDialogPromise = Promise.resolve();
@@ -120,18 +117,6 @@ export function promptForgotPassword() {
             )
         );
     });
-}
-
-export function exportRecords(records: VaultItem[]) {
-    const dialog = getSingleton("pl-export-dialog") as ExportDialog;
-    dialog.show(records);
-}
-
-export async function openField(field: Field, edit = false, presets = {}, readonly?: boolean) {
-    const result = (await lineUpDialog("pl-field-dialog", (d: FieldDialog) =>
-        d.openField(field, edit, presets, readonly)
-    )) as FieldDialogResult;
-    return result;
 }
 
 export function dialog(name: string) {

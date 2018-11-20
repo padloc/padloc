@@ -1,7 +1,6 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { checkForUpdates } from "@padlock/core/lib/platform.js";
 import { shared, mixins } from "../styles";
-import { promptPassword, alert, confirm, prompt, exportRecords, dialog } from "../dialog";
+import { promptPassword, alert, confirm, prompt, dialog } from "../dialog";
 import { app } from "../init.js";
 import { element, html, query, listen } from "./base.js";
 import { View } from "./view.js";
@@ -9,6 +8,7 @@ import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 import { ImportDialog } from "./import-dialog.js";
+import { ExportDialog } from "./export-dialog.js";
 
 @element("pl-settings")
 export class Settings extends View {
@@ -17,6 +17,9 @@ export class Settings extends View {
 
     @dialog("pl-import-dialog")
     _importDialog: ImportDialog;
+
+    @dialog("pl-export-dialog")
+    _exportDialog: ExportDialog;
 
     @listen("settings-changed", app)
     @listen("account-changed", app)
@@ -268,60 +271,13 @@ export class Settings extends View {
 
     private async _import() {
         this._fileInput.click();
-        // const options = [$l("From Clipboard")];
-        // // TODO
-        // // if (!isCordova()) {
-        // //     options.push($l("From File"));
-        // // }
-        // const choice = await choose($l("Please choose an import method!"), options, {
-        //     preventDismiss: false,
-        //     type: "question"
-        // });
-        // switch (choice) {
-        //     case 0:
-        //         this._importFromClipboard();
-        //         break;
-        //     case 1:
-        //         this._fileInput.click();
-        //         break;
-        // }
     }
 
     private async _importFile() {
         const file = this._fileInput.files![0];
         const reader = new FileReader();
         reader.onload = async () => {
-            // try {
             await this._importDialog.show(reader.result as string);
-            // } catch (e) {
-            //     switch (e.code) {
-            //         case "decryption_failed":
-            //             alert($l("Failed to open file. Did you enter the correct password?"), { type: "warning" });
-            //             break;
-            //         case "unsupported_container_version":
-            //             const confirmed = await confirm(
-            //                 $l(
-            //                     "It seems the data you are trying to import was exported from a " +
-            //                         "newer version of Padlock and can not be opened with the version you are " +
-            //                         "currently running."
-            //                 ),
-            //                 $l("Check For Updates"),
-            //                 $l("Cancel"),
-            //                 { type: "info" }
-            //             );
-            //             if (confirmed) {
-            //                 checkForUpdates();
-            //             }
-            //             break;
-            //         case "invalid_csv":
-            //             alert($l("Failed to recognize file format."), { type: "warning" });
-            //             break;
-            //         default:
-            //             alert($l("Failed to open file."), { type: "warning" });
-            //             throw e;
-            //     }
-            // }
-
             this._fileInput.value = "";
         };
 
@@ -329,6 +285,6 @@ export class Settings extends View {
     }
 
     private _export() {
-        exportRecords(Array.from(app.mainVault!.items));
+        this._exportDialog.show();
     }
 }

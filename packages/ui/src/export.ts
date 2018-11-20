@@ -1,21 +1,21 @@
-import { Record } from "@padlock/core/lib/data.js";
-import { loadPapa } from "./import";
+import { VaultItem } from "@padlock/core/lib/vault.js";
+import { PBES2Container } from "@padlock/core/lib/crypto.js";
+import { loadPapa, ImportFormat, CSV } from "./import.js";
 
-function recordsToTable(records: Record[]) {
+export const supportedFormats: ImportFormat[] = [CSV];
+export { CSV } from "./import.js";
+
+function itemsToTable(items: VaultItem[]) {
     // Array of column names
     let cols = ["name", "tags"];
     // Column indizes associated with field/column names
     let colInds = {};
     // Two dimensional array, starting with column names
     let table = [cols];
-    // Filter out removed items
-    records = records.filter(function(rec) {
-        return !rec.removed;
-    });
 
     // Fill up columns array with distinct field names
-    for (let rec of records) {
-        for (let field of rec.fields) {
+    for (let item of items) {
+        for (let field of item.fields) {
             if (!colInds[field.name]) {
                 colInds[field.name] = cols.length;
                 cols.push(field.name);
@@ -33,18 +33,18 @@ function recordsToTable(records: Record[]) {
         return row;
     }
 
-    // Add a row for each record
-    records.forEach(function(rec) {
-        // Create an empty row to be filled with record name, category and field values
+    // Add a row for each item
+    items.forEach(function(item) {
+        // Create an empty row to be filled with item name, category and field values
         var row = emptyRow();
-        // Record name and category are always the first and second column respectively
-        row[0] = rec.name;
-        row[1] = rec.tags.join(",");
+        // VaultItem name and category are always the first and second column respectively
+        row[0] = item.name;
+        row[1] = item.tags.join(",");
 
-        // Fill up columns with corrensponding field values if the fields exist on the record. All
+        // Fill up columns with corrensponding field values if the fields exist on the item. All
         // other columns remain empty
-        rec.fields.forEach(function(rec) {
-            row[colInds[rec.name]] = rec.value;
+        item.fields.forEach(function(item) {
+            row[colInds[item.name]] = item.value;
         });
 
         // Add row to table
@@ -54,16 +54,23 @@ function recordsToTable(records: Record[]) {
     return table;
 }
 
-export async function toCSV(records: Record[]): Promise<string> {
+export async function asCSV(items: VaultItem[]): Promise<string> {
     const papa = await loadPapa();
-    return papa.unparse(recordsToTable(records));
+    return papa.unparse(itemsToTable(items));
 }
 
-export async function toPadlock(_records: Record[], _password: string): Promise<string> {
-    // TODO
-    throw "Not implemented";
-    // const store = new AccountStore(new Account(), true, records);
-    // store.password = password;
-    // const data = await store.serialize();
-    // return marshal(data);
+export async function asPBES2Container(items: VaultItem[], password: string): Promise<string> {
+    const container = new PBES2Container();
+    container.password = password;
+
+    await container.set({
+        async serialize() {
+            return { items };
+        },
+        async deserialize() {
+            return this;
+        }
+    });
+
+    return await container.serialize();
 }
