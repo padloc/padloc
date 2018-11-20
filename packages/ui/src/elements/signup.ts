@@ -10,13 +10,19 @@ import { alert, choose, prompt } from "../dialog.js";
 
 @element("pl-signup")
 export class Signup extends StartForm {
-    @property() private _weakPassword = false;
+    @property()
+    private _weakPassword = false;
 
-    @query("#emailInput") private _emailInput: Input;
-    @query("#nameInput") private _nameInput: Input;
-    @query("#passwordInput") private _passwordInput: Input;
-    @query("#repeatPasswordInput") private _repeatPasswordInput: Input;
-    @query("#submitButton") private _submitButton: LoadingButton;
+    @query("#emailInput")
+    private _emailInput: Input;
+    @query("#nameInput")
+    private _nameInput: Input;
+    @query("#passwordInput")
+    private _passwordInput: Input;
+    @query("#repeatPasswordInput")
+    private _repeatPasswordInput: Input;
+    @query("#submitButton")
+    private _submitButton: LoadingButton;
 
     reset() {
         this._emailInput.value = "";
@@ -36,7 +42,7 @@ export class Signup extends StartForm {
 
                 .title {
                     font-size: 140%;
-                    margin-bottom: 30px;
+                    margin: 30px;
                     position: relative;
                 }
 
@@ -61,6 +67,10 @@ export class Signup extends StartForm {
                     padding: 0;
                 }
 
+                #submitButton {
+                    margin-bottom: 30px;
+                }
+
                 // pl-input:not([focused]) + .hint {
                 //     transition-duration: 0.1s;
                 //     max-height: 0;
@@ -71,7 +81,7 @@ export class Signup extends StartForm {
 
             <form>
 
-                <div class="title">
+                <div class="title animate">
 
                     <div>${$l("Create Account")}</div>
 
@@ -84,11 +94,11 @@ export class Signup extends StartForm {
                     type="email"
                     required
                     .label=${$l("Email Address")}
-                    class="tiles-2"
+                    class="tiles-2 animate tap"
                     @enter=${() => this._submit()}>
                 </pl-input>
 
-                <div class="hint">
+                <div class="hint animate">
                     ${$l(
                         "Your email address serves as your username and allows us to get in touch with you. " +
                             "Don't worry, no spam!"
@@ -98,11 +108,11 @@ export class Signup extends StartForm {
                 <pl-input
                     id="nameInput"
                     .label=${$l("Your Name")}
-                    class="tiles-2"
+                    class="tiles-2 animate tap"
                     @enter=${() => this._submit()}>
                 </pl-input>
 
-                <div class="hint">
+                <div class="hint animate">
                     ${$l("What should we call you?")}
                 </div>
 
@@ -111,14 +121,14 @@ export class Signup extends StartForm {
                     type="password"
                     required
                     .label=${$l("Master Password")}
-                    class="tiles-2"
+                    class="tiles-2 animate tap"
                     @change=${() => this._updatePwdStrength()}
                     @enter=${() => this._submit()}>
                 </pl-input>
 
-                <div class="hint warning" ?hidden=${!_weakPassword}>${$l("WARNING: Weak Password!")}</div>
+                <div class="hint warning animate" ?hidden=${!_weakPassword}>${$l("WARNING: Weak Password!")}</div>
 
-                <div class="hint">
+                <div class="hint animate">
                     ${$l(
                         "Your master password is a single passphrase used to protect your data. " +
                             "Without it, nobody will be able to access your data - not even us!"
@@ -130,11 +140,11 @@ export class Signup extends StartForm {
                     type="password"
                     required
                     .label=${$l("Repeat Master Password")}
-                    class="tiles-2"
+                    class="tiles-2 animate tap"
                     @enter=${() => this._submit()}>
                 </pl-input>
 
-                <div class="hint">
+                <div class="hint animate">
                     ${$l(
                         "Don't forget your master password! For privacy and security reasons we don't keep " +
                             "a record of you password which means we won't be able to help you recover your " +
@@ -142,7 +152,7 @@ export class Signup extends StartForm {
                     )}
                 </div>
 
-                <pl-loading-button id="submitButton" class="tap tiles-3" @click=${() => this._submit()}>
+                <pl-loading-button id="submitButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
                     ${$l("Submit")}
                 </pl-loading-button>
 

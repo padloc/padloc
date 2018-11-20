@@ -34,17 +34,8 @@ export const sharedStyles = html`
             margin: 10px;
         }
 
-        .logo {
-            width: 90px;
-            height: 90px;
-            font-size: 125%;
-        }
-
-        .title {
-            font-size: 250%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        pl-logo {
+            margin: 30px auto;
         }
 
         pl-loading-button {
@@ -56,7 +47,7 @@ export const sharedStyles = html`
 
 export abstract class StartForm extends BaseElement {
     reset() {
-        animateCascade(this.$$("form > *"), {
+        animateCascade(this.$$(".animate"), {
             animation: "reveal",
             duration: 1000,
             fullDuration: 1500,
@@ -68,7 +59,7 @@ export abstract class StartForm extends BaseElement {
     }
 
     done() {
-        animateCascade(this.$$("form > *"), {
+        animateCascade(this.$$(".animate"), {
             animation: "fade",
             duration: 400,
             fullDuration: 600,

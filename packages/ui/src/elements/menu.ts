@@ -4,6 +4,7 @@ import { localize as $l } from "@padlock/core/lib/locale.js";
 import { app, router } from "../init.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, property, html, listen } from "./base.js";
+import "./logo.js";
 
 @element("pl-menu")
 export class Menu extends BaseElement {
@@ -89,20 +90,10 @@ export class Menu extends BaseElement {
                 font-size: 80%;
             }
 
-            .logo {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 150%;
-                color: rgba(0, 0, 0, 0.3);
-                padding: 10px;
-                margin-bottom: 10px;
-            }
-
-            .logo .version {
-                font-weight: normal;
-                padding: 0 5px;
-                font-size: var(--font-size-tiny);
+            pl-logo {
+                height: 30px;
+                margin: 15px 0 20px 0;
+                opacity: 0.25;
             }
 
             .no-tags {
@@ -123,15 +114,7 @@ export class Menu extends BaseElement {
             }
         </style>
 
-        <div class="logo">
-
-            <pl-icon icon="logo"></pl-icon>
-
-            <div>Padlock</div>
-
-            <div class="version">v3.0</div>
-
-        </div>
+        <pl-logo></pl-logo>
 
         <nav>
 

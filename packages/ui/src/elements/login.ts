@@ -6,12 +6,16 @@ import { StartForm, sharedStyles } from "./start-form.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
 import { alert } from "../dialog.js";
+import "./logo.js";
 
 @element("pl-login")
 export class Login extends StartForm {
-    @query("#emailInput") private _emailInput: Input;
-    @query("#passwordInput") private _passwordInput: Input;
-    @query("#loginButton") private _loginButton: LoadingButton;
+    @query("#emailInput")
+    private _emailInput: Input;
+    @query("#passwordInput")
+    private _passwordInput: Input;
+    @query("#loginButton")
+    private _loginButton: LoadingButton;
 
     async reset() {
         await this.updateComplete;
@@ -48,17 +52,14 @@ export class Login extends StartForm {
 
             <form>
 
-                <div class="title">
-                    <pl-icon class="logo" icon="logo"></pl-icon>
-                    <div>Padlock</div>
-                </div>
+                <pl-logo class="animate"></pl-logo>
 
                 <pl-input
                     id="emailInput"
                     type="email"
                     required
                     .label=${$l("Email Adress")}
-                    class="tiles-2"
+                    class="tiles-2 animate tap"
                     @enter=${() => this._submit()}>
                 </pl-input>
 
@@ -67,21 +68,22 @@ export class Login extends StartForm {
                     type="password"
                     required
                     .label=${$l("Master Password")}
-                    class="tiles-2"
+                    class="tiles-2 animate tap"
                     @enter=${() => this._submit()}>
                 </pl-input>
 
-                <pl-loading-button id="loginButton" class="tap tiles-3" @click=${() => this._submit()}>
+                <pl-loading-button id="loginButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
                     ${$l("Login")}
                 </pl-loading-button>
 
-                <div class="hint">
+                <div class="hint animate">
                     ${$l("New to Padlock?")}
                 </div>
 
                 <button
                     type="button"
-                    class="tap signup" @click=${() => this.dispatch("signup")}>
+                    class="tap signup animate"
+                    @click=${() => this.dispatch("signup")}>
                         ${$l("Sign Up Now")}
                 </button>
 
