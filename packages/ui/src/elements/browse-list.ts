@@ -3,6 +3,7 @@ import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { repeat } from "lit-html/directives/repeat.js";
+import { when } from "lit-html/directives/when.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { dialog } from "../dialog.js";
@@ -456,15 +457,20 @@ export class BrowseList extends BaseElement {
 
         return html`
 
-            <div class="section-header" ?hidden=${!item.firstInSection}>
+            ${when(
+                item.firstInSection,
+                () => html`
+                <div class="section-header" ?hidden=${!item.firstInSection}>
 
-                <div>${item.section}</div>
+                    <div>${item.section}</div>
 
-                <div class="spacer"></div>
+                    <div class="spacer"></div>
 
-                <div>${item.section}</div>
+                    <div>${item.section}</div>
 
-            </div>
+                </div>`,
+                () => html``
+            )}
 
             <div class="item"
                 ?selected=${item.item.id === this.selected}
@@ -480,10 +486,7 @@ export class BrowseList extends BaseElement {
                         <div class="tags small">
                             ${tags.map(
                                 tag => html`
-                                    <div class="ellipsis tag ${tag.class}">
-                                        <pl-icon icon=${tag.icon}></pl-icon>
-                                        <div>${tag.name}</div>
-                                    </div>
+                                    <div class="ellipsis tag ${tag.class}">${tag.name}</div>
                                 `
                             )}
                         </div>

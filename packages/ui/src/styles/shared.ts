@@ -367,8 +367,7 @@ export const shared = html`
     }
 
     .tag {
-        background: var(--color-foreground);
-        // color: var(--color-background);
+        color: var(--color-background);
         font-weight: bold;
         border-radius: var(--border-radius);
         font-size: var(--font-size-tiny);
@@ -377,8 +376,7 @@ export const shared = html`
         line-height: 30px;
         padding: 0 8px;
         text-align: center;
-        // ${mixins.gradientDark(true)}
-        background: #ddd;
+        ${mixins.gradientDark(true)}
     }
 
     .tag:not(:last-child) {
