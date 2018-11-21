@@ -2,6 +2,7 @@ import { VaultItem, Field } from "@padlock/core/lib/vault.js";
 import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";
+import { repeat } from "lit-html/directives/repeat.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { dialog } from "../dialog.js";
@@ -312,7 +313,7 @@ export class BrowseList extends BaseElement {
 
         <main id="main">
 
-            ${this._listItems.map((_: any, index: number) => this._renderItem(index))}
+            ${repeat(this._listItems, item => item.id, (_: any, index: number) => this._renderItem(index))}
 
         </main>
 
