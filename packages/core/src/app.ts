@@ -500,7 +500,7 @@ export class App extends EventTarget implements Storable {
 
     async addItems(items: VaultItem[], vault: Vault = this.mainVault!) {
         vault.items.update(...items);
-        await this.storage.set(vault);
+        this.storage.set(vault);
         this.dispatch("items-added", { vault, items });
         this.syncVault(vault);
     }
@@ -515,9 +515,8 @@ export class App extends EventTarget implements Storable {
         if (this.account) {
             item.updatedBy = this.account.id;
         }
-        await this.addItems([item], vault);
+        this.addItems([item], vault);
         this.dispatch("item-created", { vault, item });
-        this.syncVault(vault);
         return item;
     }
 
@@ -531,16 +530,16 @@ export class App extends EventTarget implements Storable {
         if (this.account) {
             item.updatedBy = this.account.id;
         }
-        await this.storage.set(vault);
+        this.dispatch("item-changed", { vault, item });
+        this.storage.set(vault);
         this.syncVault(vault);
-        this.dispatch("item-changed", { vault: vault, item: item });
     }
 
     async deleteItems(vault: Vault, items: VaultItem[]) {
         vault.items.remove(...items);
-        await this.storage.set(vault);
+        this.dispatch("vault-changed", { vault });
+        this.storage.set(vault);
         this.syncVault(vault);
-        this.dispatch("vault-changed", { vault: vault });
     }
 
     // INVITES
@@ -548,6 +547,7 @@ export class App extends EventTarget implements Storable {
     async createInvite(vault: Vault, email: string) {
         const invite = await vault.createInvite(email);
         await vault.invites.update(invite);
+        this.dispatch("invite-created", { invite });
         await this.syncVault(vault);
         return invite;
     }
