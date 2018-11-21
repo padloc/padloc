@@ -9,6 +9,7 @@ import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 import { ImportDialog } from "./import-dialog.js";
 import { ExportDialog } from "./export-dialog.js";
+import "./fingerprint.js";
 
 @element("pl-settings")
 export class Settings extends View {

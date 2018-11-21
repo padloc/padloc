@@ -1,4 +1,4 @@
-import { VaultItem, Field } from "@padlock/core/lib/data.js";
+import { VaultItem, Field } from "@padlock/core/lib/vault.js";
 import { setClipboard } from "@padlock/core/lib/platform.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { shared, mixins } from "../styles";

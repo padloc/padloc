@@ -3,8 +3,6 @@ import { LitElement, html } from "@polymer/lit-element";
 import { UpdatingElement, PropertyDeclaration } from "@polymer/lit-element/lib/updating-element.js";
 export { html };
 
-export { TemplateResult } from "lit-html";
-
 export interface BasePrototype extends BaseElement {}
 
 export interface ListenerDeclaration {

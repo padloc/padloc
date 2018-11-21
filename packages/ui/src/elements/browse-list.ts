@@ -1,6 +1,4 @@
-import { when } from "lit-html/directives/when.js";
-import { Field } from "@padlock/core/lib/data.js";
-import { VaultItem } from "@padlock/core/lib/vault.js";
+import { VaultItem, Field } from "@padlock/core/lib/vault.js";
 import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";
@@ -11,7 +9,6 @@ import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
 import { CreateItemDialog } from "./create-item-dialog.js";
 import { Input } from "./input.js";
-import "./share-dialog.js";
 
 @element("pl-browse-list")
 export class BrowseList extends BaseElement {
@@ -458,68 +455,63 @@ export class BrowseList extends BaseElement {
 
         return html`
 
-            ${when(
-                item.firstInSection,
-                () => html`
-                    <div class="section-header">
+            <div class="section-header" ?hidden=${!item.firstInSection}>
 
-                        <div>${item.section}</div>
+                <div>${item.section}</div>
 
-                        <div class="spacer"></div>
+                <div class="spacer"></div>
 
-                        <div>${item.section}</div>
+                <div>${item.section}</div>
 
-                    </div>`,
-                () => ""
-            )}
+            </div>
 
-                <div class="item"
-                    ?selected=${item.item.id === this.selected}
-                    @click=${() => this.selectItem(item)}
-                    index="${index}">
+            <div class="item"
+                ?selected=${item.item.id === this.selected}
+                @click=${() => this.selectItem(item)}
+                index="${index}">
 
-                        <div class="item-header">
+                    <div class="item-header">
 
-                            <div class="item-name" ?disabled=${!item.item.name}>
-                                ${item.item.name || $l("No Name")}
-                            </div>
-
-                            <div class="tags small">
-                                ${tags.map(
-                                    tag => html`
-                                        <div class="ellipsis tag ${tag.class}">
-                                            <pl-icon icon=${tag.icon}></pl-icon>
-                                            <div>${tag.name}</div>
-                                        </div>
-                                    `
-                                )}
-                            </div>
-
+                        <div class="item-name" ?disabled=${!item.item.name}>
+                            ${item.item.name || $l("No Name")}
                         </div>
 
-                        <div class="item-fields">
-
-                            ${item.item.fields.map(
-                                (f: Field, i: number) => html`
-                                    <div
-                                        class="item-field"
-                                        @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}>
-
-                                        <div class="item-field-label">${f.name}</div>
-
-                                        <div class="copied-message">${$l("copied")}</div>
-
+                        <div class="tags small">
+                            ${tags.map(
+                                tag => html`
+                                    <div class="ellipsis tag ${tag.class}">
+                                        <pl-icon icon=${tag.icon}></pl-icon>
+                                        <div>${tag.name}</div>
                                     </div>
                                 `
                             )}
-
-                            <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
-                                ${$l("No Fields")}
-                            </div>
-
                         </div>
 
-                </div>
+                    </div>
+
+                    <div class="item-fields">
+
+                        ${item.item.fields.map(
+                            (f: Field, i: number) => html`
+                                <div
+                                    class="item-field"
+                                    @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}>
+
+                                    <div class="item-field-label">${f.name}</div>
+
+                                    <div class="copied-message">${$l("copied")}</div>
+
+                                </div>
+                            `
+                        )}
+
+                        <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
+                            ${$l("No Fields")}
+                        </div>
+
+                    </div>
+
+            </div>
         `;
     }
 }
