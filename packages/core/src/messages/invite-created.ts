@@ -3,7 +3,7 @@ import { Message } from "../messenger";
 import { base as baseHTML, paragraph as p, button } from "./base-html";
 
 export class InviteCreatedMessage implements Message {
-    constructor(private invite: Invite) {}
+    constructor(private invite: Invite, private link: string) {}
 
     get title() {
         const { vault, invitor } = this.invite;
@@ -11,16 +11,14 @@ export class InviteCreatedMessage implements Message {
     }
 
     get text() {
-        const { id, vault, invitor } = this.invite;
-        const url = `https://127.0.0.1:8081/invite/${vault!.id}/${id}`;
-
+        const { vault, invitor } = this.invite;
         return `
 Hi there!
 
 You have been invited by ${invitor!.name || invitor!.email} to join his vault "${vault!.name}" on Padlock! To accept the invite,
 please visit the link below:
 
-${url}
+${this.link}
 
 If you believe you may have received this email in error, please contact us at support@padlock.io
 
@@ -29,8 +27,7 @@ Martin`;
     }
 
     get html() {
-        const { id, vault, invitor } = this.invite;
-        const url = `https://127.0.0.1:8081/invite/${vault!.id}/${id}`;
+        const { vault, invitor } = this.invite;
         return baseHTML(`
 
             ${p("Hi there!")}
@@ -39,7 +36,7 @@ Martin`;
                 You have been invited by <strong>${invitor!.name || invitor!.email}</strong> to join his vault <strong>${vault!.name}</strong> on Padlock!
             `)}
 
-            ${button(`Join ${vault!.name}`, url)}
+            ${button(`Join ${vault!.name}`, this.link)}
 
             ${p(`
                 If you believe you may have received this email in error, please contact us at <strong>support@padlock.io</strong>

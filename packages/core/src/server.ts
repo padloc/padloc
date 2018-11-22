@@ -17,12 +17,17 @@ import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, 
 
 const pendingAuths = new Map<string, SRPServer>();
 
+export interface ServerConfig {
+    clientUrl: string;
+    reportErrors: string;
+}
+
 export class Context implements API {
     session?: Session;
     account?: Account;
     device?: DeviceInfo;
 
-    constructor(public storage: Storage, public messenger: Messenger) {}
+    constructor(public config: ServerConfig, public storage: Storage, public messenger: Messenger) {}
 
     async verifyEmail({ email }: { email: string }) {
         const v = new EmailVerification(email, base64ToHex(await getProvider().randomBytes(3)), uuid());
@@ -208,7 +213,10 @@ export class Context implements API {
                 await this.storage.get(acc);
                 acc.vaults.update({ ...vault.info, updated: new Date() });
                 if (acc.id !== account.id) {
-                    this.messenger.send(member.email, new MemberAddedMessage(vault));
+                    this.messenger.send(
+                        member.email,
+                        new MemberAddedMessage(vault, `${this.config.clientUrl}/vaults/${vault.id}`)
+                    );
                 }
                 promises.push(this.storage.set(acc));
             }
@@ -222,7 +230,10 @@ export class Context implements API {
         }
 
         for (const invite of (changes.invites && changes.invites.added) || []) {
-            this.messenger.send(invite.email, new InviteCreatedMessage(invite));
+            this.messenger.send(
+                invite.email,
+                new InviteCreatedMessage(invite, `${this.config.clientUrl}/invite/${vault.id}/${invite.id}`)
+            );
         }
 
         await [...promises, this.storage.set(existing)];
@@ -300,7 +311,10 @@ export class Context implements API {
         }
 
         if (!existing.accepted && invite.invitor) {
-            this.messenger.send(invite.invitor.email, new InviteAcceptedMessage(invite));
+            this.messenger.send(
+                invite.invitor.email,
+                new InviteAcceptedMessage(invite, `${this.config.clientUrl}/invite/${vault.id}/${invite.id}`)
+            );
         }
 
         vault.invites.update(invite);
@@ -320,12 +334,12 @@ export class Context implements API {
 }
 
 export class Server {
-    constructor(private storage: Storage, private messenger: Messenger) {}
+    constructor(public config: ServerConfig, private storage: Storage, private messenger: Messenger) {}
 
     async handle(req: Request) {
         const res = { result: null };
         try {
-            const context = new Context(this.storage, this.messenger);
+            const context = new Context(this.config, this.storage, this.messenger);
             context.device = req.device;
             await this._authenticate(req, context);
             await this._process(req, res, context);
@@ -522,11 +536,13 @@ export class Server {
             };
         } else {
             console.error(e.stack);
-            this.messenger.send("support@padlock.io", {
-                title: "Padlock Error Notification",
-                text: `The following error occurred at ${new Date().toString()}:\n\n${e.stack}`,
-                html: ""
-            });
+            if (this.config.reportErrors) {
+                this.messenger.send(this.config.reportErrors, {
+                    title: "Padlock Error Notification",
+                    text: `The following error occurred at ${new Date().toString()}:\n\n${e.stack}`,
+                    html: ""
+                });
+            }
             res.error = {
                 code: ErrorCode.SERVER_ERROR,
                 message:
