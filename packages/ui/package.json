@@ -10,7 +10,8 @@
     "@polymer/lit-element": "^0.6.3",
     "@polymer/paper-spinner": "^3.0.0-pre.18",
     "@webcomponents/webcomponentsjs": "^2.0.0",
-    "autosize": "^4.0.2"
+    "autosize": "^4.0.2",
+    "lit-html": "^0.13.0"
   },
   "devDependencies": {
     "reflect-metadata": "^0.1.12"
