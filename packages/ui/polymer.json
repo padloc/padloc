@@ -8,6 +8,7 @@
    "manifest.json"
   ],
   "extraDependencies": [
+    "env.js",
     "manifest.json",
     "node_modules/@webcomponents/webcomponentsjs/**/*",
     "assets/**/*",
@@ -15,5 +16,25 @@
     "shim/**/*"
   ],
   "moduleResolution": "node",
-  "npm": true
+  "npm": true,
+  "builds": [
+    {
+      "name": "pwa",
+      "browserCapabilities": [
+        "es2017"
+      ],
+      "js": {
+        "minify": false,
+        "compile": false,
+        "transformModulesToAmd": false
+      },
+      "css": {
+        "minify": false
+      },
+      "html": {
+        "minify": false
+      },
+      "bundle": false
+    }
+  ]
 }

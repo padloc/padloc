@@ -6,7 +6,7 @@ import { Router } from "./route.js";
 import { AjaxSender } from "./ajax.js";
 import { WebPlatform } from "./platform.js";
 
-const sender = new AjaxSender("http://127.0.0.1:3000/");
+const sender = new AjaxSender(window.env.serverUrl);
 export const app = (window.app = new App(sender));
 export const router = (window.router = new Router());
 

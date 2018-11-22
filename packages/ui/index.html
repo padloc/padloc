@@ -15,7 +15,13 @@
 
         <link rel="stylesheet" href="/assets/fonts/fonts.css"/>
 
+        <!-- environment config -->
+        <script src="/env.js"></script>
+        <!-- load the webcomponents loader, which injects the necessary polyfill bundle -->
+        <script src="node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+        <!-- EventTarget shim -->
         <script src="/shim/event-target.js"></script>
+
         <script type="module" src="/lib/elements/app.js"></script>
 
     </head>
