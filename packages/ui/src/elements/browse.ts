@@ -18,7 +18,9 @@ export class Browse extends View {
     @listen("item-created", app)
     _itemCreated(e: CustomEvent) {
         router.go(`items/${e.detail.item.id}`);
-        this._itemView.edit();
+        setTimeout(() => {
+            this._itemView.edit();
+        }, 200);
     }
 
     render() {
