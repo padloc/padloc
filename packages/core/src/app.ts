@@ -641,9 +641,10 @@ export class App extends EventTarget implements Storable {
                 this._activeSyncPromises.delete(obj.id);
                 this.dispatch("finish-sync", obj);
             },
-            () => {
+            e => {
                 this._activeSyncPromises.delete(obj.id);
                 this.dispatch("finish-sync", obj);
+                throw e;
             }
         );
         this._activeSyncPromises.set(obj.id, active);
