@@ -3,7 +3,7 @@ import { VaultInfo, VaultMember } from "@padlock/core/lib/vault.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
-import { dialog, confirm, prompt, alert } from "../dialog.js";
+import { dialog, confirm, prompt } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, listen } from "./base.js";
@@ -72,28 +72,26 @@ export class VaultView extends BaseElement {
     }
 
     private async _invite() {
-        const email = await prompt($l("Who would you like to invite to this vault?"), {
+        prompt($l("Please enter the email address of the person you would like to invite!"), {
             type: "email",
-            placeholder: $l("Enter Email Address"),
-            validate: async (val: string, input: Input) => {
+            title: $l("Invite New Member"),
+            label: $l("Email Address"),
+            confirmLabel: $l("Send Invite"),
+            validate: async (email: string, input: Input) => {
                 if (input.invalid) {
                     throw $l("Please enter a valid email address!");
                 }
-                return val;
+
+                if ([...this.vault!.members].some(m => m.email === email)) {
+                    throw $l("This user is already a member!");
+                }
+
+                const invite = await app.createInvite(this.vault!, email);
+                await this._inviteDialog.show(invite);
+
+                return email;
             }
         });
-
-        if (!email) {
-            return;
-        }
-
-        if ([...this.vault!.members].some(m => m.email === email)) {
-            await alert($l("This user is already a member!"), { type: "warning" });
-            return;
-        }
-
-        const invite = await app.createInvite(this.vault!, email);
-        await this._inviteDialog.show(invite);
     }
 
     private async _addParentMember() {
