@@ -22,7 +22,12 @@ export class Menu extends BaseElement {
 
     private _filter(params: FilterParams) {
         app.filter = params;
-        router.go("items");
+        this._goTo("items");
+    }
+
+    private _goTo(path: string) {
+        this.dispatch("toggle-menu");
+        router.go(path);
     }
 
     render() {
@@ -128,7 +133,7 @@ export class Menu extends BaseElement {
 
                 </li>
 
-                <li class="tap" @click=${() => router.go("settings")} ?selected=${this.selected === "settings"}>
+                <li class="tap" @click=${() => this._goTo("settings")} ?selected=${this.selected === "settings"}>
 
                     <pl-icon icon="settings"></pl-icon>
 
@@ -136,7 +141,7 @@ export class Menu extends BaseElement {
 
                 </li>
 
-                <li class="tap" @click=${() => router.go("vaults")} ?selected=${this.selected === "vaults"}>
+                <li class="tap" @click=${() => this._goTo("vaults")} ?selected=${this.selected === "vaults"}>
 
                     <pl-icon icon="vaults"></pl-icon>
 

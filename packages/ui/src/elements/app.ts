@@ -255,8 +255,6 @@ class App extends AutoLock(BaseElement) {
             return;
         }
 
-        this._menuOpen = false;
-
         if (view) {
             // const backward = direction === "backward" && this._view;
             // animateElement(view, {
