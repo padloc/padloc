@@ -1,6 +1,6 @@
 import { AccountInfo } from "@padlock/core/lib/account.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { shared, mixins } from "../styles";
+import { shared } from "../styles";
 import { element, html, property } from "./base.js";
 import { Dialog } from "./dialog.js";
 
@@ -15,48 +15,20 @@ export class SelectAccountDialog extends Dialog<AccountInfo[], AccountInfo> {
 
             <style>
 
+                h2 {
+                    justify-content: center;
+                    margin: 20px 10px 10px 10px;
+                    font-weight: bold;
+                }
+
                 .inner {
-                    --color-background: var(--color-tertiary);
-                    --color-foreground: var(--var-secondary);
-                    text-shadow: none;
-                    background: var(--color-background);
                     width: auto;
                     max-width: 100%;
                 }
 
-                .title {
-                    padding: 10px 15px;
-                    text-align: center;
-                    font-weight: bold;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    ${mixins.gradientHighlight()}
-                    text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-                    color: var(--color-tertiary);
-                }
-
-                pl-dialog > * {
-                    --color-background: var(--color-tertiary);
-                    --color-foreground: var(--color-secondary);
-                    background: var(--color-background);
-                    color: var(--color-foreground);
-                    text-shadow: none;
-                }
-
-                pl-dialog > :not(:last-child):not(.title) {
-                    border-bottom: solid 1px var(--border-color);
-                }
-
-                .hint {
-                    padding: 10px;
-                    text-align: center;
-                    font-size: var(--font-size-small);
-                }
-
             </style>
 
-            <h1>${$l("Select a User")}</h1>
+            <h2>${$l("Add Member")}</h2>
 
             ${this.accounts.map(
                 acc => html`

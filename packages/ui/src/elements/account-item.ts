@@ -32,6 +32,8 @@ export class AccountItem extends BaseElement {
                 }
 
                 pl-fingerprint {
+                    color: var(--color-secondary);
+                    --color-background: var(--color-tertiary);
                     width: 46px;
                     height: 46px;
                     border-radius: 100%;
