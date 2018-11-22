@@ -23,19 +23,17 @@ export interface Stats {
 export interface Settings {
     autoLock: boolean;
     autoLockDelay: number;
-    defaultFields: string[];
     customServer: boolean;
     customServerUrl: string;
-    autoSync: boolean;
+    syncInterval: number;
 }
 
 const defaultSettings: Settings = {
     autoLock: true,
     autoLockDelay: 5,
-    defaultFields: ["username", "password"],
     customServer: false,
-    customServerUrl: "https://cloud.padlock.io/",
-    autoSync: true
+    customServerUrl: "",
+    syncInterval: 1
 };
 
 function filterByString(fs: string, rec: VaultItem) {
@@ -200,6 +198,8 @@ export class App extends EventTarget implements Storable {
             this.syncAccount();
         }
 
+        this.startPeriodicSync();
+
         this.dispatch("load");
     }
 
@@ -207,6 +207,7 @@ export class App extends EventTarget implements Storable {
         await this.account!.unlock(password);
         await this.loadVaults();
         this.dispatch("unlock");
+        this.synchronize();
     }
 
     async lock() {
@@ -456,6 +457,8 @@ export class App extends EventTarget implements Storable {
                 }
                 this._vaults.delete(vaultInfo.id);
                 this.account!.vaults.remove(vaultInfo as VaultInfo & CollectionItem);
+            } else {
+                throw e;
             }
         }
 
@@ -649,5 +652,14 @@ export class App extends EventTarget implements Storable {
         );
         this._activeSyncPromises.set(obj.id, active);
         return active;
+    }
+
+    async startPeriodicSync() {
+        setTimeout(() => {
+            if (this.loggedIn && !this.locked) {
+                this.synchronize();
+            }
+            this.startPeriodicSync();
+        }, this.settings.syncInterval * 60 * 1000);
     }
 }
