@@ -4,7 +4,6 @@ import "./elements/generator.js";
 import "./elements/alert-dialog.js";
 import "./elements/prompt-dialog.js";
 import "./elements/export-dialog.js";
-import "./elements/field-dialog.js";
 import { AlertDialog, AlertOptions } from "./elements/alert-dialog.js";
 import { PromptDialog, PromptOptions } from "./elements/prompt-dialog.js";
 import { getSingleton } from "./singleton.js";
