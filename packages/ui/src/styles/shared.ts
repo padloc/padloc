@@ -168,7 +168,6 @@ export const shared = html`
         height: var(--row-height);
         background: var(--color-background);
         font-size: var(--font-size-default);
-        z-index: 1;
         border-bottom: solid 1px #ddd;
         align-items: center;
     }

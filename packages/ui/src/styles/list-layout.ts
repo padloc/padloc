@@ -6,11 +6,13 @@ export const listLayout = html`
 
     .list-layout {
         ${mixins.fullbleed()}
+        perspective: 1000px;
     }
 
     .list-layout > * {
         border-radius: var(--border-radius);
         overflow: hidden;
+        will-change: transform;
     }
 
     @media (min-width: ${config.narrowWidth}px) {
