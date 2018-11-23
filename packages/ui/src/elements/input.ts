@@ -171,6 +171,7 @@ export class Input extends BaseElement {
             input {
                 box-sizing: border-box;
                 text-overflow: ellipsis;
+                box-shadow: none;
             }
 
             input, textarea {
