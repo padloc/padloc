@@ -23,7 +23,7 @@ export class Select<T> extends BaseElement {
                 :host {
                     display: block;
                     position: relative;
-                    padding: 0 8px;
+                    padding: 0 15px;
                 }
 
                 select {
@@ -49,6 +49,14 @@ export class Select<T> extends BaseElement {
                     font-weight: bold;
                     opacity: 1;
                 }
+
+                pl-icon {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    margin: auto;
+                }
             </style>
 
             <select id="selectEl" @change=${() => this._changed()}>
@@ -58,6 +66,8 @@ export class Select<T> extends BaseElement {
                 `
                 )}
             </select>
+
+            <pl-icon icon="dropdown"></pl-icon>
 
             <label for="selectEl" float>${label}</label>
 

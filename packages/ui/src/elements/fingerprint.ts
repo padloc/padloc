@@ -18,7 +18,6 @@ export class Fingerprint extends BaseElement {
                 rects.push(svg`<rect x="${x}" y="${y}" width="1" height="1" opacity="${val / 10}" />`);
             }
         }
-        console.log(rects);
         return svg`
             <svg viewBox="0 0 ${size} ${size}">
                 ${rects}

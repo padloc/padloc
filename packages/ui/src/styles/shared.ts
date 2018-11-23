@@ -17,7 +17,6 @@ export const shared = html`
         font-family: var(--font-family), var(--font-family-fallback);
         font-weight: var(--font-weight-regular);
         font-size: var(--font-size-default);
-        text-shadow: inherit;
         -webkit-font-smoothing: antialiased;
         -webkit-tap-highlight-color: transparent;
     }
@@ -64,10 +63,13 @@ export const shared = html`
 
     input, select {
         border: none;
+        -webkit-appearance: none;
+        -mox-appearance: none;
         appearance: none;
         font-family: inherit;
         font-size: inherit;
         font-weight: inherit;
+        text-shadow: inherit;
         color: inherit;
         border-radius: 0;
         background: transparent;
