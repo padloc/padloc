@@ -1,29 +1,29 @@
 import { randomArt } from "@padlock/core/lib/randomart.js";
 import { getProvider } from "@padlock/core/lib/crypto.js";
-import { mixins } from "../styles";
+import { svg } from "lit-html";
 import { BaseElement, html, element, property } from "./base";
 
 @element("pl-fingerprint")
 export class Fingerprint extends BaseElement {
-    @property({ reflect: true })
-    symbols: boolean = false;
-    @property() key: string = "";
+    @property()
+    key: string = "";
 
     private async _grid() {
+        const size = 11;
         const fingerprint = await getProvider().fingerprint(this.key);
-        const art = randomArt(fingerprint, { width: 11, height: 11 });
-        return html`${art.values.map(
-            (line, i) => html`
-                    <div class="row">
-                        ${line.map(
-                            (val, j) => html`<div class="cell">
-                            <div class="cell-background" style="opacity: ${val / 10}"></div>
-                            <div class="cell-symbol">${art.symbols[i][j]}</div>
-                        </div>`
-                        )}
-                    </div>
-                `
-        )}`;
+        const art = randomArt(fingerprint, { width: size, height: size });
+        const rects = [];
+        for (const [x, line] of art.values.entries()) {
+            for (const [y, val] of line.entries()) {
+                rects.push(svg`<rect x="${x}" y="${y}" width="1" height="1" opacity="${val / 10}" />`);
+            }
+        }
+        console.log(rects);
+        return svg`
+            <svg viewBox="0 0 ${size} ${size}">
+                ${rects}
+            </svg>
+        `;
     }
 
     shouldUpdate() {
@@ -40,53 +40,17 @@ export class Fingerprint extends BaseElement {
                     position: relative;
                     overflow: hidden;
                     background: var(--color-background);
+                    color: var(--color-foreground);
                 }
 
-                .container {
+                svg {
                     width: 100%;
                     height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    font-family: var(--font-family-mono);
-                }
-
-                .row {
-                    display: flex;
-                    flex-direction: row;
-                    flex: 1;
-                }
-
-                .cell {
-                    flex: 1;
-                    overflow: hidden;
-                    position: relative;
-                }
-
-                .cell-background {
-                    background: currentColor;
-                }
-
-                .cell-symbol {
-                    color: var(--color-background);
-                    font-weight: bold;
-                    text-shadow: none !important;
-                    height: 1em;
-                    text-align: center;
-                    margin: auto;
-                }
-
-                .cell-background, .cell-symbol {
-                    ${mixins.fullbleed()}
-                }
-
-                :host(:not([symbols])) .cell-symbol {
-                    display: none;
+                    fill: currentColor;
                 }
             </style>
 
-            <div class="container">
-                ${this._grid()}
-            </div>
+            ${this._grid()}
         `;
     }
 }
