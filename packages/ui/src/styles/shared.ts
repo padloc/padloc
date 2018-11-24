@@ -480,7 +480,7 @@ export const shared = html`
         75% {transform: translate(5px, 2px);}
     }
 
-    @media (min-width: ${config.narrowWidth}px) {
+    @media (min-width: ${config.narrowWidth + 1}px) {
         .menu-button {
             visibility: hidden;
         }
