@@ -97,6 +97,7 @@ class App extends AutoLock(BaseElement) {
                 transform: translate3d(0, 0, 0);
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
+                will-change: transform, opacity;
             }
 
             .views {
@@ -108,6 +109,13 @@ class App extends AutoLock(BaseElement) {
 
             .views > * {
                 ${mixins.fullbleed()}
+                will-change: opacity;
+            }
+
+            .views > :not(.showing) {
+                opacity: 0;
+                z-index: -1;
+                pointer-events: none;
             }
 
             .wrapper:not(.active),
@@ -162,11 +170,11 @@ class App extends AutoLock(BaseElement) {
 
             <div class="views">
 
-                <pl-settings ?hidden=${this._view !== this._settings}></pl-settings>
+                <pl-settings ?showing=${this._view === this._settings}></pl-settings>
 
-                <pl-browse ?hidden=${this._view !== this._browse}></pl-browse>
+                <pl-browse ?showing=${this._view === this._browse}></pl-browse>
 
-                <pl-manage ?hidden=${this._view !== this._manage}></pl-manage>
+                <pl-manage ?showing=${this._view === this._manage}></pl-manage>
 
             </div>
 
