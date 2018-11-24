@@ -68,7 +68,7 @@ export class Invite implements CollectionItem {
 
     constructor(public email = "") {}
 
-    async initialize(vault: VaultInfo, invitor: AccountInfo, encKey: AESKey, duration = 1) {
+    async initialize(vault: VaultInfo, invitor: AccountInfo, encKey: AESKey, duration = 12) {
         this.id = uuid();
         this.expires = new Date(Date.now() + 1000 * 60 * 60 * duration);
         this.secret = base64ToHex(await getProvider().randomBytes(4));
