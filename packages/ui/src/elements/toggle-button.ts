@@ -4,7 +4,7 @@ import { Toggle } from "./toggle.js";
 
 @element("pl-toggle-button")
 export class ToggleButton extends BaseElement {
-    @property({ reflect: true })
+    @property()
     active: boolean = false;
     @property({ reflect: true })
     reverse: boolean = false;
@@ -63,7 +63,7 @@ export class ToggleButton extends BaseElement {
 
         <button @click=${() => this.toggle()}>
 
-            <pl-toggle .active="${active}" @change=${() => (this.active = this._toggle.active)}"></pl-toggle>
+            <pl-toggle .active=${active} @change=${() => (this.active = this._toggle.active)}"></pl-toggle>
 
             <div>${label}</div>
 

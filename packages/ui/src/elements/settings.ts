@@ -149,20 +149,20 @@ export class Settings extends View {
 
             <pl-toggle-button
                 id="autoLockButton"
-                .active="${settings.autoLock}"
-                label="${$l("Lock Automatically")}"
+                .active=${settings.autoLock}
+                .label=${$l("Lock Automatically")}
                 class="box tap"
                 reverse>
             </pl-toggle-button>
 
             <pl-slider
                 id="autoLockDelaySlider"
-                min="1"
-                max="10"
-                step="1"
-                .value="${settings.autoLockDelay}"
-                unit="${$l(" min")}"
-                label="${$l("After")}"
+                .min="1"
+                .max="10"
+                .step="1"
+                .value=${settings.autoLockDelay}
+                .unit=${$l(" min")}
+                .label=${$l("After")}
                 ?hidden=${!settings.autoLock}
                 class="box">
             </pl-slider>

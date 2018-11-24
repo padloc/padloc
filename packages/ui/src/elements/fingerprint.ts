@@ -46,6 +46,7 @@ export class Fingerprint extends BaseElement {
                     width: 100%;
                     height: 100%;
                     fill: currentColor;
+                    pointer-events: none;
                 }
             </style>
 

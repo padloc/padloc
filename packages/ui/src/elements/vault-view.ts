@@ -4,12 +4,13 @@ import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
 import { dialog, confirm, prompt } from "../dialog.js";
-import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, listen } from "./base.js";
 import { InviteDialog } from "./invite-dialog.js";
 import { SelectAccountDialog } from "./select-account-dialog.js";
 import { Input } from "./input.js";
+import { ToggleButton } from "./toggle-button.js";
+import "./toggle-button.js";
 import "./account-item.js";
 import "./icon.js";
 
@@ -37,38 +38,6 @@ export class VaultView extends BaseElement {
     _refresh() {
         this.requestUpdate();
         this.$$("pl-account-item", false).forEach((el: any) => el.requestUpdate());
-    }
-
-    async _activated() {
-        animateCascade(this.$$(".animate:not([hidden])", false), { initialDelay: 200 });
-        if (
-            this.vault &&
-            this.vault != app.mainVault &&
-            this.vault.members.size === 1 &&
-            !this.vault.invites.size &&
-            this.vault.getPermissions().manage
-        ) {
-            const confirmed = await confirm(
-                $l("There is nobody else here yet. Do you want to add somebody else to this vault?"),
-                $l("Invite Others"),
-                $l("Stay Lonely"),
-                { icon: "vault" }
-            );
-            if (confirmed) {
-                this._invite();
-            }
-        }
-
-        const invite = this.vault!.getInviteByEmail(app.account!.email);
-        if (invite && !invite.accepted) {
-            this._showInvite(invite);
-        }
-
-        if (this.vault!.isAdmin()) {
-            for (const invite of [...this.vault!.invites].filter(i => i.accepted)) {
-                this._showInvite(invite);
-            }
-        }
     }
 
     private async _invite() {
@@ -163,6 +132,33 @@ export class VaultView extends BaseElement {
         }
     }
 
+    private async _toggleAdmin(member: VaultMember, e: MouseEvent) {
+        const button = e.target as ToggleButton;
+        const question = button.active
+            ? "Do you want to give {0} admin permissions? They will be able to " +
+              "add and delete members, change permissions and create subvaults."
+            : "Do you want to remove {0} as an admin?";
+        const confirmed = await confirm($l(question, member.name || member.email), $l("Make Admin"));
+
+        if (confirmed) {
+            member.permissions.manage = button.active;
+            if (member.permissions.manage) {
+                member.permissions.write = true;
+            }
+            this.vault!.members.update(member);
+            app.syncVault(this.vault!);
+        } else {
+            button.active = !button.active;
+        }
+    }
+
+    private async _toggleReadonly(member: VaultMember) {
+        member.permissions.write = !member.permissions.write;
+        this.vault!.members.update(member);
+        this.requestUpdate();
+        app.syncVault(this.vault!);
+    }
+
     // private async _delete() {
     //     const confirmed = await prompt($l("Are you sure you want to delete the '{0}' vault?", this.vault!.name), {
     //         placeholder: $l("Type 'DELETE' to confirm"),
@@ -190,8 +186,6 @@ export class VaultView extends BaseElement {
         const subvaults = vault === app.mainVault ? [] : [...vaults].map(v => app.getVault(v.id)!);
         const permissions = vault.getPermissions();
         const invites = vault.isAdmin() ? [...vault.invites] : [];
-        const admins = [...members].filter(m => vault.isAdmin(m));
-        const nonAdmins = [...members].filter(m => !vault.isAdmin(m));
 
         return html`
         ${shared}
@@ -205,7 +199,7 @@ export class VaultView extends BaseElement {
             }
 
             .tags {
-                margin: 15px;
+                padding: 0 15px;
             }
 
             .name {
@@ -226,8 +220,10 @@ export class VaultView extends BaseElement {
             }
 
             .remove-button {
-                font-size: 120%;
-                margin: 10px;
+                font-size: 150%;
+                width: 50px;
+                height: 50px;
+                margin: 14px;
             }
 
             li {
@@ -276,6 +272,70 @@ export class VaultView extends BaseElement {
                 user-select: text;
                 letter-spacing: 2px;
             }
+
+            .member {
+                height: 80px;
+                display: flex;
+                align-items: center;
+            }
+
+            .member pl-fingerprint {
+                color: var(--color-secondary);
+                --color-background: var(--color-tertiary);
+                width: 46px;
+                height: 46px;
+                border-radius: 100%;
+                border: solid 1px var(--border-color);
+                margin: 15px;
+            }
+
+            .member-info {
+                flex: 1;
+                width: 0;
+                padding-right: 18px;
+            }
+
+            .member-email {
+                ${mixins.ellipsis()}
+            }
+
+            .member-email {
+                font-weight: bold;
+                ${mixins.ellipsis()}
+            }
+
+            .permission-tags {
+                padding: 0;
+                margin: 0 8px 0 2px;
+            }
+
+            .permission-buttons {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+            }
+
+            .permission-buttons > * {
+                --toggle-width: 24px;
+                --toggle-height: 18px;
+                --color-background: var(--color-secondary);
+                --color-foreground: var(--color-tertiary);
+                background: var(--color-background);
+                font-size: var(--font-size-micro);
+                color: var(--color-foreground);
+                font-weight: bold;
+                border-radius: 20px;
+                height: auto;
+                padding: 4px 4px 4px 8px;
+                margin: 2px 8px;
+            }
+
+            .member:not(:hover) .permission-buttons,
+            .member:not(:hover) .remove-button,
+            .member:hover pl-fingerprint,
+            .member:hover .permission-tags {
+                display: none;
+            }
         </style>
 
         <header class="narrow back-header">
@@ -300,14 +360,6 @@ export class VaultView extends BaseElement {
                     <pl-icon icon="vault"></pl-icon>
 
                     <div>${vault.parent && vault.parent.name}</div>
-
-                </div>
-
-                <div class="tag flex">
-
-                    <pl-icon icon="group"></pl-icon>
-
-                    <div>${$l("{0} Members", members.size.toString())}</div>
 
                 </div>
 
@@ -379,28 +431,6 @@ export class VaultView extends BaseElement {
 
             <h2 class="animate">
 
-                <pl-icon icon="admins"></pl-icon>
-
-                <div class="flex">${$l("Admins")}</div>
-
-            </h2>
-
-            <ul>
-
-                    ${admins.map(
-                        acc => html`
-                        <li>
-
-                            <pl-account-item .account=${acc} class="flex"> </pl-account-item>
-
-                        </li>
-                        `
-                    )}
-
-            </ul>
-
-            <h2 class="animate">
-
                 <pl-icon icon="group"></pl-icon>
 
                 <div class="flex">${$l("Members")}</div>
@@ -417,18 +447,60 @@ export class VaultView extends BaseElement {
 
             <ul>
 
-                ${nonAdmins.map(
-                    acc => html`
-                        <li>
+                ${[...members].map(
+                    member => html`
+                        <li class="member">
 
-                            <pl-account-item .account=${acc} class="flex"> </pl-account-item>
+                            <pl-fingerprint .key=${member.publicKey}></pl-fingerprint>
 
                             <pl-icon
                                 icon="remove"
                                 class="remove-button tap"
-                                ?hidden=${acc.id === app.account!.id || !permissions.manage}
-                                @click=${() => this._removeMember(acc)}>
+                                ?disabled=${vault.isOwner(member)}
+                                @click=${() => this._removeMember(member)}>
                             </pl-icon>
+
+                            <div class="member-info">
+
+                                <div class="member-name">${member.name}</div>
+
+                                <div class="member-email">${member.email}</div>
+
+                            </div>
+
+                            <div class="tags small permission-tags">
+
+                                <div class="tag" ?hidden=${!vault.isOwner(member)}>${$l("Owner")}</div>
+
+                                <div class="tag" ?hidden=${vault.isOwner(member) || !member.permissions.manage}>
+                                    ${$l("Admin")}
+                                </div>
+
+                                <div class="tag" ?hidden=${member.permissions.write}>${$l("Readonly")}</div>
+
+                            </div>
+
+                            <div class="permission-buttons">
+
+                                <pl-toggle-button
+                                    .label=${$l("Admin")}
+                                    .active=${member.permissions.manage}
+                                    ?disabled=${vault.isOwner(member)}
+                                    @click=${(e: MouseEvent) => this._toggleAdmin(member, e)} 
+                                    class="tap"
+                                    reverse>
+                                </pl-toggle-button>
+
+                                <pl-toggle-button
+                                    .label=${$l("Readonly")}
+                                    .active=${!member.permissions.write}
+                                    ?disabled=${member.permissions.manage}
+                                    @click=${() => this._toggleReadonly(member)} 
+                                    class="tap"
+                                    reverse>
+                                </pl-toggle-button>
+
+                            </div>
 
                         </li>
                     `
