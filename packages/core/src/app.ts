@@ -219,10 +219,22 @@ export class App extends EventTarget implements Storable {
     // SESSION / ACCOUNT MANGAGEMENT
 
     async verifyEmail(email: string) {
-        return this.api.verifyEmail({ email });
+        return this.api.verifyEmail(email);
     }
 
-    async signup(email: string, password: string, name: string, emailVerification: { id: string; code: string }) {
+    async signup({
+        email,
+        password,
+        name,
+        verify,
+        invite
+    }: {
+        email: string;
+        password: string;
+        name: string;
+        verify: string;
+        invite?: Invite;
+    }) {
         const account = new Account();
         account.email = email;
         account.name = name;
@@ -239,14 +251,15 @@ export class App extends EventTarget implements Storable {
         await this.api.createAccount({
             account,
             auth,
-            emailVerification
+            verify,
+            invite: invite && { id: invite.id, vault: invite.vault!.id }
         });
 
         await this.login(email, password);
     }
 
     async login(email: string, password: string) {
-        const { auth, B } = await this.api.initAuth({ email });
+        const { auth, B } = await this.api.initAuth(email);
         const authKey = await auth.getAuthKey(password);
 
         const srp = new SRPClient();

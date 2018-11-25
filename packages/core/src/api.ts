@@ -8,9 +8,10 @@ import { Base64String } from "./encoding";
 export interface CreateAccountParams {
     account: Account;
     auth: Auth;
-    emailVerification: {
+    verify: string;
+    invite?: {
         id: string;
-        code: string;
+        vault: string;
     };
 }
 
@@ -19,9 +20,9 @@ export interface CreateVaultParams {
 }
 
 export interface API {
-    verifyEmail(params: { email: string }): Promise<{ id: string }>;
+    verifyEmail(email: string): Promise<void>;
 
-    initAuth(params: { email: string }): Promise<{ auth: Auth; B: Base64String }>;
+    initAuth(email: string): Promise<{ auth: Auth; B: Base64String }>;
     updateAuth(params: Auth): Promise<void>;
 
     createSession(params: { account: AccountID; M: Base64String; A: Base64String }): Promise<Session>;

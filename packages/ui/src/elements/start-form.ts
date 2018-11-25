@@ -1,5 +1,6 @@
+import { Invite } from "@padlock/core/lib/invite.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, html } from "./base.js";
+import { BaseElement, html, property } from "./base.js";
 import { animateCascade } from "../animation.js";
 import "./icon.js";
 
@@ -46,6 +47,9 @@ export const sharedStyles = html`
 `;
 
 export abstract class StartForm extends BaseElement {
+    @property()
+    public invite?: Invite;
+
     reset() {
         animateCascade(this.$$(".animate"), {
             animation: "reveal",

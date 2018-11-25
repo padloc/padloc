@@ -10,6 +10,8 @@ import { alert, choose, prompt } from "../dialog.js";
 
 @element("pl-signup")
 export class Signup extends StartForm {
+    verificationCode: string;
+
     @property()
     private _weakPassword = false;
 
@@ -24,8 +26,9 @@ export class Signup extends StartForm {
     @query("#submitButton")
     private _submitButton: LoadingButton;
 
-    reset() {
-        this._emailInput.value = "";
+    async reset() {
+        this._emailInput.value = (this.invite && this.invite.email) || "";
+        this._emailInput.checkValidity();
         this._passwordInput.value = "";
         this._repeatPasswordInput.value = "";
         this._submitButton.stop();
@@ -101,7 +104,7 @@ export class Signup extends StartForm {
                 <div class="hint animate">
                     ${$l(
                         "Your email address serves as your username and allows us to get in touch with you. " +
-                            "Don't worry, no spam!"
+                            "Don't worry, we would never send you any spam!"
                     )}
                 </div>
 
@@ -153,7 +156,7 @@ export class Signup extends StartForm {
                 </div>
 
                 <pl-loading-button id="submitButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
-                    ${$l("Submit")}
+                    ${$l("Create Account")}
                 </pl-loading-button>
 
             </form>
@@ -216,34 +219,41 @@ export class Signup extends StartForm {
             }
         }
 
-        const { id } = await app.verifyEmail(email);
-        return this._register(email, password, name, id);
+        if (!this.verificationCode) {
+            await app.verifyEmail(email);
+        }
+
+        return this._signup(email, password, name);
     }
 
-    private async _register(email: string, password: string, name: string, verificationID: string): Promise<void> {
+    private async _signup(email: string, password: string, name: string): Promise<void> {
         this._submitButton.start();
 
-        const code = await prompt(
-            $l(
-                "One last step! To verify your email address, please enter " +
-                    "the verification code from the email we just sent you!"
-            ),
-            { placeholder: "Enter Verification Code", confirmLabel: "Submit" }
-        );
+        if (!this.verificationCode) {
+            this.verificationCode = await prompt(
+                $l(
+                    "One last step! To verify your email address, please enter " +
+                        "the verification code from the email we just sent you!"
+                ),
+                { placeholder: "Enter Verification Code", confirmLabel: "Submit" }
+            );
 
-        if (code == null) {
-            this._submitButton.stop();
-            return;
+            if (this.verificationCode === null) {
+                this._submitButton.stop();
+                return;
+            }
         }
 
         try {
-            await app.signup(email, password, name, { id: verificationID, code });
+            await app.signup({ email, password, name, verify: this.verificationCode, invite: this.invite });
             this._submitButton.success();
             this.done();
         } catch (e) {
             this._submitButton.fail();
             switch (e.code) {
                 case ErrorCode.EMAIL_VERIFICATION_FAILED:
+                    this.verificationCode = "";
+
                     switch (
                         await choose(
                             $l(
@@ -255,7 +265,7 @@ export class Signup extends StartForm {
                         )
                     ) {
                         case 0:
-                            return this._register(email, password, name, verificationID);
+                            return this._signup(email, password, name);
                         case 1:
                             return this._submit();
                         default:

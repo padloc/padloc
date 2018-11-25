@@ -29,14 +29,13 @@ export class Context implements API {
 
     constructor(public config: ServerConfig, public storage: Storage, public messenger: Messenger) {}
 
-    async verifyEmail({ email }: { email: string }) {
+    async verifyEmail(email: string) {
         const v = new EmailVerification(email, base64ToHex(await getProvider().randomBytes(3)), uuid());
         await this.storage.set(v);
         this.messenger.send(email, new EmailVerificationMessage(v));
-        return { id: v.id };
     }
 
-    async initAuth({ email }: { email: string }): Promise<{ auth: Auth; B: Base64String }> {
+    async initAuth(email: string): Promise<{ auth: Auth; B: Base64String }> {
         const auth = new Auth(email);
 
         try {
@@ -120,11 +119,7 @@ export class Context implements API {
     }
 
     async createAccount(params: CreateAccountParams): Promise<Account> {
-        const {
-            account,
-            auth,
-            emailVerification: { id, code }
-        } = params;
+        const { account, auth, verify } = params;
 
         const ev = new EmailVerification(auth.email);
         try {
@@ -137,7 +132,7 @@ export class Context implements API {
             }
         }
 
-        if (ev.id !== id || ev.code !== code.toLowerCase()) {
+        if (ev.code !== verify.toLowerCase()) {
             throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
         }
 
@@ -230,10 +225,23 @@ export class Context implements API {
         }
 
         for (const invite of (changes.invites && changes.invites.added) || []) {
-            this.messenger.send(
-                invite.email,
-                new InviteCreatedMessage(invite, `${this.config.clientUrl}/invite/${vault.id}/${invite.id}`)
-            );
+            let link = `${this.config.clientUrl}/invite/${vault.id}/${invite.id}`;
+
+            try {
+                await this.storage.get(new Auth(invite.email));
+                console.log("account found", invite.email);
+            } catch (e) {
+                console.log("no account found", invite.email);
+                if (e.code !== ErrorCode.NOT_FOUND) {
+                    throw e;
+                }
+                // account does not exist yet; add verification code to link
+                const v = new EmailVerification(invite.email, base64ToHex(await getProvider().randomBytes(3)), uuid());
+                await this.storage.set(v);
+                link += `?verify=${v.code}`;
+            }
+
+            this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
         }
 
         await [...promises, this.storage.set(existing)];
@@ -275,14 +283,12 @@ export class Context implements API {
     }
 
     async getInvite({ vault, id }: { vault: string; id: string }) {
-        const { account } = this._requireAuth();
-
         const v = new Vault(vault);
         await this.storage.get(v);
 
         const invite = v.invites.get(id);
 
-        if (!invite || (!v.isAdmin(account) && invite.email !== account.email)) {
+        if (!invite) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
@@ -366,14 +372,14 @@ export class Server {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
 
-                res.result = await ctx.verifyEmail({ email: params[0].email });
+                res.result = await ctx.verifyEmail(params[0].email);
                 break;
 
             case "initAuth":
                 if (!params || params.length !== 1 || typeof params[0].email !== "string") {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
-                const { auth: _auth, B } = await ctx.initAuth({ email: params[0].email });
+                const { auth: _auth, B } = await ctx.initAuth(params[0].email);
                 res.result = {
                     auth: await _auth.serialize(),
                     B
@@ -421,7 +427,8 @@ export class Server {
                 acc = await ctx.createAccount({
                     account: await new Account().deserialize(params[0].account),
                     auth: await new Auth().deserialize(params[0].auth),
-                    emailVerification: params[0].emailVerification
+                    verify: params[0].verify,
+                    invite: params[0].invite
                 });
                 res.result = await acc.serialize();
                 break;

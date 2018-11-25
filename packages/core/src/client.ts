@@ -52,15 +52,15 @@ export class Client implements API {
         return res;
     }
 
-    async verifyEmail(params: { email: string }) {
-        const res = await this.call("verifyEmail", [params]);
+    async verifyEmail(email: string) {
+        const res = await this.call("verifyEmail", [{ email }]);
         return res.result;
     }
 
-    async initAuth(params: { email: string }) {
-        const res = await this.call("initAuth", [params]);
+    async initAuth(email: string) {
+        const res = await this.call("initAuth", [{ email }]);
         const { auth, B } = res.result;
-        return { auth: await new Auth(params.email).deserialize(auth), B };
+        return { auth: await new Auth(email).deserialize(auth), B };
     }
 
     async updateAuth(auth: Auth): Promise<void> {
@@ -81,7 +81,8 @@ export class Client implements API {
             {
                 auth: await params.auth.serialize(),
                 account: await params.account.serialize(),
-                emailVerification: params.emailVerification
+                verify: params.verify,
+                invite: params.invite
             }
         ]);
         return new Account().deserialize(res.result);

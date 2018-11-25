@@ -19,7 +19,8 @@ export class Login extends StartForm {
 
     async reset() {
         await this.updateComplete;
-        this._emailInput.value = "";
+        this._emailInput.value = (this.invite && this.invite.email) || "";
+        this._emailInput.checkValidity();
         this._passwordInput.value = "";
         this._loginButton.stop();
         super.reset();

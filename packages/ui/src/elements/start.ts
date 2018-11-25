@@ -1,20 +1,22 @@
-import { app } from "../init.js";
+import { Invite } from "@padlock/core/lib/invite.js";
+import { router, app } from "../init.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, listen, query } from "./base.js";
 import { Unlock } from "./unlock.js";
 import { Login } from "./login.js";
 import { Signup } from "./signup.js";
 
-export type StartViewMode = "unlock" | "get-started";
-
 @element("pl-start")
 export class Start extends BaseElement {
     @property({ reflect: true })
     open: boolean = false;
 
-    @query("pl-unlock") private _unlockForm: Unlock;
-    @query("pl-login") private _loginForm: Login;
-    @query("pl-signup") private _signupForm: Signup;
+    @query("pl-unlock")
+    private _unlockForm: Unlock;
+    @query("pl-login")
+    private _loginForm: Login;
+    @query("pl-signup")
+    private _signupForm: Signup;
 
     @listen("load", app)
     @listen("lock", app)
@@ -26,10 +28,26 @@ export class Start extends BaseElement {
     @listen("load", app)
     @listen("lock", app)
     @listen("logout", app)
-    _updateForm() {
+    async _updateForm() {
+        let invite;
+        const inviteMatch = router.path.match(/^invite\/([^\/]+)\/([^\/]+)$/);
+
+        if (inviteMatch) {
+            const [, vault, id] = inviteMatch;
+            invite = (await app.getInvite(vault, id)) || undefined;
+        }
+
+        const verificationCode = new URLSearchParams(window.location.search).get("verify") || "";
+
         if (app.account) {
+            this._unlockForm.invite = invite;
             this._showForm(this._unlockForm);
+        } else if (verificationCode) {
+            this._signupForm.invite = invite;
+            this._signupForm.verificationCode = verificationCode;
+            this._showForm(this._signupForm);
         } else {
+            this._loginForm.invite = invite;
             this._showForm(this._loginForm);
         }
     }
@@ -96,8 +114,16 @@ export class Start extends BaseElement {
             </style>
 
             <pl-unlock class="form"></pl-unlock>
-            <pl-login class="form" @signup=${() => this._showForm(this._signupForm)}></pl-login>
-            <pl-signup class="form" @cancel=${() => this._showForm(this._loginForm)}></pl-signup>
+
+            <pl-login
+                class="form"
+                @signup=${() => this._showForm(this._signupForm)}>
+            </pl-login>
+
+            <pl-signup
+                class="form"
+                @cancel=${() => this._showForm(this._loginForm)}>
+            </pl-signup>
         `;
     }
 }

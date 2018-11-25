@@ -268,7 +268,7 @@ export class Input extends BaseElement {
 
     _blurred(e: FocusEvent) {
         e.stopPropagation();
-        this._updateValidity();
+        this.checkValidity();
         this.focused = false;
 
         this.dispatch("blur");
@@ -288,7 +288,7 @@ export class Input extends BaseElement {
     @listen("keydown")
     _keydown(e: KeyboardEvent) {
         if (e.key === "Enter" && !this.multiline) {
-            this._updateValidity();
+            this.checkValidity();
             this.dispatch("enter");
             e.preventDefault();
             e.stopPropagation();
@@ -304,7 +304,7 @@ export class Input extends BaseElement {
         e.stopPropagation();
     }
 
-    private _updateValidity() {
+    checkValidity() {
         this.invalid = this._inputElement && this._inputElement.checkValidity && !this._inputElement.checkValidity();
     }
 
