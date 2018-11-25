@@ -34,6 +34,7 @@ export enum ErrorCode {
     // Generic Errors
     CLIENT_ERROR = "client_error",
     SERVER_ERROR = "server_error",
+    UNKNOWN_ERROR = "unknown_error",
 
     ENCODING_ERROR = "encoding_error",
 
@@ -60,19 +61,23 @@ const statusCodes = {
 };
 
 export class Err extends Error {
-    report = false;
-    display = false;
-    status = 500;
+    code: ErrorCode;
+    report: boolean;
+    display: boolean;
+    status: number;
+    originalError?: Error;
 
     constructor(
-        public code: ErrorCode,
+        code: ErrorCode,
         message?: string,
-        opts: { report?: boolean; display?: boolean; status?: number } = {}
+        opts: { report?: boolean; display?: boolean; status?: number; originalError?: Error } = {}
     ) {
         super(message || messages[code] || "");
+        this.code = code;
         this.status = opts.status || statusCodes[code] || 500;
         this.report = opts.report || false;
         this.display = opts.report || false;
+        this.originalError = opts.originalError;
     }
 }
 

@@ -1,10 +1,9 @@
 import { debounce } from "@padlock/core/lib/util.js";
-// // import { BaseElement } from "../elements/base.js";
 import { app } from "../init.js";
 
 type Constructor<T> = new (...args: any[]) => T;
 
-export function AutoLock<B extends Constructor<HTMLElement>>(baseClass: B) {
+export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
     return class extends baseClass {
         _pausedAt: Date | null = null;
         _lockTimeout?: number;

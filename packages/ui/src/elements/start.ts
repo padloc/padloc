@@ -1,4 +1,3 @@
-import { Invite } from "@padlock/core/lib/invite.js";
 import { router, app } from "../init.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, listen, query } from "./base.js";

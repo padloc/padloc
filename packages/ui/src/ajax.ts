@@ -15,7 +15,11 @@ export async function request(
     return new Promise<XMLHttpRequest>((resolve, reject) => {
         req.onreadystatechange = () => {
             if (req.readyState === 4) {
-                resolve(req);
+                if (!req.status) {
+                    reject(new Err(ErrorCode.FAILED_CONNECTION));
+                } else {
+                    resolve(req);
+                }
             }
         };
 
