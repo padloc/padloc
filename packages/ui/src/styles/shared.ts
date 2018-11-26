@@ -61,6 +61,10 @@ export const shared = html`
         bottom: 0;
     }
 
+    button {
+        text-shadow: inherit;
+    }
+
     input, select {
         border: none;
         -webkit-appearance: none;

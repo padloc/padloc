@@ -7,6 +7,7 @@ import { StartForm, sharedStyles } from "./start-form.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
 import { alert, choose, prompt } from "../dialog.js";
+import "./logo.js";
 
 @element("pl-signup")
 export class Signup extends StartForm {
@@ -44,23 +45,22 @@ export class Signup extends StartForm {
             <style include="shared">
 
                 .title {
-                    font-size: 140%;
-                    margin: 30px;
-                    position: relative;
-                }
-
-                .title > pl-icon {
-                    position: absolute;
-                    top: 0;
-                    right: 0;
+                    width: 300px;
+                    margin: 30px auto;
+                    font-size: var(--font-size-small);
+                    font-weight: bold;
+                    letter-spacing: 0.5px;
+                    padding: 0 10px;
                 }
 
                 .hint {
                     font-size: var(--font-size-tiny);
                     box-sizing: border-box;
-                    transition: max-height 0.3s;
                     max-height: 100px;
-                    padding: 0 15px 10px 15px;
+                    padding: 0 10px;
+                    margin-bottom: 30px;
+                    transition: color 0.2s;
+                    text-shadow: none;
                 }
 
                 .hint.warning {
@@ -74,22 +74,25 @@ export class Signup extends StartForm {
                     margin-bottom: 30px;
                 }
 
-                // pl-input:not([focused]) + .hint {
-                //     transition-duration: 0.1s;
-                //     max-height: 0;
-                // }
+                .login {
+                    text-decoration: underline;
+                    cursor: pointer;
+                }
+
+                pl-input:not([focused]) + .hint {
+                    color: rgba(0, 0, 0, 0.2)
+                }
             </style>
 
             <div flex></div>
 
             <form>
 
+                <pl-logo class="animate"></pl-logo>
+
                 <div class="title animate">
-
-                    <div>${$l("Create Account")}</div>
-
-                    <pl-icon icon="cancel" class="tap" @click=${() => this._cancel()}></pl-icon>
-
+                    ${$l("Welcome to Padloc! Let's get you started by creating an account for you. Already have one?")}
+                    <span class="login" @click=${() => this._login()}>➔ Sign In</span>
                 </div>
 
                 <pl-input
@@ -97,7 +100,7 @@ export class Signup extends StartForm {
                     type="email"
                     required
                     .label=${$l("Email Address")}
-                    class="tiles-2 animate tap"
+                    class="tiles-2 animate"
                     @enter=${() => this._submit()}>
                 </pl-input>
 
@@ -111,7 +114,7 @@ export class Signup extends StartForm {
                 <pl-input
                     id="nameInput"
                     .label=${$l("Your Name")}
-                    class="tiles-2 animate tap"
+                    class="tiles-2 animate"
                     @enter=${() => this._submit()}>
                 </pl-input>
 
@@ -124,12 +127,10 @@ export class Signup extends StartForm {
                     type="password"
                     required
                     .label=${$l("Master Password")}
-                    class="tiles-2 animate tap"
+                    class="tiles-2 animate"
                     @change=${() => this._updatePwdStrength()}
                     @enter=${() => this._submit()}>
                 </pl-input>
-
-                <div class="hint warning animate" ?hidden=${!_weakPassword}>${$l("WARNING: Weak Password!")}</div>
 
                 <div class="hint animate">
                     ${$l(
@@ -138,12 +139,14 @@ export class Signup extends StartForm {
                     )}
                 </div>
 
+                <div class="hint warning animate" ?hidden=${!_weakPassword}>${$l("WARNING: Weak Password!")}</div>
+
                 <pl-input
                     id="repeatPasswordInput"
                     type="password"
                     required
                     .label=${$l("Repeat Master Password")}
-                    class="tiles-2 animate tap"
+                    class="tiles-2 animate"
                     @enter=${() => this._submit()}>
                 </pl-input>
 
@@ -299,7 +302,7 @@ export class Signup extends StartForm {
         window.open("https://padlock.io/howto/choose-master-password/", "_system");
     }
 
-    private _cancel() {
-        this.dispatch("cancel");
+    private _login() {
+        this.dispatch("login");
     }
 }

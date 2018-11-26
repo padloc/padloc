@@ -121,7 +121,7 @@ export class Start extends BaseElement {
 
             <pl-signup
                 class="form"
-                @cancel=${() => this._showForm(this._loginForm)}>
+                @login=${() => this._showForm(this._loginForm)}>
             </pl-signup>
         `;
     }
