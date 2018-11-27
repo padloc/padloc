@@ -1,4 +1,4 @@
-import { Storable, LocalStorage } from "./storage";
+import { Storage, Storable } from "./storage";
 import { Vault, VaultInfo, VaultItem, Field, Tag, createVaultItem } from "./vault";
 import { CollectionItem } from "./collection";
 import { Account } from "./account";
@@ -60,11 +60,10 @@ export interface FilterParams {
 }
 
 export class App extends EventTarget implements Storable {
-    kind = "padlock-app";
+    kind = "app";
     pk = "";
 
     version = "3.0";
-    storage = new LocalStorage();
     api: API;
     settings = defaultSettings;
     stats: Stats = {};
@@ -74,7 +73,7 @@ export class App extends EventTarget implements Storable {
     account: Account | null = null;
     loaded = this.load();
 
-    constructor(sender: Sender) {
+    constructor(public storage: Storage, sender: Sender) {
         super();
         this.api = new Client(this, sender);
     }

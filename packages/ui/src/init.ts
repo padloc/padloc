@@ -5,9 +5,10 @@ import { WebCryptoProvider } from "./crypto.js";
 import { Router } from "./route.js";
 import { AjaxSender } from "./ajax.js";
 import { WebPlatform } from "./platform.js";
+import { LocalStorage } from "./storage.js";
 
 const sender = new AjaxSender(window.env.serverUrl);
-export const app = (window.app = new App(sender));
+export const app = (window.app = new App(new LocalStorage(), sender));
 export const router = (window.router = new Router());
 
 setPlatform(new WebPlatform());

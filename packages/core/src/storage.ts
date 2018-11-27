@@ -1,4 +1,4 @@
-import { Serializable, marshal, unmarshal } from "./encoding";
+import { Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 
 export interface Storable extends Serializable {
@@ -33,34 +33,5 @@ export class MemoryStorage implements Storage {
 
     async clear() {
         this._storage = new Map<string, any>();
-    }
-}
-
-export class LocalStorage implements Storage {
-    keyFor(s: Storable) {
-        return `${s.kind || ""}_${s.pk || ""}`;
-    }
-
-    async set(s: Storable) {
-        localStorage.setItem(this.keyFor(s), marshal(await s.serialize()));
-    }
-
-    async get(s: Storable) {
-        const data = localStorage.getItem(this.keyFor(s));
-        if (!data) {
-            throw new Err(ErrorCode.NOT_FOUND);
-        }
-        await s.deserialize(unmarshal(data));
-    }
-
-    async delete(s: Storable) {
-        localStorage.removeItem(this.keyFor(s));
-    }
-
-    async clear() {
-        let key;
-        while ((key = localStorage.key(0))) {
-            localStorage.removeItem(key);
-        }
     }
 }
