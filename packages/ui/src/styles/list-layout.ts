@@ -1,5 +1,6 @@
 import { html } from "@polymer/lit-element";
-import { mixins, config } from "./";
+import * as mixins from "./mixins";
+import * as config from "./config";
 
 export const listLayout = html`
 <style>

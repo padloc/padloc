@@ -17,14 +17,17 @@ export class Start extends BaseElement {
     @query("pl-signup")
     private _signupForm: Signup;
 
-    @listen("load", app)
+    async firstUpdated() {
+        await app.loaded;
+        this._updateForm();
+    }
+
     @listen("lock", app)
     @listen("unlock", app)
     _updateOpen() {
         this.open = !app.locked;
     }
 
-    @listen("load", app)
     @listen("lock", app)
     @listen("logout", app)
     async _updateForm() {

@@ -106,7 +106,6 @@ export async function asCSV(data: string, nameColIndex?: number, tagsColIndex?: 
 export function isPadlockV1(data: string): boolean {
     try {
         return validateLegacyContainer(unmarshal(data));
-        return true;
     } catch (e) {
         return false;
     }
