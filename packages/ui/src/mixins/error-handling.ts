@@ -6,8 +6,12 @@ import { notify } from "../elements/notification.js";
 
 type Constructor<T> = new (...args: any[]) => T;
 
+export interface ErrorHandling {
+    handleError(error: any): Promise<boolean>;
+}
+
 export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
-    return class extends baseClass {
+    return class extends baseClass implements ErrorHandling {
         constructor(...args: any[]) {
             super(...args);
             window.addEventListener("error", (e: ErrorEvent) => this.handleError(e.error));
@@ -26,37 +30,21 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                 case ErrorCode.INVALID_SESSION:
                 case ErrorCode.SESSION_EXPIRED:
                     await app.logout();
-                    alert($l("You've been logged out of your Padlock online account. Please login in again!"));
-                    break;
-                case ErrorCode.DEPRECATED_API_VERSION:
-                    const confirmed = await confirm(
-                        $l(
-                            "A newer version of Padlock is available now! Update now to keep using " +
-                                "online features (you won't be able to sync with your account until then)!"
-                        ),
-                        $l("Update Now"),
-                        $l("Cancel"),
-                        { type: "info" }
-                    );
-
-                    if (confirmed) {
-                        // checkForUpdates();
-                        window.open("https://padlock.io/downloads/", "_blank");
-                    }
-                    break;
+                    await alert($l("Your session has expired. Please log in again!"));
+                    return true;
                 case ErrorCode.RATE_LIMIT_EXCEEDED:
-                    alert($l("It seems are servers are over capacity right now. Please try again later!"), {
+                    await alert($l("It seems are servers are over capacity right now. Please try again later!"), {
                         type: "warning"
                     });
-                    break;
+                    return true;
                 case ErrorCode.FAILED_CONNECTION:
                     notify($l("Looks like you're offline right now. Please check your internet connection!"), {
                         type: "warning",
                         duration: 5000
                     });
-                    break;
+                    return true;
                 case ErrorCode.SERVER_ERROR:
-                    confirm(
+                    await confirm(
                         error.message ||
                             $l("Something went wrong while connecting to our servers. Please try again later!"),
                         $l("Contact Support"),
@@ -67,8 +55,10 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                             window.open(`mailto:support@padlock.io?subject=Server+Error+(${error.code})`);
                         }
                     });
-                    break;
+                    return true;
             }
+
+            return false;
         }
     };
 }

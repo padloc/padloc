@@ -197,8 +197,6 @@ export class App extends EventTarget implements Storable {
             this.syncAccount();
         }
 
-        this.startPeriodicSync();
-
         this.dispatch("load");
     }
 
@@ -325,7 +323,7 @@ export class App extends EventTarget implements Storable {
     }
 
     async syncAccount() {
-        this._queueSync(this.account!, () => this._syncAccount());
+        return this._queueSync(this.account!, () => this._syncAccount());
     }
 
     async _syncAccount() {
@@ -664,14 +662,5 @@ export class App extends EventTarget implements Storable {
         );
         this._activeSyncPromises.set(obj.id, active);
         return active;
-    }
-
-    async startPeriodicSync() {
-        setTimeout(() => {
-            if (this.loggedIn && !this.locked) {
-                this.synchronize();
-            }
-            this.startPeriodicSync();
-        }, this.settings.syncInterval * 60 * 1000);
     }
 }

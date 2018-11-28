@@ -4,6 +4,7 @@ import { config, shared, mixins } from "../styles";
 import { app, router } from "../init.js";
 import { AutoLock } from "../mixins/auto-lock.js";
 import { ErrorHandling } from "../mixins/error-handling.js";
+import { AutoSync } from "../mixins/auto-sync.js";
 import { BaseElement, html, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -21,7 +22,7 @@ import { InviteDialog } from "./invite-dialog.js";
 //     document.addEventListener("deviceready", resolve);
 // });
 
-class App extends ErrorHandling(AutoLock(BaseElement)) {
+class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
     @query("pl-start")
     private _startView: Start;
     @query("pl-browse")
