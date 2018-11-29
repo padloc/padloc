@@ -209,7 +209,8 @@ export class Signup extends StartForm {
                 {
                     type: "warning",
                     title: $l("WARNING: Weak Password"),
-                    hideIcon: true
+                    hideIcon: true,
+                    preventDismiss: true
                 }
             );
             switch (choice) {
@@ -252,11 +253,10 @@ export class Signup extends StartForm {
             this._submitButton.success();
             this.done();
         } catch (e) {
+            this.verificationCode = "";
             this._submitButton.fail();
             switch (e.code) {
                 case ErrorCode.EMAIL_VERIFICATION_FAILED:
-                    this.verificationCode = "";
-
                     switch (
                         await choose(
                             $l(
