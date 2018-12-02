@@ -53,7 +53,7 @@ export interface RSAEncryptionParams {
 export interface RSASigningParams {
     algorithm: "RSA-PSS";
     hash: "SHA-256";
-    saltLength: 128;
+    saltLength: 32;
 }
 
 export interface HMACParams {
@@ -203,7 +203,7 @@ export function defaultRSASigningParams(): RSASigningParams {
     return {
         algorithm: "RSA-PSS",
         hash: "SHA-256",
-        saltLength: 128
+        saltLength: 32
     };
 }
 
