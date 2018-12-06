@@ -229,9 +229,7 @@ export class Context implements API {
 
             try {
                 await this.storage.get(new Auth(invite.email));
-                console.log("account found", invite.email);
             } catch (e) {
-                console.log("no account found", invite.email);
                 if (e.code !== ErrorCode.NOT_FOUND) {
                     throw e;
                 }
@@ -256,7 +254,6 @@ export class Context implements API {
         const vault = await new Vault(uuid(), name);
         vault.owner = account.id;
         vault.created = new Date();
-        vault.updated = new Date();
 
         await this.storage.set(vault);
 

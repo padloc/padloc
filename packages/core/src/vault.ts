@@ -32,6 +32,7 @@ export interface VaultInfo {
     id: string;
     name: string;
     publicKey: RSAPublicKey;
+    parent?: string;
 }
 
 export interface SignedVaultInfo extends VaultInfo {
@@ -95,7 +96,7 @@ export class VaultItemCollection extends Collection<VaultItem> {
     }
 }
 
-export class Vault implements VaultInfo, Storable {
+export class Vault implements Storable {
     kind = "vault";
     owner: AccountID = "";
     created = new Date(0);
@@ -137,7 +138,8 @@ export class Vault implements VaultInfo, Storable {
         return {
             id: this.id,
             name: this.name,
-            publicKey: this.publicKey
+            publicKey: this.publicKey,
+            parent: (this.parent && this.parent.id) || undefined
         };
     }
 
@@ -247,6 +249,11 @@ export class Vault implements VaultInfo, Storable {
         return verified;
     }
 
+    async verifyMember(acc: AccountInfo): Promise<boolean> {
+        const member = this.members.get(acc.id);
+        return !!member && member.publicKey === acc.publicKey && (await this.verify(member));
+    }
+
     async verifySubVault(info: VaultInfo): Promise<boolean> {
         const subVault = this.vaults.get(info.id);
         return !!subVault && subVault.publicKey === info.publicKey && (await this.verify(subVault));
@@ -330,7 +337,9 @@ export class Vault implements VaultInfo, Storable {
         }
 
         return {
-            ...this.info,
+            id: this.id,
+            name: this.name,
+            publicKey: this.publicKey,
             created: this.created,
             updated: this.updated,
             revision: this.revision,
@@ -354,14 +363,6 @@ export class Vault implements VaultInfo, Storable {
         this.parent = raw.parent;
         this._name = raw.name;
         this._publicKey = raw.publicKey;
-
-        // Verify signatures
-        for (const subj of [...raw.members.items, ...raw.vaults.items]) {
-            if (!(await this.verify(subj))) {
-                throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
-            }
-        }
-
         this._signingParams = raw.signingParams;
 
         this.members = await new Collection<VaultMember>().deserialize(raw.members);

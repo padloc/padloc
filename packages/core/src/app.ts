@@ -1,6 +1,6 @@
 import { EventEmitter } from "./event-target";
 import { Storage, Storable } from "./storage";
-import { Vault, VaultInfo, VaultItem, Field, Tag, createVaultItem } from "./vault";
+import { Vault, VaultInfo, VaultMember, VaultItem, Field, Tag, createVaultItem } from "./vault";
 import { CollectionItem } from "./collection";
 import { Account } from "./account";
 import { Auth } from "./auth";
@@ -102,8 +102,8 @@ export class App extends EventEmitter implements Storable {
         return [...new Set(tags)];
     }
 
-    get mainVault() {
-        return this.account && this._vaults.get(this.account.mainVault);
+    get mainVault(): Vault | null {
+        return (this.account && this._vaults.get(this.account.mainVault)) || null;
     }
 
     get vaults() {
@@ -350,7 +350,7 @@ export class App extends EventEmitter implements Storable {
     // VAULTS
 
     getVault(id: string) {
-        return this._vaults.get(id);
+        return this._vaults.get(id) || null;
     }
 
     async createVault(name: string, parent?: Vault): Promise<Vault> {
@@ -363,10 +363,9 @@ export class App extends EventEmitter implements Storable {
 
         this._vaults.set(vault.id, vault);
 
-        await this.syncVault(vault);
+        await this.api.updateVault(vault);
 
         const addToVault = parent || this.mainVault;
-
         if (addToVault) {
             await addToVault.addSubVault(vault.info);
             await this.syncVault(addToVault);
@@ -434,26 +433,39 @@ export class App extends EventEmitter implements Storable {
             await this.loadVault(vaultInfo);
         }
 
-        for (const vault of this._vaults.values()) {
-            if (vault === this.mainVault) {
-                continue;
-            }
-            const parent = vault.parent ? this.getVault(vault.parent.id) : this.mainVault;
-            if (!(await parent!.verifySubVault(vault))) {
+        await Promise.all([...this._vaults.values()].map(vault => this.verifyVault(vault)));
+    }
+
+    async verifyVault(vault: Vault) {
+        if (vault.id === this.account!.mainVault) {
+            return true;
+        }
+        const parent = vault.parent ? this.getVault(vault.parent.id) : this.mainVault;
+        if (!(await parent!.verifySubVault(vault.info))) {
+            console.log("failed to verify vault", vault.info, parent!.info);
+            throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
+        }
+
+        for (const member of vault.members) {
+            if (!(await vault.verifyMember(member))) {
                 throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
             }
         }
     }
 
-    async syncVault(vaultInfo: VaultInfo) {
+    async syncVault(vaultInfo: { id: string }): Promise<Vault> {
         return this._queueSync(vaultInfo, (vaultInfo: VaultInfo) => this._syncVault(vaultInfo));
     }
 
     async syncVaults() {
-        await Promise.all([...this.account!.vaults].map(g => this.syncVault(g)));
+        const parentVaults = [...this.account!.vaults].filter(v => v.id !== this.account!.mainVault && !v.parent);
+        const subVaults = [...this.account!.vaults].filter(v => !!v.parent);
+        await this.syncVault({ id: this.account!.mainVault });
+        await Promise.all(parentVaults.map(g => this.syncVault(g)));
+        await Promise.all(subVaults.map(g => this.syncVault(g)));
     }
 
-    async _syncVault(vaultInfo: VaultInfo): Promise<void> {
+    async _syncVault(vaultInfo: { id: string }): Promise<Vault> {
         const localVault = this.getVault(vaultInfo.id);
 
         const remoteVault = new Vault(vaultInfo.id);
@@ -484,11 +496,13 @@ export class App extends EventEmitter implements Storable {
             result = remoteVault;
         }
 
+        await this.verifyVault(result);
+
         try {
             await this.api.updateVault(result);
         } catch (e) {
             if (e.code === ErrorCode.MERGE_CONFLICT) {
-                return this.syncVault(vaultInfo);
+                return this._syncVault(vaultInfo);
             }
             throw e;
         }
@@ -497,6 +511,8 @@ export class App extends EventEmitter implements Storable {
         this._vaults.set(vaultInfo.id, result);
 
         this.dispatch("vault-changed", { vault: result });
+
+        return result;
     }
 
     // VAULT ITEMS
@@ -514,8 +530,8 @@ export class App extends EventEmitter implements Storable {
 
     async addItems(items: VaultItem[], vault: Vault = this.mainVault!) {
         vault.items.update(...items);
-        this.storage.set(vault);
         this.dispatch("items-added", { vault, items });
+        await this.storage.set(vault);
         this.syncVault(vault);
     }
 
@@ -529,30 +545,22 @@ export class App extends EventEmitter implements Storable {
         if (this.account) {
             item.updatedBy = this.account.id;
         }
-        this.addItems([item], vault);
+        await this.addItems([item], vault);
         this.dispatch("item-created", { vault, item });
         return item;
     }
 
     async updateItem(vault: Vault, item: VaultItem, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
-        for (const prop of ["name", "fields", "tags"]) {
-            if (typeof upd[prop] !== "undefined") {
-                item[prop] = upd[prop];
-            }
-        }
-        item.updated = new Date();
-        if (this.account) {
-            item.updatedBy = this.account.id;
-        }
+        vault.items.update({ ...item, ...upd, updatedBy: this.account!.id });
         this.dispatch("item-changed", { vault, item });
-        this.storage.set(vault);
+        await this.storage.set(vault);
         this.syncVault(vault);
     }
 
     async deleteItems(vault: Vault, items: VaultItem[]) {
         vault.items.remove(...items);
         this.dispatch("vault-changed", { vault });
-        this.storage.set(vault);
+        await this.storage.set(vault);
         this.syncVault(vault);
     }
 
@@ -648,11 +656,7 @@ export class App extends EventEmitter implements Storable {
         return this;
     }
 
-    dispatch(eventName: string, detail?: any) {
-        this.dispatchEvent(new CustomEvent(eventName, { detail: detail }));
-    }
-
-    async _queueSync(obj: { id: string }, fn: (obj: { id: string }) => Promise<void>): Promise<void> {
+    async _queueSync(obj: { id: string }, fn: (obj: { id: string }) => Promise<any>): Promise<any> {
         let queued = this._queuedSyncPromises.get(obj.id);
         let active = this._activeSyncPromises.get(obj.id);
 
@@ -664,19 +668,21 @@ export class App extends EventEmitter implements Storable {
         if (active) {
             // There is already a synchronization in process. wait for the current sync to finish
             // before starting a new one.
-            queued = active.then(() => {
+            const next = () => {
                 this._queuedSyncPromises.delete(obj.id);
                 return this._queueSync(obj, fn);
-            });
+            };
+            queued = active.then(next, next);
             this._queuedSyncPromises.set(obj.id, queued);
             return queued;
         }
 
         this.dispatch("start-sync", obj);
         active = fn(obj).then(
-            () => {
+            (result: any) => {
                 this._activeSyncPromises.delete(obj.id);
                 this.dispatch("finish-sync", obj);
+                return result;
             },
             e => {
                 this._activeSyncPromises.delete(obj.id);
