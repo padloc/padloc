@@ -214,9 +214,12 @@ export abstract class Container implements Serializable {
     protected abstract _getKey(): Promise<AESKey>;
 
     async set(data: Serializable) {
-        this.encryptionParams.iv = await provider.randomBytes(16);
-        // TODO: useful additional authenticated data?
-        this.encryptionParams.additionalData = await provider.randomBytes(16);
+        this.encryptionParams = {
+            ...this.encryptionParams,
+            iv: await provider.randomBytes(16),
+            // TODO: useful additional authenticated data?
+            additionalData: await provider.randomBytes(16)
+        };
 
         const key = await this._getKey();
         const pt = stringToBase64(marshal(await data.serialize()));
@@ -232,7 +235,7 @@ export abstract class Container implements Serializable {
     async serialize() {
         const raw = {
             version: 2,
-            encryptionParams: this.encryptionParams,
+            encryptionParams: { ...this.encryptionParams },
             encryptedData: this.encryptedData
         };
 
@@ -241,7 +244,7 @@ export abstract class Container implements Serializable {
 
     async deserialize(raw: any) {
         validateAESEncryptionParams(raw.encryptionParams);
-        this.encryptionParams = raw.encryptionParams;
+        this.encryptionParams = { ...raw.encryptionParams };
         this.encryptedData = raw.encryptedData;
         return this;
     }
@@ -277,13 +280,13 @@ export class PBES2Container extends Container {
 
     async serialize() {
         const raw = await super.serialize();
-        (raw as PBES2RawContainer).keyParams = this.keyParams;
+        (raw as PBES2RawContainer).keyParams = { ...this.keyParams };
         return raw;
     }
 
     async deserialize(raw: PBES2RawContainer) {
         validatePBKDF2Params(raw.keyParams);
-        this.keyParams = raw.keyParams;
+        this.keyParams = { ...raw.keyParams };
         await super.deserialize(raw);
         return this;
     }
@@ -337,14 +340,14 @@ export class SharedContainer extends Container {
 
     async serialize() {
         const raw = await super.serialize();
-        (raw as SharedRawContainer).keyParams = this.keyParams;
+        (raw as SharedRawContainer).keyParams = { ...this.keyParams };
         (raw as SharedRawContainer).accessors = Array.from(this._accessors.values());
         return raw;
     }
 
     async deserialize(raw: SharedRawContainer) {
         await super.deserialize(raw);
-        this.keyParams = raw.keyParams;
+        this.keyParams = { ...raw.keyParams };
         this._accessors.clear();
         for (const a of raw.accessors) {
             this._accessors.set(a.id, a);
