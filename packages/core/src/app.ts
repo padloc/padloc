@@ -566,8 +566,14 @@ export class App extends EventEmitter implements Storable {
         return invite;
     }
 
-    async getInvite(vault: string, id: string) {
-        return await this.api.getInvite({ vault, id });
+    async getInvite(vaultId: string, id: string) {
+        let vault = this.getVault(vaultId);
+        if (vault) {
+            vault = await this.syncVault(vault);
+            return vault.invites.get(id);
+        } else {
+            return await this.api.getInvite({ vault: vaultId, id });
+        }
     }
 
     async acceptInvite(invite: Invite, secret: string) {
@@ -578,6 +584,13 @@ export class App extends EventEmitter implements Storable {
             await this.syncVault(this.mainVault!);
         }
         return success;
+    }
+
+    async confirmInvite(invite: Invite) {
+        const vault = this.getVault(invite!.vault!.id);
+        await vault!.addMember(invite!.invitee!);
+        vault!.invites.remove(invite!);
+        await this.syncVault(vault!);
     }
 
     // SETTINGS / STATS

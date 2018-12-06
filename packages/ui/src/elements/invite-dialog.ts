@@ -349,11 +349,8 @@ export class InviteDialog extends Dialog<Invite, void> {
             return;
         }
         this._confirmButton.start();
-        const vault = app.getVault(this.invite!.vault!.id);
         try {
-            await vault!.addMember(this.invite!.invitee!);
-            vault!.invites.remove(this.invite!);
-            await app.syncVault(vault!);
+            await app.confirmInvite(this.invite!);
             this._confirmButton.success();
             this.done();
             alert(
