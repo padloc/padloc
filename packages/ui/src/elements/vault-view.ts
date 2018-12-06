@@ -1,5 +1,5 @@
 import { localize as $l } from "@padlock/core/lib/locale.js";
-import { VaultInfo, VaultMember } from "@padlock/core/lib/vault.js";
+import { VaultMember } from "@padlock/core/lib/vault.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
@@ -84,7 +84,7 @@ export class VaultView extends BaseElement {
         await this._inviteDialog.show(invite);
     }
 
-    private _openVault(vault: VaultInfo) {
+    private _openVault(vault: { id: string }) {
         router.go(`vaults/${vault.id}`);
     }
 
@@ -122,13 +122,7 @@ export class VaultView extends BaseElement {
         );
 
         if (confirmed) {
-            this.vault!.members.remove(member);
-            for (const { id } of vault.vaults) {
-                const vault = app.getVault(id)!;
-                vault.members.remove(member);
-                app.syncVault(vault);
-            }
-            app.syncVault(this.vault!);
+            await app.removeMember(this.vault!, member);
         }
     }
 

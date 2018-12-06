@@ -608,6 +608,16 @@ export class App extends EventEmitter implements Storable {
     }
 
     // MISC
+    async removeMember(vault: Vault, member: VaultMember): Promise<any> {
+        for (const { id } of vault.vaults) {
+            const subVault = this.getVault(id)!;
+            if (subVault.members.get(member.id)) {
+                await this.removeMember(subVault, member);
+            }
+        }
+        vault.members.remove(member);
+        await this.syncVault(vault);
+    }
 
     async synchronize() {
         await this.syncAccount();
