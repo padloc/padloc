@@ -18,7 +18,7 @@ export interface Platform {
     getDeviceInfo(): Promise<DeviceInfo>;
 }
 
-class DummyPlatform implements Platform {
+class StubPlatform implements Platform {
     async setClipboard() {}
     async getClipboard() {
         return "";
@@ -42,7 +42,7 @@ class DummyPlatform implements Platform {
     }
 }
 
-let platform: Platform = new DummyPlatform();
+let platform: Platform = new StubPlatform();
 
 export function setPlatform(p: Platform) {
     platform = p;

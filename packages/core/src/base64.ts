@@ -34,6 +34,15 @@ function _byteLength(validLen: number, placeHoldersLen: number) {
     return ((validLen + placeHoldersLen) * 3) / 4 - placeHoldersLen;
 }
 
+export function isBase64(str: string) {
+    for (let i = 0; i < str.length; i++) {
+        if (!(typeof revLookup[str.charCodeAt(i)] === "number")) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function toByteArray(b64: string) {
     let tmp;
     const lens = getLens(b64);

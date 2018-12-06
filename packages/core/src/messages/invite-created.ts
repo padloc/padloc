@@ -3,7 +3,7 @@ import { Message } from "../messenger";
 import { base as baseHTML, paragraph as p, button } from "./base-html";
 
 export class InviteCreatedMessage implements Message {
-    constructor(private invite: Invite, private link: string) {}
+    constructor(public invite: Invite, public link: string) {}
 
     get title() {
         const { vault, invitor } = this.invite;

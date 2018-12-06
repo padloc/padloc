@@ -20,9 +20,9 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "baseUrl": ".",
-        "rootDir": "src",
+        "rootDir": "./src",
         "outDir": "dist"
     },
-    "include": ["src/**/*.ts", "types/**/*.ts", "../../node_modules/@polymer/lit-element/custom_typings/polymer.d.ts"],
-    "exclude": ["node_modules/**/*.ts"]
+    "include": ["src/**/*.ts"],
+    "exclude": []
 }

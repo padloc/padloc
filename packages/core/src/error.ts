@@ -70,14 +70,18 @@ export class Err extends Error {
     constructor(
         code: ErrorCode,
         message?: string,
-        opts: { report?: boolean; display?: boolean; status?: number; originalError?: Error } = {}
+        opts: { report?: boolean; display?: boolean; status?: number; error?: Error } = {}
     ) {
-        super(message || messages[code] || "");
+        super(message || messages[code] || (opts.error && opts.error.message) || "");
         this.code = code;
         this.status = opts.status || statusCodes[code] || 500;
         this.report = opts.report || false;
         this.display = opts.report || false;
-        this.originalError = opts.originalError;
+        this.originalError = opts.error;
+    }
+
+    toString() {
+        return `${this.code}: ${this.message}`;
     }
 }
 

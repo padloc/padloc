@@ -21,6 +21,6 @@
         "baseUrl": ".",
         "outDir": "lib"
     },
-    "include": ["src/*.ts"],
+    "include": ["src/**/*.ts"],
     "exclude": ["node_modules/**/*.ts"]
 }

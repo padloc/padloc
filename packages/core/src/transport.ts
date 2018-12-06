@@ -1,3 +1,4 @@
+import { Server } from "./server";
 import { DeviceInfo } from "./platform";
 
 export interface Request {
@@ -30,4 +31,12 @@ export interface Sender {
 
 export interface Receiver {
     listen(handler: (req: Request) => Promise<Response>): void;
+}
+
+export class DirectSender implements Sender {
+    constructor(private server: Server) {}
+
+    send(req: Request) {
+        return this.server.handle(req);
+    }
 }

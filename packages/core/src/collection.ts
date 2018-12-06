@@ -30,7 +30,7 @@ export class Collection<T extends CollectionItem> implements Iterable<T>, Serial
     }
 
     get(id: string) {
-        return this._items.get(id);
+        return this._items.get(id) || null;
     }
 
     update(...items: T[]) {

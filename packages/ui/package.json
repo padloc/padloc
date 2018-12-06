@@ -15,10 +15,16 @@
     "localforage": "^1.7.3"
   },
   "devDependencies": {
-    "reflect-metadata": "^0.1.12"
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "reflect-metadata": "^0.1.12",
+    "ts-node": "^7.0.1",
+    "wct-mocha": "^1.0.0"
   },
   "description": "Padlock UI",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd test && mocha -r ts-node/register **/*.ts"
   }
 }

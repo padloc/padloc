@@ -23,7 +23,7 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                 error instanceof Err
                     ? error
                     : error instanceof Error
-                        ? new Err(ErrorCode.UNKNOWN_ERROR, error.message, { originalError: error })
+                        ? new Err(ErrorCode.UNKNOWN_ERROR, error.message, { error })
                         : new Err(ErrorCode.UNKNOWN_ERROR, error.toString());
 
             switch (error.code) {

@@ -1,4 +1,4 @@
-import { Serializable } from "./encoding";
+import { Serializable, marshal, unmarshal } from "./encoding";
 import { Err, ErrorCode } from "./error";
 
 export interface Storable extends Serializable {
@@ -14,24 +14,28 @@ export interface Storage {
 }
 
 export class MemoryStorage implements Storage {
-    private _storage = new Map<string, any>();
+    private _storage = new Map<string, string>();
 
     async set(s: Storable) {
-        this._storage.set(s.pk, await s.serialize());
+        this._storage.set(this._getKey(s), marshal(await s.serialize()));
     }
 
     async get(s: Storable) {
-        if (!this._storage.has(s.pk)) {
+        if (!this._storage.has(this._getKey(s))) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
-        await s.deserialize(this._storage.get(s.pk));
+        await s.deserialize(unmarshal(this._storage.get(this._getKey(s))!));
     }
 
     async delete(s: Storable) {
-        this._storage.delete(s.pk);
+        this._storage.delete(this._getKey(s));
     }
 
     async clear() {
         this._storage = new Map<string, any>();
+    }
+
+    private _getKey(s: Storable) {
+        return `${s.kind}_${s.pk}`;
     }
 }

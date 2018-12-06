@@ -5,5 +5,15 @@
   "main": "index.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPLv3",
-  "private": false
+  "private": false,
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "ts-node": "^7.0.1"
+  },
+  "scripts": {
+    "test": "cd test && mocha -r ts-node/register **/*.ts"
+  }
 }
