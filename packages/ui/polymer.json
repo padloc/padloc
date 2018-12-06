@@ -1,8 +1,8 @@
 {
   "entrypoint": "index.html",
-  "shell": "lib/elements/app.js",
+  "shell": "dist/elements/app.js",
   "sources": [
-   "lib/**/*.js",
+   "dist/**/*.js",
    "manifest/**",
    "package.json",
    "manifest.json"
