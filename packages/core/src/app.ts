@@ -1,3 +1,4 @@
+import { EventEmitter } from "./event-target";
 import { Storage, Storable } from "./storage";
 import { Vault, VaultInfo, VaultItem, Field, Tag, createVaultItem } from "./vault";
 import { CollectionItem } from "./collection";
@@ -59,7 +60,7 @@ export interface FilterParams {
     text?: string;
 }
 
-export class App extends EventTarget implements Storable {
+export class App extends EventEmitter implements Storable {
     kind = "app";
     pk = "";
 

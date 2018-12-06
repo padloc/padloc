@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import { EventTarget, Event } from "@padlock/core/lib/event-target.js";
 import { LitElement, html } from "@polymer/lit-element";
 import { UpdatingElement, PropertyDeclaration } from "@polymer/lit-element/lib/updating-element.js";
 export { html };
@@ -95,12 +96,12 @@ export class BaseElement extends LitElement {
                 let target: EventTarget | undefined = undefined;
 
                 if (!decl.target) {
-                    target = this;
+                    target = (this as any) as EventTarget;
                 } else if (typeof decl.target === "string") {
                     // a string target property indicates that the target is a child of this element,
                     // so we have to make sure the renderRoot is created first
                     await this.updateComplete;
-                    target = this.$(decl.target);
+                    target = (this.$(decl.target) as any) as EventTarget;
                 } else if (typeof decl.target.addEventListener === "function") {
                     target = decl.target;
                 }

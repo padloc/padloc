@@ -1,4 +1,6 @@
-export class Router extends EventTarget {
+import { EventEmitter } from "@padlock/core/lib/event-target.js";
+
+export class Router extends EventEmitter {
     history: string[] = [];
 
     constructor(public basePath = "/") {
@@ -21,7 +23,7 @@ export class Router extends EventTarget {
                 this.history.pop();
             }
 
-        this.dispatchEvent(new CustomEvent("route-changed", { detail: { path, direction } }));
+        this.dispatch("route-changed", { path, direction });
     }
 
     get path() {
