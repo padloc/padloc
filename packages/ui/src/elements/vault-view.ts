@@ -1,3 +1,4 @@
+import { until } from "lit-html/directives/until.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { VaultMember } from "@padlock/core/lib/vault.js";
 import { Invite } from "@padlock/core/lib/invite.js";
@@ -369,7 +370,7 @@ export class VaultView extends BaseElement {
 
                     <pl-icon icon="refresh"></pl-icon>
 
-                    <div>${formatDateFromNow(vault.revision.date)}</div>
+                    <div>${until(formatDateFromNow(vault.revision.date))}</div>
 
                 </div>
 
@@ -383,12 +384,16 @@ export class VaultView extends BaseElement {
 
             </h2>
 
-            ${invites.map(async inv => {
+            ${invites.map(inv => {
                 const status = inv.expired
                     ? { icon: "time", class: "warning", text: $l("expired") }
                     : inv.accepted
                         ? { icon: "check", class: "highlight", text: $l("accepted") }
-                        : { icon: "time", class: "", text: $l("expires {0}", await formatDateFromNow(inv.expires)) };
+                        : {
+                              icon: "time",
+                              class: "",
+                              text: (async () => $l("expires {0}", await formatDateFromNow(inv.expires)))()
+                          };
 
                 return html`
                 <div class="invite layout align-center tap animate" @click=${() => this._showInvite(inv)}>
@@ -403,7 +408,7 @@ export class VaultView extends BaseElement {
 
                                 <pl-icon icon="${status.icon}"></pl-icon>
 
-                                <div>${status.text}</div>
+                                <div>${until(status.text)}</div>
 
                             </div>
 

@@ -1,3 +1,4 @@
+import { until } from "lit-html/directives/until.js";
 import { Invite } from "@padlock/core/lib/invite.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
@@ -56,9 +57,11 @@ export class InviteDialog extends Dialog<Invite, void> {
                         : {
                               icon: "time",
                               class: "",
-                              text: (async () => {
-                                  return $l("expires {0}", await formatDateFromNow(expires));
-                              })()
+                              text: until(
+                                  (async () => {
+                                      return $l("expires {0}", await formatDateFromNow(expires));
+                                  })()
+                              )
                           };
 
         return html`

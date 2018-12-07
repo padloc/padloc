@@ -1,3 +1,4 @@
+import { until } from "lit-html/directives/until.js";
 import { AccountInfo } from "@padlock/core/lib/account.js";
 import { Field } from "@padlock/core/lib/vault.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
@@ -292,7 +293,7 @@ export class ItemView extends BaseElement {
             </button>
 
             <div class="updated animate">
-                ${formatDateFromNow(updated)}
+                ${until(formatDateFromNow(updated))}
                 ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
             </div>
 
