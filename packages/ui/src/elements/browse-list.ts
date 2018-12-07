@@ -3,7 +3,7 @@ import { ListItem } from "@padlock/core/lib/app.js";
 import { localize as $l } from "@padlock/core/lib/locale.js";
 import { wait } from "@padlock/core/lib/util.js";
 import { repeat } from "lit-html/directives/repeat.js";
-import { when } from "lit-html/directives/when.js";
+import { cache } from "lit-html/directives/cache.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { dialog } from "../dialog.js";
@@ -457,19 +457,20 @@ export class BrowseList extends BaseElement {
 
         return html`
 
-            ${when(
-                item.firstInSection,
-                () => html`
-                <div class="section-header" ?hidden=${!item.firstInSection}>
+            ${cache(
+                item.firstInSection
+                    ? html`
+                        <div class="section-header" ?hidden=${!item.firstInSection}>
 
-                    <div>${item.section}</div>
+                            <div>${item.section}</div>
 
-                    <div class="spacer"></div>
+                            <div class="spacer"></div>
 
-                    <div>${item.section}</div>
+                            <div>${item.section}</div>
 
-                </div>`,
-                () => html``
+                        </div>
+                    `
+                    : html``
             )}
 
             <div class="item"

@@ -15,5 +15,6 @@
   },
   "scripts": {
     "test": "cd test && mocha -r ts-node/register **/*.ts"
-  }
+  },
+  "dependencies": {}
 }

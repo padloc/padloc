@@ -7,11 +7,11 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@padlock/core": "^1.0.0",
-    "@polymer/lit-element": "^0.6.3",
+    "@polymer/lit-element": "^0.6.4",
     "@polymer/paper-spinner": "^3.0.0-pre.18",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "autosize": "^4.0.2",
-    "lit-html": "^0.13.0",
+    "lit-html": "^0.14.0",
     "localforage": "^1.7.3"
   },
   "devDependencies": {
