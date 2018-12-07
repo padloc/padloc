@@ -76,10 +76,11 @@ export class ImportDialog extends Dialog<string, void> {
 
     async show(input: string) {
         await this.updateComplete;
+        const result = super.show();
         this._formatSelect.selected = imp.guessFormat(input);
         this._parseString(input);
         this._vaultSelect.selected = app.mainVault!;
-        return super.show();
+        return result;
     }
 
     private async _parseString(rawStr: string): Promise<void> {
