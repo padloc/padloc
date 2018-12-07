@@ -112,10 +112,15 @@ export class Invite implements CollectionItem {
 
     async accept(account: AccountInfo, secret: string): Promise<boolean> {
         this.secret = secret;
-        this.invitee = (await this._sign(account)) as SignedAccountInfo;
-        this.updated = new Date();
-        const verified = await this.verify();
-        return verified === true;
+        const verified = this.vault && (await this._verify(this.vault));
+        if (verified) {
+            this.invitee = (await this._sign(account)) as SignedAccountInfo;
+            this.updated = new Date();
+            return true;
+        } else {
+            this.secret = "";
+            return false;
+        }
     }
 
     async verify(): Promise<boolean | undefined> {

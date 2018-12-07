@@ -28,12 +28,15 @@ export class InviteDialog extends Dialog<Invite, void> {
 
     @property()
     private _verified: boolean | undefined;
+    @property()
+    private _errorMessage: string = "";
 
     private get _enableActions(): boolean {
         return !!this.invite && !this.invite.expired && !this.invite.accepted && this._verified !== false;
     }
 
     async show(invite: Invite): Promise<void> {
+        this._errorMessage = "";
         this.invite = invite;
         this._verified = await invite.verify();
         super.show();
@@ -89,6 +92,12 @@ export class InviteDialog extends Dialog<Invite, void> {
 
                 .invite-text.small {
                     font-size: var(--font-size-tiny);
+                }
+
+                .invite-text.error {
+                    color: var(--color-error);
+                    text-shadow: none;
+                    font-weight: bold;
                 }
 
                 .invite-email {
@@ -202,6 +211,10 @@ export class InviteDialog extends Dialog<Invite, void> {
                 @enter=${() => this._accept()}
                 label="${$l("Enter Confirmation Code")}">
             </pl-input>
+
+            <div class="invite-text error" ?hidden=${!this._errorMessage}>
+                ${this._errorMessage}
+            </div>
 
             <div class="invite-text small" ?hidden=${!_enableActions}>
                 ${$l(
@@ -321,6 +334,13 @@ export class InviteDialog extends Dialog<Invite, void> {
         if (this._acceptButton.state === "loading") {
             return;
         }
+
+        if (!this._codeInput.value) {
+            this._errorMessage = $l("Please enter a confirmation code!");
+            this.rumble();
+            return;
+        }
+
         this._acceptButton.start();
         try {
             const success = await app.acceptInvite(this.invite!, this._codeInput.value.toLowerCase());
@@ -335,15 +355,14 @@ export class InviteDialog extends Dialog<Invite, void> {
                 );
             } else {
                 this._acceptButton.fail();
-                this.open = false;
-                await alert($l("Verification failed! Did you enter the correct confirmation code?"), {
-                    type: "warning"
-                });
-                this.open = true;
+                this._errorMessage = $l("Wrong confirmation code. Please try again!");
+                this.rumble();
+                return;
             }
         } catch (e) {
             this._acceptButton.fail();
-            throw e;
+            this._errorMessage = e.message || $l("Something went wrong. Please try again later!");
+            this.rumble();
         }
     }
 
