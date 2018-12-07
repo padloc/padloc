@@ -35,7 +35,7 @@ export class BaseElement extends LitElement {
      * Find first element macthing the selector in the element's shadow root, caching the result
      * @param selector query selector string
      */
-    $(sel: string, cached = true): HTMLElement {
+    $(sel: string, cached = false): HTMLElement {
         if (!cached || !this._$[sel]) {
             const e = this.renderRoot!.querySelector(sel);
             if (e) {
@@ -49,7 +49,7 @@ export class BaseElement extends LitElement {
      * Find first element macthing the selector in the element's shadow root, caching the result
      * @param selector query selector string
      */
-    $$(sel: string, cached = true): NodeList {
+    $$(sel: string, cached = false): NodeList {
         if (!cached || !this._$[sel]) {
             const e = this.renderRoot!.querySelectorAll(sel);
             if (e) {
