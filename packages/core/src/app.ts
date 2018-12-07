@@ -623,7 +623,7 @@ export class App extends EventEmitter implements Storable {
                 await this.removeMember(subVault, member);
             }
         }
-        vault.members.remove(member);
+        vault.removeMember(member);
         await this.syncVault(vault);
     }
 

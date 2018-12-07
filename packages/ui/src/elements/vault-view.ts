@@ -139,7 +139,7 @@ export class VaultView extends BaseElement {
             if (member.permissions.manage) {
                 member.permissions.write = true;
             }
-            this.vault!.members.update(member);
+            this.vault!.updateMember(member);
             app.syncVault(this.vault!);
         } else {
             button.active = !button.active;
@@ -148,7 +148,7 @@ export class VaultView extends BaseElement {
 
     private async _toggleReadonly(member: VaultMember) {
         member.permissions.write = !member.permissions.write;
-        this.vault!.members.update(member);
+        this.vault!.updateMember(member);
         this.requestUpdate();
         app.syncVault(this.vault!);
     }

@@ -224,6 +224,18 @@ export class Vault implements Storable {
             permissions,
             updated: new Date()
         });
+
+        this.updated = new Date();
+    }
+
+    async updateMember(member: VaultMember) {
+        this.members.update(member);
+        this.updated = new Date();
+    }
+
+    async removeMember(member: VaultMember) {
+        this.members.remove(member);
+        this.updated = new Date();
     }
 
     async addSubVault(vault: VaultInfo) {
@@ -234,6 +246,8 @@ export class Vault implements Storable {
             signedPublicKey,
             updated: new Date()
         });
+
+        this.updated = new Date();
     }
 
     async verify(subj: VaultMember | SubVault): Promise<boolean> {
