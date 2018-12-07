@@ -14,9 +14,20 @@ export class WebPlatform implements Platform {
     // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
     async setClipboard(text: string): Promise<void> {
         clipboardTextArea = clipboardTextArea || document.createElement("textarea");
+        clipboardTextArea.contentEditable = "true";
+        clipboardTextArea.readOnly = false;
         clipboardTextArea.value = text;
         document.body.appendChild(clipboardTextArea);
+        const range = document.createRange();
+        range.selectNodeContents(clipboardTextArea);
+
+        const s = window.getSelection();
+        s.removeAllRanges();
+        s.addRange(range);
         clipboardTextArea.select();
+
+        clipboardTextArea.setSelectionRange(0, clipboardTextArea.value.length); // A big number, to cover anything that could be inside the element.
+
         document.execCommand("cut");
         document.body.removeChild(clipboardTextArea);
     }
