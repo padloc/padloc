@@ -442,7 +442,7 @@ export class Server {
                 if (!params || params.length !== 1) {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
-                vault = await ctx.getVault(await new Vault().deserialize(params[0]));
+                vault = await ctx.getVault(await new Vault(params[0].id));
                 res.result = await vault.serialize();
                 break;
 

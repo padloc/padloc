@@ -99,7 +99,7 @@ export class Client implements API {
     }
 
     async getVault(vault: Vault): Promise<Vault> {
-        const res = await this.call("getVault", [await vault.serialize()]);
+        const res = await this.call("getVault", [{ id: vault.id }]);
         return vault.deserialize(res.result);
     }
 
