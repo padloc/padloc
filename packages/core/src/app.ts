@@ -42,7 +42,7 @@ function filterByString(fs: string, rec: VaultItem) {
         return true;
     }
     const content = [rec.name, ...rec.fields.map(f => f.name)].join(" ").toLowerCase();
-    return content.search(fs) !== -1;
+    return content.search(fs.toLowerCase()) !== -1;
 }
 
 export interface ListItem {
