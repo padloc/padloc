@@ -84,7 +84,7 @@ export class MemberDialog extends Dialog<{ member: VaultMember; vault: Vault }, 
         this._loading = true;
         this._approveButton.start();
         try {
-            await this.vault!.updateMember({
+            await this.vault!.members.update({
                 ...this.member!,
                 permissions: {
                     read: this._permRead.active,

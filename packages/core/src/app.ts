@@ -465,7 +465,7 @@ export class App extends EventEmitter implements Storable {
         await Promise.all(subVaults.map(g => this.syncVault(g)));
     }
 
-    async _syncVault(vaultInfo: { id: string }): Promise<Vault> {
+    async _syncVault(vaultInfo: { id: string }): Promise<Vault | null> {
         const localVault = this.getVault(vaultInfo.id);
 
         const remoteVault = new Vault(vaultInfo.id);
@@ -480,10 +480,13 @@ export class App extends EventEmitter implements Storable {
                 }
                 this._vaults.delete(vaultInfo.id);
                 this.account!.vaults.remove(vaultInfo as VaultInfo & CollectionItem);
+                return null;
             } else {
                 throw e;
             }
         }
+
+        await this.verifyVault(remoteVault);
 
         let result: Vault;
 
@@ -496,15 +499,18 @@ export class App extends EventEmitter implements Storable {
             result = remoteVault;
         }
 
-        await this.verifyVault(result);
-
-        try {
-            await this.api.updateVault(result);
-        } catch (e) {
-            if (e.code === ErrorCode.MERGE_CONFLICT) {
-                return this._syncVault(vaultInfo);
+        // Only update if there are local changes
+        if (result.revision.id !== remoteVault.revision.id) {
+            try {
+                await this.api.updateVault(result);
+            } catch (e) {
+                if (e.code === ErrorCode.MERGE_CONFLICT) {
+                    // If there is a merge conflict (probably because somebody else
+                    // did a push while we were sycing), start over.
+                    return this._syncVault(vaultInfo);
+                }
+                throw e;
             }
-            throw e;
         }
 
         await this.storage.set(result);
@@ -568,7 +574,6 @@ export class App extends EventEmitter implements Storable {
 
     async createInvite(vault: Vault, email: string) {
         const invite = await vault.createInvite(email);
-        await vault.invites.update(invite);
         this.dispatch("invite-created", { invite });
         await this.syncVault(vault);
         return invite;
@@ -623,7 +628,7 @@ export class App extends EventEmitter implements Storable {
                 await this.removeMember(subVault, member);
             }
         }
-        vault.removeMember(member);
+        vault.members.remove(member);
         await this.syncVault(vault);
     }
 

@@ -52,36 +52,60 @@ export class Collection<T extends CollectionItem> implements Iterable<T>, Serial
             updated: [],
             removed: []
         };
+        const forwardChanges: CollectionChanges<T> = {
+            added: [],
+            updated: [],
+            removed: []
+        };
 
         for (const item of this) {
             // If item does not exist in other collection and was
             // not updated since last merge, that means someone else removed
             // it (as opposed to us adding it) and we need to delete it
             if (!coll.get(item.id)) {
-                if (item.updated < this.revision.date) {
+                if (item.updated <= this.revision.date) {
                     this.remove(item);
                     changes.removed.push(item);
                 } else {
                     item.updated = new Date();
+                    forwardChanges.added.push(item);
                 }
             }
         }
 
         for (const item of coll) {
             const existing = this.get(item.id);
-            if (!existing && item.updated > this.revision.date) {
-                // item has been added or updated after last merge so we'll keep it
-                // even if we may have deleted it locally
-                this._items.set(item.id, item);
-                changes.added.push(item);
-            } else if (existing && item.updated > existing.updated) {
-                // always use the more recently updated item
-                this._items.set(item.id, item);
-                changes.updated.push(item);
+            if (!existing) {
+                // Item does not exist locally. that means either it has been added remotely
+                // or removed locally. Let's find out which...
+                if (item.updated > this.revision.date) {
+                    // item has been added or updated after last merge so we'll keep it
+                    // even if we may have deleted it locally
+                    this._items.set(item.id, item);
+                    changes.added.push(item);
+                } else {
+                    // othwerwise we assume we've removed it and drop it
+                    forwardChanges.removed.push(item);
+                }
+            } else if (existing) {
+                if (item.updated > existing.updated) {
+                    // Remote item is more recent, use it
+                    this._items.set(item.id, item);
+                    changes.updated.push(item);
+                } else if (item.updated < existing.updated) {
+                    // Ours is more recent, keep ours
+                    forwardChanges.updated.push(existing);
+                }
             }
         }
 
-        this.revision = { id: uuid(), date: new Date(), mergedFrom: [this.revision.id, coll.revision.id] };
+        if (!forwardChanges.added.length && !forwardChanges.updated.length && !forwardChanges.removed.length) {
+            // No changes occurred locally, so we'll just overwrite the revision with the remote one
+            this.revision = coll.revision;
+        } else {
+            // We've made changes locally, so we need to updated the revision
+            this.revision = { id: uuid(), date: new Date(), mergedFrom: [this.revision.id, coll.revision.id] };
+        }
 
         return changes;
     }

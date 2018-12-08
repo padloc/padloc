@@ -129,11 +129,6 @@ export class Vault implements Storable {
         return this._publicKey;
     }
 
-    set publicKey(publicKey) {
-        this._publicKey = publicKey;
-        this.updated = new Date();
-    }
-
     get info(): VaultInfo {
         return {
             id: this.id,
@@ -166,6 +161,7 @@ export class Vault implements Storable {
         });
         await this._generateKeyPair();
         await this.addMember(this._account!.info, { read: true, write: true, manage: true });
+        this.updated = new Date();
     }
 
     access(account: Account) {
@@ -228,16 +224,6 @@ export class Vault implements Storable {
         this.updated = new Date();
     }
 
-    async updateMember(member: VaultMember) {
-        this.members.update(member);
-        this.updated = new Date();
-    }
-
-    async removeMember(member: VaultMember) {
-        this.members.remove(member);
-        this.updated = new Date();
-    }
-
     async addSubVault(vault: VaultInfo) {
         const signedPublicKey = await getProvider().sign(this._privateKey, vault.publicKey, this._signingParams);
 
@@ -280,6 +266,7 @@ export class Vault implements Storable {
     async createInvite(email: string) {
         const invite = new Invite(email);
         await invite.initialize(this.info, this._account!.info, this._invitesKey);
+        this.invites.update(invite);
         return invite;
     }
 
@@ -291,19 +278,27 @@ export class Vault implements Storable {
             items?: CollectionChanges<VaultItem>;
         } = {};
 
+        let forwardChanges = false;
+
         if (manage) {
             if (vault.updated > this.updated) {
-                this.parent = vault.parent;
-                this.created = vault.created;
                 this.owner = vault.owner;
+                this.created = vault.created;
+                this.parent = vault.parent;
                 this.name = vault.name;
-                this.publicKey = vault.publicKey;
+                this._publicKey = vault._publicKey;
                 this.updated = vault.updated;
+            } else if (this.updated > vault.updated) {
+                forwardChanges = true;
+            }
 
-                if (!this._account || this._account.locked) {
-                    this._adminContainer = vault._adminContainer;
-                } else {
+            if (!this._account || this._account.locked) {
+                this._adminContainer = vault._adminContainer;
+            } else {
+                if (vault.updated > this.updated || !this._privateKey) {
                     this._privateKey = vault._privateKey;
+                }
+                if (vault.updated > this.updated || !this._invitesKey) {
                     this._invitesKey = vault._invitesKey;
                 }
             }
@@ -311,6 +306,13 @@ export class Vault implements Storable {
             changes.members = this.members.merge(vault.members);
             changes.vaults = this.vaults.merge(vault.vaults);
             changes.invites = this.invites.merge(vault.invites);
+            if (
+                this.members.revision.id !== vault.members.revision.id ||
+                this.vaults.revision.id !== vault.vaults.revision.id ||
+                this.invites.revision.id !== vault.invites.revision.id
+            ) {
+                forwardChanges = true;
+            }
         }
 
         if (write) {
@@ -318,10 +320,17 @@ export class Vault implements Storable {
                 this._itemsContainer = vault._itemsContainer;
             } else {
                 changes.items = this.items.merge(vault.items);
+                if (this.items.revision.id !== vault.items.revision.id) {
+                    forwardChanges = true;
+                }
             }
         }
 
-        this.revision = { id: uuid(), date: new Date(), mergedFrom: [this.revision.id, vault.revision.id] };
+        if (forwardChanges) {
+            this.revision = { id: uuid(), date: new Date(), mergedFrom: [this.revision.id, vault.revision.id] };
+        } else {
+            this.revision = vault.revision;
+        }
 
         return changes;
     }
@@ -405,7 +414,7 @@ export class Vault implements Storable {
 
     private async _generateKeyPair() {
         const { publicKey, privateKey } = await getProvider().generateKey(defaultRSAKeyParams());
-        this.publicKey = publicKey;
+        this._publicKey = publicKey;
         this._privateKey = privateKey;
     }
 

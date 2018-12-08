@@ -86,42 +86,6 @@ export function appSpec(): Spec {
             await app.syncVault(vault);
         });
 
-        test("Lock", async () => {
-            await app.lock();
-            assert.isTrue(app.locked);
-            assert.ownInclude(app.account, { password: "", privateKey: "" });
-            assert.isNull(app.mainVault);
-        });
-
-        test("Unlock", async () => {
-            await app.unlock(user.password);
-            assert.isFalse(app.locked);
-            assert.isNotNull(app.mainVault);
-            assert.equal(app.items.length, 1);
-        });
-
-        test("Logout", async () => {
-            await app.logout();
-            assert.isNull(app.account);
-            assert.isNull(app.session);
-            let err = null;
-            try {
-                await app.storage.get(new Vault(sharedVaultID));
-            } catch (e) {
-                err = e;
-            }
-            assert.isNotNull(err);
-            assert.equal(err.code, ErrorCode.NOT_FOUND);
-        });
-
-        test("Login", async () => {
-            await app.login(user.email, user.password);
-            assert.isNotNull(app.account);
-            const account = app.account!;
-            assert.ownInclude(account, user);
-            assert.equal(app.vaults.length, 3);
-        });
-
         test("Invite Member", async () => {
             let vault = app.vaults[1];
             let invite = await app.createInvite(vault, otherUser.email);
@@ -157,6 +121,20 @@ export function appSpec(): Spec {
             assert.equal(otherApp.vaults.length, 3);
         });
 
+        test("Make Admin", async () => {
+            const vault = app.getVault(sharedVaultID)!;
+            const member = vault.members.get(otherApp.account!.id)!;
+            vault.members.update({ ...member, permissions: { ...member.permissions, manage: true } });
+            await app.syncVault(vault);
+            await otherApp.syncVault(vault);
+            assert.isTrue(app.getVault(sharedVaultID)!.isAdmin(otherApp.account));
+            assert.isTrue(otherApp.getVault(sharedVaultID)!.isAdmin(otherApp.account));
+            // @ts-ignore
+            assert.isOk(otherApp.getVault(sharedVaultID)!._privateKey);
+            await otherApp.syncVault(vault);
+            await app.syncVault(vault);
+        });
+
         test("Simulataneous Edit", async () => {
             const item1 = await app.createItem("Added Item 1", app.getVault(sharedVaultID)!);
             const item2 = await otherApp.createItem("Added Item 2", otherApp.getVault(sharedVaultID)!);
@@ -186,6 +164,42 @@ export function appSpec(): Spec {
             assert.equal(otherApp.vaults.length, 1);
             assert.isNull(otherApp.getVault(app.vaults[1].id));
             assert.isNull(otherApp.getVault(app.vaults[2].id));
+        });
+
+        test("Lock", async () => {
+            await app.lock();
+            assert.isTrue(app.locked);
+            assert.ownInclude(app.account, { password: "", privateKey: "" });
+            assert.isNull(app.mainVault);
+        });
+
+        test("Unlock", async () => {
+            await app.unlock(user.password);
+            assert.isFalse(app.locked);
+            assert.isNotNull(app.mainVault);
+            assert.equal(app.items.length, 3);
+        });
+
+        test("Logout", async () => {
+            await app.logout();
+            assert.isNull(app.account);
+            assert.isNull(app.session);
+            let err = null;
+            try {
+                await app.storage.get(new Vault(sharedVaultID));
+            } catch (e) {
+                err = e;
+            }
+            assert.isNotNull(err);
+            assert.equal(err.code, ErrorCode.NOT_FOUND);
+        });
+
+        test("Login", async () => {
+            await app.login(user.email, user.password);
+            assert.isNotNull(app.account);
+            const account = app.account!;
+            assert.ownInclude(account, user);
+            assert.equal(app.vaults.length, 3);
         });
     };
 }
