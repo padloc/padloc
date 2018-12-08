@@ -585,7 +585,11 @@ export class App extends EventEmitter implements Storable {
             vault = await this.syncVault(vault);
             return vault.invites.get(id);
         } else {
-            return await this.api.getInvite({ vault: vaultId, id });
+            try {
+                return await this.api.getInvite({ vault: vaultId, id });
+            } catch (e) {
+                return null;
+            }
         }
     }
 

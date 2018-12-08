@@ -36,7 +36,9 @@ export class Start extends BaseElement {
 
         if (inviteMatch) {
             const [, vault, id] = inviteMatch;
-            invite = (await app.getInvite(vault, id)) || undefined;
+            try {
+                invite = (await app.getInvite(vault, id)) || undefined;
+            } catch (e) {}
         }
 
         const verificationCode = new URLSearchParams(window.location.search).get("verify") || "";
