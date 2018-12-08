@@ -23,12 +23,14 @@ export class Select<T> extends BaseElement {
                 :host {
                     display: block;
                     position: relative;
-                    padding: 0 15px;
+                    padding: 0;
                 }
 
                 select {
                     width: 100%;
                     height: var(--row-height);
+                    cursor: pointer;
+                    padding: 0 15px;
                 }
 
                 label {
@@ -56,6 +58,7 @@ export class Select<T> extends BaseElement {
                     right: 0;
                     bottom: 0;
                     margin: auto;
+                    pointer-events: none;
                 }
             </style>
 
