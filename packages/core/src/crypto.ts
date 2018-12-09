@@ -1,4 +1,4 @@
-import { Serializable, Base64String, stringToBase64, base64ToString, marshal, unmarshal } from "./encoding";
+import { Base64String } from "./encoding";
 import { Err, ErrorCode } from "./error";
 
 // Default number of pbkdf2 iterations
@@ -92,27 +92,6 @@ export interface CryptoProvider {
     fingerprint(key: RSAPublicKey): Promise<Base64String>;
 }
 
-export function validateAESEncryptionParams(params: any): AESEncryptionParams {
-    if (
-        !["AES-GCM", "AES-CCM"].includes(params.algorithm) ||
-        // TODO: validate base64
-        typeof params.iv !== "string" ||
-        typeof params.additionalData !== "string" ||
-        ![64, 96, 128].includes(params.tagSize)
-    ) {
-        throw new Err(ErrorCode.INVALID_ENCRYPTION_PARAMS);
-    }
-
-    return params as AESEncryptionParams;
-}
-
-export function validateRSAEncryptionParams(params: any): RSAEncryptionParams {
-    if (params.algorithm !== "RSA-OAEP") {
-        throw new Err(ErrorCode.INVALID_KEY_WRAP_PARAMS);
-    }
-    return params as RSAEncryptionParams;
-}
-
 export function defaultPBKDF2Params(): PBKDF2Params {
     return {
         algorithm: "PBKDF2",
@@ -123,22 +102,6 @@ export function defaultPBKDF2Params(): PBKDF2Params {
     };
 }
 
-export function validatePBKDF2Params(params: any): PBKDF2Params {
-    if (
-        params.algorithm !== "PBKDF2" ||
-        !params.salt ||
-        typeof params.salt !== "string" ||
-        !params.iterations ||
-        params.iterations > PBKDF2_ITER_MAX ||
-        ![192, 256, 512].includes(params.keySize) ||
-        !["SHA-256", "SHA-512"].includes(params.hash)
-    ) {
-        throw new Err(ErrorCode.INVALID_KEY_PARAMS);
-    }
-
-    return params as PBKDF2Params;
-}
-
 export function defaultHMACParams(): HMACParams {
     return {
         algorithm: "HMAC",
@@ -146,32 +109,6 @@ export function defaultHMACParams(): HMACParams {
         keySize: 256
     };
 }
-
-export type EncryptionScheme = "simple" | "PBES2" | "shared";
-
-export interface BaseRawContainer {
-    version: 2;
-    scheme: EncryptionScheme;
-    encryptionParams: AESEncryptionParams;
-    encryptedData: Base64String;
-}
-
-export interface SimpleRawContainer extends BaseRawContainer {
-    scheme: "simple";
-}
-
-export interface PBES2RawContainer extends BaseRawContainer {
-    scheme: "PBES2";
-    keyParams: PBKDF2Params;
-}
-
-export interface SharedRawContainer extends BaseRawContainer {
-    scheme: "shared";
-    keyParams: RSAEncryptionParams;
-    accessors: Accessor[];
-}
-
-export type RawContainer = SimpleRawContainer | PBES2RawContainer | SharedRawContainer;
 
 export function defaultEncryptionParams(): AESEncryptionParams {
     return {
@@ -207,168 +144,41 @@ export function defaultRSASigningParams(): RSASigningParams {
     };
 }
 
-export abstract class Container implements Serializable {
-    encryptedData: Base64String = "";
-    constructor(public encryptionParams: AESEncryptionParams = defaultEncryptionParams()) {}
-
-    protected abstract _getKey(): Promise<AESKey>;
-
-    async set(data: Serializable) {
-        this.encryptionParams = {
-            ...this.encryptionParams,
-            iv: await provider.randomBytes(16),
-            // TODO: useful additional authenticated data?
-            additionalData: await provider.randomBytes(16)
-        };
-
-        const key = await this._getKey();
-        const pt = stringToBase64(marshal(await data.serialize()));
-        this.encryptedData = await provider.encrypt(key, pt, this.encryptionParams);
-    }
-
-    async get(data: Serializable) {
-        const key = await this._getKey();
-        const pt = base64ToString(await provider.decrypt(key, this.encryptedData, this.encryptionParams));
-        await data.deserialize(unmarshal(pt));
-    }
-
-    async serialize() {
-        const raw = {
-            version: 2,
-            encryptionParams: { ...this.encryptionParams },
-            encryptedData: this.encryptedData
-        };
-
-        return raw as any;
-    }
-
-    async deserialize(raw: any) {
-        validateAESEncryptionParams(raw.encryptionParams);
-        this.encryptionParams = { ...raw.encryptionParams };
-        this.encryptedData = raw.encryptedData;
-        return this;
-    }
-}
-
-export class SimpleContainer extends Container {
-    key: AESKey = "";
-
-    async _getKey() {
-        return this.key;
-    }
-}
-
-export class PBES2Container extends Container {
-    password: string = "";
-
-    constructor(
-        public encryptionParams: AESEncryptionParams = defaultEncryptionParams(),
-        public keyParams: PBKDF2Params = defaultPBKDF2Params()
+export function validateAESEncryptionParams(params: any): AESEncryptionParams {
+    if (
+        !["AES-GCM", "AES-CCM"].includes(params.algorithm) ||
+        // TODO: validate base64
+        typeof params.iv !== "string" ||
+        typeof params.additionalData !== "string" ||
+        ![64, 96, 128].includes(params.tagSize)
     ) {
-        super(encryptionParams);
+        throw new Err(ErrorCode.INVALID_ENCRYPTION_PARAMS);
     }
 
-    async _getKey() {
-        if (!this.keyParams.salt) {
-            this.keyParams.salt = await provider.randomBytes(16);
-        }
-        if (!this.password) {
-            throw new Err(ErrorCode.DECRYPTION_FAILED, "No password provided");
-        }
-        return await provider.deriveKey(this.password, this.keyParams);
-    }
-
-    async serialize() {
-        const raw = await super.serialize();
-        (raw as PBES2RawContainer).keyParams = { ...this.keyParams };
-        return raw;
-    }
-
-    async deserialize(raw: PBES2RawContainer) {
-        validatePBKDF2Params(raw.keyParams);
-        this.keyParams = { ...raw.keyParams };
-        await super.deserialize(raw);
-        return this;
-    }
+    return params as AESEncryptionParams;
 }
 
-export interface Accessor {
-    id: string;
-    publicKey: RSAPublicKey;
-    encryptedKey: Base64String;
+export function validateRSAEncryptionParams(params: any): RSAEncryptionParams {
+    if (params.algorithm !== "RSA-OAEP") {
+        throw new Err(ErrorCode.INVALID_KEY_WRAP_PARAMS);
+    }
+    return params as RSAEncryptionParams;
 }
 
-export interface Access {
-    id: string;
-    privateKey: RSAPrivateKey;
-}
-
-export class SharedContainer extends Container {
-    private _accessors = new Map<string, Accessor>();
-    private _key: AESKey = "";
-    private _access: Access | null = null;
-
-    constructor(
-        public encryptionParams: AESEncryptionParams = defaultEncryptionParams(),
-        public keyParams: RSAEncryptionParams = defaultKeyWrapParams()
+export function validatePBKDF2Params(params: any): PBKDF2Params {
+    if (
+        params.algorithm !== "PBKDF2" ||
+        !params.salt ||
+        typeof params.salt !== "string" ||
+        !params.iterations ||
+        params.iterations > PBKDF2_ITER_MAX ||
+        ![192, 256, 512].includes(params.keySize) ||
+        !["SHA-256", "SHA-512"].includes(params.hash)
     ) {
-        super(encryptionParams);
+        throw new Err(ErrorCode.INVALID_KEY_PARAMS);
     }
 
-    access({ id, privateKey }: Access) {
-        this._access = { id, privateKey };
-    }
-
-    hasAccess({ id }: { id: string }) {
-        return !!this._accessors.get(id);
-    }
-
-    async setAccessors(accessors: Accessor[]) {
-        this._accessors.clear();
-        this._key = await provider.generateKey({
-            algorithm: "AES",
-            keySize: this.encryptionParams.keySize
-        } as AESKeyParams);
-
-        await Promise.all(
-            accessors.map(async a => {
-                a.encryptedKey = await provider.encrypt(a.publicKey, await this._getKey(), this.keyParams);
-                this._accessors.set(a.id, a);
-            })
-        );
-    }
-
-    async serialize() {
-        const raw = await super.serialize();
-        (raw as SharedRawContainer).keyParams = { ...this.keyParams };
-        (raw as SharedRawContainer).accessors = Array.from(this._accessors.values());
-        return raw;
-    }
-
-    async deserialize(raw: SharedRawContainer) {
-        await super.deserialize(raw);
-        this.keyParams = { ...raw.keyParams };
-        this._accessors.clear();
-        for (const a of raw.accessors) {
-            this._accessors.set(a.id, a);
-        }
-        this._key = "";
-        return this;
-    }
-
-    protected async _getKey() {
-        if (!this._access) {
-            throw new Err(ErrorCode.MISSING_ACCESS);
-        }
-        if (!this._key) {
-            const accessor = this._accessors.get(this._access.id);
-            if (!accessor || !accessor.encryptedKey) {
-                throw new Err(ErrorCode.MISSING_ACCESS);
-            }
-            this._key = await provider.decrypt(this._access.privateKey, accessor.encryptedKey, this.keyParams);
-        }
-        return this._key;
-    }
+    return params as PBKDF2Params;
 }
 
 let provider: CryptoProvider;

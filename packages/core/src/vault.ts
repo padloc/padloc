@@ -1,6 +1,5 @@
 import { Base64String, Serializable } from "./encoding";
 import {
-    SharedContainer,
     RSAPublicKey,
     RSAPrivateKey,
     RSASigningParams,
@@ -9,6 +8,7 @@ import {
     defaultRSASigningParams,
     AESKey
 } from "./crypto";
+import { SharedContainer } from "./container";
 import { uuid } from "./util";
 import { Account, AccountInfo, SignedAccountInfo, AccountID } from "./account";
 import { Invite, InviteCollection } from "./invite";

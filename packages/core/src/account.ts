@@ -1,5 +1,6 @@
 import { Base64String } from "./encoding";
-import { PBES2Container, getProvider, RSAPublicKey, RSAPrivateKey, defaultRSAKeyParams } from "./crypto";
+import { getProvider, RSAPublicKey, RSAPrivateKey, defaultRSAKeyParams } from "./crypto";
+import { PBES2Container } from "./container";
 import { Storable } from "./storage";
 import { VaultInfo } from "./vault";
 import { Collection, CollectionItem } from "./collection";

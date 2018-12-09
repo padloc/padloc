@@ -1,6 +1,7 @@
 import { sjcl } from "../vendor/sjcl";
 import { Err, ErrorCode } from "./error";
-import { PBES2RawContainer, PBKDF2_ITER_MAX } from "./crypto";
+import { PBKDF2_ITER_MAX } from "./crypto";
+import { PBES2RawContainer } from "./container";
 
 export interface LegacyContainer {
     version?: 1;

@@ -2,7 +2,7 @@ import { unmarshal } from "@padlock/core/lib/encoding.js";
 import { validateLegacyContainer, parseLegacyContainer } from "@padlock/core/lib/legacy.js";
 import { VaultItem, Field, createVaultItem } from "@padlock/core/lib/vault.js";
 import { Err, ErrorCode } from "@padlock/core/lib/error.js";
-import { PBES2Container } from "@padlock/core/lib/crypto.js";
+import { PBES2Container } from "@padlock/core/lib/container.js";
 import { uuid } from "@padlock/core/lib/util.js";
 import { loadScript } from "./util";
 

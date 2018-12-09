@@ -1,5 +1,5 @@
 import { VaultItem } from "@padlock/core/lib/vault.js";
-import { PBES2Container } from "@padlock/core/lib/crypto.js";
+import { PBES2Container } from "@padlock/core/lib/container.js";
 import { loadPapa, ImportFormat, CSV } from "./import.js";
 
 export const supportedFormats: ImportFormat[] = [CSV];

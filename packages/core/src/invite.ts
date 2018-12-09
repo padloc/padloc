@@ -1,4 +1,5 @@
-import { getProvider, PBKDF2Params, HMACParams, HMACKey, SimpleContainer, AESKey } from "./crypto";
+import { getProvider, PBKDF2Params, HMACParams, HMACKey, AESKey } from "./crypto";
+import { SimpleContainer } from "./container";
 import { base64ToHex } from "./encoding";
 import { Collection, CollectionItem } from "./collection";
 import { VaultInfo, SignedVaultInfo } from "./vault";
