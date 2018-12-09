@@ -17,10 +17,10 @@ Your email verifiation code is:
 
 ${code.toUpperCase()}
 
-If you believe you may have received this email in error, please contact us at support@padlock.io
+If you believe you may have received this email in error, please contact us at support@padloc.app
 
 Best,
-The Padlock Team`;
+The Padloc Team`;
     }
 
     get html() {
@@ -45,7 +45,7 @@ letter-spacing: 0.2em;\
             )}
 
             ${p(`
-                If you believe you may have received this email in error, please contact us at <strong>support@padlock.io</strong>
+                If you believe you may have received this email in error, please contact us at <strong>support@padloc.app</strong>
             `)}
 
             ${p(`

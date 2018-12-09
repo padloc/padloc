@@ -1,4 +1,4 @@
-import { Platform } from "@padlock/core/lib/platform.js";
+import { Platform } from "@padloc/core/lib/platform.js";
 import { loadScript } from "./util.js";
 
 const browserInfo = (async () => {

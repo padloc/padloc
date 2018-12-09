@@ -1,5 +1,5 @@
-import { VaultMember } from "@padlock/core/lib/vault.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { VaultMember } from "@padloc/core/lib/vault.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property } from "./base.js";
 

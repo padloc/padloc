@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { EventTarget, Event } from "@padlock/core/lib/event-target.js";
+import { EventTarget, Event } from "@padloc/core/lib/event-target.js";
 import { LitElement, html } from "@polymer/lit-element";
 import { UpdatingElement, PropertyDeclaration } from "@polymer/lit-element/lib/updating-element.js";
 export { html };

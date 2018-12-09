@@ -1,4 +1,4 @@
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
 import { promptPassword, alert, confirm, prompt, dialog } from "../dialog";
 import { app } from "../init.js";
@@ -267,7 +267,7 @@ export class Settings extends View {
     }
 
     private _sendMail() {
-        window.open("mailto:support@padlock.io", "_system");
+        window.open("mailto:support@padloc.io", "_system");
     }
 
     private async _import() {

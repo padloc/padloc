@@ -1,5 +1,5 @@
-import { randomString, chars } from "@padlock/core/lib/util.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { randomString, chars } from "@padloc/core/lib/util.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
 import { html, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";

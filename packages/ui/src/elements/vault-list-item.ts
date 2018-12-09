@@ -1,4 +1,4 @@
-import { Vault } from "@padlock/core/lib/vault.js";
+import { Vault } from "@padloc/core/lib/vault.js";
 import { shared, mixins } from "../styles";
 import { app } from "../init.js";
 import { BaseElement, element, html, property } from "./base.js";

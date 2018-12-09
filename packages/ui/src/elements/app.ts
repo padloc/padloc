@@ -1,5 +1,5 @@
-import { getDeviceInfo } from "@padlock/core/lib/platform.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { getDeviceInfo } from "@padloc/core/lib/platform.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../init.js";
 import { AutoLock } from "../mixins/auto-lock.js";

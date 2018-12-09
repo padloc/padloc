@@ -1,4 +1,4 @@
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 
 export function trialingMessage(days: number) {
     return $l(

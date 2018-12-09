@@ -1,4 +1,4 @@
-import { EventEmitter } from "@padlock/core/lib/event-target.js";
+import { EventEmitter } from "@padloc/core/lib/event-target.js";
 
 export class Router extends EventEmitter {
     history: string[] = [];

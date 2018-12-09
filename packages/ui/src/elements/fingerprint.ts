@@ -1,5 +1,5 @@
-import { randomArt } from "@padlock/core/lib/randomart.js";
-import { getProvider } from "@padlock/core/lib/crypto.js";
+import { randomArt } from "@padloc/core/lib/randomart.js";
+import { getProvider } from "@padloc/core/lib/crypto.js";
 import { svg } from "lit-html";
 import { until } from "lit-html/directives/until.js";
 import { BaseElement, html, element, property } from "./base";

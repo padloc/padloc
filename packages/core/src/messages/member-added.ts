@@ -6,7 +6,7 @@ export class MemberAddedMessage implements Message {
     constructor(private vault: Vault, private link: string) {}
 
     get title() {
-        return `You've been added to the "${this.vault.name}" ${this.vault.kind} on Padlock!`;
+        return `You've been added to the "${this.vault.name}" ${this.vault.kind} on Padloc!`;
     }
 
     get text() {
@@ -15,11 +15,11 @@ export class MemberAddedMessage implements Message {
         return `
 Hi there!
 
-You now have access to ${name} on Padlock! You can view it using the following link:
+You now have access to ${name} on Padloc! You can view it using the following link:
 
 ${this.link}
 
-If you believe you may have received this email in error, please contact us at support@padlock.io
+If you believe you may have received this email in error, please contact us at support@padloc.app
 
 Best,
 Martin`;
@@ -32,13 +32,13 @@ Martin`;
             ${p("Hi there!")}
 
             ${p(`
-                You now have access to <strong>${name}</strong> on Padlock!
+                You now have access to <strong>${name}</strong> on Padloc!
             `)}
 
             ${button(`View ${name}`, this.link)}
 
             ${p(`
-                If you believe you may have received this email in error, please contact us at <strong>support@padlock.io</strong>
+                If you believe you may have received this email in error, please contact us at <strong>support@padloc.app</strong>
             `)}
 
             ${p(`

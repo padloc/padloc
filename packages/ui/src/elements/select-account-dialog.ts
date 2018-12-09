@@ -1,5 +1,5 @@
-import { AccountInfo } from "@padlock/core/lib/account.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { AccountInfo } from "@padloc/core/lib/account.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared } from "../styles";
 import { element, html, property } from "./base.js";
 import { Dialog } from "./dialog.js";

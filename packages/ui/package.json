@@ -1,12 +1,11 @@
 {
-  "homepage": "http://padlock.io",
-  "name": "@padlock/ui",
+  "name": "@padloc/ui",
   "version": "3.0.0",
   "main": "src/elements/app.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
   "dependencies": {
-    "@padlock/core": "^1.0.0",
+    "@padloc/core": "^3.0.0",
     "@polymer/lit-element": "^0.6.4",
     "@polymer/paper-spinner": "^3.0.0-pre.18",
     "@webcomponents/webcomponentsjs": "^2.0.0",
@@ -23,8 +22,7 @@
     "ts-node": "^7.0.1",
     "wct-mocha": "^1.0.0"
   },
-  "description": "Padlock UI",
+  "description": "Padloc UI",
   "scripts": {
-    "test": "cd test && mocha -r ts-node/register **/*.ts"
   }
 }

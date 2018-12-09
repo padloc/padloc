@@ -1,8 +1,8 @@
-import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Session } from "@padlock/core/lib/session.js";
-import { AccountInfo } from "@padlock/core/lib/account.js";
-import { deviceDescription } from "@padlock/core/lib/platform.js";
-import { Vault } from "@padlock/core/lib/vault.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
+import { Session } from "@padloc/core/lib/session.js";
+import { AccountInfo } from "@padloc/core/lib/account.js";
+import { deviceDescription } from "@padloc/core/lib/platform.js";
+import { Vault } from "@padloc/core/lib/vault.js";
 import { formatDateFromNow } from "../util.js";
 import { app, router } from "../init.js";
 import { shared, mixins } from "../styles";

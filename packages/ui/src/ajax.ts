@@ -1,6 +1,6 @@
-import { Err, ErrorCode } from "@padlock/core/lib/error.js";
-import { marshal, unmarshal } from "@padlock/core/lib/encoding.js";
-import { Request, Response, Sender } from "@padlock/core/lib/transport.js";
+import { Err, ErrorCode } from "@padloc/core/lib/error.js";
+import { marshal, unmarshal } from "@padloc/core/lib/encoding.js";
+import { Request, Response, Sender } from "@padloc/core/lib/transport.js";
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE";
 

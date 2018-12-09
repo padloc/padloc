@@ -1,5 +1,5 @@
-import { Server } from "@padlock/core/src/server";
-import { setProvider } from "@padlock/core/src/crypto";
+import { Server } from "@padloc/core/src/server";
+import { setProvider } from "@padloc/core/src/crypto";
 import { NodeCryptoProvider } from "./crypto";
 import { HTTPReceiver } from "./http";
 import { LevelDBStorage } from "./storage";

@@ -1,6 +1,6 @@
-import { Vault } from "@padlock/core/lib/vault.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
-import { FilterParams } from "@padlock/core/lib/app.js";
+import { Vault } from "@padloc/core/lib/vault.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
+import { FilterParams } from "@padloc/core/lib/app.js";
 import { app } from "../init.js";
 import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";

@@ -542,7 +542,7 @@ export class Server {
             console.error(e.stack);
             if (this.config.reportErrors) {
                 this.messenger.send(this.config.reportErrors, {
-                    title: "Padlock Error Notification",
+                    title: "Padloc Error Notification",
                     text: `The following error occurred at ${new Date().toString()}:\n\n${e.stack}`,
                     html: ""
                 });

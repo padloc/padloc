@@ -11,7 +11,7 @@ import { Spec } from "./spec";
 export function appSpec(): Spec {
     const clientUrl = "https://padloc.app";
     const messenger = new StubMessenger();
-    const server = new Server({ clientUrl, reportErrors: "support@padlock.io" }, new MemoryStorage(), messenger);
+    const server = new Server({ clientUrl, reportErrors: "support@padloc.app" }, new MemoryStorage(), messenger);
     const app = new App(new MemoryStorage(), new DirectSender(server));
     const otherApp = new App(new MemoryStorage(), new DirectSender(server));
 

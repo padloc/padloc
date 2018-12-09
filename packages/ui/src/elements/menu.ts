@@ -1,6 +1,6 @@
 import "@polymer/paper-spinner/paper-spinner-lite.js";
-import { FilterParams } from "@padlock/core/lib/app.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { FilterParams } from "@padloc/core/lib/app.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app, router } from "../init.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, property, html, listen } from "./base.js";

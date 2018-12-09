@@ -3,7 +3,7 @@
 **Last Update: 2018-11-10**
 
 This is a high level overview of the security design and architecture
-of the Padlock core module.
+of the **padloc** core module.
 
 ## Core Objects
 
@@ -58,10 +58,10 @@ function.
 ```ts
 class PBES2Container extends Container {
     password: string;
-    keyParams: PBES2Params;
+    keyParams: PBKDF2Params;
 
     getKey() {
-        return PBES2(this.password, this.keyParams);
+        return PBKDF2(this.password, this.keyParams);
     }
 }
 ```
@@ -98,7 +98,7 @@ class SharedContainer extends Container {
 
 ### Account
 
-The account object represents a user within padlock. In addition to basic
+The account object represents a user within padloc. In addition to basic
 information like email address and name, it holds a RSA key pair used for
 securely sharing secrets (see [`SharedContainer`](#sharedcontainer)). The
 private key is encrypted at rest using the [`PBES2` scheme](#pbes2container)
@@ -143,7 +143,7 @@ way that members are. The vaults own public key can in turn be verified through
 the parent vault. Additionally, a copy of the vaults public key is stored in
 the `adminData` container so admins can verify it in absence of a parent vault.
 
-In addition to any shared vaults, every Padlock user also has a dedicated
+In addition to any shared vaults, every **padloc** user also has a dedicated
 personal vault that only they have access to. The personal vault is no different
 in functionality from shared vaults except that they may only have exactly one
 member (the user).
@@ -182,7 +182,7 @@ class Vault {
 
 ## Secure, Trustless Key Exchange
 
-Adam and Eve are both Padlock users. Adam is an admin of the vault
+Adam and Eve are both **padloc** users. Adam is an admin of the vault
 `V` and wants to add Eve as a member. Before Adam can add Eve to the vault, he
 first needs to receive and verify her public key `pE`. Likewise, Eve needs to
 receive and verify the vaults public key `pV`. In other words, a secure key
@@ -228,9 +228,9 @@ is completed.
 
 ## Authentication
 
-Even though all sensitive information in Padlock is end-to-end encrypted and
+Even though all sensitive information in **padloc** is end-to-end encrypted and
 theoretically secure even in case of an insecure connection or even a
-compromised server, Padlock still uses a robust authentication scheme to limit
+compromised server, **padloc** still uses a robust authentication scheme to limit
 access to user data, ensure payload integrity and enforce user permissions.
 Starting with v3.0, a variation of the [Secure Remote
 Password](https://tools.ietf.org/html/rfc2945) protocol is used to authenticate
@@ -239,7 +239,7 @@ exposing the users master password.
 
 ### Account Creation
 
-When a user initially signs up with a Padlock server, the following steps are
+When a user initially signs up with a **padloc** server, the following steps are
 performed:
 
 1. The user chooses an **email address** `U` (which shall act as the user name)

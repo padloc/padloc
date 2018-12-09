@@ -1,4 +1,4 @@
-import { localize } from "@padlock/core/lib/locale.js";
+import { localize } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
 import { element, html, property } from "./base.js";
 import { Dialog } from "./dialog.js";

@@ -1,5 +1,5 @@
-import { Err, ErrorCode } from "@padlock/core/lib/error.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { Err, ErrorCode } from "@padloc/core/lib/error.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app } from "../init.js";
 import { alert, confirm } from "../dialog.js";
 import { notify } from "../elements/notification.js";
@@ -52,7 +52,7 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                         { type: "warning" }
                     ).then(confirmed => {
                         if (confirmed) {
-                            window.open(`mailto:support@padlock.io?subject=Server+Error+(${error.code})`);
+                            window.open(`mailto:support@padloc.io?subject=Server+Error+(${error.code})`);
                         }
                     });
                     return true;

@@ -1,5 +1,5 @@
-import { localize as $l } from "@padlock/core/lib/locale.js";
-import { ErrorCode } from "@padlock/core/lib/error.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
+import { ErrorCode } from "@padloc/core/lib/error.js";
 import { passwordStrength } from "../util.js";
 import { app } from "../init.js";
 import { element, html, property, query } from "./base.js";

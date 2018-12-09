@@ -1,4 +1,4 @@
-import { localize } from "@padlock/core/lib/locale.js";
+import { localize } from "@padloc/core/lib/locale.js";
 import { element, html, property, query } from "./base.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";

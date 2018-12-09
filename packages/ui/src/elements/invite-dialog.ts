@@ -1,6 +1,6 @@
 import { until } from "lit-html/directives/until.js";
-import { Invite } from "@padlock/core/lib/invite.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { Invite } from "@padloc/core/lib/invite.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { app } from "../init";
 import { shared, mixins } from "../styles";

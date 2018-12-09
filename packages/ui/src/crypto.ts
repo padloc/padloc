@@ -1,4 +1,4 @@
-import { Base64String, bytesToBase64, base64ToBytes, stringToBytes } from "@padlock/core/lib/encoding.js";
+import { Base64String, bytesToBase64, base64ToBytes, stringToBytes } from "@padloc/core/lib/encoding.js";
 import {
     CryptoProvider,
     PBKDF2Params,
@@ -17,9 +17,9 @@ import {
     validateAESEncryptionParams,
     validateRSAEncryptionParams,
     RSASigningParams
-} from "@padlock/core/lib/crypto.js";
-import { Err, ErrorCode } from "@padlock/core/lib/error.js";
-import SJCLProvider from "@padlock/core/lib/sjcl.js";
+} from "@padloc/core/lib/crypto.js";
+import { Err, ErrorCode } from "@padloc/core/lib/error.js";
+import SJCLProvider from "@padloc/core/lib/sjcl.js";
 
 const webCrypto = window.crypto && window.crypto.subtle;
 

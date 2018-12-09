@@ -1,5 +1,5 @@
-import { Vault } from "@padlock/core/lib/vault.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { Vault } from "@padloc/core/lib/vault.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app } from "../init.js";
 import { shared } from "../styles";
 import { router } from "../init";

@@ -1,5 +1,5 @@
-import { localize as $l } from "@padlock/core/lib/locale.js";
-import { Vault, Tag } from "@padlock/core/lib/vault.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
+import { Vault, Tag } from "@padloc/core/lib/vault.js";
 import { app } from "../init.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, property, html, listen } from "./base.js";

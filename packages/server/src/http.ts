@@ -1,6 +1,6 @@
 import { createServer, IncomingMessage } from "http";
-import { Receiver, Request, Response } from "@padlock/core/src/transport";
-import { marshal, unmarshal } from "@padlock/core/src/encoding";
+import { Receiver, Request, Response } from "@padloc/core/src/transport";
+import { marshal, unmarshal } from "@padloc/core/src/encoding";
 
 function readBody(request: IncomingMessage): Promise<string> {
     return new Promise((resolve, reject) => {

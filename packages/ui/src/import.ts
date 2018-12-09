@@ -1,9 +1,9 @@
-import { unmarshal } from "@padlock/core/lib/encoding.js";
-import { validateLegacyContainer, parseLegacyContainer } from "@padlock/core/lib/legacy.js";
-import { VaultItem, Field, createVaultItem } from "@padlock/core/lib/vault.js";
-import { Err, ErrorCode } from "@padlock/core/lib/error.js";
-import { PBES2Container } from "@padlock/core/lib/container.js";
-import { uuid } from "@padlock/core/lib/util.js";
+import { unmarshal } from "@padloc/core/lib/encoding.js";
+import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/lib/legacy.js";
+import { VaultItem, Field, createVaultItem } from "@padloc/core/lib/vault.js";
+import { Err, ErrorCode } from "@padloc/core/lib/error.js";
+import { PBES2Container } from "@padloc/core/lib/container.js";
+import { uuid } from "@padloc/core/lib/util.js";
 import { loadScript } from "./util";
 
 export interface ImportFormat {

@@ -1,4 +1,4 @@
-import { debounce } from "@padlock/core/lib/util.js";
+import { debounce } from "@padloc/core/lib/util.js";
 import { app } from "../init.js";
 
 type Constructor<T> = new (...args: any[]) => T;

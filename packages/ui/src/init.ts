@@ -1,6 +1,6 @@
-import { App } from "@padlock/core/lib/app.js";
-import { setProvider } from "@padlock/core/lib/crypto.js";
-import { setPlatform } from "@padlock/core/lib/platform.js";
+import { App } from "@padloc/core/lib/app.js";
+import { setProvider } from "@padloc/core/lib/crypto.js";
+import { setPlatform } from "@padloc/core/lib/platform.js";
 import { WebCryptoProvider } from "./crypto.js";
 import { Router } from "./route.js";
 import { AjaxSender } from "./ajax.js";

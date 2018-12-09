@@ -1,4 +1,4 @@
-import { Invite } from "@padlock/core/lib/invite.js";
+import { Invite } from "@padloc/core/lib/invite.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, html, property } from "./base.js";
 import { animateCascade } from "../animation.js";

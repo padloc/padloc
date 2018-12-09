@@ -1,7 +1,7 @@
-import { VaultItem, Field } from "@padlock/core/lib/vault.js";
-import { ListItem } from "@padlock/core/lib/app.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
-import { wait } from "@padlock/core/lib/util.js";
+import { VaultItem, Field } from "@padloc/core/lib/vault.js";
+import { ListItem } from "@padloc/core/lib/app.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
+import { wait } from "@padloc/core/lib/util.js";
 import { repeat } from "lit-html/directives/repeat.js";
 import { cache } from "lit-html/directives/cache.js";
 import { setClipboard } from "../clipboard.js";

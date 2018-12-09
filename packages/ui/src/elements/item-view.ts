@@ -1,7 +1,7 @@
 import { until } from "lit-html/directives/until.js";
-import { AccountInfo } from "@padlock/core/lib/account.js";
-import { Field } from "@padlock/core/lib/vault.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { AccountInfo } from "@padloc/core/lib/account.js";
+import { Field } from "@padloc/core/lib/vault.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
 import { confirm, generate } from "../dialog.js";

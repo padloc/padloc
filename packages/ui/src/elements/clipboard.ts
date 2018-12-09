@@ -1,6 +1,6 @@
-import { VaultItem, Field } from "@padlock/core/lib/vault.js";
-import { setClipboard } from "@padlock/core/lib/platform.js";
-import { localize as $l } from "@padlock/core/lib/locale.js";
+import { VaultItem, Field } from "@padloc/core/lib/vault.js";
+import { setClipboard } from "@padloc/core/lib/platform.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, html, property } from "./base.js";
 

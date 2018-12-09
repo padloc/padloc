@@ -1,8 +1,8 @@
 // @ts-ignore
 import * as level from "level";
-import { marshal, unmarshal } from "@padlock/core/src/encoding";
-import { Storage, Storable } from "@padlock/core/src/storage";
-import { Err, ErrorCode } from "@padlock/core/src/error";
+import { marshal, unmarshal } from "@padloc/core/src/encoding";
+import { Storage, Storable } from "@padloc/core/src/storage";
+import { Err, ErrorCode } from "@padloc/core/src/error";
 
 export class LevelDBStorage implements Storage {
     private _db: any;

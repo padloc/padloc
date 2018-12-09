@@ -1,6 +1,6 @@
-import { Storage, Storable } from "@padlock/core/lib/storage.js";
-import { marshal, unmarshal } from "@padlock/core/lib/encoding.js";
-import { Err, ErrorCode } from "@padlock/core/lib/error.js";
+import { Storage, Storable } from "@padloc/core/lib/storage.js";
+import { marshal, unmarshal } from "@padloc/core/lib/encoding.js";
+import { Err, ErrorCode } from "@padloc/core/lib/error.js";
 // @ts-ignore
 import localStorage from "localforage/src/localforage";
 

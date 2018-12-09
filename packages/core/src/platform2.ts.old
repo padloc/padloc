@@ -117,7 +117,7 @@ export async function getAppStoreLink(): Promise<string> {
     } else if (await isChromeApp()) {
         return "https://chrome.google.com/webstore/detail/padlock/npkoefjfcjbknoeadfkbcdpbapaamcif";
     } else {
-        return "https://padlock.io";
+        return "https://padloc.app";
     }
 }
 
@@ -131,7 +131,7 @@ export async function getReviewLink(rating: number): Promise<string> {
     } else {
         const version = await getAppVersion();
         const platform = await getPlatformName();
-        return `https://padlock.io/feedback/?r=${rating}&p=${encodeURIComponent(platform)}&v=${version}`;
+        return `https://padloc.app/feedback/?r=${rating}&p=${encodeURIComponent(platform)}&v=${version}`;
     }
 }
 

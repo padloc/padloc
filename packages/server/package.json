@@ -1,7 +1,7 @@
 {
-  "name": "@padlock/server",
-  "version": "1.0.0",
-  "description": "Padlock server component",
+  "name": "@padloc/server",
+  "version": "3.0.0",
+  "description": "Padloc server component",
   "main": "index.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPLv3",
@@ -12,7 +12,7 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
-    "@padlock/core": "^1.0.0",
+    "@padloc/core": "^3.0.0",
     "level": "^4.0.0",
     "nodemailer": "^4.6.7"
   }

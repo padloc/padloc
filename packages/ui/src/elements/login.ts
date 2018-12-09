@@ -1,5 +1,5 @@
-import { localize as $l } from "@padlock/core/lib/locale.js";
-import { ErrorCode } from "@padlock/core/lib/error.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
+import { ErrorCode } from "@padloc/core/lib/error.js";
 import { app } from "../init.js";
 import { element, html, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form.js";

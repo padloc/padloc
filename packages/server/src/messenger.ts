@@ -1,4 +1,4 @@
-import { Message, Messenger } from "@padlock/core/src/messenger";
+import { Message, Messenger } from "@padloc/core/src/messenger";
 import { createTransport, Transporter, TransportOptions } from "nodemailer";
 
 export interface EmailOptions {

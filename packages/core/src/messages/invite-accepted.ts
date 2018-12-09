@@ -19,7 +19,7 @@ Visit the following link to add them:
 
 ${this.link}
 
-If you believe you may have received this email in error, please contact us at support@padlock.io
+If you believe you may have received this email in error, please contact us at support@padloc.app
 
 Best,
 Martin`;
@@ -39,7 +39,7 @@ Martin`;
             ${button("Add Them Now", this.link)}
 
             ${p(`
-                If you believe you may have received this email in error, please contact us at <strong>support@padlock.io</strong>
+                If you believe you may have received this email in error, please contact us at <strong>support@padloc.app</strong>
             `)}
 
             ${p(`
