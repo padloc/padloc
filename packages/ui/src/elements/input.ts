@@ -180,6 +180,7 @@ export class Input extends BaseElement {
                 height: 100%;
                 min-height: inherit;
                 line-height: inherit;
+                caret-color: currentColor;
             }
 
             textarea {
