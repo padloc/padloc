@@ -93,15 +93,19 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             .wrapper {
                 ${mixins.fullbleed()}
                 ${mixins.gradientDark()}
-                display: grid;
-                grid-template-columns: 200px 1fr;
+                display: flex;
                 transform: translate3d(0, 0, 0);
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
                 will-change: transform, opacity;
             }
 
+            pl-menu {
+                width: 200px;
+            }
+
             .views {
+                flex: 1;
                 position: relative;
                 perspective: 1000px;
                 margin: var(--gutter-size);
