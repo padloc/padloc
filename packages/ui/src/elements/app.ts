@@ -125,9 +125,18 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             }
 
             @media (max-width: ${config.narrowWidth}px) {
+                :host {
+                    background: #222;
+                    box-shadow: inset #000 0 0 1000px;
+                }
+
+                .wrapper {
+                    background: transparent;
+                }
+
                 .views {
                     ${mixins.fullbleed()}
-                    margin-left: var(--gutter-size);
+                    margin: 0;
                     transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
                 }
 
