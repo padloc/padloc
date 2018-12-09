@@ -85,7 +85,8 @@ export class ItemView extends BaseElement {
             main {
                 flex: 1;
                 flex-direction: column;
-                padding: 15px;
+                padding: 10px;
+                padding-bottom: 65px;
             }
 
             pl-input {
@@ -98,6 +99,16 @@ export class ItemView extends BaseElement {
                 background: #fafafa;
                 border: solid 1px #eee;
                 border-radius: 8px;
+            }
+
+            .add-button {
+                height: 45px;
+                line-height: 45px;
+            }
+
+            .add-button pl-icon {
+                top: -1px;
+                font-size: 90%;
             }
 
             .name {
@@ -165,17 +176,21 @@ export class ItemView extends BaseElement {
             }
 
             .delete-button {
-                ${mixins.gradientWarning(true)}
+                ${mixins.gradientWarning()}
                 color: var(--color-tertiary);
-                border-radius: 8px;
+                position: absolute;
+                bottom: 10px;
+                left: 10px;
             }
 
             .updated {
-                margin-top: 50px;
-                padding: 10px;
                 text-align: center;
                 font-size: var(--font-size-tiny);
                 color: #888;
+                background: rgba(255, 255, 255, 0.5);
+                position: absolute;
+                left: 10px;
+                bottom: 10px;
             }
 
             .updated::before {
@@ -284,15 +299,7 @@ export class ItemView extends BaseElement {
 
             </button>
 
-            <button class="delete-button tap" @click=${() => this._deleteItem()} ?hidden=${!this._editing}>
-
-                <pl-icon icon="delete"></pl-icon>
-
-                <div>${$l("Delete Item")}</div>
-
-            </button>
-
-            <div class="updated animate">
+            <div class="updated" hidden>
                 ${until(formatDateFromNow(updated))}
                 ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
             </div>
@@ -302,6 +309,12 @@ export class ItemView extends BaseElement {
                 @click=${() => this.edit()}
                 ?hidden=${this._editing}
                 ?disabled=${!permissions.write}>
+            </pl-icon>
+
+            <pl-icon icon="delete"
+                class="delete-button tap"
+                @click=${() => this._deleteItem()}
+                ?hidden=${!this._editing}>
             </pl-icon>
 
             <pl-icon icon="check" class="tap fab" @click=${() => this.save()} ?hidden=${!this._editing}></pl-icon>

@@ -195,12 +195,13 @@ export const shared = html`
     }
 
     header.back-header {
-        border:none ;
+        border: none;
         align-items: center;
-        padding-left: 20px;
+        padding-left: 15px;
         color: var(--color-primary);
-        margin-bottom: -15px;
+        margin-top: 10px;
         z-index: 2;
+        height: 40px;
     }
 
     header.back-header pl-icon {
