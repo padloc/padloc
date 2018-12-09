@@ -3,7 +3,7 @@ import { getProvider, RSAPublicKey, RSAPrivateKey, defaultRSAKeyParams } from ".
 import { PBES2Container } from "./container";
 import { Storable } from "./storage";
 import { VaultInfo } from "./vault";
-import { Collection, CollectionItem } from "./collection";
+import { Collection, CollectionItem, CollectionChanges } from "./collection";
 import { SessionInfo } from "./session";
 
 export type AccountID = string;
@@ -85,7 +85,12 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
         this.privateKey = "";
     }
 
-    merge(account: Account) {
+    merge(
+        account: Account
+    ): {
+        vaults: CollectionChanges<VaultInfo & CollectionItem>;
+        sessions: CollectionChanges<SessionInfo>;
+    } {
         if (account.updated > this.updated) {
             this.name = account.name;
 

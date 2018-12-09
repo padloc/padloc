@@ -15,5 +15,8 @@
     "@padloc/core": "^3.0.0",
     "level": "^4.0.0",
     "nodemailer": "^4.6.7"
+  },
+  "scripts": {
+	"start": "ts-node src/init.ts"
   }
 }

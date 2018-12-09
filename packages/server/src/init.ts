@@ -29,4 +29,5 @@ try {
     port = parseInt(process.env.PL_SERVER_PORT!);
 } catch (e) {}
 
+console.log(`Starting server on port ${port}`);
 new HTTPReceiver(port).listen(req => server.handle(req));
