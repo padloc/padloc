@@ -17,6 +17,12 @@
   ],
   "moduleResolution": "node",
   "npm": true,
+  "lint": {
+    "ignoreWarnings": [
+      "could-not-resolve-reference",
+      "cant-determine-element-tagname"
+    ]
+  },
   "builds": [
     {
       "name": "pwa",

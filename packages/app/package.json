@@ -1,5 +1,5 @@
 {
-  "name": "@padloc/ui",
+  "name": "@padloc/app",
   "version": "3.0.0",
   "main": "src/elements/app.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
