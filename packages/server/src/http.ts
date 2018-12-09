@@ -45,7 +45,8 @@ export class HTTPReceiver implements Receiver {
                     httpRes.end();
                     break;
                 default:
-                    throw "blah";
+                    httpRes.statusCode = 405;
+                    httpRes.end();
             }
         });
 
