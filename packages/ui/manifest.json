@@ -1,6 +1,6 @@
 {
-  "name": "Padlock",
-  "short_name": "Padlock",
+  "name": "Padloc",
+  "short_name": "Padloc",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#59c6ff",
