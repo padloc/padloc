@@ -455,7 +455,7 @@ export class VaultView extends BaseElement {
                             <pl-icon
                                 icon="remove"
                                 class="remove-button tap"
-                                ?disabled=${vault.isOwner(member)}
+                                ?disabled=${!vault.isAdmin() || vault.isOwner(member)}
                                 @click=${() => this._removeMember(member)}>
                             </pl-icon>
 
@@ -484,7 +484,7 @@ export class VaultView extends BaseElement {
                                 <pl-toggle-button
                                     .label=${$l("Admin")}
                                     .active=${member.permissions.manage}
-                                    ?disabled=${vault.isOwner(member)}
+                                    ?disabled=${!vault.isAdmin() || vault.isOwner(member)}
                                     @click=${(e: MouseEvent) => this._toggleAdmin(member, e)} 
                                     class="tap"
                                     reverse>
@@ -493,7 +493,7 @@ export class VaultView extends BaseElement {
                                 <pl-toggle-button
                                     .label=${$l("Readonly")}
                                     .active=${!member.permissions.write}
-                                    ?disabled=${member.permissions.manage}
+                                    ?disabled=${!vault.isAdmin() || member.permissions.manage}
                                     @click=${() => this._toggleReadonly(member)} 
                                     class="tap"
                                     reverse>
