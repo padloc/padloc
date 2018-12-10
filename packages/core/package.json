@@ -15,7 +15,8 @@
   },
   "scripts": {
     "test": "cd test && mocha -r ts-node/register **/*.ts",
-	"build": "tsc"
+    "build": "tsc",
+    "dev": "tsc --watch"
   },
   "dependencies": {}
 }
