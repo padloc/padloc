@@ -166,7 +166,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="unchecked"]) > div::before {
-                content: "\\f096";
+                content: "\\f146";
             }
 
             :host([icon="share"]) > div::before {

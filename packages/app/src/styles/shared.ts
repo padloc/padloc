@@ -446,6 +446,7 @@ export const shared = html`
         bottom: 0;
         pointer-events: none;
         display: flex;
+        align-items: center;
     }
 
     .fab {

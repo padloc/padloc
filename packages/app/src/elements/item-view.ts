@@ -370,7 +370,7 @@ export class ItemView extends BaseElement {
             icon: "question"
         });
         if (confirmed) {
-            app.deleteItems(this.vault!, [this.item!]);
+            app.deleteItems([{ vault: this.vault!, item: this.item! }]);
             router.go("items");
         }
     }

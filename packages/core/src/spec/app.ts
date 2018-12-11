@@ -146,7 +146,7 @@ export function appSpec(): Spec {
 
             await app.updateItem(app.getVault(sharedVaultID)!, item1, { name: "Edited Item" });
             const item3 = await app.createItem("Added Item 3", app.getVault(sharedVaultID)!);
-            await otherApp.deleteItems(otherApp.getVault(sharedVaultID)!, [item2]);
+            await otherApp.deleteItems([{ vault: otherApp.getVault(sharedVaultID)!, item: item1 }]);
 
             await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
             await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);

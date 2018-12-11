@@ -563,14 +563,7 @@ export class App extends EventEmitter implements Storable {
         this.syncVault(vault);
     }
 
-    async deleteItems(vault: Vault, items: VaultItem[]) {
-        vault.items.remove(...items);
-        this.dispatch("items-deleted", { vault, items });
-        await this.storage.set(vault);
-        this.syncVault(vault);
-    }
-
-    async moveItems(items: { item: VaultItem; vault: Vault }[], target: Vault) {
+    async deleteItems(items: { item: VaultItem; vault: Vault }[]) {
         const grouped = new Map<Vault, VaultItem[]>();
         for (const item of items) {
             if (!grouped.has(item.vault)) {
@@ -579,10 +572,17 @@ export class App extends EventEmitter implements Storable {
             grouped.get(item.vault)!.push(item.item);
         }
         for (const [vault, items] of grouped.entries()) {
-            await this.deleteItems(vault, items);
+            vault.items.remove(...items);
+            await this.storage.set(vault);
+            this.dispatch("items-deleted", { vault, items });
+            this.syncVault(vault);
         }
+    }
+
+    async moveItems(items: { item: VaultItem; vault: Vault }[], target: Vault) {
         const newItems = items.map(i => ({ ...i.item, id: uuid() }));
         await this.addItems(newItems, target);
+        await this.deleteItems(items);
         return newItems;
     }
 

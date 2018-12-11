@@ -1,4 +1,4 @@
 window.env = {
-    clientUrl: "http://192.168.1.135:8081",
-    serverUrl: "http://192.168.1.135:3000"
+    clientUrl: "http://localhost:8081",
+    serverUrl: "http://localhost:3000"
 };

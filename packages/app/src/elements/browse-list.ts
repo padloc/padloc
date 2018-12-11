@@ -6,11 +6,12 @@ import { repeat } from "lit-html/directives/repeat.js";
 import { cache } from "lit-html/directives/cache.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
-import { dialog } from "../dialog.js";
+import { dialog, confirm } from "../dialog.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
 import { CreateItemDialog } from "./create-item-dialog.js";
 import { Input } from "./input.js";
+import { MoveItemsDialog } from "./move-items-dialog.js";
 
 @element("pl-browse-list")
 export class BrowseList extends BaseElement {
@@ -38,9 +39,10 @@ export class BrowseList extends BaseElement {
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
 
-    // private get _selectedItems() {
-    //     return [...this._selected.values()].map((item: ListItem) => item.item);
-    // }
+    @dialog("pl-move-items-dialog")
+    private _moveItemsDialog: MoveItemsDialog;
+
+    private _multiSelect = new Map<string, ListItem>();
 
     @listen("items-added", app)
     @listen("items-deleted", app)
@@ -51,6 +53,12 @@ export class BrowseList extends BaseElement {
     @listen("filter-changed", app)
     _updateListItems() {
         this._listItems = app.items;
+        // Clear items from selection that are no longer in list (due to filtering)
+        for (const id of this._multiSelect.keys()) {
+            if (!this._listItems.some(i => i.item.id === id)) {
+                this._multiSelect.delete(id);
+            }
+        }
         this._toggleFilterInput();
     }
 
@@ -83,34 +91,36 @@ export class BrowseList extends BaseElement {
     }
 
     selectItem(item: ListItem) {
-        // if (this.multiSelect) {
-        //     if (this._selected.has(item.item.id)) {
-        //         this._selected.delete(item.item.id);
-        //     } else {
-        //         this._selected.set(item.item.id, item);
-        //     }
-        // } else {
-        //     this._selected.clear();
-        //     this._selected.set(item.item.id, item);
-        //     this._scrollToSelected();
-        // }
-
-        router.go(`items/${item.item.id}`);
+        if (this.multiSelect) {
+            if (this._multiSelect.has(item.item.id)) {
+                this._multiSelect.delete(item.item.id);
+            } else {
+                this._multiSelect.set(item.item.id, item);
+            }
+            this.requestUpdate();
+        } else {
+            router.go(`items/${item.item.id}`);
+        }
     }
 
-    // selectAll() {
-    //     this.multiSelect = true;
-    //     for (const item of this._listItems) {
-    //         this._selected.set(item.item.id, item);
-    //     }
-    //     this.requestUpdate();
-    // }
+    selectAll() {
+        this.multiSelect = true;
+        for (const item of this._listItems) {
+            this._multiSelect.set(item.item.id, item);
+        }
+        this.requestUpdate();
+    }
 
-    // clearSelection() {
-    //     this._selected.clear();
-    //     this.multiSelect = false;
-    //     this.requestUpdate();
-    // }
+    clearSelection() {
+        this._multiSelect.clear();
+        this.requestUpdate();
+    }
+
+    cancelMultiSelect() {
+        this._multiSelect.clear();
+        this.multiSelect = false;
+        this.requestUpdate();
+    }
 
     firstUpdated() {
         this._resizeHandler();
@@ -163,6 +173,10 @@ export class BrowseList extends BaseElement {
                 text-align: center;
             }
 
+            main {
+                padding-bottom: 70px;
+            }
+
             .section-header {
                 position: sticky;
                 top: 0;
@@ -184,7 +198,9 @@ export class BrowseList extends BaseElement {
                 cursor: pointer;
                 vertical-align: top;
                 box-sizing: border-box;
+                display: flex;
                 flex-direction: row;
+                align-items: center;
                 background: var(--color-background);
                 margin: 6px 0;
                 border-top: solid 1px #ddd;
@@ -279,6 +295,45 @@ export class BrowseList extends BaseElement {
                 background: #e6e6e6;
                 border-color: #ddd;
             }
+
+            .item-check {
+                position: relative;
+                width: 30px;
+                height: 30px;
+                box-sizing: border-box;
+                border: solid 3px #eee;
+                background: #eee;
+                border-radius: 30px;
+                margin: 10px;
+                margin-right: 5px;
+            }
+
+            .item-check::after {
+                content: "";
+                display: block;
+                ${mixins.fullbleed()}
+                background: var(--color-primary);
+                border-radius: inherit;
+                transition: transform 0.2s, opacity 0.2s;
+                transition-timing-function: cubic-bezier(1, -0.3, 0, 1.3);
+            }
+
+            .item-check:not([checked])::after {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            .selected-count {
+                text-align: center;
+                display: block;
+                margin-left: 15px;
+                background: #ddd;
+                border-radius: var(--border-radius);
+                padding: 5px;
+                line-height: 1.2em;
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
+            }
         </style>
 
         <header>
@@ -335,11 +390,30 @@ export class BrowseList extends BaseElement {
 
         </div>
 
-        <div class="fabs">
+        <div class="fabs" ?hidden=${this.multiSelect}>
+
+            <pl-icon icon="checked" class="tap fab" @click=${() => this.selectAll()}></pl-icon>
 
             <div class="flex"></div>
 
             <pl-icon icon="add" class="tap fab" @click=${() => this._newItem()}></pl-icon>
+
+        </div>
+
+        <div class="fabs" ?hidden=${!this.multiSelect}>
+
+            <pl-icon icon="checkall"
+                class="tap fab"
+                @click=${() => (this._multiSelect.size ? this.clearSelection() : this.selectAll())}>
+            </pl-icon>
+
+            <pl-icon icon="cancel" class="tap fab" @click=${() => this.cancelMultiSelect()}></pl-icon>
+
+            <div class="flex selected-count">${$l("{0} items selected", this._multiSelect.size.toString())}</div>
+
+            <pl-icon icon="share" class="tap fab" @click=${() => this._moveItems()}></pl-icon>
+
+            <pl-icon icon="delete" class="tap fab destructive" @click=${() => this._deleteItems()}></pl-icon>
 
         </div>
 `;
@@ -402,35 +476,25 @@ export class BrowseList extends BaseElement {
     //     }, delay);
     // }
 
-    // private async _shareSelected() {
-    //     for (const [id, item] of this._selected.entries()) {
-    //         if (item.vault !== app.mainVault) {
-    //             this._selected.delete(id);
-    //         }
-    //     }
-    //     this.requestUpdate();
-    //     const shareDialog = getDialog("pl-share-dialog") as ShareDialog;
-    //     await shareDialog.show(this._selectedItems);
-    //     this.clearSelection();
-    // }
-    //
-    // private async _deleteSelected() {
-    //     const confirmed = await confirm(
-    //         $l("Are you sure you want to delete these items? This action can not be undone!"),
-    //         $l("Delete {0} Items", this._selectedItems.length.toString())
-    //     );
-    //     if (confirmed) {
-    //         const vaults = new Map<Vault, Item[]>();
-    //         for (const item of this._selected.values()) {
-    //             if (!vaults.has(item.vault)) {
-    //                 vaults.set(item.vault, []);
-    //             }
-    //             vaults.get(item.vault)!.push(item.item);
-    //         }
-    //         await Promise.all([...vaults.entries()].map(([vault, items]) => app.deleteItems(vault, items)));
-    //         this.multiSelect = false;
-    //     }
-    // }
+    private async _deleteItems() {
+        const confirmed = await confirm(
+            $l("Are you sure you want to delete these items? This action can not be undone!"),
+            $l("Delete {0} Items", this._multiSelect.size.toString()),
+            $l("Cancel"),
+            { type: "warning" }
+        );
+        if (confirmed) {
+            await app.deleteItems([...this._multiSelect.values()]);
+            this.cancelMultiSelect();
+        }
+    }
+
+    private async _moveItems() {
+        const movedItems = await this._moveItemsDialog.show([...this._multiSelect.values()]);
+        if (movedItems) {
+            this.cancelMultiSelect();
+        }
+    }
 
     private _copyField(item: VaultItem, index: number, e: Event) {
         e.stopPropagation();
@@ -485,40 +549,49 @@ export class BrowseList extends BaseElement {
                 @click=${() => this.selectItem(item)}
                 index="${index}">
 
-                    <div class="item-header">
-
-                        <div class="item-name" ?disabled=${!item.item.name}>
-                            ${item.item.name || $l("No Name")}
-                        </div>
-
-                        <div class="tags small">
-                            ${tags.map(
-                                tag => html`
-                                    <div class="ellipsis tag ${tag.class}">${tag.name}</div>
-                                `
-                            )}
-                        </div>
-
+                    <div class="item-check"
+                        ?hidden=${!this.multiSelect}
+                        ?checked=${this._multiSelect.has(item.item.id)}>
                     </div>
 
-                    <div class="item-fields">
+                    <div class="flex">
 
-                        ${item.item.fields.map(
-                            (f: Field, i: number) => html`
-                                <div
-                                    class="item-field"
-                                    @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}>
+                        <div class="item-header">
 
-                                    <div class="item-field-label">${f.name}</div>
+                            <div class="item-name" ?disabled=${!item.item.name}>
+                                ${item.item.name || $l("No Name")}
+                            </div>
 
-                                    <div class="copied-message">${$l("copied")}</div>
+                            <div class="tags small">
+                                ${tags.map(
+                                    tag => html`
+                                        <div class="ellipsis tag ${tag.class}">${tag.name}</div>
+                                    `
+                                )}
+                            </div>
 
-                                </div>
-                            `
-                        )}
+                        </div>
 
-                        <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
-                            ${$l("No Fields")}
+                        <div class="item-fields">
+
+                            ${item.item.fields.map(
+                                (f: Field, i: number) => html`
+                                    <div
+                                        class="item-field"
+                                        @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}>
+
+                                        <div class="item-field-label">${f.name}</div>
+
+                                        <div class="copied-message">${$l("copied")}</div>
+
+                                    </div>
+                                `
+                            )}
+
+                            <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
+                                ${$l("No Fields")}
+                            </div>
+
                         </div>
 
                     </div>
