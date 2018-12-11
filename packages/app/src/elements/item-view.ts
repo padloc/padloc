@@ -4,7 +4,7 @@ import { Field } from "@padloc/core/lib/vault.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
-import { confirm, generate } from "../dialog.js";
+import { confirm, generate, dialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { setClipboard } from "../clipboard.js";
@@ -12,6 +12,7 @@ import { BaseElement, element, html, property, query, queryAll, listen, observe 
 import "./icon.js";
 import { Input } from "./input.js";
 import { TagsInput } from "./tags-input.js";
+import { MoveItemsDialog } from "./move-items-dialog.js";
 
 @element("pl-item-view")
 export class ItemView extends BaseElement {
@@ -39,6 +40,9 @@ export class ItemView extends BaseElement {
     _fieldNameInputs: Input[];
     @queryAll("pl-input.field-value")
     _fieldValueInputs: Input[];
+
+    @dialog("pl-move-items-dialog")
+    _moveItemsDialog: MoveItemsDialog;
 
     @listen("item-changed", app)
     @listen("vault-changed", app)
@@ -175,14 +179,6 @@ export class ItemView extends BaseElement {
                 top: 1px;
             }
 
-            .delete-button {
-                ${mixins.gradientWarning()}
-                color: var(--color-tertiary);
-                position: absolute;
-                bottom: 10px;
-                left: 10px;
-            }
-
             .updated {
                 text-align: center;
                 font-size: var(--font-size-tiny);
@@ -304,20 +300,38 @@ export class ItemView extends BaseElement {
                 ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
             </div>
 
-            <pl-icon icon="edit"
-                class="tap fab"
-                @click=${() => this.edit()}
-                ?hidden=${this._editing}
-                ?disabled=${!permissions.write}>
-            </pl-icon>
+            <div class="fabs" ?hidden=${!this._editing}>
 
-            <pl-icon icon="delete"
-                class="delete-button tap"
-                @click=${() => this._deleteItem()}
-                ?hidden=${!this._editing}>
-            </pl-icon>
+                <pl-icon icon="delete"
+                    class="fab tap destructive"
+                    @click=${() => this._deleteItem()}
+                    ?hidden=${!this._editing}>
+                </pl-icon>
 
-            <pl-icon icon="check" class="tap fab" @click=${() => this.save()} ?hidden=${!this._editing}></pl-icon>
+                <div class="flex"></div>
+
+                <pl-icon icon="check"
+                    class="tap fab"
+                    @click=${() => this.save()}>
+                </pl-icon>
+
+            </div>
+
+            <div class="fabs" ?hidden=${this._editing || !permissions.write}>
+
+                <pl-icon icon="share"
+                    class="tap fab"
+                    @click=${() => this._move()}>
+                </pl-icon>
+
+                <div class="flex"></div>
+
+                <pl-icon icon="edit"
+                    class="tap fab"
+                    @click=${() => this.edit()}>
+                </pl-icon>
+
+            </div>
 
         </main>
 `;
@@ -387,5 +401,12 @@ export class ItemView extends BaseElement {
         app.updateItem(this.vault!, item, {
             fields: item.fields
         });
+    }
+
+    async _move() {
+        const movedItems = await this._moveItemsDialog.show([{ item: this.item!, vault: this.vault! }]);
+        if (movedItems && movedItems.length) {
+            router.go(`items/${movedItems[0].id}`);
+        }
     }
 }

@@ -438,14 +438,30 @@ export const shared = html`
         text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
     }
 
-    .fab {
-        border-radius: 100%;
+    .fabs {
         position: absolute;
         z-index: 2;
-        bottom: 10px;
-        right: 10px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        display: flex;
+    }
+
+    .fab {
+        pointer-events: auto;
+        border-radius: 100%;
+        margin: 15px;
         background: var(--color-secondary);
         color: var(--color-tertiary);
+    }
+
+    .fab:not(:last-child) {
+        margin-right: 0;
+    }
+
+    .fab.destructive {
+        ${mixins.gradientWarning(true)}
     }
 
     .empty-placeholder {

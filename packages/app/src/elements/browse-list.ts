@@ -45,6 +45,7 @@ export class BrowseList extends BaseElement {
     @listen("items-added", app)
     @listen("items-deleted", app)
     @listen("item-changed", app)
+    @listen("items-moved", app)
     @listen("settings-changed", app)
     @listen("vault-changed", app)
     @listen("filter-changed", app)
@@ -334,7 +335,13 @@ export class BrowseList extends BaseElement {
 
         </div>
 
-        <pl-icon icon="add" class="tap fab" @click=${() => this._newItem()}></pl-icon>
+        <div class="fabs">
+
+            <div class="flex"></div>
+
+            <pl-icon icon="add" class="tap fab" @click=${() => this._newItem()}></pl-icon>
+
+        </div>
 `;
     }
 

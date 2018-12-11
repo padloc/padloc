@@ -565,9 +565,25 @@ export class App extends EventEmitter implements Storable {
 
     async deleteItems(vault: Vault, items: VaultItem[]) {
         vault.items.remove(...items);
-        this.dispatch("vault-changed", { vault });
+        this.dispatch("items-deleted", { vault, items });
         await this.storage.set(vault);
         this.syncVault(vault);
+    }
+
+    async moveItems(items: { item: VaultItem; vault: Vault }[], target: Vault) {
+        const grouped = new Map<Vault, VaultItem[]>();
+        for (const item of items) {
+            if (!grouped.has(item.vault)) {
+                grouped.set(item.vault, []);
+            }
+            grouped.get(item.vault)!.push(item.item);
+        }
+        for (const [vault, items] of grouped.entries()) {
+            await this.deleteItems(vault, items);
+        }
+        const newItems = items.map(i => ({ ...i.item, id: uuid() }));
+        await this.addItems(newItems, target);
+        return newItems;
     }
 
     // INVITES
