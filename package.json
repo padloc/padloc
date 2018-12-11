@@ -22,6 +22,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "start": "lerna run --parallel start"
+    "start": "lerna run --parallel start",
+    "dev": "lerna run --parallel dev"
   }
 }
