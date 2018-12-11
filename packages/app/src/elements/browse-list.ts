@@ -207,6 +207,11 @@ export class BrowseList extends BaseElement {
                 border-bottom: solid 1px #ddd;
             }
 
+            .item-body {
+                flex: 1;
+                width: 0;
+            }
+
             .item .tags {
                 padding: 0 8px;
             }
@@ -554,7 +559,7 @@ export class BrowseList extends BaseElement {
                         ?checked=${this._multiSelect.has(item.item.id)}>
                     </div>
 
-                    <div class="flex">
+                    <div class="item-body">
 
                         <div class="item-header">
 
