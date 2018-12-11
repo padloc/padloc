@@ -1,5 +1,5 @@
 import { shared } from "../styles";
-import { BaseElement, element, html, property, query } from "./base.js";
+import { BaseElement, element, html, property, query, observe } from "./base.js";
 
 @element("pl-select")
 export class Select<T> extends BaseElement {
@@ -77,7 +77,8 @@ export class Select<T> extends BaseElement {
         `;
     }
 
-    _changed() {
+    @observe("options")
+    private _changed() {
         this.selected = this.options[this._select.selectedIndex];
         this.dispatch("change");
     }
