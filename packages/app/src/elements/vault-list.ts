@@ -128,8 +128,13 @@ export class VaultList extends BaseElement {
 
                 </div>
 
-                <pl-icon icon="add" class="tap fab" @click=${() => this._createVault()}></pl-icon>
+                <div class="fabs">
 
+                    <div class="flex"></div>
+
+                    <pl-icon icon="add" class="tap fab" @click=${() => this._createVault()}></pl-icon>
+
+                </div>
             </main>
         `;
     }
