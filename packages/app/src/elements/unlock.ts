@@ -1,15 +1,18 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { ErrorCode } from "@padloc/core/lib/error.js";
 import { app } from "../init.js";
-import { element, html, query } from "./base.js";
+import { element, property, html, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
-import { alert, confirm } from "../dialog.js";
+import { confirm } from "../dialog.js";
 import "./logo.js";
 
 @element("pl-unlock")
 export class Unlock extends StartForm {
+    @property()
+    private _errorMessage: string;
+
     @query("#passwordInput")
     private _passwordInput: Input;
     @query("#unlockButton")
@@ -17,6 +20,7 @@ export class Unlock extends StartForm {
 
     reset() {
         this._passwordInput.value = "";
+        this._errorMessage = "";
         this._unlockButton.stop();
         super.reset();
         setTimeout(() => this._passwordInput.focus(), 100);
@@ -51,12 +55,15 @@ export class Unlock extends StartForm {
                     required
                     .label=${$l("Enter Master Password")}
                     class="tiles-2 animate tap"
+                    select-on-focus
                     @enter=${() => this._submit()}>
                 </pl-input>
 
                 <pl-loading-button id="unlockButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
                     ${$l("Unlock")}
                 </pl-loading-button>
+
+                <div class="hint warning" ?hidden=${!this._errorMessage}>${this._errorMessage}</div>
 
             </form>
 
@@ -82,9 +89,13 @@ export class Unlock extends StartForm {
         this._passwordInput.blur();
 
         if (!this._passwordInput.value) {
-            await alert($l("Please enter your master password!"), { type: "warning" });
+            this._errorMessage = $l("Please enter your master password!");
+            this.rumble();
+            this._passwordInput.focus();
+            return;
         }
 
+        this._errorMessage = "";
         this._unlockButton.start();
         try {
             await app.unlock(this._passwordInput.value);
@@ -95,7 +106,9 @@ export class Unlock extends StartForm {
             if (e.code !== ErrorCode.DECRYPTION_FAILED) {
                 throw e;
             }
-            alert($l("Wrong password! Please try again!"), { type: "warning" });
+            this._errorMessage = $l("Wrong password! Please try again.");
+            this.rumble();
+            this._passwordInput.focus();
         }
     }
 

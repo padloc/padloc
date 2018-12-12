@@ -53,23 +53,6 @@ export class Signup extends StartForm {
                     padding: 0 10px;
                 }
 
-                .hint {
-                    font-size: var(--font-size-tiny);
-                    box-sizing: border-box;
-                    max-height: 100px;
-                    padding: 0 10px;
-                    margin-bottom: 30px;
-                    transition: color 0.2s;
-                    text-shadow: none;
-                }
-
-                .hint.warning {
-                    color: var(--color-error);
-                    font-weight: bold;
-                    margin: 0;
-                    padding: 0;
-                }
-
                 #submitButton {
                     margin-bottom: 30px;
                 }
@@ -139,7 +122,7 @@ export class Signup extends StartForm {
                     )}
                 </div>
 
-                <div class="hint warning animate" ?hidden=${!_weakPassword}>${$l("WARNING: Weak Password!")}</div>
+                <div class="hint warning" ?hidden=${!_weakPassword}>${$l("WARNING: Weak Password!")}</div>
 
                 <pl-input
                     id="repeatPasswordInput"

@@ -1,15 +1,17 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { ErrorCode } from "@padloc/core/lib/error.js";
 import { app } from "../init.js";
-import { element, html, query } from "./base.js";
+import { element, html, property, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
-import { alert } from "../dialog.js";
 import "./logo.js";
 
 @element("pl-login")
 export class Login extends StartForm {
+    @property()
+    private _errorMessage: string;
+
     @query("#emailInput")
     private _emailInput: Input;
     @query("#passwordInput")
@@ -59,6 +61,7 @@ export class Login extends StartForm {
                     id="emailInput"
                     type="email"
                     required
+                    select-on-focus
                     .label=${$l("Email Adress")}
                     class="tiles-2 animate tap"
                     @enter=${() => this._submit()}>
@@ -68,6 +71,7 @@ export class Login extends StartForm {
                     id="passwordInput"
                     type="password"
                     required
+                    select-on-focus
                     .label=${$l("Master Password")}
                     class="tiles-2 animate tap"
                     @enter=${() => this._submit()}>
@@ -76,6 +80,8 @@ export class Login extends StartForm {
                 <pl-loading-button id="loginButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
                     ${$l("Login")}
                 </pl-loading-button>
+
+                <div class="hint warning" ?hidden=${!this._errorMessage}>${this._errorMessage}</div>
 
                 <div class="hint animate">
                     ${$l("New to Padlock?")}
@@ -103,17 +109,20 @@ export class Login extends StartForm {
         this._passwordInput.blur();
 
         if (this._emailInput.invalid) {
-            await alert(this._emailInput.validationMessage || $l("Please enter a valid email address!"), {
-                type: "warning"
-            });
+            this._errorMessage = $l("Please enter a valid email address!");
+            this.rumble();
+            this._emailInput.focus();
             return;
         }
 
         if (!this._passwordInput.value) {
-            await alert($l("Please enter a master password!"), { type: "warning" });
+            this._errorMessage = $l("Please enter your master password!");
+            this.rumble();
+            this._passwordInput.focus();
             return;
         }
 
+        this._errorMessage = "";
         this._loginButton.start();
         try {
             await app.login(this._emailInput.value, this._passwordInput.value);
@@ -124,7 +133,9 @@ export class Login extends StartForm {
             if (e.code !== ErrorCode.INVALID_CREDENTIALS) {
                 throw e;
             }
-            alert($l("Wrong username or password. Please try again!"), { type: "warning" });
+            this._errorMessage = $l("Wrong username or password. Please try again!");
+            this.rumble();
+            this._passwordInput.focus();
         }
     }
 }

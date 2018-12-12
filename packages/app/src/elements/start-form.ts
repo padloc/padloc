@@ -1,7 +1,7 @@
 import { Invite } from "@padloc/core/lib/invite.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, html, property } from "./base.js";
-import { animateCascade } from "../animation.js";
+import { animateElement, animateCascade } from "../animation.js";
 import "./icon.js";
 
 export const sharedStyles = html`
@@ -43,6 +43,23 @@ export const sharedStyles = html`
             overflow: hidden;
             font-weight: bold;
         }
+
+        .hint {
+            font-size: var(--font-size-tiny);
+            box-sizing: border-box;
+            max-height: 100px;
+            padding: 0 10px;
+            margin-bottom: 30px;
+            transition: color 0.2s;
+            text-shadow: none;
+        }
+
+        .hint.warning {
+            color: #ffc107;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+        }
     </style>
 `;
 
@@ -72,5 +89,9 @@ export abstract class StartForm extends BaseElement {
             easing: "cubic-bezier(1, 0, 0.2, 1)",
             clear: 3000
         });
+    }
+
+    rumble() {
+        animateElement(this.$("form"), { animation: "rumble", duration: 200, clear: true });
     }
 }
