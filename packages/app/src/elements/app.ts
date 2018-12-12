@@ -13,7 +13,7 @@ import { Browse } from "./browse.js";
 import { Settings } from "./settings.js";
 import { Manage } from "./manage.js";
 import { Start } from "./start.js";
-import { alert, clearDialogs, getDialog } from "../dialog.js";
+import { alert, clearDialogs, dialog } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { Menu } from "./menu.js";
 import { InviteDialog } from "./invite-dialog.js";
@@ -34,12 +34,11 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
     @query("pl-menu")
     private _menu: Menu;
 
+    @dialog("pl-invite-dialog")
+    private _inviteDialog: InviteDialog;
+
     @property()
     private _view: View | null;
-
-    private get _inviteDialog() {
-        return getDialog("pl-invite-dialog") as InviteDialog;
-    }
 
     @property({ reflect: true, attribute: "menu-open" })
     _menuOpen: boolean = false;
@@ -262,7 +261,11 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             const invite = await app.getInvite(vault, id);
             if (invite) {
                 await this._inviteDialog.show(invite);
-                router.go("items");
+                if (router.canGoBack) {
+                    router.back();
+                } else {
+                    router.go("items");
+                }
             } else {
                 await alert($l("Could not find invite! Did you use the correct link?"), { type: "warning" });
                 router.go("items");

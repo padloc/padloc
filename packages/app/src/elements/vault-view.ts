@@ -7,7 +7,6 @@ import { shared, mixins } from "../styles";
 import { dialog, confirm, prompt } from "../dialog.js";
 import { app, router } from "../init.js";
 import { BaseElement, element, html, property, listen } from "./base.js";
-import { InviteDialog } from "./invite-dialog.js";
 import { SelectAccountDialog } from "./select-account-dialog.js";
 import { Input } from "./input.js";
 import { ToggleButton } from "./toggle-button.js";
@@ -27,9 +26,6 @@ export class VaultView extends BaseElement {
     get parentVault() {
         return this.vault && this.vault.parent && app.getVault(this.vault.parent.id);
     }
-
-    @dialog("pl-invite-dialog")
-    private _inviteDialog: InviteDialog;
 
     @dialog("pl-select-account-dialog")
     private _selectAccountDialog: SelectAccountDialog;
@@ -57,7 +53,7 @@ export class VaultView extends BaseElement {
                 }
 
                 const invite = await app.createInvite(this.vault!, email);
-                await this._inviteDialog.show(invite);
+                this._showInvite(invite);
 
                 return email;
             }
@@ -82,7 +78,7 @@ export class VaultView extends BaseElement {
     }
 
     private async _showInvite(invite: Invite) {
-        await this._inviteDialog.show(invite);
+        router.go(`invite/${invite.vault!.id}/${invite.id}`);
     }
 
     private _openVault(vault: { id: string }) {

@@ -39,7 +39,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         this._errorMessage = "";
         this.invite = invite;
         this._verified = await invite.verify();
-        super.show();
+        return super.show();
     }
 
     shouldUpdate() {
