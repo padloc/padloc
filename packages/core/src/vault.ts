@@ -43,11 +43,24 @@ export interface SubVault extends SignedVaultInfo, CollectionItem {}
 
 export type Tag = string;
 export type ItemID = string;
+export type FieldType =
+    | "username"
+    | "password"
+    | "url"
+    | "email"
+    | "date"
+    | "month"
+    | "creditcard"
+    | "iban"
+    | "phone"
+    | "number"
+    | "note"
+    | "other";
 
 export interface Field {
     name: string;
     value: string;
-    masked?: boolean;
+    type: FieldType;
 }
 
 export function normalizeTag(tag: string): Tag {
@@ -90,7 +103,15 @@ export class VaultItemCollection extends Collection<VaultItem> {
         return super.deserialize({
             ...raw,
             items: raw.items.map((item: any) => {
-                return { ...item, lastUsed: new Date(item.lastUsed) };
+                return {
+                    ...item,
+                    lastUsed: new Date(item.lastUsed),
+                    fields: item.fields.map((field: any) => ({
+                        ...field,
+                        type: field.type || "note",
+                        masked: undefined
+                    }))
+                };
             })
         });
     }

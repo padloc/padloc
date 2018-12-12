@@ -7,7 +7,7 @@ import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 
-class Generator extends Dialog<void, string> {
+export class Generator extends Dialog<void, string> {
     @property()
     value: string = "";
 

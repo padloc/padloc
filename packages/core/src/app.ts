@@ -544,8 +544,9 @@ export class App extends EventEmitter implements Storable {
     async createItem(name: string, vault_?: Vault, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
         const vault = vault_ || this.mainVault!;
         fields = fields || [
-            { name: $l("Username"), value: "", masked: false },
-            { name: $l("Password"), value: "", masked: true }
+            { name: $l("Username"), value: "", type: "username" },
+            { name: $l("Password"), value: "", type: "password" },
+            { name: $l("URL"), value: "", type: "url" }
         ];
         const item = createVaultItem(name || "", fields, tags);
         if (this.account) {

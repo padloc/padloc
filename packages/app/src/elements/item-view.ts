@@ -4,7 +4,7 @@ import { Field } from "@padloc/core/lib/vault.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
-import { confirm, generate, dialog } from "../dialog.js";
+import { confirm, dialog } from "../dialog.js";
 import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { setClipboard } from "../clipboard.js";
@@ -13,6 +13,8 @@ import "./icon.js";
 import { Input } from "./input.js";
 import { TagsInput } from "./tags-input.js";
 import { MoveItemsDialog } from "./move-items-dialog.js";
+import { FieldElement } from "./field.js";
+import "./field.js";
 
 @element("pl-item-view")
 export class ItemView extends BaseElement {
@@ -36,10 +38,8 @@ export class ItemView extends BaseElement {
     _nameInput: Input;
     @query("pl-tags-input")
     _tagsInput: TagsInput;
-    @queryAll("pl-input.field-name")
-    _fieldNameInputs: Input[];
-    @queryAll("pl-input.field-value")
-    _fieldValueInputs: Input[];
+    @queryAll("pl-field")
+    _fields: FieldElement[];
 
     @dialog("pl-move-items-dialog")
     _moveItemsDialog: MoveItemsDialog;
@@ -93,18 +93,6 @@ export class ItemView extends BaseElement {
                 padding-bottom: 65px;
             }
 
-            pl-input {
-                height: auto;
-                line-height: 30px;
-                box-sizing: border-box;
-            }
-
-            pl-input:not([readonly]), .add-button {
-                background: #fafafa;
-                border: solid 1px #eee;
-                border-radius: 8px;
-            }
-
             .add-button {
                 height: 45px;
                 line-height: 45px;
@@ -116,53 +104,18 @@ export class ItemView extends BaseElement {
             }
 
             .name {
+                height: auto;
                 font-size: 150%;
                 padding: 6px 10px;
+                box-sizing: border-box;
             }
 
             pl-tags-input {
                 margin: 0 10px;
             }
 
-            .field {
-                transform: translate3d(0, 0, 0);
-                display: flex;
-                align-items: center;
-                border-radius: 8px;
-            }
-
-            :host(:not([editing])) .field:hover {
+            :host(:not([editing])) pl-field:hover {
                 background: #eee;
-            }
-
-            .field-buttons {
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
-
-            .field:not(:hover) .field-buttons.right {
-                visibility: hidden;
-            }
-
-            .field-name {
-                font-size: var(--font-size-tiny);
-                font-weight: bold;
-                color: var(--color-highlight);
-                padding: 0 10px;
-            }
-
-            .field-name:not([readonly]) {
-                margin-bottom: 4px;
-            }
-
-            .field-value {
-                font-family: var(--font-family-mono);
-                font-size: 110%;
-                flex: 1;
-                padding: 0 10px;
-                opacity: 1;
-                --rule-width: 1px;
             }
 
             button {
@@ -226,64 +179,13 @@ export class ItemView extends BaseElement {
 
                 ${fields.map(
                     (field: Field, index: number) => html`
-
-                    <div class="field">
-
-                        <div class="field-buttons" ?hidden=${!this._editing}>
-
-                            <pl-icon
-                                icon="remove"
-                                class="tap"
-                                @click=${() => this._removeField(index)}>
-                            </pl-icon>
-
-                            <pl-icon
-                                icon="generate"
-                                class="tap"
-                                @click=${() => this._generateValue(index)}>
-                            </pl-icon>
-
-                        </div>
-
-                        <div class="flex">
-
-                            <pl-input class="field-name"
-                                placeholder="${$l("Field Name")}"
-                                .value=${field.name}
-                                ?readonly=${!this._editing}>
-                            </pl-input>
-
-                            <pl-input
-                                class="field-value"
-                                placeholder="${$l("Field Content")}"
-                                .value=${field.value}
-                                .masked=${field.masked && !this._editing}
-                                multiline
-                                autosize
-                                ?readonly=${!this._editing}>
-                            </pl-input>
-
-                        </div>
-
-                        <div class="field-buttons right" ?hidden=${this._editing}>
-
-                            <pl-icon
-                                icon="copy"
-                                class="tap"
-                                @click=${() => setClipboard(this.item!, field)}>
-                            </pl-icon>
-
-                            <pl-icon
-                                icon="hide"
-                                class="tap"
-                                @click=${() => this._toggleMask(index)}>
-                            </pl-icon>
-
-                        </div>
-
-                    </div>
-
-                `
+                        <pl-field
+                            .field=${field}
+                            .editing=${this._editing}
+                            @copy=${() => setClipboard(this.item!, field)}
+                            @remove=${() => this._removeField(index)}>
+                        </pl-field>
+                    `
                 )}
             </div>
 
@@ -346,11 +248,11 @@ export class ItemView extends BaseElement {
     save() {
         app.updateItem(this.vault!, this.item!, {
             name: this._nameInput.value,
-            fields: [...this._fieldNameInputs].map((inp: Input, i: number) => {
+            fields: [...this._fields].map((fieldEl: FieldElement, i: number) => {
                 return {
                     ...this.item!.fields[i],
-                    name: inp.value,
-                    value: this._fieldValueInputs[i].value
+                    name: fieldEl.name,
+                    value: fieldEl.value
                 };
             }),
             tags: this._tagsInput.tags
@@ -375,32 +277,17 @@ export class ItemView extends BaseElement {
         }
     }
 
-    private async _addField(field = { name: "", value: "", masked: false }) {
+    private async _addField(field: Field = { name: "", value: "", type: "note" }) {
         this.item!.fields.push(field);
         this.requestUpdate();
         await this.updateComplete;
-        setTimeout(() => this._fieldNameInputs[this._fieldNameInputs.length - 1].focus(), 100);
+        setTimeout(() => this._fields[this._fields.length - 1].focus(), 100);
     }
 
     _activated() {
         setTimeout(() => {
             animateCascade(this.$$(".animate"), { fullDuration: 800, fill: "both" });
         }, 100);
-    }
-
-    private async _generateValue(index: number) {
-        const value = await generate();
-        if (value) {
-            this._fieldValueInputs[index].value = value;
-        }
-    }
-
-    _toggleMask(index: number) {
-        const item = this.item!;
-        item.fields[index].masked = !item.fields[index].masked;
-        app.updateItem(this.vault!, item, {
-            fields: item.fields
-        });
     }
 
     async _move() {
