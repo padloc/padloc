@@ -33,6 +33,11 @@ export class Select<T> extends BaseElement {
                     padding: 0 15px;
                 }
 
+                option {
+                    background-color: var(--color-tertiary);
+                    color: var(--color-secondary);
+                }
+
                 label {
                     position: absolute;
                     top: 0;
