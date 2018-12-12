@@ -2,15 +2,16 @@ import { shared, listLayout } from "../styles";
 import { element, property, query, listen, html } from "./base.js";
 import { app, router } from "../init.js";
 import { View } from "./view.js";
-import "./icon.js";
-import "./browse-list.js";
+import { BrowseList } from "./browse-list.js";
 import { ItemView } from "./item-view.js";
-import "./browse-filter.js";
 
 @element("pl-browse")
 export class Browse extends View {
     @property()
     selected: string = "";
+
+    @query("pl-browse-list")
+    private _list: BrowseList;
 
     @query("pl-item-view")
     private _itemView: ItemView;
@@ -21,6 +22,10 @@ export class Browse extends View {
         setTimeout(() => {
             this._itemView.edit();
         }, 200);
+    }
+
+    search() {
+        this._list.search();
     }
 
     render() {

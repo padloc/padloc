@@ -45,31 +45,6 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
 
     async connectedCallback() {
         super.connectedCallback();
-        const device = await getDeviceInfo();
-        const isIPhoneX = device.model && /iPhone10,3|iPhone10,6/.test(device.model);
-
-        if (isIPhoneX) {
-            Object.assign(document.body.style, {
-                margin: 0,
-                height: "812px",
-                position: "relative"
-            });
-        }
-
-        // await cordovaReady;
-
-        // Replace window.open method with the inappbrowser equivalent
-        // window.open = cordova.InAppBrowser.open;
-        // if (isIPhoneX) {
-        //     StatusBar && StatusBar.show();
-        // }
-        // navigator.splashscreen.hide();
-
-        // const { platform } = await getDeviceInfo();
-        // const className = platform.toLowerCase().replace(/ /g, "-");
-        // if (className) {
-        //     this.classList.add(className);
-        // }
     }
 
     render() {
@@ -324,12 +299,8 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             shortcut = () => router.go("");
         }
         // CTRL/CMD + F -> Filter
-        // else if (control && event.key === "f") {
-        //     shortcut = () => this._listView.search();
-        // }
-        // CTRL/CMD + N -> New Item
-        else if (control && event.key === "n") {
-            shortcut = () => this._newItem();
+        else if (control && event.key === "f") {
+            shortcut = () => this._browse.search();
         }
 
         // If one of the shortcuts matches, execute it and prevent the default behaviour
@@ -337,7 +308,7 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             shortcut();
             event.preventDefault();
         } else if (!control && event.key.length === 1) {
-            // this._listView.search();
+            this._browse.search();
         }
     }
 
@@ -346,10 +317,6 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
         if (!router.back()) {
             navigator.Backbutton && navigator.Backbutton.goBack();
         }
-    }
-
-    private _newItem() {
-        app.createItem("");
     }
 }
 

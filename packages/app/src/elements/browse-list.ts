@@ -12,6 +12,8 @@ import { BaseElement, element, html, property, query, listen } from "./base.js";
 import { CreateItemDialog } from "./create-item-dialog.js";
 import { Input } from "./input.js";
 import { MoveItemsDialog } from "./move-items-dialog.js";
+import "./icon.js";
+import "./browse-filter.js";
 
 @element("pl-browse-list")
 export class BrowseList extends BaseElement {
