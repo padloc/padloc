@@ -112,6 +112,7 @@ export function appSpec(): Spec {
             assert.isTrue(otherApp.vaults[1].isMember(otherApp.account));
             assert.equal(otherApp.items.length, 1);
             assert.equal(otherApp.vaults[1].items.size, 1);
+            assert.equal(app.vaults[1].invites.size, 0);
         });
 
         test("Add Member To Subvault", async () => {
@@ -146,7 +147,7 @@ export function appSpec(): Spec {
 
             await app.updateItem(app.getVault(sharedVaultID)!, item1, { name: "Edited Item" });
             const item3 = await app.createItem("Added Item 3", app.getVault(sharedVaultID)!);
-            await otherApp.deleteItems([{ vault: otherApp.getVault(sharedVaultID)!, item: item1 }]);
+            await otherApp.deleteItems([{ vault: otherApp.getVault(sharedVaultID)!, item: item2 }]);
 
             await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
             await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);

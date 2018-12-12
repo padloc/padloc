@@ -321,6 +321,7 @@ export class Context implements API {
         }
 
         vault.invites.update(invite);
+        vault.invites.revision = { id: uuid(), date: new Date() };
 
         await this.storage.set(vault);
     }
