@@ -86,10 +86,10 @@ export class BrowseList extends BaseElement {
         this._filterInput.focus();
     }
 
-    clearFilter() {
+    cancelFilter() {
         this._filterInput.value = "";
+        this._filterInput.blur();
         this._updateFilter();
-        // this._scrollHandler();
     }
 
     selectItem(item: ListItem) {
@@ -364,13 +364,13 @@ export class BrowseList extends BaseElement {
                 @focus=${() => this._toggleFilterInput()}
                 @blur=${() => this._toggleFilterInput()}
                 @input=${() => this._updateFilter()}
-                @escape=${() => this.clearFilter()}>
+                @escape=${() => this.cancelFilter()}>
             </pl-input>
 
             <pl-icon
                 class="tap"
                 icon="cancel"
-                @click=${() => this.clearFilter()}>
+                @click=${() => this.cancelFilter()}>
             </pl-icon>
 
         </div>
