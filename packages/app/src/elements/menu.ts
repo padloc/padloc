@@ -36,10 +36,15 @@ export class Menu extends BaseElement {
 
         <style>
             :host {
-                display: block;
+                display: flex;
                 flex-direction: column;
                 color: var(--color-tertiary);
                 font-size: var(--font-size-small);
+            }
+
+            .scroller {
+                flex: 1;
+                height: 0;
                 ${mixins.scroll()}
                 padding: 10px 0;
             }
@@ -108,94 +113,113 @@ export class Menu extends BaseElement {
                 width: 100px;
             }
 
+            .footer {
+                padding: 5px;
+                display: flex;
+                align-items: center;
+            }
+
+            .footer pl-icon {
+                width: 30px;
+                height: 30px;
+                font-size: var(--font-size-tiny);
+            }
+
             .syncing {
-                position: absolute;
-                left: 10px;
-                bottom: 10px;
                 width: 20px;
                 height: 20px;
+                margin: 5px;
                 --paper-spinner-color: currentColor;
                 --paper-spinner-stroke-width: 2px;
             }
         </style>
 
-        <pl-logo></pl-logo>
+        <div class="scroller">
 
-        <nav>
+            <pl-logo></pl-logo>
+
+            <nav>
+
+                <ul>
+
+                    <li class="tap" @click=${() => this._filter({})} ?selected=${this.selected === "items"}>
+
+                        <pl-icon icon="list"></pl-icon>
+
+                        <div>${$l("Items")}</div>
+
+                    </li>
+
+                    <li class="tap" @click=${() => this._goTo("settings")} ?selected=${this.selected === "settings"}>
+
+                        <pl-icon icon="settings"></pl-icon>
+
+                        <div>${$l("Settings")}</div>
+
+                    </li>
+
+                    <li class="tap" @click=${() => this._goTo("vaults")} ?selected=${this.selected === "vaults"}>
+
+                        <pl-icon icon="vaults"></pl-icon>
+
+                        <div>${$l("Manage")}</div>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+
+            <h3>${$l("Vaults")}</h3>
 
             <ul>
 
-                <li class="tap" @click=${() => this._filter({})} ?selected=${this.selected === "items"}>
+                ${app.vaults.map(
+                    vault => html`
+                    <li
+                        class="vault tap ${vault.parent ? "subvault" : ""}"
+                        @click=${() => this._filter({ vault })}>
 
-                    <pl-icon icon="list"></pl-icon>
+                        <pl-icon icon="vault"></pl-icon>
 
-                    <div>${$l("Items")}</div>
+                        <div>${vault.name}</div> 
 
-                </li>
-
-                <li class="tap" @click=${() => this._goTo("settings")} ?selected=${this.selected === "settings"}>
-
-                    <pl-icon icon="settings"></pl-icon>
-
-                    <div>${$l("Settings")}</div>
-
-                </li>
-
-                <li class="tap" @click=${() => this._goTo("vaults")} ?selected=${this.selected === "vaults"}>
-
-                    <pl-icon icon="vaults"></pl-icon>
-
-                    <div>${$l("Manage")}</div>
-
-                </li>
+                    </li>
+                `
+                )}
 
             </ul>
 
-        </nav>
+            <h3>${$l("Tags")}</h3>
 
-        <h3>${$l("Vaults")}</h3>
+            <div class="no-tags" ?hidden=${!!app.tags.length}>${$l("You don't have any tags yet.")}</div>
 
-        <ul>
+            <ul>
 
-            ${app.vaults.map(
-                vault => html`
-                <li
-                    class="vault tap ${vault.parent ? "subvault" : ""}"
-                    @click=${() => this._filter({ vault })}>
+                ${app.tags.map(
+                    tag => html`
+                    <li
+                        class="menu-tag tap"
+                        @click=${() => this._filter({ tag })}>
 
-                    <pl-icon icon="vault"></pl-icon>
+                        <pl-icon icon="tag"></pl-icon>
 
-                    <div>${vault.name}</div> 
+                        <div>${tag}</div> 
 
-                </li>
-            `
-            )}
+                    </li>
+                `
+                )}
 
-        </ul>
+            </ul>
 
-        <h3>${$l("Tags")}</h3>
+        </div>
 
-        <div class="no-tags" ?hidden=${!!app.tags.length}>${$l("You don't have any tags yet.")}</div>
-
-        <ul>
-
-            ${app.tags.map(
-                tag => html`
-                <li
-                    class="menu-tag tap"
-                    @click=${() => this._filter({ tag })}>
-
-                    <pl-icon icon="tag"></pl-icon>
-
-                    <div>${tag}</div> 
-
-                </li>
-            `
-            )}
-
-        </ul>
-
-        <paper-spinner-lite .active=${app.syncing} class="syncing"></paper-spinner-lite>
+        <div class="footer">
+            <pl-icon icon="lock" class="tap" @click=${() => app.lock()}></pl-icon>
+            <pl-icon icon="refresh" class="tap" @click=${() => app.synchronize()}></pl-icon>
+            <div class="flex"></div>
+            <paper-spinner-lite .active=${app.syncing} class="syncing"></paper-spinner-lite>
+        </div>
 `;
     }
 }
