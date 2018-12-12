@@ -257,7 +257,7 @@ export class ItemView extends BaseElement {
                                 class="field-value"
                                 placeholder="${$l("Field Content")}"
                                 .value=${field.value}
-                                .masked=${field.masked}
+                                .masked=${field.masked && !this._editing}
                                 multiline
                                 autosize
                                 ?readonly=${!this._editing}>
