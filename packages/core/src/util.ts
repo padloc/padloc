@@ -68,3 +68,7 @@ export function resolveLanguage(locale: string, supportedLanguages: { [lang: str
 export function applyMixins(baseClass: any, ...mixins: ((cls: any) => any)[]): any {
     return mixins.reduce((cls, mixin) => mixin(cls), baseClass);
 }
+
+export function escapeRegex(str: string) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

@@ -12,7 +12,7 @@ import { Client } from "./client";
 import { Sender } from "./transport";
 import { localize as $l } from "./locale";
 import { DeviceInfo, getDeviceInfo } from "./platform";
-import { uuid } from "./util";
+import { uuid, escapeRegex } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
 
@@ -42,7 +42,7 @@ function filterByString(fs: string, rec: VaultItem) {
         return true;
     }
     const content = [rec.name, ...rec.fields.map(f => f.name)].join(" ").toLowerCase();
-    return content.search(fs.toLowerCase()) !== -1;
+    return content.search(escapeRegex(fs.toLowerCase())) !== -1;
 }
 
 export interface ListItem {
