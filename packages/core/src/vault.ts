@@ -204,6 +204,7 @@ const matchUsername = /username/i;
 const matchPassword = /password/i;
 const matchUrl = /url/i;
 const matchNote = /\n/;
+// TODO: We can probably do a lot better
 export function guessFieldType(field: any): FieldType {
     return field.masked || field.name.match(matchPassword)
         ? "password"

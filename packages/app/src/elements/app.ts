@@ -1,4 +1,3 @@
-import { getDeviceInfo } from "@padloc/core/lib/platform.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../init.js";
@@ -223,11 +222,19 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             this._menu.selected = "settings";
         } else if ((match = path.match(/^vaults(?:\/([^\/]+))?$/))) {
             const [, id] = match;
+            if (id && !app.getVault(id)) {
+                router.go("vaults");
+                return;
+            }
             this._manage.selected = id || "";
             this._openView(this._manage);
             this._menu.selected = "vaults";
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
+            if (id && !app.getItem(id)) {
+                router.go("items");
+                return;
+            }
             this._browse.selected = id || "";
             this._openView(this._browse);
             this._menu.selected = "items";
