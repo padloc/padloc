@@ -53,9 +53,12 @@ export type FieldType =
     | "month"
     | "credit"
     | "iban"
+    | "bic"
     | "phone"
+    | "address"
     | "pin"
-    | "note";
+    | "note"
+    | "text";
 
 export interface FieldDef {
     type: FieldType;
@@ -104,13 +107,13 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     month: {
         type: "month",
         pattern: ".*",
-        mask: true,
+        mask: false,
         multiline: false,
         toString: () => "month"
     },
     credit: {
         type: "credit",
-        pattern: ".*",
+        pattern: "d*",
         mask: true,
         multiline: false,
         toString: () => "credit card #"
@@ -118,9 +121,16 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     iban: {
         type: "iban",
         pattern: ".*",
-        mask: false,
+        mask: true,
         multiline: false,
         toString: () => "IBAN"
+    },
+    bic: {
+        type: "bic",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        toString: () => "BIC"
     },
     phone: {
         type: "phone",
@@ -134,7 +144,14 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         pattern: "d*",
         mask: true,
         multiline: false,
-        toString: () => "pin"
+        toString: () => "PIN"
+    },
+    address: {
+        type: "address",
+        pattern: ".*",
+        mask: false,
+        multiline: true,
+        toString: () => "address"
     },
     note: {
         type: "note",
@@ -142,6 +159,13 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: true,
         toString: () => "note"
+    },
+    text: {
+        type: "text",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        toString: () => "text"
     }
 };
 

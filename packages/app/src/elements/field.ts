@@ -49,6 +49,7 @@ export class FieldElement extends BaseElement {
                 inputType = this.type;
                 break;
             case "pin":
+            case "credit":
                 inputType = "number";
                 break;
             case "phone":
