@@ -205,40 +205,40 @@ export class ItemView extends BaseElement {
                 ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
             </div>
 
-            <div class="fabs" ?hidden=${!this._editing}>
-
-                <pl-icon icon="delete"
-                    class="fab tap destructive"
-                    @click=${() => this._deleteItem()}
-                    ?hidden=${!this._editing}>
-                </pl-icon>
-
-                <div class="flex"></div>
-
-                <pl-icon icon="check"
-                    class="tap fab"
-                    @click=${() => this.save()}>
-                </pl-icon>
-
-            </div>
-
-            <div class="fabs" ?hidden=${this._editing || !permissions.write}>
-
-                <pl-icon icon="share"
-                    class="tap fab"
-                    @click=${() => this._move()}>
-                </pl-icon>
-
-                <div class="flex"></div>
-
-                <pl-icon icon="edit"
-                    class="tap fab"
-                    @click=${() => this.edit()}>
-                </pl-icon>
-
-            </div>
-
         </main>
+
+        <div class="fabs" ?hidden=${!this._editing}>
+
+            <pl-icon icon="delete"
+                class="fab tap destructive"
+                @click=${() => this._deleteItem()}
+                ?hidden=${!this._editing}>
+            </pl-icon>
+
+            <div class="flex"></div>
+
+            <pl-icon icon="check"
+                class="tap fab"
+                @click=${() => this.save()}>
+            </pl-icon>
+
+        </div>
+
+        <div class="fabs" ?hidden=${this._editing || !permissions.write}>
+
+            <pl-icon icon="share"
+                class="tap fab"
+                @click=${() => this._move()}>
+            </pl-icon>
+
+            <div class="flex"></div>
+
+            <pl-icon icon="edit"
+                class="tap fab"
+                @click=${() => this.edit()}>
+            </pl-icon>
+
+        </div>
 `;
     }
 
