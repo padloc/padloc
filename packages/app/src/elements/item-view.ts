@@ -180,7 +180,9 @@ export class ItemView extends BaseElement {
                 ${fields.map(
                     (field: Field, index: number) => html`
                         <pl-field
-                            .field=${field}
+                            .name=${field.name}
+                            .value=${field.value}
+                            .type=${field.type}
                             .editing=${this._editing}
                             @copy=${() => setClipboard(this.item!, field)}
                             @remove=${() => this._removeField(index)}>
@@ -248,11 +250,11 @@ export class ItemView extends BaseElement {
     save() {
         app.updateItem(this.vault!, this.item!, {
             name: this._nameInput.value,
-            fields: [...this._fields].map((fieldEl: FieldElement, i: number) => {
+            fields: [...this._fields].map((fieldEl: FieldElement) => {
                 return {
-                    ...this.item!.fields[i],
                     name: fieldEl.name,
-                    value: fieldEl.value
+                    value: fieldEl.value,
+                    type: fieldEl.type
                 };
             }),
             tags: this._tagsInput.tags

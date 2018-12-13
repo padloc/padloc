@@ -6,7 +6,7 @@ export class Select<T> extends BaseElement {
     @property()
     options: T[] = [];
     @property()
-    selected: T | null = null;
+    selected: T;
     @property()
     label: string = "";
 
@@ -24,13 +24,15 @@ export class Select<T> extends BaseElement {
                     display: block;
                     position: relative;
                     padding: 0;
+                    height: var(--row-height);
+                    padding: 0 15px;
                 }
 
                 select {
                     width: 100%;
-                    height: var(--row-height);
+                    height: 100%;
+                    box-sizing: border-box;
                     cursor: pointer;
-                    padding: 0 15px;
                 }
 
                 option {
@@ -59,18 +61,20 @@ export class Select<T> extends BaseElement {
 
                 pl-icon {
                     position: absolute;
+                    width: 20px;
+                    height: 20px;
                     top: 0;
-                    right: 0;
+                    right: 5px;
                     bottom: 0;
                     margin: auto;
                     pointer-events: none;
                 }
             </style>
 
-            <select id="selectEl" @change=${() => this._changed()}>
+            <select id="selectEl" .selectedIndex=${options.indexOf(selected)} @change=${() => this._changed()}>
                 ${options.map(
                     o => html`
-                    <option ?selected=${selected === o}>${o}</option>
+                    <option >${o}</option>
                 `
                 )}
             </select>
@@ -83,6 +87,15 @@ export class Select<T> extends BaseElement {
     }
 
     @observe("options")
+    @observe("selected")
+    async _propsChanged() {
+        if (!this.selected) {
+            this.selected = this.options[0];
+        }
+        await this.updateComplete;
+        this._select.selectedIndex = this.options.indexOf(this.selected);
+    }
+
     private _changed() {
         this.selected = this.options[this._select.selectedIndex];
         this.dispatch("change");

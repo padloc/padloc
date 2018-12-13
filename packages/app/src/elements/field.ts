@@ -1,4 +1,4 @@
-import { Field } from "@padloc/core/lib/vault.js";
+import { FieldType, FieldDef, FIELD_DEFS } from "@padloc/core/lib/vault.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared } from "../styles";
 import { dialog } from "../dialog.js";
@@ -6,21 +6,21 @@ import { BaseElement, element, html, property, query } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import { Generator } from "./generator.js";
+import { Select } from "./select.js";
 
 @element("pl-field")
 export class FieldElement extends BaseElement {
     @property()
-    field: Field | null = null;
-    @property()
     editing: boolean = false;
 
-    get name() {
-        return this._nameInput.value;
-    }
+    @property()
+    name: string = "";
 
-    get value() {
-        return this._valueInput.value;
-    }
+    @property()
+    value: string = "";
+
+    @property()
+    type: FieldType = "note";
 
     @query("#nameInput")
     private _nameInput: Input;
@@ -28,22 +28,28 @@ export class FieldElement extends BaseElement {
     @query("#valueInput")
     private _valueInput: Input;
 
+    @query("#typeSelect")
+    private _typeSelect: Select<FieldDef>;
+
     @dialog("pl-generator")
     private _generator: Generator;
 
-    shouldUpdate() {
-        return !!this.field;
+    focus() {
+        this._nameInput.focus();
     }
 
     render() {
-        const field = this.field!;
+        const fieldDef = FIELD_DEFS[this.type];
         let inputType: string;
-        switch (field.type) {
+        switch (this.type) {
             case "email":
             case "url":
             case "date":
             case "month":
-                inputType = field.type;
+                inputType = this.type;
+                break;
+            case "pin":
+                inputType = "number";
                 break;
             case "phone":
                 inputType = "tel";
@@ -72,15 +78,28 @@ export class FieldElement extends BaseElement {
                     visibility: hidden;
                 }
 
+                .field-header {
+                    display: flex;
+                    margin-bottom: 4px;
+                }
+
                 .field-name {
+                    flex: 1;
+                    width: 0;
                     font-size: var(--font-size-tiny);
                     font-weight: bold;
                     color: var(--color-highlight);
                     padding: 0 10px;
                 }
 
-                .field-name:not([readonly]) {
-                    margin-bottom: 4px;
+                .field-type {
+                    width: 95px;
+                    font-weight: bold;
+                    margin-left: 4px;
+                    padding: 0;
+                    padding-left: 10px;
+                    font-size: var(--font-size-micro);
+                    color: var(--color-gradient-warning-to);
                 }
 
                 .field-value {
@@ -92,13 +111,15 @@ export class FieldElement extends BaseElement {
                     --rule-width: 1px;
                 }
 
-                pl-input {
+                pl-input,
+                pl-select {
                     height: auto;
                     line-height: 30px;
                     box-sizing: border-box;
                 }
 
-                pl-input:not([readonly]), .add-button {
+                pl-input:not([readonly]),
+                pl-select {
                     background: #fafafa;
                     border: solid 1px #eee;
                     border-radius: 8px;
@@ -114,7 +135,7 @@ export class FieldElement extends BaseElement {
                 </pl-icon>
 
                 <pl-icon
-                    ?hidden=${ field.type !== "password" }
+                    ?hidden=${ this.type !== "password" }
                     icon="generate"
                     class="tap"
                     @click=${() => this._generateValue()}>
@@ -124,22 +145,37 @@ export class FieldElement extends BaseElement {
 
             <div class="flex">
 
-                <pl-input class="field-name"
-                    id="nameInput"
-                    placeholder="${$l("Field Name")}"
-                    .value=${field.name}
-                    ?readonly=${!this.editing}>
-                </pl-input>
+                <div class="field-header">
+
+                    <pl-input class="field-name"
+                        id="nameInput"
+                        placeholder="${$l("Field Name")}"
+                        .value=${this.name}
+                        @input=${() => this.name = this._nameInput.value}
+                        ?readonly=${!this.editing}>
+                    </pl-input>
+
+                    <pl-select
+                        id="typeSelect"
+                        class="field-type"
+                        ?hidden=${ !this.editing }
+                        .options=${ Object.values(FIELD_DEFS) }
+                        .selected=${fieldDef}
+                        @change=${() => this.type = this._typeSelect.selected!.type }>
+                    </pl-select>
+
+                </div>
 
                 <pl-input
                     id="valueInput"
                     class="field-value"
                     placeholder="${$l("Field Content")}"
-                    .value=${field.value}
+                    .value=${this.value}
                     .type=${inputType}
-                    .multiLine=${field.type === "note"}
+                    .multiline=${fieldDef.multiline}
                     .readonly=${!this.editing}
-                    .masked=${field.type === "password" && !this.editing}
+                    .masked=${fieldDef.mask && !this.editing}
+                    @input=${() => this.value = this._valueInput.value}
                     autosize>
                 </pl-input>
 
@@ -156,7 +192,7 @@ export class FieldElement extends BaseElement {
                 <pl-icon
                     icon="hide"
                     class="tap"
-                    ?hidden=${ field.type !== "password" }
+                    ?hidden=${ this.type !== "password" }
                     @click=${() => this._toggleMask()}>
                 </pl-icon>
 

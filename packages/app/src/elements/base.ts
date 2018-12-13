@@ -187,7 +187,7 @@ function getType(prototype: any, propertyName: string): any {
  * Decorator to create a getter for the specified selector
  * @param selector selector to find the element
  */
-export function query(selector: string, cached = true) {
+export function query(selector: string, cached = false) {
     return (prototype: BasePrototype, propertyName: string) => {
         Object.defineProperty(prototype, propertyName, {
             get() {
@@ -204,7 +204,7 @@ export function query(selector: string, cached = true) {
  * elements matching the selector
  * @param selector selector query
  */
-export function queryAll(selector: string, cached = true) {
+export function queryAll(selector: string, cached = false) {
     return (prototype: BasePrototype, propertyName: string) => {
         Object.defineProperty(prototype, propertyName, {
             get() {

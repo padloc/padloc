@@ -1,5 +1,6 @@
 // @ts-ignore
 import autosize from "autosize/src/autosize.js";
+import { cache } from "lit-html/directives/cache.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, query, listen } from "./base.js";
 
@@ -75,7 +76,7 @@ export class Input extends BaseElement {
         return activeInput;
     }
 
-    firstUpdated() {
+    updated() {
         if (this.multiline && this.autosize) {
             autosize(this._inputElement);
         }
@@ -99,8 +100,9 @@ export class Input extends BaseElement {
         } = this;
         const doMask = masked && !!value && !focused;
 
-        const input = multiline
-            ? html`
+        const input = cache(
+            multiline
+                ? html`
                 <textarea
                     id="input"
                     .value=${value}
@@ -124,7 +126,7 @@ export class Input extends BaseElement {
                     class="mask"
                     .tabIndex="-1"
                     disabled></textarea>`
-            : html`
+                : html`
                 <input
                     id="input"
                     .value=${value}
@@ -148,7 +150,8 @@ export class Input extends BaseElement {
                     ?invisible=${!doMask}
                     class="mask"
                     .tabIndex="-1"
-                    disabled>`;
+                    disabled>`
+        );
 
         return html`
         ${shared}

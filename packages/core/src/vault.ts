@@ -43,6 +43,7 @@ export interface SubVault extends SignedVaultInfo, CollectionItem {}
 
 export type Tag = string;
 export type ItemID = string;
+
 export type FieldType =
     | "username"
     | "password"
@@ -50,12 +51,99 @@ export type FieldType =
     | "email"
     | "date"
     | "month"
-    | "creditcard"
+    | "credit"
     | "iban"
     | "phone"
-    | "number"
-    | "note"
-    | "other";
+    | "pin"
+    | "note";
+
+export interface FieldDef {
+    type: FieldType;
+    pattern: string;
+    mask: boolean;
+    multiline: boolean;
+    toString(): string;
+}
+
+export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
+    username: {
+        type: "username",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        toString: () => "username"
+    },
+    password: {
+        type: "password",
+        pattern: ".*",
+        mask: true,
+        multiline: false,
+        toString: () => "password"
+    },
+    url: {
+        type: "url",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        toString: () => "URL"
+    },
+    email: {
+        type: "email",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        toString: () => "email"
+    },
+    date: {
+        type: "date",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        toString: () => "date"
+    },
+    month: {
+        type: "month",
+        pattern: ".*",
+        mask: true,
+        multiline: false,
+        toString: () => "month"
+    },
+    credit: {
+        type: "credit",
+        pattern: ".*",
+        mask: true,
+        multiline: false,
+        toString: () => "credit card #"
+    },
+    iban: {
+        type: "iban",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        toString: () => "IBAN"
+    },
+    phone: {
+        type: "phone",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        toString: () => "phone #"
+    },
+    pin: {
+        type: "pin",
+        pattern: "d*",
+        mask: true,
+        multiline: false,
+        toString: () => "pin"
+    },
+    note: {
+        type: "note",
+        pattern: ".*",
+        mask: false,
+        multiline: true,
+        toString: () => "note"
+    }
+};
 
 export interface Field {
     name: string;
@@ -108,8 +196,7 @@ export class VaultItemCollection extends Collection<VaultItem> {
                     lastUsed: new Date(item.lastUsed),
                     fields: item.fields.map((field: any) => ({
                         ...field,
-                        type: field.type || "note",
-                        masked: undefined
+                        type: field.type || "note"
                     }))
                 };
             })
