@@ -1,9 +1,10 @@
 import { unmarshal } from "@padloc/core/lib/encoding.js";
 import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/lib/legacy.js";
-import { VaultItem, Field, createVaultItem } from "@padloc/core/lib/vault.js";
+import { VaultItem, Field, createVaultItem, guessFieldType } from "@padloc/core/lib/vault.js";
 import { Err, ErrorCode } from "@padloc/core/lib/error.js";
 import { PBES2Container } from "@padloc/core/lib/container.js";
 import { uuid } from "@padloc/core/lib/util.js";
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { loadScript } from "./util";
 
 export interface ImportFormat {
@@ -67,13 +68,16 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
     // All subsequent rows should contain values
     let items = data.slice(1).map(function(row) {
         // Construct an array of field object from column names and values
-        let fields = [];
+        let fields: Field[] = [];
         for (let i = 0; i < row.length; i++) {
             // Skip name column, category column (if any) and empty fields
             if (i != nameColIndex && i != tagsColIndex && row[i]) {
+                const name = colNames[i];
+                const value = row[i];
                 fields.push({
-                    name: colNames[i],
-                    value: row[i]
+                    name,
+                    value,
+                    type: guessFieldType({ name, value })
                 });
             }
         }
@@ -155,8 +159,9 @@ function lpParseNotes(str: string): Field[] {
         let split = line.indexOf(":");
         return {
             name: line.substring(0, split),
-            value: line.substring(split + 1)
-        };
+            value: line.substring(split + 1),
+            type: "text"
+        } as Field;
     });
     return fields;
 }
@@ -175,9 +180,9 @@ function lpParseRow(row: string[]): VaultItem {
     const notesIndex = 3;
 
     let fields: Field[] = [
-        { name: "url", value: row[urlIndex] },
-        { name: "username", value: row[usernameIndex] },
-        { name: "password", value: row[passwordIndex], masked: true }
+        { name: $l("Username"), value: row[usernameIndex], type: "username" },
+        { name: $l("Password"), value: row[passwordIndex], type: "password" },
+        { name: $l("URL"), value: row[urlIndex], type: "url" }
     ];
     let notes = row[notesIndex];
 
@@ -189,7 +194,7 @@ function lpParseRow(row: string[]): VaultItem {
         fields = fields.filter(f => f.name != "url" && f.name != "NoteType");
     } else {
         // We've got a regular 'site' item, so the 'extra' column simply contains notes
-        fields.push({ name: "notes", value: notes });
+        fields.push({ name: $l("Notes"), value: notes, type: "note" });
     }
 
     const dir = row[categoryIndex];

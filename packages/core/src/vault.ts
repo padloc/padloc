@@ -200,6 +200,22 @@ export function createVaultItem(name: string, fields?: Field[], tags?: Tag[]): V
     };
 }
 
+const matchUsername = /username/i;
+const matchPassword = /password/i;
+const matchUrl = /url/i;
+const matchNote = /\n/;
+export function guessFieldType(field: any): FieldType {
+    return field.masked || field.name.match(matchPassword)
+        ? "password"
+        : field.name.match(matchUsername)
+            ? "username"
+            : field.name.match(matchUrl)
+                ? "url"
+                : field.value.match(matchNote)
+                    ? "note"
+                    : "text";
+}
+
 export class VaultItemCollection extends Collection<VaultItem> {
     get tags(): string[] {
         const tags = new Set<string>();
@@ -220,7 +236,7 @@ export class VaultItemCollection extends Collection<VaultItem> {
                     lastUsed: new Date(item.lastUsed),
                     fields: item.fields.map((field: any) => ({
                         ...field,
-                        type: field.type || "note"
+                        type: field.type || guessFieldType(field)
                     }))
                 };
             })
