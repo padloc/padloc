@@ -184,6 +184,7 @@ export class ItemView extends BaseElement {
                             .value=${field.value}
                             .type=${field.type}
                             .editing=${this._editing}
+                            @edit=${() => this._editField(index)}
                             @copy=${() => setClipboard(this.item!, field)}
                             @remove=${() => this._removeField(index)}>
                         </pl-field>
@@ -297,5 +298,11 @@ export class ItemView extends BaseElement {
         if (movedItems && movedItems.length) {
             router.go(`items/${movedItems[0].id}`);
         }
+    }
+
+    async _editField(index: number) {
+        this._editing = true;
+        await this.updateComplete;
+        this._fields[index].focus();
     }
 }

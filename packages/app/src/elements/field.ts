@@ -35,7 +35,8 @@ export class FieldElement extends BaseElement {
     private _generator: Generator;
 
     focus() {
-        this._nameInput.focus();
+        const inputToFocus = this._nameInput.value ? this._valueInput : this._nameInput;
+        inputToFocus.focus();
     }
 
     render() {
@@ -58,6 +59,7 @@ export class FieldElement extends BaseElement {
             default:
                 inputType = "text";
         }
+        const mask = fieldDef.mask && !this.editing;
         return html`
             ${shared}
 
@@ -150,15 +152,17 @@ export class FieldElement extends BaseElement {
 
                     <pl-input class="field-name"
                         id="nameInput"
-                        placeholder="${$l("Field Name")}"
+                        placeholder="${$l("Enter Field Name")}"
                         .value=${this.name}
                         @input=${() => this.name = this._nameInput.value}
+                        @click=${() => !this._nameInput.value && this.dispatch("edit")}
                         ?readonly=${!this.editing}>
                     </pl-input>
 
                     <pl-select
                         id="typeSelect"
                         class="field-type"
+                        tabindex="-1"
                         ?hidden=${ !this.editing }
                         .options=${ Object.values(FIELD_DEFS) }
                         .selected=${fieldDef}
@@ -170,13 +174,14 @@ export class FieldElement extends BaseElement {
                 <pl-input
                     id="valueInput"
                     class="field-value"
-                    placeholder="${$l("Field Content")}"
+                    placeholder="${$l("Enter Field Value")}"
                     .value=${this.value}
                     .type=${inputType}
                     .multiline=${fieldDef.multiline}
                     .readonly=${!this.editing}
-                    .masked=${fieldDef.mask && !this.editing}
+                    .masked=${mask}
                     @input=${() => this.value = this._valueInput.value}
+                    @click=${() => !this._valueInput.value && this.dispatch("edit")}
                     autosize>
                 </pl-input>
 
@@ -191,7 +196,7 @@ export class FieldElement extends BaseElement {
                 </pl-icon>
 
                 <pl-icon
-                    icon="hide"
+                    .icon=${ (this._valueInput ? this._valueInput.masked : mask ) ? "show" : "hide" }
                     class="tap"
                     ?hidden=${ this.type !== "password" }
                     @click=${() => this._toggleMask()}>
@@ -203,6 +208,7 @@ export class FieldElement extends BaseElement {
 
     _toggleMask() {
         this._valueInput.masked = !this._valueInput.masked;
+        this.requestUpdate();
     }
 
     private async _generateValue() {
