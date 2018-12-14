@@ -377,7 +377,12 @@ export class App extends EventEmitter implements Storable {
         return vault;
     }
 
-    async updateVault(_: Vault): Promise<void> {}
+    async updateVault(vault: Vault, { name }: Partial<Vault>): Promise<void> {
+        if (name) {
+            vault.name = name;
+        }
+        await this.syncVault(vault);
+    }
 
     async deleteVault(vault: Vault): Promise<void> {
         await this.api.deleteVault(vault);

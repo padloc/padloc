@@ -43,6 +43,11 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                         duration: 5000
                     });
                     return true;
+                case ErrorCode.INSUFFICIENT_PERMISSIONS:
+                    alert($l("You don't have sufficient permissions to perform this action!"), {
+                        type: "warning"
+                    });
+                    return true;
                 case ErrorCode.SERVER_ERROR:
                     await confirm(
                         error.message ||

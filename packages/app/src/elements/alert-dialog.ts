@@ -63,7 +63,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
                 display: flex;
                 flex-direction: column;
             }
-            
+
             :host([horizontal]) .buttons {
                 flex-direction: row;
             }

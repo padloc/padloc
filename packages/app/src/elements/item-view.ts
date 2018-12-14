@@ -211,8 +211,7 @@ export class ItemView extends BaseElement {
 
             <pl-icon icon="delete"
                 class="fab tap destructive"
-                @click=${() => this._deleteItem()}
-                ?hidden=${!this._editing}>
+                @click=${() => this._deleteItem()}>
             </pl-icon>
 
             <div class="flex"></div>

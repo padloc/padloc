@@ -1,4 +1,5 @@
 import { localize } from "@padloc/core/lib/locale.js";
+import { mixins } from "../styles";
 import { element, html, property, query } from "./base.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
@@ -38,7 +39,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
     label: string = "";
     @property()
     preventDismiss: boolean = true;
-    @property()
+    @property({ reflect: true })
     type: string = defaultType;
     @property()
     validate?: (val: string, input: Input) => Promise<string>;
@@ -53,6 +54,10 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
     renderContent() {
         return html`
         <style>
+            :host([type="warning"]) .inner {
+                ${mixins.gradientWarning()}
+            }
+
             h1 {
                 display: block;
                 text-align: center;

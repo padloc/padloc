@@ -4,9 +4,9 @@ import { VaultMember } from "@padloc/core/lib/vault.js";
 import { Invite } from "@padloc/core/lib/invite.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
-import { dialog, confirm, prompt } from "../dialog.js";
+import { dialog, alert, confirm, prompt } from "../dialog.js";
 import { app, router } from "../init.js";
-import { BaseElement, element, html, property, listen } from "./base.js";
+import { BaseElement, element, html, property, listen, query, observe } from "./base.js";
 import { SelectAccountDialog } from "./select-account-dialog.js";
 import { Input } from "./input.js";
 import { ToggleButton } from "./toggle-button.js";
@@ -27,6 +27,12 @@ export class VaultView extends BaseElement {
         return this.vault && this.vault.parent && app.getVault(this.vault.parent.id);
     }
 
+    @property()
+    private _editing: boolean;
+
+    @query("#nameInput")
+    private _nameInput: Input;
+
     @dialog("pl-select-account-dialog")
     private _selectAccountDialog: SelectAccountDialog;
 
@@ -35,6 +41,21 @@ export class VaultView extends BaseElement {
     _refresh() {
         this.requestUpdate();
         this.$$("pl-account-item", false).forEach((el: any) => el.requestUpdate());
+    }
+
+    private edit() {
+        this._editing = true;
+        this._nameInput.focus();
+    }
+
+    private async save() {
+        this._editing = false;
+        await app.updateVault(this.vault!, { name: this._nameInput.value });
+    }
+
+    @observe("selected")
+    _selectedChanged() {
+        this._editing = false;
     }
 
     private async _invite() {
@@ -150,22 +171,31 @@ export class VaultView extends BaseElement {
         app.syncVault(this.vault!);
     }
 
-    // private async _delete() {
-    //     const confirmed = await prompt($l("Are you sure you want to delete the '{0}' vault?", this.vault!.name), {
-    //         placeholder: $l("Type 'DELETE' to confirm"),
-    //         validate: async val => {
-    //             if (val !== "DELETE") {
-    //                 throw $l("Type 'DELETE' to confirm");
-    //             }
-    //             return val;
-    //         }
-    //     });
-    //
-    //     if (confirmed) {
-    //         await app.deleteSharedVault(this.vault!.id);
-    //         alert($l("Vault deleted successfully"));
-    //     }
-    // }
+    private async _deleteVault() {
+        const confirmed = await prompt(
+            $l(
+                "Are you sure you want to delete this vault? " +
+                    "All the data stored in it will be lost! " +
+                    "This action can not be undone."
+            ),
+            {
+                type: "warning",
+                placeholder: $l("Type 'DELETE' to confirm"),
+                validate: async val => {
+                    if (val !== "DELETE") {
+                        throw $l("Type 'DELETE' to confirm");
+                    }
+                    return val;
+                }
+            }
+        );
+
+        if (confirmed) {
+            await app.deleteVault(this.vault!);
+            router.go("vaults");
+            alert($l("Vault deleted successfully"), { type: "success" });
+        }
+    }
 
     shouldUpdate() {
         return !!this.vault;
@@ -194,8 +224,11 @@ export class VaultView extends BaseElement {
             }
 
             .name {
-                font-size: 140%;
-                padding: 6px 12px;
+                height: auto;
+                font-size: 150%;
+                padding: 6px 10px;
+                box-sizing: border-box;
+                margin: 10px;
             }
 
             pl-account-item:not(:last-of-kind) {
@@ -339,7 +372,13 @@ export class VaultView extends BaseElement {
 
         <main>
 
-            <h1>${name}</h1>
+            <pl-input
+                id="nameInput"
+                class="name"
+                .value=${name}
+                .placeholder=${$l("Enter Vault Name")}
+                ?readonly=${!this._editing}>
+            </pl-input>
 
             <div class="tags animate">
 
@@ -538,6 +577,34 @@ export class VaultView extends BaseElement {
             </ul>
 
         </main>
+
+        <div class="fabs" ?hidden=${!this._editing}>
+
+            <pl-icon icon="delete"
+                class="fab tap destructive"
+                @click=${() => this._deleteVault()}
+                ?hidden=${!vault.isOwner()}>
+            </pl-icon>
+
+            <div class="flex"></div>
+
+            <pl-icon icon="check"
+                class="tap fab"
+                @click=${() => this.save()}>
+            </pl-icon>
+
+        </div>
+
+        <div class="fabs" ?hidden=${this._editing || !permissions.manage}>
+
+            <div class="flex"></div>
+
+            <pl-icon icon="edit"
+                class="tap fab"
+                @click=${() => this.edit()}>
+            </pl-icon>
+
+        </div>
        `;
     }
 }
