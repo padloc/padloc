@@ -214,7 +214,7 @@ export class FieldElement extends BaseElement {
     private async _generateValue() {
         const value = await this._generator.show();
         if (value) {
-            this._valueInput.value = value;
+            this.value = value;
         }
     }
 }
