@@ -47,7 +47,7 @@ export class InviteDialog extends Dialog<Invite, void> {
     }
 
     renderContent() {
-        const { email, expires, expired, vault, accepted } = this.invite!;
+        const { email, expires, expired, vault, accepted, purpose } = this.invite!;
         const forMe = email === app.account!.email;
 
         const status =
@@ -151,7 +151,7 @@ export class InviteDialog extends Dialog<Invite, void> {
 
                 <pl-icon icon="cancel" class="tap close-button" @click=${() => this.done()}></pl-icon>
 
-                <h1>${$l("Vault Invite")}</h1>
+                <h1>${purpose === "confirm_membership" ? $l("Confirm Membership") : $l("Vault Invite")}</h1>
 
                 <div class="tags">
 
@@ -197,11 +197,16 @@ export class InviteDialog extends Dialog<Invite, void> {
     }
 
     private _inviteeBody() {
-        const { vault } = this.invite!;
+        const { vault, purpose } = this.invite!;
         const { _enableActions } = this;
         return html`
             <div class="invite-text">
-                ${$l("You've been invited to join the {0} vault.", vault!.name)}
+                ${$l(
+                    purpose === "confirm_membership"
+                        ? "Please confirm your membership for the {0} vault."
+                        : "You've been invited to join the {0} vault.",
+                    vault!.name
+                )}
             </div>
 
             <pl-input
@@ -232,16 +237,22 @@ export class InviteDialog extends Dialog<Invite, void> {
                 class="tap flex tiles-2"
                 ?hidden=${!this._enableActions}
                 @click=${() => this._accept()}>
-                ${$l("Accept")}
+                ${$l(this.invite!.purpose === "confirm_membership" ? "Confirm" : "Accept")}
             </pl-loading-button>
         `;
     }
 
     _adminBody() {
         const { _enableActions } = this;
-        const { email, secret } = this.invite!;
+        const { email, secret, purpose } = this.invite!;
         return html`
-            <div class="invite-text">${$l("An invite was sent to:")}</div>
+            <div class="invite-text">
+                ${$l(
+                    purpose === "confirm_membership"
+                        ? "A membership confirmation request was sent to:"
+                        : "An invite was sent to:"
+                )}
+            </div>
 
             <div class="invite-email">${email}</div>
 
@@ -257,9 +268,10 @@ export class InviteDialog extends Dialog<Invite, void> {
     }
 
     _adminActions() {
+        const { accepted, expired, purpose } = this.invite!;
         return html`
             <pl-loading-button
-                ?hidden=${this.invite!.accepted}
+                ?hidden=${accepted}
                 id="resendButton"
                 class="tap flex tiles-3"
                 @click=${() => this._resend()}>
@@ -271,14 +283,15 @@ export class InviteDialog extends Dialog<Invite, void> {
             </pl-loading-button>
 
             <pl-loading-button
-                ?hidden=${!this.invite!.accepted}
+                ?hidden=${!accepted}
+                ?disabled=${!accepted || expired || !this._verified}
                 id="confirmButton"
                 class="tap flex tiles-3"
                 @click=${() => this._confirm()}>
 
                 <pl-icon icon="invite"></pl-icon>
 
-                <div>${$l("Add Member")}</div>
+                <div>${$l(purpose === "confirm_membership" ? "Confirm Member" : "Add Member")}</div>
 
             </pl-loading-button>
 

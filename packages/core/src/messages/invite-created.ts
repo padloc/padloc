@@ -6,17 +6,23 @@ export class InviteCreatedMessage implements Message {
     constructor(public invite: Invite, public link: string) {}
 
     get title() {
-        const { vault, invitor } = this.invite;
-        return `${invitor!.name || invitor!.email} wants you to join the "${vault!.name}" vault on Padloc!`;
+        const { vault, invitor, purpose } = this.invite;
+        return purpose === "confirm_membership"
+            ? `Confirm your membership for the "${vault!.name}" vault on Padloc!`
+            : `${invitor!.name || invitor!.email} wants you to join the "${vault!.name}" vault on Padloc!`;
     }
 
     get text() {
-        const { vault, invitor } = this.invite;
+        const { vault, invitor, purpose } = this.invite;
         return `
 Hi there!
 
-You have been invited by ${invitor!.name || invitor!.email} to join his vault "${vault!.name}" on Padloc! To accept the invite,
-please visit the link below:
+        ${
+            purpose === "confirm_membership"
+                ? `Please use the link below to reconfirm your membership for the "${vault!.name}" vault!`
+                : `You have been invited by ${invitor!.name || invitor!.email} to join their vault ` +
+                  `"${vault!.name}" on Padloc! To accept the invite, please visit the link below:`
+        }
 
 ${this.link}
 
@@ -27,16 +33,21 @@ Martin`;
     }
 
     get html() {
-        const { vault, invitor } = this.invite;
+        const { vault, invitor, purpose } = this.invite;
         return baseHTML(`
 
             ${p("Hi there!")}
 
-            ${p(`
-                You have been invited by <strong>${invitor!.name || invitor!.email}</strong> to join his vault <strong>${vault!.name}</strong> on Padloc!
-            `)}
+            ${p(
+                purpose === "confirm_membership"
+                    ? `Please use the link below to reconfirm your membership for the ` +
+                      `<strong>${vault!.name}</strong> vault!`
+                    : `You have been invited by <strong>${invitor!.name || invitor!.email}</strong> ` +
+                      `to join their vault <strong>${vault!.name}</strong> on Padloc!
+            `
+            )}
 
-            ${button(`Join ${vault!.name}`, this.link)}
+            ${button(purpose === "confirm_membership" ? "Confirm Membership" : `Join ${vault!.name}`, this.link)}
 
             ${p(`
                 If you believe you may have received this email in error, please contact us at <strong>support@padloc.app</strong>

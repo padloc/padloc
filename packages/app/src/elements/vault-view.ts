@@ -206,7 +206,8 @@ export class VaultView extends BaseElement {
         const { name, members, items, vaults } = vault;
         const subvaults = vault === app.mainVault ? [] : [...vaults].map(v => app.getVault(v.id)!);
         const permissions = vault.getPermissions();
-        const invites = vault.isAdmin() ? [...vault.invites] : [];
+        const isAdmin = vault.isAdmin() && !vault.isSuspended();
+        const invites = isAdmin ? [...vault.invites] : [];
 
         return html`
         ${shared}
@@ -473,7 +474,7 @@ export class VaultView extends BaseElement {
                     icon="add"
                     class="add-icon tap"
                     @click=${() => this._addMember()}
-                    ?hidden=${vault === app.mainVault || !permissions.manage}
+                    ?hidden=${vault === app.mainVault || !isAdmin}
                     ?disabled=${this.parentVault && vault.members.size === this.parentVault.members.size}>
                 ></pl-icon>
 
@@ -490,7 +491,7 @@ export class VaultView extends BaseElement {
                             <pl-icon
                                 icon="remove"
                                 class="remove-button tap"
-                                ?disabled=${!vault.isAdmin() || vault.isOwner(member)}
+                                ?disabled=${!isAdmin || vault.isOwner(member)}
                                 @click=${() => this._removeMember(member)}>
                             </pl-icon>
 
@@ -502,39 +503,49 @@ export class VaultView extends BaseElement {
 
                             </div>
 
+                            ${
+                                member.suspended
+                                    ? html`
+                            <div class="tags small permission-tags">
+                                <div class="tag warning">${$l("suspended")}</div>
+                            </div>
+                            `
+                                    : html`
                             <div class="tags small permission-tags">
 
-                                <div class="tag" ?hidden=${!vault.isOwner(member)}>${$l("Owner")}</div>
+                                <div class="tag" ?hidden=${!vault.isOwner(member)}>${$l("owner")}</div>
 
                                 <div class="tag" ?hidden=${vault.isOwner(member) || !member.permissions.manage}>
-                                    ${$l("Admin")}
+                                    ${$l("admin")}
                                 </div>
 
-                                <div class="tag" ?hidden=${member.permissions.write}>${$l("Readonly")}</div>
+                                <div class="tag" ?hidden=${member.permissions.write}>${$l("readonly")}</div>
 
                             </div>
 
                             <div class="permission-buttons">
 
                                 <pl-toggle-button
-                                    .label=${$l("Admin")}
+                                    .label=${$l("admin")}
                                     .active=${member.permissions.manage}
-                                    ?disabled=${!vault.isAdmin() || vault.isOwner(member)}
+                                    ?disabled=${!isAdmin || vault.isOwner(member)}
                                     @click=${(e: MouseEvent) => this._toggleAdmin(member, e)} 
                                     class="tap"
                                     reverse>
                                 </pl-toggle-button>
 
                                 <pl-toggle-button
-                                    .label=${$l("Readonly")}
+                                    .label=${$l("readonly")}
                                     .active=${!member.permissions.write}
-                                    ?disabled=${!vault.isAdmin() || member.permissions.manage}
+                                    ?disabled=${!isAdmin}
                                     @click=${() => this._toggleReadonly(member)} 
                                     class="tap"
                                     reverse>
                                 </pl-toggle-button>
 
                             </div>
+                            `
+                            }
 
                         </li>
                     `
@@ -553,7 +564,7 @@ export class VaultView extends BaseElement {
                     icon="add"
                     class="add-icon tap"
                     @click=${() => this._addSubVault()}
-                    ?hidden=${vault === app.mainVault || !permissions.manage}>
+                    ?hidden=${!isAdmin}>
                 ></pl-icon>
 
             </h2>
@@ -595,7 +606,7 @@ export class VaultView extends BaseElement {
 
         </div>
 
-        <div class="fabs" ?hidden=${this._editing || !permissions.manage}>
+        <div class="fabs" ?hidden=${this._editing || !isAdmin}>
 
             <div class="flex"></div>
 

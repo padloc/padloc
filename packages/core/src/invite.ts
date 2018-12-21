@@ -6,6 +6,8 @@ import { VaultInfo, SignedVaultInfo } from "./vault";
 import { AccountInfo, SignedAccountInfo } from "./account";
 import { uuid } from "./util";
 
+export type InvitePurpose = "join_vault" | "confirm_membership";
+
 export class Invite implements CollectionItem {
     id: string = "";
     created = new Date();
@@ -67,7 +69,7 @@ export class Invite implements CollectionItem {
         };
     }
 
-    constructor(public email = "") {}
+    constructor(public email = "", public purpose = "join_vault") {}
 
     async initialize(vault: VaultInfo, invitor: AccountInfo, encKey: AESKey, duration = 12) {
         this.id = uuid();
@@ -87,6 +89,7 @@ export class Invite implements CollectionItem {
             expires: this.expires,
             updated: this.updated,
             email: this.email,
+            purpose: this.purpose,
             keyParams: this._keyParams,
             signingParams: this._signingParams,
             vault: this.vault,
@@ -102,6 +105,7 @@ export class Invite implements CollectionItem {
         this.expires = raw.expires;
         this.updated = raw.updated;
         this.email = raw.email;
+        this.purpose = raw.purpose;
         this._keyParams = raw.keyParams;
         this._signingParams = raw.signingParams;
         this.vault = raw.vault;

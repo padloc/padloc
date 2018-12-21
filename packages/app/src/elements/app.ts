@@ -177,6 +177,7 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
     @listen("lock", app)
     _locked() {
         this.$(".wrapper").classList.remove("active");
+        this._inviteDialog.open = false;
         clearDialogs();
         clearClipboard();
     }

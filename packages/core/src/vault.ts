@@ -11,7 +11,7 @@ import {
 import { SharedContainer } from "./container";
 import { uuid } from "./util";
 import { Account, AccountInfo, SignedAccountInfo, AccountID } from "./account";
-import { Invite, InviteCollection } from "./invite";
+import { Invite, InvitePurpose, InviteCollection } from "./invite";
 import { Err, ErrorCode } from "./error";
 import { Storable } from "./storage";
 import { Collection, CollectionItem, CollectionChanges } from "./collection";
@@ -26,6 +26,7 @@ export interface Permissions {
 
 export interface VaultMember extends SignedAccountInfo, CollectionItem {
     permissions: Permissions;
+    suspended?: boolean;
 }
 
 export interface VaultInfo {
@@ -308,6 +309,10 @@ export class Vault implements Storable {
             algorithm: "AES",
             keySize: 256
         });
+        // Remove all existing invites since we've updated the invites key
+        for (const invite of this.invites) {
+            this.invites.remove(invite);
+        }
         await this._generateKeyPair();
         await this.addMember(this._account!.info, { read: true, write: true, manage: true });
         this.updated = new Date();
@@ -340,6 +345,11 @@ export class Vault implements Storable {
         return !!account && !!this.getInviteByEmail(account.email);
     }
 
+    isSuspended(account: AccountInfo | null = this._account) {
+        const member = account && this.getMember(account);
+        return !!member && member.suspended;
+    }
+
     getMember(account: AccountInfo) {
         return this.members.get(account.id);
     }
@@ -367,7 +377,8 @@ export class Vault implements Storable {
             ...account,
             signedPublicKey,
             permissions,
-            updated: new Date()
+            updated: new Date(),
+            suspended: false
         });
 
         this.updated = new Date();
@@ -412,8 +423,8 @@ export class Vault implements Storable {
         return [...this.invites].find(({ email }) => email === em);
     }
 
-    async createInvite(email: string) {
-        const invite = new Invite(email);
+    async createInvite(email: string, purpose?: InvitePurpose) {
+        const invite = new Invite(email, purpose);
         await invite.initialize(this.info, this._account!.info, this._invitesKey);
         this.invites.update(invite);
         return invite;
@@ -441,7 +452,7 @@ export class Vault implements Storable {
                 forwardChanges = true;
             }
 
-            if (!this._account || this._account.locked) {
+            if (!this._account || this._account.locked || !vault._adminContainer.hasAccess(this._account)) {
                 this._adminContainer = vault._adminContainer;
             } else {
                 if (vault.updated > this.updated || !this._privateKey) {
@@ -465,7 +476,7 @@ export class Vault implements Storable {
         }
 
         if (write) {
-            if (!this._account || this._account.locked) {
+            if (!this._account || this._account.locked || !vault._itemsContainer.hasAccess(this._account)) {
                 this._itemsContainer = vault._itemsContainer;
             } else {
                 changes.items = this.items.merge(vault.items);
@@ -488,20 +499,20 @@ export class Vault implements Storable {
         const { manage, write } = this.getPermissions();
         const account = this._account!;
 
-        if (manage && !account.locked) {
+        if (manage && !account.locked && !this.isSuspended()) {
             // TODO: Do something about removed admins
             await this._adminContainer.setAccessors(
-                [...this.members].filter(m => m.permissions.manage).map(({ id, publicKey }) => {
+                [...this.members].filter(m => m.permissions.manage && !m.suspended).map(({ id, publicKey }) => {
                     return { id, publicKey, encryptedKey: "" };
                 })
             );
             await this._adminContainer.set(this._adminSerializer);
         }
 
-        if (write && !account.locked) {
+        if (write && !account.locked && !this.isSuspended()) {
             // TODO: Do something about removed members
             await this._itemsContainer.setAccessors(
-                [...this.members].map(({ id, publicKey }) => {
+                [...this.members].filter(m => !m.suspended).map(({ id, publicKey }) => {
                     return { id, publicKey, encryptedKey: "" };
                 })
             );
@@ -582,7 +593,13 @@ export class Vault implements Storable {
                     throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
                 }
                 this._invitesKey = raw.invitesKey;
-                await Promise.all([...this.invites].map(invite => invite.accessSecret(this._invitesKey)));
+                await Promise.all(
+                    [...this.invites].map(invite => {
+                        try {
+                            invite.accessSecret(this._invitesKey);
+                        } catch (e) {}
+                    })
+                );
                 return this;
             }
         };

@@ -1,5 +1,6 @@
 import { EventEmitter } from "./event-target";
 import { Storage, Storable } from "./storage";
+import { InvitePurpose } from "./invite";
 import { Vault, VaultInfo, VaultMember, VaultItem, Field, Tag, createVaultItem } from "./vault";
 import { CollectionItem } from "./collection";
 import { Account } from "./account";
@@ -389,6 +390,44 @@ export class App extends EventEmitter implements Storable {
         await this.synchronize();
     }
 
+    async reinitializeVault(vault: Vault): Promise<void> {
+        const parent = vault.parent && this.getVault(vault.parent.id);
+        if (parent && !parent.isAdmin()) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        await vault.initialize(this.account!);
+
+        if (parent) {
+            for (const member of vault.members) {
+                // update member signatures
+                await vault.addMember(member, member.permissions);
+            }
+            // update public key and signature in parent vault
+            await parent.addSubVault(vault.info);
+        } else {
+            for (const member of vault.members) {
+                if (member.id !== this.account!.id) {
+                    // members have to be reconfirmed through invites
+                    vault.members.update({ ...member, suspended: true });
+                    await vault.createInvite(member.email, "confirm_membership");
+                }
+            }
+
+            for (const { id } of vault.vaults) {
+                let vault = this.getVault(id);
+                if (vault) {
+                    await this.reinitializeVault(vault);
+                }
+            }
+
+            await this.mainVault!.addSubVault(vault.info);
+            await this.syncVault(this.mainVault!);
+        }
+
+        await this.syncVault(vault, false);
+    }
+
     async loadVault({ id }: { id: string }, fetch = false): Promise<Vault | null> {
         let vault = this._vaults.get(id);
 
@@ -452,14 +491,14 @@ export class App extends EventEmitter implements Storable {
         }
 
         for (const member of vault.members) {
-            if (!(await vault.verifyMember(member))) {
+            if (!member.suspended && !(await vault.verifyMember(member))) {
                 throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH);
             }
         }
     }
 
-    async syncVault(vaultInfo: { id: string }): Promise<Vault> {
-        return this._queueSync(vaultInfo, (vaultInfo: VaultInfo) => this._syncVault(vaultInfo));
+    async syncVault(vaultInfo: { id: string }, verify?: boolean): Promise<Vault> {
+        return this._queueSync(vaultInfo, (vaultInfo: VaultInfo) => this._syncVault(vaultInfo, verify));
     }
 
     async syncVaults() {
@@ -470,7 +509,7 @@ export class App extends EventEmitter implements Storable {
         await Promise.all(subVaults.map(g => this.syncVault(g)));
     }
 
-    async _syncVault(vaultInfo: { id: string }): Promise<Vault | null> {
+    async _syncVault(vaultInfo: { id: string }, verify = true): Promise<Vault | null> {
         const localVault = this.getVault(vaultInfo.id);
 
         const remoteVault = new Vault(vaultInfo.id);
@@ -491,7 +530,9 @@ export class App extends EventEmitter implements Storable {
             }
         }
 
-        await this.verifyVault(remoteVault);
+        if (verify && !remoteVault.isSuspended()) {
+            await this.verifyVault(remoteVault);
+        }
 
         let result: Vault;
 
@@ -543,7 +584,7 @@ export class App extends EventEmitter implements Storable {
         vault.items.update(...items);
         this.dispatch("items-added", { vault, items });
         await this.storage.set(vault);
-        this.syncVault(vault);
+        await this.syncVault(vault);
     }
 
     async createItem(name: string, vault_?: Vault, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
@@ -566,7 +607,7 @@ export class App extends EventEmitter implements Storable {
         vault.items.update({ ...item, ...upd, updatedBy: this.account!.id });
         this.dispatch("item-changed", { vault, item });
         await this.storage.set(vault);
-        this.syncVault(vault);
+        await this.syncVault(vault);
     }
 
     async deleteItems(items: { item: VaultItem; vault: Vault }[]) {
@@ -581,7 +622,7 @@ export class App extends EventEmitter implements Storable {
             vault.items.remove(...items);
             await this.storage.set(vault);
             this.dispatch("items-deleted", { vault, items });
-            this.syncVault(vault);
+            await this.syncVault(vault);
         }
     }
 
@@ -594,8 +635,8 @@ export class App extends EventEmitter implements Storable {
 
     // INVITES
 
-    async createInvite(vault: Vault, email: string) {
-        const invite = await vault.createInvite(email);
+    async createInvite(vault: Vault, email: string, purpose?: InvitePurpose) {
+        const invite = await vault.createInvite(email, purpose);
         this.dispatch("invite-created", { invite });
         await this.syncVault(vault);
         return invite;
