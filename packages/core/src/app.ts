@@ -108,7 +108,15 @@ export class App extends EventEmitter implements Storable {
     }
 
     get vaults() {
-        return Array.from(this._vaults.values()).sort((a, b) => {
+        return [...this._vaults.values()].filter(v => !v.archived).sort((a, b) => {
+            const nameA = a.toString();
+            const nameB = b.toString();
+            return b === this.mainVault || nameA > nameB ? 1 : a === this.mainVault || nameA < nameB ? -1 : 0;
+        });
+    }
+
+    get archivedVaults() {
+        return [...this._vaults.values()].filter(v => v.archived).sort((a, b) => {
             const nameA = a.toString();
             const nameB = b.toString();
             return b === this.mainVault || nameA > nameB ? 1 : a === this.mainVault || nameA < nameB ? -1 : 0;
@@ -273,7 +281,7 @@ export class App extends EventEmitter implements Storable {
 
         await this.account.unlock(password);
 
-        const mainVault = await this.loadVault({ id: this.account.mainVault }, true);
+        const mainVault = await this.loadVault({ id: this.account.mainVault } as VaultInfo, true);
         if (!mainVault!.initialized) {
             await mainVault!.initialize(this.account);
             await this.api.updateVault(mainVault!);
@@ -385,20 +393,33 @@ export class App extends EventEmitter implements Storable {
         await this.syncVault(vault);
     }
 
-    async deleteVault(vault: Vault): Promise<void> {
-        await this.api.deleteVault(vault);
+    async deleteVault({ id }: Vault | VaultInfo): Promise<void> {
+        await this.api.deleteVault(new Vault(id));
         await this.synchronize();
     }
 
-    async reinitializeVault(vault: Vault): Promise<void> {
+    async archiveVault({ id }: Vault | VaultInfo): Promise<void> {
+        const vault = this.getVault(id)!;
+        await Promise.all([...vault.vaults].map(v => this.archiveVault(v)));
+        vault.archived = true;
+        vault.updated = new Date();
+        await this.syncVault(vault, false);
+    }
+
+    async unarchiveVault(vault: Vault | VaultInfo): Promise<void> {
+        await this.reinitializeVault(vault);
+    }
+
+    async reinitializeVault({ id }: Vault | VaultInfo): Promise<void> {
+        const vault = this.getVault(id)!;
+        vault.archived = false;
+
         const parent = vault.parent && this.getVault(vault.parent.id);
-        if (parent && !parent.isAdmin()) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
 
         await vault.initialize(this.account!);
 
         if (parent) {
+            // This is a subvault, so it's sufficient to update member signatures
             for (const member of vault.members) {
                 // update member signatures
                 await vault.addMember(member, member.permissions);
@@ -406,6 +427,7 @@ export class App extends EventEmitter implements Storable {
             // update public key and signature in parent vault
             await parent.addSubVault(vault.info);
         } else {
+            // We're dealing with a main vault, so all memberships have to be reconfirmed
             for (const member of vault.members) {
                 if (member.id !== this.account!.id) {
                     // members have to be reconfirmed through invites
@@ -414,21 +436,19 @@ export class App extends EventEmitter implements Storable {
                 }
             }
 
-            for (const { id } of vault.vaults) {
-                let vault = this.getVault(id);
-                if (vault) {
-                    await this.reinitializeVault(vault);
-                }
-            }
+            // Reinitialize subvaults
+            await Promise.all([...vault.vaults].map(v => this.reinitializeVault(v)));
 
+            // Register vault with own main vault
             await this.mainVault!.addSubVault(vault.info);
+
             await this.syncVault(this.mainVault!);
         }
 
         await this.syncVault(vault, false);
     }
 
-    async loadVault({ id }: { id: string }, fetch = false): Promise<Vault | null> {
+    async loadVault({ id }: Vault | VaultInfo, fetch = false): Promise<Vault | null> {
         let vault = this._vaults.get(id);
 
         if (!vault) {
@@ -477,7 +497,7 @@ export class App extends EventEmitter implements Storable {
             await this.loadVault(vaultInfo);
         }
 
-        await Promise.all([...this._vaults.values()].map(vault => this.verifyVault(vault)));
+        // await Promise.all([...this._vaults.values()].map(vault => this.verifyVault(vault)));
     }
 
     async verifyVault(vault: Vault) {
@@ -530,7 +550,7 @@ export class App extends EventEmitter implements Storable {
             }
         }
 
-        if (verify && !remoteVault.isSuspended()) {
+        if (verify && !remoteVault.isSuspended() && !remoteVault.archived) {
             await this.verifyVault(remoteVault);
         }
 
@@ -545,8 +565,8 @@ export class App extends EventEmitter implements Storable {
             result = remoteVault;
         }
 
-        // Only update if there are local changes
-        if (result.revision.id !== remoteVault.revision.id) {
+        // Only update if there are local changes and if the vault is not archived
+        if (!result.archived && result.revision.id !== remoteVault.revision.id) {
             try {
                 await this.api.updateVault(result);
             } catch (e) {
@@ -667,10 +687,15 @@ export class App extends EventEmitter implements Storable {
     }
 
     async confirmInvite(invite: Invite) {
-        const vault = this.getVault(invite!.vault!.id);
-        await vault!.addMember(invite!.invitee!);
+        const vault = this.getVault(invite!.vault!.id)!;
+        let permissions;
+        if (invite.purpose === "confirm_membership") {
+            const existing = vault.members.get(invite!.invitee!.id);
+            permissions = (existing && existing.permissions) || undefined;
+        }
+        await vault!.addMember(invite!.invitee!, permissions);
         vault!.invites.remove(invite!);
-        await this.syncVault(vault!);
+        await this.syncVault(vault);
     }
 
     // SETTINGS / STATS

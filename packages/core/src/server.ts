@@ -5,7 +5,7 @@ import { Account } from "./account";
 import { Auth, EmailVerification } from "./auth";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
-import { Vault } from "./vault";
+import { Vault, SubVault } from "./vault";
 import { Invite } from "./invite";
 import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
@@ -114,6 +114,7 @@ export class Context implements API {
         await this.storage.get(session);
 
         account.sessions.remove(session);
+        account.sessions.revision = { id: uuid(), date: new Date() };
 
         await Promise.all([this.storage.delete(session), this.storage.set(account)]);
     }
@@ -177,7 +178,11 @@ export class Context implements API {
 
         await this.storage.get(vault);
 
-        if (!vault.isOwner(account) && !vault.isMember(account)) {
+        const parent = vault.parent && new Vault(vault.parent.id);
+        parent && (await this.storage.get(parent));
+        const ownsParent = parent && parent.isOwner(account);
+
+        if (!vault.isOwner(account) && !vault.isMember(account) && !ownsParent) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
@@ -189,6 +194,22 @@ export class Context implements API {
 
         const existing = new Vault(vault.id);
         await this.storage.get(existing);
+
+        const parent = vault.parent && new Vault(vault.parent.id);
+        parent && (await this.storage.get(parent));
+        const ownsParent = parent && parent.isOwner(account);
+
+        if (!vault.isOwner(account) && !vault.isMember(account) && !ownsParent) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
+
+        const hasPermission = vault.archived
+            ? vault.isOwner(account) || ownsParent
+            : vault.isOwner(account) || ownsParent || vault.getPermissions(account).write;
+
+        if (!hasPermission) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
 
         if (
             vault.revision.id !== existing.revision.id &&
@@ -264,11 +285,20 @@ export class Context implements API {
         const { account } = this._requireAuth();
         await this.storage.get(vault);
 
-        if (!vault.isOwner(account) || vault.id === account.mainVault) {
+        const parent = vault.parent && new Vault(vault.parent.id);
+        parent && (await this.storage.get(parent));
+        const ownsParent = parent && parent.isOwner(account);
+
+        if ((!vault.isOwner(account) && !ownsParent) || vault.id === account.mainVault) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
         const promises = [this.storage.delete(vault)];
+
+        if (parent) {
+            parent.vaults.remove(vault.info as SubVault);
+            promises.push(this.storage.set(parent));
+        }
 
         for (const { id } of vault.vaults) {
             promises.push(this.deleteVault(new Vault(id)));
@@ -276,6 +306,19 @@ export class Context implements API {
 
         // TODO: remove vault from all member accounts?
 
+        // for (const member of vault.members) {
+        //     if (vault.isOwner(member)) {
+        //         continue;
+        //     }
+        //     promises.push(
+        //         (async () => {
+        //             const account = new Account(member.id);
+        //             await this.storage.get(account);
+        //             account.vaults.remove(vault.info as CollectionItem & VaultInfo);
+        //             await this.storage.set(account);
+        //         })()
+        //     );
+        // }
         await Promise.all(promises);
     }
 

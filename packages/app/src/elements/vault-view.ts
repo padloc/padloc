@@ -537,7 +537,7 @@ export class VaultView extends BaseElement {
                                 <pl-toggle-button
                                     .label=${$l("readonly")}
                                     .active=${!member.permissions.write}
-                                    ?disabled=${!isAdmin}
+                                    ?disabled=${!isAdmin || member.permissions.manage}
                                     @click=${() => this._toggleReadonly(member)} 
                                     class="tap"
                                     reverse>

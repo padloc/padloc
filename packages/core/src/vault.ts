@@ -261,6 +261,7 @@ export class Vault implements Storable {
         date: Date;
         mergedFrom?: [string, string];
     } = { id: uuid(), date: new Date() };
+    archived = false;
 
     get pk() {
         return this.id;
@@ -440,13 +441,17 @@ export class Vault implements Storable {
 
         let forwardChanges = false;
 
+        // Owner and created are supposed to be immutable so only copy over
+        // if not set yet. (Which should happen exactly once after creation)
+        this.owner = this.owner || vault.owner;
+        this.created = this.created || vault.created;
+
         if (manage) {
             if (vault.updated > this.updated) {
-                this.owner = vault.owner;
-                this.created = vault.created;
                 this.parent = vault.parent;
                 this.name = vault.name;
                 this._publicKey = vault._publicKey;
+                this.archived = vault.archived;
                 this.updated = vault.updated;
             } else if (this.updated > vault.updated) {
                 forwardChanges = true;
@@ -527,6 +532,7 @@ export class Vault implements Storable {
             updated: this.updated,
             revision: this.revision,
             owner: this.owner,
+            archived: this.archived,
             parent: this.parent,
             members: await this.members.serialize(),
             vaults: await this.vaults.serialize(),
@@ -543,6 +549,7 @@ export class Vault implements Storable {
         this.updated = new Date(raw.updated);
         this.revision = { ...raw.revision, date: new Date(raw.revision.date) };
         this.owner = raw.owner;
+        this.archived = !!raw.archived;
         this.parent = raw.parent;
         this._name = raw.name;
         this._publicKey = raw.publicKey;

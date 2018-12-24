@@ -26,6 +26,7 @@ export function appSpec(): Spec {
         password: "password"
     };
     let sharedVaultID = "";
+    let otherVaultID = "";
 
     return (test, assert) => {
         test("App initializes successfully", async () => {
@@ -79,8 +80,9 @@ export function appSpec(): Spec {
             const name = "My Vault Item";
             const item = await app.createItem(name, vault);
             assert.ownInclude(item, { name });
-            const listItem = app.getItem(item.id);
-            assert.ownInclude(listItem, { item, vault });
+            const listItem = app.getItem(item.id)!;
+            assert.equal(listItem.item.name, item.name);
+            assert.equal(listItem.vault.id, vault.id);
             assert.equal(app.items.length, 1);
             assert.equal(vault.items.size, 1);
             await app.syncVault(vault);
@@ -136,12 +138,45 @@ export function appSpec(): Spec {
             await app.syncVault(vault);
         });
 
-        test("Simulataneous Edit", async () => {
-            const item1 = await app.createItem("Added Item 1", app.getVault(sharedVaultID)!);
-            const item2 = await otherApp.createItem("Added Item 2", otherApp.getVault(sharedVaultID)!);
+        test("Remove Admin", async () => {
+            const vault = app.getVault(sharedVaultID)!;
+            const member = vault.members.get(otherApp.account!.id)!;
+            vault.members.update({ ...member, permissions: { ...member.permissions, manage: false } });
+            await app.reinitializeVault(vault);
+            await otherApp.synchronize();
 
+            assert.isFalse(
+                otherApp.getVault(sharedVaultID)!.isAdmin(otherApp.account),
+                "Other member should no longer be admin"
+            );
+
+            assert.isTrue(
+                otherApp.getVault(sharedVaultID)!.getMember(otherApp.account!)!.suspended,
+                "Other member should be suspended"
+            );
+
+            const message = messenger.lastMessage(otherApp.account!.email);
+            assert.instanceOf(message, InviteCreatedMessage);
+            const { id: inviteID } = (message as InviteCreatedMessage).invite;
+            const { secret } = vault.invites.get(inviteID)!;
+            let invite = (await otherApp.getInvite(vault.id, inviteID))!;
+            await otherApp.acceptInvite(invite, secret);
+            invite = (await app.getInvite(vault.id, invite.id))!;
+            assert.isTrue(await invite.verify());
+            await app.confirmInvite(invite);
+            await otherApp.syncVault(vault);
+            assert.isFalse(otherApp.getVault(sharedVaultID)!.isAdmin());
+            assert.isFalse(otherApp.getVault(sharedVaultID)!.isSuspended());
+            assert.equal(app.items.length, 1);
+        });
+
+        test("Simulataneous Edit", async () => {
+            const [item1, item2] = await Promise.all([
+                app.createItem("Added Item 1", app.getVault(sharedVaultID)!),
+                otherApp.createItem("Added Item 2", otherApp.getVault(sharedVaultID)!)
+            ]);
             await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
-            await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
+
             assert.ok(app.getItem(item2.id));
             assert.ok(otherApp.getItem(item1.id));
 
@@ -155,6 +190,29 @@ export function appSpec(): Spec {
             assert.isNull(app.getItem(item2.id));
             assert.ok(otherApp.getItem(item3.id));
             assert.equal(otherApp.getItem(item1.id)!.item.name, "Edited Item");
+        });
+
+        test("Archive Vault", async () => {
+            let vault = await app.createVault("Test");
+            otherVaultID = vault.id;
+            // const invite = await app.createInvite(vault, otherApp.account!.email);
+            // await otherApp.acceptInvite(invite, invite.secret);
+            // await app.confirmInvite(invite);
+            // await app.syncVault(vault);
+            assert.isTrue(vault.isMember(app.account!));
+            await app.archiveVault(vault);
+            vault = app.getVault(vault.id)!;
+            assert.isTrue(vault.archived);
+        });
+
+        test("Unarchive Vault", async () => {
+            await app.unarchiveVault(app.getVault(otherVaultID)!);
+            assert.isFalse(app.getVault(otherVaultID)!.archived);
+        });
+
+        test("Delete Vault", async () => {
+            await app.deleteVault(app.getVault(otherVaultID)!);
+            assert.isNull(app.getVault(otherVaultID));
         });
 
         test("Remove Member", async () => {
