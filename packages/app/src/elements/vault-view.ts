@@ -197,6 +197,30 @@ export class VaultView extends BaseElement {
         }
     }
 
+    private async _confirmMember(member: VaultMember) {
+        let invite = this.vault!.getInviteByEmail(member.email);
+
+        if (!invite) {
+            const confirmed = await confirm(
+                $l(
+                    "This member has been suspended from this vault until their membership " +
+                        "is confirmed. Do you want to send a confirmation request now?"
+                ),
+                $l("Send Request"),
+                $l("Cancel"),
+                { title: $l("Confirm Membership") }
+            );
+
+            if (confirmed) {
+                invite = await app.createInvite(this.vault!, member.email, "confirm_membership");
+            }
+        }
+
+        if (invite) {
+            this._showInvite(invite);
+        }
+    }
+
     shouldUpdate() {
         return !!this.vault;
     }
@@ -217,7 +241,7 @@ export class VaultView extends BaseElement {
             :host {
                 display: flex;
                 flex-direction: column;
-                background: var(--color-tertiary);
+                background: var(--color-quaternary);
             }
 
             .tags {
@@ -254,6 +278,12 @@ export class VaultView extends BaseElement {
             li {
                 display: flex;
                 align-items: center;
+                background: var(--color-tertiary);
+                border-top: solid 1px #eee;
+            }
+
+            li:last-child {
+                border-bottom: solid 1px #eee;
             }
 
             li:hover {
@@ -413,12 +443,10 @@ export class VaultView extends BaseElement {
             </div>
 
             <h2 ?hidden=${!invites.length} class="animate">
-
-                <pl-icon icon="mail"></pl-icon>
-
-                <div>${$l("Invites")}</div>
-
+                ${$l("Invites")}
             </h2>
+
+            <ul>
 
             ${invites.map(inv => {
                 const status = inv.expired
@@ -432,7 +460,7 @@ export class VaultView extends BaseElement {
                           };
 
                 return html`
-                <div class="invite layout align-center tap animate" @click=${() => this._showInvite(inv)}>
+                <li class="invite layout align-center tap animate" @click=${() => this._showInvite(inv)}>
 
                     <div flex>
 
@@ -460,13 +488,13 @@ export class VaultView extends BaseElement {
 
                     </div>
 
-                </div>
+                </li>
             `;
             })}
 
-            <h2 class="animate">
+            </ul>
 
-                <pl-icon icon="group"></pl-icon>
+            <h2 class="animate">
 
                 <div class="flex">${$l("Members")}</div>
 
@@ -506,8 +534,10 @@ export class VaultView extends BaseElement {
                             ${
                                 member.suspended
                                     ? html`
-                            <div class="tags small permission-tags">
-                                <div class="tag warning">${$l("suspended")}</div>
+                            <div class="tags small tap">
+                                <div class="tag warning" @click=${() => this._confirmMember(member)}>
+                                    ${$l("suspended")}
+                                </div>
                             </div>
                             `
                                     : html`
@@ -555,8 +585,6 @@ export class VaultView extends BaseElement {
 
             <h2 class="animate"
                 ?hidden=${vault === app.mainVault || !!vault.parent || (!permissions.manage && !subvaults.length)}>
-
-                <pl-icon icon="vaults"></pl-icon>
 
                 <div class="flex">${$l("Subvaults")}</div>
 

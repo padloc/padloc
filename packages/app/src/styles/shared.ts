@@ -126,7 +126,7 @@ export const shared = html`
 
     h2 {
         font-size: 120%;
-        margin: 20px 15px 0 15px;
+        margin: 20px 10px 8px 15px;
     }
 
     ::-webkit-search-cancel-button {
