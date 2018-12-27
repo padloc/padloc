@@ -221,6 +221,33 @@ export class VaultView extends BaseElement {
         }
     }
 
+    private async _archive() {
+        const confirmed = await confirm($l("Do you want to unarchive this vault?"), $l("Archive Vault"), $l("Cancel"), {
+            title: $l("Archive Vault")
+        });
+
+        if (confirmed) {
+            await app.archiveVault(this.vault!);
+            this._editing = false;
+            alert($l("Vault archived successfully!"), { type: "success" });
+        }
+    }
+
+    private async _unarchive() {
+        const confirmed = await confirm(
+            $l("Are you sure you want to unarchive this vault?"),
+            $l("Unarchive"),
+            $l("Cancel"),
+            { title: $l("Unarchive Vault") }
+        );
+
+        if (confirmed) {
+            await app.unarchiveVault(this.vault!);
+            this._editing = false;
+            alert($l("Vault unarchived successfully!"), { type: "success" });
+        }
+    }
+
     shouldUpdate() {
         return !!this.vault;
     }
@@ -231,7 +258,10 @@ export class VaultView extends BaseElement {
         const subvaults = vault === app.mainVault ? [] : [...vaults].map(v => app.getVault(v.id)!);
         const permissions = vault.getPermissions();
         const isAdmin = vault.isAdmin() && !vault.isSuspended();
+        const isOwner = vault.isOwner();
+        const isSubvault = !!vault.parent;
         const invites = isAdmin ? [...vault.invites] : [];
+        const canEdit = !vault.archived && (isSubvault ? isAdmin : isOwner);
 
         return html`
         ${shared}
@@ -391,6 +421,36 @@ export class VaultView extends BaseElement {
             .member:hover .permission-tags {
                 display: none;
             }
+
+            .archived-overlay {
+                ${mixins.fullbleed()}
+                background: rgba(255, 255, 255, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .archived-message {
+                ${mixins.gradientWarning()}
+                border-radius: var(--border-radius);
+                color: var(--color-tertiary);
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
+                margin: 20px;
+                padding: 10px;
+                text-align: center;
+            }
+
+            .archived-message > div {
+                margin: 10px;
+            }
+
+            .archived-message > button {
+                margin-top: 10px;
+                width: 100%;
+                border-radius: var(--border-radius);
+                background: var(--shade-3-color);
+                font-weight: bold;
+            }
         </style>
 
         <header class="narrow back-header">
@@ -536,7 +596,7 @@ export class VaultView extends BaseElement {
                                     ? html`
                             <div class="tags small tap">
                                 <div class="tag warning" @click=${() => this._confirmMember(member)}>
-                                    ${$l("suspended")}
+                                    ${$l("confirmation required")}
                                 </div>
                             </div>
                             `
@@ -625,6 +685,12 @@ export class VaultView extends BaseElement {
                 ?hidden=${!vault.isOwner()}>
             </pl-icon>
 
+            <pl-icon icon="archive"
+                class="fab tap"
+                @click=${() => this._archive()}
+                ?hidden=${!vault.isOwner()}>
+            </pl-icon>
+
             <div class="flex"></div>
 
             <pl-icon icon="check"
@@ -634,7 +700,7 @@ export class VaultView extends BaseElement {
 
         </div>
 
-        <div class="fabs" ?hidden=${this._editing || !isAdmin}>
+        <div class="fabs" ?hidden=${this._editing || !canEdit}>
 
             <div class="flex"></div>
 
@@ -644,6 +710,26 @@ export class VaultView extends BaseElement {
             </pl-icon>
 
         </div>
+
+        ${
+            vault.archived
+                ? html`
+            <div class="archived-overlay">
+
+                <div class="archived-message">
+
+                    <div>${$l("This vault has been archived.")}</div>
+
+                    <button class="tap" ?hidden=${!isOwner} @click=${() => this._unarchive()}>${$l(
+                      "Unarchive"
+                  )}</button>
+
+                </div>
+
+            </div>
+        `
+                : ""
+        }
        `;
     }
 }

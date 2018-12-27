@@ -116,11 +116,7 @@ export class App extends EventEmitter implements Storable {
     }
 
     get archivedVaults() {
-        return [...this._vaults.values()].filter(v => v.archived).sort((a, b) => {
-            const nameA = a.toString();
-            const nameB = b.toString();
-            return b === this.mainVault || nameA > nameB ? 1 : a === this.mainVault || nameA < nameB ? -1 : 0;
-        });
+        return [...this._vaults.values()].filter(v => v.archived && !v.parent);
     }
 
     get filter() {
@@ -401,6 +397,9 @@ export class App extends EventEmitter implements Storable {
     async archiveVault({ id }: Vault | VaultInfo): Promise<void> {
         const vault = this.getVault(id)!;
         await Promise.all([...vault.vaults].map(v => this.archiveVault(v)));
+        for (const invite of vault.invites) {
+            vault.invites.remove(invite);
+        }
         vault.archived = true;
         vault.updated = new Date();
         await this.syncVault(vault, false);
@@ -426,6 +425,7 @@ export class App extends EventEmitter implements Storable {
             }
             // update public key and signature in parent vault
             await parent.addSubVault(vault.info);
+            vault.parent = parent.info;
         } else {
             // We're dealing with a main vault, so all memberships have to be reconfirmed
             for (const member of vault.members) {

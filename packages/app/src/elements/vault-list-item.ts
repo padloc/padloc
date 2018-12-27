@@ -1,3 +1,4 @@
+import { localize as $l } from "@padloc/core/lib/locale.js";
 import { Vault } from "@padloc/core/lib/vault.js";
 import { shared, mixins } from "../styles";
 import { app } from "../init.js";
@@ -65,6 +66,14 @@ export class AccountItem extends BaseElement {
                 <div class="vault-name">${vault.name}</div>
 
                 <div class="tags small">
+
+                    <div class="tag warning" ?hidden=${!vault.archived}>
+
+                        <pl-icon icon="archive"></pl-icon>
+
+                        <div>${$l("archived")}</div>
+
+                    </div>
 
                     <div class="tag">
 
