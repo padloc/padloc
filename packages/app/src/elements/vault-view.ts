@@ -150,7 +150,10 @@ export class VaultView extends BaseElement {
             ? "Do you want to give {0} admin permissions? They will be able to " +
               "add and delete members, change permissions and create subvaults."
             : "Do you want to remove {0} as an admin?";
-        const confirmed = await confirm($l(question, member.name || member.email), $l("Make Admin"));
+        const confirmed = await confirm(
+            $l(question, member.name || member.email),
+            button.active ? $l("Make Admin") : $l("Remove Admin")
+        );
 
         if (confirmed) {
             member.permissions.manage = button.active;
@@ -274,6 +277,10 @@ export class VaultView extends BaseElement {
                 background: var(--color-quaternary);
             }
 
+            main {
+                padding-bottom: 70px;
+            }
+
             .tags {
                 padding: 0 15px;
             }
@@ -318,10 +325,6 @@ export class VaultView extends BaseElement {
 
             li:hover {
                 background: #fafafa;
-            }
-
-            li:not(:hover) .remove-button {
-                display: none;
             }
 
             .invite {
@@ -376,7 +379,7 @@ export class VaultView extends BaseElement {
 
             .member-info {
                 flex: 1;
-                width: 0;
+                min-width: 0;
                 padding-right: 18px;
             }
 
@@ -392,6 +395,10 @@ export class VaultView extends BaseElement {
             .permission-tags {
                 padding: 0;
                 margin: 0 8px 0 2px;
+            }
+
+            .permission-tags .tag {
+                max-width: 75px;
             }
 
             .permission-buttons {
@@ -413,13 +420,6 @@ export class VaultView extends BaseElement {
                 height: auto;
                 padding: 4px 4px 4px 8px;
                 margin: 2px 8px;
-            }
-
-            .member:not(:hover) .permission-buttons,
-            .member:not(:hover) .remove-button,
-            .member:hover pl-fingerprint,
-            .member:hover .permission-tags {
-                display: none;
             }
 
             .archived-overlay {
@@ -570,16 +570,17 @@ export class VaultView extends BaseElement {
 
             <ul>
 
-                ${[...members].map(
-                    member => html`
+                ${[...members].map(member => {
+                    const editing = this._editing && !vault.isOwner(member);
+                    return html`
                         <li class="member">
 
-                            <pl-fingerprint .key=${member.publicKey}></pl-fingerprint>
+                            <pl-fingerprint .key=${member.publicKey} ?hidden=${editing}></pl-fingerprint>
 
                             <pl-icon
                                 icon="remove"
                                 class="remove-button tap"
-                                ?disabled=${!isAdmin || vault.isOwner(member)}
+                                ?hidden=${!editing}
                                 @click=${() => this._removeMember(member)}>
                             </pl-icon>
 
@@ -591,29 +592,36 @@ export class VaultView extends BaseElement {
 
                             </div>
 
-                            ${
-                                member.suspended
-                                    ? html`
-                            <div class="tags small tap">
-                                <div class="tag warning" @click=${() => this._confirmMember(member)}>
-                                    ${$l("confirmation required")}
+                            <div class="tags small permission-tags" ?hidden=${editing}>
+
+                                <div
+                                    class="tag warning tap"
+                                    ?hidden=${!member.suspended}
+                                    @click=${() => this._confirmMember(member)}>
+                                    ${
+                                        vault.isInvited(member)
+                                            ? $l("confirmation requested")
+                                            : $l("request confirmation")
+                                    }
                                 </div>
-                            </div>
-                            `
-                                    : html`
-                            <div class="tags small permission-tags">
 
                                 <div class="tag" ?hidden=${!vault.isOwner(member)}>${$l("owner")}</div>
 
-                                <div class="tag" ?hidden=${vault.isOwner(member) || !member.permissions.manage}>
+                                <div
+                                    class="tag"
+                                    ?hidden=${member.suspended || vault.isOwner(member) || !member.permissions.manage}>
                                     ${$l("admin")}
                                 </div>
 
-                                <div class="tag" ?hidden=${member.permissions.write}>${$l("readonly")}</div>
+                                <div
+                                    class="tag"
+                                    ?hidden=${member.suspended || member.permissions.write}>
+                                    ${$l("readonly")}
+                                </div>
 
                             </div>
 
-                            <div class="permission-buttons">
+                            <div class="permission-buttons" ?hidden=${!editing}>
 
                                 <pl-toggle-button
                                     .label=${$l("admin")}
@@ -634,12 +642,10 @@ export class VaultView extends BaseElement {
                                 </pl-toggle-button>
 
                             </div>
-                            `
-                            }
 
                         </li>
-                    `
-                )}
+                    `;
+                })}
 
             </ul>
 

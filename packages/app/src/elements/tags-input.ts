@@ -55,11 +55,6 @@ export class TagsInput extends BaseElement {
                     margin-top: 6px;
                 }
 
-                .tags.small .tag {
-                    height: 27px;
-                    line-height: 27px;
-                }
-
                 .results {
                     padding: 0;
                     background: rgba(255, 255, 255, 0.5);
@@ -102,6 +97,10 @@ export class TagsInput extends BaseElement {
                 .add-tag {
                     height: 27px;
                     overflow: visible;
+                }
+
+                .add-tag .input-wrapper pl-icon {
+                    height: 25px;
                 }
             </style>
 

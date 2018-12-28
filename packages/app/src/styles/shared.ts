@@ -385,10 +385,8 @@ export const shared = html`
         font-weight: bold;
         border-radius: var(--border-radius);
         font-size: var(--font-size-tiny);
-        white-space: nowrap;
-        height: 30px;
-        line-height: 30px;
-        padding: 0 8px;
+        padding: 5px 8px;
+        line-height: normal;
         text-align: center;
         ${mixins.gradientDark(true)}
     }
@@ -404,7 +402,7 @@ export const shared = html`
 
     .tag pl-icon {
         width: 20px;
-        height: 30px;
+        height: 20px;
         margin-right: 4px;
         margin-left: -2px;
     }
@@ -428,15 +426,13 @@ export const shared = html`
 
     .tags.small .tag {
         font-size: var(--font-size-micro);
-        height: 25px;
-        line-height: 25px;
     }
 
     .tags.small pl-icon {
         font-size: 10px;
         margin-right: 0;
         width: 16px;
-        height: 25px;
+        height: 16px;
     }
 
     .record-tag.store-tag {
