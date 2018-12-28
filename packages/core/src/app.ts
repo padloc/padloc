@@ -387,6 +387,16 @@ export class App extends EventEmitter implements Storable {
             vault.name = name;
         }
         await this.syncVault(vault);
+        if (name) {
+            // Update parent info on subvaults
+            await Promise.all(
+                [...vault.vaults].map(async ({ id }) => {
+                    const sub = this.getVault(id)!;
+                    sub.parent = vault.info;
+                    await this.syncVault(sub);
+                })
+            );
+        }
     }
 
     async deleteVault({ id }: Vault | VaultInfo): Promise<void> {
