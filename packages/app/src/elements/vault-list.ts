@@ -11,6 +11,8 @@ import "./vault-list-item.js";
 export class VaultList extends BaseElement {
     @property()
     selected: string = "";
+    @property()
+    private _showArchived: boolean = false;
 
     @listen("unlock", app)
     @listen("vault-created", app)
@@ -40,6 +42,10 @@ export class VaultList extends BaseElement {
 
     render() {
         const vaults = app.vaults.filter(v => v !== app.mainVault);
+
+        if (this._showArchived) {
+            vaults.push(...app.archivedVaults);
+        }
 
         return html`
 
@@ -88,6 +94,14 @@ export class VaultList extends BaseElement {
                     font-size: 80%;
                 }
 
+                .show-archived {
+                    margin: 5px 10px;
+                    border-radius: var(--border-radius);
+                    background: white;
+                    width: calc(100% - 20px);
+                    border: solid 1px #ddd;
+                }
+
             </style>
 
             <header>
@@ -120,7 +134,14 @@ export class VaultList extends BaseElement {
 
                 </ul>
 
-                <div class="empty-placeholder" ?hidden=${!!vaults.length}>
+                <button
+                    class="show-archived"
+                    ?hidden=${!app.archivedVaults.length || this._showArchived}
+                    @click=${() => (this._showArchived = true)}>
+                    ${$l("Show Archived Vaults")}
+                </button>
+
+                <div class="empty-placeholder" ?hidden=${!!vaults.length || !!app.archivedVaults.length}>
 
                     <pl-icon icon="vaults"></pl-icon>
 
@@ -135,6 +156,7 @@ export class VaultList extends BaseElement {
                     <pl-icon icon="add" class="tap fab" @click=${() => this._createVault()}></pl-icon>
 
                 </div>
+
             </main>
         `;
     }
