@@ -55,7 +55,7 @@ export class Notification extends BaseElement {
 
             .message {
                 flex: 1;
-                width: 0;
+                min-width: 0;
                 padding: 15px 0 15px 15px;
                 font-weight: bold;
             }

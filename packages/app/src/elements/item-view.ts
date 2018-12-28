@@ -149,11 +149,11 @@ export class ItemView extends BaseElement {
             }
         </style>
 
-        <header class="narrow back-header">
+        <header class="narrow back-header tap" @click=${() => router.go("items")}>
 
-            <pl-icon icon="backward" @click=${() => router.go("items")}></pl-icon>
+            <pl-icon icon="backward"></pl-icon>
 
-            <div @click=${() => router.go("items")}>
+            <div>
                 ${(app.filter.vault && app.filter.vault.name) || $l("All Items")}
             </div>
 

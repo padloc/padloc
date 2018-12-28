@@ -453,11 +453,11 @@ export class VaultView extends BaseElement {
             }
         </style>
 
-        <header class="narrow back-header">
+        <header class="narrow back-header tap" @click=${() => router.go("vaults")}>
 
-            <pl-icon icon="backward" @click=${() => router.go("vaults")}></pl-icon>
+            <pl-icon icon="backward"></pl-icon>
 
-            <div @click=${() => router.go("vaults")}>${$l("Vaults")}</div>
+            <div>${$l("Vaults")}</div>
 
         </header>
 

@@ -198,10 +198,16 @@ export const shared = html`
         border: none;
         align-items: center;
         padding-left: 15px;
-        color: var(--color-primary);
+        color: var(--color-tertiary);
         margin-top: 10px;
+        margin-bottom: -10px;
         z-index: 2;
         height: 40px;
+        background: inherit;
+    }
+
+    header.back-header > * {
+        color: var(--color-primary);
     }
 
     header.back-header pl-icon {
