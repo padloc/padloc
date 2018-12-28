@@ -186,8 +186,7 @@ export class TagsInput extends BaseElement {
     }
 
     private _openVault() {
-        app.filter = { vault: this.vault };
-        router.go("items");
+        router.go(`vaults/${this.vault!.id}`);
     }
 
     _focusChanged() {
