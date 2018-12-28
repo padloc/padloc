@@ -9,6 +9,8 @@ import { Dialog } from "./dialog.js";
 export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[], VaultItem[]> {
     @property()
     items: { vault: Vault; item: VaultItem }[] = [];
+    @property()
+    vaults: Vault[] = [];
 
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
@@ -16,12 +18,6 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
     renderContent() {
         const itemsDescription =
             this.items.length === 1 ? `'${this.items[0].item.name}'` : $l("{0} Items", this.items.length.toString());
-
-        const sourceVaults = this.items.reduce((sv, i) => sv.add(i.vault), new Set<Vault>());
-        const vaults =
-            sourceVaults.size === 1
-                ? app.vaults.filter(v => v.getPermissions().write && v !== sourceVaults.values().next().value)
-                : app.vaults.filter(v => v.getPermissions().write);
 
         return html`
 
@@ -55,14 +51,19 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
 
         <h1>${$l("Move {0} To", itemsDescription)}</h1>
 
-        <div class="note" ?hidden=${vaults.length}>>
+        <div class="note" ?hidden=${this.vaults.length}>>
             $l("There is nowhere to move these items! Please make sure there is at least one other vault " +
                 "to which you have write permissions!");
         </div>
 
-        <pl-select id="vaultSelect" .options=${vaults} .label=${$l("Vault")} ?hidden=${!vaults.length}></pl-select>
+        <pl-select
+            id="vaultSelect"
+            .options=${this.vaults}
+            .label=${$l("Vault")}
+            ?hidden=${!this.vaults.length}>
+        </pl-select>
 
-        <button @click=${() => this._enter()} class="tap" ?disabled=${!vaults.length}>
+        <button @click=${() => this._enter()} class="tap" ?disabled=${!this.vaults.length}>
             ${this.items.length === 1 ? $l("Move Item") : $l("Move Items")}
         </button>
 `;
@@ -73,8 +74,15 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
     }
 
     async show(items: { vault: Vault; item: VaultItem }[]) {
-        await this.updateComplete;
         this.items = items;
+        const sourceVaults = this.items.reduce((sv, i) => sv.add(i.vault), new Set<Vault>());
+        this.vaults =
+            sourceVaults.size === 1
+                ? app.vaults.filter(v => v.getPermissions().write && v !== sourceVaults.values().next().value)
+                : app.vaults.filter(v => v.getPermissions().write);
+        // this._vaultSelect.options = vaults;
+        await this.updateComplete;
+        this._vaultSelect.selected = this.vaults[0];
         return super.show();
     }
 }
