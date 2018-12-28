@@ -149,7 +149,7 @@ export class BrowseList extends BaseElement {
 
             pl-browse-filter {
                 flex: 1;
-                width: 0;
+                min-width: 0;
             }
 
             .filter-wrapper {
@@ -196,7 +196,6 @@ export class BrowseList extends BaseElement {
             }
 
             .item {
-                display: block;
                 cursor: pointer;
                 vertical-align: top;
                 box-sizing: border-box;
@@ -211,7 +210,7 @@ export class BrowseList extends BaseElement {
 
             .item-body {
                 flex: 1;
-                width: 0;
+                min-width: 0;
             }
 
             .item .tags {
@@ -231,7 +230,7 @@ export class BrowseList extends BaseElement {
                 ${mixins.ellipsis()}
                 font-weight: bold;
                 flex: 1;
-                width: 0;
+                min-width: 0;
             }
 
             .item-fields {

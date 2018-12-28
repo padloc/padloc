@@ -89,7 +89,7 @@ export class Settings extends View {
 
             .account-info {
                 flex: 1;
-                width: 0;
+                min-width: 0;
                 padding-right: 18px;
             }
 

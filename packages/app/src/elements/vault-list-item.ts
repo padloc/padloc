@@ -39,7 +39,7 @@ export class AccountItem extends BaseElement {
 
                 .vault-info {
                     flex: 1;
-                    width: 0;
+                    min-width: 0;
                 }
 
                 .vault-name {

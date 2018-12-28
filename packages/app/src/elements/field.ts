@@ -88,7 +88,7 @@ export class FieldElement extends BaseElement {
 
                 .field-name {
                     flex: 1;
-                    width: 0;
+                    min-width: 0;
                     font-size: var(--font-size-tiny);
                     font-weight: bold;
                     color: var(--color-highlight);

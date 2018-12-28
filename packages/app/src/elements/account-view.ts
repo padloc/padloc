@@ -72,7 +72,7 @@ export class AccountView extends View {
 
             .account-info {
                 flex: 1;
-                width: 0;
+                min-width: 0;
             }
 
             .account-email {
