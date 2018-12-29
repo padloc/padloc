@@ -69,7 +69,7 @@ export class Invite implements CollectionItem {
         };
     }
 
-    constructor(public email = "", public purpose = "join_vault") {}
+    constructor(public email = "", public purpose: InvitePurpose = "join_vault") {}
 
     async initialize(vault: VaultInfo, invitor: AccountInfo, encKey: AESKey, duration = 12) {
         this.id = uuid();

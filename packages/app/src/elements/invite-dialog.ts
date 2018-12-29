@@ -334,7 +334,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         const vault = app.getVault(this.invite!.vault!.id);
         try {
             await vault!.invites.remove(this.invite!);
-            this.invite = await app.createInvite(vault!, this.invite!.email);
+            this.invite = await app.createInvite(vault!, this.invite!.email, this.invite!.purpose);
             this._verified = await this.invite.verify();
             this._resendButton.success();
         } catch (e) {
