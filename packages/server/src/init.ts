@@ -11,7 +11,8 @@ const messenger = new EmailMessenger({
     host: process.env.PL_EMAIL_SERVER || "",
     port: process.env.PL_EMAIL_PORT || "",
     user: process.env.PL_EMAIL_USER || "",
-    password: process.env.PL_EMAIL_PASSWORD || ""
+    password: process.env.PL_EMAIL_PASSWORD || "",
+    from: process.env.PL_EMAIL_FROM || ""
 });
 const storage = new LevelDBStorage(process.env.PL_DB_PATH || "db");
 const server = new Server(
