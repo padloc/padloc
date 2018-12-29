@@ -259,7 +259,6 @@ export class VaultView extends BaseElement {
         const vault = this.vault!;
         const { name, members, items, vaults } = vault;
         const subvaults = vault === app.mainVault ? [] : [...vaults].map(v => app.getVault(v.id)!);
-        const permissions = vault.getPermissions();
         const isAdmin = vault.isAdmin() && !vault.isSuspended();
         const isOwner = vault.isOwner();
         const isSubvault = !!vault.parent;
@@ -323,12 +322,12 @@ export class VaultView extends BaseElement {
                 border-bottom: solid 1px #eee;
             }
 
-            li:hover {
-                background: #fafafa;
-            }
-
             .invite {
                 padding: 15px 17px;
+            }
+
+            .invite:hover, pl-vault-list-item:hover {
+                background: #fafafa;
             }
 
             .invite .tags {
@@ -450,6 +449,14 @@ export class VaultView extends BaseElement {
                 border-radius: var(--border-radius);
                 background: var(--shade-3-color);
                 font-weight: bold;
+            }
+
+            .no-subvaults {
+                font-size: var(--font-size-small);
+                padding: 15px;
+                text-align: center;
+                max-width: 300px;
+                margin: 0 auto;
             }
         </style>
 
@@ -597,11 +604,14 @@ export class VaultView extends BaseElement {
                                 <div
                                     class="tag warning tap"
                                     ?hidden=${!member.suspended}
+                                    ?disabled=${!isAdmin}
                                     @click=${() => this._confirmMember(member)}>
                                     ${
-                                        vault.isInvited(member)
-                                            ? $l("confirmation requested")
-                                            : $l("request confirmation")
+                                        !isAdmin
+                                            ? $l("confirmation required")
+                                            : vault.isInvited(member)
+                                                ? $l("confirmation requested")
+                                                : $l("request confirmation")
                                     }
                                 </div>
 
@@ -650,7 +660,7 @@ export class VaultView extends BaseElement {
             </ul>
 
             <h2 class="animate"
-                ?hidden=${vault === app.mainVault || !!vault.parent || (!permissions.manage && !subvaults.length)}>
+                ?hidden=${vault === app.mainVault || !!vault.parent || (!canEdit && !subvaults.length)}>
 
                 <div class="flex">${$l("Subvaults")}</div>
 
@@ -658,26 +668,44 @@ export class VaultView extends BaseElement {
                     icon="add"
                     class="add-icon tap"
                     @click=${() => this._addSubVault()}
-                    ?hidden=${!isAdmin}>
+                    ?hidden=${!canEdit}>
                 ></pl-icon>
 
             </h2>
 
             <ul>
 
-                ${subvaults.map(
-                    vault => html`
-                    <li>
+                ${
+                    vault === app.mainVault || !!vault.parent || !canEdit || subvaults.length
+                        ? subvaults.map(
+                              vault => html`
+                                <li>
 
-                        <pl-vault-list-item
-                            .vault=${vault}
-                            class="animate tap flex"
-                            @click=${() => this._openVault(vault)}>
-                        </pl-vault-list-item>
+                                    <pl-vault-list-item
+                                        .vault=${vault}
+                                        class="animate tap flex"
+                                        @click=${() => this._openVault(vault)}>
+                                    </pl-vault-list-item>
 
-                    </li>
-                    `
-                )}
+                                </li>
+                            `
+                          )
+                        : html`
+                            <li>
+
+                                <div class="no-subvaults"
+                                    ?hidden=>
+
+                                    ${$l(
+                                        "This vault doesn't have any subvaults yet. Create subvaults " +
+                                            "to better manage what data certain members have access to!"
+                                    )}
+
+                                </div>
+
+                            </li>
+                        `
+                }
 
             </ul>
 
@@ -694,7 +722,7 @@ export class VaultView extends BaseElement {
             <pl-icon icon="archive"
                 class="fab tap"
                 @click=${() => this._archive()}
-                ?hidden=${!vault.isOwner()}>
+                ?hidden=${!vault.isOwner() || isSubvault}>
             </pl-icon>
 
             <div class="flex"></div>
