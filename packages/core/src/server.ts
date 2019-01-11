@@ -1,4 +1,4 @@
-import { API, CreateAccountParams, CreateVaultParams } from "./api";
+import { API, CreateAccountParams, RecoverAccountParams, CreateVaultParams } from "./api";
 import { Storage } from "./storage";
 import { Session } from "./session";
 import { Account } from "./account";
@@ -122,20 +122,7 @@ export class Context implements API {
     async createAccount(params: CreateAccountParams): Promise<Account> {
         const { account, auth, verify } = params;
 
-        const ev = new EmailVerification(auth.email);
-        try {
-            await this.storage.get(ev);
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Email verification required.");
-            } else {
-                throw e;
-            }
-        }
-
-        if (ev.code !== verify.toLowerCase()) {
-            throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
-        }
+        this._checkEmailVerification(account.email, verify);
 
         // Make sure account does not exist yet
         try {
@@ -171,6 +158,60 @@ export class Context implements API {
         existing.merge(account);
         await this.storage.set(existing);
         return existing;
+    }
+
+    async recoverAccount({ account, auth, verify }: RecoverAccountParams) {
+        await this._checkEmailVerification(account.email, verify);
+
+        const existingAuth = new Auth(account.email);
+        await this.storage.get(existingAuth);
+
+        const existing = new Account(existingAuth.account);
+        await this.storage.get(existing);
+
+        account.id = existing.id;
+        account.name = existing.name;
+        account.created = existing.created;
+        account.mainVault = existing.mainVault;
+        account.vaults = existing.vaults;
+
+        for (const { id } of account.vaults) {
+            // skip main vault
+            if (id === account.mainVault) {
+                continue;
+            }
+
+            const vault = new Vault(id);
+            await this.storage.get(vault);
+
+            if (vault.isOwner(account)) {
+                // archive owned vaults
+                vault.archived = true;
+                await this.storage.set(vault);
+                // archive subvaults
+                for (const { id } of vault.vaults) {
+                    const vault = new Vault(id);
+                    await this.storage.get(vault);
+                    vault.archived = true;
+                    await this.storage.set(vault);
+                }
+            } else {
+                // suspend membership for any vaults that are not owned by the account
+                vault.members.update({ ...vault.getMember(account)!, suspended: true });
+                await this.storage.set(vault);
+            }
+        }
+
+        // reset main vault
+        const mainVault = new Vault(account.mainVault, "My Vault");
+        mainVault.owner = account.id;
+        mainVault.created = new Date();
+        mainVault.updated = new Date();
+
+        auth.account = account.id;
+        await Promise.all([this.storage.set(account), this.storage.set(auth), this.storage.set(mainVault)]);
+
+        return account;
     }
 
     async getVault(vault: Vault) {
@@ -283,43 +324,12 @@ export class Context implements API {
 
     async deleteVault(vault: Vault) {
         const { account } = this._requireAuth();
-        await this.storage.get(vault);
+        await this._deleteVault(vault, account);
+    }
 
-        const parent = vault.parent && new Vault(vault.parent.id);
-        parent && (await this.storage.get(parent));
-        const ownsParent = parent && parent.isOwner(account);
-
-        if ((!vault.isOwner(account) && !ownsParent) || vault.id === account.mainVault) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        const promises = [this.storage.delete(vault)];
-
-        if (parent) {
-            parent.vaults.remove(vault.info as SubVault);
-            promises.push(this.storage.set(parent));
-        }
-
-        for (const { id } of vault.vaults) {
-            promises.push(this.deleteVault(new Vault(id)));
-        }
-
-        // TODO: remove vault from all member accounts?
-
-        // for (const member of vault.members) {
-        //     if (vault.isOwner(member)) {
-        //         continue;
-        //     }
-        //     promises.push(
-        //         (async () => {
-        //             const account = new Account(member.id);
-        //             await this.storage.get(account);
-        //             account.vaults.remove(vault.info as CollectionItem & VaultInfo);
-        //             await this.storage.set(account);
-        //         })()
-        //     );
-        // }
-        await Promise.all(promises);
+    async transferVault(params: { vault: string; account: string }) {
+        const { account } = this._requireAuth();
+        await this._transferVault(params, account);
     }
 
     async getInvite({ vault, id }: { vault: string; id: string }) {
@@ -377,6 +387,86 @@ export class Context implements API {
         }
 
         return { account, session };
+    }
+
+    private async _checkEmailVerification(email: string, code: string) {
+        const ev = new EmailVerification(email);
+        try {
+            await this.storage.get(ev);
+        } catch (e) {
+            if (e.code === ErrorCode.NOT_FOUND) {
+                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Email verification required.");
+            } else {
+                throw e;
+            }
+        }
+
+        if (ev.code !== code.toLowerCase()) {
+            throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
+        }
+
+        await this.storage.delete(ev);
+    }
+
+    private async _deleteVault(vault: Vault, account: Account) {
+        await this.storage.get(vault);
+
+        const parent = vault.parent && new Vault(vault.parent.id);
+        parent && (await this.storage.get(parent));
+        const ownsParent = parent && parent.isOwner(account);
+
+        if (!vault.isOwner(account) && !ownsParent) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        const promises = [this.storage.delete(vault)];
+
+        if (parent) {
+            parent.vaults.remove(vault.info as SubVault);
+            promises.push(this.storage.set(parent));
+        }
+
+        for (const { id } of vault.vaults) {
+            promises.push(this._deleteVault(new Vault(id), account));
+        }
+
+        // TODO: remove vault from all member accounts?
+
+        // for (const member of vault.members) {
+        //     if (vault.isOwner(member)) {
+        //         continue;
+        //     }
+        //     promises.push(
+        //         (async () => {
+        //             const account = new Account(member.id);
+        //             await this.storage.get(account);
+        //             account.vaults.remove(vault.info as CollectionItem & VaultInfo);
+        //             await this.storage.set(account);
+        //         })()
+        //     );
+        // }
+        await Promise.all(promises);
+    }
+
+    private async _transferVault({ vault, account }: { vault: string; account: string }, currentAccount: Account) {
+        const vlt = new Vault(vault);
+        await this.storage.get(vlt);
+
+        if (!vlt.isOwner(currentAccount)) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        if (!vlt.members.get(account)) {
+            throw new Err(ErrorCode.BAD_REQUEST, "The receiving account needs to be a member of the transfered vault");
+        }
+
+        vlt.owner = account;
+        vlt.archived = true;
+        await this.storage.set(vlt);
+
+        for (const { id } of vlt.vaults) {
+            await this._transferVault({ vault: id, account }, currentAccount);
+        }
     }
 }
 
@@ -479,6 +569,18 @@ export class Server {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
                 acc = await ctx.updateAccount(await new Account().deserialize(params[0]));
+                res.result = await acc.serialize();
+                break;
+
+            case "recoverAccount":
+                if (!params || params.length !== 1) {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                acc = await ctx.recoverAccount({
+                    ...params[0],
+                    account: await new Account().deserialize(params[0].account),
+                    auth: await new Auth().deserialize(params[0].auth)
+                });
                 res.result = await acc.serialize();
                 break;
 

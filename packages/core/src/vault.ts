@@ -319,10 +319,31 @@ export class Vault implements Storable {
         this.updated = new Date();
     }
 
+    async reinitialize(account: Account) {
+        // remove existing invites
+        for (const invite of this.invites) {
+            this.invites.remove(invite);
+        }
+
+        this._adminContainer = new SharedContainer();
+        if (!this.hasItemsAccess()) {
+            this._itemsContainer = new SharedContainer();
+        }
+        await this.initialize(account);
+    }
+
     access(account: Account) {
         this._account = account;
         this._adminContainer.access(account);
         this._itemsContainer.access(account);
+    }
+
+    hasItemsAccess(account: AccountInfo | null = this._account) {
+        return !!account && this._itemsContainer.hasAccess(account);
+    }
+
+    hasAdminAccess(account: AccountInfo | null = this._account) {
+        return !!account && this._adminContainer.hasAccess(account);
     }
 
     isOwner(account: AccountInfo | null = this._account) {
@@ -457,7 +478,7 @@ export class Vault implements Storable {
                 forwardChanges = true;
             }
 
-            if (!this._account || this._account.locked || !vault._adminContainer.hasAccess(this._account)) {
+            if (!this._account || this._account.locked || !vault.hasAdminAccess(this._account)) {
                 this._adminContainer = vault._adminContainer;
             } else {
                 if (vault.updated > this.updated || !this._privateKey) {
@@ -481,7 +502,7 @@ export class Vault implements Storable {
         }
 
         if (write) {
-            if (!this._account || this._account.locked || !vault._itemsContainer.hasAccess(this._account)) {
+            if (!this._account || this._account.locked || !vault.hasItemsAccess(this._account)) {
                 this._itemsContainer = vault._itemsContainer;
             } else {
                 changes.items = this.items.merge(vault.items);
@@ -504,7 +525,7 @@ export class Vault implements Storable {
         const { manage, write } = this.getPermissions();
         const account = this._account!;
 
-        if (manage && !account.locked && !this.isSuspended()) {
+        if (this.hasAdminAccess() && manage && !account.locked && !this.isSuspended()) {
             // TODO: Do something about removed admins
             await this._adminContainer.setAccessors(
                 [...this.members].filter(m => m.permissions.manage && !m.suspended).map(({ id, publicKey }) => {
@@ -514,8 +535,7 @@ export class Vault implements Storable {
             await this._adminContainer.set(this._adminSerializer);
         }
 
-        if (write && !account.locked && !this.isSuspended()) {
-            // TODO: Do something about removed members
+        if (this.hasItemsAccess() && write && !account.locked && !this.isSuspended()) {
             await this._itemsContainer.setAccessors(
                 [...this.members].filter(m => !m.suspended).map(({ id, publicKey }) => {
                     return { id, publicKey, encryptedKey: "" };
@@ -563,12 +583,12 @@ export class Vault implements Storable {
         await this._itemsContainer.deserialize(raw.itemsData);
 
         // Load admin data
-        if (this._account && !this._account.locked && this._adminContainer.hasAccess(this._account)) {
+        if (!this.archived && this.hasAdminAccess() && this._account && !this._account.locked) {
             await this._adminContainer.get(this._adminSerializer);
         }
 
         // Load collection data
-        if (this._account && !this._account.locked && this._itemsContainer.hasAccess(this._account)) {
+        if (!this.archived && this.hasItemsAccess() && this._account && !this._account.locked) {
             await this._itemsContainer.get(this.items);
         }
 

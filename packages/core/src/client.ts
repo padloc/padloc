@@ -1,4 +1,4 @@
-import { API, CreateAccountParams, CreateVaultParams } from "./api";
+import { API, CreateAccountParams, RecoverAccountParams, CreateVaultParams } from "./api";
 import { Sender } from "./transport";
 import { DeviceInfo } from "./platform";
 import { Session } from "./session";
@@ -96,6 +96,17 @@ export class Client implements API {
     async updateAccount(account: Account): Promise<Account> {
         const res = await this.call("updateAccount", [await account.serialize()]);
         return account.deserialize(res.result);
+    }
+
+    async recoverAccount(params: RecoverAccountParams): Promise<Account> {
+        const res = await this.call("recoverAccount", [
+            {
+                ...params,
+                auth: await params.auth.serialize(),
+                account: await params.account.serialize()
+            }
+        ]);
+        return new Account().deserialize(res.result);
     }
 
     async getVault(vault: Vault): Promise<Vault> {

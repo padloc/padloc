@@ -15,6 +15,12 @@ export interface CreateAccountParams {
     };
 }
 
+export interface RecoverAccountParams {
+    account: Account;
+    auth: Auth;
+    verify: string;
+}
+
 export interface CreateVaultParams {
     name: string;
 }
@@ -31,6 +37,7 @@ export interface API {
     createAccount(params: CreateAccountParams): Promise<Account>;
     getAccount(account: Account): Promise<Account>;
     updateAccount(account: Account): Promise<Account>;
+    recoverAccount(params: RecoverAccountParams): Promise<Account>;
 
     createVault(params: CreateVaultParams): Promise<Vault>;
     getVault(vault: Vault): Promise<Vault>;

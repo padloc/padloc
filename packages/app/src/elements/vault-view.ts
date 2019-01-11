@@ -82,11 +82,14 @@ export class VaultView extends BaseElement {
     }
 
     private async _addParentMember() {
-        const parent = app.getVault(this.vault!.parent!.id);
-        const acc = await this._selectAccountDialog.show([...parent!.members].filter(m => !this.vault!.isMember(m)));
+        const vault = this.vault!;
+        const parent = app.getVault(vault.parent!.id);
+        const acc = await this._selectAccountDialog.show(
+            [...parent!.members].filter(m => !vault.isMember(m) && !m.suspended)
+        );
         if (acc) {
-            await this.vault!.addMember(acc);
-            await app.syncVault(this.vault!);
+            await vault.addMember(acc);
+            await app.syncVault(vault);
         }
     }
 

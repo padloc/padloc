@@ -352,6 +352,30 @@ export class App extends EventEmitter implements Storable {
         this.dispatch("account-changed", { account: this.account });
     }
 
+    async recoverAccount({ email, password, verify }: { email: string; password: string; verify: string }) {
+        await this.logout();
+
+        const account = new Account();
+        account.email = email;
+        await account.initialize(password);
+
+        const auth = new Auth(email);
+        const authKey = await auth.getAuthKey(password);
+
+        const srp = new SRPClient();
+        await srp.initialize(authKey);
+
+        auth.verifier = srp.v!;
+
+        await this.api.recoverAccount({
+            account,
+            auth,
+            verify
+        });
+
+        await this.login(email, password);
+    }
+
     // VAULTS
 
     getVault(id: string) {
@@ -407,9 +431,6 @@ export class App extends EventEmitter implements Storable {
     async archiveVault({ id }: Vault | VaultInfo): Promise<void> {
         const vault = this.getVault(id)!;
         await Promise.all([...vault.vaults].map(v => this.archiveVault(v)));
-        for (const invite of vault.invites) {
-            vault.invites.remove(invite);
-        }
         vault.archived = true;
         vault.updated = new Date();
         await this.syncVault(vault, false);
@@ -421,17 +442,20 @@ export class App extends EventEmitter implements Storable {
 
     async reinitializeVault({ id }: Vault | VaultInfo): Promise<void> {
         const vault = this.getVault(id)!;
+
         vault.archived = false;
 
         const parent = vault.parent && this.getVault(vault.parent.id);
 
-        await vault.initialize(this.account!);
+        await vault.reinitialize(this.account!);
 
         if (parent) {
-            // This is a subvault, so it's sufficient to update member signatures
+            // This is a subvault, so we'll simply suspend all members until they
+            // are confirmed on the main vault
             for (const member of vault.members) {
-                // update member signatures
-                await vault.addMember(member, member.permissions);
+                if (member.id !== this.account!.id) {
+                    vault.members.update({ ...member, suspended: true });
+                }
             }
             // update public key and signature in parent vault
             await parent.addSubVault(vault.info);
@@ -455,7 +479,9 @@ export class App extends EventEmitter implements Storable {
             await this.syncVault(this.mainVault!);
         }
 
-        await this.syncVault(vault, false);
+        this._vaults.set(vault.id, vault);
+        await this.storage.set(vault);
+        await this.api.updateVault(vault);
     }
 
     async loadVault({ id }: Vault | VaultInfo, fetch = false): Promise<Vault | null> {
@@ -697,14 +723,27 @@ export class App extends EventEmitter implements Storable {
     }
 
     async confirmInvite(invite: Invite) {
-        const vault = this.getVault(invite!.vault!.id)!;
+        const vault = this.getVault(invite.vault!.id)!;
+        const invitee = invite.invitee!;
+
         let permissions;
         if (invite.purpose === "confirm_membership") {
-            const existing = vault.members.get(invite!.invitee!.id);
+            const existing = vault.members.get(invitee.id);
             permissions = (existing && existing.permissions) || undefined;
         }
-        await vault!.addMember(invite!.invitee!, permissions);
-        vault!.invites.remove(invite!);
+
+        // unsuspend member in subvaults
+        for (const { id } of vault.vaults) {
+            const sub = this.getVault(id)!;
+            const mem = sub.getMember(invitee);
+            if (mem) {
+                sub.addMember(invitee, mem.permissions);
+            }
+            await this.syncVault(sub);
+        }
+
+        await vault.addMember(invite!.invitee!, permissions);
+        vault.invites.remove(invite!);
         await this.syncVault(vault);
     }
 

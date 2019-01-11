@@ -62,6 +62,9 @@ export abstract class Container implements Serializable {
     }
 
     async get(data: Serializable) {
+        if (!this.encryptedData) {
+            return;
+        }
         const key = await this._getKey();
         const pt = base64ToString(await getProvider().decrypt(key, this.encryptedData, this.encryptionParams));
         await data.deserialize(unmarshal(pt));
@@ -154,8 +157,9 @@ export class SharedContainer extends Container {
         this._access = { id, privateKey };
     }
 
-    hasAccess({ id }: { id: string }) {
-        return !!this._accessors.get(id);
+    hasAccess({ id, publicKey }: { id: string; publicKey: string }) {
+        const accessor = this._accessors.get(id);
+        return !this.encryptedData || (!!accessor && accessor.publicKey === publicKey);
     }
 
     async setAccessors(accessors: Accessor[]) {
