@@ -5,6 +5,7 @@ import { element, html, property, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
+import { confirm } from "../dialog.js";
 import "./logo.js";
 
 @element("pl-login")
@@ -19,12 +20,15 @@ export class Login extends StartForm {
     @query("#loginButton")
     private _loginButton: LoadingButton;
 
+    private _failedCount = 0;
+
     async reset() {
         await this.updateComplete;
         this._emailInput.value = (this.invite && this.invite.email) || "";
         this._emailInput.checkValidity();
         this._passwordInput.value = "";
         this._loginButton.stop();
+        this._failedCount = 0;
         super.reset();
     }
 
@@ -135,7 +139,20 @@ export class Login extends StartForm {
             }
             this._errorMessage = $l("Wrong username or password. Please try again!");
             this.rumble();
-            this._passwordInput.focus();
+
+            this._failedCount++;
+            if (this._failedCount > 2) {
+                const recover = await confirm(
+                    $l("Can't remember your master password?"),
+                    $l("Recover Account"),
+                    $l("Try Again")
+                );
+                if (recover) {
+                    this.dispatch("recover");
+                }
+            } else {
+                this._passwordInput.focus();
+            }
         }
     }
 }

@@ -607,10 +607,10 @@ export class VaultView extends BaseElement {
                                 <div
                                     class="tag warning tap"
                                     ?hidden=${!member.suspended}
-                                    ?disabled=${!isAdmin}
+                                    ?disabled=${!isAdmin || !!vault.parent}
                                     @click=${() => this._confirmMember(member)}>
                                     ${
-                                        !isAdmin
+                                        !isAdmin || !!vault.parent
                                             ? $l("confirmation required")
                                             : vault.isInvited(member)
                                                 ? $l("confirmation requested")

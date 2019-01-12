@@ -292,6 +292,14 @@ export class App extends EventEmitter implements Storable {
     }
 
     async logout() {
+        await this._logout();
+        this.dispatch("lock");
+        this.dispatch("logout");
+        this.dispatch("account-changed", { account: this.account });
+        this.dispatch("session-changed", { session: this.session });
+    }
+
+    private async _logout() {
         try {
             await this.api.revokeSession(this.session!);
         } catch (e) {}
@@ -301,10 +309,6 @@ export class App extends EventEmitter implements Storable {
         await this.storage.clear();
         this._vaults.clear();
         await this.storage.set(this);
-        this.dispatch("lock");
-        this.dispatch("logout");
-        this.dispatch("account-changed", { account: this.account });
-        this.dispatch("session-changed", { session: this.session });
     }
 
     async changePassword(password: string) {
@@ -353,7 +357,7 @@ export class App extends EventEmitter implements Storable {
     }
 
     async recoverAccount({ email, password, verify }: { email: string; password: string; verify: string }) {
-        await this.logout();
+        await this._logout();
 
         const account = new Account();
         account.email = email;
@@ -372,8 +376,6 @@ export class App extends EventEmitter implements Storable {
             auth,
             verify
         });
-
-        await this.login(email, password);
     }
 
     // VAULTS
@@ -482,6 +484,7 @@ export class App extends EventEmitter implements Storable {
         this._vaults.set(vault.id, vault);
         await this.storage.set(vault);
         await this.api.updateVault(vault);
+        await this.syncVault(vault);
     }
 
     async loadVault({ id }: Vault | VaultInfo, fetch = false): Promise<Vault | null> {

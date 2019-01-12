@@ -47,7 +47,6 @@ export const sharedStyles = html`
         .hint {
             font-size: var(--font-size-tiny);
             box-sizing: border-box;
-            max-height: 100px;
             padding: 0 10px;
             margin-bottom: 30px;
             transition: color 0.2s;

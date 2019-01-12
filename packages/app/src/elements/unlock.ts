@@ -18,10 +18,13 @@ export class Unlock extends StartForm {
     @query("#unlockButton")
     private _unlockButton: LoadingButton;
 
+    private _failedCount = 0;
+
     reset() {
         this._passwordInput.value = "";
         this._errorMessage = "";
         this._unlockButton.stop();
+        this._failedCount = 0;
         super.reset();
         setTimeout(() => this._passwordInput.focus(), 100);
     }
@@ -108,7 +111,20 @@ export class Unlock extends StartForm {
             }
             this._errorMessage = $l("Wrong password! Please try again.");
             this.rumble();
-            this._passwordInput.focus();
+
+            this._failedCount++;
+            if (this._failedCount > 2) {
+                const recover = await confirm(
+                    $l("Can't remember your master password?"),
+                    $l("Recover Account"),
+                    $l("Try Again")
+                );
+                if (recover) {
+                    this.dispatch("recover", { email: app.account!.email });
+                }
+            } else {
+                this._passwordInput.focus();
+            }
         }
     }
 

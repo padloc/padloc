@@ -4,6 +4,7 @@ import { BaseElement, element, html, property, listen, query } from "./base.js";
 import { Unlock } from "./unlock.js";
 import { Login } from "./login.js";
 import { Signup } from "./signup.js";
+import { Recover } from "./recover.js";
 
 @element("pl-start")
 export class Start extends BaseElement {
@@ -16,6 +17,8 @@ export class Start extends BaseElement {
     private _loginForm: Login;
     @query("pl-signup")
     private _signupForm: Signup;
+    @query("pl-recover")
+    private _recoverForm: Recover;
 
     async firstUpdated() {
         await app.loaded;
@@ -31,6 +34,11 @@ export class Start extends BaseElement {
     @listen("lock", app)
     @listen("logout", app)
     async _updateForm() {
+        if (router.path === "recover") {
+            this._showForm(this._recoverForm);
+            return;
+        }
+
         let invite;
         const inviteMatch = router.path.match(/^invite\/([^\/]+)\/([^\/]+)$/);
 
@@ -56,8 +64,8 @@ export class Start extends BaseElement {
         }
     }
 
-    _showForm(form: Unlock | Login | Signup) {
-        for (const f of [this._unlockForm, this._loginForm, this._signupForm]) {
+    _showForm(form: Unlock | Login | Signup | Recover) {
+        for (const f of [this._unlockForm, this._loginForm, this._signupForm, this._recoverForm]) {
             if (f === form) {
                 f.classList.add("showing");
                 f.reset();
@@ -117,10 +125,14 @@ export class Start extends BaseElement {
                 }
             </style>
 
-            <pl-unlock class="form"></pl-unlock>
+            <pl-unlock
+                class="form"
+                @recover=${() => this._showForm(this._recoverForm)}>
+            </pl-unlock>
 
             <pl-login
                 class="form"
+                @recover=${() => this._showForm(this._recoverForm)}
                 @signup=${() => this._showForm(this._signupForm)}>
             </pl-login>
 
@@ -128,6 +140,11 @@ export class Start extends BaseElement {
                 class="form"
                 @login=${() => this._showForm(this._loginForm)}>
             </pl-signup>
+
+            <pl-recover
+                class="form"
+                @login=${() => this._showForm(this._loginForm)}>
+            </pl-recover>
         `;
     }
 }
