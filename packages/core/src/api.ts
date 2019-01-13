@@ -1,6 +1,6 @@
 import { Session } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth } from "./auth";
+import { Auth, EmailVerificationPurpose } from "./auth";
 import { Vault } from "./vault";
 import { Invite } from "./invite";
 import { Base64String } from "./encoding";
@@ -26,7 +26,7 @@ export interface CreateVaultParams {
 }
 
 export interface API {
-    verifyEmail(email: string): Promise<void>;
+    verifyEmail(params: { email: string; purpose?: EmailVerificationPurpose }): Promise<void>;
 
     initAuth(email: string): Promise<{ auth: Auth; B: Base64String }>;
     updateAuth(params: Auth): Promise<void>;

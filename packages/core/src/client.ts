@@ -3,7 +3,7 @@ import { Sender } from "./transport";
 import { DeviceInfo } from "./platform";
 import { Session } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth } from "./auth";
+import { Auth, EmailVerificationPurpose } from "./auth";
 import { Invite } from "./invite";
 import { Base64String } from "./encoding";
 import { Vault } from "./vault";
@@ -52,8 +52,8 @@ export class Client implements API {
         return res;
     }
 
-    async verifyEmail(email: string) {
-        const res = await this.call("verifyEmail", [{ email }]);
+    async verifyEmail(params: { email: string; purpose?: EmailVerificationPurpose }) {
+        const res = await this.call("verifyEmail", [params]);
         return res.result;
     }
 

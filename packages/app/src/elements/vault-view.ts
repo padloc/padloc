@@ -681,13 +681,13 @@ export class VaultView extends BaseElement {
                 ${
                     vault === app.mainVault || !!vault.parent || !canEdit || subvaults.length
                         ? subvaults.map(
-                              vault => html`
+                              sub => html`
                                 <li>
 
                                     <pl-vault-list-item
-                                        .vault=${vault}
+                                        .vault=${sub}
                                         class="animate tap flex"
-                                        @click=${() => this._openVault(vault)}>
+                                        @click=${() => this._openVault(sub)}>
                                     </pl-vault-list-item>
 
                                 </li>

@@ -88,11 +88,20 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
     merge(
         account: Account
     ): {
+        name: boolean;
+        publicKey: boolean;
         vaults: CollectionChanges<VaultInfo & CollectionItem>;
         sessions: CollectionChanges<SessionInfo>;
     } {
+        let nameChanged = false;
+        let publicKeyChanged = false;
+
         if (account.updated > this.updated) {
+            nameChanged = this.name !== account.name;
             this.name = account.name;
+
+            publicKeyChanged = this.publicKey !== account.publicKey;
+            this.publicKey = account.publicKey;
 
             // These effectively updates the password
             this.keyParams = account.keyParams;
@@ -104,7 +113,9 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
 
         return {
             vaults: this.vaults.merge(account.vaults),
-            sessions: this.sessions.merge(account.sessions)
+            sessions: this.sessions.merge(account.sessions),
+            name: nameChanged,
+            publicKey: publicKeyChanged
         };
     }
 
@@ -141,6 +152,7 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
         const { publicKey, privateKey } = await getProvider().generateKey(defaultRSAKeyParams());
         this.publicKey = publicKey;
         this.privateKey = privateKey;
+        this.updated = new Date();
     }
 
     toString() {

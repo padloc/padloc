@@ -2,7 +2,7 @@ import { API, CreateAccountParams, RecoverAccountParams, CreateVaultParams } fro
 import { Storage } from "./storage";
 import { Session } from "./session";
 import { Account } from "./account";
-import { Auth, EmailVerification } from "./auth";
+import { Auth, EmailVerification, EmailVerificationPurpose } from "./auth";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, SubVault } from "./vault";
@@ -29,8 +29,8 @@ export class Context implements API {
 
     constructor(public config: ServerConfig, public storage: Storage, public messenger: Messenger) {}
 
-    async verifyEmail(email: string) {
-        const v = new EmailVerification(email, base64ToHex(await getProvider().randomBytes(3)), uuid());
+    async verifyEmail({ email, purpose }: { email: string; purpose: EmailVerificationPurpose }) {
+        const v = new EmailVerification(email, base64ToHex(await getProvider().randomBytes(3)), uuid(), purpose);
         await this.storage.set(v);
         this.messenger.send(email, new EmailVerificationMessage(v));
     }
@@ -503,7 +503,7 @@ export class Server {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
 
-                res.result = await ctx.verifyEmail(params[0].email);
+                res.result = await ctx.verifyEmail(params[0]);
                 break;
 
             case "initAuth":

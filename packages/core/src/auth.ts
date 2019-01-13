@@ -40,6 +40,8 @@ export class Auth implements Storable {
     }
 }
 
+export type EmailVerificationPurpose = "create_account" | "recover_account";
+
 export class EmailVerification implements Storable {
     kind = "email-verification";
     created = new Date();
@@ -48,14 +50,20 @@ export class EmailVerification implements Storable {
         return this.email;
     }
 
-    constructor(public email: string, public code: string = "", public id: string = "") {}
+    constructor(
+        public email: string,
+        public code: string = "",
+        public id: string = "",
+        public purpose: EmailVerificationPurpose = "create_account"
+    ) {}
 
     async serialize() {
         return {
             id: this.id,
             email: this.email,
             code: this.code,
-            created: this.created
+            created: this.created,
+            purpose: this.purpose
         };
     }
 
@@ -64,6 +72,7 @@ export class EmailVerification implements Storable {
         this.email = raw.email;
         this.code = raw.code;
         this.created = new Date(raw.created);
+        this.purpose = raw.purpose;
         return this;
     }
 }

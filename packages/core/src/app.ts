@@ -4,7 +4,7 @@ import { InvitePurpose } from "./invite";
 import { Vault, VaultInfo, VaultMember, VaultItem, Field, Tag, createVaultItem } from "./vault";
 import { CollectionItem } from "./collection";
 import { Account } from "./account";
-import { Auth } from "./auth";
+import { Auth, EmailVerificationPurpose } from "./auth";
 import { Session } from "./session";
 import { Invite } from "./invite";
 import { DateString } from "./encoding";
@@ -221,8 +221,8 @@ export class App extends EventEmitter implements Storable {
 
     // SESSION / ACCOUNT MANGAGEMENT
 
-    async verifyEmail(email: string) {
-        return this.api.verifyEmail(email);
+    async verifyEmail(email: string, purpose?: EmailVerificationPurpose) {
+        return this.api.verifyEmail({ email, purpose });
     }
 
     async signup({

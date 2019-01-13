@@ -210,7 +210,7 @@ export class Recover extends StartForm {
             }
         }
 
-        await app.verifyEmail(email);
+        await app.verifyEmail(email, "recover_account");
 
         return this._recover(email, password, name);
     }
