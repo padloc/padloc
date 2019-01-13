@@ -198,7 +198,7 @@ export class FieldElement extends BaseElement {
                 <pl-icon
                     .icon=${ (this._valueInput ? this._valueInput.masked : mask ) ? "show" : "hide" }
                     class="tap"
-                    ?hidden=${ this.type !== "password" }
+                    ?hidden=${ !fieldDef.mask }
                     @click=${() => this._toggleMask()}>
                 </pl-icon>
 
