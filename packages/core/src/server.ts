@@ -16,6 +16,7 @@ import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 
 const pendingAuths = new Map<string, SRPServer>();
+const cachedFakeAuthParams = new Map<string, Auth>();
 
 export interface ServerConfig {
     clientUrl: string;
@@ -42,12 +43,23 @@ export class Context implements API {
             await this.storage.get(auth);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
-                // Account does not exist. Send randomized values
-                const auth = new Auth(email);
-                auth.keyParams.salt = await getProvider().randomBytes(32);
-                auth.account = uuid();
+                // Account does not exist. We don't want to respond with an error though
+                // because that would allow user enumeration. Instead, we'll just send back
+                // random values...
+
+                if (!cachedFakeAuthParams.has(email)) {
+                    const auth = new Auth(email);
+                    auth.keyParams.salt = await getProvider().randomBytes(32);
+                    auth.account = uuid();
+
+                    // We'll have to cache our fake authentication params since returning
+                    // different values on subsequent requests would give away our clever
+                    // deceit...
+                    cachedFakeAuthParams.set(email, auth);
+                }
+
                 return {
-                    auth,
+                    auth: cachedFakeAuthParams.get(email)!,
                     B: await getProvider().randomBytes(32)
                 };
             }
@@ -527,8 +539,13 @@ export class Server {
                 break;
 
             case "createSession":
-                // TODO: check params
-                if (!params || params.length !== 1) {
+                if (
+                    !params ||
+                    params.length !== 1 ||
+                    typeof params[0].account !== "string" ||
+                    typeof params[0].M !== "string" ||
+                    typeof params[0].A !== "string"
+                ) {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
                 session = await ctx.createSession(params[0]);
@@ -536,11 +553,10 @@ export class Server {
                 break;
 
             case "revokeSession":
-                if (!params || params.length !== 1) {
+                if (!params || params.length !== 1 || typeof params[0].id !== "string") {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
-                session = await new Session().deserialize(params[0]);
-                await ctx.revokeSession(session);
+                await ctx.revokeSession(new Session(params[0].id));
                 break;
 
             case "getAccount":
