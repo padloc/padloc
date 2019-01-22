@@ -3,7 +3,7 @@ import { ErrorCode } from "@padloc/core/lib/error.js";
 import { app, router } from "../init.js";
 import { element, property, html, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form";
-import { Input } from "./input.js";
+import { PasswordInput } from "./password-input.js";
 import { LoadingButton } from "./loading-button.js";
 import { confirm } from "../dialog.js";
 import "./logo.js";
@@ -14,7 +14,7 @@ export class Unlock extends StartForm {
     private _errorMessage: string;
 
     @query("#passwordInput")
-    private _passwordInput: Input;
+    private _passwordInput: PasswordInput;
     @query("#unlockButton")
     private _unlockButton: LoadingButton;
 
@@ -52,15 +52,14 @@ export class Unlock extends StartForm {
 
                 <pl-logo class="animate"></pl-logo>
 
-                <pl-input
+                <pl-password-input
                     id="passwordInput"
-                    type="password"
                     required
                     .label=${$l("Enter Master Password")}
-                    class="tiles-2 animate tap"
+                    class="tiles-2 animate"
                     select-on-focus
                     @enter=${() => this._submit()}>
-                </pl-input>
+                </pl-password-input>
 
                 <pl-loading-button id="unlockButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
                     ${$l("Unlock")}

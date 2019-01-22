@@ -7,6 +7,7 @@ import { app, router } from "../init.js";
 import { element, html, property, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form.js";
 import { Input } from "./input.js";
+import { PasswordInput } from "./password-input.js";
 import { LoadingButton } from "./loading-button.js";
 import { Generator } from "./generator.js";
 import { alert, choose, prompt, dialog } from "../dialog.js";
@@ -51,7 +52,7 @@ export class Signup extends StartForm {
     @query("#codeInput")
     private _codeInput: Input;
     @query("#repeatPasswordInput")
-    private _repeatPasswordInput: Input;
+    private _repeatPasswordInput: PasswordInput;
     @query("#submitEmailButton")
     private _submitEmailButton: LoadingButton;
     @query("#verifyEmailButton")
@@ -132,7 +133,7 @@ export class Signup extends StartForm {
                     position: relative;
                     background: var(--shade-2-color);
                     font-family: var(--font-family-mono);
-                    font-size: 130%;
+                    font-size: 120%;
                     padding: 20px 40px;
                     overflow-wrap: break-word;
                 }
@@ -159,6 +160,10 @@ export class Signup extends StartForm {
                     z-index: 1;
                     text-shadow: none;
                     color: rgba(0, 0, 0, 0.3);
+                }
+
+                .master-password:hover {
+                    background: var(--shade-3-color);
                 }
 
                 .master-password:not(:hover) .master-password-value,
@@ -301,14 +306,13 @@ export class Signup extends StartForm {
 
                     </div>
 
-                    <pl-input
+                    <pl-password-input
                         id="repeatPasswordInput"
-                        type="password"
                         required
                         .label=${$l("Repeat Master Password")}
                         class="tiles-2 animate repeat-master-password"
                         @enter=${() => this._submitPassword()}>
-                    </pl-input>
+                    </pl-password-input>
 
                     <div class="hint" hidden>
                         ${$l(
@@ -404,10 +408,11 @@ export class Signup extends StartForm {
             this._submitPasswordButton.fail();
             switch (e.code) {
                 case ErrorCode.ACCOUNT_EXISTS:
-                    const choice = await choose($l("An account with this email address already exists!"), [
-                        $l("Login"),
-                        $l("Change Email")
-                    ]);
+                    const choice = await choose(
+                        $l("An account with this email address already exists!"),
+                        [$l("Login"), $l("Change Email")],
+                        { type: "warning" }
+                    );
                     if (choice === 0) {
                         this.dispatch("cancel");
                     } else {

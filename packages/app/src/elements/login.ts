@@ -4,6 +4,7 @@ import { app, router } from "../init.js";
 import { element, html, property, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form.js";
 import { Input } from "./input.js";
+import { PasswordInput } from "./password-input.js";
 import { LoadingButton } from "./loading-button.js";
 import { confirm } from "../dialog.js";
 import "./logo.js";
@@ -20,7 +21,7 @@ export class Login extends StartForm {
     @query("#emailInput")
     private _emailInput: Input;
     @query("#passwordInput")
-    private _passwordInput: Input;
+    private _passwordInput: PasswordInput;
     @query("#loginButton")
     private _loginButton: LoadingButton;
 
@@ -74,15 +75,14 @@ export class Login extends StartForm {
                     @enter=${() => this._submit()}>
                 </pl-input>
 
-                <pl-input
+                <pl-password-input
                     id="passwordInput"
-                    type="password"
                     required
                     select-on-focus
                     .label=${$l("Master Password")}
                     class="tiles-2 animate tap"
                     @enter=${() => this._submit()}>
-                </pl-input>
+                </pl-password-input>
 
                 <pl-loading-button id="loginButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
                     ${$l("Login")}
