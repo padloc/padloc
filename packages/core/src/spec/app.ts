@@ -34,12 +34,14 @@ export function appSpec(): Spec {
         });
 
         test("Signup", async () => {
-            await app.verifyEmail(user.email);
+            await app.requestEmailVerification(user.email);
             const message = messenger.lastMessage(user.email);
 
             assert.instanceOf(message, EmailVerificationMessage);
 
-            const verify = (message! as EmailVerificationMessage).verification.code;
+            const code = (message! as EmailVerificationMessage).verification.code;
+
+            const verify = await app.completeEmailVerification(user.email, code);
 
             await app.signup({ ...user, verify });
 
@@ -167,6 +169,7 @@ export function appSpec(): Spec {
             await otherApp.syncVault(vault);
             assert.isFalse(otherApp.getVault(sharedVaultID)!.isAdmin());
             assert.isFalse(otherApp.getVault(sharedVaultID)!.isSuspended());
+            assert.isTrue(otherApp.getVault(sharedVaultID)!.hasItemsAccess());
             assert.equal(app.items.length, 1);
         });
 

@@ -478,9 +478,9 @@ export class Vault implements Storable {
                 forwardChanges = true;
             }
 
-            if (!this._account || this._account.locked || !vault.hasAdminAccess(this._account)) {
-                this._adminContainer = vault._adminContainer;
-            } else {
+            this._adminContainer = vault._adminContainer;
+
+            if (this._account && !this._account.locked && vault.hasAdminAccess(this._account)) {
                 if (vault.updated > this.updated || !this._privateKey) {
                     this._privateKey = vault._privateKey;
                 }
@@ -502,9 +502,9 @@ export class Vault implements Storable {
         }
 
         if (write) {
-            if (!this._account || this._account.locked || !vault.hasItemsAccess(this._account)) {
-                this._itemsContainer = vault._itemsContainer;
-            } else {
+            this._itemsContainer = vault._itemsContainer;
+
+            if (this._account && !this._account.locked && vault.hasItemsAccess(this._account)) {
                 changes.items = this.items.merge(vault.items);
                 if (this.items.revision.id !== vault.items.revision.id) {
                     forwardChanges = true;
