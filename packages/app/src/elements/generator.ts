@@ -1,15 +1,51 @@
 import { randomString, chars } from "@padloc/core/lib/util.js";
+import { generatePassphrase } from "@padloc/core/lib/diceware.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
-import { html, property, query, listen } from "./base.js";
+import { html, property, query, listen, observe } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
+import { Select } from "./select.js";
+
+export type GeneratorMode = "words" | "chars";
+
+interface SeparatorOption {
+    value: string;
+    toString(): string;
+}
+
+const separators = [
+    {
+        value: "-",
+        toString: () => "separate-words-using-hiphens"
+    },
+    {
+        value: "_",
+        toString: () => "separate_words_using_underscore"
+    },
+    {
+        value: "/",
+        toString: () => "separate/words/using/slashes"
+    },
+    {
+        value: " ",
+        toString: () => "separate words using spaces"
+    }
+];
 
 export class Generator extends Dialog<void, string> {
     @property()
     value: string = "";
+
+    @property()
+    mode: GeneratorMode = "words";
+
+    @query("#separator")
+    private _separator: Select<SeparatorOption>;
+    @query("#wordCount")
+    private _wordCount: Slider;
 
     @query("#lower")
     private _lower: ToggleButton;
@@ -60,16 +96,11 @@ export class Generator extends Dialog<void, string> {
                 margin-bottom: 15px;
             }
 
-            .header::before, .header::after {
-                font-family: "FontAwesome";
-                content: "\\ \\f0e7\\ ";
-            }
-
             .value {
                 font-family: var(--font-family-mono);
-                word-break: break-all;
                 text-align: center;
                 font-size: 130%;
+                overflow-wrap: break-word;
             }
 
             pl-toggle-button {
@@ -80,6 +111,10 @@ export class Generator extends Dialog<void, string> {
             pl-slider {
                 display: flex;
                 height: var(--row-height);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+            }
+
+            pl-select {
                 border-bottom: solid 1px rgba(0, 0, 0, 0.1);
             }
 
@@ -96,11 +131,27 @@ export class Generator extends Dialog<void, string> {
                 color: var(--color-quaternary);
                 text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
             }
+
+            .tabs {
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                background: rgba(0, 0, 0, 0.1);
+                grid-gap: 1px;
+            }
+
+            .tabs > * {
+                background: var(--color-tertiary);
+            }
+
+            .tabs button[active] {
+                color: var(--color-primary);
+            }
         </style>
 
         <div class="generate-button tap" @click=${() => this._generate()}>
 
-            <div class="header">${$l("Generate Random Value")}</div>
+            <div class="header">${$l("Generate Password")}</div>
 
             <div class="value tiles-1">
                 ${value}
@@ -108,40 +159,77 @@ export class Generator extends Dialog<void, string> {
 
         </div>
 
-        <pl-toggle-button
-            id="lower"
-            label="a-z"
-            class="tap"
-            reverse>
-        </pl-toggle-button>
+        <div class="tabs">
 
-        <pl-toggle-button
-            id="upper"
-            label="A-Z"
-            class="tap"
-            reverse>
-        </pl-toggle-button>
+            <button
+                class="tap"
+                ?active=${this.mode === "words"}
+                @click=${() => this._selectMode("words")}>
+                ${$l("passphrase")}
+            </button>
 
-        <pl-toggle-button
-            id="numbers"
-            label="0-9"
-            class="tap"
-            reverse>
-        </pl-toggle-button>
+            <button
+                class="tap"
+                ?active=${this.mode === "chars"}
+                @click=${() => this._selectMode("chars")}>
+                ${$l("random string")}
+            </button>
 
-        <pl-toggle-button
-            id="other"
-            label="?()/%..."
-            class="tap"
-            reverse>
-        </pl-toggle-button>
+        </div>
 
-        <pl-slider
-            id="length"
-            label="${$l("length")}"
-            min="5"
-            max="50">
-        </pl-slider>
+        <div ?hidden=${this.mode !== "words"}>
+
+            <pl-select id="separator" .options=${separators}></pl-select>
+
+            <pl-slider
+                id="wordCount"
+                unit=" ${$l("words")}"
+                value="4"
+                min="3"
+                max="6">
+            </pl-slider>
+
+        </div>
+
+        <div ?hidden=${this.mode !== "chars"}>
+
+            <pl-toggle-button
+                id="lower"
+                label="a-z"
+                class="tap"
+                reverse>
+            </pl-toggle-button>
+
+            <pl-toggle-button
+                id="upper"
+                label="A-Z"
+                class="tap"
+                reverse>
+            </pl-toggle-button>
+
+            <pl-toggle-button
+                id="numbers"
+                label="0-9"
+                class="tap"
+                reverse>
+            </pl-toggle-button>
+
+            <pl-toggle-button
+                id="other"
+                label="?()/%..."
+                class="tap"
+                reverse>
+            </pl-toggle-button>
+
+            <pl-slider
+                id="length"
+                label="${$l("length")}"
+                value="20"
+                min="5"
+                max="50">
+            </pl-slider>
+
+        </div>
 
         <button class="confirm-button tap" @click=${() => this._confirm()}>${$l("Apply")}</button>
 
@@ -151,7 +239,6 @@ export class Generator extends Dialog<void, string> {
 
     firstUpdated() {
         this._lower.active = this._upper.active = this._numbers.active = true;
-        this._length.value = 10;
     }
 
     async show(): Promise<string> {
@@ -161,14 +248,20 @@ export class Generator extends Dialog<void, string> {
     }
 
     @listen("change")
-    _generate() {
-        let charSet = "";
-        this._lower.active && (charSet += chars.lower);
-        this._upper.active && (charSet += chars.upper);
-        this._numbers.active && (charSet += chars.numbers);
-        this._other.active && (charSet += chars.other);
-
-        this.value = charSet ? randomString(this._length.value, charSet) : "";
+    async _generate() {
+        switch (this.mode) {
+            case "words":
+                this.value = await generatePassphrase(this._wordCount.value, this._separator.selected.value);
+                break;
+            case "chars":
+                let charSet = "";
+                this._lower.active && (charSet += chars.lower);
+                this._upper.active && (charSet += chars.upper);
+                this._numbers.active && (charSet += chars.numbers);
+                this._other.active && (charSet += chars.other);
+                this.value = charSet ? randomString(this._length.value, charSet) : "";
+                break;
+        }
     }
 
     private _confirm() {
@@ -177,6 +270,11 @@ export class Generator extends Dialog<void, string> {
 
     private _dismiss() {
         this.done("");
+    }
+
+    private _selectMode(mode: GeneratorMode) {
+        this.mode = mode;
+        this._generate();
     }
 }
 
