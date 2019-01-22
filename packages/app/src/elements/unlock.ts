@@ -1,6 +1,6 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { ErrorCode } from "@padloc/core/lib/error.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { element, property, html, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form";
 import { Input } from "./input.js";
@@ -120,7 +120,7 @@ export class Unlock extends StartForm {
                     $l("Try Again")
                 );
                 if (recover) {
-                    this.dispatch("recover", { email: app.account!.email });
+                    router.go("recover", { email: app.account!.email });
                 }
             } else {
                 this._passwordInput.focus();

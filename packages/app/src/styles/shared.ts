@@ -14,6 +14,16 @@ export const shared = html`
         -webkit-user-select: auto;
     }
 
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
     :host, html, button, input, textarea {
         font-family: var(--font-family), var(--font-family-fallback);
         font-weight: var(--font-weight-regular);

@@ -42,8 +42,9 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
     @property({ reflect: true, attribute: "menu-open" })
     _menuOpen: boolean = false;
 
-    async connectedCallback() {
-        super.connectedCallback();
+    async firstUpdated() {
+        await app.loaded;
+        this._applyPath(router.path);
     }
 
     render() {
@@ -180,13 +181,14 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
         this._inviteDialog.open = false;
         clearDialogs();
         clearClipboard();
+        this._applyPath(router.path);
     }
 
     @listen("unlock", app)
     _unlocked() {
         setTimeout(() => {
             this.$(".wrapper").classList.add("active");
-            this._applyPath(router.path);
+            router.go(router.params.next || "", {});
         }, 600);
     }
 
@@ -201,9 +203,7 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
 
     @listen("route-changed", router)
     _routeChanged({ detail: { path, direction } }: { detail: { path: string; direction: string } }) {
-        if (!app.locked) {
-            this._applyPath(path, direction);
-        }
+        this._applyPath(path, direction);
     }
 
     @listen("dialog-open")
@@ -218,6 +218,48 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
 
     async _applyPath(path: string, _direction: string = "forward") {
         let match;
+
+        if (path === "recover") {
+            this._startView.recover();
+            return;
+        }
+
+        if (!app.account) {
+            if (path === "login") {
+                this._startView.login();
+            } else if ((match = path.match(/^signup(?:\/([^\/]+))?$/))) {
+                const [, step] = match;
+                this._startView.signup(step);
+            } else {
+                const params = router.params;
+
+                if (path) {
+                    params.next = path;
+                }
+
+                if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
+                    const [, vault, id] = match;
+                    const invite = await app.getInvite(vault, id);
+                    if (invite) {
+                        params.invite = vault + "," + id;
+                        params.email = invite.email;
+                    }
+                }
+
+                router.go(params.verify ? "signup" : "login", params);
+            }
+            return;
+        }
+
+        if (app.locked) {
+            if (path === "unlock") {
+                this._startView.unlock();
+            } else {
+                router.go("unlock", path ? { next: path } : undefined);
+            }
+            return;
+        }
+
         if (path === "settings") {
             this._openView(this._settings);
             this._menu.selected = "settings";

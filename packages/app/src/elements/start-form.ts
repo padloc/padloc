@@ -1,4 +1,3 @@
-import { Invite } from "@padloc/core/lib/invite.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, html, property } from "./base.js";
 import { animateElement, animateCascade } from "../animation.js";
@@ -17,7 +16,7 @@ export const sharedStyles = html`
             to { transform: translate(0, -200px); opacity: 0; }
         }
 
-        :host {
+        :host, .wrapper {
             ${mixins.fullbleed()}
             ${mixins.scroll()}
             display: flex;
@@ -45,12 +44,11 @@ export const sharedStyles = html`
         }
 
         .hint {
-            font-size: var(--font-size-tiny);
+            font-size: var(--font-size-small);
             box-sizing: border-box;
             padding: 0 10px;
             margin-bottom: 30px;
             transition: color 0.2s;
-            text-shadow: none;
         }
 
         .hint.warning {
@@ -58,16 +56,14 @@ export const sharedStyles = html`
             font-weight: bold;
             margin: 0;
             padding: 0;
+            text-shadow: none;
         }
     </style>
 `;
 
 export abstract class StartForm extends BaseElement {
-    @property()
-    public invite?: Invite;
-
-    reset() {
-        animateCascade(this.$$(".animate"), {
+    protected _animateIn(nodes: Iterable<Node | Element>) {
+        return animateCascade(nodes, {
             animation: "reveal",
             duration: 1000,
             fullDuration: 1500,
@@ -75,11 +71,10 @@ export abstract class StartForm extends BaseElement {
             fill: "backwards",
             clear: 3000
         });
-        this.requestUpdate();
     }
 
-    done() {
-        animateCascade(this.$$(".animate"), {
+    protected _animateOut(nodes: Iterable<Node | Element>) {
+        animateCascade(nodes, {
             animation: "fade",
             duration: 400,
             fullDuration: 600,
@@ -88,6 +83,15 @@ export abstract class StartForm extends BaseElement {
             easing: "cubic-bezier(1, 0, 0.2, 1)",
             clear: 3000
         });
+    }
+
+    reset() {
+        this._animateIn(this.$$(".animate"));
+        this.requestUpdate();
+    }
+
+    done() {
+        this._animateOut(this.$$(".animate"));
     }
 
     rumble() {

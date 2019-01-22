@@ -10,7 +10,7 @@ import { Invite } from "./invite";
 import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
-import { Base64String, base64ToHex } from "./encoding";
+import { Base64String } from "./encoding";
 import { getProvider } from "./crypto";
 import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
@@ -30,10 +30,15 @@ export class Context implements API {
 
     constructor(public config: ServerConfig, public storage: Storage, public messenger: Messenger) {}
 
-    async verifyEmail({ email, purpose }: { email: string; purpose: EmailVerificationPurpose }) {
-        const v = new EmailVerification(email, base64ToHex(await getProvider().randomBytes(3)), uuid(), purpose);
+    async requestEmailVerification({ email, purpose }: { email: string; purpose: EmailVerificationPurpose }) {
+        const v = new EmailVerification(email, purpose);
+        await v.init();
         await this.storage.set(v);
         this.messenger.send(email, new EmailVerificationMessage(v));
+    }
+
+    async completeEmailVerification({ email, code }: { email: string; code: string }) {
+        return await this._checkEmailVerificationCode(email, code);
     }
 
     async initAuth(email: string): Promise<{ auth: Auth; B: Base64String }> {
@@ -134,7 +139,7 @@ export class Context implements API {
     async createAccount(params: CreateAccountParams): Promise<Account> {
         const { account, auth, verify } = params;
 
-        this._checkEmailVerification(account.email, verify);
+        this._checkEmailVerificationToken(account.email, verify);
 
         // Make sure account does not exist yet
         try {
@@ -173,7 +178,7 @@ export class Context implements API {
     }
 
     async recoverAccount({ account, auth, verify }: RecoverAccountParams) {
-        await this._checkEmailVerification(account.email, verify);
+        await this._checkEmailVerificationToken(account.email, verify);
 
         const existingAuth = new Auth(account.email);
         await this.storage.get(existingAuth);
@@ -308,9 +313,10 @@ export class Context implements API {
                     throw e;
                 }
                 // account does not exist yet; add verification code to link
-                const v = new EmailVerification(invite.email, base64ToHex(await getProvider().randomBytes(3)), uuid());
+                const v = new EmailVerification(invite.email);
+                await v.init();
                 await this.storage.set(v);
-                link += `?verify=${v.code}`;
+                link += `?verify=${v.token}`;
             }
 
             this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
@@ -401,7 +407,7 @@ export class Context implements API {
         return { account, session };
     }
 
-    private async _checkEmailVerification(email: string, code: string) {
+    private async _checkEmailVerificationCode(email: string, code: string) {
         const ev = new EmailVerification(email);
         try {
             await this.storage.get(ev);
@@ -415,6 +421,25 @@ export class Context implements API {
 
         if (ev.code !== code.toLowerCase()) {
             throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
+        }
+
+        return ev.token;
+    }
+
+    private async _checkEmailVerificationToken(email: string, token: string) {
+        const ev = new EmailVerification(email);
+        try {
+            await this.storage.get(ev);
+        } catch (e) {
+            if (e.code === ErrorCode.NOT_FOUND) {
+                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Email verification required.");
+            } else {
+                throw e;
+            }
+        }
+
+        if (ev.token !== token) {
+            throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification token. Please try again!");
         }
 
         await this.storage.delete(ev);
@@ -510,12 +535,25 @@ export class Server {
         let vault: Vault;
 
         switch (method) {
-            case "verifyEmail":
+            case "requestEmailVerification":
                 if (!params || params.length !== 1 || typeof params[0].email !== "string") {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
 
-                res.result = await ctx.verifyEmail(params[0]);
+                res.result = await ctx.requestEmailVerification(params[0]);
+                break;
+
+            case "completeEmailVerification":
+                if (
+                    !params ||
+                    params.length !== 1 ||
+                    typeof params[0].email !== "string" ||
+                    typeof params[0].code !== "string"
+                ) {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+
+                res.result = await ctx.completeEmailVerification(params[0]);
                 break;
 
             case "initAuth":

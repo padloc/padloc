@@ -221,8 +221,12 @@ export class App extends EventEmitter implements Storable {
 
     // SESSION / ACCOUNT MANGAGEMENT
 
-    async verifyEmail(email: string, purpose?: EmailVerificationPurpose) {
-        return this.api.verifyEmail({ email, purpose });
+    async requestEmailVerification(email: string, purpose?: EmailVerificationPurpose) {
+        return this.api.requestEmailVerification({ email, purpose });
+    }
+
+    async completeEmailVerification(email: string, code: string) {
+        return this.api.completeEmailVerification({ email, code });
     }
 
     async signup({
@@ -236,7 +240,7 @@ export class App extends EventEmitter implements Storable {
         password: string;
         name: string;
         verify: string;
-        invite?: Invite;
+        invite?: { id: string; vault: string };
     }) {
         const account = new Account();
         account.email = email;
@@ -255,7 +259,7 @@ export class App extends EventEmitter implements Storable {
             account,
             auth,
             verify,
-            invite: invite && { id: invite.id, vault: invite.vault!.id }
+            invite
         });
 
         await this.login(email, password);

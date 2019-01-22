@@ -1,4 +1,4 @@
-import { router, app } from "../init.js";
+import { app } from "../init.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, property, listen, query } from "./base.js";
 import { Unlock } from "./unlock.js";
@@ -20,9 +20,25 @@ export class Start extends BaseElement {
     @query("pl-recover")
     private _recoverForm: Recover;
 
-    async firstUpdated() {
-        await app.loaded;
-        this._updateForm();
+    async unlock() {
+        await this.updateComplete;
+        this._showForm(this._unlockForm);
+    }
+
+    async login() {
+        await this.updateComplete;
+        this._showForm(this._loginForm);
+    }
+
+    async signup(step?: string) {
+        await this.updateComplete;
+        this._signupForm.goToStep(step);
+        this._showForm(this._signupForm);
+    }
+
+    async recover() {
+        await this.updateComplete;
+        this._showForm(this._recoverForm);
     }
 
     @listen("lock", app)
@@ -31,40 +47,7 @@ export class Start extends BaseElement {
         this.open = !app.locked;
     }
 
-    @listen("lock", app)
-    @listen("logout", app)
-    async _updateForm() {
-        if (router.path === "recover") {
-            this._showForm(this._recoverForm);
-            return;
-        }
-
-        let invite;
-        const inviteMatch = router.path.match(/^invite\/([^\/]+)\/([^\/]+)$/);
-
-        if (inviteMatch) {
-            const [, vault, id] = inviteMatch;
-            try {
-                invite = (await app.getInvite(vault, id)) || undefined;
-            } catch (e) {}
-        }
-
-        const verificationCode = new URLSearchParams(window.location.search).get("verify") || "";
-
-        if (app.account) {
-            this._unlockForm.invite = invite;
-            this._showForm(this._unlockForm);
-        } else if (verificationCode) {
-            this._signupForm.invite = invite;
-            this._signupForm.verificationCode = verificationCode;
-            this._showForm(this._signupForm);
-        } else {
-            this._loginForm.invite = invite;
-            this._showForm(this._loginForm);
-        }
-    }
-
-    _showForm(form: Unlock | Login | Signup | Recover) {
+    async _showForm(form: Unlock | Login | Signup | Recover) {
         for (const f of [this._unlockForm, this._loginForm, this._signupForm, this._recoverForm]) {
             if (f === form) {
                 f.classList.add("showing");
@@ -125,26 +108,13 @@ export class Start extends BaseElement {
                 }
             </style>
 
-            <pl-unlock
-                class="form"
-                @recover=${() => this._showForm(this._recoverForm)}>
-            </pl-unlock>
+            <pl-unlock class="form"></pl-unlock>
 
-            <pl-login
-                class="form"
-                @recover=${() => this._showForm(this._recoverForm)}
-                @signup=${() => this._showForm(this._signupForm)}>
-            </pl-login>
+            <pl-login class="form"></pl-login>
 
-            <pl-signup
-                class="form"
-                @login=${() => this._showForm(this._loginForm)}>
-            </pl-signup>
+            <pl-signup class="form"></pl-signup>
 
-            <pl-recover
-                class="form"
-                @login=${() => this._showForm(this._loginForm)}>
-            </pl-recover>
+            <pl-recover class="form"></pl-recover>
         `;
     }
 }

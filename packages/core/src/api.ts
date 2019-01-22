@@ -26,7 +26,8 @@ export interface CreateVaultParams {
 }
 
 export interface API {
-    verifyEmail(params: { email: string; purpose?: EmailVerificationPurpose }): Promise<void>;
+    requestEmailVerification(params: { email: string; purpose?: EmailVerificationPurpose }): Promise<void>;
+    completeEmailVerification(params: { email: string; code: string }): Promise<string>;
 
     initAuth(email: string): Promise<{ auth: Auth; B: Base64String }>;
     updateAuth(params: Auth): Promise<void>;

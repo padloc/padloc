@@ -1,6 +1,5 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { ErrorCode } from "@padloc/core/lib/error.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { element, html, property, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form.js";
 import { Input } from "./input.js";
@@ -14,6 +13,10 @@ export class Recover extends StartForm {
     @property()
     private _weakPassword = false;
 
+    private get _email() {
+        return router.params.email || "";
+    }
+
     @query("#emailInput")
     private _emailInput: Input;
     @query("#passwordInput")
@@ -24,7 +27,6 @@ export class Recover extends StartForm {
     private _submitButton: LoadingButton;
 
     async reset() {
-        this._emailInput.value = "";
         this._passwordInput.value = "";
         this._repeatPasswordInput.value = "";
         this._submitButton.stop();
@@ -90,6 +92,7 @@ export class Recover extends StartForm {
                     type="email"
                     required
                     .label=${$l("Email Address")}
+                    .value=${this._email}
                     class="tiles-2 animate"
                     @enter=${() => this._submit()}>
                 </pl-input>
@@ -210,12 +213,12 @@ export class Recover extends StartForm {
             }
         }
 
-        await app.verifyEmail(email, "recover_account");
+        await app.requestEmailVerification(email, "recover_account");
 
-        return this._recover(email, password, name);
+        return this._recover(email, password);
     }
 
-    private async _recover(email: string, password: string, name: string): Promise<void> {
+    private async _recover(email: string, password: string): Promise<void> {
         this._submitButton.start();
 
         const verify = await prompt(
@@ -223,10 +226,20 @@ export class Recover extends StartForm {
                 "To complete the account recovery process, please enter " +
                     "the confirmation code sent to your email address!"
             ),
-            { placeholder: "Enter Confirmation Code", confirmLabel: "Submit" }
+            {
+                placeholder: "Enter Verification Code",
+                confirmLabel: "Submit",
+                validate: async (code: string) => {
+                    try {
+                        return await app.completeEmailVerification(email, code);
+                    } catch (e) {
+                        throw e.message || e.code || e.toString();
+                    }
+                }
+            }
         );
 
-        if (verify === null) {
+        if (!verify) {
             this._submitButton.stop();
             return;
         }
@@ -235,28 +248,10 @@ export class Recover extends StartForm {
             await app.recoverAccount({ email, password, verify });
             this._submitButton.success();
             await alert($l("Account recovery successful!"), { type: "success" });
-            this.dispatch("login", { email });
+            router.go("login", { email });
         } catch (e) {
             this._submitButton.fail();
-            switch (e.code) {
-                case ErrorCode.EMAIL_VERIFICATION_FAILED:
-                    switch (
-                        await choose(
-                            $l("Wrong confirmation code. Please try again!"),
-                            [$l("Try Again"), $l("Resend Email"), $l("Cancel")],
-                            { type: "warning", title: $l("Invalid Validation Code!") }
-                        )
-                    ) {
-                        case 0:
-                            return this._recover(email, password, name);
-                        case 1:
-                            return this._submit();
-                        default:
-                            return;
-                    }
-                default:
-                    throw e;
-            }
+            throw e;
         }
     }
 

@@ -30,13 +30,34 @@ export class Router extends EventEmitter {
         return window.location.pathname.replace(new RegExp("^" + this.basePath), "");
     }
 
+    get params() {
+        const params = {};
+        for (const [key, value] of new URLSearchParams(window.location.search)) {
+            params[key] = value;
+        }
+        return params;
+    }
+
+    set params(params: { [prop: string]: string }) {
+        history.pushState(
+            { historyIndex: this.history.length - 1 },
+            "",
+            this.basePath + this.path + "?" + new URLSearchParams(params).toString()
+        );
+    }
+
     get canGoBack() {
         return this.history.length > 1;
     }
 
-    go(path: string) {
+    go(path: string, params?: { [prop: string]: string }) {
         if (path !== this.path) {
-            history.pushState({ historyIndex: this.history.length }, "", this.basePath + path);
+            let url = this.basePath + path;
+            const queryString = new URLSearchParams(params || this.params).toString();
+            if (queryString) {
+                url += "?" + queryString;
+            }
+            history.pushState({ historyIndex: this.history.length }, "", url);
             this._pathChanged();
         }
     }

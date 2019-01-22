@@ -52,8 +52,13 @@ export class Client implements API {
         return res;
     }
 
-    async verifyEmail(params: { email: string; purpose?: EmailVerificationPurpose }) {
-        const res = await this.call("verifyEmail", [params]);
+    async requestEmailVerification(params: { email: string; purpose?: EmailVerificationPurpose }) {
+        const res = await this.call("requestEmailVerification", [params]);
+        return res.result;
+    }
+
+    async completeEmailVerification(params: { email: string; code: string }) {
+        const res = await this.call("completeEmailVerification", [params]);
         return res.result;
     }
 

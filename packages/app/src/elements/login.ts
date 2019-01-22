@@ -1,6 +1,6 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { ErrorCode } from "@padloc/core/lib/error.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { element, html, property, query } from "./base.js";
 import { StartForm, sharedStyles } from "./start-form.js";
 import { Input } from "./input.js";
@@ -13,6 +13,10 @@ export class Login extends StartForm {
     @property()
     private _errorMessage: string;
 
+    private get _email() {
+        return router.params.email || "";
+    }
+
     @query("#emailInput")
     private _emailInput: Input;
     @query("#passwordInput")
@@ -24,8 +28,6 @@ export class Login extends StartForm {
 
     async reset() {
         await this.updateComplete;
-        this._emailInput.value = (this.invite && this.invite.email) || "";
-        this._emailInput.checkValidity();
         this._passwordInput.value = "";
         this._loginButton.stop();
         this._failedCount = 0;
@@ -67,6 +69,7 @@ export class Login extends StartForm {
                     required
                     select-on-focus
                     .label=${$l("Email Adress")}
+                    .value=${this._email}
                     class="tiles-2 animate tap"
                     @enter=${() => this._submit()}>
                 </pl-input>
@@ -94,7 +97,7 @@ export class Login extends StartForm {
                 <button
                     type="button"
                     class="tap signup animate"
-                    @click=${() => this.dispatch("signup")}>
+                    @click=${() => router.go("signup")}>
                         ${$l("Sign Up Now")}
                 </button>
 
@@ -112,6 +115,9 @@ export class Login extends StartForm {
         this._emailInput.blur();
         this._passwordInput.blur();
 
+        const email = this._emailInput.value;
+        const password = this._passwordInput.value;
+
         if (this._emailInput.invalid) {
             this._errorMessage = $l("Please enter a valid email address!");
             this.rumble();
@@ -119,7 +125,7 @@ export class Login extends StartForm {
             return;
         }
 
-        if (!this._passwordInput.value) {
+        if (!password) {
             this._errorMessage = $l("Please enter your master password!");
             this.rumble();
             this._passwordInput.focus();
@@ -129,7 +135,7 @@ export class Login extends StartForm {
         this._errorMessage = "";
         this._loginButton.start();
         try {
-            await app.login(this._emailInput.value, this._passwordInput.value);
+            await app.login(email, password);
             this._loginButton.success();
             this.done();
         } catch (e) {
@@ -148,7 +154,7 @@ export class Login extends StartForm {
                     $l("Try Again")
                 );
                 if (recover) {
-                    this.dispatch("recover");
+                    router.go("recover", { email });
                 }
             } else {
                 this._passwordInput.focus();
