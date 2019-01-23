@@ -78,7 +78,7 @@ export class Client implements API {
     }
 
     async revokeSession(session: Session): Promise<void> {
-        await this.call("revokeSession", [await session.serialize()]);
+        await this.call("revokeSession", [{ id: session.id }]);
     }
 
     async createAccount(params: CreateAccountParams): Promise<Account> {
