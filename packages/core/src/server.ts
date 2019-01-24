@@ -1,5 +1,6 @@
 import { API, CreateAccountParams, RecoverAccountParams, CreateVaultParams } from "./api";
 import { Storage } from "./storage";
+import { Attachment, AttachmentStorage } from "./attachment";
 import { Session } from "./session";
 import { Account } from "./account";
 import { Auth, EmailVerification, EmailVerificationPurpose } from "./auth";
@@ -28,7 +29,12 @@ export class Context implements API {
     account?: Account;
     device?: DeviceInfo;
 
-    constructor(public config: ServerConfig, public storage: Storage, public messenger: Messenger) {}
+    constructor(
+        public config: ServerConfig,
+        public storage: Storage,
+        public messenger: Messenger,
+        public attachmentStorage: AttachmentStorage
+    ) {}
 
     async requestEmailVerification({ email, purpose }: { email: string; purpose: EmailVerificationPurpose }) {
         const v = new EmailVerification(email, purpose);
@@ -397,6 +403,59 @@ export class Context implements API {
         await this.storage.set(vault);
     }
 
+    async createAttachment(att: Attachment) {
+        const { account } = this._requireAuth();
+
+        const vault = new Vault(att.vault);
+        await this.storage.get(vault);
+
+        const permissions = vault.getPermissions(account);
+
+        if (!permissions.write) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        // TODO: check storage limits
+
+        att.id = uuid();
+
+        await this.attachmentStorage.put(att);
+
+        return att;
+    }
+
+    async getAttachment(att: Attachment) {
+        const { account } = this._requireAuth();
+
+        const vault = new Vault(att.vault);
+        await this.storage.get(vault);
+
+        const permissions = vault.getPermissions(account);
+
+        if (!permissions.read) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        await this.attachmentStorage.get(att);
+
+        return att;
+    }
+
+    async deleteAttachment(att: Attachment) {
+        const { account } = this._requireAuth();
+
+        const vault = new Vault(att.vault);
+        await this.storage.get(vault);
+
+        const permissions = vault.getPermissions(account);
+
+        if (!permissions.write) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        await this.attachmentStorage.delete(att);
+    }
+
     private _requireAuth(): { account: Account; session: Session } {
         const { account, session } = this;
 
@@ -508,12 +567,17 @@ export class Context implements API {
 }
 
 export class Server {
-    constructor(public config: ServerConfig, private storage: Storage, private messenger: Messenger) {}
+    constructor(
+        public config: ServerConfig,
+        private storage: Storage,
+        private messenger: Messenger,
+        private attachmentStorage: AttachmentStorage
+    ) {}
 
     async handle(req: Request) {
         const res = { result: null };
         try {
-            const context = new Context(this.config, this.storage, this.messenger);
+            const context = new Context(this.config, this.storage, this.messenger, this.attachmentStorage);
             context.device = req.device;
             await this._authenticate(req, context);
             await this._process(req, res, context);
@@ -533,6 +597,7 @@ export class Server {
         let session: Session;
         let acc: Account;
         let vault: Vault;
+        let att: Attachment;
 
         switch (method) {
             case "requestEmailVerification":
@@ -685,6 +750,32 @@ export class Server {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
                 await ctx.acceptInvite(await new Invite().deserialize(params[0]));
+                break;
+
+            case "createAttachment":
+                if (!params || params.length !== 1) {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                att = await new Attachment().deserialize(params[0]);
+                await ctx.createAttachment(att);
+                res.result = { id: att.id };
+                break;
+
+            case "getAttachment":
+                if (!params || params.length !== 1) {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                att = new Attachment(params[0]);
+                await ctx.getAttachment(att);
+                res.result = await att.serialize();
+                break;
+
+            case "deleteAttachment":
+                if (!params || params.length !== 1) {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                att = new Attachment(params[0]);
+                await ctx.deleteAttachment(att);
                 break;
 
             default:

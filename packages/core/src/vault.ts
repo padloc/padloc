@@ -1,4 +1,4 @@
-import { Base64String, Serializable } from "./encoding";
+import { Base64String, Serializable, marshal, unmarshal, stringToBase64, base64ToString } from "./encoding";
 import {
     RSAPublicKey,
     RSAPrivateKey,
@@ -15,6 +15,7 @@ import { Invite, InvitePurpose, InviteCollection } from "./invite";
 import { Err, ErrorCode } from "./error";
 import { Storable } from "./storage";
 import { Collection, CollectionItem, CollectionChanges } from "./collection";
+import { VaultItemCollection, VaultItem } from "./item";
 
 export type MemberStatus = "active" | "removed" | "left";
 
@@ -41,210 +42,6 @@ export interface SignedVaultInfo extends VaultInfo {
 }
 
 export interface SubVault extends SignedVaultInfo, CollectionItem {}
-
-export type Tag = string;
-export type ItemID = string;
-
-export type FieldType =
-    | "username"
-    | "password"
-    | "url"
-    | "email"
-    | "date"
-    | "month"
-    | "credit"
-    | "iban"
-    | "bic"
-    | "phone"
-    | "address"
-    | "pin"
-    | "note"
-    | "text";
-
-export interface FieldDef {
-    type: FieldType;
-    pattern: string;
-    mask: boolean;
-    multiline: boolean;
-    toString(): string;
-}
-
-export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
-    username: {
-        type: "username",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "username"
-    },
-    password: {
-        type: "password",
-        pattern: ".*",
-        mask: true,
-        multiline: false,
-        toString: () => "password"
-    },
-    url: {
-        type: "url",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "URL"
-    },
-    email: {
-        type: "email",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "email"
-    },
-    date: {
-        type: "date",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "date"
-    },
-    month: {
-        type: "month",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "month"
-    },
-    credit: {
-        type: "credit",
-        pattern: "d*",
-        mask: true,
-        multiline: false,
-        toString: () => "credit card #"
-    },
-    iban: {
-        type: "iban",
-        pattern: ".*",
-        mask: true,
-        multiline: false,
-        toString: () => "IBAN"
-    },
-    bic: {
-        type: "bic",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "BIC"
-    },
-    phone: {
-        type: "phone",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "phone #"
-    },
-    pin: {
-        type: "pin",
-        pattern: "d*",
-        mask: true,
-        multiline: false,
-        toString: () => "PIN"
-    },
-    address: {
-        type: "address",
-        pattern: ".*",
-        mask: false,
-        multiline: true,
-        toString: () => "address"
-    },
-    note: {
-        type: "note",
-        pattern: ".*",
-        mask: false,
-        multiline: true,
-        toString: () => "note"
-    },
-    text: {
-        type: "text",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "text"
-    }
-};
-
-export interface Field {
-    name: string;
-    value: string;
-    type: FieldType;
-}
-
-export function normalizeTag(tag: string): Tag {
-    return tag.replace(",", "");
-}
-
-export interface VaultItem extends CollectionItem {
-    id: ItemID;
-    name: string;
-    fields: Field[];
-    tags: Tag[];
-    updatedBy: AccountID;
-    lastUsed: Date;
-}
-
-export function createVaultItem(name: string, fields?: Field[], tags?: Tag[]): VaultItem {
-    return {
-        id: uuid(),
-        name: name,
-        fields: fields || [],
-        tags: tags || [],
-        updated: new Date(),
-        updatedBy: "",
-        lastUsed: new Date()
-    };
-}
-
-const matchUsername = /username/i;
-const matchPassword = /password/i;
-const matchUrl = /url/i;
-const matchNote = /\n/;
-// TODO: We can probably do a lot better
-export function guessFieldType(field: any): FieldType {
-    return field.masked || field.name.match(matchPassword)
-        ? "password"
-        : field.name.match(matchUsername)
-            ? "username"
-            : field.name.match(matchUrl)
-                ? "url"
-                : field.value.match(matchNote)
-                    ? "note"
-                    : "text";
-}
-
-export class VaultItemCollection extends Collection<VaultItem> {
-    get tags(): string[] {
-        const tags = new Set<string>();
-        for (const r of this) {
-            for (const t of r.tags) {
-                tags.add(t);
-            }
-        }
-        return [...tags];
-    }
-
-    deserialize(raw: any) {
-        return super.deserialize({
-            ...raw,
-            items: raw.items.map((item: any) => {
-                return {
-                    ...item,
-                    lastUsed: new Date(item.lastUsed),
-                    fields: item.fields.map((field: any) => ({
-                        ...field,
-                        type: field.type || guessFieldType(field)
-                    }))
-                };
-            })
-        });
-    }
-}
 
 export class Vault implements Storable {
     kind = "vault";
@@ -532,7 +329,8 @@ export class Vault implements Storable {
                     return { id, publicKey, encryptedKey: "" };
                 })
             );
-            await this._adminContainer.set(this._adminSerializer);
+            const adminData = stringToBase64(marshal(await this._adminSerializer.serialize()));
+            await this._adminContainer.set(adminData);
         }
 
         if (this.hasItemsAccess() && write && !account.locked && !this.isSuspended()) {
@@ -541,7 +339,8 @@ export class Vault implements Storable {
                     return { id, publicKey, encryptedKey: "" };
                 })
             );
-            await this._itemsContainer.set(this.items);
+            const itemsData = stringToBase64(marshal(await this.items.serialize()));
+            await this._itemsContainer.set(itemsData);
         }
 
         return {
@@ -584,12 +383,14 @@ export class Vault implements Storable {
 
         // Load admin data
         if (!this.archived && this.hasAdminAccess() && this._account && !this._account.locked) {
-            await this._adminContainer.get(this._adminSerializer);
+            const adminData = unmarshal(base64ToString(await this._adminContainer.get()));
+            await this._adminSerializer.deserialize(adminData);
         }
 
         // Load collection data
         if (!this.archived && this.hasItemsAccess() && this._account && !this._account.locked) {
-            await this._itemsContainer.get(this.items);
+            const itemsData = unmarshal(base64ToString(await this._itemsContainer.get()));
+            await this.items.deserialize(itemsData);
         }
 
         return this;

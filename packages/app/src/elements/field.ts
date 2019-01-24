@@ -1,4 +1,4 @@
-import { FieldType, FieldDef, FIELD_DEFS } from "@padloc/core/lib/vault.js";
+import { FieldType, FieldDef, FIELD_DEFS } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared } from "../styles";
 import { dialog } from "../dialog.js";

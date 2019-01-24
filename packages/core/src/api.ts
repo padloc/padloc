@@ -4,6 +4,7 @@ import { Auth, EmailVerificationPurpose } from "./auth";
 import { Vault } from "./vault";
 import { Invite } from "./invite";
 import { Base64String } from "./encoding";
+import { Attachment } from "./attachment";
 
 export interface CreateAccountParams {
     account: Account;
@@ -47,4 +48,8 @@ export interface API {
 
     getInvite(params: { vault: string; id: string }): Promise<Invite>;
     acceptInvite(invite: Invite): Promise<void>;
+
+    createAttachment(attachment: Attachment): Promise<Attachment>;
+    getAttachment(attachment: Attachment): Promise<Attachment>;
+    deleteAttachment(attachment: Attachment): Promise<void>;
 }

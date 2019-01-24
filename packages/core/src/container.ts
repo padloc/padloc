@@ -1,4 +1,4 @@
-import { Serializable, Base64String, stringToBase64, base64ToString, marshal, unmarshal } from "./encoding";
+import { Serializable, Base64String } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import {
     PBKDF2Params,
@@ -48,7 +48,7 @@ export abstract class Container implements Serializable {
 
     protected abstract _getKey(): Promise<AESKey>;
 
-    async set(data: Serializable) {
+    async set(data: Base64String) {
         this.encryptionParams = {
             ...this.encryptionParams,
             iv: await getProvider().randomBytes(16),
@@ -57,17 +57,16 @@ export abstract class Container implements Serializable {
         };
 
         const key = await this._getKey();
-        const pt = stringToBase64(marshal(await data.serialize()));
-        this.encryptedData = await getProvider().encrypt(key, pt, this.encryptionParams);
+        this.encryptedData = await getProvider().encrypt(key, data, this.encryptionParams);
     }
 
-    async get(data: Serializable) {
+    async get(): Promise<Base64String> {
         if (!this.encryptedData) {
-            return;
+            return "";
         }
         const key = await this._getKey();
-        const pt = base64ToString(await getProvider().decrypt(key, this.encryptedData, this.encryptionParams));
-        await data.deserialize(unmarshal(pt));
+        const pt = await getProvider().decrypt(key, this.encryptedData, this.encryptionParams);
+        return pt;
     }
 
     async serialize() {

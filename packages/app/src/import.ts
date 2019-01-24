@@ -1,6 +1,6 @@
-import { unmarshal } from "@padloc/core/lib/encoding.js";
+import { unmarshal, base64ToString } from "@padloc/core/lib/encoding.js";
 import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/lib/legacy.js";
-import { VaultItem, Field, createVaultItem, guessFieldType } from "@padloc/core/lib/vault.js";
+import { VaultItem, Field, createVaultItem, guessFieldType } from "@padloc/core/lib/item.js";
 import { Err, ErrorCode } from "@padloc/core/lib/error.js";
 import { PBES2Container } from "@padloc/core/lib/container.js";
 import { uuid } from "@padloc/core/lib/util.js";
@@ -119,28 +119,20 @@ export async function asPadlockLegacy(data: string, password: string): Promise<V
     const raw = parseLegacyContainer(unmarshal(data));
     const container = await new PBES2Container().deserialize(raw);
     container.password = password;
-    let items: VaultItem[] = [];
-    const serializer = {
-        async serialize() {
-            return {};
-        },
-        async deserialize(records: any[]) {
-            items = records.filter(({ removed }) => !removed).map(record => {
-                return {
-                    id: uuid(),
-                    name: record.name,
-                    fields: record.fields,
-                    tags: record.tags || [record.category],
-                    updated: new Date(record.updated),
-                    lastUsed: new Date(record.lastUsed),
-                    updatedBy: ""
-                };
-            });
-            return this;
-        }
-    };
 
-    await container.get(serializer);
+    const records = unmarshal(base64ToString(await container.get())) as any[];
+    const items = records.filter(({ removed }) => !removed).map(record => {
+        return {
+            id: uuid(),
+            name: record.name,
+            fields: record.fields,
+            tags: record.tags || [record.category],
+            updated: new Date(record.updated),
+            lastUsed: new Date(record.lastUsed),
+            updatedBy: "",
+            attachments: []
+        };
+    });
 
     return items;
 }

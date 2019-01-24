@@ -1,7 +1,8 @@
 import { EventEmitter } from "./event-target";
 import { Storage, Storable } from "./storage";
 import { InvitePurpose } from "./invite";
-import { Vault, VaultInfo, VaultMember, VaultItem, Field, Tag, createVaultItem } from "./vault";
+import { Vault, VaultInfo, VaultMember } from "./vault";
+import { VaultItem, Field, Tag, createVaultItem } from "./item";
 import { CollectionItem } from "./collection";
 import { Account } from "./account";
 import { Auth, EmailVerificationPurpose } from "./auth";
@@ -16,6 +17,7 @@ import { DeviceInfo, getDeviceInfo } from "./platform";
 import { uuid, escapeRegex } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
+import { Attachment, AttachmentInfo } from "./attachment";
 
 export interface Stats {
     lastSync?: DateString;
@@ -766,6 +768,26 @@ export class App extends EventEmitter implements Storable {
         Object.assign(this.settings, obj);
         this.storage.set(this);
         this.dispatch("settings-changed", { settings: this.settings });
+    }
+
+    // ATTACHMENTS
+
+    async createAttachment(vault: Vault, blob: Blob): Promise<Attachment> {
+        const att = new Attachment({ vault: vault.id });
+        await att.fromBlob(blob);
+        return await this.api.createAttachment(att);
+    }
+
+    async getAttachment(attInfo: AttachmentInfo): Promise<Attachment> {
+        const att = new Attachment(attInfo);
+        return await this.api.getAttachment(att);
+    }
+
+    async deleteAttachment(att: Attachment | AttachmentInfo): Promise<void> {
+        if (!(att instanceof Attachment)) {
+            att = new Attachment(att);
+        }
+        await this.api.deleteAttachment(att as Attachment);
     }
 
     // MISC

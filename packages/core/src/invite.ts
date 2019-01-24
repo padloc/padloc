@@ -1,6 +1,6 @@
 import { getProvider, PBKDF2Params, HMACParams, HMACKey, AESKey } from "./crypto";
 import { SimpleContainer } from "./container";
-import { base64ToHex } from "./encoding";
+import { stringToBase64, base64ToString, base64ToHex, marshal, unmarshal } from "./encoding";
 import { Collection, CollectionItem } from "./collection";
 import { VaultInfo, SignedVaultInfo } from "./vault";
 import { AccountInfo, SignedAccountInfo } from "./account";
@@ -53,21 +53,6 @@ export class Invite implements CollectionItem {
     };
 
     private _secretData = new SimpleContainer();
-    private get _secretSerializer() {
-        return {
-            serialize: async () => {
-                return {
-                    secret: this.secret,
-                    expires: this.expires
-                };
-            },
-            deserialize: async (raw: any) => {
-                this.secret = raw.secret;
-                this.expires = raw.expires;
-                return this;
-            }
-        };
-    }
 
     constructor(public email = "", public purpose: InvitePurpose = "join_vault") {}
 
@@ -76,7 +61,7 @@ export class Invite implements CollectionItem {
         this.expires = new Date(Date.now() + 1000 * 60 * 60 * duration);
         this.secret = base64ToHex(await getProvider().randomBytes(4));
         this._secretData.key = encKey;
-        await this._secretData.set(this._secretSerializer);
+        await this._secretData.set(stringToBase64(marshal({ secret: this.secret, expires: this.expires })));
         this._keyParams.salt = await getProvider().randomBytes(16);
         this.vault = await this._sign(vault);
         this.invitor = invitor;
@@ -137,7 +122,9 @@ export class Invite implements CollectionItem {
 
     async accessSecret(key: AESKey) {
         this._secretData.key = key;
-        await this._secretData.get(this._secretSerializer);
+        const { secret, expires } = unmarshal(base64ToString(await this._secretData.get()));
+        this.secret = secret;
+        this.expires = expires;
     }
 
     private async _getKey() {

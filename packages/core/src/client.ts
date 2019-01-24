@@ -8,6 +8,7 @@ import { Invite } from "./invite";
 import { Base64String } from "./encoding";
 import { Vault } from "./vault";
 import { Err, ErrorCode } from "./error";
+import { Attachment } from "./attachment";
 
 export interface ClientSettings {
     customServer: boolean;
@@ -140,5 +141,20 @@ export class Client implements API {
 
     async acceptInvite(invite: Invite): Promise<void> {
         await this.call("acceptInvite", [await invite.serialize()]);
+    }
+
+    async createAttachment(att: Attachment): Promise<Attachment> {
+        const { result } = await this.call("createAttachment", [await att.serialize()]);
+        att.id = result.id;
+        return att;
+    }
+
+    async getAttachment(att: Attachment): Promise<Attachment> {
+        const res = await this.call("getAttachment", [{ id: att.id, vault: att.vault }]);
+        return att.deserialize(res.result);
+    }
+
+    async deleteAttachment(att: Attachment): Promise<void> {
+        await this.call("deleteAttachment", [{ id: att.id, vault: att.vault }]);
     }
 }

@@ -6,12 +6,18 @@ import { EmailVerificationMessage, InviteCreatedMessage } from "../messages";
 import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
 import { ErrorCode } from "../error";
+import { MemoryAttachmentStorage } from "../attachment";
 import { Spec } from "./spec";
 
 export function appSpec(): Spec {
     const clientUrl = "https://padloc.app";
     const messenger = new StubMessenger();
-    const server = new Server({ clientUrl, reportErrors: "support@padloc.app" }, new MemoryStorage(), messenger);
+    const server = new Server(
+        { clientUrl, reportErrors: "support@padloc.app" },
+        new MemoryStorage(),
+        messenger,
+        new MemoryAttachmentStorage()
+    );
     const app = new App(new MemoryStorage(), new DirectSender(server));
     const otherApp = new App(new MemoryStorage(), new DirectSender(server));
 

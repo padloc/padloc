@@ -4,6 +4,7 @@ import { NodeCryptoProvider } from "./crypto";
 import { HTTPReceiver } from "./http";
 import { LevelDBStorage } from "./storage";
 import { EmailMessenger } from "./messenger";
+import { FileSystemStorage } from "./attachment";
 
 setProvider(new NodeCryptoProvider());
 
@@ -15,13 +16,15 @@ const messenger = new EmailMessenger({
     from: process.env.PL_EMAIL_FROM || ""
 });
 const storage = new LevelDBStorage(process.env.PL_DB_PATH || "db");
+const attachmentStorage = new FileSystemStorage({ path: process.env.PL_ATTACHMENTS_PATH || "attachments" });
 const server = new Server(
     {
         clientUrl: process.env.PL_CLIENT_URL || "https://localhost:8081",
         reportErrors: process.env.PL_REPORT_ERRORS || ""
     },
     storage,
-    messenger
+    messenger,
+    attachmentStorage
 );
 
 let port = 3000;

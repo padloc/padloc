@@ -7,6 +7,7 @@
   "license": "GPLv3",
   "private": false,
   "devDependencies": {
+    "@types/fs-extra": "^5.0.4",
     "@types/nodemailer": "^4.6.2",
     "ts-node": "^7.0.0",
     "ts-node-dev": "^1.0.0-pre.31",
@@ -14,6 +15,8 @@
   },
   "dependencies": {
     "@padloc/core": "^3.0.0",
+    "aws-sdk": "^2.393.0",
+    "fs-extra": "^7.0.1",
     "level": "^4.0.0",
     "nodemailer": "^4.6.7"
   },

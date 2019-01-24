@@ -1,4 +1,4 @@
-import { Base64String } from "./encoding";
+import { Base64String, base64ToString, stringToBase64, marshal, unmarshal } from "./encoding";
 import { getProvider, RSAPublicKey, RSAPrivateKey, defaultRSAKeyParams } from "./crypto";
 import { PBES2Container } from "./container";
 import { Storable } from "./storage";
@@ -43,18 +43,6 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
         return !this.privateKey;
     }
 
-    private get _encSerializer() {
-        return {
-            serialize: async () => {
-                return { privateKey: this.privateKey };
-            },
-            deserialize: async ({ privateKey }: { privateKey: string }) => {
-                this.privateKey = privateKey;
-                return this;
-            }
-        };
-    }
-
     constructor(public id: AccountID = "") {
         super();
     }
@@ -66,7 +54,7 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
 
     async setPassword(password: string) {
         this.password = password;
-        await this.set(this._encSerializer);
+        await this.set(stringToBase64(marshal({ privateKey: this.privateKey })));
         this.updated = new Date();
     }
 
@@ -77,7 +65,8 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
 
     async unlock(password: string) {
         this.password = password;
-        await this.get(this._encSerializer);
+        const { privateKey } = unmarshal(base64ToString(await this.get()));
+        this.privateKey = privateKey;
     }
 
     lock() {
