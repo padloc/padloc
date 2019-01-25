@@ -1,11 +1,11 @@
 import { until } from "lit-html/directives/until.js";
 import { AccountInfo } from "@padloc/core/lib/account.js";
-import { Field } from "@padloc/core/lib/vault.js";
+import { Field } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
+import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
 import { confirm, dialog } from "../dialog.js";
-import { animateCascade } from "../animation.js";
 import { app, router } from "../init.js";
 import { setClipboard } from "../clipboard.js";
 import { BaseElement, element, html, property, query, queryAll, listen, observe } from "./base.js";
@@ -15,6 +15,8 @@ import { TagsInput } from "./tags-input.js";
 import { MoveItemsDialog } from "./move-items-dialog.js";
 import { FieldElement } from "./field.js";
 import "./field.js";
+import { AttachmentElement } from "./attachment.js";
+import "./attachment.js";
 
 @element("pl-item-view")
 export class ItemView extends BaseElement {
@@ -35,14 +37,18 @@ export class ItemView extends BaseElement {
     private _editing: Boolean = false;
 
     @query("#nameInput")
-    _nameInput: Input;
+    private _nameInput: Input;
     @query("pl-tags-input")
-    _tagsInput: TagsInput;
+    private _tagsInput: TagsInput;
     @queryAll("pl-field")
-    _fields: FieldElement[];
+    private _fields: FieldElement[];
+    @query("input[type='file']")
+    private _fileInput: HTMLInputElement;
+    @queryAll("pl-attachment")
+    private _attachmentElements: AttachmentElement[];
 
     @dialog("pl-move-items-dialog")
-    _moveItemsDialog: MoveItemsDialog;
+    private _moveItemsDialog: MoveItemsDialog;
 
     @listen("item-changed", app)
     @listen("vault-changed", app)
@@ -70,6 +76,7 @@ export class ItemView extends BaseElement {
         const vault = this.vault!;
         const permissions = vault.getPermissions();
         const updatedByMember = vault.getMember({ id: updatedBy } as AccountInfo);
+        const attachments = this.item!.attachments || [];
 
         return html`
         ${shared}
@@ -91,16 +98,6 @@ export class ItemView extends BaseElement {
                 flex-direction: column;
                 padding: 10px;
                 padding-bottom: 65px;
-            }
-
-            .add-button {
-                height: 45px;
-                line-height: 45px;
-            }
-
-            .add-button pl-icon {
-                top: -1px;
-                font-size: 90%;
             }
 
             .name {
@@ -147,6 +144,13 @@ export class ItemView extends BaseElement {
                 font-size: 80%;
                 content: "\\f303\ ";
             }
+
+            h4 {
+                font-size: var(--font-size-tiny);
+                color: var(--color-primary);
+                font-weight: bold;
+                margin: 10px;
+            }
         </style>
 
         <header class="narrow back-header tap" @click=${() => router.go("items")}>
@@ -172,7 +176,8 @@ export class ItemView extends BaseElement {
             <pl-tags-input
                 .editing=${this._editing}
                 .vault=${vault}
-                .tags=${tags}>
+                .tags=${tags}
+                @move=${this._move}>
             </pl-tags-input>
 
             <div class="fields">
@@ -192,16 +197,24 @@ export class ItemView extends BaseElement {
                 )}
             </div>
 
-            <button class="add-button tap" @click=${() => this._addField()} ?hidden=${!this._editing}>
+            <div class="attachments" ?hidden=${!attachments.length}>
 
-                <pl-icon icon="add"></pl-icon>
+                <h4>${$l("Attachments")}</h4>
+    
+                ${attachments.map(
+                    a => html`
+                   <pl-attachment
+                       .info=${a}
+                       .editing=${this._editing}
+                       @delete=${() => this._deleteAttachment(a)}>
+                   </pl-attachment>
+                `
+                )} 
 
-                <div>${$l("Add Field")}</div>
-
-            </button>
+            </div>
 
             <div class="updated" hidden>
-                ${until(formatDateFromNow(updated))}
+                ${until(formatDateFromNow(updated!))}
                 ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
             </div>
 
@@ -210,8 +223,18 @@ export class ItemView extends BaseElement {
         <div class="fabs" ?hidden=${!this._editing}>
 
             <pl-icon icon="delete"
-                class="fab tap destructive"
+                class="fab tap"
                 @click=${() => this._deleteItem()}>
+            </pl-icon>
+
+            <pl-icon icon="attachment"
+                class="fab tap"
+                @click=${() => this._addAttachment()}>
+            </pl-icon>
+
+            <pl-icon icon="add"
+                class="fab tap"
+                @click=${() => this._addField()}>
             </pl-icon>
 
             <div class="flex"></div>
@@ -225,11 +248,6 @@ export class ItemView extends BaseElement {
 
         <div class="fabs" ?hidden=${this._editing || !permissions.write}>
 
-            <pl-icon icon="share"
-                class="tap fab"
-                @click=${() => this._move()}>
-            </pl-icon>
-
             <div class="flex"></div>
 
             <pl-icon icon="edit"
@@ -238,6 +256,8 @@ export class ItemView extends BaseElement {
             </pl-icon>
 
         </div>
+
+        <input type="file" hidden @change=${this._attachFile}>
 `;
     }
 
@@ -248,6 +268,14 @@ export class ItemView extends BaseElement {
     }
 
     save() {
+        // update attachment names
+        for (const [i, att] of this.item!.attachments.entries()) {
+            const el = this._attachmentElements[i];
+            if (el && el.attachmentName) {
+                att.name = el.attachmentName;
+            }
+        }
+
         app.updateItem(this.vault!, this.item!, {
             name: this._nameInput.value,
             fields: [...this._fields].map((fieldEl: FieldElement) => {
@@ -286,22 +314,48 @@ export class ItemView extends BaseElement {
         setTimeout(() => this._fields[this._fields.length - 1].focus(), 100);
     }
 
-    _activated() {
-        setTimeout(() => {
-            animateCascade(this.$$(".animate"), { fullDuration: 800, fill: "both" });
-        }, 100);
-    }
-
-    async _move() {
+    private async _move() {
         const movedItems = await this._moveItemsDialog.show([{ item: this.item!, vault: this.vault! }]);
         if (movedItems && movedItems.length) {
             router.go(`items/${movedItems[0].id}`);
         }
     }
 
-    async _editField(index: number) {
+    private async _editField(index: number) {
         this._editing = true;
         await this.updateComplete;
         this._fields[index].focus();
+    }
+
+    private _addAttachment() {
+        this._fileInput.click();
+    }
+
+    private async _attachFile() {
+        const item = this.item!;
+        const vault = this.vault!;
+        const file = this._fileInput.files![0];
+        if (!file) {
+            return;
+        }
+        const att = await app.createAttachment(vault, file);
+        item.attachments = item.attachments || [];
+        item.attachments.push(att.info);
+        this.requestUpdate();
+    }
+
+    private async _deleteAttachment(info: AttachmentInfo) {
+        const confirmed = await confirm(
+            $l("Are you sure you want to delete '{0}'?", info.name),
+            $l("Delete"),
+            $l("Cancel"),
+            { title: $l("Delete Attachment"), type: "warning" }
+        );
+        if (confirmed) {
+            await app.deleteAttachment(info);
+            const attachments = this.item!.attachments;
+            attachments.splice(attachments.indexOf(info), 1);
+            this.requestUpdate();
+        }
     }
 }

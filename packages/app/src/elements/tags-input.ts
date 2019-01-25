@@ -1,5 +1,6 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { Vault, Tag } from "@padloc/core/lib/vault.js";
+import { Vault } from "@padloc/core/lib/vault.js";
+import { Tag } from "@padloc/core/lib/item.js";
 import { app, router } from "../init.js";
 import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
@@ -106,7 +107,7 @@ export class TagsInput extends BaseElement {
 
             <div class="tags small wrapper">
 
-                <div class="tag highlight tap" @click=${() => this._openVault()} ?disabled=${editing}>
+                <div class="tag highlight tap" @click=${() => this._vaultClicked()}>
 
                     <pl-icon icon="vault"></pl-icon>
 
@@ -184,8 +185,12 @@ export class TagsInput extends BaseElement {
         }
     }
 
-    private _openVault() {
-        router.go(`vaults/${this.vault!.id}`);
+    private _vaultClicked() {
+        if (this.editing) {
+            this.dispatch("move");
+        } else {
+            router.go(`vaults/${this.vault!.id}`);
+        }
     }
 
     _focusChanged() {

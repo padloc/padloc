@@ -676,6 +676,7 @@ export class App extends EventEmitter implements Storable {
     }
 
     async deleteItems(items: { item: VaultItem; vault: Vault }[]) {
+        // TODO: delete attachments
         const grouped = new Map<Vault, VaultItem[]>();
         for (const item of items) {
             if (!grouped.has(item.vault)) {
@@ -772,9 +773,9 @@ export class App extends EventEmitter implements Storable {
 
     // ATTACHMENTS
 
-    async createAttachment(vault: Vault, blob: Blob): Promise<Attachment> {
+    async createAttachment(vault: Vault, file: File): Promise<Attachment> {
         const att = new Attachment({ vault: vault.id });
-        await att.fromBlob(blob);
+        await att.fromFile(file);
         return await this.api.createAttachment(att);
     }
 

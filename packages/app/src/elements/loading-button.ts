@@ -33,6 +33,7 @@ export class LoadingButton extends BaseElement {
             button {
                 position: relative;
                 flex: 1;
+                height: auto;
             }
 
             button > * {
@@ -45,6 +46,10 @@ export class LoadingButton extends BaseElement {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+            }
+
+            :host(.vertical) .label {
+                flex-direction: column;
             }
 
             button.loading .label, button.success .label, button.fail .label,

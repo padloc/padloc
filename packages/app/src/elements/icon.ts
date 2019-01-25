@@ -271,6 +271,46 @@ export class PlIcon extends BaseElement {
                 content: "\\f187";
             }
 
+            :host([icon="attachment"]) > div::before {
+                content: "\\f0c6";
+            }
+
+            :host([icon="file"]) > div::before {
+                content: "\\f15b";
+            }
+
+            :host([icon="file-video"]) > div::before {
+                content: "\\f1c8";
+            }
+
+            :host([icon="file-pdf"]) > div::before {
+                content: "\\f1c1";
+            }
+
+            :host([icon="file-image"]) > div::before {
+                content: "\\f1c5";
+            }
+
+            :host([icon="file-csv"]) > div::before {
+                content: "\\f6dd";
+            }
+
+            :host([icon="file-code"]) > div::before {
+                content: "\\f1c9";
+            }
+
+            :host([icon="file-archive"]) > div::before {
+                content: "\\f1c6";
+            }
+
+            :host([icon="file-audio"]) > div::before {
+                content: "\\f1c7";
+            }
+
+            :host([icon="file-text"]) > div::before {
+                content: "\\f15c";
+            }
+
             :host([icon="logo"]) > div::before {
                 font-family: "Padlock";
                 content: "\\0041";

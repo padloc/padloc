@@ -1,9 +1,9 @@
-import { Base64String, bytesToBase64, base64ToBytes } from "./encoding";
+import { bytesToBase64, base64ToBytes } from "./encoding";
 import { SimpleContainer } from "./container";
 import { getProvider, AESKeyParams } from "./crypto";
 import { Err, ErrorCode } from "./error";
 
-function readBlob(blob: Blob): Promise<Base64String> {
+function readFile(blob: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
@@ -18,6 +18,23 @@ function readBlob(blob: Blob): Promise<Base64String> {
         };
 
         reader.readAsArrayBuffer(blob);
+    });
+}
+
+function readFileAsDataURL(blob: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            resolve(reader.result as string);
+        };
+
+        reader.onerror = e => {
+            reader.abort();
+            reject(e);
+        };
+
+        reader.readAsDataURL(blob);
     });
 }
 
@@ -49,21 +66,23 @@ export class Attachment extends SimpleContainer {
         }
     }
 
-    get info() {
+    get info(): AttachmentInfo {
         return {
             id: this.id,
             vault: this.vault,
             name: this.name,
             type: this.type,
+            size: this.size,
             key: this.key
         };
     }
 
-    async fromBlob(blob: Blob) {
-        this.type = blob.type;
-        this.size = blob.size;
+    async fromFile(file: File) {
+        this.type = file.type;
+        this.size = file.size;
+        this.name = file.name;
 
-        const data = await readBlob(blob);
+        const data = await readFile(file);
 
         this.key = await getProvider().generateKey({
             algorithm: "AES",
@@ -73,27 +92,32 @@ export class Attachment extends SimpleContainer {
         await this.set(data);
     }
 
-    async toBlob(): Promise<Blob> {
+    async toFile(): Promise<File> {
         const data = await this.get();
-        return new Blob([base64ToBytes(data)], { type: this.type });
+        return new File([base64ToBytes(data)], this.name, { type: this.type });
+    }
+
+    async toDataURL(): Promise<string> {
+        const file = await this.toFile();
+        return readFileAsDataURL(file);
+    }
+
+    async toObjectURL(): Promise<string> {
+        const file = await this.toFile();
+        return URL.createObjectURL(file);
     }
 
     async serialize() {
-        const info = this.info;
-        delete info.key;
-
         return {
             ...(await super.serialize()),
-            ...info
+            id: this.id,
+            vault: this.vault
         };
     }
 
     async deserialize(raw: any) {
         this.id = raw.id;
         this.vault = raw.vault;
-        this.name = raw.name;
-        this.size = raw.size;
-        this.type = raw.type;
         return super.deserialize(raw);
     }
 }
