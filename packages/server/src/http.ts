@@ -1,12 +1,19 @@
 import { createServer, IncomingMessage } from "http";
 import { Receiver, Request, Response } from "@padloc/core/src/transport";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
+import { Err, ErrorCode } from "@padloc/core/src/error";
 
-function readBody(request: IncomingMessage): Promise<string> {
+function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
     return new Promise((resolve, reject) => {
         const body: Buffer[] = [];
+        let size = 0;
+
         request
             .on("data", chunk => {
+                size += chunk.length;
+                if (size > maxSize) {
+                    request.destroy(new Err(ErrorCode.MAX_REQUEST_SIZE_EXCEEDED));
+                }
                 body.push(chunk);
             })
             .on("error", e => {
@@ -14,13 +21,12 @@ function readBody(request: IncomingMessage): Promise<string> {
             })
             .on("end", () => {
                 resolve(Buffer.concat(body).toString());
-                // at this point, `body` has the entire request body stored in it as a string
             });
     });
 }
 
 export class HTTPReceiver implements Receiver {
-    constructor(public port: number) {}
+    constructor(public port: number, public maxRequestSize = 1e7) {}
 
     async listen(handler: (req: Request) => Promise<Response>) {
         const server = createServer(async (httpReq, httpRes) => {
@@ -39,7 +45,7 @@ export class HTTPReceiver implements Receiver {
                     break;
                 case "POST":
                     httpRes.setHeader("Content-Type", "application/json");
-                    const body = await readBody(httpReq);
+                    const body = await readBody(httpReq, this.maxRequestSize);
                     const res = await handler(unmarshal(body));
                     httpRes.write(marshal(res));
                     httpRes.end();
