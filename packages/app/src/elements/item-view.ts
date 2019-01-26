@@ -5,7 +5,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
-import { confirm, dialog } from "../dialog.js";
+import { alert, confirm, dialog } from "../dialog.js";
 import { app, router } from "../init.js";
 import { setClipboard } from "../clipboard.js";
 import { BaseElement, element, html, property, query, queryAll, listen, observe } from "./base.js";
@@ -338,10 +338,19 @@ export class ItemView extends BaseElement {
         if (!file) {
             return;
         }
+
+        if (file.size > 5e6) {
+            alert($l("The selected file is too large! Only files of up to 5 MB are supported."), {
+                type: "warning"
+            });
+            return;
+        }
+
         const att = await app.createAttachment(vault, file);
         item.attachments = item.attachments || [];
         item.attachments.push(att.info);
         this.requestUpdate();
+        this._fileInput.value = "";
     }
 
     private async _deleteAttachment(info: AttachmentInfo) {
