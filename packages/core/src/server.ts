@@ -526,6 +526,8 @@ export class Context implements API {
             promises.push(this._deleteVault(new Vault(id), account));
         }
 
+        await this.attachmentStorage.deleteForVault(vault);
+
         // TODO: remove vault from all member accounts?
 
         // for (const member of vault.members) {

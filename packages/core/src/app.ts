@@ -676,14 +676,18 @@ export class App extends EventEmitter implements Storable {
     }
 
     async deleteItems(items: { item: VaultItem; vault: Vault }[]) {
-        // TODO: delete attachments
+        const attachments = [];
         const grouped = new Map<Vault, VaultItem[]>();
         for (const item of items) {
             if (!grouped.has(item.vault)) {
                 grouped.set(item.vault, []);
             }
             grouped.get(item.vault)!.push(item.item);
+            attachments.push(...(item.item.attachments || []));
         }
+
+        await Promise.all(attachments.map(att => this.deleteAttachment(att)));
+
         for (const [vault, items] of grouped.entries()) {
             vault.items.remove(...items);
             await this.storage.set(vault);

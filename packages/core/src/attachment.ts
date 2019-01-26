@@ -1,5 +1,6 @@
 import { bytesToBase64, base64ToBytes } from "./encoding";
 import { SimpleContainer } from "./container";
+import { Vault } from "./vault";
 import { getProvider, AESKeyParams } from "./crypto";
 import { Err, ErrorCode } from "./error";
 
@@ -126,6 +127,7 @@ export interface AttachmentStorage {
     put(a: Attachment): Promise<void>;
     get(a: Attachment): Promise<Attachment>;
     delete(a: Attachment): Promise<void>;
+    deleteForVault(vault: Vault): Promise<void>;
 }
 
 export class MemoryAttachmentStorage {
@@ -145,5 +147,13 @@ export class MemoryAttachmentStorage {
 
     async delete(a: Attachment): Promise<void> {
         this._storage.delete(`${a.vault}_${a.id}`);
+    }
+
+    async deleteForVault(vault: Vault): Promise<void> {
+        for (const key of this._storage.keys()) {
+            if (key.startsWith(vault.id)) {
+                this._storage.delete(key);
+            }
+        }
     }
 }

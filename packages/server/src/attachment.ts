@@ -1,8 +1,9 @@
 import { S3 } from "aws-sdk";
 import { join } from "path";
-import { readFile, writeFile, ensureDir, unlink } from "fs-extra";
+import { readFile, writeFile, ensureDir, remove } from "fs-extra";
 import { marshal, unmarshal, bytesToString, stringToBytes } from "@padloc/core/src/encoding";
 import { Attachment, AttachmentStorage } from "@padloc/core/src/attachment";
+import { Vault } from "@padloc/core/src/vault";
 import { Err, ErrorCode } from "@padlock/core/src/error";
 
 export interface S3Config {
@@ -47,6 +48,10 @@ export class S3Storage implements AttachmentStorage {
             Key: this._getKey(att)
         });
     }
+
+    async deleteForVault() {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
 }
 
 export interface FSStorageConfig {
@@ -76,6 +81,10 @@ export class FileSystemStorage implements AttachmentStorage {
     }
 
     async delete(att: Attachment) {
-        await unlink(this._getPath(att));
+        await remove(this._getPath(att));
+    }
+
+    async deleteForVault(vault: Vault) {
+        await remove(join(this.config.path, vault.id));
     }
 }
