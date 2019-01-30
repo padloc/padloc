@@ -1,5 +1,5 @@
 import { shared, mixins } from "../styles";
-import { BaseElement, html, property } from "./base.js";
+import { BaseElement, html } from "./base.js";
 import { animateElement, animateCascade } from "../animation.js";
 import "./icon.js";
 

@@ -2,7 +2,7 @@ import { randomString, chars } from "@padloc/core/lib/util.js";
 import { generatePassphrase } from "@padloc/core/lib/diceware.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
-import { html, property, query, listen, observe } from "./base.js";
+import { html, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
