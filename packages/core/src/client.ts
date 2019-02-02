@@ -1,5 +1,5 @@
 import { API, CreateAccountParams, RecoverAccountParams, CreateVaultParams } from "./api";
-import { Sender } from "./transport";
+import { Sender, RequestProgress } from "./transport";
 import { DeviceInfo } from "./platform";
 import { Session } from "./session";
 import { Account, AccountID } from "./account";
@@ -29,7 +29,7 @@ export class Client implements API {
         return this.state.session;
     }
 
-    async call(method: string, params?: any[]) {
+    async call(method: string, params?: any[], progress?: RequestProgress) {
         const { session } = this.state;
 
         const req = { method, params, device: this.state.device };
@@ -38,16 +38,31 @@ export class Client implements API {
             await session.authenticate(req);
         }
 
-        // headers.set("X-Device", marshal(this.state.device));
+        let res;
 
-        const res = await this.sender.send(req);
+        try {
+            res = await this.sender.send(req, progress);
+        } catch (e) {
+            if (progress) {
+                progress.error = e;
+            }
+            throw e;
+        }
 
         if (res.error) {
-            throw new Err((res.error.code as any) as ErrorCode, res.error.message);
+            const err = new Err((res.error.code as any) as ErrorCode, res.error.message);
+            if (progress) {
+                progress.error = err;
+            }
+            throw err;
         }
 
         if (session && !(await session.verify(res))) {
-            throw new Err(ErrorCode.INVALID_RESPONSE);
+            const err = new Err(ErrorCode.INVALID_RESPONSE);
+            if (progress) {
+                progress.error = err;
+            }
+            throw err;
         }
 
         return res;
@@ -144,13 +159,15 @@ export class Client implements API {
     }
 
     async createAttachment(att: Attachment): Promise<Attachment> {
-        const { result } = await this.call("createAttachment", [await att.serialize()]);
+        att.uploadProgress = new RequestProgress();
+        const { result } = await this.call("createAttachment", [await att.serialize()], att.uploadProgress);
         att.id = result.id;
         return att;
     }
 
     async getAttachment(att: Attachment): Promise<Attachment> {
-        const res = await this.call("getAttachment", [{ id: att.id, vault: att.vault }]);
+        att.downloadProgress = new RequestProgress();
+        const res = await this.call("getAttachment", [{ id: att.id, vault: att.vault }], att.downloadProgress);
         return att.deserialize(res.result);
     }
 

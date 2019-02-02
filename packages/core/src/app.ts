@@ -188,6 +188,7 @@ export class App extends EventEmitter implements Storable {
 
     private _vaults = new Map<string, Vault>();
     private _filter: FilterParams = {};
+    private _attachments = new Map<string, Attachment>();
     private _queuedSyncPromises = new Map<string, Promise<void>>();
     private _activeSyncPromises = new Map<string, Promise<void>>();
 
@@ -777,21 +778,37 @@ export class App extends EventEmitter implements Storable {
 
     // ATTACHMENTS
 
-    async createAttachment(vault: Vault, file: File): Promise<Attachment> {
-        const att = new Attachment({ vault: vault.id });
-        await att.fromFile(file);
-        return await this.api.createAttachment(att);
+    getAttachment(attInfo: AttachmentInfo): Attachment {
+        let att = this._attachments.get(attInfo.id);
+
+        if (!att) {
+            att = new Attachment(attInfo);
+            this._attachments.set(`${attInfo.id}`, att);
+        }
+
+        return att;
     }
 
-    async getAttachment(attInfo: AttachmentInfo): Promise<Attachment> {
-        const att = new Attachment(attInfo);
-        return await this.api.getAttachment(att);
+    async createAttachment(vault: Vault, file: File): Promise<Attachment> {
+        const att = new Attachment({ id: uuid(), vault: vault.id });
+        await att.fromFile(file);
+        this._attachments.set(att.id, att);
+        this.api.createAttachment(att);
+        return att;
+    }
+
+    async downloadAttachment(att: Attachment | AttachmentInfo) {
+        if (!(att instanceof Attachment)) {
+            att = this.getAttachment(att);
+        }
+        return this.api.getAttachment(att as Attachment);
     }
 
     async deleteAttachment(att: Attachment | AttachmentInfo): Promise<void> {
         if (!(att instanceof Attachment)) {
-            att = new Attachment(att);
+            att = this.getAttachment(att);
         }
+        this._attachments.delete(att.id);
         await this.api.deleteAttachment(att as Attachment);
     }
 

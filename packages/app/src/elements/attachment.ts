@@ -1,10 +1,11 @@
-import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
+import { Attachment, AttachmentInfo } from "@padloc/core/lib/attachment.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
+import { RequestProgress } from "@padloc/core/lib/transport.js";
 import { shared, mixins } from "../styles";
 import { app } from "../init.js";
 // import { dialog } from "../dialog.js";
-import { BaseElement, element, html, property, query } from "./base.js";
-import { LoadingButton } from "./loading-button.js";
+import { BaseElement, element, html, property, query, observe } from "./base.js";
+import "./loading-button.js";
 import { Input } from "./input.js";
 import "./icon.js";
 // import { AttachmentDialog } from "./attachment-dialog.js";
@@ -21,20 +22,40 @@ export class AttachmentElement extends BaseElement {
         return this._nameInput.value;
     }
 
-    @query("#spinner")
-    private _spinner: LoadingButton;
+    private get _attachment(): Attachment {
+        return app.getAttachment(this.info);
+    }
 
     @query("#nameInput")
     private _nameInput: Input;
 
-    // @dialog("pl-attachment-dialog")
-    // private _attachmentDialog: AttachmentDialog;
+    private _progressHandler = this.requestUpdate.bind(this, undefined, undefined);
+
+    @property()
+    private _upload?: RequestProgress;
+    @property()
+    private _download?: RequestProgress;
 
     shouldUpdate() {
         return !!this.info;
     }
 
     render() {
+        const dlp = (this._download && this._download.downloadProgress) || {
+            loaded: 0,
+            total: 0
+        };
+        const ulp = (this._upload && this._upload.uploadProgress) || {
+            loaded: 0,
+            total: 0
+        };
+
+        const downloadError = this._download && this._download.error;
+        const uploadError = this._upload && this._upload.error;
+
+        const downloading = !!dlp.total && dlp.loaded < dlp.total && !downloadError;
+        const uploading = !!ulp.total && ulp.loaded < ulp.total && !uploadError;
+
         return html`
             ${shared}
 
@@ -84,16 +105,44 @@ export class AttachmentElement extends BaseElement {
                     padding: 0 5px;
                     flex: 1;
                 }
-                
+
+                .progress {
+                    height: 18px;
+                    border-radius: 4px;
+                    overflow: hidden;
+                    position: relative;
+                    margin-top: 2px;
+                }
+
+                .progress-bar {
+                    ${mixins.fullbleed()}
+                    background: var(--color-highlight);
+                    transform-origin: 0 0;
+                }
+
+                .progress-text {
+                    ${mixins.fullbleed()}
+                    font-size: var(--font-size-micro);
+                    font-weight: bold;
+                    line-height: 18px;
+                    z-index: 1;
+                    padding: 0 4px;
+                }
+
+                .size.error {
+                    color: var(--color-error);
+                }
+
             </style>
 
-            <div 
+            <div
                 class="tap display"
-                ?hidden=${this.editing}
+                ?hidden=${this.editing && !uploading}
+                ?disabled=${downloading || uploading}
                 @click=${this._openAttachment}>
 
-                <pl-loading-button id="spinner">
-                    
+                <pl-loading-button id="spinner" .state=${uploading || downloading ? "loading" : "idle"}>
+
                     <pl-icon class="file-icon" icon=${this._icon()}></pl-icon>
 
                 </pl-loading-button>
@@ -102,41 +151,83 @@ export class AttachmentElement extends BaseElement {
 
                     <div class="name">${(this.info && this.info.name) || $l("Unnamed")}</div>
 
-                    <div class="size">${this._size()}</div>
+                    <div class="size" ?hidden=${uploadError || downloadError}>
+                    ${
+                        downloading
+                            ? $l("downloading... {0}/{1}", this._size(dlp.loaded), this._size(dlp.total))
+                            : uploading
+                                ? $l("uploading... {0}/{1}", this._size(ulp.loaded), this._size(ulp.total))
+                                : this._size(this.info.size)
+                    }
+                    </div>
+
+                    <div class="size error" ?hidden=${!uploadError && !downloadError}>
+                        ${uploadError ? $l("Failed to upload!") : $l("Failed to download! Click to try again.")}
+                    </div>
 
                 </div>
 
             </div>
 
-            <div class="edit" ?hidden=${!this.editing}>
+            <div class="edit" ?hidden=${!this.editing || uploading}>
 
                 <pl-icon class="delete-icon tap" icon="remove" @click=${() => this.dispatch("delete")}></pl-icon>
 
-                <pl-input id="nameInput" class="name-input" .value=${this.info && this.info.name}></pl-input>
+                <pl-input id="nameInput" class="name-input" .value=${this.info && this.info.name}>
+                    <div class="upload-progress"></div>
+                </pl-input>
 
             </pl-loading-button>
         `;
     }
 
+    private async _downloadAttachment() {
+        const url = await this._attachment.toObjectURL();
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = this._attachment.name;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
     private async _openAttachment() {
-        if (this._spinner.state === "loading") {
-            return;
+        if (!this._attachment.loaded) {
+            app.downloadAttachment(this._attachment).then(() => this._downloadAttachment());
+            this._attachmentChanged();
         }
+    }
 
-        this._spinner.start();
+    @observe("info")
+    private async _attachmentChanged() {
+        this._upload = this._attachment.uploadProgress;
+        this._download = this._attachment.downloadProgress;
+    }
 
-        try {
-            const attachment = await app.getAttachment(this.info);
-            const url = await attachment.toObjectURL();
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = attachment.name;
-            a.click();
-            this._spinner.success();
-            URL.revokeObjectURL(url);
-        } catch (e) {
-            this._spinner.fail();
-            throw e;
+    @observe("_upload")
+    async _uploadChanged(changes: Map<string, any>) {
+        const prev = changes.get("_upload");
+
+        if (this._upload !== prev) {
+            if (prev) {
+                prev.removeEventListener("progress", this._progressHandler);
+            }
+            if (this._upload) {
+                this._upload.addEventListener("progress", this._progressHandler);
+            }
+        }
+    }
+
+    @observe("_download")
+    async _downloadChanged(changes: Map<string, any>) {
+        const prev = changes.get("_download");
+
+        if (this._download !== prev) {
+            if (prev) {
+                prev.removeEventListener("progress", this._progressHandler);
+            }
+            if (this._download) {
+                this._download.addEventListener("progress", this._progressHandler);
+            }
         }
     }
 
@@ -182,8 +273,7 @@ export class AttachmentElement extends BaseElement {
         }
     }
 
-    private _size() {
-        const size = (this.info && this.info.size) || 0;
+    private _size(size: number = 0) {
         return size < 1e6 ? Math.ceil(size / 10) / 100 + " KB" : Math.ceil(size / 10000) / 100 + " MB";
     }
 }

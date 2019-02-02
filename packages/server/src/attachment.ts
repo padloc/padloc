@@ -1,6 +1,6 @@
 import { S3 } from "aws-sdk";
 import { join } from "path";
-import { readFile, writeFile, ensureDir, remove } from "fs-extra";
+import { readFile, writeFile, ensureDir, remove, readdir, stat } from "fs-extra";
 import { marshal, unmarshal, bytesToString, stringToBytes } from "@padloc/core/src/encoding";
 import { Attachment, AttachmentStorage } from "@padloc/core/src/attachment";
 import { Vault } from "@padloc/core/src/vault";
@@ -49,7 +49,11 @@ export class S3Storage implements AttachmentStorage {
         });
     }
 
-    async deleteForVault() {
+    async deleteAll() {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
+
+    async getUsage(): Promise<number> {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 }
@@ -84,7 +88,17 @@ export class FileSystemStorage implements AttachmentStorage {
         await remove(this._getPath(att));
     }
 
-    async deleteForVault(vault: Vault) {
+    async deleteAll(vault: Vault) {
         await remove(join(this.config.path, vault.id));
+    }
+
+    async getUsage(vault: Vault) {
+        const files = await readdir(join(this.config.path, vault.id));
+        let size = 0;
+        for (const file of files) {
+            const stats = await stat(join(this.config.path, vault.id, file));
+            size += stats.size;
+        }
+        return size;
     }
 }

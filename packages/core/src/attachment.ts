@@ -3,6 +3,7 @@ import { SimpleContainer } from "./container";
 import { Vault } from "./vault";
 import { getProvider, AESKeyParams } from "./crypto";
 import { Err, ErrorCode } from "./error";
+import { RequestProgress } from "./transport";
 
 function readFile(blob: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -54,6 +55,8 @@ export class Attachment extends SimpleContainer {
     name: string = "";
     size: number = 0;
     type: string = "";
+    uploadProgress?: RequestProgress;
+    downloadProgress?: RequestProgress;
 
     constructor(info?: Partial<AttachmentInfo>) {
         super();
@@ -76,6 +79,10 @@ export class Attachment extends SimpleContainer {
             size: this.size,
             key: this.key
         };
+    }
+
+    get loaded(): boolean {
+        return !!this.encryptedData;
     }
 
     async fromFile(file: File) {
@@ -111,6 +118,7 @@ export class Attachment extends SimpleContainer {
     async serialize() {
         return {
             ...(await super.serialize()),
+            size: this.size,
             id: this.id,
             vault: this.vault
         };
@@ -119,6 +127,7 @@ export class Attachment extends SimpleContainer {
     async deserialize(raw: any) {
         this.id = raw.id;
         this.vault = raw.vault;
+        this.size = raw.size;
         return super.deserialize(raw);
     }
 }
@@ -127,7 +136,8 @@ export interface AttachmentStorage {
     put(a: Attachment): Promise<void>;
     get(a: Attachment): Promise<Attachment>;
     delete(a: Attachment): Promise<void>;
-    deleteForVault(vault: Vault): Promise<void>;
+    deleteAll(vault: Vault): Promise<void>;
+    getUsage(vault: Vault): Promise<number>;
 }
 
 export class MemoryAttachmentStorage {
@@ -149,11 +159,21 @@ export class MemoryAttachmentStorage {
         this._storage.delete(`${a.vault}_${a.id}`);
     }
 
-    async deleteForVault(vault: Vault): Promise<void> {
+    async deleteAll(vault: Vault): Promise<void> {
         for (const key of this._storage.keys()) {
             if (key.startsWith(vault.id)) {
                 this._storage.delete(key);
             }
         }
+    }
+
+    async getUsage(vault: Vault): Promise<number> {
+        let size = 0;
+        for (const [key, att] of this._storage.entries()) {
+            if (key.startsWith(vault.id)) {
+                size += att.size;
+            }
+        }
+        return size;
     }
 }

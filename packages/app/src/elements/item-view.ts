@@ -3,6 +3,7 @@ import { AccountInfo } from "@padloc/core/lib/account.js";
 import { Field } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
+import { ErrorCode } from "@padloc/core/lib/error.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
 import { alert, confirm, dialog } from "../dialog.js";
@@ -351,6 +352,23 @@ export class ItemView extends BaseElement {
         item.attachments.push(att.info);
         this.requestUpdate();
         this._fileInput.value = "";
+        const ulp = att.uploadProgress!;
+        const errorHandler = (e: CustomEvent) => {
+            const err = e.detail.error;
+            alert(
+                err.code === ErrorCode.STORAGE_QUOTA_EXCEEDED
+                    ? $l("You have exceed the storage limit for this vault!")
+                    : $l("Upload failed! Please try again!"),
+                { type: "warning" }
+            );
+            const attachments = this.item!.attachments;
+            attachments.splice(attachments.findIndex(({ id }) => att.id === id), 1);
+            this.requestUpdate();
+            ulp.removeEventListener("error", errorHandler);
+            app.deleteAttachment(att);
+        };
+        ulp.addEventListener("error", errorHandler);
+        ulp.complete.then(() => setTimeout(() => ulp.removeEventListener("error", errorHandler), 100));
     }
 
     private async _deleteAttachment(info: AttachmentInfo) {
@@ -363,7 +381,7 @@ export class ItemView extends BaseElement {
         if (confirmed) {
             await app.deleteAttachment(info);
             const attachments = this.item!.attachments;
-            attachments.splice(attachments.indexOf(info), 1);
+            attachments.splice(attachments.findIndex(({ id }) => info.id === id), 1);
             this.requestUpdate();
         }
     }

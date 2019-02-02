@@ -1,6 +1,6 @@
 import { Err, ErrorCode } from "@padloc/core/lib/error.js";
 import { marshal, unmarshal } from "@padloc/core/lib/encoding.js";
-import { Request, Response, Sender } from "@padloc/core/lib/transport.js";
+import { Request, Response, Sender, RequestProgress } from "@padloc/core/lib/transport.js";
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -8,7 +8,8 @@ export async function request(
     method: Method,
     url: string,
     body?: string,
-    headers?: Map<string, string>
+    headers?: Map<string, string>,
+    progress?: RequestProgress
 ): Promise<XMLHttpRequest> {
     let req = new XMLHttpRequest();
 
@@ -28,6 +29,10 @@ export async function request(
             if (headers) {
                 headers.forEach((value, key) => req.setRequestHeader(key, value));
             }
+            if (progress) {
+                req.onprogress = (pg: { loaded: number; total: number }) => (progress.downloadProgress = pg);
+                req.upload.onprogress = (pg: { loaded: number; total: number }) => (progress.uploadProgress = pg);
+            }
             req.send(body);
         } catch (e) {
             reject(new Err(ErrorCode.FAILED_CONNECTION));
@@ -38,21 +43,19 @@ export async function request(
 export class AjaxSender implements Sender {
     constructor(public url: string) {}
 
-    async send(req: Request): Promise<Response> {
+    async send(req: Request, progress?: RequestProgress): Promise<Response> {
+        const body = marshal(req);
         const res = await request(
             "POST",
             this.url,
-            marshal(req),
-            new Map<string, string>([["Content-Type", "application/json"], ["Accept", "application/json"]])
+            body,
+            new Map<string, string>([["Content-Type", "application/json"], ["Accept", "application/json"]]),
+            progress
         );
         try {
             return unmarshal(res.responseText);
         } catch (e) {
             throw new Err(ErrorCode.SERVER_ERROR);
         }
-    }
-
-    async receive(): Promise<Response> {
-        throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 }

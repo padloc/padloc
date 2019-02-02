@@ -26,7 +26,7 @@ function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
 }
 
 export class HTTPReceiver implements Receiver {
-    constructor(public port: number, public maxRequestSize = 1e7) {}
+    constructor(public port: number, public maxRequestSize = 1e9) {}
 
     async listen(handler: (req: Request) => Promise<Response>) {
         const server = createServer(async (httpReq, httpRes) => {
@@ -44,10 +44,12 @@ export class HTTPReceiver implements Receiver {
                     httpRes.end();
                     break;
                 case "POST":
-                    httpRes.setHeader("Content-Type", "application/json");
                     const body = await readBody(httpReq, this.maxRequestSize);
                     const res = await handler(unmarshal(body));
-                    httpRes.write(marshal(res));
+                    const resBody = marshal(res);
+                    httpRes.setHeader("Content-Type", "application/json");
+                    httpRes.setHeader("Content-Length", resBody.length);
+                    httpRes.write(resBody);
                     httpRes.end();
                     break;
                 default:

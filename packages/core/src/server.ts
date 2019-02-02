@@ -415,9 +415,13 @@ export class Context implements API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        // TODO: check storage limits
+        // att.id = uuid();
 
-        att.id = uuid();
+        const currentUsage = await this.attachmentStorage.getUsage(vault);
+
+        if (currentUsage + att.size > 1e7) {
+            throw new Err(ErrorCode.STORAGE_QUOTA_EXCEEDED);
+        }
 
         await this.attachmentStorage.put(att);
 
@@ -526,7 +530,7 @@ export class Context implements API {
             promises.push(this._deleteVault(new Vault(id), account));
         }
 
-        await this.attachmentStorage.deleteForVault(vault);
+        await this.attachmentStorage.deleteAll(vault);
 
         // TODO: remove vault from all member accounts?
 

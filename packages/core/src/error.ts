@@ -30,6 +30,8 @@ export enum ErrorCode {
     INVALID_RESPONSE = "invalid_response",
     INVALID_REQUEST = "invalid_request",
     MERGE_CONFLICT = "merge_conflict",
+    MAX_REQUEST_SIZE_EXCEEDED = "max_request_size_exceeded",
+    STORAGE_QUOTA_EXCEEDED = "storage_quota_exceeded",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",

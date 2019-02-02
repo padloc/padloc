@@ -513,11 +513,10 @@ export class BrowseList extends BaseElement {
     private _renderItem(index: number) {
         const item = this._listItems[index];
 
-        // const tags = [{ name: "", class: "warning", icon: "org" }];
         const tags = [];
 
         const vaultName = item.vault.toString();
-        tags.push({ name: vaultName, icon: "vault", class: "highlight" });
+        tags.push({ name: vaultName, icon: "", class: "highlight" });
 
         if (item.warning) {
             tags.push({ icon: "error", class: "tag warning", name: "" });
@@ -527,7 +526,16 @@ export class BrowseList extends BaseElement {
         if (t) {
             tags.push({
                 name: item.item.tags.length > 1 ? `${t} (+${item.item.tags.length - 1})` : t,
-                icon: "tag",
+                icon: "",
+                class: ""
+            });
+        }
+
+        const attCount = (item.item.attachments && item.item.attachments.length) || 0;
+        if (attCount) {
+            tags.push({
+                name: "",
+                icon: "attachment",
                 class: ""
             });
         }
@@ -570,9 +578,16 @@ export class BrowseList extends BaseElement {
 
                             <div class="tags small">
                                 ${tags.map(
-                                    tag => html`
-                                        <div class="ellipsis tag ${tag.class}">${tag.name}</div>
-                                    `
+                                    tag =>
+                                        tag.icon
+                                            ? html`
+                                                <div class="tag ${tag.class}">
+                                                    <pl-icon icon="${tag.icon}"></pl-icon>
+                                                </div>
+                                            `
+                                            : html`
+                                                <div class="ellipsis tag ${tag.class}">${tag.name}</div>
+                                            `
                                 )}
                             </div>
 
