@@ -419,7 +419,7 @@ export class Context implements API {
 
         const currentUsage = await this.attachmentStorage.getUsage(vault);
 
-        if (currentUsage + att.size > 1e7) {
+        if (currentUsage + att.size > 5e7) {
             throw new Err(ErrorCode.STORAGE_QUOTA_EXCEEDED);
         }
 
