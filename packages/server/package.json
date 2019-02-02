@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@padloc/core": "^3.0.0",
-    "aws-sdk": "^2.393.0",
     "fs-extra": "^7.0.1",
     "level": "^4.0.0",
     "nodemailer": "^4.6.7"
