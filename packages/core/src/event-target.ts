@@ -1,9 +1,9 @@
 export interface Event {
-    name: string;
+    type: string;
     detail?: any;
 }
 
-type Listener = ((e: Event) => void) | { handle: (e: Event) => void };
+export type Listener = ((e: Event) => void) | { handle: (e: Event) => void };
 
 export interface EventTarget {
     addEventListener(eventName: string, listener: Listener): any;
@@ -27,8 +27,8 @@ export class EventEmitter implements EventTarget {
         }
     }
 
-    dispatchEvent(e: Event) {
-        const listeners = this._listeners.get(e.name);
+    dispatchEvent(e: CustomEvent) {
+        const listeners = this._listeners.get(e.type);
         if (listeners) {
             for (const listener of listeners) {
                 if (typeof listener === "function") {
@@ -40,7 +40,7 @@ export class EventEmitter implements EventTarget {
         }
     }
 
-    dispatch(name: string, detail?: any) {
-        this.dispatchEvent({ name, detail });
+    dispatch(type: string, detail?: any) {
+        this.dispatchEvent(new CustomEvent(type, { detail }));
     }
 }

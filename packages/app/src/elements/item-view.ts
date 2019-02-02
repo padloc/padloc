@@ -4,6 +4,7 @@ import { Field } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
 import { ErrorCode } from "@padloc/core/lib/error.js";
+import { Listener } from "@padloc/core/lib/event-target.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
 import { alert, confirm, dialog } from "../dialog.js";
@@ -353,7 +354,7 @@ export class ItemView extends BaseElement {
         this.requestUpdate();
         this._fileInput.value = "";
         const ulp = att.uploadProgress!;
-        const errorHandler = (e: CustomEvent) => {
+        const errorHandler: Listener = (e: CustomEvent) => {
             const err = e.detail.error;
             alert(
                 err.code === ErrorCode.STORAGE_QUOTA_EXCEEDED
