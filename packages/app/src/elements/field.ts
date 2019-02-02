@@ -39,8 +39,19 @@ export class FieldElement extends BaseElement {
         inputToFocus.focus();
     }
 
+    updated(changes: Map<string, any>) {
+        // workaround for issue where string fails to be set if
+        // type was previously a number type. This gives the
+        // renderer time to update the input type first.
+        if (changes.get("type")) {
+            setTimeout(() => {
+                this._valueInput.value = this.value;
+            }, 10);
+        }
+    }
+
     render() {
-        const fieldDef = FIELD_DEFS[this.type];
+        const fieldDef = FIELD_DEFS[this.type] || FIELD_DEFS.text;
         let inputType: string;
         switch (this.type) {
             case "email":
@@ -138,7 +149,7 @@ export class FieldElement extends BaseElement {
                 </pl-icon>
 
                 <pl-icon
-                    ?hidden=${ this.type !== "password" }
+                    ?hidden=${this.type !== "password"}
                     icon="generate"
                     class="tap"
                     @click=${() => this._generateValue()}>
@@ -154,7 +165,7 @@ export class FieldElement extends BaseElement {
                         id="nameInput"
                         placeholder="${$l("Enter Field Name")}"
                         .value=${this.name}
-                        @input=${() => this.name = this._nameInput.value}
+                        @input=${() => (this.name = this._nameInput.value)}
                         @click=${() => !this._nameInput.value && this.dispatch("edit")}
                         ?readonly=${!this.editing}>
                     </pl-input>
@@ -163,10 +174,10 @@ export class FieldElement extends BaseElement {
                         id="typeSelect"
                         class="field-type"
                         tabindex="-1"
-                        ?hidden=${ !this.editing }
-                        .options=${ Object.values(FIELD_DEFS) }
+                        ?hidden=${!this.editing}
+                        .options=${Object.values(FIELD_DEFS)}
                         .selected=${fieldDef}
-                        @change=${() => this.type = this._typeSelect.selected!.type }>
+                        @change=${() => (this.type = this._typeSelect.selected!.type)}>
                     </pl-select>
 
                 </div>
@@ -175,12 +186,12 @@ export class FieldElement extends BaseElement {
                     id="valueInput"
                     class="field-value"
                     placeholder="${$l("Enter Field Value")}"
-                    .value=${this.value}
                     .type=${inputType}
                     .multiline=${fieldDef.multiline}
                     .readonly=${!this.editing}
                     .masked=${mask}
-                    @input=${() => this.value = this._valueInput.value}
+                    .value=${this.value}
+                    @input=${() => (this.value = this._valueInput.value)}
                     @click=${() => !this._valueInput.value && this.dispatch("edit")}
                     autosize>
                 </pl-input>
@@ -196,9 +207,9 @@ export class FieldElement extends BaseElement {
                 </pl-icon>
 
                 <pl-icon
-                    .icon=${ (this._valueInput ? this._valueInput.masked : mask ) ? "show" : "hide" }
+                    .icon=${(this._valueInput ? this._valueInput.masked : mask) ? "show" : "hide"}
                     class="tap"
-                    ?hidden=${ !fieldDef.mask }
+                    ?hidden=${!fieldDef.mask}
                     @click=${() => this._toggleMask()}>
                 </pl-icon>
 
