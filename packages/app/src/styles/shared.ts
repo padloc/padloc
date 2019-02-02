@@ -162,7 +162,7 @@ export const shared = html`
     }
 
     [invisible] {
-        visibility: hidden;
+        opacity: 0;
     }
 
     [disabled] {

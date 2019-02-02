@@ -109,7 +109,7 @@ export class Input extends BaseElement {
                     .placeholder=${placeholder}
                     .tabIndex=${noTab ? "-1" : ""}
                     ?readonly=${readonly}
-                    ?invisible=${doMask}
+                    ?invsbl=${doMask}
                     ?disabled=${disabled}
                     ?required=${required}
                     autocapitalize=${autocapitalize}
@@ -122,7 +122,7 @@ export class Input extends BaseElement {
 
                 <textarea
                     .value=${mask(value)}
-                    ?invisible=${!doMask}
+                    ?invsbl=${!doMask}
                     class="mask"
                     .tabIndex="-1"
                     disabled></textarea>`
@@ -133,7 +133,7 @@ export class Input extends BaseElement {
                     .placeholder=${placeholder}
                     ?readonly=${readonly}
                     .tabIndex=${noTab ? "-1" : ""}
-                    ?invisible=${doMask}
+                    ?invsbl=${doMask}
                     ?disabled=${disabled}
                     autocapitalize="${autocapitalize ? "" : "off"}"
                     ?required=${required}
@@ -147,7 +147,7 @@ export class Input extends BaseElement {
 
                 <input
                     .value=${mask(value)}
-                    ?invisible=${!doMask}
+                    ?invsbl=${!doMask}
                     class="mask"
                     .tabIndex="-1"
                     disabled>`
@@ -237,7 +237,7 @@ export class Input extends BaseElement {
                 -webkit-text-fill-color: currentColor;
             }
 
-            input[invisible], textarea[invisible] {
+            input[invsbl], textarea[invsbl] {
                 opacity: 0;
             }
         </style>
