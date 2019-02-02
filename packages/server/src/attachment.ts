@@ -93,12 +93,16 @@ export class FileSystemStorage implements AttachmentStorage {
     }
 
     async getUsage(vault: Vault) {
-        const files = await readdir(join(this.config.path, vault.id));
-        let size = 0;
-        for (const file of files) {
-            const stats = await stat(join(this.config.path, vault.id, file));
-            size += stats.size;
+        try {
+            const files = await readdir(join(this.config.path, vault.id));
+            let size = 0;
+            for (const file of files) {
+                const stats = await stat(join(this.config.path, vault.id, file));
+                size += stats.size;
+            }
+            return size;
+        } catch (e) {
+            return 0;
         }
-        return size;
     }
 }
