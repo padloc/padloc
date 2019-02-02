@@ -1,4 +1,4 @@
-import { VaultItem, Field } from "@padloc/core/lib/vault.js";
+import { VaultItem, Field } from "@padloc/core/lib/item.js";
 import { ListItem } from "@padloc/core/lib/app.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { wait } from "@padloc/core/lib/util.js";

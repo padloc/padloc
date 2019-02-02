@@ -1,4 +1,5 @@
-import { Vault, VaultItem } from "@padloc/core/lib/vault.js";
+import { Vault } from "@padloc/core/lib/vault.js";
+import { VaultItem } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import * as imp from "../import.js";
 import { prompt, alert } from "../dialog.js";

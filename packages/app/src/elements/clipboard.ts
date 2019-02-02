@@ -1,4 +1,4 @@
-import { VaultItem, Field } from "@padloc/core/lib/vault.js";
+import { VaultItem, Field } from "@padloc/core/lib/item.js";
 import { setClipboard } from "@padloc/core/lib/platform.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";

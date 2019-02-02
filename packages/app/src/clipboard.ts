@@ -1,4 +1,4 @@
-import { VaultItem, Field } from "@padloc/core/lib/vault.js";
+import { VaultItem, Field } from "@padloc/core/lib/item.js";
 import "./elements/clipboard";
 import { Clipboard } from "./elements/clipboard.js";
 import { getSingleton } from "./singleton.js"
