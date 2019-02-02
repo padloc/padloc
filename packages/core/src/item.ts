@@ -199,6 +199,7 @@ export class VaultItemCollection extends Collection<VaultItem> {
                 return {
                     ...item,
                     lastUsed: new Date(item.lastUsed),
+                    attachments: item.attachments || [],
                     fields: item.fields.map((field: any) => ({
                         ...field,
                         type: field.type || guessFieldType(field)
