@@ -1,41 +1,68 @@
-import { Serializable, marshal, unmarshal } from "./encoding";
+import { Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 
-export interface Storable extends Serializable {
-    kind: string;
-    pk: string;
+export abstract class Storable extends Serializable {
+    abstract id: string;
 }
 
+export type StorableConstructor<T extends Storable> = new (...args: any[]) => T;
+
+export type Query = { [prop: string]: any };
+
 export interface Storage {
-    set(s: Storable): Promise<void>;
-    get(s: Storable): Promise<void>;
-    delete(s: Storable): Promise<void>;
+    save<T extends Storable>(obj: T): Promise<void>;
+    get<T extends Storable>(cls: StorableConstructor<T> | T, id: string): Promise<T>;
+    delete<T extends Storable>(obj: T): Promise<void>;
     clear(): Promise<void>;
 }
 
-export class MemoryStorage implements Storage {
-    private _storage = new Map<string, string>();
+// function testVal(obj: object, path: string[], value: any): boolean {
+//     const arr = Array.isArray(obj) ? obj : [obj];
+//
+//     for (const each of arr) {
+//         if (path.length ? testVal(each, path.slice(1), value) : each === value) {
+//             return true;
+//         }
+//     }
+//
+//     return false;
+// }
+//
+// function testQuery(obj: object, query: Query) {
+//     return Object.entries(query).every(([prop, val]) => testVal(obj, prop.split("."), val));
+// }
 
-    async set(s: Storable) {
-        this._storage.set(this._getKey(s), marshal(await s.serialize()));
+export class MemoryStorage implements Storage {
+    private _storage = new Map<string, object>();
+
+    async save<T extends Storable>(obj: T) {
+        this._storage.set(`${obj.type}_${obj.id}`, obj.toRaw());
     }
 
-    async get(s: Storable) {
-        if (!this._storage.has(this._getKey(s))) {
+    async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string) {
+        const res = cls instanceof Storable ? cls : new cls();
+        const raw = this._storage.get(`${res.type}_${id}`);
+        if (!raw) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
-        await s.deserialize(unmarshal(this._storage.get(this._getKey(s))!));
+        return res.fromRaw(raw);
     }
 
-    async delete(s: Storable) {
-        this._storage.delete(this._getKey(s));
+    async delete<T extends Storable>(obj: T) {
+        this._storage.delete(`${obj.type}_${obj.id}`);
     }
 
     async clear() {
-        this._storage = new Map<string, any>();
+        this._storage.clear();
     }
 
-    private _getKey(s: Storable) {
-        return `${s.kind}_${s.pk}`;
-    }
+    // async _findRaw(kind: string, query: Query): Promise<object> {
+    //     for (const [key, obj] of this._storage.entries()) {
+    //         if (key.startsWith(kind) && testQuery(obj, query)) {
+    //             return obj;
+    //         }
+    //     }
+    //
+    //     throw new Err(ErrorCode.NOT_FOUND);
+    // }
 }

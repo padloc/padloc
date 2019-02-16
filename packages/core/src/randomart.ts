@@ -1,5 +1,3 @@
-import { Base64String, base64ToBytes } from "./encoding";
-
 export interface Options {
     height: number;
     width: number;
@@ -96,10 +94,9 @@ export function getValues(fingerprint: Uint8Array, opts: Partial<Options> = {}):
     return grid;
 }
 
-export function randomArt(fingerprint: Base64String, opts: Partial<Options> = {}): Fingerprint {
+export function randomArt(fingerprint: Uint8Array, opts: Partial<Options> = {}): Fingerprint {
     const options = Object.assign({}, defaults, opts);
-    const bytes = base64ToBytes(fingerprint);
-    const vals = getValues(bytes, options);
+    const vals = getValues(fingerprint, options);
     const symbols = opts.symbols || defaults.symbols;
     return {
         width: options.width,

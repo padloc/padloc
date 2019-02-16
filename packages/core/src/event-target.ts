@@ -27,7 +27,7 @@ export class EventEmitter implements EventTarget {
         }
     }
 
-    dispatchEvent(e: CustomEvent) {
+    dispatchEvent(e: Event) {
         const listeners = this._listeners.get(e.type);
         if (listeners) {
             for (const listener of listeners) {
@@ -41,6 +41,6 @@ export class EventEmitter implements EventTarget {
     }
 
     dispatch(type: string, detail?: any) {
-        this.dispatchEvent(new CustomEvent(type, { detail }));
+        this.dispatchEvent({ type, detail });
     }
 }

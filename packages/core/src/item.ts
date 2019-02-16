@@ -173,12 +173,12 @@ export function guessFieldType(field: any): FieldType {
     return field.masked || field.name.match(matchPassword)
         ? "password"
         : field.name.match(matchUsername)
-            ? "username"
-            : field.name.match(matchUrl)
-                ? "url"
-                : field.value.match(matchNote)
-                    ? "note"
-                    : "text";
+        ? "username"
+        : field.name.match(matchUrl)
+        ? "url"
+        : field.value.match(matchNote)
+        ? "note"
+        : "text";
 }
 
 export class VaultItemCollection extends Collection<VaultItem> {
@@ -192,8 +192,8 @@ export class VaultItemCollection extends Collection<VaultItem> {
         return [...tags];
     }
 
-    deserialize(raw: any) {
-        return super.deserialize({
+    fromRaw(raw: any) {
+        return super.fromRaw({
             ...raw,
             items: raw.items.map((item: any) => {
                 return {

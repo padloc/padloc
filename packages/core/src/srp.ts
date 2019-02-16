@@ -1,5 +1,5 @@
 import { BigInteger } from "../vendor/jsbn";
-import { Base64String, bytesToHex, hexToBytes, bytesToBase64, base64ToBytes } from "./encoding";
+import { bytesToHex, hexToBytes } from "./encoding";
 import { getProvider, HashParams } from "./crypto";
 
 function concat(...arrs: Uint8Array[]): Uint8Array {
@@ -13,9 +13,8 @@ function concat(...arrs: Uint8Array[]): Uint8Array {
     return res;
 }
 
-async function digest(hash = "SHA-256", ...input: Uint8Array[]): Promise<Uint8Array> {
-    const b64 = await getProvider().hash(bytesToBase64(concat(...input)), { algorithm: hash } as HashParams);
-    return base64ToBytes(b64);
+async function digest(hash: "SHA-1" | "SHA-256" = "SHA-256", ...input: Uint8Array[]): Promise<Uint8Array> {
+    return getProvider().hash(concat(...input), new HashParams({ algorithm: hash }));
 }
 
 function i2b(i: BigInteger): Uint8Array {
@@ -32,23 +31,23 @@ function b2i(b: Uint8Array): BigInteger {
 
 export class Client {
     get v() {
-        return this._v ? bytesToBase64(i2b(this._v)) : null;
+        return this._v ? i2b(this._v) : null;
     }
 
     get A() {
-        return this._A ? bytesToBase64(i2b(this._A)) : null;
+        return this._A ? i2b(this._A) : null;
     }
 
     get K() {
-        return this._K ? bytesToBase64(i2b(this._K)) : null;
+        return this._K ? i2b(this._K) : null;
     }
 
     get M1() {
-        return this._M1 ? bytesToBase64(i2b(this._M1)) : null;
+        return this._M1 ? i2b(this._M1) : null;
     }
 
     get M2() {
-        return this._M2 ? bytesToBase64(i2b(this._M2)) : null;
+        return this._M2 ? i2b(this._M2) : null;
     }
 
     private _srp: SRP;
@@ -65,18 +64,18 @@ export class Client {
         this._srp = new SRP(length);
     }
 
-    async initialize(secret: Base64String) {
-        this._x = b2i(base64ToBytes(secret));
+    async initialize(secret: Uint8Array) {
+        this._x = b2i(secret);
         this._v = this._srp.v(this._x);
-        this._a = b2i(base64ToBytes(await getProvider().randomBytes(32)));
+        this._a = b2i(await getProvider().randomBytes(32));
         this._A = this._srp.A(this._a);
     }
 
-    async setB(B: Base64String) {
+    async setB(B: Uint8Array) {
         if (!this._x || !this._a || !this._A) {
             throw "not initialized";
         }
-        this._B = b2i(base64ToBytes(B));
+        this._B = b2i(B);
         this._K = await this._getKey();
         this._M1 = await this._srp.M1(this._A, this._B, this._K);
         this._M2 = await this._srp.M1(this._A, this._M1, this._K);
@@ -100,19 +99,19 @@ export class Client {
 
 export class Server {
     get B() {
-        return this._B ? bytesToBase64(i2b(this._B)) : null;
+        return this._B ? i2b(this._B) : null;
     }
 
     get K() {
-        return this._K ? bytesToBase64(i2b(this._K)) : null;
+        return this._K ? i2b(this._K) : null;
     }
 
     get M1() {
-        return this._M1 ? bytesToBase64(i2b(this._M1)) : null;
+        return this._M1 ? i2b(this._M1) : null;
     }
 
     get M2() {
-        return this._M2 ? bytesToBase64(i2b(this._M2)) : null;
+        return this._M2 ? i2b(this._M2) : null;
     }
 
     private _srp: SRP;
@@ -128,17 +127,17 @@ export class Server {
         this._srp = new SRP(length);
     }
 
-    async initialize(verifier: Base64String) {
-        this._v = b2i(base64ToBytes(verifier));
-        this._b = b2i(base64ToBytes(await getProvider().randomBytes(32)));
+    async initialize(verifier: Uint8Array) {
+        this._v = b2i(verifier);
+        this._b = b2i(await getProvider().randomBytes(32));
         this._B = await this._srp.B(this._v, this._b);
     }
 
-    async setA(A: Base64String) {
+    async setA(A: Uint8Array) {
         if (!this._v || !this._b || !this._B) {
             throw "not initialized";
         }
-        this._A = b2i(base64ToBytes(A));
+        this._A = b2i(A);
         this._K = await this._getKey();
         this._M1 = await this._srp.M1(this._A, this._B, this._K);
         this._M2 = await this._srp.M1(this._A, this._M1, this._K);

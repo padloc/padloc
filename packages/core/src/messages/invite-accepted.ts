@@ -6,15 +6,15 @@ export class InviteAcceptedMessage implements Message {
     constructor(private invite: Invite, private link: string) {}
 
     get title() {
-        return `${this.invite.invitee!.name || this.invite.invitee!.email} has accepted your invite!`;
+        return `${this.invite.invitee!.name || this.invite.email} has accepted your invite!`;
     }
 
     get text() {
-        const { invitee, vault } = this.invite;
+        const { invitee, org, email } = this.invite;
         return `
 Hi there!
 
-Good news! ${ invitee!.name || invitee!.email } has accepted your invite to join ${vault!.name}!
+Good news! ${ invitee!.name || email } has accepted your invite to join ${org!.name}!
 Visit the following link to add them:
 
 ${this.link}
@@ -26,14 +26,14 @@ Martin`;
     }
 
     get html() {
-        const { invitee, vault } = this.invite;
+        const { invitee, org, email } = this.invite;
         return baseHTML(`
 
             ${p("Hi there!")}
 
             ${p(`
-                Good news! <strong>${ invitee!.name || invitee!.email }</strong> has
-                accepted your invite to join <strong>${vault!.name}</strong>!
+                Good news! <strong>${ invitee!.name || email }</strong> has
+                accepted your invite to join <strong>${org!.name}</strong>!
             `)}
 
             ${button("Add Them Now", this.link)}

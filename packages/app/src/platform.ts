@@ -1,5 +1,5 @@
-import { Platform } from "@padloc/core/lib/platform.js";
-import { loadScript } from "./util.js";
+import { Platform, DeviceInfo } from "@padloc/core/src/platform";
+import { loadScript } from "./util";
 
 const browserInfo = (async () => {
     const uaparser = await loadScript("/vendor/ua-parser.js", "UAParser");
@@ -46,7 +46,7 @@ export class WebPlatform implements Platform {
 
     async getDeviceInfo() {
         const { os, browser } = await browserInfo;
-        return {
+        return new DeviceInfo({
             platform: os.name.replace(" ", ""),
             osVersion: os.version.replace(" ", ""),
             id: "",
@@ -56,6 +56,6 @@ export class WebPlatform implements Platform {
             browser: browser.name,
             userAgent: navigator.userAgent,
             locale: navigator.language || "en"
-        };
+        });
     }
 }

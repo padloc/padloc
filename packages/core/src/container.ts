@@ -1,210 +1,143 @@
-import { Serializable, Base64String } from "./encoding";
+import { Serializable, stringToBytes, base64ToBytes, bytesToBase64 } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import {
     PBKDF2Params,
     AESKey,
-    RSAPublicKey,
-    RSAPrivateKey,
-    AESKeyParams,
     AESEncryptionParams,
+    AESKeyParams,
     RSAEncryptionParams,
-    getProvider,
-    defaultPBKDF2Params,
-    defaultEncryptionParams,
-    defaultKeyWrapParams,
-    validateAESEncryptionParams,
-    validatePBKDF2Params
+    RSAPrivateKey,
+    RSAPublicKey,
+    getProvider
 } from "./crypto";
 
 export type EncryptionScheme = "simple" | "PBES2" | "shared";
 
-export interface BaseRawContainer {
-    version: 2;
-    scheme: EncryptionScheme;
-    encryptionParams: AESEncryptionParams;
-    encryptedData: Base64String;
-}
+export abstract class BaseContainer extends Serializable {
+    encryptionParams: AESEncryptionParams = new AESEncryptionParams();
+    encryptedData?: Uint8Array;
 
-export interface SimpleRawContainer extends BaseRawContainer {
-    scheme: "simple";
-}
+    protected _key?: AESKey;
 
-export interface PBES2RawContainer extends BaseRawContainer {
-    scheme: "PBES2";
-    keyParams: PBKDF2Params;
-}
-
-export interface SharedRawContainer extends BaseRawContainer {
-    scheme: "shared";
-    keyParams: RSAEncryptionParams;
-    accessors: Accessor[];
-}
-
-export type RawContainer = SimpleRawContainer | PBES2RawContainer | SharedRawContainer;
-
-export abstract class Container implements Serializable {
-    encryptedData: Base64String = "";
-    constructor(public encryptionParams: AESEncryptionParams = defaultEncryptionParams()) {}
-
-    protected abstract _getKey(): Promise<AESKey>;
-
-    async set(data: Base64String) {
-        this.encryptionParams = {
-            ...this.encryptionParams,
-            iv: await getProvider().randomBytes(16),
-            // TODO: useful additional authenticated data?
-            additionalData: await getProvider().randomBytes(16)
-        };
-
-        const key = await this._getKey();
-        this.encryptedData = await getProvider().encrypt(key, data, this.encryptionParams);
-    }
-
-    async get(): Promise<Base64String> {
-        if (!this.encryptedData) {
-            return "";
+    async setData(data: Uint8Array) {
+        if (!this._key) {
+            throw new Err(ErrorCode.ENCRYPTION_FAILED);
         }
-        const key = await this._getKey();
-        const pt = await getProvider().decrypt(key, this.encryptedData, this.encryptionParams);
-        return pt;
+
+        this.encryptionParams.iv = await getProvider().randomBytes(16);
+        // TODO: useful additional authenticated data?
+        this.encryptionParams.additionalData = await getProvider().randomBytes(16);
+
+        this.encryptedData = await getProvider().encrypt(this._key, data, this.encryptionParams);
     }
 
-    async serialize() {
-        const raw = {
-            version: 2,
-            encryptionParams: { ...this.encryptionParams },
-            encryptedData: this.encryptedData
+    async getData(): Promise<Uint8Array> {
+        if (!this.encryptedData || !this._key) {
+            throw new Err(ErrorCode.DECRYPTION_FAILED);
+        }
+        return await getProvider().decrypt(this._key, this.encryptedData, this.encryptionParams);
+    }
+
+    toRaw(exclude: string[] = []) {
+        return {
+            ...super.toRaw(exclude),
+            encryptedData: this.encryptedData ? bytesToBase64(this.encryptedData) : undefined
         };
-
-        return raw as any;
     }
 
-    async deserialize(raw: any) {
-        validateAESEncryptionParams(raw.encryptionParams);
-        this.encryptionParams = { ...raw.encryptionParams };
-        this.encryptedData = raw.encryptedData;
-        return this;
+    validate() {
+        return typeof this.encryptedData === "undefined" || this.encryptedData instanceof Uint8Array;
+    }
+
+    fromRaw({ encryptionParams, encryptedData }: any) {
+        this.encryptionParams.fromRaw(encryptionParams);
+        return super.fromRaw({
+            encryptedData: encryptedData ? base64ToBytes(encryptedData) : undefined
+        });
+    }
+
+    abstract access(secret: unknown): Promise<void>;
+}
+
+export class SimpleContainer extends BaseContainer {
+    async access(key: AESKey) {
+        this._key = key;
     }
 }
 
-export class SimpleContainer extends Container {
-    key: AESKey = "";
+export class PBES2Container extends BaseContainer {
+    keyParams: PBKDF2Params = new PBKDF2Params();
 
-    async _getKey() {
-        return this.key;
-    }
-}
-
-export class PBES2Container extends Container {
-    password: string = "";
-
-    constructor(
-        public encryptionParams: AESEncryptionParams = defaultEncryptionParams(),
-        public keyParams: PBKDF2Params = defaultPBKDF2Params()
-    ) {
-        super(encryptionParams);
+    fromRaw({ keyParams, ...rest }: any) {
+        this.keyParams.fromRaw(keyParams);
+        return super.fromRaw(rest);
     }
 
-    async _getKey() {
-        if (!this.keyParams.salt) {
+    async access(password: string) {
+        if (!this.keyParams.salt.length) {
             this.keyParams.salt = await getProvider().randomBytes(16);
         }
-        if (!this.password) {
-            throw new Err(ErrorCode.DECRYPTION_FAILED, "No password provided");
+        this._key = await getProvider().deriveKey(stringToBytes(password), this.keyParams);
+    }
+}
+
+export class Accessor extends Serializable {
+    id: string = "";
+    encryptedKey: Uint8Array = new Uint8Array();
+
+    toRaw() {
+        return {
+            id: this.id,
+            encryptedKey: bytesToBase64(this.encryptedKey)
+        };
+    }
+
+    validate() {
+        return typeof this.id === "string" && this.encryptedKey instanceof Uint8Array;
+    }
+
+    fromRaw({ id, encryptedKey }: any) {
+        return super.fromRaw({ id, encryptedKey: base64ToBytes(encryptedKey) });
+    }
+}
+
+export class SharedContainer extends BaseContainer {
+    keyParams: RSAEncryptionParams = new RSAEncryptionParams();
+    accessors: Accessor[] = [];
+
+    async access({ id, privateKey }: { id: string; privateKey: RSAPrivateKey }) {
+        const accessor = this.accessors.find(a => a.id === id);
+        if (!accessor || !accessor.encryptedKey) {
+            throw new Err(ErrorCode.MISSING_ACCESS);
         }
-        return await getProvider().deriveKey(this.password, this.keyParams);
+        this._key = await getProvider().decrypt(privateKey, accessor.encryptedKey, this.keyParams);
     }
 
-    async serialize() {
-        const raw = await super.serialize();
-        (raw as PBES2RawContainer).keyParams = { ...this.keyParams };
-        return raw;
-    }
+    async updateAccessors(subjects: { id: string; publicKey: RSAPublicKey }[]) {
+        // Get existing data so we can reencrypt it after rotating the key
+        const data = this.encryptedData && this._key && (await this.getData());
 
-    async deserialize(raw: PBES2RawContainer) {
-        validatePBKDF2Params(raw.keyParams);
-        this.keyParams = { ...raw.keyParams };
-        await super.deserialize(raw);
-        return this;
-    }
-}
+        // Generate new key
+        this._key = await getProvider().generateKey(new AESKeyParams());
 
-export interface Accessor {
-    id: string;
-    publicKey: RSAPublicKey;
-    encryptedKey: Base64String;
-}
+        // Reencrypt data with new key
+        if (data) {
+            this.setData(data);
+        }
 
-export interface Access {
-    id: string;
-    privateKey: RSAPrivateKey;
-}
-
-export class SharedContainer extends Container {
-    private _accessors = new Map<string, Accessor>();
-    private _key: AESKey = "";
-    private _access: Access | null = null;
-
-    constructor(
-        public encryptionParams: AESEncryptionParams = defaultEncryptionParams(),
-        public keyParams: RSAEncryptionParams = defaultKeyWrapParams()
-    ) {
-        super(encryptionParams);
-    }
-
-    access({ id, privateKey }: Access) {
-        this._access = { id, privateKey };
-    }
-
-    hasAccess({ id, publicKey }: { id: string; publicKey: string }) {
-        const accessor = this._accessors.get(id);
-        return !this.encryptedData || (!!accessor && accessor.publicKey === publicKey);
-    }
-
-    async setAccessors(accessors: Accessor[]) {
-        this._accessors.clear();
-        this._key = await getProvider().generateKey({
-            algorithm: "AES",
-            keySize: this.encryptionParams.keySize
-        } as AESKeyParams);
-
-        await Promise.all(
-            accessors.map(async a => {
-                a.encryptedKey = await getProvider().encrypt(a.publicKey, await this._getKey(), this.keyParams);
-                this._accessors.set(a.id, a);
+        this.accessors = await Promise.all(
+            subjects.map(async ({ id, publicKey }) => {
+                const accessor = new Accessor();
+                accessor.id = id;
+                accessor.encryptedKey = await getProvider().encrypt(publicKey, this._key!, this.keyParams);
+                return accessor;
             })
         );
     }
 
-    async serialize() {
-        const raw = await super.serialize();
-        (raw as SharedRawContainer).keyParams = { ...this.keyParams };
-        (raw as SharedRawContainer).accessors = Array.from(this._accessors.values());
-        return raw;
-    }
-
-    async deserialize(raw: SharedRawContainer) {
-        await super.deserialize(raw);
-        this.keyParams = { ...raw.keyParams };
-        this._accessors.clear();
-        for (const a of raw.accessors) {
-            this._accessors.set(a.id, a);
-        }
-        this._key = "";
-        return this;
-    }
-
-    protected async _getKey() {
-        if (!this._access) {
-            throw new Err(ErrorCode.MISSING_ACCESS);
-        }
-        if (!this._key) {
-            const accessor = this._accessors.get(this._access.id);
-            if (!accessor || !accessor.encryptedKey) {
-                throw new Err(ErrorCode.MISSING_ACCESS);
-            }
-            this._key = await getProvider().decrypt(this._access.privateKey, accessor.encryptedKey, this.keyParams);
-        }
-        return this._key;
+    fromRaw({ keyParams, accessors, ...rest }: any) {
+        this.keyParams.fromRaw(keyParams);
+        this.accessors = accessors.map((a: any) => new Accessor().fromRaw(a));
+        return super.fromRaw(rest);
     }
 }

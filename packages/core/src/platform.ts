@@ -1,15 +1,21 @@
 import { localize as $l } from "./locale";
+import { Serializable } from "./encoding";
 
-export interface DeviceInfo {
-    platform: string;
-    osVersion: string;
-    id: string;
-    appVersion: string;
+export class DeviceInfo extends Serializable {
+    platform: string = "";
+    osVersion: string = "";
+    id: string = "";
+    appVersion: string = "";
+    userAgent: string = "";
+    locale: string = "en";
     manufacturer?: string;
     model?: string;
     browser?: string;
-    userAgent: string;
-    locale: string;
+
+    constructor(props?: Partial<DeviceInfo>) {
+        super();
+        props && Object.assign(this, props);
+    }
 }
 
 export interface Platform {
@@ -24,17 +30,7 @@ class StubPlatform implements Platform {
         return "";
     }
     async getDeviceInfo() {
-        return {
-            platform: "",
-            osVersion: "",
-            id: "",
-            appVersion: "",
-            manufacturer: "",
-            model: "",
-            browser: "",
-            userAgent: "",
-            locale: "en"
-        };
+        return new DeviceInfo();
     }
     async checkForUpdates() {}
     async getReviewLink() {

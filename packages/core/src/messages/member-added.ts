@@ -1,16 +1,16 @@
-import { Vault } from "../vault";
+import { Org } from "../org";
 import { Message } from "../messenger";
 import { base as baseHTML, paragraph as p, button } from "./base-html";
 
 export class MemberAddedMessage implements Message {
-    constructor(private vault: Vault, private link: string) {}
+    constructor(private org: Org, private link: string) {}
 
     get title() {
-        return `You've been added to the "${this.vault.name}" ${this.vault.kind} on Padloc!`;
+        return `You have sucessfully join ${ this.org.name } on Padloc!`;
     }
 
     get text() {
-        const { name } = this.vault;
+        const { name } = this.org;
 
         return `
 Hi there!
@@ -26,7 +26,7 @@ Martin`;
     }
 
     get html() {
-        const { name } = this.vault;
+        const { name } = this.org;
         return baseHTML(`
 
             ${p("Hi there!")}

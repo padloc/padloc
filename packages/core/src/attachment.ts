@@ -5,12 +5,12 @@ import { getProvider, AESKeyParams } from "./crypto";
 import { Err, ErrorCode } from "./error";
 import { RequestProgress } from "./transport";
 
-function readFile(blob: File): Promise<string> {
+function readFile(blob: File): Promise<Uint8Array> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
         reader.onload = () => {
-            const result = bytesToBase64(new Uint8Array(reader.result as ArrayBuffer));
+            const result = new Uint8Array(reader.result as ArrayBuffer);
             resolve(result);
         };
 
@@ -66,7 +66,9 @@ export class Attachment extends SimpleContainer {
             this.name = info.name || "";
             this.size = info.size || 0;
             this.type = info.type || "";
-            this.key = info.key || "";
+            if (info.key) {
+                this._key = base64ToBytes(info.key);
+            }
         }
     }
 
@@ -77,7 +79,7 @@ export class Attachment extends SimpleContainer {
             name: this.name,
             type: this.type,
             size: this.size,
-            key: this.key
+            key: this._key ? bytesToBase64(this._key) : ""
         };
     }
 
@@ -92,17 +94,17 @@ export class Attachment extends SimpleContainer {
 
         const data = await readFile(file);
 
-        this.key = await getProvider().generateKey({
+        this._key = await getProvider().generateKey({
             algorithm: "AES",
             keySize: this.encryptionParams.keySize
         } as AESKeyParams);
 
-        await this.set(data);
+        await this.setData(data);
     }
 
     async toFile(): Promise<File> {
-        const data = await this.get();
-        return new File([base64ToBytes(data)], this.name, { type: this.type });
+        const data = await this.getData();
+        return new File([data], this.name, { type: this.type });
     }
 
     async toDataURL(): Promise<string> {
@@ -115,20 +117,13 @@ export class Attachment extends SimpleContainer {
         return URL.createObjectURL(file);
     }
 
-    async serialize() {
-        return {
-            ...(await super.serialize()),
-            size: this.size,
-            id: this.id,
-            vault: this.vault
-        };
+    validate() {
+        return typeof this.id === "string" && typeof this.vault === "string" && typeof this.size === "number";
     }
 
-    async deserialize(raw: any) {
-        this.id = raw.id;
-        this.vault = raw.vault;
-        this.size = raw.size;
-        return super.deserialize(raw);
+    fromRaw({ id, vault, size, ...rest }: any) {
+        Object.assign(this, { id, vault, size });
+        return super.fromRaw(rest);
     }
 }
 

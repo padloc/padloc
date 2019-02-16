@@ -1,6 +1,6 @@
 import { Request, Response } from "./transport";
-import { marshal, Base64String, stringToBase64 } from "./encoding";
-import { getProvider, defaultHMACParams } from "./crypto";
+import { marshal, Serializable, stringToBytes, base64ToBytes, bytesToBase64 } from "./encoding";
+import { getProvider, HMACParams } from "./crypto";
 import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
 import { AccountID } from "./account";
@@ -17,14 +17,14 @@ export interface SessionInfo {
     device?: DeviceInfo;
 }
 
-export class Session implements SessionInfo, Storable {
-    kind = "session";
+export class Session extends Serializable implements SessionInfo, Storable {
+    id: string = "";
     account: AccountID = "";
-    created = new Date();
-    updated = new Date();
-    lastUsed = new Date();
+    created = new Date(0);
+    updated = new Date(0);
+    lastUsed = new Date(0);
     expires?: Date;
-    key: Base64String = "";
+    key!: Uint8Array;
     device?: DeviceInfo;
 
     get info(): SessionInfo {
@@ -38,12 +38,6 @@ export class Session implements SessionInfo, Storable {
             device: this.device
         };
     }
-
-    get pk() {
-        return this.id;
-    }
-
-    constructor(public id: SessionID = "") {}
 
     async authenticate(r: Request | Response): Promise<void> {
         const session = this.id;
@@ -88,11 +82,12 @@ export class Session implements SessionInfo, Storable {
         return this;
     }
 
-    private async _sign(message: string): Promise<Base64String> {
-        return await getProvider().sign(this.key, stringToBase64(message), defaultHMACParams());
+    private async _sign(message: string): Promise<string> {
+        const bytes = await getProvider().sign(this.key, stringToBytes(message), new HMACParams());
+        return bytesToBase64(bytes);
     }
 
-    private async _verify(signature: Base64String, message: string): Promise<boolean> {
-        return await getProvider().verify(this.key, signature, stringToBase64(message), defaultHMACParams());
+    private async _verify(signature: string, message: string): Promise<boolean> {
+        return await getProvider().verify(this.key, base64ToBytes(signature), stringToBytes(message), new HMACParams());
     }
 }

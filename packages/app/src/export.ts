@@ -1,6 +1,6 @@
 import { VaultItem } from "@padloc/core/lib/item.js";
 import { PBES2Container } from "@padloc/core/lib/container.js";
-import { marshal, stringToBase64 } from "@padloc/core/lib/encoding.js";
+import { marshal, stringToBytes } from "@padloc/core/lib/encoding.js";
 import { loadPapa, ImportFormat, CSV } from "./import.js";
 
 export const supportedFormats: ImportFormat[] = [CSV];
@@ -62,9 +62,7 @@ export async function asCSV(items: VaultItem[]): Promise<string> {
 
 export async function asPBES2Container(items: VaultItem[], password: string): Promise<string> {
     const container = new PBES2Container();
-    container.password = password;
-
-    await container.set(stringToBase64(marshal({ items })));
-
-    return await container.serialize();
+    container.access(password);
+    await container.setData(stringToBytes(marshal({ items })));
+    return container.toJSON();
 }

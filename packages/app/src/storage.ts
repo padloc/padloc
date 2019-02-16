@@ -1,24 +1,24 @@
-import { Storage, Storable } from "@padloc/core/lib/storage.js";
-import { marshal, unmarshal } from "@padloc/core/lib/encoding.js";
-import { Err, ErrorCode } from "@padloc/core/lib/error.js";
+import { Storage, Storable, StorableConstructor } from "@padloc/core/src/storage";
+import { Err, ErrorCode } from "@padloc/core/src/error";
 // @ts-ignore
 import localStorage from "localforage/src/localforage";
 
 export class LocalStorage implements Storage {
     keyFor(s: Storable) {
-        return `${s.kind || ""}_${s.pk || ""}`;
+        return `${s.type}_${s.id}`;
     }
 
-    async set(s: Storable) {
-        localStorage.setItem(this.keyFor(s), marshal(await s.serialize()));
+    async save(s: Storable) {
+        await localStorage.setItem(this.keyFor(s), s);
     }
 
-    async get(s: Storable) {
+    async get<T extends Storable>(cls: T | StorableConstructor<T>) {
+        const s = cls instanceof Storable ? cls : new cls();
         const data = (await localStorage.getItem(this.keyFor(s))) as string;
         if (!data) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
-        await s.deserialize(unmarshal(data));
+        return s.fromJSON(data);
     }
 
     async delete(s: Storable) {

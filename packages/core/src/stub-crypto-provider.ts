@@ -1,5 +1,3 @@
-import { byteLength } from "./base64";
-import { Base64String, bytesToBase64, base64ToBytes, stringToBytes } from "./encoding";
 import {
     CryptoProvider,
     PBKDF2Params,
@@ -29,17 +27,31 @@ function concat(...arrs: Uint8Array[]): Uint8Array {
     return res;
 }
 
+function equal(a: Uint8Array, b: Uint8Array): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 export class StubCryptoProvider implements CryptoProvider {
-    async randomBytes(n: number): Promise<Base64String> {
+    async randomBytes(n: number): Promise<Uint8Array> {
         const bytes = new Uint8Array(n);
         for (let i = 0; i < n; i++) {
             bytes[i] = Math.random() * 255;
         }
-        return bytesToBase64(bytes);
+        return bytes;
     }
 
-    async hash(input: Base64String, _params: HashParams): Promise<Base64String> {
-        return bytesToBase64(base64ToBytes(input).slice(0, 32));
+    async hash(input: Uint8Array, _params: HashParams): Promise<Uint8Array> {
+        return input.slice(0, 32);
     }
 
     generateKey(params: AESKeyParams): Promise<AESKey>;
@@ -59,100 +71,91 @@ export class StubCryptoProvider implements CryptoProvider {
         }
     }
 
-    async deriveKey(password: string, params: PBKDF2Params): Promise<SymmetricKey> {
+    async deriveKey(password: Uint8Array, params: PBKDF2Params): Promise<SymmetricKey> {
         const bytes = new Uint8Array(params.keySize);
-        bytes.set(concat(stringToBytes(password), stringToBytes(params.salt)));
-        return bytesToBase64(bytes.slice(0, 32));
+        bytes.set(concat(password, params.salt));
+        return bytes.slice(0, 32);
     }
 
-    encrypt(key: AESKey, data: Base64String, params: AESEncryptionParams): Promise<Base64String>;
-    encrypt(publicKey: RSAPublicKey, data: Base64String, params: RSAEncryptionParams): Promise<Base64String>;
+    encrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
+    encrypt(publicKey: RSAPublicKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
     async encrypt(
         key: AESKey | RSAPublicKey,
-        data: Base64String,
+        data: Uint8Array,
         params: AESEncryptionParams | RSAEncryptionParams
-    ): Promise<Base64String> {
+    ): Promise<Uint8Array> {
         switch (params.algorithm) {
             case "AES-GCM":
-                return bytesToBase64(
-                    concat(
-                        base64ToBytes(key),
-                        base64ToBytes(params.iv),
-                        base64ToBytes(params.additionalData),
-                        base64ToBytes(data)
-                    )
-                );
+                return concat(key, params.iv, params.additionalData, data);
+
             case "RSA-OAEP":
-                return bytesToBase64(concat(base64ToBytes(key), base64ToBytes(data)));
+                return concat(key, data);
             default:
                 throw new Err(ErrorCode.NOT_SUPPORTED);
         }
     }
 
-    decrypt(key: AESKey, data: Base64String, params: AESEncryptionParams): Promise<Base64String>;
-    decrypt(publicKey: RSAPublicKey, data: Base64String, params: RSAEncryptionParams): Promise<Base64String>;
+    decrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
+    decrypt(publicKey: RSAPublicKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
     async decrypt(
         key: AESKey | RSAPublicKey,
-        data: Base64String,
+        data: Uint8Array,
         params: AESEncryptionParams | RSAEncryptionParams
-    ): Promise<Base64String> {
+    ): Promise<Uint8Array> {
         if (params.algorithm.startsWith("AES")) {
             params = params as AESEncryptionParams;
-            const keyLength = byteLength(key);
-            const ivLength = byteLength(params.iv);
-            const adataLength = byteLength(params.additionalData);
-            const dataBytes = base64ToBytes(data);
-            const extractedKey = bytesToBase64(dataBytes.slice(0, keyLength));
-            const iv = bytesToBase64(dataBytes.slice(keyLength, keyLength + ivLength));
-            const adata = bytesToBase64(dataBytes.slice(keyLength + ivLength, keyLength + ivLength + adataLength));
+            const keyLength = key.length;
+            const ivLength = params.iv.length;
+            const adataLength = params.additionalData.length;
+            const extractedKey = data.slice(0, keyLength);
+            const iv = data.slice(keyLength, keyLength + ivLength);
+            const adata = data.slice(keyLength + ivLength, keyLength + ivLength + adataLength);
 
-            if (key !== extractedKey || iv !== params.iv || adata !== params.additionalData) {
+            if (!equal(key, extractedKey) || !equal(iv, params.iv) || !equal(adata, params.additionalData)) {
                 throw new Err(ErrorCode.DECRYPTION_FAILED);
             }
-            return bytesToBase64(dataBytes.slice(keyLength + adataLength + ivLength));
+            return data.slice(keyLength + adataLength + ivLength);
         } else {
-            const keyLength = byteLength(key);
-            const dataBytes = base64ToBytes(data);
-            const extractedKey = bytesToBase64(dataBytes.slice(0, keyLength));
+            const keyLength = key.length;
+            const extractedKey = data.slice(0, keyLength);
 
-            if (key !== extractedKey) {
+            if (!equal(key, extractedKey)) {
                 throw new Err(ErrorCode.DECRYPTION_FAILED);
             }
-            return bytesToBase64(dataBytes.slice(keyLength));
+            return data.slice(keyLength);
         }
     }
 
-    async fingerprint(key: RSAPublicKey): Promise<Base64String> {
+    async fingerprint(key: RSAPublicKey): Promise<Uint8Array> {
         return key;
     }
 
-    async sign(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String>;
-    async sign(key: RSAPrivateKey, data: Base64String, params: RSASigningParams): Promise<Base64String>;
+    async sign(key: HMACKey, data: Uint8Array, params: HMACParams): Promise<Uint8Array>;
+    async sign(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams): Promise<Uint8Array>;
     async sign(
         key: HMACKey | RSAPrivateKey,
-        data: Base64String,
+        data: Uint8Array,
         _params: HMACParams | RSASigningParams
-    ): Promise<Base64String> {
-        return bytesToBase64(concat(base64ToBytes(key), base64ToBytes(data)));
+    ): Promise<Uint8Array> {
+        return concat(key, data);
     }
 
-    async verify(key: HMACKey, signature: Base64String, data: Base64String, params: HMACParams): Promise<boolean>;
+    async verify(key: HMACKey, signature: Uint8Array, data: Uint8Array, params: HMACParams): Promise<boolean>;
     async verify(
         key: RSAPrivateKey,
-        signature: Base64String,
-        data: Base64String,
+        signature: Uint8Array,
+        data: Uint8Array,
         params: RSASigningParams
     ): Promise<boolean>;
     async verify(
         key: HMACKey | RSAPrivateKey,
-        signature: Base64String,
-        data: Base64String,
+        signature: Uint8Array,
+        data: Uint8Array,
         _params: HMACParams | RSASigningParams
     ): Promise<boolean> {
-        const keyLength = byteLength(key);
-        const sigBytes = base64ToBytes(signature);
-        const extractedKey = bytesToBase64(sigBytes.slice(0, keyLength));
-        const extractedData = bytesToBase64(sigBytes.slice(keyLength));
-        return key === extractedKey && data === extractedData;
+        const keyLength = key.length;
+        const extractedKey = signature.slice(0, keyLength);
+        const extractedData = signature.slice(keyLength);
+        return equal(key, extractedKey) && equal(data, extractedData);
     }
 }

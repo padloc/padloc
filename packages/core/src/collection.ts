@@ -3,7 +3,7 @@ import { uuid } from "./util";
 
 export interface CollectionItem {
     id: string;
-    updated: Date;
+    updated?: Date;
 }
 
 export interface CollectionChanges<T> {
@@ -12,12 +12,14 @@ export interface CollectionChanges<T> {
     removed: T[];
 }
 
-export class Collection<T extends CollectionItem> implements Iterable<T>, Serializable {
-    revision: {
-        id: string;
-        date: Date;
-        mergedFrom?: [string, string];
-    } = { id: "", date: new Date(0) };
+export interface Revision {
+    id: string;
+    date: Date;
+    mergedFrom?: [string, string];
+}
+
+export class Collection<T extends CollectionItem> extends Serializable implements Iterable<T> {
+    revision: Revision = { id: "", date: new Date(0) };
 
     get size() {
         return this._items.size;
@@ -26,6 +28,7 @@ export class Collection<T extends CollectionItem> implements Iterable<T>, Serial
     private _items: Map<string, T>;
 
     constructor(items: T[] = []) {
+        super();
         this._items = new Map(items.map(item => [item.id, item] as [string, T]));
     }
 
@@ -63,11 +66,11 @@ export class Collection<T extends CollectionItem> implements Iterable<T>, Serial
             // not updated since last merge, that means someone else removed
             // it (as opposed to us adding it) and we need to delete it
             if (!coll.get(item.id)) {
-                if (item.updated <= this.revision.date) {
+                if (item.updated! <= this.revision.date) {
                     this.remove(item);
                     changes.removed.push(item);
                 } else {
-                    item.updated = new Date();
+                    item.updated! = new Date();
                     forwardChanges.added.push(item);
                 }
             }
@@ -78,7 +81,7 @@ export class Collection<T extends CollectionItem> implements Iterable<T>, Serial
             if (!existing) {
                 // Item does not exist locally. that means either it has been added remotely
                 // or removed locally. Let's find out which...
-                if (item.updated > this.revision.date) {
+                if (item.updated! > this.revision.date) {
                     // item has been added or updated after last merge so we'll keep it
                     // even if we may have deleted it locally
                     this._items.set(item.id, item);
@@ -88,11 +91,11 @@ export class Collection<T extends CollectionItem> implements Iterable<T>, Serial
                     forwardChanges.removed.push(item);
                 }
             } else if (existing) {
-                if (item.updated > existing.updated) {
+                if (item.updated! > existing.updated!) {
                     // Remote item is more recent, use it
                     this._items.set(item.id, item);
                     changes.updated.push(item);
-                } else if (item.updated < existing.updated) {
+                } else if (item.updated! < existing.updated!) {
                     // Ours is more recent, keep ours
                     forwardChanges.updated.push(existing);
                 }
@@ -110,14 +113,14 @@ export class Collection<T extends CollectionItem> implements Iterable<T>, Serial
         return changes;
     }
 
-    async serialize(): Promise<any> {
+    toRaw() {
         return {
             revision: this.revision,
             items: Array.from(this)
         };
     }
 
-    async deserialize(raw: any) {
+    fromRaw(raw: any) {
         for (const item of raw.items) {
             if (!(item.updated instanceof Date)) {
                 item.updated = new Date(item.updated);

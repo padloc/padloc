@@ -1,184 +1,220 @@
-import { Base64String } from "./encoding";
-import { Err, ErrorCode } from "./error";
+import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
 
 // Default number of pbkdf2 iterations
 export const PBKDF2_ITER_DEFAULT = 5e4;
 // Maximum number of pbkdf2 iterations
 export const PBKDF2_ITER_MAX = 1e7;
 
-export type AESKey = Base64String;
-export type HMACKey = Base64String;
+export type AESKey = Uint8Array;
+export type HMACKey = Uint8Array;
 export type SymmetricKey = AESKey | HMACKey;
-export type RSAPublicKey = Base64String;
-export type RSAPrivateKey = Base64String;
+export type RSAPublicKey = Uint8Array;
+export type RSAPrivateKey = Uint8Array;
 
-export interface AESEncryptionParams {
-    algorithm: "AES-GCM" | "AES-CCM";
-    tagSize: 64 | 96 | 128;
-    keySize: 256;
-    iv: Base64String;
-    additionalData: Base64String;
+export class AESEncryptionParams extends Serializable {
+    algorithm: "AES-GCM" | "AES-CCM" = "AES-GCM";
+    tagSize: 64 | 96 | 128 = 64;
+    keySize: 256 = 256;
+    iv: Uint8Array = new Uint8Array();
+    additionalData = new Uint8Array();
+
+    toRaw() {
+        return {
+            ...super.toRaw(),
+            iv: bytesToBase64(this.iv),
+            additionalData: bytesToBase64(this.additionalData)
+        };
+    }
+
+    validate() {
+        return (
+            ["AES-GCM", "AES-CCM"].includes(this.algorithm) &&
+            [64, 96, 128].includes(this.tagSize) &&
+            [256].includes(this.keySize)
+        );
+    }
+
+    fromRaw({ algorithm, tagSize, keySize, iv, additionalData }: any) {
+        return super.fromRaw({
+            algorithm,
+            tagSize,
+            keySize,
+            iv: base64ToBytes(iv),
+            additionalData: base64ToBytes(additionalData)
+        });
+    }
 }
 
-export interface AESKeyParams {
-    algorithm: "AES";
-    keySize: 256;
+export class AESKeyParams extends Serializable {
+    algorithm: "AES" = "AES";
+    keySize: 256 = 256;
+
+    validate() {
+        return this.algorithm !== "AES" && this.keySize !== 256;
+    }
+
+    fromRaw({ algorithm, keySize }: any) {
+        return super.fromRaw({ algorithm, keySize });
+    }
 }
 
-export interface HMACKeyParams {
-    algorithm: "HMAC";
-    keySize: 256;
+export class HMACKeyParams extends Serializable {
+    algorithm: "HMAC" = "HMAC";
+    keySize: 256 = 256;
+
+    validate() {
+        return this.algorithm === "HMAC" && this.keySize === 256;
+    }
+
+    fromRaw({ algorithm, keySize }: any) {
+        return super.fromRaw({ algorithm, keySize });
+    }
 }
 
-export interface RSAKeyParams {
-    algorithm: "RSA";
-    modulusLength: 2048;
-    publicExponent: Uint8Array;
-    hash: "SHA-256";
+export class RSAKeyParams extends Serializable {
+    algorithm: "RSA" = "RSA";
+    modulusLength: 2048 = 2048;
+    publicExponent: Uint8Array = new Uint8Array([0x01, 0x00, 0x01]);
+    hash: "SHA-256" = "SHA-256";
+
+    toRaw() {
+        return {
+            ...super.toRaw(),
+            publicExponent: bytesToBase64(this.publicExponent)
+        };
+    }
+
+    validate() {
+        return (
+            this.algorithm === "RSA" &&
+            this.modulusLength === 2048 &&
+            this.hash === "SHA-256" &&
+            this.publicExponent instanceof Uint8Array
+        );
+    }
+
+    fromRaw({ algorithm, modulusLength, publicExponent, hash }: any) {
+        return super.fromRaw({ algorithm, modulusLength, publicExponent: base64ToBytes(publicExponent), hash });
+    }
 }
 
-export interface PBKDF2Params {
-    algorithm: "PBKDF2";
-    hash: "SHA-256";
-    keySize: 256;
-    iterations: number;
-    salt: string;
+export class PBKDF2Params extends Serializable {
+    algorithm: "PBKDF2" = "PBKDF2";
+    hash: "SHA-256" = "SHA-256";
+    keySize: 256 = 256;
+    iterations: number = PBKDF2_ITER_DEFAULT;
+    salt: Uint8Array = new Uint8Array();
+
+    constructor(props?: Partial<PBKDF2Params>) {
+        super();
+        props && Object.assign(this, props);
+    }
+
+    toRaw() {
+        return {
+            ...super.toRaw(),
+            salt: bytesToBase64(this.salt)
+        };
+    }
+
+    validate() {
+        return (
+            this.algorithm === "PBKDF2" &&
+            this.hash === "SHA-256" &&
+            this.keySize === 256 &&
+            typeof this.iterations === "number" &&
+            this.iterations < PBKDF2_ITER_MAX &&
+            this.salt instanceof Uint8Array
+        );
+    }
+
+    fromRaw({ algorithm, hash, keySize, iterations, salt }: any) {
+        return super.fromRaw({ algorithm, hash, keySize, iterations, salt: base64ToBytes(salt) });
+    }
 }
 
-export interface RSAEncryptionParams {
-    algorithm: "RSA-OAEP";
-    hash: "SHA-256";
+export class RSAEncryptionParams extends Serializable {
+    algorithm: "RSA-OAEP" = "RSA-OAEP";
+    hash: "SHA-256" = "SHA-256";
+
+    validate() {
+        return this.algorithm === "RSA-OAEP" && this.hash === "SHA-256";
+    }
+
+    fromRaw({ algorithm, hash }: any) {
+        return super.fromRaw({ algorithm, hash });
+    }
 }
 
-export interface RSASigningParams {
-    algorithm: "RSA-PSS";
-    hash: "SHA-256";
-    saltLength: 32;
+export class RSASigningParams extends Serializable {
+    algorithm: "RSA-PSS" = "RSA-PSS";
+    hash: "SHA-256" = "SHA-256";
+    saltLength: 32 = 32;
+
+    validate() {
+        return this.algorithm === "RSA-PSS" && this.hash === "SHA-256" && this.saltLength === 32;
+    }
+
+    fromRaw({ algorithm, hash, saltLength }: any) {
+        return super.fromRaw({ algorithm, hash, saltLength });
+    }
 }
 
-export interface HMACParams {
-    algorithm: "HMAC";
-    hash: "SHA-256";
-    keySize: 256;
+export class HMACParams extends Serializable {
+    algorithm: "HMAC" = "HMAC";
+    hash: "SHA-256" = "SHA-256";
+    keySize: 256 = 256;
+
+    validate() {
+        return this.algorithm === "HMAC" && this.hash === "SHA-256" && this.keySize === 256;
+    }
+
+    fromRaw({ algorithm, hash, keySize }: any) {
+        return super.fromRaw({ algorithm, hash, keySize });
+    }
 }
 
-export interface HashParams {
-    algorithm: "SHA-1" | "SHA-256";
+export class HashParams extends Serializable {
+    algorithm: "SHA-1" | "SHA-256" = "SHA-256";
+
+    constructor(props?: Partial<HashParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+
+    validate() {
+        return ["SHA-1", "SHA-256"].includes(this.algorithm);
+    }
+
+    fromRaw({ algorithm }: any) {
+        return super.fromRaw({ algorithm });
+    }
 }
 
 export interface CryptoProvider {
-    randomBytes(n: number): Promise<Base64String>;
+    randomBytes(n: number): Promise<Uint8Array>;
 
-    hash(input: Base64String, params: HashParams): Promise<Base64String>;
+    hash(input: Uint8Array, params: HashParams): Promise<Uint8Array>;
 
     generateKey(params: AESKeyParams): Promise<AESKey>;
     generateKey(params: HMACKeyParams): Promise<HMACKey>;
     generateKey(params: RSAKeyParams): Promise<{ privateKey: RSAPrivateKey; publicKey: RSAPublicKey }>;
 
-    deriveKey(password: string, params: PBKDF2Params): Promise<SymmetricKey>;
+    deriveKey(password: Uint8Array, params: PBKDF2Params): Promise<SymmetricKey>;
 
-    encrypt(key: AESKey, data: Base64String, params: AESEncryptionParams): Promise<Base64String>;
-    encrypt(publicKey: RSAPublicKey, data: Base64String, params: RSAEncryptionParams): Promise<Base64String>;
+    encrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
+    encrypt(publicKey: RSAPublicKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
 
-    decrypt(key: AESKey, data: Base64String, params: AESEncryptionParams): Promise<Base64String>;
-    decrypt(privateKey: RSAPrivateKey, data: Base64String, params: RSAEncryptionParams): Promise<Base64String>;
+    decrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
+    decrypt(privateKey: RSAPrivateKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
 
-    sign(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String>;
-    sign(key: RSAPrivateKey, data: Base64String, params: RSASigningParams): Promise<Base64String>;
+    sign(key: HMACKey, data: Uint8Array, params: HMACParams): Promise<Uint8Array>;
+    sign(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams): Promise<Uint8Array>;
 
-    verify(key: HMACKey, signature: Base64String, data: Base64String, params: HMACParams): Promise<boolean>;
-    verify(key: RSAPublicKey, signature: Base64String, data: Base64String, params: RSASigningParams): Promise<boolean>;
+    verify(key: HMACKey, signature: Uint8Array, data: Uint8Array, params: HMACParams): Promise<boolean>;
+    verify(key: RSAPublicKey, signature: Uint8Array, data: Uint8Array, params: RSASigningParams): Promise<boolean>;
 
-    fingerprint(key: RSAPublicKey): Promise<Base64String>;
-}
-
-export function defaultPBKDF2Params(): PBKDF2Params {
-    return {
-        algorithm: "PBKDF2",
-        hash: "SHA-256",
-        keySize: 256,
-        iterations: PBKDF2_ITER_DEFAULT,
-        salt: ""
-    };
-}
-
-export function defaultHMACParams(): HMACParams {
-    return {
-        algorithm: "HMAC",
-        hash: "SHA-256",
-        keySize: 256
-    };
-}
-
-export function defaultEncryptionParams(): AESEncryptionParams {
-    return {
-        algorithm: "AES-GCM",
-        tagSize: 64,
-        keySize: 256,
-        iv: "",
-        additionalData: ""
-    };
-}
-
-export function defaultKeyWrapParams(): RSAEncryptionParams {
-    return {
-        algorithm: "RSA-OAEP",
-        hash: "SHA-256"
-    };
-}
-
-export function defaultRSAKeyParams(): RSAKeyParams {
-    return {
-        algorithm: "RSA",
-        modulusLength: 2048,
-        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-        hash: "SHA-256"
-    };
-}
-
-export function defaultRSASigningParams(): RSASigningParams {
-    return {
-        algorithm: "RSA-PSS",
-        hash: "SHA-256",
-        saltLength: 32
-    };
-}
-
-export function validateAESEncryptionParams(params: any): AESEncryptionParams {
-    if (
-        !["AES-GCM", "AES-CCM"].includes(params.algorithm) ||
-        // TODO: validate base64
-        typeof params.iv !== "string" ||
-        typeof params.additionalData !== "string" ||
-        ![64, 96, 128].includes(params.tagSize)
-    ) {
-        throw new Err(ErrorCode.INVALID_ENCRYPTION_PARAMS);
-    }
-
-    return params as AESEncryptionParams;
-}
-
-export function validateRSAEncryptionParams(params: any): RSAEncryptionParams {
-    if (params.algorithm !== "RSA-OAEP") {
-        throw new Err(ErrorCode.INVALID_KEY_WRAP_PARAMS);
-    }
-    return params as RSAEncryptionParams;
-}
-
-export function validatePBKDF2Params(params: any): PBKDF2Params {
-    if (
-        params.algorithm !== "PBKDF2" ||
-        !params.salt ||
-        typeof params.salt !== "string" ||
-        !params.iterations ||
-        params.iterations > PBKDF2_ITER_MAX ||
-        ![192, 256, 512].includes(params.keySize) ||
-        !["SHA-256", "SHA-512"].includes(params.hash)
-    ) {
-        throw new Err(ErrorCode.INVALID_KEY_PARAMS);
-    }
-
-    return params as PBKDF2Params;
+    fingerprint(key: RSAPublicKey): Promise<Uint8Array>;
 }
 
 let provider: CryptoProvider;

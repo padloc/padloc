@@ -1,5 +1,4 @@
 import { getProvider } from "./crypto";
-import { base64ToBytes } from "./encoding";
 
 // RFC4122-compliant uuid generator
 export function uuid(): string {
@@ -53,7 +52,7 @@ export async function randomNumber(min: number = 0, max: number = 10): Promise<n
     const mask = Math.pow(2, bitsNeeded) - 1;
 
     // Fill a byte array with N random numbers
-    const byteArray = base64ToBytes(await getProvider().randomBytes(bytesNeeded));
+    const byteArray = await getProvider().randomBytes(bytesNeeded);
 
     let p = (bytesNeeded - 1) * 8;
     for (let i = 0; i < bytesNeeded; i++) {

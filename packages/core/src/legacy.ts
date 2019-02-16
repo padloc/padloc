@@ -1,7 +1,7 @@
 import { sjcl } from "../vendor/sjcl";
 import { Err, ErrorCode } from "./error";
 import { PBKDF2_ITER_MAX } from "./crypto";
-import { PBES2RawContainer } from "./container";
+import { PBES2Container } from "./container";
 
 export interface LegacyContainer {
     version?: 1;
@@ -33,7 +33,7 @@ export function validateLegacyContainer(obj: any): boolean {
     );
 }
 
-export function parseLegacyContainer(raw: LegacyContainer): PBES2RawContainer {
+export function parseLegacyContainer(raw: LegacyContainer): PBES2Container {
     if (!validateLegacyContainer(raw)) {
         throw new Err(ErrorCode.ENCODING_ERROR);
     }
@@ -49,9 +49,7 @@ export function parseLegacyContainer(raw: LegacyContainer): PBES2RawContainer {
         raw.adata = sjcl.codec.base64.fromBits(raw.adata);
     }
 
-    return {
-        version: 2,
-        scheme: "PBES2",
+    return new PBES2Container().fromRaw({
         encryptionParams: {
             algorithm: "AES-CCM",
             tagSize: raw.ts,
@@ -67,5 +65,5 @@ export function parseLegacyContainer(raw: LegacyContainer): PBES2RawContainer {
             salt: raw.salt
         },
         encryptedData: raw.ct
-    };
+    });
 }
