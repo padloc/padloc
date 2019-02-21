@@ -119,6 +119,10 @@ export class App extends EventEmitter {
         return !!this._activeSyncPromises.size;
     }
 
+    get syncComplete() {
+        return Promise.all([...this._activeSyncPromises.values(), ...this._queuedSyncPromises.values()]);
+    }
+
     get tags() {
         if (!this.mainVault) {
             return [];
@@ -345,7 +349,6 @@ export class App extends EventEmitter {
         this.state.account = null;
         await this.storage.clear();
         this._vaults.clear();
-        await this.storage.save(this.state);
     }
 
     async changePassword(password: string) {
@@ -479,9 +482,12 @@ export class App extends EventEmitter {
 
         this._vaults.clear();
 
-        for (const vaultInfo of this.account.sharedVaults) {
-            await this.loadVault(vaultInfo);
-        }
+        await this.loadVault({ id: this.account.mainVault });
+    }
+
+    async saveVault(vault: Vault): Promise<void> {
+        await vault.commit();
+        await this.storage.save(vault);
     }
 
     async syncVault(vault: { id: VaultID }): Promise<Vault> {
@@ -523,6 +529,8 @@ export class App extends EventEmitter {
             result = remoteVault;
         }
 
+        await result.access(this.account!);
+
         // Only update if there are local changes and if the vault is not archived
         if (!remoteVault.revision || result.revision!.id !== remoteVault.revision.id) {
             try {
@@ -537,7 +545,7 @@ export class App extends EventEmitter {
             }
         }
 
-        await this.storage.save(result);
+        await this.saveVault(result);
         this._vaults.set(id, result);
 
         this.dispatch("vault-changed", { vault: result });
@@ -561,8 +569,8 @@ export class App extends EventEmitter {
     async addItems(items: VaultItem[], vault: Vault = this.mainVault!) {
         vault.items.update(...items);
         this.dispatch("items-added", { vault, items });
-        await this.storage.save(vault);
-        await this.syncVault(vault);
+        await this.saveVault(vault);
+        this.syncVault(vault);
     }
 
     async createItem(name: string, vault_?: Vault, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {

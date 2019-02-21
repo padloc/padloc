@@ -1,6 +1,6 @@
-import { App } from "../app";
+import { App, AppState } from "../app";
 import { Server } from "../server";
-// import { Vault } from "../vault";
+import { Vault } from "../vault";
 import { StubMessenger } from "../messenger";
 import {
     EmailVerificationMessage
@@ -8,11 +8,14 @@ import {
 } from "../messages";
 import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
-// import { ErrorCode } from "../error";
+import { ErrorCode } from "../error";
 import { MemoryAttachmentStorage } from "../attachment";
 import { Spec } from "./spec";
+import { assertReject } from "../../test/lib/util";
 
 export function appSpec(): Spec {
+    console.log("testing app");
+
     const clientUrl = "https://padloc.app";
     const messenger = new StubMessenger();
     const server = new Server(
@@ -54,13 +57,23 @@ export function appSpec(): Spec {
 
             await app.signup({ ...user, verify });
 
-            assert.isFalse(app.locked);
-            assert.isNotNull(app.account);
+            assert.isFalse(app.locked, "App should be in unlocked state after signup.");
+            assert.isNotNull(app.account, "Account object should be populated after signup.");
 
             const account = app.account!;
-            assert.ownInclude(account, { email: user.email, name: user.name });
-            assert.isNotNull(app.mainVault);
+            assert.ownInclude(account, { email: user.email, name: user.name }, "Account info should be set correctly.");
+            assert.isNotNull(app.mainVault, "Main vault should be created.");
         });
+
+        test("Create Personal Vault Item", async () => {
+            const item = await app.createItem("My First Item");
+            assert.equal(app.items.length, 1, "Item count should be 1.");
+            assert.ok(app.getItem(item.id), "Item should be accessible by ID.");
+            assert.equal(app.getItem(item.id)!.item, item);
+            assert.equal(app.getItem(item.id)!.vault, app.mainVault);
+        });
+
+        test("Login", async () => {});
 
         //
         // test("Create Vault", async () => {
@@ -236,40 +249,44 @@ export function appSpec(): Spec {
         //     assert.isNull(otherApp.getVault(app.vaults[2].id));
         // });
         //
-        // test("Lock", async () => {
-        //     await app.lock();
-        //     assert.isTrue(app.locked);
-        //     assert.ownInclude(app.account, { password: "", privateKey: "" });
-        //     assert.isNull(app.mainVault);
-        // });
-        //
-        // test("Unlock", async () => {
-        //     await app.unlock(user.password);
-        //     assert.isFalse(app.locked);
-        //     assert.isNotNull(app.mainVault);
-        //     assert.equal(app.items.length, 3);
-        // });
-        //
-        // test("Logout", async () => {
-        //     await app.logout();
-        //     assert.isNull(app.account);
-        //     assert.isNull(app.session);
-        //     let err = null;
-        //     try {
-        //         await app.storage.get(new Vault(sharedVaultID));
-        //     } catch (e) {
-        //         err = e;
-        //     }
-        //     assert.isNotNull(err);
-        //     assert.equal(err.code, ErrorCode.NOT_FOUND);
-        // });
-        //
-        // test("Login", async () => {
-        //     await app.login(user.email, user.password);
-        //     assert.isNotNull(app.account);
-        //     const account = app.account!;
-        //     assert.ownInclude(account, user);
-        //     assert.equal(app.vaults.length, 3);
-        // });
+        test("Lock", async () => {
+            await app.lock();
+            assert.isTrue(app.locked, "App should be in 'locked' state.");
+            assert.isNotOk(app.account!.privateKey, "Private key should be inaccessible after locking.");
+            assert.isNull(app.mainVault, "Main vault should be in acessible after locking.");
+        });
+
+        test("Unlock", async () => {
+            await app.unlock(user.password);
+            assert.isFalse(app.locked, "App should be in 'unlocked' state.");
+            assert.instanceOf(app.account!.privateKey, Uint8Array, "Private key should be loaded.");
+            assert.isNotNull(app.mainVault, "Main vault should be loaded.");
+            assert.equal(app.items.length, 1, "Items should be loaded.");
+        });
+
+        test("Logout", async () => {
+            const mainVaultId = app.account!.mainVault;
+            await app.logout();
+            assert.isNull(app.account, "Account should be unloaded.");
+            assert.isNull(app.state.session, "Session should be unloaded.");
+            assertReject(
+                () => app.storage.get(Vault, mainVaultId),
+                ErrorCode.NOT_FOUND,
+                "Main Vault should be purged from storage"
+            );
+            assertReject(
+                () => app.storage.get(AppState, app.state.id),
+                ErrorCode.NOT_FOUND,
+                "Application state should be perged from strorage"
+            );
+        });
+
+        test("Login", async () => {
+            await app.login(user.email, user.password);
+            assert.isNotNull(app.account, "Account should be loaded.");
+            const account = app.account!;
+            assert.ownInclude(account, { email: user.email, name: user.name }, "Account info should be correct.");
+            assert.equal(app.items.length, 1, "Vault Items should be loaded");
+        });
     };
 }

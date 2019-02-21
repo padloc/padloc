@@ -56,7 +56,7 @@ export class Vault extends SharedContainer implements Storable {
         }
     }
 
-    async save() {
+    async commit() {
         await this.setData(this.items.toBytes());
     }
 
