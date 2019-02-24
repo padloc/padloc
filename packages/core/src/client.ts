@@ -13,6 +13,7 @@ import { DeviceInfo } from "./platform";
 import { Session, SessionID } from "./session";
 import { Account } from "./account";
 import { Auth } from "./auth";
+import { Org, OrgID } from "./org";
 // import { Invite } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Err, ErrorCode } from "./error";
@@ -122,6 +123,21 @@ export class Client implements API {
     async recoverAccount(params: RecoverAccountParams): Promise<Account> {
         const res = await this.call("recoverAccount", [params.toRaw()]);
         return new Account().fromRaw(res.result);
+    }
+
+    async getOrg(id: OrgID): Promise<Org> {
+        const res = await this.call("getOrg", [id]);
+        return new Org().fromRaw(res.result);
+    }
+
+    async createOrg(org: Org): Promise<Org> {
+        const res = await this.call("createOrg", [org.toRaw()]);
+        return new Org().fromRaw(res.result);
+    }
+
+    async updateOrg(org: Org): Promise<Org> {
+        const res = await this.call("updateOrg", [org.toRaw()]);
+        return new Org().fromRaw(res.result);
     }
 
     async getVault(id: VaultID): Promise<Vault> {

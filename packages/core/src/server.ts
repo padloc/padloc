@@ -20,7 +20,7 @@ import { Auth, EmailVerification } from "./auth";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
-import { Org } from "./org";
+import { Org, OrgID } from "./org";
 // import { Invite } from "./invite";
 import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
@@ -228,13 +228,79 @@ export class Context implements API {
         return account;
     }
 
-    async getVault(id: VaultID) {
+    async createOrg(org: Org) {
         const { account } = this._requireAuth();
 
-        // Check permssion
-        if (id !== account.mainVault && !account.sharedVaults.some(v => v.id === id)) {
+        org.id = uuid();
+        org.owner = account.id;
+
+        account.orgs.push(org.id);
+
+        await Promise.all([this.storage.save(org), this.storage.save(account)]);
+
+        return org;
+    }
+
+    async getOrg(id: OrgID) {
+        const { account } = this._requireAuth();
+
+        const org = await this.storage.get(Org, id);
+
+        if (!org.isMember(account)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
+
+        return org;
+    }
+
+    async updateOrg({
+        id,
+        name,
+        publicKey,
+        keyParams,
+        encryptionParams,
+        encryptedData,
+        signingParams,
+        accessors,
+        members,
+        groups,
+        admins,
+        everyone
+    }: Org) {
+        const { account } = this._requireAuth();
+
+        const org = await this.storage.get(Org, id);
+
+        if (!org.isAdmin(account)) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        Object.assign(org, {
+            name,
+            publicKey,
+            keyParams,
+            encryptionParams,
+            encryptedData,
+            signingParams,
+            accessors,
+            members,
+            groups,
+            admins,
+            everyone
+        });
+
+        await this.storage.save(org);
+
+        return org;
+    }
+
+    async getVault(id: VaultID) {
+        // const { account } = this._requireAuth();
+
+        // TODO: Check permssion
+        // if (id !== account.mainVault && !account.sharedVaults.some(v => v.id === id)) {
+        //     throw new Err(ErrorCode.NOT_FOUND);
+        // }
 
         const vault = await this.storage.get(Vault, id);
 
@@ -242,19 +308,20 @@ export class Context implements API {
     }
 
     async updateVault({ id, name, keyParams, encryptionParams, accessors, encryptedData, revision }: Vault) {
-        const { account } = this._requireAuth();
+        // const { account } = this._requireAuth();
 
-        if (id !== account.mainVault) {
-            const v = account.sharedVaults.find(v => v.id === id);
-
-            if (!v) {
-                throw new Err(ErrorCode.NOT_FOUND);
-            }
-
-            if (v.readonly) {
-                throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-            }
-        }
+        // TODO: Check permissions
+        // if (id !== account.mainVault) {
+        //     const v = account.sharedVaults.find(v => v.id === id);
+        //
+        //     if (!v) {
+        //         throw new Err(ErrorCode.NOT_FOUND);
+        //     }
+        //
+        //     if (v.readonly) {
+        //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        //     }
+        // }
 
         const vault = await this.storage.get(Vault, id);
 
@@ -277,6 +344,10 @@ export class Context implements API {
     async createVault(vault: Vault) {
         const { account } = this._requireAuth();
 
+        if (!vault.org) {
+            throw new Err(ErrorCode.BAD_REQUEST, "Shared vaults have to be attached to an organization.");
+        }
+
         const org = await this.storage.get(Org, vault.org!);
 
         if (!org.isAdmin(account)) {
@@ -287,9 +358,9 @@ export class Context implements API {
         vault.owner = account.id;
         vault.created = vault.updated = new Date();
 
-        // org.addVault(vault);
+        org.vaults.push({ id: vault.id, name: vault.name });
 
-        await this.storage.save(vault);
+        await Promise.all([this.storage.save(vault), this.storage.save(org)]);
 
         return vault;
     }
@@ -318,20 +389,9 @@ export class Context implements API {
         let i = org.vaults.findIndex(v => v.id === id);
         org.vaults.splice(i, 1);
 
-        // Remove vault from accessor accounts and groups
-        for (const { id: accID } of vault.accessors) {
-            // Check if accessor is a group first. If not it must be
-            // an account
-            const group = org.groups.find(g => g.id === accID);
-            if (group) {
-                i = group.vaults.findIndex(v => v.id === id);
-                group.vaults.splice(i, 1);
-            } else {
-                const acc = await this.storage.get(Account, accID);
-                i = acc.sharedVaults.findIndex(v => v.id === id);
-                acc.sharedVaults.splice(i, 1);
-                promises.push(this.storage.save(acc));
-            }
+        for (const group of org.getGroupsForVault(vault)) {
+            const i = group.vaults.findIndex(v => v.id === id);
+            group.vaults.splice(i, 1);
         }
 
         promises.push(this.storage.save(org));
@@ -565,7 +625,7 @@ export class Server {
                 break;
 
             case "revokeSession":
-                if (typeof params[0].id !== "string") {
+                if (typeof params[0] !== "string") {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
                 await ctx.revokeSession(params[0]);
@@ -585,6 +645,21 @@ export class Server {
 
             case "recoverAccount":
                 res.result = (await ctx.recoverAccount(new RecoverAccountParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "createOrg":
+                res.result = (await ctx.createOrg(new Org().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "getOrg":
+                if (typeof params[0] !== "string") {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                res.result = (await ctx.getOrg(params[0])).toRaw();
+                break;
+
+            case "updateOrg":
+                res.result = (await ctx.updateOrg(new Org().fromRaw(params[0]))).toRaw();
                 break;
 
             case "getVault":

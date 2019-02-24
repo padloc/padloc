@@ -4,6 +4,7 @@ import { PBES2Container } from "./container";
 import { Storable } from "./storage";
 import { SessionInfo } from "./session";
 import { VaultID } from "./vault";
+import { OrgID } from "./org";
 
 export type AccountID = string;
 
@@ -27,8 +28,8 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
     publicKey!: RSAPublicKey;
     privateKey!: RSAPrivateKey;
     mainVault: VaultID = "";
-    sharedVaults: { id: VaultID; readonly: boolean }[] = [];
     sessions: SessionInfo[] = [];
+    orgs: OrgID[] = [];
 
     get info(): AccountInfo {
         return { id: this.id, email: this.email, publicKey: this.publicKey, name: this.name };
@@ -76,11 +77,12 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
             typeof this.mainVault === "string" &&
             this.created instanceof Date &&
             this.updated instanceof Date &&
-            this.publicKey instanceof Uint8Array
+            this.publicKey instanceof Uint8Array &&
+            this.orgs.every(org => typeof org === "string")
         );
     }
 
-    fromRaw({ id, created, updated, email, name, mainVault, sharedVaults, publicKey, ...rest }: any) {
+    fromRaw({ id, created, updated, email, name, mainVault, sharedVaults, publicKey, orgs, ...rest }: any) {
         Object.assign(this, {
             id,
             email,
@@ -89,7 +91,8 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
             sharedVaults,
             created: new Date(created),
             updated: new Date(updated),
-            publicKey: base64ToBytes(publicKey)
+            publicKey: base64ToBytes(publicKey),
+            orgs: orgs
         });
         return super.fromRaw(rest);
     }

@@ -2,6 +2,7 @@ import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
 import { Auth, EmailVerificationPurpose } from "./auth";
 import { Vault, VaultID } from "./vault";
+import { Org, OrgID } from "./org";
 // import { Invite } from "./invite";
 import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
 // import { Attachment } from "./attachment";
@@ -177,6 +178,10 @@ export interface API {
     getAccount(): Promise<Account>;
     updateAccount(account: Account): Promise<Account>;
     recoverAccount(params: RecoverAccountParams): Promise<Account>;
+
+    createOrg(params: Org): Promise<Org>;
+    getOrg(id: OrgID): Promise<Org>;
+    updateOrg(org: Org): Promise<Org>;
 
     createVault(vault: Vault): Promise<Vault>;
     getVault(id: VaultID): Promise<Vault>;

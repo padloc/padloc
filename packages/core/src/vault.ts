@@ -35,11 +35,12 @@ export class Vault extends SharedContainer implements Storable {
         );
     }
 
-    fromRaw({ id, name, owner, created, updated, archived, revision, ...rest }: any) {
+    fromRaw({ id, name, owner, org, created, updated, archived, revision, ...rest }: any) {
         Object.assign(this, {
             id,
             name,
             owner,
+            org,
             revision,
             created: new Date(created),
             updated: new Date(updated),

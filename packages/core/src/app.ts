@@ -3,7 +3,8 @@ import { Storage, Storable } from "./storage";
 import { Serializable } from "./encoding";
 // import { InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-// import { Org } from "./org";
+import { Org, OrgID } from "./org";
+import { Group } from "./group";
 import { VaultItem, Field, Tag, createVaultItem } from "./item";
 import { Account } from "./account";
 import { Auth, EmailVerificationPurpose } from "./auth";
@@ -148,6 +149,10 @@ export class App extends EventEmitter {
             });
     }
 
+    get orgs() {
+        return [...this._orgs.values()];
+    }
+
     get archivedVaults() {
         return [...this._vaults.values()].filter(v => !!v.archived);
     }
@@ -218,6 +223,7 @@ export class App extends EventEmitter {
     }
 
     private _vaults = new Map<string, Vault>();
+    private _orgs = new Map<string, Org>();
     private _filter: FilterParams = {};
     private _attachments = new Map<string, Attachment>();
     private _queuedSyncPromises = new Map<string, Promise<void>>();
@@ -243,6 +249,7 @@ export class App extends EventEmitter {
 
     async unlock(password: string) {
         await this.account!.access(password);
+        await this.loadOrgs();
         await this.loadVaults();
         this.dispatch("unlock");
         this.synchronize();
@@ -411,14 +418,20 @@ export class App extends EventEmitter {
         return this._vaults.get(id) || null;
     }
 
-    // async createVault(name: string, org: Org): Promise<Vault> {
-    //     const vault = await org.createVault();
-    //     await this.api.createVault(vault);
-    //     // TODO: sync org etc.
-    //
-    //     this.dispatch("vault-created", { vault });
-    //     return vault;
-    // }
+    async createVault(name: string, org: Org, groups: Group[] = []): Promise<Vault> {
+        let vault = new Vault();
+        vault.name = name;
+        vault.org = org.id;
+        await vault.updateAccessors([org.admins, ...groups]);
+        vault = await this.api.createVault(vault);
+        for (const group of groups) {
+            group.vaults.push({ id: vault.id, readonly: false });
+        }
+        await this.api.updateOrg(org);
+        await this.synchronize();
+        this.dispatch("vault-created", { vault });
+        return this.getVault(vault.id)!;
+    }
 
     // async deleteVault({ id }: { id: VaultID }): Promise<void> {
     //     await this.api.deleteVault(id);
@@ -437,44 +450,6 @@ export class App extends EventEmitter {
     //     await this.reinitializeVault(vault);
     // }
 
-    async loadVault({ id }: { id: string }, fetch = false): Promise<Vault | null> {
-        let vault = this._vaults.get(id);
-
-        if (!vault) {
-            try {
-                vault = await this.storage.get(Vault, id);
-            } catch (e) {
-                if (e.code !== ErrorCode.NOT_FOUND) {
-                    throw e;
-                }
-                if (!fetch) {
-                    return null;
-                }
-            }
-        }
-
-        if (!vault && fetch) {
-            try {
-                vault = await this.api.getVault(id);
-            } catch (e) {
-                if (e.code !== ErrorCode.NOT_FOUND) {
-                    throw e;
-                }
-                return null;
-            }
-        }
-
-        if (!vault) {
-            return null;
-        }
-
-        await vault.access(this.account!);
-
-        this._vaults.set(id, vault);
-
-        return vault;
-    }
-
     async loadVaults() {
         if (!this.account) {
             return;
@@ -482,28 +457,49 @@ export class App extends EventEmitter {
 
         this._vaults.clear();
 
-        await this.loadVault({ id: this.account.mainVault });
+        const vault = await this.storage.get(Vault, this.account.mainVault);
+        await vault.access(this.account!);
+        this._vaults.set(this.account.mainVault, vault);
+
+        for (const org of this.orgs) {
+            for (const group of org.getGroupsForMember(this.account)) {
+                await group.access(this.account);
+                for (const { id } of group.vaults) {
+                    const vault = await this.storage.get(Vault, id);
+                    await vault.access(group);
+                    this._vaults.set(id, vault);
+                }
+            }
+        }
     }
 
     async saveVault(vault: Vault): Promise<void> {
         await vault.commit();
+        this._vaults.set(vault.id, vault);
         await this.storage.save(vault);
     }
 
-    async syncVault(vault: { id: VaultID }): Promise<Vault> {
-        return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault));
+    async syncVault(vault: { id: VaultID }, access: Account | Group = this.account!): Promise<Vault> {
+        return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault, access));
     }
 
     async syncVaults() {
         if (!this.account) {
             return;
         }
-        await Promise.all(
-            [{ id: this.account.mainVault }, ...this.account.sharedVaults].map(vault => this.syncVault(vault))
-        );
+
+        const promises = [this.syncVault({ id: this.account.mainVault })] as Promise<any>[];
+
+        for (const org of this.orgs) {
+            for (const group of org.getGroupsForMember(this.account)) {
+                promises.push(...group.vaults.map(vault => this.syncVault(vault, group)));
+            }
+        }
+
+        await Promise.all(promises);
     }
 
-    async _syncVault({ id }: { id: VaultID }): Promise<Vault | null> {
+    async _syncVault({ id }: { id: VaultID }, access: Account | Group): Promise<Vault | null> {
         const localVault = this.getVault(id);
         let remoteVault: Vault;
         let result: Vault;
@@ -529,7 +525,7 @@ export class App extends EventEmitter {
             result = remoteVault;
         }
 
-        await result.access(this.account!);
+        await result.access(access);
 
         // Only update if there are local changes and if the vault is not archived
         if (!remoteVault.revision || result.revision!.id !== remoteVault.revision.id) {
@@ -539,7 +535,7 @@ export class App extends EventEmitter {
                 if (e.code === ErrorCode.MERGE_CONFLICT) {
                     // If there is a merge conflict (probably because somebody else
                     // did a push while we were sycing), start over.
-                    return this._syncVault({ id });
+                    return this._syncVault({ id }, access);
                 }
                 throw e;
             }
@@ -622,6 +618,34 @@ export class App extends EventEmitter {
         await this.addItems(newItems, target);
         await this.deleteItems(items);
         return newItems;
+    }
+
+    // ORGANIZATIONS
+
+    getOrg(id: OrgID) {
+        return this._orgs.get(id);
+    }
+
+    async createOrg(name: string): Promise<Org> {
+        let org = new Org();
+        org.name = name;
+        await org.initialize(this.account!);
+        org = await this.api.createOrg(org);
+        await this.fetchAccount();
+        await this.loadOrgs(true);
+        return this.getOrg(org.id)!;
+    }
+
+    async loadOrgs(fetch = false) {
+        if (!this.account) {
+            return;
+        }
+        for (const id of this.account.orgs) {
+            const org = fetch ? await this.api.getOrg(id) : await this.storage.get(Org, id);
+            await org.access(this.account);
+            this._orgs.set(id, org);
+            fetch && (await this.storage.save(org));
+        }
     }
 
     // INVITES
@@ -746,6 +770,7 @@ export class App extends EventEmitter {
 
     async synchronize() {
         await this.fetchAccount();
+        await this.loadOrgs(true);
         await this.syncVaults();
         await this.storage.save(this.state);
         this.setStats({ lastSync: new Date() });

@@ -8,6 +8,7 @@ import {
     marshal
 } from "./encoding";
 import { getProvider, RSAPrivateKey, RSAPublicKey, RSAKeyParams, HMACKeyParams, RSASigningParams } from "./crypto";
+import { uuid } from "./util";
 import { SharedContainer } from "./container";
 import { Err, ErrorCode } from "./error";
 import { Storable } from "./storage";
@@ -64,8 +65,9 @@ export type OrgID = string;
 export type OrgRole = "admin" | "member";
 
 export class Org extends SharedContainer implements Storable {
-    id: string = "";
+    id: OrgID = "";
     name: string = "";
+    owner: AccountID = "";
     publicKey!: RSAPublicKey;
     privateKey!: RSAPrivateKey;
     invitesKey!: Uint8Array;
@@ -76,8 +78,8 @@ export class Org extends SharedContainer implements Storable {
         id: VaultID;
         name: string;
     }[] = [];
-    adminGroup: Group = new Group();
-    everyoneGroup: Group = new Group();
+    admins: Group = new Group();
+    everyone: Group = new Group();
 
     toRaw() {
         return {
@@ -90,19 +92,21 @@ export class Org extends SharedContainer implements Storable {
         return (
             typeof this.name === "string" &&
             typeof this.id === "string" &&
+            typeof this.owner === "string" &&
             this.publicKey instanceof Uint8Array &&
             this.vaults.every(({ id, name }: any) => typeof id === "string" && typeof name === "string")
         );
     }
 
-    fromRaw({ id, name, publicKey, members, groups, vaults, adminGroup, everyoneGroup, signingParams, ...rest }: any) {
+    fromRaw({ id, name, owner, publicKey, members, groups, vaults, admins, everyone, signingParams, ...rest }: any) {
         this.signingParams.fromRaw(signingParams);
-        this.adminGroup.fromRaw(adminGroup);
-        this.everyoneGroup.fromRaw(everyoneGroup);
+        this.admins.fromRaw(admins);
+        this.everyone.fromRaw(everyone);
 
         Object.assign(this, {
             id,
             name,
+            owner,
             publicKey: base64ToBytes(publicKey),
             members: members.map((m: any) => new OrgMember().fromRaw(m)),
             groups: groups.map((g: any) => new Group().fromRaw(g)),
@@ -113,11 +117,15 @@ export class Org extends SharedContainer implements Storable {
     }
 
     isAdmin(m: { id: string }) {
-        return !!this.adminGroup.isMember(m);
+        return !!this.admins.isMember(m);
     }
 
-    getMember(id: AccountID) {
+    getMember({ id }: { id: AccountID }) {
         return this.members.find(m => m.id === id);
+    }
+
+    isMember(account: Account) {
+        return !!this.getMember(account);
     }
 
     getGroup(id: GroupID) {
@@ -126,33 +134,40 @@ export class Org extends SharedContainer implements Storable {
 
     getMembersForGroup(group: Group): OrgMember[] {
         return group.accessors
-            .map(({ id }) => this.getMember(id))
+            .map(a => this.getMember(a))
             // Filter out undefined members
             .filter(m => !!m) as OrgMember[];
     }
 
-    getGroupsForMember({ id }: OrgMember) {
-        return this.groups.filter(g => g.accessors.some(a => a.id === id));
+    getGroupsForMember({ id }: OrgMember | Account) {
+        return [...this.groups.filter(g => g.accessors.some(a => a.id === id)), this.everyone];
+    }
+
+    getGroupsForVault({ id }: Vault) {
+        return this.groups.filter(group => group.vaults.some(v => v.id === id));
     }
 
     async initialize(account: Account) {
+        this.admins.id = uuid();
+        this.everyone.id = uuid();
+
         // Add account to admin group
-        await this.adminGroup.updateAccessors([account]);
+        await this.admins.updateAccessors([account]);
 
         // Generate admin group keys
-        await this.adminGroup.generateKeys();
+        await this.admins.generateKeys();
 
         // Grant admin group access to
-        await this.updateAccessors([this.adminGroup]);
+        await this.updateAccessors([this.admins]);
 
         await this.generateKeys();
 
         await this.addMember(account);
 
-        await this.everyoneGroup.generateKeys();
+        await this.everyone.generateKeys();
 
-        await this.sign(this.adminGroup);
-        await this.sign(this.everyoneGroup);
+        await this.sign(this.admins);
+        await this.sign(this.everyone);
     }
 
     async generateKeys() {
@@ -168,13 +183,17 @@ export class Org extends SharedContainer implements Storable {
     }
 
     async access(account: Account) {
-        await this.adminGroup.access(account);
-        await super.access(this.adminGroup);
-        if (this.encryptedData) {
-            const { privateKey, invitesKey } = unmarshal(bytesToString(await this.getData()));
-            this.privateKey = base64ToBytes(privateKey);
-            this.invitesKey = base64ToBytes(invitesKey);
+        if (this.isAdmin(account)) {
+            await this.admins.access(account);
+            await super.access(this.admins);
+            if (this.encryptedData) {
+                const { privateKey, invitesKey } = unmarshal(bytesToString(await this.getData()));
+                this.privateKey = base64ToBytes(privateKey);
+                this.invitesKey = base64ToBytes(invitesKey);
+            }
         }
+
+        await Promise.all(this.getGroupsForMember(account).map(g => g.access(account)));
     }
 
     async addMember(account: { id: string; name: string; email: string; publicKey: Uint8Array }) {
@@ -184,7 +203,7 @@ export class Org extends SharedContainer implements Storable {
 
         const member = new OrgMember(await this.sign(account));
         this.members.push(member);
-        await this.everyoneGroup.updateAccessors(this.members);
+        await this.everyone.updateAccessors(this.members);
     }
 
     async sign(obj: { publicKey: Uint8Array; signedPublicKey?: Uint8Array }) {
@@ -206,12 +225,5 @@ export class Org extends SharedContainer implements Storable {
             );
         } catch (e) {}
         return verified;
-    }
-
-    async createVault(name: string) {
-        const vault = new Vault();
-        vault.name = name;
-        vault.org = this.id;
-        await vault.updateAccessors([this.adminGroup]);
     }
 }

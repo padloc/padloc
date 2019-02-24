@@ -73,19 +73,21 @@ export function appSpec(): Spec {
             assert.equal(app.getItem(item.id)!.vault, app.mainVault);
         });
 
-        test("Login", async () => {});
+        test("Create Org", async () => {
+            const org = await app.createOrg("My Org");
+            assert.equal(org.name, "My Org", "Organization name should be correct.");
+            assert.ok(org.id, "Organization ID should be set.");
+            assert.equal(org.owner, app.account!.id, "Account should be organization owner.");
+            assert.isTrue(org.isAdmin(app.account!), "Account should be org admin.");
+            assert.equal(app.orgs.length, 1);
+        });
 
-        //
-        // test("Create Vault", async () => {
-        //     const name = "My Shared Vault";
-        //     const vault = await app.createVault(name);
-        //     sharedVaultID = vault.id;
-        //     assert.equal(vault.name, name);
-        //     assert.isTrue(vault.isOwner(app.account));
-        //     assert.isTrue(vault.isAdmin(app.account));
-        //     assert.equal(app.vaults.length, 2);
-        //     assert.isTrue(await app.mainVault!.verifySubVault(vault.info));
-        // });
+        test("Create Vault", async () => {
+            const name = "My Shared Vault";
+            const vault = await app.createVault(name, app.orgs[0], [app.orgs[0].everyone]);
+            assert.equal(vault.name, name);
+            assert.equal(app.vaults.length, 2);
+        });
         //
         // test("Create Subvault", async () => {
         //     const name = "My Subvault";

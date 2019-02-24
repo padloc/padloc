@@ -16,10 +16,10 @@ suite("Org", () => {
         assert.instanceOf(org.privateKey, Uint8Array);
         assert.instanceOf(org.publicKey, Uint8Array);
         assert.isTrue(org.isAdmin(account));
-        assert.ok(org.getMember(account.id));
-        assert.isTrue(await org.verify(org.getMember(account.id)!));
-        assert.isTrue(await org.verify(org.adminGroup));
-        assert.isTrue(await org.verify(org.everyoneGroup));
+        assert.ok(org.getMember(account));
+        assert.isTrue(await org.verify(org.getMember(account)!));
+        assert.isTrue(await org.verify(org.admins));
+        assert.isTrue(await org.verify(org.everyone));
     });
 
     test("Load/Access Org", async () => {
@@ -30,10 +30,10 @@ suite("Org", () => {
         // Members and groups should be verifiable even without admin access
         assert.instanceOf(org.publicKey, Uint8Array);
         assert.isTrue(org.isAdmin(account));
-        assert.ok(org.getMember(account.id));
-        assert.isTrue(await org.verify(org.getMember(account.id)!));
-        assert.isTrue(await org.verify(org.adminGroup));
-        assert.isTrue(await org.verify(org.everyoneGroup));
+        assert.ok(org.getMember(account));
+        assert.isTrue(await org.verify(org.getMember(account)!));
+        assert.isTrue(await org.verify(org.admins));
+        assert.isTrue(await org.verify(org.everyone));
 
         await org.access(account);
 
