@@ -3,7 +3,7 @@ import { Account, AccountID } from "./account";
 import { Auth, EmailVerificationPurpose } from "./auth";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
-// import { Invite } from "./invite";
+import { Invite, InviteID } from "./invite";
 import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
 // import { Attachment } from "./attachment";
 
@@ -164,6 +164,20 @@ export class CreateSessionParams extends Serializable {
     }
 }
 
+export class GetInviteParams extends Serializable {
+    org: OrgID = "";
+    id: InviteID = "";
+
+    constructor(props?: Partial<GetInviteParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+
+    validate() {
+        return !!this.org && typeof this.org === "string" && !!this.id && typeof this.id === "string";
+    }
+}
+
 export interface API {
     requestEmailVerification(params: RequestEmailVerificationParams): Promise<void>;
     completeEmailVerification(params: CompleteEmailVerificationParams): Promise<string>;
@@ -188,8 +202,8 @@ export interface API {
     updateVault(vault: Vault): Promise<Vault>;
     deleteVault(id: VaultID): Promise<void>;
 
-    // getInvite(params: { vault: string; id: string }): Promise<Invite>;
-    // acceptInvite(invite: Invite): Promise<void>;
+    getInvite(params: GetInviteParams): Promise<Invite>;
+    acceptInvite(invite: Invite): Promise<void>;
     //
     // createAttachment(attachment: Attachment): Promise<Attachment>;
     // getAttachment(attachment: Attachment): Promise<Attachment>;

@@ -30,7 +30,9 @@ suite("Collection", () => {
         assert.equal(coll2.get("1")!.value, "Item 1");
     });
 
-    test("update item", () => {
+    test("update item", async () => {
+        await wait(10);
+
         coll1.update({ ...coll1.get("1")!, value: "Edited Item 1" });
 
         merge();

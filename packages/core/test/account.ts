@@ -3,7 +3,7 @@ import { suite, test } from "mocha";
 import { ErrorCode } from "../src/error";
 import { Account } from "../src/account";
 import { bytesToHex } from "../src/encoding";
-import { assertReject } from "./lib/util";
+import { assertReject } from "../src/spec/test-util";
 
 suite("Account", () => {
     test("Initialize Account", async () => {

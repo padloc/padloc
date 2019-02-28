@@ -4,7 +4,7 @@ import { ErrorCode } from "../src/error";
 import { stringToBytes, bytesToString } from "../src/encoding";
 import { SimpleContainer, PBES2Container, SharedContainer } from "../src/container";
 import { getProvider, RSAKeyParams } from "../src/crypto";
-import { assertReject } from "./lib/util";
+import { assertReject } from "../src/spec/test-util";
 
 const provider = getProvider();
 

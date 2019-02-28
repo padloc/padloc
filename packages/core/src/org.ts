@@ -15,6 +15,7 @@ import { Storable } from "./storage";
 import { Vault, VaultID } from "./vault";
 import { Group, GroupID } from "./group";
 import { Account, AccountID } from "./account";
+import { Invite, InviteID } from "./invite";
 
 export class OrgMember extends Serializable {
     id: AccountID = "";
@@ -32,7 +33,7 @@ export class OrgMember extends Serializable {
 
     toRaw() {
         return {
-            ...super.toRaw(),
+            ...super.toRaw(["privateKey"]),
             publicKey: bytesToBase64(this.publicKey),
             signedPublicKey: bytesToBase64(this.signedPublicKey)
         };
@@ -48,13 +49,12 @@ export class OrgMember extends Serializable {
         );
     }
 
-    fromRaw({ id, name, publicKey, signedPublicKey, vaults, ...rest }: any) {
+    fromRaw({ id, name, publicKey, signedPublicKey, ...rest }: any) {
         Object.assign(this, {
             id,
             name,
             publicKey: base64ToBytes(publicKey),
-            signedPublicKey: base64ToBytes(signedPublicKey),
-            vaults
+            signedPublicKey: base64ToBytes(signedPublicKey)
         });
 
         return super.fromRaw(rest);
@@ -78,6 +78,7 @@ export class Org extends SharedContainer implements Storable {
         id: VaultID;
         name: string;
     }[] = [];
+    invites: Invite[] = [];
     admins: Group = new Group();
     everyone: Group = new Group();
 
@@ -98,7 +99,20 @@ export class Org extends SharedContainer implements Storable {
         );
     }
 
-    fromRaw({ id, name, owner, publicKey, members, groups, vaults, admins, everyone, signingParams, ...rest }: any) {
+    fromRaw({
+        id,
+        name,
+        owner,
+        publicKey,
+        members,
+        groups,
+        vaults,
+        invites,
+        admins,
+        everyone,
+        signingParams,
+        ...rest
+    }: any) {
         this.signingParams.fromRaw(signingParams);
         this.admins.fromRaw(admins);
         this.everyone.fromRaw(everyone);
@@ -110,6 +124,7 @@ export class Org extends SharedContainer implements Storable {
             publicKey: base64ToBytes(publicKey),
             members: members.map((m: any) => new OrgMember().fromRaw(m)),
             groups: groups.map((g: any) => new Group().fromRaw(g)),
+            invites: invites.map((g: any) => new Invite().fromRaw(g)),
             vaults
         });
 
@@ -124,8 +139,8 @@ export class Org extends SharedContainer implements Storable {
         return this.members.find(m => m.id === id);
     }
 
-    isMember(account: Account) {
-        return !!this.getMember(account);
+    isMember(acc: { id: AccountID }) {
+        return !!this.getMember(acc);
     }
 
     getGroup(id: GroupID) {
@@ -145,6 +160,14 @@ export class Org extends SharedContainer implements Storable {
 
     getGroupsForVault({ id }: Vault) {
         return this.groups.filter(group => group.vaults.some(v => v.id === id));
+    }
+
+    getInvite(id: InviteID) {
+        return this.invites.find(inv => inv.id === id);
+    }
+
+    removeInvite({ id }: Invite) {
+        this.invites = this.invites.filter(inv => inv.id !== id);
     }
 
     async initialize(account: Account) {

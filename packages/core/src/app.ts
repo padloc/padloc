@@ -1,7 +1,7 @@
 import { EventEmitter } from "./event-target";
 import { Storage, Storable } from "./storage";
 import { Serializable } from "./encoding";
-// import { InvitePurpose } from "./invite";
+import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Group } from "./group";
@@ -17,7 +17,8 @@ import {
     CreateAccountParams,
     InitAuthParams,
     CreateSessionParams,
-    RecoverAccountParams
+    RecoverAccountParams,
+    GetInviteParams
     // CreateVaultParams
 } from "./api";
 import { Client } from "./client";
@@ -418,10 +419,10 @@ export class App extends EventEmitter {
         return this._vaults.get(id) || null;
     }
 
-    async createVault(name: string, org: Org, groups: Group[] = []): Promise<Vault> {
+    async createVault(name: string, org: Org, groups: Group[] = org ? [org.everyone] : []): Promise<Vault> {
         let vault = new Vault();
         vault.name = name;
-        vault.org = org.id;
+        vault.org = { id: org.id, name: org.name };
         await vault.updateAccessors([org.admins, ...groups]);
         vault = await this.api.createVault(vault);
         for (const group of groups) {
@@ -462,6 +463,7 @@ export class App extends EventEmitter {
         this._vaults.set(this.account.mainVault, vault);
 
         for (const org of this.orgs) {
+            // TODO: Prevent duplicate loading of vaults
             for (const group of org.getGroupsForMember(this.account)) {
                 await group.access(this.account);
                 for (const { id } of group.vaults) {
@@ -491,6 +493,7 @@ export class App extends EventEmitter {
         const promises = [this.syncVault({ id: this.account.mainVault })] as Promise<any>[];
 
         for (const org of this.orgs) {
+            // TODO: Prevent duplicate loading of vaults
             for (const group of org.getGroupsForMember(this.account)) {
                 promises.push(...group.vaults.map(vault => this.syncVault(vault, group)));
             }
@@ -650,61 +653,34 @@ export class App extends EventEmitter {
 
     // INVITES
 
-    // async createInvite(vault: Vault, email: string, purpose?: InvitePurpose) {
-    //     const invite = await vault.createInvite(email, purpose);
-    //     this.dispatch("invite-created", { invite });
-    //     await this.syncVault(vault);
-    //     return invite;
-    // }
-    //
-    // async getInvite(vaultId: string, id: string) {
-    //     let vault = this.getVault(vaultId);
-    //     if (vault) {
-    //         vault = await this.syncVault(vault);
-    //         return vault.invites.get(id);
-    //     } else {
-    //         try {
-    //             return await this.api.getInvite({ vault: vaultId, id });
-    //         } catch (e) {
-    //             return null;
-    //         }
-    //     }
-    // }
-    //
-    // async acceptInvite(invite: Invite, secret: string) {
-    //     const success = await invite.accept(this.account!.info, secret);
-    //     if (success) {
-    //         await this.api.acceptInvite(invite);
-    //         await this.mainVault!.addSubVault({ ...invite.vault! } as VaultInfo);
-    //         await this.syncVault(this.mainVault!);
-    //     }
-    //     return success;
-    // }
-    //
-    // async confirmInvite(invite: Invite) {
-    //     const vault = this.getVault(invite.vault!.id)!;
-    //     const invitee = invite.invitee!;
-    //
-    //     let permissions;
-    //     if (invite.purpose === "confirm_membership") {
-    //         const existing = vault.members.get(invitee.id);
-    //         permissions = (existing && existing.permissions) || undefined;
-    //     }
-    //
-    //     // unsuspend member in subvaults
-    //     for (const { id } of vault.vaults) {
-    //         const sub = this.getVault(id)!;
-    //         const mem = sub.getMember(invitee);
-    //         if (mem) {
-    //             sub.addMember(invitee, mem.permissions);
-    //         }
-    //         await this.syncVault(sub);
-    //     }
-    //
-    //     await vault.addMember(invite!.invitee!, permissions);
-    //     vault.invites.remove(invite!);
-    //     await this.syncVault(vault);
-    // }
+    async createInvite(org: Org, email: string, purpose?: InvitePurpose) {
+        const invite = new Invite(email, purpose);
+        await invite.initialize(org, this.account!);
+        org.invites.push(invite);
+        this.dispatch("invite-created", { invite });
+        await this.api.updateOrg(org);
+        return invite;
+    }
+
+    async getInvite(orgId: string, id: string) {
+        return this.api.getInvite(new GetInviteParams({ org: orgId, id }));
+    }
+
+    async acceptInvite(invite: Invite, secret: string) {
+        const success = await invite.accept(this.account!, secret);
+        if (success) {
+            await this.api.acceptInvite(invite);
+        }
+        return success;
+    }
+
+    async confirmInvite(invite: Invite) {
+        const org = this.getOrg(invite.org!.id)!;
+
+        await org.addMember(invite.invitee!);
+        org.removeInvite(invite);
+        await this.api.updateOrg(org);
+    }
 
     // SETTINGS / STATS
 

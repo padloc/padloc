@@ -19,7 +19,7 @@ export class Group extends SharedContainer {
 
     toRaw() {
         return {
-            ...super.toRaw(),
+            ...super.toRaw(["privateKey"]),
             publicKey: bytesToBase64(this.publicKey),
             signedPublicKey: this.signedPublicKey ? bytesToBase64(this.signedPublicKey) : undefined
         };

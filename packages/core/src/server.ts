@@ -7,7 +7,8 @@ import {
     InitAuthResponse,
     CreateAccountParams,
     RecoverAccountParams,
-    CreateSessionParams
+    CreateSessionParams,
+    GetInviteParams
 } from "./api";
 import { Storage } from "./storage";
 import {
@@ -21,16 +22,13 @@ import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
-// import { Invite } from "./invite";
+import { Invite } from "./invite";
 import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
 import { getProvider } from "./crypto";
 import { uuid } from "./util";
-import {
-    EmailVerificationMessage
-    //, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage
-} from "./messages";
+import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 
 const pendingAuths = new Map<string, SRPServer>();
 const cachedFakeAuthParams = new Map<string, Auth>();
@@ -94,7 +92,7 @@ export class Context implements API {
         }
 
         const srp = new SRPServer();
-        await srp.initialize(auth.verifier);
+        await srp.initialize(auth.verifier!);
 
         pendingAuths.set(auth.account, srp);
 
@@ -265,7 +263,8 @@ export class Context implements API {
         members,
         groups,
         admins,
-        everyone
+        everyone,
+        invites
     }: Org) {
         const { account } = this._requireAuth();
 
@@ -273,6 +272,44 @@ export class Context implements API {
 
         if (!org.isAdmin(account)) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        for (const invite of invites) {
+            if (!org.invites.some(inv => inv.id === invite.id)) {
+                let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}`;
+
+                // If account does not exist yet, create a email verification code
+                // and send it along with the url so they can skip that step
+                try {
+                    await this.storage.get(Auth, invite.email);
+                } catch (e) {
+                    if (e.code !== ErrorCode.NOT_FOUND) {
+                        throw e;
+                    }
+                    // account does not exist yet; add verification code to link
+                    const v = new EmailVerification(invite.email);
+                    await v.init();
+                    await this.storage.save(v);
+                    link += `?verify=${v.token}`;
+                }
+
+                this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
+            }
+        }
+
+        for (const member of members) {
+            if (!org.isMember(member)) {
+                const acc = await this.storage.get(Account, member.id);
+                acc.orgs.push(org.id);
+                await this.storage.save(acc);
+
+                if (member.id !== account.id) {
+                    this.messenger.send(
+                        member.email,
+                        new MemberAddedMessage(org, `${this.config.clientUrl}/org/${org.id}`)
+                    );
+                }
+            }
         }
 
         Object.assign(org, {
@@ -286,7 +323,8 @@ export class Context implements API {
             members,
             groups,
             admins,
-            everyone
+            everyone,
+            invites
         });
 
         await this.storage.save(org);
@@ -348,7 +386,7 @@ export class Context implements API {
             throw new Err(ErrorCode.BAD_REQUEST, "Shared vaults have to be attached to an organization.");
         }
 
-        const org = await this.storage.get(Org, vault.org!);
+        const org = await this.storage.get(Org, vault.org.id);
 
         if (!org.isAdmin(account)) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
@@ -375,7 +413,7 @@ export class Context implements API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        const org = await this.storage.get(Org, vault.org);
+        const org = await this.storage.get(Org, vault.org.id);
 
         // Only org admins can delete vaults
         if (!org.isAdmin(account)) {
@@ -399,52 +437,52 @@ export class Context implements API {
         await Promise.all(promises);
     }
 
-    // async getInvite({ vault, id }: { vault: string; id: string }) {
-    //     const v = new Vault(vault);
-    //     await this.storage.get(v);
-    //
-    //     const invite = v.invites.get(id);
-    //
-    //     if (!invite) {
-    //         throw new Err(ErrorCode.NOT_FOUND);
-    //     }
-    //
-    //     return invite;
-    // }
-    //
-    // async acceptInvite(invite: Invite) {
-    //     if (!invite.accepted) {
-    //         throw new Err(ErrorCode.BAD_REQUEST);
-    //     }
-    //
-    //     const { account } = this._requireAuth();
-    //
-    //     const vault = new Vault(invite.vault!.id);
-    //
-    //     await this.storage.get(vault);
-    //
-    //     const existing = vault.invites.get(invite.id);
-    //
-    //     if (!existing) {
-    //         throw new Err(ErrorCode.NOT_FOUND);
-    //     }
-    //
-    //     if (existing.email !== account.email) {
-    //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    //     }
-    //
-    //     if (!existing.accepted && invite.invitor) {
-    //         this.messenger.send(
-    //             invite.invitor.email,
-    //             new InviteAcceptedMessage(invite, `${this.config.clientUrl}/invite/${vault.id}/${invite.id}`)
-    //         );
-    //     }
-    //
-    //     vault.invites.update(invite);
-    //     vault.invites.revision = { id: uuid(), date: new Date() };
-    //
-    //     await this.storage.set(vault);
-    // }
+    async getInvite({ org: orgId, id }: GetInviteParams) {
+        const { account } = this._requireAuth();
+
+        const org = await this.storage.get(Org, orgId);
+        const invite = org.getInvite(id);
+
+        if (
+            !invite ||
+            // User may only see invite if they are a vault admin or the invite recipient
+            (!org.isAdmin(account) && invite.email !== account.email)
+        ) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
+
+        return invite;
+    }
+
+    async acceptInvite(invite: Invite) {
+        if (!invite.accepted) {
+            throw new Err(ErrorCode.BAD_REQUEST);
+        }
+
+        const { account } = this._requireAuth();
+
+        const org = await this.storage.get(Org, invite.org.id);
+        const existing = org.getInvite(invite.id);
+
+        if (!existing) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
+
+        if (existing.email !== account.email) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        if (!existing.accepted && invite.invitedBy) {
+            this.messenger.send(
+                invite.invitedBy.email,
+                new InviteAcceptedMessage(invite, `${this.config.clientUrl}/invite/${org.id}/${invite.id}`)
+            );
+        }
+
+        org.invites[org.invites.indexOf(existing)] = invite;
+
+        await this.storage.save(org);
+    }
     //
     // async createAttachment(att: Attachment) {
     //     const { account } = this._requireAuth();
@@ -550,27 +588,6 @@ export class Context implements API {
 
         await this.storage.delete(ev);
     }
-
-    // private async _transferVault({ vault, account }: { vault: string; account: string }, currentAccount: Account) {
-    //     const vlt = new Vault(vault);
-    //     await this.storage.get(vlt);
-    //
-    //     if (!vlt.isOwner(currentAccount)) {
-    //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    //     }
-    //
-    //     if (!vlt.members.get(account)) {
-    //         throw new Err(ErrorCode.BAD_REQUEST, "The receiving account needs to be a member of the transfered vault");
-    //     }
-    //
-    //     vlt.owner = account;
-    //     vlt.archived = true;
-    //     await this.storage.set(vlt);
-    //
-    //     for (const { id } of vlt.vaults) {
-    //         await this._transferVault({ vault: id, account }, currentAccount);
-    //     }
-    // }
 }
 
 export class Server {
@@ -585,7 +602,7 @@ export class Server {
         const res = { result: null };
         try {
             const context = new Context(this.config, this.storage, this.messenger, this.attachmentStorage);
-            context.device = req.device;
+            context.device = new DeviceInfo().fromRaw(req.device);
             await this._authenticate(req, context);
             await this._process(req, res, context);
             if (context.session) {
@@ -682,6 +699,14 @@ export class Server {
                     throw new Err(ErrorCode.BAD_REQUEST);
                 }
                 await ctx.deleteVault(params[0]);
+                break;
+
+            case "getInvite":
+                res.result = (await ctx.getInvite(new GetInviteParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "acceptInvite":
+                await ctx.acceptInvite(new Invite().fromRaw(params[0]));
                 break;
 
             default:

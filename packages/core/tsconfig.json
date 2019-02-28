@@ -19,6 +19,7 @@
         "pretty": true,
         "experimentalDecorators": true,
         "baseUrl": ".",
+        "rootDir": "src",
         "outDir": "lib"
     },
     "include": ["src/**/*.ts"],

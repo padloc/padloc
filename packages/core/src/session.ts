@@ -24,7 +24,7 @@ export class Session extends Serializable implements SessionInfo, Storable {
     updated = new Date(0);
     lastUsed = new Date(0);
     expires?: Date;
-    key!: Uint8Array;
+    key?: Uint8Array;
     device?: DeviceInfo;
 
     get info(): SessionInfo {
@@ -63,31 +63,48 @@ export class Session extends Serializable implements SessionInfo, Storable {
         return this._verify(signature, session + "_" + time + "_" + marshal(data));
     }
 
-    async serialize() {
+    validate() {
+        return (
+            typeof this.id === "string" &&
+            typeof this.account === "string" &&
+            this.created instanceof Date &&
+            this.updated instanceof Date &&
+            this.lastUsed instanceof Date &&
+            (!this.expires || this.expires instanceof Date) &&
+            (!this.key || this.key instanceof Uint8Array)
+        );
+    }
+
+    toRaw() {
         return {
-            ...this.info,
-            key: this.key
+            ...super.toRaw(),
+            key: this.key ? bytesToBase64(this.key) : undefined
         };
     }
 
-    async deserialize(raw: any) {
-        this.id = raw.id;
-        this.account = raw.account;
-        this.created = new Date(raw.created);
-        this.updated = new Date(raw.updated);
-        this.lastUsed = new Date(raw.lastUsed);
-        this.expires = raw.expires && new Date(raw.expires);
-        this.device = raw.device;
-        this.key = raw.key || "";
-        return this;
+    fromRaw({ id, account, created, updated, lastUsed, expires, device, key }: any) {
+        this.id = id;
+        this.account = account;
+        this.created = new Date(created);
+        this.updated = new Date(updated);
+        this.lastUsed = new Date(lastUsed);
+        this.expires = expires && new Date(expires);
+        this.device = device ? new DeviceInfo().fromRaw(device) : undefined;
+        this.key = key ? base64ToBytes(key) : undefined;
+        return super.fromRaw({});
     }
 
     private async _sign(message: string): Promise<string> {
-        const bytes = await getProvider().sign(this.key, stringToBytes(message), new HMACParams());
+        const bytes = await getProvider().sign(this.key!, stringToBytes(message), new HMACParams());
         return bytesToBase64(bytes);
     }
 
     private async _verify(signature: string, message: string): Promise<boolean> {
-        return await getProvider().verify(this.key, base64ToBytes(signature), stringToBytes(message), new HMACParams());
+        return await getProvider().verify(
+            this.key!,
+            base64ToBytes(signature),
+            stringToBytes(message),
+            new HMACParams()
+        );
     }
 }

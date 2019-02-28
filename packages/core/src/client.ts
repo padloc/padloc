@@ -6,7 +6,8 @@ import {
     InitAuthResponse,
     CreateAccountParams,
     RecoverAccountParams,
-    CreateSessionParams
+    CreateSessionParams,
+    GetInviteParams
 } from "./api";
 import { Sender, RequestProgress } from "./transport";
 import { DeviceInfo } from "./platform";
@@ -14,7 +15,7 @@ import { Session, SessionID } from "./session";
 import { Account } from "./account";
 import { Auth } from "./auth";
 import { Org, OrgID } from "./org";
-// import { Invite } from "./invite";
+import { Invite } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Err, ErrorCode } from "./error";
 // import { Attachment } from "./attachment";
@@ -41,7 +42,7 @@ export class Client implements API {
     async call(method: string, params?: any[], progress?: RequestProgress) {
         const { session } = this.state;
 
-        const req = { method, params, device: this.state.device };
+        const req = { method, params };
 
         if (session) {
             await session.authenticate(req);
@@ -159,14 +160,14 @@ export class Client implements API {
         await this.call("deleteVault", [id]);
     }
 
-    // async getInvite(params: { vault: string; id: string }): Promise<Invite> {
-    //     const res = await this.call("getInvite", [params.toRaw()]);
-    //     return new Invite().deserialize(res.result);
-    // }
-    //
-    // async acceptInvite(invite: Invite): Promise<void> {
-    //     await this.call("acceptInvite", [await invite.serialize()]);
-    // }
+    async getInvite(params: GetInviteParams): Promise<Invite> {
+        const res = await this.call("getInvite", [params.toRaw()]);
+        return new Invite().fromRaw(res.result);
+    }
+
+    async acceptInvite(invite: Invite): Promise<void> {
+        await this.call("acceptInvite", [await invite.toRaw()]);
+    }
     //
     // async createAttachment(att: Attachment): Promise<Attachment> {
     //     att.uploadProgress = new RequestProgress();

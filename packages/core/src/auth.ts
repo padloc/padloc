@@ -6,7 +6,7 @@ import { randomNumber } from "./util";
 
 export class Auth extends Serializable implements Storable {
     account: AccountID = "";
-    verifier!: Uint8Array;
+    verifier?: Uint8Array;
     keyParams = new PBKDF2Params();
 
     get id() {
@@ -20,13 +20,15 @@ export class Auth extends Serializable implements Storable {
     toRaw() {
         return {
             ...super.toRaw(),
-            verifier: bytesToBase64(this.verifier)
+            verifier: this.verifier ? bytesToBase64(this.verifier) : undefined
         };
     }
 
     validate() {
         return (
-            typeof this.email === "string" && typeof this.account === "string" && this.verifier instanceof Uint8Array
+            typeof this.email === "string" &&
+            typeof this.account === "string" &&
+            (typeof this.verifier === "undefined" || this.verifier instanceof Uint8Array)
         );
     }
 
@@ -34,7 +36,7 @@ export class Auth extends Serializable implements Storable {
         return super.fromRaw({
             email,
             account,
-            verifier: base64ToBytes(verifier),
+            verifier: (verifier && base64ToBytes(verifier)) || undefined,
             keyParams: new PBKDF2Params().fromRaw(keyParams)
         });
     }

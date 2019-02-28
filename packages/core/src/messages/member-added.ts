@@ -3,7 +3,7 @@ import { Message } from "../messenger";
 import { base as baseHTML, paragraph as p, button } from "./base-html";
 
 export class MemberAddedMessage implements Message {
-    constructor(private org: Org, private link: string) {}
+    constructor(public org: Org, public link: string) {}
 
     get title() {
         return `You have sucessfully join ${ this.org.name } on Padloc!`;

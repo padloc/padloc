@@ -11,7 +11,7 @@ export type VaultRole = "admin" | "writer" | "reader";
 
 export class Vault extends SharedContainer implements Storable {
     id: VaultID = "";
-    org?: OrgID;
+    org?: { id: OrgID; name: string };
     name = "";
     owner: AccountID = "";
     created = new Date(0);
@@ -28,7 +28,7 @@ export class Vault extends SharedContainer implements Storable {
         return (
             typeof this.id === "string" &&
             typeof this.name === "string" &&
-            (typeof this.org === "string" || typeof this.org === "undefined") &&
+            (!this.org || (typeof this.org.id === "string" && typeof this.org.name === "string")) &&
             typeof this.owner === "string" &&
             (typeof this.archived === "undefined" || this.archived instanceof Date) &&
             (typeof this.revision === "undefined" || typeof this.revision === "object")
@@ -64,5 +64,9 @@ export class Vault extends SharedContainer implements Storable {
     merge(vault: Vault) {
         this.items.merge(vault.items);
         this.revision = this.items.revision;
+    }
+
+    toString() {
+        return this.org ? `${this.org.name}/${this.name}` : this.name;
     }
 }

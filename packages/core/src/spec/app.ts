@@ -2,16 +2,13 @@ import { App, AppState } from "../app";
 import { Server } from "../server";
 import { Vault } from "../vault";
 import { StubMessenger } from "../messenger";
-import {
-    EmailVerificationMessage
-    //, InviteCreatedMessage
-} from "../messages";
+import { EmailVerificationMessage, InviteCreatedMessage, MemberAddedMessage } from "../messages";
 import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
 import { ErrorCode } from "../error";
 import { MemoryAttachmentStorage } from "../attachment";
 import { Spec } from "./spec";
-import { assertReject } from "../../test/lib/util";
+import { assertReject } from "./test-util";
 
 export function appSpec(): Spec {
     console.log("testing app");
@@ -25,18 +22,18 @@ export function appSpec(): Spec {
         new MemoryAttachmentStorage()
     );
     const app = new App(new MemoryStorage(), new DirectSender(server));
-    // const otherApp = new App(new MemoryStorage(), new DirectSender(server));
+    const otherApp = new App(new MemoryStorage(), new DirectSender(server));
 
     const user = {
         email: "lengden@olga.com",
         name: "Lengden Olga",
         password: "correct battery horse staple"
     };
-    // const otherUser = {
-    //     email: "max@mustermann.com",
-    //     name: "Max Mustermann",
-    //     password: "password"
-    // };
+    const otherUser = {
+        email: "max@mustermann.com",
+        name: "Max Mustermann",
+        password: "password"
+    };
     // let sharedVaultID = "";
     // let otherVaultID = "";
 
@@ -88,59 +85,37 @@ export function appSpec(): Spec {
             assert.equal(vault.name, name);
             assert.equal(app.vaults.length, 2);
         });
-        //
-        // test("Create Subvault", async () => {
-        //     const name = "My Subvault";
-        //     const parent = app.getVault(sharedVaultID)!;
-        //     const vault = await app.createVault(name, parent);
-        //     assert.equal(vault.name, name);
-        //     assert.isTrue(vault.isOwner(app.account));
-        //     assert.isTrue(vault.isAdmin(app.account));
-        //     assert.equal(app.vaults.length, 3);
-        //     assert.isTrue(await parent.verifySubVault(vault.info));
-        // });
-        //
-        // test("Create Vault Item", async () => {
-        //     const vault = app.vaults[1];
-        //     const name = "My Vault Item";
-        //     const item = await app.createItem(name, vault);
-        //     assert.ownInclude(item, { name });
-        //     const listItem = app.getItem(item.id)!;
-        //     assert.equal(listItem.item.name, item.name);
-        //     assert.equal(listItem.vault.id, vault.id);
-        //     assert.equal(app.items.length, 1);
-        //     assert.equal(vault.items.size, 1);
-        //     await app.syncVault(vault);
-        // });
-        //
-        // test("Invite Member", async () => {
-        //     let vault = app.vaults[1];
-        //     let invite = await app.createInvite(vault, otherUser.email);
-        //     // Remember secret - in practice this will be communicated
-        //     // directly between the invitor and invitee
-        //     const { secret } = invite;
-        //     assert.equal(invite.email, otherUser.email);
-        //     const message = messenger.lastMessage(otherUser.email) as InviteCreatedMessage;
-        //     const linkPattern = new RegExp(`${clientUrl}/invite/${vault.id}/${invite.id}\\?verify=(.*)`);
-        //     assert.match(message.link, linkPattern);
-        //     const [, verify] = message.link.match(linkPattern)!;
-        //     await otherApp.signup({ ...otherUser, verify });
-        //     assert.ownInclude(otherApp.account, otherUser);
-        //     invite = (await otherApp.getInvite(vault.id, invite.id))!;
-        //     await otherApp.acceptInvite(invite, secret);
-        //     invite = (await app.getInvite(vault.id, invite.id))!;
-        //     assert.isTrue(await invite.verify());
-        //     await app.confirmInvite(invite);
-        //     vault = app.getVault(vault.id)!;
-        //     assert.isTrue(vault.isMember(otherApp.account));
-        //     await otherApp.synchronize();
-        //     assert.equal(otherApp.vaults.length, 2);
-        //     assert.equal(otherApp.vaults[1].id, vault.id);
-        //     assert.isTrue(otherApp.vaults[1].isMember(otherApp.account));
-        //     assert.equal(otherApp.items.length, 1);
-        //     assert.equal(otherApp.vaults[1].items.size, 1);
-        //     assert.equal(app.vaults[1].invites.size, 0);
-        // });
+
+        test("Invite Member", async () => {
+            const org = app.orgs[0];
+            let invite = await app.createInvite(org, otherUser.email);
+            // Remember secret - in practice this will be communicated
+            // directly between the invitor and invitee
+            const { secret } = invite;
+            assert.equal(invite.email, otherUser.email);
+            const inviteMessage = messenger.lastMessage(otherUser.email) as InviteCreatedMessage;
+            assert.instanceOf(inviteMessage, InviteCreatedMessage);
+            const linkPattern = new RegExp(`${clientUrl}/invite/${org.id}/${invite.id}\\?verify=(.*)`);
+            assert.match(inviteMessage.link, linkPattern);
+            const [, verify] = inviteMessage.link.match(linkPattern)!;
+
+            await otherApp.signup({ ...otherUser, verify });
+            invite = (await otherApp.getInvite(org.id, invite.id))!;
+            await otherApp.acceptInvite(invite, secret);
+            invite = (await app.getInvite(org.id, invite.id))!;
+            invite.secret = secret;
+            assert.isTrue(await invite.verify());
+            await app.confirmInvite(invite);
+            assert.isTrue(org.isMember(otherApp.account!));
+            await otherApp.synchronize();
+            assert.equal(otherApp.orgs.length, 1);
+            assert.equal(otherApp.vaults.length, 2);
+            assert.isTrue(otherApp.orgs[0].isMember(otherApp.account!));
+
+            const addedMessage = messenger.lastMessage(otherUser.email) as MemberAddedMessage;
+            assert.instanceOf(addedMessage, MemberAddedMessage);
+            assert.equal(addedMessage.org.id, org.id);
+        });
         //
         // test("Add Member To Subvault", async () => {
         //     app.vaults[2].addMember(app.vaults[1].members.get(otherApp.account!.id)!);
@@ -269,8 +244,8 @@ export function appSpec(): Spec {
         test("Logout", async () => {
             const mainVaultId = app.account!.mainVault;
             await app.logout();
-            assert.isNull(app.account, "Account should be unloaded.");
-            assert.isNull(app.state.session, "Session should be unloaded.");
+            assert.isNotOk(app.account, "Account should be unloaded.");
+            assert.isNotOk(app.state.session, "Session should be unloaded.");
             assertReject(
                 () => app.storage.get(Vault, mainVaultId),
                 ErrorCode.NOT_FOUND,

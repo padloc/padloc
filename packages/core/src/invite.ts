@@ -1,15 +1,16 @@
-import { getProvider, PBKDF2Params, HMACParams, HMACKey, AESKey } from "./crypto";
-import { SimpleContainer } from "./container";
+import { getProvider, PBKDF2Params, HMACParams, HMACKey } from "./crypto";
+import { SharedContainer } from "./container";
 import { stringToBytes, bytesToString, bytesToHex, marshal, unmarshal } from "./encoding";
 import { Account, AccountID } from "./account";
 import { Org, OrgID } from "./org";
-import { Serializable } from "./encoding";
 import { uuid } from "./util";
 
-export type InvitePurpose = "join_vault" | "confirm_membership";
+export type InvitePurpose = "join_org" | "confirm_membership";
 
-export class Invite extends Serializable {
-    id: string = "";
+export type InviteID = string;
+
+export class Invite extends SharedContainer {
+    id: InviteID = "";
     created = new Date();
     expires = new Date();
 
@@ -22,6 +23,7 @@ export class Invite extends Serializable {
     invitee: {
         id: AccountID;
         name: string;
+        email: string;
         publicKey: Uint8Array;
         signedPublicKey: Uint8Array;
     } | null = null;
@@ -33,7 +35,7 @@ export class Invite extends Serializable {
 
     set secret(s: string) {
         this._secret = s;
-        this._key = null;
+        this._signingKey = null;
     }
 
     get secret() {
@@ -49,47 +51,46 @@ export class Invite extends Serializable {
     }
 
     private _secret: string = "";
-    private _key: HMACKey | null = null;
+    private _signingKey: HMACKey | null = null;
 
-    keyParams = new PBKDF2Params({
+    signingKeyParams = new PBKDF2Params({
         iterations: 1e6
     });
 
     signingParams = new HMACParams();
 
-    secretData = new SimpleContainer();
-
-    constructor(public email = "", public purpose: InvitePurpose = "join_vault") {
+    constructor(public email = "", public purpose: InvitePurpose = "join_org") {
         super();
     }
 
-    async initialize(org: Org, invitor: Account, encKey: AESKey, duration = 12) {
+    async initialize(org: Org, invitor: Account, duration = 12) {
         this.id = uuid();
         this.expires = new Date(Date.now() + 1000 * 60 * 60 * duration);
         this.secret = bytesToHex(await getProvider().randomBytes(4));
-        this.secretData.access(encKey);
-        await this.secretData.setData(stringToBytes(marshal({ secret: this.secret, expires: this.expires })));
-        this.keyParams.salt = await getProvider().randomBytes(16);
-        this.org = await this._sign(org);
+        await this.updateAccessors([org.admins]);
+        await this.setData(stringToBytes(marshal({ secret: this.secret, expires: this.expires })));
+        this.signingKeyParams.salt = await getProvider().randomBytes(16);
+        this.org = await this._sign({ id: org.id, name: org.name, publicKey: org.publicKey });
         this.invitedBy = { id: invitor.id, email: invitor.email, name: invitor.name };
     }
 
     validate() {
         return (
-            typeof this.id === "string" &&
-            typeof this.email === "string" &&
-            ["join_vault", "confirm_membership"].includes(this.purpose) &&
-            typeof this.org === "object" &&
-            typeof this.org.id === "string" &&
-            typeof this.org.name === "string" &&
-            (this.invitee === null ||
-                (typeof this.invitee === "object" &&
-                    typeof this.invitee.id === "string" &&
-                    typeof this.invitee.name === "string")) &&
-            typeof this.invitedBy === "object" &&
-            typeof this.invitedBy.id === "string" &&
-            typeof this.invitedBy.name === "string" &&
-            typeof this.invitedBy.email === "string"
+            super.validate() &&
+            (typeof this.id === "string" &&
+                typeof this.email === "string" &&
+                ["join_org", "confirm_membership"].includes(this.purpose) &&
+                typeof this.org === "object" &&
+                typeof this.org.id === "string" &&
+                typeof this.org.name === "string" &&
+                (this.invitee === null ||
+                    (typeof this.invitee === "object" &&
+                        typeof this.invitee.id === "string" &&
+                        typeof this.invitee.name === "string")) &&
+                typeof this.invitedBy === "object" &&
+                typeof this.invitedBy.id === "string" &&
+                typeof this.invitedBy.name === "string" &&
+                typeof this.invitedBy.email === "string")
         );
     }
 
@@ -102,14 +103,13 @@ export class Invite extends Serializable {
         org,
         invitee,
         invitedBy,
-        keyParams,
+        signingKeyParams,
         signingParams,
-        secretData
+        ...rest
     }: any) {
-        this.keyParams.fromRaw(keyParams);
+        this.signingKeyParams.fromRaw(signingKeyParams);
         this.signingParams.fromRaw(signingParams);
-        this.secretData.fromRaw(secretData);
-        return super.fromRaw({
+        Object.assign(this, {
             id,
             email,
             purpose,
@@ -119,13 +119,19 @@ export class Invite extends Serializable {
             created: new Date(created),
             expires: new Date(expires)
         });
+        return super.fromRaw(rest);
     }
 
     async accept(account: Account, secret: string): Promise<boolean> {
         this.secret = secret;
         const verified = this.org && (await this._verify(this.org));
         if (verified) {
-            this.invitee = await this._sign(account);
+            this.invitee = await this._sign({
+                id: account.id,
+                name: account.name,
+                email: account.email,
+                publicKey: account.publicKey
+            });
             return true;
         } else {
             this.secret = "";
@@ -140,18 +146,21 @@ export class Invite extends Serializable {
         return (await this._verify(this.org)) && (await this._verify(this.invitee));
     }
 
-    async accessSecret(key: AESKey) {
-        this.secretData.access(key);
-        const { secret, expires } = unmarshal(bytesToString(await this.secretData.getData()));
+    async access(org: Org) {
+        await super.access(org.admins);
+        const { secret, expires } = unmarshal(bytesToString(await this.getData()));
         this.secret = secret;
-        this.expires = expires;
+        this.expires = new Date(expires);
     }
 
     private async _getKey() {
-        if (!this._key) {
-            this._key = (await getProvider().deriveKey(stringToBytes(this.secret), this.keyParams)) as HMACKey;
+        if (!this._signingKey) {
+            this._signingKey = (await getProvider().deriveKey(
+                stringToBytes(this.secret),
+                this.signingKeyParams
+            )) as HMACKey;
         }
-        return this._key;
+        return this._signingKey;
     }
 
     private async _sign<T extends { publicKey: Uint8Array }>(obj: T): Promise<T & { signedPublicKey: Uint8Array }> {
