@@ -87,7 +87,7 @@ export function appSpec(): Spec {
         });
 
         test("Invite Member", async () => {
-            const org = app.orgs[0];
+            let org = app.orgs[0];
             let invite = await app.createInvite(org, otherUser.email);
             // Remember secret - in practice this will be communicated
             // directly between the invitor and invitee
@@ -106,7 +106,7 @@ export function appSpec(): Spec {
             invite.secret = secret;
             assert.isTrue(await invite.verify());
             await app.confirmInvite(invite);
-            assert.isTrue(org.isMember(otherApp.account!));
+            assert.isTrue(app.orgs[0].isMember(otherApp.account!));
             await otherApp.synchronize();
             assert.equal(otherApp.orgs.length, 1);
             assert.equal(otherApp.vaults.length, 2);
@@ -115,6 +115,19 @@ export function appSpec(): Spec {
             const addedMessage = messenger.lastMessage(otherUser.email) as MemberAddedMessage;
             assert.instanceOf(addedMessage, MemberAddedMessage);
             assert.equal(addedMessage.org.id, org.id);
+        });
+
+        test("Create Group", async () => {
+            const org = app.orgs[0];
+            const { id } = await app.createGroup(org, "Some Group", org.members);
+            const group = app.orgs[0].getGroup(id)!;
+            assert.ok(group);
+            assert.isTrue(group.isMember(app.account!));
+            assert.isTrue(group.isMember(otherApp.account!));
+
+            await app.createVault("Another Vault", app.orgs[0], [group]);
+            await otherApp.synchronize();
+            assert.equal(otherApp.vaults.length, 3);
         });
         //
         // test("Add Member To Subvault", async () => {

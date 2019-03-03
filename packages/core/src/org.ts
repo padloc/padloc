@@ -144,7 +144,7 @@ export class Org extends SharedContainer implements Storable {
     }
 
     getGroup(id: GroupID) {
-        return this.groups.find(g => g.id === id);
+        return [...this.groups, this.admins, this.everyone].find(g => g.id === id);
     }
 
     getMembersForGroup(group: Group): OrgMember[] {
@@ -159,7 +159,7 @@ export class Org extends SharedContainer implements Storable {
     }
 
     getGroupsForVault({ id }: Vault) {
-        return this.groups.filter(group => group.vaults.some(v => v.id === id));
+        return [this.everyone, ...this.groups].filter(group => group.vaults.some(v => v.id === id));
     }
 
     getInvite(id: InviteID) {
@@ -172,7 +172,9 @@ export class Org extends SharedContainer implements Storable {
 
     async initialize(account: Account) {
         this.admins.id = uuid();
+        this.admins.name = "Admins";
         this.everyone.id = uuid();
+        this.everyone.name = "Everyone";
 
         // Add account to admin group
         await this.admins.updateAccessors([account]);
@@ -214,39 +216,83 @@ export class Org extends SharedContainer implements Storable {
                 this.privateKey = base64ToBytes(privateKey);
                 this.invitesKey = base64ToBytes(invitesKey);
             }
+
+            // Access all groups via admin group
+            await Promise.all(this.groups.map(group => group.access(this.admins)));
+
+            // Verify public keys for members and groups
+            await Promise.all(
+                [...this.members, ...this.groups].map(async (obj: OrgMember) => {
+                    if (!(await this.verify(obj))) {
+                        throw new Err(
+                            ErrorCode.PUBLIC_KEY_MISMATCH,
+                            `Failed to verify public key for member org group: ${obj.name}.`
+                        );
+                    }
+                })
+            );
         }
 
         await Promise.all(this.getGroupsForMember(account).map(g => g.access(account)));
     }
 
-    async addMember(account: { id: string; name: string; email: string; publicKey: Uint8Array }) {
-        if (!this.privateKey) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        const member = new OrgMember(await this.sign(account));
-        this.members.push(member);
-        await this.everyone.updateAccessors(this.members);
-    }
-
-    async sign(obj: { publicKey: Uint8Array; signedPublicKey?: Uint8Array }) {
+    async sign<T extends { publicKey: Uint8Array; signedPublicKey?: Uint8Array }>(obj: T): Promise<T> {
         obj.signedPublicKey = await getProvider().sign(this.privateKey, obj.publicKey, this.signingParams);
         return obj;
     }
 
-    async verify(subj: OrgMember | Group): Promise<boolean> {
+    async verify(obj: OrgMember | Group): Promise<boolean> {
         let verified = false;
-        if (!subj.signedPublicKey) {
+        if (!obj.signedPublicKey) {
             return false;
         }
         try {
             verified = await getProvider().verify(
                 this.publicKey,
-                subj.signedPublicKey,
-                subj.publicKey,
+                obj.signedPublicKey,
+                obj.publicKey,
                 this.signingParams
             );
         } catch (e) {}
         return verified;
+    }
+
+    async addMember({
+        id,
+        name,
+        email,
+        publicKey
+    }: {
+        id: string;
+        name: string;
+        email: string;
+        publicKey: Uint8Array;
+    }) {
+        if (!this.privateKey) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        const member = await this.sign(new OrgMember({ id, name, email, publicKey }));
+        this.members.push(member);
+        await this.updateGroupMembers(this.everyone, this.members);
+    }
+
+    async createGroup(name: string, members: OrgMember[] = []) {
+        const group = new Group();
+        group.id = uuid();
+        group.name = name;
+        await this.updateGroupMembers(group, members);
+        await group.generateKeys();
+        this.groups.push(await this.sign(group));
+        return group;
+    }
+
+    async updateGroupMembers(group: Group, members: OrgMember[]) {
+        // Admin group has access to all other groups
+        await group.updateAccessors([this.admins, ...members]);
+    }
+
+    async updateVault(vault: Vault) {
+        await vault.updateAccessors([this.admins, ...this.getGroupsForVault(vault)]);
     }
 }

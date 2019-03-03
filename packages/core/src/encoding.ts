@@ -1,7 +1,7 @@
 import { Err, ErrorCode } from "./error";
 import { toByteArray, fromByteArray, byteLength, isBase64 } from "./base64";
 
-export abstract class Serializable {
+export class Serializable {
     get type(): string {
         return this.constructor.name.toLowerCase();
     }
@@ -54,6 +54,11 @@ export abstract class Serializable {
 
     fromBytes(bytes: Uint8Array): this {
         return this.fromJSON(bytesToString(bytes));
+    }
+
+    clone() {
+        // @ts-ignore: This causes a typescript warning for some reason but works fine in practice
+        return new this.constructor().fromRaw(this.toRaw());
     }
 }
 

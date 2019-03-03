@@ -3,7 +3,7 @@ import { Storage, Storable } from "./storage";
 import { Serializable } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID } from "./org";
+import { Org, OrgID, OrgMember } from "./org";
 import { Group } from "./group";
 import { VaultItem, Field, Tag, createVaultItem } from "./item";
 import { Account } from "./account";
@@ -419,19 +419,26 @@ export class App extends EventEmitter {
         return this._vaults.get(id) || null;
     }
 
-    async createVault(name: string, org: Org, groups: Group[] = org ? [org.everyone] : []): Promise<Vault> {
+    async createVault(name: string, org: Org, groups: Group[] = []): Promise<Vault> {
         let vault = new Vault();
         vault.name = name;
         vault.org = { id: org.id, name: org.name };
-        await vault.updateAccessors([org.admins, ...groups]);
         vault = await this.api.createVault(vault);
-        for (const group of groups) {
-            group.vaults.push({ id: vault.id, readonly: false });
+
+        org = org.clone();
+        await org.access(this.account!);
+
+        for (const { id } of groups) {
+            org.getGroup(id)!.vaults.push({ id: vault.id, readonly: false });
         }
-        await this.api.updateOrg(org);
+
+        await org.updateVault(vault);
+        await this.api.updateVault(vault);
+        await this.updateOrg(org, org);
         await this.synchronize();
+
         this.dispatch("vault-created", { vault });
-        return this.getVault(vault.id)!;
+        return vault;
     }
 
     // async deleteVault({ id }: { id: VaultID }): Promise<void> {
@@ -522,7 +529,7 @@ export class App extends EventEmitter {
         }
 
         if (localVault) {
-            result = new Vault().fromRaw(localVault.toRaw());
+            result = localVault.clone();
             result.merge(remoteVault);
         } else {
             result = remoteVault;
@@ -651,14 +658,30 @@ export class App extends EventEmitter {
         }
     }
 
+    async updateOrg(org: Org, changes: Partial<Org>) {
+        org = Object.assign(org.clone(), changes);
+        org = await this.api.updateOrg(org);
+        await org.access(this.account!);
+        this._orgs.set(org.id, org);
+        await this.storage.save(org);
+        this.dispatch("org-changed", { org });
+    }
+
+    async createGroup(org: Org, name: string, members: OrgMember[]) {
+        org = org.clone();
+        await org.access(this.account!);
+        const group = await org.createGroup(name, members);
+        await this.updateOrg(org, org);
+        return group;
+    }
+
     // INVITES
 
     async createInvite(org: Org, email: string, purpose?: InvitePurpose) {
         const invite = new Invite(email, purpose);
         await invite.initialize(org, this.account!);
-        org.invites.push(invite);
+        await this.updateOrg(org, { invites: [...org.invites, invite] });
         this.dispatch("invite-created", { invite });
-        await this.api.updateOrg(org);
         return invite;
     }
 
@@ -675,11 +698,16 @@ export class App extends EventEmitter {
     }
 
     async confirmInvite(invite: Invite) {
-        const org = this.getOrg(invite.org!.id)!;
+        let org = this.getOrg(invite.org!.id)!;
+
+        // clone org
+        org = org.clone();
+        await org.access(this.account!);
 
         await org.addMember(invite.invitee!);
         org.removeInvite(invite);
-        await this.api.updateOrg(org);
+
+        await this.updateOrg(org, org);
     }
 
     // SETTINGS / STATS

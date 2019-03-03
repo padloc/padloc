@@ -1,7 +1,6 @@
 // import { S3 } from "aws-sdk";
 import { join } from "path";
 import { readFile, writeFile, ensureDir, remove, readdir, stat } from "fs-extra";
-import { marshal, unmarshal, bytesToString, stringToBytes } from "@padloc/core/src/encoding";
 import { Attachment, AttachmentStorage } from "@padloc/core/src/attachment";
 import { Vault } from "@padloc/core/src/vault";
 import { Err, ErrorCode } from "@padloc/core/src/error";
@@ -72,7 +71,7 @@ export class FileSystemStorage implements AttachmentStorage {
     async get(att: Attachment) {
         try {
             const data = await readFile(this._getPath(att));
-            await att.deserialize(unmarshal(bytesToString(data)));
+            await att.fromBytes(data);
             return att;
         } catch (e) {
             throw new Err(ErrorCode.NOT_FOUND);
@@ -81,7 +80,7 @@ export class FileSystemStorage implements AttachmentStorage {
 
     async put(att: Attachment) {
         await ensureDir(join(this.config.path, att.vault));
-        await writeFile(this._getPath(att), stringToBytes(marshal(await att.serialize())));
+        await writeFile(this._getPath(att), await att.toBytes());
     }
 
     async delete(att: Attachment) {

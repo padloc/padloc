@@ -55,7 +55,7 @@ export class Group extends SharedContainer {
         await this.setData(stringToBytes(marshal({ privateKey: bytesToBase64(privateKey) })));
     }
 
-    async access(account: Account) {
+    async access(account: Account | Group) {
         await super.access(account);
         const { privateKey } = unmarshal(bytesToString(await this.getData()));
         this.privateKey = base64ToBytes(privateKey);
