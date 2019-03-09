@@ -115,7 +115,14 @@ export class SharedContainer extends BaseContainer {
 
     async updateAccessors(subjects: { id: string; publicKey: RSAPublicKey }[]) {
         // Get existing data so we can reencrypt it after rotating the key
-        const data = this.encryptedData && this._key && (await this.getData());
+        let data: Uint8Array | null = null;
+
+        if (this.encryptedData) {
+            if (!this._key) {
+                throw "Non-empty containers need to be unlocked before accessors can be updated!";
+            }
+            data = await this.getData();
+        }
 
         // Generate new key
         this._key = await getProvider().generateKey(new AESKeyParams());

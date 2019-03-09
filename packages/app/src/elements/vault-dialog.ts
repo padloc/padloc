@@ -92,7 +92,7 @@ export class VaultDialog extends Dialog<Vault, void> {
             }
 
             await app.updateOrg(org, org);
-            await app.syncVault(vault, org.admins);
+            await app.syncVault(vault);
             this._saveButton.success();
         } catch (e) {
             this._saveButton.fail();

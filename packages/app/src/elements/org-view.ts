@@ -1,6 +1,7 @@
 import { until } from "lit-html/directives/until";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { Invite } from "@padloc/core/lib/invite.js";
+import { Group } from "@padloc/core/lib/group.js";
 import { formatDateFromNow } from "../util.js";
 import { shared, mixins } from "../styles";
 import { dialog, prompt } from "../dialog.js";
@@ -8,6 +9,7 @@ import { app, router } from "../init.js";
 import { BaseElement, element, html, property } from "./base.js";
 import { Input } from "./input.js";
 import { VaultDialog } from "./vault-dialog.js";
+import { GroupDialog } from "./group-dialog.js";
 import "./toggle-button.js";
 import "./account-item.js";
 import "./icon.js";
@@ -19,6 +21,9 @@ export class OrgView extends BaseElement {
 
     @dialog("pl-vault-dialog")
     private _vaultDialog: VaultDialog;
+
+    @dialog("pl-group-dialog")
+    private _groupDialog: GroupDialog;
 
     private get _org() {
         return app.getOrg(this.selected);
@@ -72,6 +77,10 @@ export class OrgView extends BaseElement {
                 return name;
             }
         });
+    }
+
+    private async _showGroup(group: Group) {
+        this._groupDialog.show(group);
     }
 
     private async _showVault({ id }: { id: string }) {
@@ -188,7 +197,7 @@ export class OrgView extends BaseElement {
 
                 ${groups.map(
                     group => html`
-                        <div>${group.name}</div>
+                        <div @click=${() => this._showGroup(group)}>${group.name}</div>
                     `
                 )}
 
