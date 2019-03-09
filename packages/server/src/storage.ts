@@ -1,7 +1,6 @@
 // @ts-ignore
 import * as level from "level";
-import { marshal, unmarshal } from "@padloc/core/src/encoding";
-import { Storage, Storable } from "@padloc/core/src/storage";
+import { Storage, Storable, StorableConstructor } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 
 export class LevelDBStorage implements Storage {
@@ -11,10 +10,11 @@ export class LevelDBStorage implements Storage {
         this._db = level(`${this.path}`);
     }
 
-    async get(s: Storable) {
+    async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string) {
         try {
-            const data = await this._db.get(this._getKey(s));
-            await s.deserialize(unmarshal(data));
+            const res = cls instanceof Storable ? cls : new cls();
+            const raw = await this._db.get(`${res.type}_${id}`);
+            return res.fromJSON(raw);
         } catch (e) {
             if (e.notFound) {
                 throw new Err(ErrorCode.NOT_FOUND);
@@ -24,19 +24,15 @@ export class LevelDBStorage implements Storage {
         }
     }
 
-    async set(s: Storable) {
-        await this._db.put(this._getKey(s), marshal(await s.serialize()));
+    async save<T extends Storable>(obj: T) {
+        await this._db.put(`${obj.type}_${obj.id}`, obj.toJSON());
     }
 
-    async delete(s: Storable) {
-        await this._db.del(this._getKey(s));
+    async delete<T extends Storable>(obj: T) {
+        await this._db.del(`${obj.type}_${obj.id}`);
     }
 
     async clear() {
         throw "not implemented";
-    }
-
-    private _getKey(s: Storable) {
-        return `${s.kind}_${s.pk}`;
     }
 }

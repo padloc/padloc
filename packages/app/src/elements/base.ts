@@ -93,32 +93,34 @@ export class BaseElement extends LitElement {
 
         for (const decl of declarations) {
             (async () => {
-                let target: EventTarget | undefined = undefined;
+                let targets: EventTarget[] = [];
 
                 if (!decl.target) {
-                    target = (this as any) as EventTarget;
+                    targets = [(this as any) as EventTarget];
                 } else if (typeof decl.target === "string") {
                     // a string target property indicates that the target is a child of this element,
                     // so we have to make sure the renderRoot is created first
                     await this.updateComplete;
-                    target = (this.$(decl.target) as any) as EventTarget;
+                    targets = (this.$$(decl.target) as any) as EventTarget[];
                 } else if (typeof decl.target.addEventListener === "function") {
-                    target = decl.target;
+                    targets = [decl.target];
                 }
 
-                if (!target) {
+                if (!targets.length) {
                     throw "invalid event target: " + decl.target;
                 }
 
                 const handler = (e: Event) => {
                     decl.handler.call(this, e);
                 };
-                target.addEventListener(decl.name, handler);
-                this._listeners.push({
-                    target,
-                    handler,
-                    name: decl.name
-                });
+                for (const target of targets) {
+                    target.addEventListener(decl.name, handler);
+                    this._listeners.push({
+                        target,
+                        handler,
+                        name: decl.name
+                    });
+                }
             })();
         }
     }

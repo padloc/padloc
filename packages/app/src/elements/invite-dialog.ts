@@ -47,25 +47,25 @@ export class InviteDialog extends Dialog<Invite, void> {
     }
 
     renderContent() {
-        const { email, expires, expired, vault, accepted, purpose } = this.invite!;
+        const { email, expires, expired, org, accepted, purpose } = this.invite!;
         const forMe = email === app.account!.email;
 
         const status =
             this._verified === false
                 ? { icon: "error", class: "warning", text: $l("The invite could not be validated.") }
                 : expired
-                    ? { icon: "time", class: "warning", text: $l("This invite has expired") }
-                    : accepted
-                        ? { icon: "check", class: "", text: $l("Accepted") }
-                        : {
-                              icon: "time",
-                              class: "",
-                              text: until(
-                                  (async () => {
-                                      return $l("expires {0}", await formatDateFromNow(expires));
-                                  })()
-                              )
-                          };
+                ? { icon: "time", class: "warning", text: $l("This invite has expired") }
+                : accepted
+                ? { icon: "check", class: "", text: $l("Accepted") }
+                : {
+                      icon: "time",
+                      class: "",
+                      text: until(
+                          (async () => {
+                              return $l("expires {0}", await formatDateFromNow(expires));
+                          })()
+                      )
+                  };
 
         return html`
             ${shared}
@@ -130,7 +130,7 @@ export class InviteDialog extends Dialog<Invite, void> {
                     box-shadow: rgba(0, 0, 0, 0.2) 0 2px 2px;
                 }
 
-                .tag.vault {
+                .tag.org {
                     font-size: var(--font-size-small);
                     padding: 4px 16px;
                 }
@@ -148,35 +148,26 @@ export class InviteDialog extends Dialog<Invite, void> {
             </style>
 
             <div class="invite">
-
                 <pl-icon icon="cancel" class="tap close-button" @click=${() => this.done()}></pl-icon>
 
-                <h1>${purpose === "confirm_membership" ? $l("Confirm Membership") : $l("Vault Invite")}</h1>
+                <h1>${purpose === "confirm_membership" ? $l("Confirm Membership") : $l("Org Invite")}</h1>
 
                 <div class="tags">
+                    <div class="tag org">
+                        <pl-icon icon="org"></pl-icon>
 
-                    <div class="tag vault">
-
-                        <pl-icon icon="vault"></pl-icon>
-
-                        <div>${vault!.name}</div>
-
+                        <div>${org!.name}</div>
                     </div>
-
                 </div>
 
                 ${forMe ? this._inviteeBody() : this._adminBody()}
 
                 <div class="tags">
-
                     <div class="tag ${status.class}">
-
                         <pl-icon icon="${status.icon}"></pl-icon>
 
                         <div>${status.text}</div>
-
                     </div>
-
                 </div>
 
                 <div class="invite-text" ?hidden=${!forMe || !accepted}>
@@ -187,25 +178,22 @@ export class InviteDialog extends Dialog<Invite, void> {
                 </div>
 
                 <div class="layout horizontal">
-
-                ${forMe ? this._inviteeActions() : this._adminActions()}
-
+                    ${forMe ? this._inviteeActions() : this._adminActions()}
                 </div>
-
             </div>
         `;
     }
 
     private _inviteeBody() {
-        const { vault, purpose } = this.invite!;
+        const { org, purpose } = this.invite!;
         const { _enableActions } = this;
         return html`
             <div class="invite-text">
                 ${$l(
                     purpose === "confirm_membership"
-                        ? "Please confirm your membership for the {0} vault."
-                        : "You've been invited to join the {0} vault.",
-                    vault!.name
+                        ? "Please confirm your membership for the {0} org."
+                        : "You've been invited to join the {0} org.",
+                    org!.name
                 )}
             </div>
 
@@ -214,7 +202,8 @@ export class InviteDialog extends Dialog<Invite, void> {
                 id="codeInput"
                 ?hidden=${!_enableActions}
                 @enter=${() => this._accept()}
-                label="${$l("Enter Confirmation Code")}">
+                label="${$l("Enter Confirmation Code")}"
+            >
             </pl-input>
 
             <div class="invite-text error" ?hidden=${!this._errorMessage}>
@@ -224,7 +213,7 @@ export class InviteDialog extends Dialog<Invite, void> {
             <div class="invite-text small" ?hidden=${!_enableActions}>
                 ${$l(
                     "If you haven't received the confirmation code yet, please ask an " +
-                        "admin of the vault to provide it to you!"
+                        "admin of the org to provide it to you!"
                 )}
             </div>
         `;
@@ -236,7 +225,8 @@ export class InviteDialog extends Dialog<Invite, void> {
                 id="acceptButton"
                 class="tap flex tiles-2"
                 ?hidden=${!this._enableActions}
-                @click=${() => this._accept()}>
+                @click=${() => this._accept()}
+            >
                 ${$l(this.invite!.purpose === "confirm_membership" ? "Confirm" : "Accept")}
             </pl-loading-button>
         `;
@@ -274,12 +264,11 @@ export class InviteDialog extends Dialog<Invite, void> {
                 ?hidden=${accepted}
                 id="resendButton"
                 class="tap flex tiles-3"
-                @click=${() => this._resend()}>
-
+                @click=${() => this._resend()}
+            >
                 <pl-icon icon="mail"></pl-icon>
 
                 <div>${$l("Resend")}</div>
-
             </pl-loading-button>
 
             <pl-loading-button
@@ -287,23 +276,17 @@ export class InviteDialog extends Dialog<Invite, void> {
                 ?disabled=${!accepted || expired || !this._verified}
                 id="confirmButton"
                 class="tap flex tiles-3"
-                @click=${() => this._confirm()}>
-
+                @click=${() => this._confirm()}
+            >
                 <pl-icon icon="invite"></pl-icon>
 
                 <div>${$l(purpose === "confirm_membership" ? "Confirm Member" : "Add Member")}</div>
-
             </pl-loading-button>
 
-            <pl-loading-button
-                id="deleteButton"
-                class="tap flex tiles-2"
-                @click=${() => this._delete()}>
-
+            <pl-loading-button id="deleteButton" class="tap flex tiles-2" @click=${() => this._delete()}>
                 <pl-icon icon="delete"></pl-icon>
 
                 <div>${$l("Delete")}</div>
-
             </pl-loading-button>
         `;
     }
@@ -314,9 +297,8 @@ export class InviteDialog extends Dialog<Invite, void> {
         }
         this._deleteButton.start();
         try {
-            const vault = app.getVault(this.invite!.vault!.id)!;
-            await vault!.invites.remove(this.invite!);
-            await app.syncVault(vault!);
+            const org = app.getOrg(this.invite!.org!.id)!;
+            await app.updateOrg(org, { invites: org.invites.filter(invite => invite.id !== this.invite!.id) });
             this._deleteButton.success();
             this.done();
         } catch (e) {
@@ -331,10 +313,10 @@ export class InviteDialog extends Dialog<Invite, void> {
             return;
         }
         this._resendButton.start();
-        const vault = app.getVault(this.invite!.vault!.id);
+        let org = app.getOrg(this.invite!.org!.id)!;
         try {
-            await vault!.invites.remove(this.invite!);
-            this.invite = await app.createInvite(vault!, this.invite!.email, this.invite!.purpose);
+            org = await app.updateOrg(org, { invites: org.invites.filter(invite => invite.id !== this.invite!.id) });
+            this.invite = await app.createInvite(org!, this.invite!.email, this.invite!.purpose);
             this._verified = await this.invite.verify();
             this._resendButton.success();
         } catch (e) {
@@ -390,9 +372,9 @@ export class InviteDialog extends Dialog<Invite, void> {
             this.done();
             alert(
                 $l(
-                    "You have successfully added {0} to the {1} vault!",
+                    "You have successfully added {0} to the {1} org!",
                     this.invite!.invitee!.name || this.invite!.invitee!.email,
-                    this.invite!.vault!.name
+                    this.invite!.org!.name
                 ),
                 { type: "success" }
             );

@@ -49,125 +49,123 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
 
     render() {
         return html`
-        ${config.cssVars}
-        ${shared}
+            ${config.cssVars} ${shared}
 
-        <style>
-            :host {
-                background: linear-gradient(var(--color-gradient-highlight-to) 0%, var(--color-gradient-highlight-from) 100%);
-                overflow: hidden;
-                color: var(--color-foreground);
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                animation: fadeIn 0.5s backwards 0.2s;
-                perspective: 1000px;
-            }
-
-            .wrapper {
-                ${mixins.fullbleed()}
-                ${mixins.gradientDark()}
-                display: flex;
-                transform: translate3d(0, 0, 0);
-                transform-origin: 0 center;
-                transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
-                will-change: transform, opacity;
-            }
-
-            pl-menu {
-                width: 200px;
-            }
-
-            .views {
-                flex: 1;
-                position: relative;
-                perspective: 1000px;
-                margin: var(--gutter-size);
-                margin-left: 0;
-            }
-
-            .views > * {
-                ${mixins.fullbleed()}
-                will-change: opacity;
-            }
-
-            .views > :not(.showing) {
-                opacity: 0;
-                z-index: -1;
-                pointer-events: none;
-            }
-
-            .wrapper:not(.active),
-            :host(.dialog-open) .wrapper {
-                transform: translate3d(0, 0, -150px) rotateX(5deg);
-            }
-
-            @media (max-width: ${config.narrowWidth}px) {
+            <style>
                 :host {
-                    background: #222;
-                    box-shadow: inset #000 0 0 1000px;
+                    background: linear-gradient(
+                        var(--color-gradient-highlight-to) 0%,
+                        var(--color-gradient-highlight-from) 100%
+                    );
+                    overflow: hidden;
+                    color: var(--color-foreground);
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    animation: fadeIn 0.5s backwards 0.2s;
+                    perspective: 1000px;
                 }
 
                 .wrapper {
-                    background: transparent;
-                }
-
-                .views {
+                    display: flex;
+                    transform: translate3d(0, 0, 0);
+                    transform-origin: 0 center;
+                    transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
+                    will-change: transform, opacity;
                     ${mixins.fullbleed()}
-                    margin: 0;
-                    transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                }
-
-                :host([menu-open]) .views {
-                    transform: translate(200px, 0);
+                    ${mixins.gradientDark()}
                 }
 
                 pl-menu {
-                    transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+                    width: 200px;
                 }
 
-                :host(:not([menu-open])) pl-menu {
+                .views {
+                    flex: 1;
+                    position: relative;
+                    perspective: 1000px;
+                    margin: var(--gutter-size);
+                    margin-left: 0;
+                }
+
+                .views > * {
+                    will-change: opacity;
+                    ${mixins.fullbleed()}
+                }
+
+                .views > :not(.showing) {
                     opacity: 0;
-                    transform: translate(-100px, 0);
+                    z-index: -1;
+                    pointer-events: none;
                 }
-            }
 
-            @media (min-width: ${config.wideWidth}px) {
-                .wrapper {
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
-                    margin: auto;
-                    overflow: hidden;
-                    top: 20px;
-                    left: 20px;
-                    right: 20px;
-                    bottom: 20px;
-                    max-width: 1200px;
-                    max-height: 900px;
+                .wrapper:not(.active),
+                :host(.dialog-open) .wrapper {
+                    transform: translate3d(0, 0, -150px) rotateX(5deg);
                 }
-            }
 
-        </style>
+                @media (max-width: ${config.narrowWidth}px) {
+                    :host {
+                        background: #222;
+                        box-shadow: inset #000 0 0 1000px;
+                    }
 
-        <pl-start id="startView"></pl-start>
+                    .wrapper {
+                        background: transparent;
+                    }
 
-        <div class="wrapper">
+                    .views {
+                        margin: 0;
+                        transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+                        ${mixins.fullbleed()}
+                    }
 
-            <pl-menu></pl-menu>
+                    :host([menu-open]) .views {
+                        transform: translate(200px, 0);
+                    }
 
-            <div class="views">
+                    pl-menu {
+                        transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1),
+                            opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+                    }
 
-                <pl-settings ?showing=${this._view === this._settings}></pl-settings>
+                    :host(:not([menu-open])) pl-menu {
+                        opacity: 0;
+                        transform: translate(-100px, 0);
+                    }
+                }
 
-                <pl-browse ?showing=${this._view === this._browse}></pl-browse>
+                @media (min-width: ${config.wideWidth}px) {
+                    .wrapper {
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
+                        margin: auto;
+                        overflow: hidden;
+                        top: 20px;
+                        left: 20px;
+                        right: 20px;
+                        bottom: 20px;
+                        max-width: 1200px;
+                        max-height: 900px;
+                    }
+                }
+            </style>
 
-                <pl-manage ?showing=${this._view === this._manage}></pl-manage>
+            <pl-start id="startView"></pl-start>
 
+            <div class="wrapper">
+                <pl-menu></pl-menu>
+
+                <div class="views">
+                    <pl-settings ?showing=${this._view === this._settings}></pl-settings>
+
+                    <pl-browse ?showing=${this._view === this._browse}></pl-browse>
+
+                    <pl-manage ?showing=${this._view === this._manage}></pl-manage>
+                </div>
             </div>
-
-        </div>
-`;
+        `;
     }
 
     @listen("toggle-menu")
@@ -238,12 +236,8 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
                 }
 
                 if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
-                    const [, vault, id] = match;
-                    const invite = await app.getInvite(vault, id);
-                    if (invite) {
-                        params.invite = vault + "," + id;
-                        params.email = invite.email;
-                    }
+                    const [, org, id] = match;
+                    params.invite = org + "," + id;
                 }
 
                 router.go(params.verify ? "signup" : "login", params);
@@ -263,15 +257,15 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
         if (path === "settings") {
             this._openView(this._settings);
             this._menu.selected = "settings";
-        } else if ((match = path.match(/^vaults(?:\/([^\/]+))?$/))) {
+        } else if ((match = path.match(/^orgs(?:\/([^\/]+))?$/))) {
             const [, id] = match;
-            if (id && !app.getVault(id)) {
-                router.go("vaults");
+            if (id && !app.getOrg(id)) {
+                router.go("");
                 return;
             }
             this._manage.selected = id || "";
             this._openView(this._manage);
-            this._menu.selected = "vaults";
+            this._menu.selected = "orgs";
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
             if (id && !app.getItem(id)) {
@@ -282,9 +276,14 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             this._openView(this._browse);
             this._menu.selected = "items";
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
-            const [, vault, id] = match;
-            const invite = await app.getInvite(vault, id);
+            const [, orgId, id] = match;
+            const invite = await app.getInvite(orgId, id);
+            const org = app.getOrg(orgId);
             if (invite) {
+                if (org && org.isAdmin(app.account!)) {
+                    await org.unlock(app.account!);
+                    await invite.unlock(org);
+                }
                 await this._inviteDialog.show(invite);
                 if (router.canGoBack) {
                     router.back();

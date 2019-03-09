@@ -7,8 +7,7 @@ import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
 import { ErrorCode } from "../error";
 import { MemoryAttachmentStorage } from "../attachment";
-import { Spec } from "./spec";
-import { assertReject } from "./test-util";
+import { Spec, assertReject } from "./spec";
 
 export function appSpec(): Spec {
     console.log("testing app");
@@ -260,11 +259,13 @@ export function appSpec(): Spec {
             assert.isNotOk(app.account, "Account should be unloaded.");
             assert.isNotOk(app.state.session, "Session should be unloaded.");
             assertReject(
+                assert,
                 () => app.storage.get(Vault, mainVaultId),
                 ErrorCode.NOT_FOUND,
                 "Main Vault should be purged from storage"
             );
             assertReject(
+                assert,
                 () => app.storage.get(AppState, app.state.id),
                 ErrorCode.NOT_FOUND,
                 "Application state should be perged from strorage"

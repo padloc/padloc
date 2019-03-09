@@ -8,7 +8,7 @@ import { bytesToHex } from "../src/encoding";
 const provider = getProvider();
 
 suite("Group", () => {
-    test("save/access", async () => {
+    test("save/unlock", async () => {
         const accessors: { id: string; privateKey: Uint8Array; publicKey: Uint8Array }[] = [];
         for (let i = 0; i < 3; i++) {
             accessors.push(Object.assign({ id: i.toString() }, await provider.generateKey(new RSAKeyParams())));
@@ -31,7 +31,7 @@ suite("Group", () => {
             group = new Group().fromRaw(group.toRaw());
 
             // Decrypt shared key via private key
-            await group.access(each as Account);
+            await group.unlock(each as Account);
 
             assert.equal(bytesToHex(group.publicKey), bytesToHex(publicKey));
             assert.equal(bytesToHex(group.privateKey), bytesToHex(privateKey));

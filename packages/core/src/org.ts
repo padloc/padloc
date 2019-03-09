@@ -24,14 +24,12 @@ export class OrgMember extends Serializable {
     publicKey!: RSAPublicKey;
     signedPublicKey!: Uint8Array;
 
-    constructor(vals?: Partial<OrgMember>) {
+    constructor({ id, name, email, publicKey, signedPublicKey }: Partial<OrgMember> = {}) {
         super();
-        if (vals) {
-            Object.assign(this, vals);
-        }
+        Object.assign(this, { id, name, email, publicKey, signedPublicKey });
     }
 
-    toRaw() {
+    toRaw(): any {
         return {
             ...super.toRaw(["privateKey"]),
             publicKey: bytesToBase64(this.publicKey),
@@ -155,11 +153,29 @@ export class Org extends SharedContainer implements Storable {
     }
 
     getGroupsForMember({ id }: OrgMember | Account) {
-        return [...this.groups.filter(g => g.accessors.some(a => a.id === id)), this.everyone];
+        return [this.admins, this.everyone, ...this.groups].filter(g => g.accessors.some(a => a.id === id));
     }
 
-    getGroupsForVault({ id }: Vault) {
-        return [this.everyone, ...this.groups].filter(group => group.vaults.some(v => v.id === id));
+    getGroupsForVault({ id }: Vault): Group[] {
+        return [this.admins, this.everyone, ...this.groups].filter(group => group.vaults.some(v => v.id === id));
+    }
+
+    getUnlockingGroupForVault({ id }: { id: VaultID }, account: OrgMember | Account) {
+        const availableGroups = this.getGroupsForMember(account);
+        return availableGroups.find(group => group.vaults.some(v => v.id === id));
+    }
+
+    getVaultsForMember(acc: OrgMember | Account) {
+        const results: { id: VaultID; name: string; group: Group }[] = [];
+
+        for (const vault of this.vaults) {
+            const group = this.getUnlockingGroupForVault(vault, acc);
+            if (group) {
+                results.push(Object.assign({ group }, vault));
+            }
+        }
+
+        return results;
     }
 
     getInvite(id: InviteID) {
@@ -170,14 +186,14 @@ export class Org extends SharedContainer implements Storable {
         this.invites = this.invites.filter(inv => inv.id !== id);
     }
 
-    async initialize(account: Account) {
+    async initialize({ id, name, email, publicKey }: Account) {
         this.admins.id = uuid();
         this.admins.name = "Admins";
         this.everyone.id = uuid();
         this.everyone.name = "Everyone";
 
         // Add account to admin group
-        await this.admins.updateAccessors([account]);
+        await this.admins.updateAccessors([{ id, publicKey }]);
 
         // Generate admin group keys
         await this.admins.generateKeys();
@@ -187,8 +203,9 @@ export class Org extends SharedContainer implements Storable {
 
         await this.generateKeys();
 
-        await this.addMember(account);
-
+        const member = await this.sign(new OrgMember({ id, name, email, publicKey }));
+        this.members.push(member);
+        await this.everyone.updateAccessors([this.admins, member]);
         await this.everyone.generateKeys();
 
         await this.sign(this.admins);
@@ -207,36 +224,21 @@ export class Org extends SharedContainer implements Storable {
         );
     }
 
-    async access(account: Account) {
-        if (this.isAdmin(account)) {
-            await this.admins.access(account);
-            await super.access(this.admins);
-            if (this.encryptedData) {
-                const { privateKey, invitesKey } = unmarshal(bytesToString(await this.getData()));
-                this.privateKey = base64ToBytes(privateKey);
-                this.invitesKey = base64ToBytes(invitesKey);
-            }
-
-            // Access all groups via admin group
-            await Promise.all(this.groups.map(group => group.access(this.admins)));
-
-            // Verify public keys for members and groups
-            await Promise.all(
-                [...this.members, ...this.groups].map(async (obj: OrgMember) => {
-                    if (!(await this.verify(obj))) {
-                        throw new Err(
-                            ErrorCode.PUBLIC_KEY_MISMATCH,
-                            `Failed to verify public key for member org group: ${obj.name}.`
-                        );
-                    }
-                })
-            );
+    async unlock(account: Account) {
+        await this.admins.unlock(account);
+        await super.unlock(this.admins);
+        if (this.encryptedData) {
+            const { privateKey, invitesKey } = unmarshal(bytesToString(await this.getData()));
+            this.privateKey = base64ToBytes(privateKey);
+            this.invitesKey = base64ToBytes(invitesKey);
         }
-
-        await Promise.all(this.getGroupsForMember(account).map(g => g.access(account)));
     }
 
     async sign<T extends { publicKey: Uint8Array; signedPublicKey?: Uint8Array }>(obj: T): Promise<T> {
+        if (!this.privateKey) {
+            throw "Organisation needs to be unlocked first.";
+        }
+
         obj.signedPublicKey = await getProvider().sign(this.privateKey, obj.publicKey, this.signingParams);
         return obj;
     }
@@ -257,6 +259,20 @@ export class Org extends SharedContainer implements Storable {
         return verified;
     }
 
+    async verifyAll() {
+        // Verify public keys for members and groups
+        await Promise.all(
+            [...this.members, ...this.groups].map(async (obj: OrgMember) => {
+                if (!(await this.verify(obj))) {
+                    throw new Err(
+                        ErrorCode.PUBLIC_KEY_MISMATCH,
+                        `Failed to verify public key for member org group: ${obj.name}.`
+                    );
+                }
+            })
+        );
+    }
+
     async addMember({
         id,
         name,
@@ -274,25 +290,17 @@ export class Org extends SharedContainer implements Storable {
 
         const member = await this.sign(new OrgMember({ id, name, email, publicKey }));
         this.members.push(member);
-        await this.updateGroupMembers(this.everyone, this.members);
+        await this.everyone.unlock(this.admins);
+        await this.everyone.updateAccessors([this.admins, ...this.members]);
     }
 
     async createGroup(name: string, members: OrgMember[] = []) {
         const group = new Group();
         group.id = uuid();
         group.name = name;
-        await this.updateGroupMembers(group, members);
+        await group.updateAccessors([this.admins, ...members]);
         await group.generateKeys();
         this.groups.push(await this.sign(group));
         return group;
-    }
-
-    async updateGroupMembers(group: Group, members: OrgMember[]) {
-        // Admin group has access to all other groups
-        await group.updateAccessors([this.admins, ...members]);
-    }
-
-    async updateVault(vault: Vault) {
-        await vault.updateAccessors([this.admins, ...this.getGroupsForVault(vault)]);
     }
 }

@@ -174,11 +174,9 @@ export class Signup extends StartForm {
             </style>
 
             <div class="wrapper" hidden>
-
                 <div flex></div>
 
                 <form>
-
                     <pl-logo class="animate"></pl-logo>
 
                     <div class="title animate">
@@ -195,7 +193,8 @@ export class Signup extends StartForm {
                         .label=${$l("Email Address")}
                         .value=${this._email}
                         class="tiles-2 animate"
-                        @enter=${() => this._submitEmail()}>
+                        @enter=${() => this._submitEmail()}
+                    >
                     </pl-input>
 
                     <div class="hint animate">
@@ -210,30 +209,30 @@ export class Signup extends StartForm {
                         .label=${$l("Your Name")}
                         .value=${this._name}
                         class="tiles-2 animate"
-                        @enter=${() => this._submitEmail()}>
+                        @enter=${() => this._submitEmail()}
+                    >
                     </pl-input>
 
                     <div class="hint animate">
                         ${$l("What should we call you?")}
                     </div>
 
-                    <pl-loading-button id="submitEmailButton" class="tap tiles-3 animate" @click=${() =>
-                        this._submitEmail()}>
+                    <pl-loading-button
+                        id="submitEmailButton"
+                        class="tap tiles-3 animate"
+                        @click=${() => this._submitEmail()}
+                    >
                         ${$l("Continue")}
                     </pl-loading-button>
-
                 </form>
 
                 <div flex></div>
-
             </div>
 
             <div class="wrapper" hidden>
-
                 <div flex></div>
 
                 <form>
-
                     <h1 class="animate">${$l("Confirm Your Email Address")}</h1>
 
                     <div class="hint animate">
@@ -251,28 +250,26 @@ export class Signup extends StartForm {
                         required
                         .label=${$l("Confirmation Code")}
                         class="tiles-2 animate"
-                        @enter=${() => this._verifyEmail()}>
+                        @enter=${() => this._verifyEmail()}
+                    >
                     </pl-input>
 
                     <pl-loading-button
                         id="verifyEmailButton"
                         class="tap tiles-3 animate"
-                        @click=${() => this._verifyEmail()}>
+                        @click=${() => this._verifyEmail()}
+                    >
                         ${$l("Continue")}
                     </pl-loading-button>
-
                 </form>
 
                 <div flex></div>
-
             </div>
 
             <div class="wrapper" hidden>
-
                 <div flex></div>
 
                 <form class="master-password-form">
-
                     <h1 class="animate">
                         <div>${$l("Say hello to your")}</div>
                         <strong>${$l("Master Password")}</strong>
@@ -287,23 +284,16 @@ export class Signup extends StartForm {
                     </div>
 
                     <div class="master-password animate">
-
                         <div class="master-password-value">
-
                             <span>${this._password}</span>
-
                         </div>
 
-                        <pl-icon
-                            icon="edit"
-                            class="master-password-edit tap"
-                            @click=${this._editMasterPassword}>
+                        <pl-icon icon="edit" class="master-password-edit tap" @click=${this._editMasterPassword}>
                         </pl-icon>
 
                         <div class="master-password-cover">
                             ${isTouch() ? $l("[Tap To Reveal]") : $l("[Hover To Reveal]")}
                         </div>
-
                     </div>
 
                     <pl-password-input
@@ -311,7 +301,8 @@ export class Signup extends StartForm {
                         required
                         .label=${$l("Repeat Master Password")}
                         class="tiles-2 animate repeat-master-password"
-                        @enter=${() => this._submitPassword()}>
+                        @enter=${() => this._submitPassword()}
+                    >
                     </pl-password-input>
 
                     <div class="hint" hidden>
@@ -323,15 +314,16 @@ export class Signup extends StartForm {
                         )}
                     </div>
 
-                    <pl-loading-button id="submitPasswordButton" class="tap tiles-3 animate" @click=${() =>
-                        this._submitPassword()}>
+                    <pl-loading-button
+                        id="submitPasswordButton"
+                        class="tap tiles-3 animate"
+                        @click=${() => this._submitPassword()}
+                    >
                         ${$l("Continue")}
                     </pl-loading-button>
-
                 </form>
 
                 <div flex></div>
-
             </div>
         `;
     }
@@ -354,13 +346,13 @@ export class Signup extends StartForm {
         const name = this._nameInput.value;
 
         if (this._verificationToken) {
-            router.go("signup/password");
+            router.go("signup/password", { ...router.params, email, name });
         } else {
             this._submitEmailButton.start();
             try {
                 await app.requestEmailVerification(email);
                 this._submitEmailButton.success();
-                router.go("signup/verify", { email, name });
+                router.go("signup/verify", { ...router.params, email, name });
             } catch (e) {
                 this._submitEmailButton.fail();
                 throw e;
@@ -414,9 +406,9 @@ export class Signup extends StartForm {
                         { type: "warning" }
                     );
                     if (choice === 0) {
-                        this.dispatch("cancel");
+                        router.go("login");
                     } else {
-                        router.go("signup", { name });
+                        router.go("signup", Object.assign(router.params, { verify: undefined }));
                         this._emailInput.focus();
                     }
                     return;

@@ -160,7 +160,7 @@ export class Context implements API {
     }
 
     async createAccount({ account, auth, verify }: CreateAccountParams): Promise<Account> {
-        this._checkEmailVerificationToken(account.email, verify);
+        await this._checkEmailVerificationToken(account.email, verify);
 
         // Make sure account does not exist yet
         try {

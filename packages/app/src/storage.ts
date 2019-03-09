@@ -1,28 +1,24 @@
-import { Storage, Storable, StorableConstructor } from "@padloc/core/src/storage";
-import { Err, ErrorCode } from "@padloc/core/src/error";
+import { Storage, Storable, StorableConstructor } from "@padloc/core/lib/storage";
+import { Err, ErrorCode } from "@padloc/core/lib/error";
 // @ts-ignore
 import localStorage from "localforage/src/localforage";
 
 export class LocalStorage implements Storage {
-    keyFor(s: Storable) {
-        return `${s.type}_${s.id}`;
-    }
-
     async save(s: Storable) {
-        await localStorage.setItem(this.keyFor(s), s);
+        await localStorage.setItem(`${s.type}_${s.id}`, s.toRaw());
     }
 
-    async get<T extends Storable>(cls: T | StorableConstructor<T>) {
+    async get<T extends Storable>(cls: T | StorableConstructor<T>, id: string) {
         const s = cls instanceof Storable ? cls : new cls();
-        const data = (await localStorage.getItem(this.keyFor(s))) as string;
+        const data = await localStorage.getItem(`${s.type}_${id}`);
         if (!data) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
-        return s.fromJSON(data);
+        return s.fromRaw(data);
     }
 
     async delete(s: Storable) {
-        await localStorage.removeItem(this.keyFor(s));
+        await localStorage.removeItem(`${s.type}_${s.id}`);
     }
 
     async clear() {

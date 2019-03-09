@@ -56,11 +56,11 @@ export abstract class BaseContainer extends Serializable {
         });
     }
 
-    abstract access(secret: unknown): Promise<void>;
+    abstract unlock(secret: unknown): Promise<void>;
 }
 
 export class SimpleContainer extends BaseContainer {
-    async access(key: AESKey) {
+    async unlock(key: AESKey) {
         this._key = key;
     }
 }
@@ -73,7 +73,7 @@ export class PBES2Container extends BaseContainer {
         return super.fromRaw(rest);
     }
 
-    async access(password: string) {
+    async unlock(password: string) {
         if (!this.keyParams.salt.length) {
             this.keyParams.salt = await getProvider().randomBytes(16);
         }
@@ -105,7 +105,7 @@ export class SharedContainer extends BaseContainer {
     keyParams: RSAEncryptionParams = new RSAEncryptionParams();
     accessors: Accessor[] = [];
 
-    async access({ id, privateKey }: { id: string; privateKey: RSAPrivateKey }) {
+    async unlock({ id, privateKey }: { id: string; privateKey: RSAPrivateKey }) {
         const accessor = this.accessors.find(a => a.id === id);
         if (!accessor || !accessor.encryptedKey) {
             throw new Err(ErrorCode.MISSING_ACCESS);
@@ -122,7 +122,7 @@ export class SharedContainer extends BaseContainer {
 
         // Reencrypt data with new key
         if (data) {
-            this.setData(data);
+            await this.setData(data);
         }
 
         this.accessors = await Promise.all(

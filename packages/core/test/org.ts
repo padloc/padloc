@@ -22,7 +22,7 @@ suite("Org", () => {
         assert.isTrue(await org.verify(org.everyone));
     });
 
-    test("Load/Access Org", async () => {
+    test("Load/Unlock Org", async () => {
         org = new Org().fromRaw(org.toRaw());
 
         assert.ok(!org.privateKey, "Private key should in accessible before explicitly accessed by an admin");
@@ -35,7 +35,7 @@ suite("Org", () => {
         assert.isTrue(await org.verify(org.admins));
         assert.isTrue(await org.verify(org.everyone));
 
-        await org.access(account);
+        await org.unlock(account);
 
         assert.instanceOf(
             org.privateKey,

@@ -50,8 +50,8 @@ export class Vault extends SharedContainer implements Storable {
         return super.fromRaw(rest);
     }
 
-    async access(account: Account | Group) {
-        await super.access(account);
+    async unlock(account: Account | Group) {
+        await super.unlock(account);
         if (this.encryptedData) {
             this.items.fromBytes(await this.getData());
         }

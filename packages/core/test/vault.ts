@@ -29,7 +29,7 @@ suite("Vault", () => {
             vault = new Vault().fromRaw(vault.toRaw());
 
             // Decrypt shared key via private key
-            await vault.access(each as Account);
+            await vault.unlock(each as Account);
 
             assert.deepEqual([...vault.items][0], testItem);
         }

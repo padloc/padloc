@@ -76,7 +76,7 @@ export const shared = html`
         text-shadow: inherit;
     }
 
-    input, select {
+    input:not([type="checkbox"]), select {
         border: none;
         -webkit-appearance: none;
         -mox-appearance: none;

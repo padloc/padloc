@@ -61,7 +61,6 @@ export class Login extends StartForm {
             <div flex></div>
 
             <form>
-
                 <pl-logo class="animate"></pl-logo>
 
                 <pl-input
@@ -72,7 +71,8 @@ export class Login extends StartForm {
                     .label=${$l("Email Adress")}
                     .value=${this._email}
                     class="tiles-2 animate tap"
-                    @enter=${() => this._submit()}>
+                    @enter=${() => this._submit()}
+                >
                 </pl-input>
 
                 <pl-password-input
@@ -81,7 +81,8 @@ export class Login extends StartForm {
                     select-on-focus
                     .label=${$l("Master Password")}
                     class="tiles-2 animate tap"
-                    @enter=${() => this._submit()}>
+                    @enter=${() => this._submit()}
+                >
                 </pl-password-input>
 
                 <pl-loading-button id="loginButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
@@ -94,13 +95,9 @@ export class Login extends StartForm {
                     ${$l("New to Padlock?")}
                 </div>
 
-                <button
-                    type="button"
-                    class="tap signup animate"
-                    @click=${() => router.go("signup")}>
-                        ${$l("Sign Up Now")}
+                <button type="button" class="tap signup animate" @click=${() => router.go("signup")}>
+                    ${$l("Sign Up Now")}
                 </button>
-
             </form>
 
             <div flex></div>

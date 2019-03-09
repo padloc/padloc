@@ -1,6 +1,6 @@
 import { getProvider, PBKDF2Params, HMACParams, HMACKey } from "./crypto";
 import { SharedContainer } from "./container";
-import { stringToBytes, bytesToString, bytesToHex, marshal, unmarshal } from "./encoding";
+import { stringToBytes, bytesToString, bytesToHex, bytesToBase64, base64ToBytes, marshal, unmarshal } from "./encoding";
 import { Account, AccountID } from "./account";
 import { Org, OrgID } from "./org";
 import { uuid } from "./util";
@@ -113,13 +113,37 @@ export class Invite extends SharedContainer {
             id,
             email,
             purpose,
-            org,
-            invitee,
+            org: org && {
+                ...org,
+                publicKey: base64ToBytes(org.publicKey),
+                signedPublicKey: base64ToBytes(org.signedPublicKey)
+            },
+            invitee: invitee && {
+                ...invitee,
+                publicKey: base64ToBytes(invitee.publicKey),
+                signedPublicKey: base64ToBytes(invitee.signedPublicKey)
+            },
             invitedBy,
             created: new Date(created),
             expires: new Date(expires)
         });
         return super.fromRaw(rest);
+    }
+
+    toRaw() {
+        return {
+            ...super.toRaw(),
+            org: this.org && {
+                ...this.org,
+                publicKey: bytesToBase64(this.org.publicKey),
+                signedPublicKey: bytesToBase64(this.org.signedPublicKey)
+            },
+            invitee: this.invitee && {
+                ...this.invitee,
+                publicKey: bytesToBase64(this.invitee.publicKey),
+                signedPublicKey: bytesToBase64(this.invitee.signedPublicKey)
+            }
+        };
     }
 
     async accept(account: Account, secret: string): Promise<boolean> {
@@ -146,8 +170,8 @@ export class Invite extends SharedContainer {
         return (await this._verify(this.org)) && (await this._verify(this.invitee));
     }
 
-    async access(org: Org) {
-        await super.access(org.admins);
+    async unlock(org: Org) {
+        await super.unlock(org.admins);
         const { secret, expires } = unmarshal(bytesToString(await this.getData()));
         this.secret = secret;
         this.expires = new Date(expires);

@@ -4,7 +4,7 @@ import { ErrorCode } from "../src/error";
 import { stringToBytes, bytesToString } from "../src/encoding";
 import { SimpleContainer, PBES2Container, SharedContainer } from "../src/container";
 import { getProvider, RSAKeyParams } from "../src/crypto";
-import { assertReject } from "../src/spec/test-util";
+import { assertReject } from "../src/spec/spec";
 
 const provider = getProvider();
 
@@ -16,7 +16,7 @@ suite("Container", () => {
         let container = new SimpleContainer();
 
         // set encryption key
-        await container.access(key);
+        await container.unlock(key);
 
         // encrypt data
         await container.setData(stringToBytes(testData));
@@ -25,11 +25,11 @@ suite("Container", () => {
         container = new SimpleContainer().fromRaw(container.toRaw());
 
         // Trying to decrypt with a different key should throw an error
-        await container.access(await provider.randomBytes(32));
-        await assertReject(async () => container.getData(), ErrorCode.DECRYPTION_FAILED);
+        await container.unlock(await provider.randomBytes(32));
+        await assertReject(assert, async () => container.getData(), ErrorCode.DECRYPTION_FAILED);
 
         // Using the correct key should allow us to retreive the original message
-        await container.access(key);
+        await container.unlock(key);
         const data = bytesToString(await container.getData());
         assert.equal(data, testData);
     });
@@ -41,7 +41,7 @@ suite("Container", () => {
         let container = new PBES2Container();
 
         // set password
-        await container.access(password);
+        await container.unlock(password);
 
         // encrypt data
         await container.setData(stringToBytes(testData));
@@ -50,11 +50,11 @@ suite("Container", () => {
         container = new PBES2Container().fromRaw(container.toRaw());
 
         // Trying to decrypt with a different key should throw an error
-        await container.access("wrong password");
-        await assertReject(async () => container.getData(), ErrorCode.DECRYPTION_FAILED);
+        await container.unlock("wrong password");
+        await assertReject(assert, async () => container.getData(), ErrorCode.DECRYPTION_FAILED);
 
         // Using the correct key should allow us to retreive the original message
-        await container.access(password);
+        await container.unlock(password);
         const data = bytesToString(await container.getData());
         assert.equal(data, testData);
     });
@@ -81,7 +81,7 @@ suite("Container", () => {
             container = new SharedContainer().fromRaw(container.toRaw());
 
             // Decrypt shared key via private key
-            await container.access(each);
+            await container.unlock(each);
 
             // Decrypt actual data
             const data = bytesToString(await container.getData());
@@ -91,7 +91,7 @@ suite("Container", () => {
         // Lets remove one accessor
         await container.updateAccessors(accessors.slice(1));
 
-        // Trying to access with the wrong accessor should throw an error
-        await assertReject(async () => container.access(accessors[0]), ErrorCode.MISSING_ACCESS);
+        // Trying to unlock with the wrong accessor should throw an error
+        await assertReject(assert, async () => container.unlock(accessors[0]), ErrorCode.MISSING_ACCESS);
     });
 });

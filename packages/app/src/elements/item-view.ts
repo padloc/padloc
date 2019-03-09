@@ -1,5 +1,4 @@
 import { until } from "lit-html/directives/until.js";
-import { AccountInfo } from "@padloc/core/lib/account.js";
 import { Field } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
@@ -74,193 +73,169 @@ export class ItemView extends BaseElement {
             return html``;
         }
 
+        const account = app.account!;
         const { name, fields, tags, updated, updatedBy } = this.item!;
         const vault = this.vault!;
-        const permissions = vault.getPermissions();
-        const updatedByMember = vault.getMember({ id: updatedBy } as AccountInfo);
+        const org = this.vault.org && app.getOrg(this.vault.org.id);
+        const group = org && org.getUnlockingGroupForVault(vault, account);
+        const readonly = !!group && group.vaults.find(v => v.id === vault.id)!.readonly;
+        const updatedByMember = org && org.getMember({ id: updatedBy });
         const attachments = this.item!.attachments || [];
 
         return html`
-        ${shared}
+            ${shared}
 
-        <style>
+            <style>
 
-            :host {
-                display: flex;
-                flex-direction: column;
-                box-sizing: border-box;
-                flex-direction: column;
-                position: relative;
-                background: var(--color-background);
-                ${mixins.scroll()}
-            }
+                :host {
+                    display: flex;
+                    flex-direction: column;
+                    box-sizing: border-box;
+                    flex-direction: column;
+                    position: relative;
+                    background: var(--color-background);
+                    ${mixins.scroll()}
+                }
 
-            main {
-                flex: 1;
-                flex-direction: column;
-                padding: 10px;
-                padding-bottom: 65px;
-            }
+                main {
+                    flex: 1;
+                    flex-direction: column;
+                    padding: 10px;
+                    padding-bottom: 65px;
+                }
 
-            .name {
-                height: auto;
-                font-size: 150%;
-                padding: 6px 10px;
-                box-sizing: border-box;
-            }
+                .name {
+                    height: auto;
+                    font-size: 150%;
+                    padding: 6px 10px;
+                    box-sizing: border-box;
+                }
 
-            pl-tags-input {
-                margin: 0 10px;
-            }
+                pl-tags-input {
+                    margin: 0 10px;
+                }
 
-            :host(:not([editing])) pl-field:hover {
-                background: #eee;
-            }
+                :host(:not([editing])) pl-field:hover {
+                    background: #eee;
+                }
 
-            button {
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin-top: 10px;
-            }
+                button {
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-top: 10px;
+                }
 
-            button pl-icon {
-                width: 30px;
-                position: relative;
-                top: 1px;
-            }
+                button pl-icon {
+                    width: 30px;
+                    position: relative;
+                    top: 1px;
+                }
 
-            .updated {
-                text-align: center;
-                font-size: var(--font-size-tiny);
-                color: #888;
-                background: rgba(255, 255, 255, 0.5);
-                position: absolute;
-                left: 10px;
-                bottom: 10px;
-            }
+                .updated {
+                    text-align: center;
+                    font-size: var(--font-size-tiny);
+                    color: #888;
+                    background: rgba(255, 255, 255, 0.5);
+                    position: absolute;
+                    left: 10px;
+                    bottom: 10px;
+                }
 
-            .updated::before {
-                font-family: FontAwesome;
-                font-size: 80%;
-                content: "\\f303\ ";
-            }
+                .updated::before {
+                    font-family: FontAwesome;
+                    font-size: 80%;
+                    content: "\\f303\ ";
+                }
 
-            h4 {
-                font-size: var(--font-size-tiny);
-                color: var(--color-primary);
-                font-weight: bold;
-                margin: 10px;
-            }
-        </style>
+                h4 {
+                    font-size: var(--font-size-tiny);
+                    color: var(--color-primary);
+                    font-weight: bold;
+                    margin: 10px;
+                }
+            </style>
 
-        <header class="narrow back-header tap" @click=${() => router.go("items")}>
+            <header class="narrow back-header tap" @click=${() => router.go("items")}>
+                <pl-icon icon="backward"></pl-icon>
 
-            <pl-icon icon="backward"></pl-icon>
+                <div>
+                    ${(app.filter.vault && app.filter.vault.name) || $l("All Items")}
+                </div>
+            </header>
 
-            <div>
-                ${(app.filter.vault && app.filter.vault.name) || $l("All Items")}
+            <main>
+                <pl-input
+                    id="nameInput"
+                    class="name"
+                    .value=${name}
+                    .placeholder=${$l("Enter Item Name")}
+                    ?readonly=${!this._editing}
+                >
+                </pl-input>
+
+                <pl-tags-input .editing=${this._editing} .vault=${vault} .tags=${tags} @move=${this._move}>
+                </pl-tags-input>
+
+                <div class="fields">
+                    ${fields.map(
+                        (field: Field, index: number) => html`
+                            <pl-field
+                                .name=${field.name}
+                                .value=${field.value}
+                                .type=${field.type}
+                                .editing=${this._editing}
+                                @edit=${() => this._editField(index)}
+                                @copy=${() => setClipboard(this.item!, field)}
+                                @remove=${() => this._removeField(index)}
+                            >
+                            </pl-field>
+                        `
+                    )}
+                </div>
+
+                <div class="attachments" ?hidden=${!attachments.length}>
+                    <h4>${$l("Attachments")}</h4>
+
+                    ${attachments.map(
+                        a => html`
+                            <pl-attachment
+                                .info=${a}
+                                .editing=${this._editing}
+                                @delete=${() => this._deleteAttachment(a)}
+                            >
+                            </pl-attachment>
+                        `
+                    )}
+                </div>
+
+                <div class="updated" hidden>
+                    ${until(formatDateFromNow(updated!))}
+                    ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
+                </div>
+            </main>
+
+            <div class="fabs" ?hidden=${!this._editing}>
+                <pl-icon icon="delete" class="fab tap" @click=${() => this._deleteItem()}> </pl-icon>
+
+                <pl-icon icon="attachment" class="fab tap" @click=${() => this._addAttachment()}> </pl-icon>
+
+                <pl-icon icon="add" class="fab tap" @click=${() => this._addField()}> </pl-icon>
+
+                <div class="flex"></div>
+
+                <pl-icon icon="check" class="tap fab" @click=${() => this.save()}> </pl-icon>
             </div>
 
-        </header>
+            <div class="fabs" ?hidden=${this._editing || readonly}>
+                <div class="flex"></div>
 
-        <main>
-
-            <pl-input
-                id="nameInput"
-                class="name"
-                .value=${name}
-                .placeholder=${$l("Enter Item Name")}
-                ?readonly=${!this._editing}>
-            </pl-input>
-
-            <pl-tags-input
-                .editing=${this._editing}
-                .vault=${vault}
-                .tags=${tags}
-                @move=${this._move}>
-            </pl-tags-input>
-
-            <div class="fields">
-
-                ${fields.map(
-                    (field: Field, index: number) => html`
-                        <pl-field
-                            .name=${field.name}
-                            .value=${field.value}
-                            .type=${field.type}
-                            .editing=${this._editing}
-                            @edit=${() => this._editField(index)}
-                            @copy=${() => setClipboard(this.item!, field)}
-                            @remove=${() => this._removeField(index)}>
-                        </pl-field>
-                    `
-                )}
+                <pl-icon icon="edit" class="tap fab" @click=${() => this.edit()}> </pl-icon>
             </div>
 
-            <div class="attachments" ?hidden=${!attachments.length}>
-
-                <h4>${$l("Attachments")}</h4>
-    
-                ${attachments.map(
-                    a => html`
-                   <pl-attachment
-                       .info=${a}
-                       .editing=${this._editing}
-                       @delete=${() => this._deleteAttachment(a)}>
-                   </pl-attachment>
-                `
-                )} 
-
-            </div>
-
-            <div class="updated" hidden>
-                ${until(formatDateFromNow(updated!))}
-                ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
-            </div>
-
-        </main>
-
-        <div class="fabs" ?hidden=${!this._editing}>
-
-            <pl-icon icon="delete"
-                class="fab tap"
-                @click=${() => this._deleteItem()}>
-            </pl-icon>
-
-            <pl-icon icon="attachment"
-                class="fab tap"
-                @click=${() => this._addAttachment()}>
-            </pl-icon>
-
-            <pl-icon icon="add"
-                class="fab tap"
-                @click=${() => this._addField()}>
-            </pl-icon>
-
-            <div class="flex"></div>
-
-            <pl-icon icon="check"
-                class="tap fab"
-                @click=${() => this.save()}>
-            </pl-icon>
-
-        </div>
-
-        <div class="fabs" ?hidden=${this._editing || !permissions.write}>
-
-            <div class="flex"></div>
-
-            <pl-icon icon="edit"
-                class="tap fab"
-                @click=${() => this.edit()}>
-            </pl-icon>
-
-        </div>
-
-        <input type="file" hidden @change=${this._attachFile}>
-`;
+            <input type="file" hidden @change=${this._attachFile} />
+        `;
     }
 
     async edit() {

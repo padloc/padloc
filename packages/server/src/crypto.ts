@@ -1,6 +1,5 @@
 // @ts-ignore
 import { randomBytes, createHash, createHmac, createSign, createVerify, constants } from "crypto";
-import { Base64String, bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
 import {
     CryptoProvider,
     AESKey,
@@ -20,22 +19,22 @@ import { Err, ErrorCode } from "@padloc/core/src/error";
 
 export class NodeCryptoProvider implements CryptoProvider {
     async randomBytes(n: number) {
-        return new Promise<Base64String>((resolve, reject) => {
+        return new Promise<Uint8Array>((resolve, reject) => {
             randomBytes(n, (err, buf) => {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(bytesToBase64(new Uint8Array(buf)));
+                    resolve(new Uint8Array(buf));
                 }
             });
         });
     }
 
-    async hash(input: Base64String, params: HashParams) {
+    async hash(input: Uint8Array, params: HashParams) {
         const alg = params.algorithm.replace("-", "").toLowerCase();
         const hash = createHash(alg);
-        hash.update(Buffer.from(base64ToBytes(input)));
-        return bytesToBase64(new Uint8Array(hash.digest()));
+        hash.update(Buffer.from(input));
+        return new Uint8Array(hash.digest());
     }
 
     generateKey(params: AESKeyParams): Promise<AESKey>;
@@ -49,29 +48,29 @@ export class NodeCryptoProvider implements CryptoProvider {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 
-    encrypt(key: AESKey, data: Base64String, params: AESEncryptionParams): Promise<Base64String>;
-    encrypt(publicKey: RSAPublicKey, data: Base64String, params: RSAEncryptionParams): Promise<Base64String>;
-    async encrypt(): Promise<Base64String> {
+    encrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
+    encrypt(publicKey: RSAPublicKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
+    async encrypt(): Promise<Uint8Array> {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 
-    decrypt(key: AESKey, data: Base64String, params: AESEncryptionParams): Promise<Base64String>;
-    decrypt(publicKey: RSAPublicKey, data: Base64String, params: RSAEncryptionParams): Promise<Base64String>;
-    async decrypt(): Promise<Base64String> {
+    decrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
+    decrypt(publicKey: RSAPublicKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
+    async decrypt(): Promise<Uint8Array> {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 
-    async fingerprint(key: RSAPublicKey): Promise<Base64String> {
-        return await this.hash(key, { algorithm: "SHA-256" });
+    async fingerprint(key: RSAPublicKey): Promise<Uint8Array> {
+        return await this.hash(key, new HashParams({ algorithm: "SHA-256" }));
     }
 
-    async sign(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String>;
-    async sign(key: RSAPrivateKey, data: Base64String, params: RSASigningParams): Promise<Base64String>;
+    async sign(key: HMACKey, data: Uint8Array, params: HMACParams): Promise<Uint8Array>;
+    async sign(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams): Promise<Uint8Array>;
     async sign(
         key: HMACKey | RSAPrivateKey,
-        data: Base64String,
+        data: Uint8Array,
         params: HMACParams | RSASigningParams
-    ): Promise<Base64String> {
+    ): Promise<Uint8Array> {
         switch (params.algorithm) {
             case "HMAC":
                 return this._signHMAC(key, data, params);
@@ -82,17 +81,17 @@ export class NodeCryptoProvider implements CryptoProvider {
         }
     }
 
-    async verify(key: HMACKey, signature: Base64String, data: Base64String, params: HMACParams): Promise<boolean>;
+    async verify(key: HMACKey, signature: Uint8Array, data: Uint8Array, params: HMACParams): Promise<boolean>;
     async verify(
         key: RSAPrivateKey,
-        signature: Base64String,
-        data: Base64String,
+        signature: Uint8Array,
+        data: Uint8Array,
         params: RSASigningParams
     ): Promise<boolean>;
     async verify(
         key: HMACKey | RSAPrivateKey,
-        signature: Base64String,
-        data: Base64String,
+        signature: Uint8Array,
+        data: Uint8Array,
         params: HMACParams | RSASigningParams
     ): Promise<boolean> {
         switch (params.algorithm) {
@@ -105,55 +104,55 @@ export class NodeCryptoProvider implements CryptoProvider {
         }
     }
 
-    private async _signHMAC(key: HMACKey, data: Base64String, params: HMACParams): Promise<Base64String> {
+    private async _signHMAC(key: HMACKey, data: Uint8Array, params: HMACParams): Promise<Uint8Array> {
         const hash = params.hash.replace("-", "").toLowerCase();
-        const hmac = createHmac(hash, Buffer.from(base64ToBytes(key)));
-        hmac.update(Buffer.from(base64ToBytes(data)));
-        return bytesToBase64(new Uint8Array(hmac.digest()));
+        const hmac = createHmac(hash, Buffer.from(key));
+        hmac.update(Buffer.from(data));
+        return new Uint8Array(hmac.digest());
     }
 
     private async _verifyHMAC(
         key: HMACKey,
-        signature: Base64String,
-        data: Base64String,
+        signature: Uint8Array,
+        data: Uint8Array,
         params: HMACParams
     ): Promise<boolean> {
         const sig = await this._signHMAC(key, data, params);
-        return signature === sig;
+        return signature.toString() === sig.toString();
     }
 
-    _signRSA(key: RSAPrivateKey, data: Base64String, params: RSASigningParams) {
-        key = `-----BEGIN PRIVATE KEY-----
-${Buffer.from(base64ToBytes(key)).toString("base64")}
+    _signRSA(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams) {
+        const k = `-----BEGIN PRIVATE KEY-----
+${Buffer.from(key).toString("base64")}
 -----END PRIVATE KEY-----`;
         const hash = params.hash.replace("-", "").toLowerCase();
         const signer = createSign(hash);
-        signer.update(Buffer.from(base64ToBytes(data)));
+        signer.update(Buffer.from(data));
         const sig = signer.sign({
-            key: key,
+            key: k,
             passphrase: "",
             // @ts-ignore
             saltLength: params.saltLength,
             padding: constants.RSA_PKCS1_PSS_PADDING
         });
 
-        return bytesToBase64(new Uint8Array(sig));
+        return new Uint8Array(sig);
     }
 
-    _verifyRSA(key: RSAPublicKey, signature: Base64String, data: Base64String, params: RSASigningParams) {
-        key = `-----BEGIN PUBLIC KEY-----
-${Buffer.from(base64ToBytes(key)).toString("base64")}
+    _verifyRSA(key: RSAPublicKey, signature: Uint8Array, data: Uint8Array, params: RSASigningParams) {
+        const k = `-----BEGIN PUBLIC KEY-----
+${Buffer.from(key).toString("base64")}
 -----END PUBLIC KEY-----`;
         const hash = params.hash.replace("-", "").toLowerCase();
         const verifier = createVerify(hash);
-        verifier.update(Buffer.from(base64ToBytes(data)));
+        verifier.update(Buffer.from(data));
         const verified = verifier.verify(
             {
-                key: key,
+                k: k,
                 saltLength: params.saltLength,
                 padding: constants.RSA_PKCS1_PSS_PADDING
             },
-            Buffer.from(base64ToBytes(signature))
+            Buffer.from(signature)
         );
 
         return verified;

@@ -130,299 +130,284 @@ export class BrowseList extends BaseElement {
 
     render() {
         return html`
-        ${shared}
+            ${shared}
 
-        <style>
+            <style>
 
-            :host {
-                display: flex;
-                flex-direction: column;
-                box-sizing: border-box;
-                position: relative;
-                background: var(--color-quaternary);
-            }
+                :host {
+                    display: flex;
+                    flex-direction: column;
+                    box-sizing: border-box;
+                    position: relative;
+                    background: var(--color-quaternary);
+                }
 
-            header {
-                overflow: visible;
-                z-index: 10;
-            }
+                header {
+                    overflow: visible;
+                    z-index: 10;
+                }
 
-            pl-browse-filter {
-                flex: 1;
-                min-width: 0;
-            }
+                pl-browse-filter {
+                    flex: 1;
+                    min-width: 0;
+                }
 
-            .filter-wrapper {
-                display: flex;
-                font-size: var(--font-size-small);
-                height: 40px;
-                position: absolute;
-                top: 50px;
-                left: 0;
-                right: 0;
-                background: #eee;
-                border: solid 1px #ddd;
-                z-index: 2;
-                overflow: hidden;
-                transition: transform 0.2s;
-            }
+                .filter-wrapper {
+                    display: flex;
+                    font-size: var(--font-size-small);
+                    height: 40px;
+                    position: absolute;
+                    top: 50px;
+                    left: 0;
+                    right: 0;
+                    background: #eee;
+                    border: solid 1px #ddd;
+                    z-index: 2;
+                    overflow: hidden;
+                    transition: transform 0.2s;
+                }
 
-            .filter-wrapper pl-input {
-                font-size: inherit;
-                padding: 0;
-                height: 40px;
-                line-height: 40px;
-                text-align: center;
-            }
+                .filter-wrapper pl-input {
+                    font-size: inherit;
+                    padding: 0;
+                    height: 40px;
+                    line-height: 40px;
+                    text-align: center;
+                }
 
-            main {
-                padding-bottom: 70px;
-            }
+                main {
+                    padding-bottom: 70px;
+                }
 
-            .section-header {
-                position: sticky;
-                top: 0;
-                background: #fafafa;
-                z-index: 1;
-                display: flex;
-                height: 40px;
-                line-height: 40px;
-                padding: 0 15px;
-                font-size: var(--font-size-tiny);
-                font-weight: bold;
-                border-bottom: solid 1px #ddd;
-                box-sizing: border-box;
-                margin-bottom: -7px;
-            }
+                .section-header {
+                    position: sticky;
+                    top: 0;
+                    background: #fafafa;
+                    z-index: 1;
+                    display: flex;
+                    height: 40px;
+                    line-height: 40px;
+                    padding: 0 15px;
+                    font-size: var(--font-size-tiny);
+                    font-weight: bold;
+                    border-bottom: solid 1px #ddd;
+                    box-sizing: border-box;
+                    margin-bottom: -7px;
+                }
 
-            .item {
-                cursor: pointer;
-                vertical-align: top;
-                box-sizing: border-box;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                background: var(--color-background);
-                margin: 6px 0;
-                border-top: solid 1px #ddd;
-                border-bottom: solid 1px #ddd;
-            }
+                .item {
+                    cursor: pointer;
+                    vertical-align: top;
+                    box-sizing: border-box;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    background: var(--color-background);
+                    margin: 6px 0;
+                    border-top: solid 1px #ddd;
+                    border-bottom: solid 1px #ddd;
+                }
 
-            .item-body {
-                flex: 1;
-                min-width: 0;
-            }
+                .item-body {
+                    flex: 1;
+                    min-width: 0;
+                }
 
-            .item .tags {
-                padding: 0 8px;
-            }
+                .item .tags {
+                    padding: 0 8px;
+                }
 
-            .item-header {
-                height: var(--row-height);
-                line-height: var(--row-height);
-                position: relative;
-                display: flex;
-                align-items: center;
-            }
+                .item-header {
+                    height: var(--row-height);
+                    line-height: var(--row-height);
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                }
 
-            .item-name {
-                padding-left: 15px;
-                ${mixins.ellipsis()}
-                font-weight: bold;
-                flex: 1;
-                min-width: 0;
-            }
+                .item-name {
+                    padding-left: 15px;
+                    ${mixins.ellipsis()}
+                    font-weight: bold;
+                    flex: 1;
+                    min-width: 0;
+                }
 
-            .item-fields {
-                position: relative;
-                display: flex;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
+                .item-fields {
+                    position: relative;
+                    display: flex;
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
 
-            .item-fields::after {
-                content: "";
-                display: block;
-                width: 6px;
-                flex: none;
-            }
+                .item-fields::after {
+                    content: "";
+                    display: block;
+                    width: 6px;
+                    flex: none;
+                }
 
-            .item-field {
-                cursor: pointer;
-                font-size: var(--font-size-tiny);
-                line-height: 32px;
-                height: 32px;
-                text-align: center;
-                position: relative;
-                flex: 1;
-                font-weight: bold;
-                margin: 0 0 8px 8px;
-                border-radius: 8px;
-                ${mixins.shade2()}
-            }
+                .item-field {
+                    cursor: pointer;
+                    font-size: var(--font-size-tiny);
+                    line-height: 32px;
+                    height: 32px;
+                    text-align: center;
+                    position: relative;
+                    flex: 1;
+                    font-weight: bold;
+                    margin: 0 0 8px 8px;
+                    border-radius: 8px;
+                    ${mixins.shade2()}
+                }
 
-            .item-field > * {
-                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-            }
+                .item-field > * {
+                    transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+                }
 
-            .copied-message {
-                ${mixins.fullbleed()}
-                border-radius: inherit;
-            }
+                .copied-message {
+                    ${mixins.fullbleed()}
+                    border-radius: inherit;
+                }
 
-            .item-field:not(.copied) .copied-message, .item-field.copied .item-field-label {
-                opacity: 0;
-                transform: scale(0);
-            }
+                .item-field:not(.copied) .copied-message, .item-field.copied .item-field-label {
+                    opacity: 0;
+                    transform: scale(0);
+                }
 
-            .copied-message {
-                font-weight: bold;
-                background: var(--color-primary);
-                color: var(--color-background);
-            }
+                .copied-message {
+                    font-weight: bold;
+                    background: var(--color-primary);
+                    color: var(--color-background);
+                }
 
-            .copied-message::before {
-                font-family: "FontAwesome";
-                content: "\\f00c\\ ";
-            }
+                .copied-message::before {
+                    font-family: "FontAwesome";
+                    content: "\\f00c\\ ";
+                }
 
-            .item-field-label {
-                padding: 0 15px;
-                pointer-events: none;
-                ${mixins.ellipsis()}
-            }
+                .item-field-label {
+                    padding: 0 15px;
+                    pointer-events: none;
+                    ${mixins.ellipsis()}
+                }
 
-            .item:focus:not([selected]) {
-                border-color: var(--color-highlight);
-                color: #4ca8d9;
-            }
+                .item:focus:not([selected]) {
+                    border-color: var(--color-highlight);
+                    color: #4ca8d9;
+                }
 
-            .item[selected] {
-                background: #e6e6e6;
-                border-color: #ddd;
-            }
+                .item[selected] {
+                    background: #e6e6e6;
+                    border-color: #ddd;
+                }
 
-            .item-check {
-                position: relative;
-                width: 30px;
-                height: 30px;
-                box-sizing: border-box;
-                border: solid 3px #eee;
-                background: #eee;
-                border-radius: 30px;
-                margin: 10px;
-                margin-right: 5px;
-            }
+                .item-check {
+                    position: relative;
+                    width: 30px;
+                    height: 30px;
+                    box-sizing: border-box;
+                    border: solid 3px #eee;
+                    background: #eee;
+                    border-radius: 30px;
+                    margin: 10px;
+                    margin-right: 5px;
+                }
 
-            .item-check::after {
-                content: "";
-                display: block;
-                ${mixins.fullbleed()}
-                background: var(--color-primary);
-                border-radius: inherit;
-                transition: transform 0.2s, opacity 0.2s;
-                transition-timing-function: cubic-bezier(1, -0.3, 0, 1.3);
-            }
+                .item-check::after {
+                    content: "";
+                    display: block;
+                    ${mixins.fullbleed()}
+                    background: var(--color-primary);
+                    border-radius: inherit;
+                    transition: transform 0.2s, opacity 0.2s;
+                    transition-timing-function: cubic-bezier(1, -0.3, 0, 1.3);
+                }
 
-            .item-check:not([checked])::after {
-                opacity: 0;
-                transform: scale(0);
-            }
+                .item-check:not([checked])::after {
+                    opacity: 0;
+                    transform: scale(0);
+                }
 
-            .selected-count {
-                text-align: center;
-                display: block;
-                margin-left: 15px;
-                background: #ddd;
-                border-radius: var(--border-radius);
-                padding: 5px;
-                line-height: 1.2em;
-                font-size: var(--font-size-tiny);
-                font-weight: bold;
-            }
-        </style>
+                .selected-count {
+                    text-align: center;
+                    display: block;
+                    margin-left: 15px;
+                    background: #ddd;
+                    border-radius: var(--border-radius);
+                    padding: 5px;
+                    line-height: 1.2em;
+                    font-size: var(--font-size-tiny);
+                    font-weight: bold;
+                }
+            </style>
 
-        <header>
+            <header>
+                <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
-            <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
+                <pl-browse-filter></pl-browse-filter>
 
-            <pl-browse-filter></pl-browse-filter>
+                <pl-icon icon="search" class="tap" @click=${() => this.search()}></pl-icon>
+            </header>
 
-            <pl-icon icon="search" class="tap" @click=${() => this.search()}></pl-icon>
+            <div class="filter-wrapper">
+                <pl-icon icon="search"></pl-icon>
 
-        </header>
+                <pl-input
+                    class="flex"
+                    .placeholder=${$l("Type To Filter")}
+                    id="filterInput"
+                    @focus=${() => this._toggleFilterInput()}
+                    @blur=${() => this._toggleFilterInput()}
+                    @input=${() => this._updateFilter()}
+                    @escape=${() => this.cancelFilter()}
+                >
+                </pl-input>
 
-        <div class="filter-wrapper">
+                <pl-icon class="tap" icon="cancel" @click=${() => this.cancelFilter()}> </pl-icon>
+            </div>
 
-            <pl-icon icon="search"></pl-icon>
+            <main id="main">
+                ${repeat(this._listItems, item => item.id, (_: any, index: number) => this._renderItem(index))}
+            </main>
 
-            <pl-input
-                class="flex"
-                .placeholder=${$l("Type To Filter")}
-                id="filterInput"
-                @focus=${() => this._toggleFilterInput()}
-                @blur=${() => this._toggleFilterInput()}
-                @input=${() => this._updateFilter()}
-                @escape=${() => this.cancelFilter()}>
-            </pl-input>
+            <div class="empty-placeholder" ?hidden=${!!this._listItems.length || app.filter.text}>
+                <pl-icon icon="list"></pl-icon>
 
-            <pl-icon
-                class="tap"
-                icon="cancel"
-                @click=${() => this.cancelFilter()}>
-            </pl-icon>
+                <div>${$l("You don't have any items yet!")}</div>
+            </div>
 
-        </div>
+            <div class="empty-placeholder" ?hidden=${!!this._listItems.length || !app.filter.text}>
+                <pl-icon icon="search"></pl-icon>
 
-        <main id="main">
+                <div>${$l("Your search did not match any items.")}</div>
+            </div>
 
-            ${repeat(this._listItems, item => item.id, (_: any, index: number) => this._renderItem(index))}
+            <div class="fabs" ?hidden=${this.multiSelect}>
+                <pl-icon icon="checked" class="tap fab" @click=${() => this.selectAll()}></pl-icon>
 
-        </main>
+                <div class="flex"></div>
 
-        <div class="empty-placeholder" ?hidden=${!!this._listItems.length || app.filter.text}>
+                <pl-icon icon="add" class="tap fab" @click=${() => this._newItem()}></pl-icon>
+            </div>
 
-            <pl-icon icon="list"></pl-icon>
+            <div class="fabs" ?hidden=${!this.multiSelect}>
+                <pl-icon
+                    icon="checkall"
+                    class="tap fab"
+                    @click=${() => (this._multiSelect.size ? this.clearSelection() : this.selectAll())}
+                >
+                </pl-icon>
 
-            <div>${$l("You don't have any items yet!")}</div>
+                <pl-icon icon="cancel" class="tap fab" @click=${() => this.cancelMultiSelect()}></pl-icon>
 
-        </div>
+                <div class="flex selected-count">${$l("{0} items selected", this._multiSelect.size.toString())}</div>
 
-        <div class="empty-placeholder" ?hidden=${!!this._listItems.length || !app.filter.text}>
+                <pl-icon icon="share" class="tap fab" @click=${() => this._moveItems()}></pl-icon>
 
-            <pl-icon icon="search"></pl-icon>
-
-            <div>${$l("Your search did not match any items.")}</div>
-
-        </div>
-
-        <div class="fabs" ?hidden=${this.multiSelect}>
-
-            <pl-icon icon="checked" class="tap fab" @click=${() => this.selectAll()}></pl-icon>
-
-            <div class="flex"></div>
-
-            <pl-icon icon="add" class="tap fab" @click=${() => this._newItem()}></pl-icon>
-
-        </div>
-
-        <div class="fabs" ?hidden=${!this.multiSelect}>
-
-            <pl-icon icon="checkall"
-                class="tap fab"
-                @click=${() => (this._multiSelect.size ? this.clearSelection() : this.selectAll())}>
-            </pl-icon>
-
-            <pl-icon icon="cancel" class="tap fab" @click=${() => this.cancelMultiSelect()}></pl-icon>
-
-            <div class="flex selected-count">${$l("{0} items selected", this._multiSelect.size.toString())}</div>
-
-            <pl-icon icon="share" class="tap fab" @click=${() => this._moveItems()}></pl-icon>
-
-            <pl-icon icon="delete" class="tap fab destructive" @click=${() => this._deleteItems()}></pl-icon>
-
-        </div>
-`;
+                <pl-icon icon="delete" class="tap fab destructive" @click=${() => this._deleteItems()}></pl-icon>
+            </div>
+        `;
     }
 
     _updateFilter() {
@@ -541,82 +526,69 @@ export class BrowseList extends BaseElement {
         }
 
         return html`
-
             ${cache(
                 item.firstInSection
                     ? html`
-                        <div class="section-header" ?hidden=${!item.firstInSection}>
+                          <div class="section-header" ?hidden=${!item.firstInSection}>
+                              <div>${item.section}</div>
 
-                            <div>${item.section}</div>
+                              <div class="spacer"></div>
 
-                            <div class="spacer"></div>
-
-                            <div>${item.section}</div>
-
-                        </div>
-                    `
+                              <div>${item.section}</div>
+                          </div>
+                      `
                     : html``
             )}
 
-            <div class="item"
+            <div
+                class="item"
                 ?selected=${item.item.id === this.selected}
                 @click=${() => this.selectItem(item)}
-                index="${index}">
+                index="${index}"
+            >
+                <div
+                    class="item-check"
+                    ?hidden=${!this.multiSelect}
+                    ?checked=${this._multiSelect.has(item.item.id)}
+                ></div>
 
-                    <div class="item-check"
-                        ?hidden=${!this.multiSelect}
-                        ?checked=${this._multiSelect.has(item.item.id)}>
-                    </div>
-
-                    <div class="item-body">
-
-                        <div class="item-header">
-
-                            <div class="item-name" ?disabled=${!item.item.name}>
-                                ${item.item.name || $l("No Name")}
-                            </div>
-
-                            <div class="tags small">
-                                ${tags.map(
-                                    tag =>
-                                        tag.icon
-                                            ? html`
-                                                <div class="tag ${tag.class}">
-                                                    <pl-icon icon="${tag.icon}"></pl-icon>
-                                                </div>
-                                            `
-                                            : html`
-                                                <div class="ellipsis tag ${tag.class}">${tag.name}</div>
-                                            `
-                                )}
-                            </div>
-
+                <div class="item-body">
+                    <div class="item-header">
+                        <div class="item-name" ?disabled=${!item.item.name}>
+                            ${item.item.name || $l("No Name")}
                         </div>
 
-                        <div class="item-fields">
-
-                            ${item.item.fields.map(
-                                (f: Field, i: number) => html`
-                                    <div
-                                        class="item-field"
-                                        @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}>
-
-                                        <div class="item-field-label">${f.name}</div>
-
-                                        <div class="copied-message">${$l("copied")}</div>
-
-                                    </div>
-                                `
+                        <div class="tags small">
+                            ${tags.map(tag =>
+                                tag.icon
+                                    ? html`
+                                          <div class="tag ${tag.class}">
+                                              <pl-icon icon="${tag.icon}"></pl-icon>
+                                          </div>
+                                      `
+                                    : html`
+                                          <div class="ellipsis tag ${tag.class}">${tag.name}</div>
+                                      `
                             )}
-
-                            <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
-                                ${$l("No Fields")}
-                            </div>
-
                         </div>
-
                     </div>
 
+                    <div class="item-fields">
+                        ${item.item.fields.map(
+                            (f: Field, i: number) => html`
+                                <div class="item-field" @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}>
+                                    <div class="item-field-label">${f.name}</div>
+
+                                    <div class="copied-message">${$l("copied")}</div>
+                                </div>
+                            `
+                        )}
+
+                        <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
+                            ${$l("No Fields")}
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
     }

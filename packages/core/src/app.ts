@@ -249,7 +249,7 @@ export class App extends EventEmitter {
     }
 
     async unlock(password: string) {
-        await this.account!.access(password);
+        await this.account!.unlock(password);
         await this.loadOrgs();
         await this.loadVaults();
         this.dispatch("unlock");
@@ -326,7 +326,7 @@ export class App extends EventEmitter {
 
         const account = (this.state.account = await this.api.getAccount());
 
-        await account.access(password);
+        await account.unlock(password);
 
         const mainVault = await this.api.getVault(account.mainVault);
         if (!mainVault.accessors.length) {
@@ -426,13 +426,11 @@ export class App extends EventEmitter {
         vault = await this.api.createVault(vault);
 
         org = org.clone();
-        await org.access(this.account!);
+        await org.unlock(this.account!);
 
-        for (const { id } of groups) {
-            org.getGroup(id)!.vaults.push({ id: vault.id, readonly: false });
-        }
+        [org.admins, ...groups].forEach(({ id }) => org.getGroup(id)!.vaults.push({ id: vault.id, readonly: false }));
+        await vault.updateAccessors([org.admins, ...groups]);
 
-        await org.updateVault(vault);
         await this.api.updateVault(vault);
         await this.updateOrg(org, org);
         await this.synchronize();
@@ -466,17 +464,18 @@ export class App extends EventEmitter {
         this._vaults.clear();
 
         const vault = await this.storage.get(Vault, this.account.mainVault);
-        await vault.access(this.account!);
+        await vault.unlock(this.account!);
         this._vaults.set(this.account.mainVault, vault);
 
         for (const org of this.orgs) {
-            // TODO: Prevent duplicate loading of vaults
-            for (const group of org.getGroupsForMember(this.account)) {
-                await group.access(this.account);
-                for (const { id } of group.vaults) {
+            for (const { id, group } of org.getVaultsForMember(this.account)) {
+                await group.unlock(this.account);
+                try {
                     const vault = await this.storage.get(Vault, id);
-                    await vault.access(group);
+                    await vault.unlock(group);
                     this._vaults.set(id, vault);
+                } catch (e) {
+                    console.error("Failed to load vault: ", vault.name);
                 }
             }
         }
@@ -488,8 +487,26 @@ export class App extends EventEmitter {
         await this.storage.save(vault);
     }
 
-    async syncVault(vault: { id: VaultID }, access: Account | Group = this.account!): Promise<Vault> {
-        return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault, access));
+    async deleteVault(vault: Vault) {
+        const org = vault.org && this.getOrg(vault.org.id);
+        if (!org) {
+            throw "Can't delete private vault";
+        }
+
+        await this.api.deleteVault(vault.id);
+
+        for (const group of org.getGroupsForVault(vault)) {
+            group.vaults = group.vaults.filter(v => v.id === vault.id);
+        }
+
+        org.vaults = org.vaults.filter(v => v.id === vault.id);
+
+        await this.updateOrg(org, org);
+        await this.synchronize();
+    }
+
+    async syncVault(vault: { id: VaultID }): Promise<Vault> {
+        return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault));
     }
 
     async syncVaults() {
@@ -500,22 +517,34 @@ export class App extends EventEmitter {
         const promises = [this.syncVault({ id: this.account.mainVault })] as Promise<any>[];
 
         for (const org of this.orgs) {
-            // TODO: Prevent duplicate loading of vaults
-            for (const group of org.getGroupsForMember(this.account)) {
-                promises.push(...group.vaults.map(vault => this.syncVault(vault, group)));
+            for (const vault of org.getVaultsForMember(this.account)) {
+                promises.push(this.syncVault(vault));
             }
         }
 
         await Promise.all(promises);
     }
 
-    async _syncVault({ id }: { id: VaultID }, access: Account | Group): Promise<Vault | null> {
+    async unlockVault(vault: Vault) {
+        const account = this.account!;
+        const org = vault.org && this.getOrg(vault.org.id);
+        if (org) {
+            const group = org.getUnlockingGroupForVault(vault, account)!;
+            await group.unlock(account);
+            await vault.unlock(group);
+        } else {
+            await vault.unlock(account);
+        }
+    }
+
+    async _syncVault({ id }: { id: VaultID }): Promise<Vault | null> {
         const localVault = this.getVault(id);
         let remoteVault: Vault;
         let result: Vault;
 
         try {
             remoteVault = await this.api.getVault(id);
+            await this.unlockVault(remoteVault);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
                 if (localVault) {
@@ -530,25 +559,27 @@ export class App extends EventEmitter {
 
         if (localVault) {
             result = localVault.clone();
+            await this.unlockVault(result);
             result.merge(remoteVault);
+            await result.commit();
         } else {
             result = remoteVault;
         }
 
-        await result.access(access);
+        const org = result.org && this.getOrg(result.org.id);
+        if (org) {
+            await result.updateAccessors(org.getGroupsForVault(result));
+        }
 
-        // Only update if there are local changes and if the vault is not archived
-        if (!remoteVault.revision || result.revision!.id !== remoteVault.revision.id) {
-            try {
-                await this.api.updateVault(result);
-            } catch (e) {
-                if (e.code === ErrorCode.MERGE_CONFLICT) {
-                    // If there is a merge conflict (probably because somebody else
-                    // did a push while we were sycing), start over.
-                    return this._syncVault({ id }, access);
-                }
-                throw e;
+        try {
+            await this.api.updateVault(result);
+        } catch (e) {
+            if (e.code === ErrorCode.MERGE_CONFLICT) {
+                // If there is a merge conflict (probably because somebody else
+                // did a push while we were sycing), start over.
+                return this._syncVault({ id });
             }
+            throw e;
         }
 
         await this.saveVault(result);
@@ -598,7 +629,7 @@ export class App extends EventEmitter {
     async updateItem(vault: Vault, item: VaultItem, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
         vault.items.update({ ...item, ...upd, updatedBy: this.account!.id });
         this.dispatch("item-changed", { vault, item });
-        await this.storage.save(vault);
+        this.saveVault(vault);
         await this.syncVault(vault);
     }
 
@@ -617,7 +648,7 @@ export class App extends EventEmitter {
 
         for (const [vault, items] of grouped.entries()) {
             vault.items.remove(...items);
-            await this.storage.save(vault);
+            this.saveVault(vault);
             this.dispatch("items-deleted", { vault, items });
             await this.syncVault(vault);
         }
@@ -652,7 +683,6 @@ export class App extends EventEmitter {
         }
         for (const id of this.account.orgs) {
             const org = fetch ? await this.api.getOrg(id) : await this.storage.get(Org, id);
-            await org.access(this.account);
             this._orgs.set(id, org);
             fetch && (await this.storage.save(org));
         }
@@ -661,15 +691,16 @@ export class App extends EventEmitter {
     async updateOrg(org: Org, changes: Partial<Org>) {
         org = Object.assign(org.clone(), changes);
         org = await this.api.updateOrg(org);
-        await org.access(this.account!);
+        await org.unlock(this.account!);
         this._orgs.set(org.id, org);
         await this.storage.save(org);
         this.dispatch("org-changed", { org });
+        return org;
     }
 
     async createGroup(org: Org, name: string, members: OrgMember[]) {
         org = org.clone();
-        await org.access(this.account!);
+        await org.unlock(this.account!);
         const group = await org.createGroup(name, members);
         await this.updateOrg(org, org);
         return group;
@@ -677,7 +708,8 @@ export class App extends EventEmitter {
 
     // INVITES
 
-    async createInvite(org: Org, email: string, purpose?: InvitePurpose) {
+    async createInvite({ id }: Org, email: string, purpose?: InvitePurpose) {
+        const org = this.getOrg(id)!;
         const invite = new Invite(email, purpose);
         await invite.initialize(org, this.account!);
         await this.updateOrg(org, { invites: [...org.invites, invite] });
@@ -686,7 +718,11 @@ export class App extends EventEmitter {
     }
 
     async getInvite(orgId: string, id: string) {
-        return this.api.getInvite(new GetInviteParams({ org: orgId, id }));
+        let invite = null;
+        try {
+            invite = await this.api.getInvite(new GetInviteParams({ org: orgId, id }));
+        } catch (e) {}
+        return invite;
     }
 
     async acceptInvite(invite: Invite, secret: string) {
@@ -702,7 +738,7 @@ export class App extends EventEmitter {
 
         // clone org
         org = org.clone();
-        await org.access(this.account!);
+        await org.unlock(this.account!);
 
         await org.addMember(invite.invitee!);
         org.removeInvite(invite);

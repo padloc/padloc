@@ -47,13 +47,13 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
     }
 
     async setPassword(password: string) {
-        await super.access(password);
+        await super.unlock(password);
         await this.setData(stringToBytes(marshal({ privateKey: bytesToBase64(this.privateKey) })));
         this.updated = new Date();
     }
 
-    async access(password: string) {
-        await super.access(password);
+    async unlock(password: string) {
+        await super.unlock(password);
         const { privateKey } = unmarshal(bytesToString(await this.getData()));
         this.privateKey = base64ToBytes(privateKey);
     }
@@ -62,7 +62,7 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
         delete this.privateKey;
     }
 
-    toRaw() {
+    toRaw(): any {
         return {
             ...super.toRaw(["privateKey"]),
             publicKey: bytesToBase64(this.publicKey)

@@ -3,7 +3,7 @@ import { suite, test } from "mocha";
 import { ErrorCode } from "../src/error";
 import { Account } from "../src/account";
 import { bytesToHex } from "../src/encoding";
-import { assertReject } from "../src/spec/test-util";
+import { assertReject } from "../src/spec/spec";
 
 suite("Account", () => {
     test("Initialize Account", async () => {
@@ -30,9 +30,9 @@ suite("Account", () => {
         // @ts-ignore
         assert.include(account, { email, name });
 
-        await assertReject(() => account.access("wrong password"), ErrorCode.DECRYPTION_FAILED);
+        await assertReject(assert, () => account.unlock("wrong password"), ErrorCode.DECRYPTION_FAILED);
 
-        await account.access(password);
+        await account.unlock(password);
 
         assert.equal(bytesToHex(publicKey), bytesToHex(account.publicKey));
         assert.equal(bytesToHex(privateKey), bytesToHex(account.privateKey));

@@ -1,4 +1,4 @@
-import { Platform, DeviceInfo } from "@padloc/core/src/platform";
+import { Platform, DeviceInfo } from "@padloc/core/lib/platform";
 import { loadScript } from "./util";
 
 const browserInfo = (async () => {
