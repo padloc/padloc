@@ -21,7 +21,7 @@ import { Auth, EmailVerification } from "./auth";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID } from "./org";
+import { Org, OrgID, OrgRole } from "./org";
 import { Invite } from "./invite";
 import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
@@ -29,6 +29,7 @@ import { DeviceInfo } from "./platform";
 import { getProvider } from "./crypto";
 import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
+import { localize as $l } from "./locale";
 
 const pendingAuths = new Map<string, SRPServer>();
 const cachedFakeAuthParams = new Map<string, Auth>();
@@ -193,16 +194,28 @@ export class Context implements API {
         return account;
     }
 
-    async updateAccount({ name, email, publicKey, keyParams, encryptionParams, encryptedData }: Account) {
+    async updateAccount({ name, email, orgs, publicKey, keyParams, encryptionParams, encryptedData }: Account) {
         const { account } = this._requireAuth();
-        Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData });
+
+        const nameChanged = account.name !== name;
+
+        Object.assign(account, { name, email, orgs, publicKey, keyParams, encryptionParams, encryptedData });
         account.updated = new Date();
         await this.storage.save(account);
+
+        if (nameChanged) {
+            for (const { id } of account.orgs) {
+                const org = await this.storage.get(Org, id);
+                org.getMember(account)!.name = name;
+                await this.storage.save(org);
+            }
+        }
+
         return account;
     }
 
     async recoverAccount({
-        account: { name, email, publicKey, keyParams, encryptionParams, encryptedData },
+        account: { email, publicKey, keyParams, encryptionParams, encryptedData },
         auth,
         verify
     }: RecoverAccountParams) {
@@ -210,17 +223,28 @@ export class Context implements API {
 
         const existingAuth = await this.storage.get(Auth, auth.id);
         const account = await this.storage.get(Account, existingAuth.account);
-        Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData });
+        Object.assign(account, { email, publicKey, keyParams, encryptionParams, encryptedData });
 
         // reset main vault
         const mainVault = new Vault();
         mainVault.id = account.mainVault;
-        mainVault.name = "My Vault";
+        mainVault.name = $l("My Vault");
         mainVault.owner = account.id;
         mainVault.created = new Date();
         mainVault.updated = new Date();
 
         auth.account = account.id;
+
+        // Suspend memberships for all orgs that the account is not the owner of
+        for (const { id } of account.orgs) {
+            const org = await this.storage.get(Org, id);
+            if (!org.isOwner(account)) {
+                const member = org.getMember(account)!;
+                member.role = OrgRole.Suspended;
+                await this.storage.save(org);
+            }
+        }
+
         await Promise.all([this.storage.save(account), this.storage.save(auth), this.storage.save(mainVault)]);
 
         return account;
@@ -229,12 +253,19 @@ export class Context implements API {
     async createOrg(org: Org) {
         const { account } = this._requireAuth();
 
+        if (!org.isOwner(account)) {
+            throw new Err(ErrorCode.BAD_REQUEST, "Account has to included as member with Owner role");
+        }
+
         org.id = uuid();
-        org.owner = account.id;
 
-        account.orgs.push(org.id);
+        await this.storage.save(org);
 
-        await Promise.all([this.storage.save(org), this.storage.save(account)]);
+        const vault = new Vault();
+        vault.name = $l("Main Vault");
+        vault.org = { id: org.id, name: org.name };
+
+        await this.createVault(vault);
 
         return org;
     }
@@ -262,20 +293,42 @@ export class Context implements API {
         accessors,
         members,
         groups,
-        admins,
-        everyone,
+        vaults,
         invites
     }: Org) {
         const { account } = this._requireAuth();
 
         const org = await this.storage.get(Org, id);
 
-        if (!org.isAdmin(account)) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        const isAdmin = org.isAdmin(account);
+        const isOwner = org.isOwner(account);
+
+        if (!isAdmin) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Only admins can make changes to organizations!");
+        }
+
+        if (
+            !isOwner &&
+            (members.length !== org.members.length ||
+                members.some(({ id, role }) => {
+                    const member = org.getMember({ id });
+                    return !member || member.role !== role;
+                }))
+        ) {
+            throw new Err(
+                ErrorCode.INSUFFICIENT_PERMISSIONS,
+                "Only organization owners can add or remove members or change roles!"
+            );
         }
 
         for (const invite of invites) {
             if (!org.invites.some(inv => inv.id === invite.id)) {
+                // new invite
+
+                if (!isOwner) {
+                    throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Only organization owners can create invites!");
+                }
+
                 let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}`;
 
                 // If account does not exist yet, create a email verification code
@@ -297,11 +350,10 @@ export class Context implements API {
             }
         }
 
+        // Added members
         for (const member of members) {
             if (!org.isMember(member)) {
-                const acc = await this.storage.get(Account, member.id);
-                acc.orgs.push(org.id);
-                await this.storage.save(acc);
+                // new member
 
                 if (member.id !== account.id) {
                     this.messenger.send(
@@ -312,20 +364,43 @@ export class Context implements API {
             }
         }
 
+        // Removed members
+        for (const { id } of org.members) {
+            if (!org.members.some(m => m.id === id)) {
+                const acc = await this.storage.get(Account, id);
+                acc.orgs = acc.orgs.filter(o => o.id !== org.id);
+                await this.storage.save(acc);
+            }
+        }
+
+        // Update any changed vault names
+        for (const { id, name } of org.vaults) {
+            const newVaultEntry = vaults.find(v => v.id === id);
+            if (newVaultEntry && newVaultEntry.name !== name) {
+                const vault = await this.storage.get(Vault, id);
+                vault.name = newVaultEntry.name;
+                await this.storage.save(vault);
+            }
+        }
+
         Object.assign(org, {
-            name,
-            publicKey,
-            keyParams,
-            encryptionParams,
-            encryptedData,
-            signingParams,
-            accessors,
             members,
             groups,
-            admins,
-            everyone,
-            invites
+            vaults
         });
+
+        if (isOwner) {
+            Object.assign(org, {
+                name,
+                publicKey,
+                keyParams,
+                encryptionParams,
+                encryptedData,
+                signingParams,
+                accessors,
+                invites
+            });
+        }
 
         await this.storage.save(org);
 
@@ -333,35 +408,31 @@ export class Context implements API {
     }
 
     async getVault(id: VaultID) {
-        // const { account } = this._requireAuth();
-
-        // TODO: Check permssion
-        // if (id !== account.mainVault && !account.sharedVaults.some(v => v.id === id)) {
-        //     throw new Err(ErrorCode.NOT_FOUND);
-        // }
+        const { account } = this._requireAuth();
 
         const vault = await this.storage.get(Vault, id);
+        const org = vault.org && (await this.storage.get(Org, vault.org.id));
+
+        if ((org && !org.canRead(vault, account)) || (!org && vault.owner !== account.id)) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
 
         return vault;
     }
 
-    async updateVault({ id, name, keyParams, encryptionParams, accessors, encryptedData, revision }: Vault) {
-        // const { account } = this._requireAuth();
-
-        // TODO: Check permissions
-        // if (id !== account.mainVault) {
-        //     const v = account.sharedVaults.find(v => v.id === id);
-        //
-        //     if (!v) {
-        //         throw new Err(ErrorCode.NOT_FOUND);
-        //     }
-        //
-        //     if (v.readonly) {
-        //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        //     }
-        // }
+    async updateVault({ id, keyParams, encryptionParams, accessors, encryptedData, revision }: Vault) {
+        const { account } = this._requireAuth();
 
         const vault = await this.storage.get(Vault, id);
+        const org = vault.org && (await this.storage.get(Org, vault.org.id));
+
+        if ((org && !org.canRead(vault, account)) || (!org && vault.owner !== account.id)) {
+            throw new Err(ErrorCode.NOT_FOUND);
+        }
+
+        if (org && !org.canWrite(vault, account)) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
 
         if (
             revision &&
@@ -372,7 +443,7 @@ export class Context implements API {
             throw new Err(ErrorCode.MERGE_CONFLICT);
         }
 
-        Object.assign(vault, { id, name, keyParams, encryptionParams, accessors, encryptedData, revision });
+        Object.assign(vault, { keyParams, encryptionParams, accessors, encryptedData, revision });
         vault.updated = new Date();
         await this.storage.save(vault);
 
@@ -424,12 +495,9 @@ export class Context implements API {
         promises.push(this.attachmentStorage.deleteAll(vault));
 
         // Remove vault from org
-        let i = org.vaults.findIndex(v => v.id === id);
-        org.vaults.splice(i, 1);
-
+        org.vaults = org.vaults.filter(v => v.id !== vault.id);
         for (const group of org.getGroupsForVault(vault)) {
-            const i = group.vaults.findIndex(v => v.id === id);
-            group.vaults.splice(i, 1);
+            group.vaults = group.vaults.filter(v => v.id !== vault.id);
         }
 
         promises.push(this.storage.save(org));
@@ -445,8 +513,8 @@ export class Context implements API {
 
         if (
             !invite ||
-            // User may only see invite if they are a vault admin or the invite recipient
-            (!org.isAdmin(account) && invite.email !== account.email)
+            // User may only see invite if they are a vault owner or the invite recipient
+            (!org.isOwner(account) && invite.email !== account.email)
         ) {
             throw new Err(ErrorCode.NOT_FOUND);
         }

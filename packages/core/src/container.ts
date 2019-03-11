@@ -106,6 +106,11 @@ export class SharedContainer extends BaseContainer {
     accessors: Accessor[] = [];
 
     async unlock({ id, privateKey }: { id: string; privateKey: RSAPrivateKey }) {
+        if (this._key) {
+            // Container is already unlocked, no need to unlock it again
+            return;
+        }
+
         const accessor = this.accessors.find(a => a.id === id);
         if (!accessor || !accessor.encryptedKey) {
             throw new Err(ErrorCode.MISSING_ACCESS);

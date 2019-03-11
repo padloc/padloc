@@ -20,59 +20,51 @@ export class ImportDialog extends Dialog<string, void> {
 
     renderContent() {
         return html`
+            <style>
+                .inner {
+                    display: flex;
+                    flex-direction: column;
+                }
 
-        <style>
+                pl-input,
+                pl-select,
+                button {
+                    text-align: center;
+                    margin: 0 10px 10px 10px;
+                    background: var(--shade-2-color);
+                    border-radius: 8px;
+                }
 
-            .inner {
-                display: flex;
-                flex-direction: column;
-            }
+                h1 {
+                    display: block;
+                    text-align: center;
+                }
 
-            pl-input, pl-select, button {
-                text-align: center;
-                margin: 0 10px 10px 10px;
-                background: var(--shade-2-color);
-                border-radius: 8px;
-            }
+                .csv-note {
+                    font-size: var(--font-size-micro);
+                    text-align: center;
+                    padding: 0px 20px 20px 20px;
+                }
+            </style>
 
-            h1 {
-                display: block;
-                text-align: center;
-            }
+            <h1>${$l("Import Data")}</h1>
 
-            button {
-                display: block;
-                font-weight: bold;
-                background: var(--shade-4-color);
-                overflow: hidden;
-            }
+            <pl-select id="formatSelect" .options=${imp.supportedFormats} .label=${$l("Format")} disabled></pl-select>
 
-            .csv-note {
-                font-size: var(--font-size-micro);
-                text-align: center;
-                padding: 0px 20px 20px 20px;
-            }
+            <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== imp.CSV}>
+                ${$l(
+                    "IMPORTANT: Before importing, please make sure that your CSV data " +
+                        "is structured according to Padlocks specific requirements!"
+                )}
+                <a href="https://padlock.io/howto/import/#importing-from-csv" target="_blank">${$l("Learn More")}</a>
+            </div>
 
-        </style>
+            <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Target Vault")}></pl-select>
 
-        <h1>${$l("Import Data")}</h1>
-
-        <pl-select id="formatSelect" .options=${imp.supportedFormats} .label=${$l("Format")} disabled></pl-select>
-
-        <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== imp.CSV}>
-            ${$l(
-                "IMPORTANT: Before importing, please make sure that your CSV data " +
-                    "is structured according to Padlocks specific requirements!"
-            )}
-            <a href="https://padlock.io/howto/import/#importing-from-csv" target="_blank">${$l("Learn More")}</a>
-        </div>
-
-        <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Target Vault")}></pl-select>
-
-        <button @click=${() => this._import()} class="tap">
-            ${$l("Import {0} Items", this._items.length.toString())}
-        </button>
-`;
+            <button @click=${() => this._import()} class="tap primary">
+                ${$l("Import {0} Items", this._items.length.toString())}
+            </button>
+        `;
     }
 
     async show(input: string) {

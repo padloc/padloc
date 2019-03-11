@@ -1,25 +1,23 @@
-import { bytesToString, stringToBytes, base64ToBytes, bytesToBase64, marshal, unmarshal } from "./encoding";
-import { getProvider, RSAPublicKey, RSAPrivateKey, RSAKeyParams } from "./crypto";
+import {
+    bytesToString,
+    stringToBytes,
+    base64ToBytes,
+    bytesToBase64,
+    concatBytes,
+    marshal,
+    unmarshal
+} from "./encoding";
+import { getProvider, RSAPublicKey, RSAPrivateKey, RSAKeyParams, HMACKey, HMACParams, HMACKeyParams } from "./crypto";
+import { Err, ErrorCode } from "./error";
 import { PBES2Container } from "./container";
 import { Storable } from "./storage";
 import { SessionInfo } from "./session";
 import { VaultID } from "./vault";
-import { OrgID } from "./org";
+import { Org, OrgID } from "./org";
 
 export type AccountID = string;
 
-export interface AccountInfo {
-    id: AccountID;
-    email: string;
-    name: string;
-    publicKey: RSAPublicKey;
-}
-
-export interface SignedAccountInfo extends AccountInfo {
-    signedPublicKey: Uint8Array;
-}
-
-export class Account extends PBES2Container implements Storable, AccountInfo {
+export class Account extends PBES2Container implements Storable {
     id: AccountID = "";
     email = "";
     name = "";
@@ -27,13 +25,10 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
     updated = new Date();
     publicKey!: RSAPublicKey;
     privateKey!: RSAPrivateKey;
+    signingKey!: HMACKey;
     mainVault: VaultID = "";
     sessions: SessionInfo[] = [];
-    orgs: OrgID[] = [];
-
-    get info(): AccountInfo {
-        return { id: this.id, email: this.email, publicKey: this.publicKey, name: this.name };
-    }
+    orgs: { id: OrgID; signature: Uint8Array }[] = [];
 
     get locked(): boolean {
         return !this.privateKey;
@@ -43,19 +38,25 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
         const { publicKey, privateKey } = await getProvider().generateKey(new RSAKeyParams());
         this.publicKey = publicKey;
         this.privateKey = privateKey;
+        this.signingKey = await getProvider().generateKey(new HMACKeyParams());
         await this.setPassword(password);
     }
 
     async setPassword(password: string) {
         await super.unlock(password);
-        await this.setData(stringToBytes(marshal({ privateKey: bytesToBase64(this.privateKey) })));
+        await this.setData(
+            stringToBytes(
+                marshal({ privateKey: bytesToBase64(this.privateKey), signingKey: bytesToBase64(this.signingKey) })
+            )
+        );
         this.updated = new Date();
     }
 
     async unlock(password: string) {
         await super.unlock(password);
-        const { privateKey } = unmarshal(bytesToString(await this.getData()));
+        const { privateKey, signingKey } = unmarshal(bytesToString(await this.getData()));
         this.privateKey = base64ToBytes(privateKey);
+        this.signingKey = base64ToBytes(signingKey);
     }
 
     lock() {
@@ -64,21 +65,26 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
 
     toRaw(): any {
         return {
-            ...super.toRaw(["privateKey"]),
-            publicKey: bytesToBase64(this.publicKey)
+            ...super.toRaw(["privateKey", "signingKey"]),
+            publicKey: bytesToBase64(this.publicKey),
+            orgs: this.orgs.map(({ signature, ...rest }) => ({
+                signature: bytesToBase64(signature),
+                ...rest
+            }))
         };
     }
 
     validate() {
         return (
-            typeof this.id === "string" &&
-            typeof this.email === "string" &&
-            typeof this.name === "string" &&
-            typeof this.mainVault === "string" &&
-            this.created instanceof Date &&
-            this.updated instanceof Date &&
-            this.publicKey instanceof Uint8Array &&
-            this.orgs.every(org => typeof org === "string")
+            super.validate() &&
+            (typeof this.id === "string" &&
+                typeof this.email === "string" &&
+                typeof this.name === "string" &&
+                typeof this.mainVault === "string" &&
+                this.created instanceof Date &&
+                this.updated instanceof Date &&
+                this.publicKey instanceof Uint8Array &&
+                this.orgs.every(org => org && typeof org.id === "string" && org.signature instanceof Uint8Array))
         );
     }
 
@@ -92,12 +98,55 @@ export class Account extends PBES2Container implements Storable, AccountInfo {
             created: new Date(created),
             updated: new Date(updated),
             publicKey: base64ToBytes(publicKey),
-            orgs: orgs
+            orgs: orgs.map(({ signature, ...rest }: any) => ({
+                signature: base64ToBytes(signature),
+                ...rest
+            }))
         });
         return super.fromRaw(rest);
     }
 
+    clone() {
+        const clone = super.clone();
+        clone.privateKey = this.privateKey;
+        clone.signingKey = this.signingKey;
+        return clone;
+    }
+
     toString() {
         return this.name || this.email;
+    }
+
+    async addOrg({ id, publicKey }: { id: string; publicKey: Uint8Array }) {
+        const signature = await getProvider().sign(
+            this.signingKey,
+            concatBytes(stringToBytes(id), publicKey),
+            new HMACParams()
+        );
+
+        const existing = this.orgs.find(org => org.id === id);
+
+        if (existing) {
+            Object.assign(existing, { id, signature });
+        } else {
+            this.orgs.push({ id, signature });
+        }
+    }
+
+    async verifyOrg({ id, publicKey, name }: Org): Promise<void> {
+        const signed = this.orgs.find(org => org.id === id);
+
+        const verified =
+            signed &&
+            (await getProvider().verify(
+                this.signingKey,
+                signed.signature,
+                concatBytes(stringToBytes(id), publicKey),
+                new HMACParams()
+            ));
+
+        if (!verified) {
+            throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH, `Failed to verify public key of ${name}!`);
+        }
     }
 }

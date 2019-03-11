@@ -1,6 +1,6 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
-import { promptPassword, alert, confirm, prompt, dialog } from "../dialog";
+import { alert, confirm, prompt, dialog } from "../dialog";
 import { app } from "../init.js";
 import { element, html, query, listen } from "./base.js";
 import { View } from "./view.js";
@@ -37,152 +37,144 @@ export class Settings extends View {
         const account = app.account!;
 
         return html`
-        ${shared}
+            ${shared}
 
-        <style>
-            :host {
-                ${mixins.fullbleed()}
-                display: flex;
-                flex-direction: column;
-                background: var(--color-tertiary);
-                border-radius: var(--border-radius);
-            }
+            <style>
+                :host {
+                    ${mixins.fullbleed()}
+                    display: flex;
+                    flex-direction: column;
+                    background: var(--color-quaternary);
+                    border-radius: var(--border-radius);
+                }
 
-            h1 {
-                display: block;
-                text-align: center;
-            }
+                h1 {
+                    display: block;
+                    text-align: center;
+                }
 
-            main {
-                width: 100%;
-                max-width: 500px;
-                margin: 0 auto;
-                padding: 15px;
-            }
+                .wrapper {
+                    max-width: 500px;
+                    margin: 0 auto;
+                    padding: 0 8px 8px 8px;
+                }
 
-            button {
-                display: block;
-            }
+                button {
+                    display: block;
+                }
 
-            .box {
-                background: #fafafa;
-                border-radius: 8px;
-                border: solid 1px #eee;
-                margin-bottom: 8px;
-                box-sizing: border-box;
-                width: 100%;
-            }
+                .item {
+                    width: 100%;
+                    box-sizing: border-box;
+                    margin: 8px 0;
+                }
 
-            .account {
-                font-size: 110%;
-                display: flex;
-                align-items: center;
-            }
+                .account {
+                    font-size: 110%;
+                    display: flex;
+                    align-items: center;
+                }
 
-            pl-fingerprint {
-                width: 60px;
-                height: 60px;
-                border-radius: 100%;
-                border: solid 1px var(--border-color);
-                margin: 15px;
-            }
+                pl-fingerprint {
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 100%;
+                    border: solid 1px var(--border-color);
+                    margin: 15px;
+                }
 
-            .account-info {
-                flex: 1;
-                min-width: 0;
-                padding-right: 18px;
-            }
+                .account-info {
+                    flex: 1;
+                    min-width: 0;
+                    padding-right: 18px;
+                }
 
-            .account-email {
-                ${mixins.ellipsis()}
-            }
+                .account-email {
+                    ${mixins.ellipsis()}
+                }
 
-            .account-email {
-                font-weight: bold;
-                ${mixins.ellipsis()}
-            }
+                .account-email {
+                    font-weight: bold;
+                    ${mixins.ellipsis()}
+                }
 
-            .account pl-icon {
-                width: 50px;
-                height: 50px;
-                margin: 5px;
-            }
-        </style>
+                .account pl-icon {
+                    width: 50px;
+                    height: 50px;
+                    margin: 5px;
+                }
+            </style>
 
-        <header class="narrow">
+            <header class="narrow">
+                <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
-            <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
+                <div class="title flex">${$l("Settings")}</div>
 
-            <div class="title">${$l("Settings")}</div>
+                <pl-icon></pl-icon>
+            </header>
 
-            <pl-icon></pl-icon>
+            <main>
+                <div class="wrapper">
+                    <h1>${$l("Account")}</h1>
 
-        </header>
+                    <div class="account item">
+                        <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
 
-        <main>
+                        <div class="account-info">
+                            <div class="account-name">${account.name}</div>
 
-            <h1>${$l("Account")}</h1>
+                            <div class="account-email">${account.email}</div>
+                        </div>
 
-            <div class="account box">
+                        <pl-icon class="tap" icon="edit" @click=${() => this._editAccount()}></pl-icon>
+                    </div>
 
-                <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
+                    <button class="tap item" @click=${() => this._logout()}>${$l("Log Out")}</button>
 
-                <div class="account-info">
+                    <button class="tap item" @click=${() => this._changePassword()}>
+                        ${$l("Change Master Password")}
+                    </button>
 
-                    <div class="account-name">${account.name}</div>
+                    <h1>${$l("Auto Lock")}</h1>
 
-                    <div class="account-email">${account.email}</div>
+                    <pl-toggle-button
+                        id="autoLockButton"
+                        .active=${settings.autoLock}
+                        .label=${$l("Lock Automatically")}
+                        class="item tap"
+                        reverse
+                    >
+                    </pl-toggle-button>
 
+                    <pl-slider
+                        id="autoLockDelaySlider"
+                        .min="1"
+                        .max="10"
+                        .step="1"
+                        .value=${settings.autoLockDelay}
+                        .unit=${$l(" min")}
+                        .label=${$l("After")}
+                        ?hidden=${!settings.autoLock}
+                        class="item"
+                    >
+                    </pl-slider>
+
+                    <h1>${$l("Import / Export")}</h1>
+
+                    <button class="item tap" @click=${() => this._import()}>${$l("Import...")}</button>
+
+                    <button class="item tap" @click=${() => this._export()}>${$l("Export...")}</button>
+
+                    <h1>${$l("Support")}</h1>
+
+                    <button @click=${() => this._openWebsite()} class="item tap">${$l("Website")}</button>
+
+                    <button @click=${() => this._sendMail()} class="item tap">${$l("Contact Support")}</button>
                 </div>
+            </main>
 
-                <pl-icon class="tap" icon="edit" @click=${() => this._editAccount()}></pl-icon>
-
-                </div>
-
-            </div>
-
-            <button class="tap box" @click=${() => this._logout()}>${$l("Log Out")}</button>
-
-            <button class="tap box" @click=${() => this._changePassword()}>${$l("Change Master Password")}</button>
-
-            <h1>${$l("Auto Lock")}</h1>
-
-            <pl-toggle-button
-                id="autoLockButton"
-                .active=${settings.autoLock}
-                .label=${$l("Lock Automatically")}
-                class="box tap"
-                reverse>
-            </pl-toggle-button>
-
-            <pl-slider
-                id="autoLockDelaySlider"
-                .min="1"
-                .max="10"
-                .step="1"
-                .value=${settings.autoLockDelay}
-                .unit=${$l(" min")}
-                .label=${$l("After")}
-                ?hidden=${!settings.autoLock}
-                class="box">
-            </pl-slider>
-
-            <h1>${$l("Import / Export")}</h1>
-
-            <button class="box tap" @click=${() => this._import()}>${$l("Import...")}</button>
-
-            <button class="box tap" @click=${() => this._export()}>${$l("Export...")}</button>
-
-            <h1>${$l("Support")}</h1>
-
-            <button @click=${() => this._openWebsite()} class="box tap">${$l("Website")}</button>
-
-            <button @click=${() => this._sendMail()} class="box tap">${$l("Contact Support")}</button>
-
-        </main>
-
-         <input type="file" accept="text/plain,.csv,.pls,.set" hidden @change=${() => this._importFile()}>
-`;
+            <input type="file" accept="text/plain,.csv,.pls,.set" hidden @change=${() => this._importFile()} />
+        `;
     }
 
     @listen("change")
@@ -195,7 +187,6 @@ export class Settings extends View {
 
     _editAccount() {
         const account = app.account!;
-
         prompt("", {
             title: $l("Edit Profile"),
             confirmLabel: $l("Save"),
@@ -206,10 +197,8 @@ export class Settings extends View {
                     throw $l("Please enter a name!");
                 }
                 if (name === account.name) {
-                    return name;
+                    await app.updateAccount(async account => (account.name = name));
                 }
-                account.setName(name);
-                await app.syncAccount();
                 return name;
             }
         });
@@ -224,9 +213,19 @@ export class Settings extends View {
 
     //* Opens the change password dialog and resets the corresponding input elements
     private async _changePassword() {
-        const success = await promptPassword(app.account!.password, {
+        const success = await prompt($l("Please enter your current password!"), {
             title: $l("Change Master Password"),
-            message: $l("Please enter your current password!")
+            label: $l("Enter Current Password"),
+            type: "password",
+            validate: async pwd => {
+                try {
+                    await app.account!.unlock(pwd);
+                } catch (e) {
+                    throw $l("Wrong password! Please try again!");
+                }
+
+                return pwd;
+            }
         });
 
         if (!success) {
@@ -235,7 +234,7 @@ export class Settings extends View {
 
         const newPwd = await prompt($l("Now choose a new master password!"), {
             title: $l("Change Master Password"),
-            placeholder: $l("Enter New Password"),
+            label: $l("Enter New Password"),
             type: "password",
             validate: async (val: string) => {
                 if (val === "") {
@@ -249,9 +248,17 @@ export class Settings extends View {
             return;
         }
 
-        const confirmed = await promptPassword(newPwd, {
+        const confirmed = await prompt($l("Please confirm your new password!"), {
             title: $l("Change Master Password"),
-            message: $l("Confirm your new master password!")
+            label: $l("Repeat New Password"),
+            type: "password",
+            validate: async pwd => {
+                if (pwd !== newPwd) {
+                    throw "Wrong password! Please try again!";
+                }
+
+                return pwd;
+            }
         });
 
         if (!confirmed) {

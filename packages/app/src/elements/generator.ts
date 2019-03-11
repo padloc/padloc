@@ -1,13 +1,13 @@
 import { randomString, chars } from "@padloc/core/lib/util.js";
 import { generatePassphrase } from "@padloc/core/lib/diceware.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { shared, mixins } from "../styles";
+import { shared } from "../styles";
 import { html, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
-import "./icon.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 import { Select } from "./select.js";
+import "./icon.js";
 
 export type GeneratorMode = "words" | "chars";
 
@@ -61,180 +61,109 @@ export class Generator extends Dialog<void, string> {
     renderContent() {
         const { value } = this;
         return html`
-        ${shared}
+            ${shared}
 
-        <style>
-            .inner {
-                --color-background: var(--color-tertiary);
-                --color-foreground: var(--color-secondary);
-                --color-highlight: var(--color-primary);
-                background: var(--color-background);
-                text-shadow: none;
-                border: none;
-                overflow: hidden;
-                position: relative;
-            }
+            <style>
+                .inner {
+                    background: var(--color-quaternary);
+                }
 
-            .charsets {
-                display: flex;
-            }
+                .header {
+                    background: var(--color-tertiary);
+                    text-align: center;
+                    border-bottom: solid 3px var(--color-shade-1);
+                    font-weight: bold;
+                }
 
-            .charsets > * {
-                flex: 1;
-            }
+                .header-title {
+                    font-size: 120%;
+                    padding: 20px 20px 10px 20px;
+                }
 
-            .generate-button {
-                padding: 25px 15px;
-                ${mixins.gradientHighlight()}
-                color: var(--color-quaternary);
-                text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
-            }
+                .charsets {
+                    display: flex;
+                }
 
-            .header {
-                font-weight: bold;
-                text-align: center;
-                margin-bottom: 15px;
-            }
+                .charsets > * {
+                    flex: 1;
+                }
 
-            .value {
-                font-family: var(--font-family-mono);
-                text-align: center;
-                font-size: 130%;
-                overflow-wrap: break-word;
-            }
+                .tabs {
+                    margin-bottom: -2px;
+                }
 
-            pl-toggle-button {
-                display: block;
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-            }
+                pl-toggle-button {
+                    display: block;
+                    border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                }
 
-            pl-slider {
-                display: flex;
-                height: var(--row-height);
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-            }
+                pl-slider {
+                    display: flex;
+                    height: var(--row-height);
+                    border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                }
 
-            pl-select {
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-            }
+                pl-select {
+                    border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                }
 
-            .confirm-button {
-                font-weight: bold;
-                text-align: center;
-                width: 100%;
-            }
+                .result {
+                    font-family: var(--font-family-mono);
+                    text-align: center;
+                    font-size: 120%;
+                    overflow-wrap: break-word;
+                    font-weight: bold;
+                    padding: 20px;
+                }
 
-            .close-button {
-                position: absolute;
-                top: 0;
-                right: 0;
-                color: var(--color-quaternary);
-                text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
-            }
+                .arrow {
+                    display: block;
+                    margin: -10px auto;
+                    font-size: 120%;
+                }
+            </style>
 
-            .tabs {
-                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                background: rgba(0, 0, 0, 0.1);
-                grid-gap: 1px;
-            }
+            <div class="header">
+                <div class="header-title">${$l("Generate Password")}</div>
+                <div class="tabs">
+                    <div class="flex tap" ?active=${this.mode === "words"} @click=${() => this._selectMode("words")}>
+                        ${$l("passphrase")}
+                    </div>
+                    <div class="flex tap" ?active=${this.mode === "chars"} @click=${() => this._selectMode("chars")}>
+                        ${$l("random string")}
+                    </div>
+                </div>
+            </div>
 
-            .tabs > * {
-                background: var(--color-tertiary);
-            }
+            <div ?hidden=${this.mode !== "words"}>
+                <pl-select id="separator" .options=${separators} class="item tap"></pl-select>
 
-            .tabs button[active] {
-                color: var(--color-primary);
-            }
-        </style>
+                <pl-slider id="wordCount" unit=" ${$l("words")}" value="4" min="3" max="6" class="item tap"></pl-slider>
+            </div>
 
-        <div class="generate-button tap" @click=${() => this._generate()}>
+            <div ?hidden=${this.mode !== "chars"}>
+                <pl-toggle-button id="lower" label="a-z" class="item tap" reverse></pl-toggle-button>
 
-            <div class="header">${$l("Generate Password")}</div>
+                <pl-toggle-button id="upper" label="A-Z" class="item tap" reverse></pl-toggle-button>
 
-            <div class="value tiles-1">
+                <pl-toggle-button id="numbers" label="0-9" class="item tap" reverse></pl-toggle-button>
+
+                <pl-toggle-button id="other" label="?()/%..." class="item tap" reverse></pl-toggle-button>
+
+                <pl-slider id="length" label="${$l("length")}" value="20" min="5" max="50" class="item"></pl-slider>
+            </div>
+
+            <pl-icon icon="arrow-down" class="arrow"></pl-icon>
+
+            <div class="result item tap" @click=${() => this._generate()}>
                 ${value}
             </div>
 
-        </div>
-
-        <div class="tabs">
-
-            <button
-                class="tap"
-                ?active=${this.mode === "words"}
-                @click=${() => this._selectMode("words")}>
-                ${$l("passphrase")}
-            </button>
-
-            <button
-                class="tap"
-                ?active=${this.mode === "chars"}
-                @click=${() => this._selectMode("chars")}>
-                ${$l("random string")}
-            </button>
-
-        </div>
-
-        <div ?hidden=${this.mode !== "words"}>
-
-            <pl-select id="separator" .options=${separators}></pl-select>
-
-            <pl-slider
-                id="wordCount"
-                unit=" ${$l("words")}"
-                value="4"
-                min="3"
-                max="6">
-            </pl-slider>
-
-        </div>
-
-        <div ?hidden=${this.mode !== "chars"}>
-
-            <pl-toggle-button
-                id="lower"
-                label="a-z"
-                class="tap"
-                reverse>
-            </pl-toggle-button>
-
-            <pl-toggle-button
-                id="upper"
-                label="A-Z"
-                class="tap"
-                reverse>
-            </pl-toggle-button>
-
-            <pl-toggle-button
-                id="numbers"
-                label="0-9"
-                class="tap"
-                reverse>
-            </pl-toggle-button>
-
-            <pl-toggle-button
-                id="other"
-                label="?()/%..."
-                class="tap"
-                reverse>
-            </pl-toggle-button>
-
-            <pl-slider
-                id="length"
-                label="${$l("length")}"
-                value="20"
-                min="5"
-                max="50">
-            </pl-slider>
-
-        </div>
-
-        <button class="confirm-button tap" @click=${() => this._confirm()}>${$l("Apply")}</button>
-
-        <pl-icon icon="cancel" class="close-button tap" @click=${() => this._dismiss()}></pl-icon>
-`;
+            <div class="actions">
+                <button class="primary tap" @click=${() => this._confirm()}>${$l("Use")}</button>
+                <button class="tap" @click=${() => this.dismiss()}>${$l("Discard")}</button>
+            </div>
+        `;
     }
 
     firstUpdated() {
@@ -266,10 +195,6 @@ export class Generator extends Dialog<void, string> {
 
     private _confirm() {
         this.done(this.value);
-    }
-
-    private _dismiss() {
-        this.done("");
     }
 
     private _selectMode(mode: GeneratorMode) {

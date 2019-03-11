@@ -24,11 +24,11 @@ export class ToggleButton extends BaseElement {
             :host {
                 display: inline-block;
                 font-size: inherit;
-                height: var(--row-height);
-                padding: 0 15px;
+                padding: 12px 15px;
             }
 
             button {
+                background: transparent;
                 display: flex;
                 width: 100%;
                 align-items: center;
@@ -65,7 +65,10 @@ export class ToggleButton extends BaseElement {
 
             <pl-toggle .active=${active} @change=${() => (this.active = this._toggle.active)}"></pl-toggle>
 
-            <div>${label}</div>
+            <div>
+                ${label}
+                <slot></slot>
+            </div>
 
         </button>
 `;

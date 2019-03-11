@@ -103,148 +103,150 @@ export class Input extends BaseElement {
         const input = cache(
             multiline
                 ? html`
-                <textarea
-                    id="input"
-                    .value=${value}
-                    .placeholder=${placeholder}
-                    .tabIndex=${noTab ? "-1" : ""}
-                    ?readonly=${readonly}
-                    ?invsbl=${doMask}
-                    ?disabled=${disabled}
-                    ?required=${required}
-                    autocapitalize=${autocapitalize}
-                    autocomplete="off"
-                    spellcheck="false"
-                    autocorrect="off"
-                    rows="1"
-                    @focus=${(e: FocusEvent) => this._focused(e)}
-                    @blur=${(e: FocusEvent) => this._blurred(e)}></textarea>
+                      <textarea
+                          id="input"
+                          .placeholder=${placeholder}
+                          .tabIndex=${noTab ? "-1" : ""}
+                          ?readonly=${readonly}
+                          ?invsbl=${doMask}
+                          ?disabled=${disabled}
+                          ?required=${required}
+                          autocapitalize=${autocapitalize}
+                          autocomplete="off"
+                          spellcheck="false"
+                          autocorrect="off"
+                          rows="1"
+                          @focus=${(e: FocusEvent) => this._focused(e)}
+                          @blur=${(e: FocusEvent) => this._blurred(e)}
+                      ></textarea>
 
-                <textarea
-                    .value=${mask(value)}
-                    ?invsbl=${!doMask}
-                    class="mask"
-                    .tabIndex="-1"
-                    disabled></textarea>`
+                      <textarea
+                          .value=${mask(value)}
+                          ?invsbl=${!doMask}
+                          class="mask"
+                          .tabIndex="-1"
+                          disabled
+                      ></textarea>
+                  `
                 : html`
-                <input
-                    id="input"
-                    .value=${value}
-                    .placeholder=${placeholder}
-                    ?readonly=${readonly}
-                    .tabIndex=${noTab ? "-1" : ""}
-                    ?invsbl=${doMask}
-                    ?disabled=${disabled}
-                    autocapitalize="${autocapitalize ? "" : "off"}"
-                    ?required=${required}
-                    autocomplete="off"
-                    spellcheck="false"
-                    autocorrect="off"
-                    type="${type}"
-                    pattern="${pattern || ".*"}"
-                    @focus=${(e: FocusEvent) => this._focused(e)}
-                    @blur=${(e: FocusEvent) => this._blurred(e)}>
+                      <input
+                          id="input"
+                          .placeholder=${placeholder}
+                          ?readonly=${readonly}
+                          .tabIndex=${noTab ? "-1" : ""}
+                          ?invsbl=${doMask}
+                          ?disabled=${disabled}
+                          autocapitalize="${autocapitalize ? "" : "off"}"
+                          ?required=${required}
+                          autocomplete="off"
+                          spellcheck="false"
+                          autocorrect="off"
+                          type="${type}"
+                          pattern="${pattern || ".*"}"
+                          @focus=${(e: FocusEvent) => this._focused(e)}
+                          @blur=${(e: FocusEvent) => this._blurred(e)}
+                      />
 
-                <input
-                    .value=${mask(value)}
-                    ?invsbl=${!doMask}
-                    class="mask"
-                    .tabIndex="-1"
-                    disabled>`
+                      <input .value=${mask(value)} ?invsbl=${!doMask} class="mask" .tabIndex="-1" disabled />
+                  `
         );
 
         return html`
-        ${shared}
+            ${shared}
 
-        <style>
+            <style>
+                :host {
+                    display: block;
+                    position: relative;
+                    font-size: inherit;
+                    font-weight: inherit;
+                    font-family: inherit;
+                    background: var(--shade-2-color);
+                    border-radius: var(--border-radius);
+                }
 
-            :host {
-                display: block;
-                position: relative;
-                font-size: inherit;
-                font-weight: inherit;
-                font-family: inherit;
-            }
+                :host(:not([multiline])) {
+                    padding: 0 10px;
+                    height: var(--row-height);
+                }
 
-            :host(:not([multiline])) {
-                padding: 0 10px;
-                height: var(--row-height);
-            }
+                input {
+                    box-sizing: border-box;
+                    text-overflow: ellipsis;
+                    box-shadow: none;
+                }
 
-            input {
-                box-sizing: border-box;
-                text-overflow: ellipsis;
-                box-shadow: none;
-            }
+                input,
+                textarea {
+                    text-align: inherit;
+                    width: 100%;
+                    height: 100%;
+                    min-height: inherit;
+                    line-height: inherit;
+                    caret-color: currentColor;
+                }
 
-            input, textarea {
-                text-align: inherit;
-                width: 100%;
-                height: 100%;
-                min-height: inherit;
-                line-height: inherit;
-                caret-color: currentColor;
-            }
+                textarea {
+                    overflow-wrap: break-word;
+                }
 
-            textarea {
-                overflow-wrap: break-word;
-            }
+                ::-webkit-search-cancel-button {
+                    display: none;
+                }
 
-            ::-webkit-search-cancel-button {
-                display: none;
-            }
+                ::-webkit-placeholder {
+                    text-shadow: inherit;
+                    color: inherit;
+                    opacity: 0.5;
+                }
 
-            ::-webkit-placeholder {
-                text-shadow: inherit;
-                color: inherit;
-                opacity: 0.5;
-            }
+                --fullbleed: {
+                    position: absolute;
+                }
 
-            --fullbleed: {
-                position: absolute;
-            }
+                .mask {
+                    pointer-events: none;
+                    font-size: 150%;
+                    padding: inherit;
+                    line-height: inherit;
+                    letter-spacing: -4.5px;
+                    margin-left: -4px;
+                    ${mixins.fullbleed()}
+                }
 
-            .mask {
-                ${mixins.fullbleed()}
-                pointer-events: none;
-                font-size: 150%;
-                padding: inherit;
-                line-height: inherit;
-                letter-spacing: -4.5px;
-                margin-left: -4px;
-            }
+                label {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    padding: 13px;
+                    opacity: 0.5;
+                    transition: transform 0.2s, color 0.2s, opacity 0.5s;
+                    cursor: text;
+                }
 
-            label {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                padding: 13px;
-                opacity: 0.5;
-                transition: transform 0.2s, color 0.2s, opacity 0.5s;
-                cursor: text;
-            }
+                label[float] {
+                    transform: scale(0.8) translate(0, -32px);
+                    color: var(--color-highlight);
+                    font-weight: bold;
+                    opacity: 1;
+                }
 
-            label[float] {
-                transform: scale(0.8) translate(0, -32px);
-                color: var(--color-highlight);
-                font-weight: bold;
-                opacity: 1;
-            }
+                input[disabled],
+                textarea[disabled] {
+                    opacity: 1;
+                    -webkit-text-fill-color: currentColor;
+                }
 
-            input[disabled], textarea[disabled] {
-                opacity: 1;
-                -webkit-text-fill-color: currentColor;
-            }
+                input[invsbl],
+                textarea[invsbl] {
+                    opacity: 0;
+                }
+            </style>
 
-            input[invsbl], textarea[invsbl] {
-                opacity: 0;
-            }
-        </style>
+            ${input}
 
-        ${input}
-
-        <label for="input" ?float=${focused || !!value || !!placeholder} ?hidden=${!label}>${label}</label>
+            <label for="input" ?float=${focused || !!value || !!placeholder} ?hidden=${!label}>${label}</label>
         `;
     }
 

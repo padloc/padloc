@@ -32,6 +32,7 @@ export class Serializable {
         Object.assign(this, raw);
         try {
             if (!this.validate()) {
+                console.log("failed to validate", this.type, raw);
                 throw new Err(ErrorCode.ENCODING_ERROR);
             }
         } catch (e) {
@@ -186,4 +187,15 @@ export function base64ToHex(b64: string): string {
 
 export function hexToBase64(hex: string): string {
     return bytesToBase64(hexToBytes(hex));
+}
+
+export function concatBytes(...arrs: Uint8Array[]): Uint8Array {
+    const length = arrs.reduce((len, arr) => len + arr.length, 0);
+    const res = new Uint8Array(length);
+    let offset = 0;
+    for (const arr of arrs) {
+        res.set(arr, offset);
+        offset += arr.length;
+    }
+    return res;
 }

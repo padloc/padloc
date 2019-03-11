@@ -67,7 +67,7 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
         _startTimer() {
             this._cancelAutoLock();
             if (app.settings.autoLock && !app.locked) {
-                this._lockTimeout = setTimeout(() => this._doLock(), this._lockDelay);
+                this._lockTimeout = window.setTimeout(() => this._doLock(), this._lockDelay);
                 // this._lockNotificationTimeout = setTimeout(() => {
                 //     if (!this.locked && !this._pausedAt) {
                 //         this.notify($l("Auto-lock in 10 seconds"), "info", 3000);

@@ -1,5 +1,4 @@
 import { localize } from "@padloc/core/lib/locale.js";
-import { mixins } from "../styles";
 import { element, html, property, query } from "./base.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
@@ -53,90 +52,66 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
 
     renderContent() {
         return html`
-        <style>
-            :host([type="warning"]) .inner {
-                ${mixins.gradientWarning()}
-            }
+            <style>
+                h1 {
+                    display: block;
+                    text-align: center;
+                }
 
-            h1 {
-                display: block;
-                text-align: center;
-            }
+                .message {
+                    margin: 20px;
+                    text-align: center;
+                }
 
-            .message {
-                margin: 20px;
-                text-align: center;
-            }
+                pl-input {
+                    text-align: center;
+                    margin: 8px;
+                }
 
-            pl-input, pl-loading-button, button {
-                text-align: center;
-                background: var(--shade-2-color);
-                border-radius: 8px;
-            }
+                .validation-message {
+                    position: relative;
+                    margin-top: 15px;
+                    font-weight: bold;
+                    font-size: var(--font-size-small);
+                    color: var(--color-error);
+                    text-shadow: none;
+                    text-align: center;
+                }
+            </style>
 
-            pl-input {
-                margin: 10px;
-            }
+            <h1 ?hidden=${!this.title}>${this.title}</h1>
 
-            .buttons {
-                margin: 10px;
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                grid-gap: 8px;
-            }
+            <div class="message" ?hidden=${!this.message}>${this.message}</div>
 
-            .confirm {
-                font-weight: bold;
-                background: var(--shade-4-color);
-            }
+            <pl-input
+                class="tap"
+                .type=${this.type}
+                .placeholder=${this.placeholder}
+                .label=${this.label}
+                @enter=${() => this._confirmButton.click()}
+            >
+            </pl-input>
 
-            .cancel {
-                background: var(--shade-3-color);
-                margin-left: 0;
-            }
+            <div class="actions">
+                <pl-loading-button
+                    id="confirmButton"
+                    class="tap ${this.type === "destructive" ? "negative" : "primary"}"
+                    @click=${() => this._confirm()}
+                >
+                    ${this.confirmLabel}
+                </pl-loading-button>
 
-            .validation-message {
-                position: relative;
-                margin-top: 15px;
-                font-weight: bold;
-                font-size: var(--font-size-small);
-                color: var(--color-error);
-                text-shadow: none;
-                text-align: center;
-            }
-        </style>
-
-        <h1 ?hidden=${!this.title}>${this.title}</h1>
-
-        <div class="message" ?hidden=${!this.message}>${this.message}</div>
-
-        <pl-input
-            class="tap"
-            .type=${this.type}
-            .placeholder=${this.placeholder}
-            .label=${this.label}
-            @enter=${() => this._confirmButton.click()}>
-        </pl-input>
-
-        <div class="buttons">
-
-            <pl-loading-button
-                id="confirmButton"
-                class="tap confirm"
-                @click=${() => this._confirm()}>
-                ${this.confirmLabel}
-            </pl-loading-button>
-
-            <button class="tap cancel" @click=${() => this.done(null)} ?hidden=${!this.cancelLabel}>
-                ${this.cancelLabel}
-            </button>
-
-        </div>
-`;
+                <button class="tap" @click=${() => this.done(null)} ?hidden=${!this.cancelLabel}>
+                    ${this.cancelLabel}
+                </button>
+            </div>
+        `;
     }
 
     renderAfter() {
-        return html`<div class="validation-message" slot="after">${this._validationMessage}</div>`;
+        return html`
+            <div class="validation-message" slot="after">${this._validationMessage}</div>
+        `;
     }
 
     done(val: string | null) {

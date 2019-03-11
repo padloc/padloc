@@ -156,8 +156,8 @@ export class AttachmentElement extends BaseElement {
                         downloading
                             ? $l("downloading... {0}/{1}", this._size(dlp.loaded), this._size(dlp.total))
                             : uploading
-                                ? $l("uploading... {0}/{1}", this._size(ulp.loaded), this._size(ulp.total))
-                                : this._size(this.info.size)
+                            ? $l("uploading... {0}/{1}", this._size(ulp.loaded), this._size(ulp.total))
+                            : this._size(this.info.size)
                     }
                     </div>
 
@@ -181,18 +181,18 @@ export class AttachmentElement extends BaseElement {
         `;
     }
 
-    private async _downloadAttachment() {
-        const url = await this._attachment.toObjectURL();
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = this._attachment.name;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
+    // private async _downloadAttachment() {
+    //     const url = await this._attachment.toObjectURL();
+    //     const a = document.createElement("a");
+    //     a.href = url;
+    //     a.download = this._attachment.name;
+    //     a.click();
+    //     URL.revokeObjectURL(url);
+    // }
 
     private async _openAttachment() {
         if (!this._attachment.loaded) {
-            app.downloadAttachment(this._attachment).then(() => this._downloadAttachment());
+            // app.downloadAttachment(this._attachment).then(() => this._downloadAttachment());
             this._attachmentChanged();
         }
     }

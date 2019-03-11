@@ -1,5 +1,5 @@
 import { getProvider, PBKDF2Params, HMACParams, HMACKey } from "./crypto";
-import { SharedContainer } from "./container";
+import { SimpleContainer } from "./container";
 import { stringToBytes, bytesToString, bytesToHex, bytesToBase64, base64ToBytes, marshal, unmarshal } from "./encoding";
 import { Account, AccountID } from "./account";
 import { Org, OrgID } from "./org";
@@ -9,7 +9,7 @@ export type InvitePurpose = "join_org" | "confirm_membership";
 
 export type InviteID = string;
 
-export class Invite extends SharedContainer {
+export class Invite extends SimpleContainer {
     id: InviteID = "";
     created = new Date();
     expires = new Date();
@@ -67,7 +67,7 @@ export class Invite extends SharedContainer {
         this.id = uuid();
         this.expires = new Date(Date.now() + 1000 * 60 * 60 * duration);
         this.secret = bytesToHex(await getProvider().randomBytes(4));
-        await this.updateAccessors([org.admins]);
+        this._key = org.invitesKey;
         await this.setData(stringToBytes(marshal({ secret: this.secret, expires: this.expires })));
         this.signingKeyParams.salt = await getProvider().randomBytes(16);
         this.org = await this._sign({ id: org.id, name: org.name, publicKey: org.publicKey });
@@ -170,8 +170,8 @@ export class Invite extends SharedContainer {
         return (await this._verify(this.org)) && (await this._verify(this.invitee));
     }
 
-    async unlock(org: Org) {
-        await super.unlock(org.admins);
+    async unlock(key: Uint8Array) {
+        await super.unlock(key);
         const { secret, expires } = unmarshal(bytesToString(await this.getData()));
         this.secret = secret;
         this.expires = new Date(expires);

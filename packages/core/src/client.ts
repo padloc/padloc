@@ -94,7 +94,7 @@ export class Client implements API {
     }
 
     async updateAuth(auth: Auth) {
-        await this.call("updateAuth", [auth]);
+        await this.call("updateAuth", [auth.toRaw()]);
     }
 
     async createSession(params: CreateSessionParams) {
@@ -117,7 +117,7 @@ export class Client implements API {
     }
 
     async updateAccount(account: Account): Promise<Account> {
-        const res = await this.call("updateAccount", [account]);
+        const res = await this.call("updateAccount", [account.toRaw()]);
         return new Account().fromRaw(res.result);
     }
 
@@ -166,7 +166,7 @@ export class Client implements API {
     }
 
     async acceptInvite(invite: Invite): Promise<void> {
-        await this.call("acceptInvite", [await invite.toRaw()]);
+        await this.call("acceptInvite", [invite.toRaw()]);
     }
     //
     // async createAttachment(att: Attachment): Promise<Attachment> {

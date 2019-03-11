@@ -8,9 +8,9 @@ export class Logo extends BaseElement {
         <svg viewBox="0 0 376 105" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <defs>
 
-                <filter x="-.3%" y="-1%" width="100.5%" height="103.9%" filterUnits="objectBoundingBox" id="shadow">
+                <filter id="shadow">
                     <feOffset dy="2" in="SourceAlpha" result="shadowOffsetOuter1"/>
-                    <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.3 0" in="shadowOffsetOuter1"/>
+                    <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.5 0" in="shadowOffsetOuter1"/>
                 </filter>
 
             </defs>
@@ -26,23 +26,22 @@ export class Logo extends BaseElement {
     }
     render() {
         return html`
+            <style>
+                :host {
+                    position: relative;
+                    display: block;
+                    width: 200px;
+                    height: 50px;
+                }
 
-        <style>
-            :host {
-                position: relative;
-                display: block;
-                width: 200px;
-                height: 50px;
-            }
+                svg {
+                    width: 100%;
+                    height: 100%;
+                    fill: currentColor;
+                }
+            </style>
 
-            svg {
-                width: 100%;
-                height: 100%;
-                fill: currentColor;
-            }
-        </style>
-
-        ${this._logo()}
-`;
+            ${this._logo()}
+        `;
     }
 }

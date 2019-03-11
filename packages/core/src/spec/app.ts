@@ -73,14 +73,13 @@ export function appSpec(): Spec {
             const org = await app.createOrg("My Org");
             assert.equal(org.name, "My Org", "Organization name should be correct.");
             assert.ok(org.id, "Organization ID should be set.");
-            assert.equal(org.owner, app.account!.id, "Account should be organization owner.");
-            assert.isTrue(org.isAdmin(app.account!), "Account should be org admin.");
+            assert.isTrue(org.isOwner(app.account!), "Account should be organization owner.");
             assert.equal(app.orgs.length, 1);
         });
 
         test("Create Vault", async () => {
             const name = "My Shared Vault";
-            const vault = await app.createVault(name, app.orgs[0], [app.orgs[0].everyone]);
+            const vault = await app.createVault(name, app.orgs[0], [{ id: app.account!.id, readonly: false }]);
             assert.equal(vault.name, name);
             assert.equal(app.vaults.length, 2);
         });
@@ -116,18 +115,18 @@ export function appSpec(): Spec {
             assert.equal(addedMessage.org.id, org.id);
         });
 
-        test("Create Group", async () => {
-            const org = app.orgs[0];
-            const { id } = await app.createGroup(org, "Some Group", org.members);
-            const group = app.orgs[0].getGroup(id)!;
-            assert.ok(group);
-            assert.isTrue(group.isMember(app.account!));
-            assert.isTrue(group.isMember(otherApp.account!));
-
-            await app.createVault("Another Vault", app.orgs[0], [group]);
-            await otherApp.synchronize();
-            assert.equal(otherApp.vaults.length, 3);
-        });
+        // test("Create Group", async () => {
+        //     const org = app.orgs[0];
+        //     const { id } = await app.createGroup(org, "Some Group", org.members)!;
+        //     const group = app.orgs[0].getGroup(id)!;
+        //     assert.ok(group);
+        //     assert.isTrue(group.isMember(app.account!));
+        //     assert.isTrue(group.isMember(otherApp.account!));
+        //
+        //     await app.createVault("Another Vault", app.orgs[0], [{ id: group.id, readonly: false }]);
+        //     await otherApp.synchronize();
+        //     assert.equal(otherApp.vaults.length, 3);
+        // });
         //
         // test("Add Member To Subvault", async () => {
         //     app.vaults[2].addMember(app.vaults[1].members.get(otherApp.account!.id)!);

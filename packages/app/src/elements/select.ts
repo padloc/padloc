@@ -26,6 +26,8 @@ export class Select<T> extends BaseElement {
                     padding: 0;
                     height: var(--row-height);
                     padding: 0 15px;
+                    background: var(--shade-2-color);
+                    border-radius: var(--border-radius);
                 }
 
                 select {
@@ -74,15 +76,14 @@ export class Select<T> extends BaseElement {
             <select id="selectEl" .selectedIndex=${options.indexOf(selected)} @change=${() => this._changed()}>
                 ${options.map(
                     o => html`
-                    <option >${o}</option>
-                `
+                        <option>${o}</option>
+                    `
                 )}
             </select>
 
             <pl-icon icon="dropdown"></pl-icon>
 
             <label for="selectEl" float>${label}</label>
-
         `;
     }
 

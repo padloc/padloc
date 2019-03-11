@@ -50,6 +50,8 @@ export class Menu extends BaseElement {
                 }
 
                 li {
+                    background: transparent;
+                    border: none;
                     display: flex;
                     align-items: center;
                     height: 40px;
@@ -81,23 +83,15 @@ export class Menu extends BaseElement {
                     font-weight: normal;
                 }
 
-                .vault, .subvault, .menu-tag {
+                .vault, .menu-tag {
                     height: 35px;
                     font-size: var(--font-size-tiny);
                 }
 
-                .vault pl-icon, .subvault pl-icon, .menu-tag pl-icon {
+                .vault pl-icon, .menu-tag pl-icon {
                     width: 30px;
                     height: 30px;
                     font-size: 90%;
-                }
-
-                .subvault {
-                    padding-left: 15px;
-                }
-
-                .subvault pl-icon {
-                    font-size: 80%;
                 }
 
                 pl-logo {
@@ -155,23 +149,29 @@ export class Menu extends BaseElement {
                             <div>${$l("Settings")}</div>
                         </li>
 
-                        <li class="tap" @click=${() => this._goTo("orgs")} ?selected=${this.selected === "orgs"}>
-                            <pl-icon icon="orgs"></pl-icon>
+                        ${app.orgs.map(
+                            org => html`
+                                <li
+                                    class="tap"
+                                    ?selected=${this.selected === `org/${org.id}`}
+                                    @click=${() => router.go(`org/${org.id}`)}
+                                >
+                                    <pl-icon icon="org"></pl-icon>
 
-                            <div>${$l("Manage")}</div>
-                        </li>
+                                    <div>${org.name}</div>
+                                </li>
+                            `
+                        )}
                     </ul>
                 </nav>
 
                 <h3>${$l("Vaults")}</h3>
-
                 <ul>
                     ${app.vaults.map(
                         vault => html`
                             <li class="vault tap" @click=${() => this._filter({ vault })}>
                                 <pl-icon icon="vault"></pl-icon>
-
-                                <div>${vault.name}</div>
+                                <div>${vault}</div>
                             </li>
                         `
                     )}

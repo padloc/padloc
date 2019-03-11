@@ -76,48 +76,6 @@ export function clearDialogs() {
     lastDialogPromise = Promise.resolve();
 }
 
-export function promptPassword(password: string, opts: PromptOptions = {}) {
-    return prompt(opts.message || $l("Please enter your password!"), {
-        ...opts,
-        placeholder: $l("Enter Password"),
-        type: "password",
-        preventDismiss: true,
-        validate: async (pwd: string) => {
-            if (!pwd) {
-                throw $l("Please enter your password!");
-            }
-
-            if (pwd !== password) {
-                throw $l("Wrong password. Please try again!");
-            }
-
-            return pwd;
-        }
-    });
-}
-
-export function promptForgotPassword() {
-    return confirm(
-        $l(
-            "For security reasons don't keep a record of your master password so unfortunately we cannot " +
-                "help you recover it. You can reset your password, but your data will be lost in the process!"
-        ),
-        $l("Reset Password"),
-        $l("Keep Trying"),
-        { hideIcon: true, title: $l("Forgot Your Password?") }
-    ).then(confirmed => {
-        return (
-            confirmed &&
-            confirm(
-                $l("Are you sure you want to reset your password? " + "WARNING: All your data will be lost!"),
-                $l("Reset Password"),
-                $l("Cancel"),
-                { type: "warning" }
-            )
-        );
-    });
-}
-
 export function dialog(name: string) {
     return (prototype: BaseElement, propertyName: string) => {
         Object.defineProperty(prototype, propertyName, {

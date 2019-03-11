@@ -3,7 +3,6 @@ import { Storable } from "./storage";
 import { VaultItemCollection } from "./item";
 import { Revision } from "./collection";
 import { Account, AccountID } from "./account";
-import { Group } from "./group";
 import { OrgID } from "./org";
 
 export type VaultID = string;
@@ -26,12 +25,13 @@ export class Vault extends SharedContainer implements Storable {
 
     validate() {
         return (
-            typeof this.id === "string" &&
-            typeof this.name === "string" &&
-            (!this.org || (typeof this.org.id === "string" && typeof this.org.name === "string")) &&
-            typeof this.owner === "string" &&
-            (typeof this.archived === "undefined" || this.archived instanceof Date) &&
-            (typeof this.revision === "undefined" || typeof this.revision === "object")
+            super.validate() &&
+            (typeof this.id === "string" &&
+                typeof this.name === "string" &&
+                (!this.org || (typeof this.org.id === "string" && typeof this.org.name === "string")) &&
+                typeof this.owner === "string" &&
+                (typeof this.archived === "undefined" || this.archived instanceof Date) &&
+                (typeof this.revision === "undefined" || typeof this.revision === "object"))
         );
     }
 
@@ -50,7 +50,7 @@ export class Vault extends SharedContainer implements Storable {
         return super.fromRaw(rest);
     }
 
-    async unlock(account: Account | Group) {
+    async unlock(account: Account) {
         await super.unlock(account);
         if (this.encryptedData) {
             this.items.fromBytes(await this.getData());
@@ -63,10 +63,11 @@ export class Vault extends SharedContainer implements Storable {
 
     merge(vault: Vault) {
         this.items.merge(vault.items);
+        this.name = vault.name;
         this.revision = this.items.revision;
     }
 
     toString() {
-        return this.org ? `${this.org.name}/${this.name}` : this.name;
+        return this.org ? `${this.org.name} / ${this.name}` : this.name;
     }
 }

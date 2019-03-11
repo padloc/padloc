@@ -3,10 +3,9 @@ import { Storage, Storable } from "./storage";
 import { Serializable } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgMember } from "./org";
-import { Group } from "./group";
+import { Org, OrgID, OrgMember, OrgRole, Group } from "./org";
 import { VaultItem, Field, Tag, createVaultItem } from "./item";
-import { Account } from "./account";
+import { Account, AccountID } from "./account";
 import { Auth, EmailVerificationPurpose } from "./auth";
 import { Session } from "./session";
 // import { Invite } from "./invite";
@@ -360,17 +359,16 @@ export class App extends EventEmitter {
     }
 
     async changePassword(password: string) {
-        const account = this.account!;
-        await account.setPassword(password);
-
-        await this.fetchAccount();
-        const auth = new Auth(account.email);
-        auth.account = account.id;
-        const authKey = await auth.getAuthKey(password);
-        const srp = new SRPClient();
-        await srp.initialize(authKey);
-        auth.verifier = srp.v!;
-        await this.api.updateAuth(auth);
+        await this.updateAccount(async account => {
+            await account.setPassword(password);
+            const auth = new Auth(account.email);
+            auth.account = account.id;
+            const authKey = await auth.getAuthKey(password);
+            const srp = new SRPClient();
+            await srp.initialize(authKey);
+            auth.verifier = srp.v!;
+            await this.api.updateAuth(auth);
+        });
     }
 
     async fetchAccount() {
@@ -378,7 +376,19 @@ export class App extends EventEmitter {
         // TODO: public key change?
         if (this.account) {
             account.privateKey = this.account.privateKey;
+            account.signingKey = this.account.signingKey;
         }
+        this.state.account = account;
+        this.storage.save(this.state);
+        this.dispatch("account-changed", { account: this.account });
+    }
+
+    async updateAccount(transform: (account: Account) => Promise<any>) {
+        let account = this.account!.clone();
+        await transform(account);
+        account = await this.api.updateAccount(account);
+        account.privateKey = this.account!.privateKey;
+        account.signingKey = this.account!.signingKey;
         this.state.account = account;
         this.storage.save(this.state);
         this.dispatch("account-changed", { account: this.account });
@@ -392,7 +402,7 @@ export class App extends EventEmitter {
     async recoverAccount({ email, password, verify }: { email: string; password: string; verify: string }) {
         await this._logout();
 
-        const account = new Account();
+        let account = new Account();
         account.email = email;
         await account.initialize(password);
 
@@ -411,6 +421,42 @@ export class App extends EventEmitter {
                 verify
             })
         );
+
+        await this.login(email, password);
+
+        account = this.account!;
+
+        for (const org of this.orgs) {
+            if (org.isOwner(account)) {
+                await this.updateOrg(org.id, async org => {
+                    // Rotate org encryption key
+                    delete org.encryptedData;
+                    await org.updateAccessors([account]);
+
+                    // Rotate Org key pair
+                    await org.generateKeys();
+
+                    for (const member of org.members) {
+                        if (!org.isOwner(member)) {
+                            member.role = OrgRole.Suspended;
+                            const invite = new Invite(member.email, "confirm_membership");
+                            await invite.initialize(org, this.account!);
+                            org.invites.push(invite);
+                        }
+                    }
+
+                    await org.addOrUpdateMember({
+                        id: account.id,
+                        email: account.email,
+                        name: account.name,
+                        publicKey: account.publicKey,
+                        role: OrgRole.Owner
+                    });
+
+                    await this.updateAccount(account => account.addOrg(org));
+                });
+            }
+        }
     }
 
     // VAULTS
@@ -419,31 +465,60 @@ export class App extends EventEmitter {
         return this._vaults.get(id) || null;
     }
 
-    async createVault(name: string, org: Org, groups: Group[] = []): Promise<Vault> {
+    async createVault(
+        name: string,
+        org: Org,
+        members: { id: AccountID; readonly: boolean }[] = [],
+        groups: { name: string; readonly: boolean }[] = []
+    ): Promise<Vault> {
         let vault = new Vault();
         vault.name = name;
         vault.org = { id: org.id, name: org.name };
         vault = await this.api.createVault(vault);
 
-        org = org.clone();
-        await org.unlock(this.account!);
-
-        [org.admins, ...groups].forEach(({ id }) => org.getGroup(id)!.vaults.push({ id: vault.id, readonly: false }));
-        await vault.updateAccessors([org.admins, ...groups]);
-
-        await this.api.updateVault(vault);
-        await this.updateOrg(org, org);
-        await this.synchronize();
+        await this.updateOrg(org.id, async (org: Org) => {
+            groups.forEach(({ name, readonly }) => org.getGroup(name)!.vaults.push({ id: vault.id, readonly }));
+            members.forEach(({ id, readonly }) => org.getMember({ id })!.vaults.push({ id: vault.id, readonly }));
+        });
 
         this.dispatch("vault-created", { vault });
         return vault;
     }
 
-    // async deleteVault({ id }: { id: VaultID }): Promise<void> {
-    //     await this.api.deleteVault(id);
-    //     await this.synchronize();
-    // }
-    //
+    async updateVault(
+        orgId: OrgID,
+        id: VaultID,
+        name: string,
+        members: { id: AccountID; readonly: boolean }[] = [],
+        groups: { name: string; readonly: boolean }[] = []
+    ) {
+        await this.updateOrg(orgId, async (org: Org) => {
+            org.vaults.find(v => v.id === id)!.name = name;
+
+            for (const group of org.groups) {
+                // remove previous vault entry
+                group.vaults = group.vaults.filter(v => v.id !== id);
+                // update vault entry
+                const selection = groups.find(g => g.name === group.name);
+                if (selection) {
+                    group.vaults.push({ id, readonly: selection.readonly });
+                }
+            }
+
+            for (const member of org.members) {
+                // remove previous vault entry
+                member.vaults = member.vaults.filter(v => v.id !== id);
+                // update vault entry
+                const selection = members.find(m => m.id === member.id);
+                if (selection) {
+                    member.vaults.push({ id, readonly: selection.readonly });
+                }
+            }
+        });
+
+        // TODO: Update vault name
+    }
+
     // async archiveVault({ id }: { id: VaultID }): Promise<void> {
     //     const vault = this.getVault(id)!;
     //     await Promise.all([...vault.vaults].map(v => this.archiveVault(v)));
@@ -468,14 +543,13 @@ export class App extends EventEmitter {
         this._vaults.set(this.account.mainVault, vault);
 
         for (const org of this.orgs) {
-            for (const { id, group } of org.getVaultsForMember(this.account)) {
-                await group.unlock(this.account);
+            for (const id of org.getVaultsForMember(this.account)) {
                 try {
                     const vault = await this.storage.get(Vault, id);
-                    await vault.unlock(group);
+                    await vault.unlock(this.account);
                     this._vaults.set(id, vault);
                 } catch (e) {
-                    console.error("Failed to load vault: ", vault.name);
+                    console.error("Failed to load vault: ", e);
                 }
             }
         }
@@ -487,26 +561,13 @@ export class App extends EventEmitter {
         await this.storage.save(vault);
     }
 
-    async deleteVault(vault: Vault) {
-        const org = vault.org && this.getOrg(vault.org.id);
-        if (!org) {
-            throw "Can't delete private vault";
-        }
-
-        await this.api.deleteVault(vault.id);
-
-        for (const group of org.getGroupsForVault(vault)) {
-            group.vaults = group.vaults.filter(v => v.id === vault.id);
-        }
-
-        org.vaults = org.vaults.filter(v => v.id === vault.id);
-
-        await this.updateOrg(org, org);
+    async deleteVault(id: VaultID) {
+        await this.api.deleteVault(id);
         await this.synchronize();
     }
 
-    async syncVault(vault: { id: VaultID }): Promise<Vault> {
-        return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault));
+    async syncVault(vault: { id: VaultID }, transform?: (vault: Vault) => any): Promise<Vault> {
+        return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault, transform));
     }
 
     async syncVaults() {
@@ -517,69 +578,102 @@ export class App extends EventEmitter {
         const promises = [this.syncVault({ id: this.account.mainVault })] as Promise<any>[];
 
         for (const org of this.orgs) {
-            for (const vault of org.getVaultsForMember(this.account)) {
-                promises.push(this.syncVault(vault));
+            // clean up vaults the user no longer has access to
+            for (const vault of this.vaults) {
+                if (vault.org && vault.org.id === org.id && !org.canRead(vault, this.account)) {
+                    await this.storage.delete(vault);
+                    this._vaults.delete(vault.id);
+                }
+            }
+
+            for (const id of org.getVaultsForMember(this.account)) {
+                promises.push(this.syncVault({ id }));
             }
         }
 
         await Promise.all(promises);
     }
 
-    async unlockVault(vault: Vault) {
-        const account = this.account!;
-        const org = vault.org && this.getOrg(vault.org.id);
-        if (org) {
-            const group = org.getUnlockingGroupForVault(vault, account)!;
-            await group.unlock(account);
-            await vault.unlock(group);
-        } else {
-            await vault.unlock(account);
+    hasWritePermissions(vault: Vault) {
+        if (!vault.org) {
+            return true;
         }
+
+        const org = this.getOrg(vault.org.id)!;
+        return org.canWrite(vault, this.account!);
     }
 
-    async _syncVault({ id }: { id: VaultID }): Promise<Vault | null> {
+    async _syncVault({ id }: { id: VaultID }, transform?: (vault: Vault) => any): Promise<Vault | null> {
+        if (!this.account || this.account.locked) {
+            throw "Need to be logged in to sync vault";
+        }
+
         const localVault = this.getVault(id);
         let remoteVault: Vault;
         let result: Vault;
 
         try {
             remoteVault = await this.api.getVault(id);
-            await this.unlockVault(remoteVault);
-        } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                if (localVault) {
-                    await this.storage.delete(localVault);
-                }
-                this._vaults.delete(id);
-                return null;
-            } else {
-                throw e;
+            if (remoteVault.encryptedData) {
+                await remoteVault.unlock(this.account);
             }
+        } catch (e) {
+            return null;
+            // if (e.code === ErrorCode.NOT_FOUND) {
+            //     if (localVault) {
+            //         await this.storage.delete(localVault);
+            //     }
+            //     this._vaults.delete(id);
+            //     return null;
+            // } else if (e.code === ErrorCode.MISSING_ACCESS) {
+            //     // User does not current have access to vault, this can happen
+            //     // if the vault has not been synchronized since the user has
+            //     // been added to it. We can safely ignore this.
+            //     console.log("Can't access remote vault");
+            //     return null;
+            // } else {
+            //     throw e;
+            // }
         }
 
         if (localVault) {
             result = localVault.clone();
-            await this.unlockVault(result);
+            await result.unlock(this.account);
             result.merge(remoteVault);
-            await result.commit();
         } else {
             result = remoteVault;
         }
 
         const org = result.org && this.getOrg(result.org.id);
-        if (org) {
-            await result.updateAccessors(org.getGroupsForVault(result));
-        }
 
-        try {
-            await this.api.updateVault(result);
-        } catch (e) {
-            if (e.code === ErrorCode.MERGE_CONFLICT) {
-                // If there is a merge conflict (probably because somebody else
-                // did a push while we were sycing), start over.
-                return this._syncVault({ id });
+        // Don't push updates if vault belongs to an org and
+        // the accounts membership is currently suspended
+        if (!org || org.getMember(this.account)!.role !== OrgRole.Suspended) {
+            if (org) {
+                await this.account.verifyOrg(org);
+                const members = org.getMembersForVault(result);
+                await org.verifyAll(members);
+                await result.updateAccessors(members);
+            } else {
+                await result.updateAccessors([this.account]);
             }
-            throw e;
+
+            await result.commit();
+
+            if (transform) {
+                transform(result);
+            }
+
+            try {
+                await this.api.updateVault(result);
+            } catch (e) {
+                if (e.code === ErrorCode.MERGE_CONFLICT) {
+                    // If there is a merge conflict (probably because somebody else
+                    // did a push while we were sycing), start over.
+                    return this._syncVault({ id });
+                }
+                throw e;
+            }
         }
 
         await this.saveVault(result);
@@ -672,7 +766,7 @@ export class App extends EventEmitter {
         org.name = name;
         await org.initialize(this.account!);
         org = await this.api.createOrg(org);
-        await this.fetchAccount();
+        await this.updateAccount(async account => account.addOrg(org));
         await this.loadOrgs(true);
         return this.getOrg(org.id)!;
     }
@@ -681,17 +775,19 @@ export class App extends EventEmitter {
         if (!this.account) {
             return;
         }
-        for (const id of this.account.orgs) {
-            const org = fetch ? await this.api.getOrg(id) : await this.storage.get(Org, id);
-            this._orgs.set(id, org);
-            fetch && (await this.storage.save(org));
+        for (const { id } of this.account.orgs) {
+            try {
+                const org = fetch ? await this.api.getOrg(id) : await this.storage.get(Org, id);
+                this._orgs.set(id, org);
+                fetch && (await this.storage.save(org));
+            } catch (e) {}
         }
     }
 
-    async updateOrg(org: Org, changes: Partial<Org>) {
-        org = Object.assign(org.clone(), changes);
+    async updateOrg(id: OrgID, transform: (org: Org) => Promise<any>) {
+        let org = this.getOrg(id)!.clone();
+        await transform(org);
         org = await this.api.updateOrg(org);
-        await org.unlock(this.account!);
         this._orgs.set(org.id, org);
         await this.storage.save(org);
         this.dispatch("org-changed", { org });
@@ -699,20 +795,94 @@ export class App extends EventEmitter {
     }
 
     async createGroup(org: Org, name: string, members: OrgMember[]) {
-        org = org.clone();
-        await org.unlock(this.account!);
-        const group = await org.createGroup(name, members);
-        await this.updateOrg(org, org);
+        const group = new Group();
+        group.name = name;
+        group.members = members.map(({ id }) => ({ id }));
+        await this.updateOrg(org.id, async (org: Org) => {
+            if (org.getGroup(name)) {
+                throw "A group with this name already exists!";
+            }
+            org.groups.push(group);
+        });
         return group;
+    }
+
+    async updateGroup(org: Org, { name }: Group, members: OrgMember[], newName?: string) {
+        await this.updateOrg(org.id, async org => {
+            const group = org.getGroup(name);
+            if (!group) {
+                throw "Group not found!";
+            }
+            if (newName && newName !== name && org.getGroup(newName)) {
+                throw "Another group with this name already exists!";
+            }
+            if (newName) {
+                group.name = newName;
+            }
+            group.members = members.map(({ id }) => ({ id }));
+        });
+    }
+
+    async updateMember(
+        org: Org,
+        { id }: OrgMember,
+        {
+            vaults,
+            groups,
+            role
+        }: {
+            vaults?: { id: VaultID; readonly: boolean }[];
+            groups?: string[];
+            role?: OrgRole;
+        }
+    ): Promise<OrgMember> {
+        await this.updateOrg(org.id, async org => {
+            const member = org.getMember({ id })!;
+
+            if (vaults) {
+                member.vaults = vaults;
+            }
+
+            if (groups) {
+                for (const group of org.groups) {
+                    group.members = group.members.filter(m => m.id !== id);
+                }
+
+                for (const name of groups) {
+                    const group = org.getGroup(name)!;
+                    group.members.push({ id });
+                }
+            }
+
+            if (role) {
+                member.role = role;
+            }
+        });
+
+        return this.getOrg(org.id)!.getMember({ id })!;
+    }
+
+    async removeMember(org: Org, { id }: OrgMember) {
+        await this.updateOrg(org.id, async org => {
+            await org.unlock(this.account!);
+
+            // Remove member from all groups
+            for (const group of org.getGroupsForMember({ id })) {
+                group.members = group.members.filter(m => m.id !== id);
+            }
+
+            org.members = org.members.filter(m => m.id !== id);
+        });
     }
 
     // INVITES
 
     async createInvite({ id }: Org, email: string, purpose?: InvitePurpose) {
         const org = this.getOrg(id)!;
+        await org.unlock(this.account!);
         const invite = new Invite(email, purpose);
         await invite.initialize(org, this.account!);
-        await this.updateOrg(org, { invites: [...org.invites, invite] });
+        await this.updateOrg(org.id, async (org: Org) => (org.invites = [...org.invites, invite]));
         this.dispatch("invite-created", { invite });
         return invite;
     }
@@ -729,21 +899,26 @@ export class App extends EventEmitter {
         const success = await invite.accept(this.account!, secret);
         if (success) {
             await this.api.acceptInvite(invite);
+            await this.updateAccount(account => account.addOrg(invite.org!));
         }
         return success;
     }
 
-    async confirmInvite(invite: Invite) {
-        let org = this.getOrg(invite.org!.id)!;
+    async confirmInvite(invite: Invite): Promise<OrgMember> {
+        await this.updateOrg(invite.org!.id, async (org: Org) => {
+            await org.unlock(this.account!);
+            await org.addOrUpdateMember(invite.invitee!);
+            org.removeInvite(invite);
+        });
 
-        // clone org
-        org = org.clone();
-        await org.unlock(this.account!);
+        return this.getOrg(invite.org!.id)!.getMember({ id: invite.invitee!.id })!;
+    }
 
-        await org.addMember(invite.invitee!);
-        org.removeInvite(invite);
-
-        await this.updateOrg(org, org);
+    async deleteInvite(invite: Invite): Promise<void> {
+        await this.updateOrg(
+            invite.org!.id,
+            async org => (org.invites = org.invites.filter(inv => inv.id !== invite.id))
+        );
     }
 
     // SETTINGS / STATS

@@ -36,6 +36,11 @@ export const tapHighlightActiveAfter = () => `
     transition: none;
 `;
 
+export const tapHighlightHoverAfter = () => `
+    opacity: 0.1;
+    transition: none;
+`;
+
 export const fullbleed = () => `
     position: absolute;
     top: 0;

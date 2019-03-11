@@ -1,38 +1,46 @@
-import { Group } from "@padloc/core/lib/group.js";
+import { Org, OrgMember, Group } from "@padloc/core/lib/org.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app } from "../init.js";
-import { element, html, property, query, queryAll, listen } from "./base.js";
+import { prompt } from "../dialog.js";
+import { element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { LoadingButton } from "./loading-button.js";
+import { Input } from "./input.js";
+import "./toggle-button.js";
+import "./member-item.js";
+
+type InputType = { group: Group | null; org: Org };
 
 @element("pl-group-dialog")
-export class GroupDialog extends Dialog<Group, void> {
+export class GroupDialog extends Dialog<InputType, void> {
     @property()
     group: Group | null = null;
 
-    private get _org() {
-        return (
-            this.group &&
-            app.orgs.find(org => [org.admins, org.everyone, ...org.groups].some(g => g.id === this.group!.id))
-        );
-    }
-
-    @queryAll("input[type='checkbox']")
-    private _checkboxes: HTMLInputElement[];
+    @property()
+    org: Org | null = null;
 
     @query("#saveButton")
     private _saveButton: LoadingButton;
 
-    private _selectedMembers = new Set<string>();
+    @query("#nameInput")
+    private _nameInput: Input;
 
-    private get _currentMembers(): Set<string> {
+    @query("#filterMembersInput")
+    private _filterMembersInput: Input;
+
+    @property()
+    private _membersFilter: string = "";
+
+    private _members = new Set<string>();
+
+    private _getCurrentMembers(): Set<string> {
         const members = new Set<string>();
 
-        if (!this._org) {
+        if (!this.group || !this.org) {
             return members;
         }
 
-        for (const member of this._org.getMembersForGroup(this.group!)) {
+        for (const member of this.org.getMembersForGroup(this.group!)) {
             members.add(member.id);
         }
 
@@ -40,27 +48,37 @@ export class GroupDialog extends Dialog<Group, void> {
     }
 
     private get _hasChanged() {
-        return (
-            this._selectedMembers.size !== this._currentMembers.size ||
-            [...this._selectedMembers.values()].some(group => !this._currentMembers.has(group))
-        );
+        if (!this._nameInput) {
+            return false;
+        }
+        const currentMembers = this._getCurrentMembers();
+        const membersChanged =
+            this._members.size !== currentMembers.size ||
+            [...this._members.values()].some(group => !currentMembers.has(group));
+
+        const nameChanged = this.group ? this.group.name !== this._nameInput.value : !!this._nameInput.value;
+
+        return this._members.size && this._nameInput.value && (membersChanged || nameChanged);
     }
 
-    show(group: Group): Promise<void> {
+    async show({ org, group }: InputType): Promise<void> {
+        this.org = org;
         this.group = group;
-        this._selectedMembers = new Set<string>(this._currentMembers);
-        return super.show();
+        this._members = this._getCurrentMembers();
+        await this.updateComplete;
+        this._nameInput.value = group ? group.name : "";
+        this._clearMembersFilter();
+        if (group) {
+            setTimeout(() => this._nameInput.focus(), 100);
+        }
+        await super.show();
     }
 
-    @listen("change", "input[type='checkbox']")
-    _updateSelected() {
-        this._selectedMembers.clear();
-
-        for (const checkbox of this._checkboxes) {
-            const member = checkbox.dataset.member;
-            if (member && checkbox.checked) {
-                this._selectedMembers.add(member);
-            }
+    _toggleMember(member: OrgMember) {
+        if (this._members.has(member.id)) {
+            this._members.delete(member.id);
+        } else {
+            this._members.add(member.id);
         }
 
         this.requestUpdate();
@@ -74,65 +92,147 @@ export class GroupDialog extends Dialog<Group, void> {
         this._saveButton.start();
 
         try {
-            const org = this._org!.clone();
+            const org = this.org!.clone();
             await org.unlock(app.account!);
-            const group = org.getGroup(this.group!.id)!;
 
-            const members = [...this._selectedMembers.values()].map(id => org.getMember({ id }));
-            await group.unlock(org.admins);
-            await group.updateAccessors([org.admins, ...members]);
+            const members = [...this._members.values()].map(id => org.getMember({ id }));
 
-            await app.updateOrg(org, org);
+            if (this.group) {
+                await app.updateGroup(org, this.group, members, this._nameInput.value);
+            } else {
+                await app.createGroup(org, this._nameInput.value, members);
+            }
+
             this._saveButton.success();
+            this.done();
         } catch (e) {
             this._saveButton.fail();
             throw e;
         }
+    }
 
-        this.requestUpdate();
+    private async _deleteGroup() {
+        this.open = false;
+
+        const deleted = await prompt($l("Are you sure you want to delete this group?"), {
+            type: "destructive",
+            title: $l("Delete Vault"),
+            placeholder: $l("Type 'DELETE' to confirm"),
+            confirmLabel: $l("Delete"),
+            validate: async val => {
+                if (val !== "DELETE") {
+                    throw $l("Type 'DELETE' to confirm");
+                }
+
+                await app.updateOrg(this.org!.id, async org => {
+                    org.groups = org.groups.filter(group => group.name !== this.group!.name);
+                });
+
+                return val;
+            }
+        });
+
+        if (deleted) {
+            this.done();
+        } else {
+            this.open = true;
+        }
+    }
+
+    private _updateMembersFilter() {
+        this._membersFilter = this._filterMembersInput.value;
+    }
+
+    private _clearMembersFilter() {
+        this._membersFilter = this._filterMembersInput.value = "";
     }
 
     shouldUpdate() {
-        return !!this.group;
+        return !!this.org;
     }
 
     renderContent() {
-        const group = this.group!;
-        const members = this._org!.members;
+        const org = this.org!;
+        const memFilter = this._membersFilter.toLowerCase();
+        const members = memFilter
+            ? org.members.filter(
+                  ({ name, email }) => email.toLowerCase().includes(memFilter) || name.toLowerCase().includes(memFilter)
+              )
+            : org.members;
+        // members.sort((a, b) => this._members.has(a.id) - this._members.has(b.id));
+        const canEdit = org.isAdmin(app.account!);
+        const canDelete = this.group && canEdit;
 
         return html`
             <style>
                 .inner {
-                    background: var(--color-tertiary);
-                    color: var(--color-secondary);
-                    text-shadow: none;
+                    background: var(--color-quaternary);
+                }
+
+                pl-toggle-button {
+                    display: block;
+                    padding: 0 15px 0 0;
+                }
+
+                .delete-button {
+                    color: var(--color-negative);
+                    font-size: var(--font-size-default);
                 }
             </style>
 
-            <h1>${group.name}</h1>
+            <header>
+                <pl-icon icon="group"></pl-icon>
+                <pl-input
+                    id="nameInput"
+                    class="flex"
+                    .placeholder=${$l("Enter Group Name")}
+                    .readonly=${!canEdit}
+                    @input=${() => this.requestUpdate()}
+                ></pl-input>
+                <pl-icon
+                    icon="delete"
+                    class="delete-button tap"
+                    @click=${this._deleteGroup}
+                    ?hidden=${!canDelete}
+                ></pl-icon>
+            </header>
 
-            <h2>${$l("Members")}</h2>
+            <div class="search-wrapper item">
+                <pl-icon icon="search"></pl-icon>
+                <pl-input
+                    id="filterMembersInput"
+                    placeholder="${$l("Search...")}"
+                    @input=${this._updateMembersFilter}
+                ></pl-input>
+                <pl-icon icon="cancel" class="tap" @click=${this._clearMembersFilter}></pl-icon>
+            </div>
 
-            <ul>
-                ${members.map(
-                    member => html`
-                    <li>
-                        <label>
-                            <input
-                                type="checkbox"
-                                data-member=${member.id}
-                                .checked=${this._selectedMembers.has(member.id)}
-                            ></input> 
-                            ${member.name}
-                        </label>
-                    </li>
+            ${members.map(
+                member => html`
+                    <pl-toggle-button
+                        class="item tap"
+                        reverse
+                        @click=${() => this._toggleMember(member)}
+                        .active=${this._members.has(member.id)}
+                        ?disabled=${!canEdit}
+                    >
+                        <pl-member-item hideRole .member=${member}></pl-member-item>
+                    </pl-toggle-button>
                 `
-                )}
-            </ul>
+            )}
 
-            <pl-loading-button id="saveButton" ?hidden=${!this._hasChanged} @click=${this._save}
-                >${$l("Save")}</pl-loading-button
-            >
+            <div class="actions" ?hidden=${!canEdit}>
+                <pl-loading-button
+                    class="tap primary"
+                    id="saveButton"
+                    ?disabled=${!this._hasChanged}
+                    @click=${this._save}
+                >
+                    ${$l("Save")}
+                </pl-loading-button>
+
+                <button class="tap" @click=${this.dismiss}>${$l("Cancel")}</button>
+            </div>
         `;
     }
 }

@@ -1,11 +1,9 @@
 import { FieldType, FieldDef, FIELD_DEFS } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared } from "../styles";
-import { dialog } from "../dialog.js";
 import { BaseElement, element, html, property, query } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
-import { Generator } from "./generator.js";
 import { Select } from "./select.js";
 
 @element("pl-field")
@@ -30,9 +28,6 @@ export class FieldElement extends BaseElement {
 
     @query("#typeSelect")
     private _typeSelect: Select<FieldDef>;
-
-    @dialog("pl-generator")
-    private _generator: Generator;
 
     focus() {
         const inputToFocus = this._nameInput.value ? this._valueInput : this._nameInput;
@@ -88,6 +83,10 @@ export class FieldElement extends BaseElement {
                     justify-content: center;
                 }
 
+                .field-buttons.left {
+                    margin: 0 -4px 0 4px;
+                }
+
                 :host(:not(:hover)) .field-buttons.right {
                     visibility: hidden;
                 }
@@ -95,6 +94,10 @@ export class FieldElement extends BaseElement {
                 .field-header {
                     display: flex;
                     margin-bottom: 4px;
+                }
+
+                .fields-container {
+                    margin: 8px;
                 }
 
                 .field-name {
@@ -132,15 +135,12 @@ export class FieldElement extends BaseElement {
                     box-sizing: border-box;
                 }
 
-                pl-input:not([readonly]),
-                pl-select {
-                    background: #fafafa;
-                    border: solid 1px #eee;
-                    border-radius: 8px;
+                pl-input[readonly] {
+                    background: transparent;
                 }
             </style>
 
-            <div class="field-buttons" ?hidden=${!this.editing}>
+            <div class="field-buttons left" ?hidden=${!this.editing}>
 
                 <pl-icon
                     icon="remove"
@@ -152,12 +152,12 @@ export class FieldElement extends BaseElement {
                     ?hidden=${this.type !== "password"}
                     icon="generate"
                     class="tap"
-                    @click=${() => this._generateValue()}>
+                    @click=${() => this.dispatch("generate")}>
                 </pl-icon>
 
             </div>
 
-            <div class="flex">
+            <div class="fields-container flex">
 
                 <div class="field-header">
 
@@ -187,7 +187,7 @@ export class FieldElement extends BaseElement {
                     class="field-value"
                     placeholder="${$l("Enter Field Value")}"
                     .type=${inputType}
-                    .multiline=${fieldDef.multiline}
+                    multiline
                     .readonly=${!this.editing}
                     .masked=${mask}
                     .value=${this.value}
@@ -201,16 +201,16 @@ export class FieldElement extends BaseElement {
             <div class="field-buttons right" ?hidden=${this.editing}>
 
                 <pl-icon
-                    icon="copy"
-                    class="tap"
-                    @click=${() => this.dispatch("copy")}>
-                </pl-icon>
-
-                <pl-icon
                     .icon=${(this._valueInput ? this._valueInput.masked : mask) ? "show" : "hide"}
                     class="tap"
                     ?hidden=${!fieldDef.mask}
                     @click=${() => this._toggleMask()}>
+                </pl-icon>
+
+                <pl-icon
+                    icon="copy"
+                    class="tap"
+                    @click=${() => this.dispatch("copy")}>
                 </pl-icon>
 
             </div>
@@ -220,12 +220,5 @@ export class FieldElement extends BaseElement {
     _toggleMask() {
         this._valueInput.masked = !this._valueInput.masked;
         this.requestUpdate();
-    }
-
-    private async _generateValue() {
-        const value = await this._generator.show();
-        if (value) {
-            this.value = value;
-        }
     }
 }

@@ -50,12 +50,21 @@ export const shared = html`
         font-weight: inherit;
         border: none;
         margin: 0;
-        height: var(--row-height);
-        line-height: var(--row-height);
-        padding: 0 15px;
+        padding: 12px 15px;
         cursor: pointer;
         text-align: center;
-        background: transparent;
+        text-shadow: inherit;
+    }
+
+    button.icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    button.icon pl-icon {
+        width: 30px;
+        height: 20px;
     }
 
     button.arrow, a.button.arrow {
@@ -72,11 +81,24 @@ export const shared = html`
         bottom: 0;
     }
 
-    button {
-        text-shadow: inherit;
+    button, pl-loading-button, pl-toggle-button, a.button {
+        background: var(--color-btn-back);
+        border-radius: var(--border-radius);
     }
 
-    input:not([type="checkbox"]), select {
+    button.primary, pl-loading-button.primary, a.button.primary {
+        background: var(--color-highlight);
+        color: var(--color-tertiary);
+        font-weight: bold;
+    }
+
+    button.negative, pl-loading-button.negative, a.button.negative {
+        background: var(--color-negative);
+        color: var(--color-tertiary);
+        font-weight: bold;
+    }
+
+    input, select {
         border: none;
         -webkit-appearance: none;
         -mox-appearance: none;
@@ -118,7 +140,6 @@ export const shared = html`
     }
 
     h1, h2 {
-        margin: 20px;
         display: flex;
         align-items: center;
         text-align: left;
@@ -132,11 +153,12 @@ export const shared = html`
 
     h1 {
         font-size: 150%;
+        margin: 20px 20px 10px 20px;
     }
 
     h2 {
         font-size: 120%;
-        margin: 20px 10px 8px 15px;
+        margin: 10px 20px 5px 20px;
     }
 
     ::-webkit-search-cancel-button {
@@ -167,7 +189,7 @@ export const shared = html`
 
     [disabled] {
         opacity: 0.5;
-        pointer-events: none;
+        pointer-events: none !important;
     }
 
     section {
@@ -180,51 +202,24 @@ export const shared = html`
 
     header {
         display: flex;
-        height: var(--row-height);
-        background: var(--color-background);
-        font-size: var(--font-size-default);
-        z-index: 1;
-        border-bottom: solid 1px #ddd;
-        align-items: center;
-    }
-
-    header > .title {
-        line-height: var(--row-height);
-        padding: 0 10px;
-        flex: 1;
-        font-weight: bold;
-        text-align: center;
-        ${mixins.ellipsis()}
-    }
-
-    header pl-icon {
-        margin: 5px;
-        border-radius: 100%;
-        overflow: hidden;
         font-size: 120%;
-    }
-
-    header.back-header {
-        border: none;
+        padding: 10px;
+        background: var(--color-tertiary);
+        z-index: 1;
+        border-bottom: solid 3px var(--color-shade-1);
         align-items: center;
-        padding-left: 15px;
-        color: var(--color-tertiary);
-        margin-top: 10px;
-        margin-bottom: -10px;
-        z-index: 2;
-        height: 40px;
-        background: inherit;
+        font-weight: bold;
     }
 
-    header.back-header > * {
-        color: var(--color-primary);
+    header pl-input {
+        height: auto;
+        background: transparent;
+        padding: 0 5px;
     }
 
-    header.back-header pl-icon {
-        font-size: 90%;
-        width: 20px;
-        top: 1px;
-        margin: 0;
+    header .title {
+        padding: 0 5px;
+        text-align: center;
     }
 
     main {
@@ -238,6 +233,19 @@ export const shared = html`
         list-style: none;
         padding: 0;
         margin: 0;
+    }
+
+    li, .item {
+        border-radius: var(--border-radius);
+        background: var(--color-tertiary);
+        border: solid 1px var(--color-shade-1);
+        border-bottom-width: 3px;
+        margin: var(--gutter-size);
+        /*box-shadow: 0px 5px 5px -5px var(--color-shade-2), 0 0 2px var(--color-shade-1);*/
+    }
+
+    li.padded, .item.padded {
+        padding: 8px;
     }
 
     pl-dialog .message {
@@ -281,6 +289,10 @@ export const shared = html`
 
     .tap:active::after {
         ${mixins.tapHighlightActiveAfter()}
+    }
+
+    .tap:not(:active):hover::after {
+        ${mixins.tapHighlightHoverAfter()}
     }
 
     .tiles > :nth-child(8n + 1), .tiles-1 {
@@ -391,14 +403,15 @@ export const shared = html`
     }
 
     .tag {
-        color: var(--color-background);
+        color: var(--color-tertiary);
+        /*text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0;*/
         font-weight: bold;
         border-radius: var(--border-radius);
         font-size: var(--font-size-tiny);
         padding: 5px 8px;
         line-height: normal;
         text-align: center;
-        ${mixins.gradientDark(true)}
+        background: var(--color-secondary);
     }
 
     .tag:not(:last-child) {
@@ -424,18 +437,16 @@ export const shared = html`
     }
 
     .tag.highlight {
-        ${mixins.gradientHighlight(true)}
-        color: var(--color-tertiary);
-        text-shadow: rgba(0, 0, 0, 0.1) 0 1px 0;
+        background: var(--color-highlight);
     }
 
     .tag.warning {
-        color: var(--color-tertiary);
-        ${mixins.gradientWarning(true)}
+        background: var(--color-negative);
     }
 
     .tags.small .tag {
         font-size: var(--font-size-micro);
+        padding: 4px 6px;
     }
 
     .tags.small pl-icon {
@@ -464,9 +475,17 @@ export const shared = html`
     .fab {
         pointer-events: auto;
         border-radius: 100%;
-        margin: 15px;
-        background: var(--color-secondary);
+        margin: 12px;
+        box-shadow: #000 0 1px 5px -2px;
         color: var(--color-tertiary);
+        width: 46px;
+        height: 46px;
+        text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0px;
+        background: var(--color-secondary);
+    }
+
+    .fab.primary {
+        background: var(--color-primary);
     }
 
     .fab:not(:last-child) {
@@ -474,7 +493,13 @@ export const shared = html`
     }
 
     .fab.destructive {
-        ${mixins.gradientWarning(true)}
+        background: var(--color-negative);
+    }
+
+    .centering {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .empty-placeholder {
@@ -500,6 +525,88 @@ export const shared = html`
         width: 200px;
     }
 
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+    }
+
+    .input-wrapper pl-input {
+        padding: 0;
+        background: transparent;
+    }
+
+    .tabs {
+        display: flex;
+        margin: 0 auto;
+        width: auto;
+        ${mixins.scroll("horizontal")}
+        font-size: var(--font-size-default);
+        font-weight: bold;
+    }
+
+    .tabs > * {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 15px;
+    }
+
+    .tabs > * > pl-icon {
+        margin-left: -12px;
+    }
+
+    .tabs > *[active] {
+        color: var(--color-highlight);
+    }
+
+    .tabs > *[active]::before {
+        content: "";
+        display: block;
+        width: 100%;
+        height: 3px;
+        background: currentColor;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+    }
+
+    header > .tabs {
+        margin: -10px -10px -12px -10px;
+    }
+
+    .search-wrapper {
+        display: flex;
+        align-items: center;
+    }
+
+    .search-wrapper pl-icon {
+        opacity: 0.5;
+        margin-left: 5px;
+    }
+
+    .search-wrapper pl-input {
+        font-size: var(--font-size-small);
+        height: auto;
+        flex: 1;
+        background: transparent;
+        padding-left: 5px;
+    }
+
+    .note {
+        padding: 0;
+        font-size: var(--font-size-small);
+        font-weight: bold;
+        padding: 8px;
+        box-shadow: rgba(0, 0, 0, 0.3) 0 0 3px 0;
+        text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
+        background: var(--color-primary);
+    }
+
+    .note.error {
+        background: var(--color-negative);
+    }
+
     @keyframes spin {
         to { transform: rotate(360deg); }
     }
@@ -521,7 +628,7 @@ export const shared = html`
         }
 
         .narrow {
-            display: none;
+            display: none !important;
         }
     }
 

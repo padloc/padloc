@@ -32,7 +32,7 @@ export class Clipboard extends BaseElement {
                 left: 15px;
                 right: 15px;
                 bottom: 15px;
-                z-index: 10;
+                z-index: 100;
                 max-width: 400px;
                 margin: 0 auto;
                 border-radius: var(--border-radius);

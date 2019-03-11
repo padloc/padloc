@@ -21,53 +21,47 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
             this.items.length === 1 ? `'${this.items[0].item.name}'` : $l("{0} Items", this.items.length.toString());
 
         return html`
+            <style>
+                pl-input,
+                pl-select {
+                    text-align: center;
+                    margin: 12px;
+                }
 
-        <style>
+                .actions {
+                    margin: 12px;
+                    grid-gap: 12px;
+                }
 
-            .inner {
-                display: flex;
-                flex-direction: column;
-            }
+                h1 {
+                    display: block;
+                    text-align: center;
+                }
 
-            pl-input, pl-select, button {
-                text-align: center;
-                margin: 0 10px 10px 10px;
-                background: var(--shade-2-color);
-                border-radius: 8px;
-            }
+                .message {
+                    margin: 8px;
+                    text-align: center;
+                }
+            </style>
 
-            h1 {
-                display: block;
-                text-align: center;
-            }
+            <h1>${$l("Move {0} To", itemsDescription)}</h1>
 
-            button {
-                display: block;
-                font-weight: bold;
-                background: var(--shade-4-color);
-                overflow: hidden;
-            }
+            <div class="message" ?hidden=${this.vaults.length}>
+                ${$l("No target vaults available!")}
+            </div>
 
-        </style>
+            <pl-select id="vaultSelect" .options=${this.vaults} .label=${$l("Vault")} ?hidden=${!this.vaults.length}>
+            </pl-select>
 
-        <h1>${$l("Move {0} To", itemsDescription)}</h1>
-
-        <div class="note" ?hidden=${this.vaults.length}>>
-            $l("There is nowhere to move these items! Please make sure there is at least one other vault " +
-                "to which you have write permissions!");
-        </div>
-
-        <pl-select
-            id="vaultSelect"
-            .options=${this.vaults}
-            .label=${$l("Vault")}
-            ?hidden=${!this.vaults.length}>
-        </pl-select>
-
-        <button @click=${() => this._enter()} class="tap" ?disabled=${!this.vaults.length}>
-            ${this.items.length === 1 ? $l("Move Item") : $l("Move Items")}
-        </button>
-`;
+            <div class="actions">
+                <button @click=${this._enter} class="primary tap" ?disabled=${!this.vaults.length}>
+                    ${this.items.length === 1 ? $l("Move Item") : $l("Move Items")}
+                </button>
+                <button @click=${this.dismiss} class="tap">
+                    ${$l("Cancel")}
+                </button>
+            </div>
+        `;
     }
 
     private async _enter() {
@@ -79,8 +73,8 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
         const sourceVaults = this.items.reduce((sv, i) => sv.add(i.vault), new Set<Vault>());
         this.vaults =
             sourceVaults.size === 1
-                ? app.vaults.filter(v => v.getPermissions().write && v !== sourceVaults.values().next().value)
-                : app.vaults.filter(v => v.getPermissions().write);
+                ? app.vaults.filter(v => app.hasWritePermissions(v) && v !== sourceVaults.values().next().value)
+                : app.vaults.filter(v => app.hasWritePermissions(v));
         // this._vaultSelect.options = vaults;
         await this.updateComplete;
         this._vaultSelect.selected = this.vaults[0];

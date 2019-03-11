@@ -1,324 +1,408 @@
+import { Org, OrgMember, OrgRole, Group } from "@padloc/core/lib/org.js";
+import { VaultID } from "@padloc/core/lib/vault.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { Vault } from "@padloc/core/lib/vault.js";
-import { VaultMember } from "@padloc/core/lib/vault.js";
-import { shared } from "../styles";
+import { mixins } from "../styles";
 import { app } from "../init.js";
-import { confirm } from "../dialog.js";
-import { element, html, property, query, listen } from "./base.js";
+import { confirm, choose } from "../dialog.js";
+import { element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
-import { ToggleButton } from "./toggle-button.js";
 import { LoadingButton } from "./loading-button.js";
-import "./fingerprint.js";
+import "./icon.js";
+import "./toggle-button.js";
+import "./group-item.js";
+import "./member-item.js";
+import "./vault-item.js";
+
+type InputType = { member: OrgMember; org: Org };
 
 @element("pl-member-dialog")
-export class MemberDialog extends Dialog<{ member: VaultMember; vault: Vault }, void> {
+export class MemberDialog extends Dialog<InputType, void> {
     @property()
-    vault: Vault | null = null;
-    @property()
-    member: VaultMember | null = null;
-    @property()
-    private _loading = false;
+    org: Org | null = null;
 
-    @query("#permRead")
-    private _permRead: ToggleButton;
-    @query("#permWrite")
-    private _permWrite: ToggleButton;
-    @query("#permManage")
-    private _permManage: ToggleButton;
-    @query("#approveButton")
-    private _approveButton: LoadingButton;
-    @query("#rejectButton")
-    private _rejectButton: LoadingButton;
+    @property()
+    member: OrgMember | null = null;
 
-    async show({ member, vault }: { member: VaultMember; vault: Vault }): Promise<void> {
+    @query("#saveButton")
+    private _saveButton: LoadingButton;
+
+    private _vaults = new Map<string, { read: boolean; write: boolean }>();
+    private _groups = new Set<string>();
+
+    private _getCurrentVaults(): Map<string, { read: boolean; write: boolean }> {
+        const vaults = new Map<string, { read: boolean; write: boolean }>();
+
+        if (!this.org || !this.member) {
+            return vaults;
+        }
+
+        for (const vault of this.org.vaults) {
+            const v = this.member && this.member.vaults.find(v => v.id === vault!.id);
+            vaults.set(vault.id, {
+                read: !!v,
+                write: !!v && !v.readonly
+            });
+        }
+
+        return vaults;
+    }
+
+    private _getCurrentGroups() {
+        return this.org && this.member
+            ? new Set(this.org.getGroupsForMember(this.member).map(g => g.name))
+            : new Set<string>();
+    }
+
+    private get _hasChanged() {
+        if (!this.org || !this.member) {
+            return false;
+        }
+
+        const currentVaults = this._getCurrentVaults();
+        const vaultsChanged = this.org.vaults.some(({ id }) => {
+            const c = currentVaults.get(id)!;
+            const s = this._vaults.get(id)!;
+            return c.read !== s.read || c.write !== s.write;
+        });
+
+        const currentGroups = this._getCurrentGroups();
+        const groupsChanged =
+            currentGroups.size !== this._groups.size ||
+            [...this._groups.values()].some(name => !currentGroups.has(name));
+
+        return vaultsChanged || groupsChanged;
+    }
+
+    async show({ member, org }: InputType): Promise<void> {
         this.member = member;
-        this.vault = vault;
+        this.org = org;
+        this._groups = this._getCurrentGroups();
+        this._vaults = this._getCurrentVaults();
         await this.updateComplete;
-        this._permRead.active = member.permissions.read;
-        this._permWrite.active = member.permissions.write;
-        this._permManage.active = member.permissions.manage;
-        this.requestUpdate();
         return super.show();
     }
 
-    @listen("change")
-    _permsChanged() {
+    _toggleGroup(group: Group) {
+        if (this._groups.has(group.name)) {
+            this._groups.delete(group.name);
+        } else {
+            this._groups.add(group.name);
+        }
         this.requestUpdate();
     }
 
-    async _rejectMember() {
-        if (!this.vault!.isMember(this.member!)) {
-            this.done();
+    private _toggleVault({ id }: { id: VaultID }) {
+        const { read } = this._vaults.get(id)!;
+        this._vaults.set(id, read ? { read: false, write: false } : { read: true, write: true });
+        this.requestUpdate();
+    }
+
+    private _toggleRead({ id }: { id: VaultID }, event?: Event) {
+        if (event) {
+            event.stopImmediatePropagation();
+        }
+
+        const sel = this._vaults.get(id)!;
+        sel.read = !sel.read;
+        if (!sel.read) {
+            sel.write = false;
+        }
+
+        this.requestUpdate();
+    }
+
+    private _toggleWrite({ id }: { id: VaultID }, event?: Event) {
+        if (event) {
+            event.stopImmediatePropagation();
+        }
+
+        const sel = this._vaults.get(id)!;
+        sel.write = !sel.write;
+        if (sel.write) {
+            sel.read = true;
+        }
+
+        this.requestUpdate();
+    }
+
+    private async _save() {
+        if (this._saveButton.state === "loading") {
             return;
         }
 
-        if (this._loading) {
-            return;
-        }
+        this._saveButton.start();
 
-        this.open = false;
-        const confirmed = await confirm($l("Are you sure you want to remove this user from this vault?"));
-        this.open = false;
+        const vaults = [...this._vaults.entries()]
+            .filter(([, { read }]) => read)
+            .map(([id, { write }]) => ({ id, readonly: !write }));
 
-        if (!confirmed) {
-            return;
-        }
-
-        this._loading = true;
-        this._rejectButton.start();
         try {
-            this._rejectButton.success();
-            this._loading = false;
+            await app.updateMember(this.org!, this.member!, {
+                vaults,
+                groups: [...this._groups]
+            });
+            this._saveButton.success();
             this.done();
         } catch (e) {
-            this._rejectButton.fail();
-            this._loading = false;
+            this._saveButton.fail();
+            this.requestUpdate();
             throw e;
         }
     }
 
-    async _approveMember() {
-        if (this._loading) {
-            return;
+    private async _showOptions() {
+        const isAdmin = this.member!.role === OrgRole.Admin;
+
+        this.open = false;
+        const choice = await choose(
+            "",
+            [$l("Remove"), $l("Suspend"), isAdmin ? $l("Remove Admin") : $l("Make Admin")],
+            {
+                hideIcon: true,
+                type: "destructive"
+            }
+        );
+
+        switch (choice) {
+            case 0:
+                this._removeMember();
+                break;
+            case 1:
+                this._suspendMember();
+                break;
+            case 2:
+                isAdmin ? this._removeAdmin() : this._makeAdmin();
+                break;
+            default:
+                this.open = true;
         }
-        this._loading = true;
-        this._approveButton.start();
-        try {
-            await this.vault!.members.update({
-                ...this.member!,
-                permissions: {
-                    read: this._permRead.active,
-                    write: this._permWrite.active,
-                    manage: this._permManage.active
-                }
-            });
-            this._approveButton.success();
-            this._loading = false;
-            this.done();
-        } catch (e) {
-            this._approveButton.fail();
-            this._loading = false;
-            throw e;
+    }
+
+    private async _removeMember() {
+        this.open = false;
+        const confirmed = await confirm(
+            $l("Are you sure you want to remove this member from this organization?"),
+            $l("Remove"),
+            $l("Cancel"),
+            {
+                type: "destructive",
+                title: $l("Remove Member")
+            }
+        );
+        this.open = true;
+
+        if (confirmed) {
+            this._saveButton.start();
+
+            try {
+                await app.removeMember(this.org!, this.member!);
+
+                this._saveButton.success();
+                this.done();
+            } catch (e) {
+                this._saveButton.fail();
+                throw e;
+            }
+        }
+    }
+
+    private async _makeAdmin() {
+        this.open = false;
+
+        const confirmed = await confirm(
+            $l(
+                "Are you sure you want to make this member an admin? " +
+                    "Admins can manage vaults, groups and permissions."
+            ),
+            $l("Make Admin"),
+            $l("Cancel")
+        );
+
+        this.open = true;
+
+        if (confirmed) {
+            this._saveButton.start();
+
+            try {
+                this.member = await app.updateMember(this.org!, this.member!, { role: OrgRole.Admin });
+                this._saveButton.success();
+            } catch (e) {
+                this._saveButton.fail();
+                throw e;
+            }
+        }
+    }
+
+    private async _removeAdmin() {
+        this.open = false;
+
+        const confirmed = await confirm(
+            $l("Are you sure you want to remove this member as admin?"),
+            $l("Remove Admin"),
+            $l("Cancel"),
+            { type: "destructive" }
+        );
+
+        this.open = true;
+
+        if (confirmed) {
+            this._saveButton.start();
+
+            try {
+                this.member = await app.updateMember(this.org!, this.member!, { role: OrgRole.Member });
+                this._saveButton.success();
+            } catch (e) {
+                this._saveButton.fail();
+                throw e;
+            }
+        }
+    }
+
+    private async _suspendMember() {
+        this.open = false;
+
+        const confirmed = await confirm(
+            $l("Are you sure you want to suspend this member?"),
+            $l("Suspend Member"),
+            $l("Cancel"),
+            { type: "destructive" }
+        );
+
+        this.open = true;
+
+        if (confirmed) {
+            this._saveButton.start();
+
+            try {
+                this.member = await app.updateMember(this.org!, this.member!, { role: OrgRole.Suspended });
+                this._saveButton.success();
+                this.done();
+            } catch (e) {
+                this._saveButton.fail();
+                throw e;
+            }
         }
     }
 
     shouldUpdate() {
-        return !!this.vault && !!this.member;
+        return !!this.org && !!this.member;
     }
 
     renderContent() {
-        const vault = this.vault!;
+        const org = this.org!;
         const member = this.member!;
-        const _loading = this._loading;
-        const vaultName = vault.name;
-        const { id, email, name, publicKey, permissions } = member;
-        const permsChanged =
-            (this._permRead && this._permRead.active !== permissions.read) ||
-            (this._permWrite && this._permWrite.active !== permissions.write) ||
-            (this._permManage && this._permManage.active !== permissions.manage);
-        // const isTrusted = app.isTrusted(account);
-        const isOwnAccount = app.account && app.account.id === id;
-        const disableControls = _loading || isOwnAccount || !vault.getPermissions().manage;
-        const isMember = vault.isMember(member);
-        const approveIcon = isMember ? "check" : "invite";
-        const approveLabel = isMember ? $l("Update") : $l("Add");
-        const rejectIcon = isMember ? "removeuser" : "cancel";
-        const rejectLabel = isMember ? $l("Remove") : $l("Cancel");
+        const accountIsOwner = org.isOwner(app.account!);
+        const accountIsAdmin = org.isAdmin(app.account!);
+        const memberIsOwner = org.isOwner(member);
 
         return html`
-        ${shared}
+            <style>
+                .inner {
+                    background: var(--color-quaternary);
+                }
 
-        <style>
-            .header {
-                padding: 20px;
-                display: flex;
-                align-items: center;
-            }
+                pl-toggle-button {
+                    display: block;
+                    padding: 0 15px 0 0;
+                }
 
-            .email {
-                font-weight: bold;
-            }
+                .more-button {
+                    font-size: var(--font-size-small);
+                    align-self: flex-start;
+                    width: 30px;
+                    height: 30px;
+                    margin-top: 5px;
+                }
 
-            .email, .name {
-                font-size: 110%;
-                line-height: 30px;
-                word-wrap: break-word;
-                white-space: pre-wrap;
-                text-align: center;
-            }
+                .subheader {
+                    margin: 8px;
+                    font-weight: bold;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 0 8px;
+                    font-size: var(--font-size-small);
+                }
 
-            pl-fingerprint {
-                --color-background: var(--color-foreground);
-                color: var(--color-secondary);
-                width: 100px;
-                height: 100px;
-                border: solid 2px var(--color-background);
-                border-radius: 100%;
-                margin: 30px auto 15px auto;
-                box-shadow: rgba(0, 0, 0, 0.2) 0 2px 2px;
-                transition: border-radius 0.3s;
-            }
+                .subheader .permission {
+                    width: 50px;
+                    font-size: var(--font-size-tiny);
+                    text-align: center;
+                    ${mixins.ellipsis()}
+                }
 
-            pl-fingerprint:hover {
-                border-radius: 5px;
-            }
+                .item {
+                    display: flex;
+                    align-items: center;
+                }
 
-            pl-fingerprint:not(:hover) + .fingerprint-hint {
-                visibility: hidden;
-            }
+                .item pl-toggle {
+                    margin-right: 14px;
+                }
+            </style>
 
-            .fingerprint-hint {
-                font-size: var(--font-size-micro);
-                text-decoration: underline;
-                text-align: center;
-                margin-top: -13px;
-                margin-bottom: -2px;
-                text-shadow: none;
-                color: var(--color-highlight);
-                font-weight: bold;
-            }
+            <header>
+                <pl-member-item .member=${member} class="flex"></pl-member-item>
+                <pl-icon
+                    icon="more"
+                    class="more-button tap"
+                    ?hidden=${!accountIsOwner || memberIsOwner}
+                    @click=${this._showOptions}
+                ></pl-icon>
+            </header>
 
-            .tags {
-                justify-content: center;
-                overflow: visible;
-                margin: 20px 0;
-            }
-
-            .tag {
-                background: var(--color-foreground);
-                color: var(--color-highlight);
-                text-shadow: none;
-                box-shadow: rgba(0, 0, 0, 0.2) 0 2px 2px;
-                font-size: var(--font-size-small);
-                padding: 4px 16px;
-            }
-
-            .text {
-                margin: 10px;
-                text-align: center;
-            }
-
-            .close-icon {
-                position: absolute;
-                top: 0;
-                right: 0;
-            }
-
-            .buttons {
-                display: flex;
-            }
-
-            .permissions-label {
-                font-size: var(--font-size-small);
-                font-weight: bold;
-                text-align: center;
-            }
-
-            .permissions {
-                display: flex;
-                justify-content: center;
-                margin: 10px 0 20px;
-                flex-wrap: wrap;
-            }
-
-            .permissions pl-toggle-button {
-                --toggle-width: 33px;
-                --toggle-height: 22px;
-                --toggle-color-off: var(--color-secondary);
-                --toggle-color-on: var(--color-primary);
-                --toggle-color-knob: var(--color-tertiary);
-                padding: 0 8px;
-                font-weight: bold;
-                font-size: var(--font-size-small);
-                margin-bottom: 5px;
-            }
-
-            .remove-button {
-                font-size: var(--font-size-small);
-            }
-
-        </style>
-
-        <div>
-
-            <pl-icon class="close-icon tap" icon="close" @click=${() => this.done()}></pl-icon>
-
-            <pl-fingerprint key="${publicKey}"></pl-fingerprint>
-
-            <div class="fingerprint-hint">${$l("What is this?")}</div>
-
-            <div>
-
-                <div class="name">${name}</div>
-
-                <div class="email">${email}</div>
-
+            <div class="subheader" ?hidden=${!org.groups.length}>
+                <div>${$l("Groups")}</div>
             </div>
 
-        </div>
+            ${org.groups.map(
+                group => html`
+                    <pl-toggle-button
+                        ?disabled=${!accountIsAdmin}
+                        class="item tap"
+                        reverse
+                        @click=${() => this._toggleGroup(group)}
+                        .active=${this._groups.has(group.name)}
+                    >
+                        <pl-group-item .group=${group}></pl-group-item>
+                    </pl-toggle-button>
+                `
+            )}
 
-        <div class="tags">
-            <div class="vault tag">
-                <pl-icon icon="vault"></pl-icon>
-                <div>${vaultName}</div>
+            <div class="subheader">
+                <div>${$l("Vaults")}</div>
+                <div class="flex"></div>
+                <div class="permission">${$l("read")}</div>
+                <div class="permission">${$l("write")}</div>
             </div>
-        </div>
 
-        <div class="permissions-label">${$l("Permissions:")}</div>
+            ${org.vaults.map(
+                vault => html`
+                    <div class="item tap" @click=${() => this._toggleVault(vault)} ?disabled=${!accountIsAdmin}>
+                        <pl-vault-item .vault=${vault} class="flex"></pl-vault-item>
+                        <pl-toggle
+                            .active=${this._vaults.get(vault.id)!.read}
+                            @click=${(e: Event) => this._toggleRead(vault, e)}
+                        ></pl-toggle>
+                        <pl-toggle
+                            .active=${this._vaults.get(vault.id)!.write}
+                            @click=${(e: Event) => this._toggleWrite(vault, e)}
+                        ></pl-toggle>
+                    </div>
+                `
+            )}
 
-        <div class="permissions tags">
+            <div class="actions" ?hidden=${!accountIsAdmin}>
+                <pl-loading-button
+                    class="tap primary"
+                    id="saveButton"
+                    ?disabled=${!this._hasChanged}
+                    @click=${this._save}
+                >
+                    ${$l("Save")}
+                </pl-loading-button>
 
-            <pl-toggle-button
-                class="tag tap"
-                id="permRead"
-                label="${$l("read")}"
-                ?disabled=${disableControls}
-                reverse>
-            </pl-toggle-button>
-
-            <pl-toggle-button
-                class="tag tap"
-                id="permWrite"
-                label="${$l("write")}"
-                ?disabled=${disableControls}
-                reverse>
-            </pl-toggle-button>
-
-            <pl-toggle-button
-                class="tag tap"
-                id="permManage"
-                label="${$l("manage")}"
-                ?disabled=${disableControls}
-                reverse>
-            </pl-toggle-button>
-
-        </div>
-
-        <div class="buttons tiles tiles-2">
-
-            <pl-loading-button
-                id="approveButton"
-                ?disabled=${disableControls || _loading || (isMember && !permsChanged)}
-                @click=${() => this._approveMember()}>
-
-                <pl-icon icon="${approveIcon}"></pl-icon>
-
-                <div>${approveLabel}</div>
-
-            </pl-loading-button>
-
-            <pl-loading-button
-                id="rejectButton"
-                ?disabled=${disableControls || _loading}
-                @click=${() => this._rejectMember()}>
-
-                <pl-icon icon="${rejectIcon}"></pl-icon>
-
-                <div>${rejectLabel}</div>
-
-            </pl-loading-button>
-
-        </div>
-`;
+                <button class="tap" @click=${this.dismiss}>${$l("Cancel")}</button>
+            </div>
+        `;
     }
 }

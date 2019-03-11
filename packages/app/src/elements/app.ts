@@ -8,14 +8,15 @@ import { BaseElement, html, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import { View } from "./view.js";
-import { Browse } from "./browse.js";
+import { ItemsList } from "./items-list.js";
 import { Settings } from "./settings.js";
-import { Manage } from "./manage.js";
+import { OrgView } from "./org-view.js";
 import { Start } from "./start.js";
 import { alert, clearDialogs, dialog } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { Menu } from "./menu.js";
 import { InviteDialog } from "./invite-dialog.js";
+import { ItemDialog } from "./item-dialog.js";
 
 // const cordovaReady = new Promise(resolve => {
 //     document.addEventListener("deviceready", resolve);
@@ -24,17 +25,20 @@ import { InviteDialog } from "./invite-dialog.js";
 class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
     @query("pl-start")
     private _startView: Start;
-    @query("pl-browse")
-    private _browse: Browse;
     @query("pl-settings")
     private _settings: Settings;
-    @query("pl-manage")
-    private _manage: Manage;
+    @query("pl-org-view")
+    private _orgView: OrgView;
+    @query("pl-items-list")
+    private _items: ItemsList;
     @query("pl-menu")
     private _menu: Menu;
 
     @dialog("pl-invite-dialog")
     private _inviteDialog: InviteDialog;
+
+    @dialog("pl-item-dialog")
+    private _itemDialog: ItemDialog;
 
     @property()
     private _view: View | null;
@@ -105,19 +109,17 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
                 }
 
                 @media (max-width: ${config.narrowWidth}px) {
-                    :host {
-                        background: #222;
-                        box-shadow: inset #000 0 0 1000px;
-                    }
-
-                    .wrapper {
-                        background: transparent;
+                    .views {
+                        transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+                        ${mixins.fullbleed()}
                     }
 
                     .views {
                         margin: 0;
-                        transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                        ${mixins.fullbleed()}
+                    }
+
+                    .views > * {
+                        border-radius: 0;
                     }
 
                     :host([menu-open]) .views {
@@ -160,9 +162,9 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
                 <div class="views">
                     <pl-settings ?showing=${this._view === this._settings}></pl-settings>
 
-                    <pl-browse ?showing=${this._view === this._browse}></pl-browse>
+                    <pl-org-view ?showing=${this._view === this._orgView}></pl-org-view>
 
-                    <pl-manage ?showing=${this._view === this._manage}></pl-manage>
+                    <pl-items-list ?showing=${this._view === this._items}></pl-items-list>
                 </div>
             </div>
         `;
@@ -257,24 +259,32 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
         if (path === "settings") {
             this._openView(this._settings);
             this._menu.selected = "settings";
-        } else if ((match = path.match(/^orgs(?:\/([^\/]+))?$/))) {
+        } else if ((match = path.match(/^org\/([^\/]+)$/))) {
             const [, id] = match;
             if (id && !app.getOrg(id)) {
                 router.go("");
                 return;
             }
-            this._manage.selected = id || "";
-            this._openView(this._manage);
-            this._menu.selected = "orgs";
+            this._orgView.orgId = id || "";
+            this._openView(this._orgView);
+            this._menu.selected = `org/${id}`;
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
-            if (id && !app.getItem(id)) {
-                router.go("items");
-                return;
-            }
-            this._browse.selected = id || "";
-            this._openView(this._browse);
+            this._items.selected = id || "";
+            this._openView(this._items);
             this._menu.selected = "items";
+
+            const item = id && app.getItem(id);
+            if (item) {
+                const done = this._itemDialog.show(item.item.id);
+                const { edit, ...rest } = router.params;
+                if (typeof edit !== "undefined") {
+                    this._itemDialog.edit();
+                    router.params = rest;
+                }
+                await done;
+                router.go("items");
+            }
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
             const [, orgId, id] = match;
             const invite = await app.getInvite(orgId, id);
@@ -282,7 +292,7 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             if (invite) {
                 if (org && org.isAdmin(app.account!)) {
                     await org.unlock(app.account!);
-                    await invite.unlock(org);
+                    await invite.unlock(org.invitesKey);
                 }
                 await this._inviteDialog.show(invite);
                 if (router.canGoBack) {
@@ -349,7 +359,7 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
         }
         // CTRL/CMD + F -> Filter
         else if (control && event.key === "f") {
-            shortcut = () => this._browse.search();
+            shortcut = () => this._items.search();
         }
 
         // If one of the shortcuts matches, execute it and prevent the default behaviour
@@ -357,7 +367,7 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             shortcut();
             event.preventDefault();
         } else if (!control && event.key.length === 1) {
-            this._browse.search();
+            this._items.search();
         }
     }
 

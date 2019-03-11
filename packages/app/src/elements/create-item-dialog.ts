@@ -90,49 +90,41 @@ export class CreateItemDialog extends Dialog<undefined, VaultItem> {
 
     renderContent() {
         return html`
+            <style>
+                :host {
+                    --gutter-size: 12px;
+                }
 
-        <style>
+                pl-input,
+                pl-select {
+                    text-align: center;
+                    margin: var(--gutter-size);
+                }
 
-            .inner {
-                display: flex;
-                flex-direction: column;
-            }
+                h1 {
+                    display: block;
+                    text-align: center;
+                }
+            </style>
 
-            pl-input, pl-select, button {
-                text-align: center;
-                margin: 0 10px 10px 10px;
-                background: var(--shade-2-color);
-                border-radius: 8px;
-            }
+            <h1>${$l("Create Vault Item")}</h1>
 
-            h1 {
-                display: block;
-                text-align: center;
-            }
+            <pl-input id="nameInput" .label=${$l("Item Name")} @enter=${() => this._enter()}> </pl-input>
 
-            button {
-                display: block;
-                font-weight: bold;
-                background: var(--shade-4-color);
-                overflow: hidden;
-            }
+            <pl-select
+                id="vaultSelect"
+                .options=${app.vaults.filter(v => app.hasWritePermissions(v))}
+                .label=${$l("Vault")}
+            ></pl-select>
 
-        </style>
+            <pl-select id="templateSelect" .options=${templates} .label=${$l("Item Type")}></pl-select>
 
-        <h1>${$l("Create Vault Item")}</h1>
+            <div class="actions">
+                <button @click=${() => this._enter()} class="primary tap">${$l("Create Item")}</button>
 
-        <pl-input
-            id="nameInput"
-            .label=${$l("Item Name")}
-            @enter=${() => this._enter()}>
-        </pl-input>
-
-        <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Vault")}></pl-select>
-
-        <pl-select id="templateSelect" .options=${templates} .label=${$l("Item Type")}></pl-select>
-
-        <button @click=${() => this._enter()} class="tap">${$l("Create Item")}</button>
-`;
+                <button @click=${() => this.dismiss()} class="tap">${$l("Cancel")}</button>
+            </div>
+        `;
     }
 
     private async _enter() {

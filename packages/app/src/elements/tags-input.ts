@@ -1,7 +1,7 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { Vault } from "@padloc/core/lib/vault.js";
 import { Tag } from "@padloc/core/lib/item.js";
-import { app, router } from "../init.js";
+import { app } from "../init.js";
 import { shared } from "../styles";
 import { BaseElement, element, html, property, query } from "./base.js";
 import { Input } from "./input";
@@ -39,7 +39,6 @@ export class TagsInput extends BaseElement {
             <style>
                 :host {
                     display: block;
-                    background: var(--color-tertiary);
                     position: relative;
                     z-index: 1;
                     overflow: visible;
@@ -50,15 +49,19 @@ export class TagsInput extends BaseElement {
                 .wrapper {
                     flex-wrap: wrap;
                     overflow: visible;
+                    margin-top: -6px;
                 }
 
                 .wrapper > * {
                     margin-top: 6px;
                 }
 
+                .tags.small .tag {
+                    padding: 5px 7px;
+                }
+
                 .results {
                     padding: 0;
-                    background: rgba(255, 255, 255, 0.5);
                     border-radius: 8px;
                     margin-top: 0;
                     flex-direction: column;
@@ -66,14 +69,15 @@ export class TagsInput extends BaseElement {
                 }
 
                 .results .tag {
+                    padding: 6px 8px;
                     margin-top: 6px;
                 }
 
                 .input-wrapper {
                     font-size: var(--font-size-micro);
                     padding: 0 4px;
-                    height: 27px;
-                    line-height: 27px;
+                    height: 26px;
+                    line-height: 26px;
                     background: #eee;
                     box-sizing: border-box;
                     border-radius: 8px;
@@ -96,7 +100,7 @@ export class TagsInput extends BaseElement {
                 }
 
                 .add-tag {
-                    height: 27px;
+                    height: 26px;
                     overflow: visible;
                 }
 
@@ -106,34 +110,26 @@ export class TagsInput extends BaseElement {
             </style>
 
             <div class="tags small wrapper">
-
                 <div class="tag highlight tap" @click=${() => this._vaultClicked()}>
-
                     <pl-icon icon="vault"></pl-icon>
 
                     <div class="tag-name">${vault}</div>
-
                 </div>
 
                 ${tags.map(
                     tag => html`
+                        <div class="tag tap" @click=${() => this._tagClicked(tag)}>
+                            <pl-icon icon="tag"></pl-icon>
 
-                    <div class="tag tap" @click=${() => this._tagClicked(tag)}>
+                            <div>${tag}</div>
 
-                        <pl-icon icon="tag"></pl-icon>
-
-                        <div>${tag}</div>
-
-                        <pl-icon icon="cancel" ?hidden=${!editing}></pl-icon>
-
-                    </div>
-                `
+                            <pl-icon icon="cancel" ?hidden=${!editing}></pl-icon>
+                        </div>
+                    `
                 )}
 
                 <div class="add-tag" ?hidden=${!editing}>
-
                     <div class="input-wrapper tap" @click=${() => this._input.focus()}>
-
                         <pl-icon icon="add"></pl-icon>
 
                         <pl-input
@@ -141,27 +137,23 @@ export class TagsInput extends BaseElement {
                             @enter=${() => this._addTag(value)}
                             @input=${() => this.requestUpdate()}
                             @focus=${() => this._focusChanged()}
-                            @blur=${() => this._focusChanged()}>
+                            @blur=${() => this._focusChanged()}
+                        >
                         </pl-input>
-
                     </div>
 
                     <div class="tags tap small results" ?hidden=${!_showResults}>
                         ${results.map(
                             res => html`
-                            <div class="tag tap" @click=${() => this._addTag(res)}>
+                                <div class="tag tap" @click=${() => this._addTag(res)}>
+                                    <pl-icon icon="tag"></pl-icon>
 
-                                <pl-icon icon="tag"></pl-icon>
-
-                                <div>${res}</div>
-
-                            </div>
-                        `
+                                    <div>${res}</div>
+                                </div>
+                            `
                         )}
                     </div>
-
                 </div>
-
             </div>
         `;
     }
@@ -179,18 +171,11 @@ export class TagsInput extends BaseElement {
     private _tagClicked(tag: Tag) {
         if (this.editing) {
             this.tags = this.tags.filter(t => t !== tag);
-        } else {
-            app.filter = { tag };
-            router.go("items");
         }
     }
 
     private _vaultClicked() {
-        if (this.editing) {
-            this.dispatch("move");
-        } else {
-            router.go(`vaults/${this.vault!.id}`);
-        }
+        this.dispatch("move");
     }
 
     _focusChanged() {

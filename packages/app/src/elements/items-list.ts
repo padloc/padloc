@@ -8,15 +8,16 @@ import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { dialog, confirm } from "../dialog.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, property, query, listen } from "./base.js";
+import { element, html, property, query, listen } from "./base.js";
+import { View } from "./view.js";
 import { CreateItemDialog } from "./create-item-dialog.js";
 import { Input } from "./input.js";
 import { MoveItemsDialog } from "./move-items-dialog.js";
 import "./icon.js";
-import "./browse-filter.js";
+import "./items-filter.js";
 
-@element("pl-browse-list")
-export class BrowseList extends BaseElement {
+@element("pl-items-list")
+export class ItemsList extends View {
     @property()
     selected: string = "";
     @property()
@@ -32,8 +33,9 @@ export class BrowseList extends BaseElement {
     // private _main: HTMLElement;
     @query("#filterInput")
     private _filterInput: Input;
-    @query(".filter-wrapper")
-    private _filterWrapper: HTMLDivElement;
+
+    @property()
+    private _filterShowing: boolean = false;
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
     // private _selected = new Map<string, ListItem>();
@@ -61,7 +63,6 @@ export class BrowseList extends BaseElement {
                 this._multiSelect.delete(id);
             }
         }
-        this._toggleFilterInput();
     }
 
     @listen("unlock", app)
@@ -82,13 +83,22 @@ export class BrowseList extends BaseElement {
         // this._animateItems();
     }
 
-    search() {
+    private _filterInputBlurred() {
+        if (!this._filterInput.value) {
+            this._filterShowing = false;
+        }
+    }
+
+    async search() {
+        this._filterShowing = true;
+        await this.updateComplete;
         this._filterInput.focus();
     }
 
     cancelFilter() {
         this._filterInput.value = "";
         this._filterInput.blur();
+        this._filterShowing = false;
         this._updateFilter();
     }
 
@@ -140,6 +150,7 @@ export class BrowseList extends BaseElement {
                     box-sizing: border-box;
                     position: relative;
                     background: var(--color-quaternary);
+                    border-radius: var(--border-radius);
                 }
 
                 header {
@@ -147,32 +158,9 @@ export class BrowseList extends BaseElement {
                     z-index: 10;
                 }
 
-                pl-browse-filter {
+                pl-items-filter {
                     flex: 1;
                     min-width: 0;
-                }
-
-                .filter-wrapper {
-                    display: flex;
-                    font-size: var(--font-size-small);
-                    height: 40px;
-                    position: absolute;
-                    top: 50px;
-                    left: 0;
-                    right: 0;
-                    background: #eee;
-                    border: solid 1px #ddd;
-                    z-index: 2;
-                    overflow: hidden;
-                    transition: transform 0.2s;
-                }
-
-                .filter-wrapper pl-input {
-                    font-size: inherit;
-                    padding: 0;
-                    height: 40px;
-                    line-height: 40px;
-                    text-align: center;
                 }
 
                 main {
@@ -180,32 +168,36 @@ export class BrowseList extends BaseElement {
                 }
 
                 .section-header {
-                    position: sticky;
-                    top: 0;
-                    background: #fafafa;
-                    z-index: 1;
-                    display: flex;
-                    height: 40px;
-                    line-height: 40px;
-                    padding: 0 15px;
-                    font-size: var(--font-size-tiny);
+                    grid-column: 1/-1;
                     font-weight: bold;
-                    border-bottom: solid 1px #ddd;
+                    display: flex;
+                    align-items: flex-end;
+                    height: 35px;
                     box-sizing: border-box;
-                    margin-bottom: -7px;
+                    padding: 0 10px 5px 10px;
+                    background: var(--color-quaternary);
+                    display: flex;
+                    z-index: 1;
+                    position: -webkit-sticky;
+                    position: sticky;
+                    top: -3px;
+                    margin-bottom: -8px;
+                    font-size: var(--font-size-small);
+                }
+
+                .items {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                    grid-gap: var(--gutter-size);
+                    padding: 8px;
+                    cursor: pointer;
                 }
 
                 .item {
-                    cursor: pointer;
-                    vertical-align: top;
                     box-sizing: border-box;
                     display: flex;
-                    flex-direction: row;
                     align-items: center;
-                    background: var(--color-background);
-                    margin: 6px 0;
-                    border-top: solid 1px #ddd;
-                    border-bottom: solid 1px #ddd;
+                    margin: 0;
                 }
 
                 .item-body {
@@ -243,7 +235,7 @@ export class BrowseList extends BaseElement {
                 .item-fields::after {
                     content: "";
                     display: block;
-                    width: 6px;
+                    width: 8px;
                     flex: none;
                 }
 
@@ -332,43 +324,45 @@ export class BrowseList extends BaseElement {
                 .selected-count {
                     text-align: center;
                     display: block;
-                    margin-left: 15px;
-                    background: #ddd;
+                    margin-left: 12px;
+                    background: #eee;
                     border-radius: var(--border-radius);
-                    padding: 5px;
+                    padding: 12px 4px;
                     line-height: 1.2em;
                     font-size: var(--font-size-tiny);
                     font-weight: bold;
+                    box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 4px;
                 }
             </style>
 
-            <header>
+            <header ?hidden=${this._filterShowing}>
                 <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
-                <pl-browse-filter></pl-browse-filter>
+                <pl-items-filter></pl-items-filter>
 
                 <pl-icon icon="search" class="tap" @click=${() => this.search()}></pl-icon>
             </header>
 
-            <div class="filter-wrapper">
+            <header ?hidden=${!this._filterShowing}>
                 <pl-icon icon="search"></pl-icon>
 
                 <pl-input
                     class="flex"
                     .placeholder=${$l("Type To Filter")}
                     id="filterInput"
-                    @focus=${() => this._toggleFilterInput()}
-                    @blur=${() => this._toggleFilterInput()}
-                    @input=${() => this._updateFilter()}
-                    @escape=${() => this.cancelFilter()}
+                    @blur=${this._filterInputBlurred}
+                    @input=${this._updateFilter}
+                    @escape=${this.cancelFilter}
                 >
                 </pl-input>
 
                 <pl-icon class="tap" icon="cancel" @click=${() => this.cancelFilter()}> </pl-icon>
-            </div>
+            </header>
 
             <main id="main">
-                ${repeat(this._listItems, item => item.id, (_: any, index: number) => this._renderItem(index))}
+                <div class="items">
+                    ${repeat(this._listItems, item => item.id, (_: any, index: number) => this._renderItem(index))}
+                </div>
             </main>
 
             <div class="empty-placeholder" ?hidden=${!!this._listItems.length || app.filter.text}>
@@ -388,7 +382,7 @@ export class BrowseList extends BaseElement {
 
                 <div class="flex"></div>
 
-                <pl-icon icon="add" class="tap fab" @click=${() => this._newItem()}></pl-icon>
+                <pl-icon icon="add" class="tap fab primary" @click=${() => this._newItem()}></pl-icon>
             </div>
 
             <div class="fabs" ?hidden=${!this.multiSelect}>
@@ -411,13 +405,7 @@ export class BrowseList extends BaseElement {
     }
 
     _updateFilter() {
-        app.filter = { text: this._filterInput.value, vault: app.filter.vault, tag: app.filter.tag };
-        this._toggleFilterInput();
-    }
-
-    _toggleFilterInput() {
-        const pos = this._filterInput.focused || this._filterInput.value ? 0 : -60;
-        this._filterWrapper.style.transform = `translate(0, ${pos}px)`;
+        app.filter = { text: this._filterInput.value };
     }
 
     @listen("resize", window)
@@ -426,7 +414,10 @@ export class BrowseList extends BaseElement {
     }
 
     private async _newItem() {
-        await this._createItemDialog.show();
+        const item = await this._createItemDialog.show();
+        if (item) {
+            router.go(`items/${item.id}?edit`);
+        }
     }
     //
     // private _scrollToIndex(i: number) {
@@ -472,7 +463,7 @@ export class BrowseList extends BaseElement {
             $l("Are you sure you want to delete these items? This action can not be undone!"),
             $l("Delete {0} Items", this._multiSelect.size.toString()),
             $l("Cancel"),
-            { type: "warning" }
+            { type: "destructive" }
         );
         if (confirmed) {
             await app.deleteItems([...this._multiSelect.values()]);

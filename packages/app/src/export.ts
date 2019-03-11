@@ -62,7 +62,7 @@ export async function asCSV(items: VaultItem[]): Promise<string> {
 
 export async function asPBES2Container(items: VaultItem[], password: string): Promise<string> {
     const container = new PBES2Container();
-    container.access(password);
+    await container.unlock(password);
     await container.setData(stringToBytes(marshal({ items })));
     return container.toJSON();
 }

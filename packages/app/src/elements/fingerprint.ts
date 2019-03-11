@@ -7,7 +7,7 @@ import { BaseElement, html, element, property } from "./base";
 @element("pl-fingerprint")
 export class Fingerprint extends BaseElement {
     @property()
-    key: string = "";
+    key!: Uint8Array;
 
     private async _grid() {
         const size = 11;

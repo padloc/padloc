@@ -69,8 +69,6 @@ export class Start extends BaseElement {
                     --color-background: var(--color-primary);
                     --color-foreground: var(--color-tertiary);
                     --color-highlight: var(--color-secondary);
-                    ${mixins.fullbleed()}
-                    ${mixins.scroll()}
                     color: var(--color-foreground);
                     display: flex;
                     flex-direction: column;
@@ -80,6 +78,8 @@ export class Start extends BaseElement {
                     background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%);
                     transform: translate3d(0, 0, 0);
                     transition: transform 0.4s cubic-bezier(1, 0, 0.2, 1);
+                    ${mixins.fullbleed()}
+                    ${mixins.scroll()}
                 }
 
                 main {

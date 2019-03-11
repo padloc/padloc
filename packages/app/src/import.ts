@@ -1,4 +1,4 @@
-import { unmarshal, base64ToString } from "@padloc/core/lib/encoding.js";
+import { unmarshal, bytesToString } from "@padloc/core/lib/encoding.js";
 import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/lib/legacy.js";
 import { VaultItem, Field, createVaultItem, guessFieldType } from "@padloc/core/lib/item.js";
 import { Err, ErrorCode } from "@padloc/core/lib/error.js";
@@ -116,9 +116,9 @@ export function isPadlockV1(data: string): boolean {
 
 export async function asPadlockLegacy(data: string, password: string): Promise<VaultItem[]> {
     const container = parseLegacyContainer(unmarshal(data));
-    container.access(password);
+    await container.unlock(password);
 
-    const records = unmarshal(base64ToString(await container.getData())) as any[];
+    const records = unmarshal(bytesToString(await container.getData())) as any[];
     const items = records
         .filter(({ removed }) => !removed)
         .map(record => {

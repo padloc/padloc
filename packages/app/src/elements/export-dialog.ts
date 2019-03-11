@@ -16,64 +16,57 @@ export class ExportDialog extends Dialog<void, void> {
 
     renderContent() {
         return html`
+            <style>
+                .inner {
+                    display: flex;
+                    flex-direction: column;
+                }
 
-        <style>
+                pl-input,
+                pl-select,
+                button {
+                    text-align: center;
+                    margin: 0 10px 10px 10px;
+                    background: var(--shade-2-color);
+                    border-radius: 8px;
+                }
 
-            .inner {
-                display: flex;
-                flex-direction: column;
-            }
+                h1 {
+                    display: block;
+                    text-align: center;
+                }
 
-            pl-input, pl-select, button {
-                text-align: center;
-                margin: 0 10px 10px 10px;
-                background: var(--shade-2-color);
-                border-radius: 8px;
-            }
+                .csv-note {
+                    font-size: var(--font-size-micro);
+                    text-align: center;
+                    padding: 0px 20px 20px 20px;
+                }
+            </style>
 
-            h1 {
-                display: block;
-                text-align: center;
-            }
+            <h1>${$l("Export Data")}</h1>
 
-            button {
-                display: block;
-                font-weight: bold;
-                background: var(--shade-4-color);
-                overflow: hidden;
-            }
+            <pl-select
+                id="vaultSelect"
+                .options=${app.vaults}
+                .label=${$l("Target Vault")}
+                @change=${() => this.requestUpdate()}
+            >
+            </pl-select>
 
-            .csv-note {
-                font-size: var(--font-size-micro);
-                text-align: center;
-                padding: 0px 20px 20px 20px;
-            }
+            <pl-select id="formatSelect" .options=${supportedFormats} .label=${$l("Format")} disabled></pl-select>
 
-        </style>
+            <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== CSV}>
+                ${$l(
+                    "WARNING: Exporting to CSV format will save your data without encyryption of any " +
+                        "kind which means it can be read by anyone. We strongly recommend exporting your data as " +
+                        "a secure, encrypted file, instead!"
+                )}
+            </div>
 
-        <h1>${$l("Export Data")}</h1>
-
-        <pl-select
-            id="vaultSelect"
-            .options=${app.vaults}
-            .label=${$l("Target Vault")}
-            @change=${() => this.requestUpdate()}>
-        </pl-select>
-
-        <pl-select id="formatSelect" .options=${supportedFormats} .label=${$l("Format")} disabled></pl-select>
-
-        <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== CSV}>
-            ${$l(
-                "WARNING: Exporting to CSV format will save your data without encyryption of any " +
-                    "kind which means it can be read by anyone. We strongly recommend exporting your data as " +
-                    "a secure, encrypted file, instead!"
-            )}
-        </div>
-
-        <button @click=${() => this._export()} class="tap">
-            ${$l("Export {0} Items", this._vaultSelect && this._vaultSelect.selected!.items.size.toString())}
-        </button>
-`;
+            <button @click=${() => this._export()} class="tap primary">
+                ${$l("Export {0} Items", this._vaultSelect && this._vaultSelect.selected!.items.size.toString())}
+            </button>
+        `;
     }
 
     async show() {

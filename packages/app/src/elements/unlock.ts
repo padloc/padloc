@@ -49,36 +49,33 @@ export class Unlock extends StartForm {
             <div flex></div>
 
             <form>
-
                 <pl-logo class="animate"></pl-logo>
 
                 <pl-password-input
                     id="passwordInput"
                     required
                     .label=${$l("Enter Master Password")}
-                    class="tiles-2 animate"
+                    class="animate"
                     select-on-focus
-                    @enter=${() => this._submit()}>
+                    @enter=${() => this._submit()}
+                >
                 </pl-password-input>
 
-                <pl-loading-button id="unlockButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
+                <pl-loading-button id="unlockButton" class="tap animate" @click=${() => this._submit()}>
                     ${$l("Unlock")}
                 </pl-loading-button>
 
-                <div class="hint warning" ?hidden=${!this._errorMessage}>${this._errorMessage}</div>
-
+                <div class="error note" ?hidden=${!this._errorMessage}>${this._errorMessage}</div>
             </form>
 
             <div flex></div>
 
             <div class="current-account animate">
-
                 <span>${$l("You are logged in as")}</span>
 
                 <strong>${email}</strong>.
 
                 <span class="logout" @click=${() => this._logout()}>Log Out</span>
-
             </div>
         `;
     }

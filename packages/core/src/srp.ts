@@ -1,20 +1,9 @@
 import { BigInteger } from "../vendor/jsbn";
-import { bytesToHex, hexToBytes } from "./encoding";
+import { bytesToHex, hexToBytes, concatBytes } from "./encoding";
 import { getProvider, HashParams } from "./crypto";
 
-function concat(...arrs: Uint8Array[]): Uint8Array {
-    const length = arrs.reduce((len, arr) => len + arr.length, 0);
-    const res = new Uint8Array(length);
-    let offset = 0;
-    for (const arr of arrs) {
-        res.set(arr, offset);
-        offset += arr.length;
-    }
-    return res;
-}
-
 async function digest(hash: "SHA-1" | "SHA-256" = "SHA-256", ...input: Uint8Array[]): Promise<Uint8Array> {
-    return getProvider().hash(concat(...input), new HashParams({ algorithm: hash }));
+    return getProvider().hash(concatBytes(...input), new HashParams({ algorithm: hash }));
 }
 
 function i2b(i: BigInteger): Uint8Array {

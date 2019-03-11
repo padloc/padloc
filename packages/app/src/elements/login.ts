@@ -70,7 +70,7 @@ export class Login extends StartForm {
                     select-on-focus
                     .label=${$l("Email Adress")}
                     .value=${this._email}
-                    class="tiles-2 animate tap"
+                    class="animate tap"
                     @enter=${() => this._submit()}
                 >
                 </pl-input>
@@ -80,16 +80,16 @@ export class Login extends StartForm {
                     required
                     select-on-focus
                     .label=${$l("Master Password")}
-                    class="tiles-2 animate tap"
+                    class="animate tap"
                     @enter=${() => this._submit()}
                 >
                 </pl-password-input>
 
-                <pl-loading-button id="loginButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
+                <pl-loading-button id="loginButton" class="tap animate" @click=${() => this._submit()}>
                     ${$l("Login")}
                 </pl-loading-button>
 
-                <div class="hint warning" ?hidden=${!this._errorMessage}>${this._errorMessage}</div>
+                <div class="error note" ?hidden=${!this._errorMessage}>${this._errorMessage}</div>
 
                 <div class="hint animate">
                     ${$l("New to Padlock?")}

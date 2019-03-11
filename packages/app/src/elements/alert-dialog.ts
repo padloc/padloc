@@ -1,11 +1,11 @@
 import { localize } from "@padloc/core/lib/locale.js";
-import { shared, mixins } from "../styles";
+import { shared } from "../styles";
 import { element, html, property } from "./base.js";
 import { Dialog } from "./dialog.js";
 
 const defaultButtonLabel = localize("OK");
 
-export type AlertType = "info" | "warning" | "plain" | "question" | "success";
+export type AlertType = "info" | "warning" | "destructive" | "plain" | "question" | "success";
 export interface AlertOptions {
     message?: string;
     title?: string;
@@ -39,56 +39,48 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     renderContent() {
         const { message, dialogTitle, options, icon } = this;
         return html`
-        ${shared}
+            ${shared}
 
-        <style>
-            :host([type="warning"]) .inner {
-                ${mixins.gradientWarning()}
-            }
+            <style>
+                :host([hide-icon]) .info-icon {
+                    display: none;
+                }
 
-            :host([type="plain"]) .inner {
-                background: var(--color-background);
-            }
+                :host([hide-icon]) .info-text,
+                :host([hide-icon]) .info-title {
+                    text-align: center;
+                }
 
-            :host([hide-icon]) .info-icon {
-                display: none;
-            }
+                :host([horizontal]) .buttons {
+                    flex-direction: row;
+                }
 
-            :host([hide-icon]) .info-text,
-            :host([hide-icon]) .info-title {
-                text-align: center;
-            }
+                :host([horizontal]) button {
+                    flex: 1;
+                }
 
-            .buttons {
-                display: flex;
-                flex-direction: column;
-            }
+                .info-text:not(.small) {
+                    font-size: var(--font-size-default);
+                }
+            </style>
 
-            :host([horizontal]) .buttons {
-                flex-direction: row;
-            }
-
-            :host([horizontal]) button {
-                flex: 1;
-            }
-
-            .info-text:not(.small) {
-                font-size: var(--font-size-default);
-            }
-        </style>
-
-        <div class="info" ?hidden=${!dialogTitle && !message}>
-            <pl-icon class="info-icon" icon="${icon}"></pl-icon>
-            <div class="info-body">
-                <div class="info-title">${dialogTitle}</div>
-                <div class="info-text ${this.dialogTitle ? "small" : ""}">${message}</div>
+            <div class="info" ?hidden=${!dialogTitle && !message}>
+                <pl-icon class="info-icon" icon="${icon}"></pl-icon>
+                <div class="info-body">
+                    <div class="info-title">${dialogTitle}</div>
+                    <div class="info-text ${this.dialogTitle ? "small" : ""}">${message}</div>
+                </div>
             </div>
-        </div>
 
-        <div class="buttons tiles tiles-2">
-            ${options.map((o: any, i: number) => html`<button class="tap" @click=${() => this.done(i)}>${o}</button>`)}
-        </div>
-`;
+            <div class="actions ${options.length > 2 ? "vertical" : ""}">
+                ${options.map(
+                    (o: any, i: number) =>
+                        html`
+                            <button class="tap ${this._buttonClass(i)}" @click=${() => this.done(i)}>${o}</button>
+                        `
+                )}
+            </div>
+        `;
     }
 
     done(i: number = -1) {
@@ -126,9 +118,18 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
             case "success":
                 return "success";
             case "question":
+            case "destructive":
                 return "question";
             default:
                 return "";
+        }
+    }
+
+    private _buttonClass(i: number) {
+        if (i === 0) {
+            return this.type === "destructive" ? "negative" : "primary";
+        } else {
+            return "";
         }
     }
 }

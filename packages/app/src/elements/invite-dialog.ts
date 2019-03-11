@@ -3,12 +3,13 @@ import { Invite } from "@padloc/core/lib/invite.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { app } from "../init";
-import { shared, mixins } from "../styles";
-import { alert } from "../dialog.js";
+import { shared } from "../styles";
+import { alert, dialog } from "../dialog.js";
 import { element, html, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { LoadingButton } from "./loading-button.js";
 import { Input } from "./input.js";
+import { MemberDialog } from "./member-dialog.js";
 
 @element("pl-invite-dialog")
 export class InviteDialog extends Dialog<Invite, void> {
@@ -25,6 +26,9 @@ export class InviteDialog extends Dialog<Invite, void> {
     private _confirmButton: LoadingButton;
     @query("#codeInput")
     private _codeInput: Input;
+
+    @dialog("pl-member-dialog")
+    private _memberDialog: MemberDialog;
 
     @property()
     private _verified: boolean | undefined;
@@ -82,7 +86,6 @@ export class InviteDialog extends Dialog<Invite, void> {
 
                 .invite {
                     overflow: hidden;
-                    ${mixins.gradientHighlight()}
                 }
 
                 .invite-text {
@@ -123,13 +126,6 @@ export class InviteDialog extends Dialog<Invite, void> {
                     margin: 20px 0;
                 }
 
-                .tag {
-                    background: var(--color-foreground);
-                    color: var(--color-highlight);
-                    text-shadow: none;
-                    box-shadow: rgba(0, 0, 0, 0.2) 0 2px 2px;
-                }
-
                 .tag.org {
                     font-size: var(--font-size-small);
                     padding: 4px 16px;
@@ -150,10 +146,10 @@ export class InviteDialog extends Dialog<Invite, void> {
             <div class="invite">
                 <pl-icon icon="cancel" class="tap close-button" @click=${() => this.done()}></pl-icon>
 
-                <h1>${purpose === "confirm_membership" ? $l("Confirm Membership") : $l("Org Invite")}</h1>
+                <h1>${purpose === "confirm_membership" ? $l("Confirm Membership") : $l("Organization Invite")}</h1>
 
                 <div class="tags">
-                    <div class="tag org">
+                    <div class="tag org highlight">
                         <pl-icon icon="org"></pl-icon>
 
                         <div>${org!.name}</div>
@@ -177,7 +173,7 @@ export class InviteDialog extends Dialog<Invite, void> {
                     )}
                 </div>
 
-                <div class="layout horizontal">
+                <div class="actions">
                     ${forMe ? this._inviteeActions() : this._adminActions()}
                 </div>
             </div>
@@ -191,8 +187,8 @@ export class InviteDialog extends Dialog<Invite, void> {
             <div class="invite-text">
                 ${$l(
                     purpose === "confirm_membership"
-                        ? "Please confirm your membership for the {0} org."
-                        : "You've been invited to join the {0} org.",
+                        ? "Please confirm your membership for the {0} organization."
+                        : "You've been invited to join the {0} organization.",
                     org!.name
                 )}
             </div>
@@ -213,7 +209,7 @@ export class InviteDialog extends Dialog<Invite, void> {
             <div class="invite-text small" ?hidden=${!_enableActions}>
                 ${$l(
                     "If you haven't received the confirmation code yet, please ask an " +
-                        "admin of the org to provide it to you!"
+                        "admin of the organization to provide it to you!"
                 )}
             </div>
         `;
@@ -223,7 +219,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         return html`
             <pl-loading-button
                 id="acceptButton"
-                class="tap flex tiles-2"
+                class="tap primary"
                 ?hidden=${!this._enableActions}
                 @click=${() => this._accept()}
             >
@@ -261,21 +257,10 @@ export class InviteDialog extends Dialog<Invite, void> {
         const { accepted, expired, purpose } = this.invite!;
         return html`
             <pl-loading-button
-                ?hidden=${accepted}
-                id="resendButton"
-                class="tap flex tiles-3"
-                @click=${() => this._resend()}
-            >
-                <pl-icon icon="mail"></pl-icon>
-
-                <div>${$l("Resend")}</div>
-            </pl-loading-button>
-
-            <pl-loading-button
                 ?hidden=${!accepted}
                 ?disabled=${!accepted || expired || !this._verified}
                 id="confirmButton"
-                class="tap flex tiles-3"
+                class="tap primary"
                 @click=${() => this._confirm()}
             >
                 <pl-icon icon="invite"></pl-icon>
@@ -283,10 +268,16 @@ export class InviteDialog extends Dialog<Invite, void> {
                 <div>${$l(purpose === "confirm_membership" ? "Confirm Member" : "Add Member")}</div>
             </pl-loading-button>
 
-            <pl-loading-button id="deleteButton" class="tap flex tiles-2" @click=${() => this._delete()}>
+            <pl-loading-button id="deleteButton" class="tap negative" @click=${() => this._delete()}>
                 <pl-icon icon="delete"></pl-icon>
 
                 <div>${$l("Delete")}</div>
+            </pl-loading-button>
+
+            <pl-loading-button ?hidden=${accepted} id="resendButton" class="tap" @click=${() => this._resend()}>
+                <pl-icon icon="mail"></pl-icon>
+
+                <div>${$l("Resend")}</div>
             </pl-loading-button>
         `;
     }
@@ -297,8 +288,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         }
         this._deleteButton.start();
         try {
-            const org = app.getOrg(this.invite!.org!.id)!;
-            await app.updateOrg(org, { invites: org.invites.filter(invite => invite.id !== this.invite!.id) });
+            await app.deleteInvite(this.invite!);
             this._deleteButton.success();
             this.done();
         } catch (e) {
@@ -315,7 +305,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         this._resendButton.start();
         let org = app.getOrg(this.invite!.org!.id)!;
         try {
-            org = await app.updateOrg(org, { invites: org.invites.filter(invite => invite.id !== this.invite!.id) });
+            await app.deleteInvite(this.invite!);
             this.invite = await app.createInvite(org!, this.invite!.email, this.invite!.purpose);
             this._verified = await this.invite.verify();
             this._resendButton.success();
@@ -367,17 +357,14 @@ export class InviteDialog extends Dialog<Invite, void> {
         }
         this._confirmButton.start();
         try {
-            await app.confirmInvite(this.invite!);
+            const member = await app.confirmInvite(this.invite!);
             this._confirmButton.success();
+
+            this.open = false;
+
+            await this._memberDialog.show({ org: app.getOrg(this.invite!.org!.id)!, member });
+
             this.done();
-            alert(
-                $l(
-                    "You have successfully added {0} to the {1} org!",
-                    this.invite!.invitee!.name || this.invite!.invitee!.email,
-                    this.invite!.org!.name
-                ),
-                { type: "success" }
-            );
         } catch (e) {
             this._confirmButton.fail();
             throw e;

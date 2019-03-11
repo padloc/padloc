@@ -17,72 +17,71 @@ export class LoadingButton extends BaseElement {
     render() {
         const { state, noTab } = this;
         return html`
-        ${shared}
+            ${shared}
 
-        <style>
+            <style>
 
-            :host {
-                display: flex;
-                height: var(--row-height);
-            }
+                :host {
+                    display: flex;
+                    height: var(--row-height);
+                }
 
-            :host([state="loading"]) button {
-                cursor: progress;
-            }
+                :host([state="loading"]) button {
+                    cursor: progress;
+                }
 
-            button {
-                position: relative;
-                flex: 1;
-                height: auto;
-            }
+                button {
+                    background: transparent;
+                    position: relative;
+                    flex: 1;
+                    height: auto;
+                }
 
-            button > * {
-                ${mixins.absoluteCenter()}
-                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-            }
+                button > * {
+                    transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+                    ${mixins.absoluteCenter()}
+                }
 
-            button > .label {
-                ${mixins.fullbleed()}
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
+                button > .label {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    ${mixins.fullbleed()}
+                }
 
-            :host(.vertical) .label {
-                flex-direction: column;
-            }
+                :host(.vertical) .label {
+                    flex-direction: column;
+                }
 
-            button.loading .label, button.success .label, button.fail .label,
-            button:not(.loading) .spinner,
-            button:not(.success) .icon-success,
-            button:not(.fail) .icon-fail {
-                opacity: 0.5;
-                transform: scale(0);
-            }
+                button.loading .label, button.success .label, button.fail .label,
+                button:not(.loading) .spinner,
+                button:not(.success) .icon-success,
+                button:not(.fail) .icon-fail {
+                    opacity: 0.5;
+                    transform: scale(0);
+                }
 
-            button pl-icon {
-                font-size: 120%;
-            }
+                button pl-icon {
+                    font-size: 120%;
+                }
 
-            paper-spinner-lite {
-                line-height: normal;
-                --paper-spinner-color: currentColor;
-                --paper-spinner-stroke-width: 2px;
-            }
-        </style>
+                paper-spinner-lite {
+                    line-height: normal;
+                    --paper-spinner-color: currentColor;
+                    --paper-spinner-stroke-width: 2px;
+                }
+            </style>
 
-        <button type="button" class="${state}" tabindex="${noTab ? "-1" : ""}">
+            <button type="button" class="${state}" tabindex="${noTab ? "-1" : ""}">
+                <div class="label"><slot></slot></div>
 
-            <div class="label"><slot></slot></div>
+                <paper-spinner-lite active="${state == "loading"}" class="spinner"></paper-spinner-lite>
 
-            <paper-spinner-lite active="${state == "loading"}" class="spinner"></paper-spinner-lite>
+                <pl-icon icon="check" class="icon-success"></pl-icon>
 
-            <pl-icon icon="check" class="icon-success"></pl-icon>
-
-            <pl-icon icon="cancel" class="icon-fail"></pl-icon>
-
-        </button>
-`;
+                <pl-icon icon="cancel" class="icon-fail"></pl-icon>
+            </button>
+        `;
     }
 
     static get is() {

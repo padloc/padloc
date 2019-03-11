@@ -62,9 +62,9 @@ export class Recover extends StartForm {
                     cursor: pointer;
                 }
 
-                .hint.recovery-notes {
+                .recovery-notes {
                     text-align: left;
-                    padding: 15px;
+                    padding: 20px;
                     margin: 10px;
                 }
 
@@ -74,13 +74,14 @@ export class Recover extends StartForm {
 
                 .recovery-notes li {
                     margin: 10px 20px 0 20px;
+                    background: transparent;
+                    border: none;
                 }
             </style>
 
             <div flex></div>
 
             <form>
-
                 <h1 class="animate">${$l("Recover Account")}</h1>
 
                 <div class="title animate">
@@ -94,7 +95,8 @@ export class Recover extends StartForm {
                     .label=${$l("Email Address")}
                     .value=${this._email}
                     class="tiles-2 animate"
-                    @enter=${() => this._submit()}>
+                    @enter=${() => this._submit()}
+                >
                 </pl-input>
 
                 <pl-input
@@ -104,10 +106,11 @@ export class Recover extends StartForm {
                     .label=${$l("New Master Password")}
                     class="tiles-2 animate"
                     @change=${() => this._updatePwdStrength()}
-                    @enter=${() => this._submit()}>
+                    @enter=${() => this._submit()}
+                >
                 </pl-input>
 
-                <div class="hint warning" ?hidden=${!this._weakPassword}>${$l("WARNING: Weak Password!")}</div>
+                <div class="error note" ?hidden=${!this._weakPassword}>${$l("WARNING: Weak Password!")}</div>
 
                 <pl-input
                     id="repeatPasswordInput"
@@ -115,10 +118,11 @@ export class Recover extends StartForm {
                     required
                     .label=${$l("Repeat Master Password")}
                     class="tiles-2 animate"
-                    @enter=${() => this._submit()}>
+                    @enter=${() => this._submit()}
+                >
                 </pl-input>
 
-                <div class="hint warning animate recovery-notes tiles-5">
+                <div class="error note animate recovery-notes">
                     ${$l(
                         "IMPORTANT, READ CAREFULLY: Padloc is designed in a way that makes it impossible " +
                             "for us to access the data encrypted in any of your vaults even if we wanted to. " +
@@ -133,26 +137,22 @@ export class Recover extends StartForm {
                         </li>
                         <li>
                             ${$l(
-                                "Any shared vaults owned by you will be archived. You may unarchive them later, " +
-                                    "but any data stored in them will be lost in the process. If there are any other " +
-                                    "members with access to those vaults, we recommend asking them to create a backup " +
-                                    "of the data so it may be restored later."
+                                "All your organization memberships will be suspended temporarily until " +
+                                    "confirmed by the organization owner."
                             )}
                         </li>
                         <li>
                             ${$l(
-                                "If you are a member of any shared vaults that you are not the owner of, your " +
-                                    "membership will be suspended and you will temporarily lose access to any data " +
-                                    "stored in those vaults until your membership is confirmed."
+                                "All members of organizations you own will be suspended temporarily until " +
+                                    "confirmed by you."
                             )}
                         </li>
                     </ul>
                 </div>
 
-                <pl-loading-button id="submitButton" class="tap tiles-3 animate" @click=${() => this._submit()}>
+                <pl-loading-button id="submitButton" class="tap animate" @click=${() => this._submit()}>
                     ${$l("Recover Account")}
                 </pl-loading-button>
-
             </form>
 
             <div flex></div>
