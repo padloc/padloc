@@ -2,7 +2,7 @@ import { VaultItem, Field } from "@padloc/core/lib/item.js";
 import { setClipboard } from "@padloc/core/lib/platform.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, html, property } from "./base.js";
+import { BaseElement, html, css, property } from "./base.js";
 
 export class Clipboard extends BaseElement {
 
@@ -17,13 +17,9 @@ export class Clipboard extends BaseElement {
         return !!this.item && !!this.field;
     }
 
-    render() {
-        const { item, field, _tMinusClear } = this;
-        return html`
-        ${ shared }
-
-        <style>
-
+    static styles = [
+        shared,
+        css`
             :host {
                 display: flex;
                 text-align: center;
@@ -61,13 +57,18 @@ export class Clipboard extends BaseElement {
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
+                border-radius: 0 var(--border-radius) var(--border-radius) 0;
             }
 
             .countdown {
                 font-size: var(--font-size-small);
             }
-        </style>
+        `
+    ];
 
+    render() {
+        const { item, field, _tMinusClear } = this;
+        return html`
         <div class="content">
             <div class="title">${ $l("Copied To Clipboard:") }</div>
             <div class="name">${ item!.name } / ${ field!.name }</div>

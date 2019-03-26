@@ -2,7 +2,7 @@ import { randomArt } from "@padloc/core/lib/randomart.js";
 import { getProvider } from "@padloc/core/lib/crypto.js";
 import { svg } from "lit-html";
 import { until } from "lit-html/directives/until.js";
-import { BaseElement, html, element, property } from "./base";
+import { BaseElement, html, css, element, property } from "./base";
 
 @element("pl-fingerprint")
 export class Fingerprint extends BaseElement {
@@ -30,27 +30,29 @@ export class Fingerprint extends BaseElement {
         return !!this.key;
     }
 
+    static styles = [
+        css`
+            :host {
+                display: block;
+                width: 100px;
+                height: 100px;
+                position: relative;
+                overflow: hidden;
+                background: var(--color-background);
+                color: var(--color-foreground);
+            }
+
+            svg {
+                width: 100%;
+                height: 100%;
+                fill: currentColor;
+                pointer-events: none;
+            }
+        `
+    ];
+
     render() {
         return html`
-            <style>
-                :host {
-                    display: block;
-                    width: 100px;
-                    height: 100px;
-                    position: relative;
-                    overflow: hidden;
-                    background: var(--color-background);
-                    color: var(--color-foreground);
-                }
-
-                svg {
-                    width: 100%;
-                    height: 100%;
-                    fill: currentColor;
-                    pointer-events: none;
-                }
-            </style>
-
             ${until(this._grid())}
         `;
     }

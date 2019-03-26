@@ -9,8 +9,8 @@
     "@polymer/paper-spinner": "^3.0.0-pre.18",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "autosize": "^4.0.2",
-    "lit-element": "^2.0.1",
-    "lit-html": "^0.14.0",
+    "lit-element": "^2.1.0",
+    "lit-html": "^1.0.0",
     "localforage": "^1.7.3"
   },
   "devDependencies": {

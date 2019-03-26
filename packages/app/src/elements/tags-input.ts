@@ -3,7 +3,7 @@ import { Vault } from "@padloc/core/lib/vault.js";
 import { Tag } from "@padloc/core/lib/item.js";
 import { app } from "../init.js";
 import { shared } from "../styles";
-import { BaseElement, element, html, property, query } from "./base.js";
+import { BaseElement, element, html, css, property, query } from "./base.js";
 import { Input } from "./input";
 import "./icon.js";
 
@@ -23,6 +23,82 @@ export class TagsInput extends BaseElement {
 
     private _focusTimeout: number = 0;
 
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: block;
+                position: relative;
+                z-index: 1;
+                overflow: visible;
+                font-size: var(--font-size-small);
+                overflow: visible;
+            }
+
+            .wrapper {
+                flex-wrap: wrap;
+                overflow: visible;
+                margin-top: -6px;
+            }
+
+            .wrapper > * {
+                margin-top: 6px;
+            }
+
+            .tags.small .tag {
+                padding: 5px 7px;
+            }
+
+            .results {
+                padding: 0;
+                border-radius: 8px;
+                margin-top: 0;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .results .tag {
+                padding: 6px 8px;
+                margin-top: 6px;
+            }
+
+            .input-wrapper {
+                font-size: var(--font-size-micro);
+                padding: 0 4px;
+                height: 26px;
+                line-height: 26px;
+                background: #eee;
+                box-sizing: border-box;
+                border-radius: 8px;
+                align-self: stretch;
+                position: relative;
+                min-width: 80px;
+                overflow: hidden;
+            }
+
+            .input-wrapper pl-input {
+                font-size: inherit;
+                position: absolute;
+                height: 100%;
+                width: 100%;
+                box-sizing: border-box;
+                padding-left: 20px;
+                top: 0;
+                font-weight: bold;
+                pointer-events: none;
+            }
+
+            .add-tag {
+                height: 26px;
+                overflow: visible;
+            }
+
+            .add-tag .input-wrapper pl-icon {
+                height: 25px;
+            }
+        `
+    ];
+
     render() {
         const { tags, editing, vault, _showResults } = this;
         const { value } = this._input || { value: "" };
@@ -34,81 +110,6 @@ export class TagsInput extends BaseElement {
         }
 
         return html`
-            ${shared}
-
-            <style>
-                :host {
-                    display: block;
-                    position: relative;
-                    z-index: 1;
-                    overflow: visible;
-                    font-size: var(--font-size-small);
-                    overflow: visible;
-                }
-
-                .wrapper {
-                    flex-wrap: wrap;
-                    overflow: visible;
-                    margin-top: -6px;
-                }
-
-                .wrapper > * {
-                    margin-top: 6px;
-                }
-
-                .tags.small .tag {
-                    padding: 5px 7px;
-                }
-
-                .results {
-                    padding: 0;
-                    border-radius: 8px;
-                    margin-top: 0;
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-
-                .results .tag {
-                    padding: 6px 8px;
-                    margin-top: 6px;
-                }
-
-                .input-wrapper {
-                    font-size: var(--font-size-micro);
-                    padding: 0 4px;
-                    height: 26px;
-                    line-height: 26px;
-                    background: #eee;
-                    box-sizing: border-box;
-                    border-radius: 8px;
-                    align-self: stretch;
-                    position: relative;
-                    min-width: 80px;
-                    overflow: hidden;
-                }
-
-                .input-wrapper pl-input {
-                    font-size: inherit;
-                    position: absolute;
-                    height: 100%;
-                    width: 100%;
-                    box-sizing: border-box;
-                    padding-left: 20px;
-                    top: 0;
-                    font-weight: bold;
-                    pointer-events: none;
-                }
-
-                .add-tag {
-                    height: 26px;
-                    overflow: visible;
-                }
-
-                .add-tag .input-wrapper pl-icon {
-                    height: 25px;
-                }
-            </style>
-
             <div class="tags small wrapper">
                 <div class="tag highlight tap" @click=${() => this._vaultClicked()}>
                     <pl-icon icon="vault"></pl-icon>

@@ -1,9 +1,7 @@
-import { html } from "@polymer/lit-element";
+import { css } from "lit-element";
 import * as mixins from "./mixins";
-import * as config from "./config";
 
-export const shared = html`
-<style>
+export const shared = css`
     :host {
         user-select: none;
         -webkit-user-select: none;
@@ -280,19 +278,46 @@ export const shared = html`
     }
 
     .tap {
-        ${mixins.tapHighlight()}
+        position: relative;
+        cursor: pointer;
     }
 
     .tap::after {
-        ${mixins.tapHighlightAfter()}
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: currentColor;
+        opacity: 0;
+        transition: opacity 1s;
+        pointer-events: none;
+        border-radius: inherit;
     }
 
     .tap:active::after {
-        ${mixins.tapHighlightActiveAfter()}
+        opacity: 0.3;
+        transition: none;
     }
 
-    .tap:not(:active):hover::after {
-        ${mixins.tapHighlightHoverAfter()}
+    .tap::before {
+        content: "";
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: currentColor;
+        opacity: 0;
+        pointer-events: none;
+        border-radius: inherit;
+    }
+
+    .tap:not(:active):hover::before {
+        opacity: 0.1;
     }
 
     .tiles > :nth-child(8n + 1), .tiles-1 {
@@ -550,29 +575,19 @@ export const shared = html`
         align-items: center;
         justify-content: center;
         padding: 10px 15px;
+        border-bottom: solid 3px var(--color-shade-1);
     }
 
     .tabs > * > pl-icon {
-        margin-left: -12px;
+        margin-left: -10px;
+        font-size: 90%;
+        width: 35px;
+        height: 35px;
     }
 
     .tabs > *[active] {
         color: var(--color-highlight);
-    }
-
-    .tabs > *[active]::before {
-        content: "";
-        display: block;
-        width: 100%;
-        height: 3px;
-        background: currentColor;
-        position: absolute;
-        left: 0;
-        bottom: 0;
-    }
-
-    header > .tabs {
-        margin: -10px -10px -12px -10px;
+        border-color: var(--color-highlight);
     }
 
     .search-wrapper {
@@ -622,7 +637,7 @@ export const shared = html`
         75% {transform: translate(5px, 2px);}
     }
 
-    @media (min-width: ${config.narrowWidth + 1}px) {
+    @media (min-width: 701px) {
         .menu-button {
             visibility: hidden;
         }
@@ -632,10 +647,9 @@ export const shared = html`
         }
     }
 
-    @media (max-width: ${config.narrowWidth}px) {
+    @media (max-width: 700px) {
         .wide {
             display: none;
         }
     }
-</style>
 `;

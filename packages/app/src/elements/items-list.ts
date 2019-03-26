@@ -8,7 +8,7 @@ import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { dialog, confirm } from "../dialog.js";
 import { shared, mixins } from "../styles";
-import { element, html, property, query, listen } from "./base.js";
+import { element, html, css, property, query, listen } from "./base.js";
 import { View } from "./view.js";
 import { CreateItemDialog } from "./create-item-dialog.js";
 import { Input } from "./input.js";
@@ -138,203 +138,204 @@ export class ItemsList extends View {
         this._resizeHandler();
     }
 
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: flex;
+                flex-direction: column;
+                box-sizing: border-box;
+                position: relative;
+                background: var(--color-quaternary);
+                border-radius: var(--border-radius);
+            }
+
+            header {
+                overflow: visible;
+                z-index: 10;
+            }
+
+            pl-items-filter {
+                flex: 1;
+                min-width: 0;
+            }
+
+            main {
+                padding-bottom: 70px;
+            }
+
+            .section-header {
+                grid-column: 1/-1;
+                font-weight: bold;
+                display: flex;
+                align-items: flex-end;
+                height: 35px;
+                box-sizing: border-box;
+                padding: 0 10px 5px 10px;
+                background: var(--color-quaternary);
+                display: flex;
+                z-index: 1;
+                position: -webkit-sticky;
+                position: sticky;
+                top: -3px;
+                margin-bottom: -8px;
+                font-size: var(--font-size-small);
+            }
+
+            .items {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                grid-gap: var(--gutter-size);
+                padding: 8px;
+                cursor: pointer;
+            }
+
+            .item {
+                box-sizing: border-box;
+                display: flex;
+                align-items: center;
+                margin: 0;
+            }
+
+            .item-body {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .item .tags {
+                padding: 0 8px;
+            }
+
+            .item-header {
+                height: var(--row-height);
+                line-height: var(--row-height);
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+
+            .item-name {
+                padding-left: 15px;
+                ${mixins.ellipsis()}
+                font-weight: bold;
+                flex: 1;
+                min-width: 0;
+            }
+
+            .item-fields {
+                position: relative;
+                display: flex;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .item-fields::after {
+                content: "";
+                display: block;
+                width: 8px;
+                flex: none;
+            }
+
+            .item-field {
+                cursor: pointer;
+                font-size: var(--font-size-tiny);
+                line-height: 32px;
+                height: 32px;
+                text-align: center;
+                position: relative;
+                flex: 1;
+                font-weight: bold;
+                margin: 0 0 8px 8px;
+                border-radius: 8px;
+                ${mixins.shade2()}
+            }
+
+            .item-field > * {
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+            }
+
+            .copied-message {
+                ${mixins.fullbleed()}
+                border-radius: inherit;
+            }
+
+            .item-field:not(.copied) .copied-message,
+            .item-field.copied .item-field-label {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            .copied-message {
+                font-weight: bold;
+                background: var(--color-primary);
+                color: var(--color-background);
+            }
+
+            .copied-message::before {
+                font-family: "FontAwesome";
+                content: "\\f00c\\ ";
+            }
+
+            .item-field-label {
+                padding: 0 15px;
+                pointer-events: none;
+                ${mixins.ellipsis()}
+            }
+
+            .item:focus:not([selected]) {
+                border-color: var(--color-highlight);
+                color: #4ca8d9;
+            }
+
+            .item[selected] {
+                background: #e6e6e6;
+                border-color: #ddd;
+            }
+
+            .item-check {
+                position: relative;
+                width: 30px;
+                height: 30px;
+                box-sizing: border-box;
+                border: solid 3px #eee;
+                background: #eee;
+                border-radius: 30px;
+                margin: 10px;
+                margin-right: 5px;
+            }
+
+            .item-check::after {
+                content: "";
+                display: block;
+                ${mixins.fullbleed()}
+                background: var(--color-primary);
+                border-radius: inherit;
+                transition: transform 0.2s, opacity 0.2s;
+                transition-timing-function: cubic-bezier(1, -0.3, 0, 1.3);
+            }
+
+            .item-check:not([checked])::after {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            .selected-count {
+                text-align: center;
+                display: block;
+                margin-left: 12px;
+                background: #eee;
+                border-radius: var(--border-radius);
+                padding: 12px 4px;
+                line-height: 1.2em;
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
+                box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 4px;
+            }
+        `
+    ];
+
     render() {
         return html`
-            ${shared}
-
-            <style>
-
-                :host {
-                    display: flex;
-                    flex-direction: column;
-                    box-sizing: border-box;
-                    position: relative;
-                    background: var(--color-quaternary);
-                    border-radius: var(--border-radius);
-                }
-
-                header {
-                    overflow: visible;
-                    z-index: 10;
-                }
-
-                pl-items-filter {
-                    flex: 1;
-                    min-width: 0;
-                }
-
-                main {
-                    padding-bottom: 70px;
-                }
-
-                .section-header {
-                    grid-column: 1/-1;
-                    font-weight: bold;
-                    display: flex;
-                    align-items: flex-end;
-                    height: 35px;
-                    box-sizing: border-box;
-                    padding: 0 10px 5px 10px;
-                    background: var(--color-quaternary);
-                    display: flex;
-                    z-index: 1;
-                    position: -webkit-sticky;
-                    position: sticky;
-                    top: -3px;
-                    margin-bottom: -8px;
-                    font-size: var(--font-size-small);
-                }
-
-                .items {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                    grid-gap: var(--gutter-size);
-                    padding: 8px;
-                    cursor: pointer;
-                }
-
-                .item {
-                    box-sizing: border-box;
-                    display: flex;
-                    align-items: center;
-                    margin: 0;
-                }
-
-                .item-body {
-                    flex: 1;
-                    min-width: 0;
-                }
-
-                .item .tags {
-                    padding: 0 8px;
-                }
-
-                .item-header {
-                    height: var(--row-height);
-                    line-height: var(--row-height);
-                    position: relative;
-                    display: flex;
-                    align-items: center;
-                }
-
-                .item-name {
-                    padding-left: 15px;
-                    ${mixins.ellipsis()}
-                    font-weight: bold;
-                    flex: 1;
-                    min-width: 0;
-                }
-
-                .item-fields {
-                    position: relative;
-                    display: flex;
-                    overflow-x: auto;
-                    -webkit-overflow-scrolling: touch;
-                }
-
-                .item-fields::after {
-                    content: "";
-                    display: block;
-                    width: 8px;
-                    flex: none;
-                }
-
-                .item-field {
-                    cursor: pointer;
-                    font-size: var(--font-size-tiny);
-                    line-height: 32px;
-                    height: 32px;
-                    text-align: center;
-                    position: relative;
-                    flex: 1;
-                    font-weight: bold;
-                    margin: 0 0 8px 8px;
-                    border-radius: 8px;
-                    ${mixins.shade2()}
-                }
-
-                .item-field > * {
-                    transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-                }
-
-                .copied-message {
-                    ${mixins.fullbleed()}
-                    border-radius: inherit;
-                }
-
-                .item-field:not(.copied) .copied-message, .item-field.copied .item-field-label {
-                    opacity: 0;
-                    transform: scale(0);
-                }
-
-                .copied-message {
-                    font-weight: bold;
-                    background: var(--color-primary);
-                    color: var(--color-background);
-                }
-
-                .copied-message::before {
-                    font-family: "FontAwesome";
-                    content: "\\f00c\\ ";
-                }
-
-                .item-field-label {
-                    padding: 0 15px;
-                    pointer-events: none;
-                    ${mixins.ellipsis()}
-                }
-
-                .item:focus:not([selected]) {
-                    border-color: var(--color-highlight);
-                    color: #4ca8d9;
-                }
-
-                .item[selected] {
-                    background: #e6e6e6;
-                    border-color: #ddd;
-                }
-
-                .item-check {
-                    position: relative;
-                    width: 30px;
-                    height: 30px;
-                    box-sizing: border-box;
-                    border: solid 3px #eee;
-                    background: #eee;
-                    border-radius: 30px;
-                    margin: 10px;
-                    margin-right: 5px;
-                }
-
-                .item-check::after {
-                    content: "";
-                    display: block;
-                    ${mixins.fullbleed()}
-                    background: var(--color-primary);
-                    border-radius: inherit;
-                    transition: transform 0.2s, opacity 0.2s;
-                    transition-timing-function: cubic-bezier(1, -0.3, 0, 1.3);
-                }
-
-                .item-check:not([checked])::after {
-                    opacity: 0;
-                    transform: scale(0);
-                }
-
-                .selected-count {
-                    text-align: center;
-                    display: block;
-                    margin-left: 12px;
-                    background: #eee;
-                    border-radius: var(--border-radius);
-                    padding: 12px 4px;
-                    line-height: 1.2em;
-                    font-size: var(--font-size-tiny);
-                    font-weight: bold;
-                    box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 4px;
-                }
-            </style>
-
             <header ?hidden=${this._filterShowing}>
                 <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
@@ -537,11 +538,17 @@ export class ItemsList extends View {
                 @click=${() => this.selectItem(item)}
                 index="${index}"
             >
-                <div
-                    class="item-check"
-                    ?hidden=${!this.multiSelect}
-                    ?checked=${this._multiSelect.has(item.item.id)}
-                ></div>
+                ${cache(
+                    this.multiSelect
+                        ? html`
+                              <div
+                                  class="item-check"
+                                  ?hidden=${!this.multiSelect}
+                                  ?checked=${this._multiSelect.has(item.item.id)}
+                              ></div>
+                          `
+                        : ""
+                )}
 
                 <div class="item-body">
                     <div class="item-header">
@@ -567,17 +574,25 @@ export class ItemsList extends View {
                     <div class="item-fields">
                         ${item.item.fields.map(
                             (f: Field, i: number) => html`
-                                <div class="item-field" @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}>
+                                <div
+                                    class="item-field tap"
+                                    @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}
+                                >
                                     <div class="item-field-label">${f.name}</div>
 
                                     <div class="copied-message">${$l("copied")}</div>
                                 </div>
                             `
                         )}
-
-                        <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
-                            ${$l("No Fields")}
-                        </div>
+                        ${cache(
+                            !item.item.fields.length
+                                ? html`
+                                      <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
+                                          ${$l("No Fields")}
+                                      </div>
+                                  `
+                                : ""
+                        )}
                     </div>
                 </div>
             </div>

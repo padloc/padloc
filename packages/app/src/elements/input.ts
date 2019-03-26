@@ -2,7 +2,7 @@
 import autosize from "autosize/src/autosize.js";
 import { cache } from "lit-html/directives/cache.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, property, query, listen } from "./base.js";
+import { BaseElement, element, html, css, property, query, listen } from "./base.js";
 
 let activeInput: Input | null = null;
 
@@ -82,6 +82,99 @@ export class Input extends BaseElement {
         }
     }
 
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: block;
+                position: relative;
+                font-size: inherit;
+                font-weight: inherit;
+                font-family: inherit;
+                background: var(--shade-2-color);
+                border-radius: var(--border-radius);
+            }
+
+            :host(:not([multiline])) {
+                padding: 0 10px;
+                height: var(--row-height);
+            }
+
+            input {
+                box-sizing: border-box;
+                text-overflow: ellipsis;
+                box-shadow: none;
+            }
+
+            input,
+            textarea {
+                text-align: inherit;
+                width: 100%;
+                height: 100%;
+                min-height: inherit;
+                line-height: inherit;
+                caret-color: currentColor;
+            }
+
+            textarea {
+                overflow-wrap: break-word;
+            }
+
+            ::-webkit-search-cancel-button {
+                display: none;
+            }
+
+            ::-webkit-placeholder {
+                text-shadow: inherit;
+                color: inherit;
+                opacity: 0.5;
+            }
+
+            --fullbleed: {
+                position: absolute;
+            }
+
+            .mask {
+                pointer-events: none;
+                font-size: 150%;
+                padding: inherit;
+                line-height: inherit;
+                letter-spacing: -4.5px;
+                margin-left: -4px;
+                ${mixins.fullbleed()}
+            }
+
+            label {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                padding: 13px;
+                opacity: 0.5;
+                transition: transform 0.2s, color 0.2s, opacity 0.5s;
+                cursor: text;
+            }
+
+            label[float] {
+                transform: scale(0.8) translate(0, -32px);
+                color: var(--color-highlight);
+                font-weight: bold;
+                opacity: 1;
+            }
+
+            input[disabled],
+            textarea[disabled] {
+                opacity: 1;
+                -webkit-text-fill-color: currentColor;
+            }
+
+            input[invsbl],
+            textarea[invsbl] {
+                opacity: 0;
+            }
+        `
+    ];
+
     render() {
         const {
             value,
@@ -152,98 +245,6 @@ export class Input extends BaseElement {
         );
 
         return html`
-            ${shared}
-
-            <style>
-                :host {
-                    display: block;
-                    position: relative;
-                    font-size: inherit;
-                    font-weight: inherit;
-                    font-family: inherit;
-                    background: var(--shade-2-color);
-                    border-radius: var(--border-radius);
-                }
-
-                :host(:not([multiline])) {
-                    padding: 0 10px;
-                    height: var(--row-height);
-                }
-
-                input {
-                    box-sizing: border-box;
-                    text-overflow: ellipsis;
-                    box-shadow: none;
-                }
-
-                input,
-                textarea {
-                    text-align: inherit;
-                    width: 100%;
-                    height: 100%;
-                    min-height: inherit;
-                    line-height: inherit;
-                    caret-color: currentColor;
-                }
-
-                textarea {
-                    overflow-wrap: break-word;
-                }
-
-                ::-webkit-search-cancel-button {
-                    display: none;
-                }
-
-                ::-webkit-placeholder {
-                    text-shadow: inherit;
-                    color: inherit;
-                    opacity: 0.5;
-                }
-
-                --fullbleed: {
-                    position: absolute;
-                }
-
-                .mask {
-                    pointer-events: none;
-                    font-size: 150%;
-                    padding: inherit;
-                    line-height: inherit;
-                    letter-spacing: -4.5px;
-                    margin-left: -4px;
-                    ${mixins.fullbleed()}
-                }
-
-                label {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    padding: 13px;
-                    opacity: 0.5;
-                    transition: transform 0.2s, color 0.2s, opacity 0.5s;
-                    cursor: text;
-                }
-
-                label[float] {
-                    transform: scale(0.8) translate(0, -32px);
-                    color: var(--color-highlight);
-                    font-weight: bold;
-                    opacity: 1;
-                }
-
-                input[disabled],
-                textarea[disabled] {
-                    opacity: 1;
-                    -webkit-text-fill-color: currentColor;
-                }
-
-                input[invsbl],
-                textarea[invsbl] {
-                    opacity: 0;
-                }
-            </style>
-
             ${input}
 
             <label for="input" ?float=${focused || !!value || !!placeholder} ?hidden=${!label}>${label}</label>

@@ -1,6 +1,6 @@
 import { shared, mixins } from "../styles";
 import { animateElement } from "../animation";
-import { BaseElement, html, property, observe, listen } from "./base.js";
+import { BaseElement, html, css, property, observe, listen } from "./base.js";
 import { Input } from "./input.js";
 
 export class Dialog<I, R> extends BaseElement {
@@ -27,84 +27,84 @@ export class Dialog<I, R> extends BaseElement {
         });
     }
 
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: block;
+                ${mixins.fullbleed()}
+                position: fixed;
+                z-index: 10;
+                ${mixins.scroll()}
+            }
+
+            :host(:not([open])) {
+                pointer-events: none;
+            }
+
+            .outer {
+                min-height: 100%;
+                display: flex;
+                position: relative;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 10px;
+                box-sizing: border-box;
+            }
+
+            .scrim {
+                display: block;
+                background: #000000;
+                opacity: 0;
+                transition: opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
+                transform: translate3d(0, 0, 0);
+                ${mixins.fullbleed()}
+                position: fixed;
+            }
+
+            :host([open]) .scrim {
+                opacity: 0.8;
+            }
+
+            .inner {
+                position: relative;
+                width: 100%;
+                box-sizing: border-box;
+                max-width: var(--pl-dialog-max-width, 400px);
+                z-index: 1;
+                border-radius: var(--border-radius);
+                box-shadow: rgba(0, 0, 0, 0.25) 0 0 5px;
+                overflow: hidden;
+                background: var(--color-tertiary);
+            }
+
+            .outer {
+                transform: translate3d(0, 0, 0);
+                /* transition: transform 400ms cubic-bezier(1, -0.3, 0, 1.3), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1); */
+                transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
+            }
+
+            .actions {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                grid-gap: var(--gutter-size);
+                margin: var(--gutter-size);
+            }
+
+            .actions.vertical {
+                grid-template-columns: 1fr;
+            }
+
+            :host(:not([open])) .outer {
+                opacity: 0;
+                transform: translate3d(0, 0, 0) scale(0.8);
+            }
+        `
+    ];
+
     render() {
         return html`
-            ${shared}
-
-            <style>
-
-                :host {
-                    display: block;
-                    ${mixins.fullbleed()}
-                    position: fixed;
-                    z-index: 10;
-                    ${mixins.scroll()}
-                }
-
-                :host(:not([open])) {
-                    pointer-events: none;
-                }
-
-                .outer {
-                    min-height: 100%;
-                    display: flex;
-                    position: relative;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 10px;
-                    box-sizing: border-box;
-                }
-
-                .scrim {
-                    display: block;
-                    background: #000000;
-                    opacity: 0;
-                    transition: opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
-                    transform: translate3d(0, 0, 0);
-                    ${mixins.fullbleed()}
-                    position: fixed;
-                }
-
-                :host([open]) .scrim {
-                    opacity: 0.8;
-                }
-
-                .inner {
-                    position: relative;
-                    width: 100%;
-                    box-sizing: border-box;
-                    max-width: var(--pl-dialog-max-width, 400px);
-                    z-index: 1;
-                    border-radius: var(--border-radius);
-                    box-shadow: rgba(0, 0, 0, 0.25) 0 0 5px;
-                    overflow: hidden;
-                    background: var(--color-tertiary);
-                }
-
-                .outer {
-                    transform: translate3d(0, 0, 0);
-                    /* transition: transform 400ms cubic-bezier(1, -0.3, 0, 1.3), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1); */
-                    transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
-                }
-
-                .actions {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-                    grid-gap: var(--gutter-size);
-                    margin: var(--gutter-size);
-                }
-
-                .actions.vertical {
-                    grid-template-columns: 1fr;
-                }
-
-                :host(:not([open])) .outer {
-                    opacity: 0;
-                    transform: translate3d(0, 0, 0) scale(0.8);
-                }
-            </style>
-
             <div class="scrim"></div>
 
             <div class="outer" @click=${() => this.dismiss()}>

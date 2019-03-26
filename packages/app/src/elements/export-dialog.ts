@@ -3,7 +3,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { CSV, ImportFormat } from "../import.js";
 import { supportedFormats, asCSV } from "../export.js";
 import { app } from "../init.js";
-import { element, html, query } from "./base.js";
+import { element, html, css, query } from "./base.js";
 import { Select } from "./select.js";
 import { Dialog } from "./dialog.js";
 
@@ -14,35 +14,38 @@ export class ExportDialog extends Dialog<void, void> {
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            .inner {
+                display: flex;
+                flex-direction: column;
+            }
+
+            pl-input,
+            pl-select,
+            button {
+                text-align: center;
+                margin: 0 10px 10px 10px;
+                background: var(--shade-2-color);
+                border-radius: 8px;
+            }
+
+            h1 {
+                display: block;
+                text-align: center;
+            }
+
+            .csv-note {
+                font-size: var(--font-size-micro);
+                text-align: center;
+                padding: 0px 20px 20px 20px;
+            }
+        `
+    ];
+
     renderContent() {
         return html`
-            <style>
-                .inner {
-                    display: flex;
-                    flex-direction: column;
-                }
-
-                pl-input,
-                pl-select,
-                button {
-                    text-align: center;
-                    margin: 0 10px 10px 10px;
-                    background: var(--shade-2-color);
-                    border-radius: 8px;
-                }
-
-                h1 {
-                    display: block;
-                    text-align: center;
-                }
-
-                .csv-note {
-                    font-size: var(--font-size-micro);
-                    text-align: center;
-                    padding: 0px 20px 20px 20px;
-                }
-            </style>
-
             <h1>${$l("Export Data")}</h1>
 
             <pl-select

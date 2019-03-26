@@ -2,7 +2,7 @@ import { Vault } from "@padloc/core/lib/vault.js";
 import { VaultItem } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app } from "../init.js";
-import { element, property, html, query } from "./base.js";
+import { element, property, html, css, query } from "./base.js";
 import { Select } from "./select.js";
 import { Dialog } from "./dialog.js";
 
@@ -16,34 +16,37 @@ export class MoveItemsDialog extends Dialog<{ vault: Vault; item: VaultItem }[],
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            pl-input,
+            pl-select {
+                text-align: center;
+                margin: 12px;
+            }
+
+            .actions {
+                margin: 12px;
+                grid-gap: 12px;
+            }
+
+            h1 {
+                display: block;
+                text-align: center;
+            }
+
+            .message {
+                margin: 8px;
+                text-align: center;
+            }
+        `
+    ];
+
     renderContent() {
         const itemsDescription =
             this.items.length === 1 ? `'${this.items[0].item.name}'` : $l("{0} Items", this.items.length.toString());
 
         return html`
-            <style>
-                pl-input,
-                pl-select {
-                    text-align: center;
-                    margin: 12px;
-                }
-
-                .actions {
-                    margin: 12px;
-                    grid-gap: 12px;
-                }
-
-                h1 {
-                    display: block;
-                    text-align: center;
-                }
-
-                .message {
-                    margin: 8px;
-                    text-align: center;
-                }
-            </style>
-
             <h1>${$l("Move {0} To", itemsDescription)}</h1>
 
             <div class="message" ?hidden=${this.vaults.length}>

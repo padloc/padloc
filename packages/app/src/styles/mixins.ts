@@ -1,9 +1,11 @@
-export const unselectable = () => `
+import { css } from "lit-element";
+
+export const unselectable = () => css`
     cursor: default;
     user-select: none;
 `;
 
-export const positionSticky = () => `
+export const positionSticky = () => css`
     position: -webkit-sticky;
     position: -moz-sticky;
     position: -o-sticky;
@@ -11,37 +13,7 @@ export const positionSticky = () => `
     position: sticky;
 `;
 
-export const tapHighlight = () => `
-    position: relative;
-    cursor: pointer;
-`;
-
-export const tapHighlightAfter = () => `
-    content: "";
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: currentColor;
-    opacity: 0;
-    transition: opacity 1s;
-    pointer-events: none;
-    border-radius: inherit;
-`;
-
-export const tapHighlightActiveAfter = () => `
-    opacity: 0.3;
-    transition: none;
-`;
-
-export const tapHighlightHoverAfter = () => `
-    opacity: 0.1;
-    transition: none;
-`;
-
-export const fullbleed = () => `
+export const fullbleed = () => css`
     position: absolute;
     top: 0;
     left: 0;
@@ -50,43 +22,43 @@ export const fullbleed = () => `
     overflow: hidden;
 `;
 
-export const scroll = (direction?: "vertical" | "horizontal") => `
-    ${direction === "vertical" ? "overflow-y" : direction === "horizontal" ? "overflow-x" : "overflow"}: auto;
+export const scroll = (direction?: "vertical" | "horizontal") => css`
+    ${direction === "vertical" ? css`overflow-y` : direction === "horizontal" ? css`overflow-x` : css`overflow`}: auto;
     -webkit-overflow-scrolling: touch;
 `;
 
-export const ellipsis = () => `
+export const ellipsis = () => css`
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 `;
 
-export const absoluteCenter = () => `
+export const absoluteCenter = () => css`
     ${fullbleed()};
     margin: auto;
 `;
 
-export const shade1 = () => `
+export const shade1 = () => css`
     background: var(--shade-1-color);
 `;
 
-export const shade2 = () => `
+export const shade2 = () => css`
     background: var(--shade-2-color);
 `;
 
-export const shade3 = () => `
+export const shade3 = () => css`
     background: var(--shade-3-color);
 `;
 
-export const shade4 = () => `
+export const shade4 = () => css`
     background: var(--shade-4-color);
 `;
 
-export const shade5 = () => `
+export const shade5 = () => css`
     background: var(--shade-5-color);
 `;
 
-export const card = () => `
+export const card = () => css`
     background: var(--color-background);
     /* box-shadow: rgba(0, 0, 0, 0.2) 0 0 1px; */
     border-radius: var(--border-radius);
@@ -95,24 +67,30 @@ export const card = () => `
     overflow: hidden;
 `;
 
-export const gradientHighlight = (horizontal = false) => `
-    background: linear-gradient(${
-        horizontal ? "90deg" : "0"
-    }, var(--color-gradient-highlight-from) 0%, var(--color-gradient-highlight-to) 100%);
+export const gradientHighlight = (horizontal = false) => css`
+    background: linear-gradient(
+        ${horizontal ? css`90deg` : css`0`},
+        var(--color-gradient-highlight-from) 0%,
+        var(--color-gradient-highlight-to) 100%
+    );
 `;
 
-export const gradientWarning = (horizontal = false) => `
-    background: linear-gradient(${
-        horizontal ? "90deg" : "0"
-    }, var(--color-gradient-warning-from) 0%, var(--color-gradient-warning-to) 100%);
+export const gradientWarning = (horizontal = false) => css`
+    background: linear-gradient(
+        ${horizontal ? css`90deg` : css`0`},
+        var(--color-gradient-warning-from) 0%,
+        var(--color-gradient-warning-to) 100%
+    );
 `;
 
-export const gradientDark = (horizontal = false) => `
-    background: linear-gradient(${
-        horizontal ? "90deg" : "0"
-    }, var(--color-gradient-dark-from) 0%, var(--color-gradient-dark-to) 100%);
+export const gradientDark = (horizontal = false) => css`
+    background: linear-gradient(
+        ${horizontal ? css`90deg` : css`0`},
+        var(--color-gradient-dark-from) 0%,
+        var(--color-gradient-dark-to) 100%
+    );
 `;
 
-export const textShadow = () => `
+export const textShadow = () => css`
     text-shadow: rgba(0, 0, 0, 0.2) 0px 2px 0px;
 `;

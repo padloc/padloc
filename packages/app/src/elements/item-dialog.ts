@@ -9,7 +9,7 @@ import { mixins } from "../styles";
 import { confirm, dialog } from "../dialog.js";
 import { app, router } from "../init.js";
 import { setClipboard } from "../clipboard.js";
-import { element, html, property, query, queryAll, listen } from "./base.js";
+import { element, html, css, property, query, queryAll, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -75,6 +75,80 @@ export class ItemDialog extends Dialog<string, void> {
         this.requestUpdate();
     }
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            :host {
+                ${mixins.scroll()}
+            }
+
+            .inner {
+                max-width: 400px;
+                background: var(--color-quaternary);
+            }
+
+            header {
+                display: block;
+            }
+
+            .header-inner {
+                display: flex;
+            }
+
+            pl-input.name {
+                padding: 0 10px;
+            }
+
+            pl-tags-input {
+                margin: 5px 5px -5px 5px;
+            }
+
+            :host(:not([editing])) pl-field:hover {
+                background: #eee;
+            }
+
+            .add-button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 6px;
+            }
+
+            .add-button pl-icon {
+                width: 30px;
+                position: relative;
+                top: 1px;
+            }
+
+            .updated {
+                text-align: center;
+                font-size: var(--font-size-tiny);
+                color: #888;
+                background: rgba(255, 255, 255, 0.5);
+                position: absolute;
+                left: 10px;
+                bottom: 10px;
+            }
+
+            .updated::before {
+                font-family: FontAwesome;
+                font-size: 80%;
+                content: "\\f303\ ";
+            }
+
+            h4 {
+                font-size: var(--font-size-tiny);
+                color: var(--color-primary);
+                font-weight: bold;
+                margin: 10px;
+            }
+
+            .fabs {
+                position: static;
+            }
+        `
+    ];
+
     renderContent() {
         if (app.locked || !this._item || !this._vault) {
             return html``;
@@ -88,78 +162,6 @@ export class ItemDialog extends Dialog<string, void> {
         const attachments = this._item!.attachments || [];
 
         return html`
-            <style>
-
-                :host {
-                    ${mixins.scroll()}
-                }
-
-                .inner {
-                    max-width: 400px;
-                    background: var(--color-quaternary);
-                }
-
-                header {
-                    display: block;
-                }
-
-                .header-inner {
-                    display: flex;
-                }
-
-                pl-input.name {
-                    padding: 0 10px;
-                }
-
-                pl-tags-input {
-                    margin: 5px 5px -5px 5px;
-                }
-
-                :host(:not([editing])) pl-field:hover {
-                    background: #eee;
-                }
-
-                .add-button {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 6px;
-                }
-
-                .add-button pl-icon {
-                    width: 30px;
-                    position: relative;
-                    top: 1px;
-                }
-
-                .updated {
-                    text-align: center;
-                    font-size: var(--font-size-tiny);
-                    color: #888;
-                    background: rgba(255, 255, 255, 0.5);
-                    position: absolute;
-                    left: 10px;
-                    bottom: 10px;
-                }
-
-                .updated::before {
-                    font-family: FontAwesome;
-                    font-size: 80%;
-                    content: "\\f303\ ";
-                }
-
-                h4 {
-                    font-size: var(--font-size-tiny);
-                    color: var(--color-primary);
-                    font-weight: bold;
-                    margin: 10px;
-                }
-
-                .fabs {
-                    position: static;
-                }
-            </style>
-
             <header>
                 <div class="header-inner">
                     <pl-input

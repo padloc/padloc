@@ -4,7 +4,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { shared } from "../styles";
 import { app } from "../init";
-import { BaseElement, element, html, property } from "./base.js";
+import { BaseElement, element, html, css, property } from "./base.js";
 import "./icon.js";
 
 @element("pl-invite-item")
@@ -15,6 +15,69 @@ export class InviteItem extends BaseElement {
     shoudUpdate() {
         return !!this.invite;
     }
+
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: flex;
+                align-items: center;
+                padding: 4px 0;
+            }
+
+            .icon {
+                font-size: 120%;
+                margin: 10px;
+                background: #eee;
+                border: solid 1px #ddd;
+                width: 45px;
+                height: 45px;
+            }
+
+            .tags {
+                margin: 4px 0;
+            }
+
+            .invite-info {
+                flex: 1;
+                width: 0;
+            }
+
+            .invite:hover {
+                background: #fafafa;
+            }
+
+            .invite .tags {
+                padding: 0;
+                margin: 0;
+            }
+
+            .invite-email {
+                font-weight: bold;
+                margin-bottom: 4px;
+            }
+
+            .invite-code {
+                text-align: center;
+                margin-right: 15px;
+            }
+
+            .invite-code-label {
+                font-weight: bold;
+                font-size: var(--font-size-micro);
+            }
+
+            .invite-code-value {
+                font-size: 140%;
+                font-family: var(--font-family-mono);
+                font-weight: bold;
+                text-transform: uppercase;
+                cursor: text;
+                user-select: text;
+                letter-spacing: 2px;
+            }
+        `
+    ];
 
     render() {
         const inv = this.invite!;
@@ -43,68 +106,6 @@ export class InviteItem extends BaseElement {
         }
 
         return html`
-            ${shared}
-
-            <style>
-                :host {
-                    display: flex;
-                    align-items: center;
-                    padding: 4px 0;
-                }
-
-                .icon {
-                    font-size: 120%;
-                    margin: 10px;
-                    background: #eee;
-                    border: solid 1px #ddd;
-                    width: 45px;
-                    height: 45px;
-                }
-
-                .tags {
-                    margin: 4px 0;
-                }
-
-                .invite-info {
-                    flex: 1;
-                    width: 0;
-                }
-
-                .invite:hover {
-                    background: #fafafa;
-                }
-
-                .invite .tags {
-                    padding: 0;
-                    margin: 0;
-                }
-
-                .invite-email {
-                    font-weight: bold;
-                    margin-bottom: 4px;
-                }
-
-                .invite-code {
-                    text-align: center;
-                    margin-right: 15px;
-                }
-
-                .invite-code-label {
-                    font-weight: bold;
-                    font-size: var(--font-size-micro);
-                }
-
-                .invite-code-value {
-                    font-size: 140%;
-                    font-family: var(--font-family-mono);
-                    font-weight: bold;
-                    text-transform: uppercase;
-                    cursor: text;
-                    user-select: text;
-                    letter-spacing: 2px;
-                }
-            </style>
-
             <pl-icon class="icon" icon="mail"></pl-icon>
 
             <div class="invite-info">

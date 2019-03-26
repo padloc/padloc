@@ -1,6 +1,6 @@
 import "@polymer/paper-spinner/paper-spinner-lite.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, property, listen } from "./base.js";
+import { BaseElement, element, html, css, property, listen } from "./base.js";
 import "./icon.js";
 
 type ButtonState = "idle" | "loading" | "success" | "fail";
@@ -14,64 +14,66 @@ export class LoadingButton extends BaseElement {
 
     private _stopTimeout: number;
 
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: flex;
+                height: var(--row-height);
+            }
+
+            :host([state="loading"]) button {
+                cursor: progress;
+            }
+
+            button {
+                background: transparent;
+                position: relative;
+                flex: 1;
+                height: auto;
+            }
+
+            button > * {
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+                ${mixins.absoluteCenter()}
+            }
+
+            button > .label {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                ${mixins.fullbleed()}
+            }
+
+            :host(.vertical) .label {
+                flex-direction: column;
+            }
+
+            button.loading .label,
+            button.success .label,
+            button.fail .label,
+            button:not(.loading) .spinner,
+            button:not(.success) .icon-success,
+            button:not(.fail) .icon-fail {
+                opacity: 0.5;
+                transform: scale(0);
+            }
+
+            button pl-icon {
+                font-size: 120%;
+            }
+
+            paper-spinner-lite {
+                line-height: normal;
+                --paper-spinner-color: currentColor;
+                --paper-spinner-stroke-width: 2px;
+            }
+        `
+    ];
+
     render() {
         const { state, noTab } = this;
         return html`
-            ${shared}
-
-            <style>
-
-                :host {
-                    display: flex;
-                    height: var(--row-height);
-                }
-
-                :host([state="loading"]) button {
-                    cursor: progress;
-                }
-
-                button {
-                    background: transparent;
-                    position: relative;
-                    flex: 1;
-                    height: auto;
-                }
-
-                button > * {
-                    transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-                    ${mixins.absoluteCenter()}
-                }
-
-                button > .label {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    ${mixins.fullbleed()}
-                }
-
-                :host(.vertical) .label {
-                    flex-direction: column;
-                }
-
-                button.loading .label, button.success .label, button.fail .label,
-                button:not(.loading) .spinner,
-                button:not(.success) .icon-success,
-                button:not(.fail) .icon-fail {
-                    opacity: 0.5;
-                    transform: scale(0);
-                }
-
-                button pl-icon {
-                    font-size: 120%;
-                }
-
-                paper-spinner-lite {
-                    line-height: normal;
-                    --paper-spinner-color: currentColor;
-                    --paper-spinner-stroke-width: 2px;
-                }
-            </style>
-
             <button type="button" class="${state}" tabindex="${noTab ? "-1" : ""}">
                 <div class="label"><slot></slot></div>
 

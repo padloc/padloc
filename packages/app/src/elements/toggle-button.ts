@@ -1,5 +1,5 @@
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, property, query } from "./base.js";
+import { BaseElement, element, html, css, property, query } from "./base.js";
 import { Toggle } from "./toggle.js";
 
 @element("pl-toggle-button")
@@ -14,13 +14,9 @@ export class ToggleButton extends BaseElement {
     @query("pl-toggle")
     _toggle: Toggle;
 
-    render() {
-        const { active, label } = this;
-        return html`
-        ${shared}
-
-        <style>
-
+    static styles = [
+        shared,
+        css`
             :host {
                 display: inline-block;
                 font-size: inherit;
@@ -59,8 +55,12 @@ export class ToggleButton extends BaseElement {
                 display: inline-block;
                 pointer-events: none;
             }
-        </style>
+        `
+    ];
 
+    render() {
+        const { active, label } = this;
+        return html`
         <button @click=${() => this.toggle()}>
 
             <pl-toggle .active=${active} @change=${() => (this.active = this._toggle.active)}"></pl-toggle>

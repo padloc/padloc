@@ -1,5 +1,5 @@
 import { localize } from "@padloc/core/lib/locale.js";
-import { element, html, property, query } from "./base.js";
+import { element, html, css, property, query } from "./base.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
 import { Dialog } from "./dialog.js";
@@ -50,35 +50,38 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
     @query("pl-input")
     private _input: Input;
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            h1 {
+                display: block;
+                text-align: center;
+            }
+
+            .message {
+                margin: 20px;
+                text-align: center;
+            }
+
+            pl-input {
+                text-align: center;
+                margin: 8px;
+            }
+
+            .validation-message {
+                position: relative;
+                margin-top: 15px;
+                font-weight: bold;
+                font-size: var(--font-size-small);
+                color: var(--color-error);
+                text-shadow: none;
+                text-align: center;
+            }
+        `
+    ];
+
     renderContent() {
         return html`
-            <style>
-                h1 {
-                    display: block;
-                    text-align: center;
-                }
-
-                .message {
-                    margin: 20px;
-                    text-align: center;
-                }
-
-                pl-input {
-                    text-align: center;
-                    margin: 8px;
-                }
-
-                .validation-message {
-                    position: relative;
-                    margin-top: 15px;
-                    font-weight: bold;
-                    font-size: var(--font-size-small);
-                    color: var(--color-error);
-                    text-shadow: none;
-                    text-align: center;
-                }
-            </style>
-
             <h1 ?hidden=${!this.title}>${this.title}</h1>
 
             <div class="message" ?hidden=${!this.message}>${this.message}</div>

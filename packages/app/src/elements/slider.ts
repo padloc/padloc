@@ -1,4 +1,4 @@
-import { BaseElement, element, html, property, query } from "./base.js";
+import { BaseElement, element, html, css, property, query } from "./base.js";
 import { shared } from "../styles";
 
 @element("pl-slider")
@@ -13,12 +13,9 @@ export class Slider extends BaseElement {
 
     @query("input") private _input: HTMLInputElement;
 
-    render() {
-        return html`
-        ${shared}
-
-        <style include="shared">
-
+    static styles = [
+        shared,
+        css`
             :host {
                 display: flex;
                 align-items: center;
@@ -31,7 +28,7 @@ export class Slider extends BaseElement {
                 --knob-size: var(--slider-knob-size, 25px);
             }
 
-            input[type=range] {
+            input[type="range"] {
                 -webkit-appearance: none;
                 width: 100%;
                 margin: 0;
@@ -41,11 +38,11 @@ export class Slider extends BaseElement {
                 min-height: var(--knob-size);
             }
 
-            input[type=range]:focus {
+            input[type="range"]:focus {
                 outline: none;
             }
 
-            input[type=range]::-webkit-slider-runnable-track {
+            input[type="range"]::-webkit-slider-runnable-track {
                 width: 100%;
                 height: var(--track-size);
                 cursor: pointer;
@@ -53,7 +50,7 @@ export class Slider extends BaseElement {
                 border-radius: 100%;
             }
 
-            input[type=range]::-webkit-slider-thumb {
+            input[type="range"]::-webkit-slider-thumb {
                 -webkit-appearance: none;
                 height: var(--knob-size);
                 width: var(--knob-size);
@@ -67,7 +64,7 @@ export class Slider extends BaseElement {
                 background-clip: content-box;
             }
 
-            input[type=range]:active::-webkit-slider-thumb {
+            input[type="range"]:active::-webkit-slider-thumb {
                 transform: scale(1.1);
             }
 
@@ -82,21 +79,24 @@ export class Slider extends BaseElement {
             .value-display {
                 margin-left: 10px;
             }
+        `
+    ];
 
-        </style>
+    render() {
+        return html`
+            <label>${this.label}</label>
 
-        <label>${this.label}</label>
+            <input
+                type="range"
+                .value=${this.value}
+                .min=${this.min}
+                .max=${this.max}
+                .step=${this.step}
+                @input=${() => this._inputChange()}
+            />
 
-        <input
-            type="range"
-            .value=${this.value}
-            .min=${this.min}
-            .max=${this.max}
-            .step=${this.step}
-            @input=${() => this._inputChange()}>
-
-        <span class="value-display" ?hidden=${this.hideValue}>${this.value}${this.unit}</span>
-`;
+            <span class="value-display" ?hidden=${this.hideValue}>${this.value}${this.unit}</span>
+        `;
     }
 
     private _inputChange() {

@@ -1,6 +1,5 @@
 import { localize } from "@padloc/core/lib/locale.js";
-import { shared } from "../styles";
-import { element, html, property } from "./base.js";
+import { element, html, property, css } from "./base.js";
 import { Dialog } from "./dialog.js";
 
 const defaultButtonLabel = localize("OK");
@@ -36,34 +35,35 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     @property({ reflect: true })
     horizontal: boolean = false;
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            :host([hide-icon]) .info-icon {
+                display: none;
+            }
+
+            :host([hide-icon]) .info-text,
+            :host([hide-icon]) .info-title {
+                text-align: center;
+            }
+
+            :host([horizontal]) .buttons {
+                flex-direction: row;
+            }
+
+            :host([horizontal]) button {
+                flex: 1;
+            }
+
+            .info-text:not(.small) {
+                font-size: var(--font-size-default);
+            }
+        `
+    ];
+
     renderContent() {
         const { message, dialogTitle, options, icon } = this;
         return html`
-            ${shared}
-
-            <style>
-                :host([hide-icon]) .info-icon {
-                    display: none;
-                }
-
-                :host([hide-icon]) .info-text,
-                :host([hide-icon]) .info-title {
-                    text-align: center;
-                }
-
-                :host([horizontal]) .buttons {
-                    flex-direction: row;
-                }
-
-                :host([horizontal]) button {
-                    flex: 1;
-                }
-
-                .info-text:not(.small) {
-                    font-size: var(--font-size-default);
-                }
-            </style>
-
             <div class="info" ?hidden=${!dialogTitle && !message}>
                 <pl-icon class="info-icon" icon="${icon}"></pl-icon>
                 <div class="info-body">

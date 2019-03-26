@@ -1,10 +1,74 @@
-import { svg } from "lit-html";
-import { BaseElement, element, html, property } from "./base.js";
+import { BaseElement, element, html, css, svg, property } from "./base.js";
 
 @element("pl-logo")
 export class Logo extends BaseElement {
     @property({ reflect: true })
     reveal: boolean = false;
+
+    static styles = [
+        css`
+            :host {
+                position: relative;
+                display: block;
+                width: 200px;
+                height: 52px;
+            }
+
+            :host([reveal]) .padloc > * {
+                stroke-dashoffset: 0;
+            }
+
+            svg {
+                width: 100%;
+                height: 100%;
+                fill: none;
+                stroke: currentColor;
+                stroke-linecap: round;
+                stroke-width: 7;
+            }
+
+            .padloc > * {
+                transition: stroke-dashoffset 1.4s cubic-bezier(0.57, 0.25, 0, 0.99);
+                stroke-dashoffset: 0;
+            }
+
+            .p {
+                stroke-dashoffset: 234px;
+                stroke-dasharray: 234px;
+                transition-delay: 0s;
+            }
+
+            .a {
+                stroke-dashoffset: 190px;
+                stroke-dasharray: 190px;
+                transition-delay: 0.1s;
+            }
+
+            .d {
+                stroke-dashoffset: 232px;
+                stroke-dasharray: 232px;
+                transition-delay: 0.2s;
+            }
+
+            .l {
+                stroke-dashoffset: 155px;
+                stroke-dasharray: 155px;
+                transition-delay: 0.3s;
+            }
+
+            .o {
+                stroke-dashoffset: 168px;
+                stroke-dasharray: 168px;
+                transition-delay: 0.4s;
+            }
+
+            .c {
+                stroke-dashoffset: 237px;
+                stroke-dasharray: 237px;
+                transition-delay: 0.5s;
+            }
+        `
+    ];
 
     _logo() {
         return svg`
@@ -53,69 +117,6 @@ export class Logo extends BaseElement {
     }
     render() {
         return html`
-            <style>
-                :host {
-                    position: relative;
-                    display: block;
-                    width: 200px;
-                    height: 52px;
-                }
-
-                :host([reveal]) .padloc > * {
-                    stroke-dashoffset: 0;
-                }
-
-                svg {
-                    width: 100%;
-                    height: 100%;
-                    fill: none;
-                    stroke: currentColor;
-                    stroke-linecap: round;
-                    stroke-width: 7;
-                }
-
-                .padloc > * {
-                    transition: stroke-dashoffset 1.4s cubic-bezier(0.57, 0.25, 0, 0.99);
-                    stroke-dashoffset: 0;
-                }
-
-                .p {
-                    stroke-dashoffset: 234px;
-                    stroke-dasharray: 234px;
-                    transition-delay: 0s;
-                }
-
-                .a {
-                    stroke-dashoffset: 190px;
-                    stroke-dasharray: 190px;
-                    transition-delay: 0.1s;
-                }
-
-                .d {
-                    stroke-dashoffset: 232px;
-                    stroke-dasharray: 232px;
-                    transition-delay: 0.2s;
-                }
-
-                .l {
-                    stroke-dashoffset: 155px;
-                    stroke-dasharray: 155px;
-                    transition-delay: 0.3s;
-                }
-
-                .o {
-                    stroke-dashoffset: 168px;
-                    stroke-dasharray: 168px;
-                    transition-delay: 0.4s;
-                }
-
-                .c {
-                    stroke-dashoffset: 237px;
-                    stroke-dasharray: 237px;
-                    transition-delay: 0.5s;
-                }
-            </style>
-
             ${this._logo()}
         `;
     }

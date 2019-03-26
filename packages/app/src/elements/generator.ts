@@ -1,8 +1,7 @@
 import { randomString, chars } from "@padloc/core/lib/util.js";
 import { generatePassphrase } from "@padloc/core/lib/diceware.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { shared } from "../styles";
-import { html, property, query, listen } from "./base.js";
+import { html, css, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
@@ -58,78 +57,82 @@ export class Generator extends Dialog<void, string> {
     @query("#length")
     private _length: Slider;
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            .inner {
+                background: var(--color-quaternary);
+            }
+
+            .header {
+                background: var(--color-tertiary);
+                text-align: center;
+                font-weight: bold;
+            }
+
+            .header-title {
+                font-size: 120%;
+                padding: 20px 20px 10px 20px;
+            }
+
+            .charsets {
+                display: flex;
+            }
+
+            .charsets > * {
+                flex: 1;
+            }
+
+            pl-toggle-button {
+                display: block;
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+            }
+
+            pl-slider {
+                display: flex;
+                height: var(--row-height);
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+            }
+
+            pl-select {
+                border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+            }
+
+            .result {
+                font-family: var(--font-family-mono);
+                text-align: center;
+                font-size: 120%;
+                overflow-wrap: break-word;
+                font-weight: bold;
+                padding: 20px;
+            }
+
+            .arrow {
+                display: block;
+                margin: -10px auto;
+                font-size: 120%;
+            }
+        `
+    ];
+
     renderContent() {
         const { value } = this;
         return html`
-            ${shared}
-
-            <style>
-                .inner {
-                    background: var(--color-quaternary);
-                }
-
-                .header {
-                    background: var(--color-tertiary);
-                    text-align: center;
-                    border-bottom: solid 3px var(--color-shade-1);
-                    font-weight: bold;
-                }
-
-                .header-title {
-                    font-size: 120%;
-                    padding: 20px 20px 10px 20px;
-                }
-
-                .charsets {
-                    display: flex;
-                }
-
-                .charsets > * {
-                    flex: 1;
-                }
-
-                .tabs {
-                    margin-bottom: -2px;
-                }
-
-                pl-toggle-button {
-                    display: block;
-                    border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-                }
-
-                pl-slider {
-                    display: flex;
-                    height: var(--row-height);
-                    border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-                }
-
-                pl-select {
-                    border-bottom: solid 1px rgba(0, 0, 0, 0.1);
-                }
-
-                .result {
-                    font-family: var(--font-family-mono);
-                    text-align: center;
-                    font-size: 120%;
-                    overflow-wrap: break-word;
-                    font-weight: bold;
-                    padding: 20px;
-                }
-
-                .arrow {
-                    display: block;
-                    margin: -10px auto;
-                    font-size: 120%;
-                }
-            </style>
-
             <div class="header">
                 <div class="header-title">${$l("Generate Password")}</div>
                 <div class="tabs">
-                    <div class="flex tap" ?active=${this.mode === "words"} @click=${() => this._selectMode("words")}>
+                    <div
+                        class="flex tab tap"
+                        ?active=${this.mode === "words"}
+                        @click=${() => this._selectMode("words")}
+                    >
                         ${$l("passphrase")}
                     </div>
-                    <div class="flex tap" ?active=${this.mode === "chars"} @click=${() => this._selectMode("chars")}>
+                    <div
+                        class="flex tab tap"
+                        ?active=${this.mode === "chars"}
+                        @click=${() => this._selectMode("chars")}
+                    >
                         ${$l("random string")}
                     </div>
                 </div>

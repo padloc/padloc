@@ -1,68 +1,75 @@
-import { shared, mixins } from "../styles";
-import { BaseElement, html, query } from "./base.js";
+import { mixins, shared } from "../styles";
+import { BaseElement, css, query } from "./base.js";
 import { animateElement, animateCascade } from "../animation.js";
 import { Logo } from "./logo.js";
 import "./icon.js";
 
-export const sharedStyles = html`
-    ${shared}
-
-    <style>
-        @keyframes reveal {
-            from { transform: translate(0, 30px); opacity: 0; }
-            to { opacity: 1; }
+const styles = css`
+    @keyframes reveal {
+        from {
+            transform: translate(0, 30px);
+            opacity: 0;
         }
-
-        @keyframes fade {
-            to { transform: translate(0, -200px); opacity: 0; }
+        to {
+            opacity: 1;
         }
+    }
 
-        :host, .wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            ${mixins.fullbleed()}
-            ${mixins.scroll()}
+    @keyframes fade {
+        to {
+            transform: translate(0, -200px);
+            opacity: 0;
         }
+    }
 
-        form {
-            width: 100%;
-            max-width: 400px;
-        }
+    :host,
+    .wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        ${mixins.fullbleed()}
+        ${mixins.scroll()}
+    }
 
-        form > * {
-            border-radius: 8px;
-            margin: 10px;
-        }
+    form {
+        width: 100%;
+        max-width: 400px;
+    }
 
-        pl-logo {
-            margin: 20px auto;
-        }
+    form > * {
+        border-radius: 8px;
+        margin: 10px;
+    }
 
-        pl-loading-button {
-            overflow: hidden;
-            font-weight: bold;
-        }
+    pl-logo {
+        margin: 20px auto;
+    }
 
-        .hint {
-            font-size: var(--font-size-small);
-            box-sizing: border-box;
-            padding: 0 10px;
-            margin-bottom: 30px;
-            transition: color 0.2s;
-        }
+    pl-loading-button {
+        overflow: hidden;
+        font-weight: bold;
+    }
 
-        .hint.warning {
-            color: #ffc107;
-            font-weight: bold;
-            margin: 0;
-            padding: 0;
-            text-shadow: none;
-        }
-    </style>
+    .hint {
+        font-size: var(--font-size-small);
+        box-sizing: border-box;
+        padding: 0 10px;
+        margin-bottom: 30px;
+        transition: color 0.2s;
+    }
+
+    .hint.warning {
+        color: #ffc107;
+        font-weight: bold;
+        margin: 0;
+        padding: 0;
+        text-shadow: none;
+    }
 `;
 
 export abstract class StartForm extends BaseElement {
+    static styles = [shared, styles];
+
     @query("pl-logo")
     _logo: Logo;
 

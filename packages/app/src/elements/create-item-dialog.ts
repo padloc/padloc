@@ -2,7 +2,7 @@ import { Vault } from "@padloc/core/lib/vault.js";
 import { FieldType, VaultItem } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app } from "../init.js";
-import { element, html, query } from "./base.js";
+import { element, html, css, query } from "./base.js";
 import { Input } from "./input.js";
 import { Select } from "./select.js";
 import { Dialog } from "./dialog.js";
@@ -88,25 +88,28 @@ export class CreateItemDialog extends Dialog<undefined, VaultItem> {
     @query("#templateSelect")
     private _templateSelect: Select<Template>;
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            :host {
+                --gutter-size: 12px;
+            }
+
+            pl-input,
+            pl-select {
+                text-align: center;
+                margin: var(--gutter-size);
+            }
+
+            h1 {
+                display: block;
+                text-align: center;
+            }
+        `
+    ];
+
     renderContent() {
         return html`
-            <style>
-                :host {
-                    --gutter-size: 12px;
-                }
-
-                pl-input,
-                pl-select {
-                    text-align: center;
-                    margin: var(--gutter-size);
-                }
-
-                h1 {
-                    display: block;
-                    text-align: center;
-                }
-            </style>
-
             <h1>${$l("Create Vault Item")}</h1>
 
             <pl-input id="nameInput" .label=${$l("Item Name")} @enter=${() => this._enter()}> </pl-input>

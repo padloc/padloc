@@ -1,8 +1,8 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { ErrorCode } from "@padloc/core/lib/error.js";
 import { app, router } from "../init.js";
-import { element, property, html, query } from "./base.js";
-import { StartForm, sharedStyles } from "./start-form";
+import { element, property, html, css, query } from "./base.js";
+import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input.js";
 import { LoadingButton } from "./loading-button.js";
 import { confirm } from "../dialog.js";
@@ -29,23 +29,24 @@ export class Unlock extends StartForm {
         setTimeout(() => this._passwordInput.focus(), 100);
     }
 
+    static styles = [
+        ...StartForm.styles,
+        css`
+            .current-account {
+                font-size: var(--font-size-tiny);
+                margin: 30px;
+            }
+
+            .logout {
+                text-decoration: underline;
+                cursor: pointer;
+            }
+        `
+    ];
+
     render() {
         const email = app.account && app.account.email;
         return html`
-            ${sharedStyles}
-
-            <style>
-                .current-account {
-                    font-size: var(--font-size-tiny);
-                    margin: 30px;
-                }
-
-                .logout {
-                    text-decoration: underline;
-                    cursor: pointer;
-                }
-            </style>
-
             <div flex></div>
 
             <form>

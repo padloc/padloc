@@ -1,7 +1,7 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app, router } from "../init.js";
-import { element, html, property, query } from "./base.js";
-import { StartForm, sharedStyles } from "./start-form.js";
+import { element, html, css, property, query } from "./base.js";
+import { StartForm } from "./start-form.js";
 import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
 import { alert, choose, prompt } from "../dialog.js";
@@ -33,52 +33,53 @@ export class Recover extends StartForm {
         super.reset();
     }
 
+    static styles = [
+        ...StartForm.styles,
+        css`
+            h1 {
+                display: block;
+                text-align: center;
+                margin: 30px;
+            }
+
+            .title {
+                width: 300px;
+                margin: 30px auto;
+                font-size: var(--font-size-small);
+                font-weight: bold;
+                letter-spacing: 0.5px;
+                padding: 0 10px;
+            }
+
+            #submitButton {
+                margin-bottom: 30px;
+            }
+
+            .login {
+                text-decoration: underline;
+                cursor: pointer;
+            }
+
+            .recovery-notes {
+                text-align: left;
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .recovery-notes ul {
+                list-style: disc;
+            }
+
+            .recovery-notes li {
+                margin: 10px 20px 0 20px;
+                background: transparent;
+                border: none;
+            }
+        `
+    ];
+
     render() {
         return html`
-            ${sharedStyles}
-
-            <style include="shared">
-                h1 {
-                    display: block;
-                    text-align: center;
-                    margin: 30px;
-                }
-
-                .title {
-                    width: 300px;
-                    margin: 30px auto;
-                    font-size: var(--font-size-small);
-                    font-weight: bold;
-                    letter-spacing: 0.5px;
-                    padding: 0 10px;
-                }
-
-                #submitButton {
-                    margin-bottom: 30px;
-                }
-
-                .login {
-                    text-decoration: underline;
-                    cursor: pointer;
-                }
-
-                .recovery-notes {
-                    text-align: left;
-                    padding: 20px;
-                    margin: 10px;
-                }
-
-                .recovery-notes ul {
-                    list-style: disc;
-                }
-
-                .recovery-notes li {
-                    margin: 10px 20px 0 20px;
-                    background: transparent;
-                    border: none;
-                }
-            </style>
-
             <div flex></div>
 
             <form>

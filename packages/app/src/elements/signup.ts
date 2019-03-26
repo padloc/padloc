@@ -4,8 +4,8 @@ import { generatePassphrase } from "@padloc/core/lib/diceware.js";
 import { isTouch } from "@padloc/core/lib/platform.js";
 import { passwordStrength } from "../util.js";
 import { app, router } from "../init.js";
-import { element, html, property, query } from "./base.js";
-import { StartForm, sharedStyles } from "./start-form.js";
+import { element, html, css, property, query } from "./base.js";
+import { StartForm } from "./start-form.js";
 import { Input } from "./input.js";
 import { PasswordInput } from "./password-input.js";
 import { LoadingButton } from "./loading-button.js";
@@ -92,88 +92,89 @@ export class Signup extends StartForm {
         this._step = step;
     }
 
+    static styles = [
+        ...StartForm.styles,
+        css`
+            h1 {
+                display: block;
+                text-align: center;
+                margin: 20px 10px;
+            }
+
+            .master-password-form {
+                max-width: 500px;
+            }
+
+            .title {
+                width: 300px;
+                margin: 30px auto;
+                font-size: var(--font-size-small);
+                font-weight: bold;
+                letter-spacing: 0.5px;
+                padding: 0 10px;
+            }
+
+            #submitButton {
+                margin-bottom: 30px;
+            }
+
+            .login {
+                text-decoration: underline;
+                cursor: pointer;
+            }
+
+            pl-input:not([focused]) + .hint {
+                color: rgba(0, 0, 0, 0.2);
+                text-shadow: none;
+            }
+
+            .master-password {
+                position: relative;
+                background: var(--shade-2-color);
+                font-family: var(--font-family-mono);
+                font-size: 120%;
+                padding: 20px 40px;
+                overflow-wrap: break-word;
+            }
+
+            .master-password-cover {
+                ${mixins.fullbleed()}
+                height: 1em;
+                margin: auto;
+                font-weight: bold;
+                text-shadow: none;
+                color: rgba(0, 0, 0, 0.3);
+            }
+
+            .master-password-edit {
+                font-size: 80%;
+                width: 35px;
+                height: 35px;
+                vertical-align: middle;
+                position: absolute;
+                right: 5px;
+                top: 0;
+                bottom: 0;
+                margin: auto;
+                z-index: 1;
+                text-shadow: none;
+                color: rgba(0, 0, 0, 0.3);
+            }
+
+            .master-password:hover {
+                background: var(--shade-3-color);
+            }
+
+            .master-password:not(:hover) .master-password-value,
+            .master-password:not(:hover) .master-password-edit,
+            .master-password:hover .master-password-cover {
+                opacity: 0;
+            }
+        `
+    ];
+
     render() {
         return html`
-            ${sharedStyles}
-
-            <style>
-                h1 {
-                    display: block;
-                    text-align: center;
-                    margin: 20px 10px;
-                }
-
-                .master-password-form {
-                    max-width: 500px;
-                }
-
-                .title {
-                    width: 300px;
-                    margin: 30px auto;
-                    font-size: var(--font-size-small);
-                    font-weight: bold;
-                    letter-spacing: 0.5px;
-                    padding: 0 10px;
-                }
-
-                #submitButton {
-                    margin-bottom: 30px;
-                }
-
-                .login {
-                    text-decoration: underline;
-                    cursor: pointer;
-                }
-
-                pl-input:not([focused]) + .hint {
-                    color: rgba(0, 0, 0, 0.2)
-                    text-shadow: none;
-                }
-
-                .master-password {
-                    position: relative;
-                    background: var(--shade-2-color);
-                    font-family: var(--font-family-mono);
-                    font-size: 120%;
-                    padding: 20px 40px;
-                    overflow-wrap: break-word;
-                }
-
-                .master-password-cover {
-                    ${mixins.fullbleed()}
-                    height: 1em;
-                    margin: auto;
-                    font-weight: bold;
-                    text-shadow: none;
-                    color: rgba(0, 0, 0, 0.3);
-                }
-
-                .master-password-edit {
-                    font-size: 80%;
-                    width: 35px;
-                    height: 35px;
-                    vertical-align: middle;
-                    position: absolute;
-                    right: 5px;
-                    top: 0;
-                    bottom: 0;
-                    margin: auto;
-                    z-index: 1;
-                    text-shadow: none;
-                    color: rgba(0, 0, 0, 0.3);
-                }
-
-                .master-password:hover {
-                    background: var(--shade-3-color);
-                }
-
-                .master-password:not(:hover) .master-password-value,
-                .master-password:not(:hover) .master-password-edit,
-                .master-password:hover .master-password-cover {
-                    opacity: 0;
-                }
-            </style>
-
             <div class="wrapper" hidden>
                 <div flex></div>
 

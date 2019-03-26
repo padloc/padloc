@@ -1,6 +1,6 @@
 import { getSingleton } from "../singleton.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, property } from "./base.js";
+import { BaseElement, element, html, css, property } from "./base.js";
 
 export type NotificationType = "info" | "warning";
 
@@ -21,50 +21,50 @@ export class Notification extends BaseElement {
 
     private _hideTimeout: number;
 
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: flex;
+                align-items: center;
+                text-align: center;
+                transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3);
+                position: fixed;
+                left: 15px;
+                right: 15px;
+                bottom: 15px;
+                z-index: 10;
+                max-width: 400px;
+                margin: 0 auto;
+                border-radius: var(--border-radius);
+                color: var(--color-background);
+                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
+                ${mixins.gradientDark(true)}
+            }
+
+            :host(:not(.showing)) {
+                transform: translateY(130%);
+            }
+
+            :host([type="warning"]) {
+                ${mixins.gradientWarning(true)}
+            }
+
+            .message {
+                flex: 1;
+                min-width: 0;
+                padding: 15px 0 15px 15px;
+                font-weight: bold;
+            }
+
+            pl-icon.close-button {
+                margin: auto 5px;
+            }
+        `
+    ];
+
     render() {
         return html`
-            ${shared}
-
-            <style>
-
-                :host {
-                    display: flex;
-                    align-items: center;
-                    text-align: center;
-                    transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3);
-                    position: fixed;
-                    left: 15px;
-                    right: 15px;
-                    bottom: 15px;
-                    z-index: 10;
-                    max-width: 400px;
-                    margin: 0 auto;
-                    border-radius: var(--border-radius);
-                    color: var(--color-background);
-                    text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-                    ${mixins.gradientDark(true)}
-                }
-
-                :host(:not(.showing)) {
-                    transform: translateY(130%);
-                }
-
-                :host([type="warning"]) {
-                    ${mixins.gradientWarning(true)}
-                }
-
-                .message {
-                    flex: 1;
-                    min-width: 0;
-                    padding: 15px 0 15px 15px;
-                    font-weight: bold;
-                }
-
-                pl-icon.close-button {
-                    margin: auto 5px;
-                }
-            </style>
-
             <div class="message">${this.message}</div>
 
             <pl-icon icon="close" class="close-button tap" @click=${() => this.dismiss()}></pl-icon>

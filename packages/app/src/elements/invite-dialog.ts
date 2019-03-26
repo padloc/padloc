@@ -3,9 +3,8 @@ import { Invite } from "@padloc/core/lib/invite.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { app } from "../init";
-import { shared } from "../styles";
 import { alert, dialog } from "../dialog.js";
-import { element, html, property, query } from "./base.js";
+import { element, html, css, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { LoadingButton } from "./loading-button.js";
 import { Input } from "./input.js";
@@ -50,6 +49,78 @@ export class InviteDialog extends Dialog<Invite, void> {
         return !!this.invite;
     }
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            :host {
+                text-align: center;
+            }
+
+            h1 {
+                display: block;
+                text-align: center;
+            }
+
+            .invite {
+                overflow: hidden;
+            }
+
+            .invite-text {
+                font-size: var(--font-size-small);
+                margin: 20px;
+            }
+
+            .invite-text.small {
+                font-size: var(--font-size-tiny);
+            }
+
+            .invite-text.error {
+                color: var(--color-error);
+                text-shadow: none;
+                font-weight: bold;
+            }
+
+            .invite-email {
+                font-size: 120%;
+                margin: 15px;
+                font-weight: bold;
+            }
+
+            .invite-code {
+                font-size: 200%;
+                font-family: var(--font-family-mono);
+                text-transform: uppercase;
+                margin: 20px;
+                letter-spacing: 5px;
+                font-weight: bold;
+                user-select: text;
+                cursor: text;
+            }
+
+            .tags {
+                justify-content: center;
+                overflow: visible;
+                margin: 20px 0;
+            }
+
+            .tag.org {
+                font-size: var(--font-size-small);
+                padding: 4px 16px;
+            }
+
+            .code-input {
+                border-radius: 8px;
+                margin: 15px;
+            }
+
+            .close-button {
+                position: absolute;
+                top: 0;
+                right: 0;
+            }
+        `
+    ];
+
     renderContent() {
         const { email, expires, expired, org, accepted, purpose } = this.invite!;
         const forMe = email === app.account!.email;
@@ -72,77 +143,6 @@ export class InviteDialog extends Dialog<Invite, void> {
                   };
 
         return html`
-            ${shared}
-
-            <style>
-                :host {
-                    text-align: center;
-                }
-
-                h1 {
-                    display: block;
-                    text-align: center;
-                }
-
-                .invite {
-                    overflow: hidden;
-                }
-
-                .invite-text {
-                    font-size: var(--font-size-small);
-                    margin: 20px;
-                }
-
-                .invite-text.small {
-                    font-size: var(--font-size-tiny);
-                }
-
-                .invite-text.error {
-                    color: var(--color-error);
-                    text-shadow: none;
-                    font-weight: bold;
-                }
-
-                .invite-email {
-                    font-size: 120%;
-                    margin: 15px;
-                    font-weight: bold;
-                }
-
-                .invite-code {
-                    font-size: 200%;
-                    font-family: var(--font-family-mono);
-                    text-transform: uppercase;
-                    margin: 20px;
-                    letter-spacing: 5px;
-                    font-weight: bold;
-                    user-select: text;
-                    cursor: text;
-                }
-
-                .tags {
-                    justify-content: center;
-                    overflow: visible;
-                    margin: 20px 0;
-                }
-
-                .tag.org {
-                    font-size: var(--font-size-small);
-                    padding: 4px 16px;
-                }
-
-                .code-input {
-                    border-radius: 8px;
-                    margin: 15px;
-                }
-
-                .close-button {
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                }
-            </style>
-
             <div class="invite">
                 <pl-icon icon="cancel" class="tap close-button" @click=${() => this.done()}></pl-icon>
 

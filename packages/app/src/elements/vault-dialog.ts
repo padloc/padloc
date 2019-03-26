@@ -4,7 +4,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { mixins } from "../styles";
 import { app } from "../init.js";
 import { prompt } from "../dialog.js";
-import { element, html, property, query } from "./base.js";
+import { element, html, css, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { LoadingButton } from "./loading-button.js";
 import { Input } from "./input.js";
@@ -232,6 +232,45 @@ export class VaultDialog extends Dialog<InputType, void> {
         return !!this.org;
     }
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            .inner {
+                background: var(--color-quaternary);
+            }
+
+            .delete-button {
+                color: var(--color-negative);
+                font-size: var(--font-size-default);
+            }
+
+            .subheader {
+                margin: 8px;
+                font-weight: bold;
+                display: flex;
+                align-items: flex-end;
+                padding: 0 8px;
+                font-size: var(--font-size-small);
+            }
+
+            .subheader .permission {
+                width: 50px;
+                text-align: center;
+                font-size: var(--font-size-tiny);
+                ${mixins.ellipsis()}
+            }
+
+            .item {
+                display: flex;
+                align-items: center;
+            }
+
+            .item pl-toggle {
+                margin-right: 14px;
+            }
+        `
+    ];
+
     renderContent() {
         const org = this.org!;
         const isAdmin = org.isAdmin(app.account!);
@@ -248,42 +287,6 @@ export class VaultDialog extends Dialog<InputType, void> {
         const groups = filter ? org.groups.filter(({ name }) => name.toLowerCase().includes(filter)) : org.groups;
 
         return html`
-            <style>
-                .inner {
-                    background: var(--color-quaternary);
-                }
-
-                .delete-button {
-                    color: var(--color-negative);
-                    font-size: var(--font-size-default);
-                }
-
-                .subheader {
-                    margin: 8px;
-                    font-weight: bold;
-                    display: flex;
-                    align-items: flex-end;
-                    padding: 0 8px;
-                    font-size: var(--font-size-small);
-                }
-
-                .subheader .permission {
-                    width: 50px;
-                    text-align: center;
-                    font-size: var(--font-size-tiny);
-                    ${mixins.ellipsis()}
-                }
-
-                .item {
-                    display: flex;
-                    align-items: center;
-                }
-
-                .item pl-toggle {
-                    margin-right: 14px;
-                }
-            </style>
-
             <header>
                 <pl-icon icon="vault"></pl-icon>
                 <pl-input

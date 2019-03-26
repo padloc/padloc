@@ -1,8 +1,8 @@
 import "reflect-metadata";
 import { EventTarget, Event } from "@padloc/core/lib/event-target.js";
-import { LitElement, html } from "@polymer/lit-element";
-import { UpdatingElement, PropertyDeclaration } from "@polymer/lit-element/lib/updating-element.js";
-export { html };
+import { LitElement, html, css, svg } from "lit-element";
+import { UpdatingElement, PropertyDeclaration } from "lit-element/lib/updating-element.js";
+export { html, css, svg };
 
 export interface BasePrototype extends BaseElement {}
 
@@ -146,12 +146,6 @@ export class BaseElement extends LitElement {
             }
         }
     }
-
-    // TODO after upgrading to lit-element > 0.12
-    render() {
-        throw "Not Implemented";
-        return html``;
-    }
 }
 
 /**
@@ -170,6 +164,7 @@ export function property(options?: PropertyDeclaration) {
     return (proto: Object, name: string) => {
         options = options || {};
         if (!options.type) {
+            // @ts-ignore
             options.type = getType(proto, name);
         }
         (proto.constructor as typeof UpdatingElement).createProperty(name, options);

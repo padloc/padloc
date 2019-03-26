@@ -4,7 +4,7 @@ import { app, router } from "../init.js";
 import { AutoLock } from "../mixins/auto-lock.js";
 import { ErrorHandling } from "../mixins/error-handling.js";
 import { AutoSync } from "../mixins/auto-sync.js";
-import { BaseElement, html, property, query, listen } from "./base.js";
+import { BaseElement, html, css, property, query, listen } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import { View } from "./view.js";
@@ -51,109 +51,110 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
         this._applyPath(router.path);
     }
 
-    render() {
-        return html`
-            ${config.cssVars} ${shared}
+    static styles = [
+        config.cssVars,
+        shared,
+        css`
+            :host {
+                background: linear-gradient(
+                    var(--color-gradient-highlight-to) 0%,
+                    var(--color-gradient-highlight-from) 100%
+                );
+                overflow: hidden;
+                color: var(--color-foreground);
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                animation: fadeIn 0.5s backwards 0.2s;
+                perspective: 1000px;
+            }
 
-            <style>
-                :host {
-                    background: linear-gradient(
-                        var(--color-gradient-highlight-to) 0%,
-                        var(--color-gradient-highlight-from) 100%
-                    );
-                    overflow: hidden;
-                    color: var(--color-foreground);
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    animation: fadeIn 0.5s backwards 0.2s;
-                    perspective: 1000px;
-                }
+            .wrapper {
+                display: flex;
+                transform: translate3d(0, 0, 0);
+                transform-origin: 0 center;
+                transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
+                will-change: transform, opacity;
+                ${mixins.fullbleed()}
+                ${mixins.gradientDark()}
+            }
 
-                .wrapper {
-                    display: flex;
-                    transform: translate3d(0, 0, 0);
-                    transform-origin: 0 center;
-                    transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
-                    will-change: transform, opacity;
+            pl-menu {
+                width: 200px;
+            }
+
+            .views {
+                flex: 1;
+                position: relative;
+                perspective: 1000px;
+                margin: var(--gutter-size);
+                margin-left: 0;
+            }
+
+            .views > * {
+                will-change: opacity;
+                ${mixins.fullbleed()}
+            }
+
+            .views > :not(.showing) {
+                opacity: 0;
+                z-index: -1;
+                pointer-events: none;
+            }
+
+            .wrapper:not(.active),
+            :host(.dialog-open) .wrapper {
+                transform: translate3d(0, 0, -150px) rotateX(5deg);
+            }
+
+            @media (max-width: 700px) {
+                .views {
+                    transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
                     ${mixins.fullbleed()}
-                    ${mixins.gradientDark()}
-                }
-
-                pl-menu {
-                    width: 200px;
                 }
 
                 .views {
-                    flex: 1;
-                    position: relative;
-                    perspective: 1000px;
-                    margin: var(--gutter-size);
-                    margin-left: 0;
+                    margin: 0;
                 }
 
                 .views > * {
-                    will-change: opacity;
-                    ${mixins.fullbleed()}
+                    border-radius: 0;
                 }
 
-                .views > :not(.showing) {
+                :host([menu-open]) .views {
+                    transform: translate(200px, 0);
+                }
+
+                pl-menu {
+                    transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+                }
+
+                :host(:not([menu-open])) pl-menu {
                     opacity: 0;
-                    z-index: -1;
-                    pointer-events: none;
+                    transform: translate(-100px, 0);
                 }
+            }
 
-                .wrapper:not(.active),
-                :host(.dialog-open) .wrapper {
-                    transform: translate3d(0, 0, -150px) rotateX(5deg);
+            @media (min-width: 1200px) {
+                .wrapper {
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
+                    margin: auto;
+                    overflow: hidden;
+                    top: 20px;
+                    left: 20px;
+                    right: 20px;
+                    bottom: 20px;
+                    max-width: 1200px;
+                    max-height: 900px;
                 }
+            }
+        `
+    ];
 
-                @media (max-width: ${config.narrowWidth}px) {
-                    .views {
-                        transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                        ${mixins.fullbleed()}
-                    }
-
-                    .views {
-                        margin: 0;
-                    }
-
-                    .views > * {
-                        border-radius: 0;
-                    }
-
-                    :host([menu-open]) .views {
-                        transform: translate(200px, 0);
-                    }
-
-                    pl-menu {
-                        transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1),
-                            opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
-                    }
-
-                    :host(:not([menu-open])) pl-menu {
-                        opacity: 0;
-                        transform: translate(-100px, 0);
-                    }
-                }
-
-                @media (min-width: ${config.wideWidth}px) {
-                    .wrapper {
-                        border-radius: 8px;
-                        overflow: hidden;
-                        box-shadow: rgba(0, 0, 0, 0.5) 0 1px 3px;
-                        margin: auto;
-                        overflow: hidden;
-                        top: 20px;
-                        left: 20px;
-                        right: 20px;
-                        bottom: 20px;
-                        max-width: 1200px;
-                        max-height: 900px;
-                    }
-                }
-            </style>
-
+    render() {
+        return html`
             <pl-start id="startView"></pl-start>
 
             <div class="wrapper">

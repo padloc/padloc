@@ -2,7 +2,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../dialog";
 import { app } from "../init.js";
-import { element, html, query, listen } from "./base.js";
+import { element, html, css, query, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
@@ -32,79 +32,80 @@ export class Settings extends View {
         return !!app.account;
     }
 
+    static styles = [
+        shared,
+        css`
+            :host {
+                ${mixins.fullbleed()}
+                display: flex;
+                flex-direction: column;
+                background: var(--color-quaternary);
+                border-radius: var(--border-radius);
+            }
+
+            h1 {
+                display: block;
+                text-align: center;
+            }
+
+            .wrapper {
+                max-width: 500px;
+                margin: 0 auto;
+                padding: 0 8px 8px 8px;
+            }
+
+            button {
+                display: block;
+            }
+
+            .item {
+                width: 100%;
+                box-sizing: border-box;
+                margin: 8px 0;
+            }
+
+            .account {
+                font-size: 110%;
+                display: flex;
+                align-items: center;
+            }
+
+            pl-fingerprint {
+                width: 60px;
+                height: 60px;
+                border-radius: 100%;
+                border: solid 1px var(--border-color);
+                margin: 15px;
+            }
+
+            .account-info {
+                flex: 1;
+                min-width: 0;
+                padding-right: 18px;
+            }
+
+            .account-email {
+                ${mixins.ellipsis()}
+            }
+
+            .account-email {
+                font-weight: bold;
+                ${mixins.ellipsis()}
+            }
+
+            .account pl-icon {
+                width: 50px;
+                height: 50px;
+                margin: 5px;
+            }
+        `
+    ];
+
     render() {
         const { settings } = app;
         const account = app.account!;
 
         return html`
-            ${shared}
-
-            <style>
-                :host {
-                    ${mixins.fullbleed()}
-                    display: flex;
-                    flex-direction: column;
-                    background: var(--color-quaternary);
-                    border-radius: var(--border-radius);
-                }
-
-                h1 {
-                    display: block;
-                    text-align: center;
-                }
-
-                .wrapper {
-                    max-width: 500px;
-                    margin: 0 auto;
-                    padding: 0 8px 8px 8px;
-                }
-
-                button {
-                    display: block;
-                }
-
-                .item {
-                    width: 100%;
-                    box-sizing: border-box;
-                    margin: 8px 0;
-                }
-
-                .account {
-                    font-size: 110%;
-                    display: flex;
-                    align-items: center;
-                }
-
-                pl-fingerprint {
-                    width: 60px;
-                    height: 60px;
-                    border-radius: 100%;
-                    border: solid 1px var(--border-color);
-                    margin: 15px;
-                }
-
-                .account-info {
-                    flex: 1;
-                    min-width: 0;
-                    padding-right: 18px;
-                }
-
-                .account-email {
-                    ${mixins.ellipsis()}
-                }
-
-                .account-email {
-                    font-weight: bold;
-                    ${mixins.ellipsis()}
-                }
-
-                .account pl-icon {
-                    width: 50px;
-                    height: 50px;
-                    margin: 5px;
-                }
-            </style>
-
             <header class="narrow">
                 <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 

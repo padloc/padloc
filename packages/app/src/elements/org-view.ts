@@ -4,7 +4,7 @@ import { OrgMember, OrgRole, Group } from "@padloc/core/lib/org.js";
 import { shared, mixins } from "../styles";
 import { dialog, prompt, choose, confirm } from "../dialog.js";
 import { app, router } from "../init.js";
-import { element, html, property, query, observe } from "./base.js";
+import { element, html, css, property, query, observe } from "./base.js";
 import { View } from "./view.js";
 import { Input } from "./input.js";
 import { VaultDialog } from "./vault-dialog.js";
@@ -146,6 +146,69 @@ export class OrgView extends View {
         return !!this._org;
     }
 
+    static styles = [
+        shared,
+        css`
+            :host {
+                display: flex;
+                flex-direction: column;
+                background: var(--color-quaternary);
+                border-radius: var(--border-radius);
+            }
+
+            .wrapper {
+                position: relative;
+                width: 100%;
+                height: 100%;
+                max-width: 600px;
+                margin: 0 auto;
+            }
+
+            .subview {
+                position: relative;
+                ${mixins.fullbleed()}
+                ${mixins.scroll()}
+            }
+
+            header {
+                display: block;
+                border: none;
+            }
+
+            .header-inner {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+            .header-inner .title {
+                text-align: center;
+            }
+
+            header > .tabs {
+                margin: -10px;
+            }
+
+            .tabs .spacer {
+                padding: 0;
+            }
+
+            .new-button {
+                display: flex;
+                font-weight: bold;
+                align-items: center;
+                justify-content: center;
+                padding: 8px;
+            }
+
+            .new-button > pl-icon {
+                font-size: 80%;
+                width: 30px;
+                height: 30px;
+            }
+        `
+    ];
+
     render() {
         const org = this._org!;
         const isOwner = org.isOwner(app.account!);
@@ -160,49 +223,6 @@ export class OrgView extends View {
             : org.members;
 
         return html`
-            ${shared}
-
-            <style>
-                :host {
-                    display: flex;
-                    flex-direction: column;
-                    background: var(--color-quaternary);
-                    border-radius: var(--border-radius);
-                }
-
-                .wrapper {
-                    position: relative;
-                    width: 100%;
-                    height: 100%;
-                    max-width: 600px;
-                    margin: 0 auto;
-                }
-
-                .subview {
-                    position: relative;
-                    ${mixins.fullbleed()}
-                    ${mixins.scroll()}
-                }
-
-                header {
-                    display: block;
-                }
-
-                .header-inner {
-                    display: flex;
-                    align-items: center;
-                    margin-bottom: 10px;
-                }
-
-                .header-inner .title {
-                    text-align: center;
-                }
-
-                .tabs .spacer {
-                    padding: 0;
-                }
-            </style>
-
             <header>
                 <div class="header-inner narrow">
                     <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
@@ -250,6 +270,14 @@ export class OrgView extends View {
                             <pl-icon icon="cancel" class="tap" @click=${this._clearMembersFilter}></pl-icon>
                         </div>
                         <ul>
+                            <li
+                                class="new-button tap"
+                                @click=${this._createInvite}
+                                ?hidden=${!isOwner || members.length < 50}
+                            >
+                                <pl-icon icon="invite"></pl-icon>
+                                <div>${$l("Invite New Member")}</div>
+                            </li>
                             ${members.map(
                                 member => html`
                                     <li class="tap member" @click=${() => this._showMember(member)}>
@@ -257,8 +285,8 @@ export class OrgView extends View {
                                     </li>
                                 `
                             )}
-                            <li class="centering padded tap" @click=${this._createInvite} ?hidden=${!isOwner}>
-                                <pl-icon icon="invite"></pl-icon>
+                            <li class="new-button tap" @click=${this._createInvite} ?hidden=${!isOwner}>
+                                <pl-icon icon="add"></pl-icon>
                                 <div>${$l("Invite New Member")}</div>
                             </li>
                         </ul>
@@ -273,7 +301,7 @@ export class OrgView extends View {
                                     </li>
                                 `
                             )}
-                            <li class="centering padded tap" @click=${this._createGroup} ?hidden=${!isOwner}>
+                            <li class="new-button tap" @click=${this._createGroup} ?hidden=${!isOwner}>
                                 <pl-icon icon="add"></pl-icon>
                                 <div>${$l("New Group")}</div>
                             </li>
@@ -289,7 +317,7 @@ export class OrgView extends View {
                                     </li>
                                 `
                             )}
-                            <li class="centering padded tap" @click=${this._createVault}>
+                            <li class="new-button tap" @click=${this._createVault}>
                                 <pl-icon icon="add"></pl-icon>
                                 <div>${$l("New Vault")}</div>
                             </li>
@@ -305,17 +333,11 @@ export class OrgView extends View {
                                     </li>
                                 `
                             )}
-                            <li class="centering padded tap" @click=${this._createInvite}>
-                                <pl-icon icon="invite"></pl-icon>
+                            <li class="new-button tap" @click=${this._createInvite}>
+                                <pl-icon icon="add"></pl-icon>
                                 <div>${$l("Invite New Member")}</div>
                             </li>
                         </ul>
-                    </div>
-
-                    <div class="fabs" ?hidden=${!isOwner}>
-                        <div class="flex"></div>
-
-                        <pl-icon icon="invite" class="tap fab" @click=${() => this._createInvite()}></pl-icon>
                     </div>
                 </div>
             </main>

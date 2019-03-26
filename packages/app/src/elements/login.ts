@@ -1,8 +1,8 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { ErrorCode } from "@padloc/core/lib/error.js";
 import { app, router } from "../init.js";
-import { element, html, property, query } from "./base.js";
-import { StartForm, sharedStyles } from "./start-form.js";
+import { element, html, css, property, query } from "./base.js";
+import { StartForm } from "./start-form.js";
 import { Input } from "./input.js";
 import { PasswordInput } from "./password-input.js";
 import { LoadingButton } from "./loading-button.js";
@@ -35,29 +35,30 @@ export class Login extends StartForm {
         super.reset();
     }
 
+    static styles = [
+        ...StartForm.styles,
+        css`
+            .hint {
+                font-size: var(--font-size-tiny);
+                box-sizing: border-box;
+                transition: max-height 0.3s;
+                max-height: 100px;
+                margin: 40px 0 -20px 0;
+            }
+
+            button.signup {
+                background: none;
+                border: none;
+                height: auto;
+                line-height: normal;
+                font-weight: bold;
+                height: var(--row-height);
+            }
+        `
+    ];
+
     render() {
         return html`
-            ${sharedStyles}
-
-            <style>
-                .hint {
-                    font-size: var(--font-size-tiny);
-                    box-sizing: border-box;
-                    transition: max-height 0.3s;
-                    max-height: 100px;
-                    margin: 40px 0 -20px 0;
-                }
-
-                button.signup {
-                    background: none;
-                    border: none;
-                    height: auto;
-                    line-height: normal;
-                    font-weight: bold;
-                    height: var(--row-height);
-                }
-            </style>
-
             <div flex></div>
 
             <form>

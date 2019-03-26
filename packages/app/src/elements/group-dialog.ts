@@ -2,7 +2,7 @@ import { Org, OrgMember, Group } from "@padloc/core/lib/org.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app } from "../init.js";
 import { prompt } from "../dialog.js";
-import { element, html, property, query } from "./base.js";
+import { element, html, css, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { LoadingButton } from "./loading-button.js";
 import { Input } from "./input.js";
@@ -151,6 +151,25 @@ export class GroupDialog extends Dialog<InputType, void> {
         return !!this.org;
     }
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            .inner {
+                background: var(--color-quaternary);
+            }
+
+            pl-toggle-button {
+                display: block;
+                padding: 0 15px 0 0;
+            }
+
+            .delete-button {
+                color: var(--color-negative);
+                font-size: var(--font-size-default);
+            }
+        `
+    ];
+
     renderContent() {
         const org = this.org!;
         const memFilter = this._membersFilter.toLowerCase();
@@ -164,22 +183,6 @@ export class GroupDialog extends Dialog<InputType, void> {
         const canDelete = this.group && canEdit;
 
         return html`
-            <style>
-                .inner {
-                    background: var(--color-quaternary);
-                }
-
-                pl-toggle-button {
-                    display: block;
-                    padding: 0 15px 0 0;
-                }
-
-                .delete-button {
-                    color: var(--color-negative);
-                    font-size: var(--font-size-default);
-                }
-            </style>
-
             <header>
                 <pl-icon icon="group"></pl-icon>
                 <pl-input

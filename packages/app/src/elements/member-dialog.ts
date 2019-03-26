@@ -4,7 +4,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { mixins } from "../styles";
 import { app } from "../init.js";
 import { confirm, choose } from "../dialog.js";
-import { element, html, property, query } from "./base.js";
+import { element, html, css, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { LoadingButton } from "./loading-button.js";
 import "./icon.js";
@@ -288,6 +288,53 @@ export class MemberDialog extends Dialog<InputType, void> {
         return !!this.org && !!this.member;
     }
 
+    static styles = [
+        ...Dialog.styles,
+        css`
+            .inner {
+                background: var(--color-quaternary);
+            }
+
+            pl-toggle-button {
+                display: block;
+                padding: 0 15px 0 0;
+            }
+
+            .more-button {
+                font-size: var(--font-size-small);
+                align-self: flex-start;
+                width: 30px;
+                height: 30px;
+                margin-top: 5px;
+            }
+
+            .subheader {
+                margin: 8px;
+                font-weight: bold;
+                display: flex;
+                align-items: flex-end;
+                padding: 0 8px;
+                font-size: var(--font-size-small);
+            }
+
+            .subheader .permission {
+                width: 50px;
+                font-size: var(--font-size-tiny);
+                text-align: center;
+                ${mixins.ellipsis()}
+            }
+
+            .item {
+                display: flex;
+                align-items: center;
+            }
+
+            .item pl-toggle {
+                margin-right: 14px;
+            }
+        `
+    ];
+
     renderContent() {
         const org = this.org!;
         const member = this.member!;
@@ -296,50 +343,6 @@ export class MemberDialog extends Dialog<InputType, void> {
         const memberIsOwner = org.isOwner(member);
 
         return html`
-            <style>
-                .inner {
-                    background: var(--color-quaternary);
-                }
-
-                pl-toggle-button {
-                    display: block;
-                    padding: 0 15px 0 0;
-                }
-
-                .more-button {
-                    font-size: var(--font-size-small);
-                    align-self: flex-start;
-                    width: 30px;
-                    height: 30px;
-                    margin-top: 5px;
-                }
-
-                .subheader {
-                    margin: 8px;
-                    font-weight: bold;
-                    display: flex;
-                    align-items: flex-end;
-                    padding: 0 8px;
-                    font-size: var(--font-size-small);
-                }
-
-                .subheader .permission {
-                    width: 50px;
-                    font-size: var(--font-size-tiny);
-                    text-align: center;
-                    ${mixins.ellipsis()}
-                }
-
-                .item {
-                    display: flex;
-                    align-items: center;
-                }
-
-                .item pl-toggle {
-                    margin-right: 14px;
-                }
-            </style>
-
             <header>
                 <pl-member-item .member=${member} class="flex"></pl-member-item>
                 <pl-icon
