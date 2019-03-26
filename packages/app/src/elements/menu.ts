@@ -129,7 +129,7 @@ export class Menu extends BaseElement {
             </style>
 
             <div class="scroller">
-                <pl-logo></pl-logo>
+                <pl-logo reveal></pl-logo>
 
                 <nav>
                     <ul>

@@ -70,6 +70,7 @@ export class Signup extends StartForm {
         this._verifyEmailButton.stop();
         this._submitPasswordButton.stop();
         this._password = await generatePassphrase();
+        setTimeout(() => (this._logo.reveal = true), 500);
     }
 
     async goToStep(step = "") {

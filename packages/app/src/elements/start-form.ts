@@ -1,6 +1,7 @@
 import { shared, mixins } from "../styles";
-import { BaseElement, html } from "./base.js";
+import { BaseElement, html, query } from "./base.js";
 import { animateElement, animateCascade } from "../animation.js";
+import { Logo } from "./logo.js";
 import "./icon.js";
 
 export const sharedStyles = html`
@@ -17,11 +18,11 @@ export const sharedStyles = html`
         }
 
         :host, .wrapper {
-            ${mixins.fullbleed()}
-            ${mixins.scroll()}
             display: flex;
             flex-direction: column;
             align-items: center;
+            ${mixins.fullbleed()}
+            ${mixins.scroll()}
         }
 
         form {
@@ -35,7 +36,7 @@ export const sharedStyles = html`
         }
 
         pl-logo {
-            margin: 30px auto;
+            margin: 20px auto;
         }
 
         pl-loading-button {
@@ -62,6 +63,9 @@ export const sharedStyles = html`
 `;
 
 export abstract class StartForm extends BaseElement {
+    @query("pl-logo")
+    _logo: Logo;
+
     protected _animateIn(nodes: Iterable<Node | Element>) {
         return animateCascade(nodes, {
             animation: "reveal",
@@ -88,6 +92,7 @@ export abstract class StartForm extends BaseElement {
     reset() {
         this._animateIn(this.$$(".animate"));
         this.requestUpdate();
+        setTimeout(() => (this._logo.reveal = true), 500);
     }
 
     done() {
