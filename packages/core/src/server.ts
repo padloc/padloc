@@ -343,7 +343,7 @@ export class Context implements API {
                     const v = new EmailVerification(invite.email);
                     await v.init();
                     await this.storage.save(v);
-                    link += `?verify=${v.token}`;
+                    link += `?verify=${v.token}&email=${invite.email}`;
                 }
 
                 this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));

@@ -208,8 +208,8 @@ export class InviteDialog extends Dialog<Invite, void> {
 
             <div class="invite-text small" ?hidden=${!_enableActions}>
                 ${$l(
-                    "If you haven't received the confirmation code yet, please ask an " +
-                        "admin of the organization to provide it to you!"
+                    "If you haven't received the confirmation code yet, please ask the organization owner " +
+                        "to provide it to you!"
                 )}
             </div>
         `;

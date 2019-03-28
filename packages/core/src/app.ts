@@ -373,7 +373,6 @@ export class App extends EventEmitter {
 
     async fetchAccount() {
         const account = await this.api.getAccount();
-        // TODO: public key change?
         if (this.account) {
             account.privateKey = this.account.privateKey;
             account.signingKey = this.account.signingKey;
@@ -515,21 +514,7 @@ export class App extends EventEmitter {
                 }
             }
         });
-
-        // TODO: Update vault name
     }
-
-    // async archiveVault({ id }: { id: VaultID }): Promise<void> {
-    //     const vault = this.getVault(id)!;
-    //     await Promise.all([...vault.vaults].map(v => this.archiveVault(v)));
-    //     vault.archived = true;
-    //     vault.updated = new Date();
-    //     await this.syncVault(vault, false);
-    // }
-    //
-    // async unarchiveVault(vault: Vault | VaultInfo): Promise<void> {
-    //     await this.reinitializeVault(vault);
-    // }
 
     async loadVaults() {
         if (!this.account) {

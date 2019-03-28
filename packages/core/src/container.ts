@@ -25,7 +25,6 @@ export abstract class BaseContainer extends Serializable {
         }
 
         this.encryptionParams.iv = await getProvider().randomBytes(16);
-        // TODO: useful additional authenticated data?
         this.encryptionParams.additionalData = await getProvider().randomBytes(16);
 
         this.encryptedData = await getProvider().encrypt(this._key, data, this.encryptionParams);
