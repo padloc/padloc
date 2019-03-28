@@ -5,7 +5,8 @@ import {
     stringToBytes,
     Serializable,
     unmarshal,
-    marshal
+    marshal,
+    concatBytes
 } from "./encoding";
 import { getProvider, RSAPrivateKey, RSAPublicKey, RSAKeyParams, AESKeyParams, RSASigningParams } from "./crypto";
 import { SharedContainer } from "./container";
@@ -27,16 +28,16 @@ export class OrgMember extends Serializable {
     name = "";
     email = "";
     publicKey!: RSAPublicKey;
-    signedPublicKey!: Uint8Array;
+    signature!: Uint8Array;
     vaults: {
         id: VaultID;
         readonly: boolean;
     }[] = [];
     role: OrgRole = OrgRole.Member;
 
-    constructor({ id, name, email, publicKey, signedPublicKey, role }: Partial<OrgMember> = {}) {
+    constructor({ id, name, email, publicKey, signature, role }: Partial<OrgMember> = {}) {
         super();
-        Object.assign(this, { id, name, email, publicKey, signedPublicKey });
+        Object.assign(this, { id, name, email, publicKey, signature });
         this.role = typeof role !== "undefined" && role in OrgRole ? role : OrgRole.Member;
     }
 
@@ -44,7 +45,7 @@ export class OrgMember extends Serializable {
         return {
             ...super.toRaw(),
             publicKey: bytesToBase64(this.publicKey),
-            signedPublicKey: bytesToBase64(this.signedPublicKey)
+            signature: bytesToBase64(this.signature)
         };
     }
 
@@ -55,18 +56,18 @@ export class OrgMember extends Serializable {
             typeof this.email === "string" &&
             this.role in OrgRole &&
             this.publicKey instanceof Uint8Array &&
-            this.signedPublicKey instanceof Uint8Array &&
+            this.signature instanceof Uint8Array &&
             this.vaults.every(({ id, readonly }: any) => typeof id === "string" && typeof readonly === "boolean")
         );
     }
 
-    fromRaw({ id, name, email, publicKey, signedPublicKey, role, vaults }: any) {
+    fromRaw({ id, name, email, publicKey, signature, role, vaults }: any) {
         return super.fromRaw({
             id,
             name,
             email,
             publicKey: base64ToBytes(publicKey),
-            signedPublicKey: base64ToBytes(signedPublicKey),
+            signature: base64ToBytes(signature),
             role,
             vaults
         });
@@ -283,29 +284,33 @@ export class Org extends SharedContainer implements Storable {
         }
     }
 
-    async sign(obj: OrgMember): Promise<OrgMember> {
+    async sign(member: OrgMember): Promise<OrgMember> {
         if (!this.privateKey) {
             throw "Organisation needs to be unlocked first.";
         }
 
-        obj.signedPublicKey = await getProvider().sign(this.privateKey, obj.publicKey, this.signingParams);
-        return obj;
+        member.signature = await getProvider().sign(
+            this.privateKey,
+            concatBytes(stringToBytes(member.id), stringToBytes(member.email), member.publicKey),
+            this.signingParams
+        );
+        return member;
     }
 
-    async verify(obj: OrgMember): Promise<void> {
-        if (!obj.signedPublicKey) {
+    async verify(member: OrgMember): Promise<void> {
+        if (!member.signature) {
             throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH, "No signed public key provided!");
         }
 
         const verified = await getProvider().verify(
             this.publicKey,
-            obj.signedPublicKey,
-            obj.publicKey,
+            member.signature,
+            concatBytes(stringToBytes(member.id), stringToBytes(member.email), member.publicKey),
             this.signingParams
         );
 
         if (!verified) {
-            throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH, `Failed to verify public key of ${obj.name}!`);
+            throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH, `Failed to verify public key of ${member.name}!`);
         }
     }
 
