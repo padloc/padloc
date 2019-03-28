@@ -1,10 +1,10 @@
-import "@polymer/paper-spinner/paper-spinner-lite.js";
 import { FilterParams } from "@padloc/core/lib/app.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app, router } from "../init.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, property, html, css, listen } from "./base.js";
 import "./logo.js";
+import "./spinner.js";
 
 @element("pl-menu")
 export class Menu extends BaseElement {
@@ -123,8 +123,6 @@ export class Menu extends BaseElement {
                 width: 20px;
                 height: 20px;
                 margin: 5px;
-                --paper-spinner-color: currentColor;
-                --paper-spinner-stroke-width: 2px;
             }
         `
     ];
@@ -201,7 +199,7 @@ export class Menu extends BaseElement {
                 <pl-icon icon="lock" class="tap" @click=${() => app.lock()}></pl-icon>
                 <pl-icon icon="refresh" class="tap" @click=${() => app.synchronize()}></pl-icon>
                 <div class="flex"></div>
-                <paper-spinner-lite .active=${app.syncing} class="syncing"></paper-spinner-lite>
+                <pl-spinner .active=${app.syncing} class="syncing"></pl-spinner>
             </div>
         `;
     }

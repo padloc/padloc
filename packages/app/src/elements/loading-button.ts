@@ -1,7 +1,7 @@
-import "@polymer/paper-spinner/paper-spinner-lite.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, css, property, listen } from "./base.js";
 import "./icon.js";
+import "./spinner.js";
 
 type ButtonState = "idle" | "loading" | "success" | "fail";
 
@@ -35,6 +35,7 @@ export class LoadingButton extends BaseElement {
 
             button > * {
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+                will-change: transform;
                 ${mixins.absoluteCenter()}
             }
 
@@ -63,10 +64,9 @@ export class LoadingButton extends BaseElement {
                 font-size: 120%;
             }
 
-            paper-spinner-lite {
-                line-height: normal;
-                --paper-spinner-color: currentColor;
-                --paper-spinner-stroke-width: 2px;
+            pl-spinner {
+                width: 30px;
+                height: 30px;
             }
         `
     ];
@@ -77,7 +77,7 @@ export class LoadingButton extends BaseElement {
             <button type="button" class="${state}" tabindex="${noTab ? "-1" : ""}">
                 <div class="label"><slot></slot></div>
 
-                <paper-spinner-lite active="${state == "loading"}" class="spinner"></paper-spinner-lite>
+                <pl-spinner .active="${state == "loading"}" class="spinner"></pl-spinner>
 
                 <pl-icon icon="check" class="icon-success"></pl-icon>
 
