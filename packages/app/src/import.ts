@@ -121,9 +121,9 @@ export async function asPadlockLegacy(data: string, password: string): Promise<V
     const records = unmarshal(bytesToString(await container.getData())) as any[];
     const items = records
         .filter(({ removed }) => !removed)
-        .map(record => {
+        .map(async record => {
             return {
-                id: uuid(),
+                id: await uuid(),
                 name: record.name,
                 fields: record.fields,
                 tags: record.tags || [record.category],
@@ -134,7 +134,7 @@ export async function asPadlockLegacy(data: string, password: string): Promise<V
             };
         });
 
-    return items;
+    return Promise.all(items);
 }
 
 /*

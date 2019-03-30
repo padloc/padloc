@@ -61,8 +61,8 @@ export class Vault extends SharedContainer implements Storable {
         await this.setData(this.items.toBytes());
     }
 
-    merge(vault: Vault) {
-        this.items.merge(vault.items);
+    async merge(vault: Vault) {
+        await this.items.merge(vault.items);
         this.name = vault.name;
         this.revision = this.items.revision;
     }

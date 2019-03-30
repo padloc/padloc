@@ -235,7 +235,7 @@ export class App extends EventEmitter {
         } catch (e) {}
         this.state.device.fromRaw(getDeviceInfo());
         if (!this.state.device.id) {
-            this.state.device.id = uuid();
+            this.state.device.id = await uuid();
         }
         await this.storage.save(this.state);
 
@@ -624,7 +624,7 @@ export class App extends EventEmitter {
         if (localVault) {
             result = localVault.clone();
             await result.unlock(this.account);
-            result.merge(remoteVault);
+            await result.merge(remoteVault);
         } else {
             result = remoteVault;
         }
@@ -696,7 +696,7 @@ export class App extends EventEmitter {
             { name: $l("Password"), value: "", type: "password" },
             { name: $l("URL"), value: "", type: "url" }
         ];
-        const item = createVaultItem(name || "", fields, tags);
+        const item = await createVaultItem(name || "", fields, tags);
         if (this.account) {
             item.updatedBy = this.account.id;
         }
@@ -734,7 +734,7 @@ export class App extends EventEmitter {
     }
 
     async moveItems(items: { item: VaultItem; vault: Vault }[], target: Vault) {
-        const newItems = items.map(i => ({ ...i.item, id: uuid() }));
+        const newItems = await Promise.all(items.map(async i => ({ ...i.item, id: await uuid() })));
         await this.addItems(newItems, target);
         await this.deleteItems(items);
         return newItems;

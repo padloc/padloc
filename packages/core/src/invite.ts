@@ -64,7 +64,7 @@ export class Invite extends SimpleContainer {
     }
 
     async initialize(org: Org, invitor: Account, duration = 12) {
-        this.id = uuid();
+        this.id = await uuid();
         this.expires = new Date(Date.now() + 1000 * 60 * 60 * duration);
         this.secret = bytesToHex(await getProvider().randomBytes(4));
         this._key = org.invitesKey;

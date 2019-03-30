@@ -151,9 +151,9 @@ export interface VaultItem extends CollectionItem {
     attachments: AttachmentInfo[];
 }
 
-export function createVaultItem(name: string, fields?: Field[], tags?: Tag[]): VaultItem {
+export async function createVaultItem(name: string, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
     return {
-        id: uuid(),
+        id: await uuid(),
         name: name,
         fields: fields || [],
         tags: tags || [],

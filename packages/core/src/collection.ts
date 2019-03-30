@@ -49,7 +49,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         }
     }
 
-    merge(coll: Collection<T>) {
+    async merge(coll: Collection<T>) {
         const changes: CollectionChanges<T> = {
             added: [],
             updated: [],
@@ -107,7 +107,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
             this.revision = coll.revision;
         } else {
             // We've made changes locally, so we need to updated the revision
-            this.revision = { id: uuid(), date: new Date(), mergedFrom: [this.revision.id, coll.revision.id] };
+            this.revision = { id: await uuid(), date: new Date(), mergedFrom: [this.revision.id, coll.revision.id] };
         }
 
         return changes;

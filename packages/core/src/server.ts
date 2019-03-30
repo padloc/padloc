@@ -76,7 +76,7 @@ export class Context implements API {
                 if (!cachedFakeAuthParams.has(email)) {
                     const auth = new Auth(email);
                     auth.keyParams.salt = await getProvider().randomBytes(32);
-                    auth.account = uuid();
+                    auth.account = await uuid();
 
                     // We'll have to cache our fake authentication params since returning
                     // different values on subsequent requests would give away our clever
@@ -129,7 +129,7 @@ export class Context implements API {
         const acc = await this.storage.get(Account, account);
 
         const session = new Session();
-        session.id = uuid();
+        session.id = await uuid();
         session.account = account;
         session.device = this.device;
         session.key = srp.K!;
@@ -173,11 +173,11 @@ export class Context implements API {
             }
         }
 
-        account.id = uuid();
+        account.id = await uuid();
         auth.account = account.id;
 
         const vault = new Vault();
-        vault.id = uuid();
+        vault.id = await uuid();
         vault.name = "My Vault";
         vault.owner = account.id;
         vault.created = new Date();
@@ -257,7 +257,7 @@ export class Context implements API {
             throw new Err(ErrorCode.BAD_REQUEST, "Account has to included as member with Owner role");
         }
 
-        org.id = uuid();
+        org.id = await uuid();
 
         await this.storage.save(org);
 
@@ -463,7 +463,7 @@ export class Context implements API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        vault.id = uuid();
+        vault.id = await uuid();
         vault.owner = account.id;
         vault.created = vault.updated = new Date();
 
@@ -564,7 +564,7 @@ export class Context implements API {
     //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
     //     }
     //
-    //     // att.id = uuid();
+    //     // att.id = await uuid();
     //
     //     const currentUsage = await this.attachmentStorage.getUsage(vault);
     //

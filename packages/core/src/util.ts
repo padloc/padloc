@@ -1,12 +1,26 @@
 import { getProvider } from "./crypto";
+import { bytesToHex } from "./encoding";
 
-// RFC4122-compliant uuid generator
-export function uuid(): string {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-        var r = (Math.random() * 16) | 0,
-            v = c == "x" ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
+export async function uuid(): Promise<string> {
+    const bytes = await getProvider().randomBytes(16);
+
+    // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    // Canonical representation
+    // XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+    return [
+        bytesToHex(bytes.slice(0, 4)),
+        "-",
+        bytesToHex(bytes.slice(4, 6)),
+        "-",
+        bytesToHex(bytes.slice(6, 8)),
+        "-",
+        bytesToHex(bytes.slice(8, 10)),
+        "-",
+        bytesToHex(bytes.slice(10, 16))
+    ].join("");
 }
 
 export const chars = {
@@ -25,16 +39,16 @@ export const charSets = {
 };
 
 //* Creates a random string with a given _length_ comprised of given set or characters
-export function randomString(length = 32, charSet = charSets.full) {
-    let rnd = new Uint8Array(1);
+export async function randomString(length = 32, charSet = charSets.full) {
+    const provider = getProvider();
     let str = "";
     while (str.length < length) {
-        window.crypto.getRandomValues(rnd);
+        const [rnd] = await provider.randomBytes(1);
         // Prevent modulo bias by rejecting values larger than the highest muliple of `charSet.length`
-        if (rnd[0] > 255 - (256 % charSet.length)) {
+        if (rnd > 255 - (256 % charSet.length)) {
             continue;
         }
-        str += charSet[rnd[0] % charSet.length];
+        str += charSet[rnd % charSet.length];
     }
     return str;
 }

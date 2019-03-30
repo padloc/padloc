@@ -88,13 +88,12 @@ export class Account extends PBES2Container implements Storable {
         );
     }
 
-    fromRaw({ id, created, updated, email, name, mainVault, sharedVaults, publicKey, orgs, ...rest }: any) {
+    fromRaw({ id, created, updated, email, name, mainVault, publicKey, orgs, ...rest }: any) {
         Object.assign(this, {
             id,
             email,
             name,
             mainVault,
-            sharedVaults,
             created: new Date(created),
             updated: new Date(updated),
             publicKey: base64ToBytes(publicKey),
