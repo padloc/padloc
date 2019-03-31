@@ -174,6 +174,7 @@ export class Context implements API {
         }
 
         account.id = await uuid();
+        account.revision = await uuid();
         auth.account = account.id;
 
         const vault = new Vault();
@@ -194,8 +195,22 @@ export class Context implements API {
         return account;
     }
 
-    async updateAccount({ name, email, orgs, publicKey, keyParams, encryptionParams, encryptedData }: Account) {
+    async updateAccount({
+        name,
+        email,
+        orgs,
+        publicKey,
+        keyParams,
+        encryptionParams,
+        encryptedData,
+        revision
+    }: Account) {
         const { account } = this._requireAuth();
+
+        if (revision !== account.revision) {
+            throw new Err(ErrorCode.OUTDATED_REVISION);
+        }
+        account.revision = await uuid();
 
         const nameChanged = account.name !== name;
 
@@ -258,6 +273,7 @@ export class Context implements API {
         }
 
         org.id = await uuid();
+        org.revision = await uuid();
 
         await this.storage.save(org);
 
@@ -294,7 +310,8 @@ export class Context implements API {
         members,
         groups,
         vaults,
-        invites
+        invites,
+        revision
     }: Org) {
         const { account } = this._requireAuth();
 
@@ -306,6 +323,11 @@ export class Context implements API {
         if (!isAdmin) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Only admins can make changes to organizations!");
         }
+
+        if (revision !== org.revision) {
+            throw new Err(ErrorCode.OUTDATED_REVISION);
+        }
+        org.revision = await uuid();
 
         if (
             !isOwner &&
@@ -437,9 +459,9 @@ export class Context implements API {
         if (revision !== vault.revision) {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
+        vault.revision = await uuid();
 
         Object.assign(vault, { keyParams, encryptionParams, accessors, encryptedData });
-        vault.revision = await uuid();
         vault.updated = new Date();
         await this.storage.save(vault);
 

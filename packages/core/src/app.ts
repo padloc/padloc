@@ -379,7 +379,20 @@ export class App extends EventEmitter {
     async updateAccount(transform: (account: Account) => Promise<any>) {
         let account = this.account!.clone();
         await transform(account);
-        account = await this.api.updateAccount(account);
+
+        try {
+            account = await this.api.updateAccount(account);
+        } catch (e) {
+            // If organizaton has been updated since last fetch,
+            // get the current version and then retry
+            if (e.code === ErrorCode.OUTDATED_REVISION) {
+                await this.fetchAccount();
+                await this.updateAccount(transform);
+            } else {
+                throw e;
+            }
+        }
+
         account.privateKey = this.account!.privateKey;
         account.signingKey = this.account!.signingKey;
         this.state.account = account;
@@ -740,19 +753,33 @@ export class App extends EventEmitter {
         if (!this.account) {
             return;
         }
-        for (const { id } of this.account.orgs) {
-            try {
-                const org = fetch ? await this.api.getOrg(id) : await this.storage.get(Org, id);
-                this._orgs.set(id, org);
-                fetch && (await this.storage.save(org));
-            } catch (e) {}
-        }
+        try {
+            await Promise.all(this.account.orgs.map(({ id }) => this.loadOrg(id, fetch)));
+        } catch (e) {}
     }
 
-    async updateOrg(id: OrgID, transform: (org: Org) => Promise<any>) {
+    async loadOrg(id: OrgID, fetch = false) {
+        const org = fetch ? await this.api.getOrg(id) : await this.storage.get(Org, id);
+        this._orgs.set(id, org);
+        fetch && (await this.storage.save(org));
+        return org;
+    }
+
+    async updateOrg(id: OrgID, transform: (org: Org) => Promise<any>): Promise<Org> {
         let org = this.getOrg(id)!.clone();
         await transform(org);
-        org = await this.api.updateOrg(org);
+        try {
+            org = await this.api.updateOrg(org);
+        } catch (e) {
+            // If organizaton has been updated since last fetch,
+            // get the current version and then retry
+            if (e.code === ErrorCode.OUTDATED_REVISION) {
+                await this.loadOrg(id, true);
+                return this.updateOrg(id, transform);
+            } else {
+                throw e;
+            }
+        }
         this._orgs.set(org.id, org);
         await this.storage.save(org);
         this.dispatch("org-changed", { org });

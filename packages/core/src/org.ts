@@ -112,6 +112,7 @@ export class Org extends SharedContainer implements Storable {
     groups: Group[] = [];
     vaults: { id: VaultID; name: string }[] = [];
     invites: Invite[] = [];
+    revision: string = "";
 
     toRaw() {
         return {
@@ -124,19 +125,21 @@ export class Org extends SharedContainer implements Storable {
         return (
             super.validate() &&
             (typeof this.name === "string" &&
+                typeof this.revision === "string" &&
                 typeof this.id === "string" &&
                 this.publicKey instanceof Uint8Array &&
                 this.vaults.every(({ id, name }: any) => typeof id === "string" && typeof name === "string"))
         );
     }
 
-    fromRaw({ id, name, owner, publicKey, members, groups, vaults, invites, signingParams, ...rest }: any) {
+    fromRaw({ id, name, owner, revision, publicKey, members, groups, vaults, invites, signingParams, ...rest }: any) {
         this.signingParams.fromRaw(signingParams);
 
         Object.assign(this, {
             id,
             name,
             owner,
+            revision,
             publicKey: base64ToBytes(publicKey),
             members: members.map((m: any) => new OrgMember().fromRaw(m)),
             groups: groups.map((g: any) => new Group().fromRaw(g)),

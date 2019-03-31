@@ -29,6 +29,7 @@ export class Account extends PBES2Container implements Storable {
     mainVault: VaultID = "";
     sessions: SessionInfo[] = [];
     orgs: { id: OrgID; signature: Uint8Array }[] = [];
+    revision: string = "";
 
     get locked(): boolean {
         return !this.privateKey;
@@ -81,6 +82,7 @@ export class Account extends PBES2Container implements Storable {
                 typeof this.email === "string" &&
                 typeof this.name === "string" &&
                 typeof this.mainVault === "string" &&
+                typeof this.revision === "string" &&
                 this.created instanceof Date &&
                 this.updated instanceof Date &&
                 this.publicKey instanceof Uint8Array &&
@@ -88,12 +90,13 @@ export class Account extends PBES2Container implements Storable {
         );
     }
 
-    fromRaw({ id, created, updated, email, name, mainVault, publicKey, orgs, ...rest }: any) {
+    fromRaw({ id, created, updated, email, name, mainVault, publicKey, orgs, revision, ...rest }: any) {
         Object.assign(this, {
             id,
             email,
             name,
             mainVault,
+            revision,
             created: new Date(created),
             updated: new Date(updated),
             publicKey: base64ToBytes(publicKey),
