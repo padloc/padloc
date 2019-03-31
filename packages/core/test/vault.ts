@@ -19,7 +19,7 @@ suite("Vault", () => {
         // set accessors (this will generate the shared key and encrypt it with the respective public keys)
         await vault.updateAccessors(accessors);
 
-        const testItem = createVaultItem("test");
+        const testItem = await createVaultItem("test");
         vault.items.update(testItem);
 
         await vault.commit();

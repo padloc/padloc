@@ -78,7 +78,7 @@ suite("Container", () => {
 
         for (const each of accessors) {
             // Make sure no information gets lost during serialization / deserialization
-            container = new SharedContainer().fromRaw(container.toRaw());
+            container = container.clone();
 
             // Decrypt shared key via private key
             await container.unlock(each);
@@ -90,6 +90,8 @@ suite("Container", () => {
 
         // Lets remove one accessor
         await container.updateAccessors(accessors.slice(1));
+
+        container = container.clone();
 
         // Trying to unlock with the wrong accessor should throw an error
         await assertReject(assert, async () => container.unlock(accessors[0]), ErrorCode.MISSING_ACCESS);

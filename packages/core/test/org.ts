@@ -1,5 +1,6 @@
 import { Org } from "../src/org";
 import { Account } from "../src/account";
+import { assertResolve } from "../src/spec/spec";
 import { assert } from "chai";
 import { suite, test } from "mocha";
 
@@ -15,11 +16,10 @@ suite("Org", () => {
 
         assert.instanceOf(org.privateKey, Uint8Array);
         assert.instanceOf(org.publicKey, Uint8Array);
+        assert.isTrue(org.isOwner(account));
         assert.isTrue(org.isAdmin(account));
         assert.ok(org.getMember(account));
-        assert.isTrue(await org.verify(org.getMember(account)!));
-        assert.isTrue(await org.verify(org.admins));
-        assert.isTrue(await org.verify(org.everyone));
+        assertResolve(assert, async () => await org.verify(org.getMember(account)!), "Member should verify");
     });
 
     test("Load/Unlock Org", async () => {
@@ -31,9 +31,7 @@ suite("Org", () => {
         assert.instanceOf(org.publicKey, Uint8Array);
         assert.isTrue(org.isAdmin(account));
         assert.ok(org.getMember(account));
-        assert.isTrue(await org.verify(org.getMember(account)!));
-        assert.isTrue(await org.verify(org.admins));
-        assert.isTrue(await org.verify(org.everyone));
+        assertResolve(assert, async () => await org.verify(org.getMember(account)!), "Member should verify");
 
         await org.unlock(account);
 

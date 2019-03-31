@@ -29,7 +29,7 @@ export enum ErrorCode {
     EMAIL_VERIFICATION_FAILED = "email_verification_failed",
     INVALID_RESPONSE = "invalid_response",
     INVALID_REQUEST = "invalid_request",
-    MERGE_CONFLICT = "merge_conflict",
+    OUTDATED_REVISION = "merge_conflict",
     MAX_REQUEST_SIZE_EXCEEDED = "max_request_size_exceeded",
     STORAGE_QUOTA_EXCEEDED = "storage_quota_exceeded",
 

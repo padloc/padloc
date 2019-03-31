@@ -434,16 +434,12 @@ export class Context implements API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        if (
-            revision &&
-            vault.revision &&
-            revision.id !== vault.revision.id &&
-            (!revision.mergedFrom || !revision.mergedFrom.includes(vault.revision.id))
-        ) {
-            throw new Err(ErrorCode.MERGE_CONFLICT);
+        if (revision !== vault.revision) {
+            throw new Err(ErrorCode.OUTDATED_REVISION);
         }
 
-        Object.assign(vault, { keyParams, encryptionParams, accessors, encryptedData, revision });
+        Object.assign(vault, { keyParams, encryptionParams, accessors, encryptedData });
+        vault.revision = await uuid();
         vault.updated = new Date();
         await this.storage.save(vault);
 
@@ -466,6 +462,7 @@ export class Context implements API {
         vault.id = await uuid();
         vault.owner = account.id;
         vault.created = vault.updated = new Date();
+        vault.revision = await uuid();
 
         org.vaults.push({ id: vault.id, name: vault.name });
 

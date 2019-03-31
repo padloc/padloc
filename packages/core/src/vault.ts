@@ -1,7 +1,6 @@
 import { SharedContainer } from "./container";
 import { Storable } from "./storage";
 import { VaultItemCollection } from "./item";
-import { Revision } from "./collection";
 import { Account, AccountID } from "./account";
 import { OrgID } from "./org";
 
@@ -15,9 +14,8 @@ export class Vault extends SharedContainer implements Storable {
     owner: AccountID = "";
     created = new Date(0);
     updated = new Date(0);
-    archived?: Date;
     items = new VaultItemCollection();
-    revision?: Revision;
+    revision: string = "";
 
     toRaw() {
         return super.toRaw(["items"]);
@@ -30,8 +28,7 @@ export class Vault extends SharedContainer implements Storable {
                 typeof this.name === "string" &&
                 (!this.org || (typeof this.org.id === "string" && typeof this.org.name === "string")) &&
                 typeof this.owner === "string" &&
-                (typeof this.archived === "undefined" || this.archived instanceof Date) &&
-                (typeof this.revision === "undefined" || typeof this.revision === "object"))
+                typeof this.revision === "string")
         );
     }
 
@@ -43,8 +40,7 @@ export class Vault extends SharedContainer implements Storable {
             org,
             revision,
             created: new Date(created),
-            updated: new Date(updated),
-            archived: archived ? new Date(archived) : undefined
+            updated: new Date(updated)
         });
 
         return super.fromRaw(rest);
@@ -61,10 +57,11 @@ export class Vault extends SharedContainer implements Storable {
         await this.setData(this.items.toBytes());
     }
 
-    async merge(vault: Vault) {
-        await this.items.merge(vault.items);
+    merge(vault: Vault): boolean {
+        this.items.merge(vault.items);
         this.name = vault.name;
-        this.revision = this.items.revision;
+        this.revision = vault.revision;
+        return this.items.lastMerged !== vault.items.lastMerged;
     }
 
     toString() {

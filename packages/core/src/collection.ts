@@ -1,5 +1,4 @@
 import { Serializable } from "./encoding";
-import { uuid } from "./util";
 
 export interface CollectionItem {
     id: string;
@@ -12,14 +11,8 @@ export interface CollectionChanges<T> {
     removed: T[];
 }
 
-export interface Revision {
-    id: string;
-    date: Date;
-    mergedFrom?: [string, string];
-}
-
 export class Collection<T extends CollectionItem> extends Serializable implements Iterable<T> {
-    revision: Revision = { id: "", date: new Date(0) };
+    lastMerged: Date = new Date(0);
 
     get size() {
         return this._items.size;
@@ -49,7 +42,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         }
     }
 
-    async merge(coll: Collection<T>) {
+    merge(coll: Collection<T>) {
         const changes: CollectionChanges<T> = {
             added: [],
             updated: [],
@@ -66,7 +59,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
             // not updated since last merge, that means someone else removed
             // it (as opposed to us adding it) and we need to delete it
             if (!coll.get(item.id)) {
-                if (item.updated! <= this.revision.date) {
+                if (item.updated! <= this.lastMerged) {
                     this.remove(item);
                     changes.removed.push(item);
                 } else {
@@ -81,7 +74,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
             if (!existing) {
                 // Item does not exist locally. that means either it has been added remotely
                 // or removed locally. Let's find out which...
-                if (item.updated! > this.revision.date) {
+                if (item.updated! > this.lastMerged) {
                     // item has been added or updated after last merge so we'll keep it
                     // even if we may have deleted it locally
                     this._items.set(item.id, item);
@@ -103,11 +96,11 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         }
 
         if (!forwardChanges.added.length && !forwardChanges.updated.length && !forwardChanges.removed.length) {
-            // No changes occurred locally, so we'll just overwrite the revision with the remote one
-            this.revision = coll.revision;
+            // No changes occurred locally, so we'll just overwrite the lastMerged date with the remote one
+            this.lastMerged = coll.lastMerged;
         } else {
-            // We've made changes locally, so we need to updated the revision
-            this.revision = { id: await uuid(), date: new Date(), mergedFrom: [this.revision.id, coll.revision.id] };
+            // We've made changes locally, so we need to update the lastMerged property
+            this.lastMerged = new Date();
         }
 
         return changes;
@@ -115,7 +108,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
 
     toRaw() {
         return {
-            revision: this.revision,
+            lastMerged: this.lastMerged,
             items: Array.from(this)
         };
     }
@@ -127,7 +120,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
             }
         }
         this._items = new Map(raw.items.map((item: any) => [item.id, item] as [string, T]));
-        this.revision = { ...raw.revision, date: new Date(raw.revision.date) };
+        this.lastMerged = new Date(raw.lastMerged);
         return this;
     }
 

@@ -81,6 +81,7 @@ export function appSpec(): Spec {
             const name = "My Shared Vault";
             const vault = await app.createVault(name, app.orgs[0], [{ id: app.account!.id, readonly: false }]);
             assert.equal(vault.name, name);
+            await app.synchronize();
             assert.equal(app.vaults.length, 2);
         });
 
@@ -93,9 +94,11 @@ export function appSpec(): Spec {
             assert.equal(invite.email, otherUser.email);
             const inviteMessage = messenger.lastMessage(otherUser.email) as InviteCreatedMessage;
             assert.instanceOf(inviteMessage, InviteCreatedMessage);
-            const linkPattern = new RegExp(`${clientUrl}/invite/${org.id}/${invite.id}\\?verify=(.*)`);
+            const linkPattern = new RegExp(`${clientUrl}/invite/${org.id}/${invite.id}\\?verify=(.*)&email=(.*)`);
             assert.match(inviteMessage.link, linkPattern);
-            const [, verify] = inviteMessage.link.match(linkPattern)!;
+            const [, verify, email] = inviteMessage.link.match(linkPattern)!;
+
+            assert.equal(email, invite.email);
 
             await otherApp.signup({ ...otherUser, verify });
             invite = (await otherApp.getInvite(org.id, invite.id))!;
@@ -107,7 +110,6 @@ export function appSpec(): Spec {
             assert.isTrue(app.orgs[0].isMember(otherApp.account!));
             await otherApp.synchronize();
             assert.equal(otherApp.orgs.length, 1);
-            assert.equal(otherApp.vaults.length, 2);
             assert.isTrue(otherApp.orgs[0].isMember(otherApp.account!));
 
             const addedMessage = messenger.lastMessage(otherUser.email) as MemberAddedMessage;

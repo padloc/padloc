@@ -140,21 +140,15 @@ export class App extends EventEmitter {
     }
 
     get vaults() {
-        return [...this._vaults.values()]
-            .filter(v => !v.archived)
-            .sort((a, b) => {
-                const nameA = a.toString();
-                const nameB = b.toString();
-                return b === this.mainVault || nameA > nameB ? 1 : a === this.mainVault || nameA < nameB ? -1 : 0;
-            });
+        return [...this._vaults.values()].sort((a, b) => {
+            const nameA = a.toString();
+            const nameB = b.toString();
+            return b === this.mainVault || nameA > nameB ? 1 : a === this.mainVault || nameA < nameB ? -1 : 0;
+        });
     }
 
     get orgs() {
         return [...this._orgs.values()];
-    }
-
-    get archivedVaults() {
-        return [...this._vaults.values()].filter(v => !!v.archived);
     }
 
     get filter() {
@@ -604,35 +598,20 @@ export class App extends EventEmitter {
             }
         } catch (e) {
             return null;
-            // if (e.code === ErrorCode.NOT_FOUND) {
-            //     if (localVault) {
-            //         await this.storage.delete(localVault);
-            //     }
-            //     this._vaults.delete(id);
-            //     return null;
-            // } else if (e.code === ErrorCode.MISSING_ACCESS) {
-            //     // User does not current have access to vault, this can happen
-            //     // if the vault has not been synchronized since the user has
-            //     // been added to it. We can safely ignore this.
-            //     console.log("Can't access remote vault");
-            //     return null;
-            // } else {
-            //     throw e;
-            // }
         }
 
         if (localVault) {
             result = localVault.clone();
             await result.unlock(this.account);
-            await result.merge(remoteVault);
+            result.merge(remoteVault);
         } else {
             result = remoteVault;
         }
 
         const org = result.org && this.getOrg(result.org.id);
 
-        // Don't push updates if vault belongs to an org and
-        // the accounts membership is currently suspended
+        // Skip update if
+        // - Vault belongs to an org and account membership is suspended
         if (!org || org.getMember(this.account)!.role !== OrgRole.Suspended) {
             if (org) {
                 await this.account.verifyOrg(org);
@@ -652,9 +631,10 @@ export class App extends EventEmitter {
             try {
                 await this.api.updateVault(result);
             } catch (e) {
-                if (e.code === ErrorCode.MERGE_CONFLICT) {
-                    // If there is a merge conflict (probably because somebody else
-                    // did a push while we were sycing), start over.
+                // The server will reject the update if the vault revision does
+                // not match the current revision on the server, in which case we'll
+                // have to fetch the current vault version and try again.
+                if (e.code === ErrorCode.OUTDATED_REVISION) {
                     return this._syncVault({ id });
                 }
                 throw e;
