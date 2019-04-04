@@ -28,7 +28,7 @@ export class Account extends PBES2Container implements Storable {
     signingKey!: HMACKey;
     mainVault: VaultID = "";
     sessions: SessionInfo[] = [];
-    orgs: { id: OrgID; signature: Uint8Array }[] = [];
+    orgs: OrgID[] = [];
     revision: string = "";
 
     get locked(): boolean {
@@ -61,18 +61,9 @@ export class Account extends PBES2Container implements Storable {
     }
 
     lock() {
+        super.lock();
         delete this.privateKey;
-    }
-
-    toRaw(): any {
-        return {
-            ...super.toRaw(["privateKey", "signingKey"]),
-            publicKey: bytesToBase64(this.publicKey),
-            orgs: this.orgs.map(({ signature, ...rest }) => ({
-                signature: bytesToBase64(signature),
-                ...rest
-            }))
-        };
+        delete this.signingKey;
     }
 
     validate() {
@@ -86,8 +77,15 @@ export class Account extends PBES2Container implements Storable {
                 this.created instanceof Date &&
                 this.updated instanceof Date &&
                 this.publicKey instanceof Uint8Array &&
-                this.orgs.every(org => org && typeof org.id === "string" && org.signature instanceof Uint8Array))
+                this.orgs.every(id => typeof id === "string"))
         );
+    }
+
+    toRaw(): any {
+        return {
+            ...super.toRaw(["privateKey", "signingKey"]),
+            publicKey: bytesToBase64(this.publicKey)
+        };
     }
 
     fromRaw({ id, created, updated, email, name, mainVault, publicKey, orgs, revision, ...rest }: any) {
@@ -100,10 +98,7 @@ export class Account extends PBES2Container implements Storable {
             created: new Date(created),
             updated: new Date(updated),
             publicKey: base64ToBytes(publicKey),
-            orgs: orgs.map(({ signature, ...rest }: any) => ({
-                signature: base64ToBytes(signature),
-                ...rest
-            }))
+            orgs
         });
         return super.fromRaw(rest);
     }
@@ -119,36 +114,30 @@ export class Account extends PBES2Container implements Storable {
         return this.name || this.email;
     }
 
-    async addOrg({ id, publicKey }: { id: string; publicKey: Uint8Array }) {
-        const signature = await getProvider().sign(
+    async signOrg({ id, publicKey }: { id: string; publicKey: Uint8Array }) {
+        return getProvider().sign(this.signingKey, concatBytes(stringToBytes(id), publicKey), new HMACParams());
+    }
+
+    async verifyOrg(org: Org): Promise<void> {
+        if (!this.signingKey) {
+            throw "Account needs to be unlocked first";
+        }
+
+        const member = org.getMember(this);
+
+        if (!member) {
+            throw new Err(ErrorCode.VERIFICATION_ERROR, "Account is not a member.");
+        }
+
+        const verified = await getProvider().verify(
             this.signingKey,
-            concatBytes(stringToBytes(id), publicKey),
+            member.orgSignature,
+            concatBytes(stringToBytes(org.id), org.publicKey),
             new HMACParams()
         );
 
-        const existing = this.orgs.find(org => org.id === id);
-
-        if (existing) {
-            Object.assign(existing, { id, signature });
-        } else {
-            this.orgs.push({ id, signature });
-        }
-    }
-
-    async verifyOrg({ id, publicKey, name }: Org): Promise<void> {
-        const signed = this.orgs.find(org => org.id === id);
-
-        const verified =
-            signed &&
-            (await getProvider().verify(
-                this.signingKey,
-                signed.signature,
-                concatBytes(stringToBytes(id), publicKey),
-                new HMACParams()
-            ));
-
         if (!verified) {
-            throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH, `Failed to verify public key of ${name}!`);
+            throw new Err(ErrorCode.VERIFICATION_ERROR, `Failed to verify public key of ${org.name}!`);
         }
     }
 }

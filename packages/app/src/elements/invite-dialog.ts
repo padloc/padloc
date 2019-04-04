@@ -30,18 +30,15 @@ export class InviteDialog extends Dialog<Invite, void> {
     private _memberDialog: MemberDialog;
 
     @property()
-    private _verified: boolean | undefined;
-    @property()
     private _errorMessage: string = "";
 
     private get _enableActions(): boolean {
-        return !!this.invite && !this.invite.expired && !this.invite.accepted && this._verified !== false;
+        return !!this.invite && !this.invite.expired && !this.invite.accepted;
     }
 
     async show(invite: Invite): Promise<void> {
         this._errorMessage = "";
         this.invite = invite;
-        this._verified = await invite.verify();
         return super.show();
     }
 
@@ -125,22 +122,19 @@ export class InviteDialog extends Dialog<Invite, void> {
         const { email, expires, expired, org, accepted, purpose } = this.invite!;
         const forMe = email === app.account!.email;
 
-        const status =
-            this._verified === false
-                ? { icon: "error", class: "warning", text: $l("The invite could not be validated.") }
-                : expired
-                ? { icon: "time", class: "warning", text: $l("This invite has expired") }
-                : accepted
-                ? { icon: "check", class: "", text: $l("Accepted") }
-                : {
-                      icon: "time",
-                      class: "",
-                      text: until(
-                          (async () => {
-                              return $l("expires {0}", await formatDateFromNow(expires));
-                          })()
-                      )
-                  };
+        const status = expired
+            ? { icon: "time", class: "warning", text: $l("This invite has expired") }
+            : accepted
+            ? { icon: "check", class: "", text: $l("Accepted") }
+            : {
+                  icon: "time",
+                  class: "",
+                  text: until(
+                      (async () => {
+                          return $l("expires {0}", await formatDateFromNow(expires));
+                      })()
+                  )
+              };
 
         return html`
             <div class="invite">
@@ -258,7 +252,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         return html`
             <pl-loading-button
                 ?hidden=${!accepted}
-                ?disabled=${!accepted || expired || !this._verified}
+                ?disabled=${!accepted || expired}
                 id="confirmButton"
                 class="tap primary"
                 @click=${() => this._confirm()}
@@ -307,7 +301,6 @@ export class InviteDialog extends Dialog<Invite, void> {
         try {
             await app.deleteInvite(this.invite!);
             this.invite = await app.createInvite(org!, this.invite!.email, this.invite!.purpose);
-            this._verified = await this.invite.verify();
             this._resendButton.success();
         } catch (e) {
             this._resendButton.fail();

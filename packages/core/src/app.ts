@@ -250,7 +250,7 @@ export class App extends EventEmitter {
     }
 
     async lock() {
-        this.account!.lock();
+        [this.account!, ...this.orgs, ...this.vaults].forEach(each => each.lock());
         this._vaults.clear();
         this.dispatch("lock");
     }
@@ -456,10 +456,9 @@ export class App extends EventEmitter {
                         email: account.email,
                         name: account.name,
                         publicKey: account.publicKey,
+                        orgSignature: await account.signOrg(org),
                         role: OrgRole.Owner
                     });
-
-                    await this.updateAccount(account => account.addOrg(org));
                 });
             }
         }
@@ -627,7 +626,7 @@ export class App extends EventEmitter {
         // - Vault belongs to an org and account membership is suspended
         if (!org || org.getMember(this.account)!.role !== OrgRole.Suspended) {
             if (org) {
-                await this.account.verifyOrg(org);
+                await this.account!.verifyOrg(org);
                 const members = org.getMembersForVault(result);
                 await org.verifyAll(members);
                 await result.updateAccessors(members);
@@ -742,9 +741,10 @@ export class App extends EventEmitter {
     async createOrg(name: string): Promise<Org> {
         let org = new Org();
         org.name = name;
-        await org.initialize(this.account!);
         org = await this.api.createOrg(org);
-        await this.updateAccount(async account => account.addOrg(org));
+        await org.initialize(this.account!);
+        org = await this.api.updateOrg(org);
+        await this.fetchAccount();
         await this.loadOrgs(true);
         return this.getOrg(org.id)!;
     }
@@ -754,7 +754,7 @@ export class App extends EventEmitter {
             return;
         }
         try {
-            await Promise.all(this.account.orgs.map(({ id }) => this.loadOrg(id, fetch)));
+            await Promise.all(this.account.orgs.map(id => this.loadOrg(id, fetch)));
         } catch (e) {}
     }
 
@@ -891,12 +891,12 @@ export class App extends EventEmitter {
         const success = await invite.accept(this.account!, secret);
         if (success) {
             await this.api.acceptInvite(invite);
-            await this.updateAccount(account => account.addOrg(invite.org!));
         }
         return success;
     }
 
     async confirmInvite(invite: Invite): Promise<OrgMember> {
+        await invite.verifyInvitee();
         await this.updateOrg(invite.org!.id, async (org: Org) => {
             await org.unlock(this.account!);
             await org.addOrUpdateMember(invite.invitee!);

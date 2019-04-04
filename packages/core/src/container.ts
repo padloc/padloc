@@ -56,6 +56,10 @@ export abstract class BaseContainer extends Serializable {
     }
 
     abstract unlock(secret: unknown): Promise<void>;
+
+    lock() {
+        delete this._key;
+    }
 }
 
 export class SimpleContainer extends BaseContainer {

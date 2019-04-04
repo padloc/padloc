@@ -7,7 +7,7 @@ import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
 import { ErrorCode } from "../error";
 import { MemoryAttachmentStorage } from "../attachment";
-import { Spec, assertReject } from "./spec";
+import { Spec, assertResolve, assertReject } from "./spec";
 
 export function appSpec(): Spec {
     console.log("testing app");
@@ -75,6 +75,11 @@ export function appSpec(): Spec {
             assert.ok(org.id, "Organization ID should be set.");
             assert.isTrue(org.isOwner(app.account!), "Account should be organization owner.");
             assert.equal(app.orgs.length, 1);
+            await assertResolve(
+                assert,
+                () => app.account!.verifyOrg(app.orgs[0]),
+                "Organization should be verified successfully."
+            );
         });
 
         test("Create Vault", async () => {
@@ -102,10 +107,10 @@ export function appSpec(): Spec {
 
             await otherApp.signup({ ...otherUser, verify });
             invite = (await otherApp.getInvite(org.id, invite.id))!;
-            await otherApp.acceptInvite(invite, secret);
+            assert.isTrue(await otherApp.acceptInvite(invite, secret));
             invite = (await app.getInvite(org.id, invite.id))!;
             invite.secret = secret;
-            assert.isTrue(await invite.verify());
+            assert.isTrue(await invite.verifyInvitee());
             await app.confirmInvite(invite);
             assert.isTrue(app.orgs[0].isMember(otherApp.account!));
             await otherApp.synchronize();

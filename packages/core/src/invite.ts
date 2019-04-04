@@ -1,9 +1,19 @@
 import { getProvider, PBKDF2Params, HMACParams, HMACKey } from "./crypto";
 import { SimpleContainer } from "./container";
-import { stringToBytes, bytesToString, bytesToHex, bytesToBase64, base64ToBytes, marshal, unmarshal } from "./encoding";
+import {
+    stringToBytes,
+    bytesToString,
+    bytesToHex,
+    bytesToBase64,
+    base64ToBytes,
+    marshal,
+    unmarshal,
+    concatBytes
+} from "./encoding";
 import { Account, AccountID } from "./account";
 import { Org, OrgID } from "./org";
 import { uuid } from "./util";
+import { Err, ErrorCode } from "./error";
 
 export type InvitePurpose = "join_org" | "confirm_membership";
 
@@ -18,15 +28,18 @@ export class Invite extends SimpleContainer {
         id: OrgID;
         name: string;
         publicKey: Uint8Array;
-        signedPublicKey: Uint8Array;
+        signature: Uint8Array;
     };
+
     invitee: {
         id: AccountID;
         name: string;
         email: string;
         publicKey: Uint8Array;
-        signedPublicKey: Uint8Array;
+        signature: Uint8Array;
+        orgSignature: Uint8Array;
     } | null = null;
+
     invitedBy!: {
         id: AccountID;
         name: string;
@@ -65,13 +78,47 @@ export class Invite extends SimpleContainer {
 
     async initialize(org: Org, invitor: Account, duration = 12) {
         this.id = await uuid();
-        this.expires = new Date(Date.now() + 1000 * 60 * 60 * duration);
+        this.invitedBy = { id: invitor.id, email: invitor.email, name: invitor.name };
+
+        // Generate secret
         this.secret = bytesToHex(await getProvider().randomBytes(4));
+        // Set expiration time (12 hours from now)
+        this.expires = new Date(Date.now() + 1000 * 60 * 60 * duration);
+
+        // Encrypt secret and expiration date (the expiration time is also stored/transmitted
+        // in plain text, encrypting it will allow verifying it wasn't tempered with later)
         this._key = org.invitesKey;
         await this.setData(stringToBytes(marshal({ secret: this.secret, expires: this.expires })));
+
+        // Initialize signing params
         this.signingKeyParams.salt = await getProvider().randomBytes(16);
-        this.org = await this._sign({ id: org.id, name: org.name, publicKey: org.publicKey });
-        this.invitedBy = { id: invitor.id, email: invitor.email, name: invitor.name };
+
+        // Create org signature using key derived from secret (see `_getSigningKey`)
+        this.org = {
+            id: org.id,
+            name: org.name,
+            publicKey: org.publicKey,
+            signature: await this._sign(concatBytes(stringToBytes(org.id), org.publicKey))
+        };
+    }
+
+    async unlock(key: Uint8Array) {
+        await super.unlock(key);
+        const { secret, expires } = unmarshal(bytesToString(await this.getData()));
+        this.secret = secret;
+
+        // Verify that expiration time has not been tempered with
+        if (this.expires.getTime() !== new Date(expires).getTime()) {
+            throw new Err(ErrorCode.VERIFICATION_ERROR);
+        }
+
+        this.expires = new Date(expires);
+    }
+
+    lock() {
+        super.lock();
+        delete this.secret;
+        delete this._signingKey;
     }
 
     validate() {
@@ -116,12 +163,13 @@ export class Invite extends SimpleContainer {
             org: org && {
                 ...org,
                 publicKey: base64ToBytes(org.publicKey),
-                signedPublicKey: base64ToBytes(org.signedPublicKey)
+                signature: base64ToBytes(org.signature)
             },
             invitee: invitee && {
                 ...invitee,
                 publicKey: base64ToBytes(invitee.publicKey),
-                signedPublicKey: base64ToBytes(invitee.signedPublicKey)
+                signature: base64ToBytes(invitee.signature),
+                orgSignature: base64ToBytes(invitee.orgSignature)
             },
             invitedBy,
             created: new Date(created),
@@ -136,48 +184,68 @@ export class Invite extends SimpleContainer {
             org: this.org && {
                 ...this.org,
                 publicKey: bytesToBase64(this.org.publicKey),
-                signedPublicKey: bytesToBase64(this.org.signedPublicKey)
+                signature: bytesToBase64(this.org.signature)
             },
             invitee: this.invitee && {
                 ...this.invitee,
                 publicKey: bytesToBase64(this.invitee.publicKey),
-                signedPublicKey: bytesToBase64(this.invitee.signedPublicKey)
+                signature: bytesToBase64(this.invitee.signature),
+                orgSignature: bytesToBase64(this.invitee.orgSignature)
             }
         };
     }
 
     async accept(account: Account, secret: string): Promise<boolean> {
         this.secret = secret;
-        const verified = this.org && (await this._verify(this.org));
-        if (verified) {
-            this.invitee = await this._sign({
-                id: account.id,
-                name: account.name,
-                email: account.email,
-                publicKey: account.publicKey
-            });
-            return true;
-        } else {
+
+        // Verify org signature
+        if (!(await this.verifyOrg())) {
             this.secret = "";
             return false;
         }
+
+        this.invitee = {
+            id: account.id,
+            name: account.name,
+            email: account.email,
+            publicKey: account.publicKey,
+            // this is used by the organization owner to verify the invitees public key
+            signature: await this._sign(
+                concatBytes(stringToBytes(account.id), stringToBytes(account.email), account.publicKey)
+            ),
+            // this is used by member later to verify the organization public key
+            orgSignature: await account.signOrg(this.org)
+        };
+
+        return true;
     }
 
-    async verify(): Promise<boolean | undefined> {
-        if (!this.secret || !this.org || !this.invitee) {
-            return undefined;
+    async verifyOrg(): Promise<boolean> {
+        if (!this.org) {
+            throw "Invite needs to be initialized first!";
         }
-        return (await this._verify(this.org)) && (await this._verify(this.invitee));
+
+        return (
+            this.expires > new Date() &&
+            this._verify(this.org.signature, concatBytes(stringToBytes(this.org.id), this.org.publicKey))
+        );
     }
 
-    async unlock(key: Uint8Array) {
-        await super.unlock(key);
-        const { secret, expires } = unmarshal(bytesToString(await this.getData()));
-        this.secret = secret;
-        this.expires = new Date(expires);
+    async verifyInvitee(): Promise<boolean> {
+        if (!this.invitee) {
+            throw "Invite needs to be accepted first!";
+        }
+
+        return (
+            this.expires > new Date() &&
+            this._verify(
+                this.invitee.signature,
+                concatBytes(stringToBytes(this.invitee.id), stringToBytes(this.invitee.email), this.invitee.publicKey)
+            )
+        );
     }
 
-    private async _getKey() {
+    private async _getSigningKey() {
         if (!this._signingKey) {
             this._signingKey = (await getProvider().deriveKey(
                 stringToBytes(this.secret),
@@ -187,12 +255,11 @@ export class Invite extends SimpleContainer {
         return this._signingKey;
     }
 
-    private async _sign<T extends { publicKey: Uint8Array }>(obj: T): Promise<T & { signedPublicKey: Uint8Array }> {
-        const signedPublicKey = await getProvider().sign(await this._getKey(), obj.publicKey, this.signingParams);
-        return Object.assign(obj, { signedPublicKey });
+    private async _sign(val: Uint8Array): Promise<Uint8Array> {
+        return getProvider().sign(await this._getSigningKey(), val, this.signingParams);
     }
 
-    private async _verify(obj: { publicKey: Uint8Array; signedPublicKey: Uint8Array }): Promise<boolean> {
-        return await getProvider().verify(await this._getKey(), obj.signedPublicKey, obj.publicKey, this.signingParams);
+    private async _verify(sig: Uint8Array, val: Uint8Array): Promise<boolean> {
+        return await getProvider().verify(await this._getSigningKey(), sig, val, this.signingParams);
     }
 }

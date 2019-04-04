@@ -195,16 +195,7 @@ export class Context implements API {
         return account;
     }
 
-    async updateAccount({
-        name,
-        email,
-        orgs,
-        publicKey,
-        keyParams,
-        encryptionParams,
-        encryptedData,
-        revision
-    }: Account) {
+    async updateAccount({ name, email, publicKey, keyParams, encryptionParams, encryptedData, revision }: Account) {
         const { account } = this._requireAuth();
 
         if (revision !== account.revision) {
@@ -214,12 +205,12 @@ export class Context implements API {
 
         const nameChanged = account.name !== name;
 
-        Object.assign(account, { name, email, orgs, publicKey, keyParams, encryptionParams, encryptedData });
+        Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData });
         account.updated = new Date();
         await this.storage.save(account);
 
         if (nameChanged) {
-            for (const { id } of account.orgs) {
+            for (const id of account.orgs) {
                 const org = await this.storage.get(Org, id);
                 org.getMember(account)!.name = name;
                 await this.storage.save(org);
@@ -251,7 +242,7 @@ export class Context implements API {
         auth.account = account.id;
 
         // Suspend memberships for all orgs that the account is not the owner of
-        for (const { id } of account.orgs) {
+        for (const id of account.orgs) {
             const org = await this.storage.get(Org, id);
             if (!org.isOwner(account)) {
                 const member = org.getMember(account)!;
@@ -268,20 +259,11 @@ export class Context implements API {
     async createOrg(org: Org) {
         const { account } = this._requireAuth();
 
-        if (!org.isOwner(account)) {
-            throw new Err(ErrorCode.BAD_REQUEST, "Account has to included as member with Owner role");
-        }
-
         org.id = await uuid();
         org.revision = await uuid();
+        org.creator = account.id;
 
         await this.storage.save(org);
-
-        const vault = new Vault();
-        vault.name = $l("Main Vault");
-        vault.org = { id: org.id, name: org.name };
-
-        await this.createVault(vault);
 
         return org;
     }
@@ -291,7 +273,7 @@ export class Context implements API {
 
         const org = await this.storage.get(Org, id);
 
-        if (!org.isMember(account)) {
+        if (org.creator !== account.id && !org.isMember(account)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
 
@@ -317,8 +299,8 @@ export class Context implements API {
 
         const org = await this.storage.get(Org, id);
 
-        const isAdmin = org.isAdmin(account);
-        const isOwner = org.isOwner(account);
+        const isOwner = org.creator === account.id || org.isOwner(account);
+        const isAdmin = isOwner || org.isAdmin(account);
 
         if (!isAdmin) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Only admins can make changes to organizations!");
@@ -375,9 +357,12 @@ export class Context implements API {
         // Added members
         for (const member of members) {
             if (!org.isMember(member)) {
-                // new member
+                const acc = await this.storage.get(Account, member.id);
+                acc.orgs.push(org.id);
+                await this.storage.save(acc);
 
                 if (member.id !== account.id) {
+                    console.log("send added message");
                     this.messenger.send(
                         member.email,
                         new MemberAddedMessage(org, `${this.config.clientUrl}/org/${org.id}`)
@@ -390,7 +375,7 @@ export class Context implements API {
         for (const { id } of org.members) {
             if (!org.members.some(m => m.id === id)) {
                 const acc = await this.storage.get(Account, id);
-                acc.orgs = acc.orgs.filter(o => o.id !== org.id);
+                acc.orgs = acc.orgs.filter(id => id !== org.id);
                 await this.storage.save(acc);
             }
         }

@@ -29,15 +29,16 @@ export class OrgMember extends Serializable {
     email = "";
     publicKey!: RSAPublicKey;
     signature!: Uint8Array;
+    orgSignature!: Uint8Array;
     vaults: {
         id: VaultID;
         readonly: boolean;
     }[] = [];
     role: OrgRole = OrgRole.Member;
 
-    constructor({ id, name, email, publicKey, signature, role }: Partial<OrgMember> = {}) {
+    constructor({ id, name, email, publicKey, signature, orgSignature, role }: Partial<OrgMember> = {}) {
         super();
-        Object.assign(this, { id, name, email, publicKey, signature });
+        Object.assign(this, { id, name, email, publicKey, signature, orgSignature });
         this.role = typeof role !== "undefined" && role in OrgRole ? role : OrgRole.Member;
     }
 
@@ -45,7 +46,8 @@ export class OrgMember extends Serializable {
         return {
             ...super.toRaw(),
             publicKey: bytesToBase64(this.publicKey),
-            signature: bytesToBase64(this.signature)
+            signature: bytesToBase64(this.signature),
+            orgSignature: bytesToBase64(this.orgSignature)
         };
     }
 
@@ -57,17 +59,19 @@ export class OrgMember extends Serializable {
             this.role in OrgRole &&
             this.publicKey instanceof Uint8Array &&
             this.signature instanceof Uint8Array &&
+            this.orgSignature instanceof Uint8Array &&
             this.vaults.every(({ id, readonly }: any) => typeof id === "string" && typeof readonly === "boolean")
         );
     }
 
-    fromRaw({ id, name, email, publicKey, signature, role, vaults }: any) {
+    fromRaw({ id, name, email, publicKey, signature, orgSignature, role, vaults }: any) {
         return super.fromRaw({
             id,
             name,
             email,
             publicKey: base64ToBytes(publicKey),
             signature: base64ToBytes(signature),
+            orgSignature: base64ToBytes(orgSignature),
             role,
             vaults
         });
@@ -103,6 +107,7 @@ export type OrgID = string;
 
 export class Org extends SharedContainer implements Storable {
     id: OrgID = "";
+    creator: AccountID = "";
     name: string = "";
     publicKey!: RSAPublicKey;
     privateKey!: RSAPrivateKey;
@@ -117,7 +122,7 @@ export class Org extends SharedContainer implements Storable {
     toRaw() {
         return {
             ...super.toRaw(["privateKey", "invitesKey"]),
-            publicKey: bytesToBase64(this.publicKey)
+            publicKey: this.publicKey && bytesToBase64(this.publicKey)
         };
     }
 
@@ -127,20 +132,19 @@ export class Org extends SharedContainer implements Storable {
             (typeof this.name === "string" &&
                 typeof this.revision === "string" &&
                 typeof this.id === "string" &&
-                this.publicKey instanceof Uint8Array &&
                 this.vaults.every(({ id, name }: any) => typeof id === "string" && typeof name === "string"))
         );
     }
 
-    fromRaw({ id, name, owner, revision, publicKey, members, groups, vaults, invites, signingParams, ...rest }: any) {
+    fromRaw({ id, name, creator, revision, publicKey, members, groups, vaults, invites, signingParams, ...rest }: any) {
         this.signingParams.fromRaw(signingParams);
 
         Object.assign(this, {
             id,
             name,
-            owner,
+            creator,
             revision,
-            publicKey: base64ToBytes(publicKey),
+            publicKey: publicKey && base64ToBytes(publicKey),
             members: members.map((m: any) => new OrgMember().fromRaw(m)),
             groups: groups.map((g: any) => new Group().fromRaw(g)),
             invites: invites.map((g: any) => new Invite().fromRaw(g)),
@@ -238,14 +242,24 @@ export class Org extends SharedContainer implements Storable {
         this.invites = this.invites.filter(inv => inv.id !== id);
     }
 
-    async initialize({ id, name, email, publicKey }: Account) {
+    async initialize(account: Account) {
         // Update access to keypair
-        await this.updateAccessors([{ id, publicKey }]);
+        await this.updateAccessors([account]);
 
         // Generate key pair used for signing members
         await this.generateKeys();
 
-        const member = await this.sign(new OrgMember({ id, name, email, publicKey, role: OrgRole.Owner }));
+        const orgSignature = await account.signOrg(this);
+        const member = await this.sign(
+            new OrgMember({
+                id: account.id,
+                name: account.name,
+                email: account.email,
+                publicKey: account.publicKey,
+                orgSignature,
+                role: OrgRole.Owner
+            })
+        );
         this.members.push(member);
     }
 
@@ -287,6 +301,13 @@ export class Org extends SharedContainer implements Storable {
         }
     }
 
+    lock() {
+        super.lock();
+        delete this.privateKey;
+        delete this.invitesKey;
+        this.invites.forEach(invite => invite.lock);
+    }
+
     async sign(member: OrgMember): Promise<OrgMember> {
         if (!this.privateKey) {
             throw "Organisation needs to be unlocked first.";
@@ -302,7 +323,7 @@ export class Org extends SharedContainer implements Storable {
 
     async verify(member: OrgMember): Promise<void> {
         if (!member.signature) {
-            throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH, "No signed public key provided!");
+            throw new Err(ErrorCode.VERIFICATION_ERROR, "No signed public key provided!");
         }
 
         const verified = await getProvider().verify(
@@ -313,7 +334,7 @@ export class Org extends SharedContainer implements Storable {
         );
 
         if (!verified) {
-            throw new Err(ErrorCode.PUBLIC_KEY_MISMATCH, `Failed to verify public key of ${member.name}!`);
+            throw new Err(ErrorCode.VERIFICATION_ERROR, `Failed to verify public key of ${member.name}!`);
         }
     }
 
@@ -327,12 +348,14 @@ export class Org extends SharedContainer implements Storable {
         name,
         email,
         publicKey,
+        orgSignature,
         role
     }: {
         id: string;
         name: string;
         email: string;
         publicKey: Uint8Array;
+        orgSignature: Uint8Array;
         role?: OrgRole;
     }) {
         if (!this.privateKey) {
@@ -344,10 +367,10 @@ export class Org extends SharedContainer implements Storable {
         const existing = this.members.find(m => m.id === id);
 
         if (existing) {
-            Object.assign(existing, { name, email, publicKey, role });
+            Object.assign(existing, { name, email, publicKey, orgSignature, role });
             await this.sign(existing);
         } else {
-            this.members.push(await this.sign(new OrgMember({ id, name, email, publicKey, role })));
+            this.members.push(await this.sign(new OrgMember({ id, name, email, publicKey, orgSignature, role })));
         }
     }
 }

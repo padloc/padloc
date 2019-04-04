@@ -19,6 +19,7 @@ suite("Org", () => {
         assert.isTrue(org.isOwner(account));
         assert.isTrue(org.isAdmin(account));
         assert.ok(org.getMember(account));
+        assertResolve(assert, async () => await account.verifyOrg(org), "Org should verify");
         assertResolve(assert, async () => await org.verify(org.getMember(account)!), "Member should verify");
     });
 
