@@ -2,38 +2,61 @@ import { Server } from "./server";
 import { DeviceInfo } from "./platform";
 import { EventEmitter } from "./event-target";
 
+/** RPC request object */
 export interface Request {
+    /** Name of the method call */
     method: string;
+    /** Arguments for the method */
     params?: any[];
+    /** Data used to authenticate the request */
     auth?: Authentication;
+    /** Info about the device the request is coming from */
     device?: DeviceInfo;
 }
 
+/** RPC response object */
 export interface Response {
+    /** The result of the RPC call */
     result: any;
+    /** Error info, if an error occurred while processing the request */
     error?: Error;
+    /** Data used to authenticate the response */
     auth?: Authentication;
 }
 
+/** Authentication data */
 export interface Authentication {
+    /** The id of the [[Session]] used for authentication */
     session: string;
+    /** A time stamp of the request/response time */
     time: string;
+    /** The signature used to verify the authentiation */
     signature: string;
 }
 
+/** Error info */
 export interface Error {
+    /** Error code */
     code: number | string;
+    /** Error message */
     message: string;
 }
 
+/** Generic interface for sending [[Request]]s */
 export interface Sender {
     send(req: Request, progress?: RequestProgress): Promise<Response>;
 }
 
+/** Generic interface for receiving [[Request]]s and processing them into a [[Response]] */
 export interface Receiver {
     listen(handler: (req: Request) => Promise<Response>): void;
 }
 
+/**
+ * Stub implementation of the [[Sender]] interface, passing requests directly
+ * into a [[Server]] instance.  this is useful for testing, where client and
+ * server instances are managed by the same process
+ */
 export class DirectSender implements Sender {
     constructor(private server: Server) {}
 

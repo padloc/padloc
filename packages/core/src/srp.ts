@@ -18,28 +18,42 @@ function b2i(b: Uint8Array): BigInteger {
     return new BigInteger(bytesToHex(b), 16);
 }
 
+/**
+ * High-level interface for the client side
+ */
 export class Client {
+    /** Verifier value, available after calling [[initialize]] */
     get v() {
         return this._v ? i2b(this._v) : null;
     }
 
+    /** Client-side random initializer, available after calling [[initialize]] */
     get A() {
         return this._A ? i2b(this._A) : null;
     }
 
+    /** Common session key, available after calling [[initialize]] and [[setB]] */
     get K() {
         return this._K ? i2b(this._K) : null;
     }
 
+    /**
+     * First value used to verify a successful key exchange, available after
+     * calling [[initialize]] and [[setB]]
+     */
     get M1() {
         return this._M1 ? i2b(this._M1) : null;
     }
 
+    /**
+     * Second value used to verify a successful key exchange, available after
+     * calling [[initialize]] and [[setB]]
+     */
     get M2() {
         return this._M2 ? i2b(this._M2) : null;
     }
 
-    private _srp: SRP;
+    private _srp: Core;
     private _x?: BigInteger;
     private _v?: BigInteger;
     private _a?: BigInteger;
@@ -50,16 +64,21 @@ export class Client {
     private _M2?: BigInteger;
 
     constructor(length: SRPGroupLength = 4096) {
-        this._srp = new SRP(length);
+        this._srp = new Core(length);
     }
 
-    async initialize(secret: Uint8Array) {
-        this._x = b2i(secret);
+    /** Initialize client using the given secret `x`, generating [[v]] and [[A]] */
+    async initialize(x: Uint8Array) {
+        this._x = b2i(x);
         this._v = this._srp.v(this._x);
         this._a = b2i(await getProvider().randomBytes(32));
         this._A = this._srp.A(this._a);
     }
 
+    /**
+     * Apply [[Server.B]] value, calculating [[K]], [[M1]] and [[M2]].
+     * Should only be called after [[initialize]] has been called.
+     */
     async setB(B: Uint8Array) {
         if (!this._x || !this._a || !this._A) {
             throw "not initialized";
@@ -67,7 +86,7 @@ export class Client {
         this._B = b2i(B);
         this._K = await this._getKey();
         this._M1 = await this._srp.M1(this._A, this._B, this._K);
-        this._M2 = await this._srp.M1(this._A, this._M1, this._K);
+        this._M2 = await this._srp.M2(this._A, this._M1, this._K);
     }
 
     private async _getKey(): Promise<BigInteger> {
@@ -87,23 +106,33 @@ export class Client {
 }
 
 export class Server {
+    /** Server-side random initializer, available after calling [[initialize]] */
     get B() {
         return this._B ? i2b(this._B) : null;
     }
 
+    /** Common session key, available after calling [[initialize]] and [[setA]] */
     get K() {
         return this._K ? i2b(this._K) : null;
     }
 
+    /**
+     * First value used to verify a successful key exchange, available after
+     * calling [[initialize]] and [[setA]]
+     */
     get M1() {
         return this._M1 ? i2b(this._M1) : null;
     }
 
+    /**
+     * Second value used to verify a successful key exchange, available after
+     * calling [[initialize]] and [[setA]]
+     */
     get M2() {
         return this._M2 ? i2b(this._M2) : null;
     }
 
-    private _srp: SRP;
+    private _srp: Core;
     private _v?: BigInteger;
     private _b?: BigInteger;
     private _B?: BigInteger;
@@ -113,15 +142,20 @@ export class Server {
     private _M2?: BigInteger;
 
     constructor(length: SRPGroupLength = 4096) {
-        this._srp = new SRP(length);
+        this._srp = new Core(length);
     }
 
-    async initialize(verifier: Uint8Array) {
-        this._v = b2i(verifier);
+    /** Initialize server using the given verfifier `v`. Generates [[B]]. */
+    async initialize(v: Uint8Array) {
+        this._v = b2i(v);
         this._b = b2i(await getProvider().randomBytes(32));
         this._B = await this._srp.B(this._v, this._b);
     }
 
+    /**
+     * Apply [[Client.A]] value, calculating [[K]], [[M1]] and [[M2]].
+     * Should only be called after [[initialize]] has been called.
+     */
     async setA(A: Uint8Array) {
         if (!this._v || !this._b || !this._B) {
             throw "not initialized";
@@ -129,7 +163,7 @@ export class Server {
         this._A = b2i(A);
         this._K = await this._getKey();
         this._M1 = await this._srp.M1(this._A, this._B, this._K);
-        this._M2 = await this._srp.M1(this._A, this._M1, this._K);
+        this._M2 = await this._srp.M2(this._A, this._M1, this._K);
     }
 
     private async _getKey() {
@@ -148,29 +182,49 @@ export class Server {
     }
 }
 
-export class SRP {
+/**
+ * Implements various formulas defined in the [SRP
+ * specification](http://srp.stanford.edu/design.html), used by [[Client]] and
+ * [[Server]] classes.
+ */
+export class Core {
     private _params: SRPParams;
 
     constructor(length: SRPGroupLength) {
         this._params = getParams(length);
     }
 
+    /** Creates a hash of all arguments, concatenated */
     async H(...inp: BigInteger[]): Promise<BigInteger> {
         const hash = await digest(this._params.hash, ...inp.map(i => i2b(i)));
         return b2i(hash);
     }
 
-    // v = g ^ x % N
+    /**
+     * Calculates verifier `v` from secret `x` according to the formula
+     * ```
+     * v = g ^ x % N
+     * ```
+     */
     v(x: BigInteger): BigInteger {
         return this._params.g.modPow(x, this._params.N);
     }
 
-    // A = g ^ a % N
+    /** Calculates `A` from random value `a`, according to the formula
+     * ```
+     * A = g ^ a % N
+     * ```
+     */
     A(a: BigInteger) {
         return this._params.g.modPow(a, this._params.N);
     }
 
-    // B = (k * v + g ^ b % N) % N
+    /**
+     * Calculates `B` from `v` and the random value `b` according to the formula
+     * ```
+     * B = (k * v + g ^ b % N) % N
+     * ```
+     */
     async B(v: BigInteger, b: BigInteger): Promise<BigInteger> {
         const k = await this.k();
         return k
@@ -179,12 +233,22 @@ export class SRP {
             .mod(this._params.N);
     }
 
-    // u = H(A | B)
+    /**
+     * Calculates `u` from `A` and `B` according to the formula
+     * ```
+     * u = H(A | B)
+     * ```
+     */
     async u(A: BigInteger, B: BigInteger): Promise<BigInteger> {
         return await this.H(A, B);
     }
 
-    //  S = (B - k * (g ^ x % N)) ^ (a + u * x) % N
+    /**
+     * Calculates `S` from `B`, `x`, `a` and `u` according to the formula
+     * ```
+     * S = (B - k * (g ^ x % N)) ^ (a + u * x) % N
+     * ```
+     */
     async clientS(B: BigInteger, x: BigInteger, a: BigInteger, u: BigInteger): Promise<BigInteger> {
         const k = await this.k();
         return B.subtract(k.multiply(this._params.g.modPow(x, this._params.N))).modPow(
@@ -193,38 +257,170 @@ export class SRP {
         );
     }
 
-    // S = (A * v ^ u % N) ^ b % N
+    /**
+     * Calculates `S` from `A`, `v`, `b` and `u` according to the formula
+     * ```
+     * S = (A * v ^ u % N) ^ b % N
+     * ```
+     */
     serverS(A: BigInteger, v: BigInteger, u: BigInteger, b: BigInteger) {
         return A.multiply(v.modPow(u, this._params.N)).modPow(b, this._params.N);
     }
 
-    // SRP-6a multiplier
+    /**
+     * Calculates the multiplier `k = H(N | g)` according to the SRP-6a specification
+     */
     async k(): Promise<BigInteger> {
         return this.H(this._params.N, this._params.g);
     }
 
-    // K = H(S)
+    /**
+     * Calculates the shared key `K = H(S)`
+     */
     async K(S: BigInteger): Promise<BigInteger> {
         return this.H(S);
     }
 
+    /**
+     * Calculates the first verification value `M1 = H(A | B | K)`
+     */
     async M1(A: BigInteger, B: BigInteger, K: BigInteger): Promise<BigInteger> {
         return await this.H(A, B, K);
     }
 
+    /**
+     * Calculates the second verification value `M2 = H(A | M1 | K)`
+     */
     async M2(A: BigInteger, M1: BigInteger, K: BigInteger): Promise<BigInteger> {
         return await this.H(A, M1, K);
     }
 
-    // This is used to ensure that values are not zero when mod N.
+    /**
+     * This is used to ensure that values are not zero when mod N.
+     */
     isZeroWhenModN(n: BigInteger) {
         return n.mod(this._params.N).equals(BigInteger.ZERO);
     }
 }
 
-export type SRPGroupLength = 1024 | 1536 | 2048 | 3072 | 4096 | 6144 | 8192;
+/**
+ * This module implements version 6a of the [Secure Remote
+ * Password](http://srp.stanford.edu/design.html) protocol.
+ *
+ * The [[Client]] and [[Server]] classes are the high-level interfaces to be
+ * used on the client and server side, respectively. The SRP key negotiation
+ * flow usually happens as follows:
+ *
+ * #### First signup
+ *
+ * ```ts
+ * // CLIENT
+ *
+ * const u = [username/email];
+ * const p = [user password];
+ * const i = [iteration count];
+ * const s = [random salt];
+ *
+ * const x =  PBKDF2(p, s, i);
+ *
+ * const client = new Client();
+ * await client.initialize(x);
+ * const v = client.v;
+ *
+ * => Send u, v, s, i to server
+ * ```
+ *
+ * #### Login / create session
+ *
+ * ```ts
+ * // CLIENT => request login for `u`
+ *
+ * // SERVER
+ *
+ * const { v, s, i } = getAuthInfo(u);
+ *
+ * const server = new Server();
+ * await server.initialize(v);
+ * const B = server.B;
+ *
+ * // => Send s, i, B to client
+ *
+ * // CLIENT
+ *
+ * const x =  PBKDF2(p, s, i);
+ *
+ * const client = new Client();
+ * await client.initialize(x);
+ * await client.setB(B);
+ *
+ * const A = client.A;
+ * const M1 = client.M1;
+ *
+ * // Common session key
+ * const K = client.K;
+ *
+ * // => Send A, M1 to server
+ *
+ * // SERVER
+ *
+ * await server.setA(A);
+ * if (server.M1 !== M1) {
+ *     throw "Invalid credentials!";
+ * }
+ *
+ * // Common session key
+ * const K = server.K;
+ *
+ * // => Success!
+ *
+ * // [OPTIONAL] (This step is usually not required since even without
+ * // verifying M2, the client will notice something is wrong as soon as they try
+ * // to verify an authenticated response from the server.)
+ *
+ * M2 = server.M2;
+ * // => Send M2 to client
+ *
+ * // CLIENT
+ * if (client.M2 !== M2) {
+ *     throw "Something is fishy!";
+ * }
+ * ```
+ *
+ * #### Overview:
+ *
+ * ```
+ *                     ┌──────────┐     ┌──────────┐
+ *                     │Client (C)│     │Server (S)│
+ *                     └─────┬────┘     └────┬─────┘
+ *     ┌───────────────────┐ │               │
+ *     │u = [email address]│ │     u, A      │
+ *     │a, A = [random*]   │ │──────────────▶│
+ *     └───────────────────┘ │               │ ┌────────────────┐
+ *                           │               │ │b, B = [random*]│
+ * ┌───────────────────────┐ │    s, i, B    │ └────────────────┘
+ * │p = [master password]  │ │◁ ─ ─ ─ ─ ─ ─ ─│
+ * │x = PBKDF2(p,s,i)      │ │               │
+ * │K = K_client(x, a, B)* │ │               │
+ * │M = M(A, B, K)*        │ │       M       │ ┌───────────────────────┐
+ * └───────────────────────┘ │──────────────▶│ │K' = K_server(v, b, A)*│
+ *                           │               │ │M' = M(A, B, K')       │
+ *                           │               │ │=> verify M == M'      │
+ *         ┌───────────────┐ │      sid      │ │S = [session id]       │
+ *         │=> store sid, K│ │◀ ─ ─ ─ ─ ─ ─ ─│ │=> store sid, K        │
+ *         └───────────────┘ │               │ └───────────────────────┘
+ *                           │               │
+ *                           ▼               ▼
+ * ```
+ */
+export namespace SRP {
+    Client;
+    Server;
+    Core;
+}
 
-export interface SRPParams {
+type SRPGroupLength = 1024 | 1536 | 2048 | 3072 | 4096 | 6144 | 8192;
+
+interface SRPParams {
     length: SRPGroupLength;
     hash: "SHA-1" | "SHA-256";
     g: BigInteger;
@@ -235,7 +431,7 @@ function h2i(hex: string): BigInteger {
     return new BigInteger(hex.replace(" ", ""), 16);
 }
 
-export function getParams(length: SRPGroupLength): SRPParams {
+function getParams(length: SRPGroupLength): SRPParams {
     switch (length) {
         case 1024:
             return {

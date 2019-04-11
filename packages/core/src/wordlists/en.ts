@@ -1,3 +1,7 @@
+/**
+ * List of english words for generating random passphrases.
+ * Taken from https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt
+ */
 export const WORDLIST_EN = [
     "abacus",
     "abdomen",

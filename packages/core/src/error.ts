@@ -1,5 +1,6 @@
-import { unmarshal } from "./encoding";
-
+/**
+ * Error codes used within Padloc
+ */
 export enum ErrorCode {
     // Crypto Errors
     INVALID_CONTAINER_DATA = "invalid_container_data",
@@ -62,11 +63,19 @@ const statusCodes = {
     [ErrorCode.ACCOUNT_EXISTS]: 409
 };
 
+/**
+ * Custom error class augmenting the built-in `Error` with some additional properties
+ */
 export class Err extends Error {
+    /** Error code used for more precise error segmentation */
     code: ErrorCode;
+    /** Wether or not this error should be reported to an admin, if that option exists */
     report: boolean;
+    /** Wether or not this error shoudl be displayed to the user */
     display: boolean;
+    /** The associated status code, in case of HTTP errors */
     status: number;
+    /** The original error, if available */
     originalError?: Error;
 
     constructor(
@@ -84,23 +93,5 @@ export class Err extends Error {
 
     toString() {
         return `${this.code}: ${this.message}`;
-    }
-}
-
-export function errFromRequest(request: XMLHttpRequest): Err {
-    try {
-        const { error, message } = unmarshal(request.responseText) as { error: ErrorCode; message: string };
-        return new Err(error, message, { status: request.status });
-    } catch (e) {
-        switch (request.status.toString()[0]) {
-            case "0":
-                return new Err(ErrorCode.FAILED_CONNECTION, request.responseText, { status: request.status });
-            case "3":
-                return new Err(ErrorCode.UNEXPECTED_REDIRECT, request.responseText, { status: request.status });
-            case "4":
-                return new Err(ErrorCode.CLIENT_ERROR, request.responseText, { status: request.status });
-            default:
-                return new Err(ErrorCode.SERVER_ERROR, request.responseText, { status: request.status });
-        }
     }
 }

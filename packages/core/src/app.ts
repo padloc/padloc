@@ -18,7 +18,6 @@ import {
     CreateSessionParams,
     RecoverAccountParams,
     GetInviteParams
-    // CreateVaultParams
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
@@ -26,7 +25,7 @@ import { localize as $l } from "./locale";
 import { DeviceInfo, getDeviceInfo } from "./platform";
 import { uuid, escapeRegex } from "./util";
 import { Client as SRPClient } from "./srp";
-import { ErrorCode } from "./error";
+import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
 
 export class Stats extends Serializable {
@@ -276,7 +275,7 @@ export class App extends EventEmitter {
         password: string;
         name: string;
         verify: string;
-        invite?: { id: string; vault: string };
+        invite?: { id: string; org: string };
     }) {
         const account = new Account();
         account.email = email;
@@ -896,7 +895,10 @@ export class App extends EventEmitter {
     }
 
     async confirmInvite(invite: Invite): Promise<OrgMember> {
-        await invite.verifyInvitee();
+        if (!(await invite.verifyInvitee())) {
+            throw new Err(ErrorCode.VERIFICATION_ERROR, "Failed to verify invitee information!");
+        }
+
         await this.updateOrg(invite.org!.id, async (org: Org) => {
             await org.unlock(this.account!);
             await org.addOrUpdateMember(invite.invitee!);

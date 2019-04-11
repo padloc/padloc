@@ -4,9 +4,20 @@ import { Storable } from "./storage";
 import { AccountID } from "./account";
 import { randomNumber } from "./util";
 
+/**
+ * Contains authentication data needed for SRP session negotiation
+ */
 export class Auth extends Serializable implements Storable {
+    /** Id of the [[Account]] the authentication data belongs to */
     account: AccountID = "";
+
+    /** Verifier used for SRP session negotiation */
     verifier?: Uint8Array;
+
+    /**
+     * Key derivation params used by the client to compute session key from the
+     * users master password
+     * */
     keyParams = new PBKDF2Params();
 
     get id() {
@@ -41,7 +52,12 @@ export class Auth extends Serializable implements Storable {
         });
     }
 
+    /**
+     * Generate the session key from the users master `password`
+     */
     async getAuthKey(password: string) {
+        // If no salt is set yet (i.e. during initialization),
+        // generate a random value
         if (!this.keyParams.salt.length) {
             this.keyParams.salt = await getProvider().randomBytes(16);
         }
@@ -51,27 +67,49 @@ export class Auth extends Serializable implements Storable {
 
 export type EmailVerificationPurpose = "create_account" | "recover_account";
 
+/**
+ * Class for storing email verification data. Email verificatiion is used
+ * to prove ownership of the email address in question and as a authentication
+ * mechanism.
+ */
 export class EmailVerification extends Serializable implements Storable {
+    /** Time of creation */
     created = new Date();
+
+    /**
+     * Email verification code. This code is sent to the user via email
+     * through [[API.requestEmailVerification]]
+     */
     code: string = "";
+
+    /**
+     * Verification token that can be exchanged for the verification code via [[API.completeEmailVerification]]
+     */
     token: string = "";
+
+    /**
+     * Number of failed tries
+     */
     tries: number = 0;
 
     get id() {
         return this.email;
     }
 
-    constructor(public email: string, public purpose: EmailVerificationPurpose = "create_account") {
+    constructor(
+        /** The email to be verified */
+        public email: string,
+        /** The verification purpose */
+        public purpose: EmailVerificationPurpose = "create_account"
+    ) {
         super();
     }
 
     async init() {
-        const codeLen = 6;
-        let code = (await randomNumber(0, Math.pow(10, codeLen) - 1)).toString();
-        while (code.length < codeLen) {
-            code = "0" + code;
-        }
-        this.code = code;
+        const len = 6;
+        // Create random 6-digit verification code
+        this.code = (await randomNumber(0, Math.pow(10, len) - 1)).toString().padStart(len, "0");
+        // Create random 16-byte verification token
         this.token = bytesToBase64(await getProvider().randomBytes(16));
         this.tries = 0;
     }

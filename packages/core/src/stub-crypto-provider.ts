@@ -14,33 +14,16 @@ import {
     HashParams,
     RSASigningParams
 } from "./crypto";
+import { concatBytes as concat, equalBytes as equal } from "./encoding";
 import { Err, ErrorCode } from "./error";
 
-function concat(...arrs: Uint8Array[]): Uint8Array {
-    const length = arrs.reduce((len, arr) => len + arr.length, 0);
-    const res = new Uint8Array(length);
-    let offset = 0;
-    for (const arr of arrs) {
-        res.set(arr, offset);
-        offset += arr.length;
-    }
-    return res;
-}
-
-function equal(a: Uint8Array, b: Uint8Array): boolean {
-    if (a.length !== b.length) {
-        return false;
-    }
-
-    for (let i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
+/**
+ * StubCryptoProvider is a stub implementation of the [[CryptoProvider]]
+ * interface mainly used for testing. All methods merely emulate the behavior
+ * of an actual implementation in a way that makes it compatible for use
+ * with the rest of the **@padloc/core** package. Needless to say, this
+ * class is **NOT SECURE AND SHOULD NEVER BE USED IN A PRODUCTION ENVIRONMENT**.
+ */
 export class StubCryptoProvider implements CryptoProvider {
     async randomBytes(n: number): Promise<Uint8Array> {
         const bytes = new Uint8Array(n);

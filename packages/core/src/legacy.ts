@@ -3,6 +3,10 @@ import { Err, ErrorCode } from "./error";
 import { PBKDF2_ITER_MAX } from "./crypto";
 import { PBES2Container } from "./container";
 
+/**
+ * Interface representing legacy container structure (i.e. encryption format
+ * used in Padlock versions 1.x and 2.x)
+ */
 export interface LegacyContainer {
     version?: 1;
     cipher: "aes";
@@ -16,6 +20,9 @@ export interface LegacyContainer {
     ct: string;
 }
 
+/**
+ * Validates legacy container structure
+ */
 export function validateLegacyContainer(obj: any): boolean {
     return (
         typeof obj === "object" &&
@@ -33,6 +40,9 @@ export function validateLegacyContainer(obj: any): boolean {
     );
 }
 
+/**
+ * Transforms a legacy container object into an instance of [[PBES2Container]]
+ */
 export function parseLegacyContainer(raw: LegacyContainer): PBES2Container {
     if (!validateLegacyContainer(raw)) {
         throw new Err(ErrorCode.ENCODING_ERROR);

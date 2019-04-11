@@ -191,38 +191,106 @@ export class HashParams extends Serializable {
     }
 }
 
+/**
+ * CryptoProvider provides a unified interface for cryptographic primitives
+ * accross all platforms. This is usually a thin wrapper around the
+ * native crypto module provided by the platform.
+ *
+ * Although CryptoProvider instances can be created and used directly, the
+ * more common usage is to use a singleton which should be instantiated during
+ * initialization using [[setProvider]] and can later be retrieved via
+ * [[getProvider]]. This allows modules to use cryptographic functions without
+ * having to worry about the underlying implementation. E.g.:
+ *
+ * ```ts
+ * // init.ts
+ * import { setProvider } from "@padloc/core/src/crypto"
+ *
+ * setProvider(new NodeCryptoProvider());
+ *
+ * // util.ts (in core)
+ * import { getProvider } from "./crypto";
+ *
+ * async function someFunction() {
+ *     const rand = await getProvider().randomBytes(16();
+ *     ...
+ * }
+ * ```
+ */
 export interface CryptoProvider {
+    /**
+     * Generates an Array of `n` random bytes
+     */
     randomBytes(n: number): Promise<Uint8Array>;
 
+    /**
+     * Creates a digest of the provided **input** using the algorithm specified in **params**
+     * For algorithms that should be supported, see [[HashParams]].
+     */
     hash(input: Uint8Array, params: HashParams): Promise<Uint8Array>;
 
+    /**
+     * Generates a random key or key pair for the algorithm specified in **params**
+     */
     generateKey(params: AESKeyParams): Promise<AESKey>;
     generateKey(params: HMACKeyParams): Promise<HMACKey>;
     generateKey(params: RSAKeyParams): Promise<{ privateKey: RSAPrivateKey; publicKey: RSAPublicKey }>;
 
+    /**
+     * Derives a key from a given `password` using the provided key derivation **params**
+     * `password` should be the byte array representation of a UTF-8 encoded password.
+     */
     deriveKey(password: Uint8Array, params: PBKDF2Params): Promise<SymmetricKey>;
 
+    /**
+     * Encrypts `data` with `key` using the cipher and parameters specified in `params`
+     */
     encrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
     encrypt(publicKey: RSAPublicKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
 
+    /**
+     * Decrypts `data` with `key` using the cipher and parameters specified in `params`
+     */
     decrypt(key: AESKey, data: Uint8Array, params: AESEncryptionParams): Promise<Uint8Array>;
     decrypt(privateKey: RSAPrivateKey, data: Uint8Array, params: RSAEncryptionParams): Promise<Uint8Array>;
 
+    /**
+     * Creates a signature from `data` with `key` using the algorithm and parameters specified in `params`
+     */
     sign(key: HMACKey, data: Uint8Array, params: HMACParams): Promise<Uint8Array>;
     sign(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams): Promise<Uint8Array>;
 
+    /**
+     * Verifies `signature` with `data` and `key` using the algorithm and parameters specified in `params`
+     */
     verify(key: HMACKey, signature: Uint8Array, data: Uint8Array, params: HMACParams): Promise<boolean>;
     verify(key: RSAPublicKey, signature: Uint8Array, data: Uint8Array, params: RSASigningParams): Promise<boolean>;
 
+    /**
+     * Creates a fingerprint from a given rsa public key
+     */
     fingerprint(key: RSAPublicKey): Promise<Uint8Array>;
 }
 
 let provider: CryptoProvider;
 
+/**
+ * Set the CrytoProvider singleton instance to be used in the current
+ * environment This should be called during initialization and before using any
+ * cryptographic functionality via [[getProvider]]
+ */
 export function setProvider(p: CryptoProvider) {
     provider = p;
 }
 
+/**
+ * Get the current CryptoProvider singleton. Make sure to call [[setProvider]]
+ * before using this function for the first time.
+ */
 export function getProvider() {
+    if (!provider) {
+        throw "No crypto provider found! Please register a provider through the `setProvider` function!";
+    }
+
     return provider;
 }

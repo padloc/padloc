@@ -6,27 +6,26 @@ import { sjcl } from "../vendor/sjcl";
 const bytesToBits = sjcl.codec.bytes.toBits;
 const bitsToBytes = sjcl.codec.bytes.fromBits;
 
+/**
+ * [[CrypoProvider]] implemenation using the [SJCL](https://github.com/bitwiseshiftleft/sjcl)
+ * library. This is used to decrypt legacy (<3.x) Padlock containers that use AES in CCM mode
+ * which is unfortunately not supported by the WebCrypto standard. Only
+ * supports encryption/decryption using AES-CCM.
+ */
 const SJCLProvider = {
     isAvailable() {
         return true;
     },
 
     randomBytes(_bytes: number): Uint8Array {
-        // if (bytes % 4) {
-        //     throw "Number of bytes must be dividable by 4";
-        // }
-        // return bitsToBytes(sjcl.random.randomWords(bytes / 4, 0));
         throw new Err(ErrorCode.NOT_SUPPORTED);
     },
 
     async deriveKey(_password: string, _params: PBKDF2Params): Promise<AESKey> {
-        // const k = sjcl.misc.pbkdf2(utf8ToBits(password), bytesToBits(params.salt!), params.iterations, params.keySize);
-        // return bitsToBytes(k);
         throw new Err(ErrorCode.NOT_SUPPORTED);
     },
 
     async randomKey(_n = 256) {
-        // return sjcl.randomBytes(n / 8);
         throw new Err(ErrorCode.NOT_SUPPORTED);
     },
 

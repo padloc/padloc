@@ -8,7 +8,15 @@ import {
     marshal,
     concatBytes
 } from "./encoding";
-import { getProvider, RSAPrivateKey, RSAPublicKey, RSAKeyParams, AESKeyParams, RSASigningParams } from "./crypto";
+import {
+    getProvider,
+    RSAPrivateKey,
+    RSAPublicKey,
+    AESKey,
+    RSAKeyParams,
+    AESKeyParams,
+    RSASigningParams
+} from "./crypto";
 import { SharedContainer } from "./container";
 import { Err, ErrorCode } from "./error";
 import { Storable } from "./storage";
@@ -16,24 +24,62 @@ import { Vault, VaultID } from "./vault";
 import { Account, AccountID } from "./account";
 import { Invite, InviteID } from "./invite";
 
+/** Role of a member within an organization, each associated with certain priviliges */
 export enum OrgRole {
+    /**
+     * Organization owner. Can manage members, groups and vaults.  Owners have
+     * access to the secret [[Org.privateKey]] and [[Org.invitesKey]]
+     * properties.
+     */
     Owner,
+    /**
+     * Organization admin. Can manage groups and vaults.
+     */
     Admin,
+    /**
+     * Basic organization member. Can read public organization data and read/write
+     * certain [[Vault]]s they have been assigned to directly or via [[Group]]s.
+     */
     Member,
+    /**
+     * Suspended members can read public organization data and access [[Vaults]] they
+     * have been assigned to, but are excluded from any updates to those vaults.
+     * Member information (like public key and email address) of suspended members
+     * are considered unverified, and need to be updated and verified via a
+     * membership confirmation [[Invite]].
+     */
     Suspended
 }
 
+/**
+ * Represents an [[Account]]s membership to an [[Org]]
+ */
 export class OrgMember extends Serializable {
+    /** id of the corresponding [[Account]] */
     id: AccountID = "";
+
+    /** name of the corresponding [[Account]] */
     name = "";
+
+    /** email address of the corresponding [[Account]] */
     email = "";
+
+    /** public key of the corresponding [[Account]] */
     publicKey!: RSAPublicKey;
+
+    /** signature used by other members to verify [[id]], [[email]] and [[publicKey]] */
     signature!: Uint8Array;
+
+    /** signature used by the member to verify [[Org.id]] and [[Org.publickey]] of the organization */
     orgSignature!: Uint8Array;
+
+    /** vaults assigned to this member */
     vaults: {
         id: VaultID;
         readonly: boolean;
     }[] = [];
+
+    /** the members organization role */
     role: OrgRole = OrgRole.Member;
 
     constructor({ id, name, email, publicKey, signature, orgSignature, role }: Partial<OrgMember> = {}) {
@@ -78,9 +124,15 @@ export class OrgMember extends Serializable {
     }
 }
 
+/**
+ * A group of members, used to manage [[Vault]] access for multiple members at once.
+ */
 export class Group extends Serializable {
+    /** display name */
     name = "";
+    /** members assigned to this group */
     members: { id: AccountID }[] = [];
+    /** [[Vault]]s assigned to this group */
     vaults: {
         id: VaultID;
         readonly: boolean;
@@ -103,20 +155,101 @@ export class Group extends Serializable {
     }
 }
 
+/** Unique identifier for [[Org]]s */
 export type OrgID = string;
 
+/**
+ * Organizations are the central component of Padlocs secure data sharing architecture.
+ *
+ * All shared [[Vault]]s are provisioned and managed in the context of an organization,
+ * while the [[Org]] class itself is responsible for managing, signing and verifying
+ * public keys, identities and priviliges for all of it's members.
+ *
+ * Vaults can be assigned to members direcly or indirectly through [[Group]]s. In both
+ * cases, this access can be declared *readonly*.
+ *
+ * Before being added to an organization, members need to go throug a key exchange
+ * procedure designed to allow verification of organization and member details
+ * by both parties. See [[Invite]] class for details.
+ *
+ * The [[privateKey]] and [[invitesKey]] properties are considered secret and are only
+ * accessible to members with the [[OrgRole.Owner]] role. To protect this information
+ * from unauthorized access, [[Org]] extends the [[SharedContainer]] class, encrypting
+ * this data at rest.
+ *
+ * #### Organization Structure
+ * ```
+ * ┌──────────────┐            ┌──────────────┐            ┌──────────────┐
+ * │              │           ╱│              │╲           │              │
+ * │   Account    │┼─────────○─│  Membership  │──┼────────┼│ Organization │
+ * │              │           ╲│              │╱           │              │
+ * └──────────────┘            └───┬──────┬───┘            └──────────────┘
+ *                                ╲│╱    ╲│╱                       ┼
+ *                                 ○      ○                        ○
+ *                                 │      │                       ╱│╲
+ *                                 │      │                ┌──────────────┐
+ *                                 │      │               ╱│              │
+ *                                 │      └──────────────○─│    Group     │
+ *                                 │                      ╲│              │
+ *                                 ○                       └──────────────┘
+ *                                ╱│╲                             ╲│╱
+ *                         ┌──────────────┐                        ○
+ *                         │              │╲                       │
+ *                         │ Shared Vault │─○──────────────────────┘
+ *                         │              │╱
+ *                         └──────────────┘
+ * ```
+ */
 export class Org extends SharedContainer implements Storable {
+    /** Unique identier */
     id: OrgID = "";
+
+    /** [[Account]] which created this organization */
     creator: AccountID = "";
+
+    /** Organization name */
     name: string = "";
+
+    /** Public key used for verifying member signatures */
     publicKey!: RSAPublicKey;
+
+    /**
+     * Private key used for signing member details
+     *
+     * @secret
+     * **IMPORTANT**: This property is considered **secret**
+     * and should never stored or transmitted in plain text
+     */
     privateKey!: RSAPrivateKey;
-    invitesKey!: Uint8Array;
+
+    /**
+     * AES key used as encryption key for [[Invite]]s
+     *
+     * @secret
+     * **IMPORTANT**: This property is considered **secret**
+     * and should never stored or transmitted in plain text
+     */
+    invitesKey!: AESKey;
+
+    /** Parameters for creating member signatures */
     signingParams = new RSASigningParams();
+
+    /** Array of organization members */
     members: OrgMember[] = [];
+
+    /** This organizations [[Group]]s. */
     groups: Group[] = [];
+
+    /** Shared [[Vault]]s owned by this organization */
     vaults: { id: VaultID; name: string }[] = [];
+
+    /** Pending [[Invite]]s */
     invites: Invite[] = [];
+
+    /**
+     * Revision id used for ensuring continuity when synchronizing the account
+     * object between client and server
+     */
     revision: string = "";
 
     toRaw() {
@@ -154,28 +287,34 @@ export class Org extends SharedContainer implements Storable {
         return super.fromRaw(rest);
     }
 
+    /** Whether the given [[Account]] is an [[OrgRole.Owner]] */
     isOwner(m: { id: AccountID }) {
         const member = this.getMember(m);
         return member && member.role <= OrgRole.Owner;
     }
 
+    /** Whether the given [[Account]] is an [[OrgRole.Admin]] */
     isAdmin(m: { id: AccountID }) {
         const member = this.getMember(m);
         return member && member.role <= OrgRole.Admin;
     }
 
+    /** Get the [[OrgMember]] object for this [[Account]] */
     getMember({ id }: { id: AccountID }) {
         return this.members.find(m => m.id === id);
     }
 
+    /** Whether the given [[Account]] is an organization member */
     isMember(acc: { id: AccountID }) {
         return !!this.getMember(acc);
     }
 
+    /** Get group with the given `name` */
     getGroup(name: string) {
         return [...this.groups].find(g => g.name === name);
     }
 
+    /** Get all members of a given `group` */
     getMembersForGroup(group: Group): OrgMember[] {
         return group.members
             .map(m => this.getMember(m))
@@ -183,18 +322,22 @@ export class Org extends SharedContainer implements Storable {
             .filter(m => !!m) as OrgMember[];
     }
 
+    /** Get all [[Group]]s the given [[Account]] is a member of */
     getGroupsForMember({ id }: { id: AccountID }) {
         return this.groups.filter(g => g.members.some(m => m.id === id));
     }
 
+    /** Get all groups that have access to a given [[Vault]] */
     getGroupsForVault({ id }: Vault): Group[] {
         return this.groups.filter(group => group.vaults.some(v => v.id === id));
     }
 
+    /** Get all members that have access to a given [[Vault]] */
     getMembersForVault({ id }: Vault): OrgMember[] {
         return this.members.filter(member => member.role !== OrgRole.Suspended && member.vaults.some(v => v.id === id));
     }
 
+    /** Get all vaults the given member has access to */
     getVaultsForMember(acc: OrgMember | Account) {
         const member = this.getMember(acc);
 
@@ -213,8 +356,9 @@ export class Org extends SharedContainer implements Storable {
         return [...results];
     }
 
-    canRead(vault: { id: VaultID }, acc: { id: AccountID }) {
-        const member = this.getMember(acc);
+    /** Check whether the given `account` has read access to a `vault` */
+    canRead(vault: { id: VaultID }, account: { id: AccountID }) {
+        const member = this.getMember(account);
 
         return (
             member &&
@@ -222,6 +366,7 @@ export class Org extends SharedContainer implements Storable {
         );
     }
 
+    /** Check whether the given `account` has write access to a `vault` */
     canWrite(vault: { id: VaultID }, acc: { id: AccountID }) {
         const member = this.getMember(acc);
 
@@ -234,19 +379,26 @@ export class Org extends SharedContainer implements Storable {
         );
     }
 
+    /** Get the invite with the given `id` */
     getInvite(id: InviteID) {
         return this.invites.find(inv => inv.id === id);
     }
 
+    /** Remove an invite */
     removeInvite({ id }: Invite) {
         this.invites = this.invites.filter(inv => inv.id !== id);
     }
 
+    /**
+     * Initializes the organization, generating [[publicKey]], [[privateKey]],
+     * and [[invitesKey]] and adding the given `account` as the organization
+     * owner.
+     */
     async initialize(account: Account) {
         // Update access to keypair
         await this.updateAccessors([account]);
 
-        // Generate key pair used for signing members
+        // Generate cryptographic keys
         await this.generateKeys();
 
         const orgSignature = await account.signOrg(this);
@@ -263,6 +415,10 @@ export class Org extends SharedContainer implements Storable {
         this.members.push(member);
     }
 
+    /**
+     * Generates a new [[publicKey]], [[privateKey]] and [[invitesKey]] and
+     * encrypts the latter two
+     */
     async generateKeys() {
         this.invitesKey = await getProvider().generateKey(new AESKeyParams());
         const { privateKey, publicKey } = await getProvider().generateKey(new RSAKeyParams());
@@ -275,6 +431,9 @@ export class Org extends SharedContainer implements Storable {
         );
     }
 
+    /**
+     * Regenerates all cryptographic keys and updates all member signatures
+     */
     async rotateKeys(force = false) {
         if (!force) {
             // Verify members and groups with current public key
@@ -292,6 +451,10 @@ export class Org extends SharedContainer implements Storable {
         await Promise.all(this.members.map(each => this.sign(each)));
     }
 
+    /**
+     * "Unlocks" the organization, granting access to the organizations
+     * [[privateKey]] and [[invitesKey]] properties.
+     */
     async unlock(account: Account) {
         await super.unlock(account);
         if (this.encryptedData) {
@@ -308,6 +471,9 @@ export class Org extends SharedContainer implements Storable {
         this.invites.forEach(invite => invite.lock);
     }
 
+    /**
+     * Signs the `member`s public key, id and email address so they can be verified later
+     */
     async sign(member: OrgMember): Promise<OrgMember> {
         if (!this.privateKey) {
             throw "Organisation needs to be unlocked first.";
@@ -321,6 +487,10 @@ export class Org extends SharedContainer implements Storable {
         return member;
     }
 
+    /**
+     * Verifies the `member`s public key, id and email address.
+     * Throws if verification fails.
+     */
     async verify(member: OrgMember): Promise<void> {
         if (!member.signature) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "No signed public key provided!");
@@ -338,11 +508,17 @@ export class Org extends SharedContainer implements Storable {
         }
     }
 
-    async verifyAll(subjects: OrgMember[] = this.members.filter(m => m.role !== OrgRole.Suspended)) {
+    /**
+     * Verify all provided `members`, throws if verification fails for any of them.
+     */
+    async verifyAll(members: OrgMember[] = this.members.filter(m => m.role !== OrgRole.Suspended)) {
         // Verify public keys for members and groups
-        await Promise.all(subjects.map(async obj => this.verify(obj)));
+        await Promise.all(members.map(async obj => this.verify(obj)));
     }
 
+    /**
+     * Adds a member to the organization, or updates the existing member with the same id.
+     */
     async addOrUpdateMember({
         id,
         name,

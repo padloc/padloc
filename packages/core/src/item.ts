@@ -3,8 +3,11 @@ import { Collection, CollectionItem } from "./collection";
 import { AccountID } from "./account";
 import { AttachmentInfo } from "./attachment";
 
+/** A tag that can be assigned to a [[VaultItem]] */
 export type Tag = string;
-export type ItemID = string;
+
+/** Unique identifier for [[VaultItem]]s */
+export type VaultItemID = string;
 
 export type FieldType =
     | "username"
@@ -22,14 +25,23 @@ export type FieldType =
     | "note"
     | "text";
 
+/**
+ * Field definition containing meta data for a certain field type
+ */
 export interface FieldDef {
+    /** content type */
     type: FieldType;
+    /** regular expression describing pattern of field contents */
     pattern: string;
+    /** whether the field should be masked when displayed */
     mask: boolean;
+    /** whether the field value can have multiple lines */
     multiline: boolean;
+    /** display name */
     toString(): string;
 }
 
+/** Available field types and respective meta data */
 export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
     username: {
         type: "username",
@@ -132,25 +144,41 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
 };
 
 export interface Field {
+    /** field name */
     name: string;
+    /** field content */
     value: string;
+    /**
+     * field type, determining meta data via the corresponding field definition
+     * in [[FIELD_DEFS]]
+     */
     type: FieldType;
 }
 
+/** Normalizes a tag value by removing invalid characters */
 export function normalizeTag(tag: string): Tag {
     return tag.replace(",", "");
 }
 
+/** Represents an entry within a vault */
 export interface VaultItem extends CollectionItem {
-    id: ItemID;
+    /** unique identfier */
+    id: VaultItemID;
+    /** item name */
     name: string;
+    /** item fields */
     fields: Field[];
+    /** array of tags assigned with this item */
     tags: Tag[];
+    /** [[Account]] the item was last updated by */
     updatedBy: AccountID;
+    /** Last time the item was interacted with */
     lastUsed: Date;
+    /** attachments associated with this item */
     attachments: AttachmentInfo[];
 }
 
+/** Creates a new vault item */
 export async function createVaultItem(name: string, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
     return {
         id: await uuid(),
@@ -168,7 +196,8 @@ const matchUsername = /username/i;
 const matchPassword = /password/i;
 const matchUrl = /url/i;
 const matchNote = /\n/;
-// TODO: We can probably do a lot better
+
+/** Guesses the most appropriate field type based on field name and value */
 export function guessFieldType(field: any): FieldType {
     return field.masked || field.name.match(matchPassword)
         ? "password"
@@ -181,7 +210,9 @@ export function guessFieldType(field: any): FieldType {
         : "text";
 }
 
+/** A collection of [[VaultItem]]s */
 export class VaultItemCollection extends Collection<VaultItem> {
+    /** Aggregated list of tags assigned to the items in this collection */
     get tags(): string[] {
         const tags = new Set<string>();
         for (const r of this) {

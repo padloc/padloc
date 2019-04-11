@@ -1,9 +1,21 @@
+/**
+ * Options for generating a fingerprint graphic
+ */
 export interface Options {
+    /** target height (number of cells) */
     height: number;
+    /** target width (number of cells) */
     width: number;
+    /** symbols to be mapped against calculated values */
     symbols: string[];
 }
 
+/**
+ * Represents a "fingerprint" visualization of a certain [[height]] and [[width]],
+ * the [[values]] property contains the raw values generated using the [drunken
+ * bishop](http://www.dirk-loss.de/sshvis/drunken_bishop.pdf) while [[symbols]]
+ * represents the same values by mapping the on the symbols defined in [[Options.symbols]].
+ */
 export interface Fingerprint {
     width: number;
     height: number;
@@ -11,10 +23,10 @@ export interface Fingerprint {
     symbols: string[][];
 }
 
-export type Move = "00" | "01" | "10" | "11";
-export type Position = [number, number];
+type Move = "00" | "01" | "10" | "11";
+type Position = [number, number];
 
-// Default options
+/** Default options */
 export const defaults: Options = {
     height: 9,
     width: 17,
@@ -94,6 +106,12 @@ export function getValues(fingerprint: Uint8Array, opts: Partial<Options> = {}):
     return grid;
 }
 
+/**
+ * Generates a visualisation of a "fingerprint" similar to the ascii-based
+ * visualization method used by OpenSSH. Generates a "heat map" of values on a
+ * grid of a given width and height using the "drunken bishop" algorithm
+ * desribed in [this paper](http://www.dirk-loss.de/sshvis/drunken_bishop.pdf).
+ */
 export function randomArt(fingerprint: Uint8Array, opts: Partial<Options> = {}): Fingerprint {
     const options = Object.assign({}, defaults, opts);
     const vals = getValues(fingerprint, options);

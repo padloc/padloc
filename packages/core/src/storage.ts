@@ -1,37 +1,39 @@
 import { Serializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 
+/**
+ * Base class for objects intended to be used in conjunction with an
+ * implementation of the [[Storage]] interface.
+ */
 export abstract class Storable extends Serializable {
     abstract id: string;
 }
 
+/**
+ * Generic type representing the constructor of a class extending [[Storable]]
+ */
 export type StorableConstructor<T extends Storable> = new (...args: any[]) => T;
 
-export type Query = { [prop: string]: any };
-
+/**
+ * Generic interface for data storage
+ */
 export interface Storage {
+    /** Saves an object to the storage */
     save<T extends Storable>(obj: T): Promise<void>;
+
+    /** Retrieves an object of type `T` based on its `id`*/
     get<T extends Storable>(cls: StorableConstructor<T> | T, id: string): Promise<T>;
+
+    /** Deletes an object */
     delete<T extends Storable>(obj: T): Promise<void>;
+
+    /** Deletes all data in this storage */
     clear(): Promise<void>;
 }
 
-// function testVal(obj: object, path: string[], value: any): boolean {
-//     const arr = Array.isArray(obj) ? obj : [obj];
-//
-//     for (const each of arr) {
-//         if (path.length ? testVal(each, path.slice(1), value) : each === value) {
-//             return true;
-//         }
-//     }
-//
-//     return false;
-// }
-//
-// function testQuery(obj: object, query: Query) {
-//     return Object.entries(query).every(([prop, val]) => testVal(obj, prop.split("."), val));
-// }
-
+/**
+ * Basic in-memory storage. Useful for testing purposes
+ */
 export class MemoryStorage implements Storage {
     private _storage = new Map<string, object>();
 
@@ -55,14 +57,4 @@ export class MemoryStorage implements Storage {
     async clear() {
         this._storage.clear();
     }
-
-    // async _findRaw(kind: string, query: Query): Promise<object> {
-    //     for (const [key, obj] of this._storage.entries()) {
-    //         if (key.startsWith(kind) && testQuery(obj, query)) {
-    //             return obj;
-    //         }
-    //     }
-    //
-    //     throw new Err(ErrorCode.NOT_FOUND);
-    // }
 }

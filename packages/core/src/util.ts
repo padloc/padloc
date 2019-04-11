@@ -1,6 +1,7 @@
 import { getProvider } from "./crypto";
 import { bytesToHex } from "./encoding";
 
+/** Generates a random UUID v4 */
 export async function uuid(): Promise<string> {
     const bytes = await getProvider().randomBytes(16);
 
@@ -23,6 +24,7 @@ export async function uuid(): Promise<string> {
     ].join("");
 }
 
+/** Caracters, by category */
 export const chars = {
     numbers: "0123456789",
     lower: "abcdefghijklmnopqrstuvwxyz",
@@ -30,6 +32,7 @@ export const chars = {
     other: "/+()%\"=&-!:'*#?;,_.@`~$^[{]}\\|<>"
 };
 
+/** Predefined char sets for generating randing strings */
 export const charSets = {
     full: chars.numbers + chars.upper + chars.lower + chars.other,
     alphanum: chars.numbers + chars.upper + chars.lower,
@@ -38,7 +41,7 @@ export const charSets = {
     hexa: chars.numbers + "abcdef"
 };
 
-//* Creates a random string with a given _length_ comprised of given set or characters
+/** Creates a random string with a given `length`, with characters chosen from a given `charSet` */
 export async function randomString(length = 32, charSet = charSets.full) {
     const provider = getProvider();
     let str = "";
@@ -53,7 +56,10 @@ export async function randomString(length = 32, charSet = charSets.full) {
     return str;
 }
 
-// taken from https://github.com/EFForg/OpenWireless/blob/master/app/js/diceware.js
+/**
+ * Generates a random number between `min` and `max`.
+ * Taken from https://github.com/EFForg/OpenWireless/blob/master/app/js/diceware.js
+ */
 export async function randomNumber(min: number = 0, max: number = 10): Promise<number> {
     let rval = 0;
     const range = max - min + 1;
@@ -87,6 +93,10 @@ export async function randomNumber(min: number = 0, max: number = 10): Promise<n
     return min + rval;
 }
 
+/**
+ * "Debounces" a function, making sure it is only called once within a certain
+ * time window
+ */
 export function debounce(fn: (...args: any[]) => any, delay: number) {
     let timeout: number;
 
@@ -96,10 +106,14 @@ export function debounce(fn: (...args: any[]) => any, delay: number) {
     };
 }
 
-export function wait(dt: number): Promise<void> {
-    return new Promise<void>(resolve => setTimeout(resolve, dt));
+/** Returns a promise that resolves after a given `delay`. */
+export function wait(delay: number): Promise<void> {
+    return new Promise<void>(resolve => setTimeout(resolve, delay));
 }
 
+/**
+ * Resolves a given locale string to the approprivate available language
+ */
 export function resolveLanguage(locale: string, supportedLanguages: { [lang: string]: any }): string {
     const localeParts = locale.toLowerCase().split("-");
 
@@ -115,10 +129,16 @@ export function resolveLanguage(locale: string, supportedLanguages: { [lang: str
     return Object.keys(supportedLanguages)[0];
 }
 
+/**
+ * Applies a number of class `mixins` to a `baseClass`
+ */
 export function applyMixins(baseClass: any, ...mixins: ((cls: any) => any)[]): any {
     return mixins.reduce((cls, mixin) => mixin(cls), baseClass);
 }
 
+/**
+ * Escapes all regex special characters within a given string.
+ */
 export function escapeRegex(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

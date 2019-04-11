@@ -15,26 +15,77 @@ import { SessionInfo } from "./session";
 import { VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 
+/** Unique identifier for [[Account]] objects */
 export type AccountID = string;
 
+/**
+ * The Account object represents a Padloc user and is
+ */
 export class Account extends PBES2Container implements Storable {
+    /** Unique account ID */
     id: AccountID = "";
+
+    /** The users email address */
     email = "";
+
+    /** The users display name */
     name = "";
+
+    /** When the account was created */
     created = new Date();
+
+    /** when the account was last updated */
     updated = new Date();
+
+    /** The accounts public key */
     publicKey!: RSAPublicKey;
+
+    /**
+     * The accounts private key
+     *
+     * @secret
+     * **IMPORTANT**: This property is considered **secret**
+     * and should never stored or transmitted in plain text
+     */
     privateKey!: RSAPrivateKey;
+
+    /**
+     * HMAC key used for signing and verifying organization details
+     *
+     * **IMPORTANT**: This property is considered **secret**
+     * and should never stored or transmitted in plain text
+     *
+     * @secret
+     */
     signingKey!: HMACKey;
+
+    /** ID of the accounts main or "private" [[Vault]]. */
     mainVault: VaultID = "";
+
+    /** List of currently active sessions */
     sessions: SessionInfo[] = [];
+
+    /** IDs of all organizations this account is a member of */
     orgs: OrgID[] = [];
+
+    /**
+     * Revision id used for ensuring continuity when synchronizing the account
+     * object between client and server
+     */
     revision: string = "";
 
+    /**
+     * Whether or not this Account object is current "locked" or, in other words,
+     * whether the `privateKey` and `signingKey` properties have been decrypted.
+     */
     get locked(): boolean {
         return !this.privateKey;
     }
 
+    /**
+     * Generates the accounts [[privateKey]], [[publicKey]] and [[signingKey]] and
+     * encrypts [[privateKey]] and [[singingKey]] using the master password.
+     */
     async initialize(password: string) {
         const { publicKey, privateKey } = await getProvider().generateKey(new RSAKeyParams());
         this.publicKey = publicKey;
@@ -43,6 +94,7 @@ export class Account extends PBES2Container implements Storable {
         await this.setPassword(password);
     }
 
+    /** Updates the master password by reencrypting the [[privateKey]] and [[signingKey]] properties */
     async setPassword(password: string) {
         await super.unlock(password);
         await this.setData(
@@ -53,6 +105,10 @@ export class Account extends PBES2Container implements Storable {
         this.updated = new Date();
     }
 
+    /**
+     * "Unlocks" the account by decrypting and extracting [[privateKey]] and
+     * [[signingKey]] from [[encryptedData]]
+     */
     async unlock(password: string) {
         await super.unlock(password);
         const { privateKey, signingKey } = unmarshal(bytesToString(await this.getData()));
@@ -60,6 +116,9 @@ export class Account extends PBES2Container implements Storable {
         this.signingKey = base64ToBytes(signingKey);
     }
 
+    /**
+     * "Locks" the account by deleting all sensitive data from the object
+     */
     lock() {
         super.lock();
         delete this.privateKey;
@@ -114,10 +173,17 @@ export class Account extends PBES2Container implements Storable {
         return this.name || this.email;
     }
 
+    /**
+     * Creates a signature that can be used later to verify an organizations id and public key
+     */
     async signOrg({ id, publicKey }: { id: string; publicKey: Uint8Array }) {
         return getProvider().sign(this.signingKey, concatBytes(stringToBytes(id), publicKey), new HMACParams());
     }
 
+    /**
+     * Verifies an organizations id an public key, using the signature stored
+     * in the [[Member]] object associated with the account.
+     */
     async verifyOrg(org: Org): Promise<void> {
         if (!this.signingKey) {
             throw "Account needs to be unlocked first";

@@ -11,9 +11,15 @@ export interface CollectionChanges<T> {
     removed: T[];
 }
 
+/**
+ * A collection of items, used for consolidating changes made independently
+ * across multiple instances through "merging".
+ */
 export class Collection<T extends CollectionItem> extends Serializable implements Iterable<T> {
+    /** Time of last merge, essential for merging logic */
     lastMerged: Date = new Date(0);
 
+    /** Number of items in this Collection */
     get size() {
         return this._items.size;
     }
@@ -25,10 +31,15 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         this._items = new Map(items.map(item => [item.id, item] as [string, T]));
     }
 
+    /** Get an item with a given `id` */
     get(id: string) {
         return this._items.get(id) || null;
     }
 
+    /**
+     * Updates one or more items based on their id. If no item with the same id
+     * exists, the item will be added to the collection
+     */
     update(...items: T[]) {
         for (const item of items) {
             item.updated = new Date();
@@ -36,12 +47,18 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         }
     }
 
+    /**
+     * Removes one or more items based on their id.
+     */
     remove(...items: T[]) {
         for (const item of items) {
             this._items.delete(item.id);
         }
     }
 
+    /**
+     * Merges in changes from another [[Collection]] instance.
+     */
     merge(coll: Collection<T>) {
         const changes: CollectionChanges<T> = {
             added: [],

@@ -5,8 +5,10 @@ import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
 import { AccountID } from "./account";
 
+/** Unique identifier for [[Session]]s */
 export type SessionID = string;
 
+/** Public session info (used for display purposes) */
 export interface SessionInfo {
     id: string;
     account: AccountID;
@@ -17,16 +19,81 @@ export interface SessionInfo {
     device?: DeviceInfo;
 }
 
+/**
+ * A session represents a trusted connection between a [[Server]] and [[Client]]
+ * which can be used to authenticate requests, allowing both parties to verify
+ * the other parties identity and check the request/response bodies integrity.
+ * The authentication flow usually works as follows:
+ *
+ * ```ts
+ * // CLIENT
+ *
+ * const request = createRequest();
+ * await this.session.authenticate(request);
+ *
+ * // SERVER
+ *
+ * if (!(await context.session.verify(request))) {
+ *     throw "Failed to verify request!";
+ * }
+ *
+ * const response = processRequest(request);
+ * await context.session.authenticate(response);
+ *
+ * // CLIENT
+ *
+ * if (!(await context.session.verify(response))) {
+ *     throw "Failed to verify response!";
+ * }
+ *
+ * processResponse(response);
+ * ```
+ *
+ * ```
+ *                        ┌──────────┐     ┌──────────┐
+ *                        │Client (C)│     │Server (S)│
+ *                        └─────┬────┘     └────┬─────┘
+ * ┌──────────────────────────┐ │               │
+ * │req = [request body]      │ │   req, sid,   │
+ * │t1 = [timestamp]          │ │   t1, sig1    │ ┌──────────────────────────┐
+ * │sig1 = HMAC(K, sid|t1|req)│ │──────────────▶│ │=> verify sig1            │
+ * └──────────────────────────┘ │               │ │res = [response body]     │
+ *                              │               │ │t2 = [timestamp]          │
+ *             ┌──────────────┐ │ res, t2, sig2 │ │sig2 = HMAC(K, sid|t2|res)│
+ *             │=> verify sig2│ │◁ ─ ─ ─ ─ ─ ─ ─│ └──────────────────────────┘
+ *             └──────────────┘ │               │
+ *                              │               │
+ *                              ▼               ▼
+ * ```
+ */
 export class Session extends Serializable implements SessionInfo, Storable {
+    /** Unique identifier */
     id: string = "";
+
+    /** Associated [[Account]] */
     account: AccountID = "";
+
+    /** Time of creation */
     created = new Date(0);
+
+    /** Time of last update */
     updated = new Date(0);
+
+    /** When this session was last used to authenticate a request */
     lastUsed = new Date(0);
+
+    /** Expiration time */
     expires?: Date;
+
+    /** Session key used to sign/verify requests and responses */
     key?: Uint8Array;
+
+    /** Info about the device the client is running on */
     device?: DeviceInfo;
 
+    /**
+     * Public session info
+     */
     get info(): SessionInfo {
         return {
             id: this.id,
@@ -39,6 +106,10 @@ export class Session extends Serializable implements SessionInfo, Storable {
         };
     }
 
+    /**
+     * Authenticates a [[Request]] or [[Response]] by signing the session id,
+     * timestamp and request/response body using the session [[key]].
+     */
     async authenticate(r: Request | Response): Promise<void> {
         const session = this.id;
         const time = new Date().toISOString();
@@ -47,6 +118,10 @@ export class Session extends Serializable implements SessionInfo, Storable {
         r.auth = { session, time, signature };
     }
 
+    /**
+     * Verifies session id, timestamp and request/response body of a given
+     * [[Request]] or [[Response]] using the session [[key]].
+     */
     async verify(r: Request | Response): Promise<boolean> {
         if (!r.auth) {
             return false;
@@ -54,7 +129,7 @@ export class Session extends Serializable implements SessionInfo, Storable {
         const { signature, session, time } = r.auth;
         const data = (<Request>r).params || (<Response>r).result;
 
-        // Make sure message isn't older than 1 minute to prevent replay attacks
+        // Reject requests/responses older than 1 minute to mitigate replay attacks
         const age = Date.now() - new Date(time).getTime();
         if (age > 60 * 1000) {
             return false;

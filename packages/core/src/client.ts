@@ -20,25 +20,36 @@ import { Vault, VaultID } from "./vault";
 import { Err, ErrorCode } from "./error";
 // import { Attachment } from "./attachment";
 
-export interface ClientSettings {
-    customServer: boolean;
-    customServerUrl: string;
-}
-
+/**
+ * Client state, keeping track of [[session]], [[account]] and [[device]] info
+ */
 export interface ClientState {
+    /** Current session */
     session: Session | null;
+    /** Currently logged in account */
     account: Account | null;
+    /** info about current device */
     device: DeviceInfo;
-    settings: ClientSettings;
 }
 
+/**
+ * Client-side interface for Client-Server communication. Manages serialization,
+ * authentication and some state like current session and account.
+ */
 export class Client implements API {
-    constructor(public state: ClientState, private sender: Sender) {}
+    constructor(
+        /** Object for storing state */
+        public state: ClientState,
+        /** [[Sender]] implementation used for sending/receiving requests */
+        private sender: Sender
+    ) {}
 
+    /** The current session */
     get session() {
         return this.state.session;
     }
 
+    /** Generic method for making an RPC call */
     async call(method: string, params?: any[], progress?: RequestProgress) {
         const { session } = this.state;
 
