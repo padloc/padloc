@@ -1,14 +1,15 @@
-import { VaultItem, Field } from "@padloc/core/lib/item.js";
-import { ListItem } from "@padloc/core/lib/app.js";
+import { VaultItem, Field, Tag } from "@padloc/core/lib/item.js";
+import { Vault, VaultID } from "@padloc/core/lib/vault.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { wait } from "@padloc/core/lib/util.js";
+import { debounce, wait, escapeRegex } from "@padloc/core/lib/util.js";
 import { repeat } from "lit-html/directives/repeat.js";
 import { cache } from "lit-html/directives/cache.js";
+import { StateMixin } from "../mixins/state.js";
 import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { dialog, confirm } from "../dialog.js";
 import { shared, mixins } from "../styles";
-import { element, html, css, property, query, listen } from "./base.js";
+import { element, html, css, property, query, listen, observe } from "./base.js";
 import { View } from "./view.js";
 import { CreateItemDialog } from "./create-item-dialog.js";
 import { Input } from "./input.js";
@@ -16,12 +17,37 @@ import { MoveItemsDialog } from "./move-items-dialog.js";
 import "./icon.js";
 import "./items-filter.js";
 
+interface ListItem {
+    item: VaultItem;
+    vault: Vault;
+    section: string;
+    firstInSection: boolean;
+    lastInSection: boolean;
+    warning?: boolean;
+}
+
+function filterByString(fs: string, rec: VaultItem) {
+    if (!fs) {
+        return true;
+    }
+    const content = [rec.name, ...rec.fields.map(f => f.name)].join(" ").toLowerCase();
+    return content.search(escapeRegex(fs.toLowerCase())) !== -1;
+}
+
 @element("pl-items-list")
-export class ItemsList extends View {
+export class ItemsList extends StateMixin(View) {
     @property()
     selected: string = "";
+
     @property()
     multiSelect: boolean = false;
+
+    @property()
+    vault: VaultID = "";
+
+    @property()
+    tag: Tag = "";
+
     @property()
     private _listItems: ListItem[] = [];
     // @property()
@@ -48,39 +74,26 @@ export class ItemsList extends View {
 
     private _multiSelect = new Map<string, ListItem>();
 
-    @listen("items-added", app)
-    @listen("items-deleted", app)
-    @listen("item-changed", app)
-    @listen("items-moved", app)
-    @listen("settings-changed", app)
-    @listen("vault-changed", app)
-    @listen("filter-changed", app)
-    _updateListItems() {
-        this._listItems = app.items;
+    private _updateItems = debounce(() => {
+        this._listItems = this._getItems();
+    }, 50);
+
+    @observe("vault")
+    @observe("tag")
+    async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
             if (!this._listItems.some(i => i.item.id === id)) {
                 this._multiSelect.delete(id);
             }
         }
-    }
 
-    @listen("unlock", app)
-    _unlocked() {
-        this._updateListItems();
-        // this._animateItems(600);
-    }
+        // When the app is getting locked, give the lock animation some time to finish
+        if (this._listItems.length && this.state.locked) {
+            await wait(500);
+        }
 
-    @listen("lock", app)
-    async _locked() {
-        await wait(500);
-        this._updateListItems();
-    }
-
-    @listen("synchronize", app)
-    _synchronized() {
-        this._updateListItems();
-        // this._animateItems();
+        this._updateItems();
     }
 
     private _filterInputBlurred() {
@@ -99,7 +112,6 @@ export class ItemsList extends View {
         this._filterInput.value = "";
         this._filterInput.blur();
         this._filterShowing = false;
-        this._updateFilter();
     }
 
     selectItem(item: ListItem) {
@@ -339,7 +351,7 @@ export class ItemsList extends View {
             <header ?hidden=${this._filterShowing}>
                 <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
-                <pl-items-filter></pl-items-filter>
+                <pl-items-filter .vault=${this.vault} .tag=${this.tag}></pl-items-filter>
 
                 <pl-icon icon="search" class="tap" @click=${() => this.search()}></pl-icon>
             </header>
@@ -352,7 +364,7 @@ export class ItemsList extends View {
                     .placeholder=${$l("Type To Filter")}
                     id="filterInput"
                     @blur=${this._filterInputBlurred}
-                    @input=${this._updateFilter}
+                    @input=${this._updateItems}
                     @escape=${this.cancelFilter}
                 >
                 </pl-input>
@@ -366,13 +378,13 @@ export class ItemsList extends View {
                 </div>
             </main>
 
-            <div class="empty-placeholder" ?hidden=${!!this._listItems.length || app.filter.text}>
+            <div class="empty-placeholder" ?hidden=${!!this._listItems.length || this._filterShowing}>
                 <pl-icon icon="list"></pl-icon>
 
                 <div>${$l("You don't have any items yet!")}</div>
             </div>
 
-            <div class="empty-placeholder" ?hidden=${!!this._listItems.length || !app.filter.text}>
+            <div class="empty-placeholder" ?hidden=${!!this._listItems.length || !this._filterShowing}>
                 <pl-icon icon="search"></pl-icon>
 
                 <div>${$l("Your search did not match any items.")}</div>
@@ -403,10 +415,6 @@ export class ItemsList extends View {
                 <pl-icon icon="delete" class="tap fab destructive" @click=${() => this._deleteItems()}></pl-icon>
             </div>
         `;
-    }
-
-    _updateFilter() {
-        app.filter = { text: this._filterInput.value };
     }
 
     @listen("resize", window)
@@ -487,6 +495,69 @@ export class ItemsList extends View {
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
     }
 
+    private _getItems(): ListItem[] {
+        const recentCount = 0;
+
+        const { vault: vaultId, tag } = this;
+        const filter = (this._filterInput && this._filterInput.value) || "";
+
+        let items: ListItem[] = [];
+
+        for (const vault of this.state.vaults) {
+            // Filter by vault
+            if (vaultId && vault.id !== vaultId) {
+                continue;
+            }
+
+            for (const item of vault.items) {
+                if (
+                    // filter by tag
+                    (!tag || item.tags.includes(tag)) &&
+                    filterByString(filter || "", item)
+                ) {
+                    items.push({
+                        vault,
+                        item,
+                        section: "",
+                        firstInSection: false,
+                        lastInSection: false
+                    });
+                }
+            }
+        }
+
+        const recent = items
+            .sort((a, b) => {
+                return (b.item.lastUsed || b.item.updated).getTime() - (a.item.lastUsed || a.item.updated).getTime();
+            })
+            .slice(0, recentCount);
+
+        items = items.slice(recentCount);
+
+        items = recent.concat(
+            items.sort((a, b) => {
+                const x = a.item.name.toLowerCase();
+                const y = b.item.name.toLowerCase();
+                return x > y ? 1 : x < y ? -1 : 0;
+            })
+        );
+
+        for (let i = 0, prev, curr; i < items.length; i++) {
+            prev = items[i - 1];
+            curr = items[i];
+
+            curr.section =
+                i < recentCount
+                    ? $l("Recently Used")
+                    : (curr.item && curr.item.name[0] && curr.item.name[0].toUpperCase()) || $l("No Name");
+
+            curr.firstInSection = !prev || prev.section !== curr.section;
+            prev && (prev.lastInSection = curr.section !== prev.section);
+        }
+
+        return items;
+    }
+
     private _renderItem(index: number) {
         const item = this._listItems[index];
 
@@ -499,7 +570,7 @@ export class ItemsList extends View {
             tags.push({ icon: "error", class: "tag warning", name: "" });
         }
 
-        const t = item.item.tags.find(t => t === app.filter.tag) || item.item.tags[0];
+        const t = item.item.tags.find(t => t === router.params.tag) || item.item.tags[0];
         if (t) {
             tags.push({
                 name: item.item.tags.length > 1 ? `${t} (+${item.item.tags.length - 1})` : t,

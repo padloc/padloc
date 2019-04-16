@@ -44,6 +44,8 @@ export class Router extends EventEmitter {
             "",
             this.basePath + this.path + "?" + new URLSearchParams(params).toString()
         );
+
+        this.dispatch("route-changed");
     }
 
     get canGoBack() {
@@ -51,12 +53,14 @@ export class Router extends EventEmitter {
     }
 
     go(path: string, params?: { [prop: string]: string }) {
-        if (path !== this.path) {
+        const queryString = new URLSearchParams(params || this.params).toString();
+
+        if (path !== this.path || queryString !== window.location.search) {
             let url = this.basePath + path;
-            const queryString = new URLSearchParams(params || this.params).toString();
             if (queryString) {
                 url += "?" + queryString;
             }
+
             history.pushState({ historyIndex: this.history.length }, "", url);
             this._pathChanged();
         }

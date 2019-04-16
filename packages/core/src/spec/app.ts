@@ -1,13 +1,11 @@
 import { App, AppState } from "../app";
 import { Server } from "../server";
-import { Vault } from "../vault";
 import { StubMessenger } from "../messenger";
 import { EmailVerificationMessage, InviteCreatedMessage, MemberAddedMessage } from "../messages";
 import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
-import { ErrorCode } from "../error";
 import { MemoryAttachmentStorage } from "../attachment";
-import { Spec, assertResolve, assertReject } from "./spec";
+import { Spec, assertResolve } from "./spec";
 
 export function appSpec(): Spec {
     console.log("testing app");
@@ -53,7 +51,7 @@ export function appSpec(): Spec {
 
             await app.signup({ ...user, verify });
 
-            assert.isFalse(app.locked, "App should be in unlocked state after signup.");
+            assert.isFalse(app.state.locked, "App should be in unlocked state after signup.");
             assert.isNotNull(app.account, "Account object should be populated after signup.");
 
             const account = app.account!;
@@ -63,7 +61,7 @@ export function appSpec(): Spec {
 
         test("Create Personal Vault Item", async () => {
             const item = await app.createItem("My First Item");
-            assert.equal(app.items.length, 1, "Item count should be 1.");
+            assert.equal(app.mainVault!.items.size, 1, "Item count should be 1.");
             assert.ok(app.getItem(item.id), "Item should be accessible by ID.");
             assert.equal(app.getItem(item.id)!.item, item);
             assert.equal(app.getItem(item.id)!.vault, app.mainVault);
@@ -74,24 +72,24 @@ export function appSpec(): Spec {
             assert.equal(org.name, "My Org", "Organization name should be correct.");
             assert.ok(org.id, "Organization ID should be set.");
             assert.isTrue(org.isOwner(app.account!), "Account should be organization owner.");
-            assert.equal(app.orgs.length, 1);
+            assert.equal(app.state.orgs.length, 1);
             await assertResolve(
                 assert,
-                () => app.account!.verifyOrg(app.orgs[0]),
+                () => app.account!.verifyOrg(app.state.orgs[0]),
                 "Organization should be verified successfully."
             );
         });
 
         test("Create Vault", async () => {
             const name = "My Shared Vault";
-            const vault = await app.createVault(name, app.orgs[0], [{ id: app.account!.id, readonly: false }]);
+            const vault = await app.createVault(name, app.state.orgs[0], [{ id: app.account!.id, readonly: false }]);
             assert.equal(vault.name, name);
             await app.synchronize();
-            assert.equal(app.vaults.length, 2);
+            assert.equal(app.state.vaults.length, 2);
         });
 
         test("Invite Member", async () => {
-            let org = app.orgs[0];
+            let org = app.state.orgs[0];
             let invite = await app.createInvite(org, otherUser.email);
             // Remember secret - in practice this will be communicated
             // directly between the invitor and invitee
@@ -112,32 +110,29 @@ export function appSpec(): Spec {
             invite.secret = secret;
             assert.isTrue(await invite.verifyInvitee());
             await app.confirmInvite(invite);
-            assert.isTrue(app.orgs[0].isMember(otherApp.account!));
+            assert.isTrue(app.state.orgs[0].isMember(otherApp.account!));
             await otherApp.synchronize();
-            assert.equal(otherApp.orgs.length, 1);
-            assert.isTrue(otherApp.orgs[0].isMember(otherApp.account!));
+            assert.equal(otherApp.state.orgs.length, 1);
+            assert.isTrue(otherApp.state.orgs[0].isMember(otherApp.account!));
 
             const addedMessage = messenger.lastMessage(otherUser.email) as MemberAddedMessage;
             assert.instanceOf(addedMessage, MemberAddedMessage);
             assert.equal(addedMessage.org.id, org.id);
         });
 
-        // test("Create Group", async () => {
-        //     const org = app.orgs[0];
-        //     const { id } = await app.createGroup(org, "Some Group", org.members)!;
-        //     const group = app.orgs[0].getGroup(id)!;
-        //     assert.ok(group);
-        //     assert.isTrue(group.isMember(app.account!));
-        //     assert.isTrue(group.isMember(otherApp.account!));
-        //
-        //     await app.createVault("Another Vault", app.orgs[0], [{ id: group.id, readonly: false }]);
-        //     await otherApp.synchronize();
-        //     assert.equal(otherApp.vaults.length, 3);
-        // });
+        test("Create Group", async () => {
+            const org = app.state.orgs[0];
+            await app.createGroup(org, "Everyone", org.members)!;
+            const group = app.state.orgs[0].getGroup("Everyone")!;
+            assert.ok(group);
+            await app.createVault("Another Vault", app.state.orgs[0], [], [{ name: group.name, readonly: false }]);
+            await otherApp.synchronize();
+            assert.equal(otherApp.vaults.length, 2);
+        });
         //
         // test("Add Member To Subvault", async () => {
-        //     app.vaults[2].addMember(app.vaults[1].members.get(otherApp.account!.id)!);
-        //     await app.syncVault(app.vaults[2]);
+        //     app.state.vaults[2].addMember(app.state.vaults[1].members.get(otherApp.account!.id)!);
+        //     await app.syncVault(app.state.vaults[2]);
         //     await otherApp.synchronize();
         //     assert.equal(otherApp.vaults.length, 3);
         // });
@@ -235,47 +230,38 @@ export function appSpec(): Spec {
         // });
         //
         // test("Remove Member", async () => {
-        //     await app.removeMember(app.vaults[1], app.vaults[1].members.get(otherApp.account!.id)!);
+        //     await app.removeMember(app.state.vaults[1], app.state.vaults[1].members.get(otherApp.account!.id)!);
         //     await otherApp.synchronize();
-        //     assert.isNull(app.vaults[1].members.get(otherApp.account!.id));
-        //     assert.isNull(app.vaults[2].members.get(otherApp.account!.id));
+        //     assert.isNull(app.state.vaults[1].members.get(otherApp.account!.id));
+        //     assert.isNull(app.state.vaults[2].members.get(otherApp.account!.id));
         //     assert.equal(otherApp.vaults.length, 1);
-        //     assert.isNull(otherApp.getVault(app.vaults[1].id));
-        //     assert.isNull(otherApp.getVault(app.vaults[2].id));
+        //     assert.isNull(otherApp.getVault(app.state.vaults[1].id));
+        //     assert.isNull(otherApp.getVault(app.state.vaults[2].id));
         // });
         //
         test("Lock", async () => {
             await app.lock();
-            assert.isTrue(app.locked, "App should be in 'locked' state.");
+            assert.isTrue(app.state.locked, "App should be in 'locked' state.");
             assert.isNotOk(app.account!.privateKey, "Private key should be inaccessible after locking.");
-            assert.isNull(app.mainVault, "Main vault should be in acessible after locking.");
+            assert.equal(app.mainVault!.items.size, 0, "Main vault should be inacessible after locking.");
         });
 
         test("Unlock", async () => {
             await app.unlock(user.password);
-            assert.isFalse(app.locked, "App should be in 'unlocked' state.");
+            assert.isFalse(app.state.locked, "App should be in 'unlocked' state.");
             assert.instanceOf(app.account!.privateKey, Uint8Array, "Private key should be loaded.");
             assert.isNotNull(app.mainVault, "Main vault should be loaded.");
-            assert.equal(app.items.length, 1, "Items should be loaded.");
+            assert.equal(app.mainVault!.items.size, 1, "Items should be loaded.");
         });
 
         test("Logout", async () => {
-            const mainVaultId = app.account!.mainVault;
             await app.logout();
-            assert.isNotOk(app.account, "Account should be unloaded.");
-            assert.isNotOk(app.state.session, "Session should be unloaded.");
-            assertReject(
-                assert,
-                () => app.storage.get(Vault, mainVaultId),
-                ErrorCode.NOT_FOUND,
-                "Main Vault should be purged from storage"
-            );
-            assertReject(
-                assert,
-                () => app.storage.get(AppState, app.state.id),
-                ErrorCode.NOT_FOUND,
-                "Application state should be perged from strorage"
-            );
+
+            const state = await app.storage.get(AppState, app.state.id);
+            assert.isNotOk(state.account, "Account should be unloaded.");
+            assert.isNotOk(state.session, "Session should be unloaded.");
+            assert.equal(state.orgs.length, 0, "Orgs should be unloaded.");
+            assert.equal(state.vaults.length, 0, "Vaults should be unloaded.");
         });
 
         test("Login", async () => {
@@ -283,7 +269,7 @@ export function appSpec(): Spec {
             assert.isNotNull(app.account, "Account should be loaded.");
             const account = app.account!;
             assert.ownInclude(account, { email: user.email, name: user.name }, "Account info should be correct.");
-            assert.equal(app.items.length, 1, "Vault Items should be loaded");
+            assert.equal(app.mainVault!.items.size, 1, "Vault Items should be loaded");
         });
     };
 }

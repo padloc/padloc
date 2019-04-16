@@ -1,19 +1,21 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { Vault } from "@padloc/core/lib/vault.js";
+import { VaultID } from "@padloc/core/lib/vault.js";
 import { Tag } from "@padloc/core/lib/item.js";
-import { app } from "../init.js";
+import { StateMixin } from "../mixins/state.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, css, property, html, listen } from "./base.js";
+import { app, router } from "../init";
+import { BaseElement, element, css, property, html } from "./base.js";
 
 @element("pl-items-filter")
-export class ItemsFilter extends BaseElement {
+export class ItemsFilter extends StateMixin(BaseElement) {
+    @property()
+    vault: VaultID = "";
+
+    @property()
+    tag: Tag = "";
+
     @property({ reflect: true, attribute: "selecting" })
     private _selecting: Boolean = false;
-
-    @listen("filter-changed", app)
-    _update() {
-        this.requestUpdate();
-    }
 
     static styles = [
         shared,
@@ -136,7 +138,8 @@ export class ItemsFilter extends BaseElement {
     ];
 
     render() {
-        const { vault, tag } = app.filter;
+        const { vault: vaultId, tag } = this;
+        const vault = app.getVault(vaultId);
         const cl = vault ? "vault" : tag ? "filter-tag" : "all";
         const label = vault ? vault.toString() : tag || $l("All Items");
 
@@ -149,14 +152,14 @@ export class ItemsFilter extends BaseElement {
 
             <div class="scrim" @click=${() => this._dismiss()}>
                 <div class="list ${cl}">
-                    <button class="all tap" @click=${() => this._select({ tag: null, vault: null })}>
+                    <button class="all tap" @click=${() => this._select({})}>
                         <pl-icon icon="list"></pl-icon>
                         <div>
                             ${$l("All Items")}
                         </div>
                     </button>
 
-                    <button class="favorites tap" @click=${() => this._select({ tag: null, vault: null })}>
+                    <button class="favorites tap" @click=${() => this._select({})}>
                         <pl-icon icon="favorite"></pl-icon>
                         <div>
                             ${$l("Favorites")}
@@ -165,9 +168,9 @@ export class ItemsFilter extends BaseElement {
 
                     <h4>${$l("Vaults")}</h4>
 
-                    ${app.vaults.map(
+                    ${this.state.vaults.map(
                         vault => html`
-                            <button class="vault tap" @click=${() => this._select({ tag: null, vault })}>
+                            <button class="vault tap" @click=${() => this._select({ vault: vault.id })}>
                                 <pl-icon icon="vault"></pl-icon>
                                 <div>
                                     ${vault}
@@ -178,13 +181,13 @@ export class ItemsFilter extends BaseElement {
 
                     <h4>${$l("Tags")}</h4>
 
-                    <div class="no-tags" ?hidden=${!!app.tags.length}>
+                    <div class="no-tags" ?hidden=${!!this.state.tags.length}>
                         ${$l("You don't have any tags yet.")}
                     </div>
 
-                    ${app.tags.map(
+                    ${this.state.tags.map(
                         tag => html`
-                            <button class="filter-tag tap" @click=${() => this._select({ tag, vault: null })}>
+                            <button class="filter-tag tap" @click=${() => this._select({ tag })}>
                                 <pl-icon icon="tag"></pl-icon>
                                 <div>
                                     ${tag}
@@ -197,12 +200,15 @@ export class ItemsFilter extends BaseElement {
         `;
     }
 
-    _select({ tag, vault }: { tag: Tag | null; vault: Vault | null }) {
-        app.filter = {
-            tag,
-            vault,
-            text: app.filter.text
-        };
+    _select({ tag, vault }: { tag?: Tag; vault?: VaultID }) {
+        const params: any = {};
+        if (tag) {
+            params.tag = tag;
+        }
+        if (vault) {
+            params.vault = vault;
+        }
+        router.go("items", params);
     }
 
     _dismiss() {

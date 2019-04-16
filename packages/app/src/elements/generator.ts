@@ -191,7 +191,7 @@ export class Generator extends Dialog<void, string> {
                 this._upper.active && (charSet += chars.upper);
                 this._numbers.active && (charSet += chars.numbers);
                 this._other.active && (charSet += chars.other);
-                this.value = charSet ? randomString(this._length.value, charSet) : "";
+                this.value = charSet ? await randomString(this._length.value, charSet) : "";
                 break;
         }
     }

@@ -99,7 +99,7 @@ export abstract class StartForm extends BaseElement {
     reset() {
         this._animateIn(this.$$(".animate"));
         this.requestUpdate();
-        setTimeout(() => (this._logo.reveal = true), 500);
+        this._logo && setTimeout(() => (this._logo.reveal = true), 500);
     }
 
     done() {

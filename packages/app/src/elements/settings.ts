@@ -2,6 +2,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../dialog";
 import { app } from "../init.js";
+import { StateMixin } from "../mixins/state.js";
 import { element, html, css, query, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
@@ -12,7 +13,7 @@ import { ExportDialog } from "./export-dialog.js";
 import "./fingerprint.js";
 
 @element("pl-settings")
-export class Settings extends View {
+export class Settings extends StateMixin(View) {
     @query("input[type='file']")
     _fileInput: HTMLInputElement;
 
@@ -21,12 +22,6 @@ export class Settings extends View {
 
     @dialog("pl-export-dialog")
     _exportDialog: ExportDialog;
-
-    @listen("settings-changed", app)
-    @listen("account-changed", app)
-    _refresh() {
-        this.requestUpdate();
-    }
 
     shouldUpdate() {
         return !!app.account;

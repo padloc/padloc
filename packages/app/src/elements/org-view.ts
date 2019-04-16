@@ -1,6 +1,7 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { Invite } from "@padloc/core/lib/invite.js";
 import { OrgMember, OrgRole, Group } from "@padloc/core/lib/org.js";
+import { StateMixin } from "../mixins/state.js";
 import { shared, mixins } from "../styles";
 import { dialog, prompt, choose, confirm } from "../dialog.js";
 import { app, router } from "../init.js";
@@ -17,7 +18,7 @@ import "./invite-item.js";
 import "./icon.js";
 
 @element("pl-org-view")
-export class OrgView extends View {
+export class OrgView extends StateMixin(View) {
     @property()
     orgId: string = "";
 
@@ -72,22 +73,18 @@ export class OrgView extends View {
 
     private async _createVault() {
         await this._vaultDialog.show({ org: this._org!, vault: null });
-        this.requestUpdate();
     }
 
     private async _showGroup(group: Group) {
         await this._groupDialog.show({ org: this._org!, group });
-        this.requestUpdate();
     }
 
     private async _createGroup() {
         await this._groupDialog.show({ org: this._org!, group: null });
-        this.requestUpdate();
     }
 
     private async _showVault(vault: { id: string; name: string }) {
         await this._vaultDialog.show({ org: this._org!, vault: vault });
-        this.requestUpdate();
     }
 
     private _updateMembersFilter() {
@@ -133,7 +130,6 @@ export class OrgView extends View {
             }
         } else {
             await this._memberDialog.show({ org: org, member });
-            this.requestUpdate();
         }
     }
 

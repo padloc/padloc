@@ -102,7 +102,7 @@ export class TagsInput extends BaseElement {
     render() {
         const { tags, editing, vault, _showResults } = this;
         const { value } = this._input || { value: "" };
-        const results = app.tags.filter(
+        const results = app.state.tags.filter(
             t => !this.tags.includes(t) && t !== value && t.toLowerCase().startsWith(value)
         );
         if (value) {

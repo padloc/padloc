@@ -12,7 +12,7 @@ export function AutoSync<B extends Constructor<ErrorHandling>>(baseClass: B) {
 
         startPeriodicSync() {
             setTimeout(async () => {
-                if (app.loggedIn && !app.locked) {
+                if (app.state.loggedIn && !app.state.locked) {
                     try {
                         await app.synchronize();
                     } catch (e) {

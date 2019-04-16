@@ -1,33 +1,19 @@
-import { FilterParams } from "@padloc/core/lib/app.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app, router } from "../init.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, property, html, css, listen } from "./base.js";
+import { StateMixin } from "../mixins/state.js";
+import { BaseElement, element, property, html, css } from "./base.js";
 import "./logo.js";
 import "./spinner.js";
 
 @element("pl-menu")
-export class Menu extends BaseElement {
+export class Menu extends StateMixin(BaseElement) {
     @property()
     selected: string = "items";
 
-    @listen("unlock", app)
-    @listen("vault-created", app)
-    @listen("vault-changed", app)
-    @listen("start-sync", app)
-    @listen("finish-sync", app)
-    _refresh() {
-        this.requestUpdate();
-    }
-
-    private _filter(params: FilterParams) {
-        app.filter = params;
-        this._goTo("items");
-    }
-
-    private _goTo(path: string) {
+    private _goTo(path: string, params?: any) {
         this.dispatch("toggle-menu");
-        router.go(path);
+        router.go(path, params);
     }
 
     static styles = [
@@ -134,7 +120,7 @@ export class Menu extends BaseElement {
 
                 <nav>
                     <ul>
-                        <li class="tap" @click=${() => this._filter({})} ?selected=${this.selected === "items"}>
+                        <li class="tap" @click=${() => this._goTo("items")} ?selected=${this.selected === "items"}>
                             <pl-icon icon="list"></pl-icon>
 
                             <div>${$l("Items")}</div>
@@ -170,7 +156,7 @@ export class Menu extends BaseElement {
                 <ul>
                     ${app.vaults.map(
                         vault => html`
-                            <li class="vault tap" @click=${() => this._filter({ vault })}>
+                            <li class="vault tap" @click=${() => this._goTo("items", { vault: vault.id })}>
                                 <pl-icon icon="vault"></pl-icon>
                                 <div>${vault}</div>
                             </li>
@@ -180,12 +166,12 @@ export class Menu extends BaseElement {
 
                 <h3>${$l("Tags")}</h3>
 
-                <div class="no-tags" ?hidden=${!!app.tags.length}>${$l("You don't have any tags yet.")}</div>
+                <div class="no-tags" ?hidden=${!!this.state.tags.length}>${$l("You don't have any tags yet.")}</div>
 
                 <ul>
-                    ${app.tags.map(
+                    ${this.state.tags.map(
                         tag => html`
-                            <li class="menu-tag tap" @click=${() => this._filter({ tag })}>
+                            <li class="menu-tag tap" @click=${() => this._goTo("items", { tag })}>
                                 <pl-icon icon="tag"></pl-icon>
 
                                 <div>${tag}</div>
@@ -199,7 +185,7 @@ export class Menu extends BaseElement {
                 <pl-icon icon="lock" class="tap" @click=${() => app.lock()}></pl-icon>
                 <pl-icon icon="refresh" class="tap" @click=${() => app.synchronize()}></pl-icon>
                 <div class="flex"></div>
-                <pl-spinner .active=${app.syncing} class="syncing"></pl-spinner>
+                <pl-spinner .active=${this.state.syncing} class="syncing"></pl-spinner>
             </div>
         `;
     }

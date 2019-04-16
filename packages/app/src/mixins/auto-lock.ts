@@ -20,9 +20,6 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
             document.addEventListener("mousemove", moved);
             document.addEventListener("pause", () => this._pause());
             document.addEventListener("resume", () => this._resume());
-            app.addEventListener("lock", moved);
-            app.addEventListener("unlock", moved);
-            app.addEventListener("settings-changed", moved);
         }
 
         _cancelAutoLock() {
@@ -45,7 +42,7 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
         _resume() {
             if (
                 app.settings.autoLock &&
-                !app.locked &&
+                !app.state.locked &&
                 this._pausedAt &&
                 new Date().getTime() - this._pausedAt.getTime() > this._lockDelay
             ) {
@@ -56,7 +53,7 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
 
         _doLock() {
             // if app is currently syncing restart the timer
-            if (app.syncing) {
+            if (app.state.syncing) {
                 this._startTimer();
                 return;
             }
@@ -66,7 +63,7 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
 
         _startTimer() {
             this._cancelAutoLock();
-            if (app.settings.autoLock && !app.locked) {
+            if (app.settings.autoLock && !app.state.locked) {
                 this._lockTimeout = window.setTimeout(() => this._doLock(), this._lockDelay);
                 // this._lockNotificationTimeout = setTimeout(() => {
                 //     if (!this.locked && !this._pausedAt) {

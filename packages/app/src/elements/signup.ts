@@ -36,8 +36,8 @@ export class Signup extends StartForm {
     private get _invite() {
         const inviteString = router.params.invite;
         if (inviteString) {
-            const [vault, id] = inviteString.split(",");
-            return { vault, id };
+            const [org, id] = inviteString.split(",");
+            return { org, id };
         } else {
             return undefined;
         }

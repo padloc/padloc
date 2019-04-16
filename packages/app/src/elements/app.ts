@@ -1,10 +1,11 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../init.js";
+import { StateMixin } from "../mixins/state.js";
 import { AutoLock } from "../mixins/auto-lock.js";
 import { ErrorHandling } from "../mixins/error-handling.js";
 import { AutoSync } from "../mixins/auto-sync.js";
-import { BaseElement, html, css, property, query, listen } from "./base.js";
+import { BaseElement, html, css, property, query, listen, observe } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import { View } from "./view.js";
@@ -22,7 +23,12 @@ import { ItemDialog } from "./item-dialog.js";
 //     document.addEventListener("deviceready", resolve);
 // });
 
-class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
+class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
+    @property()
+    locked = true;
+    @property()
+    loggedIn = false;
+
     @query("pl-start")
     private _startView: Start;
     @query("pl-settings")
@@ -44,11 +50,11 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
     private _view: View | null;
 
     @property({ reflect: true, attribute: "menu-open" })
-    _menuOpen: boolean = false;
+    private _menuOpen: boolean = false;
 
     async firstUpdated() {
         await app.loaded;
-        this._applyPath(router.path);
+        this._routeChanged();
     }
 
     static styles = [
@@ -171,40 +177,40 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
         `;
     }
 
+    stateChanged() {
+        this.locked = this.state.locked;
+        this.loggedIn = this.state.loggedIn;
+        super.stateChanged();
+    }
+
+    @observe("locked")
+    _lockedChanged() {
+        if (this.locked) {
+            this.$(".wrapper").classList.remove("active");
+            this._inviteDialog.open = false;
+            clearDialogs();
+            clearClipboard();
+            this._routeChanged();
+        } else {
+            setTimeout(() => {
+                this.$(".wrapper").classList.add("active");
+                router.go(router.params.next || "", {});
+            }, 600);
+        }
+    }
+
     @listen("toggle-menu")
     _toggleMenu() {
         this._menuOpen = !this._menuOpen;
     }
 
-    @listen("lock", app)
-    _locked() {
-        this.$(".wrapper").classList.remove("active");
-        this._inviteDialog.open = false;
-        clearDialogs();
-        clearClipboard();
-        this._applyPath(router.path);
-    }
-
-    @listen("unlock", app)
-    _unlocked() {
-        setTimeout(() => {
-            this.$(".wrapper").classList.add("active");
-            router.go(router.params.next || "", {});
-        }, 600);
-    }
-
     @listen("focus", window)
     _focused() {
         setTimeout(() => {
-            if (app.locked) {
+            if (this.locked) {
                 this._startView.focus();
             }
         }, 100);
-    }
-
-    @listen("route-changed", router)
-    _routeChanged({ detail: { path, direction } }: { detail: { path: string; direction: string } }) {
-        this._applyPath(path, direction);
     }
 
     @listen("dialog-open")
@@ -217,7 +223,13 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
         this.classList.remove("dialog-open");
     }
 
-    async _applyPath(path: string, _direction: string = "forward") {
+    @listen("route-changed", router)
+    @observe("loggedIn")
+    async _routeChanged() {
+        await app.loaded;
+
+        const path = router.path;
+
         let match;
 
         if (path === "recover") {
@@ -248,7 +260,7 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
             return;
         }
 
-        if (app.locked) {
+        if (this.state.locked) {
             if (path === "unlock") {
                 this._startView.unlock();
             } else {
@@ -272,6 +284,8 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
             this._items.selected = id || "";
+            this._items.vault = router.params.vault || "";
+            this._items.tag = router.params.tag || "";
             this._openView(this._items);
             this._menu.selected = "items";
 
@@ -347,7 +361,7 @@ class App extends AutoSync(ErrorHandling(AutoLock(BaseElement))) {
 
     @listen("keydown", document)
     _keydown(event: KeyboardEvent) {
-        if (app.locked || Input.activeInput) {
+        if (this.state.locked || Input.activeInput) {
             return;
         }
 

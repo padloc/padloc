@@ -379,7 +379,7 @@ export class Context implements API {
         }
 
         const addedMembers = members.filter(m => !org.isMember(m));
-        const removedMembers = org.members.filter(({ id }) => members.some(m => id === m.id));
+        const removedMembers = org.members.filter(({ id }) => !members.some(m => id === m.id));
         const addedInvites = invites.filter(({ id }) => !org.getInvite(id));
 
         // Only org owners can add or remove members, change roles or create invites
@@ -557,6 +557,7 @@ export class Context implements API {
 
         // Add to organization
         org.vaults.push({ id: vault.id, name: vault.name });
+        org.revision = await uuid();
 
         // Persist cahnges
         await Promise.all([this.storage.save(vault), this.storage.save(org)]);

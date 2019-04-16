@@ -6,7 +6,6 @@ import { Input } from "./input.js";
 import { LoadingButton } from "./loading-button.js";
 import { alert, choose, prompt } from "../dialog.js";
 import { passwordStrength } from "../util.js";
-import "./logo.js";
 
 @element("pl-recover")
 export class Recover extends StartForm {

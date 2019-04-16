@@ -1,13 +1,14 @@
 import { app } from "../init.js";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, css, property, listen, query } from "./base.js";
+import { StateMixin } from "../mixins/state";
+import { BaseElement, element, html, css, property, query } from "./base.js";
 import { Unlock } from "./unlock.js";
 import { Login } from "./login.js";
 import { Signup } from "./signup.js";
 import { Recover } from "./recover.js";
 
 @element("pl-start")
-export class Start extends BaseElement {
+export class Start extends StateMixin(BaseElement) {
     @property({ reflect: true })
     open: boolean = false;
 
@@ -41,10 +42,8 @@ export class Start extends BaseElement {
         this._showForm(this._recoverForm);
     }
 
-    @listen("lock", app)
-    @listen("unlock", app)
-    _updateOpen() {
-        this.open = !app.locked;
+    stateChanged() {
+        this.open = !app.state.locked;
     }
 
     async _showForm(form: Unlock | Login | Signup | Recover) {

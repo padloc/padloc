@@ -2,7 +2,7 @@ import { Attachment, AttachmentInfo } from "@padloc/core/lib/attachment.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { RequestProgress } from "@padloc/core/lib/transport.js";
 import { shared, mixins } from "../styles";
-import { app } from "../init.js";
+// import { app } from "../init.js";
 // import { dialog } from "../dialog.js";
 import { BaseElement, element, html, property, query, observe } from "./base.js";
 import "./loading-button.js";
@@ -23,7 +23,8 @@ export class AttachmentElement extends BaseElement {
     }
 
     private get _attachment(): Attachment {
-        return app.getAttachment(this.info);
+        // return app.getAttachment(this.info);
+        return new Attachment();
     }
 
     @query("#nameInput")

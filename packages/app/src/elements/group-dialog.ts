@@ -95,7 +95,7 @@ export class GroupDialog extends Dialog<InputType, void> {
             const org = this.org!.clone();
             await org.unlock(app.account!);
 
-            const members = [...this._members.values()].map(id => org.getMember({ id }));
+            const members = [...this._members.values()].map(id => org.getMember({ id })!);
 
             if (this.group) {
                 await app.updateGroup(org, this.group, members, this._nameInput.value);

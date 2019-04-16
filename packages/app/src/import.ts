@@ -48,7 +48,7 @@ export function loadPapa(): Promise<any> {
  * @param  Integer  tagsColIndex  Index of the column containing the item categories. If left empty
  *                               no categories will be used
  */
-export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?: number): VaultItem[] {
+export async function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?: number): Promise<VaultItem[]> {
     // Use first row for column names
     const colNames = data[0];
 
@@ -86,7 +86,7 @@ export function fromTable(data: string[][], nameColIndex?: number, tagsColIndex?
         return createVaultItem(name, fields, (tags && tags.split(",")) || []);
     });
 
-    return items;
+    return Promise.all(items);
 }
 
 export async function isCSV(data: string): Promise<Boolean> {
@@ -165,7 +165,7 @@ function lpParseNotes(str: string): Field[] {
  * the 'extra' column for 'special notes' and remove any special fields that are not needed outside of
  * LastPass
  */
-function lpParseRow(row: string[]): VaultItem {
+async function lpParseRow(row: string[]): Promise<VaultItem> {
     const nameIndex = 4;
     const categoryIndex = 5;
     const urlIndex = 0;
@@ -206,7 +206,7 @@ export async function asLastPass(data: string): Promise<VaultItem[]> {
         .filter((row: string[]) => row.length > 1)
         .map(lpParseRow);
 
-    return items;
+    return Promise.all(items);
 }
 
 /**

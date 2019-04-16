@@ -1,6 +1,6 @@
 import { BaseElement, property, observe } from "./base.js";
 
-export abstract class View extends BaseElement {
+export class View extends BaseElement {
     @property()
     active: boolean = false;
 

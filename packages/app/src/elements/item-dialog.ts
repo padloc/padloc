@@ -9,7 +9,7 @@ import { mixins } from "../styles";
 import { confirm, dialog } from "../dialog.js";
 import { app, router } from "../init.js";
 import { setClipboard } from "../clipboard.js";
-import { element, html, css, property, query, queryAll, listen } from "./base.js";
+import { element, html, css, property, query, queryAll } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -65,14 +65,6 @@ export class ItemDialog extends Dialog<string, void> {
         await this.updateComplete;
         this._itemChanged();
         return super.show();
-    }
-
-    @listen("item-changed", app)
-    @listen("vault-changed", app)
-    @listen("lock", app)
-    @listen("unlock", app)
-    _refresh() {
-        this.requestUpdate();
     }
 
     static styles = [
@@ -150,7 +142,7 @@ export class ItemDialog extends Dialog<string, void> {
     ];
 
     renderContent() {
-        if (app.locked || !this._item || !this._vault) {
+        if (app.state.locked || !this._item || !this._vault) {
             return html``;
         }
 

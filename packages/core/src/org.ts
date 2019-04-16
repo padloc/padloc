@@ -327,14 +327,27 @@ export class Org extends SharedContainer implements Storable {
         return this.groups.filter(g => g.members.some(m => m.id === id));
     }
 
-    /** Get all groups that have access to a given [[Vault]] */
+    /** Get all groups assigned to a given [[Vault]] */
     getGroupsForVault({ id }: Vault): Group[] {
         return this.groups.filter(group => group.vaults.some(v => v.id === id));
     }
 
-    /** Get all members that have access to a given [[Vault]] */
+    /** Get all members directly assigned to a given [[Vault]] */
     getMembersForVault({ id }: Vault): OrgMember[] {
         return this.members.filter(member => member.role !== OrgRole.Suspended && member.vaults.some(v => v.id === id));
+    }
+
+    /** Get all membes that have acess to a given `vault`, either directly or through a [[Group]] */
+    getAccessors(vault: Vault) {
+        const results = new Set<OrgMember>(this.getMembersForVault(vault));
+
+        for (const group of this.getGroupsForVault(vault)) {
+            for (const m of group.members) {
+                results.add(this.getMember(m)!);
+            }
+        }
+
+        return [...results];
     }
 
     /** Get all vaults the given member has access to */
@@ -472,7 +485,7 @@ export class Org extends SharedContainer implements Storable {
     }
 
     /**
-     * Signs the `member`s public key, id and email address so they can be verified later
+     * Signs the `member`s public key, id, role and email address so they can be verified later
      */
     async sign(member: OrgMember): Promise<OrgMember> {
         if (!this.privateKey) {
@@ -481,14 +494,19 @@ export class Org extends SharedContainer implements Storable {
 
         member.signature = await getProvider().sign(
             this.privateKey,
-            concatBytes(stringToBytes(member.id), stringToBytes(member.email), member.publicKey),
+            concatBytes(
+                stringToBytes(member.id),
+                stringToBytes(member.email),
+                new Uint8Array([member.role]),
+                member.publicKey
+            ),
             this.signingParams
         );
         return member;
     }
 
     /**
-     * Verifies the `member`s public key, id and email address.
+     * Verifies the `member`s public key, id, role and email address.
      * Throws if verification fails.
      */
     async verify(member: OrgMember): Promise<void> {
@@ -499,7 +517,12 @@ export class Org extends SharedContainer implements Storable {
         const verified = await getProvider().verify(
             this.publicKey,
             member.signature,
-            concatBytes(stringToBytes(member.id), stringToBytes(member.email), member.publicKey),
+            concatBytes(
+                stringToBytes(member.id),
+                stringToBytes(member.email),
+                new Uint8Array([member.role]),
+                member.publicKey
+            ),
             this.signingParams
         );
 

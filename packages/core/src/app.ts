@@ -1,14 +1,12 @@
-import { EventEmitter } from "./event-target";
 import { Storage, Storable } from "./storage";
 import { Serializable } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgMember, OrgRole, Group } from "./org";
-import { VaultItem, Field, Tag, createVaultItem } from "./item";
+import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
 import { Account, AccountID } from "./account";
 import { Auth, EmailVerificationPurpose } from "./auth";
-import { Session } from "./session";
-// import { Invite } from "./invite";
+import { Session, SessionID } from "./session";
 import {
     API,
     RequestEmailVerificationParams,
@@ -23,12 +21,14 @@ import { Client } from "./client";
 import { Sender } from "./transport";
 import { localize as $l } from "./locale";
 import { DeviceInfo, getDeviceInfo } from "./platform";
-import { uuid, escapeRegex } from "./util";
+import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
-import { Attachment, AttachmentInfo } from "./attachment";
+// import { Attachment, AttachmentInfo } from "./attachment";
 
+/** Various usage stats */
 export class Stats extends Serializable {
+    /** Time of last sync */
     lastSync?: Date;
 
     fromRaw({ lastSync }: any) {
@@ -39,197 +39,216 @@ export class Stats extends Serializable {
     }
 }
 
+/** Various application settings */
 export class Settings extends Serializable {
+    /** Whether to lock app automatically after a certain period of inactivity */
     autoLock: boolean = true;
+    /** Duration after which auto-lock is triggered, in minutes */
     autoLockDelay: number = 5;
-    customServer: boolean = false;
-    customServerUrl: string = "";
+    /** Interval for automatic sync, in minutes */
     syncInterval: number = 1;
 }
 
-function filterByString(fs: string, rec: VaultItem) {
-    if (!fs) {
-        return true;
-    }
-    const content = [rec.name, ...rec.fields.map(f => f.name)].join(" ").toLowerCase();
-    return content.search(escapeRegex(fs.toLowerCase())) !== -1;
-}
-
-export interface ListItem {
-    item: VaultItem;
-    vault: Vault;
-    section: string;
-    firstInSection: boolean;
-    lastInSection: boolean;
-    warning?: boolean;
-}
-
-export interface FilterParams {
-    vault?: Vault | null;
-    tag?: Tag | null;
-    text?: string;
-}
-
+/** Application state */
 export class AppState extends Storable {
     id = "app-state";
+
+    /** Application Settings */
     settings = new Settings();
+
+    /** Usage datra */
     stats = new Stats();
+
+    /** Info about current device */
     device = new DeviceInfo();
+
+    /** Current [[Session]] */
     session: Session | null = null;
+
+    /** Currently logged in [[Account]] */
     account: Account | null = null;
 
-    fromRaw({ settings, stats, device, session, account }: any) {
-        this.settings.fromRaw(settings);
-        this.stats.fromRaw(stats);
-        this.device.fromRaw(device);
-        this.session = new Session().fromRaw(session) || null;
-        this.account = new Account().fromRaw(account) || null;
-        return this;
-    }
-}
+    /** All organizations the current [[account]] is a member of. */
+    orgs: Org[] = [];
 
-export class App extends EventEmitter {
-    version = "3.0";
-    api: API;
-    state = new AppState();
-    loaded = this.load();
+    /** All vaults the current [[account]] has access to. */
+    vaults: Vault[] = [];
 
-    constructor(public storage: Storage, sender: Sender) {
-        super();
-        this.api = new Client(this.state, sender);
-    }
+    /** Whether a sync is currently in process. */
+    syncing = false;
 
-    get settings() {
-        return this.state.settings;
-    }
-
-    get account() {
-        return this.state.account;
-    }
-
-    get locked() {
-        return !this.account || !!this.account.locked;
-    }
-
-    get loggedIn() {
-        return !!this.state.session;
-    }
-
-    get syncing() {
-        return !!this._activeSyncPromises.size;
-    }
-
-    get syncComplete() {
-        return Promise.all([...this._activeSyncPromises.values(), ...this._queuedSyncPromises.values()]);
-    }
-
+    /** All [[Tag]]s found within the users [[Vault]]s */
     get tags() {
-        if (!this.mainVault) {
-            return [];
-        }
-        const tags = this.mainVault.items.tags;
+        const tags = [];
         for (const vault of this.vaults) {
             tags.push(...vault.items.tags);
         }
         return [...new Set(tags)];
     }
 
-    get mainVault(): Vault | null {
-        return (this.account && this._vaults.get(this.account.mainVault)) || null;
+    /** Whether the app is in "locked" state */
+    get locked() {
+        return !this.account || this.account.locked;
     }
 
-    get vaults() {
-        return [...this._vaults.values()].sort((a, b) => {
-            const nameA = a.toString();
-            const nameB = b.toString();
-            return b === this.mainVault || nameA > nameB ? 1 : a === this.mainVault || nameA < nameB ? -1 : 0;
-        });
+    /** Whether a user is logged in */
+    get loggedIn() {
+        return !!this.session;
     }
 
+    fromRaw({ settings, stats, device, session, account, orgs, vaults }: any) {
+        this.settings.fromRaw(settings);
+        this.stats.fromRaw(stats);
+        this.device.fromRaw(device);
+        this.session = (session && new Session().fromRaw(session)) || null;
+        this.account = (account && new Account().fromRaw(account)) || null;
+        this.orgs = orgs.map((org: any) => new Org().fromRaw(org));
+        this.vaults = vaults.map((vault: any) => new Vault().fromRaw(vault));
+        return this;
+    }
+}
+
+/**
+ * The `App` class is *the* user-facing top level component encapsulating all
+ * functionality of the Padloc client app. It is responsible for managing
+ * state, client-side persistence and synchronization with the [[Server]] and
+ * exposes methods for manipulating a users [[Account]], [[Org]]anizations and
+ * [[Vault]]s.
+ *
+ * [[App]] is completely platform-agnostic and can be used in any environment
+ * capable of running JavaScript. It does however rely on platform-specific
+ * providers for a number of features like storage and encryption which can
+ * be "plugged in" as needed.
+ *
+ * ### Encryption
+ *
+ * The `@padloc/core` module does not provide or depend on any specific
+ * implementation of cryptographic primitives but instead relies on
+ * the [[CryptoProvider]] interface to provide those.
+ *
+ * Users of the [[App]] class (and of the `@padloc/core` package in general)
+ * are responsible for ensuring that a secure implemenation of the
+ * [[CryptoProvider]] interface is available before using any methods that
+ * require cryptographic functionality. This is done through the
+ * `crypto.setProvider` function (see example below).
+ *
+ * ### Platform API
+ *
+ * Certain functionality requires access to some platform APIs. For this,
+ * an implementation of the [[Platform]] interface can be provided via
+ * `platform.setPlatform`.
+ *
+ * ### Persistent Storage
+ *
+ * Persistent storage is provided by an implementation of the [[Storage]]
+ * interface.
+ *
+ * ### Data Transport
+ *
+ * The [[Sender]] interface handles communication with the [[Server]] instance
+ * through a RPC [[Request]]-[[Response]] cycle. The implementation provided
+ * should match the [[Receiver]] implementation used in the [[Server]]
+ * instance.
+ *
+ * ### Initialization Example
+ *
+ * ```ts
+ * @import { setProvider } from "@padloc/core/src/crypto";
+ * @import { setPlatform } from "@padloc/core/src/platform";
+ *
+ * setProvider(new NodeCryptoProvider());
+ * setPlatform(new NodePlatform());
+ *
+ * const app = new App(new LevelDBStorage(), new HTTPSender());
+ *
+ * app.loaded.then(() => console.log("app ready!");
+ * ```
+ */
+export class App {
+    /** App version */
+    version = "3.0";
+
+    /** API client for RPC calls */
+    api: API;
+
+    /** Application state */
+    state = new AppState();
+
+    /** Promise that is resolved when the app has been fully loaded */
+    loaded = this.load();
+
+    constructor(
+        /** Persistent storage provider */
+        public storage: Storage,
+        /** Data transport provider */
+        sender: Sender
+    ) {
+        this.api = new Client(this.state, sender);
+    }
+
+    /** Promise that resolves once all current synchronization processes are complete */
+    get syncComplete() {
+        return Promise.all([...this._activeSyncPromises.values(), ...this._queuedSyncPromises.values()]);
+    }
+
+    /** Current account */
+    get account() {
+        return this.state.account;
+    }
+
+    /** Current session */
+    get session() {
+        return this.state.session;
+    }
+
+    /** The current accounts organizations */
     get orgs() {
-        return [...this._orgs.values()];
+        return this.state.orgs;
     }
 
-    get filter() {
-        return this._filter;
+    /** The current accounts vaults */
+    get vaults() {
+        return this.state.vaults;
     }
 
-    set filter(filter: FilterParams) {
-        this._filter = filter;
-        this.dispatch("filter-changed", filter);
+    /** Application settings */
+    get settings() {
+        return this.state.settings;
     }
 
-    get items(): ListItem[] {
-        const recentCount = 0;
-
-        const { vault, tag, text } = this.filter;
-
-        if (!this.mainVault) {
-            return [];
-        }
-        let items: ListItem[] = [];
-
-        for (const s of vault ? [vault] : this.vaults) {
-            for (const item of s.items) {
-                if ((!tag || item.tags.includes(tag)) && filterByString(text || "", item)) {
-                    items.push({
-                        vault: s,
-                        item: item,
-                        section: "",
-                        firstInSection: false,
-                        lastInSection: false
-                    });
-                }
-            }
-        }
-
-        const recent = items
-            .sort((a, b) => {
-                return (b.item.lastUsed || b.item.updated).getTime() - (a.item.lastUsed || a.item.updated).getTime();
-            })
-            .slice(0, recentCount);
-
-        items = items.slice(recentCount);
-
-        items = recent.concat(
-            items.sort((a, b) => {
-                const x = a.item.name.toLowerCase();
-                const y = b.item.name.toLowerCase();
-                return x > y ? 1 : x < y ? -1 : 0;
-            })
-        );
-
-        for (let i = 0, prev, curr; i < items.length; i++) {
-            prev = items[i - 1];
-            curr = items[i];
-
-            curr.section =
-                i < recentCount
-                    ? $l("Recently Used")
-                    : (curr.item && curr.item.name[0] && curr.item.name[0].toUpperCase()) || $l("No Name");
-
-            curr.firstInSection = !prev || prev.section !== curr.section;
-            prev && (prev.lastInSection = curr.section !== prev.section);
-        }
-
-        return items;
+    /** The current users main, or "private" [[Vault]] */
+    get mainVault(): Vault | null {
+        return (this.account && this.getVault(this.account.mainVault)) || null;
     }
 
-    private _vaults = new Map<string, Vault>();
-    private _orgs = new Map<string, Org>();
-    private _filter: FilterParams = {};
-    private _attachments = new Map<string, Attachment>();
+    // private _attachments = new Map<string, Attachment>();
+
     private _queuedSyncPromises = new Map<string, Promise<void>>();
     private _activeSyncPromises = new Map<string, Promise<void>>();
 
+    private _subscriptions: Array<(state: AppState) => void> = [];
+
+    /** Save application state to persistent storage */
+    async save() {
+        await this.loaded;
+        await this.storage.save(this.state);
+    }
+
+    /** Load application state from persistent storage */
     async load() {
+        // Try to load app state from persistent storage.
         try {
-            await this.storage.get(this.state, this.state.id);
+            this.setState(await this.storage.get(AppState, this.state.id));
         } catch (e) {}
+
+        // Update device info
         this.state.device.fromRaw(getDeviceInfo());
+        // If no device id has been set yet, generate a new one
         if (!this.state.device.id) {
             this.state.device.id = await uuid();
         }
+
+        // Save back to storage
         await this.storage.save(this.state);
 
         // Try syncing account so user can unlock with new password in case it has changed
@@ -237,38 +256,129 @@ export class App extends EventEmitter {
             this.fetchAccount();
         }
 
-        this.dispatch("load");
+        // Notify state change
+        this.publish();
     }
 
+    /**
+     * Unlocks the current [[Account]] and all available [[Vaults]].
+     */
     async unlock(password: string) {
-        await this.account!.unlock(password);
-        await this.loadOrgs();
-        await this.loadVaults();
-        this.dispatch("unlock");
+        if (!this.account) {
+            throw "Unlocking only works if the user is logged in!";
+        }
+
+        // Unlock account using the master password
+        await this.account.unlock(password);
+
+        // Unlock all vaults
+        await Promise.all(this.state.vaults.map(vault => vault.unlock(this.account!)));
+
+        // Notify state change
+        this.publish();
+
+        // Trigger sync
         this.synchronize();
     }
 
+    /**
+     * Locks the app and wipes all sensitive information from memory.
+     */
     async lock() {
-        [this.account!, ...this.orgs, ...this.vaults].forEach(each => each.lock());
-        this._vaults.clear();
-        this.dispatch("lock");
+        [this.account!, ...this.state.orgs, ...this.state.vaults].forEach(each => each.lock());
+        this.publish();
     }
 
-    // SESSION / ACCOUNT MANGAGEMENT
+    /**
+     * Synchronizes the current account and all of the accounts organizations
+     * and vaults
+     */
+    async synchronize() {
+        await this.fetchAccount();
+        await this.fetchOrgs();
+        await this.syncVaults();
+        await this.save();
+        this.setStats({ lastSync: new Date() });
+        this.publish();
+    }
 
+    /**
+     * Notifies of changes to the app [[state]] via the provided function
+     *
+     * @returns A unsubscribe function
+     */
+    subscribe(fn: (state: AppState) => void) {
+        this._subscriptions.push(fn);
+        return () => this.unsubscribe(fn);
+    }
+
+    /**
+     * Unsubscribes a function previously subscribed through [[subscribe]].
+     */
+    unsubscribe(fn: (state: AppState) => void) {
+        this._subscriptions = this._subscriptions.filter(f => f === fn);
+    }
+
+    /**
+     * Notifies all subscribers of a [[state]] change
+     */
+    publish() {
+        for (const fn of this._subscriptions) {
+            fn(this.state);
+        }
+    }
+
+    /**
+     * Updates the app [[state]]
+     */
+    setState(state: Partial<AppState>) {
+        Object.assign(this.state, state);
+        this.publish();
+    }
+
+    /** Update usage data */
+    async setStats(obj: Partial<Stats>) {
+        Object.assign(this.state.stats, obj);
+        await this.save();
+        this.publish();
+    }
+
+    /** Update application settings */
+    async setSettings(obj: Partial<Settings>) {
+        Object.assign(this.state.settings, obj);
+        await this.save();
+        this.publish();
+    }
+
+    /*
+     * ===============================
+     *  ACCOUNT & SESSION MANGAGEMENT
+     * ===============================
+     */
+
+    /** Request email verification for a given `email`. */
     async requestEmailVerification(email: string, purpose: EmailVerificationPurpose = "create_account") {
         return this.api.requestEmailVerification(new RequestEmailVerificationParams({ email, purpose }));
     }
 
+    /** Complete email with the given `code` */
     async completeEmailVerification(email: string, code: string) {
         return this.api.completeEmailVerification(new CompleteEmailVerificationParams({ email, code }));
     }
 
+    /**
+     * Creates a new Padloc [[Account]] and signs in the user.
+     */
     async signup({
+        /** The desired email address */
         email,
+        /** The users master password */
         password,
+        /** The desired display name */
         name,
+        /** Verification token obtained trough [[completeEmailVerification]] */
         verify,
+        /** Information about the [[Invite]] object if signup was initiated through invite link */
         invite
     }: {
         email: string;
@@ -277,19 +387,22 @@ export class App extends EventEmitter {
         verify: string;
         invite?: { id: string; org: string };
     }) {
+        // Inialize account object
         const account = new Account();
         account.email = email;
         account.name = name;
         await account.initialize(password);
 
+        // Initialize auth object
         const auth = new Auth(email);
         const authKey = await auth.getAuthKey(password);
 
+        // Calculate verifier
         const srp = new SRPClient();
         await srp.initialize(authKey);
-
         auth.verifier = srp.v!;
 
+        // Send off request to server
         await this.api.createAccount(
             new CreateAccountParams({
                 account,
@@ -299,61 +412,83 @@ export class App extends EventEmitter {
             })
         );
 
+        // Sign into new account
         await this.login(email, password);
     }
 
+    /**
+     * Log in user, creating a new [[Session]], loading [[Account]] info and
+     * fetching all of the users [[Org]]anizations and [[Vault]]s.
+     */
     async login(email: string, password: string) {
+        // Fetch authentication info
         const { auth, B } = await this.api.initAuth(new InitAuthParams({ email }));
+
+        // Generate auth secret
         const authKey = await auth.getAuthKey(password);
 
+        // Initialize SRP object
         const srp = new SRPClient();
-
         await srp.initialize(authKey);
         await srp.setB(B);
 
-        this.state.session = await this.api.createSession(
+        // Create session object
+        const session = await this.api.createSession(
             new CreateSessionParams({ account: auth.account, A: srp.A!, M: srp.M1! })
         );
-        this.state.session.key = srp.K!;
 
-        const account = (this.state.account = await this.api.getAccount());
+        // Apply session key and update state
+        session.key = srp.K!;
+        this.setState({ session });
 
+        // Fetch and unlock account object
+        const account = await this.api.getAccount();
         await account.unlock(password);
+        this.setState({ account });
 
-        const mainVault = await this.api.getVault(account.mainVault);
-        if (!mainVault.accessors.length) {
-            await mainVault.updateAccessors([account]);
-            await this.api.updateVault(mainVault);
-        }
+        // Save application state
+        await this.save();
 
+        // Load organizations and vaults
         await this.synchronize();
-
-        this.dispatch("login");
-        this.dispatch("unlock");
-        this.dispatch("account-changed", { account: this.account });
     }
 
+    /**
+     * Logs out user and clears all sensitive information
+     */
     async logout() {
         await this._logout();
-        this.dispatch("lock");
-        this.dispatch("logout");
-        this.dispatch("account-changed", { account: this.account });
+        this.publish();
     }
 
     private async _logout() {
+        // Revoke session
         try {
             await this.api.revokeSession(this.state.session!.id);
         } catch (e) {}
 
-        this.state.session = null;
-        this.state.account = null;
+        // Clear persistent storage and reset application state
         await this.storage.clear();
-        this._vaults.clear();
+        this.setState({
+            account: null,
+            session: null,
+            vaults: [],
+            orgs: []
+        });
+        await this.save();
     }
 
+    /**
+     * Updates the users master password
+     */
     async changePassword(password: string) {
+        // TODO: Add option to rotate keys
+
         await this.updateAccount(async account => {
+            // Update account object
             await account.setPassword(password);
+
+            // Update auth object
             const auth = new Auth(account.email);
             auth.account = account.id;
             const authKey = await auth.getAuthKey(password);
@@ -364,25 +499,45 @@ export class App extends EventEmitter {
         });
     }
 
+    /**
+     * Fetches the users [[Account]] info from the [[Server]]
+     */
     async fetchAccount() {
         const account = await this.api.getAccount();
+
+        // Copy over secret properties so we don't have to
+        // unlock the account object again.
         if (this.account) {
             account.privateKey = this.account.privateKey;
             account.signingKey = this.account.signingKey;
         }
-        this.state.account = account;
-        this.storage.save(this.state);
-        this.dispatch("account-changed", { account: this.account });
+
+        // Update and save state
+        this.setState({ account });
+        await this.save();
     }
 
+    /**
+     * Updates the users [[Account]] information
+     * @param transform A function applying the changes to the account
+     */
     async updateAccount(transform: (account: Account) => Promise<any>) {
-        let account = this.account!.clone();
+        if (!this.account) {
+            throw "User needs to be logged in in order to update their account!";
+        }
+
+        // Create a clone of the current account to prevent inconsistencies in
+        // case something goes wrong.
+        let account = this.account.clone();
+
+        // Apply changes
         await transform(account);
 
+        // Send request to server
         try {
             account = await this.api.updateAccount(account);
         } catch (e) {
-            // If organizaton has been updated since last fetch,
+            // If account has been updated since last fetch,
             // get the current version and then retry
             if (e.code === ErrorCode.OUTDATED_REVISION) {
                 await this.fetchAccount();
@@ -392,33 +547,71 @@ export class App extends EventEmitter {
             }
         }
 
+        // Copy over secret properties so we don't have to unlock the
+        // account object again.
         account.privateKey = this.account!.privateKey;
         account.signingKey = this.account!.signingKey;
-        this.state.account = account;
-        this.storage.save(this.state);
-        this.dispatch("account-changed", { account: this.account });
+
+        // Update and save state
+        this.setState({ account });
+        await this.save();
     }
 
-    async revokeSession(session: Session) {
-        await this.api.revokeSession(session.id);
+    /**
+     * Revokes the given [[Session]]
+     */
+    async revokeSession({ id }: { id: SessionID }) {
+        await this.api.revokeSession(id);
         await this.fetchAccount();
     }
 
-    async recoverAccount({ email, password, verify }: { email: string; password: string; verify: string }) {
+    /**
+     * Initiates account recovery allowing a user to regain control of their
+     * account in case they forget their master password. This results in the
+     * following:
+     *
+     * - All of the accounts cryptographic keys are rotated.
+     * - The accounts sensitive data is encrypted with the new master password.
+     * - The accounts authentication info is updated to reflect the password change.
+     * - The accounts private vault is reset (and the data within it lost).
+     * - The cryptographic keys of all [[Org]]anizations owned by the account will be
+     *   rotated and all members suspended until reconfirmed.
+     * - The accounts memberships to any [[Org]]ganizations not owned by it will be
+     *   suspended until reconfirmed.
+     *
+     * The user will automatically get logged in during this process
+     * so a separate login is not necessary.
+     */
+    async recoverAccount({
+        /** Account email */
+        email,
+        /** New master password */
+        password,
+        /** Verification token obtained trough [[completeEmailVerification]] */
+        verify
+    }: {
+        email: string;
+        password: string;
+        verify: string;
+    }) {
+        // Log out user (if logged in)
         await this._logout();
 
+        // Initialize account with new password
         let account = new Account();
         account.email = email;
         await account.initialize(password);
 
+        // Initialize auth object with new password
         const auth = new Auth(email);
         const authKey = await auth.getAuthKey(password);
-
         const srp = new SRPClient();
         await srp.initialize(authKey);
-
         auth.verifier = srp.v!;
 
+        // Send account recovery request to the server, updating account and
+        // authentication info. This will also suspend the accounts membership
+        // to any organizations not owned by them.
         await this.api.recoverAccount(
             new RecoverAccountParams({
                 account,
@@ -427,48 +620,61 @@ export class App extends EventEmitter {
             })
         );
 
+        // Sign in user using the new password
         await this.login(email, password);
-
         account = this.account!;
 
-        for (const org of this.orgs) {
-            if (org.isOwner(account)) {
-                await this.updateOrg(org.id, async org => {
-                    // Rotate org encryption key
-                    delete org.encryptedData;
-                    await org.updateAccessors([account]);
+        // Rotate keys of all owned organizations. Suspend all other members
+        // and create invites to reconfirm the membership.
+        for (const org of this.state.orgs.filter(o => o.isOwner(account))) {
+            await this.updateOrg(org.id, async org => {
+                // Rotate org encryption key
+                delete org.encryptedData;
+                await org.updateAccessors([account]);
 
-                    // Rotate Org key pair
-                    await org.generateKeys();
+                // Rotate other cryptographic keys
+                await org.generateKeys();
 
-                    for (const member of org.members) {
-                        if (!org.isOwner(member)) {
-                            member.role = OrgRole.Suspended;
-                            const invite = new Invite(member.email, "confirm_membership");
-                            await invite.initialize(org, this.account!);
-                            org.invites.push(invite);
-                        }
-                    }
+                // Suspend members and create confirmation invites
+                for (const member of org.members.filter(m => m.id !== account.id)) {
+                    member.role = OrgRole.Suspended;
+                    const invite = new Invite(member.email, "confirm_membership");
+                    await invite.initialize(org, this.account!);
+                    org.invites.push(invite);
+                }
 
-                    await org.addOrUpdateMember({
-                        id: account.id,
-                        email: account.email,
-                        name: account.name,
-                        publicKey: account.publicKey,
-                        orgSignature: await account.signOrg(org),
-                        role: OrgRole.Owner
-                    });
+                // Update own membership
+                await org.addOrUpdateMember({
+                    id: account.id,
+                    email: account.email,
+                    name: account.name,
+                    publicKey: account.publicKey,
+                    orgSignature: await account.signOrg(org),
+                    role: OrgRole.Owner
                 });
-            }
+            });
         }
     }
 
-    // VAULTS
+    /**
+     * ==================
+     *  VAULT MANAGEMENT
+     * ==================
+     */
 
-    getVault(id: string) {
-        return this._vaults.get(id) || null;
+    /** Get the [[Vault]] with the given `id` */
+    getVault(id: VaultID) {
+        return this.state.vaults.find(vault => vault.id === id);
     }
 
+    /** Locally update the given `vault` object */
+    putVault(vault: Vault) {
+        this.setState({
+            vaults: [...this.state.vaults.filter(v => v.id !== vault.id), vault]
+        });
+    }
+
+    /** Create a new [[Vault]] */
     async createVault(
         name: string,
         org: Org,
@@ -480,25 +686,35 @@ export class App extends EventEmitter {
         vault.org = { id: org.id, name: org.name };
         vault = await this.api.createVault(vault);
 
+        await this.fetchOrg(org.id);
         await this.updateOrg(org.id, async (org: Org) => {
             groups.forEach(({ name, readonly }) => org.getGroup(name)!.vaults.push({ id: vault.id, readonly }));
             members.forEach(({ id, readonly }) => org.getMember({ id })!.vaults.push({ id: vault.id, readonly }));
         });
 
-        this.dispatch("vault-created", { vault });
+        await this.synchronize();
         return vault;
     }
 
+    /** Update [[Vault]] name and access (not the vaults contents) */
     async updateVault(
+        /** Organization owning the vault */
         orgId: OrgID,
+        /** The vault id */
         id: VaultID,
+        /** The new vault name */
         name: string,
+        /** Organization members that should have access to the vault */
         members: { id: AccountID; readonly: boolean }[] = [],
+        /** Groups that should have access to the vault */
         groups: { name: string; readonly: boolean }[] = []
     ) {
         await this.updateOrg(orgId, async (org: Org) => {
+            // Update name (the name of the actual [[Vault]] name will be
+            // updated in the background)
             org.vaults.find(v => v.id === id)!.name = name;
 
+            // Update group access
             for (const group of org.groups) {
                 // remove previous vault entry
                 group.vaults = group.vaults.filter(v => v.id !== id);
@@ -509,6 +725,7 @@ export class App extends EventEmitter {
                 }
             }
 
+            // Update member access
             for (const member of org.members) {
                 // remove previous vault entry
                 member.vaults = member.vaults.filter(v => v.id !== id);
@@ -521,61 +738,43 @@ export class App extends EventEmitter {
         });
     }
 
-    async loadVaults() {
-        if (!this.account) {
-            return;
-        }
-
-        this._vaults.clear();
-
-        const vault = await this.storage.get(Vault, this.account.mainVault);
-        await vault.unlock(this.account!);
-        this._vaults.set(this.account.mainVault, vault);
-
-        for (const org of this.orgs) {
-            for (const id of org.getVaultsForMember(this.account)) {
-                try {
-                    const vault = await this.storage.get(Vault, id);
-                    await vault.unlock(this.account);
-                    this._vaults.set(id, vault);
-                } catch (e) {
-                    console.error("Failed to load vault: ", e);
-                }
-            }
-        }
-    }
-
+    /** Commit changes to vault object and save locally */
     async saveVault(vault: Vault): Promise<void> {
         await vault.commit();
-        this._vaults.set(vault.id, vault);
-        await this.storage.save(vault);
+        this.putVault(vault);
+        await this.save();
     }
 
+    /** Delete [[Vault]] */
     async deleteVault(id: VaultID) {
         await this.api.deleteVault(id);
         await this.synchronize();
     }
 
+    /** Synchronize the given [[Vault]] */
     async syncVault(vault: { id: VaultID }, transform?: (vault: Vault) => any): Promise<Vault> {
         return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault, transform));
     }
 
+    /** Synchronize all vaults the current user has access to. */
     async syncVaults() {
         if (!this.account) {
             return;
         }
 
+        // Sync private vault
         const promises = [this.syncVault({ id: this.account.mainVault })] as Promise<any>[];
 
-        for (const org of this.orgs) {
+        // Sync vaults assigned to through organizations
+        for (const org of this.state.orgs) {
             // clean up vaults the user no longer has access to
-            for (const vault of this.vaults) {
+            for (const vault of this.state.vaults) {
                 if (vault.org && vault.org.id === org.id && !org.canRead(vault, this.account)) {
-                    await this.storage.delete(vault);
-                    this._vaults.delete(vault.id);
+                    this.state.vaults = this.state.vaults.filter(v => v.id !== vault.id);
                 }
             }
 
+            // Sync all vaults for this organization
             for (const id of org.getVaultsForMember(this.account)) {
                 promises.push(this.syncVault({ id }));
             }
@@ -584,7 +783,9 @@ export class App extends EventEmitter {
         await Promise.all(promises);
     }
 
+    /** Whether the current user has write permissions to the given `vault`. */
     hasWritePermissions(vault: Vault) {
+        // No organization means its the users private vault so they naturally have write access
         if (!vault.org) {
             return true;
         }
@@ -593,7 +794,7 @@ export class App extends EventEmitter {
         return org.canWrite(vault, this.account!);
     }
 
-    async _syncVault({ id }: { id: VaultID }, transform?: (vault: Vault) => any): Promise<Vault | null> {
+    private async _syncVault({ id }: { id: VaultID }, transform?: (vault: Vault) => any): Promise<Vault | null> {
         if (!this.account || this.account.locked) {
             throw "Need to be logged in to sync vault";
         }
@@ -603,6 +804,7 @@ export class App extends EventEmitter {
         let result: Vault;
 
         try {
+            // Fetch and unlock remote vault
             remoteVault = await this.api.getVault(id);
             if (remoteVault.encryptedData) {
                 await remoteVault.unlock(this.account);
@@ -611,6 +813,7 @@ export class App extends EventEmitter {
             return null;
         }
 
+        // Merge changes
         if (localVault) {
             result = localVault.clone();
             await result.unlock(this.account);
@@ -624,21 +827,30 @@ export class App extends EventEmitter {
         // Skip update if
         // - Vault belongs to an org and account membership is suspended
         if (!org || org.getMember(this.account)!.role !== OrgRole.Suspended) {
+            // Update vault accessors
             if (org) {
-                await this.account!.verifyOrg(org);
-                const members = org.getMembersForVault(result);
-                await org.verifyAll(members);
-                await result.updateAccessors(members);
+                // Look up which members should have access to this vault
+                const accessors = org.getAccessors(result);
+
+                // Verify member details
+                await this.account.verifyOrg(org);
+                await org.verifyAll(accessors);
+
+                // Update accessors
+                await result.updateAccessors(accessors);
             } else {
                 await result.updateAccessors([this.account]);
             }
 
+            // Commit changes done during merge
             await result.commit();
 
+            // Apply any additional changes
             if (transform) {
                 transform(result);
             }
 
+            // Push updated vault object to [[Server]]
             try {
                 await this.api.updateVault(result);
             } catch (e) {
@@ -652,18 +864,21 @@ export class App extends EventEmitter {
             }
         }
 
+        // Save vault locally
         await this.saveVault(result);
-        this._vaults.set(id, result);
-
-        this.dispatch("vault-changed", { vault: result });
 
         return result;
     }
 
-    // VAULT ITEMS
+    /**
+     * =======================
+     *  Vault Item Management
+     * =======================
+     */
 
-    getItem(id: string): { item: VaultItem; vault: Vault } | null {
-        for (const vault of [this.mainVault!, ...this.vaults]) {
+    /** Get the [[VaultItem]] and [[Vault]] for the given item `id` */
+    getItem(id: VaultItemID): { item: VaultItem; vault: Vault } | null {
+        for (const vault of this.state.vaults) {
             const item = vault.items.get(id);
             if (item) {
                 return { item, vault };
@@ -673,15 +888,15 @@ export class App extends EventEmitter {
         return null;
     }
 
+    /** Adds a number of `items` to the given `vault` */
     async addItems(items: VaultItem[], vault: Vault = this.mainVault!) {
         vault.items.update(...items);
-        this.dispatch("items-added", { vault, items });
         await this.saveVault(vault);
         this.syncVault(vault);
     }
 
-    async createItem(name: string, vault_?: Vault, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
-        const vault = vault_ || this.mainVault!;
+    /** Creates a new [[VaultItem]] */
+    async createItem(name: string, vault: Vault = this.mainVault!, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
         fields = fields || [
             { name: $l("Username"), value: "", type: "username" },
             { name: $l("Password"), value: "", type: "password" },
@@ -692,19 +907,21 @@ export class App extends EventEmitter {
             item.updatedBy = this.account.id;
         }
         await this.addItems([item], vault);
-        this.dispatch("item-created", { vault, item });
         return item;
     }
 
+    /** Update a given [[VaultItem]]s name, fields and tags */
     async updateItem(vault: Vault, item: VaultItem, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
         vault.items.update({ ...item, ...upd, updatedBy: this.account!.id });
-        this.dispatch("item-changed", { vault, item });
         this.saveVault(vault);
         await this.syncVault(vault);
     }
 
+    /** Delete a number of `items` */
     async deleteItems(items: { item: VaultItem; vault: Vault }[]) {
         const attachments = [];
+
+        // Group items by vault
         const grouped = new Map<Vault, VaultItem[]>();
         for (const item of items) {
             if (!grouped.has(item.vault)) {
@@ -716,14 +933,15 @@ export class App extends EventEmitter {
 
         // await Promise.all(attachments.map(att => this.deleteAttachment(att)));
 
+        // Remove items from their respective vaults
         for (const [vault, items] of grouped.entries()) {
             vault.items.remove(...items);
             this.saveVault(vault);
-            this.dispatch("items-deleted", { vault, items });
             await this.syncVault(vault);
         }
     }
 
+    /** Move `items` from their current vault to the `target` vault */
     async moveItems(items: { item: VaultItem; vault: Vault }[], target: Vault) {
         const newItems = await Promise.all(items.map(async i => ({ ...i.item, id: await uuid() })));
         await this.addItems(newItems, target);
@@ -731,12 +949,25 @@ export class App extends EventEmitter {
         return newItems;
     }
 
-    // ORGANIZATIONS
+    /*
+     * =========================
+     *  ORGANIZATION MANAGEMENT
+     * =========================
+     */
 
+    /** Get the organization with the given `id` */
     getOrg(id: OrgID) {
-        return this._orgs.get(id);
+        return this.state.orgs.find(org => org.id === id);
     }
 
+    /** Update the given organization locally */
+    putOrg(org: Org) {
+        this.setState({
+            orgs: [...this.state.orgs.filter(v => v.id !== org.id), org]
+        });
+    }
+
+    /** Create a new [[Org]]ganization */
     async createOrg(name: string): Promise<Org> {
         let org = new Org();
         org.name = name;
@@ -744,47 +975,60 @@ export class App extends EventEmitter {
         await org.initialize(this.account!);
         org = await this.api.updateOrg(org);
         await this.fetchAccount();
-        await this.loadOrgs(true);
+        await this.fetchOrg(org.id);
         return this.getOrg(org.id)!;
     }
 
-    async loadOrgs(fetch = false) {
+    /** Fetch all organizations the current account is a member of */
+    async fetchOrgs() {
         if (!this.account) {
             return;
         }
         try {
-            await Promise.all(this.account.orgs.map(id => this.loadOrg(id, fetch)));
+            await Promise.all(this.account.orgs.map(id => this.fetchOrg(id)));
         } catch (e) {}
     }
 
-    async loadOrg(id: OrgID, fetch = false) {
-        const org = fetch ? await this.api.getOrg(id) : await this.storage.get(Org, id);
-        this._orgs.set(id, org);
-        fetch && (await this.storage.save(org));
+    /** Fetch the [[Org]]anization object with the given `id` */
+    async fetchOrg(id: OrgID) {
+        const org = await this.api.getOrg(id);
+        this.putOrg(org);
+        await this.save();
         return org;
     }
 
+    /**
+     * Update the organization with the given `id`.
+     *
+     * @param transform Function applying the changes
+     */
     async updateOrg(id: OrgID, transform: (org: Org) => Promise<any>): Promise<Org> {
+        // Create a clone of the existing org object
         let org = this.getOrg(id)!.clone();
+
+        // Apply changes
         await transform(org);
+
         try {
             org = await this.api.updateOrg(org);
         } catch (e) {
             // If organizaton has been updated since last fetch,
             // get the current version and then retry
             if (e.code === ErrorCode.OUTDATED_REVISION) {
-                await this.loadOrg(id, true);
+                await this.fetchOrg(id);
                 return this.updateOrg(id, transform);
             } else {
                 throw e;
             }
         }
-        this._orgs.set(org.id, org);
-        await this.storage.save(org);
-        this.dispatch("org-changed", { org });
+
+        // Update and save app state
+        this.putOrg(org);
+        await this.save();
         return org;
     }
 
+    /** Creates a new [[Group]] in the given `org` */
     async createGroup(org: Org, name: string, members: OrgMember[]) {
         const group = new Group();
         group.name = name;
@@ -798,6 +1042,9 @@ export class App extends EventEmitter {
         return group;
     }
 
+    /**
+     * Updates a [[Group]]s name and members
+     */
     async updateGroup(org: Org, { name }: Group, members: OrgMember[], newName?: string) {
         await this.updateOrg(org.id, async org => {
             const group = org.getGroup(name);
@@ -814,6 +1061,9 @@ export class App extends EventEmitter {
         });
     }
 
+    /**
+     * Update a members assigned [[Vault]]s, [[Group]]s and [[OrgRole]].
+     */
     async updateMember(
         org: Org,
         { id }: OrgMember,
@@ -830,21 +1080,26 @@ export class App extends EventEmitter {
         await this.updateOrg(org.id, async org => {
             const member = org.getMember({ id })!;
 
+            // Update assigned vaults
             if (vaults) {
                 member.vaults = vaults;
             }
 
+            // Update assigned groups
             if (groups) {
+                // Remove member from all groups
                 for (const group of org.groups) {
                     group.members = group.members.filter(m => m.id !== id);
                 }
 
+                // Add them back to the assigned groups
                 for (const name of groups) {
                     const group = org.getGroup(name)!;
                     group.members.push({ id });
                 }
             }
 
+            // Update member role
             if (role) {
                 member.role = role;
             }
@@ -853,10 +1108,11 @@ export class App extends EventEmitter {
         return this.getOrg(org.id)!.getMember({ id })!;
     }
 
+    /**
+     * Removes a member from the given `org`
+     */
     async removeMember(org: Org, { id }: OrgMember) {
         await this.updateOrg(org.id, async org => {
-            await org.unlock(this.account!);
-
             // Remove member from all groups
             for (const group of org.getGroupsForMember({ id })) {
                 group.members = group.members.filter(m => m.id !== id);
@@ -866,18 +1122,29 @@ export class App extends EventEmitter {
         });
     }
 
-    // INVITES
+    /*
+     * ===================
+     *  INVITE MANAGEMENT
+     * ===================
+     */
 
+    /**
+     * Create a new [[Invite]]
+     */
     async createInvite({ id }: Org, email: string, purpose?: InvitePurpose) {
-        const org = this.getOrg(id)!;
-        await org.unlock(this.account!);
-        const invite = new Invite(email, purpose);
-        await invite.initialize(org, this.account!);
-        await this.updateOrg(org.id, async (org: Org) => (org.invites = [...org.invites, invite]));
-        this.dispatch("invite-created", { invite });
-        return invite;
+        let invite: Invite;
+        await this.updateOrg(id, async (org: Org) => {
+            await org.unlock(this.account!);
+            invite = new Invite(email, purpose);
+            await invite.initialize(org, this.account!);
+            org.invites.push(invite);
+        });
+        return invite!;
     }
 
+    /**
+     * Get an [[Invite]] based on the organization id and invite id.
+     */
     async getInvite(orgId: string, id: string) {
         let invite = null;
         try {
@@ -886,6 +1153,11 @@ export class App extends EventEmitter {
         return invite;
     }
 
+    /**
+     * Accept an [[Invite]]
+     *
+     * @param secret The secret confirmation code, provided to the user by the organization owner
+     */
     async acceptInvite(invite: Invite, secret: string) {
         const success = await invite.accept(this.account!, secret);
         if (success) {
@@ -894,11 +1166,20 @@ export class App extends EventEmitter {
         return success;
     }
 
+    /**
+     * Confirm an [[Invite]] after it has been accepted by the invitee.
+     * This will verify the invitees information and then add them to
+     * the organization.
+     *
+     * @returns The newly created member object.
+     */
     async confirmInvite(invite: Invite): Promise<OrgMember> {
+        // Verify invitee information
         if (!(await invite.verifyInvitee())) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "Failed to verify invitee information!");
         }
 
+        // Add member and update organization
         await this.updateOrg(invite.org!.id, async (org: Org) => {
             await org.unlock(this.account!);
             await org.addOrUpdateMember(invite.invitee!);
@@ -908,6 +1189,9 @@ export class App extends EventEmitter {
         return this.getOrg(invite.org!.id)!.getMember({ id: invite.invitee!.id })!;
     }
 
+    /**
+     * Deletes an [[Invite]]
+     */
     async deleteInvite(invite: Invite): Promise<void> {
         await this.updateOrg(
             invite.org!.id,
@@ -915,32 +1199,18 @@ export class App extends EventEmitter {
         );
     }
 
-    // SETTINGS / STATS
-
-    async setStats(obj: Partial<Stats>) {
-        Object.assign(this.state.stats, obj);
-        this.storage.save(this.state);
-        this.dispatch("stats-changed", { stats: this.state.stats });
-    }
-
-    async setSettings(obj: Partial<Settings>) {
-        Object.assign(this.state.settings, obj);
-        this.storage.save(this.state);
-        this.dispatch("settings-changed", { settings: this.state.settings });
-    }
-
     // ATTACHMENTS
 
-    getAttachment(attInfo: AttachmentInfo): Attachment {
-        let att = this._attachments.get(attInfo.id);
-
-        if (!att) {
-            att = new Attachment(attInfo);
-            this._attachments.set(`${attInfo.id}`, att);
-        }
-
-        return att;
-    }
+    // getAttachment(attInfo: AttachmentInfo): Attachment {
+    //     let att = this._attachments.get(attInfo.id);
+    //
+    //     if (!att) {
+    //         att = new Attachment(attInfo);
+    //         this._attachments.set(`${attInfo.id}`, att);
+    //     }
+    //
+    //     return att;
+    // }
 
     // async createAttachment(vault: Vault, file: File): Promise<Attachment> {
     //     const att = new Attachment({ id: uuid(), vault: vault.id });
@@ -965,28 +1235,7 @@ export class App extends EventEmitter {
     //     await this.api.deleteAttachment(att as Attachment);
     // }
 
-    // MISC
-    // async removeMember(vault: Vault, member: VaultMember): Promise<any> {
-    //     for (const { id } of vault.vaults) {
-    //         const subVault = this.getVault(id)!;
-    //         if (subVault.members.get(member.id)) {
-    //             await this.removeMember(subVault, member);
-    //         }
-    //     }
-    //     vault.members.remove(member);
-    //     await this.syncVault(vault);
-    // }
-
-    async synchronize() {
-        await this.fetchAccount();
-        await this.loadOrgs(true);
-        await this.syncVaults();
-        await this.storage.save(this.state);
-        this.setStats({ lastSync: new Date() });
-        this.dispatch("synchronize");
-    }
-
-    async _queueSync(obj: { id: string }, fn: (obj: { id: string }) => Promise<any>): Promise<any> {
+    private async _queueSync(obj: { id: string }, fn: (obj: { id: string }) => Promise<any>): Promise<any> {
         let queued = this._queuedSyncPromises.get(obj.id);
         let active = this._activeSyncPromises.get(obj.id);
 
@@ -1007,16 +1256,17 @@ export class App extends EventEmitter {
             return queued;
         }
 
-        this.dispatch("start-sync", obj);
+        this.setState({ syncing: !!this._activeSyncPromises.size });
+
         active = fn(obj).then(
             (result: any) => {
                 this._activeSyncPromises.delete(obj.id);
-                this.dispatch("finish-sync", obj);
+                this.setState({ syncing: !!this._activeSyncPromises.size });
                 return result;
             },
             e => {
                 this._activeSyncPromises.delete(obj.id);
-                this.dispatch("finish-sync", obj);
+                this.setState({ syncing: !!this._activeSyncPromises.size });
                 throw e;
             }
         );

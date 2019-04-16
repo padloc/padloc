@@ -22,8 +22,8 @@ export class WebPlatform implements Platform {
         range.selectNodeContents(clipboardTextArea);
 
         const s = window.getSelection();
-        s.removeAllRanges();
-        s.addRange(range);
+        s!.removeAllRanges();
+        s!.addRange(range);
         clipboardTextArea.select();
 
         clipboardTextArea.setSelectionRange(0, clipboardTextArea.value.length); // A big number, to cover anything that could be inside the element.
