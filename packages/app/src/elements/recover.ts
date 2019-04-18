@@ -1,4 +1,5 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
+import { ErrorCode } from "@padloc/core/lib/error.js";
 import { EmailVerificationPurpose } from "@padloc/core/lib/email-verification.js";
 import { app, router } from "../init.js";
 import { element, html, css, property, query } from "./base.js";
@@ -234,6 +235,12 @@ export class Recover extends StartForm {
                     try {
                         return await app.completeEmailVerification(email, code);
                     } catch (e) {
+                        if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
+                            alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
+                                type: "warning"
+                            });
+                            return "";
+                        }
                         throw e.message || e.code || e.toString();
                     }
                 }

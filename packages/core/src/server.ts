@@ -739,15 +739,21 @@ export class Context implements API {
             ev = await this.storage.get(EmailVerification, email);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
-                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Email verification required.");
+                throw new Err(ErrorCode.EMAIL_VERIFICATION_REQUIRED, "Email verification required.");
             } else {
                 throw e;
             }
         }
 
         if (ev.code !== code.toLowerCase()) {
-            // TODO: Limit number of tries
-            throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
+            ev.tries++;
+            if (ev.tries > 5) {
+                await this.storage.delete(ev);
+                throw new Err(ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED, "Maximum number of tries exceeded!");
+            } else {
+                await this.storage.save(ev);
+                throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification code. Please try again!");
+            }
         }
 
         return ev.token;

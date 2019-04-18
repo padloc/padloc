@@ -373,6 +373,11 @@ export class Signup extends StartForm {
             this._verifyEmailButton.success();
             router.go("signup/password", { ...router.params, verify });
         } catch (e) {
+            if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
+                alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), { type: "warning" });
+                router.go("signup");
+                return;
+            }
             this._verifyEmailButton.fail();
             throw e;
         }

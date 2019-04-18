@@ -6,7 +6,7 @@ import { StartForm } from "./start-form.js";
 import { Input } from "./input.js";
 import { PasswordInput } from "./password-input.js";
 import { LoadingButton } from "./loading-button.js";
-import { confirm, prompt } from "../dialog.js";
+import { alert, confirm, prompt } from "../dialog.js";
 import "./logo.js";
 
 @element("pl-login")
@@ -153,6 +153,12 @@ export class Login extends StartForm {
                                 try {
                                     return await app.completeEmailVerification(email, code);
                                 } catch (e) {
+                                    if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
+                                        alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
+                                            type: "warning"
+                                        });
+                                        return "";
+                                    }
                                     throw e.message || e.code || e.toString();
                                 }
                             }
