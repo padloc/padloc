@@ -24,13 +24,31 @@ export class DeviceInfo extends Serializable {
     locale: string = "en";
 
     /** The device manufacturer, if available */
-    manufacturer?: string;
+    manufacturer: string = "";
 
     /** The device mode, if available */
-    model?: string;
+    model: string = "";
 
     /** The browser the application was loaded in, if applicable */
-    browser?: string;
+    browser: string = "";
+
+    fromRaw({ platform, osVersion, id, appVersion, userAgent, locale, manufacturer, model, browser }: any) {
+        return super.fromRaw({ platform, osVersion, id, appVersion, userAgent, locale, manufacturer, model, browser });
+    }
+
+    validate() {
+        return (
+            typeof this.platform === "string" &&
+            typeof this.osVersion === "string" &&
+            typeof this.id === "string" &&
+            typeof this.appVersion === "string" &&
+            typeof this.userAgent === "string" &&
+            typeof this.locale === "string" &&
+            typeof this.manufacturer === "string" &&
+            typeof this.model === "string" &&
+            typeof this.browser === "string"
+        );
+    }
 
     constructor(props?: Partial<DeviceInfo>) {
         super();

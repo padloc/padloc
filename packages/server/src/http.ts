@@ -45,8 +45,8 @@ export class HTTPReceiver implements Receiver {
                     break;
                 case "POST":
                     const body = await readBody(httpReq, this.maxRequestSize);
-                    const res = await handler(unmarshal(body));
-                    const resBody = marshal(res);
+                    const res = await handler(new Request().fromRaw(unmarshal(body)));
+                    const resBody = marshal(res.toRaw());
                     httpRes.setHeader("Content-Type", "application/json");
                     httpRes.setHeader("Content-Length", resBody.length);
                     httpRes.write(resBody);

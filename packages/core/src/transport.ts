@@ -1,27 +1,61 @@
+import { Serializable } from "./encoding";
 import { Server } from "./server";
 import { DeviceInfo } from "./platform";
 import { EventEmitter } from "./event-target";
 
 /** RPC request object */
-export interface Request {
+export class Request extends Serializable {
     /** Name of the method call */
-    method: string;
+    method: string = "";
     /** Arguments for the method */
     params?: any[];
     /** Data used to authenticate the request */
     auth?: Authentication;
     /** Info about the device the request is coming from */
     device?: DeviceInfo;
+
+    fromRaw({ method, params, auth, device }: any) {
+        this.device = device && new DeviceInfo().fromRaw(device);
+        return super.fromRaw({ method, params, auth });
+    }
+
+    validate() {
+        const { method, params, auth, device } = this;
+        return (
+            typeof method === "string" && (typeof params === "undefined" || Array.isArray(params)),
+            (typeof auth === "undefined" ||
+                (typeof auth.session === "string" &&
+                    typeof auth.time === "string" &&
+                    typeof auth.signature === "string")) &&
+                (typeof device === "undefined" || device instanceof DeviceInfo)
+        );
+    }
 }
 
 /** RPC response object */
-export interface Response {
+export class Response extends Serializable {
     /** The result of the RPC call */
-    result: any;
+    result: any = null;
     /** Error info, if an error occurred while processing the request */
     error?: Error;
     /** Data used to authenticate the response */
     auth?: Authentication;
+
+    fromRaw({ result, error, auth }: any) {
+        return super.fromRaw({ result, error, auth });
+    }
+
+    validate() {
+        const { error, auth } = this;
+        return (
+            (typeof error === "undefined" ||
+                (["string", "number"].includes(typeof error.code) && typeof error.message === "string")) &&
+            (typeof auth === "undefined" ||
+                (typeof auth.session === "string" &&
+                    typeof auth.time === "string" &&
+                    typeof auth.signature === "string"))
+        );
+    }
 }
 
 /** Authentication data */

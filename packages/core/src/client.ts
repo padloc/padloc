@@ -9,7 +9,7 @@ import {
     CreateSessionParams,
     GetInviteParams
 } from "./api";
-import { Sender, RequestProgress } from "./transport";
+import { Sender, Request, RequestProgress } from "./transport";
 import { DeviceInfo } from "./platform";
 import { Session, SessionID } from "./session";
 import { Account } from "./account";
@@ -53,7 +53,10 @@ export class Client implements API {
     async call(method: string, params?: any[], progress?: RequestProgress) {
         const { session } = this.state;
 
-        const req = { method, params };
+        const req = new Request();
+        req.method = method;
+        req.params = params;
+        req.device = this.state.device;
 
         if (session) {
             await session.authenticate(req);

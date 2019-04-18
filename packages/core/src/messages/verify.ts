@@ -1,5 +1,5 @@
 import { Message } from "../messenger";
-import { EmailVerification } from "../auth";
+import { EmailVerification } from "../email-verification";
 import { base as baseHTML, paragraph as p, colorBackground } from "./base-html";
 
 export class EmailVerificationMessage implements Message {

@@ -6,7 +6,7 @@ import { StartForm } from "./start-form.js";
 import { Input } from "./input.js";
 import { PasswordInput } from "./password-input.js";
 import { LoadingButton } from "./loading-button.js";
-import { confirm } from "../dialog.js";
+import { confirm, prompt } from "../dialog.js";
 import "./logo.js";
 
 @element("pl-login")
@@ -105,7 +105,7 @@ export class Login extends StartForm {
         `;
     }
 
-    private async _submit() {
+    private async _submit(verificationToken?: string): Promise<void> {
         if (this._loginButton.state === "loading") {
             return;
         }
@@ -133,29 +133,69 @@ export class Login extends StartForm {
         this._errorMessage = "";
         this._loginButton.start();
         try {
-            await app.login(email, password);
+            await app.login(email, password, verificationToken);
             this._loginButton.success();
             this.done();
         } catch (e) {
-            this._loginButton.fail();
-            if (e.code !== ErrorCode.INVALID_CREDENTIALS) {
-                throw e;
-            }
-            this._errorMessage = $l("Wrong username or password. Please try again!");
-            this.rumble();
+            switch (e.code) {
+                case ErrorCode.EMAIL_VERIFICATION_REQUIRED:
+                    this._loginButton.stop();
 
-            this._failedCount++;
-            if (this._failedCount > 2) {
-                const recover = await confirm(
-                    $l("Can't remember your master password?"),
-                    $l("Recover Account"),
-                    $l("Try Again")
-                );
-                if (recover) {
-                    router.go("recover", { email });
-                }
-            } else {
-                this._passwordInput.focus();
+                    await app.requestEmailVerification(email);
+
+                    const verify = await prompt(
+                        $l("Please enter the confirmation code sent to your email address to proceed!"),
+                        {
+                            title: $l("One Last Step!"),
+                            placeholder: $l("Enter Verification Code"),
+                            confirmLabel: $l("Submit"),
+                            validate: async (code: string) => {
+                                try {
+                                    return await app.completeEmailVerification(email, code);
+                                } catch (e) {
+                                    throw e.message || e.code || e.toString();
+                                }
+                            }
+                        }
+                    );
+
+                    return verify ? this._submit(verify) : undefined;
+                case ErrorCode.INVALID_CREDENTIALS:
+                    this._errorMessage = $l("Wrong username or password. Please try again!");
+                    this._loginButton.fail();
+                    this.rumble();
+
+                    this._failedCount++;
+                    if (this._failedCount > 2) {
+                        const recover = await confirm(
+                            $l("Can't remember your master password?"),
+                            $l("Recover Account"),
+                            $l("Try Again")
+                        );
+                        if (recover) {
+                            router.go("recover", { email });
+                        }
+                    } else {
+                        this._passwordInput.focus();
+                    }
+                    return;
+                case ErrorCode.NOT_FOUND:
+                    this._loginButton.fail();
+                    const signup = await confirm(
+                        $l("An account with this email address does not exist!"),
+                        $l("Sign Up"),
+                        $l("Cancel"),
+                        {
+                            icon: "info"
+                        }
+                    );
+                    if (signup) {
+                        router.go("signup", { email });
+                    }
+                    return;
+                default:
+                    this._loginButton.fail();
+                    throw e;
             }
         }
     }

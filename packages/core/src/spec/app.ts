@@ -5,7 +5,8 @@ import { EmailVerificationMessage, InviteCreatedMessage, MemberAddedMessage } fr
 import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
 import { MemoryAttachmentStorage } from "../attachment";
-import { Spec, assertResolve } from "./spec";
+import { ErrorCode } from "../error";
+import { Spec, assertResolve, assertReject } from "./spec";
 
 export function appSpec(): Spec {
     console.log("testing app");
@@ -265,7 +266,21 @@ export function appSpec(): Spec {
         });
 
         test("Login", async () => {
-            await app.login(user.email, user.password);
+            const app = new App(new MemoryStorage(), new DirectSender(server));
+            await assertReject(
+                assert,
+                () => app.login(user.email, user.password),
+                ErrorCode.EMAIL_VERIFICATION_REQUIRED,
+                "Logging in from a new device should require email verification."
+            );
+
+            await app.requestEmailVerification(user.email);
+            const message = messenger.lastMessage(user.email);
+            const code = (message! as EmailVerificationMessage).verification.code;
+            const verify = await app.completeEmailVerification(user.email, code);
+
+            await app.login(user.email, user.password, verify);
+
             assert.isNotNull(app.account, "Account should be loaded.");
             const account = app.account!;
             assert.ownInclude(account, { email: user.email, name: user.name }, "Account info should be correct.");

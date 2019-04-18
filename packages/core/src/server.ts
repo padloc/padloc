@@ -17,7 +17,8 @@ import {
 } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account } from "./account";
-import { Auth, EmailVerification } from "./auth";
+import { Auth } from "./auth";
+import { EmailVerification } from "./email-verification";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
@@ -26,13 +27,11 @@ import { Invite } from "./invite";
 import { Messenger } from "./messenger";
 import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
-import { getProvider } from "./crypto";
 import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { localize as $l } from "./locale";
 
 const pendingAuths = new Map<string, SRPServer>();
-const cachedFakeAuthParams = new Map<string, Auth>();
 
 /** Server configuration */
 export interface ServerConfig {
@@ -77,34 +76,31 @@ export class Context implements API {
         return await this._checkEmailVerificationCode(email, code);
     }
 
-    async initAuth({ email }: InitAuthParams): Promise<InitAuthResponse> {
-        let auth: Auth;
+    async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
+        let auth: Auth | null = null;
 
         try {
             auth = await this.storage.get(Auth, email);
         } catch (e) {
-            if (e.code === ErrorCode.NOT_FOUND) {
-                // Account does not exist. We don't want to respond with an error though
-                // because that would allow user enumeration. Instead, we'll just send back
-                // random values...
-
-                if (!cachedFakeAuthParams.has(email)) {
-                    const auth = new Auth(email);
-                    auth.keyParams.salt = await getProvider().randomBytes(32);
-                    auth.account = await uuid();
-
-                    // We'll have to cache our fake authentication params since returning
-                    // different values on subsequent requests would give away our clever
-                    // deceit...
-                    cachedFakeAuthParams.set(email, auth);
-                }
-
-                return new InitAuthResponse({
-                    auth: cachedFakeAuthParams.get(email)!,
-                    B: await getProvider().randomBytes(32)
-                });
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
             }
-            throw e;
+        }
+
+        const deviceTrusted = auth && this.device && auth.trustedDevices.some(({ id }) => id === this.device!.id);
+
+        if (!deviceTrusted) {
+            if (!verify) {
+                throw new Err(ErrorCode.EMAIL_VERIFICATION_REQUIRED);
+            } else {
+                this._checkEmailVerificationToken(email, verify);
+            }
+        }
+
+        if (!auth) {
+            // The user has successfully verified their email address so it's safe to
+            // tell them that this account doesn't exist.
+            throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
         }
 
         // Initiate SRP key exchange using the accounts verifier. This also
@@ -172,6 +168,13 @@ export class Context implements API {
         // Delete pending SRP context
         pendingAuths.delete(account);
 
+        // Add device to trusted devices
+        const auth = await this.storage.get(Auth, acc.email);
+        if (this.device && !auth.trustedDevices.some(({ id }) => id === this.device!.id)) {
+            auth.trustedDevices.push(this.device);
+        }
+        await this.storage.save(auth);
+
         // Although the session key is secret in the sense that it should never
         // be transmitted between client and server, it still needs to be
         // stored on both sides, which is why it is included in the [[Session]]
@@ -215,6 +218,11 @@ export class Context implements API {
         account.id = await uuid();
         account.revision = await uuid();
         auth.account = account.id;
+
+        // Add device to trusted devices
+        if (this.device && !auth.trustedDevices.some(({ id }) => id === this.device!.id)) {
+            auth.trustedDevices.push(this.device);
+        }
 
         // Provision the private vault for this account
         const vault = new Vault();
@@ -790,7 +798,7 @@ export class Server {
 
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
-        const res = { result: null };
+        const res = new Response();
         try {
             const context = new Context(this.config, this.storage, this.messenger, this.attachmentStorage);
             context.device = new DeviceInfo().fromRaw(req.device);

@@ -1,6 +1,7 @@
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
-import { Auth, EmailVerificationPurpose } from "./auth";
+import { Auth } from "./auth";
+import { EmailVerificationPurpose } from "./email-verification";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
@@ -21,7 +22,7 @@ export class CreateAccountParams extends Serializable {
     auth!: Auth;
 
     /**
-     * The verification code obtained from [[API.completeEmailVerification]].
+     * The verification token obtained from [[API.completeEmailVerification]].
      */
     verify!: string;
 
@@ -96,7 +97,7 @@ export class RequestEmailVerificationParams extends Serializable {
     email = "";
 
     /** The purpose of the email verification */
-    purpose: EmailVerificationPurpose = "create_account";
+    purpose: EmailVerificationPurpose = EmailVerificationPurpose.Signup;
 
     constructor(props?: Partial<RequestEmailVerificationParams>) {
         super();
@@ -104,7 +105,7 @@ export class RequestEmailVerificationParams extends Serializable {
     }
 
     validate() {
-        return typeof this.email === "string" && ["create_account", "recover_account"].includes(this.purpose);
+        return typeof this.email === "string" && this.purpose in EmailVerificationPurpose;
     }
 
     fromRaw({ email, purpose }: any) {
@@ -143,17 +144,24 @@ export class InitAuthParams extends Serializable {
     /** The email address of the [[Account]] in question */
     email = "";
 
+    /**
+     * The verification token obtained from [[API.completeEmailVerification]].
+     */
+    verify?: string;
+
     constructor(props?: Partial<InitAuthParams>) {
         super();
         props && Object.assign(this, props);
     }
 
     validate() {
-        return typeof this.email === "string";
+        return (
+            typeof this.email === "string" && (typeof this.verify === "string" || typeof this.verify === "undefined")
+        );
     }
 
-    fromRaw({ email }: any) {
-        return super.fromRaw({ email });
+    fromRaw({ email, verify }: any) {
+        return super.fromRaw({ email, verify });
     }
 }
 

@@ -1,4 +1,5 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
+import { EmailVerificationPurpose } from "@padloc/core/lib/email-verification.js";
 import { app, router } from "../init.js";
 import { element, html, css, property, query } from "./base.js";
 import { StartForm } from "./start-form.js";
@@ -213,7 +214,7 @@ export class Recover extends StartForm {
             }
         }
 
-        await app.requestEmailVerification(email, "recover_account");
+        await app.requestEmailVerification(email, EmailVerificationPurpose.Recover);
 
         return this._recover(email, password);
     }

@@ -5,7 +5,8 @@ import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgMember, OrgRole, Group } from "./org";
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
 import { Account, AccountID } from "./account";
-import { Auth, EmailVerificationPurpose } from "./auth";
+import { Auth } from "./auth";
+import { EmailVerificationPurpose } from "./email-verification";
 import { Session, SessionID } from "./session";
 import {
     API,
@@ -13,6 +14,7 @@ import {
     CompleteEmailVerificationParams,
     CreateAccountParams,
     InitAuthParams,
+    InitAuthResponse,
     CreateSessionParams,
     RecoverAccountParams,
     GetInviteParams
@@ -228,6 +230,8 @@ export class App {
 
     private _subscriptions: Array<(state: AppState) => void> = [];
 
+    private _cachedAuthInfo = new Map<string, InitAuthResponse>();
+
     /** Save application state to persistent storage */
     async save() {
         await this.loaded;
@@ -242,7 +246,8 @@ export class App {
         } catch (e) {}
 
         // Update device info
-        this.state.device.fromRaw(getDeviceInfo());
+        const { id, ...rest } = await getDeviceInfo();
+        Object.assign(this.state.device, rest);
         // If no device id has been set yet, generate a new one
         if (!this.state.device.id) {
             this.state.device.id = await uuid();
@@ -357,7 +362,7 @@ export class App {
      */
 
     /** Request email verification for a given `email`. */
-    async requestEmailVerification(email: string, purpose: EmailVerificationPurpose = "create_account") {
+    async requestEmailVerification(email: string, purpose: EmailVerificationPurpose = EmailVerificationPurpose.Signup) {
         return this.api.requestEmailVerification(new RequestEmailVerificationParams({ email, purpose }));
     }
 
@@ -420,9 +425,13 @@ export class App {
      * Log in user, creating a new [[Session]], loading [[Account]] info and
      * fetching all of the users [[Org]]anizations and [[Vault]]s.
      */
-    async login(email: string, password: string) {
-        // Fetch authentication info
-        const { auth, B } = await this.api.initAuth(new InitAuthParams({ email }));
+    async login(email: string, password: string, verify?: string) {
+        if (!this._cachedAuthInfo.has(email)) {
+            // Fetch authentication info
+            this._cachedAuthInfo.set(email, await this.api.initAuth(new InitAuthParams({ email, verify })));
+        }
+
+        const { auth, B } = this._cachedAuthInfo.get(email)!;
 
         // Generate auth secret
         const authKey = await auth.getAuthKey(password);
@@ -467,8 +476,7 @@ export class App {
             await this.api.revokeSession(this.state.session!.id);
         } catch (e) {}
 
-        // Clear persistent storage and reset application state
-        await this.storage.clear();
+        // Reset application state
         this.setState({
             account: null,
             session: null,

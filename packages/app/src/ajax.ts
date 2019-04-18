@@ -44,7 +44,7 @@ export class AjaxSender implements Sender {
     constructor(public url: string) {}
 
     async send(req: Request, progress?: RequestProgress): Promise<Response> {
-        const body = marshal(req);
+        const body = marshal(req.toRaw());
         const res = await request(
             "POST",
             this.url,
@@ -53,7 +53,7 @@ export class AjaxSender implements Sender {
             progress
         );
         try {
-            return unmarshal(res.responseText);
+            return new Response().fromRaw(unmarshal(res.responseText));
         } catch (e) {
             throw new Err(ErrorCode.SERVER_ERROR);
         }
