@@ -2,7 +2,7 @@ import { OrgMember, OrgRole } from "@padloc/core/lib/org.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared } from "../styles";
 import { BaseElement, element, html, css, property } from "./base.js";
-import "./fingerprint.js";
+import "./randomart.js";
 
 @element("pl-member-item")
 export class MemberItem extends BaseElement {
