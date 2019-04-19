@@ -65,4 +65,4 @@ The node.js server and build commands are configured via environment variables:
 
 ## Security
 
-For an security design overview, check out [this document](packages/core/design-overview.md).
+For an security design overview, check out [this document](security.md).
