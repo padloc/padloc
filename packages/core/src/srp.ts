@@ -1,3 +1,112 @@
+/**
+ * This module implements version 6a of the [Secure Remote
+ * Password](http://srp.stanford.edu/design.html) protocol.
+ *
+ * The [[Client]] and [[Server]] classes are the high-level interfaces to be
+ * used on the client and server side, respectively. The SRP key negotiation
+ * flow usually happens as follows:
+ *
+ * #### First signup
+ *
+ * ```ts
+ * // CLIENT
+ *
+ * const u = [username/email];
+ * const p = [user password];
+ * const i = [iteration count];
+ * const s = [random salt];
+ *
+ * const x =  PBKDF2(p, s, i);
+ *
+ * const client = new Client();
+ * await client.initialize(x);
+ * const v = client.v;
+ *
+ * => Send u, v, s, i to server
+ * ```
+ *
+ * #### Login / create session
+ *
+ * ```ts
+ * // CLIENT => request login for `u`
+ *
+ * // SERVER
+ *
+ * const { v, s, i } = getAuthInfo(u);
+ *
+ * const server = new Server();
+ * await server.initialize(v);
+ * const B = server.B;
+ *
+ * // => Send s, i, B to client
+ *
+ * // CLIENT
+ *
+ * const x =  PBKDF2(p, s, i);
+ *
+ * const client = new Client();
+ * await client.initialize(x);
+ * await client.setB(B);
+ *
+ * const A = client.A;
+ * const M1 = client.M1;
+ *
+ * // Common session key
+ * const K = client.K;
+ *
+ * // => Send A, M1 to server
+ *
+ * // SERVER
+ *
+ * await server.setA(A);
+ * if (server.M1 !== M1) {
+ *     throw "Invalid credentials!";
+ * }
+ *
+ * // Common session key
+ * const K = server.K;
+ *
+ * // => Success!
+ *
+ * // [OPTIONAL] (This step is usually not required since even without
+ * // verifying M2, the client will notice something is wrong as soon as they try
+ * // to verify an authenticated response from the server.)
+ *
+ * M2 = server.M2;
+ * // => Send M2 to client
+ *
+ * // CLIENT
+ * if (client.M2 !== M2) {
+ *     throw "Something is fishy!";
+ * }
+ * ```
+ *
+ * #### Overview:
+ *
+ * ```
+ *                     ┌──────────┐     ┌──────────┐
+ *                     │Client (C)│     │Server (S)│
+ *                     └─────┬────┘     └────┬─────┘
+ *     ┌───────────────────┐ │               │
+ *     │u = [email address]│ │     u, A      │
+ *     │a, A = [random*]   │ │──────────────▶│
+ *     └───────────────────┘ │               │ ┌────────────────┐
+ *                           │               │ │b, B = [random*]│
+ * ┌───────────────────────┐ │    s, i, B    │ └────────────────┘
+ * │p = [master password]  │ │◁ ─ ─ ─ ─ ─ ─ ─│
+ * │x = PBKDF2(p,s,i)      │ │               │
+ * │K = K_client(x, a, B)* │ │               │
+ * │M = M(A, B, K)*        │ │       M       │ ┌───────────────────────┐
+ * └───────────────────────┘ │──────────────▶│ │K' = K_server(v, b, A)*│
+ *                           │               │ │M' = M(A, B, K')       │
+ *                           │               │ │=> verify M == M'      │
+ *         ┌───────────────┐ │      sid      │ │S = [session id]       │
+ *         │=> store sid, K│ │◀ ─ ─ ─ ─ ─ ─ ─│ │=> store sid, K        │
+ *         └───────────────┘ │               │ └───────────────────────┘
+ *                           │               │
+ *                           ▼               ▼
+ * ```
+ */
 import { BigInteger } from "../vendor/jsbn";
 import { bytesToHex, hexToBytes, concatBytes } from "./encoding";
 import { getProvider, HashParams } from "./crypto";
@@ -301,121 +410,6 @@ export class Core {
     isZeroWhenModN(n: BigInteger) {
         return n.mod(this._params.N).equals(BigInteger.ZERO);
     }
-}
-
-/**
- * This module implements version 6a of the [Secure Remote
- * Password](http://srp.stanford.edu/design.html) protocol.
- *
- * The [[Client]] and [[Server]] classes are the high-level interfaces to be
- * used on the client and server side, respectively. The SRP key negotiation
- * flow usually happens as follows:
- *
- * #### First signup
- *
- * ```ts
- * // CLIENT
- *
- * const u = [username/email];
- * const p = [user password];
- * const i = [iteration count];
- * const s = [random salt];
- *
- * const x =  PBKDF2(p, s, i);
- *
- * const client = new Client();
- * await client.initialize(x);
- * const v = client.v;
- *
- * => Send u, v, s, i to server
- * ```
- *
- * #### Login / create session
- *
- * ```ts
- * // CLIENT => request login for `u`
- *
- * // SERVER
- *
- * const { v, s, i } = getAuthInfo(u);
- *
- * const server = new Server();
- * await server.initialize(v);
- * const B = server.B;
- *
- * // => Send s, i, B to client
- *
- * // CLIENT
- *
- * const x =  PBKDF2(p, s, i);
- *
- * const client = new Client();
- * await client.initialize(x);
- * await client.setB(B);
- *
- * const A = client.A;
- * const M1 = client.M1;
- *
- * // Common session key
- * const K = client.K;
- *
- * // => Send A, M1 to server
- *
- * // SERVER
- *
- * await server.setA(A);
- * if (server.M1 !== M1) {
- *     throw "Invalid credentials!";
- * }
- *
- * // Common session key
- * const K = server.K;
- *
- * // => Success!
- *
- * // [OPTIONAL] (This step is usually not required since even without
- * // verifying M2, the client will notice something is wrong as soon as they try
- * // to verify an authenticated response from the server.)
- *
- * M2 = server.M2;
- * // => Send M2 to client
- *
- * // CLIENT
- * if (client.M2 !== M2) {
- *     throw "Something is fishy!";
- * }
- * ```
- *
- * #### Overview:
- *
- * ```
- *                     ┌──────────┐     ┌──────────┐
- *                     │Client (C)│     │Server (S)│
- *                     └─────┬────┘     └────┬─────┘
- *     ┌───────────────────┐ │               │
- *     │u = [email address]│ │     u, A      │
- *     │a, A = [random*]   │ │──────────────▶│
- *     └───────────────────┘ │               │ ┌────────────────┐
- *                           │               │ │b, B = [random*]│
- * ┌───────────────────────┐ │    s, i, B    │ └────────────────┘
- * │p = [master password]  │ │◁ ─ ─ ─ ─ ─ ─ ─│
- * │x = PBKDF2(p,s,i)      │ │               │
- * │K = K_client(x, a, B)* │ │               │
- * │M = M(A, B, K)*        │ │       M       │ ┌───────────────────────┐
- * └───────────────────────┘ │──────────────▶│ │K' = K_server(v, b, A)*│
- *                           │               │ │M' = M(A, B, K')       │
- *                           │               │ │=> verify M == M'      │
- *         ┌───────────────┐ │      sid      │ │S = [session id]       │
- *         │=> store sid, K│ │◀ ─ ─ ─ ─ ─ ─ ─│ │=> store sid, K        │
- *         └───────────────┘ │               │ └───────────────────────┘
- *                           │               │
- *                           ▼               ▼
- * ```
- */
-export namespace SRP {
-    Client;
-    Server;
-    Core;
 }
 
 type SRPGroupLength = 1024 | 1536 | 2048 | 3072 | 4096 | 6144 | 8192;

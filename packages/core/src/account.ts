@@ -19,7 +19,14 @@ import { Org, OrgID } from "./org";
 export type AccountID = string;
 
 /**
- * The Account object represents a Padloc user and is
+ * The `Account` object represents an individual Padloc user and holds general
+ * account information as well as cryptographic keys necessary for accessing
+ * [[Vaults]] and signing/verifying [[Org]]anization details.
+ *
+ * The [[privateKey]] and [[signingKey]] properties are considered secret and
+ * therefore need to be encrypted at rest. For this, the [[Account]] object
+ * serves as a [[PBESContainer]] which is unlocked by the users **master
+ * password**.
  */
 export class Account extends PBES2Container implements Storable {
     /** Unique account ID */

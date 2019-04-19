@@ -206,6 +206,10 @@ used to decrypt the original data.
                                        ==============
 ```
 
+## Client-Server Architecture And The Zero-Trust Principle
+
+[[TODO]]
+
 ## The Account Object And Master Password
 
 The **Account** object represents an individual Padloc user and is central to
@@ -219,7 +223,7 @@ following information:
     needs to be granted access to data protected via the [Shared-Key Encryption
     Scheme](#shared-key-encryption).
 -   A HMAC key used for signing and verifing organization details (see
-    [Organizations And Shared Vaults / Signing Member Information](#signing-member-information)
+    [Organizations And Shared Vaults / Adding Members](#adding-members)
 -   A unique, immutable id
 -   A (display) name
 
@@ -342,7 +346,7 @@ information:
     used for display purposes
 -   A RSA **public key** and **private key** pair that is used to sign and
     verify public keys and identifying information of its members. See [Signing
-    Member Information](#signing-member-information) and [Verifying
+    Member Information](#adding-members) and [Verifying
     Members](#verifying-members) for details.
 -   An AES key (in the following called "**invites key**") used to encrypt the
     invite verification code during [key
@@ -393,23 +397,23 @@ Before a new member can be added to an Organization, a key exchange has to take
 place between the organization (represented by the organization owner) and the
 new member. The key exchange is performed as follows:
 
-1. The Organization owner `O` chooses a random passphrase `p`, a random salt `s`
-   and an iteration count `i` as well as a random, unique exchange id.
-2. `p`, `s` and `i` are used to generate the HMAC key `x = PBKDF2(p, s, i)`.
-3. `O` signs the organizations public key `pub_o` with the key `x`: `sig_o = HMAC(x, pub_o)`
-4. `O` sends `s`, `i`, `pub_o` and `sig_o` to the server `S`, along with the
+1. The **organization owner `O`** chooses a **random passphrase `p`**, a **random salt `s`**
+   and an **iteration count `i`** as well as a random, unique exchange id.
+2. **`p`**, **`s`** and **`i`** are used to generate the **HMAC key `x = PBKDF2(p, s, i)`**.
+3. **`O`** signs the **organizations public key `pub_o`** with **`x`**: **`sig_o = HMAC(x, pub_o)`**
+4. **`O`** sends **`s`**, **`i`**, **`pub_o`** and **`sig_o`** to the server **`S`**, along with the
    exchange id and the recipients email address.
 5. The server stores the received values and sends the invitation link (which
-   includes the exchange id) to `I` via email.
-6. `I` uses the exchange id to request `s`, `i`, `pub_o` and `sig_o` from `S`.
-7. `I` requests `p` from `O` via a separate (and optimally secure) channel of their
+   includes the exchange id) to **`I`** via email.
+6. **`I`** uses the exchange id to request **`s`**, **`i`**, **`pub_o`** and **`sig_o`** from **`S`**.
+7. **`I`** requests **`p`** from **`O`** via a separate (and optimally secure) channel of their
    choice. This can be in person, via phone or any by other means.
-8. `I` generates `x = PBKDF2(p, s, i)` using the obtained information.
-9. `I` verifies `pub_o` using `x` and `sig_o`.
-10. Upon successful verification, `I` signs their own public key `pub_i` using
-    `x`: `sig_i = HMAC(x, pub_i)`
-11. `I` sends `pub_i` and `sig_i` to `S`, which forwards them to `O`.
-12. `O` verifies `pub_i` using `sig_i` and `x`.
+8. **`I`** generates **`x = PBKDF2(p, s, i)`** using the obtained information.
+9. **`I`** verifies **`pub_o`** using **`x`** and **`sig_o`**.
+10. Upon successful verification, **`I`** signs their own **public key `pub_i`** using
+    **`x`**: **`sig_i = HMAC(x, pub_i)`**
+11. **`I`** sends **`pub_i`** and **`sig_i`** to **`S`**, which forwards them to **`O`**.
+12. **`O`** verifies **`pub_i`** using **`sig_i`** and **`x`**.
 
 ```
                  ┌─────────────┐      ┌──────────┐      ┌───────────┐
@@ -462,7 +466,7 @@ new member. The key exchange is performed as follows:
     dedicated AES "invites key" which is only accessible to organization owners.
     (See [Metadata and Cryptographic Keys](#metadata-and-cryptographic-keys).
 
-#### Signing Member Information
+#### Adding Members
 
 Once the new member and organization have successfully exchanged public keys,
 these need to be stored in a way that allows both parties to be verify them later.
@@ -710,7 +714,8 @@ specification](https://tools.ietf.org/html/rfc2945#section-3)
 
 -   Even though **`v`** is based on **`p`**, it can not be used to guess the password in
     case someone eavesdrops on the connection or if the server is compromised.
-    See [section 4 of the SRP specification](https://tools.ietf.org/html/rfc2945#section-4) for details.
+    See [section 4 of the SRP
+    specification](https://tools.ietf.org/html/rfc2945#section-4) for details.
 -   The session key **`K`** cannot be sniffed out since it is never transmitted. It
     could theoretically be guessed from the request signature but with a key size
     of 256 bits this is not really feasible either.
@@ -718,9 +723,6 @@ specification](https://tools.ietf.org/html/rfc2945#section-3)
     resulting authentication key are completely independent of the
     corresponding values used for encrypting the accounts private key, even though
     the derivation scheme and base passphrase are the same.
--   To prevent user enumeration, the server will return randomized values for
-    **`s`** and **`i`** during step 2 of the session negotiation in case no account
-    with the email **`u`** exists.
 -   Request authentication works both ways. Not only can the server verify the
     users identity and knowledge of their master password, the client can also
     verify the identity of the server.
@@ -730,24 +732,141 @@ specification](https://tools.ietf.org/html/rfc2945#section-3)
 -   Rejecting request and responses older than a certain age mitigates the risk
     of replay attacks.
 
-## Account Recovery
-
-TODO
-
 ## Possible Attack Vectors and Mitigations
 
-TODO
-
-### Compromised / Malicious Server
+This section covers various possible attack vectors and mitigation steps taken.
 
 ### Man-In-The-Middle Attacks
 
+A [man-in-the-middle
+attack](https://en.wikipedia.org/wiki/Man-in-the-middle_attack) is an attack
+where the attacker secretly relays the communication between two parties in
+order to eavesdrop on the connection and/or temper with messages in transit.
+
+MITM attacks may be launched in a multitude of ways, and even with technlogies
+like TLS, it is very hard to completely rule out that other parties may be
+listening in on the connection or even trying temper with the messages
+exchanged. Therefore, steps should be taken not only to mitigate the risk of a
+successful MITM attack, but also to ensure that even in case of an insecure
+connection, an attacker may never get access to any sensitive information or
+compromise the security of the application in any other way.
+
+-   Communication between the Padloc client and server is always secured through
+    [Transport Layer Security](https://en.wikipedia.org/wiki/Transport_Layer_Security).
+-   No sensitive information is ever transmitted in plain text.
+-   Transmitted data is protected from tempering through Padlocs strong [Authentication Mechanism](#authentication-and-data-transfer).
+-   Padlocs [Key Exchange Mechanism](#trustless-server-mediated-key-exchange) is designed to be secure even over an untrusted connection.
+
 ### Phishing
 
-### Denial-Of-Service Attacks
+With the addition of [Organizations And Shared
+Vaults](#organizations-and-shared-vaults) in Padloc 3, phishing has become a
+potential attack vector as well. Attackers may try to lure Padloc users into
+sharing sensitive information by inviting them to misleadingly named
+organizations which can be mistaken for an employer or friend. Users could then
+accidentally share data within vaults assigned to them.
 
-### Brute-Forcing Encrypted Data At Rest
+However, the procedure for inviting and adding a new member to an organization
+is designed in a way that makes this very hard to accomplish, since it requires
+direct, personal coordination between both parties. See [Trustless
+Server-Mediated Key Exchange](#trustless-server-mediated-key-exchange) for more
+details.
 
-## Cryptographic Primitives And Parameters
+### Guessing Master Passwords
 
-TODO
+Padloc uses a combination of various [strong encryption
+algorithms](#cryptographic-primitives-and-parameters) to protect all sensitive
+data and cryptographic keys both at rest and during transmission. The **master
+password** acts as a universal key for this encryption scheme.
+
+Master passwords are never stored anywhere and should only ever be known by the
+Padloc user themself. Unfortunately, since this means that in the majority of
+use cases the user will have to commit this password to memory, the "key space" of
+feasible passwords is relatively limited. Additionally, since master passwords
+are ultimately chosen by the user, no guarantee can be made to the strength or
+randomness of these passwords.
+
+This means that master password are a prime-target for guessing attacks of all
+sorts and steps should be taken to make these attacks either infeasible or, at
+a very minimum, too costly to be worthwhile.
+
+[[TODO]]
+
+### User Enumeration
+
+[[TODO]]
+
+### Password spraying
+
+[[TODO]]
+
+### Denial Of Service
+
+[[TODO]]
+
+### Compromised Server
+
+[[TODO]]
+
+## Cryptographic Algorithms And Configurations
+
+### Symmetric Encryption
+
+For all symmetric encryption operations, the [AES
+Cipher](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard) is used in
+[GCM mode](https://en.wikipedia.org/wiki/Galois/Counter_Mode) with a key size
+of **256 bits**.
+
+**Areas of use:**
+
+-   [Simple Symmetric Encryption](#simple-symmetric-encryption)
+-   [Password-Based Encryption](#password-based-encryption)
+-   [Shared-Key Encryption](#shared-key-encryption)
+
+### Asymmetric Encryption
+
+For asymmetric encryption operations, the
+[RSA-OAEP](https://en.wikipedia.org/wiki/Optimal_asymmetric_encryption_padding)
+algorithm is used with a **modulus length** of **2048 bits** and the [SHA-256 hash
+function](https://en.wikipedia.org/wiki/SHA-2).
+
+**Areas of use:**
+
+-   [Shared-Key Encryption](#shared-key-encryption)
+
+### Symmetric Signature Schemes
+
+For symmetric signature creation and verification, the [HMAC](https://en.wikipedia.org/wiki/HMAC) algorithm is used with a **key length** of **256 bits** and the [SHA-256 hash
+function](https://en.wikipedia.org/wiki/SHA-2).
+
+**Areas of use:**
+
+-   [Request Authentication](#request-authentication)
+-   [Adding Members](#adding-members)
+-   [Verifying Members](#verying-members)
+-   [Trustless Server-Mediated Key Exchange](#trustless-server-mediated-key-exchange).
+
+### Asymmetric Signature Schems
+
+For asymmetric signature creation and verification, the [RSA-PSS](https://en.wikipedia.org/wiki/Probabilistic_signature_scheme) algorithm is
+used with a **modulus length** of **2048 bits**, a **salt length** of **256 bits** and the [SHA-256 hash
+function](https://en.wikipedia.org/wiki/SHA-2).
+
+**Areas of use:**
+
+-   [Adding Members](#adding-members)
+-   [Verifying Members](#verying-members)
+
+### Password-Based Key Derivation
+
+For password-based key derivation, the
+[PBKDF2](https://en.wikipedia.org/wiki/PBKDF2) algorithm is used with the
+[SHA-256 hash function](https://en.wikipedia.org/wiki/SHA-2) and a **salt length**
+of **128 bits**. The iteration count varies by area of use.
+
+**Areas of use:**
+
+-   [Password-Based Encryption](#password-based-encryption)
+-   [User Signup](#user-signup)
+-   [Session Negotiation](#session-negotiation)
+-   [Trustless Server-Mediated Key Exchange](#trustless-server-mediated-key-exchange).
