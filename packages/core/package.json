@@ -11,11 +11,13 @@
     "@types/mocha": "^5.2.5",
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
-    "ts-node": "^7.0.1"
+    "ts-node": "^7.0.1",
+    "typedoc": "^0.14.2"
   },
   "scripts": {
     "test": "cd test && mocha -r ts-node/register *.ts",
     "build": "tsc",
+    "docs": "typedoc --out docs",
     "dev": "tsc --watch"
   },
   "dependencies": {}
