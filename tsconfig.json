@@ -17,6 +17,6 @@
         "sourceMap": false,
         "declaration": true,
         "pretty": true,
-        "experimentalDecorators": true,
+        "experimentalDecorators": true
     }
 }
