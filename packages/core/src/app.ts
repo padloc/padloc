@@ -833,8 +833,9 @@ export class App {
         const org = result.org && this.getOrg(result.org.id);
 
         // Skip update if
+        // - Member does not have write access to vault
         // - Vault belongs to an org and account membership is suspended
-        if (!org || org.getMember(this.account)!.role !== OrgRole.Suspended) {
+        if (!org || (org.getMember(this.account)!.role !== OrgRole.Suspended && org.canWrite(result, this.account))) {
             // Update vault accessors
             if (org) {
                 // Look up which members should have access to this vault
