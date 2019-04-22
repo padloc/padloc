@@ -131,6 +131,12 @@ export class Settings extends StateMixin(View) {
                         ${$l("Change Master Password")}
                     </button>
 
+                    <h1>${$l("Organizations")}</h1>
+
+                    <button class="tap item" @click=${this._createOrg}>
+                        ${$l("Create New Organization")}
+                    </button>
+
                     <h1>${$l("Auto Lock")}</h1>
 
                     <pl-toggle-button
@@ -290,5 +296,20 @@ export class Settings extends StateMixin(View) {
 
     private _export() {
         this._exportDialog.show();
+    }
+
+    private _createOrg() {
+        prompt("", {
+            title: $l("Create Organization"),
+            confirmLabel: $l("Create"),
+            label: $l("Organization Name"),
+            validate: async (name: string) => {
+                if (!name) {
+                    throw $l("Please enter a name!");
+                }
+                await app.createOrg(name);
+                return name;
+            }
+        });
     }
 }
