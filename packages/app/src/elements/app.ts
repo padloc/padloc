@@ -292,10 +292,9 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
             const item = id && app.getItem(id);
             if (item) {
                 const done = this._itemDialog.show(item.item.id);
-                const { edit, ...rest } = router.params;
+                const { edit } = router.params;
                 if (typeof edit !== "undefined") {
                     this._itemDialog.edit();
-                    router.params = rest;
                 }
                 await done;
                 router.go("items");

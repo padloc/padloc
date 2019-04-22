@@ -19,7 +19,6 @@ export class LoadingButton extends BaseElement {
         css`
             :host {
                 display: flex;
-                height: var(--row-height);
             }
 
             :host([state="loading"]) button {
@@ -36,6 +35,9 @@ export class LoadingButton extends BaseElement {
             button > * {
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
                 will-change: transform;
+            }
+
+            button > :not(.label) {
                 ${mixins.absoluteCenter()}
             }
 
@@ -43,7 +45,6 @@ export class LoadingButton extends BaseElement {
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                ${mixins.fullbleed()}
             }
 
             :host(.vertical) .label {
@@ -67,6 +68,10 @@ export class LoadingButton extends BaseElement {
             pl-spinner {
                 width: 30px;
                 height: 30px;
+            }
+
+            ::slotted(pl-icon:first-child) {
+                margin: -10px 0 -10px -10px;
             }
         `
     ];

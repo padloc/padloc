@@ -38,12 +38,12 @@ export class MemoryStorage implements Storage {
     private _storage = new Map<string, object>();
 
     async save<T extends Storable>(obj: T) {
-        this._storage.set(`${obj.type}_${obj.id}`, obj.toRaw());
+        this._storage.set(`${obj.kind}_${obj.id}`, obj.toRaw());
     }
 
     async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string) {
         const res = cls instanceof Storable ? cls : new cls();
-        const raw = this._storage.get(`${res.type}_${id}`);
+        const raw = this._storage.get(`${res.kind}_${id}`);
         if (!raw) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
@@ -51,7 +51,7 @@ export class MemoryStorage implements Storage {
     }
 
     async delete<T extends Storable>(obj: T) {
-        this._storage.delete(`${obj.type}_${obj.id}`);
+        this._storage.delete(`${obj.kind}_${obj.id}`);
     }
 
     async clear() {

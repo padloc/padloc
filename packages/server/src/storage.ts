@@ -13,7 +13,7 @@ export class LevelDBStorage implements Storage {
     async get<T extends Storable>(cls: StorableConstructor<T> | T, id: string) {
         try {
             const res = cls instanceof Storable ? cls : new cls();
-            const raw = await this._db.get(`${res.type}_${id}`);
+            const raw = await this._db.get(`${res.kind}_${id}`);
             return res.fromJSON(raw);
         } catch (e) {
             if (e.notFound) {
@@ -25,11 +25,11 @@ export class LevelDBStorage implements Storage {
     }
 
     async save<T extends Storable>(obj: T) {
-        await this._db.put(`${obj.type}_${obj.id}`, obj.toJSON());
+        await this._db.put(`${obj.kind}_${obj.id}`, obj.toJSON());
     }
 
     async delete<T extends Storable>(obj: T) {
-        await this._db.del(`${obj.type}_${obj.id}`);
+        await this._db.del(`${obj.kind}_${obj.id}`);
     }
 
     async clear() {

@@ -17,7 +17,9 @@ import {
     InitAuthResponse,
     CreateSessionParams,
     RecoverAccountParams,
-    GetInviteParams
+    GetInviteParams,
+    GetAttachmentParams,
+    DeleteAttachmentParams
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
@@ -26,7 +28,7 @@ import { DeviceInfo, getDeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
-// import { Attachment, AttachmentInfo } from "./attachment";
+import { Attachment, AttachmentInfo } from "./attachment";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -222,8 +224,6 @@ export class App {
     get mainVault(): Vault | null {
         return (this.account && this.getVault(this.account.mainVault)) || null;
     }
-
-    // private _attachments = new Map<string, Attachment>();
 
     private _queuedSyncPromises = new Map<string, Promise<void>>();
     private _activeSyncPromises = new Map<string, Promise<void>>();
@@ -919,8 +919,12 @@ export class App {
         return item;
     }
 
-    /** Update a given [[VaultItem]]s name, fields and tags */
-    async updateItem(vault: Vault, item: VaultItem, upd: { name?: string; fields?: Field[]; tags?: Tag[] }) {
+    /** Update a given [[VaultItem]]s name, fields, tags and attachments */
+    async updateItem(
+        vault: Vault,
+        item: VaultItem,
+        upd: { name?: string; fields?: Field[]; tags?: Tag[]; attachments?: AttachmentInfo[] }
+    ) {
         vault.items.update({ ...item, ...upd, updatedBy: this.account!.id });
         this.saveVault(vault);
         await this.syncVault(vault);
@@ -928,7 +932,7 @@ export class App {
 
     /** Delete a number of `items` */
     async deleteItems(items: { item: VaultItem; vault: Vault }[]) {
-        const attachments = [];
+        const attachments: { item: VaultItemID; att: AttachmentInfo }[] = [];
 
         // Group items by vault
         const grouped = new Map<Vault, VaultItem[]>();
@@ -937,10 +941,11 @@ export class App {
                 grouped.set(item.vault, []);
             }
             grouped.get(item.vault)!.push(item.item);
-            attachments.push(...(item.item.attachments || []));
+            attachments.push(...item.item.attachments.map(att => ({ item: item.item.id, att })));
         }
 
-        // await Promise.all(attachments.map(att => this.deleteAttachment(att)));
+        // Delete all attachments for this item
+        await Promise.all(attachments.map(({ item, att }) => this.deleteAttachment(item, att)));
 
         // Remove items from their respective vaults
         for (const [vault, items] of grouped.entries()) {
@@ -1208,41 +1213,48 @@ export class App {
         );
     }
 
-    // ATTACHMENTS
+    /**
+     * =============
+     *  ATTACHMENTS
+     * =============
+     */
 
-    // getAttachment(attInfo: AttachmentInfo): Attachment {
-    //     let att = this._attachments.get(attInfo.id);
-    //
-    //     if (!att) {
-    //         att = new Attachment(attInfo);
-    //         this._attachments.set(`${attInfo.id}`, att);
-    //     }
-    //
-    //     return att;
-    // }
+    async createAttachment(itemId: VaultItemID, file: File): Promise<Attachment> {
+        const { vault, item } = this.getItem(itemId)!;
 
-    // async createAttachment(vault: Vault, file: File): Promise<Attachment> {
-    //     const att = new Attachment({ id: uuid(), vault: vault.id });
-    //     await att.fromFile(file);
-    //     this._attachments.set(att.id, att);
-    //     this.api.createAttachment(att);
-    //     return att;
-    // }
-    //
-    // async downloadAttachment(att: Attachment | AttachmentInfo) {
-    //     if (!(att instanceof Attachment)) {
-    //         att = this.getAttachment(att);
-    //     }
-    //     return this.api.getAttachment(att as Attachment);
-    // }
-    //
-    // async deleteAttachment(att: Attachment | AttachmentInfo): Promise<void> {
-    //     if (!(att instanceof Attachment)) {
-    //         att = this.getAttachment(att);
-    //     }
-    //     this._attachments.delete(att.id);
-    //     await this.api.deleteAttachment(att as Attachment);
-    // }
+        let att = new Attachment({ vault: vault.id });
+        await att.fromFile(file);
+        att = await this.api.createAttachment(att);
+
+        (async () => {
+            await att.uploadProgress!.completed;
+            this.updateItem(vault, item, { attachments: [...item.attachments, att.info] });
+        })();
+
+        return att;
+    }
+
+    async downloadAttachment(att: AttachmentInfo) {
+        return this.api.getAttachment(new GetAttachmentParams(att));
+    }
+
+    async deleteAttachment(itemId: VaultItemID, att: Attachment | AttachmentInfo): Promise<void> {
+        const { vault, item } = this.getItem(itemId)!;
+        try {
+            await this.api.deleteAttachment(new DeleteAttachmentParams(att));
+        } catch (e) {
+            if (e.code !== ErrorCode.NOT_FOUND) {
+                throw e;
+            }
+        }
+        await this.updateItem(vault, item, { attachments: item.attachments.filter(a => a.id !== att.id) });
+    }
+
+    /**
+     * ================
+     *  HELPER METHODS
+     * ================
+     */
 
     private async _queueSync(obj: { id: string }, fn: (obj: { id: string }) => Promise<any>): Promise<any> {
         let queued = this._queuedSyncPromises.get(obj.id);

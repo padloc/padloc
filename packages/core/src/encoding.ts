@@ -51,7 +51,7 @@ export class Serializable {
      * among other things. Defaults to the lowercase class name, but can be
      * overwritten by subclasses
      */
-    get type(): string {
+    get kind(): string {
         return this.constructor.name.toLowerCase();
     }
 
@@ -105,7 +105,7 @@ export class Serializable {
         Object.assign(this, raw);
         try {
             if (!this.validate()) {
-                console.log("failed to validate", this.type, raw);
+                console.log("failed to validate", this.kind, raw);
                 throw new Err(ErrorCode.ENCODING_ERROR);
             }
         } catch (e) {

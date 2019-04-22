@@ -105,8 +105,10 @@ interface Progress {
 }
 
 export class RequestProgress extends EventEmitter {
-    uploadComplete: Promise<void>;
-    downloadComplete: Promise<void>;
+    completed: Promise<void> = new Promise((resolve, reject) => {
+        this._resolveCompleted = resolve;
+        this._rejectCompleted = reject;
+    });
 
     get uploadProgress() {
         return this._uploadProgress;
@@ -116,9 +118,6 @@ export class RequestProgress extends EventEmitter {
         this._uploadProgress = progress;
         this.dispatch("upload-progress", progress);
         this.dispatch("progress", this.progress);
-        if (progress.loaded === progress.total) {
-            this._resolveUploadPromise!();
-        }
     }
 
     get downloadProgress() {
@@ -129,9 +128,6 @@ export class RequestProgress extends EventEmitter {
         this._downloadProgress = progress;
         this.dispatch("download-progress", progress);
         this.dispatch("progress", this.progress);
-        if (progress.loaded === progress.total) {
-            this._resolveDownloadPromise!();
-        }
     }
 
     get progress() {
@@ -141,15 +137,12 @@ export class RequestProgress extends EventEmitter {
         };
     }
 
-    get complete() {
-        return Promise.all([this.uploadComplete, this.downloadComplete]);
-    }
-
     set error(error: Error | undefined) {
         this._error = error;
         if (error) {
             this.dispatch("error", { error });
             this.uploadProgress = this.downloadProgress = { loaded: 0, total: 0 };
+            this._rejectCompleted(error);
         }
     }
 
@@ -162,12 +155,10 @@ export class RequestProgress extends EventEmitter {
 
     private _error?: Error;
 
-    private _resolveUploadPromise?: () => void;
-    private _resolveDownloadPromise?: () => void;
+    private _resolveCompleted!: () => void;
+    private _rejectCompleted!: (err: Error) => void;
 
-    constructor() {
-        super();
-        this.uploadComplete = new Promise(resolve => (this._resolveUploadPromise = resolve));
-        this.downloadComplete = new Promise(resolve => (this._resolveDownloadPromise = resolve));
+    complete() {
+        this._resolveCompleted();
     }
 }

@@ -7,7 +7,9 @@ import {
     CreateAccountParams,
     RecoverAccountParams,
     CreateSessionParams,
-    GetInviteParams
+    GetInviteParams,
+    GetAttachmentParams,
+    DeleteAttachmentParams
 } from "./api";
 import { Sender, Request, RequestProgress } from "./transport";
 import { DeviceInfo } from "./platform";
@@ -18,7 +20,7 @@ import { Org, OrgID } from "./org";
 import { Invite } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Err, ErrorCode } from "./error";
-// import { Attachment } from "./attachment";
+import { Attachment } from "./attachment";
 
 /**
  * Client state, keeping track of [[session]], [[account]] and [[device]] info
@@ -87,6 +89,10 @@ export class Client implements API {
                 progress.error = err;
             }
             throw err;
+        }
+
+        if (progress) {
+            progress.complete();
         }
 
         return res;
@@ -182,21 +188,21 @@ export class Client implements API {
     async acceptInvite(invite: Invite): Promise<void> {
         await this.call("acceptInvite", [invite.toRaw()]);
     }
-    //
-    // async createAttachment(att: Attachment): Promise<Attachment> {
-    //     att.uploadProgress = new RequestProgress();
-    //     const { result } = await this.call("createAttachment", [await att.serialize()], att.uploadProgress);
-    //     att.id = result.id;
-    //     return att;
-    // }
-    //
-    // async getAttachment(att: Attachment): Promise<Attachment> {
-    //     att.downloadProgress = new RequestProgress();
-    //     const res = await this.call("getAttachment", [{ id: att.id, vault: att.vault }], att.downloadProgress);
-    //     return att.deserialize(res.result);
-    // }
-    //
-    // async deleteAttachment(att: Attachment): Promise<void> {
-    //     await this.call("deleteAttachment", [{ id: att.id, vault: att.vault }]);
-    // }
+
+    async createAttachment(att: Attachment): Promise<Attachment> {
+        att.uploadProgress = new RequestProgress();
+        this.call("createAttachment", [await att.toRaw()], att.uploadProgress).then(res => (att.id = res.result));
+        return att;
+    }
+
+    async getAttachment(params: GetAttachmentParams): Promise<Attachment> {
+        const att = new Attachment(params);
+        att.downloadProgress = new RequestProgress();
+        this.call("getAttachment", [params.toRaw()], att.downloadProgress).then(res => att.fromRaw(res.result));
+        return att;
+    }
+
+    async deleteAttachment(params: DeleteAttachmentParams): Promise<void> {
+        await this.call("deleteAttachment", [params.toRaw()]);
+    }
 }

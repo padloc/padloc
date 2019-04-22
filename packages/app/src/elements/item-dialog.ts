@@ -1,12 +1,10 @@
 import { until } from "lit-html/directives/until.js";
-import { Field } from "@padloc/core/lib/item.js";
+import { VaultItemID, Field } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
-// import { ErrorCode } from "@padloc/core/lib/error.js";
-// import { Listener } from "@padloc/core/lib/event-target.js";
-import { formatDateFromNow } from "../util.js";
+import { formatDateFromNow, fileIcon, fileSize } from "../util.js";
 import { mixins } from "../styles";
-import { confirm, dialog } from "../dialog.js";
+import { alert, confirm, dialog } from "../dialog.js";
 import { app, router } from "../init.js";
 import { setClipboard } from "../clipboard.js";
 import { element, html, css, property, query, queryAll } from "./base.js";
@@ -17,14 +15,14 @@ import { TagsInput } from "./tags-input.js";
 import { MoveItemsDialog } from "./move-items-dialog.js";
 import { FieldElement } from "./field.js";
 import "./field.js";
-import { AttachmentElement } from "./attachment.js";
 import { Generator } from "./generator.js";
-import "./attachment.js";
+import { AttachmentDialog } from "./attachment-dialog.js";
+import { UploadDialog } from "./upload-dialog.js";
 
 @element("pl-item-dialog")
 export class ItemDialog extends Dialog<string, void> {
     @property()
-    itemId: string = "";
+    itemId: VaultItemID = "";
 
     get _item() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
@@ -50,14 +48,18 @@ export class ItemDialog extends Dialog<string, void> {
     private _fieldInputs: FieldElement[];
     @query("input[type='file']")
     private _fileInput: HTMLInputElement;
-    @queryAll("pl-attachment")
-    private _attachmentElements: AttachmentElement[];
 
     @dialog("pl-move-items-dialog")
     private _moveItemsDialog: MoveItemsDialog;
 
     @dialog("pl-generator")
     private _generator: Generator;
+
+    @dialog("pl-attachment-dialog")
+    private _attachmentDialog: AttachmentDialog;
+
+    @dialog("pl-upload-dialog")
+    private _uploadDialog: UploadDialog;
 
     async show(itemId: string) {
         this._editing = false;
@@ -128,15 +130,34 @@ export class ItemDialog extends Dialog<string, void> {
                 content: "\\f303\ ";
             }
 
-            h4 {
-                font-size: var(--font-size-tiny);
-                color: var(--color-primary);
-                font-weight: bold;
-                margin: 10px;
-            }
-
             .fabs {
                 position: static;
+            }
+
+            .attachment {
+                display: flex;
+                align-items: center;
+                padding: 8px;
+            }
+
+            .attachment-body {
+                flex: 1;
+                width: 0;
+            }
+
+            .attachment pl-icon {
+                font-size: 150%;
+                width: 30px;
+                margin: 0 8px 0 2px;
+            }
+
+            .attachment-name {
+                font-size: var(--font-size-small);
+                font-weight: bold;
+            }
+
+            .attachment-size {
+                font-size: var(--font-size-tiny);
             }
         `
     ];
@@ -193,13 +214,16 @@ export class ItemDialog extends Dialog<string, void> {
                 </div>
             </div>
 
-            <div class="attachments" ?hidden=${!attachments.length}>
-                <h4>${$l("Attachments")}</h4>
-
+            <div class="attachments" ?hidden=${this._editing || !attachments.length}>
                 ${attachments.map(
                     a => html`
-                        <pl-attachment .info=${a} .editing=${this._editing} @delete=${() => this._deleteAttachment(a)}>
-                        </pl-attachment>
+                        <div class="attachment item tap" @click=${() => this._openAttachment(a)}>
+                            <pl-icon icon=${fileIcon(a.type)}></pl-icon>
+                            <div class="attachment-body">
+                                <div class="attachment-name ellipsis">${a.name}</div>
+                                <div class="attachment-size">${fileSize(a.size)}</div>
+                            </div>
+                        </div>
                     `
                 )}
             </div>
@@ -252,14 +276,6 @@ export class ItemDialog extends Dialog<string, void> {
     }
 
     save() {
-        // update attachment names
-        for (const [i, att] of this._item!.attachments.entries()) {
-            const el = this._attachmentElements[i];
-            if (el && el.attachmentName) {
-                att.name = el.attachmentName;
-            }
-        }
-
         app.updateItem(this._vault!, this._item!, {
             name: this._nameInput.value,
             fields: this._getFields(),
@@ -344,56 +360,31 @@ export class ItemDialog extends Dialog<string, void> {
     }
 
     private async _attachFile() {
-        // const item = this._item!;
-        // const vault = this._vault!;
-        // const file = this._fileInput.files![0];
-        // if (!file) {
-        //     return;
-        // }
-        //
-        // if (file.size > 5e6) {
-        //     alert($l("The selected file is too large! Only files of up to 5 MB are supported."), {
-        //         type: "warning"
-        //     });
-        //     return;
-        // }
-        //
-        // const att = await app.createAttachment(vault, file);
-        // item.attachments = item.attachments || [];
-        // item.attachments.push(att.info);
-        // this.requestUpdate();
-        // this._fileInput.value = "";
-        // const ulp = att.uploadProgress!;
-        // const errorHandler: Listener = (e: CustomEvent) => {
-        //     const err = e.detail.error;
-        //     alert(
-        //         err.code === ErrorCode.STORAGE_QUOTA_EXCEEDED
-        //             ? $l("You have exceed the storage limit for this vault!")
-        //             : $l("Upload failed! Please try again!"),
-        //         { type: "warning" }
-        //     );
-        //     const attachments = this._item!.attachments;
-        //     attachments.splice(attachments.findIndex(({ id }) => att.id === id), 1);
-        //     this.requestUpdate();
-        //     ulp.removeEventListener("error", errorHandler);
-        //     app.deleteAttachment(att);
-        // };
-        // ulp.addEventListener("error", errorHandler);
-        // ulp.complete.then(() => setTimeout(() => ulp.removeEventListener("error", errorHandler), 100));
+        const file = this._fileInput.files![0];
+        this._fileInput.value = "";
+        if (!file) {
+            return;
+        }
+
+        if (file.size > 5e6) {
+            alert($l("The selected file is too large! Only files of up to 5 MB are supported."), {
+                type: "warning"
+            });
+            return;
+        }
+
+        this.open = false;
+        const att = await this._uploadDialog.show({ item: this.itemId, file });
+        console.log(att);
+        if (att) {
+            await alert($l("File uploaded successfully!"), { type: "success" });
+        }
+        this.open = true;
     }
 
-    private async _deleteAttachment(_info: AttachmentInfo) {
-        // const confirmed = await confirm(
-        //     $l("Are you sure you want to delete '{0}'?", info.name),
-        //     $l("Delete"),
-        //     $l("Cancel"),
-        //     { title: $l("Delete Attachment"), type: "warning" }
-        // );
-        // if (confirmed) {
-        //     await app.deleteAttachment(info);
-        //     const attachments = this._item!.attachments;
-        //     attachments.splice(attachments.findIndex(({ id }) => info.id === id), 1);
-        //     this.requestUpdate();
-        // }
+    private async _openAttachment(info: AttachmentInfo) {
+        this.open = false;
+        await this._attachmentDialog.show({ item: this.itemId, info });
+        this.open = true;
     }
 }

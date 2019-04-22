@@ -34,3 +34,49 @@ export function toggleAttribute(el: Element, attr: string, on: boolean) {
         el.removeAttribute(attr);
     }
 }
+
+export function fileIcon(mimeType: string) {
+    const match = mimeType.match(/(.*)\/(.*)/);
+    const [, type, subtype] = match || ["", "", ""];
+
+    switch (type) {
+        case "video":
+            return "file-video";
+        case "audio":
+            return "file-audio";
+        case "image":
+            return "file-image";
+        case "text":
+            switch (subtype) {
+                case "csv":
+                // return "file-csv";
+                case "plain":
+                    return "file-text";
+                default:
+                    return "file-code";
+            }
+        case "application":
+            switch (subtype) {
+                case "pdf":
+                    return "file-pdf";
+                case "json":
+                    return "file-code";
+                case "zip":
+                case "x-7z-compressed":
+                case "x-freearc":
+                case "x-bzip":
+                case "x-bzip2":
+                case "java-archive":
+                case "x-rar-compressed":
+                case "x-tar":
+                    return "file-archive";
+            }
+
+        default:
+            return "file";
+    }
+}
+
+export function fileSize(size: number = 0) {
+    return size < 1e6 ? Math.ceil(size / 10) / 100 + " KB" : Math.ceil(size / 10000) / 100 + " MB";
+}

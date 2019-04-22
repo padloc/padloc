@@ -513,6 +513,12 @@ export const shared = css`
         background: var(--color-primary);
     }
 
+    .fab.light {
+        background: var(--color-tertiary);
+        color: var(--color-secondary);
+        text-shadow: none;
+    }
+
     .fab:not(:last-child) {
         margin-right: 0;
     }

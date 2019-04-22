@@ -1,8 +1,8 @@
 // import { S3 } from "aws-sdk";
 import { join } from "path";
 import { readFile, writeFile, ensureDir, remove, readdir, stat } from "fs-extra";
-import { Attachment, AttachmentStorage } from "@padloc/core/src/attachment";
-import { Vault } from "@padloc/core/src/vault";
+import { Attachment, AttachmentID, AttachmentStorage } from "@padloc/core/src/attachment";
+import { VaultID } from "@padloc/core/src/vault";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 
 // export interface S3Config {
@@ -64,14 +64,14 @@ export interface FSStorageConfig {
 export class FileSystemStorage implements AttachmentStorage {
     constructor(public config: FSStorageConfig) {}
 
-    private _getPath(att: Attachment) {
-        return join(this.config.path, att.vault, att.id);
+    private _getPath(vault: VaultID, id: AttachmentID) {
+        return join(this.config.path, vault, id);
     }
 
-    async get(att: Attachment) {
+    async get(vault: VaultID, id: AttachmentID) {
         try {
-            const data = await readFile(this._getPath(att));
-            await att.fromBytes(data);
+            const data = await readFile(this._getPath(vault, id));
+            const att = await new Attachment().fromBytes(data);
             return att;
         } catch (e) {
             throw new Err(ErrorCode.NOT_FOUND);
@@ -80,23 +80,23 @@ export class FileSystemStorage implements AttachmentStorage {
 
     async put(att: Attachment) {
         await ensureDir(join(this.config.path, att.vault));
-        await writeFile(this._getPath(att), await att.toBytes());
+        await writeFile(this._getPath(att.vault, att.id), await att.toBytes());
     }
 
-    async delete(att: Attachment) {
-        await remove(this._getPath(att));
+    async delete(vault: VaultID, id: AttachmentID) {
+        await remove(this._getPath(vault, id));
     }
 
-    async deleteAll(vault: Vault) {
-        await remove(join(this.config.path, vault.id));
+    async deleteAll(vault: VaultID) {
+        await remove(join(this.config.path, vault));
     }
 
-    async getUsage(vault: Vault) {
+    async getUsage(vault: VaultID) {
         try {
-            const files = await readdir(join(this.config.path, vault.id));
+            const files = await readdir(join(this.config.path, vault));
             let size = 0;
             for (const file of files) {
-                const stats = await stat(join(this.config.path, vault.id, file));
+                const stats = await stat(join(this.config.path, vault, file));
                 size += stats.size;
             }
             return size;

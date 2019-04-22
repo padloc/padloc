@@ -1,6 +1,6 @@
 import { bytesToBase64, base64ToBytes } from "./encoding";
 import { SimpleContainer } from "./container";
-import { Vault } from "./vault";
+import { VaultID } from "./vault";
 import { getProvider, AESKeyParams } from "./crypto";
 import { Err, ErrorCode } from "./error";
 import { RequestProgress } from "./transport";
@@ -40,9 +40,11 @@ function readFileAsDataURL(blob: File): Promise<string> {
     });
 }
 
+export type AttachmentID = string;
+
 export interface AttachmentInfo {
-    id: string;
-    vault: string;
+    id: AttachmentID;
+    vault: VaultID;
     name: string;
     size: number;
     type: string;
@@ -50,8 +52,8 @@ export interface AttachmentInfo {
 }
 
 export class Attachment extends SimpleContainer {
-    id: string = "";
-    vault: string = "";
+    id: AttachmentID = "";
+    vault: VaultID = "";
     name: string = "";
     size: number = 0;
     type: string = "";
@@ -129,43 +131,43 @@ export class Attachment extends SimpleContainer {
 
 export interface AttachmentStorage {
     put(a: Attachment): Promise<void>;
-    get(a: Attachment): Promise<Attachment>;
-    delete(a: Attachment): Promise<void>;
-    deleteAll(vault: Vault): Promise<void>;
-    getUsage(vault: Vault): Promise<number>;
+    get(vault: VaultID, id: AttachmentID): Promise<Attachment>;
+    delete(vault: VaultID, id: AttachmentID): Promise<void>;
+    deleteAll(vault: VaultID): Promise<void>;
+    getUsage(vault: VaultID): Promise<number>;
 }
 
-export class MemoryAttachmentStorage {
+export class MemoryAttachmentStorage implements AttachmentStorage {
     private _storage = new Map<string, Attachment>();
 
     async put(a: Attachment): Promise<void> {
         this._storage.set(`${a.vault}_${a.id}`, a);
     }
 
-    async get(a: Attachment): Promise<Attachment> {
-        const att = this._storage.get(`${a.vault}_${a.id}`);
+    async get(vault: VaultID, id: AttachmentID): Promise<Attachment> {
+        const att = this._storage.get(`${vault}_${id}`);
         if (!att) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
         return att;
     }
 
-    async delete(a: Attachment): Promise<void> {
-        this._storage.delete(`${a.vault}_${a.id}`);
+    async delete(vault: VaultID, id: AttachmentID): Promise<void> {
+        this._storage.delete(`${vault}_${id}`);
     }
 
-    async deleteAll(vault: Vault): Promise<void> {
+    async deleteAll(vault: VaultID): Promise<void> {
         for (const key of this._storage.keys()) {
-            if (key.startsWith(vault.id)) {
+            if (key.startsWith(vault)) {
                 this._storage.delete(key);
             }
         }
     }
 
-    async getUsage(vault: Vault): Promise<number> {
+    async getUsage(vault: VaultID): Promise<number> {
         let size = 0;
         for (const [key, att] of this._storage.entries()) {
-            if (key.startsWith(vault.id)) {
+            if (key.startsWith(vault)) {
                 size += att.size;
             }
         }

@@ -5,12 +5,12 @@ import localStorage from "localforage/src/localforage";
 
 export class LocalStorage implements Storage {
     async save(s: Storable) {
-        await localStorage.setItem(`${s.type}_${s.id}`, s.toRaw());
+        await localStorage.setItem(`${s.kind}_${s.id}`, s.toRaw());
     }
 
     async get<T extends Storable>(cls: T | StorableConstructor<T>, id: string) {
         const s = cls instanceof Storable ? cls : new cls();
-        const data = await localStorage.getItem(`${s.type}_${id}`);
+        const data = await localStorage.getItem(`${s.kind}_${id}`);
         if (!data) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
@@ -18,7 +18,7 @@ export class LocalStorage implements Storage {
     }
 
     async delete(s: Storable) {
-        await localStorage.removeItem(`${s.type}_${s.id}`);
+        await localStorage.removeItem(`${s.kind}_${s.id}`);
     }
 
     async clear() {

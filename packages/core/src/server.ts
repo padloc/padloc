@@ -8,13 +8,12 @@ import {
     CreateAccountParams,
     RecoverAccountParams,
     CreateSessionParams,
-    GetInviteParams
+    GetInviteParams,
+    GetAttachmentParams,
+    DeleteAttachmentParams
 } from "./api";
 import { Storage } from "./storage";
-import {
-    // Attachment,
-    AttachmentStorage
-} from "./attachment";
+import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account } from "./account";
 import { Auth } from "./auth";
@@ -596,7 +595,7 @@ export class Context implements API {
         const promises = [this.storage.delete(vault)];
 
         // Delete all attachments associated with this vault
-        promises.push(this.attachmentStorage.deleteAll(vault));
+        promises.push(this.attachmentStorage.deleteAll(vault.id));
 
         // Remove vault from org
         org.vaults = org.vaults.filter(v => v.id !== vault.id);
@@ -665,63 +664,68 @@ export class Context implements API {
         // Persist changes
         await this.storage.save(org);
     }
-    //
-    // async createAttachment(att: Attachment) {
-    //     const { account } = this._requireAuth();
-    //
-    //     const vault = new Vault(att.vault);
-    //     await this.storage.get(vault);
-    //
-    //     const permissions = vault.getPermissions(account);
-    //
-    //     if (!permissions.write) {
-    //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    //     }
-    //
-    //     // att.id = await uuid();
-    //
-    //     const currentUsage = await this.attachmentStorage.getUsage(vault);
-    //
-    //     if (currentUsage + att.size > 5e7) {
-    //         throw new Err(ErrorCode.STORAGE_QUOTA_EXCEEDED);
-    //     }
-    //
-    //     await this.attachmentStorage.put(att);
-    //
-    //     return att;
-    // }
-    //
-    // async getAttachment(att: Attachment) {
-    //     const { account } = this._requireAuth();
-    //
-    //     const vault = new Vault(att.vault);
-    //     await this.storage.get(vault);
-    //
-    //     const permissions = vault.getPermissions(account);
-    //
-    //     if (!permissions.read) {
-    //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    //     }
-    //
-    //     await this.attachmentStorage.get(att);
-    //
-    //     return att;
-    // }
-    //
-    // async deleteAttachment(att: Attachment) {
-    //     const { account } = this._requireAuth();
-    //
-    //     const vault = new Vault(att.vault);
-    //     await this.storage.get(vault);
-    //
-    //     const permissions = vault.getPermissions(account);
-    //
-    //     if (!permissions.write) {
-    //         throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-    //     }
-    //
-    //     await this.attachmentStorage.delete(att);
-    // }
+
+    async createAttachment(att: Attachment) {
+        const { account } = this._requireAuth();
+
+        const vault = await this.storage.get(Vault, att.vault);
+        const org = vault.org && (await this.storage.get(Org, vault.org.id));
+
+        const allowed = org ? org.canWrite(vault, account) : vault.owner === account.id;
+
+        if (!allowed) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        att.id = await uuid();
+
+        const currentUsage = org
+            ? (await Promise.all(org.vaults.map(({ id }) => this.attachmentStorage.getUsage(id)))).reduce(
+                  (sum: number, each: number) => sum + each,
+                  0
+              )
+            : await this.attachmentStorage.getUsage(vault.id);
+
+        if (currentUsage + att.size > 5e7) {
+            throw new Err(ErrorCode.STORAGE_QUOTA_EXCEEDED);
+        }
+
+        await this.attachmentStorage.put(att);
+
+        return att;
+    }
+
+    async getAttachment({ id, vault: vaultId }: GetAttachmentParams) {
+        const { account } = this._requireAuth();
+
+        const vault = await this.storage.get(Vault, vaultId);
+        const org = vault.org && (await this.storage.get(Org, vault.org.id));
+
+        const allowed = org ? org.canRead(vault, account) : vault.owner === account.id;
+
+        if (!allowed) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        const att = await this.attachmentStorage.get(vaultId, id);
+
+        return att;
+    }
+
+    async deleteAttachment({ vault: vaultId, id }: DeleteAttachmentParams) {
+        const { account } = this._requireAuth();
+
+        const vault = await this.storage.get(Vault, vaultId);
+        const org = vault.org && (await this.storage.get(Org, vault.org.id));
+
+        const allowed = org ? org.canWrite(vault, account) : vault.owner === account.id;
+
+        if (!allowed) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        await this.attachmentStorage.delete(vaultId, id);
+    }
 
     private _requireAuth(): { account: Account; session: Session } {
         const { account, session } = this;
@@ -912,6 +916,18 @@ export class Server {
 
             case "acceptInvite":
                 await ctx.acceptInvite(new Invite().fromRaw(params[0]));
+                break;
+
+            case "createAttachment":
+                res.result = (await ctx.createAttachment(new Attachment().fromRaw(params[0]))).id;
+                break;
+
+            case "getAttachment":
+                res.result = (await ctx.getAttachment(new GetAttachmentParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "deleteAttachment":
+                await ctx.deleteAttachment(new DeleteAttachmentParams().fromRaw(params[0]));
                 break;
 
             default:

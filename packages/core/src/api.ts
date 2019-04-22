@@ -6,7 +6,7 @@ import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
 import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
-// import { Attachment } from "./attachment";
+import { Attachment, AttachmentID } from "./attachment";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -246,9 +246,31 @@ export class GetInviteParams extends Serializable {
     }
 
     validate() {
-        return !!this.org && typeof this.org === "string" && !!this.id && typeof this.id === "string";
+        return typeof this.org === "string" && typeof this.id === "string";
     }
 }
+
+/**
+ * Parameters for fetching an [[Attachment]]
+ */
+export class GetAttachmentParams extends Serializable {
+    /** The vault id */
+    vault: VaultID = "";
+
+    /** The attachment id */
+    id: AttachmentID = "";
+
+    constructor(props?: Partial<GetAttachmentParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
+
+    validate() {
+        return typeof this.vault === "string" && typeof this.id === "string";
+    }
+}
+
+export class DeleteAttachmentParams extends GetAttachmentParams {}
 
 /**
  * Transport-agnostic interface defining communication
@@ -401,8 +423,8 @@ export interface API {
      * Requires the authenticated account to be the recipient of the invite.
      */
     acceptInvite(invite: Invite): Promise<void>;
-    //
-    // createAttachment(attachment: Attachment): Promise<Attachment>;
-    // getAttachment(attachment: Attachment): Promise<Attachment>;
-    // deleteAttachment(attachment: Attachment): Promise<void>;
+
+    createAttachment(attachment: Attachment): Promise<Attachment>;
+    getAttachment(attachment: GetAttachmentParams): Promise<Attachment>;
+    deleteAttachment(attachment: DeleteAttachmentParams): Promise<void>;
 }
