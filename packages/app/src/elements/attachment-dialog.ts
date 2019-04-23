@@ -1,15 +1,14 @@
+import { TemplateResult } from "lit-element";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { VaultItemID } from "@padloc/core/lib/item.js";
-import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
-// import { ErrorCode } from "@padloc/core/lib/error.js";
+import { Attachment, AttachmentInfo } from "@padloc/core/lib/attachment.js";
 import { app } from "../init.js";
 import { mixins } from "../styles";
-import { fileIcon, fileSize } from "../util.js";
+import { mediaType, fileIcon, fileSize } from "../util.js";
 import { confirm } from "../dialog.js";
 import { element, html, css, property } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
-// import { LoadingButton } from "./loading-button.js";
 
 @element("pl-attachment-dialog")
 export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: File; item: VaultItemID }, void> {
@@ -37,8 +36,9 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             .header {
                 padding: 12px;
                 background: var(--color-tertiary);
-                box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 3px;
+                box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 3px;
                 position: relative;
+                z-index: 1;
             }
 
             .header > .name {
@@ -57,7 +57,47 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             .info,
             .preview {
                 flex: 1;
-                object-fit: contain;
+                position: relative;
+            }
+
+            .preview.image {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 8px;
+            }
+
+            .preview.image img {
+                width: 100%;
+                height: 100%;
+                object-fit: scale-down;
+            }
+
+            .preview.text,
+            .preview.code {
+                margin: 0;
+                background: var(--color-quaternary);
+                font-size: var(--font-size-tiny);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .preview code {
+                padding: 16px;
+                padding-bottom: 80px;
+                max-width: 100%;
+                max-height: 100%;
+                box-sizing: border-box;
+                ${mixins.scroll()}
+            }
+
+            .preview.text {
+                white-space: normal;
+            }
+
+            .preview.text code {
+                max-width: 600px;
             }
 
             .info {
@@ -115,11 +155,11 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
     @property()
     private _error = "";
 
-    // @property()
-    // private _objectUrl?: string;
-    //
-    // @query("#downloadButton")
-    // private _downloadButton: LoadingButton;
+    @property()
+    private _objectUrl?: string;
+
+    @property()
+    private _preview: TemplateResult | null = null;
 
     get _item() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
@@ -134,11 +174,19 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
     show({ info, item }: { info: AttachmentInfo; item: VaultItemID }) {
         this.info = info;
         this.itemId = item;
+        this._error = "";
+        this._progress = null;
+        this._preview = null;
+        this._download();
         return super.show();
     }
 
     done() {
-        // TODO: release objec url
+        if (this._objectUrl) {
+            URL.revokeObjectURL(this._objectUrl);
+        }
+        this._objectUrl = undefined;
+        this._preview = null;
         super.done();
     }
 
@@ -160,33 +208,62 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             this.open = true;
         }
     }
-    //
-    // async download() {
-    //     if (this._downloadButton.state === "loading") {
-    //         return;
-    //     }
-    //
-    //     this._downloadButton.start();
-    //
-    //     const att = await app.downloadAttachment(this.info!);
-    //
-    //     const progress = att.downloadProgress!;
-    //     progress.addEventListener("progress", this._progressHandler);
-    //     await progress.complete;
-    //     await wait(10);
-    //
-    //     progress.removeEventListener("progress", this._progressHandler);
-    //     if (progress.error) {
-    //         this._downloadButton.fail();
-    //     } else {
-    //         this._downloadButton.success();
-    //         this.info = att.info;
-    //         delete att.downloadProgress;
-    //         this._objectUrl = await att.toObjectURL();
-    //     }
-    //
-    //     this.requestUpdate();
-    // }
+
+    async _download() {
+        this._progress = null;
+        this._error = "";
+
+        const att = await app.downloadAttachment(this.info!);
+        const download = att.downloadProgress!;
+        const handler = () => (this._progress = download.progress);
+
+        download.addEventListener("progress", handler);
+        try {
+            await download.completed;
+        } catch (e) {}
+        download.removeEventListener("progress", handler);
+
+        this._progress = null;
+
+        if (download.error) {
+            this._error = $l("Download failed!");
+        } else {
+            this._preview = await this._getPreview(att);
+        }
+    }
+
+    private async _getPreview(att: Attachment) {
+        if (!this.info) {
+            return null;
+        }
+
+        const mType = mediaType(this.info.type);
+
+        switch (mType) {
+            case "pdf":
+                this._objectUrl = await att.toObjectURL();
+                return html`
+                    <object
+                        class="preview pdf"
+                        type="application/pdf"
+                        data="${this._objectUrl}#toolbar=0&view=Fit"
+                    ></object>
+                `;
+            case "image":
+                this._objectUrl = await att.toObjectURL();
+                return html`
+                    <div class="preview image">
+                        <img src="${this._objectUrl}" />
+                    </div>
+                `;
+            case "text":
+            case "code":
+                const text = await att.toText();
+                return html`<pre class="preview ${mType}"><code>${text}</pre></code>`;
+            default:
+                return null;
+        }
+    }
 
     renderContent() {
         if (!this.info) {
@@ -199,20 +276,31 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                 <pl-icon icon="close" class="tap" @click=${() => this.done()}></pl-icon>
             </div>
 
-            <div class="info">
-                <pl-spinner class="loading-spinner" .active=${!!this._progress} ?hidden=${!this._progress}></pl-spinner>
-                <pl-icon .icon=${fileIcon(this.info.type)} ?hidden=${!!this._progress}></pl-icon>
+            ${this._preview ||
+                html`
+                    <div class="info">
+                        <pl-spinner
+                            class="loading-spinner"
+                            .active=${!!this._progress}
+                            ?hidden=${!this._progress}
+                        ></pl-spinner>
+                        <pl-icon .icon=${fileIcon(this.info.type)} ?hidden=${!!this._progress}></pl-icon>
 
-                <div class="mime-type ellipis">${this.info.type}</div>
+                        <div class="mime-type ellipis">${this.info.type}</div>
 
-                <div class="error" ?hidden=${!this._error}>${this._error}</div>
+                        <div class="error" ?hidden=${!this._error}>${this._error}</div>
 
-                <div class="size" ?hidden=${!!this._error}>
-                    ${this._progress
-                        ? $l("downloading... {0}/{1}", fileSize(this._progress.loaded), fileSize(this._progress.total))
-                        : fileSize(this.info.size)}
-                </div>
-            </div>
+                        <div class="size" ?hidden=${!!this._error}>
+                            ${this._progress
+                                ? $l(
+                                      "downloading... {0}/{1}",
+                                      fileSize(this._progress.loaded),
+                                      fileSize(this._progress.total)
+                                  )
+                                : fileSize(this.info.size)}
+                        </div>
+                    </div>
+                `}
 
             <div class="fabs">
                 <pl-icon icon="delete" class="fab tap destructive" @click=${this._delete}></pl-icon>

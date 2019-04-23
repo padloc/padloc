@@ -91,10 +91,6 @@ export class Client implements API {
             throw err;
         }
 
-        if (progress) {
-            progress.complete();
-        }
-
         return res;
     }
 
@@ -191,14 +187,20 @@ export class Client implements API {
 
     async createAttachment(att: Attachment): Promise<Attachment> {
         att.uploadProgress = new RequestProgress();
-        this.call("createAttachment", [await att.toRaw()], att.uploadProgress).then(res => (att.id = res.result));
+        this.call("createAttachment", [await att.toRaw()], att.uploadProgress).then(res => {
+            att.id = res.result;
+            att.uploadProgress!.complete();
+        });
         return att;
     }
 
     async getAttachment(params: GetAttachmentParams): Promise<Attachment> {
         const att = new Attachment(params);
         att.downloadProgress = new RequestProgress();
-        this.call("getAttachment", [params.toRaw()], att.downloadProgress).then(res => att.fromRaw(res.result));
+        this.call("getAttachment", [params.toRaw()], att.downloadProgress).then(res => {
+            att.fromRaw(res.result);
+            att.downloadProgress!.complete();
+        });
         return att;
     }
 

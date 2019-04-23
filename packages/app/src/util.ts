@@ -35,32 +35,32 @@ export function toggleAttribute(el: Element, attr: string, on: boolean) {
     }
 }
 
-export function fileIcon(mimeType: string) {
+export function mediaType(mimeType: string) {
     const match = mimeType.match(/(.*)\/(.*)/);
     const [, type, subtype] = match || ["", "", ""];
 
     switch (type) {
         case "video":
-            return "file-video";
+            return "video";
         case "audio":
-            return "file-audio";
+            return "audio";
         case "image":
-            return "file-image";
+            return "image";
         case "text":
             switch (subtype) {
                 case "csv":
-                // return "file-csv";
+                // return "csv";
                 case "plain":
-                    return "file-text";
+                    return "text";
                 default:
-                    return "file-code";
+                    return "code";
             }
         case "application":
             switch (subtype) {
                 case "pdf":
-                    return "file-pdf";
+                    return "pdf";
                 case "json":
-                    return "file-code";
+                    return "code";
                 case "zip":
                 case "x-7z-compressed":
                 case "x-freearc":
@@ -69,12 +69,16 @@ export function fileIcon(mimeType: string) {
                 case "java-archive":
                 case "x-rar-compressed":
                 case "x-tar":
-                    return "file-archive";
+                    return "archive";
             }
-
         default:
-            return "file";
+            return "";
     }
+}
+
+export function fileIcon(mimeType: string) {
+    const mType = mediaType(mimeType);
+    return mType ? `file-${mType}` : "file";
 }
 
 export function fileSize(size: number = 0) {

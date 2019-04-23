@@ -23,6 +23,23 @@ function readFile(blob: File): Promise<Uint8Array> {
     });
 }
 
+function readAsText(blob: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            resolve(reader.result as string);
+        };
+
+        reader.onerror = e => {
+            reader.abort();
+            reject(e);
+        };
+
+        reader.readAsText(blob);
+    });
+}
+
 function readFileAsDataURL(blob: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -117,6 +134,11 @@ export class Attachment extends SimpleContainer {
     async toObjectURL(): Promise<string> {
         const file = await this.toFile();
         return URL.createObjectURL(file);
+    }
+
+    async toText(): Promise<string> {
+        const file = await this.toFile();
+        return readAsText(file);
     }
 
     validate() {
