@@ -1,24 +1,27 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { wait } from "@padloc/core/lib/util.js";
 import { VaultItemID } from "@padloc/core/lib/item.js";
-import { RequestProgress } from "@padloc/core/lib/transport.js";
-import { Attachment, AttachmentInfo } from "@padloc/core/lib/attachment.js";
+import { Attachment } from "@padloc/core/lib/attachment.js";
 import { ErrorCode } from "@padloc/core/lib/error.js";
 import { app } from "../init.js";
 import { fileIcon, fileSize } from "../util.js";
-import { element, html, css, property, query, observe } from "./base.js";
+import { element, html, css, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
 import { LoadingButton } from "./loading-button.js";
+import { Input } from "./input.js";
 
 @element("pl-upload-dialog")
 export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Attachment> {
     static styles = [
         ...Dialog.styles,
         css`
+            h1 {
+                margin: 0 0 8px 0;
+            }
+
             .file-info {
                 display: flex;
-                margin: 8px 0;
+                margin: 12px 0;
                 align-items: center;
             }
 
@@ -26,20 +29,26 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
                 width: 80px;
                 height: 80px;
                 font-size: 60px;
+                margin: 4px;
             }
 
             .name {
                 font-weight: bold;
+                height: auto;
+                padding: 8px 12px;
+                margin-right: 12px;
+                margin-left: -6px;
             }
 
             .size,
             .error {
+                margin-top: 8px;
+                font-weight: bold;
                 font-size: var(--font-size-small);
             }
 
             .error {
                 color: var(--color-negative);
-                font-weight: bold;
             }
         `
     ];
@@ -57,6 +66,9 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
 
     @property()
     private _error = "";
+
+    @query("#nameInput")
+    private _nameInput: Input;
 
     @query("#uploadButton")
     private _uploadButton: LoadingButton;
@@ -87,9 +99,14 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
         this._progress = null;
         this._error = "";
 
+        if (!this._nameInput.value) {
+            this._error = $l("Please enter a name!");
+            return;
+        }
+
         this._uploadButton.start();
 
-        const att = await app.createAttachment(this.itemId!, this.file!);
+        const att = await app.createAttachment(this.itemId!, this.file!, this._nameInput.value);
 
         const upload = att.uploadProgress!;
 
@@ -125,7 +142,10 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
                 <pl-icon .icon=${fileIcon(this.file.type)}></pl-icon>
 
                 <div class="flex">
-                    <div class="name">${this.file.name}</div>
+                    <h1>${$l("Upload Attachment")}</h1>
+
+                    <pl-input class="name" id="nameInput" .value=${this.file.name}></pl-input>
+
                     <div class="size">
                         ${this._progress
                             ? $l(
@@ -133,8 +153,9 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
                                   fileSize(this._progress.loaded),
                                   fileSize(this._progress.total)
                               )
-                            : fileSize(this.file.size)}
+                            : (this.file.type || $l("Unkown File Type")) + " - " + fileSize(this.file.size)}
                     </div>
+
                     <div class="error" ?hidden=${!this._error}>${this._error}</div>
                 </div>
             </div>

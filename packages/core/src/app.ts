@@ -1222,11 +1222,14 @@ export class App {
      * =============
      */
 
-    async createAttachment(itemId: VaultItemID, file: File): Promise<Attachment> {
+    async createAttachment(itemId: VaultItemID, file: File, name?: string): Promise<Attachment> {
         const { vault, item } = this.getItem(itemId)!;
 
         let att = new Attachment({ vault: vault.id });
         await att.fromFile(file);
+        if (name) {
+            att.name = name;
+        }
         att = await this.api.createAttachment(att);
 
         (async () => {
