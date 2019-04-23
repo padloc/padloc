@@ -375,7 +375,6 @@ export class ItemDialog extends Dialog<string, void> {
 
         this.open = false;
         const att = await this._uploadDialog.show({ item: this.itemId, file });
-        console.log(att);
         if (att) {
             await alert($l("File uploaded successfully!"), { type: "success" });
         }

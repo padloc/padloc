@@ -5,7 +5,7 @@ import { Attachment, AttachmentInfo } from "@padloc/core/lib/attachment.js";
 import { app } from "../init.js";
 import { mixins } from "../styles";
 import { mediaType, fileIcon, fileSize } from "../util.js";
-import { confirm } from "../dialog.js";
+import { confirm, prompt } from "../dialog.js";
 import { element, html, css, property } from "./base.js";
 import { Dialog } from "./dialog.js";
 import "./icon.js";
@@ -159,6 +159,9 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
     private _objectUrl?: string;
 
     @property()
+    private _attachment: Attachment | null = null;
+
+    @property()
     private _preview: TemplateResult | null = null;
 
     get _item() {
@@ -177,6 +180,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         this._error = "";
         this._progress = null;
         this._preview = null;
+        this._attachment = null;
         this._download();
         return super.show();
     }
@@ -187,6 +191,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         }
         this._objectUrl = undefined;
         this._preview = null;
+        this._attachment = null;
         super.done();
     }
 
@@ -228,6 +233,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         if (download.error) {
             this._error = $l("Download failed!");
         } else {
+            this._attachment = att;
             this._preview = await this._getPreview(att);
         }
     }
@@ -243,11 +249,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             case "pdf":
                 this._objectUrl = await att.toObjectURL();
                 return html`
-                    <object
-                        class="preview pdf"
-                        type="application/pdf"
-                        data="${this._objectUrl}#toolbar=0&view=Fit"
-                    ></object>
+                    <object class="preview pdf" type="application/pdf" data="${this._objectUrl}#view=Fit"></object>
                 `;
             case "image":
                 this._objectUrl = await att.toObjectURL();
@@ -263,6 +265,61 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             default:
                 return null;
         }
+    }
+
+    private async _saveToDisk() {
+        if (!this._attachment) {
+            throw "Need to download attachment first!";
+        }
+
+        this.open = false;
+        const confirmed = await confirm(
+            $l(
+                "Do you want to save this file to your disk? WARNING: Doing " +
+                    "this will leave the file exposed and unprotected on your " +
+                    "harddrive!"
+            ),
+            $l("Save"),
+            $l("Cancel"),
+            { title: $l("Save To Disk"), type: "warning" }
+        );
+        this.open = true;
+
+        if (confirmed) {
+            const url = await this._attachment.toObjectURL();
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = this._attachment.name;
+            a.rel = "noopener";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    private async _edit() {
+        if (!this.info) {
+            return;
+        }
+        this.open = false;
+        await prompt("", {
+            title: $l("Edit Name"),
+            confirmLabel: $l("Save"),
+            value: this.info.name,
+            label: $l("Attachment Name"),
+            validate: async (name: string) => {
+                if (!name) {
+                    throw $l("Please enter an attachment name!");
+                }
+                if (name !== this.info!.name) {
+                    this.info!.name = name;
+                    await app.updateItem(this._vault!, this._item!, {});
+                }
+                return name;
+            }
+        });
+        this.open = true;
     }
 
     renderContent() {
@@ -286,7 +343,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                         ></pl-spinner>
                         <pl-icon .icon=${fileIcon(this.info.type)} ?hidden=${!!this._progress}></pl-icon>
 
-                        <div class="mime-type ellipis">${this.info.type}</div>
+                        <div class="mime-type ellipis">${this.info.type || $l("Unknown File Type")}</div>
 
                         <div class="error" ?hidden=${!this._error}>${this._error}</div>
 
@@ -305,8 +362,13 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             <div class="fabs">
                 <pl-icon icon="delete" class="fab tap destructive" @click=${this._delete}></pl-icon>
                 <div class="flex"></div>
-                <pl-icon icon="edit" class="fab light tap"></pl-icon>
-                <pl-icon icon="download" class="fab light tap"></pl-icon>
+                <pl-icon icon="edit" class="fab light tap" @click=${this._edit}></pl-icon>
+                <pl-icon
+                    icon="download"
+                    class="fab light tap"
+                    ?disabled=${!this._attachment}
+                    @click=${this._saveToDisk}
+                ></pl-icon>
             </div>
         `;
     }
