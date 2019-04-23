@@ -932,7 +932,7 @@ export class App {
 
     /** Delete a number of `items` */
     async deleteItems(items: { item: VaultItem; vault: Vault }[]) {
-        const attachments: { item: VaultItemID; att: AttachmentInfo }[] = [];
+        const attachments: AttachmentInfo[] = [];
 
         // Group items by vault
         const grouped = new Map<Vault, VaultItem[]>();
@@ -941,11 +941,11 @@ export class App {
                 grouped.set(item.vault, []);
             }
             grouped.get(item.vault)!.push(item.item);
-            attachments.push(...item.item.attachments.map(att => ({ item: item.item.id, att })));
+            attachments.push(...item.item.attachments);
         }
 
         // Delete all attachments for this item
-        await Promise.all(attachments.map(({ item, att }) => this.deleteAttachment(item, att)));
+        await Promise.all(attachments.map(att => this.api.deleteAttachment(new DeleteAttachmentParams(att))));
 
         // Remove items from their respective vaults
         for (const [vault, items] of grouped.entries()) {
