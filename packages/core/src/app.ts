@@ -957,6 +957,9 @@ export class App {
 
     /** Move `items` from their current vault to the `target` vault */
     async moveItems(items: { item: VaultItem; vault: Vault }[], target: Vault) {
+        if (items.some(item => !!item.item.attachments.length)) {
+            throw "Items with attachments cannot be moved!";
+        }
         const newItems = await Promise.all(items.map(async i => ({ ...i.item, id: await uuid() })));
         await this.addItems(newItems, target);
         await this.deleteItems(items);

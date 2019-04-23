@@ -330,11 +330,15 @@ export class ItemDialog extends Dialog<string, void> {
             return;
         }
         this.open = false;
-        const movedItems = await this._moveItemsDialog.show([{ item: this._item!, vault: this._vault! }]);
-        this.open = true;
-        if (movedItems && movedItems.length) {
-            router.go(`items/${movedItems[0].id}`);
+        if (this._item!.attachments.length) {
+            await alert($l("Items with attachments cannot be moved!"), { type: "warning" });
+        } else {
+            const movedItems = await this._moveItemsDialog.show([{ item: this._item!, vault: this._vault! }]);
+            if (movedItems && movedItems.length) {
+                router.go(`items/${movedItems[0].id}`);
+            }
         }
+        this.open = true;
     }
 
     private async _editField(index: number) {

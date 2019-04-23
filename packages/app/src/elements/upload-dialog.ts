@@ -107,7 +107,7 @@ export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Atta
             this._uploadButton.fail();
             this._error =
                 upload.error.code === ErrorCode.STORAGE_QUOTA_EXCEEDED
-                    ? $l("You have exceed the storage limit for this vault!")
+                    ? $l("Storage limit exceeded!")
                     : $l("Upload failed! Please try again!");
         } else {
             this._uploadButton.success();

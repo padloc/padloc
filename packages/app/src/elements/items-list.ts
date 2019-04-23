@@ -481,7 +481,22 @@ export class ItemsList extends StateMixin(View) {
     }
 
     private async _moveItems() {
-        const movedItems = await this._moveItemsDialog.show([...this._multiSelect.values()]);
+        let selected = [...this._multiSelect.values()];
+        if (selected.some(({ item }) => !!item.attachments.length)) {
+            const proceed = await confirm(
+                $l(
+                    "Some items in your selection have attachments and cannot be moved. " +
+                        "Do you want to proceed moving the other items?"
+                ),
+                $l("Yes"),
+                $l("No")
+            );
+            if (!proceed) {
+                return;
+            }
+            selected = selected.filter(({ item }) => !item.attachments.length);
+        }
+        const movedItems = await this._moveItemsDialog.show(selected);
         if (movedItems) {
             this.cancelMultiSelect();
         }
