@@ -198,7 +198,7 @@ export class Settings extends StateMixin(View) {
                 if (!name) {
                     throw $l("Please enter a name!");
                 }
-                if (name === account.name) {
+                if (name !== account.name) {
                     await app.updateAccount(async account => (account.name = name));
                 }
                 return name;

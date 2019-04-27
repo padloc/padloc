@@ -92,7 +92,6 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
             .views {
                 flex: 1;
                 position: relative;
-                perspective: 1000px;
                 margin: var(--gutter-size);
                 margin-left: 0;
             }
@@ -292,9 +291,10 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
             const item = id && app.getItem(id);
             if (item) {
                 const done = this._itemDialog.show(item.item.id);
-                const { edit } = router.params;
+                const { edit, ...rest } = router.params;
                 if (typeof edit !== "undefined") {
                     this._itemDialog.edit();
+                    router.params = rest;
                 }
                 await done;
                 router.go("items");

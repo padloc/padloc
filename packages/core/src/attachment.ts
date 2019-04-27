@@ -119,6 +119,7 @@ export class Attachment extends SimpleContainer {
         } as AESKeyParams);
 
         await this.setData(data);
+        return this;
     }
 
     async toFile(): Promise<File> {
