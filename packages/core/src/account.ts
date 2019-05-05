@@ -14,6 +14,7 @@ import { Storable } from "./storage";
 import { SessionInfo } from "./session";
 import { VaultID } from "./vault";
 import { Org, OrgID } from "./org";
+import { AccountQuota } from "./quota";
 
 /** Unique identifier for [[Account]] objects */
 export type AccountID = string;
@@ -80,6 +81,8 @@ export class Account extends PBES2Container implements Storable {
      * object between client and server
      */
     revision: string = "";
+
+    quota: AccountQuota = new AccountQuota();
 
     /**
      * Whether or not this Account object is current "locked" or, in other words,
@@ -154,7 +157,20 @@ export class Account extends PBES2Container implements Storable {
         };
     }
 
-    fromRaw({ id, created, updated, email, name, mainVault, publicKey, orgs, revision, sessions, ...rest }: any) {
+    fromRaw({
+        id,
+        created,
+        updated,
+        email,
+        name,
+        mainVault,
+        publicKey,
+        orgs,
+        revision,
+        sessions,
+        quota,
+        ...rest
+    }: any) {
         Object.assign(this, {
             id,
             email,
@@ -164,6 +180,7 @@ export class Account extends PBES2Container implements Storable {
             created: new Date(created),
             updated: new Date(updated),
             publicKey: base64ToBytes(publicKey),
+            quota: new AccountQuota().fromRaw(quota),
             orgs,
             sessions
         });

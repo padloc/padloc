@@ -2,7 +2,7 @@ import { Storage, Storable } from "./storage";
 import { Serializable } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
-import { Org, OrgID, OrgMember, OrgRole, Group } from "./org";
+import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
 import { VaultItem, VaultItemID, Field, Tag, createVaultItem } from "./item";
 import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
@@ -987,9 +987,10 @@ export class App {
     }
 
     /** Create a new [[Org]]ganization */
-    async createOrg(name: string): Promise<Org> {
+    async createOrg(name: string, type: OrgType = OrgType.Basic): Promise<Org> {
         let org = new Org();
         org.name = name;
+        org.type = type;
         org = await this.api.createOrg(org);
         await org.initialize(this.account!);
         org = await this.api.updateOrg(org);

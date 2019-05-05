@@ -34,7 +34,9 @@ export enum ErrorCode {
     INVALID_REQUEST = "invalid_request",
     OUTDATED_REVISION = "merge_conflict",
     MAX_REQUEST_SIZE_EXCEEDED = "max_request_size_exceeded",
-    STORAGE_QUOTA_EXCEEDED = "storage_quota_exceeded",
+
+    // Quota errors
+    QUOTA_EXCEEDED = "quota_exceeded",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",

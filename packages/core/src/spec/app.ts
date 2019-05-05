@@ -5,7 +5,9 @@ import { EmailVerificationMessage, InviteCreatedMessage, MemberAddedMessage } fr
 import { DirectSender } from "../transport";
 import { MemoryStorage } from "../storage";
 import { MemoryAttachmentStorage } from "../attachment";
+import { BasicQuotaProvider } from "../quota";
 import { ErrorCode } from "../error";
+import { OrgType } from "../org";
 import { Spec, assertResolve, assertReject } from "./spec";
 
 export function appSpec(): Spec {
@@ -17,7 +19,8 @@ export function appSpec(): Spec {
         { clientUrl, reportErrors: "support@padloc.app" },
         new MemoryStorage(),
         messenger,
-        new MemoryAttachmentStorage()
+        new MemoryAttachmentStorage(),
+        new BasicQuotaProvider()
     );
     const app = new App(new MemoryStorage(), new DirectSender(server));
     const otherApp = new App(new MemoryStorage(), new DirectSender(server));
@@ -69,7 +72,7 @@ export function appSpec(): Spec {
         });
 
         test("Create Org", async () => {
-            const org = await app.createOrg("My Org");
+            const org = await app.createOrg("My Org", OrgType.Business);
             assert.equal(org.name, "My Org", "Organization name should be correct.");
             assert.ok(org.id, "Organization ID should be set.");
             assert.isTrue(org.isOwner(app.account!), "Account should be organization owner.");

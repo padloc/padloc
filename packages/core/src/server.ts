@@ -29,6 +29,7 @@ import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { localize as $l } from "./locale";
+import { QuotaProvider } from "./quota";
 
 const pendingAuths = new Map<string, SRPServer>();
 
@@ -61,7 +62,8 @@ export class Context implements API {
         /** [[Messenger]] implemenation for sending messages to users */
         public messenger: Messenger,
         /** Attachment storage */
-        public attachmentStorage: AttachmentStorage
+        public attachmentStorage: AttachmentStorage,
+        public quotaProvider: QuotaProvider
     ) {}
 
     async requestEmailVerification({ email, purpose }: RequestEmailVerificationParams) {
@@ -240,6 +242,7 @@ export class Context implements API {
 
     async getAccount() {
         const { account } = this._requireAuth();
+        account.quota = await this.quotaProvider.getAccountQuota(account);
         return account;
     }
 
@@ -260,6 +263,11 @@ export class Context implements API {
 
         // Update account object
         Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData });
+
+        //update quota
+        account.quota = await this.quotaProvider.getAccountQuota(account);
+
+        // Persist changes
         account.updated = new Date();
         await this.storage.save(account);
 
@@ -332,7 +340,13 @@ export class Context implements API {
 
         org.id = await uuid();
         org.revision = await uuid();
-        org.creator = account.id;
+        org.owner = account.id;
+
+        const quota = await this.quotaProvider.getOrgQuota(account, org);
+        if (!quota) {
+            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+        }
+        org.quota = quota;
 
         await this.storage.save(org);
 
@@ -346,9 +360,15 @@ export class Context implements API {
 
         // Only members can read organization data. For non-members,
         // we pretend the organization doesn't exist.
-        if (org.creator !== account.id && !org.isMember(account)) {
+        if (org.owner !== account.id && !org.isMember(account)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
+
+        const quota = await this.quotaProvider.getOrgQuota(account, org);
+        if (!quota) {
+            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+        }
+        org.quota = quota;
 
         return org;
     }
@@ -381,7 +401,7 @@ export class Context implements API {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
 
-        const isOwner = org.creator === account.id || org.isOwner(account);
+        const isOwner = org.owner === account.id || org.isOwner(account);
         const isAdmin = isOwner || org.isAdmin(account);
 
         // Only admins can make any changes to organizations at all.
@@ -433,21 +453,6 @@ export class Context implements API {
             this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
         }
 
-        // Added members
-        for (const member of addedMembers) {
-            const acc = await this.storage.get(Account, member.id);
-            acc.orgs.push(org.id);
-            await this.storage.save(acc);
-
-            if (member.id !== account.id) {
-                // Send a notification email to let the new member know they've been added
-                this.messenger.send(
-                    member.email,
-                    new MemberAddedMessage(org, `${this.config.clientUrl}/org/${org.id}`)
-                );
-            }
-        }
-
         // Removed members
         for (const { id } of removedMembers) {
             const acc = await this.storage.get(Account, id);
@@ -483,6 +488,33 @@ export class Context implements API {
                 accessors,
                 invites
             });
+        }
+
+        // Update org quota
+        const quota = await this.quotaProvider.getOrgQuota(account, org);
+        if (!quota) {
+            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+        }
+        org.quota = quota;
+
+        // Check members quota
+        if (members.length > org.quota.members || groups.length > org.quota.groups) {
+            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+        }
+
+        // Added members
+        for (const member of addedMembers) {
+            const acc = await this.storage.get(Account, member.id);
+            acc.orgs.push(org.id);
+            await this.storage.save(acc);
+
+            if (member.id !== account.id) {
+                // Send a notification email to let the new member know they've been added
+                this.messenger.send(
+                    member.email,
+                    new MemberAddedMessage(org, `${this.config.clientUrl}/org/${org.id}`)
+                );
+            }
         }
 
         // Update revision
@@ -569,6 +601,17 @@ export class Context implements API {
         // Add to organization
         org.vaults.push({ id: vault.id, name: vault.name });
         org.revision = await uuid();
+
+        const quota = await this.quotaProvider.getOrgQuota(account, org);
+        if (!quota) {
+            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+        }
+        org.quota = quota;
+
+        // Check vault quota of organization
+        if (org.vaults.length > org.quota.vaults) {
+            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+        }
 
         // Persist cahnges
         await Promise.all([this.storage.save(vault), this.storage.save(org)]);
@@ -690,8 +733,12 @@ export class Context implements API {
               )
             : await this.attachmentStorage.getUsage(vault.id);
 
-        if (currentUsage + att.size > 5e7) {
-            throw new Err(ErrorCode.STORAGE_QUOTA_EXCEEDED);
+        const quota = org
+            ? await this.quotaProvider.getOrgQuota(account, org)
+            : await this.quotaProvider.getAccountQuota(account);
+
+        if (!quota || currentUsage + att.size > quota.storage) {
+            throw new Err(ErrorCode.QUOTA_EXCEEDED);
         }
 
         await this.attachmentStorage.put(att);
@@ -807,14 +854,21 @@ export class Server {
         /** [[Messenger]] implemenation for sending messages to users */
         public messenger: Messenger,
         /** Attachment storage */
-        public attachmentStorage: AttachmentStorage
+        public attachmentStorage: AttachmentStorage,
+        public quotaProvider: QuotaProvider
     ) {}
 
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
         const res = new Response();
         try {
-            const context = new Context(this.config, this.storage, this.messenger, this.attachmentStorage);
+            const context = new Context(
+                this.config,
+                this.storage,
+                this.messenger,
+                this.attachmentStorage,
+                this.quotaProvider
+            );
             context.device = req.device && new DeviceInfo().fromRaw(req.device);
             await this._authenticate(req, context);
             await this._process(req, res, context);

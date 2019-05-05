@@ -23,6 +23,7 @@ import { Storable } from "./storage";
 import { Vault, VaultID } from "./vault";
 import { Account, AccountID } from "./account";
 import { Invite, InviteID } from "./invite";
+import { OrgQuota } from "./quota";
 
 /** Role of a member within an organization, each associated with certain priviliges */
 export enum OrgRole {
@@ -158,6 +159,12 @@ export class Group extends Serializable {
 /** Unique identifier for [[Org]]s */
 export type OrgID = string;
 
+export enum OrgType {
+    Basic,
+    Team,
+    Business
+}
+
 /**
  * Organizations are the central component of Padlocs secure data sharing architecture.
  *
@@ -204,8 +211,10 @@ export class Org extends SharedContainer implements Storable {
     /** Unique identier */
     id: OrgID = "";
 
+    type: OrgType = OrgType.Basic;
+
     /** [[Account]] which created this organization */
-    creator: AccountID = "";
+    owner: AccountID = "";
 
     /** Organization name */
     name: string = "";
@@ -252,6 +261,8 @@ export class Org extends SharedContainer implements Storable {
      */
     revision: string = "";
 
+    quota: OrgQuota = new OrgQuota();
+
     toRaw() {
         return {
             ...super.toRaw(["privateKey", "invitesKey"]),
@@ -265,17 +276,34 @@ export class Org extends SharedContainer implements Storable {
             (typeof this.name === "string" &&
                 typeof this.revision === "string" &&
                 typeof this.id === "string" &&
+                this.type in OrgType &&
                 this.vaults.every(({ id, name }: any) => typeof id === "string" && typeof name === "string"))
         );
     }
 
-    fromRaw({ id, name, creator, revision, publicKey, members, groups, vaults, invites, signingParams, ...rest }: any) {
+    fromRaw({
+        id,
+        type,
+        name,
+        owner,
+        revision,
+        publicKey,
+        members,
+        groups,
+        vaults,
+        invites,
+        signingParams,
+        quota,
+        ...rest
+    }: any) {
         this.signingParams.fromRaw(signingParams);
+        this.quota.fromRaw(quota);
 
         Object.assign(this, {
             id,
+            type,
             name,
-            creator,
+            owner,
             revision,
             publicKey: publicKey && base64ToBytes(publicKey),
             members: members.map((m: any) => new OrgMember().fromRaw(m)),
