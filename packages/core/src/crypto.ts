@@ -13,7 +13,7 @@ export type RSAPrivateKey = Uint8Array;
 
 export class AESEncryptionParams extends Serializable {
     algorithm: "AES-GCM" | "AES-CCM" = "AES-GCM";
-    tagSize: 64 | 96 | 128 = 64;
+    tagSize: 64 | 96 | 128 = 128;
     keySize: 256 = 256;
     iv: Uint8Array = new Uint8Array();
     additionalData = new Uint8Array();
