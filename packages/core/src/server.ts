@@ -113,7 +113,8 @@ export class Context implements API {
         pendingAuths.set(auth.account, srp);
 
         return new InitAuthResponse({
-            auth,
+            account: auth.account,
+            keyParams: auth.keyParams,
             B: srp.B!
         });
     }

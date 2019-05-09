@@ -6,6 +6,7 @@ import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
 import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
+import { PBKDF2Params } from "./crypto";
 // import { Attachment } from "./attachment";
 
 /**
@@ -169,8 +170,11 @@ export class InitAuthParams extends Serializable {
  * The response object received from [[API.initAuth]]
  */
 export class InitAuthResponse extends Serializable {
-    /** The authentication parameters stored for this account */
-    auth!: Auth;
+    /** The account id */
+    account: AccountID = "";
+
+    /** The key derivation parameters used for authentication */
+    keyParams: PBKDF2Params = new PBKDF2Params();
 
     /** A random value used for SRP session negotiation */
     B!: Uint8Array;
@@ -180,9 +184,10 @@ export class InitAuthResponse extends Serializable {
         props && Object.assign(this, props);
     }
 
-    fromRaw({ auth, B }: any) {
+    fromRaw({ account, keyParams, B }: any) {
         return super.fromRaw({
-            auth: new Auth().fromRaw(auth),
+            account,
+            keyParams: new PBKDF2Params().fromRaw(keyParams),
             B: base64ToBytes(B)
         });
     }

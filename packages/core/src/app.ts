@@ -431,7 +431,10 @@ export class App {
             this._cachedAuthInfo.set(email, await this.api.initAuth(new InitAuthParams({ email, verify })));
         }
 
-        const { auth, B } = this._cachedAuthInfo.get(email)!;
+        const { account: accId, keyParams, B } = this._cachedAuthInfo.get(email)!;
+
+        const auth = new Auth(email);
+        auth.keyParams = keyParams;
 
         // Generate auth secret
         const authKey = await auth.getAuthKey(password);
@@ -443,7 +446,7 @@ export class App {
 
         // Create session object
         const session = await this.api.createSession(
-            new CreateSessionParams({ account: auth.account, A: srp.A!, M: srp.M1! })
+            new CreateSessionParams({ account: accId, A: srp.A!, M: srp.M1! })
         );
 
         // Apply session key and update state
