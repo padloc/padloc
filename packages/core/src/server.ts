@@ -1,4 +1,4 @@
-import { bytesToHex } from "./encoding";
+import { equalCT } from "./encoding";
 import {
     API,
     RequestEmailVerificationParams,
@@ -146,7 +146,7 @@ export class Context implements API {
         // accounts master password. This also guarantees that the session key
         // computed by the client and server are identical an can be used for
         // authentication.
-        if (bytesToHex(M) !== bytesToHex(srp.M1!)) {
+        if (!equalCT(M, srp.M1!)) {
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
@@ -171,7 +171,7 @@ export class Context implements API {
 
         // Add device to trusted devices
         const auth = await this.storage.get(Auth, acc.email);
-        if (this.device && !auth.trustedDevices.some(({ id }) => id === this.device!.id)) {
+        if (this.device && !auth.trustedDevices.some(({ id }) => equalCT(id, this.device!.id))) {
             auth.trustedDevices.push(this.device);
         }
         await this.storage.save(auth);
@@ -746,7 +746,7 @@ export class Context implements API {
             }
         }
 
-        if (ev.code !== code.toLowerCase()) {
+        if (!equalCT(ev.code, code.toLowerCase())) {
             ev.tries++;
             if (ev.tries > 5) {
                 await this.storage.delete(ev);
@@ -772,7 +772,7 @@ export class Context implements API {
             }
         }
 
-        if (ev.token !== token) {
+        if (!equalCT(ev.token, token)) {
             throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification token. Please try again!");
         }
 

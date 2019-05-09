@@ -16,6 +16,7 @@ import {
     RSASigningParams
 } from "@padloc/core/src/crypto";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import { equalCT } from "@padloc/core/src/encoding";
 
 export class NodeCryptoProvider implements CryptoProvider {
     async randomBytes(n: number) {
@@ -118,7 +119,7 @@ export class NodeCryptoProvider implements CryptoProvider {
         params: HMACParams
     ): Promise<boolean> {
         const sig = await this._signHMAC(key, data, params);
-        return signature.toString() === sig.toString();
+        return equalCT(sig, signature);
     }
 
     _signRSA(key: RSAPrivateKey, data: Uint8Array, params: RSASigningParams) {
