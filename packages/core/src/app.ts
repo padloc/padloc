@@ -1004,6 +1004,14 @@ export class App {
     /** Fetch the [[Org]]anization object with the given `id` */
     async fetchOrg(id: OrgID) {
         const org = await this.api.getOrg(id);
+        const existing = this.getOrg(id);
+
+        // Verify that the updated organization object has a `minMemberUpdated`
+        // property equal to or higher than the previous (local) one.
+        if (existing && org.minMemberUpdated < existing.minMemberUpdated) {
+            throw new Err(ErrorCode.VERIFICATION_ERROR, "'minMemberUpdated' property may not decrease!");
+        }
+
         this.putOrg(org);
         await this.save();
         return org;
@@ -1123,14 +1131,10 @@ export class App {
     /**
      * Removes a member from the given `org`
      */
-    async removeMember(org: Org, { id }: OrgMember) {
+    async removeMember(org: Org, member: OrgMember) {
         await this.updateOrg(org.id, async org => {
-            // Remove member from all groups
-            for (const group of org.getGroupsForMember({ id })) {
-                group.members = group.members.filter(m => m.id !== id);
-            }
-
-            org.members = org.members.filter(m => m.id !== id);
+            await org.unlock(this.account!);
+            await org.removeMember(member);
         });
     }
 

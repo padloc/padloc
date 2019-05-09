@@ -364,7 +364,8 @@ export class Context implements API {
         groups,
         vaults,
         invites,
-        revision
+        revision,
+        minMemberUpdated
     }: Org) {
         const { account } = this._requireAuth();
 
@@ -385,6 +386,14 @@ export class Context implements API {
         // Only admins can make any changes to organizations at all.
         if (!isAdmin) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Only admins can make changes to organizations!");
+        }
+
+        // Verify that `minMemberUpdated` is equal to or larger than the previous value
+        if (minMemberUpdated < org.minMemberUpdated) {
+            throw new Err(
+                ErrorCode.BAD_REQUEST,
+                "`minMemberUpdated` property needs to be equal to or larger than the previous one!"
+            );
         }
 
         const addedMembers = members.filter(m => !org.isMember(m));
@@ -479,7 +488,8 @@ export class Context implements API {
                 encryptedData,
                 signingParams,
                 accessors,
-                invites
+                invites,
+                minMemberUpdated
             });
         }
 
