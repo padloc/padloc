@@ -42,9 +42,9 @@ export interface ServerConfig {
 }
 
 /**
- * Request context constructed for each request by [[Server]] to execute API requests
+ * Request context
  */
-export class Context implements API {
+export interface Context {
     /** Current [[Session]] */
     session?: Session;
 
@@ -53,8 +53,14 @@ export class Context implements API {
 
     /** Information about the device the request is coming from */
     device?: DeviceInfo;
+}
 
+/**
+ * Controller class for processing api requests
+ */
+class Controller implements API {
     constructor(
+        public context: Context,
         /** Server config */
         public config: ServerConfig,
         /** Storage for persisting data */
@@ -88,7 +94,8 @@ export class Context implements API {
             }
         }
 
-        const deviceTrusted = auth && this.device && auth.trustedDevices.some(({ id }) => id === this.device!.id);
+        const deviceTrusted =
+            auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
 
         if (!deviceTrusted) {
             if (!verify) {
@@ -157,7 +164,7 @@ export class Context implements API {
         const session = new Session();
         session.id = await uuid();
         session.account = account;
-        session.device = this.device;
+        session.device = this.context.device;
         session.key = srp.K!;
 
         // Add the session to the list of active sessions
@@ -171,8 +178,8 @@ export class Context implements API {
 
         // Add device to trusted devices
         const auth = await this.storage.get(Auth, acc.email);
-        if (this.device && !auth.trustedDevices.some(({ id }) => id === this.device!.id)) {
-            auth.trustedDevices.push(this.device);
+        if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
+            auth.trustedDevices.push(this.context.device);
         }
         await this.storage.save(auth);
 
@@ -221,8 +228,8 @@ export class Context implements API {
         auth.account = account.id;
 
         // Add device to trusted devices
-        if (this.device && !auth.trustedDevices.some(({ id }) => id === this.device!.id)) {
-            auth.trustedDevices.push(this.device);
+        if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
+            auth.trustedDevices.push(this.context.device);
         }
 
         // Provision the private vault for this account
@@ -779,7 +786,7 @@ export class Context implements API {
     }
 
     private _requireAuth(): { account: Account; session: Session } {
-        const { account, session } = this;
+        const { account, session } = this.context;
 
         if (!session || !account) {
             throw new Err(ErrorCode.INVALID_SESSION);
@@ -834,41 +841,14 @@ export class Context implements API {
     }
 }
 
-/**
- * The Padloc server acts as a central repository for [[Account]]s, [[Org]]s
- * and [[Vault]]s. [[Server]] handles authentication, enforces user privileges
- * and acts as a mediator for key exchange between clients.
- *
- * The server component acts on a strict zero-trust, zero-knowledge principle
- * when it comes to sensitive data, meaning no sensitive data is ever exposed
- * to the server at any point, nor should the server (or the person controlling
- * it) ever be able to temper with critical data or trick users into granting
- * them access to encrypted information.
- */
-export class Server {
-    constructor(
-        /** Server config */
-        public config: ServerConfig,
-        /** Storage for persisting data */
-        public storage: Storage,
-        /** [[Messenger]] implemenation for sending messages to users */
-        public messenger: Messenger,
-        /** Attachment storage */
-        public attachmentStorage: AttachmentStorage,
-        public quotaProvider: QuotaProvider
-    ) {}
+export abstract class BaseServer {
+    constructor(public config: ServerConfig, public storage: Storage, public messenger: Messenger) {}
 
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
         const res = new Response();
         try {
-            const context = new Context(
-                this.config,
-                this.storage,
-                this.messenger,
-                this.attachmentStorage,
-                this.quotaProvider
-            );
+            const context: Context = {};
             context.device = req.device && new DeviceInfo().fromRaw(req.device);
             await this._authenticate(req, context);
             await this._process(req, res, context);
@@ -881,117 +861,7 @@ export class Server {
         return res;
     }
 
-    private async _process(req: Request, res: Response, ctx: Context): Promise<void> {
-        const method = req.method;
-        const params = req.params || [];
-
-        switch (method) {
-            case "requestEmailVerification":
-                await ctx.requestEmailVerification(new RequestEmailVerificationParams().fromRaw(params[0]));
-                break;
-
-            case "completeEmailVerification":
-                res.result = await ctx.completeEmailVerification(
-                    new CompleteEmailVerificationParams().fromRaw(params[0])
-                );
-                break;
-
-            case "initAuth":
-                res.result = (await ctx.initAuth(new InitAuthParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "updateAuth":
-                await ctx.updateAuth(new Auth().fromRaw(params[0]));
-                break;
-
-            case "createSession":
-                res.result = (await ctx.createSession(new CreateSessionParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "revokeSession":
-                if (typeof params[0] !== "string") {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                await ctx.revokeSession(params[0]);
-                break;
-
-            case "getAccount":
-                res.result = (await ctx.getAccount()).toRaw();
-                break;
-
-            case "createAccount":
-                res.result = (await ctx.createAccount(new CreateAccountParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "updateAccount":
-                res.result = (await ctx.updateAccount(new Account().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "recoverAccount":
-                res.result = (await ctx.recoverAccount(new RecoverAccountParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "createOrg":
-                res.result = (await ctx.createOrg(new Org().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "getOrg":
-                if (typeof params[0] !== "string") {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                res.result = (await ctx.getOrg(params[0])).toRaw();
-                break;
-
-            case "updateOrg":
-                res.result = (await ctx.updateOrg(new Org().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "getVault":
-                if (typeof params[0] !== "string") {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                res.result = (await ctx.getVault(params[0])).toRaw();
-                break;
-
-            case "updateVault":
-                res.result = (await ctx.updateVault(new Vault().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "createVault":
-                res.result = (await ctx.createVault(new Vault().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "deleteVault":
-                if (typeof params[0] !== "string") {
-                    throw new Err(ErrorCode.BAD_REQUEST);
-                }
-                await ctx.deleteVault(params[0]);
-                break;
-
-            case "getInvite":
-                res.result = (await ctx.getInvite(new GetInviteParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "acceptInvite":
-                await ctx.acceptInvite(new Invite().fromRaw(params[0]));
-                break;
-
-            case "createAttachment":
-                res.result = (await ctx.createAttachment(new Attachment().fromRaw(params[0]))).id;
-                break;
-
-            case "getAttachment":
-                res.result = (await ctx.getAttachment(new GetAttachmentParams().fromRaw(params[0]))).toRaw();
-                break;
-
-            case "deleteAttachment":
-                await ctx.deleteAttachment(new DeleteAttachmentParams().fromRaw(params[0]));
-                break;
-
-            default:
-                throw new Err(ErrorCode.INVALID_REQUEST);
-        }
-    }
+    abstract _process(req: Request, res: Response, ctx: Context): Promise<void>;
 
     private async _authenticate(req: Request, ctx: Context) {
         if (!req.auth) {
@@ -1002,7 +872,7 @@ export class Server {
 
         // Find the session with the id specified in the [[Request.auth]] property
         try {
-            session = await ctx.storage.get(Session, req.auth.session);
+            session = await this.storage.get(Session, req.auth.session);
         } catch (e) {
             if (e.code === ErrorCode.NOT_FOUND) {
                 throw new Err(ErrorCode.INVALID_SESSION);
@@ -1022,7 +892,7 @@ export class Server {
         }
 
         // Get account associated with this session
-        const account = await ctx.storage.get(Account, session.account);
+        const account = await this.storage.get(Account, session.account);
 
         // Store account and session on context
         ctx.session = session;
@@ -1040,10 +910,10 @@ export class Server {
             account.sessions.push(session.info);
         }
 
-        await Promise.all([ctx.storage.save(session), ctx.storage.save(account)]);
+        await Promise.all([this.storage.save(session), this.storage.save(account)]);
     }
 
-    _handleError(e: Error, res: Response) {
+    private _handleError(e: Error, res: Response) {
         if (e instanceof Err) {
             res.error = {
                 code: e.code,
@@ -1064,6 +934,153 @@ export class Server {
                     "Something went wrong while we were processing your request. " +
                     "Our team has been notified and will resolve the problem as soon as possible!"
             };
+        }
+    }
+}
+
+/**
+ * The Padloc server acts as a central repository for [[Account]]s, [[Org]]s
+ * and [[Vault]]s. [[Server]] handles authentication, enforces user privileges
+ * and acts as a mediator for key exchange between clients.
+ *
+ * The server component acts on a strict zero-trust, zero-knowledge principle
+ * when it comes to sensitive data, meaning no sensitive data is ever exposed
+ * to the server at any point, nor should the server (or the person controlling
+ * it) ever be able to temper with critical data or trick users into granting
+ * them access to encrypted information.
+ */
+export class Server extends BaseServer {
+    constructor(
+        /** Server config */
+        config: ServerConfig,
+        /** Storage for persisting data */
+        storage: Storage,
+        /** [[Messenger]] implemenation for sending messages to users */
+        messenger: Messenger,
+        /** Attachment storage */
+        public attachmentStorage: AttachmentStorage,
+        public quotaProvider: QuotaProvider
+    ) {
+        super(config, storage, messenger);
+    }
+
+    async _process(req: Request, res: Response, ctx: Context): Promise<void> {
+        const ctlr = new Controller(
+            ctx,
+            this.config,
+            this.storage,
+            this.messenger,
+            this.attachmentStorage,
+            this.quotaProvider
+        );
+        const method = req.method;
+        const params = req.params || [];
+
+        switch (method) {
+            case "requestEmailVerification":
+                await ctlr.requestEmailVerification(new RequestEmailVerificationParams().fromRaw(params[0]));
+                break;
+
+            case "completeEmailVerification":
+                res.result = await ctlr.completeEmailVerification(
+                    new CompleteEmailVerificationParams().fromRaw(params[0])
+                );
+                break;
+
+            case "initAuth":
+                res.result = (await ctlr.initAuth(new InitAuthParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "updateAuth":
+                await ctlr.updateAuth(new Auth().fromRaw(params[0]));
+                break;
+
+            case "createSession":
+                res.result = (await ctlr.createSession(new CreateSessionParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "revokeSession":
+                if (typeof params[0] !== "string") {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                await ctlr.revokeSession(params[0]);
+                break;
+
+            case "getAccount":
+                res.result = (await ctlr.getAccount()).toRaw();
+                break;
+
+            case "createAccount":
+                res.result = (await ctlr.createAccount(new CreateAccountParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "updateAccount":
+                res.result = (await ctlr.updateAccount(new Account().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "recoverAccount":
+                res.result = (await ctlr.recoverAccount(new RecoverAccountParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "createOrg":
+                res.result = (await ctlr.createOrg(new Org().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "getOrg":
+                if (typeof params[0] !== "string") {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                res.result = (await ctlr.getOrg(params[0])).toRaw();
+                break;
+
+            case "updateOrg":
+                res.result = (await ctlr.updateOrg(new Org().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "getVault":
+                if (typeof params[0] !== "string") {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                res.result = (await ctlr.getVault(params[0])).toRaw();
+                break;
+
+            case "updateVault":
+                res.result = (await ctlr.updateVault(new Vault().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "createVault":
+                res.result = (await ctlr.createVault(new Vault().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "deleteVault":
+                if (typeof params[0] !== "string") {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                await ctlr.deleteVault(params[0]);
+                break;
+
+            case "getInvite":
+                res.result = (await ctlr.getInvite(new GetInviteParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "acceptInvite":
+                await ctlr.acceptInvite(new Invite().fromRaw(params[0]));
+                break;
+
+            case "createAttachment":
+                res.result = (await ctlr.createAttachment(new Attachment().fromRaw(params[0]))).id;
+                break;
+
+            case "getAttachment":
+                res.result = (await ctlr.getAttachment(new GetAttachmentParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "deleteAttachment":
+                await ctlr.deleteAttachment(new DeleteAttachmentParams().fromRaw(params[0]));
+                break;
+
+            default:
+                throw new Err(ErrorCode.INVALID_REQUEST);
         }
     }
 }

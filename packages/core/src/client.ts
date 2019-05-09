@@ -38,7 +38,7 @@ export interface ClientState {
  * Client-side interface for Client-Server communication. Manages serialization,
  * authentication and some state like current session and account.
  */
-export class Client implements API {
+export class BaseClient {
     constructor(
         /** Object for storing state */
         public state: ClientState,
@@ -93,7 +93,9 @@ export class Client implements API {
 
         return res;
     }
+}
 
+export class Client extends BaseClient implements API {
     async requestEmailVerification(params: RequestEmailVerificationParams) {
         const res = await this.call("requestEmailVerification", [params.toRaw()]);
         return res.result;

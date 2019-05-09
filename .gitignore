@@ -2,6 +2,7 @@ node_modules
 packages/*/node_modules
 packages/*/docs
 packages/core/lib
+packages/billing/lib
 packages/app/dist
 packages/app/build
 packages/app/test/dist
