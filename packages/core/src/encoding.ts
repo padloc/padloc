@@ -290,14 +290,25 @@ export function hexToBase64(hex: string): string {
 /**
  * Concatenates a number of Uint8Arrays to a single array
  */
-export function concatBytes(...arrs: Uint8Array[]): Uint8Array {
-    const length = arrs.reduce((len, arr) => len + arr.length, 0);
+export function concatBytes(arrs: Uint8Array[], delimiter?: number): Uint8Array {
+    let length = arrs.reduce((len, arr) => len + arr.length, 0);
+
+    if (typeof delimiter !== "undefined") {
+        length += arrs.length - 1;
+    }
+
     const res = new Uint8Array(length);
     let offset = 0;
     for (const arr of arrs) {
         res.set(arr, offset);
         offset += arr.length;
+
+        if (typeof delimiter !== "undefined" && offset < length) {
+            res.set([delimiter], offset);
+            offset++;
+        }
     }
+
     return res;
 }
 

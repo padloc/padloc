@@ -184,7 +184,7 @@ export class Account extends PBES2Container implements Storable {
      * Creates a signature that can be used later to verify an organizations id and public key
      */
     async signOrg({ id, publicKey }: { id: string; publicKey: Uint8Array }) {
-        return getProvider().sign(this.signingKey, concatBytes(stringToBytes(id), publicKey), new HMACParams());
+        return getProvider().sign(this.signingKey, concatBytes([stringToBytes(id), publicKey], 0x00), new HMACParams());
     }
 
     /**
@@ -205,7 +205,7 @@ export class Account extends PBES2Container implements Storable {
         const verified = await getProvider().verify(
             this.signingKey,
             member.orgSignature,
-            concatBytes(stringToBytes(org.id), org.publicKey),
+            concatBytes([stringToBytes(org.id), org.publicKey], 0x00),
             new HMACParams()
         );
 

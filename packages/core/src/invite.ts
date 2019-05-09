@@ -208,7 +208,7 @@ export class Invite extends SimpleContainer {
             id: org.id,
             name: org.name,
             publicKey: org.publicKey,
-            signature: await this._sign(concatBytes(stringToBytes(org.id), org.publicKey))
+            signature: await this._sign(concatBytes([stringToBytes(org.id), org.publicKey], 0x00))
         };
     }
 
@@ -326,7 +326,7 @@ export class Invite extends SimpleContainer {
             publicKey: account.publicKey,
             // this is used by the organization owner to verify the invitees public key
             signature: await this._sign(
-                concatBytes(stringToBytes(account.id), stringToBytes(account.email), account.publicKey)
+                concatBytes([stringToBytes(account.id), stringToBytes(account.email), account.publicKey], 0x00)
             ),
             // this is used by member later to verify the organization public key
             orgSignature: await account.signOrg(this.org)
@@ -343,7 +343,7 @@ export class Invite extends SimpleContainer {
 
         return (
             this.expires > new Date() &&
-            this._verify(this.org.signature, concatBytes(stringToBytes(this.org.id), this.org.publicKey))
+            this._verify(this.org.signature, concatBytes([stringToBytes(this.org.id), this.org.publicKey], 0x00))
         );
     }
 
@@ -357,7 +357,10 @@ export class Invite extends SimpleContainer {
             this.expires > new Date() &&
             this._verify(
                 this.invitee.signature,
-                concatBytes(stringToBytes(this.invitee.id), stringToBytes(this.invitee.email), this.invitee.publicKey)
+                concatBytes(
+                    [stringToBytes(this.invitee.id), stringToBytes(this.invitee.email), this.invitee.publicKey],
+                    0x00
+                )
             )
         );
     }

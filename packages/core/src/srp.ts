@@ -112,7 +112,7 @@ import { bytesToHex, hexToBytes, concatBytes } from "./encoding";
 import { getProvider, HashParams } from "./crypto";
 
 async function digest(hash: "SHA-1" | "SHA-256" = "SHA-256", ...input: Uint8Array[]): Promise<Uint8Array> {
-    return getProvider().hash(concatBytes(...input), new HashParams({ algorithm: hash }));
+    return getProvider().hash(concatBytes(input), new HashParams({ algorithm: hash }));
 }
 
 function i2b(i: BigInteger): Uint8Array {

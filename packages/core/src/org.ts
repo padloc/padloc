@@ -495,10 +495,13 @@ export class Org extends SharedContainer implements Storable {
         member.signature = await getProvider().sign(
             this.privateKey,
             concatBytes(
-                stringToBytes(member.id),
-                stringToBytes(member.email),
-                new Uint8Array([member.role]),
-                member.publicKey
+                [
+                    stringToBytes(member.id),
+                    stringToBytes(member.email),
+                    new Uint8Array([member.role]),
+                    member.publicKey
+                ],
+                0x00
             ),
             this.signingParams
         );
@@ -518,10 +521,13 @@ export class Org extends SharedContainer implements Storable {
             this.publicKey,
             member.signature,
             concatBytes(
-                stringToBytes(member.id),
-                stringToBytes(member.email),
-                new Uint8Array([member.role]),
-                member.publicKey
+                [
+                    stringToBytes(member.id),
+                    stringToBytes(member.email),
+                    new Uint8Array([member.role]),
+                    member.publicKey
+                ],
+                0x00
             ),
             this.signingParams
         );
