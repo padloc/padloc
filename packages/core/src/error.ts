@@ -46,7 +46,9 @@ export enum ErrorCode {
     ENCODING_ERROR = "encoding_error",
 
     NOT_FOUND = "not_found",
-    INVALID_CSV = "invalid_csv"
+    INVALID_CSV = "invalid_csv",
+
+    BILLING_ERROR = "billing_error"
 }
 
 const messages = {

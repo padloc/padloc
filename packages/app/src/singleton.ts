@@ -10,7 +10,7 @@ export function getSingleton(elName: string) {
 
     if (!el) {
         singletons[elName] = el = document.createElement(elName);
-        container.shadowRoot!.appendChild(el);
+        container.appendChild(el);
     }
 
     return el;

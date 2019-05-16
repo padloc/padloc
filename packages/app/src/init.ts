@@ -10,8 +10,8 @@ import { LocalStorage } from "./storage.js";
 
 const sender = new AjaxSender((window.env && window.env.serverUrl) || "http://localhost:3000");
 export const app = (window.app = new App(new LocalStorage(), sender));
-window.billing = new BillingClient(app.state, new AjaxSender(window.env.billingUrl));
 export const router = (window.router = new Router());
+export const billing = (window.billing = new BillingClient(app.state, new AjaxSender(window.env.billingUrl)));
 
 setPlatform(new WebPlatform());
 setProvider(new WebCryptoProvider());

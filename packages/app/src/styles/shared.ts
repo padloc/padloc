@@ -96,6 +96,14 @@ export const shared = css`
         font-weight: bold;
     }
 
+    button.transparent {
+        background: none;
+    }
+
+    button.light {
+        color: var(--color-tertiary);
+    }
+
     input, select {
         border: none;
         -webkit-appearance: none;

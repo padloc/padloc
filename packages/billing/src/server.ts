@@ -2,28 +2,34 @@ import * as Stripe from "stripe";
 import { QuotaProvider, AccountQuota, OrgQuota } from "@padloc/core/src/quota";
 import { Account } from "@padloc/core/src/account";
 import { Org } from "@padloc/core/src/org";
-import { Serializable } from "@padloc/core/src/encoding";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { BaseServer, ServerConfig, Context } from "@padloc/core/src/server";
 import { Storage } from "@padloc/core/src/storage";
 import { Messenger } from "@padloc/core/src/messenger";
 import { Request, Response } from "@padloc/core/src/transport";
-import { BillingAPI, Plan, PlanInfo, Subscription, UpdateBillingInfoParams } from "./api";
+import { BillingAPI, BillingInfo, Plan, PlanInfo, Subscription, UpdateBillingInfoParams, PaymentMethod } from "./api";
 
 export interface BillingConfig {
     stripeSecret: string;
 }
 
-function parsePlan({ id, metadata: { plan, storage, groups, vaults, min, max, available } }: Stripe.plans.IPlan) {
+function parsePlan({
+    id,
+    amount,
+    metadata: { plan, description, storage, groups, vaults, min, max, available, features }
+}: Stripe.plans.IPlan) {
     return new PlanInfo().fromRaw({
         id,
         plan: plan ? (parseInt(plan) as Plan) : Plan.Free,
+        description: description || "",
         storage: storage ? parseInt(storage) : 0,
         min: min ? parseInt(min) : 0,
         max: max ? parseInt(max) : 0,
         groups: groups ? parseInt(groups) : 0,
         vaults: vaults ? parseInt(vaults) : 0,
-        available: available === "true"
+        available: available === "true",
+        cost: amount,
+        features: (features && features.trim().split(/\n/)) || []
     });
 }
 
@@ -46,18 +52,6 @@ function parseSubscription({
         vaults: vaults ? parseInt(vaults) : planInfo.vaults,
         members: quantity
     });
-}
-
-export class BillingInfo extends Serializable {
-    customerId: string = "";
-    subscription: Subscription | null = null;
-
-    fromRaw({ customerId, subscription }: any) {
-        return super.fromRaw({
-            subscription: (subscription && new Subscription().fromRaw(subscription)) || null,
-            customerId
-        });
-    }
 }
 
 export class BillingServer extends BaseServer implements QuotaProvider, BillingAPI {
@@ -95,16 +89,34 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingA
         const customer = await this._getOrCreateCustomer(account);
         const subscription = customer.subscriptions.data[0] ? parseSubscription(customer.subscriptions.data[0]) : null;
         const info = new BillingInfo();
+        const source = customer.sources && (customer.sources.data[0] as Stripe.ICard);
         info.subscription = subscription;
         info.customerId = customer.id;
+        info.availablePlans = [...this._availablePlans.values()];
+        info.paymentMethod =
+            (source &&
+                new PaymentMethod().fromRaw({
+                    id: source.id,
+                    name: `${source.brand} **** **** **** ${source.last4}`
+                })) ||
+            null;
         return info;
     }
 
-    async updateBillingInfo(account: Account, { plan, members, source }: UpdateBillingInfoParams) {
+    async updateBillingInfo(account: Account, { plan, members, source, paymentMethod }: UpdateBillingInfoParams) {
         const info = await this.getBillingInfo(account);
 
         if (source) {
-            await this._stripe.customers.update(info.customerId, { source });
+            try {
+                await this._stripe.customers.update(info.customerId, { source });
+            } catch (e) {
+                throw new Err(ErrorCode.BILLING_ERROR, e.message);
+            }
+        }
+
+        if (paymentMethod) {
+            // @ts-ignore
+            await this._stripe.paymentMethods.attach(paymentMethod, { customer: info.customerId });
         }
 
         if (typeof plan !== "undefined" || typeof members !== "undefined") {
@@ -122,17 +134,68 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingA
                 params.quantity = members;
             }
 
+            params.trial_end = "now";
+
             if (info.subscription) {
+                console.log("updating subscription");
                 await this._stripe.subscriptions.update(
                     info.subscription.id,
                     params as Stripe.subscriptions.ISubscriptionUpdateOptions
                 );
             } else {
+                console.log("creating subscription");
                 await this._stripe.subscriptions.create(params as Stripe.subscriptions.ISubscriptionCreationOptions);
             }
         }
 
         return this.getBillingInfo(account);
+    }
+
+    async getPrice(account: Account, { plan, members }: UpdateBillingInfoParams) {
+        const planInfo = this._availablePlans.get(plan!);
+        if (!planInfo) {
+            throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan!");
+        }
+
+        const { customerId, subscription } = await this.getBillingInfo(account);
+
+        // const sub = await this._stripe.subscriptions.retrieve(subscription!.id);
+
+        // Set proration date to this moment:
+        const prorationDate = Math.floor(Date.now() / 1000);
+
+        // See what the next invoice would look like with a plan switch
+        // and proration set:
+        // const items = [
+        //     {
+        //         id: sub!.items.data[0].id,
+        //         plan: planInfo.id,
+        //         quantity: members
+        //     }
+        // ];
+
+        // @ts-ignore
+        const invoice = await this._stripe.invoices.retrieveUpcoming({
+            customer: customerId,
+            subscription: subscription!.id,
+            subscription_plan: planInfo.id,
+            subscription_quantity: members || 0,
+            subscription_trial_end: "now",
+            subscription_proration_date: prorationDate
+        });
+
+        // Calculate the proration cost:
+        const current_prorations = [];
+        var cost = 0;
+        for (var i = 0; i < invoice.lines.data.length; i++) {
+            const invoice_item = invoice.lines.data[i];
+            if (invoice_item.period.start === prorationDate) {
+                current_prorations.push(invoice_item);
+                cost += invoice_item.amount;
+            }
+        }
+
+        return cost;
     }
 
     private async _getOrCreateCustomer({ email }: { email: string }): Promise<Stripe.customers.ICustomer> {
@@ -153,7 +216,6 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingA
     }
 
     async _process(req: Request, res: Response, ctx: Context): Promise<void> {
-        console.log("process request", req, res, ctx);
         if (!ctx.account) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
@@ -171,6 +233,10 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingA
                     ctx.account,
                     new UpdateBillingInfoParams(params[0])
                 )).toRaw();
+                break;
+
+            case "getPrice":
+                res.result = await this.getPrice(ctx.account, new UpdateBillingInfoParams(params[0]));
                 break;
 
             default:

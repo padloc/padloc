@@ -18,7 +18,7 @@ export class ToggleButton extends BaseElement {
         shared,
         css`
             :host {
-                display: inline-block;
+                display: block;
                 font-size: inherit;
                 padding: 12px 15px;
             }

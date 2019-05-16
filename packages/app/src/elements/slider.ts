@@ -132,6 +132,6 @@ export class Slider extends BaseElement {
     private _inputChange() {
         const prev = this.value;
         this.value = parseFloat(this._input.value);
-        this.dispatch("change", { prev: prev, curr: this.value }, true, true);
+        this.dispatch("change", { prev: prev, value: this.value }, true, true);
     }
 }

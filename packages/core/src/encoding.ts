@@ -82,7 +82,7 @@ export class Serializable {
                 continue;
             }
 
-            if (typeof val === "object" && typeof val.toRaw === "function") {
+            if (val && typeof val === "object" && typeof val.toRaw === "function") {
                 raw[prop] = val.toRaw();
             } else if (Array.isArray(val)) {
                 raw[prop] = val.map((each: any) => (each instanceof Serializable ? each.toRaw() : each));

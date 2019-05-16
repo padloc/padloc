@@ -10,27 +10,59 @@ export enum Plan {
     Business
 }
 
+const planNames = {
+    [Plan.Free]: "Free",
+    [Plan.Pro]: "Pro",
+    [Plan.Family]: "Family",
+    [Plan.Team]: "Teams",
+    [Plan.Business]: "Business"
+};
+
 export class PlanInfo extends Serializable {
     id = "";
     plan: Plan = Plan.Free;
+    description = "";
     storage: number = 0;
     groups: number = 0;
     vaults: number = 0;
     min: number = 0;
     max: number = 0;
     available = false;
+    cost: number = 0;
+    features: string[] = [];
+
+    get name() {
+        return planNames[this.plan];
+    }
 
     validate() {
         return (
             typeof this.id === "string" &&
+            typeof this.description === "string" &&
             this.plan in Plan &&
             typeof this.min === "number" &&
             typeof this.max === "number" &&
+            typeof this.cost === "number" &&
             typeof this.storage === "number" &&
             typeof this.groups === "number" &&
             typeof this.vaults === "number" &&
-            typeof this.available === "boolean"
+            typeof this.available === "boolean" &&
+            Array.isArray(this.features) &&
+            this.features.every(f => typeof f === "string")
         );
+    }
+}
+
+export class PaymentMethod extends Serializable {
+    id = "";
+    name = "";
+
+    validate() {
+        return typeof this.id === "string" && typeof this.name === "string";
+    }
+
+    fromRaw({ id, name }: any) {
+        return super.fromRaw({ id, name });
     }
 }
 
@@ -90,11 +122,15 @@ export class Subscription extends Serializable {
 export class BillingInfo extends Serializable {
     customerId: string = "";
     subscription: Subscription | null = null;
+    availablePlans: PlanInfo[] = [];
+    paymentMethod: PaymentMethod | null = null;
 
-    fromRaw({ customerId, subscription }: any) {
+    fromRaw({ customerId, subscription, availablePlans, paymentMethod }: any) {
         return super.fromRaw({
             subscription: (subscription && new Subscription().fromRaw(subscription)) || null,
-            customerId
+            availablePlans: availablePlans.map((p: any) => new PlanInfo().fromRaw(p)),
+            customerId,
+            paymentMethod: paymentMethod ? new PaymentMethod().fromRaw(paymentMethod) : null
         });
     }
 }
@@ -119,6 +155,7 @@ export class UpdateBillingInfoParams extends Serializable {
     plan?: Plan;
     members?: number;
     source?: string;
+    paymentMethod?: string;
 
     constructor(params?: Partial<UpdateBillingInfoParams>) {
         super();
@@ -132,7 +169,8 @@ export class UpdateBillingInfoParams extends Serializable {
             typeof this.email === "string" &&
             (!this.members || typeof this.members === "number") &&
             (!this.plan || this.plan in Plan) &&
-            (!this.source || typeof this.source === "string")
+            (!this.source || typeof this.source === "string") &&
+            (!this.paymentMethod || typeof this.paymentMethod === "string")
         );
     }
 }

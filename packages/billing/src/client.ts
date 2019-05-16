@@ -12,4 +12,9 @@ export class BillingClient extends BaseClient implements BillingAPI {
         const res = await this.call("updateBillingInfo", [params.toRaw()]);
         return new BillingInfo().fromRaw(res.result);
     }
+
+    async getPrice(_: Account, params: UpdateBillingInfoParams): Promise<number> {
+        const res = await this.call("getPrice", [params.toRaw()]);
+        return res.result;
+    }
 }
