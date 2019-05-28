@@ -8,6 +8,12 @@ export class VaultItem extends BaseElement {
     @property()
     vault: { id: VaultID; name: string };
 
+    @property()
+    groups: number = 0;
+
+    @property()
+    members: number = 0;
+
     static styles = [
         shared,
         css`
@@ -53,13 +59,13 @@ export class VaultItem extends BaseElement {
                     <div class="tag">
                         <pl-icon icon="group"></pl-icon>
 
-                        <div>0</div>
+                        <div>${this.groups}</div>
                     </div>
 
                     <div class="tag">
-                        <pl-icon icon="list"></pl-icon>
+                        <pl-icon icon="user"></pl-icon>
 
-                        <div>0</div>
+                        <div>${this.members}</div>
                     </div>
                 </div>
             </div>

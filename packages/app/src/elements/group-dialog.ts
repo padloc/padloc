@@ -92,9 +92,7 @@ export class GroupDialog extends Dialog<InputType, void> {
         this._saveButton.start();
 
         try {
-            const org = this.org!.clone();
-            await org.unlock(app.account!);
-
+            const org = this.org!;
             const members = [...this._members.values()].map(id => org.getMember({ id })!);
 
             if (this.group) {

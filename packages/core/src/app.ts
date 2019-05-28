@@ -1117,8 +1117,9 @@ export class App {
             }
 
             // Update member role
-            if (role) {
-                member.role = role;
+            if (role && member.role !== role) {
+                await org.unlock(this.account!);
+                await org.addOrUpdateMember({ ...member, role });
             }
         });
 

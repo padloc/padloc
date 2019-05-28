@@ -328,12 +328,12 @@ export class Org extends SharedContainer implements Storable {
     }
 
     /** Get all groups assigned to a given [[Vault]] */
-    getGroupsForVault({ id }: Vault): Group[] {
+    getGroupsForVault({ id }: { id: VaultID }): Group[] {
         return this.groups.filter(group => group.vaults.some(v => v.id === id));
     }
 
     /** Get all members directly assigned to a given [[Vault]] */
-    getMembersForVault({ id }: Vault): OrgMember[] {
+    getMembersForVault({ id }: { id: VaultID }): OrgMember[] {
         return this.members.filter(member => member.role !== OrgRole.Suspended && member.vaults.some(v => v.id === id));
     }
 

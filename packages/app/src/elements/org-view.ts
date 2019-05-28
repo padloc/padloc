@@ -208,6 +208,7 @@ export class OrgView extends StateMixin(View) {
     render() {
         const org = this._org!;
         const isOwner = org.isOwner(app.account!);
+        const isAdmin = isOwner || org.isAdmin(app.account!);
         const invites = org.invites;
         const groups = org.groups;
         const vaults = org.vaults;
@@ -297,7 +298,7 @@ export class OrgView extends StateMixin(View) {
                                     </li>
                                 `
                             )}
-                            <li class="new-button tap" @click=${this._createGroup} ?hidden=${!isOwner}>
+                            <li class="new-button tap" @click=${this._createGroup} ?hidden=${!isAdmin}>
                                 <pl-icon icon="add"></pl-icon>
                                 <div>${$l("New Group")}</div>
                             </li>
@@ -309,7 +310,11 @@ export class OrgView extends StateMixin(View) {
                             ${vaults.map(
                                 vault => html`
                                     <li @click=${() => this._showVault(vault)} class="item tap">
-                                        <pl-vault-item .vault=${vault}></pl-vault-item>
+                                        <pl-vault-item
+                                            .vault=${vault}
+                                            .groups=${org.getGroupsForVault(vault).length}
+                                            .members=${org.getMembersForVault(vault).length}
+                                        ></pl-vault-item>
                                     </li>
                                 `
                             )}
