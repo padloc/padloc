@@ -1,0 +1,11 @@
+node_modules
+packages/*/node_modules
+packages/*/docs
+packages/core/lib
+packages/*/dist
+packages/*/build
+packages/app/test/dist
+Dockerfile
+.dockerignore
+.git
+.gitignore

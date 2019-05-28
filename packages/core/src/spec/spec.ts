@@ -1,9 +1,9 @@
 import "chai";
 import { Err } from "../error";
 
-export type Spec = (test: (name: string, fn: () => Promise<void>) => void, assert: Chai.Assert) => void;
+export type Spec = (test: (name: string, fn: () => Promise<void>) => void, assert: any) => void;
 
-export async function assertResolve(assert: Chai.Assert, fn: () => Promise<any>, message?: string) {
+export async function assertResolve(assert: any, fn: () => Promise<any>, message?: string) {
     let err: Err | null = null;
     try {
         await fn();
@@ -14,7 +14,7 @@ export async function assertResolve(assert: Chai.Assert, fn: () => Promise<any>,
     assert.isNull(err, message);
 }
 
-export async function assertReject(assert: Chai.Assert, fn: () => Promise<any>, code: string, message?: string) {
+export async function assertReject(assert: any, fn: () => Promise<any>, code: string, message?: string) {
     let err: Err | null = null;
     try {
         await fn();

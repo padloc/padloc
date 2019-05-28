@@ -25,8 +25,8 @@
   },
   "description": "Padloc UI",
   "scripts": {
-    "build": "tsc && polymer build && sed -i.bak 's@clientUrl: \".*\"@clientUrl: \"'$PL_CLIENT_URL'\"@' build/pwa/env.js && sed -i.bak 's@serverUrl: \".*\"@serverUrl: \"'$PL_SERVER_URL'\"@' build/pwa/env.js && rm build/pwa/env.js.bak",
-    "start": "cd build/pwa && polymer serve -p $PL_CLIENT_PORT",
+    "build": "tsc && polymer build",
+    "start": "cd build/pwa && echo \"window.env = { serverUrl: '$PTC_SERVER_URL', clientUrl: '$PTC_CLIENT_URL'};\" > env.js && polymer serve -p $PL_CLIENT_PORT --hostname 0.0.0.0",
     "dev": "tsc --watch | polymer serve"
   }
 }

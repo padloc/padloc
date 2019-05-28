@@ -16,7 +16,7 @@
   "dependencies": {
     "@padloc/core": "^3.0.0",
     "fs-extra": "^7.0.1",
-    "level": "^4.0.0",
+    "level": "^5.0.1",
     "nodemailer": "^4.6.7"
   },
   "scripts": {

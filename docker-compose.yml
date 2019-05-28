@@ -1,0 +1,19 @@
+version: "3"
+services:
+    padloc:
+        build: .
+        ports:
+            - 8080:8080
+            - 3000:3000
+        environment:
+            - PL_EMAIL_USER
+            - PL_EMAIL_SERVER
+            - PL_EMAIL_PORT
+            - PL_EMAIL_PASSWORD
+            - PL_EMAIL_FROM
+            - PL_REPORT_ERRORS
+            - PL_SERVER_URL=http://192.168.1.8:3000
+            - PL_CLIENT_URL=http://192.168.1.8:8081
+        volumes:
+            - ./data:/data
+            - ./docs:/docs
