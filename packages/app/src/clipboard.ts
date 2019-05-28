@@ -3,7 +3,7 @@ import "./elements/clipboard";
 import { Clipboard } from "./elements/clipboard.js";
 import { getSingleton } from "./singleton.js"
 
-export function setClipboard(item: VaultItem, field: Field, duration?: number) {
+export async function setClipboard(item: VaultItem, field: Field, duration?: number) {
     const singleton = getSingleton("pl-clipboard") as Clipboard;
     return singleton.set(item, field, duration);
 }

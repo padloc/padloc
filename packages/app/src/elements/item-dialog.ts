@@ -2,6 +2,7 @@ import { until } from "lit-html/directives/until.js";
 import { VaultItemID, Field } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
+import { parseURL } from "@padloc/core/lib/otp.js";
 import { formatDateFromNow, fileIcon, fileSize } from "../util.js";
 import { mixins } from "../styles";
 import { alert, confirm, dialog } from "../dialog.js";
@@ -18,6 +19,7 @@ import "./field.js";
 import { Generator } from "./generator.js";
 import { AttachmentDialog } from "./attachment-dialog.js";
 import { UploadDialog } from "./upload-dialog.js";
+import { QRDialog } from "./qr-dialog.js";
 
 @element("pl-item-dialog")
 export class ItemDialog extends Dialog<string, void> {
@@ -60,6 +62,9 @@ export class ItemDialog extends Dialog<string, void> {
 
     @dialog("pl-upload-dialog")
     private _uploadDialog: UploadDialog;
+
+    @dialog("pl-qr-dialog")
+    private _qrDialog: QRDialog;
 
     async show(itemId: string) {
         this._editing = false;
@@ -203,6 +208,7 @@ export class ItemDialog extends Dialog<string, void> {
                             @copy=${() => setClipboard(this._item!, field)}
                             @remove=${() => this._removeField(index)}
                             @generate=${() => this._generateValue(index)}
+                            @get-totp-qr=${() => this._getTotpQR(index)}
                         >
                         </pl-field>
                     `
@@ -388,6 +394,21 @@ export class ItemDialog extends Dialog<string, void> {
     private async _openAttachment(info: AttachmentInfo) {
         this.open = false;
         await this._attachmentDialog.show({ item: this.itemId, info });
+        this.open = true;
+    }
+
+    private async _getTotpQR(index: number): Promise<void> {
+        this.open = false;
+        const data = await this._qrDialog.show();
+        if (data) {
+            try {
+                const { secret } = parseURL(data);
+                this._fields[index].value = secret;
+            } catch (e) {
+                await alert("Invalid Code! Please try again!", { type: "warning" });
+                return this._getTotpQR(index);
+            }
+        }
         this.open = true;
     }
 }

@@ -1,7 +1,9 @@
 import { FieldType, FieldDef, FIELD_DEFS } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
+import { totp } from "@padloc/core/lib/otp.js";
+import { base32ToBytes } from "@padloc/core/lib/encoding.js";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query } from "./base.js";
+import { BaseElement, element, html, svg, css, property, query, observe } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
 import { Select } from "./select.js";
@@ -20,6 +22,16 @@ export class FieldElement extends BaseElement {
     @property()
     type: FieldType = "note";
 
+    @property()
+    private _totpToken = "";
+
+    @property()
+    private _totpLastTick = 0;
+
+    private get _totpAge() {
+        return Math.min(1, (Date.now() - this._totpLastTick) / 3e4);
+    }
+
     @query("#nameInput")
     private _nameInput: Input;
 
@@ -35,6 +47,7 @@ export class FieldElement extends BaseElement {
     }
 
     updated(changes: Map<string, any>) {
+        super.updated(changes);
         // workaround for issue where string fails to be set if
         // type was previously a number type. This gives the
         // renderer time to update the input type first.
@@ -116,6 +129,35 @@ export class FieldElement extends BaseElement {
             pl-input[readonly] {
                 background: transparent;
             }
+
+            .totp {
+                padding: 0 10px;
+                display: flex;
+                align-items: center;
+                user-select: text;
+                -webkit-user-select: text;
+            }
+
+            .countdown {
+                width: 16px;
+                height: 16px;
+                margin-left: 8px;
+                border-radius: 100%;
+            }
+
+            .countdown circle {
+                transform-origin: center center;
+                transform: rotate(-90deg);
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 8;
+                stroke-dasharray: 25;
+                transition: stroke-dashoffset 1s;
+            }
+
+            .countdown circle.bg {
+                opacity: 0.2;
+            }
         `
     ];
 
@@ -151,6 +193,14 @@ export class FieldElement extends BaseElement {
                     @click=${() => this.dispatch("generate")}
                 >
                 </pl-icon>
+
+                <pl-icon
+                    ?hidden=${this.type !== "totp"}
+                    icon="qrcode"
+                    class="tap"
+                    @click=${() => this.dispatch("get-totp-qr")}
+                >
+                </pl-icon>
             </div>
 
             <div class="fields-container flex">
@@ -178,20 +228,32 @@ export class FieldElement extends BaseElement {
                     </pl-select>
                 </div>
 
-                <pl-input
-                    id="valueInput"
-                    class="field-value"
-                    placeholder="${$l("Enter Field Value")}"
-                    .type=${inputType}
-                    multiline
-                    .readonly=${!this.editing}
-                    .masked=${mask}
-                    .value=${this.value}
-                    @input=${() => (this.value = this._valueInput.value)}
-                    @click=${() => !this._valueInput.value && this.dispatch("edit")}
-                    autosize
-                >
-                </pl-input>
+                ${ this.type === "totp" && !this.editing  ? html`
+                    <div class="totp">
+                        ${ this._totpToken.substring(0, 3) }&nbsp;${this._totpToken.substring(3, 6)}
+                        ${svg`
+                            <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this._totpToken}>
+                                <circle cx="5" cy="5" r="4" class="bg" />
+                                <circle cx="5" cy="5" r="4" style="stroke-dashoffset: ${ Math.floor(this._totpAge * -25) }"/>
+                            </svg>
+                        `}
+                    </div>
+                ` : html`
+                    <pl-input
+                        id="valueInput"
+                        class="field-value"
+                        placeholder="${$l("Enter Field Value")}"
+                        .type=${inputType}
+                        multiline
+                        .readonly=${!this.editing}
+                        .masked=${mask}
+                        .value=${this.value}
+                        @input=${() => (this.value = this._valueInput.value)}
+                        @click=${() => !this._valueInput.value && this.dispatch("edit")}
+                        autosize
+                    >
+                    </pl-input>
+                `}
             </div>
 
             <div class="field-buttons right" ?hidden=${this.editing}>
@@ -208,8 +270,26 @@ export class FieldElement extends BaseElement {
         `;
     }
 
-    _toggleMask() {
+    private _toggleMask() {
         this._valueInput.masked = !this._valueInput.masked;
+        this.requestUpdate();
+    }
+
+    @observe("type")
+    @observe("value")
+    private async _updateTOTP() {
+        if (this.type !== "totp" || !this.value) {
+            this._totpToken = "";
+            return;
+        }
+
+        if (this._totpAge >= 1) {
+            this._totpLastTick = Math.floor(Date.now() / 3e4) * 3e4;
+            this._totpToken = await totp(base32ToBytes(this.value));
+        }
+
+        setTimeout(() => this._updateTOTP(), 2000);
+
         this.requestUpdate();
     }
 }

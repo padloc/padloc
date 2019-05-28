@@ -1,6 +1,8 @@
 import { VaultItem, Field } from "@padloc/core/lib/item.js";
 import { setClipboard } from "@padloc/core/lib/platform.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
+import { totp } from "@padloc/core/lib/otp.js";
+import { base32ToBytes } from "@padloc/core/lib/encoding.js";
 import { shared, mixins } from "../styles";
 import { BaseElement, html, css, property } from "./base.js";
 
@@ -81,12 +83,14 @@ export class Clipboard extends BaseElement {
 `;
     }
 
-    set(item: VaultItem, field: Field, duration = 60) {
+    async set(item: VaultItem, field: Field, duration = 60) {
         clearInterval(this._interval);
 
         this.item = item;
         this.field = field;
-        setClipboard(field.value);
+
+        const value = field.type === "totp" ? await totp(base32ToBytes(field.value)) : field.value;
+        setClipboard(value);
 
         this.classList.add("showing");
 

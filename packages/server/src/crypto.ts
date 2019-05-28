@@ -10,6 +10,7 @@ import {
     AESKeyParams,
     RSAKeyParams,
     HMACParams,
+    HMACKeyParams,
     AESEncryptionParams,
     RSAEncryptionParams,
     HashParams,
@@ -39,7 +40,7 @@ export class NodeCryptoProvider implements CryptoProvider {
 
     generateKey(params: AESKeyParams): Promise<AESKey>;
     generateKey(params: RSAKeyParams): Promise<{ privateKey: RSAPrivateKey; publicKey: RSAPublicKey }>;
-    generateKey(params: HMACParams): Promise<HMACKey>;
+    generateKey(params: HMACKeyParams): Promise<HMACKey>;
     async generateKey(): Promise<any> {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }

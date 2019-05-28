@@ -162,8 +162,13 @@ export class RSASigningParams extends Serializable {
 
 export class HMACParams extends Serializable {
     algorithm: "HMAC" = "HMAC";
-    hash: "SHA-256" = "SHA-256";
-    keySize: 256 = 256;
+    hash: "SHA-1" | "SHA-256" = "SHA-256";
+    keySize: number = 256;
+
+    constructor(props?: Partial<HMACParams>) {
+        super();
+        props && Object.assign(this, props);
+    }
 
     validate() {
         return this.algorithm === "HMAC" && this.hash === "SHA-256" && this.keySize === 256;

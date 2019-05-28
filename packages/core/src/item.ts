@@ -22,6 +22,7 @@ export type FieldType =
     | "phone"
     | "address"
     | "pin"
+    | "totp"
     | "note"
     | "text";
 
@@ -140,6 +141,13 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: false,
         toString: () => "text"
+    },
+    totp: {
+        type: "totp",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        toString: () => "totp"
     }
 };
 

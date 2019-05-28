@@ -9,6 +9,7 @@ import {
     AESKeyParams,
     RSAKeyParams,
     HMACParams,
+    HMACKeyParams,
     AESEncryptionParams,
     RSAEncryptionParams,
     HashParams,
@@ -32,8 +33,8 @@ export class WebCryptoProvider implements CryptoProvider {
 
     generateKey(params: AESKeyParams): Promise<AESKey>;
     generateKey(params: RSAKeyParams): Promise<{ privateKey: RSAPrivateKey; publicKey: RSAPublicKey }>;
-    generateKey(params: HMACParams): Promise<HMACKey>;
-    async generateKey(params: AESKeyParams | RSAKeyParams | HMACParams) {
+    generateKey(params: HMACKeyParams): Promise<HMACKey>;
+    async generateKey(params: AESKeyParams | RSAKeyParams | HMACKeyParams) {
         switch (params.algorithm) {
             case "AES":
             case "HMAC":

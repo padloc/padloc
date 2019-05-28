@@ -1,6 +1,8 @@
 import { Err, ErrorCode } from "./error";
 import { toByteArray, fromByteArray, byteLength, isBase64 } from "./base64";
 
+export { bytesToBase32, base32ToBytes } from "./base32";
+
 /**
  * Base class for "serializable" classes, i.e. classes that can be serialized
  * into a plain javascript object, JSON string or byte sequence which can be
@@ -285,6 +287,14 @@ export function base64ToHex(b64: string): string {
  */
 export function hexToBase64(hex: string): string {
     return bytesToBase64(hexToBytes(hex));
+}
+
+export function numToBytes(num: number) {
+    return hexToBytes(num.toString(16).padStart(16, "0"));
+}
+
+export function bytesToNum(bytes: Uint8Array) {
+    return parseInt(bytesToHex(bytes), 16);
 }
 
 /**
