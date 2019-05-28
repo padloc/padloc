@@ -6,7 +6,6 @@
   "license": "GPL-3.0",
   "dependencies": {
     "@padloc/core": "^3.0.0",
-    "@padloc/billing": "^3.0.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "autosize": "^4.0.2",
     "lit-element": "^2.1.0",

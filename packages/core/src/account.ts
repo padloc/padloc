@@ -15,6 +15,7 @@ import { SessionInfo } from "./session";
 import { VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { AccountQuota } from "./quota";
+import { BillingInfo } from "./billing";
 
 /** Unique identifier for [[Account]] objects */
 export type AccountID = string;
@@ -83,6 +84,8 @@ export class Account extends PBES2Container implements Storable {
     revision: string = "";
 
     quota: AccountQuota = new AccountQuota();
+
+    billing!: BillingInfo;
 
     /**
      * Whether or not this Account object is current "locked" or, in other words,
@@ -169,6 +172,7 @@ export class Account extends PBES2Container implements Storable {
         revision,
         sessions,
         quota,
+    billing,
         ...rest
     }: any) {
         Object.assign(this, {
@@ -181,6 +185,7 @@ export class Account extends PBES2Container implements Storable {
             updated: new Date(updated),
             publicKey: base64ToBytes(publicKey),
             quota: new AccountQuota().fromRaw(quota),
+            billing: billing && new BillingInfo().fromRaw(billing),
             orgs,
             sessions
         });

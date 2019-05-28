@@ -7,6 +7,7 @@ import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
 import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
 import { Attachment, AttachmentID } from "./attachment";
+import { UpdateBillingParams } from "./billing";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -427,4 +428,7 @@ export interface API {
     createAttachment(attachment: Attachment): Promise<Attachment>;
     getAttachment(attachment: GetAttachmentParams): Promise<Attachment>;
     deleteAttachment(attachment: DeleteAttachmentParams): Promise<void>;
+
+    updateBilling(params: UpdateBillingParams): Promise<void>;
+    getPrice(params: UpdateBillingParams): Promise<void>;
 }

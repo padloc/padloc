@@ -1,15 +1,16 @@
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
+import { OrgType } from "@padloc/core/lib/org";
 import { localize as $l } from "@padloc/core/lib/locale";
-import { PlanInfo, Plan } from "@padloc/billing/lib/api";
-import { billing } from "../init";
+import { Plan } from "@padloc/core/lib/billing";
 import { mixins } from "../styles";
+import { app } from "../init";
 import { element, html, property, css } from "./base";
 import { Dialog } from "./dialog";
 
 @element("pl-choose-plan-dialog")
-export class ChoosePlanDialog extends Dialog<void, PlanInfo> {
+export class ChoosePlanDialog extends Dialog<void, Plan> {
     @property()
-    private _plans: PlanInfo[] = [];
+    private _plans: Plan[] = [];
 
     @property()
     private _page: "personal" | "business" = "personal";
@@ -18,8 +19,8 @@ export class ChoosePlanDialog extends Dialog<void, PlanInfo> {
 
     async show() {
         const result = super.show();
-        const billingInfo = await billing.getBillingInfo();
-        this._plans = billingInfo.availablePlans.sort((a, b) => a.plan - b.plan);
+        const billingInfo = app.account!.billing!;
+        this._plans = billingInfo.availablePlans;
         return result;
     }
 
@@ -78,16 +79,6 @@ export class ChoosePlanDialog extends Dialog<void, PlanInfo> {
                 height: 250px;
                 flex-direction: column;
                 position: relative;
-            }
-
-            .plan-1, .plan-3 {
-                --color-highlight: var(--color-secondary);
-                --color-highlight-text: var(--color-tertiary);
-            }
-
-            .plan-2, .plan-4  {
-                --color-highlight: var(--color-negative);
-                --color-highlight-text: var(--color-tertiary);
             }
 
             /*
@@ -171,11 +162,17 @@ export class ChoosePlanDialog extends Dialog<void, PlanInfo> {
         `
     ];
 
-    private _renderPlan(plan: PlanInfo) {
+    private _renderPlan(plan: Plan) {
         const monthlyPrice = Math.round(plan.cost / 12);
 
         return html`
-            <div class="plan plan-${plan.plan}" @click=${() => this.done(plan)}>
+            <div
+                style=${plan.color
+                    ? `--color-highlight: ${plan.color}; --color-highlight-text: var(--color-tertiary);`
+                    : ""}
+                class="plan"
+                @click=${() => this.done(plan)}
+            >
                 <div class="plan-header">
                     <div class="plan-name">
                         ${plan.name}
@@ -235,11 +232,13 @@ export class ChoosePlanDialog extends Dialog<void, PlanInfo> {
             </div>
 
             <div class="plans" ?hidden=${this._page !== "personal"}>
-                ${this._plans.filter(p => p.plan <= Plan.Family).map(plan => this._renderPlan(plan))}
+                ${this._plans.filter(p => [OrgType.Basic, -1].includes(p.orgType)).map(plan => this._renderPlan(plan))}
             </div>
 
             <div class="plans" ?hidden=${this._page !== "business"}>
-                ${this._plans.filter(p => p.plan >= Plan.Team).map(plan => this._renderPlan(plan))}
+                ${this._plans
+                    .filter(p => [OrgType.Team, OrgType.Business].includes(p.orgType))
+                    .map(plan => this._renderPlan(plan))}
             </div>
         `;
     }

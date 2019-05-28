@@ -21,6 +21,7 @@ import { Invite } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Err, ErrorCode } from "./error";
 import { Attachment } from "./attachment";
+import { UpdateBillingParams } from "./billing";
 
 /**
  * Client state, keeping track of [[session]], [[account]] and [[device]] info
@@ -208,5 +209,13 @@ export class Client extends BaseClient implements API {
 
     async deleteAttachment(params: DeleteAttachmentParams): Promise<void> {
         await this.call("deleteAttachment", [params.toRaw()]);
+    }
+
+    async updateBilling(params: UpdateBillingParams): Promise<void> {
+        await this.call("updateBilling", [params.toRaw()]);
+    }
+
+    async getPrice(params: UpdateBillingParams): Promise<void> {
+        await this.call("getPrice", [params.toRaw()]);
     }
 }

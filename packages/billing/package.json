@@ -15,7 +15,5 @@
     "stripe": "^6.31.2"
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
   }
 }

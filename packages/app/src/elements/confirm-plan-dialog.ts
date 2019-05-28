@@ -1,20 +1,19 @@
 import { localize as $l } from "@padloc/core/lib/locale";
-import { PlanInfo, BillingInfo, UpdateBillingInfoParams } from "@padloc/billing/lib/api";
-import { billing } from "../init";
-import { dialog, choose } from "../dialog";
+import { Plan, UpdateBillingParams } from "@padloc/core/lib/billing";
+import { dialog } from "../dialog";
+import { app } from "../init";
 import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
 import "./slider";
-import { Input } from "./input";
 import { LoadingButton } from "./loading-button";
-import { CardInput } from "./card-input";
 import "./card-input";
 import { BillingDialog } from "./billing-dialog";
+import { ChoosePlanDialog } from "./choose-plan-dialog";
 
 @element("pl-confirm-plan-dialog")
-export class ConfirmPlanDialog extends Dialog<PlanInfo, void> {
+export class ConfirmPlanDialog extends Dialog<Plan, void> {
     @property()
-    plan: PlanInfo | null = null;
+    plan: Plan | null = null;
 
     @property()
     quantity: number = 1;
@@ -24,19 +23,14 @@ export class ConfirmPlanDialog extends Dialog<PlanInfo, void> {
     @property()
     private _error = "";
 
-    @property()
-    private _billingInfo: BillingInfo;
-
-    @query("#couponInput")
-    private _couponInput: Input;
-
     @query("#submitButton")
     private _submitButton: LoadingButton;
 
     @dialog("pl-billing-dialog")
     private _billingDialog: BillingDialog;
 
-    private _cardInput: CardInput;
+    @dialog("pl-choose-plan-dialog")
+    private _choosePlanDialog: ChoosePlanDialog;
 
     private async _submit() {
         if (this._submitButton.state === "loading") {
@@ -46,36 +40,10 @@ export class ConfirmPlanDialog extends Dialog<PlanInfo, void> {
         this._error = "";
         this._submitButton.start();
 
-        let token;
         try {
-            token = await this._cardInput.getToken();
-        } catch (e) {
-            this._error = e.message || $l("Something went wrong. Please try again later!");
-
-            const choice = await choose(
-                $l(
-                    "We failed to verify your credit card! You can update your card details now or skip this step for now and add a payment method later."
-                ),
-                [$l("Update Card"), $l("Add Later"), $l("Contact Support")],
-                {
-                    title: this._error,
-                    type: "warning"
-                }
-            );
-
-            switch (choice) {
-                case 0:
-                case 1:
-                    return;
-            }
-        }
-
-        try {
-            await billing.updateBillingInfo(
-                null,
-                new UpdateBillingInfoParams({
-                    source: token,
-                    plan: this.plan!.plan,
+            await app.api.getPrice(
+                new UpdateBillingParams({
+                    plan: this.plan!.id,
                     members: this.quantity
                 })
             );
@@ -86,24 +54,21 @@ export class ConfirmPlanDialog extends Dialog<PlanInfo, void> {
         }
     }
 
-    connectedCallback() {
-        super.connectedCallback();
-        const cardInput = (this._cardInput = document.createElement("pl-card-input") as CardInput);
-        cardInput.classList.add("item");
-        cardInput.addEventListener("change", (e: CustomEvent) => (this._error = e.detail.error));
-        this.appendChild(cardInput);
-    }
-
-    async show(plan: PlanInfo) {
+    async show(plan: Plan) {
         this.plan = plan;
-        this._billingInfo = await billing.getBillingInfo();
         const result = super.show();
         return result;
     }
 
     private async _updateBillingInfo() {
         this.open = false;
-        this._billingInfo = await this._billingDialog.show(this._billingInfo);
+        await this._billingDialog.show();
+        this.open = true;
+    }
+
+    private async _changePlan() {
+        this.open = false;
+        this.plan = await this._choosePlanDialog.show();
         this.open = true;
     }
 
@@ -152,18 +117,6 @@ export class ConfirmPlanDialog extends Dialog<PlanInfo, void> {
                 display: flex;
                 flex-direction: column;
                 position: relative;
-            }
-
-            .plan-1,
-            .plan-3 {
-                --color-highlight: var(--color-secondary);
-                --color-highlight-text: var(--color-tertiary);
-            }
-
-            .plan-2,
-            .plan-4 {
-                --color-highlight: var(--color-negative);
-                --color-highlight-text: var(--color-tertiary);
             }
 
             .plan-name {
@@ -248,8 +201,21 @@ export class ConfirmPlanDialog extends Dialog<PlanInfo, void> {
                 padding: 4px;
                 font-weight: bold;
             }
+
+            .change-plan {
+                background: transparent;
+                color: var(--color-tertiary);
+                font-weight: bold;
+                margin: 4px;
+            }
         `
     ];
+
+    renderBefore() {
+        return html`
+            <button class="change-plan tap" @click=${this._changePlan}>${$l("Change Plan")}</button>
+        `;
+    }
 
     renderContent() {
         if (!this.plan) {
@@ -258,10 +224,15 @@ export class ConfirmPlanDialog extends Dialog<PlanInfo, void> {
 
         const plan = this.plan;
         const monthlyPrice = Math.round((this.quantity * plan.cost) / 12);
-        const paymentMethod = this._billingInfo && this._billingInfo.paymentMethod;
+        const paymentMethod = app.account!.billing.paymentMethod;
 
         return html`
-            <div class="plan plan-${plan.plan}">
+            <div
+                class="plan"
+                style=${plan.color
+                    ? `--color-highlight: ${plan.color}; --color-highlight-text: var(--color-tertiary);`
+                    : ""}
+            >
                 <div class="plan-header">
                     <div class="plan-name">
                         ${plan.name}
@@ -321,8 +292,6 @@ export class ConfirmPlanDialog extends Dialog<PlanInfo, void> {
                               </div>
                           `}
                 </div>
-
-                <pl-input class="item" id="couponInput" placeholder=${$l("Coupon Code")}></pl-input>
 
                 <div class="error item" ?hidden="${!this._error}">
                     ${this._error}

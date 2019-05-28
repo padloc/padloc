@@ -29,6 +29,7 @@ import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
+import { UpdateBillingParams } from "./billing";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -1261,6 +1262,17 @@ export class App {
             }
         }
         await this.updateItem(vault, item, { attachments: item.attachments.filter(a => a.id !== att.id) });
+    }
+
+    /**
+     * =========
+     *  BILLING
+     * =========
+     */
+
+    async updateBilling(params: UpdateBillingParams) {
+        await this.api.updateBilling(params);
+        await this.fetchAccount();
     }
 
     /**

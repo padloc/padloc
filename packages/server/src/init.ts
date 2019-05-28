@@ -1,11 +1,12 @@
 import { Server } from "@padloc/core/src/server";
 import { setProvider } from "@padloc/core/src/crypto";
-import { BillingServer } from "@padloc/billing/src/server";
+// import { StubBillingProvider } from "@padloc/core/src/billing";
 import { NodeCryptoProvider } from "./crypto";
 import { HTTPReceiver } from "./http";
 import { LevelDBStorage } from "./storage";
 import { EmailMessenger } from "./messenger";
 import { FileSystemStorage } from "./attachment";
+import { StripeBillingProvider } from "./billing";
 
 async function init() {
     setProvider(new NodeCryptoProvider());
@@ -23,7 +24,8 @@ async function init() {
     });
     const storage = new LevelDBStorage(process.env.PL_DB_PATH || "db");
     const attachmentStorage = new FileSystemStorage({ path: process.env.PL_ATTACHMENTS_PATH || "attachments" });
-    const billingProvider = new BillingServer(config, storage, messenger, {
+    // const billingProvider = new StubBillingProvider();
+    const billingProvider = new StripeBillingProvider({
         stripeSecret: process.env.PL_STRIPE_SECRET || ""
     });
 
@@ -42,9 +44,9 @@ async function init() {
 
     console.log(`Starting server on port ${port}`);
     new HTTPReceiver(port).listen(req => server.handle(req));
-
-    console.log(`Starting billing server on port ${billingPort}`);
-    new HTTPReceiver(billingPort).listen(req => billingProvider.handle(req));
+    //
+    // console.log(`Starting billing server on port ${billingPort}`);
+    // new HTTPReceiver(billingPort).listen(req => billingProvider.handle(req));
 }
 
 init();

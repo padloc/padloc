@@ -1,15 +1,18 @@
 import * as Stripe from "stripe";
-import { QuotaProvider, AccountQuota, OrgQuota } from "@padloc/core/src/quota";
 import { Account } from "@padloc/core/src/account";
-import { Org } from "@padloc/core/src/org";
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { BaseServer, ServerConfig, Context } from "@padloc/core/src/server";
-import { Storage } from "@padloc/core/src/storage";
-import { Messenger } from "@padloc/core/src/messenger";
-import { Request, Response } from "@padloc/core/src/transport";
-import { BillingProvider, BillingInfo, Plan, Subscription, UpdateBillingInfoParams, PaymentMethod } from "./api";
+import {
+    BillingProvider,
+    BillingInfo,
+    Plan,
+    Subscription,
+    UpdateBillingParams,
+    PaymentMethod,
+    BillingAddress,
+    Discount
+} from "@padloc/core/src/billing";
 
-export interface BillingConfig {
+export interface StripeConfig {
     stripeSecret: string;
 }
 
@@ -17,7 +20,7 @@ function parsePlan({
     id,
     amount,
     nickname,
-    metadata: { description, storage, groups, vaults, min, max, available, features, orgType, default: def }
+    metadata: { description, storage, groups, vaults, min, max, available, features, orgType, default: def, color }
 }: Stripe.plans.IPlan) {
     return new Plan().fromRaw({
         id,
@@ -32,7 +35,8 @@ function parsePlan({
         default: def === "true",
         cost: amount,
         features: (features && features.trim().split(/\n/)) || [],
-        orgType: orgType ? parseInt(orgType) : -1
+        orgType: orgType ? parseInt(orgType) : -1,
+        color: color || ""
     });
 }
 
@@ -57,13 +61,12 @@ function parseSubscription({
     });
 }
 
-export class BillingServer extends BaseServer implements QuotaProvider, BillingProvider {
+export class StripeBillingProvider implements BillingProvider {
     private _stripe: Stripe;
     private _availablePlans: Plan[] = [];
 
-    constructor(config: ServerConfig, storage: Storage, messenger: Messenger, public billingConfig: BillingConfig) {
-        super(config, storage, messenger);
-        this._stripe = new Stripe(billingConfig.stripeSecret);
+    constructor(public config: StripeConfig) {
+        this._stripe = new Stripe(config.stripeSecret);
     }
 
     async init() {
@@ -73,17 +76,6 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingP
             .map(p => parsePlan(p))
             .filter(p => p.available)
             .sort((a, b) => a.orgType - b.orgType);
-    }
-
-    async getAccountQuota(account: Account) {
-        const { subscription } = await this.getBillingInfo(account);
-        return new AccountQuota((subscription && { storage: subscription.storage }) || undefined);
-    }
-
-    async getOrgQuota(account: Account, org: Org) {
-        const info = await this.getBillingInfo(account);
-        const sub = info.subscription;
-        return sub && sub.org === org.id && sub.plan.orgType === org.type ? new OrgQuota(sub) : null;
     }
 
     async getBillingInfo(account: Account) {
@@ -101,18 +93,49 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingP
                     name: `${source.brand} **** **** **** ${source.last4}`
                 })) ||
             null;
+
+        // @ts-ignore
+        const { name, address } = customer;
+
+        info.address = new BillingAddress().fromRaw({
+            name: name || "",
+            street: (address && address.line1) || "",
+            postalCode: (address && address.postal_code) || "",
+            country: (address && address.country) || ""
+        });
+
+        info.discount =
+            (customer.discount &&
+                new Discount().fromRaw({
+                    name: customer.discount.coupon.name,
+                    coupon: customer.discount.coupon.id
+                })) ||
+            null;
+
         return info;
     }
 
-    async updateBillingInfo(account: Account, { plan, members, paymentMethod }: UpdateBillingInfoParams) {
+    async updateBilling(
+        account: Account,
+        { plan, members, paymentMethod, address, coupon }: UpdateBillingParams = new UpdateBillingParams()
+    ) {
         const info = await this.getBillingInfo(account);
 
-        if (paymentMethod && paymentMethod.source) {
-            try {
-                await this._stripe.customers.update(info.customerId, { source: paymentMethod.source });
-            } catch (e) {
-                throw new Err(ErrorCode.BILLING_ERROR, e.message);
-            }
+        try {
+            await this._stripe.customers.update(info.customerId, {
+                // @ts-ignore
+                name: address && address.name,
+                address: address && {
+                    line1: address.street,
+                    postal_code: address.postalCode,
+                    city: address.city,
+                    country: address.country
+                },
+                source: paymentMethod && paymentMethod.source,
+                coupon: coupon || undefined
+            });
+        } catch (e) {
+            throw new Err(ErrorCode.BILLING_ERROR, e.message);
         }
 
         if (typeof plan !== "undefined" || typeof members !== "undefined") {
@@ -144,10 +167,10 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingP
             }
         }
 
-        return this.getBillingInfo(account);
+        account.billing = await this.getBillingInfo(account);
     }
 
-    async getPrice(account: Account, { plan, members }: UpdateBillingInfoParams) {
+    async getPrice(account: Account, { plan, members }: UpdateBillingParams) {
         const planInfo = this._availablePlans.find(p => p.id === plan);
         if (!planInfo) {
             throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan!");
@@ -160,16 +183,6 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingP
         // Set proration date to this moment:
         const prorationDate = Math.floor(Date.now() / 1000);
 
-        // See what the next invoice would look like with a plan switch
-        // and proration set:
-        // const items = [
-        //     {
-        //         id: sub!.items.data[0].id,
-        //         plan: planInfo.id,
-        //         quantity: members
-        //     }
-        // ];
-
         // @ts-ignore
         const invoice = await this._stripe.invoices.retrieveUpcoming({
             customer: customerId,
@@ -180,18 +193,18 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingP
             subscription_proration_date: prorationDate
         });
 
-        // Calculate the proration cost:
-        const current_prorations = [];
-        var cost = 0;
-        for (var i = 0; i < invoice.lines.data.length; i++) {
-            const invoice_item = invoice.lines.data[i];
-            if (invoice_item.period.start === prorationDate) {
-                current_prorations.push(invoice_item);
-                cost += invoice_item.amount;
-            }
+        console.log(invoice);
+
+        const items = new Map<number, number>();
+
+        for (const line of invoice.lines.data) {
+            console.log(line.amount);
+            items.set(line.period.start, line.amount + (items.get(line.period.start) || 0));
         }
 
-        return cost;
+        console.log(items.entries());
+
+        // console.log([...items.entries()].map(([ts, amount]) => ({ due: new Date(ts * 1000), amount })));
     }
 
     private async _getOrCreateCustomer({ email }: { email: string }): Promise<Stripe.customers.ICustomer> {
@@ -209,34 +222,5 @@ export class BillingServer extends BaseServer implements QuotaProvider, BillingP
         }
 
         return customer;
-    }
-
-    async _process(req: Request, res: Response, ctx: Context): Promise<void> {
-        if (!ctx.account) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
-
-        const method = req.method;
-        const params = req.params || [];
-
-        switch (method) {
-            case "getBillingInfo":
-                res.result = (await this.getBillingInfo(ctx.account)).toRaw();
-                break;
-
-            case "updateBillingInfo":
-                res.result = (await this.updateBillingInfo(
-                    ctx.account,
-                    new UpdateBillingInfoParams(params[0])
-                )).toRaw();
-                break;
-
-            case "getPrice":
-                res.result = await this.getPrice(ctx.account, new UpdateBillingInfoParams(params[0]));
-                break;
-
-            default:
-                throw new Err(ErrorCode.INVALID_REQUEST);
-        }
     }
 }

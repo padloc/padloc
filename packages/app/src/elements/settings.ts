@@ -1,7 +1,7 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { shared, mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../dialog";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { StateMixin } from "../mixins/state.js";
 import { element, html, css, query, listen } from "./base.js";
 import { View } from "./view.js";
@@ -10,6 +10,9 @@ import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 import { ImportDialog } from "./import-dialog.js";
 import { ExportDialog } from "./export-dialog.js";
+import { BillingDialog } from "./billing-dialog.js";
+import { ChoosePlanDialog } from "./choose-plan-dialog.js";
+import { ConfirmPlanDialog } from "./confirm-plan-dialog.js";
 import "./randomart.js";
 
 @element("pl-settings")
@@ -22,6 +25,15 @@ export class Settings extends StateMixin(View) {
 
     @dialog("pl-export-dialog")
     _exportDialog: ExportDialog;
+
+    @dialog("pl-billing-dialog")
+    _billingDialog: BillingDialog;
+
+    @dialog("pl-choose-plan-dialog")
+    _choosePlanDialog: ChoosePlanDialog;
+
+    @dialog("pl-confirm-plan-dialog")
+    _confirmPlanDialog: ConfirmPlanDialog;
 
     shouldUpdate() {
         return !!app.account;
@@ -38,7 +50,7 @@ export class Settings extends StateMixin(View) {
                 border-radius: var(--border-radius);
             }
 
-            h1 {
+            h2 {
                 display: block;
                 text-align: center;
             }
@@ -101,7 +113,7 @@ export class Settings extends StateMixin(View) {
         const account = app.account!;
 
         return html`
-            <header class="narrow">
+            <header>
                 <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
                 <div class="title flex">${$l("Settings")}</div>
@@ -111,7 +123,7 @@ export class Settings extends StateMixin(View) {
 
             <main>
                 <div class="wrapper">
-                    <h1>${$l("Account")}</h1>
+                    <h2>${$l("Account")}</h2>
 
                     <div class="account item">
                         <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
@@ -131,13 +143,27 @@ export class Settings extends StateMixin(View) {
                         ${$l("Change Master Password")}
                     </button>
 
-                    <h1>${$l("Organizations")}</h1>
+                    <h2>${$l("Billing")}</h2>
+
+                    <button class="tap item" @click=${this._updatePlan}>${$l("Update Plan")}</button>
+
+                    <button class="tap item" @click=${this._updateBilling}>${$l("Update Billing Info")}</button>
+
+                    <h2>${$l("Organizations")}</h2>
+
+                    ${app.state.orgs
+                        .filter(org => org.isOwner(app.account!))
+                        .map(
+                            org => html`
+                                <button class="tap item" @click=${() => router.go(`org/${org.id}`)}>${org.name}</button>
+                            `
+                        )}
 
                     <button class="tap item" @click=${this._createOrg}>
-                        ${$l("Create New Organization")}
+                        ${$l("Create Organization")}
                     </button>
 
-                    <h1>${$l("Auto Lock")}</h1>
+                    <h2>${$l("Auto Lock")}</h2>
 
                     <pl-toggle-button
                         id="autoLockButton"
@@ -161,13 +187,13 @@ export class Settings extends StateMixin(View) {
                     >
                     </pl-slider>
 
-                    <h1>${$l("Import / Export")}</h1>
+                    <h2>${$l("Import / Export")}</h2>
 
                     <button class="item tap" @click=${() => this._import()}>${$l("Import...")}</button>
 
                     <button class="item tap" @click=${() => this._export()}>${$l("Export...")}</button>
 
-                    <h1>${$l("Support")}</h1>
+                    <h2>${$l("Support")}</h2>
 
                     <button @click=${() => this._openWebsite()} class="item tap">${$l("Website")}</button>
 
@@ -311,5 +337,13 @@ export class Settings extends StateMixin(View) {
                 return name;
             }
         });
+    }
+
+    private _updateBilling() {
+        this._billingDialog.show();
+    }
+
+    private _updatePlan() {
+        this._confirmPlanDialog.show(app.account!.billing.subscription!.plan);
     }
 }

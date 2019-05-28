@@ -1,7 +1,7 @@
 import { localize as $l, countries } from "@padloc/core/lib/locale";
-import { BillingInfo, UpdateBillingInfoParams } from "@padloc/billing/lib/api";
-import { billing } from "../init";
+import { BillingAddress, UpdateBillingParams } from "@padloc/core/lib/billing";
 import { loadScript } from "../util";
+import { app } from "../init";
 import { element, html, property, query, css } from "./base";
 import { Dialog } from "./dialog";
 import { LoadingButton } from "./loading-button";
@@ -10,21 +10,34 @@ import { Select } from "./select";
 
 const stripeLoaded = loadScript("https://js.stripe.com/v3/", "Stripe");
 
+interface Params {
+    condensed?: boolean;
+    title?: string;
+    message?: string;
+    submitLabel?: string;
+}
+
 @element("pl-billing-dialog")
-export class BillingDialog extends Dialog<BillingInfo, BillingInfo> {
+export class BillingDialog extends Dialog<Params | undefined, void> {
     @property()
     stripePubKey = "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy";
 
     @property()
     condensed: boolean = false;
 
+    @property()
+    dialogTitle = "";
+
+    @property()
+    message = "";
+
+    @property()
+    submitLabel = "";
+
     readonly preventDismiss = true;
 
     @property()
     private _error = "";
-
-    @property()
-    private _billingInfo: BillingInfo;
 
     @property()
     private _editingPaymentMethod: boolean = false;
@@ -50,12 +63,21 @@ export class BillingDialog extends Dialog<BillingInfo, BillingInfo> {
     @query("#countrySelect")
     private _countrySelect: Select<{ code: string; name: string }>;
 
+    @query("#couponInput")
+    private _couponInput: Input;
+
     private _stripe: any;
     private _cardElement: any;
 
-    async show(info: BillingInfo) {
-        this._billingInfo = info;
-        this._editingPaymentMethod = !this._billingInfo.paymentMethod;
+    async show({ condensed, title, message, submitLabel }: Params = {}) {
+        this.condensed = condensed || false;
+        this.dialogTitle = title || $l("Update Billing Info");
+        this.message = message || "";
+        this.submitLabel = submitLabel || $l("Save");
+        this._editingPaymentMethod = !app.account!.billing.paymentMethod;
+        // $l(
+        //                     "Add your billing info now so you're all set to keep using Padloc once the trial period is over. Don't worry, you won't be charged yet!"
+        //                 )
         return super.show();
     }
 
@@ -105,7 +127,7 @@ export class BillingDialog extends Dialog<BillingInfo, BillingInfo> {
         this._cardElement.focus();
     }
 
-    private async _submitCard() {
+    private async _submit() {
         if (this._submitButton.state === "loading") {
             return;
         }
@@ -113,24 +135,36 @@ export class BillingDialog extends Dialog<BillingInfo, BillingInfo> {
         this._error = "";
         this._submitButton.start();
 
-        const { token, error } = await this._stripe.createToken(this._cardElement, {
-            name: this._nameInput.value,
-            address_line1: this._streetInput.value,
-            address_zip: this._zipInput.value,
-            address_city: this._cityInput.value,
-            address_country: this._countrySelect.selected.code
-        });
+        let source = "";
 
-        if (error) {
-            this._error = error.message;
-            this._submitButton.fail();
-            return;
+        if (this._editingPaymentMethod) {
+            const { token, error } = await this._stripe.createToken(this._cardElement);
+
+            if (error) {
+                this._error = error.message;
+                this._submitButton.fail();
+                return;
+            }
+
+            source = token.id;
         }
 
+        const address = new BillingAddress().fromRaw({
+            name: this._nameInput.value,
+            street: this._streetInput.value,
+            postalCode: this._zipInput.value,
+            city: this._cityInput.value,
+            country: this._countrySelect.selected.code
+        });
+
+        const coupon = this._couponInput.value;
+
         try {
-            const info = await billing.updateBillingInfo(null, new UpdateBillingInfoParams({ source: token.id }));
+            await app.updateBilling(
+                new UpdateBillingParams({ address, paymentMethod: source ? { source } : undefined, coupon })
+            );
             this._submitButton.success();
-            this.done(info);
+            this.done();
         } catch (e) {
             this._error = e.message || $l("Something went wrong. Please try again later!");
             this._submitButton.fail();
@@ -194,28 +228,40 @@ export class BillingDialog extends Dialog<BillingInfo, BillingInfo> {
                 color: var(--color-tertiary);
                 margin-top: 8px;
             }
+
+            .discount {
+                padding: 12px;
+            }
+
+            .discount .name {
+                font-weight: bold;
+            }
+
+            .discount .coupon {
+                opacity: 0.7;
+                font-family: var(--font-family-mono);
+            }
         `
     ];
 
     renderContent() {
-        if (!this._billingInfo) {
+        const billingInfo = app.account!.billing;
+
+        if (!billingInfo) {
             return html``;
         }
 
-        const paymentMethod = this._billingInfo.paymentMethod;
+        const { address, paymentMethod, discount } = billingInfo;
+        const countryOptions = countries.map(c => Object.assign(c, { toString: () => c.name }));
 
         return html`
-            <h1>${$l("Add Billing Info")}</h1>
+            <h1>${this.dialogTitle}</h1>
 
             <div class="message">
-                ${$l(
-                    "Add your billing info now so you're all set to keep using Padloc once the trial period is over. Don't worry, you won't be charged yet!"
-                )}
+                ${this.message}
             </div>
 
             <label>${$l("Payment Details")}</label>
-
-            <pl-input id="nameInput" class="item" .placeholder=${$l("Name On Card")}></pl-input>
 
             <div class="card-wrapper item" ?hidden=${!this._editingPaymentMethod}>
                 <slot></slot>
@@ -233,26 +279,35 @@ export class BillingDialog extends Dialog<BillingInfo, BillingInfo> {
                   `
                 : html``}
 
-            <label>${$l("Country Or Region")}</label>
-
-            <pl-select
-                class="item"
-                id="countrySelect"
-                .options=${countries.map(c => Object.assign(c, { toString: () => c.name }))}
-            ></pl-select>
-
             <div ?hidden="condensed">
                 <label>${$l("Billing Address")}</label>
 
-                <pl-input id="nameInput" class="item" .placeholder=${$l("Name")}></pl-input>
+                <pl-input id="nameInput" class="item" .placeholder=${$l("Name")} .value=${address.name}></pl-input>
 
-                <pl-input id="streetInput" class="item" .placeholder=${$l("Address")}></pl-input>
+                <pl-input
+                    id="streetInput"
+                    class="item"
+                    .placeholder=${$l("Address")}
+                    .value=${address.street}
+                ></pl-input>
 
                 <div class="city-wrapper">
-                    <pl-input id="zipInput" class="item" .placeholder=${$l("Postal Code")}></pl-input>
+                    <pl-input
+                        id="zipInput"
+                        class="item"
+                        .placeholder=${$l("Postal Code")}
+                        .value=${address.postalCode}
+                    ></pl-input>
 
-                    <pl-input id="cityInput" class="item" .placeholder=${$l("City")}></pl-input>
+                    <pl-input id="cityInput" class="item" .placeholder=${$l("City")} .value=${address.city}></pl-input>
                 </div>
+
+                <pl-select
+                    class="item"
+                    id="countrySelect"
+                    .options=${countryOptions}
+                    .selected=${countryOptions.find(c => c.code === address.country)}
+                ></pl-select>
 
                 <label>${$l("Tax Info")}</label>
 
@@ -268,24 +323,29 @@ export class BillingDialog extends Dialog<BillingInfo, BillingInfo> {
                     id="taxIdInput"
                     class="item"
                     .placeholder=${$l("Tax ID")}
-                    ?hidden=${this._isBusiness}
+                    ?hidden=${!this._isBusiness}
                 ></pl-input>
-
-                <div class="error item" ?hidden="${!this._error}">
-                    ${this._error}
-                </div>
             </div>
 
             <label>Coupon</label>
 
-            <pl-input class="item" id="couponInput" placeholder=${$l("Coupon Code")}></pl-input>
+            <div class="discount item" ?hidden=${!discount}>
+                <span class="name">${discount && discount.name}</span>
+                <span class="coupon">(${discount && discount.coupon})</span>
+            </div>
+
+            <pl-input class="item" id="couponInput" placeholder=${$l("Coupon Code")} ?hidden=${!!discount}></pl-input>
+
+            <div class="error item" ?hidden="${!this._error}">
+                ${this._error}
+            </div>
 
             <div class="actions">
-                <pl-loading-button class="primary tap" id="submitButton" @click=${this._submitCard}>
-                    ${$l("Submit")}
+                <pl-loading-button class="primary tap" id="submitButton" @click=${this._submit}>
+                    ${this.submitLabel}
                 </pl-loading-button>
 
-                <button class="tap" @click=${() => this.done(this._billingInfo)} ?hidden=${this.condensed}>
+                <button class="tap" @click=${() => this.done()} ?hidden=${this.condensed}>
                     ${$l("Cancel")}
                 </button>
             </div>
@@ -294,7 +354,7 @@ export class BillingDialog extends Dialog<BillingInfo, BillingInfo> {
 
     renderAfter() {
         return html`
-            <button class="tap skip-button" @click=${() => this.done(this._billingInfo)} ?hidden=${!this.condensed}>
+            <button class="tap skip-button" @click=${() => this.done()} ?hidden=${!this.condensed}>
                 ${$l("Add Later")}
             </button>
         `;
