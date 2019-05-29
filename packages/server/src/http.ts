@@ -12,6 +12,7 @@ function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
             .on("data", chunk => {
                 size += chunk.length;
                 if (size > maxSize) {
+                    console.error("Max request size exceeded!", size, maxSize);
                     request.destroy(new Err(ErrorCode.MAX_REQUEST_SIZE_EXCEEDED));
                 }
                 body.push(chunk);

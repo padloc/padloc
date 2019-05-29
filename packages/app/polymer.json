@@ -11,6 +11,7 @@
     "env.js",
     "manifest.json",
     "node_modules/@webcomponents/webcomponentsjs/**/*",
+    "node_modules/jsqr/dist/jsQR.js",
     "assets/**/*",
     "vendor/**/*",
     "shim/**/*"
