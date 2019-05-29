@@ -55,13 +55,16 @@ export class QRDialog extends Dialog<void, string> {
     }
 
     async show() {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(
+        if (!this._video) {
+            this._video = document.createElement("video");
+            this._video.setAttribute("playsinline", "");
+            this._video.setAttribute("muted", "");
+            this._video.setAttribute("autoplay", "");
+        }
+        navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "environment" } }).then(
             stream => {
                 // Use facingMode: environment to attemt to get the front camera on phones
-                const video = (this._video = this._video || document.createElement("video"));
-                video.srcObject = stream;
-                video.setAttribute("playsinline", "true"); // required to tell iOS safari we don't want fullscreen
-                video.play();
+                this._video.srcObject = stream;
                 requestAnimationFrame(() => this._tick());
             },
             async err => {
