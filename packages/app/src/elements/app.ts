@@ -228,7 +228,6 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
     }
 
     @listen("route-changed", router)
-    @observe("loggedIn")
     async _routeChanged() {
         await app.loaded;
 

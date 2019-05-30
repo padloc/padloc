@@ -129,6 +129,7 @@ export class Unlock extends StartForm {
         const confirmed = await confirm($l("Are you sure you want to log out of this account?"));
         if (confirmed) {
             await app.logout();
+            router.go("login");
         }
     }
 }

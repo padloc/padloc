@@ -415,7 +415,8 @@ export class Signup extends StartForm {
                     if (choice === 0) {
                         router.go("login");
                     } else {
-                        router.go("signup", Object.assign(router.params, { verify: undefined }));
+                        const { verify, ...params } = router.params;
+                        router.go("signup", params);
                         this._emailInput.focus();
                     }
                     return;

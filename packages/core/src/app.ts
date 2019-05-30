@@ -471,6 +471,8 @@ export class App {
     }
 
     private async _logout() {
+        this._cachedAuthInfo.clear();
+
         // Revoke session
         try {
             await this.api.revokeSession(this.state.session!.id);
