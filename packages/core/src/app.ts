@@ -1286,8 +1286,6 @@ export class App {
             return queued;
         }
 
-        this.setState({ syncing: !!this._activeSyncPromises.size });
-
         active = fn(obj).then(
             (result: any) => {
                 this._activeSyncPromises.delete(obj.id);
@@ -1300,7 +1298,10 @@ export class App {
                 throw e;
             }
         );
+
         this._activeSyncPromises.set(obj.id, active);
+        this.setState({ syncing: !!this._activeSyncPromises.size });
+
         return active;
     }
 }
