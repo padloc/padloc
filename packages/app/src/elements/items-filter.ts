@@ -159,7 +159,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         </div>
                     </button>
 
-                    <button class="favorites tap" @click=${() => this._select({})}>
+                    <button class="favorites tap" @click=${() => this._select({})} hidden>
                         <pl-icon icon="favorite"></pl-icon>
                         <div>
                             ${$l("Favorites")}

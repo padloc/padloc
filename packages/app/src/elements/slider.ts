@@ -42,7 +42,8 @@ export class Slider extends BaseElement {
                 outline: none;
             }
 
-            input[type="range"]::-webkit-slider-runnable-track {
+            input[type="range"]::-webkit-slider-runnable-track,
+            input[type="range"]::-moz-range-track {
                 width: 100%;
                 height: var(--track-size);
                 cursor: pointer;
@@ -50,8 +51,11 @@ export class Slider extends BaseElement {
                 border-radius: 100%;
             }
 
-            input[type="range"]::-webkit-slider-thumb {
+            input[type="range"]::-webkit-slider-thumb,
+            input[type="range"]::-moz-range-thumb {
                 -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
                 height: var(--knob-size);
                 width: var(--knob-size);
                 margin-top: calc(0.5 * var(--track-size) - 0.5 * var(--knob-size));
@@ -64,7 +68,8 @@ export class Slider extends BaseElement {
                 background-clip: content-box;
             }
 
-            input[type="range"]:active::-webkit-slider-thumb {
+            input[type="range"]:active::-webkit-slider-thumb,
+            input[type="range"]:active::-mo-range-thumb {
                 transform: scale(1.1);
             }
 

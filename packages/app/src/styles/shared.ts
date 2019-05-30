@@ -360,33 +360,9 @@ export const shared = css`
         ${mixins.ellipsis()}
     }
 
-    .rounded-corners {
-        content: "";
-        display: block;
-        position: absolute;
-        left: -10px;
-        right: -10px;
-        top: -10px;
-        bottom: -10px;
-        border: solid 10px var(--color-gutter);
-        border-radius: calc(10px + var(--border-radius));
-        z-index: 1;
-        pointer-events: none;
-        transform: translate3d(0, 0, 0);
-    }
-
     pl-icon[spin] {
         animation: spin 1s infinite;
         transform-origin: center 49%;
-    }
-
-    .unlock-feature-hint {
-        padding: 8px;
-        text-align: center;
-        background: var(--color-foreground);
-        color: var(--color-background);
-        font-size: var(--font-size-tiny);
-        font-weight: bold;
     }
 
     .info {

@@ -58,7 +58,7 @@ export class Dialog<I, R> extends BaseElement {
                 background: #000000;
                 opacity: 0;
                 transition: opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
-                transform: translate3d(0, 0, 0);
+                will-change: opacity;
                 ${mixins.fullbleed()}
                 position: fixed;
             }
@@ -80,9 +80,9 @@ export class Dialog<I, R> extends BaseElement {
             }
 
             .outer {
-                transform: translate3d(0, 0, 0);
                 /* transition: transform 400ms cubic-bezier(1, -0.3, 0, 1.3), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1); */
                 transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
+                will-change: transform, opacity;
             }
 
             .actions {
@@ -98,7 +98,7 @@ export class Dialog<I, R> extends BaseElement {
 
             :host(:not([open])) .outer {
                 opacity: 0;
-                transform: translate3d(0, 0, 0) scale(0.8);
+                transform: scale(0.8);
             }
         `
     ];

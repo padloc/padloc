@@ -77,7 +77,6 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
             .wrapper {
                 display: flex;
-                transform: translate3d(0, 0, 0);
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
                 will-change: transform, opacity;

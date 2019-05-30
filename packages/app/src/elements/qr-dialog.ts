@@ -26,6 +26,7 @@ export class QRDialog extends Dialog<void, string> {
 
             canvas {
                 flex: 1;
+                height: 0;
                 object-fit: cover;
             }
 
@@ -65,6 +66,7 @@ export class QRDialog extends Dialog<void, string> {
             stream => {
                 // Use facingMode: environment to attemt to get the front camera on phones
                 this._video.srcObject = stream;
+                this._video.play();
                 requestAnimationFrame(() => this._tick());
             },
             async err => {
