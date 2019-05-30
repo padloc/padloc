@@ -69,10 +69,9 @@ export class QRDialog extends Dialog<void, string> {
                 this._video.play();
                 requestAnimationFrame(() => this._tick());
             },
-            async err => {
-                console.log(err);
+            async () => {
                 this.open = false;
-                await alert($l("Failed to access camera! Please make sure you have granted acess!"), {
+                await alert($l("Failed to QR scanner. Please make sure you have granted access to the camera!"), {
                     type: "warning"
                 });
                 this.done();

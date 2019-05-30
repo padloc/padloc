@@ -44,6 +44,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             .header > .name {
                 font-weight: bold;
                 text-align: center;
+                ${mixins.ellipsis()}
             }
 
             .header > pl-icon {

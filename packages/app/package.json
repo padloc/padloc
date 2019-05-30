@@ -18,7 +18,7 @@
     "chai": "^4.2.0",
     "jsqr": "git+https://github.com/shrpne/jsQR.git",
     "mocha": "^5.2.0",
-    "polymer-cli": "^1.9.2",
+    "polymer-cli": "^1.9.9",
     "reflect-metadata": "^0.1.12",
     "ts-node": "^7.0.1",
     "wct-mocha": "^1.0.0"

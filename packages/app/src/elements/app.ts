@@ -61,6 +61,12 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
         config.cssVars,
         shared,
         css`
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+            }
+
             :host {
                 background: linear-gradient(
                     var(--color-gradient-highlight-to) 0%,
@@ -71,7 +77,7 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
                 position: absolute;
                 width: 100%;
                 height: 100%;
-                animation: fadeIn 0.5s backwards 0.2s;
+                animation: fadeIn 0.5s;
                 perspective: 1000px;
             }
 
