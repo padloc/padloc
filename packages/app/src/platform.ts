@@ -47,13 +47,13 @@ export class WebPlatform implements Platform {
     async getDeviceInfo() {
         const { os, browser } = await browserInfo;
         return new DeviceInfo({
-            platform: os.name.replace(" ", ""),
-            osVersion: os.version.replace(" ", ""),
+            platform: (os.name && os.name.replace(" ", "")) || "",
+            osVersion: (os.version && os.version.replace(" ", "")) || "",
             id: "",
             appVersion: "",
             manufacturer: "",
             model: "",
-            browser: browser.name,
+            browser: browser.name || "",
             userAgent: navigator.userAgent,
             locale: navigator.language || "en"
         });
