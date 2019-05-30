@@ -1,6 +1,6 @@
 import { Err, ErrorCode } from "@padloc/core/lib/error.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { alert, confirm } from "../dialog.js";
 import { notify } from "../elements/notification.js";
 
@@ -23,14 +23,15 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                 error instanceof Err
                     ? error
                     : error instanceof Error
-                        ? new Err(ErrorCode.UNKNOWN_ERROR, error.message, { error })
-                        : new Err(ErrorCode.UNKNOWN_ERROR, error.toString());
+                    ? new Err(ErrorCode.UNKNOWN_ERROR, error.message, { error })
+                    : new Err(ErrorCode.UNKNOWN_ERROR, error.toString());
 
             switch (error.code) {
                 case ErrorCode.INVALID_SESSION:
                 case ErrorCode.SESSION_EXPIRED:
                     await app.logout();
                     await alert($l("Your session has expired. Please log in again!"));
+                    router.go("login");
                     return true;
                 case ErrorCode.RATE_LIMIT_EXCEEDED:
                     await alert($l("It seems are servers are over capacity right now. Please try again later!"), {

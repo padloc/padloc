@@ -304,6 +304,10 @@ export class Context implements API {
 
         // The new auth object has all the information except the account id
         auth.account = account.id;
+        this.device && auth.trustedDevices.push(this.device);
+
+        // Revoke all sessions
+        await account.sessions.map(s => this.storage.delete(Object.assign(new Session(), s)));
 
         // Suspend memberships for all orgs that the account is not the owner of.
         // Since the accounts public key has changed, they will need to go through
