@@ -32,6 +32,8 @@ export class InviteDialog extends Dialog<Invite, void> {
     @property()
     private _errorMessage: string = "";
 
+    private _pollInterval = 5000;
+
     private get _enableActions(): boolean {
         return !!this.invite && !this.invite.expired && !this.invite.accepted;
     }
@@ -39,7 +41,22 @@ export class InviteDialog extends Dialog<Invite, void> {
     async show(invite: Invite): Promise<void> {
         this._errorMessage = "";
         this.invite = invite;
+        setTimeout(() => this._refresh(), this._pollInterval);
         return super.show();
+    }
+
+    private async _refresh() {
+        if (!this.invite || !this.open || this.invite.accepted) {
+            return;
+        }
+
+        const invite = await app.getInvite(this.invite.org!.id, this.invite.id);
+        if (invite) {
+            invite.secret = this.invite.secret;
+            invite.expires = this.invite.expires;
+            this.invite = invite;
+        }
+        setTimeout(() => this._refresh(), this._pollInterval);
     }
 
     shouldUpdate() {
@@ -259,7 +276,7 @@ export class InviteDialog extends Dialog<Invite, void> {
             >
                 <pl-icon icon="invite"></pl-icon>
 
-                <div>${$l(purpose === "confirm_membership" ? "Confirm Member" : "Add Member")}</div>
+                <div>${$l(purpose === "confirm_membership" ? "Confirm" : "Add Member")}</div>
             </pl-loading-button>
 
             <pl-loading-button id="deleteButton" class="tap negative" @click=${() => this._delete()}>
