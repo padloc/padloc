@@ -443,16 +443,6 @@ export class ItemsList extends StateMixin(View) {
     //         this._scrollToIndex(i);
     //     }
     // }
-    //
-    // private _fixScroll() {
-    //     // Workaround for list losing scrollability on iOS after resetting filter
-    //     isIOS().then(yes => {
-    //         if (yes) {
-    //             this._main.style.overflow = "hidden";
-    //             setTimeout(() => (this._main.style.overflow = "auto"), 100);
-    //         }
-    //     });
-    // }
 
     // private async _animateItems(delay = 100) {
     //     await this.updateComplete;
@@ -468,14 +458,31 @@ export class ItemsList extends StateMixin(View) {
     // }
 
     private async _deleteItems() {
+        let selected = [...this._multiSelect.values()];
+
+        if (selected.some(({ vault }) => !app.hasWritePermissions(vault))) {
+            const proceed = await confirm(
+                $l(
+                    "Some items in your selection are from Vaults you don't have write access " +
+                        "to and cannot be deleted. Do you want to proceed deleting the other items?"
+                ),
+                $l("Yes"),
+                $l("No")
+            );
+            if (!proceed) {
+                return;
+            }
+            selected = selected.filter(({ vault }) => app.hasWritePermissions(vault));
+        }
+
         const confirmed = await confirm(
             $l("Are you sure you want to delete these items? This action can not be undone!"),
-            $l("Delete {0} Items", this._multiSelect.size.toString()),
+            $l("Delete {0} Items", selected.length.toString()),
             $l("Cancel"),
             { type: "destructive" }
         );
         if (confirmed) {
-            await app.deleteItems([...this._multiSelect.values()]);
+            await app.deleteItems(selected);
             this.cancelMultiSelect();
         }
     }
@@ -496,6 +503,22 @@ export class ItemsList extends StateMixin(View) {
             }
             selected = selected.filter(({ item }) => !item.attachments.length);
         }
+
+        if (selected.some(({ vault }) => !app.hasWritePermissions(vault))) {
+            const proceed = await confirm(
+                $l(
+                    "Some items in your selection are from Vaults you don't have write " +
+                        "access to and cannot be moved. Do you want to proceed moving the other items?"
+                ),
+                $l("Yes"),
+                $l("No")
+            );
+            if (!proceed) {
+                return;
+            }
+            selected = selected.filter(({ vault }) => app.hasWritePermissions(vault));
+        }
+
         const movedItems = await this._moveItemsDialog.show(selected);
         if (movedItems) {
             this.cancelMultiSelect();
