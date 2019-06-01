@@ -55,6 +55,8 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
     async firstUpdated() {
         await app.loaded;
         this._routeChanged();
+        const spinner = document.querySelector(".spinner") as HTMLElement;
+        spinner.style.display = "none";
     }
 
     static styles = [
