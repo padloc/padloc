@@ -181,9 +181,10 @@ export class Generator extends Dialog<void, string> {
 
     @listen("change")
     async _generate() {
+        const separator = (this._separator && this._separator.selected && this._separator.selected.value) || "-";
         switch (this.mode) {
             case "words":
-                this.value = await generatePassphrase(this._wordCount.value, this._separator.selected.value);
+                this.value = await generatePassphrase(this._wordCount.value, separator);
                 break;
             case "chars":
                 let charSet = "";
