@@ -815,7 +815,7 @@ export class Server {
         const res = new Response();
         try {
             const context = new Context(this.config, this.storage, this.messenger, this.attachmentStorage);
-            context.device = new DeviceInfo().fromRaw(req.device);
+            context.device = context.device && new DeviceInfo().fromRaw(req.device);
             await this._authenticate(req, context);
             await this._process(req, res, context);
             if (context.session) {

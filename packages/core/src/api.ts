@@ -56,8 +56,8 @@ export class CreateAccountParams extends Serializable {
         return super.fromRaw({
             verify,
             invite,
-            account: new Account().fromRaw(account),
-            auth: new Auth().fromRaw(auth)
+            account: account && new Account().fromRaw(account),
+            auth: auth && new Auth().fromRaw(auth)
         });
     }
 }
