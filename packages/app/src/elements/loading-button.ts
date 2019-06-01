@@ -19,6 +19,7 @@ export class LoadingButton extends BaseElement {
         css`
             :host {
                 display: flex;
+                padding: 12px 15px;
             }
 
             :host([state="loading"]) button {
@@ -30,6 +31,7 @@ export class LoadingButton extends BaseElement {
                 position: relative;
                 flex: 1;
                 height: auto;
+                padding: 0;
             }
 
             button > * {

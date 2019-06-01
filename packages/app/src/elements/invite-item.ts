@@ -4,13 +4,37 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { shared } from "../styles";
 import { app } from "../init";
-import { BaseElement, element, html, css, property } from "./base.js";
+import { dialog } from "../dialog";
+import { BaseElement, element, html, css, property, query } from "./base.js";
+import { LoadingButton } from "./loading-button";
+import { MemberDialog } from "./member-dialog.js";
 import "./icon.js";
 
 @element("pl-invite-item")
 export class InviteItem extends BaseElement {
     @property()
     invite: Invite;
+
+    @query(".confirm-button")
+    private _confirmButton: LoadingButton;
+
+    @dialog("pl-member-dialog")
+    private _memberDialog: MemberDialog;
+
+    private async _confirm() {
+        if (this._confirmButton.state === "loading") {
+            return;
+        }
+        this._confirmButton.start();
+        try {
+            const member = await app.confirmInvite(this.invite!);
+            this._confirmButton.success();
+            await this._memberDialog.show({ org: app.getOrg(this.invite!.org!.id)!, member });
+        } catch (e) {
+            this._confirmButton.fail();
+            throw e;
+        }
+    }
 
     shoudUpdate() {
         return !!this.invite;
@@ -76,6 +100,13 @@ export class InviteItem extends BaseElement {
                 user-select: text;
                 letter-spacing: 2px;
             }
+
+            .confirm-button {
+                padding: 6px 8px;
+                margin-right: 16px;
+                font-size: var(--font-size-small);
+                align-self: center;
+            }
         `
     ];
 
@@ -120,7 +151,11 @@ export class InviteItem extends BaseElement {
                 </div>
             </div>
 
-            <div class="invite-code">
+            <pl-loading-button class="tap primary confirm-button" ?hidden=${!inv.accepted} @click=${this._confirm}>
+                ${$l("Confirm")}
+            </pl-loading-button>
+
+            <div class="invite-code" ?hidden=${inv.accepted}>
                 <div class="invite-code-label">${$l("Confirmation Code:")}</div>
 
                 <div class="invite-code-value">${until(secret)}</div>
