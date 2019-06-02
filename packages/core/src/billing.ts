@@ -1,11 +1,12 @@
-import { Account, AccountID } from "./account";
-import { Org, OrgType, OrgID } from "./org";
+import { AccountID } from "./account";
+import { OrgType, OrgID } from "./org";
 import { Serializable } from "./encoding";
 
 export class Plan extends Serializable {
     id = "";
     name = "";
     description = "";
+    items: number = -1;
     storage: number = 0;
     groups: number = 0;
     vaults: number = 0;
@@ -27,6 +28,7 @@ export class Plan extends Serializable {
             typeof this.min === "number" &&
             typeof this.max === "number" &&
             typeof this.cost === "number" &&
+            typeof this.items === "number" &&
             typeof this.storage === "number" &&
             typeof this.groups === "number" &&
             typeof this.vaults === "number" &&
@@ -68,6 +70,7 @@ export class Subscription extends Serializable {
     org: OrgID = "";
     plan: Plan = new Plan();
     status: SubscriptionStatus = SubscriptionStatus.Active;
+    items: number = -1;
     storage: number = 0;
     groups: number = 0;
     vaults: number = 0;
@@ -84,6 +87,7 @@ export class Subscription extends Serializable {
             typeof this.status === "string" &&
             typeof this.account === "string" &&
             typeof this.org === "string" &&
+            typeof this.items === "number" &&
             typeof this.members === "number" &&
             typeof this.storage === "number" &&
             typeof this.groups === "number" &&
@@ -121,17 +125,23 @@ export class Discount extends Serializable {
 
 export class BillingInfo extends Serializable {
     customerId: string = "";
+    account: AccountID = "";
+    org: OrgID = "";
+    email: string = "";
     subscription: Subscription | null = null;
     availablePlans: Plan[] = [];
     paymentMethod: PaymentMethod | null = null;
     address: BillingAddress = new BillingAddress();
     discount: Discount | null = null;
 
-    fromRaw({ customerId, subscription, availablePlans, paymentMethod, address, discount }: any) {
+    fromRaw({ customerId, account, org, email, subscription, availablePlans, paymentMethod, address, discount }: any) {
         return super.fromRaw({
             subscription: (subscription && new Subscription().fromRaw(subscription)) || null,
             availablePlans: availablePlans.map((p: any) => new Plan().fromRaw(p)),
             customerId,
+            account,
+            org,
+            email,
             address: (address && new BillingAddress().fromRaw(address)) || new BillingAddress(),
             paymentMethod: paymentMethod ? new PaymentMethod().fromRaw(paymentMethod) : null,
             discount: discount ? new Discount().fromRaw(discount) : null
@@ -140,6 +150,9 @@ export class BillingInfo extends Serializable {
 }
 
 export class UpdateBillingParams extends Serializable {
+    account?: AccountID;
+    org?: OrgID;
+    email?: string;
     plan?: string;
     members?: number;
     paymentMethod?: any;
@@ -153,8 +166,11 @@ export class UpdateBillingParams extends Serializable {
         }
     }
 
-    fromRaw({ plan, members, paymentMethod, coupon, address }: any) {
+    fromRaw({ account, email, org, plan, members, paymentMethod, coupon, address }: any) {
         return super.fromRaw({
+            email,
+            account,
+            org,
             plan,
             members,
             paymentMethod,
@@ -165,6 +181,10 @@ export class UpdateBillingParams extends Serializable {
 
     validate() {
         return (
+            (!this.email || typeof this.email === "string") &&
+            (!this.account || typeof this.account === "string") &&
+            (!this.org || typeof this.org === "string") &&
+            (!this.email || typeof this.email === "string") &&
             (!this.members || typeof this.members === "number") &&
             (!this.plan || typeof this.plan === "string") &&
             (!this.coupon || typeof this.coupon === "string")
@@ -173,56 +193,39 @@ export class UpdateBillingParams extends Serializable {
 }
 
 export interface BillingProvider {
-    updateBilling(account: Account, update?: UpdateBillingParams): Promise<void>;
-    registerOrg(account: Account, org: Org): Promise<void>;
-    getPrice(account: Account, update?: UpdateBillingParams): Promise<void>;
+    updateBilling(update?: UpdateBillingParams): Promise<void>;
 }
-
-const stubPlans: Plan[] = [
-    {
-        id: "personal",
-        name: "Personal",
-        description: "Basic Setup For Personal Use",
-        storage: -1,
-        available: true,
-        default: true
-    },
-    {
-        id: "shared",
-        name: "Shared",
-        description: "Basic Setup For Sharing",
-        storage: -1,
-        vaults: -1,
-        available: true,
-        orgType: 1
-    },
-    {
-        id: "advanced",
-        name: "Advanced",
-        description: "Advanced Setup For Sharing",
-        storage: -1,
-        groups: -1,
-        vaults: -1,
-        available: true,
-        orgType: 2
-    }
-].map(p => {
-    const plan = new Plan();
-    Object.assign(plan, p);
-    return plan;
-});
-
-export class StubBillingProvider implements BillingProvider {
-    async updateBilling(account: Account, update?: UpdateBillingParams) {
-        const info = account.billing || new BillingInfo();
-        const subscription = (info.subscription = info.subscription || new Subscription());
-        const plan = update && stubPlans.find(p => p.id === update.plan);
-        subscription.plan = plan || subscription.plan || stubPlans[0];
-        info.availablePlans = stubPlans;
-        account.billing = info;
-    }
-
-    async registerOrg() {}
-
-    async getPrice() {}
-}
+//
+// const stubPlans: Plan[] = [
+//     {
+//         id: "personal",
+//         name: "Personal",
+//         description: "Basic Setup For Personal Use",
+//         storage: -1,
+//         available: true,
+//         default: true
+//     },
+//     {
+//         id: "shared",
+//         name: "Shared",
+//         description: "Basic Setup For Sharing",
+//         storage: -1,
+//         vaults: -1,
+//         available: true,
+//         orgType: 1
+//     },
+//     {
+//         id: "advanced",
+//         name: "Advanced",
+//         description: "Advanced Setup For Sharing",
+//         storage: -1,
+//         groups: -1,
+//         vaults: -1,
+//         available: true,
+//         orgType: 2
+//     }
+// ].map(p => {
+//     const plan = new Plan();
+//     Object.assign(plan, p);
+//     return plan;
+// });

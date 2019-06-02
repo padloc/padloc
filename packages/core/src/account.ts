@@ -85,7 +85,7 @@ export class Account extends PBES2Container implements Storable {
 
     quota: AccountQuota = new AccountQuota();
 
-    billing!: BillingInfo;
+    billing?: BillingInfo;
 
     /**
      * Whether or not this Account object is current "locked" or, in other words,
@@ -172,7 +172,7 @@ export class Account extends PBES2Container implements Storable {
         revision,
         sessions,
         quota,
-    billing,
+        billing,
         ...rest
     }: any) {
         Object.assign(this, {

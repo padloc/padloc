@@ -11,29 +11,29 @@ import { ToggleButton } from "./toggle-button.js";
 import { ImportDialog } from "./import-dialog.js";
 import { ExportDialog } from "./export-dialog.js";
 import { BillingDialog } from "./billing-dialog.js";
-import { ChoosePlanDialog } from "./choose-plan-dialog.js";
-import { ConfirmPlanDialog } from "./confirm-plan-dialog.js";
+// import { ChoosePlanDialog } from "./choose-plan-dialog.js";
+// import { ConfirmPlanDialog } from "./confirm-plan-dialog.js";
 import "./randomart.js";
 
 @element("pl-settings")
 export class Settings extends StateMixin(View) {
     @query("input[type='file']")
-    _fileInput: HTMLInputElement;
+    private _fileInput: HTMLInputElement;
 
     @dialog("pl-import-dialog")
-    _importDialog: ImportDialog;
+    private _importDialog: ImportDialog;
 
     @dialog("pl-export-dialog")
-    _exportDialog: ExportDialog;
+    private _exportDialog: ExportDialog;
 
     @dialog("pl-billing-dialog")
-    _billingDialog: BillingDialog;
+    private _billingDialog: BillingDialog;
 
-    @dialog("pl-choose-plan-dialog")
-    _choosePlanDialog: ChoosePlanDialog;
-
-    @dialog("pl-confirm-plan-dialog")
-    _confirmPlanDialog: ConfirmPlanDialog;
+    // @dialog("pl-choose-plan-dialog")
+    // private _choosePlanDialog: ChoosePlanDialog;
+    //
+    // @dialog("pl-confirm-plan-dialog")
+    // private _confirmPlanDialog: ConfirmPlanDialog;
 
     shouldUpdate() {
         return !!app.account;
@@ -344,6 +344,6 @@ export class Settings extends StateMixin(View) {
     }
 
     private _updatePlan() {
-        this._confirmPlanDialog.show(app.account!.billing.subscription!.plan);
+        // this._confirmPlanDialog.show(app.account!.billing.subscription!.plan);
     }
 }

@@ -1,18 +1,9 @@
 import { Serializable } from "./encoding";
-import { Account } from "./account";
-import { Org, OrgType } from "./org";
-
-// export enum Plan {
-//     Free = "free",
-//     Pro = "pro",
-//     Family = "family",
-//     Team = "team",
-//     Business = "business"
-// }
 
 export class AccountQuota extends Serializable {
     items = -1;
-    storage = 0;
+    storage = -1;
+    orgs = -1;
 
     constructor(vals?: Partial<AccountQuota>) {
         super();
@@ -27,10 +18,10 @@ export class AccountQuota extends Serializable {
 }
 
 export class OrgQuota extends Serializable {
-    members = 0;
-    groups = 0;
-    vaults = 0;
-    storage = 0;
+    members = -1;
+    groups = -1;
+    vaults = -1;
+    storage = -1;
 
     constructor(vals?: Partial<OrgQuota>) {
         super();
@@ -49,40 +40,40 @@ export class OrgQuota extends Serializable {
     }
 }
 
-export interface QuotaProvider {
-    getOrgQuota(account: Account, org: Org): Promise<OrgQuota | null>;
-    getAccountQuota(account: Account): Promise<AccountQuota>;
-}
-
-export class BasicQuotaProvider {
-    async getOrgQuota(_account: Account, { type }: Org) {
-        switch (type) {
-            case OrgType.Basic:
-                return new OrgQuota({
-                    members: 10,
-                    storage: 1e9
-                });
-
-            case OrgType.Team:
-                return new OrgQuota({
-                    members: 50,
-                    vaults: 10,
-                    storage: 5e9
-                });
-
-            case OrgType.Business:
-                return new OrgQuota({
-                    members: 200,
-                    vaults: 50,
-                    groups: 20,
-                    storage: 10e9
-                });
-        }
-    }
-
-    async getAccountQuota(_account: Account) {
-        return new AccountQuota({
-            storage: 1e9
-        });
-    }
-}
+// export interface QuotaProvider {
+//     getOrgQuota(account: Account, org: Org): Promise<OrgQuota | null>;
+//     getAccountQuota(account: Account): Promise<AccountQuota>;
+// }
+//
+// export class BasicQuotaProvider {
+//     async getOrgQuota(_account: Account, { type }: Org) {
+//         switch (type) {
+//             case OrgType.Basic:
+//                 return new OrgQuota({
+//                     members: 10,
+//                     storage: 1e9
+//                 });
+//
+//             case OrgType.Team:
+//                 return new OrgQuota({
+//                     members: 50,
+//                     vaults: 10,
+//                     storage: 5e9
+//                 });
+//
+//             case OrgType.Business:
+//                 return new OrgQuota({
+//                     members: 200,
+//                     vaults: 50,
+//                     groups: 20,
+//                     storage: 10e9
+//                 });
+//         }
+//     }
+//
+//     async getAccountQuota(_account: Account) {
+//         return new AccountQuota({
+//             storage: 1e9
+//         });
+//     }
+// }

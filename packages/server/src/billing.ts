@@ -1,6 +1,8 @@
 import * as Stripe from "stripe";
 import { Account } from "@padloc/core/src/account";
+import { Org } from "@padloc/core/src/org";
 import { Err, ErrorCode } from "@padloc/core/src/error";
+import { Storage } from "@padloc/core/src/storage";
 import {
     BillingProvider,
     BillingInfo,
@@ -45,7 +47,7 @@ function parseSubscription({
     status,
     plan,
     quantity,
-    metadata: { storage, groups, vaults, account, org }
+    metadata: { items, storage, groups, vaults, account, org }
 }: Stripe.subscriptions.ISubscription) {
     const planInfo = parsePlan(plan!);
     return new Subscription().fromRaw({
@@ -54,18 +56,67 @@ function parseSubscription({
         plan: planInfo.toRaw(),
         account: account || "",
         org: org || "",
-        storage: storage ? parseInt(storage) : planInfo.storage,
-        groups: groups ? parseInt(groups) : planInfo.groups,
-        vaults: vaults ? parseInt(vaults) : planInfo.vaults,
+        items: items ? parseInt(items) : planInfo.items || -1,
+        storage: storage ? parseInt(storage) : planInfo.storage || 0,
+        groups: groups ? parseInt(groups) : planInfo.groups || 0,
+        vaults: vaults ? parseInt(vaults) : planInfo.vaults || 0,
         members: quantity
     });
+}
+
+function parseCustomer({
+    id,
+    email,
+    name,
+    address,
+    subscriptions,
+    sources,
+    discount,
+    metadata: { org, account }
+}: Stripe.customers.ICustomer) {
+    const info = new BillingInfo();
+
+    info.org = org;
+    info.account = account;
+    info.email = email || "";
+    info.customerId = id;
+
+    const subscription = subscriptions.data[0] ? parseSubscription(subscriptions.data[0]) : null;
+    info.subscription = subscription;
+
+    const source = sources && (sources.data[0] as Stripe.ICard);
+    info.paymentMethod =
+        (source &&
+            new PaymentMethod().fromRaw({
+                id: source.id,
+                name: `${source.brand} •••• •••• •••• ${source.last4}`
+            })) ||
+        null;
+
+    info.address = new BillingAddress().fromRaw({
+        name: name || "",
+        street: (address && address.line1) || "",
+        postalCode: (address && address.postal_code) || "",
+        city: (address && address.city) || "",
+        country: (address && address.country) || ""
+    });
+
+    info.discount =
+        (discount &&
+            new Discount().fromRaw({
+                name: discount.coupon.name,
+                coupon: discount.coupon.id
+            })) ||
+        null;
+
+    return info;
 }
 
 export class StripeBillingProvider implements BillingProvider {
     private _stripe: Stripe;
     private _availablePlans: Plan[] = [];
 
-    constructor(public config: StripeConfig) {
+    constructor(public config: StripeConfig, public storage: Storage) {
         this._stripe = new Stripe(config.stripeSecret);
     }
 
@@ -78,51 +129,20 @@ export class StripeBillingProvider implements BillingProvider {
             .sort((a, b) => a.orgType - b.orgType);
     }
 
-    async getBillingInfo(account: Account) {
-        const customer = await this._getOrCreateCustomer(account);
-        const subscription = customer.subscriptions.data[0] ? parseSubscription(customer.subscriptions.data[0]) : null;
-        const info = new BillingInfo();
-        const source = customer.sources && (customer.sources.data[0] as Stripe.ICard);
-        info.subscription = subscription;
-        info.customerId = customer.id;
-        info.availablePlans = [...this._availablePlans.values()];
-        info.paymentMethod =
-            (source &&
-                new PaymentMethod().fromRaw({
-                    id: source.id,
-                    name: `${source.brand} **** **** **** ${source.last4}`
-                })) ||
-            null;
+    async updateBilling({ account, org, email, plan, members, paymentMethod, address, coupon }: UpdateBillingParams) {
+        if (!account && !org) {
+            throw new Err(ErrorCode.BAD_REQUEST, "Either 'account' or 'org' parameter required!");
+        }
 
-        // @ts-ignore
-        const { name, address } = customer;
+        const acc = account ? await this.storage.get(Account, account) : await this.storage.get(Org, org!);
 
-        info.address = new BillingAddress().fromRaw({
-            name: name || "",
-            street: (address && address.line1) || "",
-            postalCode: (address && address.postal_code) || "",
-            country: (address && address.country) || ""
-        });
+        await this._sync(acc);
 
-        info.discount =
-            (customer.discount &&
-                new Discount().fromRaw({
-                    name: customer.discount.coupon.name,
-                    coupon: customer.discount.coupon.id
-                })) ||
-            null;
-
-        return info;
-    }
-
-    async updateBilling(
-        account: Account,
-        { plan, members, paymentMethod, address, coupon }: UpdateBillingParams = new UpdateBillingParams()
-    ) {
-        const info = await this.getBillingInfo(account);
+        const info = acc.billing!;
 
         try {
             await this._stripe.customers.update(info.customerId, {
+                email,
                 // @ts-ignore
                 name: address && address.name,
                 address: address && {
@@ -132,7 +152,9 @@ export class StripeBillingProvider implements BillingProvider {
                     country: address.country
                 },
                 source: paymentMethod && paymentMethod.source,
-                coupon: coupon || undefined
+                coupon: coupon || undefined,
+                // @ts-ignore
+                metadata: { account, org }
             });
         } catch (e) {
             throw new Err(ErrorCode.BILLING_ERROR, e.message);
@@ -167,7 +189,7 @@ export class StripeBillingProvider implements BillingProvider {
             }
         }
 
-        account.billing = await this.getBillingInfo(account);
+        await this._sync(acc);
     }
 
     async getPrice(account: Account, { plan, members }: UpdateBillingParams) {
@@ -176,7 +198,9 @@ export class StripeBillingProvider implements BillingProvider {
             throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan!");
         }
 
-        const { customerId, subscription } = await this.getBillingInfo(account);
+        await this._sync(account);
+
+        const { customerId, subscription } = account.billing!;
 
         // const sub = await this._stripe.subscriptions.retrieve(subscription!.id);
 
@@ -207,20 +231,40 @@ export class StripeBillingProvider implements BillingProvider {
         // console.log([...items.entries()].map(([ts, amount]) => ({ due: new Date(ts * 1000), amount })));
     }
 
-    private async _getOrCreateCustomer({ email }: { email: string }): Promise<Stripe.customers.ICustomer> {
-        let {
-            data: [customer]
-        } = await this._stripe.customers.list({ email });
+    private async _sync(acc: Account | Org): Promise<void> {
+        const customer = acc.billing
+            ? await this._stripe.customers.retrieve(acc.billing.customerId)
+            : await this._stripe.customers.create({
+                  metadata: {
+                      account: acc instanceof Account ? acc.id : "",
+                      org: acc instanceof Org ? acc.id : ""
+                  }
+              });
 
-        // console.log("customer: ", customer);
+        acc.billing = parseCustomer(customer);
 
-        if (!customer) {
-            customer = await this._stripe.customers.create({
-                email,
-                plan: this._availablePlans.find(p => p.default)!.id
-            });
-        }
+        const sub = acc.billing.subscription;
 
-        return customer;
+        Object.assign(
+            acc.quota,
+            sub
+                ? {
+                      storage: sub.storage,
+                      items: sub.items,
+                      members: sub.members,
+                      groups: sub.groups,
+                      vaults: sub.vaults
+                  }
+                : {
+                      storage: 0,
+                      items: 50,
+                      members: 0,
+                      groups: 0,
+                      vaults: 0
+                  }
+        );
+
+        acc.billing!.availablePlans = [...this._availablePlans.values()];
+        await this.storage.save(acc);
     }
 }

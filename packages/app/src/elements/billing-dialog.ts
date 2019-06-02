@@ -1,5 +1,6 @@
 import { localize as $l, countries } from "@padloc/core/lib/locale";
-import { BillingAddress, UpdateBillingParams } from "@padloc/core/lib/billing";
+import { OrgID } from "@padloc/core/lib/org";
+import { BillingInfo, BillingAddress, UpdateBillingParams } from "@padloc/core/lib/billing";
 import { loadScript } from "../util";
 import { app } from "../init";
 import { element, html, property, query, css } from "./base";
@@ -15,6 +16,7 @@ interface Params {
     title?: string;
     message?: string;
     submitLabel?: string;
+    org?: OrgID;
 }
 
 @element("pl-billing-dialog")
@@ -45,8 +47,14 @@ export class BillingDialog extends Dialog<Params | undefined, void> {
     @property()
     private _isBusiness: boolean = false;
 
+    @property()
+    private _org?: OrgID;
+
     @query("#submitButton")
     private _submitButton: LoadingButton;
+
+    @query("#emailInput")
+    private _emailInput: Input;
 
     @query("#nameInput")
     private _nameInput: Input;
@@ -69,12 +77,17 @@ export class BillingDialog extends Dialog<Params | undefined, void> {
     private _stripe: any;
     private _cardElement: any;
 
-    async show({ condensed, title, message, submitLabel }: Params = {}) {
+    private get _billingInfo() {
+        return this._org ? app.getOrg(this._org)!.billing : app.account!.billing;
+    }
+
+    async show({ condensed, title, message, submitLabel, org }: Params = {}) {
+        this._org = org;
         this.condensed = condensed || false;
         this.dialogTitle = title || $l("Update Billing Info");
         this.message = message || "";
         this.submitLabel = submitLabel || $l("Save");
-        this._editingPaymentMethod = !app.account!.billing.paymentMethod;
+        this._editingPaymentMethod = !this._billingInfo || !this._billingInfo.paymentMethod;
         // $l(
         //                     "Add your billing info now so you're all set to keep using Padloc once the trial period is over. Don't worry, you won't be charged yet!"
         //                 )
@@ -161,7 +174,14 @@ export class BillingDialog extends Dialog<Params | undefined, void> {
 
         try {
             await app.updateBilling(
-                new UpdateBillingParams({ address, paymentMethod: source ? { source } : undefined, coupon })
+                new UpdateBillingParams({
+                    email: this._emailInput.value,
+                    org: this._org,
+                    account: this._org ? undefined : app.account!.id,
+                    address,
+                    paymentMethod: source ? { source } : undefined,
+                    coupon
+                })
             );
             this._submitButton.success();
             this.done();
@@ -245,13 +265,13 @@ export class BillingDialog extends Dialog<Params | undefined, void> {
     ];
 
     renderContent() {
-        const billingInfo = app.account!.billing;
+        const billingInfo = this._billingInfo || new BillingInfo();
 
-        if (!billingInfo) {
-            return html``;
-        }
+        let { email, address, paymentMethod, discount } = billingInfo;
 
-        const { address, paymentMethod, discount } = billingInfo;
+        email = email || (app.account!.billing && app.account!.billing.email) || app.account!.email;
+        const name = address.name || app.account!.name;
+
         const countryOptions = countries.map(c => Object.assign(c, { toString: () => c.name }));
 
         return html`
@@ -282,7 +302,15 @@ export class BillingDialog extends Dialog<Params | undefined, void> {
             <div ?hidden="condensed">
                 <label>${$l("Billing Address")}</label>
 
-                <pl-input id="nameInput" class="item" .placeholder=${$l("Name")} .value=${address.name}></pl-input>
+                <pl-input
+                    id="emailInput"
+                    class="item"
+                    .type="email"
+                    .placeholder=${$l("Billing Email")}
+                    .value=${email}
+                ></pl-input>
+
+                <pl-input id="nameInput" class="item" .placeholder=${$l("Name")} .value=${name}></pl-input>
 
                 <pl-input
                     id="streetInput"

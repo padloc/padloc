@@ -430,5 +430,5 @@ export interface API {
     deleteAttachment(attachment: DeleteAttachmentParams): Promise<void>;
 
     updateBilling(params: UpdateBillingParams): Promise<void>;
-    getPrice(params: UpdateBillingParams): Promise<void>;
+    // getPrice(params: UpdateBillingParams): Promise<void>;
 }

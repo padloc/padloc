@@ -29,7 +29,7 @@ import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { localize as $l } from "./locale";
-import { QuotaProvider } from "./quota";
+import { BillingProvider, UpdateBillingParams } from "./billing";
 
 const pendingAuths = new Map<string, SRPServer>();
 
@@ -69,7 +69,7 @@ class Controller implements API {
         public messenger: Messenger,
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
-        public quotaProvider: QuotaProvider
+        public billingProvider?: BillingProvider
     ) {}
 
     async requestEmailVerification({ email, purpose }: RequestEmailVerificationParams) {
@@ -249,7 +249,6 @@ class Controller implements API {
 
     async getAccount() {
         const { account } = this._requireAuth();
-        account.quota = await this.quotaProvider.getAccountQuota(account);
         return account;
     }
 
@@ -270,9 +269,6 @@ class Controller implements API {
 
         // Update account object
         Object.assign(account, { name, email, publicKey, keyParams, encryptionParams, encryptedData });
-
-        //update quota
-        account.quota = await this.quotaProvider.getAccountQuota(account);
 
         // Persist changes
         account.updated = new Date();
@@ -319,7 +315,7 @@ class Controller implements API {
 
         // The new auth object has all the information except the account id
         auth.account = account.id;
-        this.device && auth.trustedDevices.push(this.device);
+        this.context.device && auth.trustedDevices.push(this.context.device);
 
         // Revoke all sessions
         await account.sessions.map(s => this.storage.delete(Object.assign(new Session(), s)));
@@ -345,15 +341,16 @@ class Controller implements API {
     async createOrg(org: Org) {
         const { account } = this._requireAuth();
 
+        const existingOrgs = await Promise.all(account.orgs.map(id => this.storage.get(Org, id)));
+        const ownedOrgs = existingOrgs.filter(o => o.owner === account.id);
+
+        if (account.quota.orgs !== -1 && ownedOrgs.length >= account.quota.orgs) {
+            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+        }
+
         org.id = await uuid();
         org.revision = await uuid();
         org.owner = account.id;
-
-        const quota = await this.quotaProvider.getOrgQuota(account, org);
-        if (!quota) {
-            throw new Err(ErrorCode.QUOTA_EXCEEDED);
-        }
-        org.quota = quota;
 
         await this.storage.save(org);
 
@@ -370,12 +367,6 @@ class Controller implements API {
         if (org.owner !== account.id && !org.isMember(account)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
-
-        const quota = await this.quotaProvider.getOrgQuota(account, org);
-        if (!quota) {
-            throw new Err(ErrorCode.QUOTA_EXCEEDED);
-        }
-        org.quota = quota;
 
         return org;
     }
@@ -497,15 +488,11 @@ class Controller implements API {
             });
         }
 
-        // Update org quota
-        const quota = await this.quotaProvider.getOrgQuota(account, org);
-        if (!quota) {
-            throw new Err(ErrorCode.QUOTA_EXCEEDED);
-        }
-        org.quota = quota;
-
         // Check members quota
-        if (members.length > org.quota.members || groups.length > org.quota.groups) {
+        if (
+            (org.quota.members !== -1 && members.length > org.quota.members) ||
+            (org.quota.groups !== -1 && groups.length > org.quota.groups)
+        ) {
             throw new Err(ErrorCode.QUOTA_EXCEEDED);
         }
 
@@ -609,14 +596,8 @@ class Controller implements API {
         org.vaults.push({ id: vault.id, name: vault.name });
         org.revision = await uuid();
 
-        const quota = await this.quotaProvider.getOrgQuota(account, org);
-        if (!quota) {
-            throw new Err(ErrorCode.QUOTA_EXCEEDED);
-        }
-        org.quota = quota;
-
         // Check vault quota of organization
-        if (org.vaults.length > org.quota.vaults) {
+        if (org.quota.vaults !== -1 && org.vaults.length > org.quota.vaults) {
             throw new Err(ErrorCode.QUOTA_EXCEEDED);
         }
 
@@ -740,11 +721,9 @@ class Controller implements API {
               )
             : await this.attachmentStorage.getUsage(vault.id);
 
-        const quota = org
-            ? await this.quotaProvider.getOrgQuota(account, org)
-            : await this.quotaProvider.getAccountQuota(account);
+        const quota = org ? org.quota : account.quota;
 
-        if (!quota || currentUsage + att.size > quota.storage) {
+        if (quota.storage !== -1 && currentUsage + att.size > quota.storage) {
             throw new Err(ErrorCode.QUOTA_EXCEEDED);
         }
 
@@ -783,6 +762,28 @@ class Controller implements API {
         }
 
         await this.attachmentStorage.delete(vaultId, id);
+    }
+
+    async updateBilling(params: UpdateBillingParams) {
+        if (!this.billingProvider) {
+            throw new Err(ErrorCode.NOT_SUPPORTED);
+        }
+        const { account } = this._requireAuth();
+
+        const { account: accId, org: orgId } = params;
+
+        if (accId && accId !== account.id) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        if (orgId) {
+            const org = await this.storage.get(Org, orgId);
+            if (!org.isOwner(account)) {
+                throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+            }
+        }
+
+        await this.billingProvider.updateBilling(params);
     }
 
     private _requireAuth(): { account: Account; session: Session } {
@@ -959,7 +960,7 @@ export class Server extends BaseServer {
         messenger: Messenger,
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
-        public quotaProvider: QuotaProvider
+        public billingProvider?: BillingProvider
     ) {
         super(config, storage, messenger);
     }
@@ -971,7 +972,7 @@ export class Server extends BaseServer {
             this.storage,
             this.messenger,
             this.attachmentStorage,
-            this.quotaProvider
+            this.billingProvider
         );
         const method = req.method;
         const params = req.params || [];
@@ -1077,6 +1078,10 @@ export class Server extends BaseServer {
 
             case "deleteAttachment":
                 await ctlr.deleteAttachment(new DeleteAttachmentParams().fromRaw(params[0]));
+                break;
+
+            case "updateBilling":
+                await ctlr.updateBilling(new UpdateBillingParams().fromRaw(params[0]));
                 break;
 
             default:

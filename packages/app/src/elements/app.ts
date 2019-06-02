@@ -184,6 +184,8 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
                     <pl-items-list ?showing=${this._view === this._items}></pl-items-list>
                 </div>
             </div>
+
+            <slot></slot>
         `;
     }
 

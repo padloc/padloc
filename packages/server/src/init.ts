@@ -25,9 +25,12 @@ async function init() {
     const storage = new LevelDBStorage(process.env.PL_DB_PATH || "db");
     const attachmentStorage = new FileSystemStorage({ path: process.env.PL_ATTACHMENTS_PATH || "attachments" });
     // const billingProvider = new StubBillingProvider();
-    const billingProvider = new StripeBillingProvider({
-        stripeSecret: process.env.PL_STRIPE_SECRET || ""
-    });
+    const billingProvider = new StripeBillingProvider(
+        {
+            stripeSecret: process.env.PL_STRIPE_SECRET || ""
+        },
+        storage
+    );
 
     await billingProvider.init();
 

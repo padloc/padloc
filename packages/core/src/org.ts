@@ -24,6 +24,7 @@ import { Vault, VaultID } from "./vault";
 import { Account, AccountID } from "./account";
 import { Invite, InviteID } from "./invite";
 import { OrgQuota } from "./quota";
+import { BillingInfo } from "./billing";
 
 /** Role of a member within an organization, each associated with certain priviliges */
 export enum OrgRole {
@@ -263,6 +264,8 @@ export class Org extends SharedContainer implements Storable {
 
     quota: OrgQuota = new OrgQuota();
 
+    billing?: BillingInfo;
+
     toRaw() {
         return {
             ...super.toRaw(["privateKey", "invitesKey"]),
@@ -294,10 +297,11 @@ export class Org extends SharedContainer implements Storable {
         invites,
         signingParams,
         quota,
+        billing,
         ...rest
     }: any) {
         this.signingParams.fromRaw(signingParams);
-        this.quota.fromRaw(quota);
+        quota && this.quota.fromRaw(quota);
 
         Object.assign(this, {
             id,
@@ -309,7 +313,8 @@ export class Org extends SharedContainer implements Storable {
             members: members.map((m: any) => new OrgMember().fromRaw(m)),
             groups: groups.map((g: any) => new Group().fromRaw(g)),
             invites: invites.map((g: any) => new Invite().fromRaw(g)),
-            vaults
+            vaults,
+            billing: billing && new BillingInfo().fromRaw(billing)
         });
 
         return super.fromRaw(rest);
