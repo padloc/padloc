@@ -523,6 +523,34 @@ class Controller implements API {
         return org;
     }
 
+    async deleteOrg(id: OrgID) {
+        const { account } = this._requireAuth();
+
+        const org = await this.storage.get(Org, id);
+
+        if (!org.isOwner(account)) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        // Delete all associated vaults
+        await Promise.all(org.vaults.map(v => this.storage.delete(Object.assign(new Vault(), v))));
+
+        // Remove org from all member accounts
+        await Promise.all(
+            org.members.map(async member => {
+                const acc = await this.storage.get(Account, member.id);
+                acc.orgs = acc.orgs.filter(id => id !== org.id);
+                await this.storage.save(acc);
+            })
+        );
+
+        if (this.billingProvider && org.billing) {
+            await this.billingProvider.delete(org.billing);
+        }
+
+        await this.storage.delete(org);
+    }
+
     async getVault(id: VaultID) {
         const { account } = this._requireAuth();
 
@@ -787,7 +815,7 @@ class Controller implements API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        await this.billingProvider.updateBilling(params);
+        await this.billingProvider.update(params);
     }
 
     async getPlans() {
@@ -1047,6 +1075,13 @@ export class Server extends BaseServer {
 
             case "updateOrg":
                 res.result = (await ctlr.updateOrg(new Org().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "deleteOrg":
+                if (typeof params[0] !== "string") {
+                    throw new Err(ErrorCode.BAD_REQUEST);
+                }
+                await ctlr.deleteOrg(params[0]);
                 break;
 
             case "getVault":

@@ -364,6 +364,8 @@ export interface API {
      */
     updateOrg(org: Org): Promise<Org>;
 
+    deleteOrg(id: OrgID): Promise<void>;
+
     /**
      * Create a new vault
      *

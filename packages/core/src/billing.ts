@@ -199,7 +199,8 @@ export class UpdateBillingParams extends Serializable {
 }
 
 export interface BillingProvider {
-    updateBilling(update?: UpdateBillingParams): Promise<void>;
+    update(params: UpdateBillingParams): Promise<void>;
+    delete(billingInfo: BillingInfo): Promise<void>;
     getPlans(): Promise<Plan[]>;
 }
 //

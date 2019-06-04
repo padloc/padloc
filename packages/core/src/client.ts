@@ -160,6 +160,10 @@ export class Client extends BaseClient implements API {
         return new Org().fromRaw(res.result);
     }
 
+    async deleteOrg(id: OrgID): Promise<void> {
+        await this.call("deleteOrg", [id]);
+    }
+
     async getVault(id: VaultID): Promise<Vault> {
         const res = await this.call("getVault", [id]);
         return new Vault().fromRaw(res.result);

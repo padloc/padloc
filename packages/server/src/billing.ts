@@ -126,7 +126,7 @@ export class StripeBillingProvider implements BillingProvider {
         this._availablePlans = plans.data.map(p => parsePlan(p)).filter(p => p.available);
     }
 
-    async updateBilling({ account, org, email, plan, members, paymentMethod, address, coupon }: UpdateBillingParams) {
+    async update({ account, org, email, plan, members, paymentMethod, address, coupon }: UpdateBillingParams) {
         if (!account && !org) {
             throw new Err(ErrorCode.BAD_REQUEST, "Either 'account' or 'org' parameter required!");
         }
@@ -232,6 +232,17 @@ export class StripeBillingProvider implements BillingProvider {
         console.log(items.entries());
 
         // console.log([...items.entries()].map(([ts, amount]) => ({ due: new Date(ts * 1000), amount })));
+    }
+
+    async delete(billingInfo: BillingInfo) {
+        try {
+            await this._stripe.customers.del(billingInfo.customerId);
+        } catch (e) {
+            // If the customer is already gone we can ignore the error
+            if (e.code !== "resource_missing") {
+                throw e;
+            }
+        }
     }
 
     private async _sync(acc: Account | Org): Promise<void> {

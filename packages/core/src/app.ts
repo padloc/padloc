@@ -1005,9 +1005,13 @@ export class App {
         if (!this.account) {
             return;
         }
+
         try {
             await Promise.all(this.account.orgs.map(id => this.fetchOrg(id)));
         } catch (e) {}
+
+        // Remove orgs that the account is no longer a member of
+        this.setState({ orgs: this.state.orgs.filter(org => this.account!.orgs.includes(org.id)) });
     }
 
     /** Fetch the [[Org]]anization object with the given `id` */
@@ -1047,6 +1051,11 @@ export class App {
         this.putOrg(org);
         await this.save();
         return org;
+    }
+
+    async deleteOrg(id: OrgID) {
+        await this.api.deleteOrg(id);
+        await this.synchronize();
     }
 
     /** Creates a new [[Group]] in the given `org` */
