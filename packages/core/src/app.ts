@@ -988,7 +988,7 @@ export class App {
     }
 
     /** Create a new [[Org]]ganization */
-    async createOrg(name: string, type: OrgType = OrgType.Basic): Promise<Org> {
+    async createOrg(name: string, type: OrgType = OrgType.Business): Promise<Org> {
         let org = new Org();
         org.name = name;
         org.type = type;
@@ -1272,7 +1272,7 @@ export class App {
 
     async updateBilling(params: UpdateBillingParams) {
         await this.api.updateBilling(params);
-        await this.fetchAccount();
+        params.org ? await this.fetchOrg(params.org) : await this.fetchAccount();
     }
 
     /**

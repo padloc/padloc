@@ -288,7 +288,7 @@ export class Input extends BaseElement {
     @listen("change", "input, textarea")
     _changeHandler(e: Event) {
         e.stopPropagation();
-        this.dispatch("change", { prevValue: this._prevValue, valud: this.value }, true, true);
+        this.dispatch("change", { prevValue: this._prevValue, value: this.value }, true, true);
         this._prevValue = this.value;
     }
 

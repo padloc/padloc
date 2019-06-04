@@ -73,16 +73,22 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             .vault,
+            .org,
             .menu-tag {
                 height: 35px;
                 font-size: var(--font-size-tiny);
             }
 
             .vault pl-icon,
+            .org pl-icon,
             .menu-tag pl-icon {
                 width: 30px;
                 height: 30px;
                 font-size: 90%;
+            }
+
+            .new {
+                opacity: 0.6;
             }
 
             pl-logo {
@@ -140,22 +146,31 @@ export class Menu extends StateMixin(BaseElement) {
 
                             <div>${$l("Settings")}</div>
                         </li>
-
-                        ${app.orgs.map(
-                            org => html`
-                                <li
-                                    class="tap"
-                                    ?selected=${this.selected === `org/${org.id}`}
-                                    @click=${() => router.go(`org/${org.id}`)}
-                                >
-                                    <pl-icon icon="org"></pl-icon>
-
-                                    <div>${org.name}</div>
-                                </li>
-                            `
-                        )}
                     </ul>
                 </nav>
+
+                <h3>${$l("Orgs & Teams")}</h3>
+                <ul>
+                    ${app.orgs.map(
+                        org => html`
+                            <li
+                                class="org tap"
+                                ?selected=${this.selected === `org/${org.id}`}
+                                @click=${() => router.go(`org/${org.id}`)}
+                            >
+                                <pl-icon icon="org"></pl-icon>
+
+                                <div>${org.name}</div>
+                            </li>
+                        `
+                    )}
+
+                    <li class="new org tap" @click=${() => this.dispatch("create-org")}>
+                        <pl-icon icon="add"></pl-icon>
+
+                        <div>${$l("New Org")}</div>
+                    </li>
+                </ul>
 
                 <h3>${$l("Vaults")}</h3>
                 <ul>

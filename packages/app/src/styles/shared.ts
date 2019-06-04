@@ -233,7 +233,7 @@ export const shared = css`
         margin: 0;
     }
 
-    li, .item {
+    .item {
         border-radius: var(--border-radius);
         background: var(--color-tertiary);
         border: solid 1px var(--color-shade-1);
@@ -242,7 +242,7 @@ export const shared = css`
         /*box-shadow: 0px 5px 5px -5px var(--color-shade-2), 0 0 2px var(--color-shade-1);*/
     }
 
-    li.padded, .item.padded {
+    .item.padded {
         padding: 8px;
     }
 

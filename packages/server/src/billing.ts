@@ -22,7 +22,7 @@ function parsePlan({
     id,
     amount,
     nickname,
-    metadata: { description, storage, groups, vaults, min, max, available, features, orgType, default: def, color }
+    metadata: { description, storage, groups, vaults, min, max, available, features, type, default: def, color }
 }: Stripe.plans.IPlan) {
     return new Plan().fromRaw({
         id,
@@ -37,7 +37,7 @@ function parsePlan({
         default: def === "true",
         cost: amount,
         features: (features && features.trim().split(/\n/)) || [],
-        orgType: orgType ? parseInt(orgType) : -1,
+        type: type ? parseInt(type) : 0,
         color: color || ""
     });
 }
@@ -123,10 +123,7 @@ export class StripeBillingProvider implements BillingProvider {
     async init() {
         const plans = await this._stripe.plans.list();
 
-        this._availablePlans = plans.data
-            .map(p => parsePlan(p))
-            .filter(p => p.available)
-            .sort((a, b) => a.orgType - b.orgType);
+        this._availablePlans = plans.data.map(p => parsePlan(p)).filter(p => p.available);
     }
 
     async updateBilling({ account, org, email, plan, members, paymentMethod, address, coupon }: UpdateBillingParams) {
@@ -134,7 +131,7 @@ export class StripeBillingProvider implements BillingProvider {
             throw new Err(ErrorCode.BAD_REQUEST, "Either 'account' or 'org' parameter required!");
         }
 
-        const acc = account ? await this.storage.get(Account, account) : await this.storage.get(Org, org!);
+        const acc = org ? await this.storage.get(Org, org) : await this.storage.get(Account, account!);
 
         await this._sync(acc);
 
@@ -175,17 +172,23 @@ export class StripeBillingProvider implements BillingProvider {
                 params.quantity = members;
             }
 
-            params.trial_end = "now";
+            // params.trial_end = "now";
 
-            if (info.subscription) {
-                console.log("updating subscription");
-                await this._stripe.subscriptions.update(
-                    info.subscription.id,
-                    params as Stripe.subscriptions.ISubscriptionUpdateOptions
-                );
-            } else {
-                console.log("creating subscription");
-                await this._stripe.subscriptions.create(params as Stripe.subscriptions.ISubscriptionCreationOptions);
+            try {
+                if (info.subscription) {
+                    console.log("updating subscription");
+                    await this._stripe.subscriptions.update(
+                        info.subscription.id,
+                        params as Stripe.subscriptions.ISubscriptionUpdateOptions
+                    );
+                } else {
+                    console.log("creating subscription");
+                    await this._stripe.subscriptions.create(
+                        params as Stripe.subscriptions.ISubscriptionCreationOptions
+                    );
+                }
+            } catch (e) {
+                throw new Err(ErrorCode.BILLING_ERROR, e.message);
             }
         }
 
@@ -264,7 +267,10 @@ export class StripeBillingProvider implements BillingProvider {
                   }
         );
 
-        acc.billing!.availablePlans = [...this._availablePlans.values()];
         await this.storage.save(acc);
+    }
+
+    async getPlans() {
+        return [...this._availablePlans.values()];
     }
 }

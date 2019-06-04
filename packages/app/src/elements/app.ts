@@ -18,6 +18,8 @@ import { clearClipboard } from "../clipboard.js";
 import { Menu } from "./menu.js";
 import { InviteDialog } from "./invite-dialog.js";
 import { ItemDialog } from "./item-dialog.js";
+import { CreateOrgDialog } from "./create-org-dialog.js";
+import { ChoosePlanDialog } from "./choose-plan-dialog.js";
 
 // const cordovaReady = new Promise(resolve => {
 //     document.addEventListener("deviceready", resolve);
@@ -45,6 +47,12 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
     @dialog("pl-item-dialog")
     private _itemDialog: ItemDialog;
+
+    @dialog("pl-choose-plan-dialog")
+    private _choosePlanDialog: ChoosePlanDialog;
+
+    @dialog("pl-create-org-dialog")
+    private _createOrgDialog: CreateOrgDialog;
 
     @property()
     private _view: View | null;
@@ -401,6 +409,19 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
     _androidBack() {
         if (!router.back()) {
             navigator.Backbutton && navigator.Backbutton.goBack();
+        }
+    }
+
+    @listen("create-org")
+    async _createOrg() {
+        const plan = await this._choosePlanDialog.show();
+        if (!plan) {
+            return;
+        }
+
+        const org = await this._createOrgDialog.show(plan);
+        if (org) {
+            router.go(`org/${org.id}`);
         }
     }
 }

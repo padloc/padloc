@@ -21,7 +21,7 @@ import { Invite } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Err, ErrorCode } from "./error";
 import { Attachment } from "./attachment";
-import { UpdateBillingParams } from "./billing";
+import { Plan, UpdateBillingParams } from "./billing";
 
 /**
  * Client state, keeping track of [[session]], [[account]] and [[device]] info
@@ -215,7 +215,8 @@ export class Client extends BaseClient implements API {
         await this.call("updateBilling", [params.toRaw()]);
     }
 
-    async getPrice(params: UpdateBillingParams): Promise<void> {
-        await this.call("getPrice", [params.toRaw()]);
+    async getPlans(): Promise<Plan[]> {
+        const res = await this.call("getPlans");
+        return res.result.map((p: any) => new Plan().fromRaw(p));
     }
 }

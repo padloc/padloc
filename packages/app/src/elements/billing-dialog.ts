@@ -20,7 +20,7 @@ interface Params {
 }
 
 @element("pl-billing-dialog")
-export class BillingDialog extends Dialog<Params | undefined, void> {
+export class BillingDialog extends Dialog<Params | undefined, UpdateBillingParams> {
     @property()
     stripePubKey = "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy";
 
@@ -146,11 +146,12 @@ export class BillingDialog extends Dialog<Params | undefined, void> {
         }
 
         this._error = "";
-        this._submitButton.start();
 
-        let source = "";
+        let paymentMethod;
 
         if (this._editingPaymentMethod) {
+            this._submitButton.start();
+
             const { token, error } = await this._stripe.createToken(this._cardElement);
 
             if (error) {
@@ -159,7 +160,12 @@ export class BillingDialog extends Dialog<Params | undefined, void> {
                 return;
             }
 
-            source = token.id;
+            this._submitButton.success();
+
+            paymentMethod = {
+                name: `${token.card.brand} •••• •••• •••• ${token.card.last4}`,
+                source: token.id
+            };
         }
 
         const address = new BillingAddress().fromRaw({
@@ -172,23 +178,16 @@ export class BillingDialog extends Dialog<Params | undefined, void> {
 
         const coupon = this._couponInput.value;
 
-        try {
-            await app.updateBilling(
-                new UpdateBillingParams({
-                    email: this._emailInput.value,
-                    org: this._org,
-                    account: this._org ? undefined : app.account!.id,
-                    address,
-                    paymentMethod: source ? { source } : undefined,
-                    coupon
-                })
-            );
-            this._submitButton.success();
-            this.done();
-        } catch (e) {
-            this._error = e.message || $l("Something went wrong. Please try again later!");
-            this._submitButton.fail();
-        }
+        this.done(
+            new UpdateBillingParams({
+                email: this._emailInput.value,
+                org: this._org,
+                account: this._org ? undefined : app.account!.id,
+                address,
+                paymentMethod,
+                coupon
+            })
+        );
     }
 
     static styles = [

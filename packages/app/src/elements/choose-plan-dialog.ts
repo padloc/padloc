@@ -1,7 +1,6 @@
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
-import { OrgType } from "@padloc/core/lib/org";
 import { localize as $l } from "@padloc/core/lib/locale";
-import { Plan } from "@padloc/core/lib/billing";
+import { Plan, PlanType } from "@padloc/core/lib/billing";
 import { mixins } from "../styles";
 import { app } from "../init";
 import { element, html, property, css } from "./base";
@@ -12,21 +11,22 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
     @property()
     private _plans: Plan[] = [];
 
-    @property()
-    private _page: "personal" | "business" = "personal";
-
-    readonly preventDismiss = true;
-
     async show() {
         const result = super.show();
-        const billingInfo = app.account!.billing!;
-        this._plans = billingInfo.availablePlans;
+        this._plans = (await app.api.getPlans())
+            .filter(p => [PlanType.Family, PlanType.Team, PlanType.Business].includes(p.type))
+            .sort((a, b) => a.type - b.type);
         return result;
     }
 
     static styles = [
         ...Dialog.styles,
         css`
+            h2 {
+                color: var(--color-tertiary);
+                margin: 0;
+            }
+
             .outer {
                 padding: 0;
             }
@@ -58,15 +58,10 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
                 flex-direction: column;
                 --color-highlight: var(--color-shade-2);
                 --color-highlight-text: var(--color-secondary);
-                box-shadow: rgba(0, 0, 0, 0.2) 0 0 10px;
                 transition: transform 0.2s;
                 cursor: pointer;
                 scroll-snap-align: center;
                 text-align: center;
-            }
-
-            .plan:hover {
-                transform: scale(1.03);
             }
 
             .plan-header {
@@ -220,25 +215,17 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
         `;
     }
 
-    renderContent() {
+    renderBefore() {
         return html`
-            <div class="tabs">
-                <div class="tab tap" ?active=${this._page === "personal"} @click=${() => (this._page = "personal")}>
-                    Personal
-                </div>
-                <div class="tab tap" ?active=${this._page === "business"} @click=${() => (this._page = "business")}>
-                    Business
-                </div>
-            </div>
+            <h2>${$l("Choose A Plan")}</h2>
+        `;
+    }
 
-            <div class="plans" ?hidden=${this._page !== "personal"}>
-                ${this._plans.filter(p => [OrgType.Basic, -1].includes(p.orgType)).map(plan => this._renderPlan(plan))}
-            </div>
-
-            <div class="plans" ?hidden=${this._page !== "business"}>
-                ${this._plans
-                    .filter(p => [OrgType.Team, OrgType.Business].includes(p.orgType))
-                    .map(plan => this._renderPlan(plan))}
+    renderContent() {
+        const plans = this._plans;
+        return html`
+            <div class="plans">
+                ${plans.map(plan => this._renderPlan(plan))}
             </div>
         `;
     }

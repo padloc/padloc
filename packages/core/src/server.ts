@@ -341,6 +341,10 @@ class Controller implements API {
     async createOrg(org: Org) {
         const { account } = this._requireAuth();
 
+        if (!org.name) {
+            throw new Err(ErrorCode.BAD_REQUEST, "Please provide an organization name!");
+        }
+
         const existingOrgs = await Promise.all(account.orgs.map(id => this.storage.get(Org, id)));
         const ownedOrgs = existingOrgs.filter(o => o.owner === account.id);
 
@@ -723,7 +727,7 @@ class Controller implements API {
 
         const quota = org ? org.quota : account.quota;
 
-        if (quota.storage !== -1 && currentUsage + att.size > quota.storage) {
+        if (quota.storage !== -1 && currentUsage + att.size > quota.storage * 1e9) {
             throw new Err(ErrorCode.QUOTA_EXCEEDED);
         }
 
@@ -770,20 +774,27 @@ class Controller implements API {
         }
         const { account } = this._requireAuth();
 
-        const { account: accId, org: orgId } = params;
+        params.account = params.account || account.id;
 
-        if (accId && accId !== account.id) {
-            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
-        }
+        const { account: accId, org: orgId } = params;
 
         if (orgId) {
             const org = await this.storage.get(Org, orgId);
             if (!org.isOwner(account)) {
                 throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
             }
+        } else if (accId && accId !== account.id) {
+            throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
         await this.billingProvider.updateBilling(params);
+    }
+
+    async getPlans() {
+        if (!this.billingProvider) {
+            throw new Err(ErrorCode.NOT_SUPPORTED);
+        }
+        return this.billingProvider.getPlans();
     }
 
     private _requireAuth(): { account: Account; session: Session } {
@@ -1082,6 +1093,11 @@ export class Server extends BaseServer {
 
             case "updateBilling":
                 await ctlr.updateBilling(new UpdateBillingParams().fromRaw(params[0]));
+                break;
+
+            case "getPlans":
+                const plans = await ctlr.getPlans();
+                res.result = plans.map(p => p.toRaw());
                 break;
 
             default:

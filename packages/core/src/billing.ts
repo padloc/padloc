@@ -1,9 +1,18 @@
 import { AccountID } from "./account";
-import { OrgType, OrgID } from "./org";
+import { OrgID } from "./org";
 import { Serializable } from "./encoding";
+
+export enum PlanType {
+    Free,
+    Premium,
+    Family,
+    Team,
+    Business
+}
 
 export class Plan extends Serializable {
     id = "";
+    type: PlanType = PlanType.Free;
     name = "";
     description = "";
     items: number = -1;
@@ -15,7 +24,6 @@ export class Plan extends Serializable {
     available = false;
     cost: number = 0;
     features: string[] = [];
-    orgType: OrgType | -1 = -1;
     default = false;
     color = "";
 
@@ -35,7 +43,7 @@ export class Plan extends Serializable {
             typeof this.available === "boolean" &&
             Array.isArray(this.features) &&
             this.features.every(f => typeof f === "string") &&
-            (this.orgType === -1 || this.orgType in OrgType) &&
+            (this.type === -1 || this.type in PlanType) &&
             typeof this.default === "boolean"
         );
     }
@@ -129,15 +137,13 @@ export class BillingInfo extends Serializable {
     org: OrgID = "";
     email: string = "";
     subscription: Subscription | null = null;
-    availablePlans: Plan[] = [];
     paymentMethod: PaymentMethod | null = null;
     address: BillingAddress = new BillingAddress();
     discount: Discount | null = null;
 
-    fromRaw({ customerId, account, org, email, subscription, availablePlans, paymentMethod, address, discount }: any) {
+    fromRaw({ customerId, account, org, email, subscription, paymentMethod, address, discount }: any) {
         return super.fromRaw({
             subscription: (subscription && new Subscription().fromRaw(subscription)) || null,
-            availablePlans: availablePlans.map((p: any) => new Plan().fromRaw(p)),
             customerId,
             account,
             org,
@@ -155,7 +161,7 @@ export class UpdateBillingParams extends Serializable {
     email?: string;
     plan?: string;
     members?: number;
-    paymentMethod?: any;
+    paymentMethod?: { name: string } & any;
     address?: BillingAddress;
     coupon?: string;
 
@@ -194,6 +200,7 @@ export class UpdateBillingParams extends Serializable {
 
 export interface BillingProvider {
     updateBilling(update?: UpdateBillingParams): Promise<void>;
+    getPlans(): Promise<Plan[]>;
 }
 //
 // const stubPlans: Plan[] = [
