@@ -17,6 +17,12 @@ export class VirtualList<T> extends BaseElement {
     @property()
     renderItem: (data: T) => TemplateResult;
 
+    @property()
+    buffer: number = 1;
+
+    @property()
+    guard?: (data: T) => any[];
+
     get firstIndex() {
         return this._firstIndex;
     }
@@ -28,7 +34,6 @@ export class VirtualList<T> extends BaseElement {
     private _lastIndex: number;
     private _height: number;
     private _width: number;
-    private _elementCount: number;
     private _canvasHeight: number;
     private _itemWidth: number;
     private _itemsPerRow: number;
@@ -47,16 +52,17 @@ export class VirtualList<T> extends BaseElement {
     @observe("data", "itemMinWidth", "minItemWidth", "itemHeight")
     @listen("resize", window)
     _updateBounds() {
-        this._width = this.offsetWidth;
-        this._height = this.offsetHeight;
+        const { width, height } = getComputedStyle(this);
+        this._width = parseInt(width!);
+        this._height = parseInt(height!);
         this._itemsPerRow = Math.floor(this._width / (this.minItemWidth || this._width));
         this._itemWidth = this._width / this._itemsPerRow;
         const rowCount = Math.ceil(this.data.length / this._itemsPerRow);
         this._canvasHeight = rowCount * this.itemHeight;
-        this._elementCount = Math.ceil(this._height / this.itemHeight + 1) * this._itemsPerRow;
+        const elementCount = Math.ceil(this._height / this.itemHeight + 2 * this.buffer) * this._itemsPerRow;
 
         const els = [];
-        for (let i = 0; i < this._elementCount; i++) {
+        for (let i = 0; i < elementCount; i++) {
             els.push({ data: null, x: 0, y: 0 });
         }
         this._elements = els;
@@ -67,7 +73,7 @@ export class VirtualList<T> extends BaseElement {
     _updateIndizes() {
         const oldFirstIndex = this._firstIndex;
         const oldLastIndex = this._lastIndex;
-        this._firstIndex = Math.max(Math.floor(this.scrollTop / this.itemHeight) * this._itemsPerRow, 0);
+        this._firstIndex = Math.max(Math.floor(this.scrollTop / this.itemHeight - this.buffer) * this._itemsPerRow, 0);
         this._lastIndex = Math.min(this._firstIndex + this._elements.length, this.data.length) - 1;
         if (this._firstIndex !== oldFirstIndex || this._lastIndex !== oldLastIndex) {
             this._updateElements();
@@ -114,8 +120,8 @@ export class VirtualList<T> extends BaseElement {
         const { _itemWidth: w, itemHeight: h } = this;
         return html`
             <div class="content" style="position: relative; height: ${this._canvasHeight}px">
-                ${this._elements.map(({ x, y, data }) =>
-                    guard([x, y, data], () => {
+                ${this._elements.map(({ x, y, data }) => {
+                    const render = () => {
                         return data !== null
                             ? html`
                                   <div
@@ -126,8 +132,12 @@ export class VirtualList<T> extends BaseElement {
                                   </div>
                               `
                             : html``;
-                    })
-                )}
+                    };
+
+                    const deps = [x, y, data, w, h];
+                    this.guard && data && deps.push(...this.guard(data));
+                    return this.guard ? guard(deps, render) : render();
+                })}
             </div>
         `;
     }
