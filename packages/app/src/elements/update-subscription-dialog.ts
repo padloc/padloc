@@ -74,7 +74,10 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
 
     private async _changePlan() {
         this.open = false;
-        this.plan = await this._choosePlanDialog.show();
+        const plan = await this._choosePlanDialog.show();
+        if (plan) {
+            this.plan = plan;
+        }
         this.open = true;
     }
 
