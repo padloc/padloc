@@ -1,6 +1,7 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { Invite } from "@padloc/core/lib/invite.js";
 import { OrgMember, OrgRole, Group } from "@padloc/core/lib/org.js";
+import { BillingInfo } from "@padloc/core/lib/billing.js";
 import { StateMixin } from "../mixins/state.js";
 import { shared, mixins } from "../styles";
 import { dialog, alert, choose, confirm } from "../dialog.js";
@@ -12,6 +13,9 @@ import { VaultDialog } from "./vault-dialog.js";
 import { GroupDialog } from "./group-dialog.js";
 import { MemberDialog } from "./member-dialog.js";
 import { CreateInvitesDialog } from "./create-invites-dialog.js";
+import { BillingDialog } from "./billing-dialog.js";
+import { UpdateSubscriptionDialog } from "./update-subscription-dialog.js";
+import { LoadingButton } from "./loading-button.js";
 import "./member-item.js";
 import "./group-item.js";
 import "./vault-item.js";
@@ -22,6 +26,9 @@ import "./icon.js";
 export class OrgView extends StateMixin(View) {
     @property()
     orgId: string = "";
+
+    @query("#billingButton")
+    private _billingButton: LoadingButton;
 
     @query("#filterMembersInput")
     private _filterMembersInput: Input;
@@ -35,15 +42,18 @@ export class OrgView extends StateMixin(View) {
     @dialog("pl-member-dialog")
     private _memberDialog: MemberDialog;
 
-    @dialog("pl-create-invites-dialog")
-    private _createInvitesDialog: CreateInvitesDialog;
+    @dialog("pl-billing-dialog")
+    private _billingDialog: BillingDialog;
+
+    @dialog("pl-update-subscription-dialog")
+    private _updateSubscriptionDialog: UpdateSubscriptionDialog;
 
     private get _org() {
         return app.getOrg(this.orgId);
     }
 
     @property()
-    private _page: "members" | "groups" | "vaults" | "invites" = "members";
+    private _page: "members" | "groups" | "vaults" | "invites" | "settings" = "members";
 
     @property()
     private _membersFilter: string = "";
@@ -126,6 +136,59 @@ export class OrgView extends StateMixin(View) {
         }
     }
 
+    private async _updateBilling() {
+        if (this._billingButton.state === "loading") {
+            return;
+        }
+
+        const org = this._org!;
+        const params = await this._billingDialog.show({ billingInfo: org.billing });
+        if (params) {
+            this._billingButton.start();
+            params.org = org.id;
+            try {
+                await app.updateBilling(params);
+                this._billingButton.success();
+            } catch (e) {
+                this._billingButton.fail();
+                throw e;
+            }
+        }
+    }
+
+    private async _updateSubscription() {
+        this._updateSubscriptionDialog.show(this._org!);
+    }
+
+    private async _deleteOrg() {
+        const deleted = await prompt(
+            $l(
+                "Are you sure you want to delete this organization? " +
+                    "All associated vaults the data within them will be lost! " +
+                    "This action can not be undone."
+            ),
+            {
+                type: "destructive",
+                title: $l("Delete Organization"),
+                confirmLabel: $l("Delete"),
+                placeholder: $l("Type 'DELETE' to confirm"),
+                validate: async val => {
+                    if (val !== "DELETE") {
+                        throw $l("Type 'DELETE' to confirm");
+                    }
+
+                    await app.deleteOrg(this._org!.id);
+
+                    return val;
+                }
+            }
+        );
+
+        if (deleted) {
+            router.go("");
+        }
+    }
+
     @observe("orgId")
     _clearMembersFilter() {
         this._membersFilter = this._filterMembersInput.value = "";
@@ -195,6 +258,43 @@ export class OrgView extends StateMixin(View) {
                 width: 30px;
                 height: 30px;
             }
+
+            .settings {
+                padding: 8px;
+            }
+
+            .settings > button,
+            .settings > pl-loading-button {
+                text-align: center;
+                display: block;
+                font-weight: bold;
+            }
+
+            .settings .item {
+                margin: 8px 0;
+            }
+
+            .settings h3 {
+                margin: 18px 8px 12px 8px;
+            }
+
+            .subscription {
+                padding: 12px 8px 12px 16px;
+                display: flex;
+                align-items: flex-start;
+            }
+
+            .plan-name {
+                font-size: 130%;
+                font-weight: bold;
+            }
+
+            .payment-method {
+                display: flex;
+                align-items: center;
+                padding: 8px;
+                font-weight: bold;
+            }
         `
     ];
 
@@ -212,6 +312,8 @@ export class OrgView extends StateMixin(View) {
               )
             : org.members;
 
+        const billing = org.billing || new BillingInfo();
+
         return html`
             <header>
                 <div class="header-inner narrow">
@@ -222,27 +324,32 @@ export class OrgView extends StateMixin(View) {
 
                 <div class="tabs">
                     <div class="spacer"></div>
+
                     <div class="tap" ?active=${this._page === "members"} @click=${() => (this._page = "members")}>
                         <pl-icon icon="user"></pl-icon>
                         <div>${$l("Members")}</div>
                     </div>
+
                     <div class="tap" ?active=${this._page === "groups"} @click=${() => (this._page = "groups")}>
                         <pl-icon icon="group"></pl-icon>
                         <div>${$l("Groups")}</div>
                     </div>
+
                     <div class="tap" ?active=${this._page === "vaults"} @click=${() => (this._page = "vaults")}>
                         <pl-icon icon="vaults"></pl-icon>
                         <div>${$l("Vaults")}</div>
                     </div>
+
                     <div
                         class="tap"
-                        ?active=${this._page === "invites"}
-                        @click=${() => (this._page = "invites")}
+                        ?active=${this._page === "settings"}
+                        @click=${() => (this._page = "settings")}
                         ?hidden=${!isOwner}
                     >
-                        <pl-icon icon="invite"></pl-icon>
-                        <div>${$l("Invites")}</div>
+                        <pl-icon icon="settings"></pl-icon>
+                        <div>${$l("Settings")}</div>
                     </div>
+
                     <div class="spacer"></div>
                 </div>
             </header>
@@ -261,21 +368,30 @@ export class OrgView extends StateMixin(View) {
                         </div>
                         <ul>
                             <li
-                                class="new-button tap"
+                                class="new-button item tap"
                                 @click=${this._createInvite}
                                 ?hidden=${!isOwner || members.length < 50}
                             >
                                 <pl-icon icon="invite"></pl-icon>
                                 <div>${$l("Invite New Members")}</div>
                             </li>
+
+                            ${invites.map(
+                                inv => html`
+                                    <li class="item tap" @click=${() => this._showInvite(inv)}>
+                                        <pl-invite-item .invite=${inv}></pl-invite-item>
+                                    </li>
+                                `
+                            )}
                             ${members.map(
                                 member => html`
-                                    <li class="tap member" @click=${() => this._showMember(member)}>
+                                    <li class="tap member item" @click=${() => this._showMember(member)}>
                                         <pl-member-item .member=${member}></pl-member-item>
                                     </li>
                                 `
                             )}
-                            <li class="new-button tap" @click=${this._createInvite} ?hidden=${!isOwner}>
+
+                            <li class="new-button tap item" @click=${this._createInvite} ?hidden=${!isOwner}>
                                 <pl-icon icon="add"></pl-icon>
                                 <div>${$l("Invite New Members")}</div>
                             </li>
@@ -291,7 +407,7 @@ export class OrgView extends StateMixin(View) {
                                     </li>
                                 `
                             )}
-                            <li class="new-button tap" @click=${this._createGroup} ?hidden=${!isAdmin}>
+                            <li class="new-button tap item" @click=${this._createGroup} ?hidden=${!isAdmin}>
                                 <pl-icon icon="add"></pl-icon>
                                 <div>${$l("New Group")}</div>
                             </li>
@@ -311,27 +427,78 @@ export class OrgView extends StateMixin(View) {
                                     </li>
                                 `
                             )}
-                            <li class="new-button tap" @click=${this._createVault}>
+                            <li class="new-button tap item" @click=${this._createVault}>
                                 <pl-icon icon="add"></pl-icon>
                                 <div>${$l("New Vault")}</div>
                             </li>
                         </ul>
                     </div>
 
-                    <div ?hidden=${this._page !== "invites" || !isOwner} class="subview">
-                        <ul>
-                            ${invites.map(
-                                inv => html`
-                                    <li class="tap" @click=${() => this._showInvite(inv)}>
-                                        <pl-invite-item .invite=${inv}></pl-invite-item>
-                                    </li>
-                                `
-                            )}
-                            <li class="new-button tap" @click=${this._createInvite}>
-                                <pl-icon icon="add"></pl-icon>
-                                <div>${$l("Invite New Members")}</div>
-                            </li>
-                        </ul>
+                    <div ?hidden=${this._page !== "settings" || !isOwner} class="subview settings">
+                        <h3>${$l("Subscription")}</h3>
+
+                        ${billing.subscription
+                            ? html`
+                                  <div class="item subscription">
+                                      <div class="flex">
+                                          <div class="plan-name">
+                                              ${billing.subscription.plan.name}
+                                          </div>
+                                          <div class="subscription-quantity">
+                                              ${$l("{0} Seats", billing.subscription.members.toString())}
+                                          </div>
+                                          <div class="subscription-cost">
+                                              ${$l(
+                                                  "${0} / Year",
+                                                  (
+                                                      (billing.subscription.members * billing.subscription.plan.cost) /
+                                                      100
+                                                  ).toFixed(2)
+                                              )}
+                                          </div>
+                                      </div>
+                                      <div>
+                                          <pl-icon class="tap" icon="edit" @click=${this._updateSubscription}></pl-icon>
+                                      </div>
+                                  </div>
+                              `
+                            : html``}
+
+                        <h3>${$l("Billing Info")}</h3>
+
+                        <div class="payment-method item">
+                            <pl-icon icon="credit"></pl-icon>
+
+                            ${billing.paymentMethod
+                                ? html`
+                                      <div>
+                                          ${billing.paymentMethod.name}
+                                      </div>
+                                  `
+                                : html`
+                                      <div>
+                                          ${$l("Add Billing Info")}
+                                      </div>
+                                  `}
+
+                            <div class="flex"></div>
+
+                            <pl-loading-button
+                                id="billingButton"
+                                class="edit-billing tap icon"
+                                @click=${this._updateBilling}
+                            >
+                                <pl-icon icon="edit"></pl-icon>
+                            </pl-loading-button>
+                        </div>
+
+                        <h3>${$l("General")}</h3>
+
+                        <button class="tap item">${$l("Change Organization Name")}</button>
+
+                        <button class="item tap negative" @click=${this._deleteOrg}>
+                            ${$l("Delete Organization")}
+                        </button>
                     </div>
                 </div>
             </main>

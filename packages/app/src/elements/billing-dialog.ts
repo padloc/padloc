@@ -1,5 +1,4 @@
 import { localize as $l, countries } from "@padloc/core/lib/locale";
-import { OrgID } from "@padloc/core/lib/org";
 import { BillingInfo, BillingAddress, UpdateBillingParams } from "@padloc/core/lib/billing";
 import { loadScript } from "../util";
 import { app } from "../init";
@@ -16,7 +15,7 @@ interface Params {
     title?: string;
     message?: string;
     submitLabel?: string;
-    org?: OrgID;
+    billingInfo?: BillingInfo;
 }
 
 @element("pl-billing-dialog")
@@ -42,13 +41,13 @@ export class BillingDialog extends Dialog<Params | undefined, UpdateBillingParam
     private _error = "";
 
     @property()
+    private _billingInfo: BillingInfo;
+
+    @property()
     private _editingPaymentMethod: boolean = false;
 
     @property()
     private _isBusiness: boolean = false;
-
-    @property()
-    private _org?: OrgID;
 
     @query("#submitButton")
     private _submitButton: LoadingButton;
@@ -77,16 +76,12 @@ export class BillingDialog extends Dialog<Params | undefined, UpdateBillingParam
     private _stripe: any;
     private _cardElement: any;
 
-    private get _billingInfo() {
-        return this._org ? app.getOrg(this._org)!.billing : app.account!.billing;
-    }
-
-    async show({ condensed, title, message, submitLabel, org }: Params = {}) {
-        this._org = org;
+    async show({ condensed, title, message, submitLabel, billingInfo }: Params = {}) {
         this.condensed = condensed || false;
         this.dialogTitle = title || $l("Update Billing Info");
         this.message = message || "";
         this.submitLabel = submitLabel || $l("Save");
+        this._billingInfo = billingInfo || new BillingInfo();
         this._editingPaymentMethod = !this._billingInfo || !this._billingInfo.paymentMethod;
         // $l(
         //                     "Add your billing info now so you're all set to keep using Padloc once the trial period is over. Don't worry, you won't be charged yet!"
@@ -181,8 +176,6 @@ export class BillingDialog extends Dialog<Params | undefined, UpdateBillingParam
         this.done(
             new UpdateBillingParams({
                 email: this._emailInput.value,
-                org: this._org,
-                account: this._org ? undefined : app.account!.id,
                 address,
                 paymentMethod,
                 coupon

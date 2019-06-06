@@ -72,7 +72,14 @@ export class LoadingButton extends BaseElement {
                 height: 30px;
             }
 
-            ::slotted(pl-icon:first-child) {
+            :host(.icon) {
+                background: transparent !important;
+                border-radius: 100% !important;
+                padding: 0;
+                line-height: 0;
+            }
+
+            :host(:not(.icon)) ::slotted(pl-icon:first-child) {
                 margin: -10px 0 -10px -10px;
             }
         `

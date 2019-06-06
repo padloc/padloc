@@ -228,26 +228,6 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
                 font-weight: bold;
             }
 
-            .change-plan {
-                background: transparent;
-                color: var(--color-tertiary);
-                font-weight: bold;
-                margin: 4px;
-            }
-
-            .features {
-                font-size: var(--font-size-small);
-                margin: 8px 0;
-            }
-
-            .features > * {
-                padding: 10px 15px;
-            }
-
-            .features > :not(:last-child) {
-                border-bottom: solid 1px var(--color-shade-1);
-            }
-
             .quantity-wrapper {
                 display: flex;
                 align-items: center;
