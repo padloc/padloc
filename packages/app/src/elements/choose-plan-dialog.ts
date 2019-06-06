@@ -36,38 +36,44 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
                 box-shadow: none;
                 max-width: 100%;
                 width: 100%;
+                overflow: auto;
+                scroll-snap-type: x mandatory;
+                white-space: nowrap;
+                padding: 12px 24px;
+                text-align: center;
             }
 
             .plans {
-                overflow: auto;
-                scroll-snap-type: x mandatory;
+                min-width: 100%;
                 display: flex;
                 padding: 20px 50px;
-                max-width: 900px;
-                margin: 0 auto;
+                box-sizing: border-box;
+                justify-content: center;
             }
 
             .plan {
-                min-width: 300px;
                 flex: 1;
+                white-space: normal;
+                width: 100%;
+                max-width: 330px;
                 background: var(--color-tertiary);
                 border-radius: var(--border-radius);
-                margin-right: 12px;
                 overflow: hidden;
-                display: flex;
+                display: inline-flex;
                 flex-direction: column;
-                --color-highlight: var(--color-shade-2);
-                --color-highlight-text: var(--color-secondary);
-                transition: transform 0.2s;
                 cursor: pointer;
                 scroll-snap-align: center;
                 text-align: center;
+                will-change: transform;
+            }
+
+            .plan:not(:last-child) {
+                margin-right: 12px;
             }
 
             .plan-header {
                 text-align: center;
                 padding: 20px;
-                /* background: linear-gradient(180deg, #59c6ff 0%, #077cb9 100%); */
                 background: var(--color-highlight);
                 color: var(--color-highlight-text);
                 display: flex;
@@ -214,19 +220,17 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
             </div>
         `;
     }
-
-    renderBefore() {
-        return html`
-            <h2>${$l("Choose A Plan")}</h2>
-        `;
-    }
+    //
+    // renderBefore() {
+    //     return html`
+    //         <h2>${$l("Choose A Plan")}</h2>
+    //     `;
+    // }
 
     renderContent() {
         const plans = this._plans;
         return html`
-            <div class="plans">
-                ${plans.map(plan => this._renderPlan(plan))}
-            </div>
+            ${plans.map(plan => this._renderPlan(plan))}
         `;
     }
 }
