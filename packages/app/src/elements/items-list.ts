@@ -2,7 +2,6 @@ import { VaultItem, Field, Tag } from "@padloc/core/lib/item.js";
 import { Vault, VaultID } from "@padloc/core/lib/vault.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { debounce, wait, escapeRegex } from "@padloc/core/lib/util.js";
-import { repeat } from "lit-html/directives/repeat.js";
 import { cache } from "lit-html/directives/cache.js";
 import { StateMixin } from "../mixins/state.js";
 import { setClipboard } from "../clipboard.js";
@@ -16,6 +15,7 @@ import { Input } from "./input.js";
 import { MoveItemsDialog } from "./move-items-dialog.js";
 import "./icon.js";
 import "./items-filter.js";
+import "./virtual-list.js";
 
 interface ListItem {
     item: VaultItem;
@@ -112,6 +112,7 @@ export class ItemsList extends StateMixin(View) {
         this._filterInput.value = "";
         this._filterInput.blur();
         this._filterShowing = false;
+        this._updateItems();
     }
 
     selectItem(item: ListItem) {
@@ -174,6 +175,7 @@ export class ItemsList extends StateMixin(View) {
 
             main {
                 padding-bottom: 70px;
+                position: relative;
             }
 
             .section-header {
@@ -199,14 +201,15 @@ export class ItemsList extends StateMixin(View) {
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                 grid-gap: var(--gutter-size);
                 padding: 8px;
-                cursor: pointer;
             }
 
             .item {
                 box-sizing: border-box;
                 display: flex;
                 align-items: center;
-                margin: 0;
+                margin: 4px;
+                cursor: pointer;
+                height: 90px;
             }
 
             .item-body {
@@ -343,6 +346,13 @@ export class ItemsList extends StateMixin(View) {
                 font-weight: bold;
                 box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 4px;
             }
+
+            pl-virtual-list {
+                padding: 4px;
+                padding-bottom: 65px;
+                ${mixins.fullbleed()}
+                ${mixins.scroll()}
+            }
         `
     ];
 
@@ -373,9 +383,21 @@ export class ItemsList extends StateMixin(View) {
             </header>
 
             <main id="main">
-                <div class="items">
-                    ${repeat(this._listItems, item => item.id, (_: any, index: number) => this._renderItem(index))}
-                </div>
+                <pl-virtual-list
+                    .data=${this._listItems}
+                    .minItemWidth=${300}
+                    .itemHeight=${98}
+                    .renderItem=${(item: ListItem) => this._renderItem(item)}
+                    .guard=${({ item, vault }: ListItem) => [
+                        item.name,
+                        item.tags,
+                        item.fields,
+                        vault,
+                        item.id === this.selected,
+                        this.multiSelect,
+                        this._multiSelect.has(item.id)
+                    ]}
+                ></pl-virtual-list>
             </main>
 
             <div class="empty-placeholder" ?hidden=${!!this._listItems.length || this._filterShowing}>
@@ -596,9 +618,7 @@ export class ItemsList extends StateMixin(View) {
         return items;
     }
 
-    private _renderItem(index: number) {
-        const item = this._listItems[index];
-
+    private _renderItem(item: ListItem) {
         const tags = [];
 
         const vaultName = item.vault.toString();
@@ -628,7 +648,7 @@ export class ItemsList extends StateMixin(View) {
 
         return html`
             ${cache(
-                item.firstInSection
+                false
                     ? html`
                           <div class="section-header" ?hidden=${!item.firstInSection}>
                               <div>${item.section}</div>
@@ -641,12 +661,7 @@ export class ItemsList extends StateMixin(View) {
                     : html``
             )}
 
-            <div
-                class="item"
-                ?selected=${item.item.id === this.selected}
-                @click=${() => this.selectItem(item)}
-                index="${index}"
-            >
+            <div class="item" ?selected=${item.item.id === this.selected} @click=${() => this.selectItem(item)}>
                 ${cache(
                     this.multiSelect
                         ? html`
