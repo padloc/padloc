@@ -87,14 +87,7 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
             .inner {
                 background: transparent;
                 box-shadow: none;
-            }
-
-            .wrapper {
-                flex: 1;
                 background: var(--color-quaternary);
-                border-radius: var(--border-radius);
-                margin: 12px;
-                overflow: hidden;
                 text-align: center;
             }
 
@@ -215,7 +208,7 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
         const monthlyPrice = Math.round((this.quantity * plan.cost) / 12);
 
         return html`
-            <div class="wrapper" style=${`--color-highlight: ${color}; --color-highlight-text: var(--color-tertiary);`}>
+            <div style=${`--color-highlight: ${color}; --color-highlight-text: var(--color-tertiary);`}>
                 <h1>${$l("Update Subscription")}</h1>
 
                 <div class="plan item">

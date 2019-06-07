@@ -156,7 +156,7 @@ export class Menu extends StateMixin(BaseElement) {
                             <li
                                 class="org tap"
                                 ?selected=${this.selected === `org/${org.id}`}
-                                @click=${() => router.go(`org/${org.id}`)}
+                                @click=${() => this._goTo(`org/${org.id}`)}
                             >
                                 <pl-icon icon="org"></pl-icon>
 

@@ -316,7 +316,7 @@ export class OrgView extends StateMixin(View) {
 
         return html`
             <header>
-                <div class="header-inner narrow">
+                <div class="header-inner">
                     <pl-icon class="tap menu-button" icon="menu" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
                     <div class="title flex ellipsis">${org.name}</div>
                     <pl-icon></pl-icon>

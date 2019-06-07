@@ -47,9 +47,8 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         this.plan = plan;
         this.quantity = (plan && plan.min) || 1;
         this._updateBillingParams = null;
-        const result = super.show();
         this._org = null;
-        return result;
+        return super.show();
     }
 
     private async _submit() {
@@ -125,21 +124,8 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
     static styles = [
         ...Dialog.styles,
         css`
-            .outer {
-                padding: 0;
-            }
-
             .inner {
-                background: transparent;
-                box-shadow: none;
-            }
-
-            .wrapper {
-                flex: 1;
                 background: var(--color-quaternary);
-                border-radius: var(--border-radius);
-                margin: 12px;
-                overflow: hidden;
                 text-align: center;
             }
 
@@ -353,7 +339,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         const color = (plan && plan.color) || "var(--color-primary)";
 
         return html`
-            <div class="wrapper" style=${`--color-highlight: ${color}; --color-highlight-text: var(--color-tertiary);`}>
+            <div style=${`--color-highlight: ${color}; --color-highlight-text: var(--color-tertiary);`}>
                 <h1>${$l("Create Organization")}</h1>
 
                 <pl-input

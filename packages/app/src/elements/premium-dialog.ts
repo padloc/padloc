@@ -1,36 +1,30 @@
+import { unsafeHTML } from "lit-html/directives/unsafe-html";
 import { localize as $l } from "@padloc/core/lib/locale";
-import { Plan, UpdateBillingParams } from "@padloc/core/lib/billing";
+import { Plan, PlanType, UpdateBillingParams } from "@padloc/core/lib/billing";
 import { dialog } from "../dialog";
 import { app } from "../init";
 import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
-import "./slider";
 import { LoadingButton } from "./loading-button";
 import "./card-input";
 import { BillingDialog } from "./billing-dialog";
-import { ChoosePlanDialog } from "./choose-plan-dialog";
 
-@element("pl-confirm-plan-dialog")
-export class ConfirmPlanDialog extends Dialog<Plan, void> {
+@element("pl-premium-dialog")
+export class PremiumDialog extends Dialog<void, void> {
     @property()
     plan: Plan | null = null;
 
     @property()
-    quantity: number = 1;
-
-    readonly preventDismiss = true;
+    private _error = "";
 
     @property()
-    private _error = "";
+    private _updateBillingParams: UpdateBillingParams | null = null;
 
     @query("#submitButton")
     private _submitButton: LoadingButton;
 
     @dialog("pl-billing-dialog")
     private _billingDialog: BillingDialog;
-
-    @dialog("pl-choose-plan-dialog")
-    private _choosePlanDialog: ChoosePlanDialog;
 
     private async _submit() {
         if (this._submitButton.state === "loading") {
@@ -40,71 +34,45 @@ export class ConfirmPlanDialog extends Dialog<Plan, void> {
         this._error = "";
         this._submitButton.start();
 
+        const params =
+            this._updateBillingParams ||
+            new UpdateBillingParams({
+                plan: this.plan!.id,
+                account: app.account!.id
+            });
+
         try {
-            await app.api.getPrice(
-                new UpdateBillingParams({
-                    plan: this.plan!.id,
-                    members: this.quantity
-                })
-            );
+            await app.updateBilling(params);
             this._submitButton.success();
+            this.done();
         } catch (e) {
-            console.log(e);
+            this._error = e.message || $l("Something went wrong. Please try again later!");
             this._submitButton.fail();
+            return;
         }
     }
 
-    async show(plan: Plan) {
-        this.plan = plan;
-        const result = super.show();
-        return result;
+    async show() {
+        const plan = (await app.api.getPlans()).find(p => p.type === PlanType.Premium);
+        this.plan = plan!;
+        this._updateBillingParams = null;
+        return super.show();
     }
 
     private async _updateBillingInfo() {
         this.open = false;
-        await this._billingDialog.show();
-        this.open = true;
-    }
-
-    private async _changePlan() {
-        this.open = false;
-        this.plan = await this._choosePlanDialog.show();
+        const billing = await this._billingDialog.show();
+        if (billing) {
+            this._updateBillingParams = billing;
+        }
         this.open = true;
     }
 
     static styles = [
         ...Dialog.styles,
         css`
-            .outer {
-                padding: 0;
-            }
-
             .inner {
-                background: transparent;
-                box-shadow: none;
-            }
-
-            .plans {
-                overflow: auto;
-                scroll-snap-type: x mandatory;
-                display: flex;
-                padding: 20px 50px;
-                max-width: 900px;
-                margin: 0 auto;
-            }
-
-            .plan {
-                min-width: 300px;
-                flex: 1;
                 background: var(--color-quaternary);
-                border-radius: var(--border-radius);
-                margin-right: 12px;
-                overflow: hidden;
-                --color-highlight: var(--color-shade-2);
-                --color-highlight-text: var(--color-secondary);
-                box-shadow: rgba(0, 0, 0, 0.2) 0 0 10px;
-                transition: transform 0.2s;
-                scroll-snap-align: center;
                 text-align: center;
             }
 
@@ -117,6 +85,12 @@ export class ConfirmPlanDialog extends Dialog<Plan, void> {
                 display: flex;
                 flex-direction: column;
                 position: relative;
+            }
+
+            .close-icon {
+                position: absolute;
+                top: 8px;
+                right: 8px;
             }
 
             .plan-name {
@@ -180,7 +154,7 @@ export class ConfirmPlanDialog extends Dialog<Plan, void> {
                 font-weight: bold;
             }
 
-            .plan pl-loading-button.primary {
+            pl-loading-button.primary {
                 margin: 8px;
                 background: var(--color-highlight);
                 color: var(--color-highlight-text);
@@ -208,14 +182,21 @@ export class ConfirmPlanDialog extends Dialog<Plan, void> {
                 font-weight: bold;
                 margin: 4px;
             }
+
+            .features {
+                font-size: var(--font-size-small);
+                margin: 8px 0;
+            }
+
+            .features > * {
+                padding: 10px 15px;
+            }
+
+            .features > :not(:last-child) {
+                border-bottom: solid 1px var(--color-shade-1);
+            }
         `
     ];
-
-    renderBefore() {
-        return html`
-            <button class="change-plan tap" @click=${this._changePlan}>${$l("Change Plan")}</button>
-        `;
-    }
 
     renderContent() {
         if (!this.plan) {
@@ -223,27 +204,32 @@ export class ConfirmPlanDialog extends Dialog<Plan, void> {
         }
 
         const plan = this.plan;
-        const monthlyPrice = Math.round((this.quantity * plan.cost) / 12);
-        const paymentMethod = app.account!.billing.paymentMethod;
+        const monthlyPrice = Math.round(plan.cost / 12);
+        const paymentMethod = this._updateBillingParams && this._updateBillingParams.paymentMethod;
 
         return html`
             <div
-                class="plan"
                 style=${plan.color
                     ? `--color-highlight: ${plan.color}; --color-highlight-text: var(--color-tertiary);`
                     : ""}
             >
                 <div class="plan-header">
+                    <pl-icon class="tap close-icon" icon="cancel" @click=${() => this.done()}></pl-icon>
+
                     <div class="plan-name">
                         ${plan.name}
                     </div>
+
                     <div class="flex"></div>
+
                     <div class="plan-trial">
                         ${$l("Free For {0} Days", (30).toString())}
                     </div>
+
                     <div class="plan-then">
                         ${$l("then")}
                     </div>
+
                     <div class="plan-price">
                         <div class="plan-price-currency">$</div>
                         <div class="plan-price-dollars">
@@ -253,30 +239,27 @@ export class ConfirmPlanDialog extends Dialog<Plan, void> {
                             .${(monthlyPrice % 100).toString().padEnd(2, "0")}
                         </div>
                     </div>
+
                     <div class="plan-unit">
                         ${$l("per month")}
                     </div>
+
                     <div class="flex"></div>
+
                     <div class="plan-fineprint">
                         ${$l("USD, billed annually")}
                     </div>
                 </div>
 
-                <div class="item" ?hidden=${plan.max < 2}>
-                    <div class="quantity">
-                        <strong>${this.quantity}</strong>
-                        ${$l("users")}
-                    </div>
-
-                    <pl-slider
-                        id="quantitySlider"
-                        .value=${this.quantity}
-                        .min=${plan.min}
-                        .max=${plan.max}
-                        hideValue
-                        @change=${(e: any) => (this.quantity = e.detail.value)}
-                    ></pl-slider>
-                </div>
+                <ul class="features">
+                    ${plan.features.map(
+                        feature => html`
+                            <li>
+                                ${unsafeHTML(feature.replace(/\*\*(.+)\*\*/g, "<strong>$1</strong>"))}
+                            </li>
+                        `
+                    )}
+                </ul>
 
                 <div class="payment-method item tap" @click=${this._updateBillingInfo}>
                     <pl-icon icon="credit"></pl-icon>

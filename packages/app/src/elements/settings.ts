@@ -1,18 +1,19 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
+import { BillingInfo } from "@padloc/core/lib/billing.js";
 import { shared, mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../dialog";
-import { app, router } from "../init.js";
+import { app } from "../init.js";
 import { StateMixin } from "../mixins/state.js";
 import { element, html, css, query, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
+import { LoadingButton } from "./loading-button.js";
 import { ToggleButton } from "./toggle-button.js";
 import { ImportDialog } from "./import-dialog.js";
 import { ExportDialog } from "./export-dialog.js";
 import { BillingDialog } from "./billing-dialog.js";
-// import { ChoosePlanDialog } from "./choose-plan-dialog.js";
-// import { ConfirmPlanDialog } from "./confirm-plan-dialog.js";
+import { PremiumDialog } from "./premium-dialog.js";
 import "./randomart.js";
 
 @element("pl-settings")
@@ -26,14 +27,14 @@ export class Settings extends StateMixin(View) {
     @dialog("pl-export-dialog")
     private _exportDialog: ExportDialog;
 
+    @query("#billingButton")
+    private _billingButton: LoadingButton;
+
     @dialog("pl-billing-dialog")
     private _billingDialog: BillingDialog;
 
-    // @dialog("pl-choose-plan-dialog")
-    // private _choosePlanDialog: ChoosePlanDialog;
-    //
-    // @dialog("pl-confirm-plan-dialog")
-    // private _confirmPlanDialog: ConfirmPlanDialog;
+    @dialog("pl-premium-dialog")
+    private _premiumDialog: PremiumDialog;
 
     shouldUpdate() {
         return !!app.account;
@@ -50,8 +51,8 @@ export class Settings extends StateMixin(View) {
                 border-radius: var(--border-radius);
             }
 
-            h2 {
-                display: block;
+            h3 {
+                margin: 18px 8px 12px 8px;
                 text-align: center;
             }
 
@@ -105,12 +106,44 @@ export class Settings extends StateMixin(View) {
                 height: 50px;
                 margin: 5px;
             }
+
+            .subscription {
+                padding: 12px 8px 12px 16px;
+                display: flex;
+                align-items: flex-start;
+            }
+
+            .plan-name {
+                font-size: 130%;
+                font-weight: bold;
+            }
+
+            .billing-info {
+                padding: 12px;
+            }
+
+            .billing-address {
+                display: flex;
+                align-items: flex-start;
+                font-weight: bold;
+            }
+
+            .billing-address-body {
+                margin: 8px 4px 4px 2px;
+            }
+
+            .payment-method {
+                display: flex;
+                align-items: center;
+                font-weight: bold;
+            }
         `
     ];
 
     render() {
         const { settings } = app;
         const account = app.account!;
+        const billing = account.billing || new BillingInfo();
 
         return html`
             <header>
@@ -123,7 +156,7 @@ export class Settings extends StateMixin(View) {
 
             <main>
                 <div class="wrapper">
-                    <h2>${$l("Account")}</h2>
+                    <h3>${$l("Profile")}</h3>
 
                     <div class="account item">
                         <pl-fingerprint .key=${account.publicKey}></pl-fingerprint>
@@ -137,33 +170,84 @@ export class Settings extends StateMixin(View) {
                         <pl-icon class="tap" icon="edit" @click=${() => this._editAccount()}></pl-icon>
                     </div>
 
+                    <h3>${$l("Security")}</h3>
+
                     <button class="tap item" @click=${() => this._logout()}>${$l("Log Out")}</button>
 
                     <button class="tap item" @click=${() => this._changePassword()}>
                         ${$l("Change Master Password")}
                     </button>
 
-                    <h2>${$l("Billing")}</h2>
+                    <h3>${$l("Subscription")}</h3>
 
-                    <button class="tap item" @click=${this._updatePlan}>${$l("Update Plan")}</button>
+                    ${billing.subscription
+                        ? html`
+                              <div class="item subscription">
+                                  <div class="flex">
+                                      <div class="plan-name">
+                                          ${billing.subscription.plan.name}
+                                      </div>
+                                      <div class="subscription-cost">
+                                          ${$l("${0} / Year", (billing.subscription.plan.cost / 100).toFixed(2))}
+                                      </div>
+                                  </div>
+                                  <div>
+                                      <pl-icon class="tap" icon="edit" @click=${this._updateSubscription}></pl-icon>
+                                  </div>
+                              </div>
+                          `
+                        : html``}
 
-                    <button class="tap item" @click=${this._updateBilling}>${$l("Update Billing Info")}</button>
+                    <h3>${$l("Billing Info")}</h3>
 
-                    <h2>${$l("Organizations")}</h2>
+                    <div class="billing-info item">
+                        <div class="payment-method">
+                            <pl-icon icon="credit"></pl-icon>
 
-                    ${app.state.orgs
-                        .filter(org => org.isOwner(app.account!))
-                        .map(
-                            org => html`
-                                <button class="tap item" @click=${() => router.go(`org/${org.id}`)}>${org.name}</button>
-                            `
-                        )}
+                            ${billing.paymentMethod
+                                ? html`
+                                      <div>
+                                          ${billing.paymentMethod.name}
+                                      </div>
+                                  `
+                                : html`
+                                      <div>
+                                          ${$l("Add Billing Info")}
+                                      </div>
+                                  `}
 
-                    <button class="tap item" @click=${this._createOrg}>
-                        ${$l("Create Organization")}
-                    </button>
+                            <div class="flex"></div>
 
-                    <h2>${$l("Auto Lock")}</h2>
+                            <pl-loading-button
+                                id="billingButton"
+                                class="edit-billing tap icon"
+                                @click=${this._updateBilling}
+                            >
+                                <pl-icon icon="edit"></pl-icon>
+                            </pl-loading-button>
+                        </div>
+
+                        <div class="billing-address">
+                            <pl-icon icon="address" class="billing-address-icon"></pl-icon>
+
+                            <div class="billing-address-body">
+                                <div class="billing-name">${billing.address.name}</div>
+                                <div class="billing-street">${billing.address.street}</div>
+                                <div class="billing-city">${billing.address.postalCode}, ${billing.address.city}</div>
+                                <div class="billing-email">${billing.email}</div>
+                            </div>
+                        </div>
+
+                        <div class="billing-address">
+                            <pl-icon icon="discount" class="billing-address-icon"></pl-icon>
+
+                            <div class="billing-address-body">
+                                ${billing.discount!.name}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>${$l("Auto Lock")}</h3>
 
                     <pl-toggle-button
                         id="autoLockButton"
@@ -187,13 +271,13 @@ export class Settings extends StateMixin(View) {
                     >
                     </pl-slider>
 
-                    <h2>${$l("Import / Export")}</h2>
+                    <h3>${$l("Import / Export")}</h3>
 
                     <button class="item tap" @click=${() => this._import()}>${$l("Import...")}</button>
 
                     <button class="item tap" @click=${() => this._export()}>${$l("Export...")}</button>
 
-                    <h2>${$l("Support")}</h2>
+                    <h3>${$l("Support")}</h3>
 
                     <button @click=${() => this._openWebsite()} class="item tap">${$l("Website")}</button>
 
@@ -324,26 +408,26 @@ export class Settings extends StateMixin(View) {
         this._exportDialog.show();
     }
 
-    private _createOrg() {
-        prompt("", {
-            title: $l("Create Organization"),
-            confirmLabel: $l("Create"),
-            label: $l("Organization Name"),
-            validate: async (name: string) => {
-                if (!name) {
-                    throw $l("Please enter a name!");
-                }
-                await app.createOrg(name);
-                return name;
+    private async _updateBilling() {
+        if (this._billingButton.state === "loading") {
+            return;
+        }
+
+        const params = await this._billingDialog.show({ billingInfo: app.account!.billing });
+        if (params) {
+            this._billingButton.start();
+            params.account = app.account!.id;
+            try {
+                await app.updateBilling(params);
+                this._billingButton.success();
+            } catch (e) {
+                this._billingButton.fail();
+                throw e;
             }
-        });
+        }
     }
 
-    private _updateBilling() {
-        this._billingDialog.show();
-    }
-
-    private _updatePlan() {
-        // this._confirmPlanDialog.show(app.account!.billing.subscription!.plan);
+    private async _updateSubscription() {
+        this._premiumDialog.show();
     }
 }
