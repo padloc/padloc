@@ -15,11 +15,11 @@ interface Params {
     title?: string;
     message?: string;
     submitLabel?: string;
-    billingInfo?: BillingInfo;
+    billingInfo: BillingInfo;
 }
 
 @element("pl-billing-dialog")
-export class BillingDialog extends Dialog<Params | undefined, UpdateBillingParams> {
+export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
     @property()
     stripePubKey = "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy";
 
@@ -76,12 +76,12 @@ export class BillingDialog extends Dialog<Params | undefined, UpdateBillingParam
     private _stripe: any;
     private _cardElement: any;
 
-    async show({ condensed, title, message, submitLabel, billingInfo }: Params = {}) {
+    async show({ condensed, title, message, submitLabel, billingInfo }: Params) {
         this.condensed = condensed || false;
         this.dialogTitle = title || $l("Update Billing Info");
         this.message = message || "";
         this.submitLabel = submitLabel || $l("Save");
-        this._billingInfo = billingInfo || new BillingInfo();
+        this._billingInfo = billingInfo;
         this._editingPaymentMethod = !this._billingInfo || !this._billingInfo.paymentMethod;
         // $l(
         //                     "Add your billing info now so you're all set to keep using Padloc once the trial period is over. Don't worry, you won't be charged yet!"
@@ -124,7 +124,7 @@ export class BillingDialog extends Dialog<Params | undefined, UpdateBillingParam
         });
         card.addEventListener("blur", () => {
             if (cardEmpty) {
-                this._editingPaymentMethod = false;
+                this._editingPaymentMethod = !this._billingInfo || !this._billingInfo.paymentMethod;
             }
         });
     }
@@ -175,6 +175,8 @@ export class BillingDialog extends Dialog<Params | undefined, UpdateBillingParam
 
         this.done(
             new UpdateBillingParams({
+                account: this._billingInfo!.account,
+                org: this._billingInfo!.org,
                 email: this._emailInput.value,
                 address,
                 paymentMethod,
@@ -264,7 +266,10 @@ export class BillingDialog extends Dialog<Params | undefined, UpdateBillingParam
         email = email || (app.account!.billing && app.account!.billing.email) || app.account!.email;
         const name = address.name || app.account!.name;
 
-        const countryOptions = countries.map(c => Object.assign(c, { toString: () => c.name }));
+        const countryOptions = [
+            { code: "", toString: () => $l("Select A Country") },
+            ...countries.map(c => Object.assign(c, { toString: () => c.name }))
+        ];
 
         return html`
             <h1>${this.dialogTitle}</h1>

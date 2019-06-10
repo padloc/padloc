@@ -1,0 +1,137 @@
+import { countries, localize as $l } from "@padloc/core/lib/locale.js";
+import { BillingInfo } from "@padloc/core/lib/billing.js";
+import { shared } from "../styles";
+import { dialog } from "../dialog";
+import { app } from "../init.js";
+import { BaseElement, element, property, html, css, query } from "./base.js";
+import "./icon.js";
+import { LoadingButton } from "./loading-button.js";
+import { BillingDialog } from "./billing-dialog.js";
+
+@element("pl-billing-info")
+export class BillingInfoElement extends BaseElement {
+    @property()
+    billing: BillingInfo | null = null;
+
+    @query("#billingButton")
+    private _billingButton: LoadingButton;
+
+    @dialog("pl-billing-dialog")
+    private _billingDialog: BillingDialog;
+
+    private async _update() {
+        if (this._billingButton.state === "loading") {
+            return;
+        }
+
+        const billingInfo = this.billing!;
+
+        const params = await this._billingDialog.show({ billingInfo });
+        if (params) {
+            this._billingButton.start();
+            try {
+                await app.updateBilling(params);
+                this._billingButton.success();
+            } catch (e) {
+                this._billingButton.fail();
+                throw e;
+            }
+        }
+    }
+
+    static styles = [
+        shared,
+        css`
+            :host {
+                padding: 8px;
+                display: grid;
+                grid-template-columns: 36px 1fr;
+                position: relative;
+            }
+
+            .payment-method,
+            .billing-email,
+            .discount {
+                font-weight: bold;
+            }
+
+            .data {
+                margin: 8px 6px;
+            }
+
+            .edit-button {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                z-index: 1;
+            }
+
+            .missing {
+                opacity: 0.7;
+                cursor: pointer;
+            }
+
+            .data-icon {
+                width: 36px;
+            }
+        `
+    ];
+
+    render() {
+        if (!this.billing) {
+            return html``;
+        }
+
+        const billing = this.billing!;
+        const country = countries.find(c => c.code === billing.address.country);
+        const postalCode = billing.address.postalCode;
+        const city = billing.address.city;
+
+        return html`
+            <pl-loading-button id="billingButton" class="edit-button tap icon" @click=${this._update}>
+                <pl-icon icon="edit"></pl-icon>
+            </pl-loading-button>
+
+            <pl-icon icon="credit" class="data-icon"></pl-icon>
+
+            <div class="data payment-method">
+                ${billing.paymentMethod
+                    ? html`
+                          <div>
+                              ${billing.paymentMethod.name}
+                          </div>
+                      `
+                    : html`
+                          <div class="missing" @click=${this._update}>
+                              ${$l("Add Payment Method")}
+                          </div>
+                      `}
+            </div>
+
+            ${billing.email || billing.address.name
+                ? html`
+                      <pl-icon icon="address" class="data-icon"></pl-icon>
+
+                      <div class="data">
+                          <div class="billing-email">${billing.email}</div>
+                          <div class="billing-name">${billing.address.name}</div>
+                          <div class="billing-street">${billing.address.street}</div>
+                          <div class="billing-city">
+                              ${postalCode ? `${postalCode}, ` : ""} ${city ? `${city}, ` : ""}
+                              ${country ? `${country.name}` : ""}
+                          </div>
+                      </div>
+                  `
+                : html``}
+            ${billing.discount
+                ? html`
+                      <pl-icon icon="discount" class="data-icon"></pl-icon>
+
+                      <div class="data discount">
+                          ${billing.discount.name}
+                      </div>
+                  `
+                : html``}
+        `;
+    }
+}

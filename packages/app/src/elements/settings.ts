@@ -8,12 +8,11 @@ import { element, html, css, query, listen } from "./base.js";
 import { View } from "./view.js";
 import "./icon.js";
 import { Slider } from "./slider.js";
-import { LoadingButton } from "./loading-button.js";
 import { ToggleButton } from "./toggle-button.js";
 import { ImportDialog } from "./import-dialog.js";
 import { ExportDialog } from "./export-dialog.js";
-import { BillingDialog } from "./billing-dialog.js";
 import { PremiumDialog } from "./premium-dialog.js";
+import "./billing-info.js";
 import "./randomart.js";
 
 @element("pl-settings")
@@ -26,12 +25,6 @@ export class Settings extends StateMixin(View) {
 
     @dialog("pl-export-dialog")
     private _exportDialog: ExportDialog;
-
-    @query("#billingButton")
-    private _billingButton: LoadingButton;
-
-    @dialog("pl-billing-dialog")
-    private _billingDialog: BillingDialog;
 
     @dialog("pl-premium-dialog")
     private _premiumDialog: PremiumDialog;
@@ -117,26 +110,6 @@ export class Settings extends StateMixin(View) {
                 font-size: 130%;
                 font-weight: bold;
             }
-
-            .billing-info {
-                padding: 12px;
-            }
-
-            .billing-address {
-                display: flex;
-                align-items: flex-start;
-                font-weight: bold;
-            }
-
-            .billing-address-body {
-                margin: 8px 4px 4px 2px;
-            }
-
-            .payment-method {
-                display: flex;
-                align-items: center;
-                font-weight: bold;
-            }
         `
     ];
 
@@ -200,52 +173,7 @@ export class Settings extends StateMixin(View) {
 
                     <h3>${$l("Billing Info")}</h3>
 
-                    <div class="billing-info item">
-                        <div class="payment-method">
-                            <pl-icon icon="credit"></pl-icon>
-
-                            ${billing.paymentMethod
-                                ? html`
-                                      <div>
-                                          ${billing.paymentMethod.name}
-                                      </div>
-                                  `
-                                : html`
-                                      <div>
-                                          ${$l("Add Billing Info")}
-                                      </div>
-                                  `}
-
-                            <div class="flex"></div>
-
-                            <pl-loading-button
-                                id="billingButton"
-                                class="edit-billing tap icon"
-                                @click=${this._updateBilling}
-                            >
-                                <pl-icon icon="edit"></pl-icon>
-                            </pl-loading-button>
-                        </div>
-
-                        <div class="billing-address">
-                            <pl-icon icon="address" class="billing-address-icon"></pl-icon>
-
-                            <div class="billing-address-body">
-                                <div class="billing-name">${billing.address.name}</div>
-                                <div class="billing-street">${billing.address.street}</div>
-                                <div class="billing-city">${billing.address.postalCode}, ${billing.address.city}</div>
-                                <div class="billing-email">${billing.email}</div>
-                            </div>
-                        </div>
-
-                        <div class="billing-address">
-                            <pl-icon icon="discount" class="billing-address-icon"></pl-icon>
-
-                            <div class="billing-address-body">
-                                ${billing.discount!.name}
-                            </div>
-                        </div>
-                    </div>
+                    <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
 
                     <h3>${$l("Auto Lock")}</h3>
 
@@ -406,25 +334,6 @@ export class Settings extends StateMixin(View) {
 
     private _export() {
         this._exportDialog.show();
-    }
-
-    private async _updateBilling() {
-        if (this._billingButton.state === "loading") {
-            return;
-        }
-
-        const params = await this._billingDialog.show({ billingInfo: app.account!.billing });
-        if (params) {
-            this._billingButton.start();
-            params.account = app.account!.id;
-            try {
-                await app.updateBilling(params);
-                this._billingButton.success();
-            } catch (e) {
-                this._billingButton.fail();
-                throw e;
-            }
-        }
     }
 
     private async _updateSubscription() {

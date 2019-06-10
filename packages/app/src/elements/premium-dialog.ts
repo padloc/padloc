@@ -1,6 +1,6 @@
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
 import { localize as $l } from "@padloc/core/lib/locale";
-import { Plan, PlanType, UpdateBillingParams } from "@padloc/core/lib/billing";
+import { BillingInfo, Plan, PlanType, UpdateBillingParams } from "@padloc/core/lib/billing";
 import { dialog } from "../dialog";
 import { app } from "../init";
 import { element, html, property, css, query } from "./base";
@@ -61,7 +61,9 @@ export class PremiumDialog extends Dialog<void, void> {
 
     private async _updateBillingInfo() {
         this.open = false;
-        const billing = await this._billingDialog.show();
+        const billing = await this._billingDialog.show({
+            billingInfo: Object.assign(new BillingInfo(), { account: app.account!.id })
+        });
         if (billing) {
             this._updateBillingParams = billing;
         }

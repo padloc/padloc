@@ -1,6 +1,6 @@
 import { localize as $l } from "@padloc/core/lib/locale";
 import { Org } from "@padloc/core/lib/org";
-import { Plan, UpdateBillingParams } from "@padloc/core/lib/billing";
+import { Plan, BillingInfo, UpdateBillingParams } from "@padloc/core/lib/billing";
 import { dialog } from "../dialog";
 import { app } from "../init";
 import { element, html, property, css, query } from "./base";
@@ -105,10 +105,16 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
 
     private async _updateBillingInfo() {
         this.open = false;
-        const billing = await this._billingDialog.show();
+        const billingInfo = new BillingInfo();
+        billingInfo.address.name = this._nameInput.value;
+        const billing = await this._billingDialog.show({
+            billingInfo
+        });
         if (billing) {
             this._updateBillingParams = billing;
         }
+
+        this._error = "";
         this.open = true;
     }
 

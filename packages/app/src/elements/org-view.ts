@@ -13,9 +13,8 @@ import { VaultDialog } from "./vault-dialog.js";
 import { GroupDialog } from "./group-dialog.js";
 import { MemberDialog } from "./member-dialog.js";
 import { CreateInvitesDialog } from "./create-invites-dialog.js";
-import { BillingDialog } from "./billing-dialog.js";
 import { UpdateSubscriptionDialog } from "./update-subscription-dialog.js";
-import { LoadingButton } from "./loading-button.js";
+import "./billing-info.js";
 import "./member-item.js";
 import "./group-item.js";
 import "./vault-item.js";
@@ -26,9 +25,6 @@ import "./icon.js";
 export class OrgView extends StateMixin(View) {
     @property()
     orgId: string = "";
-
-    @query("#billingButton")
-    private _billingButton: LoadingButton;
 
     @query("#filterMembersInput")
     private _filterMembersInput: Input;
@@ -41,9 +37,6 @@ export class OrgView extends StateMixin(View) {
 
     @dialog("pl-member-dialog")
     private _memberDialog: MemberDialog;
-
-    @dialog("pl-billing-dialog")
-    private _billingDialog: BillingDialog;
 
     @dialog("pl-update-subscription-dialog")
     private _updateSubscriptionDialog: UpdateSubscriptionDialog;
@@ -133,26 +126,6 @@ export class OrgView extends StateMixin(View) {
             }
         } else {
             await this._memberDialog.show({ org: org, member });
-        }
-    }
-
-    private async _updateBilling() {
-        if (this._billingButton.state === "loading") {
-            return;
-        }
-
-        const org = this._org!;
-        const params = await this._billingDialog.show({ billingInfo: org.billing });
-        if (params) {
-            this._billingButton.start();
-            params.org = org.id;
-            try {
-                await app.updateBilling(params);
-                this._billingButton.success();
-            } catch (e) {
-                this._billingButton.fail();
-                throw e;
-            }
         }
     }
 
@@ -312,7 +285,7 @@ export class OrgView extends StateMixin(View) {
               )
             : org.members;
 
-        const billing = org.billing || new BillingInfo();
+        const billing = org.billing || Object.assign(new BillingInfo(), { org: org.id });
 
         return html`
             <header>
@@ -466,31 +439,7 @@ export class OrgView extends StateMixin(View) {
 
                         <h3>${$l("Billing Info")}</h3>
 
-                        <div class="payment-method item">
-                            <pl-icon icon="credit"></pl-icon>
-
-                            ${billing.paymentMethod
-                                ? html`
-                                      <div>
-                                          ${billing.paymentMethod.name}
-                                      </div>
-                                  `
-                                : html`
-                                      <div>
-                                          ${$l("Add Billing Info")}
-                                      </div>
-                                  `}
-
-                            <div class="flex"></div>
-
-                            <pl-loading-button
-                                id="billingButton"
-                                class="edit-billing tap icon"
-                                @click=${this._updateBilling}
-                            >
-                                <pl-icon icon="edit"></pl-icon>
-                            </pl-loading-button>
-                        </div>
+                        <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
 
                         <h3>${$l("General")}</h3>
 
