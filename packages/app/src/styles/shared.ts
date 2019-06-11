@@ -138,15 +138,7 @@ export const shared = css`
     }
 
     h1, h2 {
-        display: flex;
-        align-items: center;
-        text-align: left;
         font-weight: normal;
-    }
-
-    h1 pl-icon, h2 pl-icon {
-        position: relative;
-        font-size: 90%;
     }
 
     h1 {

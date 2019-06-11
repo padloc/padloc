@@ -3,7 +3,7 @@ import { Invite } from "@padloc/core/lib/invite.js";
 import { OrgMember, OrgRole, Group } from "@padloc/core/lib/org.js";
 import { StateMixin } from "../mixins/state.js";
 import { shared, mixins } from "../styles";
-import { dialog, prompt, choose, confirm } from "../dialog.js";
+import { dialog, alert, choose, confirm } from "../dialog.js";
 import { app, router } from "../init.js";
 import { element, html, css, property, query, observe } from "./base.js";
 import { View } from "./view.js";
@@ -11,6 +11,7 @@ import { Input } from "./input.js";
 import { VaultDialog } from "./vault-dialog.js";
 import { GroupDialog } from "./group-dialog.js";
 import { MemberDialog } from "./member-dialog.js";
+import { CreateInvitesDialog } from "./create-invites-dialog.js";
 import "./member-item.js";
 import "./group-item.js";
 import "./vault-item.js";
@@ -34,6 +35,9 @@ export class OrgView extends StateMixin(View) {
     @dialog("pl-member-dialog")
     private _memberDialog: MemberDialog;
 
+    @dialog("pl-create-invites-dialog")
+    private _createInvitesDialog: CreateInvitesDialog;
+
     private get _org() {
         return app.getOrg(this.orgId);
     }
@@ -44,27 +48,16 @@ export class OrgView extends StateMixin(View) {
     @property()
     private _membersFilter: string = "";
 
-    private _createInvite() {
-        prompt($l("Please enter the email address of the person you would like to invite!"), {
-            type: "email",
-            title: $l("Invite New Member"),
-            label: $l("Email Address"),
-            confirmLabel: $l("Send Invite"),
-            validate: async (email: string, input: Input) => {
-                if (input.invalid) {
-                    throw $l("Please enter a valid email address!");
-                }
-
-                if ([...this._org!.members].some(m => m.email === email)) {
-                    throw $l("This user is already a member!");
-                }
-
-                const invite = await app.createInvite(this._org!, email);
-                router.go(`invite/${invite.org!.id}/${invite.id}`);
-
-                return email;
+    private async _createInvite() {
+        const invites = await this._createInvitesDialog.show(this._org!);
+        if (invites) {
+            if (invites.length === 1) {
+                router.go(`invite/${invites[0].org!.id}/${invites[0].id}`);
+            } else {
+                alert($l("Successfully created {0} invites!", invites.length.toString()));
+                this._page = "invites";
             }
-        });
+        }
     }
 
     private _showInvite(invite: Invite) {
@@ -123,7 +116,7 @@ export class OrgView extends StateMixin(View) {
                         }
                         break;
                     case 1:
-                        const invite = await app.createInvite(org, member.email, "confirm_membership");
+                        const invite = await app.createInvites(org, [member.email], "confirm_membership")[0];
                         router.go(`invite/${invite.org!.id}/${invite.id}`);
                         break;
                 }
@@ -273,7 +266,7 @@ export class OrgView extends StateMixin(View) {
                                 ?hidden=${!isOwner || members.length < 50}
                             >
                                 <pl-icon icon="invite"></pl-icon>
-                                <div>${$l("Invite New Member")}</div>
+                                <div>${$l("Invite New Members")}</div>
                             </li>
                             ${members.map(
                                 member => html`
@@ -284,7 +277,7 @@ export class OrgView extends StateMixin(View) {
                             )}
                             <li class="new-button tap" @click=${this._createInvite} ?hidden=${!isOwner}>
                                 <pl-icon icon="add"></pl-icon>
-                                <div>${$l("Invite New Member")}</div>
+                                <div>${$l("Invite New Members")}</div>
                             </li>
                         </ul>
                     </div>
@@ -336,7 +329,7 @@ export class OrgView extends StateMixin(View) {
                             )}
                             <li class="new-button tap" @click=${this._createInvite}>
                                 <pl-icon icon="add"></pl-icon>
-                                <div>${$l("Invite New Member")}</div>
+                                <div>${$l("Invite New Members")}</div>
                             </li>
                         </ul>
                     </div>

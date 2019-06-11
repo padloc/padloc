@@ -317,7 +317,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         let org = app.getOrg(this.invite!.org!.id)!;
         try {
             await app.deleteInvite(this.invite!);
-            this.invite = await app.createInvite(org!, this.invite!.email, this.invite!.purpose);
+            this.invite = await app.createInvites(org!, [this.invite!.email], this.invite!.purpose)[0];
             this._resendButton.success();
         } catch (e) {
             this._resendButton.fail();

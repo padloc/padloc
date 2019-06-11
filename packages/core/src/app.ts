@@ -1151,15 +1151,18 @@ export class App {
     /**
      * Create a new [[Invite]]
      */
-    async createInvite({ id }: Org, email: string, purpose?: InvitePurpose) {
-        let invite: Invite;
+    async createInvites({ id }: Org, emails: string[], purpose?: InvitePurpose) {
+        const invites: Invite[] = [];
         await this.updateOrg(id, async (org: Org) => {
             await org.unlock(this.account!);
-            invite = new Invite(email, purpose);
-            await invite.initialize(org, this.account!);
-            org.invites.push(invite);
+            for (const email of emails) {
+                const invite = new Invite(email, purpose);
+                await invite.initialize(org, this.account!);
+                invites.push(invite);
+            }
+            org.invites = [...org.invites.filter(a => !invites.some(b => a.email === b.email)), ...invites];
         });
-        return invite!;
+        return invites!;
     }
 
     /**
