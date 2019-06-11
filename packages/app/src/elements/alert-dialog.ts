@@ -4,7 +4,7 @@ import { Dialog } from "./dialog.js";
 
 const defaultButtonLabel = localize("OK");
 
-export type AlertType = "info" | "warning" | "destructive" | "plain" | "question" | "success";
+export type AlertType = "info" | "warning" | "destructive" | "choice" | "question" | "success";
 export interface AlertOptions {
     message?: string;
     title?: string;
@@ -13,7 +13,7 @@ export interface AlertOptions {
     icon?: string;
     preventDismiss?: boolean;
     hideIcon?: boolean;
-    horizontal?: boolean;
+    vertical?: boolean;
 }
 
 @element("pl-alert-dialog")
@@ -33,7 +33,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     @property({ attribute: "hide-icon", reflect: true })
     hideIcon: boolean = false;
     @property({ reflect: true })
-    horizontal: boolean = false;
+    vertical: boolean = false;
 
     static styles = [
         ...Dialog.styles,
@@ -47,14 +47,6 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
                 text-align: center;
             }
 
-            :host([horizontal]) .buttons {
-                flex-direction: row;
-            }
-
-            :host([horizontal]) button {
-                flex: 1;
-            }
-
             .info-text:not(.small) {
                 font-size: var(--font-size-default);
             }
@@ -62,7 +54,8 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
     ];
 
     renderContent() {
-        const { message, dialogTitle, options, icon } = this;
+        const { message, dialogTitle, options, icon, vertical } = this;
+
         return html`
             <div class="info" ?hidden=${!dialogTitle && !message}>
                 <pl-icon class="info-icon" icon="${icon}"></pl-icon>
@@ -72,7 +65,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
                 </div>
             </div>
 
-            <div class="actions ${options.length > 2 ? "vertical" : ""}">
+            <div class="actions ${vertical || options.length > 2 ? "vertical" : ""}">
                 ${options.map(
                     (o: any, i: number) =>
                         html`
@@ -94,7 +87,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         type = "info",
         preventDismiss = false,
         hideIcon = false,
-        horizontal = false,
+        vertical = false,
         icon
     }: AlertOptions = {}): Promise<number> {
         this.message = message;
@@ -103,7 +96,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         this.preventDismiss = preventDismiss;
         this.options = options;
         this.hideIcon = hideIcon;
-        this.horizontal = horizontal;
+        this.vertical = vertical;
         this.icon = icon || this._icon(type);
 
         return super.show();
@@ -127,7 +120,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
 
     private _buttonClass(i: number) {
         if (i === 0) {
-            return this.type === "destructive" ? "negative" : "primary";
+            return this.type === "destructive" ? "negative" : this.type !== "choice" ? "primary" : "";
         } else {
             return "";
         }

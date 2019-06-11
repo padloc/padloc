@@ -13,14 +13,14 @@ export class BillingInfoElement extends BaseElement {
     @property()
     billing: BillingInfo | null = null;
 
-    @query("#billingButton")
-    private _billingButton: LoadingButton;
+    @query("#editButton")
+    private _editButton: LoadingButton;
 
     @dialog("pl-billing-dialog")
     private _billingDialog: BillingDialog;
 
     private async _update() {
-        if (this._billingButton.state === "loading") {
+        if (this._editButton.state === "loading") {
             return;
         }
 
@@ -28,12 +28,12 @@ export class BillingInfoElement extends BaseElement {
 
         const params = await this._billingDialog.show({ billingInfo });
         if (params) {
-            this._billingButton.start();
+            this._editButton.start();
             try {
                 await app.updateBilling(params);
-                this._billingButton.success();
+                this._editButton.success();
             } catch (e) {
-                this._billingButton.fail();
+                this._editButton.fail();
                 throw e;
             }
         }
@@ -88,7 +88,7 @@ export class BillingInfoElement extends BaseElement {
         const city = billing.address.city;
 
         return html`
-            <pl-loading-button id="billingButton" class="edit-button tap icon" @click=${this._update}>
+            <pl-loading-button id="editButton" class="edit-button tap icon" @click=${this._update}>
                 <pl-icon icon="edit"></pl-icon>
             </pl-loading-button>
 

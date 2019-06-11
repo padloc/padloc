@@ -30,6 +30,7 @@ import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
 import { localize as $l } from "./locale";
 import { BillingProvider, UpdateBillingParams } from "./billing";
+import { AccountQuota, OrgQuota } from "./quota";
 
 const pendingAuths = new Map<string, SRPServer>();
 
@@ -39,6 +40,10 @@ export interface ServerConfig {
     clientUrl: string;
     /** Email address to report critical errors to */
     reportErrors: string;
+
+    accountQuota?: Partial<AccountQuota>;
+
+    orgQuota?: Partial<OrgQuota>;
 }
 
 /**
@@ -241,6 +246,11 @@ class Controller implements API {
         vault.updated = new Date();
         account.mainVault = vault.id;
 
+        // Set default account quota
+        if (this.config.accountQuota) {
+            Object.assign(account.quota, this.config.accountQuota);
+        }
+
         // Persist data
         await Promise.all([this.storage.save(account), this.storage.save(vault), this.storage.save(auth)]);
 
@@ -355,6 +365,11 @@ class Controller implements API {
         org.id = await uuid();
         org.revision = await uuid();
         org.owner = account.id;
+
+        // set default org quota
+        if (this.config.orgQuota) {
+            Object.assign(org.quota, this.config.orgQuota);
+        }
 
         await this.storage.save(org);
 
@@ -746,13 +761,7 @@ class Controller implements API {
 
         att.id = await uuid();
 
-        const currentUsage = org
-            ? (await Promise.all(org.vaults.map(({ id }) => this.attachmentStorage.getUsage(id)))).reduce(
-                  (sum: number, each: number) => sum + each,
-                  0
-              )
-            : await this.attachmentStorage.getUsage(vault.id);
-
+        const currentUsage = org ? org.usedStorage : account.usedStorage;
         const quota = org ? org.quota : account.quota;
 
         if (quota.storage !== -1 && currentUsage + att.size > quota.storage * 1e9) {
@@ -760,6 +769,8 @@ class Controller implements API {
         }
 
         await this.attachmentStorage.put(att);
+
+        await this._updateUsedStorage(org || account);
 
         return att;
     }
@@ -794,6 +805,8 @@ class Controller implements API {
         }
 
         await this.attachmentStorage.delete(vaultId, id);
+
+        await this._updateUsedStorage(org || account);
     }
 
     async updateBilling(params: UpdateBillingParams) {
@@ -823,6 +836,18 @@ class Controller implements API {
             throw new Err(ErrorCode.NOT_SUPPORTED);
         }
         return this.billingProvider.getPlans();
+    }
+
+    private async _updateUsedStorage(acc: Org | Account) {
+        const vaults = acc instanceof Org ? acc.vaults.map(v => v.id) : [acc.mainVault];
+
+        const usedStorage = (await Promise.all(vaults.map(id => this.attachmentStorage.getUsage(id)))).reduce(
+            (sum: number, each: number) => sum + each,
+            0
+        );
+
+        acc.usedStorage = usedStorage;
+        await this.storage.save(acc);
     }
 
     private _requireAuth(): { account: Account; session: Session } {

@@ -11,9 +11,9 @@ import { Slider } from "./slider.js";
 import { ToggleButton } from "./toggle-button.js";
 import { ImportDialog } from "./import-dialog.js";
 import { ExportDialog } from "./export-dialog.js";
-import { PremiumDialog } from "./premium-dialog.js";
 import "./billing-info.js";
 import "./randomart.js";
+import "./subscription.js";
 
 @element("pl-settings")
 export class Settings extends StateMixin(View) {
@@ -25,9 +25,6 @@ export class Settings extends StateMixin(View) {
 
     @dialog("pl-export-dialog")
     private _exportDialog: ExportDialog;
-
-    @dialog("pl-premium-dialog")
-    private _premiumDialog: PremiumDialog;
 
     shouldUpdate() {
         return !!app.account;
@@ -99,17 +96,6 @@ export class Settings extends StateMixin(View) {
                 height: 50px;
                 margin: 5px;
             }
-
-            .subscription {
-                padding: 12px 8px 12px 16px;
-                display: flex;
-                align-items: flex-start;
-            }
-
-            .plan-name {
-                font-size: 130%;
-                font-weight: bold;
-            }
         `
     ];
 
@@ -153,23 +139,7 @@ export class Settings extends StateMixin(View) {
 
                     <h3>${$l("Subscription")}</h3>
 
-                    ${billing.subscription
-                        ? html`
-                              <div class="item subscription">
-                                  <div class="flex">
-                                      <div class="plan-name">
-                                          ${billing.subscription.plan.name}
-                                      </div>
-                                      <div class="subscription-cost">
-                                          ${$l("${0} / Year", (billing.subscription.plan.cost / 100).toFixed(2))}
-                                      </div>
-                                  </div>
-                                  <div>
-                                      <pl-icon class="tap" icon="edit" @click=${this._updateSubscription}></pl-icon>
-                                  </div>
-                              </div>
-                          `
-                        : html``}
+                    <pl-subscription class="item"></pl-subscription>
 
                     <h3>${$l("Billing Info")}</h3>
 
@@ -334,9 +304,5 @@ export class Settings extends StateMixin(View) {
 
     private _export() {
         this._exportDialog.show();
-    }
-
-    private async _updateSubscription() {
-        this._premiumDialog.show();
     }
 }

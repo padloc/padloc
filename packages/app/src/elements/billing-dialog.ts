@@ -284,6 +284,10 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                 <slot></slot>
             </div>
 
+            <div class="error item" ?hidden="${!this._error}">
+                ${this._error}
+            </div>
+
             ${paymentMethod
                 ? html`
                       <div class="payment-method item" ?hidden=${this._editingPaymentMethod}>
@@ -360,10 +364,6 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
             </div>
 
             <pl-input class="item" id="couponInput" placeholder=${$l("Coupon Code")} ?hidden=${!!discount}></pl-input>
-
-            <div class="error item" ?hidden="${!this._error}">
-                ${this._error}
-            </div>
 
             <div class="actions">
                 <pl-loading-button class="primary tap" id="submitButton" @click=${this._submit}>

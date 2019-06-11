@@ -7,6 +7,7 @@ import {
     BillingProvider,
     BillingInfo,
     Plan,
+    // PlanType,
     Subscription,
     UpdateBillingParams,
     PaymentMethod,
@@ -22,7 +23,7 @@ function parsePlan({
     id,
     amount,
     nickname,
-    metadata: { description, storage, groups, vaults, min, max, available, features, type, default: def, color }
+    metadata: { description, storage, groups, vaults, items, min, max, available, features, type, default: def, color }
 }: Stripe.plans.IPlan) {
     return new Plan().fromRaw({
         id,
@@ -33,6 +34,7 @@ function parsePlan({
         max: max ? parseInt(max) : 0,
         groups: groups ? parseInt(groups) : 0,
         vaults: vaults ? parseInt(vaults) : 0,
+        items: items ? parseInt(items) : -1,
         available: available === "true",
         default: def === "true",
         cost: amount,
@@ -47,12 +49,18 @@ function parseSubscription({
     status,
     plan,
     quantity,
+    trial_end,
+    cancel_at_period_end,
+    current_period_end,
     metadata: { items, storage, groups, vaults, account, org }
 }: Stripe.subscriptions.ISubscription) {
     const planInfo = parsePlan(plan!);
     return new Subscription().fromRaw({
         id,
         status,
+        trialEnd: trial_end && trial_end * 1000,
+        periodEnd: current_period_end && current_period_end * 1000,
+        willCancel: cancel_at_period_end,
         plan: planInfo.toRaw(),
         account: account || "",
         org: org || "",
@@ -126,7 +134,7 @@ export class StripeBillingProvider implements BillingProvider {
         this._availablePlans = plans.data.map(p => parsePlan(p)).filter(p => p.available);
     }
 
-    async update({ account, org, email, plan, members, paymentMethod, address, coupon }: UpdateBillingParams) {
+    async update({ account, org, email, plan, members, paymentMethod, address, coupon, cancel }: UpdateBillingParams) {
         if (!account && !org) {
             throw new Err(ErrorCode.BAD_REQUEST, "Either 'account' or 'org' parameter required!");
         }
@@ -157,35 +165,38 @@ export class StripeBillingProvider implements BillingProvider {
             throw new Err(ErrorCode.BILLING_ERROR, e.message);
         }
 
-        if (typeof plan !== "undefined" || typeof members !== "undefined") {
-            const params: any = info.subscription ? {} : { customer: info.customerId };
+        const params: any = {};
 
-            if (typeof plan !== "undefined") {
-                const planInfo = this._availablePlans.find(p => p.id === plan);
-                if (!planInfo) {
-                    throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan!");
-                }
-                params.plan = planInfo.id;
+        if (typeof plan !== "undefined") {
+            const planInfo = this._availablePlans.find(p => p.id === plan);
+            if (!planInfo) {
+                throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan!");
             }
+            params.plan = planInfo.id;
+        }
 
-            if (typeof members !== "undefined") {
-                params.quantity = members;
-            }
+        if (typeof members !== "undefined") {
+            params.quantity = members;
+        }
 
-            // params.trial_end = "now";
+        if (typeof cancel === "boolean") {
+            params.cancel_at_period_end = cancel;
+        }
 
+        if (Object.keys(params).length) {
             try {
                 if (info.subscription) {
-                    console.log("updating subscription");
-                    await this._stripe.subscriptions.update(
-                        info.subscription.id,
-                        params as Stripe.subscriptions.ISubscriptionUpdateOptions
-                    );
+                    await this._stripe.subscriptions.update(info.subscription.id, {
+                        trial_from_plan: true,
+                        // trial_end: "now",
+                        ...params
+                    } as Stripe.subscriptions.ISubscriptionUpdateOptions);
                 } else {
-                    console.log("creating subscription");
-                    await this._stripe.subscriptions.create(
-                        params as Stripe.subscriptions.ISubscriptionCreationOptions
-                    );
+                    await this._stripe.subscriptions.create({
+                        customer: info.customerId,
+                        trial_from_plan: true,
+                        ...params
+                    } as Stripe.subscriptions.ISubscriptionCreationOptions);
                 }
             } catch (e) {
                 throw new Err(ErrorCode.BILLING_ERROR, e.message);
@@ -220,12 +231,9 @@ export class StripeBillingProvider implements BillingProvider {
             subscription_proration_date: prorationDate
         });
 
-        console.log(invoice);
-
         const items = new Map<number, number>();
 
         for (const line of invoice.lines.data) {
-            console.log(line.amount);
             items.set(line.period.start, line.amount + (items.get(line.period.start) || 0));
         }
 
@@ -246,18 +254,35 @@ export class StripeBillingProvider implements BillingProvider {
     }
 
     private async _sync(acc: Account | Org): Promise<void> {
+        // const freePlan = this._availablePlans.find(p => p.type === PlanType.Free);
+
         const customer = acc.billing
             ? await this._stripe.customers.retrieve(acc.billing.customerId)
             : await this._stripe.customers.create({
+                  // email: acc instanceof Account ? acc.email : undefined,
+                  // plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
                   metadata: {
                       account: acc instanceof Account ? acc.id : "",
                       org: acc instanceof Org ? acc.id : ""
                   }
               });
 
+        // @ts-ignore
+        if (!customer || customer.deleted) {
+            delete acc.billing;
+            return this._sync(acc);
+        }
+
         acc.billing = parseCustomer(customer);
 
-        const sub = acc.billing.subscription;
+        // if (acc instanceof Account && !acc.billing!.subscription && freePlan) {
+        //     await this._stripe.subscriptions.create({
+        //         customer: acc.billing!.customerId,
+        //         plan: freePlan.id
+        //     });
+        // }
+
+        const sub = acc.billing!.subscription;
 
         Object.assign(
             acc.quota,

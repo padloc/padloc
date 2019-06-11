@@ -13,7 +13,18 @@ async function init() {
 
     const config = {
         clientUrl: process.env.PL_CLIENT_URL || "https://localhost:8081",
-        reportErrors: process.env.PL_REPORT_ERRORS || ""
+        reportErrors: process.env.PL_REPORT_ERRORS || "",
+        accountQuota: {
+            items: 50,
+            storage: 0,
+            orgs: 5
+        },
+        orgQuota: {
+            members: 1,
+            groups: 0,
+            vaults: 0,
+            storage: 0
+        }
     };
     const messenger = new EmailMessenger({
         host: process.env.PL_EMAIL_SERVER || "",

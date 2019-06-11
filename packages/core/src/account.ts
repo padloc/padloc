@@ -87,6 +87,8 @@ export class Account extends PBES2Container implements Storable {
 
     billing?: BillingInfo;
 
+    usedStorage: number = 0;
+
     /**
      * Whether or not this Account object is current "locked" or, in other words,
      * whether the `privateKey` and `signingKey` properties have been decrypted.
@@ -146,6 +148,7 @@ export class Account extends PBES2Container implements Storable {
                 typeof this.name === "string" &&
                 typeof this.mainVault === "string" &&
                 typeof this.revision === "string" &&
+                typeof this.usedStorage === "number" &&
                 this.created instanceof Date &&
                 this.updated instanceof Date &&
                 this.publicKey instanceof Uint8Array &&
@@ -173,6 +176,7 @@ export class Account extends PBES2Container implements Storable {
         sessions,
         quota,
         billing,
+        usedStorage,
         ...rest
     }: any) {
         Object.assign(this, {
@@ -187,7 +191,8 @@ export class Account extends PBES2Container implements Storable {
             quota: new AccountQuota().fromRaw(quota),
             billing: billing && new BillingInfo().fromRaw(billing),
             orgs,
-            sessions
+            sessions,
+            usedStorage: usedStorage || 0
         });
         return super.fromRaw(rest);
     }

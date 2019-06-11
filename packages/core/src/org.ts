@@ -266,6 +266,8 @@ export class Org extends SharedContainer implements Storable {
 
     billing?: BillingInfo;
 
+    usedStorage: number = 0;
+
     toRaw() {
         return {
             ...super.toRaw(["privateKey", "invitesKey"]),
@@ -279,6 +281,7 @@ export class Org extends SharedContainer implements Storable {
             (typeof this.name === "string" &&
                 typeof this.revision === "string" &&
                 typeof this.id === "string" &&
+                typeof this.usedStorage === "number" &&
                 this.type in OrgType &&
                 this.vaults.every(({ id, name }: any) => typeof id === "string" && typeof name === "string"))
         );
@@ -298,6 +301,7 @@ export class Org extends SharedContainer implements Storable {
         signingParams,
         quota,
         billing,
+        usedStorage,
         ...rest
     }: any) {
         this.signingParams.fromRaw(signingParams);
@@ -314,7 +318,8 @@ export class Org extends SharedContainer implements Storable {
             groups: groups.map((g: any) => new Group().fromRaw(g)),
             invites: invites.map((g: any) => new Invite().fromRaw(g)),
             vaults,
-            billing: billing && new BillingInfo().fromRaw(billing)
+            billing: billing && new BillingInfo().fromRaw(billing),
+            usedStorage: usedStorage || 0
         });
 
         return super.fromRaw(rest);

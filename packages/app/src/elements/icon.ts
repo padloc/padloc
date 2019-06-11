@@ -216,6 +216,10 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="group"]) > div::before {
+                content: "\\f509";
+            }
+
+            :host([icon="members"]) > div::before {
                 content: "\\f0c0";
             }
 
@@ -333,6 +337,14 @@ export class PlIcon extends BaseElement {
 
             :host([icon="discount"]) > div::before {
                 content: "\\f295";
+            }
+
+            :host([icon="dollar"]) > div::before {
+                content: "\\f155";
+            }
+
+            :host([icon="storage"]) > div::before {
+                content: "\\f49e";
             }
 
             :host([icon="logo"]) > div::before {

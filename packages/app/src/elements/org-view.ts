@@ -4,7 +4,7 @@ import { OrgMember, OrgRole, Group } from "@padloc/core/lib/org.js";
 import { BillingInfo } from "@padloc/core/lib/billing.js";
 import { StateMixin } from "../mixins/state.js";
 import { shared, mixins } from "../styles";
-import { dialog, alert, choose, confirm } from "../dialog.js";
+import { dialog, alert, choose, confirm, prompt } from "../dialog.js";
 import { app, router } from "../init.js";
 import { element, html, css, property, query, observe } from "./base.js";
 import { View } from "./view.js";
@@ -13,8 +13,8 @@ import { VaultDialog } from "./vault-dialog.js";
 import { GroupDialog } from "./group-dialog.js";
 import { MemberDialog } from "./member-dialog.js";
 import { CreateInvitesDialog } from "./create-invites-dialog.js";
-import { UpdateSubscriptionDialog } from "./update-subscription-dialog.js";
 import "./billing-info.js";
+import "./subscription.js";
 import "./member-item.js";
 import "./group-item.js";
 import "./vault-item.js";
@@ -38,8 +38,8 @@ export class OrgView extends StateMixin(View) {
     @dialog("pl-member-dialog")
     private _memberDialog: MemberDialog;
 
-    @dialog("pl-update-subscription-dialog")
-    private _updateSubscriptionDialog: UpdateSubscriptionDialog;
+    @dialog("pl-create-invites-dialog")
+    private _createInvitesDialog: CreateInvitesDialog;
 
     private get _org() {
         return app.getOrg(this.orgId);
@@ -129,10 +129,6 @@ export class OrgView extends StateMixin(View) {
         }
     }
 
-    private async _updateSubscription() {
-        this._updateSubscriptionDialog.show(this._org!);
-    }
-
     private async _deleteOrg() {
         const deleted = await prompt(
             $l(
@@ -185,7 +181,7 @@ export class OrgView extends StateMixin(View) {
                 position: relative;
                 width: 100%;
                 height: 100%;
-                max-width: 600px;
+                max-width: 500px;
                 margin: 0 auto;
             }
 
@@ -249,24 +245,11 @@ export class OrgView extends StateMixin(View) {
 
             .settings h3 {
                 margin: 18px 8px 12px 8px;
+                text-align: center;
             }
 
-            .subscription {
-                padding: 12px 8px 12px 16px;
-                display: flex;
-                align-items: flex-start;
-            }
-
-            .plan-name {
-                font-size: 130%;
-                font-weight: bold;
-            }
-
-            .payment-method {
-                display: flex;
-                align-items: center;
-                padding: 8px;
-                font-weight: bold;
+            .settings button {
+                width: 100%;
             }
         `
     ];
@@ -299,7 +282,7 @@ export class OrgView extends StateMixin(View) {
                     <div class="spacer"></div>
 
                     <div class="tap" ?active=${this._page === "members"} @click=${() => (this._page = "members")}>
-                        <pl-icon icon="user"></pl-icon>
+                        <pl-icon icon="members"></pl-icon>
                         <div>${$l("Members")}</div>
                     </div>
 
@@ -410,32 +393,7 @@ export class OrgView extends StateMixin(View) {
                     <div ?hidden=${this._page !== "settings" || !isOwner} class="subview settings">
                         <h3>${$l("Subscription")}</h3>
 
-                        ${billing.subscription
-                            ? html`
-                                  <div class="item subscription">
-                                      <div class="flex">
-                                          <div class="plan-name">
-                                              ${billing.subscription.plan.name}
-                                          </div>
-                                          <div class="subscription-quantity">
-                                              ${$l("{0} Seats", billing.subscription.members.toString())}
-                                          </div>
-                                          <div class="subscription-cost">
-                                              ${$l(
-                                                  "${0} / Year",
-                                                  (
-                                                      (billing.subscription.members * billing.subscription.plan.cost) /
-                                                      100
-                                                  ).toFixed(2)
-                                              )}
-                                          </div>
-                                      </div>
-                                      <div>
-                                          <pl-icon class="tap" icon="edit" @click=${this._updateSubscription}></pl-icon>
-                                      </div>
-                                  </div>
-                              `
-                            : html``}
+                        <pl-subscription .org=${this._org} class="item"></pl-subscription>
 
                         <h3>${$l("Billing Info")}</h3>
 

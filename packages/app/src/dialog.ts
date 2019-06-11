@@ -53,16 +53,14 @@ export function prompt(message: string, opts: PromptOptions = {}, instant = fals
         : lineUpDialog("pl-prompt-dialog", (dialog: PromptDialog) => dialog.show(opts));
 }
 
-export function choose(
-    message: string,
-    options: string[],
-    opts: AlertOptions = {
-        preventDismiss: true,
-        type: "question"
-    }
-): Promise<number> {
+export function choose(message: string, options: string[], opts: AlertOptions = {}): Promise<number> {
     opts.options = options;
-    return alert(message, opts);
+    return alert(message, {
+        ...opts,
+        options,
+        type: "choice",
+        vertical: true
+    });
 }
 
 export function generate() {

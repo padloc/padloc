@@ -13,7 +13,7 @@ export enum PlanType {
 export class Plan extends Serializable {
     id = "";
     type: PlanType = PlanType.Free;
-    name = "";
+    name = "Free";
     description = "";
     items: number = -1;
     storage: number = 0;
@@ -83,10 +83,40 @@ export class Subscription extends Serializable {
     groups: number = 0;
     vaults: number = 0;
     members: number = 0;
+    willCancel: boolean = false;
+    periodEnd: Date = new Date(0);
+    trialEnd?: Date;
 
-    fromRaw({ id, status, account, plan, members, storage, groups, vaults, org }: any) {
+    fromRaw({
+        id,
+        status,
+        account,
+        plan,
+        members,
+        items,
+        storage,
+        groups,
+        vaults,
+        org,
+        trialEnd,
+        willCancel,
+        periodEnd
+    }: any) {
         this.plan.fromRaw(plan);
-        return super.fromRaw({ id, status, account, members, storage, groups, vaults, org });
+        return super.fromRaw({
+            id,
+            status,
+            account,
+            members,
+            storage,
+            groups,
+            vaults,
+            items,
+            org,
+            trialEnd: trialEnd && new Date(trialEnd),
+            periodEnd: new Date(periodEnd),
+            willCancel
+        });
     }
 
     validate() {
@@ -99,6 +129,7 @@ export class Subscription extends Serializable {
             typeof this.members === "number" &&
             typeof this.storage === "number" &&
             typeof this.groups === "number" &&
+            typeof this.willCancel === "boolean" &&
             typeof this.vaults === "number"
         );
     }
@@ -164,6 +195,7 @@ export class UpdateBillingParams extends Serializable {
     paymentMethod?: { name: string } & any;
     address?: BillingAddress;
     coupon?: string;
+    cancel?: boolean;
 
     constructor(params?: Partial<UpdateBillingParams>) {
         super();
@@ -172,7 +204,7 @@ export class UpdateBillingParams extends Serializable {
         }
     }
 
-    fromRaw({ account, email, org, plan, members, paymentMethod, coupon, address }: any) {
+    fromRaw({ account, email, org, plan, members, paymentMethod, coupon, address, cancel }: any) {
         return super.fromRaw({
             email,
             account,
@@ -181,7 +213,8 @@ export class UpdateBillingParams extends Serializable {
             members,
             paymentMethod,
             coupon,
-            address: address && new BillingAddress().fromRaw(address)
+            address: address && new BillingAddress().fromRaw(address),
+            cancel
         });
     }
 
@@ -193,6 +226,7 @@ export class UpdateBillingParams extends Serializable {
             (!this.email || typeof this.email === "string") &&
             (!this.members || typeof this.members === "number") &&
             (!this.plan || typeof this.plan === "string") &&
+            (!this.cancel || typeof this.cancel === "boolean") &&
             (!this.coupon || typeof this.coupon === "string")
         );
     }
