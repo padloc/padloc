@@ -17,3 +17,4 @@ services:
         volumes:
             - ./data:/data
             - ./docs:/docs
+            - ./app:/app

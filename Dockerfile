@@ -8,7 +8,7 @@ ENV PL_ATTACHMENTS_PATH=/docs
 EXPOSE 3000
 EXPOSE 8080
 
-VOLUME ["/data", "/docs"]
+VOLUME ["/app", "/data", "/docs"]
 
 WORKDIR /home/padloc/
 
@@ -16,5 +16,6 @@ COPY . .
 
 RUN npm ci --unsafe-perm
 RUN npm run build
+RUN cp -r packages/app/build/pwa /app
 
 CMD ["npm", "start"]
