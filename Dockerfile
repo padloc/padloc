@@ -10,12 +10,11 @@ EXPOSE 8080
 
 VOLUME ["/app", "/data", "/docs"]
 
-WORKDIR /home/padloc/
+WORKDIR /padloc
 
 COPY . .
 
 RUN npm ci --unsafe-perm
 RUN npm run build
-RUN cp -r packages/app/build/pwa /app
 
 CMD ["npm", "start"]
