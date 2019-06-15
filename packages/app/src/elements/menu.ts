@@ -16,6 +16,11 @@ export class Menu extends StateMixin(BaseElement) {
         router.go(path, params);
     }
 
+    private _lock() {
+        this.dispatch("toggle-menu");
+        app.lock();
+    }
+
     static styles = [
         shared,
         css`
@@ -120,7 +125,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                 <nav>
                     <ul>
-                        <li class="tap" @click=${() => this._goTo("items")} ?selected=${this.selected === "items"}>
+                        <li class="tap" @click=${() => this._goTo("items", {})} ?selected=${this.selected === "items"}>
                             <pl-icon icon="list"></pl-icon>
 
                             <div>${$l("Items")}</div>
@@ -182,7 +187,7 @@ export class Menu extends StateMixin(BaseElement) {
             </div>
 
             <div class="footer">
-                <pl-icon icon="lock" class="tap" @click=${() => app.lock()}></pl-icon>
+                <pl-icon icon="lock" class="tap" @click=${this._lock}></pl-icon>
                 <pl-icon icon="refresh" class="tap" @click=${() => app.synchronize()}></pl-icon>
                 <div class="flex"></div>
                 <pl-spinner .active=${this.state.syncing} class="syncing"></pl-spinner>

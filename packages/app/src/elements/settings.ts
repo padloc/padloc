@@ -187,7 +187,7 @@ export class Settings extends StateMixin(View) {
         });
     }
 
-    _editAccount() {
+    private _editAccount() {
         const account = app.account!;
         prompt("", {
             title: $l("Edit Profile"),
@@ -206,7 +206,7 @@ export class Settings extends StateMixin(View) {
         });
     }
 
-    async _logout() {
+    private async _logout() {
         const confirmed = await confirm($l("Do you really want to log out?"), $l("Log Out"));
         if (confirmed) {
             app.logout();

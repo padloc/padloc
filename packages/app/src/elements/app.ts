@@ -101,10 +101,13 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
                 position: relative;
                 margin: var(--gutter-size);
                 margin-left: 0;
+                background: var(--color-quaternary);
+                border-radius: var(--border-radius);
             }
 
             .views > * {
                 will-change: opacity;
+                transition: opacity 0.4s;
                 ${mixins.fullbleed()}
             }
 
@@ -129,6 +132,7 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
                     margin: 0;
                 }
 
+                .views,
                 .views > * {
                     border-radius: 0;
                 }
