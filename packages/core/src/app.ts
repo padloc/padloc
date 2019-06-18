@@ -113,6 +113,10 @@ export class AppState extends Storable {
     }
 }
 
+export interface BillingConfig {
+    stripePublicKey: string;
+}
+
 /**
  * The `App` class is *the* user-facing top level component encapsulating all
  * functionality of the Padloc client app. It is responsible for managing
@@ -186,7 +190,8 @@ export class App {
         /** Persistent storage provider */
         public storage: Storage,
         /** Data transport provider */
-        sender: Sender
+        sender: Sender,
+        public billingConfig?: BillingConfig
     ) {
         this.api = new Client(this.state, sender);
     }

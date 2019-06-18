@@ -83,8 +83,6 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
             params.org = this._org.id;
             try {
                 await app.updateBilling(params);
-                this._submitButton.success();
-                this.done(this._org);
             } catch (e) {
                 this._error = e.message || $l("Something went wrong. Please try again later!");
                 this._submitButton.fail();
@@ -92,6 +90,7 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
             }
         }
 
+        this._submitButton.success();
         this.done(this._org);
     }
 

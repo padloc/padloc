@@ -396,13 +396,17 @@ export class OrgView extends StateMixin(View) {
                     </div>
 
                     <div ?hidden=${this._page !== "settings" || !isOwner} class="subview settings">
-                        <h3>${$l("Subscription")}</h3>
+                        ${app.billingConfig
+                            ? html`
+                                  <h3>${$l("Subscription")}</h3>
 
-                        <pl-subscription .org=${this._org} class="item"></pl-subscription>
+                                  <pl-subscription .org=${this._org} class="item"></pl-subscription>
 
-                        <h3>${$l("Billing Info")}</h3>
+                                  <h3>${$l("Billing Info")}</h3>
 
-                        <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
+                                  <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
+                              `
+                            : ""}
 
                         <h3>${$l("General")}</h3>
 

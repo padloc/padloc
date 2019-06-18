@@ -168,7 +168,7 @@ export class Menu extends StateMixin(BaseElement) {
                     <li class="new org tap" @click=${() => this.dispatch("create-org")}>
                         <pl-icon icon="add"></pl-icon>
 
-                        <div>${$l("New Org")}</div>
+                        <div>${$l("New Organization")}</div>
                     </li>
                 </ul>
 

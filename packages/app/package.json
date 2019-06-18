@@ -26,7 +26,7 @@
   "description": "Padloc UI",
   "scripts": {
     "build": "tsc && polymer build",
-    "start": "cd build/pwa && echo \"window.env = { serverUrl: '$PL_SERVER_URL', clientUrl: '$PL_CLIENT_URL'};\" > env.js && polymer serve -p $PL_CLIENT_PORT --hostname 0.0.0.0",
+    "start": "cd build/pwa && echo \"window.env = { serverUrl: '$PL_SERVER_URL', clientUrl: '$PL_CLIENT_URL', stripePubKey: '$PL_STRIPE_PUBLIC_KEY'};\" > env.js && polymer serve -p $PL_CLIENT_PORT --hostname 0.0.0.0",
     "dev": "tsc --watch | polymer serve"
   }
 }

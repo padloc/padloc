@@ -1,3 +1,4 @@
+import { Plan } from "@padloc/core/lib/billing.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../init.js";
@@ -414,9 +415,13 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
     @listen("create-org")
     async _createOrg() {
-        const plan = await this._choosePlanDialog.show();
-        if (!plan) {
-            return;
+        let plan: Plan | null = null;
+
+        if (app.billingConfig) {
+            const plan = await this._choosePlanDialog.show();
+            if (!plan) {
+                return;
+            }
         }
 
         const org = await this._createOrgDialog.show(plan);

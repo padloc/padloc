@@ -21,9 +21,6 @@ interface Params {
 @element("pl-billing-dialog")
 export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
     @property()
-    stripePubKey = "pk_test_jTF9rjIV9LyiyJ6ir2ARE8Oy";
-
-    @property()
     condensed: boolean = false;
 
     @property()
@@ -92,9 +89,15 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
     async connectedCallback() {
         super.connectedCallback();
 
+        const stripePubKey = app.billingConfig && app.billingConfig.stripePublicKey;
+
+        if (!stripePubKey) {
+            return;
+        }
+
         const Stripe = await stripeLoaded;
 
-        const stripe = (this._stripe = Stripe(this.stripePubKey));
+        const stripe = (this._stripe = Stripe(stripePubKey));
         const elements = stripe.elements({
             fonts: [
                 {
