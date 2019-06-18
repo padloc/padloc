@@ -4,7 +4,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
 import { shared } from "../styles";
 import { app } from "../init";
-import { dialog } from "../dialog";
+import { dialog, alert } from "../dialog";
 import { BaseElement, element, html, css, property, query } from "./base.js";
 import { LoadingButton } from "./loading-button";
 import { MemberDialog } from "./member-dialog.js";
@@ -32,7 +32,7 @@ export class InviteItem extends BaseElement {
             await this._memberDialog.show({ org: app.getOrg(this.invite!.org!.id)!, member });
         } catch (e) {
             this._confirmButton.fail();
-            throw e;
+            alert(e.message || $l("Something went wrong. Please try again later!"), { type: "warning" });
         }
     }
 

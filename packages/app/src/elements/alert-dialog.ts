@@ -111,6 +111,7 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
             case "success":
                 return "success";
             case "question":
+            case "choice":
             case "destructive":
                 return "question";
             default:

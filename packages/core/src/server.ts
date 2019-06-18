@@ -359,7 +359,10 @@ class Controller implements API {
         const ownedOrgs = existingOrgs.filter(o => o.owner === account.id);
 
         if (account.quota.orgs !== -1 && ownedOrgs.length >= account.quota.orgs) {
-            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+            throw new Err(
+                ErrorCode.ORG_QUOTA_EXCEEDED,
+                "You have reached the maximum number of organizations for this account!"
+            );
         }
 
         org.id = await uuid();
@@ -508,11 +511,19 @@ class Controller implements API {
         }
 
         // Check members quota
-        if (
-            (org.quota.members !== -1 && members.length > org.quota.members) ||
-            (org.quota.groups !== -1 && groups.length > org.quota.groups)
-        ) {
-            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+        if (org.quota.members !== -1 && members.length > org.quota.members) {
+            throw new Err(
+                ErrorCode.MEMBER_QUOTA_EXCEEDED,
+                "You have reached the maximum number of members for this organization!"
+            );
+        }
+
+        // Check groups quota
+        if (org.quota.groups !== -1 && groups.length > org.quota.groups) {
+            throw new Err(
+                ErrorCode.GROUP_QUOTA_EXCEEDED,
+                "You have reached the maximum number of groups for this organization!"
+            );
         }
 
         // Added members
@@ -645,7 +656,10 @@ class Controller implements API {
 
         // Check vault quota of organization
         if (org.quota.vaults !== -1 && org.vaults.length > org.quota.vaults) {
-            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+            throw new Err(
+                ErrorCode.VAULT_QUOTA_EXCEEDED,
+                "You have reached the maximum number of vaults for this organization!"
+            );
         }
 
         // Persist cahnges
@@ -765,7 +779,12 @@ class Controller implements API {
         const quota = org ? org.quota : account.quota;
 
         if (quota.storage !== -1 && currentUsage + att.size > quota.storage * 1e9) {
-            throw new Err(ErrorCode.QUOTA_EXCEEDED);
+            throw new Err(
+                ErrorCode.STORAGE_QUOTA_EXCEEDED,
+                org
+                    ? "You have reached the storage limit for this organization!"
+                    : "You have reached the storage limit for this account!"
+            );
         }
 
         await this.attachmentStorage.put(att);

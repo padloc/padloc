@@ -154,12 +154,6 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
                 border-bottom: solid 3px var(--color-shade-2);
             }
 
-            .error {
-                color: var(--color-negative);
-                padding: 8px;
-                text-align: center;
-            }
-
             .quantity-wrapper {
                 display: flex;
                 align-items: center;

@@ -26,6 +26,9 @@ export class MemberDialog extends Dialog<InputType, void> {
     @query("#saveButton")
     private _saveButton: LoadingButton;
 
+    @property()
+    private _error: string = "";
+
     private _vaults = new Map<string, { read: boolean; write: boolean }>();
     private _groups = new Set<string>();
 
@@ -78,6 +81,7 @@ export class MemberDialog extends Dialog<InputType, void> {
         this.org = org;
         this._groups = this._getCurrentGroups();
         this._vaults = this._getCurrentVaults();
+        this._error = "";
         await this.updateComplete;
         return super.show();
     }
@@ -130,6 +134,7 @@ export class MemberDialog extends Dialog<InputType, void> {
             return;
         }
 
+        this._error = "";
         this._saveButton.start();
 
         const vaults = [...this._vaults.entries()]
@@ -145,7 +150,7 @@ export class MemberDialog extends Dialog<InputType, void> {
             this.done();
         } catch (e) {
             this._saveButton.fail();
-            this.requestUpdate();
+            this._error = e.message || $l("Something went wrong. Please try again later!");
             throw e;
         }
     }
@@ -393,6 +398,10 @@ export class MemberDialog extends Dialog<InputType, void> {
                     </div>
                 `
             )}
+
+            <div class="error item" ?hidden="${!this._error}">
+                ${this._error}
+            </div>
 
             <div class="actions" ?hidden=${!accountIsAdmin}>
                 <pl-loading-button

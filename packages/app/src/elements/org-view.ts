@@ -286,7 +286,12 @@ export class OrgView extends StateMixin(View) {
                         <div>${$l("Members")}</div>
                     </div>
 
-                    <div class="tap" ?active=${this._page === "groups"} @click=${() => (this._page = "groups")}>
+                    <div
+                        class="tap"
+                        ?active=${this._page === "groups"}
+                        @click=${() => (this._page = "groups")}
+                        ?hidden=${!org.groups.length && !org.quota.groups}
+                    >
                         <pl-icon icon="group"></pl-icon>
                         <div>${$l("Groups")}</div>
                     </div>

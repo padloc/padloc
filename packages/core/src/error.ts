@@ -36,7 +36,11 @@ export enum ErrorCode {
     MAX_REQUEST_SIZE_EXCEEDED = "max_request_size_exceeded",
 
     // Quota errors
-    QUOTA_EXCEEDED = "quota_exceeded",
+    ORG_QUOTA_EXCEEDED = "org_quota_exceeded",
+    MEMBER_QUOTA_EXCEEDED = "member_quota_exceeded",
+    GROUP_QUOTA_EXCEEDED = "group_quota_exceeded",
+    VAULT_QUOTA_EXCEEDED = "vault_quota_exceeded",
+    STORAGE_QUOTA_EXCEEDED = "storage_quota_exceeded",
 
     // Generic Errors
     CLIENT_ERROR = "client_error",

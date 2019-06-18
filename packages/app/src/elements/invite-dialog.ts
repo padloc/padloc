@@ -30,7 +30,7 @@ export class InviteDialog extends Dialog<Invite, void> {
     private _memberDialog: MemberDialog;
 
     @property()
-    private _errorMessage: string = "";
+    private _error: string = "";
 
     private _pollInterval = 5000;
 
@@ -39,7 +39,7 @@ export class InviteDialog extends Dialog<Invite, void> {
     }
 
     async show(invite: Invite): Promise<void> {
-        this._errorMessage = "";
+        this._error = "";
         this.invite = invite;
         setTimeout(() => this._refresh(), this._pollInterval);
         return super.show();
@@ -184,6 +184,10 @@ export class InviteDialog extends Dialog<Invite, void> {
                     )}
                 </div>
 
+                <div class="item error" ?hidden=${!this._error}>
+                    ${this._error}
+                </div>
+
                 <div class="actions">
                     ${forMe ? this._inviteeActions() : this._adminActions()}
                 </div>
@@ -212,10 +216,6 @@ export class InviteDialog extends Dialog<Invite, void> {
                 label="${$l("Enter Confirmation Code")}"
             >
             </pl-input>
-
-            <div class="invite-text error" ?hidden=${!this._errorMessage}>
-                ${this._errorMessage}
-            </div>
 
             <div class="invite-text small" ?hidden=${!_enableActions}>
                 ${$l(
@@ -303,6 +303,7 @@ export class InviteDialog extends Dialog<Invite, void> {
             this._deleteButton.success();
             this.done();
         } catch (e) {
+            this._error = e.message || $l("Something went wrong. Please try again later!");
             this._deleteButton.fail();
             throw e;
         }
@@ -320,6 +321,7 @@ export class InviteDialog extends Dialog<Invite, void> {
             this.invite = await app.createInvites(org!, [this.invite!.email], this.invite!.purpose)[0];
             this._resendButton.success();
         } catch (e) {
+            this._error = e.message || $l("Something went wrong. Please try again later!");
             this._resendButton.fail();
             throw e;
         }
@@ -331,7 +333,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         }
 
         if (!this._codeInput.value) {
-            this._errorMessage = $l("Please enter a confirmation code!");
+            this._error = $l("Please enter a confirmation code!");
             this.rumble();
             return;
         }
@@ -350,13 +352,13 @@ export class InviteDialog extends Dialog<Invite, void> {
                 );
             } else {
                 this._acceptButton.fail();
-                this._errorMessage = $l("Wrong confirmation code. Please try again!");
+                this._error = $l("Wrong confirmation code. Please try again!");
                 this.rumble();
                 return;
             }
         } catch (e) {
             this._acceptButton.fail();
-            this._errorMessage = e.message || $l("Something went wrong. Please try again later!");
+            this._error = e.message || $l("Something went wrong. Please try again later!");
             this.rumble();
         }
     }
@@ -376,6 +378,7 @@ export class InviteDialog extends Dialog<Invite, void> {
 
             this.done();
         } catch (e) {
+            this._error = e.message || $l("Something went wrong. Please try again later!");
             this._confirmButton.fail();
             throw e;
         }

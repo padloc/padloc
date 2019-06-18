@@ -35,6 +35,9 @@ export class VaultDialog extends Dialog<InputType, void> {
     @property()
     private _filterString: string = "";
 
+    @property()
+    private _error: string = "";
+
     private _members = new Map<string, { read: boolean; write: boolean }>();
 
     private _groups = new Map<string, { read: boolean; write: boolean }>();
@@ -104,6 +107,7 @@ export class VaultDialog extends Dialog<InputType, void> {
     }
 
     async show({ vault, org }: InputType): Promise<void> {
+        this._error = "";
         this.vault = vault;
         this.org = org;
         this._members = this._getCurrentMembers();
@@ -161,6 +165,7 @@ export class VaultDialog extends Dialog<InputType, void> {
             return;
         }
 
+        this._error = "";
         this._saveButton.start();
 
         const groups = [...this._groups.entries()]
@@ -182,6 +187,7 @@ export class VaultDialog extends Dialog<InputType, void> {
             this.done();
         } catch (e) {
             this._saveButton.fail();
+            this._error = e.message || $l("Something went wrong. Please try again later!");
             throw e;
         }
 
@@ -355,6 +361,10 @@ export class VaultDialog extends Dialog<InputType, void> {
                     </div>
                 `
             )}
+
+            <div class="error item" ?hidden="${!this._error}">
+                ${this._error}
+            </div>
 
             <div class="actions" ?hidden=${!isAdmin}>
                 <pl-loading-button

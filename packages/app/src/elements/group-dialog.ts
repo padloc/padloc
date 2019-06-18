@@ -31,6 +31,9 @@ export class GroupDialog extends Dialog<InputType, void> {
     @property()
     private _membersFilter: string = "";
 
+    @property()
+    private _error: string = "";
+
     private _members = new Set<string>();
 
     private _getCurrentMembers(): Set<string> {
@@ -65,6 +68,7 @@ export class GroupDialog extends Dialog<InputType, void> {
         this.org = org;
         this.group = group;
         this._members = this._getCurrentMembers();
+        this._error = "";
         await this.updateComplete;
         this._nameInput.value = group ? group.name : "";
         this._clearMembersFilter();
@@ -89,6 +93,7 @@ export class GroupDialog extends Dialog<InputType, void> {
             return;
         }
 
+        this._error = "";
         this._saveButton.start();
 
         try {
@@ -104,6 +109,7 @@ export class GroupDialog extends Dialog<InputType, void> {
             this._saveButton.success();
             this.done();
         } catch (e) {
+            this._error = e.message || $l("Something went wrong. Please try again later!");
             this._saveButton.fail();
             throw e;
         }
@@ -221,6 +227,10 @@ export class GroupDialog extends Dialog<InputType, void> {
                     </pl-toggle-button>
                 `
             )}
+
+            <div class="error item" ?hidden="${!this._error}">
+                ${this._error}
+            </div>
 
             <div class="actions" ?hidden=${!canEdit}>
                 <pl-loading-button

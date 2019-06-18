@@ -242,6 +242,13 @@ export const shared = css`
         /*box-shadow: 0px 5px 5px -5px var(--color-shade-2), 0 0 2px var(--color-shade-1);*/
     }
 
+    .item.error {
+        background: var(--color-negative);
+        color: var(--color-tertiary);
+        padding: 8px;
+        text-align: center;
+    }
+
     .item.padded {
         padding: 8px;
     }

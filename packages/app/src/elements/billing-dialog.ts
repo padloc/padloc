@@ -218,13 +218,6 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                 margin: 0;
             }
 
-            .error {
-                background: var(--color-negative);
-                color: var(--color-tertiary);
-                padding: 8px;
-                text-align: center;
-            }
-
             .payment-method {
                 display: flex;
                 align-items: center;
