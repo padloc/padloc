@@ -1,4 +1,5 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
+import { PlanType } from "@padloc/core/lib/billing.js";
 import { app, router } from "../init.js";
 import { shared, mixins } from "../styles";
 import { StateMixin } from "../mixins/state.js";
@@ -19,6 +20,11 @@ export class Menu extends StateMixin(BaseElement) {
     private _lock() {
         this.dispatch("toggle-menu");
         app.lock();
+    }
+
+    private _getPremium() {
+        this.dispatch("get-premium");
+        this.dispatch("toggle-menu");
     }
 
     static styles = [
@@ -49,10 +55,6 @@ export class Menu extends StateMixin(BaseElement) {
                 border-radius: 8px;
                 overflow: hidden;
                 height: 40px;
-            }
-
-            li:not([selected]):hover {
-                background: rgba(0, 0, 0, 0.1);
             }
 
             li[selected] {
@@ -121,10 +123,20 @@ export class Menu extends StateMixin(BaseElement) {
                 height: 20px;
                 margin: 5px;
             }
+
+            .get-premium {
+                background: var(--color-negative);
+            }
         `
     ];
 
     render() {
+        const canUpgrade =
+            app.account &&
+            app.billingConfig &&
+            (!app.account.billing ||
+                !app.account.billing.subscription ||
+                app.account.billing.subscription.plan.type === PlanType.Free);
         return html`
             <div class="scroller">
                 <pl-logo reveal></pl-logo>
@@ -145,6 +157,12 @@ export class Menu extends StateMixin(BaseElement) {
                             <pl-icon icon="settings"></pl-icon>
 
                             <div>${$l("Settings")}</div>
+                        </li>
+
+                        <li class="get-premium tap" @click=${this._getPremium} ?hidden=${!canUpgrade}>
+                            <pl-icon icon="favorite"></pl-icon>
+
+                            <div>${$l("Get Premium")}</div>
                         </li>
                     </ul>
                 </nav>
