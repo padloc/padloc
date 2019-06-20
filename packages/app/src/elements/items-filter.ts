@@ -186,7 +186,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                     </div>
 
                     ${this.state.tags.map(
-                        tag => html`
+                        ([tag]) => html`
                             <button class="filter-tag tap" @click=${() => this._select({ tag })}>
                                 <pl-icon icon="tag"></pl-icon>
                                 <div>

@@ -102,9 +102,9 @@ export class TagsInput extends BaseElement {
     render() {
         const { tags, editing, vault, _showResults } = this;
         const { value } = this._input || { value: "" };
-        const results = app.state.tags.filter(
-            t => !this.tags.includes(t) && t !== value && t.toLowerCase().startsWith(value)
-        );
+        const results = app.state.tags
+            .filter(([t]) => !this.tags.includes(t) && t !== value && t.toLowerCase().startsWith(value))
+            .map(([t]) => t);
         if (value) {
             results.push(value);
         }

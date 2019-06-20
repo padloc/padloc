@@ -127,6 +127,16 @@ export class Menu extends StateMixin(BaseElement) {
             .get-premium {
                 background: var(--color-negative);
             }
+
+            li .detail {
+                flex: none;
+                opacity: 0.5;
+            }
+
+            .detail.warning {
+                color: var(--color-negative);
+                opacity: 1;
+            }
         `
     ];
 
@@ -137,6 +147,9 @@ export class Menu extends StateMixin(BaseElement) {
             (!app.account.billing ||
                 !app.account.billing.subscription ||
                 app.account.billing.subscription.plan.type === PlanType.Free);
+
+        const itemsQuota = (app.account && app.account.quota.items) || -1;
+
         return html`
             <div class="scroller">
                 <pl-logo reveal></pl-logo>
@@ -167,7 +180,47 @@ export class Menu extends StateMixin(BaseElement) {
                     </ul>
                 </nav>
 
+                <h3>${$l("Vaults")}</h3>
+                <ul>
+                    ${app.vaults.map(
+                        vault => html`
+                            <li class="vault tap" @click=${() => this._goTo("items", { vault: vault.id })}>
+                                <pl-icon icon="vault"></pl-icon>
+                                <div>${vault}</div>
+                                <div
+                                    class="detail ${vault.id === app.mainVault!.id && itemsQuota !== -1
+                                        ? "warning"
+                                        : ""}"
+                                >
+                                    ${vault.id === app.mainVault!.id && itemsQuota !== -1
+                                        ? `${vault.items.size} / ${itemsQuota}`
+                                        : vault.items.size}
+                                </div>
+                            </li>
+                        `
+                    )}
+                </ul>
+
+                <h3>${$l("Tags")}</h3>
+
+                <div class="no-tags" ?hidden=${!!this.state.tags.length}>${$l("You don't have any tags yet.")}</div>
+
+                <ul>
+                    ${this.state.tags.map(
+                        ([tag, count]) => html`
+                            <li class="menu-tag tap" @click=${() => this._goTo("items", { tag })}>
+                                <pl-icon icon="tag"></pl-icon>
+
+                                <div>${tag}</div>
+
+                                <div class="detail">${count}</div>
+                            </li>
+                        `
+                    )}
+                </ul>
+
                 <h3>${$l("Orgs & Teams")}</h3>
+
                 <ul>
                     ${app.orgs.map(
                         org => html`
@@ -188,34 +241,6 @@ export class Menu extends StateMixin(BaseElement) {
 
                         <div>${$l("New Organization")}</div>
                     </li>
-                </ul>
-
-                <h3>${$l("Vaults")}</h3>
-                <ul>
-                    ${app.vaults.map(
-                        vault => html`
-                            <li class="vault tap" @click=${() => this._goTo("items", { vault: vault.id })}>
-                                <pl-icon icon="vault"></pl-icon>
-                                <div>${vault}</div>
-                            </li>
-                        `
-                    )}
-                </ul>
-
-                <h3>${$l("Tags")}</h3>
-
-                <div class="no-tags" ?hidden=${!!this.state.tags.length}>${$l("You don't have any tags yet.")}</div>
-
-                <ul>
-                    ${this.state.tags.map(
-                        tag => html`
-                            <li class="menu-tag tap" @click=${() => this._goTo("items", { tag })}>
-                                <pl-icon icon="tag"></pl-icon>
-
-                                <div>${tag}</div>
-                            </li>
-                        `
-                    )}
                 </ul>
             </div>
 

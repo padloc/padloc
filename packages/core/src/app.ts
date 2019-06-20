@@ -84,11 +84,21 @@ export class AppState extends Storable {
 
     /** All [[Tag]]s found within the users [[Vault]]s */
     get tags() {
-        const tags = [];
+        const tags = new Map<string, number>();
+
         for (const vault of this.vaults) {
-            tags.push(...vault.items.tags);
+            for (const item of vault.items) {
+                for (const tag of item.tags) {
+                    if (!tags.has(tag)) {
+                        tags.set(tag, 0);
+                    }
+
+                    tags.set(tag, tags.get(tag)! + 1);
+                }
+            }
         }
-        return [...new Set(tags)];
+
+        return [...tags.entries()];
     }
 
     /** Whether the app is in "locked" state */
