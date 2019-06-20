@@ -422,7 +422,7 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
         let plan: Plan | null = null;
 
         if (app.billingConfig) {
-            const plan = await this._choosePlanDialog.show();
+            plan = await this._choosePlanDialog.show();
             if (!plan) {
                 return;
             }
