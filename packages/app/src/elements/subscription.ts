@@ -10,7 +10,6 @@ import { BaseElement, element, property, html, css, query } from "./base.js";
 import "./icon.js";
 import { LoadingButton } from "./loading-button.js";
 import { UpdateSubscriptionDialog } from "./update-subscription-dialog.js";
-import { PremiumDialog } from "./premium-dialog.js";
 
 @element("pl-subscription")
 export class OrgSubscription extends StateMixin(BaseElement) {
@@ -19,9 +18,6 @@ export class OrgSubscription extends StateMixin(BaseElement) {
 
     @dialog("pl-update-subscription-dialog")
     private _updateSubscriptionDialog: UpdateSubscriptionDialog;
-
-    @dialog("pl-premium-dialog")
-    private _premiumDialog: PremiumDialog;
 
     @query("#editButton")
     private _editButton: LoadingButton;
@@ -42,7 +38,8 @@ export class OrgSubscription extends StateMixin(BaseElement) {
         }
 
         if (!this.org && sub.plan.type === PlanType.Free) {
-            return this._premiumDialog.show();
+            this.dispatch("get-premium");
+            return;
         }
 
         const canceled = sub.willCancel || sub.status === SubscriptionStatus.Canceled;
@@ -63,7 +60,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
     }
 
     private _updatePlan() {
-        this.org ? this._updateSubscriptionDialog.show(this.org) : this._premiumDialog.show();
+        this.org ? this._updateSubscriptionDialog.show(this.org) : this.dispatch("get-premium");
     }
 
     private async _do(fn: () => Promise<any>) {
@@ -297,7 +294,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                       </pl-loading-button>
                   `
                 : html`
-                      <button class="premium-button primary tap" @click=${this._update}>${$l("Go Premium")}</button>
+                      <button class="premium-button primary tap" @click=${this._update}>${$l("Get Premium")}</button>
                   `}
         `;
     }

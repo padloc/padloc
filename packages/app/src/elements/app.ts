@@ -14,13 +14,14 @@ import { ItemsList } from "./items-list.js";
 import { Settings } from "./settings.js";
 import { OrgView } from "./org-view.js";
 import { Start } from "./start.js";
-import { alert, clearDialogs, dialog } from "../dialog.js";
+import { alert, confirm, clearDialogs, dialog } from "../dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { Menu } from "./menu.js";
 import { InviteDialog } from "./invite-dialog.js";
 import { ItemDialog } from "./item-dialog.js";
 import { CreateOrgDialog } from "./create-org-dialog.js";
 import { ChoosePlanDialog } from "./choose-plan-dialog.js";
+import { PremiumDialog } from "./premium-dialog.js";
 
 // const cordovaReady = new Promise(resolve => {
 //     document.addEventListener("deviceready", resolve);
@@ -54,6 +55,9 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
     @dialog("pl-create-org-dialog")
     private _createOrgDialog: CreateOrgDialog;
+
+    @dialog("pl-premium-dialog")
+    private _premiumDialog: PremiumDialog;
 
     @property()
     private _view: View | null;
@@ -427,6 +431,18 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
         const org = await this._createOrgDialog.show(plan);
         if (org) {
             router.go(`org/${org.id}`);
+        }
+    }
+
+    @listen("get-premium")
+    async _getPremium(e: CustomEvent) {
+        const message = e.detail && (e.detail.message as string);
+        const icon = (e.detail && e.detail.icon) || "error";
+
+        const confirmed = !message || (await confirm(message, $l("Get Premium"), $l("Cancel"), { icon }));
+
+        if (confirmed) {
+            this._premiumDialog.show();
         }
     }
 }

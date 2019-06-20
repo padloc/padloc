@@ -2,6 +2,7 @@ import { Vault } from "@padloc/core/lib/vault.js";
 import { FieldType, VaultItem } from "@padloc/core/lib/item.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app } from "../init.js";
+import { alert } from "../dialog.js";
 import { element, html, css, query } from "./base.js";
 import { Input } from "./input.js";
 import { Select } from "./select.js";
@@ -131,10 +132,28 @@ export class CreateItemDialog extends Dialog<undefined, VaultItem> {
     }
 
     private async _enter() {
+        const vault = this._vaultSelect.selected!;
+        const quota = app.account!.quota;
+
+        if (vault.id === app.mainVault!.id && quota.items !== -1 && vault.items.size >= quota.items) {
+            this.done();
+            if (app.billingConfig) {
+                this.dispatch("get-premium", {
+                    message: $l(
+                        "You have reached the maximum number of items for this account. " +
+                            "Upgrade to Premium to get unlimited items for you private vault!"
+                    ),
+                    icon: "list"
+                });
+            } else {
+                alert($l("You have reached the maximum number of items for this account!"), { type: "warning" });
+            }
+        }
+
         const template = this._templateSelect.selected;
         const item = await app.createItem(
             this._nameInput.value,
-            this._vaultSelect.selected!,
+            vault,
             template.fields.map(f => ({ ...f, value: "" }))
         );
         this.done(item);
