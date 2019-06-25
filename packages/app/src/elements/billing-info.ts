@@ -1,7 +1,7 @@
 import { countries, localize as $l } from "@padloc/core/lib/locale.js";
 import { BillingInfo } from "@padloc/core/lib/billing.js";
 import { shared } from "../styles";
-import { dialog } from "../dialog";
+import { dialog, alert } from "../dialog";
 import { app } from "../init.js";
 import { BaseElement, element, property, html, css, query } from "./base.js";
 import "./icon.js";
@@ -34,6 +34,7 @@ export class BillingInfoElement extends BaseElement {
                 this._editButton.success();
             } catch (e) {
                 this._editButton.fail();
+                alert(e.message || $l("Something went wrong. Please try again later!"), {type: "warning"});
                 throw e;
             }
         }

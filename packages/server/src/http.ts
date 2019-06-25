@@ -3,7 +3,7 @@ import { Receiver, Request, Response } from "@padloc/core/src/transport";
 import { marshal, unmarshal } from "@padloc/core/src/encoding";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 
-function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
+export function readBody(request: IncomingMessage, maxSize = 1e7): Promise<string> {
     return new Promise((resolve, reject) => {
         const body: Buffer[] = [];
         let size = 0;

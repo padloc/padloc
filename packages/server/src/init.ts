@@ -1,6 +1,6 @@
 import { Server } from "@padloc/core/src/server";
 import { setProvider } from "@padloc/core/src/crypto";
-// import { StubBillingProvider } from "@padloc/core/src/billing";
+import { BillingProvider } from "@padloc/core/src/billing";
 import { NodeCryptoProvider } from "./crypto";
 import { HTTPReceiver } from "./http";
 import { LevelDBStorage } from "./storage";
@@ -36,25 +36,34 @@ async function init() {
     const storage = new LevelDBStorage(process.env.PL_DB_PATH || "db");
     const attachmentStorage = new FileSystemStorage({ path: process.env.PL_ATTACHMENTS_PATH || "attachments" });
     // const billingProvider = new StubBillingProvider();
-    const billingProvider = new StripeBillingProvider(
-        {
-            stripeSecret: process.env.PL_STRIPE_SECRET || ""
-        },
-        storage
-    );
 
-    await billingProvider.init();
+    let billingProvider: BillingProvider | undefined = undefined;
 
-    const server = new Server(config, storage, messenger, attachmentStorage, billingProvider);
+    if (process.env.PL_STRIPE_SECRET) {
+        let billingPort = parseInt(process.env.PL_BILLING_PORT!);
+        if (isNaN(billingPort)) {
+            billingPort = 3001;
+        }
+
+        const stripeProvider = new StripeBillingProvider(
+            {
+                stripeSecret: process.env.PL_STRIPE_SECRET || "",
+                port: billingPort
+            },
+            storage
+        );
+
+        await stripeProvider.init();
+
+        billingProvider = stripeProvider;
+    }
 
     let port = parseInt(process.env.PL_SERVER_PORT!);
     if (isNaN(port)) {
         port = 3000;
     }
-    let billingPort = parseInt(process.env.PL_BILLING_PORT!);
-    if (isNaN(billingPort)) {
-        billingPort = 3001;
-    }
+
+    const server = new Server(config, storage, messenger, attachmentStorage, billingProvider);
 
     console.log(`Starting server on port ${port}`);
     new HTTPReceiver(port).listen(req => server.handle(req));

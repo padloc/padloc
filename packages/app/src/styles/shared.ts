@@ -387,6 +387,7 @@ export const shared = css`
     .info-body {
         padding: 20px 15px 20px 10px;
         flex: 1;
+        width: 0;
     }
 
     .info-title {

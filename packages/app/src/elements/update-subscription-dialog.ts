@@ -34,6 +34,7 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
     private _choosePlanDialog: ChoosePlanDialog;
 
     async show(org: Org) {
+        this._error = "";
         this.org = org;
         const sub = org.billing!.subscription!;
         this.plan = sub.plan;

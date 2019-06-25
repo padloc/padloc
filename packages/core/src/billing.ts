@@ -63,13 +63,10 @@ export class PaymentMethod extends Serializable {
 }
 
 export enum SubscriptionStatus {
-    Incomplete = "incomplete",
-    IncompleteExpired = "incomplete_expired",
     Trialing = "trialing",
     Active = "active",
-    PastDue = "past_due",
-    Canceled = "canceled",
-    Unpaid = "unpaid"
+    Inactive = "inactive",
+    Canceled = "canceled"
 }
 
 export class Subscription extends Serializable {
@@ -83,9 +80,12 @@ export class Subscription extends Serializable {
     groups: number = 0;
     vaults: number = 0;
     members: number = 0;
-    willCancel: boolean = false;
     periodEnd: Date = new Date(0);
     trialEnd?: Date;
+
+    paymentError?: string;
+    paymentRequiresAuth?: string;
+    currentInvoice: string = "";
 
     fromRaw({
         id,
@@ -99,8 +99,10 @@ export class Subscription extends Serializable {
         vaults,
         org,
         trialEnd,
-        willCancel,
-        periodEnd
+        periodEnd,
+        paymentError,
+        paymentRequiresAuth,
+        currentInvoice
     }: any) {
         this.plan.fromRaw(plan);
         return super.fromRaw({
@@ -115,7 +117,9 @@ export class Subscription extends Serializable {
             org,
             trialEnd: trialEnd && new Date(trialEnd),
             periodEnd: new Date(periodEnd),
-            willCancel
+            paymentError,
+            paymentRequiresAuth,
+            currentInvoice
         });
     }
 
@@ -129,7 +133,6 @@ export class Subscription extends Serializable {
             typeof this.members === "number" &&
             typeof this.storage === "number" &&
             typeof this.groups === "number" &&
-            typeof this.willCancel === "boolean" &&
             typeof this.vaults === "number"
         );
     }

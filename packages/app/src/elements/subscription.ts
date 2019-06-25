@@ -3,7 +3,7 @@ import { Org } from "@padloc/core/lib/org.js";
 import { PlanType, SubscriptionStatus, UpdateBillingParams, Subscription } from "@padloc/core/lib/billing.js";
 import { shared } from "../styles";
 import { dialog, alert, choose } from "../dialog";
-import { fileSize } from "../util.js";
+import { fileSize, loadScript } from "../util.js";
 import { app } from "../init.js";
 import { StateMixin } from "../mixins/state.js";
 import { BaseElement, element, property, html, css, query } from "./base.js";
@@ -21,6 +21,9 @@ export class OrgSubscription extends StateMixin(BaseElement) {
 
     @query("#editButton")
     private _editButton: LoadingButton;
+
+    @query("#authButton")
+    private _authButton: LoadingButton;
 
     private get _billing() {
         return this.org ? this.org.billing : app.account && app.account.billing;
@@ -42,7 +45,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
             return;
         }
 
-        const canceled = sub.willCancel || sub.status === SubscriptionStatus.Canceled;
+        const canceled = sub.status === SubscriptionStatus.Canceled;
         const choices = canceled ? [$l("Resume Subscription")] : [$l("Cancel Subscription")];
 
         if (this.org) {
@@ -84,6 +87,34 @@ export class OrgSubscription extends StateMixin(BaseElement) {
 
     private async _resumeSubscription() {
         this._do(() => app.updateBilling(new UpdateBillingParams({ cancel: false })));
+    }
+
+    private async _authenticatePayment() {
+        const stripePubKey = app.billingConfig && app.billingConfig.stripePublicKey;
+
+        if (!stripePubKey || this._authButton.state === "loading") {
+            return;
+        }
+
+        this._authButton.start();
+
+        let error: string = "";
+        try {
+            const Stripe = await loadScript("https://js.stripe.com/v3/", "Stripe");
+            const stripe = Stripe(stripePubKey);
+            const result = await stripe.handleCardPayment(this._subscription!.paymentRequiresAuth);
+            error = result.error && result.error.message;
+            await app.updateBilling(new UpdateBillingParams());
+        } catch(e) {
+            error = e.message || $l("Something went wrong. Please try again later!");
+        }
+
+        if (error) {
+            alert(error);
+            this._authButton.fail();
+        } else {
+            this._authButton.success();
+        }
     }
 
     static styles = [
@@ -244,7 +275,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                     </div>
                 </div>
 
-                ${sub.willCancel
+                ${sub.status === SubscriptionStatus.Canceled
                     ? html`
                           <div class="quota-item" warning>
                               <pl-icon icon="time"></pl-icon>
@@ -254,23 +285,13 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                               </div>
                           </div>
                       `
-                    : sub.status === SubscriptionStatus.Canceled
+                    : sub.status === SubscriptionStatus.Inactive
                     ? html`
                           <div class="quota-item" warning>
                               <pl-icon icon="error"></pl-icon>
 
                               <div class="label">
-                                  ${$l("Canceled")}
-                              </div>
-                          </div>
-                      `
-                    : sub.status === SubscriptionStatus.PastDue || sub.status === SubscriptionStatus.Unpaid
-                    ? html`
-                          <div class="quota-item" warning>
-                              <pl-icon icon="error"></pl-icon>
-
-                              <div class="label">
-                                  ${$l("Payment Failed")}
+                                  ${sub.paymentRequiresAuth ? $l("Authentication Required") : $l("Inactive")}
                               </div>
                           </div>
                       `
@@ -287,7 +308,13 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                     : html``}
             </div>
 
-            ${this.org || sub.plan.type !== PlanType.Free
+            ${ sub.paymentError ? html`
+                <div class="error item">${sub.paymentError}</div>
+            ` : ""}
+
+            ${sub.paymentRequiresAuth ? html`
+                  <pl-loading-button id="authButton" class="premium-button primary tap" @click=${this._authenticatePayment}>${$l("Complete Payment")}</pl-loading-button>
+            ` : this.org || sub.plan.type !== PlanType.Free
                 ? html`
                       <pl-loading-button id="editButton" class="edit-button tap icon" @click=${this._update}>
                           <pl-icon icon="edit"></pl-icon>

@@ -55,6 +55,7 @@ export class PremiumDialog extends Dialog<void, void> {
     async show() {
         const plan = (await app.api.getPlans()).find(p => p.type === PlanType.Premium);
         this.plan = plan!;
+        this._error = "";
         this._updateBillingParams = null;
         return super.show();
     }
@@ -66,6 +67,7 @@ export class PremiumDialog extends Dialog<void, void> {
         });
         if (billing) {
             this._updateBillingParams = billing;
+            this._error = "";
         }
         this.open = true;
     }

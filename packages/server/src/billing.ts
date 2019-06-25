@@ -1,3 +1,4 @@
+import { createServer } from "http";
 import * as Stripe from "stripe";
 import { Account } from "@padloc/core/src/account";
 import { Org } from "@padloc/core/src/org";
@@ -9,14 +10,17 @@ import {
     Plan,
     // PlanType,
     Subscription,
+    SubscriptionStatus,
     UpdateBillingParams,
     PaymentMethod,
     BillingAddress,
     Discount
 } from "@padloc/core/src/billing";
+import { readBody } from "./http";
 
 export interface StripeConfig {
     stripeSecret: string;
+    port: number;
 }
 
 function parsePlan({
@@ -46,21 +50,47 @@ function parsePlan({
 
 function parseSubscription({
     id,
-    status,
+    status: _status,
     plan,
     quantity,
     trial_end,
     cancel_at_period_end,
     current_period_end,
-    metadata: { items, storage, groups, vaults, account, org }
+    metadata: { items, storage, groups, vaults, account, org },
+    latest_invoice
 }: Stripe.subscriptions.ISubscription) {
     const planInfo = parsePlan(plan!);
+
+    const payment = latest_invoice && latest_invoice.payment_intent;
+    const paymentStatus = payment && payment.status;
+    const paymentError = payment && payment.last_payment_error && payment.last_payment_error.message || undefined;
+    const paymentRequiresAuth = payment && paymentStatus === "requires_action" ? payment.client_secret : undefined;
+
+    let status: SubscriptionStatus;
+
+    switch (_status) {
+        case "trialing":
+            status = SubscriptionStatus.Trialing;
+            break;
+        case "active":
+            status = cancel_at_period_end ? SubscriptionStatus.Canceled : SubscriptionStatus.Active;
+            break;
+        case "canceled":
+        case "unpaid":
+        case "past_due":
+        case "incomplete":
+        case "incomplete_expired":
+            status = SubscriptionStatus.Inactive;
+            break;
+        default:
+            status = SubscriptionStatus.Inactive;
+    }
+
     return new Subscription().fromRaw({
         id,
         status,
         trialEnd: trial_end && trial_end * 1000,
         periodEnd: current_period_end && current_period_end * 1000,
-        willCancel: cancel_at_period_end,
         plan: planInfo.toRaw(),
         account: account || "",
         org: org || "",
@@ -68,7 +98,10 @@ function parseSubscription({
         storage: storage ? parseInt(storage) : planInfo.storage || 0,
         groups: groups ? parseInt(groups) : planInfo.groups || 0,
         vaults: vaults ? parseInt(vaults) : planInfo.vaults || 0,
-        members: quantity
+        members: quantity,
+        paymentError,
+        paymentRequiresAuth,
+        currentInvoice: latest_invoice && latest_invoice.id || ""
     });
 }
 
@@ -129,9 +162,8 @@ export class StripeBillingProvider implements BillingProvider {
     }
 
     async init() {
-        const plans = await this._stripe.plans.list();
-
-        this._availablePlans = plans.data.map(p => parsePlan(p)).filter(p => p.available);
+        this._loadPlans();
+        this._startWebhook();
     }
 
     async update({ account, org, email, plan, members, paymentMethod, address, coupon, cancel }: UpdateBillingParams) {
@@ -187,14 +219,16 @@ export class StripeBillingProvider implements BillingProvider {
             try {
                 if (info.subscription) {
                     await this._stripe.subscriptions.update(info.subscription.id, {
-                        trial_from_plan: true,
-                        // trial_end: "now",
+                        // trial_from_plan: true,
+                        // trial_end: Math.floor(Date.now() / 1000) + 20,
+                        trial_end: "now",
                         ...params
                     } as Stripe.subscriptions.ISubscriptionUpdateOptions);
                 } else {
                     await this._stripe.subscriptions.create({
                         customer: info.customerId,
-                        trial_from_plan: true,
+                        // trial_from_plan: true,
+                        trial_end: "now",
                         ...params
                     } as Stripe.subscriptions.ISubscriptionCreationOptions);
                 }
@@ -204,6 +238,17 @@ export class StripeBillingProvider implements BillingProvider {
         }
 
         await this._sync(acc);
+
+        const sub = acc.billing && acc.billing.subscription;
+
+        if (sub && sub.status === SubscriptionStatus.Inactive && paymentMethod && !sub.paymentRequiresAuth) {
+            try {
+                await this._stripe.invoices.pay(sub.currentInvoice);
+                await this._sync(acc);
+            } catch (e) {
+                throw new Err(ErrorCode.BILLING_ERROR, e.message);
+            }
+        }
     }
 
     async getPrice(account: Account, { plan, members }: UpdateBillingParams) {
@@ -257,7 +302,7 @@ export class StripeBillingProvider implements BillingProvider {
         // const freePlan = this._availablePlans.find(p => p.type === PlanType.Free);
 
         const customer = acc.billing
-            ? await this._stripe.customers.retrieve(acc.billing.customerId)
+            ? await this._stripe.customers.retrieve(acc.billing.customerId, { expand: [ "subscriptions.data.latest_invoice.payment_intent" ]})
             : await this._stripe.customers.create({
                   // email: acc instanceof Account ? acc.email : undefined,
                   // plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
@@ -308,5 +353,68 @@ export class StripeBillingProvider implements BillingProvider {
 
     async getPlans() {
         return [...this._availablePlans.values()];
+    }
+
+    private async _startWebhook() {
+        const server = createServer(async (httpReq, httpRes) => {
+            httpRes.on("error", e => {
+                console.error(e);
+            });
+
+            let event: Stripe.events.IEvent;
+
+            try {
+                const body = await readBody(httpReq);
+                event = JSON.parse(body);
+            } catch(e) {
+                httpRes.statusCode = 400;
+                httpRes.end();
+                return;
+            }
+
+            console.log("stripe event: ", event.type);
+
+            let customer: Stripe.customers.ICustomer | undefined = undefined;
+
+            switch (event.type) {
+                case "customer.created":
+                case "customer.deleted":
+                case "customer.updated":
+                    customer = event.data.object as Stripe.customers.ICustomer;
+                    break;
+                case "customer.subscription.deleted":
+                case "customer.subscription.created":
+                case "customer.subscription.updated":
+                    const sub = event.data.object as Stripe.subscriptions.ISubscription;
+                    customer = await this._stripe.customers.retrieve(sub.customer as string);
+                    break;
+                case "plan.created":
+                case "plan.updated":
+                case "plan.deleted":
+                    this._loadPlans();
+                    break;
+            }
+
+            if (customer) {
+                console.log("customer: ", customer, customer.metadata);
+                const { account, org } = customer.metadata;
+                const acc = org ? await this.storage.get(Org, org) : account ? await this.storage.get(Account, account) : null;
+
+                if (acc) {
+                    console.log("account", acc.name);
+                    await this._sync(acc);
+                }
+            }
+
+            httpRes.statusCode = 200;
+            httpRes.end();
+        });
+
+        server.listen(this.config.port);
+    }
+
+    private async _loadPlans() {
+        const plans = await this._stripe.plans.list();
+        this._availablePlans = plans.data.map(p => parsePlan(p)).filter(p => p.available);
     }
 }

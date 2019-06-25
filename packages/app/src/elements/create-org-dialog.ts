@@ -109,11 +109,12 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         const billing = await this._billingDialog.show({
             billingInfo
         });
+
         if (billing) {
             this._updateBillingParams = billing;
+            this._error = "";
         }
 
-        this._error = "";
         this.open = true;
     }
 
