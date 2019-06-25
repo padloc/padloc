@@ -63,7 +63,7 @@ function parseSubscription({
 
     const payment = latest_invoice && latest_invoice.payment_intent;
     const paymentStatus = payment && payment.status;
-    const paymentError = payment && payment.last_payment_error && payment.last_payment_error.message || undefined;
+    const paymentError = (payment && payment.last_payment_error && payment.last_payment_error.message) || undefined;
     const paymentRequiresAuth = payment && paymentStatus === "requires_action" ? payment.client_secret : undefined;
 
     let status: SubscriptionStatus;
@@ -101,7 +101,7 @@ function parseSubscription({
         members: quantity,
         paymentError,
         paymentRequiresAuth,
-        currentInvoice: latest_invoice && latest_invoice.id || ""
+        currentInvoice: (latest_invoice && latest_invoice.id) || ""
     });
 }
 
@@ -220,15 +220,15 @@ export class StripeBillingProvider implements BillingProvider {
                 if (info.subscription) {
                     await this._stripe.subscriptions.update(info.subscription.id, {
                         // trial_from_plan: true,
-                        // trial_end: Math.floor(Date.now() / 1000) + 20,
-                        trial_end: "now",
+                        trial_end: Math.floor(Date.now() / 1000) + 20,
+                        // trial_end: "now",
                         ...params
                     } as Stripe.subscriptions.ISubscriptionUpdateOptions);
                 } else {
                     await this._stripe.subscriptions.create({
                         customer: info.customerId,
-                        // trial_from_plan: true,
-                        trial_end: "now",
+                        trial_from_plan: true,
+                        // trial_end: "now",
                         ...params
                     } as Stripe.subscriptions.ISubscriptionCreationOptions);
                 }
@@ -302,7 +302,9 @@ export class StripeBillingProvider implements BillingProvider {
         // const freePlan = this._availablePlans.find(p => p.type === PlanType.Free);
 
         const customer = acc.billing
-            ? await this._stripe.customers.retrieve(acc.billing.customerId, { expand: [ "subscriptions.data.latest_invoice.payment_intent" ]})
+            ? await this._stripe.customers.retrieve(acc.billing.customerId, {
+                  expand: ["subscriptions.data.latest_invoice.payment_intent"]
+              })
             : await this._stripe.customers.create({
                   // email: acc instanceof Account ? acc.email : undefined,
                   // plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
@@ -366,7 +368,7 @@ export class StripeBillingProvider implements BillingProvider {
             try {
                 const body = await readBody(httpReq);
                 event = JSON.parse(body);
-            } catch(e) {
+            } catch (e) {
                 httpRes.statusCode = 400;
                 httpRes.end();
                 return;
@@ -398,7 +400,11 @@ export class StripeBillingProvider implements BillingProvider {
             if (customer) {
                 console.log("customer: ", customer, customer.metadata);
                 const { account, org } = customer.metadata;
-                const acc = org ? await this.storage.get(Org, org) : account ? await this.storage.get(Account, account) : null;
+                const acc = org
+                    ? await this.storage.get(Org, org)
+                    : account
+                    ? await this.storage.get(Account, account)
+                    : null;
 
                 if (acc) {
                     console.log("account", acc.name);
