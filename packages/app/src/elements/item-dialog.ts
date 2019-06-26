@@ -94,8 +94,9 @@ export class ItemDialog extends Dialog<string, void> {
                 display: flex;
             }
 
-            pl-input.name {
+            .name {
                 padding: 0 10px;
+                line-height: 40px;
             }
 
             pl-tags-input {
@@ -164,6 +165,26 @@ export class ItemDialog extends Dialog<string, void> {
             .attachment-size {
                 font-size: var(--font-size-tiny);
             }
+
+            .favorite {
+                color: var(--color-secondary);
+                width: 40px;
+                height: 40px;
+                font-size: var(--font-size-default);
+                opacity: 0.3;
+                cursor: pointer;
+                transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 2) 0s;
+            }
+
+            .favorite:hover {
+                opacity: 0.6;
+            }
+
+            .favorite[active] {
+                color: var(--color-negative);
+                opacity: 1;
+                transform: scale(1.1);
+            }
         `
     ];
 
@@ -172,12 +193,13 @@ export class ItemDialog extends Dialog<string, void> {
             return html``;
         }
 
-        const { updated, updatedBy } = this._item!;
+        const { updated, updatedBy, favorited } = this._item!;
         const vault = this._vault!;
         const org = vault.org && app.getOrg(vault.org.id);
         const readonly = !app.hasWritePermissions(vault);
         const updatedByMember = org && org.getMember({ id: updatedBy });
         const attachments = this._item!.attachments || [];
+        const isFavorite = favorited && favorited.includes(app.account!.id);
 
         return html`
             <header>
@@ -189,7 +211,13 @@ export class ItemDialog extends Dialog<string, void> {
                         ?readonly=${!this._editing}
                     >
                     </pl-input>
-                    <pl-icon icon="cancel" class="tap" @click=${this.dismiss}></pl-icon>
+                    <pl-icon icon="cancel" class="tap" @click=${this.dismiss} hidden></pl-icon>
+                    <pl-icon
+                        icon="favorite"
+                        class="favorite"
+                        ?active=${isFavorite}
+                        @click=${() => this._setFavorite(!isFavorite)}
+                    ></pl-icon>
                 </div>
 
                 <pl-tags-input .editing=${this._editing} .vault=${this._vault} @move=${this._move}></pl-tags-input>
@@ -419,5 +447,10 @@ export class ItemDialog extends Dialog<string, void> {
             }
         }
         this.open = true;
+    }
+
+    private _setFavorite(favorite: boolean) {
+        app.updateItem(this._vault!, this._item!, { favorite });
+        this.requestUpdate();
     }
 }

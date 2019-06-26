@@ -439,8 +439,14 @@ export const shared = css`
     .tag pl-icon {
         width: 20px;
         height: 20px;
-        margin-right: 4px;
+    }
+
+    .tag pl-icon:first-child {
         margin-left: -2px;
+    }
+
+    .tag pl-icon:last-child {
+        margin-right: -2px;
     }
 
     .tag.ghost {
@@ -464,7 +470,6 @@ export const shared = css`
 
     .tags.small pl-icon {
         font-size: 10px;
-        margin-right: 0;
         width: 16px;
         height: 16px;
     }

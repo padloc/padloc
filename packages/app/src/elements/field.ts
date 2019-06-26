@@ -124,10 +124,12 @@ export class FieldElement extends BaseElement {
                 height: auto;
                 line-height: 30px;
                 box-sizing: border-box;
+                background: none;
+                border: dashed 1px var(--color-shade-2);
             }
 
             pl-input[readonly] {
-                background: transparent;
+                border: none;
             }
 
             .totp {

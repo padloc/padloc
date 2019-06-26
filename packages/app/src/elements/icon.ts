@@ -248,7 +248,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="org"]) > div::before {
-                content: "\\f1ad";
+                content: "\\f0c0";
             }
 
             // :host([icon="logo"]) > div::before {
@@ -345,6 +345,10 @@ export class PlIcon extends BaseElement {
 
             :host([icon="storage"]) > div::before {
                 content: "\\f49e";
+            }
+
+            :host([icon="hirarchy"]) > div::before {
+                content: "\\f0e8";
             }
 
             :host([icon="logo"]) > div::before {

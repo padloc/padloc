@@ -57,6 +57,10 @@ export class Menu extends StateMixin(BaseElement) {
                 height: 40px;
             }
 
+            li:not(.sub-item) {
+                margin-top: 8px;
+            }
+
             li[selected] {
                 background: rgba(255, 255, 255, 0.2);
             }
@@ -74,16 +78,13 @@ export class Menu extends StateMixin(BaseElement) {
                 font-weight: normal;
             }
 
-            .vault,
-            .org,
-            .menu-tag {
+            .sub-item {
                 height: 35px;
                 font-size: var(--font-size-tiny);
+                margin-left: 20px;
             }
 
-            .vault pl-icon,
-            .org pl-icon,
-            .menu-tag pl-icon {
+            .sub-item pl-icon {
                 width: 30px;
                 height: 30px;
                 font-size: 90%;
@@ -95,7 +96,7 @@ export class Menu extends StateMixin(BaseElement) {
 
             pl-logo {
                 height: 30px;
-                margin: 15px 0 20px 0;
+                margin: 15px 0;
                 opacity: 0.25;
             }
 
@@ -110,6 +111,8 @@ export class Menu extends StateMixin(BaseElement) {
                 padding: 5px;
                 display: flex;
                 align-items: center;
+                box-shadow: rgba(0, 0, 0, 0.2) 0 -1px 15px 0px;
+                z-index: 1;
             }
 
             .footer pl-icon {
@@ -137,10 +140,18 @@ export class Menu extends StateMixin(BaseElement) {
                 color: var(--color-negative);
                 opacity: 1;
             }
+
+            .separator {
+                height: 2px;
+                background: var(--color-shade-2);
+                border-radius: 100%;
+                margin: 8px 16px;
+            }
         `
     ];
 
     render() {
+        const accId = (app.account && app.account.id) || "";
         const canUpgrade =
             app.account &&
             app.billingConfig &&
@@ -150,9 +161,15 @@ export class Menu extends StateMixin(BaseElement) {
 
         const itemsQuota = (app.account && app.account.quota.items) || -1;
 
+        const favCount = app.vaults.reduce((count, vault) => {
+            return [...vault.items].reduce((c, item) => (item.favorited.includes(accId) ? c + 1 : c), count);
+        }, 0);
+
         return html`
             <div class="scroller">
                 <pl-logo reveal></pl-logo>
+
+                <div class="separator"></div>
 
                 <nav>
                     <ul>
@@ -161,6 +178,93 @@ export class Menu extends StateMixin(BaseElement) {
 
                             <div>${$l("Items")}</div>
                         </li>
+
+                        <li
+                            class="sub-item tap"
+                            @click=${() => this._goTo("items", { favorite: true })}
+                            ?selected=${this.selected === "favorites"}
+                        >
+                            <pl-icon icon="favorite"></pl-icon>
+
+                            <div>${$l("Favorites")}</div>
+
+                            <div class="detail">${favCount}</div>
+                        </li>
+
+                        ${app.vaults.map(
+                            vault => html`
+                                <li
+                                    class="sub-item tap"
+                                    @click=${() => this._goTo("items", { vault: vault.id })}
+                                    ?selected=${this.selected === `vault/${vault.id}`}
+                                >
+                                    <pl-icon icon="vault"></pl-icon>
+                                    <div>${vault}</div>
+                                    <div
+                                        class="detail ${vault.id === app.mainVault!.id && itemsQuota !== -1
+                                            ? "warning"
+                                            : ""}"
+                                    >
+                                        ${vault.id === app.mainVault!.id && itemsQuota !== -1
+                                            ? `${vault.items.size} / ${itemsQuota}`
+                                            : vault.items.size}
+                                    </div>
+                                </li>
+                            `
+                        )}
+                        ${this.state.tags.map(
+                            ([tag, count]) => html`
+                                <li
+                                    class="sub-item tap"
+                                    @click=${() => this._goTo("items", { tag })}
+                                    ?selected=${this.selected === `tag/${tag}`}
+                                >
+                                    <pl-icon icon="tag"></pl-icon>
+
+                                    <div>${tag}</div>
+
+                                    <div class="detail">${count}</div>
+                                </li>
+                            `
+                        )}
+
+                        <li class="new sub-item tap" @click=${() => this.dispatch("create-org")}>
+                            <pl-icon icon="add"></pl-icon>
+
+                            <div>${$l("New Vault Item")}</div>
+                        </li>
+
+                        <div class="separator"></div>
+
+                        <li>
+                            <pl-icon icon="hirarchy"></pl-icon>
+
+                            <div>
+                                ${$l("Orgs & Teams")}
+                            </div>
+                        </li>
+
+                        ${app.orgs.map(
+                            org => html`
+                                <li
+                                    class="sub-item tap"
+                                    ?selected=${this.selected === `org/${org.id}`}
+                                    @click=${() => this._goTo(`org/${org.id}`)}
+                                >
+                                    <pl-icon icon="org"></pl-icon>
+
+                                    <div>${org.name}</div>
+                                </li>
+                            `
+                        )}
+
+                        <li class="new sub-item tap" @click=${() => this.dispatch("create-org")}>
+                            <pl-icon icon="add"></pl-icon>
+
+                            <div>${$l("New Organization")}</div>
+                        </li>
+
+                        <div class="separator"></div>
 
                         <li
                             class="tap"
@@ -179,69 +283,6 @@ export class Menu extends StateMixin(BaseElement) {
                         </li>
                     </ul>
                 </nav>
-
-                <h3>${$l("Vaults")}</h3>
-                <ul>
-                    ${app.vaults.map(
-                        vault => html`
-                            <li class="vault tap" @click=${() => this._goTo("items", { vault: vault.id })}>
-                                <pl-icon icon="vault"></pl-icon>
-                                <div>${vault}</div>
-                                <div
-                                    class="detail ${vault.id === app.mainVault!.id && itemsQuota !== -1
-                                        ? "warning"
-                                        : ""}"
-                                >
-                                    ${vault.id === app.mainVault!.id && itemsQuota !== -1
-                                        ? `${vault.items.size} / ${itemsQuota}`
-                                        : vault.items.size}
-                                </div>
-                            </li>
-                        `
-                    )}
-                </ul>
-
-                <h3>${$l("Tags")}</h3>
-
-                <div class="no-tags" ?hidden=${!!this.state.tags.length}>${$l("You don't have any tags yet.")}</div>
-
-                <ul>
-                    ${this.state.tags.map(
-                        ([tag, count]) => html`
-                            <li class="menu-tag tap" @click=${() => this._goTo("items", { tag })}>
-                                <pl-icon icon="tag"></pl-icon>
-
-                                <div>${tag}</div>
-
-                                <div class="detail">${count}</div>
-                            </li>
-                        `
-                    )}
-                </ul>
-
-                <h3>${$l("Orgs & Teams")}</h3>
-
-                <ul>
-                    ${app.orgs.map(
-                        org => html`
-                            <li
-                                class="org tap"
-                                ?selected=${this.selected === `org/${org.id}`}
-                                @click=${() => this._goTo(`org/${org.id}`)}
-                            >
-                                <pl-icon icon="org"></pl-icon>
-
-                                <div>${org.name}</div>
-                            </li>
-                        `
-                    )}
-
-                    <li class="new org tap" @click=${() => this.dispatch("create-org")}>
-                        <pl-icon icon="add"></pl-icon>
-
-                        <div>${$l("New Organization")}</div>
-                    </li>
-                </ul>
             </div>
 
             <div class="footer">

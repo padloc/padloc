@@ -941,9 +941,17 @@ export class App {
     async updateItem(
         vault: Vault,
         item: VaultItem,
-        upd: { name?: string; fields?: Field[]; tags?: Tag[]; attachments?: AttachmentInfo[] }
+        upd: { name?: string; fields?: Field[]; tags?: Tag[]; attachments?: AttachmentInfo[]; favorite?: boolean }
     ) {
-        vault.items.update({ ...item, ...upd, updatedBy: this.account!.id });
+        const account = this.account!;
+
+        let favorited = new Set(item.favorited);
+
+        if (typeof upd.favorite === "boolean") {
+            upd.favorite ? favorited.add(account.id) : favorited.delete(account.id);
+        }
+
+        vault.items.update({ ...item, ...upd, updatedBy: this.account!.id, favorited: [...favorited] });
         this.saveVault(vault);
         await this.syncVault(vault);
     }

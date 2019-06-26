@@ -184,6 +184,8 @@ export interface VaultItem extends CollectionItem {
     lastUsed: Date;
     /** attachments associated with this item */
     attachments: AttachmentInfo[];
+    /** Accounts that have favorited this item */
+    favorited: AccountID[];
 }
 
 /** Creates a new vault item */
@@ -196,7 +198,8 @@ export async function createVaultItem(name: string, fields?: Field[], tags?: Tag
         updated: new Date(),
         updatedBy: "",
         lastUsed: new Date(),
-        attachments: []
+        attachments: [],
+        favorited: []
     };
 }
 

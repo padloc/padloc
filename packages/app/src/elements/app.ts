@@ -307,11 +307,15 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
             this._menu.selected = `org/${id}`;
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
+
+            const { vault, tag, favorite } = router.params;
             this._items.selected = id || "";
-            this._items.vault = router.params.vault || "";
-            this._items.tag = router.params.tag || "";
+            this._items.vault = vault || "";
+            this._items.tag = tag || "";
+            this._items.favorite = favorite === "true";
             this._openView(this._items);
-            this._menu.selected = "items";
+
+            this._menu.selected = vault ? `vault/${vault}` : tag ? `tag/${tag}` : favorite ? "favorites" : "items";
 
             const item = id && app.getItem(id);
             if (item) {

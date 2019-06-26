@@ -14,6 +14,9 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     @property()
     tag: Tag = "";
 
+    @property()
+    favorite: boolean = false;
+
     @property({ reflect: true, attribute: "selecting" })
     private _selecting: Boolean = false;
 
@@ -72,8 +75,9 @@ export class ItemsFilter extends StateMixin(BaseElement) {
             }
 
             .list pl-icon {
-                margin-left: -6px;
-                margin-right: 0;
+                margin-left: -4px;
+                margin-right: 2px;
+                margin-top: 1px;
                 font-size: 80%;
                 width: 25px;
             }
@@ -81,7 +85,6 @@ export class ItemsFilter extends StateMixin(BaseElement) {
             button > div,
             .option > div {
                 ${mixins.ellipsis()}
-                flex: 1;
             }
 
             .scrim {
@@ -134,14 +137,28 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                 padding: 5px 10px 15px 10px;
                 opacity: 0.5;
             }
+
+            .count {
+                opacity: 0.7;
+                margin-left: 6px;
+                margin-right: 2px;
+                font-size: var(--font-size-tiny);
+            }
         `
     ];
 
     render() {
-        const { vault: vaultId, tag } = this;
+        const { vault: vaultId, tag, favorite } = this;
         const vault = app.getVault(vaultId);
-        const cl = vault ? "vault" : tag ? "filter-tag" : "all";
-        const label = vault ? vault.toString() : tag || $l("All Items");
+        const cl = favorite ? "favorites" : vault ? "vault" : tag ? "filter-tag" : "all";
+        const label = favorite ? $l("Favorites") : vault ? vault.toString() : tag || $l("All Items");
+        const accId = (app.account && app.account.id) || "";
+
+        const favCount = app.vaults.reduce((count, vault) => {
+            return [...vault.items].reduce((c, item) => (item.favorited.includes(accId) ? c + 1 : c), count);
+        }, 0);
+
+        const totalCount = app.vaults.reduce((count, vault) => count + vault.items.size, 0);
 
         return html`
             <button class="tap ${cl}" @click=${() => (this._selecting = !this._selecting)}>
@@ -157,13 +174,15 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         <div>
                             ${$l("All Items")}
                         </div>
+                        <div class="count">${totalCount}</div>
                     </button>
 
-                    <button class="favorites tap" @click=${() => this._select({})} hidden>
+                    <button class="favorites tap" @click=${() => this._select({ favorite: true })}>
                         <pl-icon icon="favorite"></pl-icon>
                         <div>
                             ${$l("Favorites")}
                         </div>
+                        <div class="count">${favCount}</div>
                     </button>
 
                     <h4>${$l("Vaults")}</h4>
@@ -175,6 +194,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                                 <div>
                                     ${vault}
                                 </div>
+                                <div class="count">${vault.items.size}</div>
                             </button>
                         `
                     )}
@@ -186,12 +206,13 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                     </div>
 
                     ${this.state.tags.map(
-                        ([tag]) => html`
+                        ([tag, count]) => html`
                             <button class="filter-tag tap" @click=${() => this._select({ tag })}>
                                 <pl-icon icon="tag"></pl-icon>
                                 <div>
                                     ${tag}
                                 </div>
+                                <div class="count">${count}</div>
                             </button>
                         `
                     )}
@@ -200,13 +221,16 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         `;
     }
 
-    _select({ tag, vault }: { tag?: Tag; vault?: VaultID }) {
+    _select({ tag, vault, favorite }: { tag?: Tag; vault?: VaultID; favorite?: boolean }) {
         const params: any = {};
         if (tag) {
             params.tag = tag;
         }
         if (vault) {
             params.vault = vault;
+        }
+        if (favorite) {
+            params.favorite = favorite;
         }
         router.go("items", params);
     }
