@@ -55,6 +55,9 @@ export class Menu extends StateMixin(BaseElement) {
                 border-radius: 8px;
                 overflow: hidden;
                 height: 40px;
+                font-weight: 600;
+                --color-highlight: var(--color-tertiary);
+                --color-foreground: var(--color-secondary);
             }
 
             li:not(.sub-item) {
@@ -62,7 +65,10 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             li[selected] {
-                background: rgba(255, 255, 255, 0.2);
+                background: var(--color-highlight);
+                box-shadow: rgba(0, 0, 0, 0.1) 0 1px 1px;
+                color: var(--color-foreground);
+                font-weight: bold;
             }
 
             li div {
@@ -88,6 +94,16 @@ export class Menu extends StateMixin(BaseElement) {
                 width: 30px;
                 height: 30px;
                 font-size: 90%;
+            }
+
+            .favorites {
+                --color-highlight: var(--color-negative);
+                --color-foreground: var(--color-tertiary);
+            }
+
+            .vault {
+                --color-highlight: var(--color-primary);
+                --color-foreground: var(--color-tertiary);
             }
 
             .new {
@@ -133,7 +149,8 @@ export class Menu extends StateMixin(BaseElement) {
 
             li .detail {
                 flex: none;
-                opacity: 0.5;
+                opacity: 0.7;
+                font-weight: semi-bold;
             }
 
             .detail.warning {
@@ -180,7 +197,7 @@ export class Menu extends StateMixin(BaseElement) {
                         </li>
 
                         <li
-                            class="sub-item tap"
+                            class="sub-item tap favorites"
                             @click=${() => this._goTo("items", { favorite: true })}
                             ?selected=${this.selected === "favorites"}
                         >
@@ -194,7 +211,7 @@ export class Menu extends StateMixin(BaseElement) {
                         ${app.vaults.map(
                             vault => html`
                                 <li
-                                    class="sub-item tap"
+                                    class="sub-item tap vault"
                                     @click=${() => this._goTo("items", { vault: vault.id })}
                                     ?selected=${this.selected === `vault/${vault.id}`}
                                 >
@@ -228,7 +245,7 @@ export class Menu extends StateMixin(BaseElement) {
                             `
                         )}
 
-                        <li class="new sub-item tap" @click=${() => this.dispatch("create-org")}>
+                        <li class="new sub-item tap" @click=${() => this.dispatch("create-item")}>
                             <pl-icon icon="add"></pl-icon>
 
                             <div>${$l("New Vault Item")}</div>

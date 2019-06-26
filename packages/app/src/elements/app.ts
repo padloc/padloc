@@ -22,6 +22,7 @@ import { ItemDialog } from "./item-dialog.js";
 import { CreateOrgDialog } from "./create-org-dialog.js";
 import { ChoosePlanDialog } from "./choose-plan-dialog.js";
 import { PremiumDialog } from "./premium-dialog.js";
+import { CreateItemDialog } from "./create-item-dialog.js";
 
 // const cordovaReady = new Promise(resolve => {
 //     document.addEventListener("deviceready", resolve);
@@ -58,6 +59,9 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
     @dialog("pl-premium-dialog")
     private _premiumDialog: PremiumDialog;
+
+    @dialog("pl-create-item-dialog")
+    private _createItemDialog: CreateItemDialog;
 
     @property()
     private _view: View | null;
@@ -418,6 +422,14 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
     _androidBack() {
         if (!router.back()) {
             navigator.Backbutton && navigator.Backbutton.goBack();
+        }
+    }
+
+    @listen("create-item")
+    async _newItem() {
+        const item = await this._createItemDialog.show();
+        if (item) {
+            router.go(`items/${item.id}?edit`);
         }
     }
 

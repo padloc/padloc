@@ -10,7 +10,6 @@ import { dialog, confirm } from "../dialog.js";
 import { shared, mixins } from "../styles";
 import { element, html, css, property, query, listen, observe } from "./base.js";
 import { View } from "./view.js";
-import { CreateItemDialog } from "./create-item-dialog.js";
 import { Input } from "./input.js";
 import { MoveItemsDialog } from "./move-items-dialog.js";
 import "./icon.js";
@@ -68,9 +67,6 @@ export class ItemsList extends StateMixin(View) {
 
     private _cachedBounds: DOMRect | ClientRect | null = null;
     // private _selected = new Map<string, ListItem>();
-
-    @dialog("pl-create-item-dialog")
-    private _createItemDialog: CreateItemDialog;
 
     @dialog("pl-move-items-dialog")
     private _moveItemsDialog: MoveItemsDialog;
@@ -421,7 +417,7 @@ export class ItemsList extends StateMixin(View) {
 
                 <div class="flex"></div>
 
-                <pl-icon icon="add" class="tap fab primary" @click=${() => this._newItem()}></pl-icon>
+                <pl-icon icon="add" class="tap fab primary" @click=${() => this.dispatch("create-item")}></pl-icon>
             </div>
 
             <div class="fabs" ?hidden=${!this.multiSelect}>
@@ -446,13 +442,6 @@ export class ItemsList extends StateMixin(View) {
     @listen("resize", window)
     _resizeHandler() {
         delete this._cachedBounds;
-    }
-
-    private async _newItem() {
-        const item = await this._createItemDialog.show();
-        if (item) {
-            router.go(`items/${item.id}?edit`);
-        }
     }
     //
     // private _scrollToIndex(i: number) {
