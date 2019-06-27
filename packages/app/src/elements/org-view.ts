@@ -158,6 +158,24 @@ export class OrgView extends StateMixin(View) {
         }
     }
 
+    private async _changeName() {
+        await prompt("", {
+            title: $l("Rename Organization"),
+            confirmLabel: $l("Save"),
+            label: $l("Company Name"),
+            value: this._org!.name,
+            validate: async name => {
+                if (!name) {
+                    throw $l("Please enter a name!");
+                }
+
+                await app.updateOrg(this._org!.id, async org => (org.name = name));
+
+                return name;
+            }
+        });
+    }
+
     @observe("orgId")
     _clearMembersFilter() {
         this._membersFilter = this._filterMembersInput.value = "";
@@ -410,7 +428,7 @@ export class OrgView extends StateMixin(View) {
 
                         <h3>${$l("General")}</h3>
 
-                        <button class="tap item">${$l("Change Organization Name")}</button>
+                        <button class="tap item" @click=${this._changeName}>${$l("Change Organization Name")}</button>
 
                         <button class="item tap negative" @click=${this._deleteOrg}>
                             ${$l("Delete Organization")}
