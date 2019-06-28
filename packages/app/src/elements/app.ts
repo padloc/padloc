@@ -15,6 +15,7 @@ import { Settings } from "./settings.js";
 import { OrgView } from "./org-view.js";
 import { Start } from "./start.js";
 import { alert, confirm, clearDialogs, dialog } from "../dialog.js";
+import { Dialog } from "./dialog.js";
 import { clearClipboard } from "../clipboard.js";
 import { Menu } from "./menu.js";
 import { InviteDialog } from "./invite-dialog.js";
@@ -254,6 +255,8 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
     @listen("route-changed", router)
     async _routeChanged() {
+        Dialog.closeAll();
+
         await app.loaded;
 
         const path = router.path;
@@ -323,14 +326,12 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
             const item = id && app.getItem(id);
             if (item) {
-                const done = this._itemDialog.show(item.item.id);
+                this._itemDialog.show(item.item.id);
                 const { edit, ...rest } = router.params;
                 if (typeof edit !== "undefined") {
                     this._itemDialog.edit();
                     router.params = rest;
                 }
-                await done;
-                router.go("items");
             }
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
             const [, orgId, id] = match;
@@ -341,12 +342,7 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
                     await org.unlock(app.account!);
                     await invite.unlock(org.invitesKey);
                 }
-                await this._inviteDialog.show(invite);
-                if (router.canGoBack) {
-                    router.back();
-                } else {
-                    router.go("items");
-                }
+                this._inviteDialog.show(invite);
             } else {
                 await alert($l("Could not find invite! Did you use the correct link?"), { type: "warning" });
                 router.go("items");
@@ -420,7 +416,9 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
     @listen("backbutton", document)
     _androidBack() {
-        if (!router.back()) {
+        if (router.canGoBack) {
+            router.back();
+        } else {
             navigator.Backbutton && navigator.Backbutton.goBack();
         }
     }

@@ -2,7 +2,7 @@ import { until } from "lit-html/directives/until.js";
 import { Invite } from "@padloc/core/lib/invite.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { formatDateFromNow } from "../util.js";
-import { app } from "../init";
+import { app, router } from "../init";
 import { alert, dialog } from "../dialog.js";
 import { element, html, css, property, query } from "./base.js";
 import { Dialog } from "./dialog.js";
@@ -43,6 +43,11 @@ export class InviteDialog extends Dialog<Invite, void> {
         this.invite = invite;
         setTimeout(() => this._refresh(), this._pollInterval);
         return super.show();
+    }
+
+    dismiss() {
+        super.dismiss();
+        router.back();
     }
 
     private async _refresh() {
@@ -155,7 +160,7 @@ export class InviteDialog extends Dialog<Invite, void> {
 
         return html`
             <div class="invite">
-                <pl-icon icon="cancel" class="tap close-button" @click=${() => this.done()}></pl-icon>
+                <pl-icon icon="cancel" class="tap close-button" @click=${() => this.dismiss()}></pl-icon>
 
                 <h1>${purpose === "confirm_membership" ? $l("Confirm Membership") : $l("Organization Invite")}</h1>
 
@@ -301,13 +306,13 @@ export class InviteDialog extends Dialog<Invite, void> {
         try {
             await app.deleteInvite(this.invite!);
             this._deleteButton.success();
-            this.done();
+            this.dismiss();
         } catch (e) {
             this._error = e.message || $l("Something went wrong. Please try again later!");
             this._deleteButton.fail();
             throw e;
         }
-        this.done();
+        this.dismiss();
     }
 
     private async _resend() {
@@ -343,7 +348,7 @@ export class InviteDialog extends Dialog<Invite, void> {
             const success = await app.acceptInvite(this.invite!, this._codeInput.value.toLowerCase());
             if (success) {
                 this._acceptButton.success();
-                this.done();
+                this.dismiss();
                 alert(
                     $l(
                         "You have successfully accepted the invite. You'll be notified once you've been granted access."
@@ -376,7 +381,7 @@ export class InviteDialog extends Dialog<Invite, void> {
 
             await this._memberDialog.show({ org: app.getOrg(this.invite!.org!.id)!, member });
 
-            this.done();
+            this.dismiss();
         } catch (e) {
             this._error = e.message || $l("Something went wrong. Please try again later!");
             this._confirmButton.fail();

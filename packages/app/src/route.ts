@@ -68,11 +68,11 @@ export class Router extends EventEmitter {
         history.forward();
     }
 
-    back() {
+    back(alternate = "") {
         if (this.canGoBack) {
             history.back();
-            return true;
+        } else {
+            this.go(alternate);
         }
-        return false;
     }
 }

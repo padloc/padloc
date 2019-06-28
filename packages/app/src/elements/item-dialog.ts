@@ -44,10 +44,13 @@ export class ItemDialog extends Dialog<string, void> {
 
     @query("#nameInput")
     private _nameInput: Input;
+
     @query("pl-tags-input")
     private _tagsInput: TagsInput;
+
     @queryAll("pl-field")
     private _fieldInputs: FieldElement[];
+
     @query("input[type='file']")
     private _fileInput: HTMLInputElement;
 
@@ -71,7 +74,19 @@ export class ItemDialog extends Dialog<string, void> {
         this.itemId = itemId;
         await this.updateComplete;
         this._itemChanged();
+        // Workaround for weird bug where name input is sometimes empty after opening dialog
+        setTimeout(() => this._itemChanged(), 200);
         return super.show();
+    }
+
+    dismiss() {
+        super.dismiss();
+        router.back();
+    }
+
+    done() {
+        super.done();
+        setTimeout(() => (this.itemId = ""), 500);
     }
 
     static styles = [
@@ -111,6 +126,10 @@ export class ItemDialog extends Dialog<string, void> {
             .name {
                 padding: 0 10px;
                 line-height: 40px;
+            }
+
+            :host([editing]) .name {
+                border: dashed 1px var(--color-shade-3);
             }
 
             pl-tags-input {
@@ -196,6 +215,16 @@ export class ItemDialog extends Dialog<string, void> {
                 transform: scale(1.1);
             }
 
+            .editing {
+                text-align: center;
+                padding: 8px;
+                color: var(--color-shade-4);
+                margin: 0 0 0 12px;
+                border: solid 1px var(--color-shade-2);
+                border-radius: var(--border-radius);
+                background: rgba(255, 255, 255, 0.9);
+            }
+
             @media (max-width: 700px) {
                 .outer {
                     padding: 0;
@@ -227,7 +256,12 @@ export class ItemDialog extends Dialog<string, void> {
         return html`
             <header>
                 <div class="header-inner">
-                    <pl-icon icon="backward" class="tap narrow close-icon" @click=${this.dismiss}></pl-icon>
+                    <pl-icon
+                        icon="backward"
+                        class="tap narrow close-icon"
+                        @click=${this.dismiss}
+                        ?hidden=${this._editing}
+                    ></pl-icon>
                     <pl-input
                         id="nameInput"
                         class="name flex"
@@ -266,9 +300,11 @@ export class ItemDialog extends Dialog<string, void> {
                         `
                     )}
 
-                    <div class="add-button tap item" ?hidden=${!this._editing} @click=${() => this._addField()}>
-                        <pl-icon icon="add"></pl-icon>
-                        <div>${$l("Add Field")}</div>
+                    <div class="actions">
+                        <button class="add-button tap item" ?hidden=${!this._editing} @click=${() => this._addField()}>
+                            <pl-icon icon="add"></pl-icon>
+                            <div>${$l("Add Field")}</div>
+                        </button>
                     </div>
                 </div>
 
@@ -290,29 +326,27 @@ export class ItemDialog extends Dialog<string, void> {
                     ${until(formatDateFromNow(updated!))}
                     ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
                 </div>
-
-                <div class="actions" ?hidden=${!this._editing}>
-                    <button class="primary tap" @click=${this.save}>${$l("Save")}</button>
-
-                    <button class="tap" @click=${this.cancelEdit}>${$l("Cancel")}</button>
-                </div>
             </div>
 
             <div class="fabs" ?hidden=${this._editing}>
-                <pl-icon
-                    icon="delete"
-                    class="destructive fab tap"
-                    @click=${() => this._deleteItem()}
-                    ?disabled=${readonly}
-                >
-                </pl-icon>
-
                 <div class="flex"></div>
 
                 <pl-icon icon="attachment" class="fab tap" @click=${() => this._addAttachment()} ?disabled=${readonly}>
                 </pl-icon>
 
                 <pl-icon icon="edit" class="tap fab" @click=${() => this.edit()} ?disabled=${readonly}> </pl-icon>
+            </div>
+
+            <div class="fabs" ?hidden=${!this._editing}>
+                <pl-icon icon="delete" class="destructive fab tap" @click=${() => this._deleteItem()} hidden></pl-icon>
+
+                <pl-icon icon="share" class="fab tap" @click=${() => this._move()} hidden> </pl-icon>
+
+                <pl-icon icon="check" class="fab primary tap" @click=${this.save}></pl-icon>
+
+                <div class="editing flex">${$l("editing")}</div>
+
+                <pl-icon icon="cancel" class="fab tap" @click=${this.cancelEdit}></pl-icon>
             </div>
 
             <input type="file" hidden @change=${this._attachFile} />

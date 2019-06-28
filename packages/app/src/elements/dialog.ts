@@ -1,9 +1,18 @@
 import { shared, mixins } from "../styles";
 import { animateElement } from "../animation";
-import { BaseElement, html, css, property, observe, listen } from "./base.js";
+import { BaseElement, element, html, css, property, observe, listen } from "./base.js";
 import { Input } from "./input.js";
 
+@element("pl-dialog")
 export class Dialog<I, R> extends BaseElement {
+    static openDialogs = new Set<Dialog<any, any>>();
+
+    static closeAll() {
+        for (const dialog of Dialog.openDialogs) {
+            dialog.open = false;
+        }
+    }
+
     @property()
     open: boolean = false;
     @property()
@@ -17,9 +26,11 @@ export class Dialog<I, R> extends BaseElement {
         this._resolve && this._resolve(result);
         this._resolve = null;
         this.open = false;
+        Dialog.openDialogs.delete(this);
     }
 
     async show(_input: I = (undefined as any) as I) {
+        Dialog.openDialogs.add(this);
         this.open = true;
 
         return new Promise<R>(resolve => {
@@ -179,5 +190,3 @@ export class Dialog<I, R> extends BaseElement {
         }
     }
 }
-
-window.customElements.define("pl-dialog", Dialog);
