@@ -5,7 +5,7 @@ import { element, property, html, css, query } from "./base.js";
 import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input.js";
 import { LoadingButton } from "./loading-button.js";
-import { confirm } from "../dialog.js";
+import { confirm, choose } from "../dialog.js";
 import "./logo.js";
 
 @element("pl-unlock")
@@ -41,6 +41,16 @@ export class Unlock extends StartForm {
                 text-decoration: underline;
                 cursor: pointer;
             }
+
+            .account {
+                position: relative;
+            }
+
+            .account pl-icon {
+                position: absolute;
+                right: 5px;
+                top: 6px;
+            }
         `
     ];
 
@@ -51,6 +61,11 @@ export class Unlock extends StartForm {
 
             <form>
                 <pl-logo class="animate"></pl-logo>
+
+                <div class="account animate">
+                    <pl-input .label=${$l("Logged In As")} .value="${email}" readonly></pl-input>
+                    <pl-icon icon="more" class="tap" @click=${this._showMenu}></pl-icon>
+                </div>
 
                 <pl-password-input
                     id="passwordInput"
@@ -70,14 +85,6 @@ export class Unlock extends StartForm {
             </form>
 
             <div flex></div>
-
-            <div class="current-account animate">
-                <span>${$l("You are logged in as")}</span>
-
-                <strong>${email}</strong>.
-
-                <span class="logout" @click=${() => this._logout()}>Log Out</span>
-            </div>
         `;
     }
 
@@ -122,6 +129,18 @@ export class Unlock extends StartForm {
             } else {
                 this._passwordInput.focus();
             }
+        }
+    }
+
+    private async _showMenu() {
+        const choice = await choose("", [$l("Logout / Switch Account"), $l("Forgot Password")]);
+        switch (choice) {
+            case 0:
+                this._logout();
+                break;
+            case 1:
+                router.go("recover", { email: app.account!.email });
+                break;
         }
     }
 

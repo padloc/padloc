@@ -38,7 +38,7 @@ const styles = css`
 
     form > * {
         border-radius: 8px;
-        margin: 10px;
+        margin: 12px;
     }
 
     pl-logo {
