@@ -486,6 +486,11 @@ export class App {
         this.publish();
     }
 
+    async deleteAccount() {
+        await this.api.deleteAccount();
+        await this._logout();
+    }
+
     private async _logout() {
         this._cachedAuthInfo.clear();
 
@@ -1165,15 +1170,8 @@ export class App {
     /**
      * Removes a member from the given `org`
      */
-    async removeMember(org: Org, { id }: OrgMember) {
-        await this.updateOrg(org.id, async org => {
-            // Remove member from all groups
-            for (const group of org.getGroupsForMember({ id })) {
-                group.members = group.members.filter(m => m.id !== id);
-            }
-
-            org.members = org.members.filter(m => m.id !== id);
-        });
+    async removeMember(org: Org, member: OrgMember) {
+        await this.updateOrg(org.id, async org => org.removeMember(member));
     }
 
     /*

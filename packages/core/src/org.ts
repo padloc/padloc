@@ -328,13 +328,13 @@ export class Org extends SharedContainer implements Storable {
     /** Whether the given [[Account]] is an [[OrgRole.Owner]] */
     isOwner(m: { id: AccountID }) {
         const member = this.getMember(m);
-        return member && member.role <= OrgRole.Owner;
+        return !!member && member.role <= OrgRole.Owner;
     }
 
     /** Whether the given [[Account]] is an [[OrgRole.Admin]] */
     isAdmin(m: { id: AccountID }) {
         const member = this.getMember(m);
-        return member && member.role <= OrgRole.Admin;
+        return !!member && member.role <= OrgRole.Admin;
     }
 
     /** Get the [[OrgMember]] object for this [[Account]] */
@@ -609,5 +609,14 @@ export class Org extends SharedContainer implements Storable {
         } else {
             this.members.push(await this.sign(new OrgMember({ id, name, email, publicKey, orgSignature, role })));
         }
+    }
+
+    removeMember({ id }: { id: string }) {
+        // Remove member from all groups
+        for (const group of this.getGroupsForMember({ id })) {
+            group.members = group.members.filter(m => m.id !== id);
+        }
+
+        this.members = this.members.filter(m => m.id !== id);
     }
 }

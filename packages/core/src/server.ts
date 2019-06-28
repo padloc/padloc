@@ -348,6 +348,42 @@ class Controller implements API {
         return account;
     }
 
+    async deleteAccount() {
+        const { account } = this._requireAuth();
+
+        // Make sure that the account is not owner of any organizations
+        const orgs = await Promise.all(account.orgs.map(org => this.storage.get(Org, org)));
+        if (orgs.some(org => org.isOwner(account))) {
+            throw new Err(
+                ErrorCode.BAD_REQUEST,
+                "This account is the owner of one or more organizations and cannot " +
+                    "be deleted. Please delete all your owned organizations first!"
+            );
+        }
+
+        for (const org of orgs) {
+            org.removeMember(account);
+            await this.storage.save(org);
+        }
+
+        // Delete billing info with billing provider
+        if (account.billing && this.billingProvider) {
+            await this.billingProvider.delete(account.billing);
+        }
+
+        // Delete main vault
+        await this.storage.delete(Object.assign(new Vault(), { id: account.mainVault }));
+
+        // Revoke all sessions
+        await account.sessions.map(s => this.storage.delete(Object.assign(new Session(), s)));
+
+        // Delete auth object
+        await this.storage.delete(new Auth(account.email));
+
+        // Delete account object
+        await this.storage.delete(account);
+    }
+
     async createOrg(org: Org) {
         const { account } = this._requireAuth();
 
@@ -1104,6 +1140,10 @@ export class Server extends BaseServer {
 
             case "recoverAccount":
                 res.result = (await ctlr.recoverAccount(new RecoverAccountParams().fromRaw(params[0]))).toRaw();
+                break;
+
+            case "deleteAccount":
+                await ctlr.deleteAccount();
                 break;
 
             case "createOrg":

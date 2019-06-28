@@ -133,7 +133,7 @@ export class OrgView extends StateMixin(View) {
         const deleted = await prompt(
             $l(
                 "Are you sure you want to delete this organization? " +
-                    "All associated vaults the data within them will be lost! " +
+                    "All associated vaults and the data within them will be lost! " +
                     "This action can not be undone."
             ),
             {

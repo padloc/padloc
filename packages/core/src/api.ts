@@ -339,6 +339,11 @@ export interface API {
     recoverAccount(params: RecoverAccountParams): Promise<Account>;
 
     /**
+     * Delete current account
+     */
+    deleteAccount(): Promise<void>;
+
+    /**
      * Create a new [[Org]]
      *
      * @authentication_required

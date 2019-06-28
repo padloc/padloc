@@ -2,7 +2,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { BillingInfo } from "@padloc/core/lib/billing.js";
 import { shared, mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../dialog";
-import { app } from "../init.js";
+import { app, router } from "../init.js";
 import { StateMixin } from "../mixins/state.js";
 import { element, html, css, query, listen } from "./base.js";
 import { View } from "./view.js";
@@ -184,6 +184,12 @@ export class Settings extends StateMixin(View) {
                     <button @click=${() => this._openWebsite()} class="item tap">${$l("Website")}</button>
 
                     <button @click=${() => this._sendMail()} class="item tap">${$l("Contact Support")}</button>
+
+                    <h3>${$l("Danger Zone")}</h3>
+
+                    <button @click=${() => this._deleteAccount()} class="item tap negative">
+                        ${$l("Delete Account")}
+                    </button>
                 </div>
             </main>
 
@@ -308,5 +314,57 @@ export class Settings extends StateMixin(View) {
 
     private _export() {
         this._exportDialog.show();
+    }
+
+    private async _deleteAccount() {
+        const success = await prompt($l("Please enter your master password to proceed."), {
+            title: $l("Delete Account"),
+            label: $l("Enter Master Password"),
+            type: "password",
+            validate: async pwd => {
+                try {
+                    await app.account!.unlock(pwd);
+                } catch (e) {
+                    throw $l("Wrong password! Please try again!");
+                }
+
+                return pwd;
+            }
+        });
+
+        if (!success) {
+            return;
+        }
+
+        const deleted = await prompt(
+            $l(
+                "Are you sure you want to delete this account? " +
+                    "All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. " +
+                    "This action can not be undone!"
+            ),
+            {
+                type: "destructive",
+                title: $l("Delete Account"),
+                confirmLabel: $l("Delete"),
+                placeholder: $l("Type 'DELETE' to confirm"),
+                validate: async val => {
+                    if (val !== "DELETE") {
+                        throw $l("Type 'DELETE' to confirm");
+                    }
+
+                    try {
+                        await app.deleteAccount();
+                    } catch (e) {
+                        throw e.message || $l("Something went wrong. Please try again later!");
+                    }
+
+                    return val;
+                }
+            }
+        );
+
+        if (deleted) {
+            router.go("");
+        }
     }
 }
