@@ -77,21 +77,35 @@ export class ItemDialog extends Dialog<string, void> {
     static styles = [
         ...Dialog.styles,
         css`
-            :host {
-                ${mixins.scroll()}
-            }
-
             .inner {
                 max-width: 400px;
+                min-height: 500px;
                 background: var(--color-quaternary);
+                display: flex;
+                flex-direction: column;
             }
 
             header {
                 display: block;
             }
 
+            .body {
+                flex: 1;
+                padding-bottom: 70px;
+                ${mixins.scroll()}
+            }
+
             .header-inner {
                 display: flex;
+                align-items: center;
+            }
+
+            .close-icon {
+                width: 30px;
+                height: 30px;
+                font-size: var(--font-size-default);
+                margin-right: -5px;
+                margin-top: -1px;
             }
 
             .name {
@@ -134,10 +148,6 @@ export class ItemDialog extends Dialog<string, void> {
                 font-family: FontAwesome;
                 font-size: 80%;
                 content: "\\f303\ ";
-            }
-
-            .fabs {
-                position: static;
             }
 
             .attachment {
@@ -185,6 +195,19 @@ export class ItemDialog extends Dialog<string, void> {
                 opacity: 1;
                 transform: scale(1.1);
             }
+
+            @media (max-width: 700px) {
+                .outer {
+                    padding: 0;
+                }
+
+                .inner {
+                    border-radius: 0;
+                    max-width: 100%;
+                    width: 100%;
+                    height: 100%;
+                }
+            }
         `
     ];
 
@@ -204,6 +227,7 @@ export class ItemDialog extends Dialog<string, void> {
         return html`
             <header>
                 <div class="header-inner">
+                    <pl-icon icon="backward" class="tap narrow close-icon" @click=${this.dismiss}></pl-icon>
                     <pl-input
                         id="nameInput"
                         class="name flex"
@@ -211,7 +235,6 @@ export class ItemDialog extends Dialog<string, void> {
                         ?readonly=${!this._editing}
                     >
                     </pl-input>
-                    <pl-icon icon="cancel" class="tap" @click=${this.dismiss} hidden></pl-icon>
                     <pl-icon
                         icon="favorite"
                         class="favorite"
@@ -223,53 +246,56 @@ export class ItemDialog extends Dialog<string, void> {
                 <pl-tags-input .editing=${this._editing} .vault=${this._vault} @move=${this._move}></pl-tags-input>
             </header>
 
-            <div class="fields">
-                ${this._fields.map(
-                    (field: Field, index: number) => html`
-                        <pl-field
-                            class="item"
-                            .name=${field.name}
-                            .value=${field.value}
-                            .type=${field.type}
-                            .editing=${this._editing}
-                            @edit=${() => this._editField(index)}
-                            @copy=${() => setClipboard(this._item!, field)}
-                            @remove=${() => this._removeField(index)}
-                            @generate=${() => this._generateValue(index)}
-                            @get-totp-qr=${() => this._getTotpQR(index)}
-                        >
-                        </pl-field>
-                    `
-                )}
+            <div class="body">
+                <div class="fields">
+                    ${this._fields.map(
+                        (field: Field, index: number) => html`
+                            <pl-field
+                                class="item"
+                                .name=${field.name}
+                                .value=${field.value}
+                                .type=${field.type}
+                                .editing=${this._editing}
+                                @edit=${() => this._editField(index)}
+                                @copy=${() => setClipboard(this._item!, field)}
+                                @remove=${() => this._removeField(index)}
+                                @generate=${() => this._generateValue(index)}
+                                @get-totp-qr=${() => this._getTotpQR(index)}
+                            >
+                            </pl-field>
+                        `
+                    )}
 
-                <div class="add-button tap item" ?hidden=${!this._editing} @click=${() => this._addField()}>
-                    <pl-icon icon="add"></pl-icon>
-                    <div>${$l("Add Field")}</div>
+                    <div class="add-button tap item" ?hidden=${!this._editing} @click=${() => this._addField()}>
+                        <pl-icon icon="add"></pl-icon>
+                        <div>${$l("Add Field")}</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="attachments" ?hidden=${this._editing || !attachments.length}>
-                ${attachments.map(
-                    a => html`
-                        <div class="attachment item tap" @click=${() => this._openAttachment(a)}>
-                            <pl-icon icon=${fileIcon(a.type)}></pl-icon>
-                            <div class="attachment-body">
-                                <div class="attachment-name ellipsis">${a.name}</div>
-                                <div class="attachment-size">${fileSize(a.size)}</div>
+                <div class="attachments" ?hidden=${this._editing || !attachments.length}>
+                    ${attachments.map(
+                        a => html`
+                            <div class="attachment item tap" @click=${() => this._openAttachment(a)}>
+                                <pl-icon icon=${fileIcon(a.type)}></pl-icon>
+                                <div class="attachment-body">
+                                    <div class="attachment-name ellipsis">${a.name}</div>
+                                    <div class="attachment-size">${fileSize(a.size)}</div>
+                                </div>
                             </div>
-                        </div>
-                    `
-                )}
-            </div>
+                        `
+                    )}
+                </div>
 
-            <div class="updated" hidden>
-                ${until(formatDateFromNow(updated!))} ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
-            </div>
+                <div class="updated" hidden>
+                    ${until(formatDateFromNow(updated!))}
+                    ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
+                </div>
 
-            <div class="actions" ?hidden=${!this._editing}>
-                <button class="primary tap" @click=${this.save}>${$l("Save")}</button>
+                <div class="actions" ?hidden=${!this._editing}>
+                    <button class="primary tap" @click=${this.save}>${$l("Save")}</button>
 
-                <button class="tap" @click=${this.cancelEdit}>${$l("Cancel")}</button>
+                    <button class="tap" @click=${this.cancelEdit}>${$l("Cancel")}</button>
+                </div>
             </div>
 
             <div class="fabs" ?hidden=${this._editing}>

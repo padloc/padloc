@@ -93,7 +93,7 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
                 );
                 overflow: hidden;
                 color: var(--color-foreground);
-                position: absolute;
+                position: fixed;
                 width: 100%;
                 height: 100%;
                 animation: fadeIn 0.5s;

@@ -35,7 +35,6 @@ export class Dialog<I, R> extends BaseElement {
                 ${mixins.fullbleed()}
                 position: fixed;
                 z-index: 10;
-                ${mixins.scroll()}
             }
 
             :host(:not([open])) {
@@ -43,14 +42,17 @@ export class Dialog<I, R> extends BaseElement {
             }
 
             .outer {
-                min-height: 100%;
+                height: 100%;
                 display: flex;
                 position: relative;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                padding: 10px;
+                padding: 12px;
                 box-sizing: border-box;
+                perspective: 1000px;
+                transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
+                will-change: transform, opacity;
             }
 
             .scrim {
@@ -70,6 +72,7 @@ export class Dialog<I, R> extends BaseElement {
             .inner {
                 position: relative;
                 width: 100%;
+                max-height: 100%;
                 box-sizing: border-box;
                 max-width: var(--pl-dialog-max-width, 400px);
                 z-index: 1;
@@ -77,12 +80,7 @@ export class Dialog<I, R> extends BaseElement {
                 box-shadow: rgba(0, 0, 0, 0.25) 0 0 5px;
                 overflow: hidden;
                 background: var(--color-tertiary);
-            }
-
-            .outer {
-                /* transition: transform 400ms cubic-bezier(1, -0.3, 0, 1.3), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1); */
-                transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
-                will-change: transform, opacity;
+                will-change: transform;
             }
 
             .actions {
