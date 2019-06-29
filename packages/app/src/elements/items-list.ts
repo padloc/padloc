@@ -98,7 +98,7 @@ export class ItemsList extends StateMixin(View) {
 
     private _filterInputBlurred() {
         if (!this._filterInput.value) {
-            this._filterShowing = false;
+            setTimeout(() => (this._filterShowing = false), 100);
         }
     }
 
