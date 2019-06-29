@@ -2,6 +2,7 @@ import { unsafeHTML } from "lit-html/directives/unsafe-html";
 import { localize as $l } from "@padloc/core/lib/locale";
 import { BillingInfo, Plan, PlanType, UpdateBillingParams } from "@padloc/core/lib/billing";
 import { dialog } from "../dialog";
+import { mixins } from "../styles";
 import { app } from "../init";
 import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
@@ -75,6 +76,12 @@ export class PremiumDialog extends Dialog<void, void> {
     static styles = [
         ...Dialog.styles,
         css`
+            .plan {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
             .inner {
                 background: var(--color-quaternary);
                 text-align: center;
@@ -178,6 +185,7 @@ export class PremiumDialog extends Dialog<void, void> {
                 justify-content: center;
                 padding: 4px;
                 font-weight: bold;
+                margin-bottom: 0;
             }
 
             .change-plan {
@@ -189,7 +197,9 @@ export class PremiumDialog extends Dialog<void, void> {
 
             .features {
                 font-size: var(--font-size-small);
-                margin: 8px 0;
+                margin-top: 8px;
+                flex: 1;
+                ${mixins.scroll()}
             }
 
             .features > * {
@@ -213,6 +223,7 @@ export class PremiumDialog extends Dialog<void, void> {
 
         return html`
             <div
+                class="plan"
                 style=${plan.color
                     ? `--color-highlight: ${plan.color}; --color-highlight-text: var(--color-tertiary);`
                     : ""}

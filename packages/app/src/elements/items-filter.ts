@@ -155,7 +155,10 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         const accId = (app.account && app.account.id) || "";
 
         const favCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce((c, item) => (item.favorited.includes(accId) ? c + 1 : c), count);
+            return [...vault.items].reduce(
+                (c, item) => (item.favorited && item.favorited.includes(accId) ? c + 1 : c),
+                count
+            );
         }, 0);
 
         const totalCount = app.vaults.reduce((count, vault) => count + vault.items.size, 0);

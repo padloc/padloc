@@ -95,36 +95,21 @@ export class ItemDialog extends Dialog<string, void> {
                 flex-direction: column;
             }
 
-            header {
-                display: block;
-            }
-
             .body {
                 flex: 1;
-                padding-bottom: 100px;
+                padding-bottom: 50px;
                 ${mixins.scroll()}
-            }
-
-            .header-inner {
-                display: flex;
-                align-items: center;
-            }
-
-            .close-icon {
-                width: 30px;
-                height: 30px;
-                font-size: var(--font-size-default);
-                margin-right: -5px;
-                margin-top: -1px;
             }
 
             .name {
                 padding: 0 10px;
                 line-height: 40px;
+                text-align: center;
             }
 
             :host([editing]) .name {
                 border: dashed 1px var(--color-shade-3);
+                text-align: left;
             }
 
             pl-tags-input {
@@ -187,12 +172,10 @@ export class ItemDialog extends Dialog<string, void> {
 
             .favorite {
                 color: var(--color-secondary);
-                width: 40px;
-                height: 40px;
-                font-size: var(--font-size-default);
                 opacity: 0.3;
                 cursor: pointer;
                 transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
+                transform: scale(0.9);
             }
 
             .favorite:hover {
@@ -202,7 +185,7 @@ export class ItemDialog extends Dialog<string, void> {
             .favorite[active] {
                 color: var(--color-negative);
                 opacity: 1;
-                transform: scale(1.1);
+                transform: scale(1);
             }
 
             .editing {
@@ -261,27 +244,25 @@ export class ItemDialog extends Dialog<string, void> {
 
         return html`
             <header>
-                <div class="header-inner">
-                    <pl-icon
-                        icon="backward"
-                        class="tap narrow close-icon"
-                        @click=${this.dismiss}
-                        ?hidden=${this._editing}
-                    ></pl-icon>
-                    <pl-input
-                        id="nameInput"
-                        class="name flex"
-                        .placeholder=${$l("Enter Item Name")}
-                        ?readonly=${!this._editing}
-                    >
-                    </pl-input>
-                    <pl-icon
-                        icon="favorite"
-                        class="favorite"
-                        ?active=${isFavorite}
-                        @click=${() => this._setFavorite(!isFavorite)}
-                    ></pl-icon>
-                </div>
+                <pl-icon
+                    icon="backward"
+                    class="tap close-icon"
+                    @click=${this.dismiss}
+                    ?hidden=${this._editing}
+                ></pl-icon>
+                <pl-input
+                    id="nameInput"
+                    class="name flex"
+                    .placeholder=${$l("Enter Item Name")}
+                    ?readonly=${!this._editing}
+                >
+                </pl-input>
+                <pl-icon
+                    icon="favorite"
+                    class="favorite"
+                    ?active=${isFavorite}
+                    @click=${() => this._setFavorite(!isFavorite)}
+                ></pl-icon>
             </header>
 
             <div class="body">

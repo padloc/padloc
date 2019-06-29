@@ -84,3 +84,7 @@ export function fileIcon(mimeType: string) {
 export function fileSize(size: number = 0) {
     return size < 1e6 ? Math.ceil(size / 10) / 100 + " KB" : Math.ceil(size / 10000) / 100 + " MB";
 }
+
+export function mask(value: string): string {
+    return value && value.replace(/[^\n]/g, "\u2022");
+}

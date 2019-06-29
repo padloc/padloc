@@ -2,6 +2,7 @@
 import autosize from "autosize/src/autosize.js";
 import { cache } from "lit-html/directives/cache.js";
 import { shared, mixins } from "../styles";
+import { mask } from "../util.js";
 import { BaseElement, element, html, css, property, query, listen } from "./base.js";
 
 let activeInput: Input | null = null;
@@ -12,10 +13,6 @@ document.addEventListener("touchend", () => {
         activeInput.blur();
     }
 });
-
-function mask(value: string): string {
-    return value && value.replace(/[^\n]/g, "\u2022");
-}
 
 @element("pl-input")
 export class Input extends BaseElement {

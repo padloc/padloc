@@ -1,4 +1,4 @@
-import { VaultItem, Field, Tag } from "@padloc/core/lib/item.js";
+import { VaultItem, Field, Tag, FIELD_DEFS } from "@padloc/core/lib/item.js";
 import { Vault, VaultID } from "@padloc/core/lib/vault.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { debounce, wait, escapeRegex } from "@padloc/core/lib/util.js";
@@ -8,6 +8,7 @@ import { setClipboard } from "../clipboard.js";
 import { app, router } from "../init.js";
 import { dialog, confirm } from "../dialog.js";
 import { shared, mixins } from "../styles";
+import { mask } from "../util.js";
 import { element, html, css, property, query, listen, observe } from "./base.js";
 import { View } from "./view.js";
 import { Input } from "./input.js";
@@ -29,7 +30,7 @@ function filterByString(fs: string, rec: VaultItem) {
     if (!fs) {
         return true;
     }
-    const content = [rec.name, ...rec.fields.map(f => f.name)].join(" ").toLowerCase();
+    const content = [rec.name, ...rec.fields.map(f => f.name), ...rec.fields.map(f => f.value)].join(" ").toLowerCase();
     return content.search(escapeRegex(fs.toLowerCase())) !== -1;
 }
 
@@ -207,9 +208,9 @@ export class ItemsList extends StateMixin(View) {
                 box-sizing: border-box;
                 display: flex;
                 align-items: center;
-                margin: 4px;
+                margin: 6px;
                 cursor: pointer;
-                height: 90px;
+                height: 103px;
             }
 
             .item-body {
@@ -242,36 +243,23 @@ export class ItemsList extends StateMixin(View) {
                 display: flex;
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
-            }
-
-            .item-fields::after {
-                content: "";
-                display: block;
-                width: 8px;
-                flex: none;
+                padding: 0 8px 8px 8px;
+                margin-top: -4px;
             }
 
             .item-field {
                 cursor: pointer;
                 font-size: var(--font-size-tiny);
-                line-height: 32px;
-                height: 32px;
-                text-align: center;
                 position: relative;
                 flex: 1;
                 font-weight: bold;
-                margin: 0 0 8px 8px;
                 border-radius: 8px;
-                ${mixins.shade2()}
+                max-width: calc(60%);
             }
 
             .item-field > * {
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-            }
-
-            .copied-message {
-                ${mixins.fullbleed()}
-                border-radius: inherit;
+                transform-origin: 50px center;
             }
 
             .item-field:not(.copied) .copied-message,
@@ -282,8 +270,10 @@ export class ItemsList extends StateMixin(View) {
 
             .copied-message {
                 font-weight: bold;
-                background: var(--color-primary);
-                color: var(--color-background);
+                color: var(--color-primary);
+                border-radius: inherit;
+                padding: 14px;
+                ${mixins.fullbleed()}
             }
 
             .copied-message::before {
@@ -292,8 +282,18 @@ export class ItemsList extends StateMixin(View) {
             }
 
             .item-field-label {
-                padding: 0 15px;
+                padding: 4px 8px;
                 pointer-events: none;
+            }
+
+            .item-field-name {
+                font-size: var(--font-size-micro);
+                color: var(--color-primary);
+                margin-bottom: 2px;
+                ${mixins.ellipsis()}
+            }
+
+            .item-field-value {
                 ${mixins.ellipsis()}
             }
 
@@ -312,18 +312,18 @@ export class ItemsList extends StateMixin(View) {
                 width: 30px;
                 height: 30px;
                 box-sizing: border-box;
-                border: solid 3px #eee;
-                background: #eee;
+                border: solid 3px transparent;
+                background: var(--color-shade-1);
                 border-radius: 30px;
-                margin: 10px;
-                margin-right: 5px;
+                margin: 12px;
+                margin-right: 0;
             }
 
             .item-check::after {
                 content: "";
                 display: block;
                 ${mixins.fullbleed()}
-                background: var(--color-primary);
+                background: var(--color-negative);
                 border-radius: inherit;
                 transition: transform 0.2s, opacity 0.2s;
                 transition-timing-function: cubic-bezier(1, -0.3, 0, 1.3);
@@ -386,7 +386,7 @@ export class ItemsList extends StateMixin(View) {
                 <pl-virtual-list
                     .data=${this._listItems}
                     .minItemWidth=${300}
-                    .itemHeight=${98}
+                    .itemHeight=${115}
                     .renderItem=${(item: ListItem) => this._renderItem(item)}
                     .guard=${({ item, vault }: ListItem) => [
                         item.name,
@@ -615,8 +615,8 @@ export class ItemsList extends StateMixin(View) {
     private _renderItem(item: ListItem) {
         const tags = [];
 
-        const vaultName = item.vault.toString();
-        tags.push({ name: vaultName, icon: "", class: "highlight" });
+        // const vaultName = item.vault.toString();
+        // tags.push({ name: vaultName, icon: "", class: "highlight" });
 
         if (item.warning) {
             tags.push({ icon: "error", class: "tag warning", name: "" });
@@ -698,23 +698,32 @@ export class ItemsList extends StateMixin(View) {
                     </div>
 
                     <div class="item-fields">
-                        ${item.item.fields.map(
-                            (f: Field, i: number) => html`
+                        ${item.item.fields.map((f: Field, i: number) => {
+                            const fieldDef = FIELD_DEFS[f.type] || FIELD_DEFS.text;
+                            return html`
                                 <div
                                     class="item-field tap"
                                     @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}
                                 >
-                                    <div class="item-field-label">${f.name}</div>
+                                    <div class="item-field-label">
+                                        <div class="item-field-name">${f.name || $l("Unnamed")}</div>
+                                        <div class="item-field-value">${fieldDef.mask ? mask(f.value) : f.value}</div>
+                                    </div>
 
                                     <div class="copied-message">${$l("copied")}</div>
                                 </div>
-                            `
-                        )}
+                            `;
+                        })}
                         ${cache(
                             !item.item.fields.length
                                 ? html`
                                       <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
-                                          ${$l("No Fields")}
+                                          <div class="item-field-label">
+                                              <div class="item-field-name">
+                                                  ${$l("No Fields")}
+                                              </div>
+                                              <div class="item-field-value">${$l("This item has no fields.")}</div>
+                                          </div>
                                       </div>
                                   `
                                 : ""

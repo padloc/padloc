@@ -179,7 +179,10 @@ export class Menu extends StateMixin(BaseElement) {
         const itemsQuota = (app.account && app.account.quota.items) || -1;
 
         const favCount = app.vaults.reduce((count, vault) => {
-            return [...vault.items].reduce((c, item) => (item.favorited.includes(accId) ? c + 1 : c), count);
+            return [...vault.items].reduce(
+                (c, item) => (item.favorited && item.favorited.includes(accId) ? c + 1 : c),
+                count
+            );
         }, 0);
 
         return html`
