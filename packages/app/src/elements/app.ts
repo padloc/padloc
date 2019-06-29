@@ -427,7 +427,7 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
     async _newItem() {
         const item = await this._createItemDialog.show();
         if (item) {
-            router.go(`items/${item.id}?edit`);
+            router.go(`items/${item.id}`, { ...router.params, edit: "" });
         }
     }
 
@@ -456,8 +456,10 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
         const confirmed = !message || (await confirm(message, $l("Get Premium"), $l("Cancel"), { icon }));
 
         if (confirmed) {
-            this._premiumDialog.show();
+            await this._premiumDialog.show();
         }
+
+        this._routeChanged();
     }
 }
 

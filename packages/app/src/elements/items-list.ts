@@ -338,13 +338,13 @@ export class ItemsList extends StateMixin(View) {
                 text-align: center;
                 display: block;
                 margin-left: 12px;
-                background: #eee;
+                background: rgba(255, 255, 255, 0.9);
                 border-radius: var(--border-radius);
                 padding: 12px 4px;
                 line-height: 1.2em;
                 font-size: var(--font-size-tiny);
                 font-weight: bold;
-                box-shadow: rgba(0, 0, 0, 0.3) 0px 0px 4px;
+                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
             }
 
             pl-virtual-list {

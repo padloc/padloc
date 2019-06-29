@@ -96,7 +96,7 @@ export class Dialog<I, R> extends BaseElement {
 
             .actions {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
                 grid-gap: var(--gutter-size);
                 margin: var(--gutter-size);
             }

@@ -65,10 +65,10 @@ export class TagsInput extends BaseElement {
             .input-wrapper {
                 font-size: var(--font-size-micro);
                 padding: 0 4px;
-                height: 26px;
-                line-height: 26px;
-                background: #eee;
-                box-sizing: border-box;
+                height: 24px;
+                line-height: 24px;
+                background: var(--color-tertiary);
+                border: solid 1px var(--color-shade-4);
                 border-radius: 8px;
                 align-self: stretch;
                 position: relative;
@@ -143,7 +143,7 @@ export class TagsInput extends BaseElement {
                         </pl-input>
                     </div>
 
-                    <div class="tags tap small results" ?hidden=${!_showResults}>
+                    <div class="tags small results" ?hidden=${!_showResults}>
                         ${results.map(
                             res => html`
                                 <div class="tag tap" @click=${() => this._addTag(res)}>

@@ -210,10 +210,9 @@ export class FieldElement extends BaseElement {
                     <pl-input
                         class="field-name"
                         id="nameInput"
-                        placeholder="${$l("Enter Field Name")}"
+                        placeholder="${this.editing ? $l("Enter Field Name") : $l("Unnamed")}"
                         .value=${this.name}
                         @input=${() => (this.name = this._nameInput.value)}
-                        @click=${() => !this._nameInput.value && this.dispatch("edit")}
                         ?readonly=${!this.editing}
                     >
                     </pl-input>
@@ -230,32 +229,35 @@ export class FieldElement extends BaseElement {
                     </pl-select>
                 </div>
 
-                ${ this.type === "totp" && !this.editing  ? html`
-                    <div class="totp">
-                        ${ this._totpToken.substring(0, 3) }&nbsp;${this._totpToken.substring(3, 6)}
-                        ${svg`
+                ${this.type === "totp" && !this.editing
+                    ? html`
+                          <div class="totp">
+                              ${this._totpToken.substring(0, 3)}&nbsp;${this._totpToken.substring(3, 6)}
+                              ${svg`
                             <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this._totpToken}>
                                 <circle cx="5" cy="5" r="4" class="bg" />
-                                <circle cx="5" cy="5" r="4" style="stroke-dashoffset: ${ Math.floor(this._totpAge * -25) }"/>
+                                <circle cx="5" cy="5" r="4" style="stroke-dashoffset: ${Math.floor(
+                                    this._totpAge * -25
+                                )}"/>
                             </svg>
                         `}
-                    </div>
-                ` : html`
-                    <pl-input
-                        id="valueInput"
-                        class="field-value"
-                        placeholder="${$l("Enter Field Value")}"
-                        .type=${inputType}
-                        multiline
-                        .readonly=${!this.editing}
-                        .masked=${mask}
-                        .value=${this.value}
-                        @input=${() => (this.value = this._valueInput.value)}
-                        @click=${() => !this._valueInput.value && this.dispatch("edit")}
-                        autosize
-                    >
-                    </pl-input>
-                `}
+                          </div>
+                      `
+                    : html`
+                          <pl-input
+                              id="valueInput"
+                              class="field-value"
+                              placeholder="${this.editing ? $l("Enter Field Value") : ""}"
+                              .type=${inputType}
+                              multiline
+                              .readonly=${!this.editing}
+                              .masked=${mask}
+                              .value=${this.value}
+                              @input=${() => (this.value = this._valueInput.value)}
+                              autosize
+                          >
+                          </pl-input>
+                      `}
             </div>
 
             <div class="field-buttons right" ?hidden=${this.editing}>

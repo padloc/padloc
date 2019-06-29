@@ -494,7 +494,7 @@ export const shared = css`
         pointer-events: auto;
         border-radius: 100%;
         margin: 12px;
-        box-shadow: #000 0 1px 5px -2px;
+        box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
         color: var(--color-tertiary);
         width: 46px;
         height: 46px;

@@ -81,19 +81,14 @@ export class ItemDialog extends Dialog<string, void> {
 
     dismiss() {
         super.dismiss();
-        router.back();
-    }
-
-    done() {
-        super.done();
-        setTimeout(() => (this.itemId = ""), 500);
+        router.go("items");
     }
 
     static styles = [
         ...Dialog.styles,
         css`
             .inner {
-                max-width: 400px;
+                max-width: 500px;
                 min-height: 500px;
                 background: var(--color-quaternary);
                 display: flex;
@@ -106,7 +101,7 @@ export class ItemDialog extends Dialog<string, void> {
 
             .body {
                 flex: 1;
-                padding-bottom: 70px;
+                padding-bottom: 100px;
                 ${mixins.scroll()}
             }
 
@@ -133,46 +128,37 @@ export class ItemDialog extends Dialog<string, void> {
             }
 
             pl-tags-input {
-                margin: 5px 5px -5px 5px;
+                margin: 16px;
+            }
+
+            .fields > * {
+                margin: 12px;
             }
 
             :host(:not([editing])) pl-field:hover {
                 background: #eee;
             }
 
-            .add-button {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 6px;
-            }
-
-            .add-button pl-icon {
-                width: 30px;
-                position: relative;
-                top: 1px;
-            }
-
             .updated {
                 text-align: center;
                 font-size: var(--font-size-tiny);
-                color: #888;
-                background: rgba(255, 255, 255, 0.5);
-                position: absolute;
-                left: 10px;
-                bottom: 10px;
+                color: var(--color-shade-4);
+                font-weight: 600;
+                margin: 30px;
             }
 
             .updated::before {
                 font-family: FontAwesome;
                 font-size: 80%;
-                content: "\\f303\ ";
+                content: "\\f303";
+                display: inline-block;
+                margin-right: 4px;
             }
 
             .attachment {
                 display: flex;
                 align-items: center;
-                padding: 8px;
+                padding: 12px;
             }
 
             .attachment-body {
@@ -180,19 +166,23 @@ export class ItemDialog extends Dialog<string, void> {
                 width: 0;
             }
 
-            .attachment pl-icon {
+            .attachment .file-icon {
                 font-size: 150%;
-                width: 30px;
-                margin: 0 8px 0 2px;
+                margin: 0 4px 0 -4px;
             }
 
             .attachment-name {
                 font-size: var(--font-size-small);
                 font-weight: bold;
+                line-height: 1.5em;
             }
 
             .attachment-size {
                 font-size: var(--font-size-tiny);
+            }
+
+            .attachment-remove {
+                margin: 0 8px 0 -8px;
             }
 
             .favorite {
@@ -202,7 +192,7 @@ export class ItemDialog extends Dialog<string, void> {
                 font-size: var(--font-size-default);
                 opacity: 0.3;
                 cursor: pointer;
-                transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 2) 0s;
+                transition: transform 0.2s cubic-bezier(0.05, 0.7, 0.03, 3) 0s;
             }
 
             .favorite:hover {
@@ -218,11 +208,27 @@ export class ItemDialog extends Dialog<string, void> {
             .editing {
                 text-align: center;
                 padding: 8px;
-                color: var(--color-shade-4);
                 margin: 0 0 0 12px;
-                border: solid 1px var(--color-shade-2);
+                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
                 border-radius: var(--border-radius);
                 background: rgba(255, 255, 255, 0.9);
+            }
+
+            .actions {
+                margin: 16px;
+            }
+
+            .actions > button {
+                font-size: var(--font-size-small);
+                background: none;
+                padding: 10px 8px 10px 0;
+                border: dashed 1px;
+                font-weight: bold;
+            }
+
+            .actions > button.negative {
+                color: var(--color-negative);
+                border-color: var(--color-negative);
             }
 
             @media (max-width: 700px) {
@@ -276,11 +282,11 @@ export class ItemDialog extends Dialog<string, void> {
                         @click=${() => this._setFavorite(!isFavorite)}
                     ></pl-icon>
                 </div>
-
-                <pl-tags-input .editing=${this._editing} .vault=${this._vault} @move=${this._move}></pl-tags-input>
             </header>
 
             <div class="body">
+                <pl-tags-input .editing=${this._editing} .vault=${this._vault} @move=${this._move}></pl-tags-input>
+
                 <div class="fields">
                     ${this._fields.map(
                         (field: Field, index: number) => html`
@@ -299,20 +305,22 @@ export class ItemDialog extends Dialog<string, void> {
                             </pl-field>
                         `
                     )}
-
-                    <div class="actions">
-                        <button class="add-button tap item" ?hidden=${!this._editing} @click=${() => this._addField()}>
-                            <pl-icon icon="add"></pl-icon>
-                            <div>${$l("Add Field")}</div>
-                        </button>
-                    </div>
                 </div>
 
-                <div class="attachments" ?hidden=${this._editing || !attachments.length}>
+                <div class="attachments">
                     ${attachments.map(
                         a => html`
-                            <div class="attachment item tap" @click=${() => this._openAttachment(a)}>
-                                <pl-icon icon=${fileIcon(a.type)}></pl-icon>
+                            <div
+                                class="attachment item ${this._editing ? "" : "tap"}"
+                                @click=${() => this._openAttachment(a)}
+                            >
+                                <pl-icon icon=${fileIcon(a.type)} class="file-icon" ?hidden=${this._editing}></pl-icon>
+                                <pl-icon
+                                    icon="remove"
+                                    class="attachment-remove tap"
+                                    ?hidden=${!this._editing}
+                                    @click=${() => this._deleteAttachment(a)}
+                                ></pl-icon>
                                 <div class="attachment-body">
                                     <div class="attachment-name ellipsis">${a.name}</div>
                                     <div class="attachment-size">${fileSize(a.size)}</div>
@@ -322,7 +330,29 @@ export class ItemDialog extends Dialog<string, void> {
                     )}
                 </div>
 
-                <div class="updated" hidden>
+                <div class="actions" ?hidden=${!this._editing}>
+                    <button class="icon tap" @click=${() => this._addField()}>
+                        <pl-icon icon="add"></pl-icon>
+                        <div>${$l("Field")}</div>
+                    </button>
+
+                    <button class="icon tap" @click=${this._addAttachment}>
+                        <pl-icon icon="attachment"></pl-icon>
+                        <div>${$l("Attachment")}</div>
+                    </button>
+
+                    <button class="icon tap" @click=${this._move}>
+                        <pl-icon icon="share"></pl-icon>
+                        <div>${$l("Move")}</div>
+                    </button>
+
+                    <button class="icon tap negative" @click=${this._deleteItem}>
+                        <pl-icon icon="delete"></pl-icon>
+                        <div>${$l("Delete")}</div>
+                    </button>
+                </div>
+
+                <div class="updated">
                     ${until(formatDateFromNow(updated!))}
                     ${updatedByMember && " " + $l("by {0}", updatedByMember.email)}
                 </div>
@@ -330,9 +360,6 @@ export class ItemDialog extends Dialog<string, void> {
 
             <div class="fabs" ?hidden=${this._editing}>
                 <div class="flex"></div>
-
-                <pl-icon icon="attachment" class="fab tap" @click=${() => this._addAttachment()} ?disabled=${readonly}>
-                </pl-icon>
 
                 <pl-icon icon="edit" class="tap fab" @click=${() => this.edit()} ?disabled=${readonly}> </pl-icon>
             </div>
@@ -489,6 +516,9 @@ export class ItemDialog extends Dialog<string, void> {
     }
 
     private async _openAttachment(info: AttachmentInfo) {
+        if (this._editing) {
+            return;
+        }
         this.open = false;
         await this._attachmentDialog.show({ item: this.itemId, info });
         this.open = true;
@@ -512,5 +542,21 @@ export class ItemDialog extends Dialog<string, void> {
     private _setFavorite(favorite: boolean) {
         app.updateItem(this._vault!, this._item!, { favorite });
         this.requestUpdate();
+    }
+
+    private async _deleteAttachment(a: AttachmentInfo) {
+        const confirmed = await confirm(
+            $l("Are you sure you want to delete this attachment?"),
+            $l("Delete"),
+            $l("Cancel"),
+            {
+                title: $l("Delete Attachment"),
+                type: "destructive"
+            }
+        );
+        if (confirmed) {
+            await app.deleteAttachment(this.itemId!, a);
+            this.requestUpdate();
+        }
     }
 }

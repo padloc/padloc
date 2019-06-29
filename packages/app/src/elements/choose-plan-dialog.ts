@@ -36,7 +36,7 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
                 box-shadow: none;
                 max-width: 100%;
                 width: 100%;
-                overflow: auto;
+                ${mixins.scroll()}
                 scroll-snap-type: x mandatory;
                 white-space: nowrap;
                 padding: 12px 24px;
