@@ -396,7 +396,9 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
         // ESCAPE -> Back
         if (event.key === "Escape") {
-            shortcut = () => router.go("");
+            if (Dialog.openDialogs.size) {
+                Dialog.closeAll();
+            }
         }
         // CTRL/CMD + F -> Filter
         else if (control && event.key === "f") {
