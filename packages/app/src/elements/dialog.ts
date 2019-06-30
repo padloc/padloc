@@ -63,7 +63,6 @@ export class Dialog<I, R> extends BaseElement {
                 box-sizing: border-box;
                 perspective: 1000px;
                 transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
-                will-change: transform, opacity;
             }
 
             .scrim {
@@ -71,7 +70,6 @@ export class Dialog<I, R> extends BaseElement {
                 background: #000000;
                 opacity: 0;
                 transition: opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
-                will-change: opacity;
                 ${mixins.fullbleed()}
                 position: fixed;
             }
@@ -91,7 +89,6 @@ export class Dialog<I, R> extends BaseElement {
                 box-shadow: rgba(0, 0, 0, 0.25) 0 0 5px;
                 overflow: hidden;
                 background: var(--color-tertiary);
-                will-change: transform;
             }
 
             .actions {

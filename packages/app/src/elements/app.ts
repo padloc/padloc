@@ -105,7 +105,6 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
                 display: flex;
                 transform-origin: 0 center;
                 transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
-                will-change: transform, opacity;
                 ${mixins.fullbleed()}
                 ${mixins.gradientDark()}
             }
@@ -124,7 +123,6 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
             }
 
             .views > * {
-                will-change: opacity;
                 transition: opacity 0.4s;
                 ${mixins.fullbleed()}
             }
