@@ -3,12 +3,12 @@
   "shell": "dist/elements/app.js",
   "sources": [
    "dist/**/*.js",
-   "manifest/**",
    "package.json",
    "manifest.json"
   ],
   "extraDependencies": [
     "env.js",
+    "sw.js",
     "manifest.json",
     "node_modules/@webcomponents/webcomponentsjs/**/*",
     "node_modules/jsqr/dist/jsQR.js",
