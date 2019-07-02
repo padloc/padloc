@@ -6,6 +6,7 @@ import { StateMixin } from "../mixins/state.js";
 import { AutoLock } from "../mixins/auto-lock.js";
 import { ErrorHandling } from "../mixins/error-handling.js";
 import { AutoSync } from "../mixins/auto-sync.js";
+import { ServiceWorker } from "../mixins/sw.js";
 import { BaseElement, html, css, property, query, listen, observe } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -29,7 +30,7 @@ import { CreateItemDialog } from "./create-item-dialog.js";
 //     document.addEventListener("deviceready", resolve);
 // });
 
-class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
+class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
     @property()
     locked = true;
     @property()
@@ -69,6 +70,9 @@ class App extends StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement)))) {
 
     @property({ reflect: true, attribute: "menu-open" })
     private _menuOpen: boolean = false;
+
+    @property()
+    private _installPrompt: BeforeInstallPromptEvent | null = null;
 
     async firstUpdated() {
         await app.loaded;

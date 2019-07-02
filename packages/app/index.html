@@ -36,14 +36,6 @@
         <script src="/shim/event-target.js"></script>
 
         <script type="module" src="/dist/elements/app.js"></script>
-
-        <script>
-            if ("serviceWorker" in navigator) {
-                window.addEventListener("load", () => {
-                    navigator.serviceWorker.register("/sw.js");
-                });
-            }
-        </script>
     </head>
     <body>
         <style>

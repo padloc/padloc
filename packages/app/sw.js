@@ -1,12 +1,8 @@
-// importScripts("node_modules/workbox-sw/build/workbox-sw.js");
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
-// workbox.setConfig({
-//     modulePathPrefix: "node_modules/workbox-sw/build/"
-// });
+importScripts("node_modules/workbox-sw/build/workbox-sw.js");
 workbox.precaching.precacheAndRoute([
   {
     "url": "index.html",
-    "revision": "897490fe7686db6fd42d96b6f2dd353e"
+    "revision": "331d048aaae64aa3b4edea45f143104b"
   },
   {
     "url": "dist/ajax.js",
@@ -34,7 +30,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "dist/elements/app.js",
-    "revision": "2df74fe0649475849c54a596d09b49f9"
+    "revision": "b0b140f6831fca52e2f7da68eb146797"
   },
   {
     "url": "dist/elements/attachment-dialog.js",
@@ -342,7 +338,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "package.json",
-    "revision": "7a95ac69a685c2781a9296b2eb36fd13"
+    "revision": "e9f4d973a2b1033c676a832a09994a61"
   },
   {
     "url": "manifest.json",
@@ -989,7 +985,19 @@ workbox.precaching.precacheAndRoute([
     "revision": "8daecdb1119803cafa86560290216048"
   }
 ]);
-workbox.routing.registerNavigationRoute(
-// Assuming '/single-page-app.html' has been precached,
-// look up its corresponding cache key.
-workbox.precaching.getCacheKeyForURL("index.html"));
+workbox.routing.registerNavigationRoute(workbox.precaching.getCacheKeyForURL("index.html"));
+addEventListener("message", event => {
+    const action = event.data && event.data.type;
+    let response = undefined;
+    switch (action) {
+        case "INSTALL_UPDATE":
+            console.log("installing update");
+            // @ts-ignore
+            skipWaiting();
+            break;
+        case "GET_VERSION":
+            response = "3.0.0-beta.1";
+            break;
+    }
+    event.ports[0].postMessage(response);
+});
