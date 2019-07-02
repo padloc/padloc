@@ -466,6 +466,7 @@ export const shared = css`
     .tags.small .tag {
         font-size: var(--font-size-micro);
         padding: 4px 6px;
+        line-height: 16px;
     }
 
     .tags.small pl-icon {

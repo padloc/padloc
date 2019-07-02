@@ -197,20 +197,17 @@ export class ItemsList extends StateMixin(View) {
                 font-size: var(--font-size-small);
             }
 
-            .items {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                grid-gap: var(--gutter-size);
-                padding: 8px;
-            }
-
             .item {
                 box-sizing: border-box;
                 display: flex;
                 align-items: center;
                 margin: 6px;
                 cursor: pointer;
-                height: 103px;
+                height: 99;
+                /*
+                box-shadow: rgba(0, 0, 0, 0.1) 0 1px 8px;
+                border: none;
+                */
             }
 
             .item-body {
@@ -219,23 +216,23 @@ export class ItemsList extends StateMixin(View) {
             }
 
             .item .tags {
-                padding: 0 8px;
+                padding: 0;
             }
 
             .item-header {
-                height: var(--row-height);
-                line-height: var(--row-height);
+                height: 24px;
+                margin: 12px 12px 8px 12px;
                 position: relative;
                 display: flex;
                 align-items: center;
             }
 
             .item-name {
-                padding-left: 15px;
                 ${mixins.ellipsis()}
-                font-weight: bold;
+                font-weight: 600;
                 flex: 1;
                 min-width: 0;
+                line-height: 24px;
             }
 
             .item-fields {
@@ -243,8 +240,22 @@ export class ItemsList extends StateMixin(View) {
                 display: flex;
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
-                padding: 0 8px 8px 8px;
-                margin-top: -4px;
+                padding: 0 0 6px 6px;
+            }
+
+            .item-fields::after {
+                content: "";
+                display: block;
+                width: 6px;
+                flex: none;
+                /*
+                position: absolute;
+                z-index: 1;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                background: linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+                 */
             }
 
             .item-field {
@@ -252,7 +263,6 @@ export class ItemsList extends StateMixin(View) {
                 font-size: var(--font-size-tiny);
                 position: relative;
                 flex: 1;
-                font-weight: bold;
                 border-radius: 8px;
                 max-width: calc(60%);
             }
@@ -282,7 +292,7 @@ export class ItemsList extends StateMixin(View) {
             }
 
             .item-field-label {
-                padding: 4px 8px;
+                padding: 4px 6px;
                 pointer-events: none;
             }
 
@@ -290,10 +300,14 @@ export class ItemsList extends StateMixin(View) {
                 font-size: var(--font-size-micro);
                 color: var(--color-primary);
                 margin-bottom: 2px;
+                font-weight: 600;
                 ${mixins.ellipsis()}
+                line-height: 16px;
             }
 
             .item-field-value {
+                font-weight: 600;
+                line-height: 19px;
                 ${mixins.ellipsis()}
             }
 
@@ -348,7 +362,7 @@ export class ItemsList extends StateMixin(View) {
             }
 
             pl-virtual-list {
-                padding: 4px;
+                padding: 6px;
                 padding-bottom: 65px;
                 ${mixins.fullbleed()}
                 ${mixins.scroll()}
@@ -386,7 +400,7 @@ export class ItemsList extends StateMixin(View) {
                 <pl-virtual-list
                     .data=${this._listItems}
                     .minItemWidth=${300}
-                    .itemHeight=${115}
+                    .itemHeight=${111}
                     .renderItem=${(item: ListItem) => this._renderItem(item)}
                     .guard=${({ item, vault }: ListItem) => [
                         item.name,

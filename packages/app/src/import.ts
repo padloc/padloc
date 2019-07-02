@@ -130,7 +130,8 @@ export async function asPadlockLegacy(data: string, password: string): Promise<V
                 updated: new Date(record.updated),
                 lastUsed: new Date(record.lastUsed),
                 updatedBy: "",
-                attachments: []
+                attachments: [],
+                favorited: []
             };
         });
 

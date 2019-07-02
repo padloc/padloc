@@ -59,7 +59,7 @@ export class Settings extends StateMixin(View) {
             .item {
                 width: 100%;
                 box-sizing: border-box;
-                margin: 8px 0;
+                margin: 12px 0;
             }
 
             .account {
