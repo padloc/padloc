@@ -30,7 +30,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "dist/elements/app.js",
-    "revision": "b0b140f6831fca52e2f7da68eb146797"
+    "revision": "015bc4b21c0c41e7c5f6030aa6fce069"
   },
   {
     "url": "dist/elements/attachment-dialog.js",
@@ -63,6 +63,10 @@ workbox.precaching.precacheAndRoute([
   {
     "url": "dist/elements/clipboard.js",
     "revision": "d0ddfcc979db8394d3c3a8482301a3e4"
+  },
+  {
+    "url": "dist/elements/confirm-plan-dialog.js",
+    "revision": "eac2beea7f06b835e1bb34bf00ddb5d6"
   },
   {
     "url": "dist/elements/create-invites-dialog.js",
@@ -101,6 +105,22 @@ workbox.precaching.precacheAndRoute([
     "revision": "491a8349f9ed3ee96764a8c2ee82e009"
   },
   {
+    "url": "dist/elements/icon_BACKUP_9221.js",
+    "revision": "3d0aa71d624fde8055d2b303e1358b98"
+  },
+  {
+    "url": "dist/elements/icon_BASE_9221.js",
+    "revision": "ac264febdb1ccd44801939e7e022fb96"
+  },
+  {
+    "url": "dist/elements/icon_LOCAL_9221.js",
+    "revision": "e83eeb88fdc1caa4aa2f573e821da13b"
+  },
+  {
+    "url": "dist/elements/icon_REMOTE_9221.js",
+    "revision": "f9ab249bc0cbf849dd00cee22cf1da21"
+  },
+  {
     "url": "dist/elements/icon.js",
     "revision": "9de4c8952b8333e517531eebeaeaf5b5"
   },
@@ -123,6 +143,10 @@ workbox.precaching.precacheAndRoute([
   {
     "url": "dist/elements/item-dialog.js",
     "revision": "252e74324ab738a7c9dbc19934109ca8"
+  },
+  {
+    "url": "dist/elements/item.js",
+    "revision": "e0b2fa1abcb59e85c360164adc744e4b"
   },
   {
     "url": "dist/elements/items-filter.js",
@@ -165,8 +189,64 @@ workbox.precaching.precacheAndRoute([
     "revision": "b34e32b3e5ad273d696d532fd274cf7b"
   },
   {
+    "url": "dist/elements/org-subscription.js",
+    "revision": "c17c158c50030eeff0a21055524d5aa9"
+  },
+  {
+    "url": "dist/elements/org-view_BACKUP_92822.js",
+    "revision": "aefdeee496f214ea94ad696fcd166276"
+  },
+  {
+    "url": "dist/elements/org-view_BACKUP_93572.js",
+    "revision": "46d260f830ae55479dcb08056b605608"
+  },
+  {
+    "url": "dist/elements/org-view_BACKUP_94058.js",
+    "revision": "6f11196fb30ace030e52e544455d7edd"
+  },
+  {
+    "url": "dist/elements/org-view_BASE_92822.js",
+    "revision": "76c1ce1deff5533235f14cb0605d8484"
+  },
+  {
+    "url": "dist/elements/org-view_BASE_93572.js",
+    "revision": "584f5954a9cb80f3ec4269bb75c8f6d1"
+  },
+  {
+    "url": "dist/elements/org-view_BASE_94058.js",
+    "revision": "e57fa06204e6b3af06bb71ef0a70b764"
+  },
+  {
+    "url": "dist/elements/org-view_LOCAL_92822.js",
+    "revision": "ad3b092f08903adaf0e3701a1f050b6b"
+  },
+  {
+    "url": "dist/elements/org-view_LOCAL_93572.js",
+    "revision": "e3b1ba9deeadf56dafbaf09e239543fe"
+  },
+  {
+    "url": "dist/elements/org-view_LOCAL_94058.js",
+    "revision": "46d260f830ae55479dcb08056b605608"
+  },
+  {
+    "url": "dist/elements/org-view_REMOTE_92822.js",
+    "revision": "b7a9659c863b35f1cb9095f3778e9a22"
+  },
+  {
+    "url": "dist/elements/org-view_REMOTE_93572.js",
+    "revision": "e57fa06204e6b3af06bb71ef0a70b764"
+  },
+  {
+    "url": "dist/elements/org-view_REMOTE_94058.js",
+    "revision": "de39772eef5dab781167d834b7b7ae85"
+  },
+  {
     "url": "dist/elements/org-view.js",
     "revision": "df640007a8ab06fb88c65160f3fd2821"
+  },
+  {
+    "url": "dist/elements/orgs-view.js",
+    "revision": "522cc2744dbdd38f1119786ae9e22340"
   },
   {
     "url": "dist/elements/password-input.js",
@@ -221,6 +301,10 @@ workbox.precaching.precacheAndRoute([
     "revision": "8556ab3914e47c4956e39fcc2e1224c0"
   },
   {
+    "url": "dist/elements/subscription-subscription.js",
+    "revision": "a8108862fae11c19b39a5e1f34805439"
+  },
+  {
     "url": "dist/elements/subscription.js",
     "revision": "b674cf2298915bd864fae3e0abbbcfe9"
   },
@@ -247,6 +331,10 @@ workbox.precaching.precacheAndRoute([
   {
     "url": "dist/elements/update-subscription-dialog.js",
     "revision": "c2f49a909bc043bcd1c68f005f658864"
+  },
+  {
+    "url": "dist/elements/update-subscription.js",
+    "revision": "d4c6fad5f875e5fd219fae5dfbb9d3b4"
   },
   {
     "url": "dist/elements/upload-dialog.js",
@@ -338,7 +426,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "package.json",
-    "revision": "e9f4d973a2b1033c676a832a09994a61"
+    "revision": "5994cfc207d608ca12a3c983f0dcf53e"
   },
   {
     "url": "manifest.json",
@@ -346,7 +434,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "env.js",
-    "revision": "a610b8ea130850e375579aa96baf5e86"
+    "revision": "24014cf50ba492ab9f4ecc17773e1e53"
   },
   {
     "url": "node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-ce.js",
@@ -414,7 +502,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "node_modules/@webcomponents/webcomponentsjs/package.json",
-    "revision": "970074da0d6fa3db09fbea07241db6db"
+    "revision": "5547c80de5778b6c8a616490d0a3fdd5"
   },
   {
     "url": "node_modules/@webcomponents/webcomponentsjs/README.md",
@@ -431,6 +519,38 @@ workbox.precaching.precacheAndRoute([
   {
     "url": "node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js",
     "revision": "e044a63e034bf10304dad73138b8c74b"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/account_BACKUP_7727.js",
+    "revision": "8574645c87bc95ec62e7ab97649835ef"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/account_BACKUP_9686.js",
+    "revision": "dd70a5ae241ee33b2913eab73c9ae0c0"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/account_BASE_7727.js",
+    "revision": "dbde0d684c5925810f97016cc43daae1"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/account_BASE_9686.js",
+    "revision": "cbf077a7c23765b27b7d8739992abbec"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/account_LOCAL_7727.js",
+    "revision": "dba8d0c9e0c8882255c8c1b31a0a00d5"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/account_LOCAL_9686.js",
+    "revision": "dd70a5ae241ee33b2913eab73c9ae0c0"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/account_REMOTE_7727.js",
+    "revision": "cbf077a7c23765b27b7d8739992abbec"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/account_REMOTE_9686.js",
+    "revision": "92c448a70226a39b932803e69caa9128"
   },
   {
     "url": "node_modules/@padloc/core/lib/account.js",
@@ -463,6 +583,10 @@ workbox.precaching.precacheAndRoute([
   {
     "url": "node_modules/@padloc/core/lib/billing.js",
     "revision": "30cfd640008f2b0cff7a86c05fc1a65a"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/billing.tsxx.js",
+    "revision": "35319f99b2f404c050ffab2ec2f805ac"
   },
   {
     "url": "node_modules/@padloc/core/lib/client.js",
@@ -499,6 +623,10 @@ workbox.precaching.precacheAndRoute([
   {
     "url": "node_modules/@padloc/core/lib/event-target.js",
     "revision": "505ab8cf2f9d9f66ae6fbca3e06b04a3"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/group.js",
+    "revision": "2ed76255adceb0b882c8c1db21d2125a"
   },
   {
     "url": "node_modules/@padloc/core/lib/invite.js",
@@ -565,6 +693,74 @@ workbox.precaching.precacheAndRoute([
     "revision": "c3bde287865158f97fccefe735ed248c"
   },
   {
+    "url": "node_modules/@padloc/core/lib/server_BACKUP_12901.js",
+    "revision": "f58e766f54ccb9bf4b3101ef58f79f13"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_BACKUP_13279.js",
+    "revision": "cfc35bb50c7f6d32c8510bb486a08092"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_BACKUP_7936.js",
+    "revision": "dfc165be0a5bee44a653c903a5f302b2"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_BACKUP_8731.js",
+    "revision": "f37b230f91b8d101e7bebb03f4b667a6"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_BASE_12901.js",
+    "revision": "843346ce45e43df665db6af8664c42c3"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_BASE_13279.js",
+    "revision": "cf2eba9905dd2b25d64c7549c11336e7"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_BASE_7936.js",
+    "revision": "6e9f74664390551f4b6c1358db777430"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_BASE_8731.js",
+    "revision": "d5ccb91b893144d56e74ef4689387196"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_LOCAL_12901.js",
+    "revision": "0c81d7a7e1e83b0d06b1368c7a5b28d3"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_LOCAL_13279.js",
+    "revision": "3be75dff702db49c8761d41a3de02476"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_LOCAL_7936.js",
+    "revision": "843346ce45e43df665db6af8664c42c3"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_LOCAL_8731.js",
+    "revision": "cf2eba9905dd2b25d64c7549c11336e7"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_REMOTE_12901.js",
+    "revision": "cf2eba9905dd2b25d64c7549c11336e7"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_REMOTE_13279.js",
+    "revision": "715e0601589e580d0d8bd6ca7589db17"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_REMOTE_7936.js",
+    "revision": "d5ccb91b893144d56e74ef4689387196"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_REMOTE_8731.js",
+    "revision": "d4586b9e949f3d52d75e4fbb96c78a56"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/server_x.js",
+    "revision": "6e9f74664390551f4b6c1358db777430"
+  },
+  {
     "url": "node_modules/@padloc/core/lib/server.js",
     "revision": "d2884cab8d8e8c8fc1cc2cfb8e0e6057"
   },
@@ -589,6 +785,10 @@ workbox.precaching.precacheAndRoute([
     "revision": "b626beda254bc106a739e7721c64eec3"
   },
   {
+    "url": "node_modules/@padloc/core/lib/spec/test-util.js",
+    "revision": "826056c92c7707fc6c20157f38b6ada3"
+  },
+  {
     "url": "node_modules/@padloc/core/lib/srp.js",
     "revision": "e4242eac3dd40e8582187c0a652f128b"
   },
@@ -607,6 +807,10 @@ workbox.precaching.precacheAndRoute([
   {
     "url": "node_modules/@padloc/core/lib/util.js",
     "revision": "807458a3f9b57380262c0cf119f99ea8"
+  },
+  {
+    "url": "node_modules/@padloc/core/lib/uuid.js",
+    "revision": "d41d8cd98f00b204e9800998ecf8427e"
   },
   {
     "url": "node_modules/@padloc/core/lib/vault.js",

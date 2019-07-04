@@ -71,9 +71,6 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     @property({ reflect: true, attribute: "menu-open" })
     private _menuOpen: boolean = false;
 
-    @property()
-    private _installPrompt: BeforeInstallPromptEvent | null = null;
-
     async firstUpdated() {
         await app.loaded;
         this._routeChanged();
