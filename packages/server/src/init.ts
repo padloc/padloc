@@ -15,15 +15,15 @@ async function init() {
         clientUrl: process.env.PL_CLIENT_URL || "https://localhost:8081",
         reportErrors: process.env.PL_REPORT_ERRORS || "",
         accountQuota: {
-            items: 50,
-            storage: 0,
+            items: -1,
+            storage: 1,
             orgs: 5
         },
         orgQuota: {
-            members: 1,
-            groups: 0,
-            vaults: 0,
-            storage: 0
+            members: -1,
+            groups: -1,
+            vaults: -1,
+            storage: 5
         }
     };
     const messenger = new EmailMessenger({
