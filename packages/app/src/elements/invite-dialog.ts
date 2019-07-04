@@ -47,7 +47,7 @@ export class InviteDialog extends Dialog<Invite, void> {
 
     dismiss() {
         super.dismiss();
-        router.back();
+        router.go(`org/${this.invite!.org!.id}`);
     }
 
     private async _refresh() {
@@ -323,7 +323,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         let org = app.getOrg(this.invite!.org!.id)!;
         try {
             await app.deleteInvite(this.invite!);
-            this.invite = await app.createInvites(org!, [this.invite!.email], this.invite!.purpose)[0];
+            this.invite = (await app.createInvites(org!, [this.invite!.email], this.invite!.purpose))[0];
             this._resendButton.success();
         } catch (e) {
             this._error = e.message || $l("Something went wrong. Please try again later!");
