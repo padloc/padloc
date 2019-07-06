@@ -2,7 +2,7 @@ import { Err, ErrorCode } from "@padloc/core/lib/error.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { app, router } from "../init.js";
 import { alert, confirm } from "../dialog.js";
-import { notify } from "../elements/notification.js";
+// import { notify } from "../elements/notification.js";
 
 type Constructor<T> = new (...args: any[]) => T;
 
@@ -39,10 +39,10 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                     });
                     return true;
                 case ErrorCode.FAILED_CONNECTION:
-                    notify($l("Looks like you're offline right now. Please check your internet connection!"), {
-                        type: "warning",
-                        duration: 5000
-                    });
+                    // notify($l("Looks like you're offline right now. Please check your internet connection!"), {
+                    //     type: "warning",
+                    //     duration: 5000
+                    // });
                     return true;
                 case ErrorCode.INSUFFICIENT_PERMISSIONS:
                     alert($l("You don't have sufficient permissions to perform this action!"), {

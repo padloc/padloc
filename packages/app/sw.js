@@ -1,4 +1,6 @@
 importScripts("node_modules/workbox-sw/build/workbox-sw.js");
+importScripts("env.js");
+self.console.log(self.env);
 workbox.precaching.precacheAndRoute([
   {
     "url": "index.html",
@@ -30,7 +32,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "dist/elements/app.js",
-    "revision": "015bc4b21c0c41e7c5f6030aa6fce069"
+    "revision": "9c2e5d471b6222911a228114935dbfbc"
   },
   {
     "url": "dist/elements/attachment-dialog.js",
@@ -82,7 +84,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "dist/elements/dialog.js",
-    "revision": "4e045d2f6c1872e7f1ce5cfe4d3a8054"
+    "revision": "0471074a3307110f0c4917bb11319a70"
   },
   {
     "url": "dist/elements/export-dialog.js",
@@ -134,7 +136,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "dist/elements/invite-dialog.js",
-    "revision": "380ff2630f0bed88dc61c25ce76d0c7f"
+    "revision": "d4ed1adb004441cdc7d845979b5995ad"
   },
   {
     "url": "dist/elements/invite-item.js",
@@ -382,7 +384,11 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "dist/mixins/error-handling.js",
-    "revision": "215c02d88afa0c4fd58bc434ceff93f5"
+    "revision": "248f7da3c19af117cad9aeee60705f96"
+  },
+  {
+    "url": "dist/mixins/service-worker.js",
+    "revision": "3efaf296ca593350a2a885664512b4af"
   },
   {
     "url": "dist/mixins/state.js",
@@ -426,7 +432,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "package.json",
-    "revision": "5994cfc207d608ca12a3c983f0dcf53e"
+    "revision": "986eed717f544584b9820b008551d1b8"
   },
   {
     "url": "manifest.json",
@@ -434,7 +440,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "env.js",
-    "revision": "24014cf50ba492ab9f4ecc17773e1e53"
+    "revision": "156ffdb9235bc18e162c7d6ff0dfe2df"
   },
   {
     "url": "node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-ce.js",
@@ -562,7 +568,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "node_modules/@padloc/core/lib/app.js",
-    "revision": "b263110fa6e3f98aa8ca302e9b7dc62e"
+    "revision": "f1039b0c8c27dd7c25b7203a98296663"
   },
   {
     "url": "node_modules/@padloc/core/lib/attachment.js",
@@ -590,7 +596,7 @@ workbox.precaching.precacheAndRoute([
   },
   {
     "url": "node_modules/@padloc/core/lib/client.js",
-    "revision": "ff3347198a4f91703f8acf8f4e1f6465"
+    "revision": "666a308387dc40dcf1dc2778de697389"
   },
   {
     "url": "node_modules/@padloc/core/lib/collection.js",
@@ -1003,6 +1009,54 @@ workbox.precaching.precacheAndRoute([
   {
     "url": "node_modules/workbox-sw/build/workbox-sw.js",
     "revision": "6e1e47d706556eac8524f396e785d4bb"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.dev.es5.mjs",
+    "revision": "fc994f936328441cc31ce2c228c273e8"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.dev.es5.mjs.map",
+    "revision": "8112b149faedb3f35175653b8930b1c0"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.dev.mjs",
+    "revision": "0660ff174ef790c3eb7b804303560220"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.dev.mjs.map",
+    "revision": "79a82eeba4400f86130f1b4099437675"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.dev.umd.js",
+    "revision": "c17834573a1b48bb8cf33b12128bdae9"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.dev.umd.js.map",
+    "revision": "2effcc731f7435dc5922299c13284285"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.prod.es5.mjs",
+    "revision": "869476238d69f1d95543f9019c9541c6"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.prod.es5.mjs.map",
+    "revision": "17737e67c19e9b6ee6d0f772be87bea1"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.prod.mjs",
+    "revision": "56cbbcdb311d6e4f35259abf7cc4fb10"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.prod.mjs.map",
+    "revision": "64d17c690a143f835e65ae91bb0eaf7b"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.prod.umd.js",
+    "revision": "c65238721ed1187cf832e51a9e34724a"
+  },
+  {
+    "url": "node_modules/workbox-window/build/workbox-window.prod.umd.js.map",
+    "revision": "132b32c538331115f07cdbb8d5aafd6b"
   },
   {
     "url": "node_modules/localforage/src/drivers/indexeddb.js",

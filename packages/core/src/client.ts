@@ -11,7 +11,7 @@ import {
     GetAttachmentParams,
     DeleteAttachmentParams
 } from "./api";
-import { Sender, Request, RequestProgress } from "./transport";
+import { Sender, Request, Response, RequestProgress } from "./transport";
 import { DeviceInfo } from "./platform";
 import { Session, SessionID } from "./session";
 import { Account } from "./account";
@@ -40,11 +40,14 @@ export interface ClientState {
  * authentication and some state like current session and account.
  */
 export class BaseClient {
+    online = true;
+
     constructor(
         /** Object for storing state */
         public state: ClientState,
         /** [[Sender]] implementation used for sending/receiving requests */
-        private sender: Sender
+        private sender: Sender,
+        private hook?: (req: Request, res: Response | null, err: Err | null) => void
     ) {}
 
     /** The current session */
@@ -73,6 +76,7 @@ export class BaseClient {
             if (progress) {
                 progress.error = e;
             }
+            this.hook && this.hook(req, null, e);
             throw e;
         }
 
@@ -81,6 +85,7 @@ export class BaseClient {
             if (progress) {
                 progress.error = err;
             }
+            this.hook && this.hook(req, res, err);
             throw err;
         }
 
@@ -89,9 +94,11 @@ export class BaseClient {
             if (progress) {
                 progress.error = err;
             }
+            this.hook && this.hook(req, res, err);
             throw err;
         }
 
+        this.hook && this.hook(req, res, null);
         return res;
     }
 }

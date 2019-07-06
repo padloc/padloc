@@ -6,7 +6,7 @@ import { StateMixin } from "../mixins/state.js";
 import { AutoLock } from "../mixins/auto-lock.js";
 import { ErrorHandling } from "../mixins/error-handling.js";
 import { AutoSync } from "../mixins/auto-sync.js";
-import { ServiceWorker } from "../mixins/sw.js";
+import { ServiceWorker } from "../mixins/service-worker.js";
 import { BaseElement, html, css, property, query, listen, observe } from "./base.js";
 import "./icon.js";
 import { Input } from "./input.js";
@@ -100,6 +100,13 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 height: 100%;
                 animation: fadeIn 0.5s;
                 perspective: 1000px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .main {
+                flex: 1;
+                position: relative;
             }
 
             .wrapper {
@@ -137,6 +144,28 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             .wrapper:not(.active),
             :host(.dialog-open) .wrapper {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
+            }
+
+            .offline {
+                background: var(--color-negative);
+                color: var(--color-tertiary);
+                padding: 8px;
+                text-align: center;
+                z-index: 100;
+                font-weight: bold;
+                letter-spacing: 2px;
+                font-size: var(--font-size-small);
+                text-shadow: rgba(0, 0, 0, 0.15) 0 1px 0;
+                position: relative;
+            }
+
+            .offline pl-icon {
+                position: absolute;
+                right: 0;
+                font-size: var(--font-size-micro);
+                margin: -4px 4px;
+                width: 30px;
+                height: 30px;
             }
 
             @media (max-width: 700px) {
@@ -188,21 +217,29 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
 
     render() {
         return html`
-            <pl-start id="startView"></pl-start>
+            <div class="offline" ?hidden=${app.online}>
+                ${$l("offline")}
 
-            <div class="wrapper">
-                <pl-menu></pl-menu>
-
-                <div class="views">
-                    <pl-settings ?showing=${this._view === this._settings}></pl-settings>
-
-                    <pl-org-view ?showing=${this._view === this._orgView}></pl-org-view>
-
-                    <pl-items-list ?showing=${this._view === this._items}></pl-items-list>
-                </div>
+                <pl-icon icon="info" class="tap" @click=${this._showOfflineAlert}></pl-icon>
             </div>
 
-            <slot></slot>
+            <div class="main">
+                <pl-start id="startView"></pl-start>
+
+                <div class="wrapper">
+                    <pl-menu></pl-menu>
+
+                    <div class="views">
+                        <pl-settings ?showing=${this._view === this._settings}></pl-settings>
+
+                        <pl-org-view ?showing=${this._view === this._orgView}></pl-org-view>
+
+                        <pl-items-list ?showing=${this._view === this._items}></pl-items-list>
+                    </div>
+                </div>
+
+                <slot></slot>
+            </div>
         `;
     }
 
@@ -461,6 +498,17 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         }
 
         this._routeChanged();
+    }
+
+    private _showOfflineAlert() {
+        alert(
+            $l(
+                "It looks like the app cannot connect to the Padloc servers right now, probably due " +
+                    "to a missing internet connection. You can still access your vaults and even create " +
+                    "or edit Vault Items but your changes won't be synchronized until you're back online."
+            ),
+            { title: $l("You're Offline") }
+        );
     }
 }
 

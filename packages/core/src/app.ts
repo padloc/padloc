@@ -82,6 +82,9 @@ export class AppState extends Storable {
     /** Whether a sync is currently in process. */
     syncing = false;
 
+    /** Whether the app has an internet connection at the moment */
+    online = true;
+
     /** All [[Tag]]s found within the users [[Vault]]s */
     get tags() {
         const tags = new Map<string, number>();
@@ -203,7 +206,12 @@ export class App {
         sender: Sender,
         public billingConfig?: BillingConfig
     ) {
-        this.api = new Client(this.state, sender);
+        this.api = new Client(this.state, sender, (_req, _res, err) => {
+            const online = !err || err.code !== ErrorCode.FAILED_CONNECTION;
+            if (online !== this.state.online) {
+                this.setState({ online });
+            }
+        });
     }
 
     /** Promise that resolves once all current synchronization processes are complete */
@@ -239,6 +247,10 @@ export class App {
     /** The current users main, or "private" [[Vault]] */
     get mainVault(): Vault | null {
         return (this.account && this.getVault(this.account.mainVault)) || null;
+    }
+
+    get online() {
+        return this.state.online;
     }
 
     private _queuedSyncPromises = new Map<string, Promise<void>>();

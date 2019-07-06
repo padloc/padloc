@@ -17,6 +17,7 @@ module.exports = {
         "node_modules/autosize/src/autosize.js",
         "node_modules/jsqr/dist/jsQR.js",
         "node_modules/workbox-sw/build/workbox-sw.js",
+        "node_modules/workbox-window/build/*",
         "node_modules/localforage/src/**/*.js",
         "assets/**/*",
         "vendor/**/*",

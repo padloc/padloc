@@ -44,7 +44,6 @@ export class Dialog<I, R> extends BaseElement {
             :host {
                 display: block;
                 ${mixins.fullbleed()}
-                position: fixed;
                 z-index: 10;
             }
 
