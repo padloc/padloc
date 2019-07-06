@@ -11,6 +11,9 @@ import { Dialog } from "./dialog.js";
 @element("pl-import-dialog")
 export class ImportDialog extends Dialog<string, void> {
     @property()
+    private _rawData: string = "";
+
+    @property()
     private _items: VaultItem[] = [];
 
     @query("#formatSelect")
@@ -52,7 +55,13 @@ export class ImportDialog extends Dialog<string, void> {
         return html`
             <h1>${$l("Import Data")}</h1>
 
-            <pl-select id="formatSelect" .options=${imp.supportedFormats} .label=${$l("Format")} disabled></pl-select>
+            <pl-select
+                id="formatSelect"
+                .options=${imp.supportedFormats}
+                .label=${$l("Format")}
+                @change=${this._parseString}
+                disabled
+            ></pl-select>
 
             <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== imp.CSV}>
                 ${$l(
@@ -73,13 +82,16 @@ export class ImportDialog extends Dialog<string, void> {
     async show(input: string) {
         await this.updateComplete;
         const result = super.show();
+        this._rawData = input;
         this._formatSelect.selected = imp.guessFormat(input) || imp.CSV;
-        this._parseString(input);
+        this._parseString();
         this._vaultSelect.selected = app.mainVault!;
         return result;
     }
 
-    private async _parseString(rawStr: string): Promise<void> {
+    private async _parseString(): Promise<void> {
+        const rawStr = this._rawData;
+
         switch (this._formatSelect.selected!.format) {
             case imp.PADLOCK_LEGACY.format:
                 this.open = false;
@@ -106,6 +118,26 @@ export class ImportDialog extends Dialog<string, void> {
                 break;
             case imp.CSV.format:
                 this._items = await imp.asCSV(rawStr);
+                break;
+            case imp.PBES2.format:
+                this.open = false;
+                const pwd2 = await prompt($l("This file is protected by a password."), {
+                    label: $l("Enter Password"),
+                    type: "password",
+                    validate: async (pwd: string) => {
+                        try {
+                            this._items = await imp.asPBES2Container(rawStr, pwd);
+                        } catch (e) {
+                            throw $l("Wrong Password");
+                        }
+                        return pwd;
+                    }
+                });
+                this.open = true;
+
+                if (pwd2 === null) {
+                    this.done();
+                }
                 break;
             default:
                 this._items = [];

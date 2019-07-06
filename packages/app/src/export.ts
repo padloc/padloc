@@ -1,10 +1,10 @@
 import { VaultItem } from "@padloc/core/lib/item.js";
 import { PBES2Container } from "@padloc/core/lib/container.js";
 import { marshal, stringToBytes } from "@padloc/core/lib/encoding.js";
-import { loadPapa, ImportFormat, CSV } from "./import.js";
+import { loadPapa, ImportFormat, CSV, PBES2 } from "./import.js";
 
-export const supportedFormats: ImportFormat[] = [CSV];
-export { CSV } from "./import.js";
+export const supportedFormats: ImportFormat[] = [CSV, PBES2];
+export { CSV, PBES2 } from "./import.js";
 
 function itemsToTable(items: VaultItem[]) {
     // Array of column names

@@ -1,8 +1,9 @@
 import { Vault } from "@padloc/core/lib/vault.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { CSV, ImportFormat } from "../import.js";
-import { supportedFormats, asCSV } from "../export.js";
+import { CSV, PBES2, ImportFormat } from "../import.js";
+import { supportedFormats, asCSV, asPBES2Container } from "../export.js";
 import { app } from "../init.js";
+import { prompt } from "../dialog.js";
 import { element, html, css, query } from "./base.js";
 import { Select } from "./select.js";
 import { Dialog } from "./dialog.js";
@@ -56,7 +57,7 @@ export class ExportDialog extends Dialog<void, void> {
             >
             </pl-select>
 
-            <pl-select id="formatSelect" .options=${supportedFormats} .label=${$l("Format")} disabled></pl-select>
+            <pl-select id="formatSelect" .options=${supportedFormats} .label=${$l("Format")}></pl-select>
 
             <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== CSV}>
                 ${$l(
@@ -81,9 +82,37 @@ export class ExportDialog extends Dialog<void, void> {
 
     private async _export() {
         const vault = this._vaultSelect.selected!;
-        const data = await asCSV([...vault.items]);
+        const items = [...vault.items];
+
         const date = new Date().toISOString().substr(0, 10);
-        const fileName = `${vault.name.replace(/ /g, "_")}_${date}.csv`;
+        let data = "";
+        let fileName = "";
+
+        switch (this._formatSelect.selected.format) {
+            case CSV.format:
+                data = await asCSV(items);
+                fileName = `${vault.name.replace(/ /g, "_")}_${date}.csv`;
+                break;
+
+            case PBES2.format:
+                this.open = false;
+                const password = await prompt($l("Please choose a password to protect this backup with!"), {
+                    type: "password"
+                });
+                this.open = true;
+
+                if (typeof password !== "string") {
+                    this.done();
+                    return;
+                }
+
+                data = await asPBES2Container(items, password);
+                fileName = `${vault.name.replace(/ /g, "_")}_${date}.pbes2`;
+                break;
+
+            default:
+                return;
+        }
         this._download(data, fileName);
         this.done();
     }

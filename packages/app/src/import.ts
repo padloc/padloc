@@ -1,4 +1,5 @@
 import { unmarshal, bytesToString } from "@padloc/core/lib/encoding.js";
+import { PBES2Container } from "@padloc/core/lib/container.js";
 import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/lib/legacy.js";
 import { VaultItem, Field, createVaultItem, guessFieldType } from "@padloc/core/lib/item.js";
 import { Err, ErrorCode } from "@padloc/core/lib/error.js";
@@ -7,7 +8,7 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { loadScript } from "./util";
 
 export interface ImportFormat {
-    format: "csv" | "padlock-legacy" | "lastpass";
+    format: "csv" | "padlock-legacy" | "lastpass" | "padloc";
     toString(): string;
 }
 
@@ -32,7 +33,14 @@ export const LASTPASS: ImportFormat = {
     }
 };
 
-export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS];
+export const PBES2: ImportFormat = {
+    format: "padloc",
+    toString() {
+        return "Encrypted Container";
+    }
+};
+
+export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2];
 
 export function loadPapa(): Promise<any> {
     return loadScript("vendor/papaparse.js", "Papa");
@@ -138,6 +146,31 @@ export async function asPadlockLegacy(data: string, password: string): Promise<V
     return Promise.all(items);
 }
 
+export async function isPBES2Container(data: string) {
+    try {
+        new PBES2Container().fromRaw(unmarshal(data));
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+export async function asPBES2Container(data: string, password: string): Promise<VaultItem[]> {
+    const container = new PBES2Container().fromRaw(unmarshal(data));
+    await container.unlock(password);
+
+    const raw = unmarshal(bytesToString(await container.getData())) as any;
+    const items = raw.items.map((item: any) => {
+        return {
+            ...item,
+            updated: new Date(item.updated),
+            lastUsed: new Date(item.lastUsed)
+        };
+    });
+
+    return items;
+}
+
 /*
  * Lastpass secure notes are exported by putting non-standard fields into the 'extra' column. Every line
  * represents a field in the following format:
@@ -218,5 +251,13 @@ export function isLastPass(data: string): boolean {
 }
 
 export function guessFormat(data: string): ImportFormat | null {
-    return isPadlockV1(data) ? PADLOCK_LEGACY : isLastPass(data) ? LASTPASS : isCSV(data) ? CSV : null;
+    return isPBES2Container(data)
+        ? PBES2
+        : isPadlockV1(data)
+        ? PADLOCK_LEGACY
+        : isLastPass(data)
+        ? LASTPASS
+        : isCSV(data)
+        ? CSV
+        : null;
 }

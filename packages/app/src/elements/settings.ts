@@ -193,7 +193,7 @@ export class Settings extends StateMixin(View) {
                 </div>
             </main>
 
-            <input type="file" accept="text/plain,.csv,.pls,.set" hidden @change=${() => this._importFile()} />
+            <input type="file" accept="text/plain,.csv,.pls,.set,.pbes2" hidden @change=${() => this._importFile()} />
         `;
     }
 
