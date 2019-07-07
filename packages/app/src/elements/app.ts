@@ -14,6 +14,7 @@ import { View } from "./view.js";
 import { ItemsList } from "./items-list.js";
 import { Settings } from "./settings.js";
 import { OrgView } from "./org-view.js";
+import { OrgsList } from "./orgs-list.js";
 import { Start } from "./start.js";
 import { alert, confirm, clearDialogs, dialog } from "../dialog.js";
 import { Dialog } from "./dialog.js";
@@ -44,6 +45,8 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     private _orgView: OrgView;
     @query("pl-items-list")
     private _items: ItemsList;
+    @query("pl-orgs-list")
+    private _orgs: OrgsList;
     @query("pl-menu")
     private _menu: Menu;
 
@@ -128,6 +131,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 margin-left: 0;
                 background: var(--color-quaternary);
                 border-radius: var(--border-radius);
+                overflow: hidden;
             }
 
             .views > * {
@@ -152,10 +156,9 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 padding: 8px;
                 text-align: center;
                 z-index: 100;
-                font-weight: bold;
+                font-weight: 600;
                 letter-spacing: 2px;
                 font-size: var(--font-size-small);
-                text-shadow: rgba(0, 0, 0, 0.15) 0 1px 0;
                 position: relative;
             }
 
@@ -233,6 +236,8 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                         <pl-settings ?showing=${this._view === this._settings}></pl-settings>
 
                         <pl-org-view ?showing=${this._view === this._orgView}></pl-org-view>
+
+                        <pl-orgs-list ?showing=${this._view === this._orgs}></pl-orgs-list>
 
                         <pl-items-list ?showing=${this._view === this._items}></pl-items-list>
                     </div>
@@ -339,15 +344,22 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         if (path === "settings") {
             this._openView(this._settings);
             this._menu.selected = "settings";
-        } else if ((match = path.match(/^org\/([^\/]+)$/))) {
+        } else if ((match = path.match(/^orgs?(?:\/([^\/]+))?$/))) {
             const [, id] = match;
-            if (id && !app.getOrg(id)) {
-                router.go("");
+            const org = id && app.getOrg(id);
+            if (id && !org) {
+                router.go("orgs");
                 return;
             }
-            this._orgView.orgId = id || "";
-            this._openView(this._orgView);
-            this._menu.selected = `org/${id}`;
+
+            if (org) {
+                this._orgView.orgId = id || "";
+                this._openView(this._orgView);
+                this._menu.selected = `orgs/${id}`;
+            } else {
+                this._openView(this._orgs);
+                this._menu.selected = "orgs";
+            }
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
 
@@ -482,7 +494,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
 
         const org = await this._createOrgDialog.show(plan);
         if (org) {
-            router.go(`org/${org.id}`);
+            router.go(`orgs/${org.id}`);
         }
     }
 

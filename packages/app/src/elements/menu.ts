@@ -256,7 +256,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                         <div class="separator"></div>
 
-                        <li>
+                        <li class="tap" ?selected=${this.selected === "orgs"} @click=${() => this._goTo("orgs")}>
                             <pl-icon icon="hirarchy"></pl-icon>
 
                             <div>
@@ -268,8 +268,8 @@ export class Menu extends StateMixin(BaseElement) {
                             org => html`
                                 <li
                                     class="sub-item tap"
-                                    ?selected=${this.selected === `org/${org.id}`}
-                                    @click=${() => this._goTo(`org/${org.id}`)}
+                                    ?selected=${this.selected === `orgs/${org.id}`}
+                                    @click=${() => this._goTo(`orgs/${org.id}`)}
                                 >
                                     <pl-icon icon="org"></pl-icon>
 
