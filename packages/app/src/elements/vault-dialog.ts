@@ -310,73 +310,75 @@ export class VaultDialog extends Dialog<InputType, void> {
                 ></pl-icon>
             </header>
 
-            <div class="search-wrapper item">
-                <pl-icon icon="search"></pl-icon>
-                <pl-input id="filterInput" placeholder="${$l("Search...")}" @input=${this._updateFilter}></pl-input>
-                <pl-icon icon="cancel" class="tap" @click=${this._clearFilter}></pl-icon>
-            </div>
+            <div class="content">
+                <div class="search-wrapper item">
+                    <pl-icon icon="search"></pl-icon>
+                    <pl-input id="filterInput" placeholder="${$l("Search...")}" @input=${this._updateFilter}></pl-input>
+                    <pl-icon icon="cancel" class="tap" @click=${this._clearFilter}></pl-icon>
+                </div>
 
-            <div class="subheader" ?hidden=${!members.length}>
-                <div>${$l("Members")}</div>
-                <div class="flex"></div>
-                <div class="permission">${$l("read")}</div>
-                <div class="permission">${$l("write")}</div>
-            </div>
+                <div class="subheader" ?hidden=${!members.length}>
+                    <div>${$l("Members")}</div>
+                    <div class="flex"></div>
+                    <div class="permission">${$l("read")}</div>
+                    <div class="permission">${$l("write")}</div>
+                </div>
 
-            ${members.map(
-                member => html`
-                    <div class="item tap" @click=${() => this._toggle(member)} ?disabled=${!isAdmin}>
-                        <pl-member-item hideRole .member=${member} class="flex"></pl-member-item>
-                        <pl-toggle
-                            .active=${this._members.get(member.id)!.read}
-                            @click=${(e: Event) => this._toggleRead(member, e)}
-                        ></pl-toggle>
-                        <pl-toggle
-                            .active=${this._members.get(member.id)!.write}
-                            @click=${(e: Event) => this._toggleWrite(member, e)}
-                        ></pl-toggle>
-                    </div>
-                `
-            )}
+                ${members.map(
+                    member => html`
+                        <div class="item tap" @click=${() => this._toggle(member)} ?disabled=${!isAdmin}>
+                            <pl-member-item hideRole .member=${member} class="flex"></pl-member-item>
+                            <pl-toggle
+                                .active=${this._members.get(member.id)!.read}
+                                @click=${(e: Event) => this._toggleRead(member, e)}
+                            ></pl-toggle>
+                            <pl-toggle
+                                .active=${this._members.get(member.id)!.write}
+                                @click=${(e: Event) => this._toggleWrite(member, e)}
+                            ></pl-toggle>
+                        </div>
+                    `
+                )}
 
-            <div class="subheader" ?hidden=${!groups.length}>
-                <div>${$l("Groups")}</div>
-                <div class="flex"></div>
-                <div class="permission">${$l("read")}</div>
-                <div class="permission">${$l("write")}</div>
-            </div>
+                <div class="subheader" ?hidden=${!groups.length}>
+                    <div>${$l("Groups")}</div>
+                    <div class="flex"></div>
+                    <div class="permission">${$l("read")}</div>
+                    <div class="permission">${$l("write")}</div>
+                </div>
 
-            ${groups.map(
-                group => html`
-                    <div class="item tap" @click=${() => this._toggle(group)} ?disabled=${!isAdmin}>
-                        <pl-group-item .group=${group} class="flex"></pl-group-item>
-                        <pl-toggle
-                            .active=${this._groups.get(group.name)!.read}
-                            @click=${(e: Event) => this._toggleRead(group, e)}
-                        ></pl-toggle>
-                        <pl-toggle
-                            .active=${this._groups.get(group.name)!.write}
-                            @click=${(e: Event) => this._toggleWrite(group, e)}
-                        ></pl-toggle>
-                    </div>
-                `
-            )}
+                ${groups.map(
+                    group => html`
+                        <div class="item tap" @click=${() => this._toggle(group)} ?disabled=${!isAdmin}>
+                            <pl-group-item .group=${group} class="flex"></pl-group-item>
+                            <pl-toggle
+                                .active=${this._groups.get(group.name)!.read}
+                                @click=${(e: Event) => this._toggleRead(group, e)}
+                            ></pl-toggle>
+                            <pl-toggle
+                                .active=${this._groups.get(group.name)!.write}
+                                @click=${(e: Event) => this._toggleWrite(group, e)}
+                            ></pl-toggle>
+                        </div>
+                    `
+                )}
 
-            <div class="error item" ?hidden="${!this._error}">
-                ${this._error}
-            </div>
+                <div class="error item" ?hidden="${!this._error}">
+                    ${this._error}
+                </div>
 
-            <div class="actions" ?hidden=${!isAdmin}>
-                <pl-loading-button
-                    class="tap primary"
-                    id="saveButton"
-                    ?disabled=${!this._hasChanged}
-                    @click=${this._save}
-                >
-                    ${$l("Save")}
-                </pl-loading-button>
+                <div class="actions" ?hidden=${!isAdmin}>
+                    <pl-loading-button
+                        class="tap primary"
+                        id="saveButton"
+                        ?disabled=${!this._hasChanged}
+                        @click=${this._save}
+                    >
+                        ${$l("Save")}
+                    </pl-loading-button>
 
-                <button class="tap" @click=${this.dismiss}>${$l("Cancel")}</button>
+                    <button class="tap" @click=${this.dismiss}>${$l("Cancel")}</button>
+                </div>
             </div>
         `;
     }

@@ -57,21 +57,23 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         const { message, dialogTitle, options, icon, vertical } = this;
 
         return html`
-            <div class="info" ?hidden=${!dialogTitle && !message}>
-                <pl-icon class="info-icon" icon="${icon}"></pl-icon>
-                <div class="info-body">
-                    <div class="info-title">${dialogTitle}</div>
-                    <div class="info-text ${this.dialogTitle ? "small" : ""}">${message}</div>
+            <div class="content">
+                <div class="info" ?hidden=${!dialogTitle && !message}>
+                    <pl-icon class="info-icon" icon="${icon}"></pl-icon>
+                    <div class="info-body">
+                        <div class="info-title">${dialogTitle}</div>
+                        <div class="info-text ${this.dialogTitle ? "small" : ""}">${message}</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="actions ${vertical || options.length > 2 ? "vertical" : ""}">
-                ${options.map(
-                    (o: any, i: number) =>
-                        html`
-                            <button class="tap ${this._buttonClass(i)}" @click=${() => this.done(i)}>${o}</button>
-                        `
-                )}
+                <div class="actions ${vertical || options.length > 2 ? "vertical" : ""}">
+                    ${options.map(
+                        (o: any, i: number) =>
+                            html`
+                                <button class="tap ${this._buttonClass(i)}" @click=${() => this.done(i)}>${o}</button>
+                            `
+                    )}
+                </div>
             </div>
         `;
     }

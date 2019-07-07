@@ -112,7 +112,8 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
             }
 
             .message {
-                margin: 12px 25px 20px 25px;
+                font-size: var(--font-size-small);
+                margin: 0px 20px 8px 20px;
             }
 
             .tags {

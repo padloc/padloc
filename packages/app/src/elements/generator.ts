@@ -1,7 +1,6 @@
 import { randomString, chars } from "@padloc/core/lib/util.js";
 import { generatePassphrase } from "@padloc/core/lib/diceware.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
-import { mixins } from "../styles";
 import { html, css, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { Slider } from "./slider.js";
@@ -71,11 +70,6 @@ export class Generator extends Dialog<void, string> {
                 background: var(--color-tertiary);
                 text-align: center;
                 font-weight: bold;
-            }
-
-            .content {
-                flex: 1;
-                ${mixins.scroll()}
             }
 
             .header-title {

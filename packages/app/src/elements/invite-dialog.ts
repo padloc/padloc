@@ -47,7 +47,7 @@ export class InviteDialog extends Dialog<Invite, void> {
 
     dismiss() {
         super.dismiss();
-        router.go(`org/${this.invite!.org!.id}`);
+        router.go(`orgs/${this.invite!.org!.id}`);
     }
 
     private async _refresh() {
@@ -73,15 +73,6 @@ export class InviteDialog extends Dialog<Invite, void> {
         css`
             :host {
                 text-align: center;
-            }
-
-            h1 {
-                display: block;
-                text-align: center;
-            }
-
-            .invite {
-                overflow: hidden;
             }
 
             .invite-text {
@@ -131,12 +122,6 @@ export class InviteDialog extends Dialog<Invite, void> {
                 border-radius: 8px;
                 margin: 15px;
             }
-
-            .close-button {
-                position: absolute;
-                top: 0;
-                right: 0;
-            }
         `
     ];
 
@@ -159,11 +144,17 @@ export class InviteDialog extends Dialog<Invite, void> {
               };
 
         return html`
-            <div class="invite">
-                <pl-icon icon="cancel" class="tap close-button" @click=${() => this.dismiss()}></pl-icon>
+            <header>
+                <pl-icon></pl-icon>
 
-                <h1>${purpose === "confirm_membership" ? $l("Confirm Membership") : $l("Organization Invite")}</h1>
+                <div class="title flex">
+                    ${purpose === "confirm_membership" ? $l("Confirm Membership") : $l("Organization Invite")}
+                </div>
 
+                <pl-icon icon="cancel" class="tap" @click=${() => this.dismiss()}></pl-icon>
+            </header>
+
+            <div class="content">
                 <div class="tags">
                     <div class="tag org highlight">
                         <pl-icon icon="org"></pl-icon>

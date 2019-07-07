@@ -34,11 +34,7 @@ export class Settings extends StateMixin(View) {
         shared,
         css`
             :host {
-                ${mixins.fullbleed()}
-                display: flex;
-                flex-direction: column;
                 background: var(--color-quaternary);
-                border-radius: var(--border-radius);
             }
 
             h3 {

@@ -17,9 +17,9 @@ export function loadScript(src: string, global?: string): Promise<any> {
     return p;
 }
 
-export async function formatDateFromNow(date: Date | string | number) {
+export async function formatDateFromNow(date: Date | string | number, addSuffix = true) {
     const { distanceInWordsToNow } = await loadScript("/vendor/date-fns.js", "dateFns");
-    return distanceInWordsToNow(date, { addSuffix: true });
+    return distanceInWordsToNow(date, { addSuffix });
 }
 
 export async function passwordStrength(pwd: string): Promise<{ score: number }> {

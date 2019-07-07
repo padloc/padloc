@@ -83,7 +83,7 @@ export class InviteItem extends BaseElement {
 
             .invite-code {
                 text-align: center;
-                margin-right: 15px;
+                margin: 12px;
             }
 
             .invite-code-label {
@@ -103,9 +103,15 @@ export class InviteItem extends BaseElement {
 
             .confirm-button {
                 padding: 6px 8px;
-                margin-right: 16px;
+                margin: 12px;
                 font-size: var(--font-size-small);
                 align-self: center;
+            }
+
+            @media (max-width: 400px) {
+                .invite-code {
+                    display: none;
+                }
             }
         `
     ];
@@ -122,7 +128,7 @@ export class InviteItem extends BaseElement {
             : {
                   icon: "time",
                   class: "",
-                  text: (async () => $l("expires {0}", await formatDateFromNow(inv.expires)))()
+                  text: (async () => $l("{0}", await formatDateFromNow(inv.expires, false)))()
               };
 
         let secret = Promise.resolve("");

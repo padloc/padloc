@@ -358,62 +358,64 @@ export class MemberDialog extends Dialog<InputType, void> {
                 ></pl-icon>
             </header>
 
-            <div class="subheader" ?hidden=${!org.groups.length}>
-                <div>${$l("Groups")}</div>
-            </div>
+            <div class="content">
+                <div class="subheader" ?hidden=${!org.groups.length}>
+                    <div>${$l("Groups")}</div>
+                </div>
 
-            ${org.groups.map(
-                group => html`
-                    <pl-toggle-button
-                        ?disabled=${!accountIsAdmin}
-                        class="item tap"
-                        reverse
-                        @click=${() => this._toggleGroup(group)}
-                        .active=${this._groups.has(group.name)}
+                ${org.groups.map(
+                    group => html`
+                        <pl-toggle-button
+                            ?disabled=${!accountIsAdmin}
+                            class="item tap"
+                            reverse
+                            @click=${() => this._toggleGroup(group)}
+                            .active=${this._groups.has(group.name)}
+                        >
+                            <pl-group-item .group=${group}></pl-group-item>
+                        </pl-toggle-button>
+                    `
+                )}
+
+                <div class="subheader">
+                    <div>${$l("Vaults")}</div>
+                    <div class="flex"></div>
+                    <div class="permission">${$l("read")}</div>
+                    <div class="permission">${$l("write")}</div>
+                </div>
+
+                ${org.vaults.map(
+                    vault => html`
+                        <div class="item tap" @click=${() => this._toggleVault(vault)} ?disabled=${!accountIsAdmin}>
+                            <pl-vault-item .vault=${vault} class="flex"></pl-vault-item>
+                            <pl-toggle
+                                .active=${this._vaults.get(vault.id)!.read}
+                                @click=${(e: Event) => this._toggleRead(vault, e)}
+                            ></pl-toggle>
+                            <pl-toggle
+                                .active=${this._vaults.get(vault.id)!.write}
+                                @click=${(e: Event) => this._toggleWrite(vault, e)}
+                            ></pl-toggle>
+                        </div>
+                    `
+                )}
+
+                <div class="error item" ?hidden="${!this._error}">
+                    ${this._error}
+                </div>
+
+                <div class="actions" ?hidden=${!accountIsAdmin}>
+                    <pl-loading-button
+                        class="tap primary"
+                        id="saveButton"
+                        ?disabled=${!this._hasChanged}
+                        @click=${this._save}
                     >
-                        <pl-group-item .group=${group}></pl-group-item>
-                    </pl-toggle-button>
-                `
-            )}
+                        ${$l("Save")}
+                    </pl-loading-button>
 
-            <div class="subheader">
-                <div>${$l("Vaults")}</div>
-                <div class="flex"></div>
-                <div class="permission">${$l("read")}</div>
-                <div class="permission">${$l("write")}</div>
-            </div>
-
-            ${org.vaults.map(
-                vault => html`
-                    <div class="item tap" @click=${() => this._toggleVault(vault)} ?disabled=${!accountIsAdmin}>
-                        <pl-vault-item .vault=${vault} class="flex"></pl-vault-item>
-                        <pl-toggle
-                            .active=${this._vaults.get(vault.id)!.read}
-                            @click=${(e: Event) => this._toggleRead(vault, e)}
-                        ></pl-toggle>
-                        <pl-toggle
-                            .active=${this._vaults.get(vault.id)!.write}
-                            @click=${(e: Event) => this._toggleWrite(vault, e)}
-                        ></pl-toggle>
-                    </div>
-                `
-            )}
-
-            <div class="error item" ?hidden="${!this._error}">
-                ${this._error}
-            </div>
-
-            <div class="actions" ?hidden=${!accountIsAdmin}>
-                <pl-loading-button
-                    class="tap primary"
-                    id="saveButton"
-                    ?disabled=${!this._hasChanged}
-                    @click=${this._save}
-                >
-                    ${$l("Save")}
-                </pl-loading-button>
-
-                <button class="tap" @click=${this.dismiss}>${$l("Cancel")}</button>
+                    <button class="tap" @click=${this.dismiss}>${$l("Cancel")}</button>
+                </div>
             </div>
         `;
     }

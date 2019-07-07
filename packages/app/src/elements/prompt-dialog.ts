@@ -59,7 +59,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
             }
 
             .message {
-                margin: 20px;
+                margin: 10px 20px 20px 20px;
                 text-align: center;
             }
 
@@ -82,31 +82,33 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
 
     renderContent() {
         return html`
-            <h1 ?hidden=${!this.title}>${this.title}</h1>
+            <div class="content">
+                <h1 ?hidden=${!this.title}>${this.title}</h1>
 
-            <div class="message" ?hidden=${!this.message}>${this.message}</div>
+                <div class="message" ?hidden=${!this.message}>${this.message}</div>
 
-            <pl-input
-                class="tap"
-                .type=${this.type}
-                .placeholder=${this.placeholder}
-                .label=${this.label}
-                @enter=${() => this._confirmButton.click()}
-            >
-            </pl-input>
-
-            <div class="actions">
-                <pl-loading-button
-                    id="confirmButton"
-                    class="tap ${this.type === "destructive" ? "negative" : "primary"}"
-                    @click=${() => this._confirm()}
+                <pl-input
+                    class="tap"
+                    .type=${this.type}
+                    .placeholder=${this.placeholder}
+                    .label=${this.label}
+                    @enter=${() => this._confirmButton.click()}
                 >
-                    ${this.confirmLabel}
-                </pl-loading-button>
+                </pl-input>
 
-                <button class="tap" @click=${() => this.done(null)} ?hidden=${!this.cancelLabel}>
-                    ${this.cancelLabel}
-                </button>
+                <div class="actions">
+                    <pl-loading-button
+                        id="confirmButton"
+                        class="tap ${this.type === "destructive" ? "negative" : "primary"}"
+                        @click=${() => this._confirm()}
+                    >
+                        ${this.confirmLabel}
+                    </pl-loading-button>
+
+                    <button class="tap" @click=${() => this.done(null)} ?hidden=${!this.cancelLabel}>
+                        ${this.cancelLabel}
+                    </button>
+                </div>
             </div>
         `;
     }

@@ -204,45 +204,47 @@ export class GroupDialog extends Dialog<InputType, void> {
                 ></pl-icon>
             </header>
 
-            <div class="search-wrapper item">
-                <pl-icon icon="search"></pl-icon>
-                <pl-input
-                    id="filterMembersInput"
-                    placeholder="${$l("Search...")}"
-                    @input=${this._updateMembersFilter}
-                ></pl-input>
-                <pl-icon icon="cancel" class="tap" @click=${this._clearMembersFilter}></pl-icon>
-            </div>
+            <div class="content">
+                <div class="search-wrapper item">
+                    <pl-icon icon="search"></pl-icon>
+                    <pl-input
+                        id="filterMembersInput"
+                        placeholder="${$l("Search...")}"
+                        @input=${this._updateMembersFilter}
+                    ></pl-input>
+                    <pl-icon icon="cancel" class="tap" @click=${this._clearMembersFilter}></pl-icon>
+                </div>
 
-            ${members.map(
-                member => html`
-                    <pl-toggle-button
-                        class="item tap"
-                        reverse
-                        @click=${() => this._toggleMember(member)}
-                        .active=${this._members.has(member.id)}
-                        ?disabled=${!canEdit}
+                ${members.map(
+                    member => html`
+                        <pl-toggle-button
+                            class="item tap"
+                            reverse
+                            @click=${() => this._toggleMember(member)}
+                            .active=${this._members.has(member.id)}
+                            ?disabled=${!canEdit}
+                        >
+                            <pl-member-item hideRole .member=${member}></pl-member-item>
+                        </pl-toggle-button>
+                    `
+                )}
+
+                <div class="error item" ?hidden="${!this._error}">
+                    ${this._error}
+                </div>
+
+                <div class="actions" ?hidden=${!canEdit}>
+                    <pl-loading-button
+                        class="tap primary"
+                        id="saveButton"
+                        ?disabled=${!this._hasChanged}
+                        @click=${this._save}
                     >
-                        <pl-member-item hideRole .member=${member}></pl-member-item>
-                    </pl-toggle-button>
-                `
-            )}
+                        ${$l("Save")}
+                    </pl-loading-button>
 
-            <div class="error item" ?hidden="${!this._error}">
-                ${this._error}
-            </div>
-
-            <div class="actions" ?hidden=${!canEdit}>
-                <pl-loading-button
-                    class="tap primary"
-                    id="saveButton"
-                    ?disabled=${!this._hasChanged}
-                    @click=${this._save}
-                >
-                    ${$l("Save")}
-                </pl-loading-button>
-
-                <button class="tap" @click=${this.dismiss}>${$l("Cancel")}</button>
+                    <button class="tap" @click=${this.dismiss}>${$l("Cancel")}</button>
+                </div>
             </div>
         `;
     }

@@ -7,4 +7,5 @@ packages/app/dist
 packages/app/build
 packages/app/test/dist
 packages/app/sw.js
+packages/app/env.js
 packages/server/db

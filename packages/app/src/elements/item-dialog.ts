@@ -94,10 +94,8 @@ export class ItemDialog extends Dialog<string, void> {
                 flex-direction: column;
             }
 
-            .body {
-                flex: 1;
+            .content {
                 padding-bottom: 50px;
-                ${mixins.scroll()}
             }
 
             .name {
@@ -264,7 +262,7 @@ export class ItemDialog extends Dialog<string, void> {
                 ></pl-icon>
             </header>
 
-            <div class="body">
+            <div class="content">
                 <pl-tags-input .editing=${this._editing} .vault=${this._vault} @move=${this._move}></pl-tags-input>
 
                 <div class="fields">

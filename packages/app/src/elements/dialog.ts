@@ -88,6 +88,13 @@ export class Dialog<I, R> extends BaseElement {
                 box-shadow: rgba(0, 0, 0, 0.25) 0 0 5px;
                 overflow: hidden;
                 background: var(--color-tertiary);
+                display: flex;
+                flex-direction: column;
+            }
+
+            .content {
+                flex: 1;
+                ${mixins.scroll()}
             }
 
             .actions {
