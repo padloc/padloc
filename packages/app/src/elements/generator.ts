@@ -1,6 +1,7 @@
 import { randomString, chars } from "@padloc/core/lib/util.js";
 import { generatePassphrase } from "@padloc/core/lib/diceware.js";
 import { localize as $l } from "@padloc/core/lib/locale.js";
+import { mixins } from "../styles";
 import { html, css, property, query, listen } from "./base.js";
 import { Dialog } from "./dialog.js";
 import { Slider } from "./slider.js";
@@ -62,12 +63,19 @@ export class Generator extends Dialog<void, string> {
         css`
             .inner {
                 background: var(--color-quaternary);
+                display: flex;
+                flex-direction: column;
             }
 
             .header {
                 background: var(--color-tertiary);
                 text-align: center;
                 font-weight: bold;
+            }
+
+            .content {
+                flex: 1;
+                ${mixins.scroll()}
             }
 
             .header-title {
@@ -138,33 +146,42 @@ export class Generator extends Dialog<void, string> {
                 </div>
             </div>
 
-            <div ?hidden=${this.mode !== "words"}>
-                <pl-select id="separator" .options=${separators} class="item tap"></pl-select>
+            <div class="content">
+                <div ?hidden=${this.mode !== "words"}>
+                    <pl-select id="separator" .options=${separators} class="item tap"></pl-select>
 
-                <pl-slider id="wordCount" unit=" ${$l("words")}" value="4" min="3" max="6" class="item tap"></pl-slider>
-            </div>
+                    <pl-slider
+                        id="wordCount"
+                        unit=" ${$l("words")}"
+                        value="4"
+                        min="3"
+                        max="6"
+                        class="item tap"
+                    ></pl-slider>
+                </div>
 
-            <div ?hidden=${this.mode !== "chars"}>
-                <pl-toggle-button id="lower" label="a-z" class="item tap" reverse></pl-toggle-button>
+                <div ?hidden=${this.mode !== "chars"}>
+                    <pl-toggle-button id="lower" label="a-z" class="item tap" reverse></pl-toggle-button>
 
-                <pl-toggle-button id="upper" label="A-Z" class="item tap" reverse></pl-toggle-button>
+                    <pl-toggle-button id="upper" label="A-Z" class="item tap" reverse></pl-toggle-button>
 
-                <pl-toggle-button id="numbers" label="0-9" class="item tap" reverse></pl-toggle-button>
+                    <pl-toggle-button id="numbers" label="0-9" class="item tap" reverse></pl-toggle-button>
 
-                <pl-toggle-button id="other" label="?()/%..." class="item tap" reverse></pl-toggle-button>
+                    <pl-toggle-button id="other" label="?()/%..." class="item tap" reverse></pl-toggle-button>
 
-                <pl-slider id="length" label="${$l("length")}" value="20" min="5" max="50" class="item"></pl-slider>
-            </div>
+                    <pl-slider id="length" label="${$l("length")}" value="20" min="5" max="50" class="item"></pl-slider>
+                </div>
 
-            <pl-icon icon="arrow-down" class="arrow"></pl-icon>
+                <pl-icon icon="arrow-down" class="arrow"></pl-icon>
 
-            <div class="result item tap" @click=${() => this._generate()}>
-                ${value}
-            </div>
+                <div class="result item tap" @click=${() => this._generate()}>
+                    ${value}
+                </div>
 
-            <div class="actions">
-                <button class="primary tap" @click=${() => this._confirm()}>${$l("Use")}</button>
-                <button class="tap" @click=${() => this.dismiss()}>${$l("Discard")}</button>
+                <div class="actions">
+                    <button class="primary tap" @click=${() => this._confirm()}>${$l("Use")}</button>
+                    <button class="tap" @click=${() => this.dismiss()}>${$l("Discard")}</button>
+                </div>
             </div>
         `;
     }

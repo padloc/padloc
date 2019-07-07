@@ -89,7 +89,6 @@ export class ItemDialog extends Dialog<string, void> {
         css`
             .inner {
                 max-width: 500px;
-                min-height: 500px;
                 background: var(--color-quaternary);
                 display: flex;
                 flex-direction: column;
