@@ -63,6 +63,8 @@ export const shared = css`
     button.icon pl-icon {
         width: 30px;
         height: 20px;
+        margin-left: -8px;
+        font-size: 90%;
     }
 
     button.arrow, a.button.arrow {
@@ -493,14 +495,20 @@ export const shared = css`
 
     .fab {
         pointer-events: auto;
-        border-radius: 100%;
+        border-radius: 45px;
         margin: 12px;
         box-shadow: rgba(0, 0, 0, 0.3) 0 1px 3px;
         color: var(--color-tertiary);
-        width: 46px;
-        height: 46px;
+        width: 45px;
+        height: 45px;
         text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0px;
         background: var(--color-secondary);
+    }
+
+    button.fab {
+        width: auto;
+        padding: 4px 20px;
+        font-weight: bold;
     }
 
     .fab.primary {

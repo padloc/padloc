@@ -4,7 +4,6 @@ import { localize as $l } from "@padloc/core/lib/locale.js";
 import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
 import { parseURL } from "@padloc/core/lib/otp.js";
 import { formatDateFromNow, fileIcon, fileSize } from "../util.js";
-import { mixins } from "../styles";
 import { alert, confirm, dialog } from "../dialog.js";
 import { app, router } from "../init.js";
 import { setClipboard } from "../clipboard.js";
@@ -92,6 +91,8 @@ export class ItemDialog extends Dialog<string, void> {
                 background: var(--color-quaternary);
                 display: flex;
                 flex-direction: column;
+                height: 100%;
+                max-height: 600px;
             }
 
             .content {
@@ -99,7 +100,8 @@ export class ItemDialog extends Dialog<string, void> {
             }
 
             .name {
-                padding: 0 10px;
+                padding: 0 8px;
+                margin: 0 8px;
                 line-height: 40px;
                 text-align: center;
             }
@@ -211,6 +213,13 @@ export class ItemDialog extends Dialog<string, void> {
                 border-color: var(--color-negative);
             }
 
+            .save-button,
+            .cancel-button {
+                flex: 1;
+                max-width: 200px;
+                min-width: 120px;
+            }
+
             @media (max-width: 700px) {
                 .outer {
                     padding: 0;
@@ -241,12 +250,7 @@ export class ItemDialog extends Dialog<string, void> {
 
         return html`
             <header>
-                <pl-icon
-                    icon="backward"
-                    class="tap close-icon"
-                    @click=${this.dismiss}
-                    ?hidden=${this._editing}
-                ></pl-icon>
+                <pl-icon icon="backward" class="tap close-icon" @click=${this.dismiss}></pl-icon>
                 <pl-input
                     id="nameInput"
                     class="name flex"
@@ -343,15 +347,17 @@ export class ItemDialog extends Dialog<string, void> {
             </div>
 
             <div class="fabs" ?hidden=${!this._editing}>
-                <pl-icon icon="delete" class="destructive fab tap" @click=${() => this._deleteItem()} hidden></pl-icon>
+                <button class="primary icon fab tap save-button" @click=${this.save}>
+                    <pl-icon icon="check"></pl-icon>
+                    <div>${$l("Save")}</div>
+                </button>
 
-                <pl-icon icon="share" class="fab tap" @click=${() => this._move()} hidden> </pl-icon>
+                <div class="spacer"></div>
 
-                <pl-icon icon="check" class="fab primary tap" @click=${this.save}></pl-icon>
-
-                <div class="editing flex">${$l("editing")}</div>
-
-                <pl-icon icon="cancel" class="fab tap" @click=${this.cancelEdit}></pl-icon>
+                <button class="icon fab tap cancel-button" @click=${this.cancelEdit}>
+                    <pl-icon icon="cancel"></pl-icon>
+                    <div>${$l("Cancel")}</div>
+                </button>
             </div>
 
             <input type="file" hidden @change=${this._attachFile} />
