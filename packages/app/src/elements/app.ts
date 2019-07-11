@@ -26,6 +26,7 @@ import { CreateOrgDialog } from "./create-org-dialog.js";
 import { ChoosePlanDialog } from "./choose-plan-dialog.js";
 import { PremiumDialog } from "./premium-dialog.js";
 import { CreateItemDialog } from "./create-item-dialog.js";
+import { TemplateDialog } from "./template-dialog.js";
 
 // const cordovaReady = new Promise(resolve => {
 //     document.addEventListener("deviceready", resolve);
@@ -67,6 +68,9 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
 
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
+
+    @dialog("pl-template-dialog")
+    private _templateDialog: TemplateDialog;
 
     @property()
     private _view: View | null;
@@ -384,9 +388,12 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             const item = id && app.getItem(id);
             if (item) {
                 this._itemDialog.show(item.item.id);
-                const { edit, ...rest } = router.params;
+                const { edit, addattachment, ...rest } = router.params;
                 if (typeof edit !== "undefined") {
                     this._itemDialog.edit();
+                    if (typeof addattachment !== "undefined") {
+                        this._itemDialog.addAttachment();
+                    }
                     router.params = rest;
                 }
             }
@@ -484,9 +491,10 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
 
     @listen("create-item")
     async _newItem() {
-        const item = await this._createItemDialog.show();
+        const template = await this._templateDialog.show();
+        const item = await this._createItemDialog.show(template);
         if (item) {
-            router.go(`items/${item.id}`, { ...router.params, edit: "" });
+            router.go(`items/${item.id}`, { ...router.params, edit: "", addattachment: "" });
         }
     }
 

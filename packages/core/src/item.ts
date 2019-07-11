@@ -1,3 +1,4 @@
+import { localize as $l } from "./locale";
 import { uuid } from "./util";
 import { Collection, CollectionItem } from "./collection";
 import { AccountID } from "./account";
@@ -220,6 +221,90 @@ export function guessFieldType(field: any): FieldType {
         ? "note"
         : "text";
 }
+
+export interface ItemTemplate {
+    fields: { name: string; type: FieldType }[];
+    icon: string;
+    toString(): string;
+    attachment?: boolean;
+}
+
+export const ITEM_TEMPLATES: ItemTemplate[] = [
+    {
+        toString: () => $l("Login"),
+        icon: "login",
+        fields: [
+            { name: $l("Username"), type: "username" },
+            { name: $l("Password"), type: "password" },
+            { name: $l("URL"), type: "url" }
+        ]
+    },
+    {
+        toString: () => $l("Credit Card"),
+        icon: "credit",
+        fields: [
+            { name: $l("Card #"), type: "credit" },
+            { name: $l("Card Owner"), type: "text" },
+            { name: $l("Valid Until"), type: "month" },
+            { name: $l("Security Code (CVC)"), type: "pin" },
+            { name: $l("PIN"), type: "pin" }
+        ]
+    },
+    // {
+    //     toString: () => $l("SIM Card"),
+    //     icon: "sim",
+    //     fields: [
+    //         { name: $l("Phone Number"), type: "phone" },
+    //         { name: $l("PIN"), type: "pin" },
+    //         { name: $l("PUK"), type: "pin" },
+    //         { name: $l("Carrier"), type: "text" }
+    //     ]
+    // },
+    {
+        toString: () => $l("Bank Account"),
+        icon: "bank",
+        fields: [
+            { name: $l("Account Owner"), type: "text" },
+            { name: $l("IBAN"), type: "iban" },
+            { name: $l("BIC"), type: "bic" },
+            { name: $l("Card PIN"), type: "pin" }
+        ]
+    },
+    {
+        toString: () => $l("WIFI Password"),
+        icon: "wifi",
+        fields: [{ name: $l("Name"), type: "text" }, { name: $l("Password"), type: "password" }]
+    },
+    {
+        toString: () => $l("Passport"),
+        icon: "passport",
+        fields: [
+            { name: $l("Full Name"), type: "text" },
+            { name: $l("Number"), type: "text" },
+            { name: $l("Country"), type: "text" },
+            { name: $l("Birthdate"), type: "date" },
+            { name: $l("Birthplace"), type: "text" },
+            { name: $l("Issued On"), type: "date" },
+            { name: $l("Expires"), type: "date" }
+        ]
+    },
+    {
+        toString: () => $l("Note"),
+        icon: "note",
+        fields: [{ name: $l("Note"), type: "note" }]
+    },
+    {
+        toString: () => $l("Document"),
+        icon: "attachment",
+        fields: [],
+        attachment: true
+    },
+    {
+        toString: () => $l("Custom"),
+        icon: "custom",
+        fields: []
+    }
+];
 
 /** A collection of [[VaultItem]]s */
 export class VaultItemCollection extends Collection<VaultItem> {

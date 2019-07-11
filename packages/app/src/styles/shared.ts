@@ -209,6 +209,7 @@ export const shared = css`
         border-bottom: solid 3px var(--color-shade-1);
         align-items: center;
         font-weight: bold;
+        min-height: 40px;
     }
 
     header pl-input {

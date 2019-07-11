@@ -78,7 +78,7 @@ export class PlIcon extends BaseElement {
             }
 
             :host([icon="generate"]) > div::before {
-                content: "\\f0d0";
+                content: "\\f522";
             }
 
             :host([icon="tag"]) > div::before {
@@ -349,6 +349,42 @@ export class PlIcon extends BaseElement {
 
             :host([icon="hirarchy"]) > div::before {
                 content: "\\f0e8";
+            }
+
+            :host([icon="web"]) > div::before {
+                content: "\\f57d";
+            }
+
+            :host([icon="bank"]) > div::before {
+                content: "\\f53d";
+            }
+
+            :host([icon="login"]) > div::before {
+                content: "\\f2f6";
+            }
+
+            :host([icon="sim"]) > div::before {
+                content: "\\f7c4";
+            }
+
+            :host([icon="wifi"]) > div::before {
+                content: "\\f1eb";
+            }
+
+            :host([icon="passport"]) > div::before {
+                content: "\\f5ab";
+            }
+
+            :host([icon="note"]) > div::before {
+                content: "\\f036";
+            }
+
+            :host([icon="custom"]) > div::before {
+                content: "\\f249";
+            }
+
+            :host([icon="email"]) > div::before {
+                content: "\\f1fa";
             }
 
             :host([icon="logo"]) > div::before {
