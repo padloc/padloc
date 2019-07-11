@@ -363,14 +363,23 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
 
-            const { vault, tag, favorite } = router.params;
+            const { vault, tag, favorites, attachments } = router.params;
             this._items.selected = id || "";
             this._items.vault = vault || "";
             this._items.tag = tag || "";
-            this._items.favorite = favorite === "true";
+            this._items.favorites = favorites === "true";
+            this._items.attachments = attachments === "true";
             this._openView(this._items);
 
-            this._menu.selected = vault ? `vault/${vault}` : tag ? `tag/${tag}` : favorite ? "favorites" : "items";
+            this._menu.selected = vault
+                ? `vault/${vault}`
+                : tag
+                ? `tag/${tag}`
+                : favorites
+                ? "favorites"
+                : attachments
+                ? "attachments"
+                : "items";
 
             const item = id && app.getItem(id);
             if (item) {

@@ -49,7 +49,10 @@ export class ItemsList extends StateMixin(View) {
     tag: Tag = "";
 
     @property()
-    favorite: boolean = false;
+    favorites: boolean = false;
+
+    @property()
+    attachments: boolean = false;
 
     @property()
     private _listItems: ListItem[] = [];
@@ -80,7 +83,8 @@ export class ItemsList extends StateMixin(View) {
 
     @observe("vault")
     @observe("tag")
-    @observe("favorite")
+    @observe("favorites")
+    @observe("attachments")
     async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
@@ -303,11 +307,13 @@ export class ItemsList extends StateMixin(View) {
                 font-weight: 600;
                 ${mixins.ellipsis()}
                 line-height: 16px;
+                height: 16px;
             }
 
             .item-field-value {
                 font-weight: 600;
                 line-height: 19px;
+                height: 19px;
                 ${mixins.ellipsis()}
             }
 
@@ -375,7 +381,12 @@ export class ItemsList extends StateMixin(View) {
             <header ?hidden=${this._filterShowing}>
                 <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
 
-                <pl-items-filter .vault=${this.vault} .tag=${this.tag} .favorite=${this.favorite}></pl-items-filter>
+                <pl-items-filter
+                    .vault=${this.vault}
+                    .tag=${this.tag}
+                    .favorites=${this.favorites}
+                    .attachments=${this.attachments}
+                ></pl-items-filter>
 
                 <pl-icon icon="search" class="tap" @click=${() => this.search()}></pl-icon>
             </header>
@@ -565,7 +576,7 @@ export class ItemsList extends StateMixin(View) {
     private _getItems(): ListItem[] {
         const recentCount = 0;
 
-        const { vault: vaultId, tag, favorite } = this;
+        const { vault: vaultId, tag, favorites, attachments } = this;
         const filter = (this._filterInput && this._filterInput.value) || "";
 
         let items: ListItem[] = [];
@@ -580,7 +591,8 @@ export class ItemsList extends StateMixin(View) {
                 if (
                     // filter by tag
                     (!tag || item.tags.includes(tag)) &&
-                    (!favorite || (item.favorited && item.favorited.includes(app.account!.id))) &&
+                    (!favorites || (item.favorited && item.favorited.includes(app.account!.id))) &&
+                    (!attachments || !!item.attachments.length) &&
                     filterByString(filter || "", item)
                 ) {
                     items.push({

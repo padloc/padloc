@@ -185,6 +185,10 @@ export class Menu extends StateMixin(BaseElement) {
             );
         }, 0);
 
+        const attCount = app.vaults.reduce((count, vault) => {
+            return [...vault.items].reduce((c, item) => (item.attachments.length ? c + 1 : c), count);
+        }, 0);
+
         return html`
             <div class="scroller">
                 <pl-logo reveal></pl-logo>
@@ -201,7 +205,7 @@ export class Menu extends StateMixin(BaseElement) {
 
                         <li
                             class="sub-item tap favorites"
-                            @click=${() => this._goTo("items", { favorite: true })}
+                            @click=${() => this._goTo("items", { favorites: true })}
                             ?selected=${this.selected === "favorites"}
                         >
                             <pl-icon icon="favorite"></pl-icon>
@@ -232,6 +236,19 @@ export class Menu extends StateMixin(BaseElement) {
                                 </li>
                             `
                         )}
+
+                        <li
+                            class="sub-item tap"
+                            @click=${() => this._goTo("items", { attachments: true })}
+                            ?selected=${this.selected === "attachments"}
+                        >
+                            <pl-icon icon="attachment"></pl-icon>
+
+                            <div>${$l("Attachments")}</div>
+
+                            <div class="detail">${attCount}</div>
+                        </li>
+
                         ${this.state.tags.map(
                             ([tag, count]) => html`
                                 <li

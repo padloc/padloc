@@ -161,6 +161,10 @@ export class ItemsFilter extends StateMixin(BaseElement) {
             );
         }, 0);
 
+        const attCount = app.vaults.reduce((count, vault) => {
+            return [...vault.items].reduce((c, item) => (item.attachments.length ? c + 1 : c), count);
+        }, 0);
+
         const totalCount = app.vaults.reduce((count, vault) => count + vault.items.size, 0);
 
         return html`
@@ -180,12 +184,20 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         <div class="count">${totalCount}</div>
                     </button>
 
-                    <button class="favorites tap" @click=${() => this._select({ favorite: true })}>
+                    <button class="favorites tap" @click=${() => this._select({ favorites: true })}>
                         <pl-icon icon="favorite"></pl-icon>
                         <div>
                             ${$l("Favorites")}
                         </div>
                         <div class="count">${favCount}</div>
+                    </button>
+
+                    <button class="filter-tag tap" @click=${() => this._select({ attachments: true })}>
+                        <pl-icon icon="attachment"></pl-icon>
+                        <div>
+                            ${$l("Attachments")}
+                        </div>
+                        <div class="count">${attCount}</div>
                     </button>
 
                     <h4>${$l("Vaults")}</h4>
@@ -224,7 +236,17 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         `;
     }
 
-    _select({ tag, vault, favorite }: { tag?: Tag; vault?: VaultID; favorite?: boolean }) {
+    _select({
+        tag,
+        vault,
+        favorites,
+        attachments
+    }: {
+        tag?: Tag;
+        vault?: VaultID;
+        favorites?: boolean;
+        attachments?: boolean;
+    }) {
         const params: any = {};
         if (tag) {
             params.tag = tag;
@@ -232,8 +254,11 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         if (vault) {
             params.vault = vault;
         }
-        if (favorite) {
-            params.favorite = favorite;
+        if (favorites) {
+            params.favorites = favorites;
+        }
+        if (attachments) {
+            params.attachments = attachments;
         }
         router.go("items", params);
     }
