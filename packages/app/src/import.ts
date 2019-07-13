@@ -146,7 +146,7 @@ export async function asPadlockLegacy(data: string, password: string): Promise<V
     return Promise.all(items);
 }
 
-export async function isPBES2Container(data: string) {
+export function isPBES2Container(data: string) {
     try {
         new PBES2Container().fromRaw(unmarshal(data));
         return true;

@@ -47,7 +47,7 @@ const SJCLProvider = {
                 bytesToBits(params.additionalData!),
                 params.tagSize
             );
-            return bitsToBytes(pt);
+            return new Uint8Array(bitsToBytes(pt));
         } catch (e) {
             throw new Err(ErrorCode.DECRYPTION_FAILED);
         }
@@ -71,7 +71,7 @@ const SJCLProvider = {
                 bytesToBits(params.additionalData!),
                 params.tagSize
             );
-            return bitsToBytes(ct);
+            return new Uint8Array(bitsToBytes(ct));
         } catch (e) {
             throw new Err(ErrorCode.ENCRYPTION_FAILED);
         }
