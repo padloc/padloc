@@ -301,18 +301,28 @@ export class StripeBillingProvider implements BillingProvider {
     private async _sync(acc: Account | Org): Promise<void> {
         // const freePlan = this._availablePlans.find(p => p.type === PlanType.Free);
 
-        const customer = acc.billing
-            ? await this._stripe.customers.retrieve(acc.billing.customerId, {
-                  expand: ["subscriptions.data.latest_invoice.payment_intent"]
-              })
-            : await this._stripe.customers.create({
-                  // email: acc instanceof Account ? acc.email : undefined,
-                  // plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
-                  metadata: {
-                      account: acc instanceof Account ? acc.id : "",
-                      org: acc instanceof Org ? acc.id : ""
-                  }
-              });
+        let customer: Stripe.customers.ICustomer;
+
+        try {
+            customer = acc.billing
+                ? await this._stripe.customers.retrieve(acc.billing.customerId, {
+                      expand: ["subscriptions.data.latest_invoice.payment_intent"]
+                  })
+                : await this._stripe.customers.create({
+                      // email: acc instanceof Account ? acc.email : undefined,
+                      // plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
+                      metadata: {
+                          account: acc instanceof Account ? acc.id : "",
+                          org: acc instanceof Org ? acc.id : ""
+                      }
+                  });
+        } catch (e) {
+            // If the customer was not found we can continue an create a new one,
+            // otherwise something unexpected happened and we should probably throw
+            if (e.code !== "resource_missing") {
+                throw e;
+            }
+        }
 
         // @ts-ignore
         if (!customer || customer.deleted) {
