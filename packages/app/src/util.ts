@@ -88,3 +88,7 @@ export function fileSize(size: number = 0) {
 export function mask(value: string): string {
     return value && value.replace(/[^\n]/g, "\u2022");
 }
+
+export function isTouch(): boolean {
+    return window.matchMedia("(hover: none)").matches;
+}

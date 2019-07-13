@@ -1,8 +1,7 @@
 import { localize as $l } from "@padloc/core/lib/locale.js";
 import { ErrorCode } from "@padloc/core/lib/error.js";
 import { generatePassphrase } from "@padloc/core/lib/diceware.js";
-import { isTouch } from "@padloc/core/lib/platform.js";
-import { passwordStrength } from "../util.js";
+import { passwordStrength, isTouch } from "../util.js";
 import { app, router } from "../init.js";
 import { element, html, css, property, query } from "./base.js";
 import { StartForm } from "./start-form.js";

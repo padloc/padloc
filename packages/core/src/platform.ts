@@ -118,17 +118,3 @@ export function deviceDescription(device?: DeviceInfo) {
     }
     return device.browser ? $l("{0} on {1}", device.browser, device.platform) : $l("{0} Device", device.platform);
 }
-
-let _isTouch: boolean | undefined = undefined;
-/** Checks if the current environment supports touch events */
-export function isTouch(): boolean {
-    if (_isTouch === undefined) {
-        try {
-            document.createEvent("TouchEvent");
-            _isTouch = true;
-        } catch (e) {
-            _isTouch = false;
-        }
-    }
-    return _isTouch;
-}
