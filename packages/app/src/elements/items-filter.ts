@@ -1,10 +1,10 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { VaultID } from "@padloc/core/lib/vault.js";
-import { Tag } from "@padloc/core/lib/item.js";
-import { StateMixin } from "../mixins/state.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { VaultID } from "@padloc/core/src/vault";
+import { Tag } from "@padloc/core/src/item";
+import { StateMixin } from "../mixins/state";
 import { shared, mixins } from "../styles";
 import { app, router } from "../init";
-import { BaseElement, element, css, property, html } from "./base.js";
+import { BaseElement, element, css, property, html } from "./base";
 
 @element("pl-items-filter")
 export class ItemsFilter extends StateMixin(BaseElement) {

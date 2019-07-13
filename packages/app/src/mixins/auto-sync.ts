@@ -1,5 +1,5 @@
-import { app } from "../init.js";
-import { ErrorHandling } from "./error-handling.js";
+import { app } from "../init";
+import { ErrorHandling } from "./error-handling";
 
 type Constructor<T> = new (...args: any[]) => T;
 

@@ -1,8 +1,8 @@
-import { OrgMember, OrgRole } from "@padloc/core/lib/org.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
+import { OrgMember, OrgRole } from "@padloc/core/src/org";
+import { localize as $l } from "@padloc/core/src/locale";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property } from "./base.js";
-import "./randomart.js";
+import { BaseElement, element, html, css, property } from "./base";
+import "./randomart";
 
 @element("pl-member-item")
 export class MemberItem extends BaseElement {

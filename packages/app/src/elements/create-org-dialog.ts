@@ -1,6 +1,6 @@
-import { localize as $l } from "@padloc/core/lib/locale";
-import { Org } from "@padloc/core/lib/org";
-import { Plan, BillingInfo, UpdateBillingParams } from "@padloc/core/lib/billing";
+import { localize as $l } from "@padloc/core/src/locale";
+import { Org } from "@padloc/core/src/org";
+import { Plan, BillingInfo, UpdateBillingParams } from "@padloc/core/src/billing";
 import { dialog } from "../dialog";
 import { app } from "../init";
 import { element, html, property, css, query } from "./base";

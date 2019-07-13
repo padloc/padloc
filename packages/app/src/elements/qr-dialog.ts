@@ -1,10 +1,10 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
+import { localize as $l } from "@padloc/core/src/locale";
 import { mixins } from "../styles";
-import { alert } from "../dialog.js";
-import { loadScript } from "../util.js";
-import { element, html, css, query } from "./base.js";
-import { Dialog } from "./dialog.js";
-import "./icon.js";
+import { alert } from "../dialog";
+import { loadScript } from "../util";
+import { element, html, css, query } from "./base";
+import { Dialog } from "./dialog";
+import "./icon";
 
 @element("pl-qr-dialog")
 export class QRDialog extends Dialog<void, string> {

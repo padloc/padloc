@@ -1,12 +1,12 @@
-import { Vault } from "@padloc/core/lib/vault.js";
-import { VaultItem } from "@padloc/core/lib/item.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import * as imp from "../import.js";
-import { prompt, alert } from "../dialog.js";
-import { app } from "../init.js";
-import { element, html, css, query, property } from "./base.js";
-import { Select } from "./select.js";
-import { Dialog } from "./dialog.js";
+import { Vault } from "@padloc/core/src/vault";
+import { VaultItem } from "@padloc/core/src/item";
+import { localize as $l } from "@padloc/core/src/locale";
+import * as imp from "../import";
+import { prompt, alert } from "../dialog";
+import { app } from "../init";
+import { element, html, css, query, property } from "./base";
+import { Select } from "./select";
+import { Dialog } from "./dialog";
 
 @element("pl-import-dialog")
 export class ImportDialog extends Dialog<string, void> {

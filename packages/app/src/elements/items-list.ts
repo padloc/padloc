@@ -1,21 +1,21 @@
-import { VaultItem, Field, Tag, FIELD_DEFS } from "@padloc/core/lib/item.js";
-import { Vault, VaultID } from "@padloc/core/lib/vault.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { debounce, wait, escapeRegex } from "@padloc/core/lib/util.js";
-import { cache } from "lit-html/directives/cache.js";
-import { StateMixin } from "../mixins/state.js";
-import { setClipboard } from "../clipboard.js";
-import { app, router } from "../init.js";
-import { dialog, confirm } from "../dialog.js";
+import { VaultItem, Field, Tag, FIELD_DEFS } from "@padloc/core/src/item";
+import { Vault, VaultID } from "@padloc/core/src/vault";
+import { localize as $l } from "@padloc/core/src/locale";
+import { debounce, wait, escapeRegex } from "@padloc/core/src/util";
+import { cache } from "lit-html/directives/cache";
+import { StateMixin } from "../mixins/state";
+import { setClipboard } from "../clipboard";
+import { app, router } from "../init";
+import { dialog, confirm } from "../dialog";
 import { shared, mixins } from "../styles";
-import { mask } from "../util.js";
-import { element, html, css, property, query, listen, observe } from "./base.js";
-import { View } from "./view.js";
-import { Input } from "./input.js";
-import { MoveItemsDialog } from "./move-items-dialog.js";
-import "./icon.js";
-import "./items-filter.js";
-import "./virtual-list.js";
+import { mask } from "../util";
+import { element, html, css, property, query, listen, observe } from "./base";
+import { View } from "./view";
+import { Input } from "./input";
+import { MoveItemsDialog } from "./move-items-dialog";
+import "./icon";
+import "./items-filter";
+import "./virtual-list";
 
 interface ListItem {
     item: VaultItem;

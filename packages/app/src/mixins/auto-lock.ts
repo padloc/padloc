@@ -1,5 +1,5 @@
-import { debounce } from "@padloc/core/lib/util.js";
-import { app } from "../init.js";
+import { debounce } from "@padloc/core/src/util";
+import { app } from "../init";
 
 type Constructor<T> = new (...args: any[]) => T;
 

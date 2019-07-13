@@ -1,5 +1,5 @@
-import { Storage, Storable, StorableConstructor } from "@padloc/core/lib/storage";
-import { Err, ErrorCode } from "@padloc/core/lib/error";
+import { Storage, Storable, StorableConstructor } from "@padloc/core/src/storage";
+import { Err, ErrorCode } from "@padloc/core/src/error";
 // @ts-ignore
 import localStorage from "localforage/src/localforage";
 

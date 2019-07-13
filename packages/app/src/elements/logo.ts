@@ -1,4 +1,4 @@
-import { BaseElement, element, html, css, svg, property } from "./base.js";
+import { BaseElement, element, html, css, svg, property } from "./base";
 
 @element("pl-logo")
 export class Logo extends BaseElement {

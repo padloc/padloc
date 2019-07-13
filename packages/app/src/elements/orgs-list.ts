@@ -1,10 +1,10 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { StateMixin } from "../mixins/state.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { StateMixin } from "../mixins/state";
 import { shared } from "../styles";
-import { app, router } from "../init.js";
-import { element, html, css } from "./base.js";
-import { View } from "./view.js";
-import "./icon.js";
+import { app, router } from "../init";
+import { element, html, css } from "./base";
+import { View } from "./view";
+import "./icon";
 
 @element("pl-orgs-list")
 export class OrgsList extends StateMixin(View) {

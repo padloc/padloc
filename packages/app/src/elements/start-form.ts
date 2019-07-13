@@ -1,8 +1,8 @@
 import { mixins, shared } from "../styles";
-import { BaseElement, css, query } from "./base.js";
-import { animateElement, animateCascade } from "../animation.js";
-import { Logo } from "./logo.js";
-import "./icon.js";
+import { BaseElement, css, query } from "./base";
+import { animateElement, animateCascade } from "../animation";
+import { Logo } from "./logo";
+import "./icon";
 
 const styles = css`
     @keyframes reveal {

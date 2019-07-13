@@ -1,7 +1,7 @@
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, css, property, listen } from "./base.js";
-import "./icon.js";
-import "./spinner.js";
+import { BaseElement, element, html, css, property, listen } from "./base";
+import "./icon";
+import "./spinner";
 
 type ButtonState = "idle" | "loading" | "success" | "fail";
 

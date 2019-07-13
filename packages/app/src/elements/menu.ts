@@ -1,11 +1,11 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { PlanType } from "@padloc/core/lib/billing.js";
-import { app, router } from "../init.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { PlanType } from "@padloc/core/src/billing";
+import { app, router } from "../init";
 import { shared, mixins } from "../styles";
-import { StateMixin } from "../mixins/state.js";
-import { BaseElement, element, property, html, css } from "./base.js";
-import "./logo.js";
-import "./spinner.js";
+import { StateMixin } from "../mixins/state";
+import { BaseElement, element, property, html, css } from "./base";
+import "./logo";
+import "./spinner";
 
 @element("pl-menu")
 export class Menu extends StateMixin(BaseElement) {

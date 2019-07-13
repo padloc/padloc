@@ -1,7 +1,7 @@
-import { randomArt } from "@padloc/core/lib/randomart.js";
-import { getProvider } from "@padloc/core/lib/crypto.js";
+import { randomArt } from "@padloc/core/src/randomart";
+import { getProvider } from "@padloc/core/src/crypto";
 import { svg } from "lit-html";
-import { until } from "lit-html/directives/until.js";
+import { until } from "lit-html/directives/until";
 import { BaseElement, html, css, element, property } from "./base";
 
 @element("pl-fingerprint")

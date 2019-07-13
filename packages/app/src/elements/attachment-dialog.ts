@@ -1,14 +1,14 @@
 import { TemplateResult } from "lit-element";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { VaultItemID } from "@padloc/core/lib/item.js";
-import { Attachment, AttachmentInfo } from "@padloc/core/lib/attachment.js";
-import { app } from "../init.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { VaultItemID } from "@padloc/core/src/item";
+import { Attachment, AttachmentInfo } from "@padloc/core/src/attachment";
+import { app } from "../init";
 import { mixins } from "../styles";
-import { mediaType, fileIcon, fileSize } from "../util.js";
-import { confirm, prompt } from "../dialog.js";
-import { element, html, css, property } from "./base.js";
-import { Dialog } from "./dialog.js";
-import "./icon.js";
+import { mediaType, fileIcon, fileSize } from "../util";
+import { confirm, prompt } from "../dialog";
+import { element, html, css, property } from "./base";
+import { Dialog } from "./dialog";
+import "./icon";
 
 @element("pl-attachment-dialog")
 export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: File; item: VaultItemID }, void> {

@@ -1,17 +1,17 @@
-import { VaultID } from "@padloc/core/lib/vault.js";
-import { Org, Group, OrgMember } from "@padloc/core/lib/org.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
+import { VaultID } from "@padloc/core/src/vault";
+import { Org, Group, OrgMember } from "@padloc/core/src/org";
+import { localize as $l } from "@padloc/core/src/locale";
 import { mixins } from "../styles";
-import { app } from "../init.js";
-import { prompt } from "../dialog.js";
-import { element, html, css, property, query } from "./base.js";
-import { Dialog } from "./dialog.js";
-import { LoadingButton } from "./loading-button.js";
-import { Input } from "./input.js";
-import "./icon.js";
-import "./group-item.js";
-import "./member-item.js";
-import "./toggle.js";
+import { app } from "../init";
+import { prompt } from "../dialog";
+import { element, html, css, property, query } from "./base";
+import { Dialog } from "./dialog";
+import { LoadingButton } from "./loading-button";
+import { Input } from "./input";
+import "./icon";
+import "./group-item";
+import "./member-item";
+import "./toggle";
 
 type InputType = { vault: { id: VaultID; name: string } | null; org: Org };
 

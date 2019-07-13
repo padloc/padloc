@@ -1,12 +1,12 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { BaseElement } from "./elements/base.js";
-import "./elements/generator.js";
-import "./elements/alert-dialog.js";
-import "./elements/prompt-dialog.js";
-import "./elements/export-dialog.js";
-import { AlertDialog, AlertOptions } from "./elements/alert-dialog.js";
-import { PromptDialog, PromptOptions } from "./elements/prompt-dialog.js";
-import { getSingleton } from "./singleton.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { BaseElement } from "./elements/base";
+import "./elements/generator";
+import "./elements/alert-dialog";
+import "./elements/prompt-dialog";
+import "./elements/export-dialog";
+import { AlertDialog, AlertOptions } from "./elements/alert-dialog";
+import { PromptDialog, PromptOptions } from "./elements/prompt-dialog";
+import { getSingleton } from "./singleton";
 
 let lastDialogPromise = Promise.resolve();
 let currentDialog: any;

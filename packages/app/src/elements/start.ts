@@ -1,11 +1,11 @@
-import { app } from "../init.js";
+import { app } from "../init";
 import { shared, mixins } from "../styles";
 import { StateMixin } from "../mixins/state";
-import { BaseElement, element, html, css, property, query } from "./base.js";
-import { Unlock } from "./unlock.js";
-import { Login } from "./login.js";
-import { Signup } from "./signup.js";
-import { Recover } from "./recover.js";
+import { BaseElement, element, html, css, property, query } from "./base";
+import { Unlock } from "./unlock";
+import { Login } from "./login";
+import { Signup } from "./signup";
+import { Recover } from "./recover";
 
 @element("pl-start")
 export class Start extends StateMixin(BaseElement) {

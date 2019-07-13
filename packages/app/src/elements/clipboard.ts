@@ -1,10 +1,10 @@
-import { VaultItem, Field } from "@padloc/core/lib/item.js";
-import { setClipboard } from "@padloc/core/lib/platform.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { totp } from "@padloc/core/lib/otp.js";
-import { base32ToBytes } from "@padloc/core/lib/encoding.js";
+import { VaultItem, Field } from "@padloc/core/src/item";
+import { setClipboard } from "@padloc/core/src/platform";
+import { localize as $l } from "@padloc/core/src/locale";
+import { totp } from "@padloc/core/src/otp";
+import { base32ToBytes } from "@padloc/core/src/encoding";
 import { shared, mixins } from "../styles";
-import { BaseElement, html, css, property } from "./base.js";
+import { BaseElement, html, css, property } from "./base";
 
 export class Clipboard extends BaseElement {
 

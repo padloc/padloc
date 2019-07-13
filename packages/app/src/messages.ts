@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
+import { localize as $l } from "@padloc/core/src/locale";
 
 export function trialingMessage(days: number) {
     return $l(

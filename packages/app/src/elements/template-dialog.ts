@@ -1,7 +1,7 @@
-import { ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/lib/item.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { element, html, css } from "./base.js";
-import { Dialog } from "./dialog.js";
+import { ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
+import { localize as $l } from "@padloc/core/src/locale";
+import { element, html, css } from "./base";
+import { Dialog } from "./dialog";
 
 @element("pl-template-dialog")
 export class TemplateDialog extends Dialog<void, ItemTemplate> {

@@ -1,14 +1,14 @@
-import { until } from "lit-html/directives/until.js";
-import { Invite } from "@padloc/core/lib/invite.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { formatDateFromNow } from "../util.js";
+import { until } from "lit-html/directives/until";
+import { Invite } from "@padloc/core/src/invite";
+import { localize as $l } from "@padloc/core/src/locale";
+import { formatDateFromNow } from "../util";
 import { app, router } from "../init";
-import { alert, dialog } from "../dialog.js";
-import { element, html, css, property, query } from "./base.js";
-import { Dialog } from "./dialog.js";
-import { LoadingButton } from "./loading-button.js";
-import { Input } from "./input.js";
-import { MemberDialog } from "./member-dialog.js";
+import { alert, dialog } from "../dialog";
+import { element, html, css, property, query } from "./base";
+import { Dialog } from "./dialog";
+import { LoadingButton } from "./loading-button";
+import { Input } from "./input";
+import { MemberDialog } from "./member-dialog";
 
 @element("pl-invite-dialog")
 export class InviteDialog extends Dialog<Invite, void> {

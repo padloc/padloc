@@ -1,25 +1,25 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { Invite } from "@padloc/core/lib/invite.js";
-import { OrgMember, OrgRole, Group } from "@padloc/core/lib/org.js";
-import { BillingInfo } from "@padloc/core/lib/billing.js";
-import { StateMixin } from "../mixins/state.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { Invite } from "@padloc/core/src/invite";
+import { OrgMember, OrgRole, Group } from "@padloc/core/src/org";
+import { BillingInfo } from "@padloc/core/src/billing";
+import { StateMixin } from "../mixins/state";
 import { shared, mixins } from "../styles";
-import { dialog, alert, choose, confirm, prompt } from "../dialog.js";
-import { app, router } from "../init.js";
-import { element, html, css, property, query, observe } from "./base.js";
-import { View } from "./view.js";
-import { Input } from "./input.js";
-import { VaultDialog } from "./vault-dialog.js";
-import { GroupDialog } from "./group-dialog.js";
-import { MemberDialog } from "./member-dialog.js";
-import { CreateInvitesDialog } from "./create-invites-dialog.js";
-import "./billing-info.js";
-import "./subscription.js";
-import "./member-item.js";
-import "./group-item.js";
-import "./vault-item.js";
-import "./invite-item.js";
-import "./icon.js";
+import { dialog, alert, choose, confirm, prompt } from "../dialog";
+import { app, router } from "../init";
+import { element, html, css, property, query, observe } from "./base";
+import { View } from "./view";
+import { Input } from "./input";
+import { VaultDialog } from "./vault-dialog";
+import { GroupDialog } from "./group-dialog";
+import { MemberDialog } from "./member-dialog";
+import { CreateInvitesDialog } from "./create-invites-dialog";
+import "./billing-info";
+import "./subscription";
+import "./member-item";
+import "./group-item";
+import "./vault-item";
+import "./invite-item";
+import "./icon";
 
 @element("pl-org-view")
 export class OrgView extends StateMixin(View) {

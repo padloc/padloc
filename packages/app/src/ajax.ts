@@ -1,6 +1,6 @@
-import { Err, ErrorCode } from "@padloc/core/lib/error.js";
-import { marshal, unmarshal } from "@padloc/core/lib/encoding.js";
-import { Request, Response, Sender, RequestProgress } from "@padloc/core/lib/transport.js";
+import { Err, ErrorCode } from "@padloc/core/src/error";
+import { marshal, unmarshal } from "@padloc/core/src/encoding";
+import { Request, Response, Sender, RequestProgress } from "@padloc/core/src/transport";
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE";
 

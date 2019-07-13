@@ -1,6 +1,6 @@
 import { Workbox } from "workbox-window";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { confirm } from "../dialog.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { confirm } from "../dialog";
 
 type Constructor<T> = new (...args: any[]) => T;
 

@@ -1,11 +1,11 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { Vault } from "@padloc/core/lib/vault.js";
-import { Tag } from "@padloc/core/lib/item.js";
-import { app } from "../init.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { Vault } from "@padloc/core/src/vault";
+import { Tag } from "@padloc/core/src/item";
+import { app } from "../init";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query } from "./base.js";
+import { BaseElement, element, html, css, property, query } from "./base";
 import { Input } from "./input";
-import "./icon.js";
+import "./icon";
 
 @element("pl-tags-input")
 export class TagsInput extends BaseElement {

@@ -1,4 +1,4 @@
-import { BaseElement, element, html, css, property } from "./base.js";
+import { BaseElement, element, html, css, property } from "./base";
 
 @element("pl-icon")
 export class PlIcon extends BaseElement {

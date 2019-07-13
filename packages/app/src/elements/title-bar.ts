@@ -1,5 +1,5 @@
 import { shared, mixins } from "../styles";
-import { BaseElement, html } from "./base.js";
+import { BaseElement, html } from "./base";
 
 export class TitleBar extends BaseElement {
     render() {

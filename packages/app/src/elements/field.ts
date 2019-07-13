@@ -1,12 +1,12 @@
-import { FieldType, FieldDef, FIELD_DEFS } from "@padloc/core/lib/item.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { totp } from "@padloc/core/lib/otp.js";
-import { base32ToBytes } from "@padloc/core/lib/encoding.js";
+import { FieldType, FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
+import { localize as $l } from "@padloc/core/src/locale";
+import { totp } from "@padloc/core/src/otp";
+import { base32ToBytes } from "@padloc/core/src/encoding";
 import { shared } from "../styles";
-import { BaseElement, element, html, svg, css, property, query, observe } from "./base.js";
-import "./icon.js";
-import { Input } from "./input.js";
-import { Select } from "./select.js";
+import { BaseElement, element, html, svg, css, property, query, observe } from "./base";
+import "./icon";
+import { Input } from "./input";
+import { Select } from "./select";
 
 @element("pl-field")
 export class FieldElement extends BaseElement {

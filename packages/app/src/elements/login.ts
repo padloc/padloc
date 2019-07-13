@@ -1,13 +1,13 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { ErrorCode } from "@padloc/core/lib/error.js";
-import { app, router } from "../init.js";
-import { element, html, css, property, query } from "./base.js";
-import { StartForm } from "./start-form.js";
-import { Input } from "./input.js";
-import { PasswordInput } from "./password-input.js";
-import { LoadingButton } from "./loading-button.js";
-import { alert, confirm, prompt } from "../dialog.js";
-import "./logo.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { ErrorCode } from "@padloc/core/src/error";
+import { app, router } from "../init";
+import { element, html, css, property, query } from "./base";
+import { StartForm } from "./start-form";
+import { Input } from "./input";
+import { PasswordInput } from "./password-input";
+import { LoadingButton } from "./loading-button";
+import { alert, confirm, prompt } from "../dialog";
+import "./logo";
 
 @element("pl-login")
 export class Login extends StartForm {

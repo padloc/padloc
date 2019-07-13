@@ -1,8 +1,8 @@
-import { Err, ErrorCode } from "@padloc/core/lib/error.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { app, router } from "../init.js";
-import { alert, confirm } from "../dialog.js";
-// import { notify } from "../elements/notification.js";
+import { Err, ErrorCode } from "@padloc/core/src/error";
+import { localize as $l } from "@padloc/core/src/locale";
+import { app, router } from "../init";
+import { alert, confirm } from "../dialog";
+// import { notify } from "../elements/notification";
 
 type Constructor<T> = new (...args: any[]) => T;
 

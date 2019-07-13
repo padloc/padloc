@@ -1,13 +1,13 @@
-import { Org, OrgMember, Group } from "@padloc/core/lib/org.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { app } from "../init.js";
-import { prompt } from "../dialog.js";
-import { element, html, css, property, query } from "./base.js";
-import { Dialog } from "./dialog.js";
-import { LoadingButton } from "./loading-button.js";
-import { Input } from "./input.js";
-import "./toggle-button.js";
-import "./member-item.js";
+import { Org, OrgMember, Group } from "@padloc/core/src/org";
+import { localize as $l } from "@padloc/core/src/locale";
+import { app } from "../init";
+import { prompt } from "../dialog";
+import { element, html, css, property, query } from "./base";
+import { Dialog } from "./dialog";
+import { LoadingButton } from "./loading-button";
+import { Input } from "./input";
+import "./toggle-button";
+import "./member-item";
 
 type InputType = { group: Group | null; org: Org };
 

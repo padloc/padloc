@@ -1,17 +1,17 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { ErrorCode } from "@padloc/core/lib/error.js";
-import { generatePassphrase } from "@padloc/core/lib/diceware.js";
-import { passwordStrength, isTouch } from "../util.js";
-import { app, router } from "../init.js";
-import { element, html, css, property, query } from "./base.js";
-import { StartForm } from "./start-form.js";
-import { Input } from "./input.js";
-import { PasswordInput } from "./password-input.js";
-import { LoadingButton } from "./loading-button.js";
-import { Generator } from "./generator.js";
-import { alert, choose, prompt, dialog } from "../dialog.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { ErrorCode } from "@padloc/core/src/error";
+import { generatePassphrase } from "@padloc/core/src/diceware";
+import { passwordStrength, isTouch } from "../util";
+import { app, router } from "../init";
+import { element, html, css, property, query } from "./base";
+import { StartForm } from "./start-form";
+import { Input } from "./input";
+import { PasswordInput } from "./password-input";
+import { LoadingButton } from "./loading-button";
+import { Generator } from "./generator";
+import { alert, choose, prompt, dialog } from "../dialog";
 import { mixins } from "../styles";
-import "./logo.js";
+import "./logo";
 
 const steps = ["", "verify", "password"];
 

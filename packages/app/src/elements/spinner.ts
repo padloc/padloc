@@ -1,4 +1,4 @@
-import { BaseElement, element, html, css, svg, property, query, observe } from "./base.js";
+import { BaseElement, element, html, css, svg, property, query, observe } from "./base";
 
 @element("pl-spinner")
 export class Spinner extends BaseElement {

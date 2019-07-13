@@ -1,6 +1,6 @@
-import { element, html, css } from "./base.js";
-import { Input } from "./input.js";
-import "./icon.js";
+import { element, html, css } from "./base";
+import { Input } from "./input";
+import "./icon";
 
 @element("pl-password-input")
 export class PasswordInput extends Input {

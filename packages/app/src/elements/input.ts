@@ -1,9 +1,9 @@
 // @ts-ignore
-import autosize from "autosize/src/autosize.js";
-import { cache } from "lit-html/directives/cache.js";
+import autosize from "autosize/src/autosize";
+import { cache } from "lit-html/directives/cache";
 import { shared, mixins } from "../styles";
-import { mask } from "../util.js";
-import { BaseElement, element, html, css, property, query, listen } from "./base.js";
+import { mask } from "../util";
+import { BaseElement, element, html, css, property, query, listen } from "./base";
 
 let activeInput: Input | null = null;
 

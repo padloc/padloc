@@ -1,13 +1,13 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { ErrorCode } from "@padloc/core/lib/error.js";
-import { EmailVerificationPurpose } from "@padloc/core/lib/email-verification.js";
-import { app, router } from "../init.js";
-import { element, html, css, property, query } from "./base.js";
-import { StartForm } from "./start-form.js";
-import { Input } from "./input.js";
-import { LoadingButton } from "./loading-button.js";
-import { alert, choose, prompt } from "../dialog.js";
-import { passwordStrength } from "../util.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { ErrorCode } from "@padloc/core/src/error";
+import { EmailVerificationPurpose } from "@padloc/core/src/email-verification";
+import { app, router } from "../init";
+import { element, html, css, property, query } from "./base";
+import { StartForm } from "./start-form";
+import { Input } from "./input";
+import { LoadingButton } from "./loading-button";
+import { alert, choose, prompt } from "../dialog";
+import { passwordStrength } from "../util";
 
 @element("pl-recover")
 export class Recover extends StartForm {

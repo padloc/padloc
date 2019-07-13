@@ -1,6 +1,6 @@
-import { localize } from "@padloc/core/lib/locale.js";
-import { element, html, property, css } from "./base.js";
-import { Dialog } from "./dialog.js";
+import { localize } from "@padloc/core/src/locale";
+import { element, html, property, css } from "./base";
+import { Dialog } from "./dialog";
 
 const defaultButtonLabel = localize("OK");
 

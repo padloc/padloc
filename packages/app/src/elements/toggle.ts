@@ -1,4 +1,4 @@
-import { BaseElement, element, html, css, property, listen } from "./base.js";
+import { BaseElement, element, html, css, property, listen } from "./base";
 import { shared } from "../styles";
 
 @element("pl-toggle")

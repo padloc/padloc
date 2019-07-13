@@ -1,6 +1,6 @@
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, css, property, query } from "./base.js";
-import { Toggle } from "./toggle.js";
+import { BaseElement, element, html, css, property, query } from "./base";
+import { Toggle } from "./toggle";
 
 @element("pl-toggle-button")
 export class ToggleButton extends BaseElement {

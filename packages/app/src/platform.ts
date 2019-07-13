@@ -1,9 +1,8 @@
-import { Platform, DeviceInfo } from "@padloc/core/lib/platform";
-import { loadScript } from "./util";
+import { Platform, DeviceInfo } from "@padloc/core/src/platform";
 
 const browserInfo = (async () => {
-    const uaparser = await loadScript("/vendor/ua-parser.js", "UAParser");
-    return uaparser(navigator.userAgent);
+    const { UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
+    return new UAParser(navigator.userAgent).getResult();
 })();
 
 // Textarea used for copying/pasting using the dom

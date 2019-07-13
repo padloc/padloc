@@ -1,12 +1,12 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { Org } from "@padloc/core/lib/org.js";
-import { Invite } from "@padloc/core/lib/invite.js";
-import { app } from "../init.js";
-import { element, property, html, css, query } from "./base.js";
-import { Input } from "./input.js";
-import { Dialog } from "./dialog.js";
-import { LoadingButton } from "./loading-button.js";
-import "./icon.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { Org } from "@padloc/core/src/org";
+import { Invite } from "@padloc/core/src/invite";
+import { app } from "../init";
+import { element, property, html, css, query } from "./base";
+import { Input } from "./input";
+import { Dialog } from "./dialog";
+import { LoadingButton } from "./loading-button";
+import "./icon";
 
 @element("pl-create-invites-dialog")
 export class CreateInvitesDialog extends Dialog<Org, Invite[]> {

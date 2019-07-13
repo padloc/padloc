@@ -9,10 +9,6 @@
         />
         <meta name="apple-mobile-web-app-capable" content="yes" />
 
-        <link rel="shortcut icon" type="image/png" href="/assets/icons/192.png" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/assets/icons/apple-touch-180.png" />
-
         <style>
             html,
             body {
@@ -24,21 +20,7 @@
                 color: #fff;
                 position: fixed;
             }
-        </style>
 
-        <link rel="stylesheet" href="/assets/fonts/fonts.css" />
-
-        <!-- environment config -->
-        <script src="/env.js"></script>
-        <!-- load the webcomponents loader, which injects the necessary polyfill bundle -->
-        <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-        <!-- EventTarget shim -->
-        <script src="/shim/event-target.js"></script>
-
-        <script type="module" src="/dist/elements/app.js"></script>
-    </head>
-    <body>
-        <style>
             @keyframes spin {
                 from {
                     stroke-dashoffset: 240;
@@ -79,6 +61,8 @@
             }
         </style>
 
+    </head>
+    <body>
         <svg viewBox="0 0 100 100" class="spinner">
             <circle cx="50" cy="50" r="40" />
         </svg>

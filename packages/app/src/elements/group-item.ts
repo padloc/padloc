@@ -1,7 +1,7 @@
-import { Group } from "@padloc/core/lib/org.js";
+import { Group } from "@padloc/core/src/org";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property } from "./base.js";
-import "./icon.js";
+import { BaseElement, element, html, css, property } from "./base";
+import "./icon";
 
 @element("pl-group-item")
 export class GroupItem extends BaseElement {

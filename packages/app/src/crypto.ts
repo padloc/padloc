@@ -14,9 +14,9 @@ import {
     RSAEncryptionParams,
     HashParams,
     RSASigningParams
-} from "@padloc/core/lib/crypto.js";
-import { Err, ErrorCode } from "@padloc/core/lib/error.js";
-import SJCLProvider from "@padloc/core/lib/sjcl.js";
+} from "@padloc/core/src/crypto";
+import { Err, ErrorCode } from "@padloc/core/src/error";
+import SJCLProvider from "@padloc/core/src/sjcl";
 
 const webCrypto = window.crypto && window.crypto.subtle;
 

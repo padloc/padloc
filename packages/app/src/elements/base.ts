@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import { EventTarget, Event } from "@padloc/core/lib/event-target.js";
+import { EventTarget, Event } from "@padloc/core/src/event-target";
 import { LitElement, html, css, svg } from "lit-element";
-import { UpdatingElement, PropertyDeclaration } from "lit-element/lib/updating-element.js";
+import { UpdatingElement, PropertyDeclaration } from "lit-element/lib/updating-element";
 export { html, css, svg };
 
 export interface BasePrototype extends BaseElement {}

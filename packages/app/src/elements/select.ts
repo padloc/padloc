@@ -1,5 +1,5 @@
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query, observe } from "./base.js";
+import { BaseElement, element, html, css, property, query, observe } from "./base";
 
 @element("pl-select")
 export class Select<T> extends BaseElement {

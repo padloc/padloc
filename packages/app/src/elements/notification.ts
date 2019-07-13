@@ -1,6 +1,6 @@
-import { getSingleton } from "../singleton.js";
+import { getSingleton } from "../singleton";
 import { shared, mixins } from "../styles";
-import { BaseElement, element, html, css, property } from "./base.js";
+import { BaseElement, element, html, css, property } from "./base";
 
 export type NotificationType = "info" | "warning";
 

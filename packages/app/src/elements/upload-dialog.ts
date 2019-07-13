@@ -1,14 +1,14 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { VaultItemID } from "@padloc/core/lib/item.js";
-import { Attachment } from "@padloc/core/lib/attachment.js";
-import { ErrorCode } from "@padloc/core/lib/error.js";
-import { app } from "../init.js";
-import { fileIcon, fileSize } from "../util.js";
-import { element, html, css, property, query } from "./base.js";
-import { Dialog } from "./dialog.js";
-import "./icon.js";
-import { LoadingButton } from "./loading-button.js";
-import { Input } from "./input.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { VaultItemID } from "@padloc/core/src/item";
+import { Attachment } from "@padloc/core/src/attachment";
+import { ErrorCode } from "@padloc/core/src/error";
+import { app } from "../init";
+import { fileIcon, fileSize } from "../util";
+import { element, html, css, property, query } from "./base";
+import { Dialog } from "./dialog";
+import "./icon";
+import { LoadingButton } from "./loading-button";
+import { Input } from "./input";
 
 @element("pl-upload-dialog")
 export class UploadDialog extends Dialog<{ file: File; item: VaultItemID }, Attachment> {

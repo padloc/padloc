@@ -1,14 +1,14 @@
-import { Attachment, AttachmentInfo } from "@padloc/core/lib/attachment.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { RequestProgress } from "@padloc/core/lib/transport.js";
+import { Attachment, AttachmentInfo } from "@padloc/core/src/attachment";
+import { localize as $l } from "@padloc/core/src/locale";
+import { RequestProgress } from "@padloc/core/src/transport";
 import { shared, mixins } from "../styles";
-// import { app } from "../init.js";
-// import { dialog } from "../dialog.js";
-import { BaseElement, element, html, property, query, observe } from "./base.js";
-import "./loading-button.js";
-import { Input } from "./input.js";
-import "./icon.js";
-// import { AttachmentDialog } from "./attachment-dialog.js";
+// import { app } from "../init";
+// import { dialog } from "../dialog";
+import { BaseElement, element, html, property, query, observe } from "./base";
+import "./loading-button";
+import { Input } from "./input";
+import "./icon";
+// import { AttachmentDialog } from "./attachment-dialog";
 
 @element("pl-attachment")
 export class AttachmentElement extends BaseElement {

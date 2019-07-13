@@ -1,7 +1,7 @@
 import { shared, mixins } from "../styles";
 import { animateElement } from "../animation";
-import { BaseElement, element, html, css, property, observe, listen } from "./base.js";
-import { Input } from "./input.js";
+import { BaseElement, element, html, css, property, observe, listen } from "./base";
+import { Input } from "./input";
 
 @element("pl-dialog")
 export class Dialog<I, R> extends BaseElement {

@@ -1,15 +1,15 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { Org } from "@padloc/core/lib/org.js";
-import { PlanType, SubscriptionStatus, UpdateBillingParams, Subscription } from "@padloc/core/lib/billing.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { Org } from "@padloc/core/src/org";
+import { PlanType, SubscriptionStatus, UpdateBillingParams, Subscription } from "@padloc/core/src/billing";
 import { shared } from "../styles";
 import { dialog, alert, choose } from "../dialog";
-import { fileSize, loadScript } from "../util.js";
-import { app } from "../init.js";
-import { StateMixin } from "../mixins/state.js";
-import { BaseElement, element, property, html, css, query } from "./base.js";
-import "./icon.js";
-import { LoadingButton } from "./loading-button.js";
-import { UpdateSubscriptionDialog } from "./update-subscription-dialog.js";
+import { fileSize, loadScript } from "../util";
+import { app } from "../init";
+import { StateMixin } from "../mixins/state";
+import { BaseElement, element, property, html, css, query } from "./base";
+import "./icon";
+import { LoadingButton } from "./loading-button";
+import { UpdateSubscriptionDialog } from "./update-subscription-dialog";
 
 @element("pl-subscription")
 export class OrgSubscription extends StateMixin(BaseElement) {
@@ -105,7 +105,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
             const result = await stripe.handleCardPayment(this._subscription!.paymentRequiresAuth);
             error = result.error && result.error.message;
             await app.updateBilling(new UpdateBillingParams());
-        } catch(e) {
+        } catch (e) {
             error = e.message || $l("Something went wrong. Please try again later!");
         }
 
@@ -308,13 +308,21 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                     : html``}
             </div>
 
-            ${ sub.paymentError ? html`
-                <div class="error item">${sub.paymentError}</div>
-            ` : ""}
-
-            ${sub.paymentRequiresAuth ? html`
-                  <pl-loading-button id="authButton" class="premium-button primary tap" @click=${this._authenticatePayment}>${$l("Complete Payment")}</pl-loading-button>
-            ` : this.org || sub.plan.type !== PlanType.Free
+            ${sub.paymentError
+                ? html`
+                      <div class="error item">${sub.paymentError}</div>
+                  `
+                : ""}
+            ${sub.paymentRequiresAuth
+                ? html`
+                      <pl-loading-button
+                          id="authButton"
+                          class="premium-button primary tap"
+                          @click=${this._authenticatePayment}
+                          >${$l("Complete Payment")}</pl-loading-button
+                      >
+                  `
+                : this.org || sub.plan.type !== PlanType.Free
                 ? html`
                       <pl-loading-button id="editButton" class="edit-button tap icon" @click=${this._update}>
                           <pl-icon icon="edit"></pl-icon>

@@ -1,4 +1,4 @@
-import { BaseElement, property, observe } from "./base.js";
+import { BaseElement, property, observe } from "./base";
 
 export class View extends BaseElement {
     @property()

@@ -1,8 +1,8 @@
-import { localize } from "@padloc/core/lib/locale.js";
-import { element, html, css, property, query } from "./base.js";
-import { Input } from "./input.js";
-import { LoadingButton } from "./loading-button.js";
-import { Dialog } from "./dialog.js";
+import { localize } from "@padloc/core/src/locale";
+import { element, html, css, property, query } from "./base";
+import { Input } from "./input";
+import { LoadingButton } from "./loading-button";
+import { Dialog } from "./dialog";
 
 const defaultConfirmLabel = localize("OK");
 const defaultCancelLabel = localize("Cancel");

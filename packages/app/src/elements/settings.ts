@@ -1,19 +1,19 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { BillingInfo } from "@padloc/core/lib/billing.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { BillingInfo } from "@padloc/core/src/billing";
 import { shared, mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../dialog";
-import { app, router } from "../init.js";
-import { StateMixin } from "../mixins/state.js";
-import { element, html, css, query, listen } from "./base.js";
-import { View } from "./view.js";
-import "./icon.js";
-import { Slider } from "./slider.js";
-import { ToggleButton } from "./toggle-button.js";
-import { ImportDialog } from "./import-dialog.js";
-import { ExportDialog } from "./export-dialog.js";
-import "./billing-info.js";
-import "./randomart.js";
-import "./subscription.js";
+import { app, router } from "../init";
+import { StateMixin } from "../mixins/state";
+import { element, html, css, query, listen } from "./base";
+import { View } from "./view";
+import "./icon";
+import { Slider } from "./slider";
+import { ToggleButton } from "./toggle-button";
+import { ImportDialog } from "./import-dialog";
+import { ExportDialog } from "./export-dialog";
+import "./billing-info";
+import "./randomart";
+import "./subscription";
 
 @element("pl-settings")
 export class Settings extends StateMixin(View) {

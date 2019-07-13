@@ -1,7 +1,7 @@
-import { VaultID } from "@padloc/core/lib/vault.js";
+import { VaultID } from "@padloc/core/src/vault";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property } from "./base.js";
-import "./icon.js";
+import { BaseElement, element, html, css, property } from "./base";
+import "./icon";
 
 @element("pl-vault-item")
 export class VaultItem extends BaseElement {

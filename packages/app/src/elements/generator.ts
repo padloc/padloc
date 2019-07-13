@@ -1,12 +1,12 @@
-import { randomString, chars } from "@padloc/core/lib/util.js";
-import { generatePassphrase } from "@padloc/core/lib/diceware.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { html, css, property, query, listen } from "./base.js";
-import { Dialog } from "./dialog.js";
-import { Slider } from "./slider.js";
-import { ToggleButton } from "./toggle-button.js";
-import { Select } from "./select.js";
-import "./icon.js";
+import { randomString, chars } from "@padloc/core/src/util";
+import { generatePassphrase } from "@padloc/core/src/diceware";
+import { localize as $l } from "@padloc/core/src/locale";
+import { html, css, property, query, listen } from "./base";
+import { Dialog } from "./dialog";
+import { Slider } from "./slider";
+import { ToggleButton } from "./toggle-button";
+import { Select } from "./select";
+import "./icon";
 
 export type GeneratorMode = "words" | "chars";
 

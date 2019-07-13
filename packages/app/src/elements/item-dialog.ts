@@ -1,24 +1,24 @@
-import { until } from "lit-html/directives/until.js";
-import { VaultItemID, Field } from "@padloc/core/lib/item.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { AttachmentInfo } from "@padloc/core/lib/attachment.js";
-import { parseURL } from "@padloc/core/lib/otp.js";
-import { formatDateFromNow, fileIcon, fileSize } from "../util.js";
-import { alert, confirm, dialog } from "../dialog.js";
-import { app, router } from "../init.js";
-import { setClipboard } from "../clipboard.js";
-import { element, html, css, property, query, queryAll } from "./base.js";
-import { Dialog } from "./dialog.js";
-import "./icon.js";
-import { Input } from "./input.js";
-import { TagsInput } from "./tags-input.js";
-import { MoveItemsDialog } from "./move-items-dialog.js";
-import { FieldElement } from "./field.js";
-import "./field.js";
-import { Generator } from "./generator.js";
-import { AttachmentDialog } from "./attachment-dialog.js";
-import { UploadDialog } from "./upload-dialog.js";
-import { QRDialog } from "./qr-dialog.js";
+import { until } from "lit-html/directives/until";
+import { VaultItemID, Field } from "@padloc/core/src/item";
+import { localize as $l } from "@padloc/core/src/locale";
+import { AttachmentInfo } from "@padloc/core/src/attachment";
+import { parseURL } from "@padloc/core/src/otp";
+import { formatDateFromNow, fileIcon, fileSize } from "../util";
+import { alert, confirm, dialog } from "../dialog";
+import { app, router } from "../init";
+import { setClipboard } from "../clipboard";
+import { element, html, css, property, query, queryAll } from "./base";
+import { Dialog } from "./dialog";
+import "./icon";
+import { Input } from "./input";
+import { TagsInput } from "./tags-input";
+import { MoveItemsDialog } from "./move-items-dialog";
+import { FieldElement } from "./field";
+import "./field";
+import { Generator } from "./generator";
+import { AttachmentDialog } from "./attachment-dialog";
+import { UploadDialog } from "./upload-dialog";
+import { QRDialog } from "./qr-dialog";
 
 @element("pl-item-dialog")
 export class ItemDialog extends Dialog<string, void> {

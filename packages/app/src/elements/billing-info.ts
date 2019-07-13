@@ -1,12 +1,12 @@
-import { countries, localize as $l } from "@padloc/core/lib/locale.js";
-import { BillingInfo } from "@padloc/core/lib/billing.js";
+import { countries, localize as $l } from "@padloc/core/src/locale";
+import { BillingInfo } from "@padloc/core/src/billing";
 import { shared } from "../styles";
 import { dialog, alert } from "../dialog";
-import { app } from "../init.js";
-import { BaseElement, element, property, html, css, query } from "./base.js";
-import "./icon.js";
-import { LoadingButton } from "./loading-button.js";
-import { BillingDialog } from "./billing-dialog.js";
+import { app } from "../init";
+import { BaseElement, element, property, html, css, query } from "./base";
+import "./icon";
+import { LoadingButton } from "./loading-button";
+import { BillingDialog } from "./billing-dialog";
 
 @element("pl-billing-info")
 export class BillingInfoElement extends BaseElement {

@@ -1,12 +1,12 @@
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { ErrorCode } from "@padloc/core/lib/error.js";
-import { app, router } from "../init.js";
-import { element, property, html, css, query } from "./base.js";
+import { localize as $l } from "@padloc/core/src/locale";
+import { ErrorCode } from "@padloc/core/src/error";
+import { app, router } from "../init";
+import { element, property, html, css, query } from "./base";
 import { StartForm } from "./start-form";
-import { PasswordInput } from "./password-input.js";
-import { LoadingButton } from "./loading-button.js";
-import { confirm, choose } from "../dialog.js";
-import "./logo.js";
+import { PasswordInput } from "./password-input";
+import { LoadingButton } from "./loading-button";
+import { confirm, choose } from "../dialog";
+import "./logo";
 
 @element("pl-unlock")
 export class Unlock extends StartForm {

@@ -1,4 +1,4 @@
-import { BaseElement, element, html, css, property, query } from "./base.js";
+import { BaseElement, element, html, css, property, query } from "./base";
 import { shared } from "../styles";
 
 @element("pl-slider")

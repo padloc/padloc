@@ -1,6 +1,6 @@
 import { unsafeHTML } from "lit-html/directives/unsafe-html";
-import { localize as $l } from "@padloc/core/lib/locale";
-import { Plan, PlanType } from "@padloc/core/lib/billing";
+import { localize as $l } from "@padloc/core/src/locale";
+import { Plan, PlanType } from "@padloc/core/src/billing";
 import { mixins } from "../styles";
 import { app } from "../init";
 import { element, html, property, css } from "./base";

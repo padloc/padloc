@@ -1,12 +1,12 @@
-import { Vault } from "@padloc/core/lib/vault.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { CSV, PBES2, ImportFormat } from "../import.js";
-import { supportedFormats, asCSV, asPBES2Container } from "../export.js";
-import { app } from "../init.js";
-import { prompt } from "../dialog.js";
-import { element, html, css, query } from "./base.js";
-import { Select } from "./select.js";
-import { Dialog } from "./dialog.js";
+import { Vault } from "@padloc/core/src/vault";
+import { localize as $l } from "@padloc/core/src/locale";
+import { CSV, PBES2, ImportFormat } from "../import";
+import { supportedFormats, asCSV, asPBES2Container } from "../export";
+import { app } from "../init";
+import { prompt } from "../dialog";
+import { element, html, css, query } from "./base";
+import { Select } from "./select";
+import { Dialog } from "./dialog";
 
 @element("pl-export-dialog")
 export class ExportDialog extends Dialog<void, void> {

@@ -16,9 +16,7 @@
   },
   "scripts": {
     "test": "cd test && mocha -r ts-node/register *.ts",
-    "build": "tsc",
-    "docs": "typedoc --out docs",
-    "dev": "tsc --watch"
+    "docs": "typedoc --out docs"
   },
   "dependencies": {}
 }

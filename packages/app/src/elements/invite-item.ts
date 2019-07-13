@@ -1,14 +1,14 @@
 import { until } from "lit-html/directives/until";
-import { Invite } from "@padloc/core/lib/invite.js";
-import { localize as $l } from "@padloc/core/lib/locale.js";
-import { formatDateFromNow } from "../util.js";
+import { Invite } from "@padloc/core/src/invite";
+import { localize as $l } from "@padloc/core/src/locale";
+import { formatDateFromNow } from "../util";
 import { shared } from "../styles";
 import { app } from "../init";
 import { dialog, alert } from "../dialog";
-import { BaseElement, element, html, css, property, query } from "./base.js";
+import { BaseElement, element, html, css, property, query } from "./base";
 import { LoadingButton } from "./loading-button";
-import { MemberDialog } from "./member-dialog.js";
-import "./icon.js";
+import { MemberDialog } from "./member-dialog";
+import "./icon";
 
 @element("pl-invite-item")
 export class InviteItem extends BaseElement {
