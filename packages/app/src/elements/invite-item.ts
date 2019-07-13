@@ -157,11 +157,15 @@ export class InviteItem extends BaseElement {
                 </div>
             </div>
 
-            <pl-loading-button class="tap primary confirm-button" ?hidden=${!inv.accepted} @click=${this._confirm}>
+            <pl-loading-button
+                class="tap primary confirm-button"
+                ?hidden=${!inv.accepted || inv.expired}
+                @click=${this._confirm}
+            >
                 ${$l("Confirm")}
             </pl-loading-button>
 
-            <div class="invite-code" ?hidden=${inv.accepted}>
+            <div class="invite-code" ?hidden=${inv.accepted || inv.expired}>
                 <div class="invite-code-label">${$l("Confirmation Code:")}</div>
 
                 <div class="invite-code-value">${until(secret)}</div>
