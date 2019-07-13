@@ -106,7 +106,6 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 width: 100%;
                 height: 100%;
                 animation: fadeIn 0.5s;
-                perspective: 1000px;
                 display: flex;
                 flex-direction: column;
             }
@@ -114,6 +113,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             .main {
                 flex: 1;
                 position: relative;
+                perspective: 1000px;
             }
 
             .wrapper {
@@ -152,6 +152,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             .wrapper:not(.active),
             :host(.dialog-open) .wrapper {
                 transform: translate3d(0, 0, -150px) rotateX(5deg);
+                border-radius: var(--border-radius);
             }
 
             .offline {

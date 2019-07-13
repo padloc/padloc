@@ -68,6 +68,10 @@ export class ItemDialog extends Dialog<string, void> {
     @dialog("pl-qr-dialog")
     private _qrDialog: QRDialog;
 
+    private _draggingIndex = -1;
+
+    private _dragOverIndex = -1;
+
     async show(itemId: string) {
         this._editing = false;
         this.itemId = itemId;
@@ -104,12 +108,16 @@ export class ItemDialog extends Dialog<string, void> {
                 background: var(--color-quaternary);
                 display: flex;
                 flex-direction: column;
-                height: 100%;
-                max-height: 600px;
+                min-height: 500px;
+                max-height: 100%;
             }
 
             .content {
                 padding-bottom: 50px;
+            }
+
+            .content > * {
+                margin: 12px;
             }
 
             .name {
@@ -124,12 +132,12 @@ export class ItemDialog extends Dialog<string, void> {
                 text-align: left;
             }
 
-            pl-tags-input {
-                margin: 16px;
+            pl-field {
+                position: relative;
             }
 
-            .fields > * {
-                margin: 12px;
+            .content > pl-tags-input {
+                margin: 12px 16px;
             }
 
             :host(:not([editing])) pl-field:hover {
@@ -156,6 +164,7 @@ export class ItemDialog extends Dialog<string, void> {
                 display: flex;
                 align-items: center;
                 padding: 12px;
+                margin: 12px;
             }
 
             .attachment-body {
@@ -209,10 +218,6 @@ export class ItemDialog extends Dialog<string, void> {
                 background: rgba(255, 255, 255, 0.9);
             }
 
-            .actions {
-                margin: 16px;
-            }
-
             .actions > button {
                 font-size: var(--font-size-small);
                 background: none;
@@ -231,6 +236,30 @@ export class ItemDialog extends Dialog<string, void> {
                 flex: 1;
                 max-width: 200px;
                 min-width: 120px;
+            }
+
+            [draggable="true"].dragging {
+                opacity: 0.5;
+            }
+
+            :host(.dragging) .content > :not(.dragging) {
+                will-change: transform;
+                transition: transform 0.2s;
+            }
+
+            pl-field.dragover::after {
+                content: "";
+                display: block;
+                height: 30px;
+                border: dashed 1px var(--color-shade-4);
+                width: 100%;
+                position: absolute;
+                bottom: -45px;
+                border-radius: var(--border-radius);
+            }
+
+            pl-field.dragover ~ * {
+                transform: translate3d(0, 40px, 0);
             }
 
             @media (max-width: 700px) {
@@ -282,48 +311,48 @@ export class ItemDialog extends Dialog<string, void> {
             <div class="content">
                 <pl-tags-input .editing=${this._editing} .vault=${this._vault} @move=${this._move}></pl-tags-input>
 
-                <div class="fields">
-                    ${this._fields.map(
-                        (field: Field, index: number) => html`
-                            <pl-field
-                                class="item"
-                                .name=${field.name}
-                                .value=${field.value}
-                                .type=${field.type}
-                                .editing=${this._editing}
-                                @edit=${() => this._editField(index)}
-                                @copy=${() => setClipboard(this._item!, field)}
-                                @remove=${() => this._removeField(index)}
-                                @generate=${() => this._generateValue(index)}
-                                @get-totp-qr=${() => this._getTotpQR(index)}
-                            >
-                            </pl-field>
-                        `
-                    )}
-                </div>
-
-                <div class="attachments">
-                    ${attachments.map(
-                        a => html`
-                            <div
-                                class="attachment item ${this._editing ? "" : "tap"}"
-                                @click=${() => this._openAttachment(a)}
-                            >
-                                <pl-icon icon=${fileIcon(a.type)} class="file-icon" ?hidden=${this._editing}></pl-icon>
-                                <pl-icon
-                                    icon="remove"
-                                    class="attachment-remove tap"
-                                    ?hidden=${!this._editing}
-                                    @click=${() => this._deleteAttachment(a)}
-                                ></pl-icon>
-                                <div class="attachment-body">
-                                    <div class="attachment-name ellipsis">${a.name}</div>
-                                    <div class="attachment-size">${fileSize(a.size)}</div>
-                                </div>
+                ${this._fields.map(
+                    (field: Field, index: number) => html`
+                        <pl-field
+                            class="item"
+                            .name=${field.name}
+                            .value=${field.value}
+                            .type=${field.type}
+                            .editing=${this._editing}
+                            @edit=${() => this._editField(index)}
+                            @copy=${() => setClipboard(this._item!, field)}
+                            @remove=${() => this._removeField(index)}
+                            @generate=${() => this._generateValue(index)}
+                            @get-totp-qr=${() => this._getTotpQR(index)}
+                            @dragstart=${(e: DragEvent) => this._dragstart(e, index)}
+                            @dragenter=${(e: DragEvent) => this._dragenter(e, index)}
+                            @dragover=${(e: DragEvent) => this._dragover(e)}
+                            @dragend=${(e: DragEvent) => this._dragend(e)}
+                            @drop=${(e: DragEvent) => this._drop(e)}
+                        >
+                        </pl-field>
+                    `
+                )}
+                ${attachments.map(
+                    a => html`
+                        <div
+                            class="attachment item ${this._editing ? "" : "tap"}"
+                            @click=${() => this._openAttachment(a)}
+                        >
+                            <pl-icon icon=${fileIcon(a.type)} class="file-icon" ?hidden=${this._editing}></pl-icon>
+                            <pl-icon
+                                icon="remove"
+                                class="attachment-remove tap"
+                                ?hidden=${!this._editing}
+                                @click=${() => this._deleteAttachment(a)}
+                            ></pl-icon>
+                            <div class="attachment-body">
+                                <div class="attachment-name ellipsis">${a.name}</div>
+                                <div class="attachment-size">${fileSize(a.size)}</div>
                             </div>
-                        `
-                    )}
-                </div>
+                        </div>
+                    `
+                )}
 
                 <div class="actions" ?hidden=${!this._editing}>
                     <button class="icon tap" @click=${() => this._addField()}>
@@ -331,7 +360,7 @@ export class ItemDialog extends Dialog<string, void> {
                         <div>${$l("Field")}</div>
                     </button>
 
-                    <button class="icon tap" @click=${this._addAttachment}>
+                    <button class="icon tap" @click=${this.addAttachment}>
                         <pl-icon icon="attachment"></pl-icon>
                         <div>${$l("Attachment")}</div>
                     </button>
@@ -542,5 +571,60 @@ export class ItemDialog extends Dialog<string, void> {
             await app.deleteAttachment(this.itemId!, a);
             this.requestUpdate();
         }
+    }
+
+    private _drop(e: DragEvent) {
+        // console.log("drop", e, this._draggingIndex, this._dragOverIndex);
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+
+    private _dragstart(e: DragEvent, index: number) {
+        // console.log("dragstart", e);
+        this._draggingIndex = index;
+        e.dataTransfer!.effectAllowed = "move";
+        e.dataTransfer!.setData("text/plain", "foo");
+        (e.target as HTMLElement).classList.add("dragging");
+        this.classList.add("dragging");
+    }
+
+    private _dragenter(e: DragEvent, index: number) {
+        // console.log("dragenter", e);
+        e.dataTransfer!.dropEffect = "move";
+
+        this._dragOverIndex = index;
+
+        for (const [i, field] of this._fieldInputs.entries()) {
+            field.classList.toggle(
+                "dragover",
+                i === index && i !== this._draggingIndex && i !== this._draggingIndex - 1
+            );
+        }
+    }
+
+    private _dragover(e: DragEvent) {
+        e.preventDefault();
+    }
+
+    private _dragend(_e: DragEvent) {
+        // console.log("dragend", e, this._draggingIndex, this._dragOverIndex);
+
+        if (this._draggingIndex !== -1 || this._dragOverIndex !== -1) {
+            const field = this._fields[this._draggingIndex];
+            this._fields.splice(this._draggingIndex, 1);
+            const targetIndex =
+                this._dragOverIndex >= this._draggingIndex ? this._dragOverIndex : this._dragOverIndex + 1;
+            this._fields.splice(targetIndex, 0, field);
+            this.requestUpdate();
+        }
+
+        for (const field of this._fieldInputs) {
+            field.classList.remove("dragging");
+            field.classList.remove("dragover");
+        }
+        this.classList.remove("dragging");
+        this._dragOverIndex = -1;
+        this._draggingIndex = -1;
     }
 }

@@ -63,7 +63,6 @@ export class FieldElement extends BaseElement {
         css`
             :host {
                 display: flex;
-                align-items: center;
                 border-radius: 8px;
                 min-height: 80px;
             }
@@ -71,7 +70,6 @@ export class FieldElement extends BaseElement {
             .field-buttons {
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
             }
 
             .field-buttons.left {
@@ -160,6 +158,20 @@ export class FieldElement extends BaseElement {
             .countdown circle.bg {
                 opacity: 0.2;
             }
+
+            .drag-handle {
+                cursor: grab;
+            }
+
+            .drag-handle:active {
+                cursor: grabbing;
+            }
+
+            @media(hover: none) {
+                .drag-handle {
+                    display: none;
+                }
+            }
         `
     ];
 
@@ -186,7 +198,13 @@ export class FieldElement extends BaseElement {
         const mask = fieldDef.mask && !this.editing;
         return html`
             <div class="field-buttons left" ?hidden=${!this.editing}>
-                <pl-icon icon="remove" class="tap" @click=${() => this.dispatch("remove")}> </pl-icon>
+                <pl-icon
+                    icon="menu"
+                    class="drag-handle"
+                    @mouseover=${() => this.setAttribute("draggable", "true")}
+                    @mouseout=${() => this.removeAttribute("draggable")}
+                >
+                </pl-icon>
 
                 <pl-icon
                     ?hidden=${this.type !== "password"}
@@ -203,6 +221,8 @@ export class FieldElement extends BaseElement {
                     @click=${() => this.dispatch("get-totp-qr")}
                 >
                 </pl-icon>
+
+                <pl-icon icon="remove" class="tap" @click=${() => this.dispatch("remove")}> </pl-icon>
             </div>
 
             <div class="fields-container flex">
