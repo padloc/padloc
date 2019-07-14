@@ -11,7 +11,8 @@ module.exports = {
     output: {
         path: path.resolve("dist"),
         filename: "[name].js",
-        chunkFilename: "[name].chunk.js"
+        chunkFilename: "[name].chunk.js",
+        publicPath: "/"
     },
     mode: "development",
     devtool: "source-map",

@@ -1,7 +1,6 @@
 import { localize as $l } from "@padloc/core/src/locale";
 import { mixins } from "../styles";
 import { alert } from "../dialog";
-import { loadScript } from "../util";
 import { element, html, css, query } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
@@ -113,7 +112,7 @@ export class QRDialog extends Dialog<void, string> {
             return;
         }
 
-        const jsQR = await loadScript("/node_modules/jsqr/dist/jsQR.js", "jsQR");
+        const { default: jsQR } = await import(/* webpackChunkName: "jsqr" */ "jsqr");
 
         const canvas = this._canvas.getContext("2d")!;
         this._canvas.height = this._video.videoHeight;

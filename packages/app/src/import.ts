@@ -5,7 +5,6 @@ import { VaultItem, Field, createVaultItem, guessFieldType } from "@padloc/core/
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { uuid } from "@padloc/core/src/util";
 import { localize as $l } from "@padloc/core/src/locale";
-import { loadScript } from "./util";
 
 export interface ImportFormat {
     format: "csv" | "padlock-legacy" | "lastpass" | "padloc";
@@ -43,7 +42,7 @@ export const PBES2: ImportFormat = {
 export const supportedFormats: ImportFormat[] = [CSV, PADLOCK_LEGACY, LASTPASS, PBES2];
 
 export function loadPapa(): Promise<any> {
-    return loadScript("vendor/papaparse.js", "Papa");
+    return import(/* webpackChunkName: "papaparse" */ "papaparse");
 }
 
 /**
