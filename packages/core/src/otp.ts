@@ -1,5 +1,6 @@
 import { numToBytes, bytesToNum } from "./encoding";
-import { getProvider, HMACParams } from "./crypto";
+import { HMACParams } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 import { base32ToBytes } from "./encoding";
 
 export interface HOTPOpts {

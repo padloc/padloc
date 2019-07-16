@@ -1,7 +1,7 @@
 import { Server } from "@padloc/core/src/server";
-import { setProvider } from "@padloc/core/src/crypto";
+import { setPlatform } from "@padloc/core/src/platform";
 import { BillingProvider } from "@padloc/core/src/billing";
-import { NodeCryptoProvider } from "./crypto";
+import { NodePlatform } from "./platform";
 import { HTTPReceiver } from "./http";
 import { LevelDBStorage } from "./storage";
 import { EmailMessenger } from "./messenger";
@@ -9,7 +9,7 @@ import { FileSystemStorage } from "./attachment";
 import { StripeBillingProvider } from "./billing";
 
 async function init() {
-    setProvider(new NodeCryptoProvider());
+    setPlatform(new NodePlatform());
 
     const config = {
         clientUrl: process.env.PL_CLIENT_URL || "https://localhost:8081",

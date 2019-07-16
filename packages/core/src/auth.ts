@@ -1,5 +1,6 @@
 import { Serializable, stringToBytes, base64ToBytes, bytesToBase64 } from "./encoding";
-import { getProvider, PBKDF2Params } from "./crypto";
+import { PBKDF2Params } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 import { DeviceInfo } from "./platform";
 import { Storable } from "./storage";
 import { AccountID } from "./account";

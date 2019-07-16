@@ -7,7 +7,8 @@ import {
     marshal,
     unmarshal
 } from "./encoding";
-import { getProvider, RSAPublicKey, RSAPrivateKey, RSAKeyParams, HMACKey, HMACParams, HMACKeyParams } from "./crypto";
+import { RSAPublicKey, RSAPrivateKey, RSAKeyParams, HMACKey, HMACParams, HMACKeyParams } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
 import { PBES2Container } from "./container";
 import { Storable } from "./storage";

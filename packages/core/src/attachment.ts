@@ -1,7 +1,8 @@
 import { bytesToBase64, base64ToBytes } from "./encoding";
 import { SimpleContainer } from "./container";
 import { VaultID } from "./vault";
-import { getProvider, AESKeyParams } from "./crypto";
+import { AESKeyParams } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 import { Err, ErrorCode } from "./error";
 import { RequestProgress } from "./transport";
 

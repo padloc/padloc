@@ -1,4 +1,5 @@
-import { getProvider, PBKDF2Params, HMACParams, HMACKey } from "./crypto";
+import { PBKDF2Params, HMACParams, HMACKey } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 import { SimpleContainer } from "./container";
 import {
     stringToBytes,

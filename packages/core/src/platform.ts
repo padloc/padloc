@@ -1,5 +1,7 @@
 import { localize as $l } from "./locale";
 import { Serializable } from "./encoding";
+import { CryptoProvider } from "./crypto";
+import { StubCryptoProvider } from "./stub-crypto-provider";
 
 /**
  * Object representing all information available for a given device.
@@ -31,6 +33,10 @@ export class DeviceInfo extends Serializable {
 
     /** The browser the application was loaded in, if applicable */
     browser: string = "";
+
+    get description() {
+        return this.browser ? $l("{0} on {1}", this.browser, this.platform) : $l("{0} Device", this.platform);
+    }
 
     fromRaw({ platform, osVersion, id, appVersion, userAgent, locale, manufacturer, model, browser }: any) {
         return super.fromRaw({ platform, osVersion, id, appVersion, userAgent, locale, manufacturer, model, browser });
@@ -68,12 +74,14 @@ export interface Platform {
 
     /** Get information about the current device */
     getDeviceInfo(): Promise<DeviceInfo>;
+
+    crypto: CryptoProvider;
 }
 
 /**
  * Stub implementation of the [[Platform]] interface. Useful for testing
  */
-class StubPlatform implements Platform {
+export class StubPlatform implements Platform {
     async setClipboard() {}
     async getClipboard() {
         return "";
@@ -85,6 +93,8 @@ class StubPlatform implements Platform {
     async getReviewLink() {
         return "";
     }
+
+    crypto = new StubCryptoProvider();
 }
 
 let platform: Platform = new StubPlatform();
@@ -111,10 +121,6 @@ export function getDeviceInfo() {
     return platform.getDeviceInfo();
 }
 
-/** Generates a description text for a given device */
-export function deviceDescription(device?: DeviceInfo) {
-    if (!device) {
-        return $l("Unknown Device");
-    }
-    return device.browser ? $l("{0} on {1}", device.browser, device.platform) : $l("{0} Device", device.platform);
+export function getCryptoProvider() {
+    return platform.crypto;
 }

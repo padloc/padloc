@@ -1,4 +1,5 @@
 import { Platform, DeviceInfo } from "@padloc/core/src/platform";
+import { WebCryptoProvider } from "./crypto";
 
 const browserInfo = (async () => {
     const { UAParser } = await import(/* webpackChunkName: "ua-parser" */ "ua-parser-js");
@@ -9,6 +10,8 @@ const browserInfo = (async () => {
 let clipboardTextArea: HTMLTextAreaElement;
 
 export class WebPlatform implements Platform {
+    crypto = new WebCryptoProvider();
+
     // Set clipboard text using `document.execCommand("cut")`.
     // NOTE: This only works in certain environments like Google Chrome apps with the appropriate permissions set
     async setClipboard(text: string): Promise<void> {

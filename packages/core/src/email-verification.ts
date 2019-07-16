@@ -1,5 +1,5 @@
 import { Serializable, bytesToBase64 } from "./encoding";
-import { getProvider } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 import { Storable } from "./storage";
 import { randomNumber } from "./util";
 

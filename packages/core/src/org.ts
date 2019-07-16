@@ -8,15 +8,8 @@ import {
     marshal,
     concatBytes
 } from "./encoding";
-import {
-    getProvider,
-    RSAPrivateKey,
-    RSAPublicKey,
-    AESKey,
-    RSAKeyParams,
-    AESKeyParams,
-    RSASigningParams
-} from "./crypto";
+import { RSAPrivateKey, RSAPublicKey, AESKey, RSAKeyParams, AESKeyParams, RSASigningParams } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 import { SharedContainer } from "./container";
 import { Err, ErrorCode } from "./error";
 import { Storable } from "./storage";

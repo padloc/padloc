@@ -3,9 +3,10 @@ import { suite, test } from "mocha";
 import { Vault } from "../src/vault";
 import { Account } from "../src/account";
 import { createVaultItem } from "../src/item";
-import { getProvider, RSAKeyParams } from "../src/crypto";
+import { RSAKeyParams } from "../src/crypto";
+import { StubCryptoProvider } from "../src/stub-crypto-provider";
 
-const provider = getProvider();
+const provider = new StubCryptoProvider();
 
 suite("Vault", () => {
     test("save/load", async () => {

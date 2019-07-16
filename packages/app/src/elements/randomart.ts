@@ -1,5 +1,5 @@
 import { randomArt } from "@padloc/core/src/randomart";
-import { getProvider } from "@padloc/core/src/crypto";
+import { getCryptoProvider as getProvider } from "@padloc/core/src/platform";
 import { svg } from "lit-html";
 import { until } from "lit-html/directives/until";
 import { BaseElement, html, css, element, property } from "./base";

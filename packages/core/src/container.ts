@@ -7,9 +7,9 @@ import {
     AESKeyParams,
     RSAEncryptionParams,
     RSAPrivateKey,
-    RSAPublicKey,
-    getProvider
+    RSAPublicKey
 } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 
 /**
  * Base class for all **Container** implementations. In general, a **Container** is

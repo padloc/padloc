@@ -1,9 +1,10 @@
 import { Request, Response } from "./transport";
 import { marshal, Serializable, stringToBytes, base64ToBytes, bytesToBase64 } from "./encoding";
-import { getProvider, HMACParams } from "./crypto";
+import { HMACParams } from "./crypto";
 import { Storable } from "./storage";
 import { DeviceInfo } from "./platform";
 import { AccountID } from "./account";
+import { getCryptoProvider as getProvider } from "./platform";
 
 /** Unique identifier for [[Session]]s */
 export type SessionID = string;

@@ -200,27 +200,6 @@ export class HashParams extends Serializable {
  * CryptoProvider provides a unified interface for cryptographic primitives
  * accross all platforms. This is usually a thin wrapper around the
  * native crypto module provided by the platform.
- *
- * Although CryptoProvider instances can be created and used directly, the
- * more common usage is to use a singleton which should be instantiated during
- * initialization using [[setProvider]] and can later be retrieved via
- * [[getProvider]]. This allows modules to use cryptographic functions without
- * having to worry about the underlying implementation. E.g.:
- *
- * ```ts
- * // init.ts
- * import { setProvider } from "@padloc/core/src/crypto"
- *
- * setProvider(new NodeCryptoProvider());
- *
- * // util.ts (in core)
- * import { getProvider } from "./crypto";
- *
- * async function someFunction() {
- *     const rand = await getProvider().randomBytes(16();
- *     ...
- * }
- * ```
  */
 export interface CryptoProvider {
     /**
@@ -275,27 +254,4 @@ export interface CryptoProvider {
      * Creates a fingerprint from a given rsa public key
      */
     fingerprint(key: RSAPublicKey): Promise<Uint8Array>;
-}
-
-let provider: CryptoProvider;
-
-/**
- * Set the CrytoProvider singleton instance to be used in the current
- * environment This should be called during initialization and before using any
- * cryptographic functionality via [[getProvider]]
- */
-export function setProvider(p: CryptoProvider) {
-    provider = p;
-}
-
-/**
- * Get the current CryptoProvider singleton. Make sure to call [[setProvider]]
- * before using this function for the first time.
- */
-export function getProvider() {
-    if (!provider) {
-        throw "No crypto provider found! Please register a provider through the `setProvider` function!";
-    }
-
-    return provider;
 }

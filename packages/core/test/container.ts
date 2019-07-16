@@ -3,10 +3,11 @@ import { suite, test } from "mocha";
 import { ErrorCode } from "../src/error";
 import { stringToBytes, bytesToString } from "../src/encoding";
 import { SimpleContainer, PBES2Container, SharedContainer } from "../src/container";
-import { getProvider, RSAKeyParams } from "../src/crypto";
+import { RSAKeyParams } from "../src/crypto";
+import { StubCryptoProvider } from "../src/stub-crypto-provider";
 import { assertReject } from "../src/spec/spec";
 
-const provider = getProvider();
+const provider = new StubCryptoProvider();
 
 suite("Container", () => {
     test("SimpleContainer", async () => {

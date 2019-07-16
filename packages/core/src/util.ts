@@ -1,4 +1,4 @@
-import { getProvider } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 import { bytesToHex } from "./encoding";
 
 /** Generates a random UUID v4 */

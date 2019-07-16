@@ -109,7 +109,8 @@
  */
 import { BigInteger } from "../vendor/jsbn";
 import { bytesToHex, hexToBytes, concatBytes } from "./encoding";
-import { getProvider, HashParams } from "./crypto";
+import { HashParams } from "./crypto";
+import { getCryptoProvider as getProvider } from "./platform";
 
 async function digest(hash: "SHA-1" | "SHA-256" = "SHA-256", ...input: Uint8Array[]): Promise<Uint8Array> {
     return getProvider().hash(concatBytes(...input), new HashParams({ algorithm: hash }));

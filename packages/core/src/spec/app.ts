@@ -92,7 +92,7 @@ export function appSpec(): Spec {
 
         test("Invite Member", async () => {
             let org = app.state.orgs[0];
-            let invite = await app.createInvites(org, [otherUser.email])[0];
+            let [invite] = await app.createInvites(org, [otherUser.email]);
             // Remember secret - in practice this will be communicated
             // directly between the invitor and invitee
             const { secret } = invite;
