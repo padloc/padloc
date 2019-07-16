@@ -7,7 +7,7 @@ import { StateMixin } from "../mixins/state";
 import { setClipboard } from "../clipboard";
 import { app, router } from "../init";
 import { dialog, confirm } from "../dialog";
-import { shared, mixins } from "../styles";
+import { mixins } from "../styles";
 import { mask } from "../util";
 import { element, html, css, property, query, listen, observe } from "./base";
 import { View } from "./view";
@@ -157,7 +157,7 @@ export class ItemsList extends StateMixin(View) {
     }
 
     static styles = [
-        shared,
+        ...View.styles,
         css`
             :host {
                 display: flex;

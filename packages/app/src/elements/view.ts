@@ -1,6 +1,22 @@
-import { BaseElement, property, observe } from "./base";
+import { BaseElement, property, observe, css } from "./base";
+import { shared } from "../styles";
 
 export class View extends BaseElement {
+    static styles = [
+        shared,
+        css`
+            @supports (-webkit-overflow-scrolling: touch) {
+                header {
+                    padding-top: env(safe-area-inset-top);
+                }
+
+                .fabs {
+                    margin: calc(env(safe-area-inset-bottom) / 3);
+                }
+            }
+        `
+    ];
+
     @property()
     active: boolean = false;
 

@@ -19,6 +19,7 @@ import { Generator } from "./generator";
 import { AttachmentDialog } from "./attachment-dialog";
 import { UploadDialog } from "./upload-dialog";
 import { QRDialog } from "./qr-dialog";
+import { View } from "./view";
 
 @element("pl-item-dialog")
 export class ItemDialog extends Dialog<string, void> {
@@ -102,6 +103,7 @@ export class ItemDialog extends Dialog<string, void> {
 
     static styles = [
         ...Dialog.styles,
+        ...View.styles,
         css`
             .inner {
                 max-width: 500px;

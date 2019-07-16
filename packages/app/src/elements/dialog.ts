@@ -112,6 +112,13 @@ export class Dialog<I, R> extends BaseElement {
                 opacity: 0;
                 transform: scale(0.8);
             }
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                .outer {
+                    padding-top: max(env(safe-area-inset-top), 12px);
+                    padding-bottom: max(env(safe-area-inset-bottom), 12px);
+                }
+            }
         `
     ];
 

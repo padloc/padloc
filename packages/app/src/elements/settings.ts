@@ -1,6 +1,6 @@
 import { localize as $l } from "@padloc/core/src/locale";
 import { BillingInfo } from "@padloc/core/src/billing";
-import { shared, mixins } from "../styles";
+import { mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../dialog";
 import { app, router } from "../init";
 import { StateMixin } from "../mixins/state";
@@ -31,7 +31,7 @@ export class Settings extends StateMixin(View) {
     }
 
     static styles = [
-        shared,
+        ...View.styles,
         css`
             :host {
                 background: var(--color-quaternary);

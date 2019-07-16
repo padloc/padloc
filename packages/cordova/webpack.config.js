@@ -8,8 +8,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, "www"),
         filename: "[name].js",
-        chunkFilename: "[name].chunk.js",
-        publicPath: "/"
+        chunkFilename: "[name].chunk.js"
     },
     mode: "development",
     devtool: "source-map",

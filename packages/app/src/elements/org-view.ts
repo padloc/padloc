@@ -3,7 +3,7 @@ import { Invite } from "@padloc/core/src/invite";
 import { OrgMember, OrgRole, Group } from "@padloc/core/src/org";
 import { BillingInfo } from "@padloc/core/src/billing";
 import { StateMixin } from "../mixins/state";
-import { shared, mixins } from "../styles";
+import { mixins } from "../styles";
 import { dialog, alert, choose, confirm, prompt } from "../dialog";
 import { app, router } from "../init";
 import { element, html, css, property, query, observe } from "./base";
@@ -186,7 +186,7 @@ export class OrgView extends StateMixin(View) {
     }
 
     static styles = [
-        shared,
+        ...View.styles,
         css`
             :host {
                 display: flex;

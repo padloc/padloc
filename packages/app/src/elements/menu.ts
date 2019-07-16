@@ -164,6 +164,17 @@ export class Menu extends StateMixin(BaseElement) {
                 border-radius: 100%;
                 margin: 8px 16px;
             }
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                pl-logo {
+                    margin-top: max(env(safe-area-inset-top), 15px);
+                }
+
+                .footer {
+                    padding-bottom: max(calc(env(safe-area-inset-bottom) / 3), 5px);
+                    padding-left: max(calc(env(safe-area-inset-bottom) / 3), 5px);
+                }
+            }
         `
     ];
 
