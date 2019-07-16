@@ -7,9 +7,9 @@ const WebpackPwaManifest = require("webpack-pwa-manifest");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 
 module.exports = {
-    entry: path.resolve("src/elements/app.ts"),
+    entry: path.resolve(__dirname, "src/elements/app.ts"),
     output: {
-        path: path.resolve("dist"),
+        path: path.resolve(__dirname, "dist"),
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
         publicPath: "/"
@@ -32,10 +32,6 @@ module.exports = {
             {
                 test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
                 use: ["file-loader"]
-            },
-            {
-                test: /env.js$/,
-                use: ["file-loader"]
             }
         ]
     },
@@ -47,9 +43,9 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: "Padloc",
-            template: path.resolve("index.html")
+            template: path.resolve(__dirname, "index.html")
         }),
-        new FaviconsWebpackPlugin(path.resolve("assets/icons/512.png")),
+        new FaviconsWebpackPlugin(path.resolve(__dirname, "assets/icons/512.png")),
         new WebpackPwaManifest({
             name: "Padloc Password Manager",
             short_name: "Padloc",
@@ -57,25 +53,20 @@ module.exports = {
             theme: "#59c6ff",
             icons: [
                 {
-                    src: path.resolve("assets/icons/512.png"),
+                    src: path.resolve(__dirname, "assets/icons/512.png"),
                     sizes: [96, 128, 192, 256, 384, 512]
                 }
             ]
         }),
         new InjectManifest({
-            swSrc: path.resolve("src/sw.ts"),
+            swSrc: path.resolve(__dirname, "src/sw.ts"),
             swDest: "sw.js"
         })
     ],
     devServer: {
-        contentBase: "./dist",
+        contentBase: path.resolve(__dirname, "dist"),
         historyApiFallback: true,
         host: "0.0.0.0",
         port: process.env.PL_CLIENT_PORT || 8080
-    },
-    node: {
-        fs: "empty",
-        net: "empty",
-        tls: "empty"
     }
 };
