@@ -1,19 +1,19 @@
 import { localize as $l } from "@padloc/core/src/locale";
+import { scanQR, stopScanQR } from "@padloc/core/src/platform";
 import { mixins } from "../styles";
 import { alert } from "../dialog";
-import { element, html, css, query } from "./base";
+import { element, html, css } from "./base";
 import { Dialog } from "./dialog";
+import { View } from "./view";
 import "./icon";
 
 @element("pl-qr-dialog")
 export class QRDialog extends Dialog<void, string> {
-    @query("canvas")
-    private _canvas: HTMLCanvasElement;
-
-    private _video: HTMLVideoElement;
+    readonly hideApp = true;
 
     static styles = [
         ...Dialog.styles,
+        ...View.styles,
         css`
             .inner {
                 ${mixins.fullbleed()}
@@ -21,12 +21,11 @@ export class QRDialog extends Dialog<void, string> {
                 max-width: 100%;
                 display: flex;
                 flex-direction: column;
+                background: transparent;
             }
 
-            canvas {
-                flex: 1;
-                height: 0;
-                object-fit: cover;
+            .scrim {
+                background: transparent;
             }
 
             .seeker {
@@ -55,77 +54,20 @@ export class QRDialog extends Dialog<void, string> {
     }
 
     async show() {
-        if (!this._video) {
-            this._video = document.createElement("video");
-            this._video.setAttribute("playsinline", "");
-            this._video.setAttribute("muted", "");
-            this._video.setAttribute("autoplay", "");
-        }
-        navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "environment" } }).then(
-            stream => {
-                // Use facingMode: environment to attemt to get the front camera on phones
-                this._video.srcObject = stream;
-                this._video.play();
-                requestAnimationFrame(() => this._tick());
-            },
-            async () => {
-                this.open = false;
-                await alert($l("Failed to QR scanner. Please make sure you have granted access to the camera!"), {
+        scanQR().then(
+            (res: string) => this.done(res),
+            (err: Error) => {
+                this.done();
+                alert($l("Failed to scan QR code. Error: " + err.toString()), {
                     type: "warning"
                 });
-                this.done();
             }
         );
-
         return super.show();
     }
 
     done(data?: string) {
-        const stream: MediaStream | null = this._video && (this._video.srcObject as MediaStream);
-        if (stream) {
-            for (const track of stream.getTracks()) {
-                track.stop();
-            }
-        }
-
-        this._video && (this._video.srcObject = null);
+        stopScanQR();
         super.done(data);
-    }
-
-    // _drawLine(begin, end, color) {
-    //     const canvas = this._canvas.getContext("2d")!;
-    //     canvas.beginPath();
-    //     canvas.moveTo(begin.x, begin.y);
-    //     canvas.lineTo(end.x, end.y);
-    //     canvas.lineWidth = 4;
-    //     canvas.strokeStyle = color;
-    //     canvas.stroke();
-    // }
-
-    async _tick() {
-        if (!this.open) {
-            return;
-        }
-
-        if (this._video.readyState !== this._video.HAVE_ENOUGH_DATA) {
-            requestAnimationFrame(() => this._tick());
-            return;
-        }
-
-        const { default: jsQR } = await import(/* webpackChunkName: "jsqr" */ "jsqr");
-
-        const canvas = this._canvas.getContext("2d")!;
-        this._canvas.height = this._video.videoHeight;
-        this._canvas.width = this._video.videoWidth;
-        canvas.drawImage(this._video, 0, 0, this._canvas.width, this._canvas.height);
-        const imageData = canvas.getImageData(0, 0, this._canvas.width, this._canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "dontInvert"
-        });
-        if (code) {
-            this.done(code.data);
-        }
-
-        requestAnimationFrame(() => this._tick());
     }
 }

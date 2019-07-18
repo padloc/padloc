@@ -156,6 +156,14 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 border-radius: var(--border-radius);
             }
 
+            :host(.dialog-open.hide-app) {
+                background: transparent;
+            }
+
+            :host(.dialog-open.hide-app) .main > * {
+                opacity: 0;
+            }
+
             .offline {
                 background: var(--color-negative);
                 color: var(--color-tertiary);
@@ -291,13 +299,18 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     }
 
     @listen("dialog-open")
-    _dialogOpen() {
+    _dialogOpen(e: CustomEvent) {
+        const dialog = e.target as Dialog<any, any>;
         this.classList.add("dialog-open");
+        if (dialog.hideApp) {
+            this.classList.add("hide-app");
+        }
     }
 
     @listen("dialog-close")
     _dialogClose() {
         this.classList.remove("dialog-open");
+        this.classList.remove("hide-app");
     }
 
     @listen("route-changed", router)

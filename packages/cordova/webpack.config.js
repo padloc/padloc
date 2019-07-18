@@ -8,7 +8,8 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, "www"),
         filename: "[name].js",
-        chunkFilename: "[name].chunk.js"
+        chunkFilename: "[name].chunk.js",
+        publicPath: "/"
     },
     mode: "development",
     devtool: "source-map",
@@ -30,6 +31,10 @@ module.exports = {
                 use: ["file-loader"]
             }
         ]
+    },
+    externals: {
+        cordova: "cordova",
+        "cordova-plugin-qrscanner": "window"
     },
     plugins: [
         new EnvironmentPlugin({

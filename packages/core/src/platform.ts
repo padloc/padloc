@@ -1,6 +1,7 @@
 import { localize as $l } from "./locale";
 import { Serializable } from "./encoding";
 import { CryptoProvider } from "./crypto";
+import { Err, ErrorCode } from "./error";
 import { StubCryptoProvider } from "./stub-crypto-provider";
 
 /**
@@ -76,6 +77,9 @@ export interface Platform {
     getDeviceInfo(): Promise<DeviceInfo>;
 
     crypto: CryptoProvider;
+
+    scanQR(): Promise<string>;
+    stopScanQR(): Promise<void>;
 }
 
 /**
@@ -95,6 +99,15 @@ export class StubPlatform implements Platform {
     }
 
     crypto = new StubCryptoProvider();
+
+    async scanQR() {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+        return "";
+    }
+
+    async stopScanQR() {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
 }
 
 let platform: Platform = new StubPlatform();
@@ -123,4 +136,12 @@ export function getDeviceInfo() {
 
 export function getCryptoProvider() {
     return platform.crypto;
+}
+
+export function scanQR() {
+    return platform.scanQR();
+}
+
+export function stopScanQR() {
+    return platform.stopScanQR();
 }

@@ -18,6 +18,8 @@ export class Dialog<I, R> extends BaseElement {
     @property()
     preventDismiss: boolean = false;
 
+    readonly hideApp: boolean = false;
+
     isShowing: boolean = false;
     private _hideTimeout?: number;
     private _resolve: ((result?: R) => void) | null;
