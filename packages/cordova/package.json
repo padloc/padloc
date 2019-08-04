@@ -22,7 +22,11 @@
       "cordova-clipboard": {},
       "cordova-plugin-device": {},
       "cordova-plugin-ionic-webview": {},
-      "cordova-plugin-qrscanner": {}
+      "cordova-plugin-qrscanner": {},
+      "cordova-plugin-fingerprint-aio": {
+        "FACEID_USAGE_DESCRIPTION": " "
+      },
+      "cordova-plugin-secure-storage": {}
     }
   },
   "dependencies": {
@@ -38,10 +42,12 @@
     "cordova-plugin-compat": "^1.2.0",
     "cordova-plugin-device": "1.1.7",
     "cordova-plugin-file": "^4.3.3",
+    "cordova-plugin-fingerprint-aio": "^1.7.0",
     "cordova-plugin-inappbrowser": "~1.4.0",
     "cordova-plugin-ionic-webview": "^4.1.1",
     "cordova-plugin-privacyscreen": "~0.3.1",
     "cordova-plugin-qrscanner": "^3.0.1",
+    "cordova-plugin-secure-storage": "^3.0.2",
     "cordova-plugin-splashscreen": "^4.0.3",
     "cordova-plugin-statusbar": "2.4.3",
     "cordova-plugin-whitelist": "~1.2.2",

@@ -80,25 +80,34 @@ export interface Platform {
 
     scanQR(): Promise<string>;
     stopScanQR(): Promise<void>;
+
+    isBiometricAuthAvailable(): Promise<boolean>;
+    biometricAuth(message?: string): Promise<boolean>;
+
+    isKeyStoreAvailable(): Promise<boolean>;
+    keyStoreGet(name: string): Promise<string>;
+    keyStoreSet(name: string, val: string): Promise<void>;
+    keyStoreDelete(name: string): Promise<void>;
 }
 
 /**
  * Stub implementation of the [[Platform]] interface. Useful for testing
  */
 export class StubPlatform implements Platform {
-    async setClipboard() {}
+    crypto = new StubCryptoProvider();
+
+    async setClipboard(_val: string) {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
+
     async getClipboard() {
-        return "";
-    }
-    async getDeviceInfo() {
-        return new DeviceInfo();
-    }
-    async checkForUpdates() {}
-    async getReviewLink() {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
         return "";
     }
 
-    crypto = new StubCryptoProvider();
+    async getDeviceInfo() {
+        return new DeviceInfo();
+    }
 
     async scanQR() {
         throw new Err(ErrorCode.NOT_SUPPORTED);
@@ -106,6 +115,32 @@ export class StubPlatform implements Platform {
     }
 
     async stopScanQR() {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
+
+    async isBiometricAuthAvailable() {
+        return false;
+    }
+
+    async biometricAuth() {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+        return false;
+    }
+
+    async isKeyStoreAvailable() {
+        return false;
+    }
+
+    async keyStoreGet(_name: string) {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+        return "";
+    }
+
+    async keyStoreSet(_name: string, _val: string) {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
+
+    async keyStoreDelete(_name: string) {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 }
@@ -144,4 +179,28 @@ export function scanQR() {
 
 export function stopScanQR() {
     return platform.stopScanQR();
+}
+
+export function isBiometricAuthAvailable() {
+    return platform.isBiometricAuthAvailable();
+}
+
+export function biometricAuth(message?: string) {
+    return platform.biometricAuth(message);
+}
+
+export function isKeyStoreAvailable() {
+    return platform.isKeyStoreAvailable();
+}
+
+export function keyStoreSet(name: string, value: string) {
+    return platform.keyStoreSet(name, value);
+}
+
+export function keyStoreGet(name: string) {
+    return platform.keyStoreGet(name);
+}
+
+export function keyStoreDelete(name: string) {
+    return platform.keyStoreDelete(name);
 }

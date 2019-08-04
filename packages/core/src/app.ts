@@ -24,7 +24,7 @@ import {
 import { Client } from "./client";
 import { Sender } from "./transport";
 import { localize as $l } from "./locale";
-import { DeviceInfo, getDeviceInfo } from "./platform";
+import { DeviceInfo, getDeviceInfo, isKeyStoreAvailable, keyStoreSet, keyStoreGet, keyStoreDelete } from "./platform";
 import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
@@ -52,6 +52,7 @@ export class Settings extends Serializable {
     autoLockDelay: number = 5;
     /** Interval for automatic sync, in minutes */
     syncInterval: number = 1;
+    biometricAuth: boolean = false;
 }
 
 /** Application state */
@@ -506,6 +507,10 @@ export class App {
     private async _logout() {
         this._cachedAuthInfo.clear();
 
+        if (await this.canRememberMasterPassword()) {
+            await this.unrememberMasterPassword();
+        }
+
         // Revoke session
         try {
             await this.api.revokeSession(this.state.session!.id);
@@ -697,6 +702,31 @@ export class App {
                 });
             });
         }
+    }
+
+    canRememberMasterPassword() {
+        return isKeyStoreAvailable();
+    }
+
+    rememberMasterPassword(password: string) {
+        return keyStoreSet("master_password", password);
+    }
+
+    retrieveMasterPassword() {
+        return keyStoreGet("master_password");
+    }
+
+    async remembersMasterPassword() {
+        try {
+            const password = await this.retrieveMasterPassword();
+            return !!password;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    unrememberMasterPassword() {
+        return keyStoreDelete("master_password");
     }
 
     /**

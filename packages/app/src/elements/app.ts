@@ -1,6 +1,7 @@
 import "../../assets/fonts/fonts.css";
 import { Plan } from "@padloc/core/src/billing";
 import { localize as $l } from "@padloc/core/src/locale";
+import { biometricAuth } from "@padloc/core/src/platform";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../init";
 import { StateMixin } from "../mixins/state";
@@ -17,7 +18,7 @@ import { Settings } from "./settings";
 import { OrgView } from "./org-view";
 import { OrgsList } from "./orgs-list";
 import { Start } from "./start";
-import { alert, confirm, clearDialogs, dialog } from "../dialog";
+import { alert, confirm, prompt, clearDialogs, dialog } from "../dialog";
 import { Dialog } from "./dialog";
 import { clearClipboard } from "../clipboard";
 import { Menu } from "./menu";
@@ -148,6 +149,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 opacity: 0;
                 z-index: -1;
                 pointer-events: none;
+                display: none;
             }
 
             .wrapper:not(.active),
@@ -171,7 +173,6 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 text-align: center;
                 z-index: 100;
                 font-weight: 600;
-                letter-spacing: 2px;
                 font-size: var(--font-size-small);
                 position: relative;
             }
@@ -179,10 +180,18 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             .offline pl-icon {
                 position: absolute;
                 right: 0;
+                bottom: 0;
                 font-size: var(--font-size-micro);
-                margin: -4px 4px;
+                margin: 4px;
                 width: 30px;
                 height: 30px;
+            }
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                .offline {
+                    padding-top: max(calc(env(safe-area-inset-top) - 8px), 8px);
+                    margin-bottom: calc(-1 * max(env(safe-area-inset-top), 8px) + 8px);
+                }
             }
 
             @media (max-width: 700px) {
@@ -235,7 +244,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     render() {
         return html`
             <div class="offline" ?hidden=${app.online}>
-                ${$l("offline")}
+                ${$l("o f f l i n e")}
 
                 <pl-icon icon="info" class="tap" @click=${this._showOfflineAlert}></pl-icon>
             </div>
@@ -507,9 +516,15 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     @listen("create-item")
     async _newItem() {
         const template = await this._templateDialog.show();
-        const item = await this._createItemDialog.show(template);
-        if (item) {
-            router.go(`items/${item.id}`, { ...router.params, edit: "", addattachment: "" });
+        if (template) {
+            const item = await this._createItemDialog.show(template);
+            if (item) {
+                const params = { ...router.params, edit: "true" } as any;
+                if (template.attachment) {
+                    params.addattachment = "true";
+                }
+                router.go(`items/${item.id}`, params);
+            }
         }
     }
 
@@ -553,6 +568,55 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             ),
             { title: $l("You're Offline") }
         );
+    }
+
+    @listen("enable-biometric-auth")
+    async _enableBiometricAuth() {
+        const confirmed = await confirm(
+            $l("Do you want to enable biometric unlock for this device?"),
+            $l("Setup"),
+            $l("Cancel"),
+            {
+                title: $l("Biometric Unlock")
+            }
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        const authenticated = await biometricAuth();
+
+        if (!authenticated) {
+            alert($l("Biometric authentication failed! Canceling Setup."), {
+                title: $l("Biometric Unlock"),
+                type: "warning"
+            });
+            return;
+        }
+
+        const password = await prompt($l("Please enter your master password!"), {
+            title: $l("Biometric Unlock"),
+            label: $l("Enter Master Password"),
+            type: "password",
+            validate: async pwd => {
+                try {
+                    await app.account!.unlock(pwd);
+                } catch (e) {
+                    throw $l("Wrong password! Please try again!");
+                }
+
+                return pwd;
+            }
+        });
+
+        if (!password) {
+            return;
+        }
+
+        await app.rememberMasterPassword(password);
+
+        alert($l("Biometric unlock activated successfully!"), { title: $l("Biometric Unlock"), type: "success" });
     }
 }
 

@@ -1,6 +1,9 @@
 import { localize as $l } from "@padloc/core/src/locale";
 import { ErrorCode } from "@padloc/core/src/error";
+import { isBiometricAuthAvailable, biometricAuth } from "@padloc/core/src/platform";
+import { wait } from "@padloc/core/src/util";
 import { app, router } from "../init";
+import { isTouch } from "../util";
 import { element, property, html, css, query } from "./base";
 import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input";
@@ -15,18 +18,28 @@ export class Unlock extends StartForm {
 
     @query("#passwordInput")
     private _passwordInput: PasswordInput;
+
     @query("#unlockButton")
     private _unlockButton: LoadingButton;
 
+    @query("#bioauthButton")
+    private _bioauthButton: LoadingButton;
+
     private _failedCount = 0;
 
-    reset() {
+    async reset() {
         this._passwordInput.value = "";
         this._errorMessage = "";
         this._unlockButton.stop();
         this._failedCount = 0;
         super.reset();
-        setTimeout(() => this._passwordInput.focus(), 100);
+
+        if (!isTouch) {
+            setTimeout(() => this._passwordInput.focus(), 100);
+        }
+
+        const [bioauthAvailable] = await Promise.all([isBiometricAuthAvailable(), wait(1000)]);
+        this._bioauthButton.classList.toggle("show", bioauthAvailable);
     }
 
     static styles = [
@@ -50,6 +63,34 @@ export class Unlock extends StartForm {
                 position: absolute;
                 right: 5px;
                 top: 6px;
+            }
+
+            .bioauth-button {
+                background: transparent;
+                width: 50px;
+                transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.5s;
+                position: absolute;
+                bottom: 12px;
+                left: 0;
+                right: 0;
+                margin: auto;
+            }
+
+            .bioauth-button:not(.show) {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            .bioauth-button pl-icon {
+                font-size: 140%;
+                width: 50px;
+                height: 50px;
+            }
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                .bioauth-button {
+                    bottom: max(env(safe-area-inset-bottom), 12px);
+                }
             }
         `
     ];
@@ -85,6 +126,10 @@ export class Unlock extends StartForm {
             </form>
 
             <div flex></div>
+
+            <pl-loading-button class="bioauth-button icon tap" id="bioauthButton" @click=${this._bioAuth}>
+                <pl-icon icon="fingerprint"></pl-icon>
+            </pl-loading-button>
         `;
     }
 
@@ -149,6 +194,36 @@ export class Unlock extends StartForm {
         if (confirmed) {
             await app.logout();
             router.go("login");
+        }
+    }
+
+    private async _bioAuth() {
+        if (this._bioauthButton.state === "loading") {
+            return;
+        }
+
+        this._bioauthButton.start();
+
+        try {
+            if (await app.remembersMasterPassword()) {
+                const authenticated = await biometricAuth();
+
+                if (!authenticated) {
+                    this._bioauthButton.fail();
+                    return;
+                }
+
+                const [password] = await Promise.all([app.retrieveMasterPassword(), wait(1000)]);
+
+                this._bioauthButton.success();
+                this._passwordInput.value = password;
+                this._submit();
+            } else {
+                this.dispatch("enable-biometric-auth");
+                this._bioauthButton.stop();
+            }
+        } catch (e) {
+            this._bioauthButton.fail();
         }
     }
 }
