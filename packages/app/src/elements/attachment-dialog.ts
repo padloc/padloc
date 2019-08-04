@@ -9,11 +9,13 @@ import { confirm, prompt } from "../dialog";
 import { element, html, css, property } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
+import { View } from "./view";
 
 @element("pl-attachment-dialog")
 export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: File; item: VaultItemID }, void> {
     static styles = [
         ...Dialog.styles,
+        ...View.styles,
         css`
             .inner {
                 background: none;

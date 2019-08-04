@@ -1,4 +1,4 @@
-import { Platform, DeviceInfo } from "@padloc/core/src/platform";
+import { Platform, StubPlatform, DeviceInfo } from "@padloc/core/src/platform";
 import { WebCryptoProvider } from "./crypto";
 
 const browserInfo = (async () => {
@@ -6,7 +6,7 @@ const browserInfo = (async () => {
     return new UAParser(navigator.userAgent).getResult();
 })();
 
-export class WebPlatform implements Platform {
+export class WebPlatform extends StubPlatform implements Platform {
     private _clipboardTextArea: HTMLTextAreaElement;
     private _qrVideo: HTMLVideoElement;
     private _qrCanvas: HTMLCanvasElement;

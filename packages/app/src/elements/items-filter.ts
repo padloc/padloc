@@ -144,6 +144,12 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                 margin-right: 2px;
                 font-size: var(--font-size-tiny);
             }
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                .scrim {
+                    top: calc(50px + max(env(safe-area-inset-top), 8px));
+                }
+            }
         `
     ];
 

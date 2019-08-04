@@ -4,8 +4,9 @@ import { localize as $l } from "@padloc/core/src/locale";
 import { totp } from "@padloc/core/src/otp";
 import { base32ToBytes } from "@padloc/core/src/encoding";
 import { shared, mixins } from "../styles";
-import { BaseElement, html, css, property } from "./base";
+import { BaseElement, element, html, css, property } from "./base";
 
+@element("pl-clipboard")
 export class Clipboard extends BaseElement {
 
     @property() item: VaultItem | null = null;
@@ -119,5 +120,3 @@ export class Clipboard extends BaseElement {
         this._resolve = null;
     }
 }
-
-window.customElements.define("pl-clipboard", Clipboard);

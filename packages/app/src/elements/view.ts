@@ -7,7 +7,7 @@ export class View extends BaseElement {
         css`
             @supports (-webkit-overflow-scrolling: touch) {
                 header {
-                    padding-top: env(safe-area-inset-top);
+                    padding-top: max(env(safe-area-inset-top), 8px);
                 }
 
                 .fabs {
