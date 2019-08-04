@@ -15,7 +15,10 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     tag: Tag = "";
 
     @property()
-    favorite: boolean = false;
+    favorites: boolean = false;
+
+    @property()
+    attachments: boolean = false;
 
     @property({ reflect: true, attribute: "selecting" })
     private _selecting: Boolean = false;
@@ -154,10 +157,16 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     ];
 
     render() {
-        const { vault: vaultId, tag, favorite } = this;
+        const { vault: vaultId, tag, favorites, attachments } = this;
         const vault = app.getVault(vaultId);
-        const cl = favorite ? "favorites" : vault ? "vault" : tag ? "filter-tag" : "all";
-        const label = favorite ? $l("Favorites") : vault ? vault.toString() : tag || $l("All Items");
+        const cl = favorites ? "favorites" : vault ? "vault" : attachments || tag ? "filter-tag" : "all";
+        const label = favorites
+            ? $l("Favorites")
+            : attachments
+            ? $l("Attachments")
+            : vault
+            ? vault.toString()
+            : tag || $l("All Items");
         const accId = (app.account && app.account.id) || "";
 
         const favCount = app.vaults.reduce((count, vault) => {
