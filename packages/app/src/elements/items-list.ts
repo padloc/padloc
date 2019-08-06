@@ -2,20 +2,23 @@ import { VaultItem, Field, Tag, FIELD_DEFS } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
 import { localize as $l } from "@padloc/core/src/locale";
 import { debounce, wait, escapeRegex } from "@padloc/core/src/util";
+import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { cache } from "lit-html/directives/cache";
 import { StateMixin } from "../mixins/state";
 import { setClipboard } from "../clipboard";
 import { app, router } from "../init";
 import { dialog, confirm } from "../dialog";
 import { mixins } from "../styles";
-import { mask } from "../util";
+import { mask, fileIcon, fileSize } from "../util";
 import { element, html, css, property, query, listen, observe } from "./base";
 import { View } from "./view";
 import { Input } from "./input";
 import { MoveItemsDialog } from "./move-items-dialog";
+import { AttachmentDialog } from "./attachment-dialog";
 import "./icon";
 import "./items-filter";
 import "./virtual-list";
+import "./totp";
 
 interface ListItem {
     item: VaultItem;
@@ -74,6 +77,9 @@ export class ItemsList extends StateMixin(View) {
 
     @dialog("pl-move-items-dialog")
     private _moveItemsDialog: MoveItemsDialog;
+
+    @dialog("pl-attachment-dialog")
+    private _attachmentDialog: AttachmentDialog;
 
     private _multiSelect = new Map<string, ListItem>();
 
@@ -273,7 +279,6 @@ export class ItemsList extends StateMixin(View) {
 
             .item-field > * {
                 transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
-                transform-origin: 50px center;
             }
 
             .item-field:not(.copied) .copied-message,
@@ -283,11 +288,12 @@ export class ItemsList extends StateMixin(View) {
             }
 
             .copied-message {
+                ${mixins.fullbleed()}
+                border-radius: inherit;
                 font-weight: bold;
                 color: var(--color-primary);
-                border-radius: inherit;
-                padding: 14px;
-                ${mixins.fullbleed()}
+                text-align: center;
+                line-height: 45px;
             }
 
             .copied-message::before {
@@ -315,6 +321,24 @@ export class ItemsList extends StateMixin(View) {
                 line-height: 19px;
                 height: 19px;
                 ${mixins.ellipsis()}
+            }
+
+            .item-field-value > * {
+                vertical-align: middle;
+            }
+
+            .item-field.attachment {
+                display: flex;
+                align-items: center;
+            }
+
+            .attachment .file-icon {
+                display: inline-block;
+                height: 1em;
+                width: 1em;
+                font-size: 90%;
+                border-radius: 0;
+                vertical-align: middle;
             }
 
             .item:focus:not([selected]) {
@@ -573,6 +597,10 @@ export class ItemsList extends StateMixin(View) {
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
     }
 
+    private _openAttachment(a: AttachmentInfo, item: VaultItem, e: MouseEvent) {
+        e.stopPropagation();
+        this._attachmentDialog.show({ info: a, item: item.id });
+    }
     private _getItems(): ListItem[] {
         const recentCount = 0;
 
@@ -638,26 +666,27 @@ export class ItemsList extends StateMixin(View) {
         return items;
     }
 
-    private _renderItem(item: ListItem) {
+    private _renderItem(li: ListItem) {
+        const { item, warning } = li;
         const tags = [];
 
-        // const vaultName = item.vault.toString();
+        // const vaultName = vault.toString();
         // tags.push({ name: vaultName, icon: "", class: "highlight" });
 
-        if (item.warning) {
+        if (warning) {
             tags.push({ icon: "error", class: "tag warning", name: "" });
         }
 
-        const t = item.item.tags.find(t => t === router.params.tag) || item.item.tags[0];
+        const t = item.tags.find(t => t === router.params.tag) || item.tags[0];
         if (t) {
             tags.push({
-                name: item.item.tags.length > 1 ? `${t} (+${item.item.tags.length - 1})` : t,
+                name: item.tags.length > 1 ? `${t} (+${item.tags.length - 1})` : t,
                 icon: "",
                 class: ""
             });
         }
 
-        const attCount = (item.item.attachments && item.item.attachments.length) || 0;
+        const attCount = (item.attachments && item.attachments.length) || 0;
         if (attCount) {
             tags.push({
                 name: "",
@@ -666,7 +695,7 @@ export class ItemsList extends StateMixin(View) {
             });
         }
 
-        if (item.item.favorited && item.item.favorited.includes(app.account!.id)) {
+        if (item.favorited && item.favorited.includes(app.account!.id)) {
             tags.push({
                 name: "",
                 icon: "favorite",
@@ -675,28 +704,14 @@ export class ItemsList extends StateMixin(View) {
         }
 
         return html`
-            ${cache(
-                false
-                    ? html`
-                          <div class="section-header" ?hidden=${!item.firstInSection}>
-                              <div>${item.section}</div>
-
-                              <div class="spacer"></div>
-
-                              <div>${item.section}</div>
-                          </div>
-                      `
-                    : html``
-            )}
-
-            <div class="item" ?selected=${item.item.id === this.selected} @click=${() => this.selectItem(item)}>
+            <div class="item" ?selected=${item.id === this.selected} @click=${() => this.selectItem(li)}>
                 ${cache(
                     this.multiSelect
                         ? html`
                               <div
                                   class="item-check"
                                   ?hidden=${!this.multiSelect}
-                                  ?checked=${this._multiSelect.has(item.item.id)}
+                                  ?checked=${this._multiSelect.has(item.id)}
                               ></div>
                           `
                         : ""
@@ -704,8 +719,8 @@ export class ItemsList extends StateMixin(View) {
 
                 <div class="item-body">
                     <div class="item-header">
-                        <div class="item-name" ?disabled=${!item.item.name}>
-                            ${item.item.name || $l("No Name")}
+                        <div class="item-name" ?disabled=${!item.name}>
+                            ${item.name || $l("No Name")}
                         </div>
 
                         <div class="tags small">
@@ -724,26 +739,47 @@ export class ItemsList extends StateMixin(View) {
                     </div>
 
                     <div class="item-fields">
-                        ${item.item.fields.map((f: Field, i: number) => {
+                        ${item.fields.map((f: Field, i: number) => {
                             const fieldDef = FIELD_DEFS[f.type] || FIELD_DEFS.text;
                             return html`
-                                <div
-                                    class="item-field tap"
-                                    @click=${(e: MouseEvent) => this._copyField(item.item, i, e)}
-                                >
+                                <div class="item-field tap" @click=${(e: MouseEvent) => this._copyField(item, i, e)}>
                                     <div class="item-field-label">
                                         <div class="item-field-name">${f.name || $l("Unnamed")}</div>
-                                        <div class="item-field-value">${fieldDef.mask ? mask(f.value) : f.value}</div>
+                                        ${f.type === "totp"
+                                            ? html`
+                                                  <pl-totp class="item-field-value" .secret=${f.value}></pl-totp>
+                                              `
+                                            : html`
+                                                  <div class="item-field-value">
+                                                      ${fieldDef.mask ? mask(f.value) : f.value}
+                                                  </div>
+                                              `}
                                     </div>
 
                                     <div class="copied-message">${$l("copied")}</div>
                                 </div>
                             `;
                         })}
+                        ${item.attachments.map(
+                            a => html`
+                                <div
+                                    class="item-field attachment tap"
+                                    @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
+                                >
+                                    <div class="item-field-label">
+                                        <div class="item-field-name ellipsis">${a.name}</div>
+                                        <div class="item-field-value">
+                                            <pl-icon icon=${fileIcon(a.type)} class="file-icon"></pl-icon>
+                                            <span>${fileSize(a.size)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `
+                        )}
                         ${cache(
-                            !item.item.fields.length
+                            !item.fields.length && !item.attachments.length
                                 ? html`
-                                      <div class="item-field" disabled ?hidden=${!!item.item.fields.length}>
+                                      <div class="item-field" disabled ?hidden=${!!item.fields.length}>
                                           <div class="item-field-label">
                                               <div class="item-field-name">
                                                   ${$l("No Fields")}

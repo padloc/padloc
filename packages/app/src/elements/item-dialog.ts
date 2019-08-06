@@ -83,7 +83,9 @@ export class ItemDialog extends Dialog<string, void> {
         return super.show();
     }
 
-    addAttachment() {
+    async addAttachment() {
+        await this.updateComplete;
+
         if (this._vault!.id === app.mainVault!.id && !app.account!.quota.storage && app.billingConfig) {
             this.dispatch("get-premium", {
                 message: $l("Upgrade to Premium now and get 1GB of encrypted file storage!"),

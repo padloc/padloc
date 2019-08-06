@@ -133,18 +133,20 @@ export class BaseElement extends LitElement {
     }
 
     updated(changed: Map<string, any>): void {
-        super.updated(changed);
+        let proto = this;
 
-        const observers = (<typeof BaseElement>this.constructor)._observers;
-        if (!observers) {
-            return;
-        }
-
-        for (const observer of observers) {
-            if (observer.props.some(p => changed.has(p))) {
-                observer.handler.call(this, changed);
+        do {
+            const observers = (<typeof BaseElement>proto.constructor)._observers;
+            if (!observers) {
+                return;
             }
-        }
+
+            for (const observer of observers) {
+                if (observer.props.some(p => changed.has(p))) {
+                    observer.handler.call(this, changed);
+                }
+            }
+        } while (proto instanceof BaseElement && (proto = Object.getPrototypeOf(proto)));
     }
 }
 

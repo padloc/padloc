@@ -47,6 +47,7 @@ export class VirtualList<T> extends BaseElement {
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener("scroll", () => this._updateIndizes(), { passive: true });
+        this._updateBounds();
     }
 
     @observe("data", "itemMinWidth", "minItemWidth", "itemHeight")

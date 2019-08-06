@@ -1,12 +1,11 @@
 import { FieldType, FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
 import { localize as $l } from "@padloc/core/src/locale";
-import { totp } from "@padloc/core/src/otp";
-import { base32ToBytes } from "@padloc/core/src/encoding";
 import { shared } from "../styles";
-import { BaseElement, element, html, svg, css, property, query, observe } from "./base";
+import { BaseElement, element, html, css, property, query } from "./base";
 import "./icon";
 import { Input } from "./input";
 import { Select } from "./select";
+import "./totp";
 
 @element("pl-field")
 export class FieldElement extends BaseElement {
@@ -21,16 +20,6 @@ export class FieldElement extends BaseElement {
 
     @property()
     type: FieldType = "note";
-
-    @property()
-    private _totpToken = "";
-
-    @property()
-    private _totpLastTick = 0;
-
-    private get _totpAge() {
-        return Math.min(1, (Date.now() - this._totpLastTick) / 3e4);
-    }
 
     @query("#nameInput")
     private _nameInput: Input;
@@ -130,33 +119,8 @@ export class FieldElement extends BaseElement {
                 border: none;
             }
 
-            .totp {
+            pl-totp {
                 padding: 0 10px;
-                display: flex;
-                align-items: center;
-                user-select: text;
-                -webkit-user-select: text;
-            }
-
-            .countdown {
-                width: 16px;
-                height: 16px;
-                margin-left: 8px;
-                border-radius: 100%;
-            }
-
-            .countdown circle {
-                transform-origin: center center;
-                transform: rotate(-90deg);
-                fill: none;
-                stroke: currentColor;
-                stroke-width: 8;
-                stroke-dasharray: 25;
-                transition: stroke-dashoffset 1s;
-            }
-
-            .countdown circle.bg {
-                opacity: 0.2;
             }
 
             .drag-handle {
@@ -251,17 +215,7 @@ export class FieldElement extends BaseElement {
 
                 ${this.type === "totp" && !this.editing
                     ? html`
-                          <div class="totp">
-                              ${this._totpToken.substring(0, 3)}&nbsp;${this._totpToken.substring(3, 6)}
-                              ${svg`
-                            <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this._totpToken}>
-                                <circle cx="5" cy="5" r="4" class="bg" />
-                                <circle cx="5" cy="5" r="4" style="stroke-dashoffset: ${Math.floor(
-                                    this._totpAge * -25
-                                )}"/>
-                            </svg>
-                        `}
-                          </div>
+                        <pl-totp .secret=${this.value} .time=${Date.now()}></pl-totp>
                       `
                     : html`
                           <pl-input
@@ -296,24 +250,6 @@ export class FieldElement extends BaseElement {
 
     private _toggleMask() {
         this._valueInput.masked = !this._valueInput.masked;
-        this.requestUpdate();
-    }
-
-    @observe("type")
-    @observe("value")
-    private async _updateTOTP() {
-        if (this.type !== "totp" || !this.value) {
-            this._totpToken = "";
-            return;
-        }
-
-        if (this._totpAge >= 1) {
-            this._totpLastTick = Math.floor(Date.now() / 3e4) * 3e4;
-            this._totpToken = await totp(base32ToBytes(this.value));
-        }
-
-        setTimeout(() => this._updateTOTP(), 2000);
-
         this.requestUpdate();
     }
 }
