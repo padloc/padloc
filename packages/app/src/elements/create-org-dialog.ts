@@ -90,8 +90,18 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
             }
         }
 
+        const org = (this._org = app.getOrg(this._org.id)!);
+
+        // Create first vault and group
+        if (org.quota.groups) {
+            const everyone = await app.createGroup(org, "Everyone", [org.getMember(app.account!)!]);
+            await app.createVault("Main", org, [], [{ name: everyone.name, readonly: false }]);
+        } else {
+            await app.createVault("Main", org, [{ id: app.account!.id, readonly: false }]);
+        }
+
         this._submitButton.success();
-        this.done(this._org);
+        this.done(org);
     }
 
     private async _updateQuantity() {
