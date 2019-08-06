@@ -42,7 +42,9 @@ export class TemplateDialog extends Dialog<void, ItemTemplate> {
     renderContent() {
         return html`
             <header>
+                <pl-icon></pl-icon>
                 <div class="title flex">${$l("Choose A Template")}</div>
+                <pl-icon icon="cancel" class="tap" @click=${this.dismiss}></pl-icon>
             </header>
 
             <div class="content">

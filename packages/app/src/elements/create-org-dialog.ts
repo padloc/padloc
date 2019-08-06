@@ -345,9 +345,13 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
         const color = (plan && plan.color) || "var(--color-primary)";
 
         return html`
-            <div style=${`--color-highlight: ${color}; --color-highlight-text: var(--color-tertiary);`}>
-                <h1>${$l("Create Organization")}</h1>
+            <header>
+                <pl-icon></pl-icon>
+                <div class="title flex">${$l("Create Organization")}</div>
+                <pl-icon icon="cancel" class="tap" @click=${this.dismiss}></pl-icon>
+            </header>
 
+            <div class="content" style=${`--color-highlight: ${color}; --color-highlight-text: var(--color-tertiary);`}>
                 <pl-input
                     id="nameInput"
                     class="item"

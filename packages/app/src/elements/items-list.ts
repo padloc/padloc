@@ -401,6 +401,32 @@ export class ItemsList extends StateMixin(View) {
     ];
 
     render() {
+        const placeholder = this._listItems.length
+            ? {}
+            : this._filterShowing
+            ? {
+                  icon: "search",
+                  text: $l("Your search did not match any items.")
+              }
+            : this.vault
+            ? {
+                  icon: "vault",
+                  text: $l("This vault does not have any items yet.")
+              }
+            : this.attachments
+            ? {
+                  icon: "attachment",
+                  text: $l("You don't have any attachments yet.")
+              }
+            : this.favorites
+            ? {
+                  icon: "favorite",
+                  text: $l("You don't have any favorites yet.")
+              }
+            : {
+                  icon: "favorite",
+                  text: $l("You don't have any items yet.")
+              };
         return html`
             <header ?hidden=${this._filterShowing}>
                 <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
@@ -449,16 +475,10 @@ export class ItemsList extends StateMixin(View) {
                 ></pl-virtual-list>
             </main>
 
-            <div class="empty-placeholder" ?hidden=${!!this._listItems.length || this._filterShowing}>
-                <pl-icon icon="list"></pl-icon>
+            <div class="empty-placeholder" ?hidden=${!placeholder.text}>
+                <pl-icon icon="${placeholder.icon}"></pl-icon>
 
-                <div>${$l("You don't have any items yet!")}</div>
-            </div>
-
-            <div class="empty-placeholder" ?hidden=${!!this._listItems.length || !this._filterShowing}>
-                <pl-icon icon="search"></pl-icon>
-
-                <div>${$l("Your search did not match any items.")}</div>
+                <div>${placeholder.text}</div>
             </div>
 
             <div class="fabs" ?hidden=${this.multiSelect}>

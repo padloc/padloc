@@ -109,6 +109,22 @@ export class OrgsList extends StateMixin(View) {
                     )}
                 </div>
 
+                <div class="empty-placeholder" ?hidden=${!!app.orgs.length}>
+                    <pl-icon icon="org"></pl-icon>
+
+                    <div>
+                        ${$l(
+                            "Create an organization to securely share and manage data " +
+                                "between a group of people like your family and friends, " +
+                                "teams or even entire companies!"
+                        )}
+                    </div>
+
+                    <button class="primary tap" @click=${() => this.dispatch("create-org")}>
+                        ${$l("Create Organization")}
+                    </button>
+                </div>
+
                 <div class="fabs">
                     <div class="flex"></div>
 

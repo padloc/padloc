@@ -556,7 +556,8 @@ export const shared = css`
     }
 
     .empty-placeholder > div {
-        width: 200px;
+        width: 300px;
+        margin-bottom: 20px;
     }
 
     .input-wrapper {

@@ -149,7 +149,6 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 opacity: 0;
                 z-index: -1;
                 pointer-events: none;
-                display: none;
             }
 
             .wrapper:not(.active),

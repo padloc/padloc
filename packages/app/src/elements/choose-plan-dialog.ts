@@ -41,6 +41,7 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
                 white-space: nowrap;
                 padding: 12px 24px;
                 text-align: center;
+                display: block;
             }
 
             .plans {
