@@ -460,7 +460,10 @@ export class App {
             this._cachedAuthInfo.set(email, await this.api.initAuth(new InitAuthParams({ email, verify })));
         }
 
-        const { auth, B } = this._cachedAuthInfo.get(email)!;
+        const { account: accId, keyParams, B } = this._cachedAuthInfo.get(email)!;
+
+        const auth = new Auth(email);
+        auth.keyParams = keyParams;
 
         // Generate auth secret
         const authKey = await auth.getAuthKey(password);
@@ -472,7 +475,7 @@ export class App {
 
         // Create session object
         const session = await this.api.createSession(
-            new CreateSessionParams({ account: auth.account, A: srp.A!, M: srp.M1! })
+            new CreateSessionParams({ account: accId, A: srp.A!, M: srp.M1! })
         );
 
         // Apply session key and update state
@@ -1087,6 +1090,14 @@ export class App {
     /** Fetch the [[Org]]anization object with the given `id` */
     async fetchOrg(id: OrgID) {
         const org = await this.api.getOrg(id);
+        const existing = this.getOrg(id);
+
+        // Verify that the updated organization object has a `minMemberUpdated`
+        // property equal to or higher than the previous (local) one.
+        if (existing && org.minMemberUpdated < existing.minMemberUpdated) {
+            throw new Err(ErrorCode.VERIFICATION_ERROR, "'minMemberUpdated' property may not decrease!");
+        }
+
         this.putOrg(org);
         await this.save();
         return org;
@@ -1213,7 +1224,10 @@ export class App {
      * Removes a member from the given `org`
      */
     async removeMember(org: Org, member: OrgMember) {
-        await this.updateOrg(org.id, async org => org.removeMember(member));
+        await this.updateOrg(org.id, async org => {
+            await org.unlock(this.account!);
+            await org.removeMember(member);
+        });
     }
 
     /*

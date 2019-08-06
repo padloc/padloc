@@ -300,14 +300,25 @@ export function bytesToNum(bytes: Uint8Array) {
 /**
  * Concatenates a number of Uint8Arrays to a single array
  */
-export function concatBytes(...arrs: Uint8Array[]): Uint8Array {
-    const length = arrs.reduce((len, arr) => len + arr.length, 0);
+export function concatBytes(arrs: Uint8Array[], delimiter?: number): Uint8Array {
+    let length = arrs.reduce((len, arr) => len + arr.length, 0);
+
+    if (typeof delimiter !== "undefined") {
+        length += arrs.length - 1;
+    }
+
     const res = new Uint8Array(length);
     let offset = 0;
     for (const arr of arrs) {
         res.set(arr, offset);
         offset += arr.length;
+
+        if (typeof delimiter !== "undefined" && offset < length) {
+            res.set([delimiter], offset);
+            offset++;
+        }
     }
+
     return res;
 }
 
@@ -324,4 +335,18 @@ export function equalBytes(a: Uint8Array, b: Uint8Array): boolean {
     }
 
     return true;
+}
+
+/**
+ * Checks two array-like objects for equality in constant time
+ * (given that the `===` operator performs in constant time over all elements)
+ */
+export function equalCT<T extends ArrayLike<any>>(a: T, b: T): boolean {
+    let match = true;
+
+    for (let i = 0; i < a.length; i++) {
+        match = match && a[i] === b[i];
+    }
+
+    return a.length === b.length && match;
 }

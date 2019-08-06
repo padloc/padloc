@@ -77,9 +77,12 @@ export class OrgMember extends Serializable {
     /** the members organization role */
     role: OrgRole = OrgRole.Member;
 
-    constructor({ id, name, email, publicKey, signature, orgSignature, role }: Partial<OrgMember> = {}) {
+    /** time the member was last updated */
+    updated = new Date(0);
+
+    constructor({ id, name, email, publicKey, signature, orgSignature, role, updated }: Partial<OrgMember> = {}) {
         super();
-        Object.assign(this, { id, name, email, publicKey, signature, orgSignature });
+        Object.assign(this, { id, name, email, publicKey, signature, orgSignature, updated });
         this.role = typeof role !== "undefined" && role in OrgRole ? role : OrgRole.Member;
     }
 
@@ -98,6 +101,7 @@ export class OrgMember extends Serializable {
             typeof this.name === "string" &&
             typeof this.email === "string" &&
             this.role in OrgRole &&
+            this.updated instanceof Date &&
             this.publicKey instanceof Uint8Array &&
             this.signature instanceof Uint8Array &&
             this.orgSignature instanceof Uint8Array &&
@@ -105,7 +109,7 @@ export class OrgMember extends Serializable {
         );
     }
 
-    fromRaw({ id, name, email, publicKey, signature, orgSignature, role, vaults }: any) {
+    fromRaw({ id, name, email, publicKey, signature, orgSignature, role, vaults, updated }: any) {
         return super.fromRaw({
             id,
             name,
@@ -114,7 +118,8 @@ export class OrgMember extends Serializable {
             signature: base64ToBytes(signature),
             orgSignature: base64ToBytes(orgSignature),
             role,
-            vaults
+            vaults,
+            updated: new Date(updated)
         });
     }
 }
@@ -234,6 +239,17 @@ export class Org extends SharedContainer implements Storable {
      */
     invitesKey!: AESKey;
 
+    /**
+     * Minimum accepted update time for organization members.
+     * Any members with a [[OrgMember.updated]] value lower than
+     * this should be considered invalid.
+     *
+     * In order to prevent an attacker from rolling back this value, all
+     * clients should verify that updated organization object always have a
+     * [[Org.minMemberUpdated]] value equal to or higher than the previous one.
+     */
+    minMemberUpdated: Date = new Date();
+
     /** Parameters for creating member signatures */
     signingParams = new RSASigningParams();
 
@@ -274,8 +290,7 @@ export class Org extends SharedContainer implements Storable {
             (typeof this.name === "string" &&
                 typeof this.revision === "string" &&
                 typeof this.id === "string" &&
-                typeof this.usedStorage === "number" &&
-                this.type in OrgType &&
+                this.minMemberUpdated instanceof Date &&
                 this.vaults.every(({ id, name }: any) => typeof id === "string" && typeof name === "string"))
         );
     }
@@ -286,6 +301,7 @@ export class Org extends SharedContainer implements Storable {
         name,
         owner,
         revision,
+        minMemberUpdated,
         publicKey,
         members,
         groups,
@@ -306,6 +322,7 @@ export class Org extends SharedContainer implements Storable {
             name,
             owner,
             revision,
+            minMemberUpdated: new Date(minMemberUpdated),
             publicKey: publicKey && base64ToBytes(publicKey),
             members: members.map((m: any) => new OrgMember().fromRaw(m)),
             groups: groups.map((g: any) => new Group().fromRaw(g)),
@@ -445,6 +462,9 @@ export class Org extends SharedContainer implements Storable {
         // Generate cryptographic keys
         await this.generateKeys();
 
+        // Set minimum date for member update times
+        this.minMemberUpdated = new Date();
+
         const orgSignature = await account.signOrg(this);
         const member = await this.sign(
             new OrgMember({
@@ -453,7 +473,8 @@ export class Org extends SharedContainer implements Storable {
                 email: account.email,
                 publicKey: account.publicKey,
                 orgSignature,
-                role: OrgRole.Owner
+                role: OrgRole.Owner,
+                updated: new Date()
             })
         );
         this.members.push(member);
@@ -526,10 +547,14 @@ export class Org extends SharedContainer implements Storable {
         member.signature = await getProvider().sign(
             this.privateKey,
             concatBytes(
-                stringToBytes(member.id),
-                stringToBytes(member.email),
-                new Uint8Array([member.role]),
-                member.publicKey
+                [
+                    stringToBytes(member.id),
+                    stringToBytes(member.email),
+                    new Uint8Array([member.role]),
+                    member.publicKey,
+                    stringToBytes(member.updated.toISOString())
+                ],
+                0x00
             ),
             this.signingParams
         );
@@ -545,17 +570,23 @@ export class Org extends SharedContainer implements Storable {
             throw new Err(ErrorCode.VERIFICATION_ERROR, "No signed public key provided!");
         }
 
-        const verified = await getProvider().verify(
-            this.publicKey,
-            member.signature,
-            concatBytes(
-                stringToBytes(member.id),
-                stringToBytes(member.email),
-                new Uint8Array([member.role]),
-                member.publicKey
-            ),
-            this.signingParams
-        );
+        const verified =
+            member.updated >= this.minMemberUpdated &&
+            (await getProvider().verify(
+                this.publicKey,
+                member.signature,
+                concatBytes(
+                    [
+                        stringToBytes(member.id),
+                        stringToBytes(member.email),
+                        new Uint8Array([member.role]),
+                        member.publicKey,
+                        stringToBytes(member.updated.toISOString())
+                    ],
+                    0x00
+                ),
+                this.signingParams
+            ));
 
         if (!verified) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, `Failed to verify public key of ${member.name}!`);
@@ -595,21 +626,41 @@ export class Org extends SharedContainer implements Storable {
         role = typeof role !== "undefined" ? role : OrgRole.Member;
 
         const existing = this.members.find(m => m.id === id);
+        const updated = new Date();
 
         if (existing) {
-            Object.assign(existing, { name, email, publicKey, orgSignature, role });
+            Object.assign(existing, { name, email, publicKey, orgSignature, role, updated });
             await this.sign(existing);
         } else {
-            this.members.push(await this.sign(new OrgMember({ id, name, email, publicKey, orgSignature, role })));
+            this.members.push(
+                await this.sign(new OrgMember({ id, name, email, publicKey, orgSignature, role, updated }))
+            );
         }
     }
 
-    removeMember({ id }: { id: string }) {
-        // Remove member from all groups
-        for (const group of this.getGroupsForMember({ id })) {
-            group.members = group.members.filter(m => m.id !== id);
+    /**
+     * Removes a member from the organization
+     */
+    async removeMember(member: { id: AccountID }) {
+        if (!this.privateKey) {
+            throw "Organisation needs to be unlocked first.";
         }
 
-        this.members = this.members.filter(m => m.id !== id);
+        // Remove member from all groups
+        for (const group of this.getGroupsForMember(member)) {
+            group.members = group.members.filter(m => m.id !== member.id);
+        }
+
+        // Remove member
+        this.members = this.members.filter(m => m.id !== member.id);
+
+        // Verify remaining members (since we're going to re-sign them)
+        await this.verifyAll();
+
+        // Bump minimum update date
+        this.minMemberUpdated = new Date();
+
+        // Re-sign all members
+        await Promise.all(this.members.map(m => this.addOrUpdateMember(m)));
     }
 }

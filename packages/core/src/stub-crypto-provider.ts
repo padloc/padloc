@@ -57,7 +57,7 @@ export class StubCryptoProvider implements CryptoProvider {
 
     async deriveKey(password: Uint8Array, params: PBKDF2Params): Promise<SymmetricKey> {
         const bytes = new Uint8Array(params.keySize);
-        bytes.set(concat(password, params.salt));
+        bytes.set(concat([password, params.salt]));
         return bytes.slice(0, 32);
     }
 
@@ -70,10 +70,10 @@ export class StubCryptoProvider implements CryptoProvider {
     ): Promise<Uint8Array> {
         switch (params.algorithm) {
             case "AES-GCM":
-                return concat(key, params.iv, params.additionalData, data);
+                return concat([key, params.iv, params.additionalData, data]);
 
             case "RSA-OAEP":
-                return concat(key, data);
+                return concat([key, data]);
             default:
                 throw new Err(ErrorCode.NOT_SUPPORTED);
         }
@@ -121,7 +121,7 @@ export class StubCryptoProvider implements CryptoProvider {
         data: Uint8Array,
         _params: HMACParams | RSASigningParams
     ): Promise<Uint8Array> {
-        return concat(key, data);
+        return concat([key, data]);
     }
 
     async verify(key: HMACKey, signature: Uint8Array, data: Uint8Array, params: HMACParams): Promise<boolean>;

@@ -1,4 +1,4 @@
-import { bytesToHex } from "./encoding";
+import { equalCT } from "./encoding";
 import {
     API,
     RequestEmailVerificationParams,
@@ -126,7 +126,8 @@ class Controller implements API {
         pendingAuths.set(auth.account, srp);
 
         return new InitAuthResponse({
-            auth,
+            account: auth.account,
+            keyParams: auth.keyParams,
             B: srp.B!
         });
     }
@@ -158,7 +159,7 @@ class Controller implements API {
         // accounts master password. This also guarantees that the session key
         // computed by the client and server are identical an can be used for
         // authentication.
-        if (bytesToHex(M) !== bytesToHex(srp.M1!)) {
+        if (!equalCT(M, srp.M1!)) {
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
@@ -183,7 +184,7 @@ class Controller implements API {
 
         // Add device to trusted devices
         const auth = await this.storage.get(Auth, acc.email);
-        if (this.context.device && !auth.trustedDevices.some(({ id }) => id === this.context.device!.id)) {
+        if (this.context.device && !auth.trustedDevices.some(({ id }) => equalCT(id, this.context.device!.id))) {
             auth.trustedDevices.push(this.context.device);
         }
         await this.storage.save(auth);
@@ -442,7 +443,8 @@ class Controller implements API {
         groups,
         vaults,
         invites,
-        revision
+        revision,
+        minMemberUpdated
     }: Org) {
         const { account } = this._requireAuth();
 
@@ -463,6 +465,14 @@ class Controller implements API {
         // Only admins can make any changes to organizations at all.
         if (!isAdmin) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS, "Only admins can make changes to organizations!");
+        }
+
+        // Verify that `minMemberUpdated` is equal to or larger than the previous value
+        if (minMemberUpdated < org.minMemberUpdated) {
+            throw new Err(
+                ErrorCode.BAD_REQUEST,
+                "`minMemberUpdated` property needs to be equal to or larger than the previous one!"
+            );
         }
 
         const addedMembers = members.filter(m => !org.isMember(m));
@@ -542,7 +552,8 @@ class Controller implements API {
                 encryptedData,
                 signingParams,
                 accessors,
-                invites
+                invites,
+                minMemberUpdated
             });
         }
 
@@ -927,7 +938,7 @@ class Controller implements API {
             }
         }
 
-        if (ev.code !== code.toLowerCase()) {
+        if (!equalCT(ev.code, code.toLowerCase())) {
             ev.tries++;
             if (ev.tries > 5) {
                 await this.storage.delete(ev);
@@ -953,7 +964,7 @@ class Controller implements API {
             }
         }
 
-        if (ev.token !== token) {
+        if (!equalCT(ev.token, token)) {
             throw new Err(ErrorCode.EMAIL_VERIFICATION_FAILED, "Invalid verification token. Please try again!");
         }
 
