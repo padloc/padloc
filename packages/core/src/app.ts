@@ -856,6 +856,18 @@ export class App {
             }
         }
 
+        const removeVaults: string[] = [];
+        for (const vault of this.state.vaults) {
+            const org = vault.org && this.getOrg(vault.org.id);
+            if (!org || !org.canRead(vault, this.account)) {
+                removeVaults.push(vault.id);
+            }
+        }
+
+        await this.setState({
+            vaults: this.state.vaults.filter(v => !removeVaults.includes(v.id))
+        });
+
         await Promise.all(promises);
     }
 
