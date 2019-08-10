@@ -18,10 +18,7 @@ export type FieldType =
     | "date"
     | "month"
     | "credit"
-    | "iban"
-    | "bic"
     | "phone"
-    | "address"
     | "pin"
     | "totp"
     | "note"
@@ -39,8 +36,10 @@ export interface FieldDef {
     mask: boolean;
     /** whether the field value can have multiple lines */
     multiline: boolean;
+    /** icon used for display */
+    icon: string;
     /** display name */
-    toString(): string;
+    name: string;
 }
 
 /** Available field types and respective meta data */
@@ -50,105 +49,96 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         pattern: ".*",
         mask: false,
         multiline: false,
-        toString: () => "username"
+        icon: "user",
+        name: "Username"
     },
     password: {
         type: "password",
         pattern: ".*",
         mask: true,
-        multiline: false,
-        toString: () => "password"
+        multiline: true,
+        icon: "lock",
+        name: "Password"
     },
     url: {
         type: "url",
         pattern: ".*",
         mask: false,
         multiline: false,
-        toString: () => "URL"
+        icon: "web",
+        name: "URL"
     },
     email: {
         type: "email",
         pattern: ".*",
         mask: false,
         multiline: false,
-        toString: () => "email"
+        icon: "email",
+        name: "Email Address"
     },
     date: {
         type: "date",
-        pattern: ".*",
+        pattern: "\\d\\d\\d\\d-\\d\\d-\\d\\d",
         mask: false,
         multiline: false,
-        toString: () => "date"
+        icon: "date",
+        name: "Date"
     },
     month: {
         type: "month",
-        pattern: ".*",
+        pattern: "\\d\\d\\d\\d-\\d\\d",
         mask: false,
         multiline: false,
-        toString: () => "month"
+        icon: "month",
+        name: "Month"
     },
     credit: {
         type: "credit",
-        pattern: "d*",
+        pattern: "\\d*",
         mask: true,
         multiline: false,
-        toString: () => "credit card #"
-    },
-    iban: {
-        type: "iban",
-        pattern: ".*",
-        mask: true,
-        multiline: false,
-        toString: () => "IBAN"
-    },
-    bic: {
-        type: "bic",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "BIC"
+        icon: "credit",
+        name: "Credit Card Number"
     },
     phone: {
         type: "phone",
         pattern: ".*",
         mask: false,
         multiline: false,
-        toString: () => "phone #"
+        icon: "phone",
+        name: "Phone Number"
     },
     pin: {
         type: "pin",
-        pattern: "d*",
+        pattern: "\\d*",
         mask: true,
         multiline: false,
-        toString: () => "PIN"
-    },
-    address: {
-        type: "address",
-        pattern: ".*",
-        mask: false,
-        multiline: true,
-        toString: () => "address"
-    },
-    note: {
-        type: "note",
-        pattern: ".*",
-        mask: false,
-        multiline: true,
-        toString: () => "note"
-    },
-    text: {
-        type: "text",
-        pattern: ".*",
-        mask: false,
-        multiline: false,
-        toString: () => "text"
+        icon: "lock",
+        name: "PIN"
     },
     totp: {
         type: "totp",
         pattern: ".*",
         mask: false,
         multiline: false,
-        toString: () => "totp"
+        icon: "totp",
+        name: "Two-Factor Token"
+    },
+    note: {
+        type: "note",
+        pattern: ".*",
+        mask: false,
+        multiline: true,
+        icon: "note",
+        name: "Note"
+    },
+    text: {
+        type: "text",
+        pattern: ".*",
+        mask: false,
+        multiline: false,
+        icon: "text",
+        name: "Other"
     }
 };
 
@@ -243,30 +233,20 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
         toString: () => $l("Credit Card"),
         icon: "credit",
         fields: [
-            { name: $l("Card #"), type: "credit" },
+            { name: $l("Card Number"), type: "credit" },
             { name: $l("Card Owner"), type: "text" },
             { name: $l("Valid Until"), type: "month" },
-            { name: $l("Security Code (CVC)"), type: "pin" },
+            { name: $l("CVC"), type: "pin" },
             { name: $l("PIN"), type: "pin" }
         ]
     },
-    // {
-    //     toString: () => $l("SIM Card"),
-    //     icon: "sim",
-    //     fields: [
-    //         { name: $l("Phone Number"), type: "phone" },
-    //         { name: $l("PIN"), type: "pin" },
-    //         { name: $l("PUK"), type: "pin" },
-    //         { name: $l("Carrier"), type: "text" }
-    //     ]
-    // },
     {
         toString: () => $l("Bank Account"),
         icon: "bank",
         fields: [
             { name: $l("Account Owner"), type: "text" },
-            { name: $l("IBAN"), type: "iban" },
-            { name: $l("BIC"), type: "bic" },
+            { name: $l("IBAN"), type: "text" },
+            { name: $l("BIC"), type: "text" },
             { name: $l("Card PIN"), type: "pin" }
         ]
     },
@@ -280,7 +260,7 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
         icon: "passport",
         fields: [
             { name: $l("Full Name"), type: "text" },
-            { name: $l("Number"), type: "text" },
+            { name: $l("Passport Number"), type: "text" },
             { name: $l("Country"), type: "text" },
             { name: $l("Birthdate"), type: "date" },
             { name: $l("Birthplace"), type: "text" },

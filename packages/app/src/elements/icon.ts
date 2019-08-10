@@ -391,6 +391,26 @@ export class PlIcon extends BaseElement {
                 content: "\\f577";
             }
 
+            :host([icon="totp"]) > div::before {
+                content: "\\f1da";
+            }
+
+            :host([icon="month"]) > div::before {
+                content: "\\f133";
+            }
+
+            :host([icon="date"]) > div::before {
+                content: "\\f073";
+            }
+
+            :host([icon="phone"]) > div::before {
+                content: "\\f095";
+            }
+
+            :host([icon="text"]) > div::before {
+                content: "\\f031";
+            }
+
             :host([icon="logo"]) > div::before {
                 font-family: "Padlock";
                 content: "\\0041";

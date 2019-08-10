@@ -1,10 +1,9 @@
-import { FieldType, FieldDef, FIELD_DEFS } from "@padloc/core/src/item";
+import { FieldType, FIELD_DEFS } from "@padloc/core/src/item";
 import { localize as $l } from "@padloc/core/src/locale";
 import { shared } from "../styles";
 import { BaseElement, element, html, css, property, query } from "./base";
 import "./icon";
 import { Input } from "./input";
-import { Select } from "./select";
 import "./totp";
 
 @element("pl-field")
@@ -26,9 +25,6 @@ export class FieldElement extends BaseElement {
 
     @query("#valueInput")
     private _valueInput: Input;
-
-    @query("#typeSelect")
-    private _typeSelect: Select<FieldDef>;
 
     focus() {
         const inputToFocus = this._nameInput.value ? this._valueInput : this._nameInput;
@@ -72,6 +68,21 @@ export class FieldElement extends BaseElement {
             .field-header {
                 display: flex;
                 margin-bottom: 4px;
+                font-size: var(--font-size-tiny);
+                font-weight: bold;
+                color: var(--color-highlight);
+                align-items: center;
+                position: relative;
+            }
+
+            .field-header pl-icon {
+                border-radius: 0;
+                font-size: 10px;
+                width: 10px;
+                height: 11px;
+                position: absolute;
+                left: 8px;
+                top: 8px;
             }
 
             .fields-container {
@@ -81,10 +92,7 @@ export class FieldElement extends BaseElement {
             .field-name {
                 flex: 1;
                 min-width: 0;
-                font-size: var(--font-size-tiny);
-                font-weight: bold;
-                color: var(--color-highlight);
-                padding: 0 10px;
+                padding: 0 10px 0 24px;
             }
 
             .field-type {
@@ -134,6 +142,13 @@ export class FieldElement extends BaseElement {
             @media(hover: none) {
                 .drag-handle {
                     display: none;
+                }
+            }
+
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                .field-header pl-icon {
+                    top: 11px;
                 }
             }
         `
@@ -191,6 +206,8 @@ export class FieldElement extends BaseElement {
 
             <div class="fields-container flex">
                 <div class="field-header">
+                    <pl-icon icon="${fieldDef.icon}"></pl-icon>
+
                     <pl-input
                         class="field-name"
                         id="nameInput"
@@ -200,17 +217,6 @@ export class FieldElement extends BaseElement {
                         ?readonly=${!this.editing}
                     >
                     </pl-input>
-
-                    <pl-select
-                        id="typeSelect"
-                        class="field-type"
-                        tabindex="-1"
-                        ?hidden=${!this.editing}
-                        .options=${Object.values(FIELD_DEFS)}
-                        .selected=${fieldDef}
-                        @change=${() => (this.type = this._typeSelect.selected!.type)}
-                    >
-                    </pl-select>
                 </div>
 
                 ${this.type === "totp" && !this.editing
@@ -223,10 +229,11 @@ export class FieldElement extends BaseElement {
                               class="field-value"
                               placeholder="${this.editing ? $l("Enter Field Value") : ""}"
                               .type=${inputType}
-                              multiline
+                              .multiline=${fieldDef.multiline}
                               .readonly=${!this.editing}
                               .masked=${mask}
                               .value=${this.value}
+                              .pattern=${fieldDef.pattern}
                               @input=${() => (this.value = this._valueInput.value)}
                               autosize
                           >

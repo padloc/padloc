@@ -19,6 +19,7 @@ import { Generator } from "./generator";
 import { AttachmentDialog } from "./attachment-dialog";
 import { UploadDialog } from "./upload-dialog";
 import { QRDialog } from "./qr-dialog";
+import { FieldTypeDialog } from "./field-type-dialog";
 import { View } from "./view";
 
 @element("pl-item-dialog")
@@ -68,6 +69,9 @@ export class ItemDialog extends Dialog<string, void> {
 
     @dialog("pl-qr-dialog")
     private _qrDialog: QRDialog;
+
+    @dialog("pl-field-type-dialog")
+    private _fieldTypeDialog: FieldTypeDialog;
 
     private _draggingIndex = -1;
 
@@ -469,8 +473,16 @@ export class ItemDialog extends Dialog<string, void> {
         }
     }
 
-    private async _addField(field: Field = { name: "", value: "", type: "note" }) {
-        this._fields.push(field);
+    private async _addField() {
+        this.open = false;
+        const fieldType = await this._fieldTypeDialog.show();
+        this.open = true;
+
+        if (!fieldType) {
+            return;
+        }
+
+        this._fields.push({ name: "", value: "", type: fieldType });
         this.requestUpdate();
         await this.updateComplete;
         setTimeout(() => this._fieldInputs[this._fields.length - 1].focus(), 100);

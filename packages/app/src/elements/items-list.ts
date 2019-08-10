@@ -316,6 +316,17 @@ export class ItemsList extends StateMixin(View) {
                 height: 16px;
             }
 
+            .item-field-name pl-icon {
+                font-size: 9px;
+                color: var(--color-primary);
+                display: inline-block;
+                height: 10px;
+                width: 10px;
+                border-radius: 0;
+                position: relative;
+                top: 1px;
+            }
+
             .item-field-value {
                 font-weight: 600;
                 line-height: 19px;
@@ -764,7 +775,10 @@ export class ItemsList extends StateMixin(View) {
                             return html`
                                 <div class="item-field tap" @click=${(e: MouseEvent) => this._copyField(item, i, e)}>
                                     <div class="item-field-label">
-                                        <div class="item-field-name">${f.name || $l("Unnamed")}</div>
+                                        <div class="item-field-name">
+                                            <pl-icon icon="${fieldDef.icon}"></pl-icon>
+                                            ${f.name || $l("Unnamed")}
+                                        </div>
                                         ${f.type === "totp"
                                             ? html`
                                                   <pl-totp class="item-field-value" .secret=${f.value}></pl-totp>
@@ -787,7 +801,10 @@ export class ItemsList extends StateMixin(View) {
                                     @click=${(e: MouseEvent) => this._openAttachment(a, item, e)}
                                 >
                                     <div class="item-field-label">
-                                        <div class="item-field-name ellipsis">${a.name}</div>
+                                        <div class="item-field-name ellipsis">
+                                            <pl-icon icon="attachment"></pl-icon>
+                                            ${a.name}
+                                        </div>
                                         <div class="item-field-value">
                                             <pl-icon icon=${fileIcon(a.type)} class="file-icon"></pl-icon>
                                             <span>${fileSize(a.size)}</span>

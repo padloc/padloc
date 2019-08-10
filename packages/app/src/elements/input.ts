@@ -169,6 +169,14 @@ export class Input extends BaseElement {
             textarea[invsbl] {
                 opacity: 0;
             }
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                input[type="date"],
+                input[type="month"] {
+                    display: block;
+                    min-height: 1.5em;
+                }
+            }
         `
     ];
 
