@@ -13,6 +13,7 @@ import { VaultDialog } from "./vault-dialog";
 import { GroupDialog } from "./group-dialog";
 import { MemberDialog } from "./member-dialog";
 import { CreateInvitesDialog } from "./create-invites-dialog";
+import { LoadingButton } from "./loading-button";
 import "./billing-info";
 import "./subscription";
 import "./member-item";
@@ -28,6 +29,9 @@ export class OrgView extends StateMixin(View) {
 
     @query("#filterMembersInput")
     private _filterMembersInput: Input;
+
+    @query("#rotateKeysButton")
+    private _rotateKeysButton: LoadingButton;
 
     @dialog("pl-vault-dialog")
     private _vaultDialog: VaultDialog;
@@ -156,6 +160,8 @@ export class OrgView extends StateMixin(View) {
         if (deleted) {
             router.go("");
         }
+
+        alert("Organization deleted successfully.", { type: "success" });
     }
 
     private async _changeName() {
@@ -176,8 +182,48 @@ export class OrgView extends StateMixin(View) {
         });
     }
 
+    private async _rotateKeys() {
+        if (this._rotateKeysButton.state === "loading") {
+            return;
+        }
+
+        const confirmed = await confirm(
+            $l(
+                "Do you want to rotate this organizations cryptographic keys? All organization " +
+                    "memberships will have to be reconfirmed but no data will be lost."
+            ),
+            $l("Confirm")
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        this._rotateKeysButton.start();
+
+        try {
+            await app.rotateOrgKeys(this._org!);
+            this._rotateKeysButton.success();
+            alert(
+                $l(
+                    "The organizations cryptographic keys have been rotated successfully and " +
+                        "membership confirmation requests for all members have been sent out."
+                ),
+                { type: "success" }
+            );
+        } catch (e) {
+            this._rotateKeysButton.fail();
+            alert(e.message || $l("Something went wrong. Please try again later!"), { type: "warning" });
+        }
+    }
+
     @observe("orgId")
-    _clearMembersFilter() {
+    _orgChanged() {
+        this._page = "members";
+        this._clearMembersFilter();
+    }
+
+    private _clearMembersFilter() {
         this._membersFilter = this._filterMembersInput.value = "";
     }
 
@@ -425,6 +471,12 @@ export class OrgView extends StateMixin(View) {
                                   <pl-billing-info .billing=${billing} class="item"></pl-billing-info>
                               `
                             : ""}
+
+                        <h3>${$l("Security")}</h3>
+
+                        <pl-loading-button id="rotateKeysButton" class="tap item" @click=${this._rotateKeys}
+                            >${$l("Rotate Cryptographic Keys")}</pl-loading-button
+                        >
 
                         <h3>${$l("General")}</h3>
 

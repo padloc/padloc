@@ -673,38 +673,45 @@ export class App {
 
         // Sign in user using the new password
         await this.login(email, password);
-        account = this.account!;
 
         // Rotate keys of all owned organizations. Suspend all other members
         // and create invites to reconfirm the membership.
         for (const org of this.state.orgs.filter(o => o.isOwner(account))) {
-            await this.updateOrg(org.id, async org => {
-                // Rotate org encryption key
-                delete org.encryptedData;
-                await org.updateAccessors([account]);
-
-                // Rotate other cryptographic keys
-                await org.generateKeys();
-
-                // Suspend members and create confirmation invites
-                for (const member of org.members.filter(m => m.id !== account.id)) {
-                    member.role = OrgRole.Suspended;
-                    const invite = new Invite(member.email, "confirm_membership");
-                    await invite.initialize(org, this.account!);
-                    org.invites.push(invite);
-                }
-
-                // Update own membership
-                await org.addOrUpdateMember({
-                    id: account.id,
-                    email: account.email,
-                    name: account.name,
-                    publicKey: account.publicKey,
-                    orgSignature: await account.signOrg(org),
-                    role: OrgRole.Owner
-                });
-            });
+            await this.rotateOrgKeys(org);
         }
+    }
+
+    async rotateOrgKeys(org: Org) {
+        const account = this.account!;
+
+        return this.updateOrg(org.id, async org => {
+            // Rotate org encryption key
+            delete org.encryptedData;
+            await org.updateAccessors([account]);
+
+            // Rotate other cryptographic keys
+            await org.generateKeys();
+
+            org.invites = [];
+
+            // Suspend members and create confirmation invites
+            for (const member of org.members.filter(m => m.id !== account.id)) {
+                member.role = OrgRole.Suspended;
+                const invite = new Invite(member.email, "confirm_membership");
+                await invite.initialize(org, this.account!);
+                org.invites.push(invite);
+            }
+
+            // Update own membership
+            await org.addOrUpdateMember({
+                id: account.id,
+                email: account.email,
+                name: account.name,
+                publicKey: account.publicKey,
+                orgSignature: await account.signOrg(org),
+                role: OrgRole.Owner
+            });
+        });
     }
 
     canRememberMasterPassword() {
