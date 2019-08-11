@@ -16,8 +16,7 @@
   ],
   "devDependencies": {
     "lerna": "^3.13.4",
-    "typescript": "^3.4.3",
-    "workbox-cli": "^4.3.1"
+    "typescript": "^3.4.3"
   },
   "dependencies": {},
   "scripts": {
