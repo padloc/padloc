@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { scanQR, stopScanQR } from "@padloc/core/src/platform";
 import { mixins } from "../styles";
 import { alert } from "../dialog";

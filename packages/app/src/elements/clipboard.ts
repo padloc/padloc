@@ -1,6 +1,6 @@
 import { VaultItem, Field } from "@padloc/core/src/item";
 import { setClipboard } from "@padloc/core/src/platform";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { totp } from "@padloc/core/src/otp";
 import { base32ToBytes } from "@padloc/core/src/encoding";
 import { shared, mixins } from "../styles";

@@ -1,4 +1,5 @@
-import { localize as $l, countries } from "@padloc/core/src/locale";
+import { countries } from "@padloc/locale/src/countries";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo, BillingAddress, UpdateBillingParams } from "@padloc/core/src/billing";
 import { loadScript } from "../util";
 import { app } from "../init";

@@ -1,5 +1,5 @@
 import { Org, OrgMember, Group } from "@padloc/core/src/org";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { app } from "../init";
 import { prompt } from "../dialog";
 import { element, html, css, property, query } from "./base";

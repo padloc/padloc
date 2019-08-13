@@ -1,4 +1,5 @@
-import { countries, localize as $l } from "@padloc/core/src/locale";
+import { countries } from "@padloc/locale/src/countries";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo } from "@padloc/core/src/billing";
 import { shared } from "../styles";
 import { dialog, alert } from "../dialog";
@@ -34,7 +35,7 @@ export class BillingInfoElement extends BaseElement {
                 this._editButton.success();
             } catch (e) {
                 this._editButton.fail();
-                alert(e.message || $l("Something went wrong. Please try again later!"), {type: "warning"});
+                alert(e.message || $l("Something went wrong. Please try again later!"), { type: "warning" });
                 throw e;
             }
         }

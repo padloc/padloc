@@ -1,5 +1,5 @@
 import { Attachment, AttachmentInfo } from "@padloc/core/src/attachment";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { RequestProgress } from "@padloc/core/src/transport";
 import { shared, mixins } from "../styles";
 // import { app } from "../init";

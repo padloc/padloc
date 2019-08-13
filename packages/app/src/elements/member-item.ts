@@ -1,5 +1,5 @@
 import { OrgMember, OrgRole } from "@padloc/core/src/org";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import { BaseElement, element, html, css, property } from "./base";
 import "./randomart";

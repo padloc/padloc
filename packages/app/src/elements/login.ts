@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { app, router } from "../init";
 import { element, html, css, property, query } from "./base";

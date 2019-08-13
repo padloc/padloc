@@ -4,7 +4,7 @@ import { validateLegacyContainer, parseLegacyContainer } from "@padloc/core/src/
 import { VaultItem, Field, createVaultItem, guessFieldType } from "@padloc/core/src/item";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { uuid } from "@padloc/core/src/util";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 
 export interface ImportFormat {
     format: "csv" | "padlock-legacy" | "lastpass" | "padloc";

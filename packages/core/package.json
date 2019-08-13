@@ -6,6 +6,9 @@
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPLv3",
   "private": false,
+  "dependencies": {
+   	"@padloc/locale": "^3.0.0"
+  },
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.5",

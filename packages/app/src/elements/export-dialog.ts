@@ -1,5 +1,5 @@
 import { Vault } from "@padloc/core/src/vault";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { CSV, PBES2, ImportFormat } from "../import";
 import { supportedFormats, asCSV, asPBES2Container } from "../export";
 import { app } from "../init";

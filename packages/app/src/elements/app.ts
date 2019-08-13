@@ -1,6 +1,6 @@
 import "../../assets/fonts/fonts.css";
 import { Plan } from "@padloc/core/src/billing";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { biometricAuth } from "@padloc/core/src/platform";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../init";

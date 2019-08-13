@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { BaseElement } from "./elements/base";
 import "./elements/generator";
 import "./elements/alert-dialog";

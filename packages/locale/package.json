@@ -1,6 +1,6 @@
 {
-  "name": "@padloc/tooling",
-  "version": "1.0.0",
+  "name": "@padloc/locale",
+  "version": "3.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {

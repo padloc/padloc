@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { isBiometricAuthAvailable, biometricAuth } from "@padloc/core/src/platform";
 import { wait } from "@padloc/core/src/util";

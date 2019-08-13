@@ -1,6 +1,6 @@
 import { until } from "lit-html/directives/until";
 import { Invite } from "@padloc/core/src/invite";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { formatDateFromNow } from "../util";
 import { app, router } from "../init";
 import { alert, dialog } from "../dialog";

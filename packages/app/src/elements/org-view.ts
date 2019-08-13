@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { Invite } from "@padloc/core/src/invite";
 import { OrgMember, OrgRole, Group } from "@padloc/core/src/org";
 import { BillingInfo } from "@padloc/core/src/billing";

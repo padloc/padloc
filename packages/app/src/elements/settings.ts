@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo } from "@padloc/core/src/billing";
 import { mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../dialog";

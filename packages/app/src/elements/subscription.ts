@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { Org } from "@padloc/core/src/org";
 import { PlanType, SubscriptionStatus, UpdateBillingParams, Subscription } from "@padloc/core/src/billing";
 import { shared } from "../styles";

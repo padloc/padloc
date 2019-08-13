@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { StateMixin } from "../mixins/state";
 import { app, router } from "../init";
 import { element, html, css } from "./base";

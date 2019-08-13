@@ -1,6 +1,6 @@
 import { VaultID } from "@padloc/core/src/vault";
 import { Org, Group, OrgMember } from "@padloc/core/src/org";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { mixins } from "../styles";
 import { app } from "../init";
 import { prompt } from "../dialog";

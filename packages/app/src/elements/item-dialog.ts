@@ -1,6 +1,6 @@
 import { until } from "lit-html/directives/until";
 import { VaultItemID, Field } from "@padloc/core/src/item";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { parseURL } from "@padloc/core/src/otp";
 import { formatDateFromNow, fileIcon, fileSize } from "../util";

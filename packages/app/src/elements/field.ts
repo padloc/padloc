@@ -1,5 +1,5 @@
 import { FieldType, FIELD_DEFS } from "@padloc/core/src/item";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import { BaseElement, element, html, css, property, query } from "./base";
 import "./icon";

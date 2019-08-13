@@ -1,5 +1,5 @@
 import { Err, ErrorCode } from "@padloc/core/src/error";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { app, router } from "../init";
 import { alert, confirm } from "../dialog";
 // import { notify } from "../elements/notification";

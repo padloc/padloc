@@ -1,5 +1,5 @@
 import { TemplateResult } from "lit-element";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { VaultItemID } from "@padloc/core/src/item";
 import { Attachment, AttachmentInfo } from "@padloc/core/src/attachment";
 import { app } from "../init";

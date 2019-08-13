@@ -1,6 +1,6 @@
 import { VaultItem, Field, Tag, FIELD_DEFS } from "@padloc/core/src/item";
 import { Vault, VaultID } from "@padloc/core/src/vault";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { debounce, wait, escapeRegex } from "@padloc/core/src/util";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
 import { cache } from "lit-html/directives/cache";

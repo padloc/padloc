@@ -1,6 +1,6 @@
 import { randomString, chars } from "@padloc/core/src/util";
 import { generatePassphrase } from "@padloc/core/src/diceware";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { html, css, property, query, listen } from "./base";
 import { Dialog } from "./dialog";
 import { Slider } from "./slider";

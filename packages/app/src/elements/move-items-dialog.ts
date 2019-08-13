@@ -1,6 +1,6 @@
 import { Vault } from "@padloc/core/src/vault";
 import { VaultItem } from "@padloc/core/src/item";
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { app } from "../init";
 import { element, property, html, css, query } from "./base";
 import { Select } from "./select";

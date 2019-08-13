@@ -1,4 +1,4 @@
-import { localize as $l } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { VaultID } from "@padloc/core/src/vault";
 import { Tag } from "@padloc/core/src/item";
 import { StateMixin } from "../mixins/state";

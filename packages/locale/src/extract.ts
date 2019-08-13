@@ -159,7 +159,7 @@ export function merge(curr: Translation, prev: Translation) {
 }
 
 export function updateTranslation(sources: string[], language: string, dest: string) {
-    const destPath = resolve(dest, language + ".yaml");
+    const destPath = resolve(dest, language + ".lang");
     // const backupPath = resolve(dest, language + "_backup.yaml");
 
     const translation = fromSource(sources, language);
