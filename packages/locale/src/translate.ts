@@ -6,6 +6,10 @@ export function setDefaultLanguage(lang: string) {
     defaultLanguage = lang;
 }
 
+export function getDefaultLanguage() {
+    return defaultLanguage;
+}
+
 export async function loadLanguage(lang: string, setDefault = true): Promise<void> {
     lang = lang.toLowerCase();
 

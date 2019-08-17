@@ -1,6 +1,7 @@
 import { randomString, chars } from "@padloc/core/src/util";
-import { generatePassphrase } from "@padloc/core/src/diceware";
+import { generatePassphrase, AVAILABLE_LANGUAGES } from "@padloc/core/src/diceware";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { app } from "../init";
 import { html, css, property, query, listen } from "./base";
 import { Dialog } from "./dialog";
 import { Slider } from "./slider";
@@ -18,19 +19,19 @@ interface SeparatorOption {
 const separators = [
     {
         value: "-",
-        toString: () => "separate-words-using-hiphens"
+        toString: () => $l("Dash") + " ( - )"
     },
     {
         value: "_",
-        toString: () => "separate_words_using_underscore"
+        toString: () => $l("Underscore") + " ( _ )"
     },
     {
         value: "/",
-        toString: () => "separate/words/using/slashes"
+        toString: () => $l("Slash") + " ( / )"
     },
     {
         value: " ",
-        toString: () => "separate words using spaces"
+        toString: () => $l("Space") + " (   )"
     }
 ];
 
@@ -43,6 +44,8 @@ export class Generator extends Dialog<void, string> {
 
     @query("#separator")
     private _separator: Select<SeparatorOption>;
+    @query("#language")
+    private _language: Select<{ value: string }>;
     @query("#wordCount")
     private _wordCount: Slider;
 
@@ -98,6 +101,11 @@ export class Generator extends Dialog<void, string> {
 
             pl-select {
                 border-bottom: solid 1px rgba(0, 0, 0, 0.1);
+                text-align: center;
+            }
+
+            .controls > * {
+                margin: 16px 8px;
             }
 
             .result {
@@ -107,6 +115,7 @@ export class Generator extends Dialog<void, string> {
                 overflow-wrap: break-word;
                 font-weight: bold;
                 padding: 20px;
+                margin: 16px 8px;
             }
 
             .arrow {
@@ -141,8 +150,20 @@ export class Generator extends Dialog<void, string> {
             </div>
 
             <div class="content">
-                <div ?hidden=${this.mode !== "words"}>
-                    <pl-select id="separator" .options=${separators} class="item tap"></pl-select>
+                <div ?hidden=${this.mode !== "words"} class="controls">
+                    <pl-select
+                        id="separator"
+                        .options=${separators}
+                        .label=${$l("Word Separator")}
+                        class="item tap"
+                    ></pl-select>
+
+                    <pl-select
+                        id="language"
+                        .options=${AVAILABLE_LANGUAGES}
+                        .label=${$l("Language")}
+                        class="item tap"
+                    ></pl-select>
 
                     <pl-slider
                         id="wordCount"
@@ -154,7 +175,7 @@ export class Generator extends Dialog<void, string> {
                     ></pl-slider>
                 </div>
 
-                <div ?hidden=${this.mode !== "chars"}>
+                <div ?hidden=${this.mode !== "chars"} class="controls">
                     <pl-toggle-button id="lower" label="a-z" class="item tap" reverse></pl-toggle-button>
 
                     <pl-toggle-button id="upper" label="A-Z" class="item tap" reverse></pl-toggle-button>
@@ -193,9 +214,12 @@ export class Generator extends Dialog<void, string> {
     @listen("change")
     async _generate() {
         const separator = (this._separator && this._separator.selected && this._separator.selected.value) || "-";
+        const language =
+            (this._language && this._language.selected && this._language.selected.value) || app.state.device.locale;
+
         switch (this.mode) {
             case "words":
-                this.value = await generatePassphrase(this._wordCount.value, separator);
+                this.value = await generatePassphrase(this._wordCount.value, separator, [language]);
                 break;
             case "chars":
                 let charSet = "";
