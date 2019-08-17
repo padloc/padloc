@@ -68,7 +68,7 @@ export class Signup extends StartForm {
         this._submitEmailButton.stop();
         this._verifyEmailButton.stop();
         this._submitPasswordButton.stop();
-        this._password = await generatePassphrase();
+        this._password = await generatePassphrase(4, " ", [app.state.device.locale]);
         setTimeout(() => (this._logo.reveal = true), 500);
     }
 
