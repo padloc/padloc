@@ -435,7 +435,7 @@ export class ItemsList extends StateMixin(View) {
                   text: $l("You don't have any favorites yet.")
               }
             : {
-                  icon: "favorite",
+                  icon: "list",
                   text: $l("You don't have any items yet.")
               };
         return html`

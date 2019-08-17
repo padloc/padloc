@@ -112,7 +112,7 @@ export class Menu extends StateMixin(BaseElement) {
 
             pl-logo {
                 height: 30px;
-                margin: 15px 0;
+                margin: 15px auto;
                 opacity: 0.25;
             }
 
@@ -148,6 +148,7 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             li .detail {
+                margin-left: 4px;
                 flex: none;
                 opacity: 0.7;
                 font-weight: semi-bold;
@@ -226,8 +227,9 @@ export class Menu extends StateMixin(BaseElement) {
                             <div class="detail">${favCount}</div>
                         </li>
 
-                        ${app.vaults.map(
-                            vault => html`
+                        ${app.vaults.map(vault => {
+                            const exceededQuota = app.mainVault && vault.id === app.mainVault!.id && itemsQuota !== -1;
+                            return html`
                                 <li
                                     class="sub-item tap vault"
                                     @click=${() => this._goTo("items", { vault: vault.id })}
@@ -235,18 +237,12 @@ export class Menu extends StateMixin(BaseElement) {
                                 >
                                     <pl-icon icon="vault"></pl-icon>
                                     <div>${vault}</div>
-                                    <div
-                                        class="detail ${vault.id === app.mainVault!.id && itemsQuota !== -1
-                                            ? "warning"
-                                            : ""}"
-                                    >
-                                        ${vault.id === app.mainVault!.id && itemsQuota !== -1
-                                            ? `${vault.items.size} / ${itemsQuota}`
-                                            : vault.items.size}
+                                    <div class="detail ${exceededQuota ? "warning" : ""}">
+                                        ${exceededQuota ? `${vault.items.size} / ${itemsQuota}` : vault.items.size}
                                     </div>
                                 </li>
-                            `
-                        )}
+                            `;
+                        })}
 
                         <li
                             class="sub-item tap"

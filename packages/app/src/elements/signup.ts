@@ -138,7 +138,8 @@ export class Signup extends StartForm {
 
             .master-password-cover {
                 ${mixins.fullbleed()}
-                height: 1em;
+                height: 2em;
+                line-height: 2em;
                 margin: auto;
                 font-weight: bold;
                 text-shadow: none;
