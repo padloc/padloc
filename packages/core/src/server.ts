@@ -28,9 +28,9 @@ import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
-import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingProvider, UpdateBillingParams } from "./billing";
 import { AccountQuota, OrgQuota } from "./quota";
+import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 
 const pendingAuths = new Map<string, SRPServer>();
 
@@ -981,6 +981,9 @@ export abstract class BaseServer {
         try {
             const context: Context = {};
             context.device = req.device && new DeviceInfo().fromRaw(req.device);
+            try {
+                await loadLanguage((context.device && context.device.locale) || "en");
+            } catch (e) {}
             await this._authenticate(req, context);
             await this._process(req, res, context);
             if (context.session) {
