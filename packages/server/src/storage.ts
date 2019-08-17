@@ -1,5 +1,5 @@
 // @ts-ignore
-import * as level from "level";
+import level from "level";
 import { Storage, Storable, StorableConstructor } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 

@@ -110,6 +110,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 animation: fadeIn 0.5s;
                 display: flex;
                 flex-direction: column;
+                --menu-width: 250px;
             }
 
             .main {
@@ -127,7 +128,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             }
 
             pl-menu {
-                width: 200px;
+                width: var(--menu-width);
             }
 
             .views {
@@ -209,7 +210,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 }
 
                 :host([menu-open]) .views {
-                    transform: translate(200px, 0);
+                    transform: translate(var(--menu-width), 0);
                 }
 
                 pl-menu {

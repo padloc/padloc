@@ -28,7 +28,7 @@ import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
-import { localize as $l } from "./locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingProvider, UpdateBillingParams } from "./billing";
 import { AccountQuota, OrgQuota } from "./quota";
 

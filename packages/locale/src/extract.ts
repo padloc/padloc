@@ -98,17 +98,18 @@ function extract(files: ts.SourceFile[]) {
 
 export function toYAML({ language, date, commit, items }: Translation) {
     const doc = new YAML.Document();
-    doc.commentBefore = ` Padloc Translation File
+    doc.commentBefore = `
+ Padloc Translation File
 
  language: ${language}
  date: ${date.toISOString()}
  commit: ${commit}
 `;
 
-    doc.contents = YAML.createNode(items.map(item => [item.original, item.translation])) as any;
+    doc.contents = YAML.createNode(items.flatMap(item => [item.original, item.translation])) as any;
 
     for (const [i, item] of items.entries()) {
-        const node = (doc.contents as any).items[i];
+        const node = (doc.contents as any).items[i*2];
         node.commentBefore = item.sources
             .map(
                 ({ file, line, character, comment }) => ` ${file}:${line},${character}${comment ? ` (${comment})` : ""}`
@@ -121,8 +122,38 @@ export function toYAML({ language, date, commit, items }: Translation) {
 }
 
 export function fromYAML(str: string, language: string): Translation {
-    const raw = YAML.parse(str) as [string, string][];
-    const items = raw.map(([original, translation]) => ({ original, translation, sources: [] }));
+    const raw = YAML.parse(str) as string[];
+    const items: TranslationItem[] = [];
+    for (let i = 0; i < raw.length; i+=2) {
+        items.push({original: raw[i], translation: raw[i+1], sources: []});
+    }
+    return {
+        language,
+        date: new Date(),
+        commit: "",
+        items
+    };
+}
+
+export function toModule(translation: Translation) {
+    return `\
+    import { parse } from "yaml";
+    export default parse(\`
+${toYAML(translation)}
+    \`);
+`;
+}
+
+export function toJSON(translation: Translation) {
+    return JSON.stringify(translation.items.map(({original, translation}) => [original, translation]), null, 2);
+}
+
+export function fromJSON(str: string, language: string) {
+    const items = JSON.parse(str).map(([original, translation]: [string, string]) => ({
+        original,
+        translation,
+        sources: []
+    }));
     return {
         language,
         date: new Date(),
@@ -151,25 +182,27 @@ export function fromSource(fileNames: string[], language: string): Translation {
 
 export function merge(curr: Translation, prev: Translation) {
     for (const item of curr.items) {
-        const prevItem = prev.items.find(i => i.original === item.original);
-        if (prevItem) {
-            item.translation = prevItem.translation;
+        const prevItemIndex = prev.items.findIndex(i => i.original === item.original);
+        if (prevItemIndex !== -1) {
+            item.translation = prev.items[prevItemIndex].translation;
+            prev.items.splice(prevItemIndex, 1);
         }
     }
 }
 
 export function updateTranslation(sources: string[], language: string, dest: string) {
-    const destPath = resolve(dest, language + ".lang");
-    // const backupPath = resolve(dest, language + "_backup.yaml");
+    const destPath = resolve(dest, language + ".json");
+    const backupPath = resolve(dest, language + "_backup.json");
 
     const translation = fromSource(sources, language);
 
     if (existsSync(destPath)) {
-        const existing = fromYAML(readFileSync(destPath, "utf-8"), language);
-        merge(translation, existing);
+        const previous = fromJSON(readFileSync(destPath, "utf-8"), language);
+        merge(translation, previous);
+        writeFileSync(backupPath, toJSON(previous));
     }
 
-    writeFileSync(destPath, toYAML(translation));
+    writeFileSync(destPath, toJSON(translation));
 }
 
 const [, , ...fileNames] = process.argv;

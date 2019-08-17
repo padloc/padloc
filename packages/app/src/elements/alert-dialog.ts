@@ -1,8 +1,8 @@
-import { localize } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { element, html, property, css } from "./base";
 import { Dialog } from "./dialog";
 
-const defaultButtonLabel = localize("OK");
+const defaultButtonLabel = $l("OK");
 
 export type AlertType = "info" | "warning" | "destructive" | "choice" | "question" | "success";
 export interface AlertOptions {

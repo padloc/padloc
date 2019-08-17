@@ -1,0 +1,1338 @@
+[
+  [
+    "Confirm",
+    ""
+  ],
+  [
+    "Cancel",
+    "Abbrechen"
+  ],
+  [
+    "Username",
+    ""
+  ],
+  [
+    "Password",
+    ""
+  ],
+  [
+    "URL",
+    ""
+  ],
+  [
+    "Notes",
+    ""
+  ],
+  [
+    "Your trial period ends in {0} days. Upgrade now to continue using online features like synchronization and automatic backups!",
+    ""
+  ],
+  [
+    "Your free trial has expired. Upgrade now to continue using advanced features like automatic online backups and seamless synchronization between devices!",
+    ""
+  ],
+  [
+    "Your last payment has failed. Please contact your card provider or update your payment method!",
+    ""
+  ],
+  [
+    "Your subscription has been canceled. Reactivate it now to continue using advanced features like automatic online backups and seamless synchronization between devices!",
+    ""
+  ],
+  [
+    "Log in now to unlock advanced features like automatic online backups and seamless synchronization between devices!",
+    ""
+  ],
+  [
+    "OK",
+    ""
+  ],
+  [
+    "o f f l i n e",
+    ""
+  ],
+  [
+    "Could not find invite! Did you use the correct link?",
+    ""
+  ],
+  [
+    "Get Premium",
+    ""
+  ],
+  [
+    "It looks like the app cannot connect to the Padloc servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
+    ""
+  ],
+  [
+    "You're Offline",
+    ""
+  ],
+  [
+    "Do you want to enable biometric unlock for this device?",
+    ""
+  ],
+  [
+    "Setup",
+    ""
+  ],
+  [
+    "Biometric Unlock",
+    ""
+  ],
+  [
+    "Biometric authentication failed! Canceling Setup.",
+    ""
+  ],
+  [
+    "Please enter your master password!",
+    ""
+  ],
+  [
+    "Enter Master Password",
+    ""
+  ],
+  [
+    "Wrong password! Please try again!",
+    ""
+  ],
+  [
+    "Biometric unlock activated successfully!",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this attachment?",
+    ""
+  ],
+  [
+    "Delete",
+    ""
+  ],
+  [
+    "Delete Attachment",
+    ""
+  ],
+  [
+    "Download failed!",
+    ""
+  ],
+  [
+    "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
+    ""
+  ],
+  [
+    "Save",
+    ""
+  ],
+  [
+    "Save To Disk",
+    ""
+  ],
+  [
+    "Edit Name",
+    ""
+  ],
+  [
+    "Attachment Name",
+    ""
+  ],
+  [
+    "Please enter an attachment name!",
+    ""
+  ],
+  [
+    "Unknown File Type",
+    ""
+  ],
+  [
+    "downloading... {0}/{1}",
+    ""
+  ],
+  [
+    "Unnamed",
+    ""
+  ],
+  [
+    "uploading... {0}/{1}",
+    ""
+  ],
+  [
+    "Failed to upload!",
+    ""
+  ],
+  [
+    "Failed to download! Click to try again.",
+    ""
+  ],
+  [
+    "Update Billing Info",
+    ""
+  ],
+  [
+    "Select A Country",
+    ""
+  ],
+  [
+    "Payment Details",
+    ""
+  ],
+  [
+    "Billing Address",
+    ""
+  ],
+  [
+    "Billing Email",
+    ""
+  ],
+  [
+    "Name",
+    ""
+  ],
+  [
+    "Address",
+    ""
+  ],
+  [
+    "Postal Code",
+    ""
+  ],
+  [
+    "City",
+    ""
+  ],
+  [
+    "Tax Info",
+    ""
+  ],
+  [
+    "This is a business",
+    ""
+  ],
+  [
+    "Tax ID",
+    ""
+  ],
+  [
+    "Coupon Code",
+    ""
+  ],
+  [
+    "Add Later",
+    ""
+  ],
+  [
+    "Something went wrong. Please try again later!",
+    ""
+  ],
+  [
+    "Add Payment Method",
+    ""
+  ],
+  [
+    "per user / month",
+    ""
+  ],
+  [
+    "USD, billed annually",
+    ""
+  ],
+  [
+    "Try For Free",
+    ""
+  ],
+  [
+    "Copied To Clipboard:",
+    ""
+  ],
+  [
+    "Clear",
+    ""
+  ],
+  [
+    "Please enter at least one email address!",
+    ""
+  ],
+  [
+    "You have entered too many email addresses! Please delete some before submitting!",
+    ""
+  ],
+  [
+    "Some of the emails you entered appear to be invalid!",
+    ""
+  ],
+  [
+    "Something went wrong! Please try again later!",
+    ""
+  ],
+  [
+    "Invite New Members",
+    ""
+  ],
+  [
+    "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
+    ""
+  ],
+  [
+    "Enter Email Address",
+    ""
+  ],
+  [
+    "Submit",
+    ""
+  ],
+  [
+    "New Vault Item",
+    ""
+  ],
+  [
+    "Item Name",
+    ""
+  ],
+  [
+    "Template",
+    ""
+  ],
+  [
+    "Vault",
+    ""
+  ],
+  [
+    "Create & Edit",
+    ""
+  ],
+  [
+    "You have reached the maximum number of items for this account. Upgrade to Premium to get unlimited items for you private vault!",
+    ""
+  ],
+  [
+    "You have reached the maximum number of items for this account!",
+    ""
+  ],
+  [
+    "Please enter an organization name!",
+    ""
+  ],
+  [
+    "Free For {0} Days",
+    ""
+  ],
+  [
+    "then",
+    ""
+  ],
+  [
+    "per month",
+    ""
+  ],
+  [
+    "{0} min",
+    ""
+  ],
+  [
+    "{0} max",
+    ""
+  ],
+  [
+    "Seats",
+    ""
+  ],
+  [
+    "Add Billing Info",
+    ""
+  ],
+  [
+    "Create Organization",
+    ""
+  ],
+  [
+    "Organization Name",
+    ""
+  ],
+  [
+    "Create",
+    ""
+  ],
+  [
+    "Export Data",
+    ""
+  ],
+  [
+    "Target Vault",
+    ""
+  ],
+  [
+    "Format",
+    ""
+  ],
+  [
+    "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
+    ""
+  ],
+  [
+    "Export {0} Items",
+    ""
+  ],
+  [
+    "Please choose a password to protect this backup with!",
+    ""
+  ],
+  [
+    "Choose A Field Type",
+    ""
+  ],
+  [
+    "What kind of field you would like to add?",
+    ""
+  ],
+  [
+    "Enter Field Name",
+    ""
+  ],
+  [
+    "Enter Field Value",
+    ""
+  ],
+  [
+    "Generate Password",
+    ""
+  ],
+  [
+    "passphrase",
+    ""
+  ],
+  [
+    "random string",
+    ""
+  ],
+  [
+    "words",
+    ""
+  ],
+  [
+    "length",
+    ""
+  ],
+  [
+    "Use",
+    ""
+  ],
+  [
+    "Discard",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this group?",
+    ""
+  ],
+  [
+    "Delete Vault",
+    ""
+  ],
+  [
+    "Type 'DELETE' to confirm",
+    ""
+  ],
+  [
+    "Enter Group Name",
+    ""
+  ],
+  [
+    "Search...",
+    ""
+  ],
+  [
+    "Import Data",
+    ""
+  ],
+  [
+    "IMPORTANT: Before importing, please make sure that your CSV data is structured according to Padlocks specific requirements!",
+    ""
+  ],
+  [
+    "Learn More",
+    ""
+  ],
+  [
+    "Import {0} Items",
+    ""
+  ],
+  [
+    "This file is protected by a password.",
+    ""
+  ],
+  [
+    "Enter Password",
+    ""
+  ],
+  [
+    "Wrong Password",
+    ""
+  ],
+  [
+    "Successfully imported {0} items.",
+    ""
+  ],
+  [
+    "This invite has expired",
+    ""
+  ],
+  [
+    "Accepted",
+    ""
+  ],
+  [
+    "expires {0}",
+    ""
+  ],
+  [
+    "Confirm Membership",
+    ""
+  ],
+  [
+    "Organization Invite",
+    ""
+  ],
+  [
+    "Please wait for an admin to complete the process. You will be notified as soon as you receive access.",
+    ""
+  ],
+  [
+    "Enter Confirmation Code",
+    ""
+  ],
+  [
+    "If you haven't received the confirmation code yet, please ask the organization owner to provide it to you!",
+    ""
+  ],
+  [
+    "They will also need the following confirmation code, which you should communicate to them separately:",
+    ""
+  ],
+  [
+    "Resend",
+    ""
+  ],
+  [
+    "Please enter a confirmation code!",
+    ""
+  ],
+  [
+    "You have successfully accepted the invite. You'll be notified once you've been granted access.",
+    ""
+  ],
+  [
+    "Wrong confirmation code. Please try again!",
+    ""
+  ],
+  [
+    "expired",
+    ""
+  ],
+  [
+    "accepted",
+    ""
+  ],
+  [
+    "{0}",
+    ""
+  ],
+  [
+    "Confirmation Code:",
+    ""
+  ],
+  [
+    "Upgrade to Premium now and get 1GB of encrypted file storage!",
+    ""
+  ],
+  [
+    "Enter Item Name",
+    ""
+  ],
+  [
+    "Field",
+    ""
+  ],
+  [
+    "Attachment",
+    ""
+  ],
+  [
+    "Move",
+    ""
+  ],
+  [
+    "by {0}",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    ""
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    ""
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    ""
+  ],
+  [
+    "File uploaded successfully!",
+    ""
+  ],
+  [
+    "Favorites",
+    ""
+  ],
+  [
+    "Attachments",
+    ""
+  ],
+  [
+    "All Items",
+    ""
+  ],
+  [
+    "Vaults",
+    ""
+  ],
+  [
+    "Tags",
+    ""
+  ],
+  [
+    "You don't have any tags yet.",
+    ""
+  ],
+  [
+    "Your search did not match any items.",
+    ""
+  ],
+  [
+    "This vault does not have any items yet.",
+    ""
+  ],
+  [
+    "You don't have any attachments yet.",
+    ""
+  ],
+  [
+    "You don't have any favorites yet.",
+    ""
+  ],
+  [
+    "You don't have any items yet.",
+    ""
+  ],
+  [
+    "Type To Filter",
+    ""
+  ],
+  [
+    "{0} items selected",
+    ""
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
+    ""
+  ],
+  [
+    "Yes",
+    ""
+  ],
+  [
+    "No",
+    ""
+  ],
+  [
+    "Are you sure you want to delete these items? This action can not be undone!",
+    ""
+  ],
+  [
+    "Delete {0} Items",
+    ""
+  ],
+  [
+    "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
+    ""
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
+    ""
+  ],
+  [
+    "Recently Used",
+    ""
+  ],
+  [
+    "No Name",
+    ""
+  ],
+  [
+    "copied",
+    ""
+  ],
+  [
+    "No Fields",
+    ""
+  ],
+  [
+    "This item has no fields.",
+    ""
+  ],
+  [
+    "Email Adress",
+    ""
+  ],
+  [
+    "Master Password",
+    ""
+  ],
+  [
+    "Login",
+    ""
+  ],
+  [
+    "New to Padlock?",
+    ""
+  ],
+  [
+    "Sign Up Now",
+    ""
+  ],
+  [
+    "Please enter a valid email address!",
+    ""
+  ],
+  [
+    "Please enter the confirmation code sent to your email address to proceed!",
+    ""
+  ],
+  [
+    "One Last Step!",
+    ""
+  ],
+  [
+    "Enter Verification Code",
+    ""
+  ],
+  [
+    "Maximum number of tries exceeded! Please resubmit and try again!",
+    ""
+  ],
+  [
+    "Wrong username or password. Please try again!",
+    ""
+  ],
+  [
+    "Can't remember your master password?",
+    ""
+  ],
+  [
+    "Recover Account",
+    ""
+  ],
+  [
+    "Try Again",
+    ""
+  ],
+  [
+    "An account with this email address does not exist!",
+    ""
+  ],
+  [
+    "Sign Up",
+    ""
+  ],
+  [
+    "Remove",
+    ""
+  ],
+  [
+    "Suspend",
+    ""
+  ],
+  [
+    "Remove Admin",
+    ""
+  ],
+  [
+    "Make Admin",
+    ""
+  ],
+  [
+    "Are you sure you want to remove this member from this organization?",
+    ""
+  ],
+  [
+    "Remove Member",
+    ""
+  ],
+  [
+    "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
+    ""
+  ],
+  [
+    "Are you sure you want to remove this member as admin?",
+    ""
+  ],
+  [
+    "Are you sure you want to suspend this member?",
+    ""
+  ],
+  [
+    "Suspend Member",
+    ""
+  ],
+  [
+    "Groups",
+    ""
+  ],
+  [
+    "read",
+    ""
+  ],
+  [
+    "write",
+    ""
+  ],
+  [
+    "Owner",
+    ""
+  ],
+  [
+    "Admin",
+    ""
+  ],
+  [
+    "Suspended",
+    ""
+  ],
+  [
+    "Items",
+    ""
+  ],
+  [
+    "Orgs & Teams",
+    ""
+  ],
+  [
+    "New Organization",
+    ""
+  ],
+  [
+    "Settings",
+    "Einstellungen"
+  ],
+  [
+    "{0} Items",
+    ""
+  ],
+  [
+    "Move {0} To",
+    ""
+  ],
+  [
+    "No target vaults available!",
+    ""
+  ],
+  [
+    "Move Item",
+    ""
+  ],
+  [
+    "Move Items",
+    ""
+  ],
+  [
+    "Successfully created {0} invites!",
+    ""
+  ],
+  [
+    "Unsuspend",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
+    ""
+  ],
+  [
+    "Delete Organization",
+    ""
+  ],
+  [
+    "Rename Organization",
+    ""
+  ],
+  [
+    "Company Name",
+    ""
+  ],
+  [
+    "Please enter a name!",
+    ""
+  ],
+  [
+    "Do you want to rotate this organizations cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
+    ""
+  ],
+  [
+    "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
+    ""
+  ],
+  [
+    "Members",
+    ""
+  ],
+  [
+    "New Group",
+    ""
+  ],
+  [
+    "New Vault",
+    ""
+  ],
+  [
+    "Subscription",
+    ""
+  ],
+  [
+    "Billing Info",
+    ""
+  ],
+  [
+    "Security",
+    ""
+  ],
+  [
+    "Rotate Cryptographic Keys",
+    ""
+  ],
+  [
+    "General",
+    ""
+  ],
+  [
+    "Change Organization Name",
+    ""
+  ],
+  [
+    "Create an organization to securely share and manage data between a group of people like your family and friends, teams or even entire companies!",
+    ""
+  ],
+  [
+    "Start Trial",
+    ""
+  ],
+  [
+    "Scan QR Code",
+    ""
+  ],
+  [
+    "Failed to scan QR code. Error: ",
+    ""
+  ],
+  [
+    "Please enter your email address and new master password.",
+    ""
+  ],
+  [
+    "Email Address",
+    ""
+  ],
+  [
+    "New Master Password",
+    ""
+  ],
+  [
+    "WARNING: Weak Password!",
+    ""
+  ],
+  [
+    "Repeat Master Password",
+    ""
+  ],
+  [
+    "IMPORTANT, READ CAREFULLY: Padloc is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
+    ""
+  ],
+  [
+    "Any data stored in your private vault can not be recovered and will be permantently lost.",
+    ""
+  ],
+  [
+    "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
+    ""
+  ],
+  [
+    "All members of organizations you own will be suspended temporarily until confirmed by you.",
+    ""
+  ],
+  [
+    "Please enter a master password!",
+    ""
+  ],
+  [
+    "You didn't repeat your master password correctly. Try again!",
+    ""
+  ],
+  [
+    "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
+    ""
+  ],
+  [
+    "Choose Different Password",
+    ""
+  ],
+  [
+    "Use Anyway",
+    ""
+  ],
+  [
+    "WARNING: Weak Password",
+    ""
+  ],
+  [
+    "To complete the account recovery process, please enter the confirmation code sent to your email address!",
+    ""
+  ],
+  [
+    "Account recovery successful!",
+    ""
+  ],
+  [
+    "Profile",
+    ""
+  ],
+  [
+    "Log Out",
+    ""
+  ],
+  [
+    "Change Master Password",
+    ""
+  ],
+  [
+    "Auto Lock",
+    ""
+  ],
+  [
+    "Lock Automatically",
+    ""
+  ],
+  [
+    " min",
+    ""
+  ],
+  [
+    "After",
+    ""
+  ],
+  [
+    "Import / Export",
+    ""
+  ],
+  [
+    "Import...",
+    ""
+  ],
+  [
+    "Export...",
+    ""
+  ],
+  [
+    "Support",
+    ""
+  ],
+  [
+    "Website",
+    ""
+  ],
+  [
+    "Contact Support",
+    ""
+  ],
+  [
+    "Danger Zone",
+    ""
+  ],
+  [
+    "Delete Account",
+    ""
+  ],
+  [
+    "Edit Profile",
+    ""
+  ],
+  [
+    "Do you really want to log out?",
+    ""
+  ],
+  [
+    "Please enter your current password!",
+    ""
+  ],
+  [
+    "Enter Current Password",
+    ""
+  ],
+  [
+    "Now choose a new master password!",
+    ""
+  ],
+  [
+    "Enter New Password",
+    ""
+  ],
+  [
+    "Please enter a password!",
+    ""
+  ],
+  [
+    "Please confirm your new password!",
+    ""
+  ],
+  [
+    "Repeat New Password",
+    ""
+  ],
+  [
+    "Master password changed successfully.",
+    ""
+  ],
+  [
+    "Please enter your master password to proceed.",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
+    ""
+  ],
+  [
+    "Welcome to Padloc! Let's get you started by creating an account for you. Already have one?",
+    ""
+  ],
+  [
+    "Your email address serves as your username and allows us to get in touch with you. Don't worry, we would never send you any spam!",
+    ""
+  ],
+  [
+    "Your Name",
+    ""
+  ],
+  [
+    "What should we call you?",
+    ""
+  ],
+  [
+    "Continue",
+    ""
+  ],
+  [
+    "Confirm Your Email Address",
+    ""
+  ],
+  [
+    "Check your inbox! We sent you confirmation code to {0}. Please enter the code below to confirm your email address!",
+    ""
+  ],
+  [
+    "Confirmation Code",
+    ""
+  ],
+  [
+    "Say hello to your",
+    ""
+  ],
+  [
+    "It's the last password you'll ever have to remember! Your master password is used to protect your data and should not be known to anyone but you. Without it, nobody will be able to access your data - not even us!",
+    ""
+  ],
+  [
+    "[Tap To Reveal]",
+    ""
+  ],
+  [
+    "[Hover To Reveal]",
+    ""
+  ],
+  [
+    "For privacy and security reasons we don't keep a record of you password which means we won't be able to help you recover your data in case you forget it. We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
+    ""
+  ],
+  [
+    "An account with this email address already exists!",
+    ""
+  ],
+  [
+    "Change Email",
+    ""
+  ],
+  [
+    "We recommend using a randomly generated password that is both strong and easy to remember.",
+    ""
+  ],
+  [
+    "Keep This One",
+    ""
+  ],
+  [
+    "Generate Another",
+    ""
+  ],
+  [
+    "Choose My Own",
+    ""
+  ],
+  [
+    "Want A Different Master Password?",
+    ""
+  ],
+  [
+    "Choose Own Master Password",
+    ""
+  ],
+  [
+    "Resume Subscription",
+    ""
+  ],
+  [
+    "Cancel Subscription",
+    ""
+  ],
+  [
+    "Update Plan",
+    ""
+  ],
+  [
+    "Unlimited",
+    ""
+  ],
+  [
+    "{0} / Year",
+    ""
+  ],
+  [
+    "Canceled ({0} days left)",
+    ""
+  ],
+  [
+    "Authentication Required",
+    ""
+  ],
+  [
+    "Inactive",
+    ""
+  ],
+  [
+    "Trialing ({0} days left)",
+    ""
+  ],
+  [
+    "Complete Payment",
+    ""
+  ],
+  [
+    "Add Tag",
+    ""
+  ],
+  [
+    "Choose A Template",
+    ""
+  ],
+  [
+    "What kind of item you would like to add?",
+    ""
+  ],
+  [
+    "Logged In As",
+    ""
+  ],
+  [
+    "Unlock",
+    "Entsperren"
+  ],
+  [
+    "Wrong password! Please try again.",
+    ""
+  ],
+  [
+    "Logout / Switch Account",
+    ""
+  ],
+  [
+    "Forgot Password",
+    ""
+  ],
+  [
+    "Are you sure you want to log out of this account?",
+    ""
+  ],
+  [
+    "Update Subscription",
+    ""
+  ],
+  [
+    "Update",
+    ""
+  ],
+  [
+    "Storage limit exceeded!",
+    ""
+  ],
+  [
+    "Upload failed! Please try again!",
+    ""
+  ],
+  [
+    "Upload Attachment",
+    ""
+  ],
+  [
+    "Unkown File Type",
+    ""
+  ],
+  [
+    "Retry Upload",
+    ""
+  ],
+  [
+    "Upload",
+    ""
+  ],
+  [
+    "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
+    ""
+  ],
+  [
+    "Enter Vault Name",
+    ""
+  ],
+  [
+    "Your session has expired. Please log in again!",
+    ""
+  ],
+  [
+    "It seems are servers are over capacity right now. Please try again later!",
+    ""
+  ],
+  [
+    "You don't have sufficient permissions to perform this action!",
+    ""
+  ],
+  [
+    "Something went wrong while connecting to our servers. Please try again later!",
+    ""
+  ],
+  [
+    "Dismiss",
+    ""
+  ],
+  [
+    "A new update is ready to install! Do you want to install it now?",
+    ""
+  ],
+  [
+    "Install & Reload",
+    ""
+  ]
+]

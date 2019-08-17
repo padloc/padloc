@@ -13,10 +13,13 @@
         "removeComments": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "declaration": false,
         "sourceMap": false,
-        "declaration": true,
+        "declaration": false,
         "pretty": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "allowJs": true
     }
 }

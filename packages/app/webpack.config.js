@@ -32,14 +32,6 @@ module.exports = {
             {
                 test: /\.(woff|woff2|eot|ttf|otf|svg)$/,
                 use: ["file-loader"]
-            },
-            {
-                test: /\.lang$/,
-                use: [
-                    {
-                        loader: path.resolve("../locale/loaders/lang-loader.js")
-                    }
-                ]
             }
         ]
     },

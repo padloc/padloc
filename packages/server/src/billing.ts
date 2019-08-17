@@ -1,5 +1,5 @@
 import { createServer } from "http";
-import * as Stripe from "stripe";
+import Stripe from "stripe";
 import { Account } from "@padloc/core/src/account";
 import { Org } from "@padloc/core/src/org";
 import { Err, ErrorCode } from "@padloc/core/src/error";

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@padloc/core": "^3.0.0",
+    "@padloc/locale": "^3.0.0",
     "@types/stripe": "^6.26.5",
     "fs-extra": "^7.0.1",
     "level": "^5.0.1",

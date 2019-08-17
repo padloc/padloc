@@ -1,11 +1,11 @@
-import { localize } from "@padloc/core/src/locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { element, html, css, property, query } from "./base";
 import { Input } from "./input";
 import { LoadingButton } from "./loading-button";
 import { Dialog } from "./dialog";
 
-const defaultConfirmLabel = localize("OK");
-const defaultCancelLabel = localize("Cancel");
+const defaultConfirmLabel = $l("OK");
+const defaultCancelLabel = $l("Cancel");
 const defaultType = "text";
 const defaultPlaceholder = "";
 

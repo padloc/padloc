@@ -1,4 +1,4 @@
-import { localize as $l } from "./locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { uuid } from "./util";
 import { Collection, CollectionItem } from "./collection";
 import { AccountID } from "./account";

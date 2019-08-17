@@ -1,3 +1,4 @@
+import { loadLanguage } from "@padloc/locale/src/translate";
 import { Storage, Storable } from "./storage";
 import { Serializable } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
@@ -23,7 +24,7 @@ import {
 } from "./api";
 import { Client } from "./client";
 import { Sender } from "./transport";
-import { localize as $l } from "./locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { DeviceInfo, getDeviceInfo, isKeyStoreAvailable, keyStoreSet, keyStoreGet, keyStoreDelete } from "./platform";
 import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
@@ -277,6 +278,13 @@ export class App {
         // Update device info
         const { id, ...rest } = await getDeviceInfo();
         Object.assign(this.state.device, rest);
+
+        try {
+            await loadLanguage(this.state.device.locale);
+        } catch(e) {
+            // Failed to load language, so we'll fallback to default (English)
+        }
+
         // If no device id has been set yet, generate a new one
         if (!this.state.device.id) {
             this.state.device.id = await uuid();

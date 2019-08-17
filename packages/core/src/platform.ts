@@ -1,4 +1,4 @@
-import { localize as $l } from "./locale";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { Serializable } from "./encoding";
 import { CryptoProvider } from "./crypto";
 import { Err, ErrorCode } from "./error";
