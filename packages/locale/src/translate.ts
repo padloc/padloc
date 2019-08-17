@@ -22,7 +22,7 @@ export async function loadLanguage(lang: string, setDefault = true): Promise<voi
             if (setDefault) {
                 defaultLanguage = lang;
             }
-        } catch(e) {
+        } catch (e) {
             const dashIndex = lang.lastIndexOf("-");
             if (dashIndex !== -1) {
                 return loadLanguage(lang.substring(0, dashIndex));
@@ -64,9 +64,9 @@ export function resolveLanguage(locale: string, supportedLanguages: { [lang: str
  * translate("Hello! My name is {0}. I am from {1}. How are you?", name, country);
  * ```
  */
-export function translate(msg: string, language = defaultLanguage, ...fmtArgs: string[]) {
+export function translate(msg: string, ...fmtArgs: string[]) {
     // Choose translations for current language
-    const lang = languages.get(language);
+    const lang = languages.get(defaultLanguage);
 
     // Look up translation. If no translation is found, use the original message.
     let res = (lang && lang.get(msg)) || msg;

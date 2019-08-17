@@ -50,7 +50,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: false,
         icon: "user",
-        name: "Username"
+        get name() {
+            return $l("Username");
+        }
     },
     password: {
         type: "password",
@@ -58,7 +60,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: true,
         multiline: true,
         icon: "lock",
-        name: "Password"
+        get name() {
+            return $l("Password");
+        }
     },
     url: {
         type: "url",
@@ -66,7 +70,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: false,
         icon: "web",
-        name: "URL"
+        get name() {
+            return $l("URL");
+        }
     },
     email: {
         type: "email",
@@ -74,7 +80,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: false,
         icon: "email",
-        name: "Email Address"
+        get name() {
+            return $l("Email Address");
+        }
     },
     date: {
         type: "date",
@@ -82,7 +90,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: false,
         icon: "date",
-        name: "Date"
+        get name() {
+            return $l("Date");
+        }
     },
     month: {
         type: "month",
@@ -90,7 +100,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: false,
         icon: "month",
-        name: "Month"
+        get name() {
+            return $l("Month");
+        }
     },
     credit: {
         type: "credit",
@@ -98,7 +110,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: true,
         multiline: false,
         icon: "credit",
-        name: "Credit Card Number"
+        get name() {
+            return $l("Credit Card Number");
+        }
     },
     phone: {
         type: "phone",
@@ -106,7 +120,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: false,
         icon: "phone",
-        name: "Phone Number"
+        get name() {
+            return $l("Phone Number");
+        }
     },
     pin: {
         type: "pin",
@@ -114,7 +130,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: true,
         multiline: false,
         icon: "lock",
-        name: "PIN"
+        get name() {
+            return $l("PIN");
+        }
     },
     totp: {
         type: "totp",
@@ -122,7 +140,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: false,
         icon: "totp",
-        name: "Two-Factor Token"
+        get name() {
+            return $l("Two-Factor Token");
+        }
     },
     note: {
         type: "note",
@@ -130,7 +150,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: true,
         icon: "note",
-        name: "Note"
+        get name() {
+            return $l("Note");
+        }
     },
     text: {
         type: "text",
@@ -138,7 +160,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         mask: false,
         multiline: false,
         icon: "text",
-        name: "Other"
+        get name() {
+            return $l("Other");
+        }
     }
 };
 
@@ -224,54 +248,169 @@ export const ITEM_TEMPLATES: ItemTemplate[] = [
         toString: () => $l("Login"),
         icon: "login",
         fields: [
-            { name: $l("Username"), type: "username" },
-            { name: $l("Password"), type: "password" },
-            { name: $l("URL"), type: "url" }
+            {
+                get name() {
+                    return $l("Username");
+                },
+                type: "username"
+            },
+            {
+                get name() {
+                    return $l("Password");
+                },
+                type: "password"
+            },
+            {
+                get name() {
+                    return $l("URL");
+                },
+                type: "url"
+            }
         ]
     },
     {
         toString: () => $l("Credit Card"),
         icon: "credit",
         fields: [
-            { name: $l("Card Number"), type: "credit" },
-            { name: $l("Card Owner"), type: "text" },
-            { name: $l("Valid Until"), type: "month" },
-            { name: $l("CVC"), type: "pin" },
-            { name: $l("PIN"), type: "pin" }
+            {
+                get name() {
+                    return $l("Card Number");
+                },
+                type: "credit"
+            },
+            {
+                get name() {
+                    return $l("Card Owner");
+                },
+                type: "text"
+            },
+            {
+                get name() {
+                    return $l("Valid Until");
+                },
+                type: "month"
+            },
+            {
+                get name() {
+                    return $l("CVC");
+                },
+                type: "pin"
+            },
+            {
+                get name() {
+                    return $l("PIN");
+                },
+                type: "pin"
+            }
         ]
     },
     {
         toString: () => $l("Bank Account"),
         icon: "bank",
         fields: [
-            { name: $l("Account Owner"), type: "text" },
-            { name: $l("IBAN"), type: "text" },
-            { name: $l("BIC"), type: "text" },
-            { name: $l("Card PIN"), type: "pin" }
+            {
+                get name() {
+                    return $l("Account Owner");
+                },
+                type: "text"
+            },
+            {
+                get name() {
+                    return $l("IBAN");
+                },
+                type: "text"
+            },
+            {
+                get name() {
+                    return $l("BIC");
+                },
+                type: "text"
+            },
+            {
+                get name() {
+                    return $l("Card PIN");
+                },
+                type: "pin"
+            }
         ]
     },
     {
         toString: () => $l("WIFI Password"),
         icon: "wifi",
-        fields: [{ name: $l("Name"), type: "text" }, { name: $l("Password"), type: "password" }]
+        fields: [
+            {
+                get name() {
+                    return $l("Name");
+                },
+                type: "text"
+            },
+            {
+                get name() {
+                    return $l("Password");
+                },
+                type: "password"
+            }
+        ]
     },
     {
         toString: () => $l("Passport"),
         icon: "passport",
         fields: [
-            { name: $l("Full Name"), type: "text" },
-            { name: $l("Passport Number"), type: "text" },
-            { name: $l("Country"), type: "text" },
-            { name: $l("Birthdate"), type: "date" },
-            { name: $l("Birthplace"), type: "text" },
-            { name: $l("Issued On"), type: "date" },
-            { name: $l("Expires"), type: "date" }
+            {
+                get name() {
+                    return $l("Full Name");
+                },
+                type: "text"
+            },
+            {
+                get name() {
+                    return $l("Passport Number");
+                },
+                type: "text"
+            },
+            {
+                get name() {
+                    return $l("Country");
+                },
+                type: "text"
+            },
+            {
+                get name() {
+                    return $l("Birthdate");
+                },
+                type: "date"
+            },
+            {
+                get name() {
+                    return $l("Birthplace");
+                },
+                type: "text"
+            },
+            {
+                get name() {
+                    return $l("Issued On");
+                },
+                type: "date"
+            },
+            {
+                get name() {
+                    return $l("Expires");
+                },
+                type: "date"
+            }
         ]
     },
     {
         toString: () => $l("Note"),
         icon: "note",
-        fields: [{ name: $l("Note"), type: "note" }]
+        fields: [
+            {
+                get name() {
+                    return $l("Note");
+                },
+                type: "note"
+            }
+        ]
     },
     {
         toString: () => $l("Document"),

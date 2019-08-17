@@ -1,55 +1,11 @@
 [
   [
-    "Confirm",
-    ""
-  ],
-  [
-    "Cancel",
-    "Abbrechen"
-  ],
-  [
-    "Username",
-    ""
-  ],
-  [
-    "Password",
-    ""
-  ],
-  [
-    "URL",
-    ""
-  ],
-  [
-    "Notes",
-    ""
-  ],
-  [
-    "Your trial period ends in {0} days. Upgrade now to continue using online features like synchronization and automatic backups!",
-    ""
-  ],
-  [
-    "Your free trial has expired. Upgrade now to continue using advanced features like automatic online backups and seamless synchronization between devices!",
-    ""
-  ],
-  [
-    "Your last payment has failed. Please contact your card provider or update your payment method!",
-    ""
-  ],
-  [
-    "Your subscription has been canceled. Reactivate it now to continue using advanced features like automatic online backups and seamless synchronization between devices!",
-    ""
-  ],
-  [
-    "Log in now to unlock advanced features like automatic online backups and seamless synchronization between devices!",
-    ""
-  ],
-  [
     "OK",
-    ""
+    "OK"
   ],
   [
     "o f f l i n e",
-    ""
+    "o f f l i n e"
   ],
   [
     "Could not find invite! Did you use the correct link?",
@@ -60,60 +16,64 @@
     ""
   ],
   [
+    "Cancel",
+    "Abbrechen"
+  ],
+  [
     "It looks like the app cannot connect to the Padloc servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
     ""
   ],
   [
     "You're Offline",
-    ""
+    "Sie Sind Offline"
   ],
   [
     "Do you want to enable biometric unlock for this device?",
-    ""
+    "Wollen Sie biometrisches Entsperren für dieses Gerät aktivieren?"
   ],
   [
     "Setup",
-    ""
+    "Einrichten"
   ],
   [
     "Biometric Unlock",
-    ""
+    "Biometrisches Entsperren"
   ],
   [
     "Biometric authentication failed! Canceling Setup.",
-    ""
+    "Biometrische Authentifizierung fehlgeschlagen! Vorgang wird abgebrochen."
   ],
   [
     "Please enter your master password!",
-    ""
+    "Bitte geben Sie Ihr Master Passwort ein!"
   ],
   [
     "Enter Master Password",
-    ""
+    "Master Passwort Eingeben"
   ],
   [
     "Wrong password! Please try again!",
-    ""
+    "Falsches Passwort! Bitte versuchen Sie es erneut!"
   ],
   [
     "Biometric unlock activated successfully!",
-    ""
+    "Biometrisches Entsperren wurde erfolgreich aktiviert!"
   ],
   [
     "Are you sure you want to delete this attachment?",
-    ""
+    "Sind Sie sicher dass Sie diesen Anhang entfernen möchten?"
   ],
   [
     "Delete",
-    ""
+    "Löschen"
   ],
   [
     "Delete Attachment",
-    ""
+    "Anhang Löschen"
   ],
   [
     "Download failed!",
-    ""
+    "Download fehlgeschlagen!"
   ],
   [
     "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
@@ -121,15 +81,15 @@
   ],
   [
     "Save",
-    ""
+    "Speichern"
   ],
   [
     "Save To Disk",
-    ""
+    "Auf Festplatte Speichern"
   ],
   [
     "Edit Name",
-    ""
+    "Namen Bearbeiten"
   ],
   [
     "Attachment Name",
@@ -533,6 +493,10 @@
   ],
   [
     "{0}",
+    ""
+  ],
+  [
+    "Confirm",
     ""
   ],
   [
@@ -1333,6 +1297,150 @@
   ],
   [
     "Install & Reload",
+    ""
+  ],
+  [
+    "Username",
+    "Benutzername"
+  ],
+  [
+    "Password",
+    "Passwort"
+  ],
+  [
+    "URL",
+    "URL"
+  ],
+  [
+    "Notes",
+    "Notizen"
+  ],
+  [
+    "Date",
+    "Datum"
+  ],
+  [
+    "Month",
+    "Monat"
+  ],
+  [
+    "Credit Card Number",
+    "Kreditkartennummer"
+  ],
+  [
+    "Phone Number",
+    ""
+  ],
+  [
+    "PIN",
+    ""
+  ],
+  [
+    "Two-Factor Token",
+    ""
+  ],
+  [
+    "Note",
+    ""
+  ],
+  [
+    "Other",
+    ""
+  ],
+  [
+    "Credit Card",
+    ""
+  ],
+  [
+    "Card Number",
+    ""
+  ],
+  [
+    "Card Owner",
+    ""
+  ],
+  [
+    "Valid Until",
+    ""
+  ],
+  [
+    "CVC",
+    ""
+  ],
+  [
+    "Bank Account",
+    ""
+  ],
+  [
+    "Account Owner",
+    ""
+  ],
+  [
+    "IBAN",
+    ""
+  ],
+  [
+    "BIC",
+    ""
+  ],
+  [
+    "Card PIN",
+    ""
+  ],
+  [
+    "WIFI Password",
+    ""
+  ],
+  [
+    "Passport",
+    ""
+  ],
+  [
+    "Full Name",
+    ""
+  ],
+  [
+    "Passport Number",
+    ""
+  ],
+  [
+    "Country",
+    ""
+  ],
+  [
+    "Birthdate",
+    ""
+  ],
+  [
+    "Birthplace",
+    ""
+  ],
+  [
+    "Issued On",
+    ""
+  ],
+  [
+    "Expires",
+    ""
+  ],
+  [
+    "Document",
+    ""
+  ],
+  [
+    "Custom",
+    ""
+  ],
+  [
+    "{0} on {1}",
+    ""
+  ],
+  [
+    "{0} Device",
+    ""
+  ],
+  [
+    "My Vault",
     ""
   ]
 ]
