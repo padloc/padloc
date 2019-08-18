@@ -7,6 +7,7 @@ import { formatDateFromNow, fileIcon, fileSize } from "../util";
 import { alert, confirm, dialog } from "../dialog";
 import { app, router } from "../init";
 import { setClipboard } from "../clipboard";
+import { animateCascade } from "../animation";
 import { element, html, css, property, query, queryAll } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
@@ -84,7 +85,10 @@ export class ItemDialog extends Dialog<string, void> {
         this._itemChanged();
         // Workaround for weird bug where name input is sometimes empty after opening dialog
         setTimeout(() => this._itemChanged(), 200);
-        return super.show();
+        const promise = super.show();
+        await this.updateComplete;
+        animateCascade(this.$$(".content > *"));
+        return promise;
     }
 
     async addAttachment() {
@@ -280,6 +284,10 @@ export class ItemDialog extends Dialog<string, void> {
                     max-width: 100%;
                     width: 100%;
                     height: 100%;
+                }
+
+                .scrim {
+                    display: none;
                 }
             }
         `
