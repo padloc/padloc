@@ -663,4 +663,8 @@ export class Org extends SharedContainer implements Storable {
         // Re-sign all members
         await Promise.all(this.members.map(m => this.addOrUpdateMember(m)));
     }
+
+    toString() {
+        return this.name;
+    }
 }

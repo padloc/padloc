@@ -233,12 +233,12 @@ export class App {
 
     /** The current accounts organizations */
     get orgs() {
-        return this.state.orgs;
+        return this.state.orgs.sort();
     }
 
     /** The current accounts vaults */
     get vaults() {
-        return this.state.vaults;
+        return this.state.vaults.sort();
     }
 
     /** Application settings */
@@ -281,7 +281,7 @@ export class App {
 
         try {
             await loadLanguage(this.state.device.locale);
-        } catch(e) {
+        } catch (e) {
             // Failed to load language, so we'll fallback to default (English)
         }
 
@@ -858,23 +858,17 @@ export class App {
 
         // Sync vaults assigned to through organizations
         for (const org of this.state.orgs) {
-            // clean up vaults the user no longer has access to
-            for (const vault of this.state.vaults) {
-                if (vault.org && vault.org.id === org.id && !org.canRead(vault, this.account)) {
-                    this.state.vaults = this.state.vaults.filter(v => v.id !== vault.id);
-                }
-            }
-
             // Sync all vaults for this organization
             for (const id of org.getVaultsForMember(this.account)) {
                 promises.push(this.syncVault({ id }));
             }
         }
 
+        // clean up vaults the user no longer has access to
         const removeVaults: string[] = [];
         for (const vault of this.state.vaults) {
             const org = vault.org && this.getOrg(vault.org.id);
-            if (!org || !org.canRead(vault, this.account)) {
+            if (vault.id !== this.account.mainVault && (!org || !org.canRead(vault, this.account))) {
                 removeVaults.push(vault.id);
             }
         }
