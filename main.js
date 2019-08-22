@@ -38,7 +38,7 @@ let updateOnQuit = false;
 
 function updateReady(updateInfo) {
     dialog.showMessageBox({
-        message: "Install Update",
+        message: "Bruh Install Update",
         detail: `Padlock version ${updateInfo.version} has been downloaded. The update will be installed ` +
             `the next time the app is launched.`,
         buttons: ["Install Later", "Install And Restart"],
