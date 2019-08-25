@@ -15,11 +15,10 @@
     "chai": "^4.2.0",
     "mocha": "^5.2.0",
     "ts-node": "^7.0.1",
-    "typedoc": "^0.14.2"
+    "typedoc": "^0.15.0"
   },
   "scripts": {
     "test": "cd test && mocha -r ts-node/register *.ts",
     "docs": "typedoc --out docs"
-  },
-  "dependencies": {}
+  }
 }
