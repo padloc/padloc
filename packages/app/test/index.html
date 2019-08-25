@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+        <title>lit-element tests</title>
+        <link href="../node_modules/mocha/mocha.css" rel="stylesheet" />
+        <script src="../node_modules/mocha/mocha.js"></script>
+        <script src="../node_modules/chai/chai.js"></script>
+        <script>
+            mocha.setup({
+                ui: "tdd",
+                timeout: 1000000
+            });
+        </script>
+        <script type="module" src="dist/crypto.js"></script>
+        <script type="module" src="dist/app.js"></script>
+        <script type="module" src="dist/util.js"></script>
+    </head>
+    <body>
+        <div id="mocha"></div>
+        <script>
+            setTimeout(() => {
+                mocha.run();
+            }, 2000);
+        </script>
+    </body>
+</html>

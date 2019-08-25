@@ -1,0 +1,14 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "target": "es2017",
+        "lib": [
+            "esnext"
+         ],
+        "module": "commonjs",
+        "declaration": "false",
+        "baseUrl": "."
+    },
+    "include": ["src/*.ts"],
+    "exclude": ["node_modules/**/*.ts"]
+}

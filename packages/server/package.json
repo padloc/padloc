@@ -1,0 +1,29 @@
+{
+  "name": "@padloc/server",
+  "version": "3.0.0",
+  "description": "Padloc server component",
+  "main": "index.js",
+  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+  "license": "GPLv3",
+  "private": false,
+  "devDependencies": {
+    "@types/fs-extra": "^5.0.4",
+    "@types/nodemailer": "^4.6.2",
+    "ts-node": "^7.0.1",
+    "ts-node-dev": "^1.0.0-pre.32",
+    "typescript": "^3.3.3333"
+  },
+  "dependencies": {
+    "@padloc/core": "^3.0.0",
+    "@padloc/locale": "^3.0.0",
+    "@types/stripe": "^6.26.5",
+    "fs-extra": "^7.0.1",
+    "level": "^5.0.1",
+    "nodemailer": "^4.6.7",
+    "stripe": "^7.1.0"
+  },
+  "scripts": {
+    "start": "ts-node src/init.ts",
+    "dev": "ts-node-dev src/init.ts"
+  }
+}

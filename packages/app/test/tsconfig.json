@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "module": "es2015",
+        "moduleResolution": "node",
+        "isolatedModules": false,
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitThis": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": false,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "declaration": false,
+        "sourceMap": false,
+        "declaration": true,
+        "pretty": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "baseUrl": ".",
+        "rootDir": "./src",
+        "outDir": "dist"
+    },
+    "include": ["src/**/*.ts"],
+    "exclude": []
+}

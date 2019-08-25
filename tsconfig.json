@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "target": "es2015",
-        "module": "commonjs",
+        "target": "es2017",
+        "module": "es2015",
         "moduleResolution": "node",
         "isolatedModules": false,
         "noImplicitAny": true,
@@ -9,25 +9,17 @@
         "noUnusedParameters": true,
         "noImplicitThis": true,
         "strictNullChecks": true,
+        "strictPropertyInitialization": true,
         "removeComments": false,
         "preserveConstEnums": true,
         "suppressImplicitAnyIndexErrors": true,
-        "lib": ["es2017", "dom"],
-        "outDir": "./app/lib",
-        "declaration": true,
-        "sourceMap": true,
+        "sourceMap": false,
+        "declaration": false,
         "pretty": true,
         "experimentalDecorators": true,
-        "typeRoots": [
-            "./typings",
-            "./node_modules/@types"
-        ]
-    },
-    "include": [
-        "app/src/**/*.ts",
-        "typings/*"
-    ],
-    "exclude": [
-        "node_modules/**/*.ts"
-    ]
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "allowJs": true
+    }
 }

@@ -1,0 +1,17 @@
+{
+  "name": "@padloc/locale",
+  "version": "3.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "extract": "ts-node src/extract.ts ../*/src/{**,.}/*.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/yaml": "^1.0.2",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3",
+    "yaml": "^1.6.0"
+  }
+}

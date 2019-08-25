@@ -1,0 +1,54 @@
+@font-face {
+    font-family: "Nunito";
+    font-style: normal;
+    font-weight: 300;
+    src: local("Nunito Light"), local("Nunito-Light"), url(../../assets/fonts/Nunito-Light.ttf) format("truetype");
+}
+@font-face {
+    font-family: "Nunito";
+    font-style: normal;
+    font-weight: 400;
+    src: local("Nunito Regular"), local("Nunito-Regular"), url(../../assets/fonts/Nunito-Regular.ttf) format("truetype");
+}
+@font-face {
+    font-family: "Nunito";
+    font-style: normal;
+    font-weight: 600;
+    src: local("Nunito SemiBold"), local("Nunito-SemiBold"),
+        url(../../assets/fonts/Nunito-SemiBold.ttf) format("truetype");
+}
+@font-face {
+    font-family: "Nunito";
+    font-style: normal;
+    font-weight: 700;
+    src: local("Nunito Bold"), local("Nunito-Bold"), url(../../assets/fonts/Nunito-Bold.ttf) format("truetype");
+}
+@font-face {
+    font-family: "Inconsolata";
+    font-style: normal;
+    font-weight: 400;
+    src: local("Inconsolata Regular"), local("Inconsolata-Regular"),
+        url(../../assets/fonts/Inconsolata-Regular.ttf) format("truetype");
+}
+
+@font-face {
+    font-family: "Padlock";
+    src: url("../../assets/fonts/Padlock.eot");
+    src: url("../../assets/fonts/Padlock.eot") format("embedded-opentype"),
+        url("../../assets/fonts/Padlock.woff") format("woff"), url("../../assets/fonts/Padlock.ttf") format("truetype"),
+        url("../../assets/fonts/Padlock.svg#Padlock") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "FontAwesome";
+    src: url("../../assets/fonts/fontawesome-webfont.eot");
+    src: url("../../assets/fonts/fontawesome-webfont.eot") format("embedded-opentype"),
+        url("../../assets/fonts/fontawesome-webfont.woff2") format("woff2"),
+        url("../../assets/fonts/fontawesome-webfont.woff") format("woff"),
+        url("../../assets/fonts/fontawesome-webfont.ttf") format("truetype"),
+        url("../../assets/fonts/fontawesome-webfont.svg") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}

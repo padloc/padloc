@@ -1,0 +1,1 @@
+window.myscript = "Hello World!";

@@ -1,0 +1,15 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "strictPropertyInitialization": false,
+        "declaration": false,
+        "emitDecoratorMetadata": true,
+        "baseUrl": ".",
+        "outDir": "dist",
+        "sourceMap": true,
+        "module": "esnext",
+        "strict": true
+    },
+    "include": ["src/**/*.ts", "types/**/*.ts", "../../node_modules/@polymer/lit-element/custom_typings/polymer.d.ts"],
+    "exclude": ["node_modules/**/*.ts"]
+}
