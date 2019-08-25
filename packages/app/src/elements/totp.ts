@@ -2,7 +2,7 @@ import { styleMap } from "lit-html/directives/style-map.js";
 import { hotp } from "@padloc/core/src/otp";
 import { base32ToBytes } from "@padloc/core/src/encoding";
 import { shared } from "../styles";
-import { BaseElement, element, html, svg, css, property } from "./base";
+import { BaseElement, element, html, svg, css, property, observe } from "./base";
 import "./icon";
 
 @element("pl-totp")
@@ -56,8 +56,15 @@ export class TOTP extends BaseElement {
         `
     ];
 
-    async _update(updInt = 2000) {
+    @observe("secret")
+    private async _update(updInt = 2000) {
         window.clearTimeout(this._updateTimeout);
+
+        if (!this.secret) {
+            this._token = "";
+            this._age = 0;
+            return;
+        }
 
         const time = Date.now();
 
@@ -90,7 +97,7 @@ export class TOTP extends BaseElement {
                 ${this._token.substring(0, 3)}&nbsp;${this._token.substring(3, 6)}
             </span>
             ${svg`
-                <svg class="countdown" viewBox="0 0 10 10">
+                <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this._token}>
                     <circle cx="5" cy="5" r="4" class="bg" />
                     <circle
                         cx="5"

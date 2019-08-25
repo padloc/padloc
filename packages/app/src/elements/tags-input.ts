@@ -91,7 +91,6 @@ export class TagsInput extends BaseElement {
             .add-tag {
                 height: 26px;
                 overflow: visible;
-                margin-left: 5px;
             }
 
             .add-tag .input-wrapper pl-icon {
