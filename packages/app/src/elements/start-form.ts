@@ -10,9 +10,6 @@ const styles = css`
             transform: translate(0, 30px);
             opacity: 0;
         }
-        to {
-            opacity: 1;
-        }
     }
 
     @keyframes fade {
@@ -42,7 +39,7 @@ const styles = css`
     }
 
     pl-logo {
-        margin: 20px auto;
+        margin: 40px auto 30px auto;
     }
 
     pl-loading-button {

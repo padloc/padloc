@@ -105,7 +105,7 @@ export class Signup extends StartForm {
             }
 
             .title {
-                width: 300px;
+                max-width: 310px;
                 margin: 30px auto;
                 font-size: var(--font-size-small);
                 font-weight: bold;
@@ -117,9 +117,17 @@ export class Signup extends StartForm {
                 margin-bottom: 30px;
             }
 
+            .login-wrapper {
+                font-size: var(--font-size-small);
+                padding: 8px;
+                margin: 8px 0;
+                opacity: 0.7;
+            }
+
             .login {
                 text-decoration: underline;
                 cursor: pointer;
+                font-weight: bold;
             }
 
             pl-input:not([focused]) + .hint {
@@ -182,10 +190,7 @@ export class Signup extends StartForm {
                     <pl-logo class="animate"></pl-logo>
 
                     <div class="title animate">
-                        ${$l(
-                            "Welcome to Padloc! Let's get you started by creating an account for you. Already have one?"
-                        )}
-                        <span class="login" @click=${() => router.go("login")}>➔ Sign In</span>
+                        ${$l("Welcome to Padloc! Let's get you started by creating an account for you.")}
                     </div>
 
                     <pl-input
@@ -229,6 +234,11 @@ export class Signup extends StartForm {
                 </form>
 
                 <div flex></div>
+
+                <div class="login-wrapper animate">
+                    Already have an account?
+                    <span class="login" @click=${() => router.go("login")}>${$l("Sign In")}</span>
+                </div>
             </div>
 
             <div class="wrapper" hidden>
