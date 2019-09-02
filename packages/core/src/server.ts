@@ -28,7 +28,7 @@ import { Server as SRPServer } from "./srp";
 import { DeviceInfo } from "./platform";
 import { uuid } from "./util";
 import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, MemberAddedMessage } from "./messages";
-import { BillingProvider, UpdateBillingParams } from "./billing";
+import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing";
 import { AccountQuota, OrgQuota } from "./quota";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 
@@ -255,7 +255,17 @@ class Controller implements API {
         // Persist data
         await Promise.all([this.storage.save(account), this.storage.save(vault), this.storage.save(auth)]);
 
-        return account;
+        if (this.billingProvider) {
+            await this.billingProvider.update(
+                new UpdateBillingParams({
+                    email: account.email,
+                    account: account.id,
+                    address: new BillingAddress({ name: account.name })
+                })
+            );
+        }
+
+        return this.storage.get(Account, account.id);
     }
 
     async getAccount() {

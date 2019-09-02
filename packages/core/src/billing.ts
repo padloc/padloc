@@ -145,6 +145,13 @@ export class BillingAddress extends Serializable {
     city = "";
     country = "";
 
+    constructor(params?: Partial<BillingAddress>) {
+        super();
+        if (params) {
+            Object.assign(this, params);
+        }
+    }
+
     validate() {
         return (
             typeof this.name === "string" &&

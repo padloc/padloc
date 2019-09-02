@@ -8,7 +8,7 @@ import {
     BillingProvider,
     BillingInfo,
     Plan,
-    // PlanType,
+    PlanType,
     Subscription,
     SubscriptionStatus,
     UpdateBillingParams,
@@ -299,35 +299,37 @@ export class StripeBillingProvider implements BillingProvider {
     }
 
     private async _sync(acc: Account | Org): Promise<void> {
-        // const freePlan = this._availablePlans.find(p => p.type === PlanType.Free);
+        let customer: Stripe.customers.ICustomer | undefined;
 
-        let customer: Stripe.customers.ICustomer;
-
-        try {
-            customer = acc.billing
-                ? await this._stripe.customers.retrieve(acc.billing.customerId, {
-                      expand: ["subscriptions.data.latest_invoice.payment_intent"]
-                  })
-                : await this._stripe.customers.create({
-                      // email: acc instanceof Account ? acc.email : undefined,
-                      // plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
-                      metadata: {
-                          account: acc instanceof Account ? acc.id : "",
-                          org: acc instanceof Org ? acc.id : ""
-                      }
-                  });
-        } catch (e) {
-            // If the customer was not found we can continue an create a new one,
-            // otherwise something unexpected happened and we should probably throw
-            if (e.code !== "resource_missing") {
-                throw e;
+        if (acc.billing) {
+            try {
+                customer = await this._stripe.customers.retrieve(acc.billing.customerId, {
+                    expand: ["subscriptions.data.latest_invoice.payment_intent"]
+                });
+            } catch (e) {
+                // If the customer was not found we can continue an create a new one,
+                // otherwise something unexpected happened and we should probably throw
+                if (e.code !== "resource_missing") {
+                    throw e;
+                }
             }
+        } else if (acc instanceof Account) {
+            const existingCustomers = await this._stripe.customers.list({ email: acc.email });
+            customer = existingCustomers.data.find(c => !c.metadata.org && !c.metadata.account);
         }
 
         // @ts-ignore
         if (!customer || customer.deleted) {
-            delete acc.billing;
-            return this._sync(acc);
+            const freePlan = this._availablePlans.find(p => p.type === PlanType.Free);
+
+            customer = await this._stripe.customers.create({
+                // email: acc instanceof Account ? acc.email : undefined,
+                plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
+                metadata: {
+                    account: acc instanceof Account ? acc.id : "",
+                    org: acc instanceof Org ? acc.id : ""
+                }
+            });
         }
 
         acc.billing = parseCustomer(customer);
@@ -339,7 +341,7 @@ export class StripeBillingProvider implements BillingProvider {
         //     });
         // }
 
-        const sub = acc.billing!.subscription;
+        const sub = acc.billing.subscription;
 
         Object.assign(
             acc.quota,
@@ -384,8 +386,6 @@ export class StripeBillingProvider implements BillingProvider {
                 return;
             }
 
-            console.log("stripe event: ", event.type);
-
             let customer: Stripe.customers.ICustomer | undefined = undefined;
 
             switch (event.type) {
@@ -408,7 +408,6 @@ export class StripeBillingProvider implements BillingProvider {
             }
 
             if (customer) {
-                console.log("customer: ", customer, customer.metadata);
                 const { account, org } = customer.metadata;
                 const acc = org
                     ? await this.storage.get(Org, org)
@@ -417,7 +416,6 @@ export class StripeBillingProvider implements BillingProvider {
                     : null;
 
                 if (acc) {
-                    console.log("account", acc.name);
                     await this._sync(acc);
                 }
             }
