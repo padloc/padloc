@@ -14,6 +14,7 @@ async function init() {
     const config = {
         clientUrl: process.env.PL_CLIENT_URL || "https://localhost:8081",
         reportErrors: process.env.PL_REPORT_ERRORS || "",
+        mfa: (process.env.PL_MFA as ("email" | "none")) || "email",
         accountQuota: {
             items: -1,
             storage: 1,

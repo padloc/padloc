@@ -41,6 +41,9 @@ export interface ServerConfig {
     /** Email address to report critical errors to */
     reportErrors: string;
 
+    /** Multi-factor authentication mode used for login */
+    mfa: "email" | "none";
+
     accountQuota?: Partial<AccountQuota>;
 
     orgQuota?: Partial<OrgQuota>;
@@ -102,7 +105,7 @@ class Controller implements API {
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
 
-        if (!deviceTrusted) {
+        if (this.config.mfa !== "none" && !deviceTrusted) {
             if (!verify) {
                 throw new Err(ErrorCode.EMAIL_VERIFICATION_REQUIRED);
             } else {
