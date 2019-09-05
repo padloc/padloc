@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.maklesoft.padlock" version="3.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="app.padloc" version="3.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Padloc</name>
     <description>
     </description>
-    <author email="contact@maklesoft.com" href="http://maklesoft.com">
+    <author email="contact@padloc.app" href="https://padloc.app">
         MaKleSoft
     </author>
     <content src="index.html" />
@@ -22,8 +22,10 @@
     <preference name="StatusBarStyle" value="lightcontent" />
     <preference name="BackupWebStorage" value="cloud" />
     <preference name="cordova-custom-config-autorestore" value="true" />
-    <preference name="xwalkVersion" value="xwalk_core_library:23.53.589.4" />
     <platform name="android">
+        <preference name="cdvMinSdkVersion" value="28" />
+        <preference name="android-targetSdkVersion" value="28" />
+        <preference name="android-minSdkVersion" value="28" />
         <icon density="ldpi" src="res/android/icon/app-icon-ldpi.png" />
         <icon density="mdpi" src="res/android/icon/app-icon-mdpi.png" />
         <icon density="hdpi" src="res/android/icon/app-icon-hdpi.png" />

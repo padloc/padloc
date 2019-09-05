@@ -1,5 +1,5 @@
 const path = require("path");
-const { EnvironmentPlugin } = require("webpack");
+const { EnvironmentPlugin, optimize } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
@@ -8,8 +8,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, "www"),
         filename: "[name].js",
-        chunkFilename: "[name].chunk.js",
-        publicPath: "/"
+        chunkFilename: "[name].chunk.js"
     },
     mode: "development",
     devtool: "source-map",
@@ -45,6 +44,9 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: "Padloc",
             template: path.resolve(__dirname, "src/index.html")
+        }),
+        new optimize.LimitChunkCountPlugin({
+            maxChunks: 1
         })
     ]
 };
