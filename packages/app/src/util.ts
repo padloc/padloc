@@ -62,6 +62,21 @@ export function mediaType(mimeType: string) {
                     return "pdf";
                 case "json":
                     return "code";
+                case "pkcs8":
+                case "pkcs10":
+                case "pkix-cert":
+                case "pkix-crl":
+                case "pkcs7-mime":
+                case "x-x509-ca-cert":
+                case "x-x509-user-cert":
+                case "x-pkcs12":
+                case "x-pkcs7-certificates":
+                case "x-pkcs7-mime":
+                case "x-pkcs7-crl":
+                case "x-pem-file":
+                case "x-pkcs12":
+                case "x-pkcs7-certreqresp":
+                    return "certificate";
                 case "zip":
                 case "x-7z-compressed":
                 case "x-freearc":

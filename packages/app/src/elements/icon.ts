@@ -315,6 +315,10 @@ export class PlIcon extends BaseElement {
                 content: "\\f15c";
             }
 
+            :host([icon="file-certificate"]) > div::before {
+                content: "\\f56c";
+            }
+
             :host([icon="arrow-down"]) > div::before {
                 content: "\\f309";
             }

@@ -582,6 +582,7 @@ export class ItemDialog extends Dialog<string, void> {
     }
 
     private async _deleteAttachment(a: AttachmentInfo) {
+        this.open = false;
         const confirmed = await confirm(
             $l("Are you sure you want to delete this attachment?"),
             $l("Delete"),
@@ -591,6 +592,7 @@ export class ItemDialog extends Dialog<string, void> {
                 type: "destructive"
             }
         );
+        this.open = true;
         if (confirmed) {
             await app.deleteAttachment(this.itemId!, a);
             this.requestUpdate();
