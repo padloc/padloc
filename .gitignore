@@ -14,3 +14,4 @@ packages/cordova/plugins
 packages/cordova/www
 packages/cordova/dist
 data
+packages/electron/build
