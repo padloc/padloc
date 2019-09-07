@@ -33,7 +33,9 @@ function filterByString(fs: string, rec: VaultItem) {
     if (!fs) {
         return true;
     }
-    const content = [rec.name, ...rec.fields.map(f => f.name), ...rec.fields.map(f => f.value)].join(" ").toLowerCase();
+    const content = [rec.name, ...rec.tags, ...rec.fields.map(f => f.name), ...rec.fields.map(f => f.value)]
+        .join(" ")
+        .toLowerCase();
     return content.search(escapeRegex(fs.toLowerCase())) !== -1;
 }
 
