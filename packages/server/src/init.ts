@@ -1,4 +1,4 @@
-import { Server } from "@padloc/core/src/server";
+import { Server, ServerConfig } from "@padloc/core/src/server";
 import { setPlatform } from "@padloc/core/src/platform";
 import { BillingProvider } from "@padloc/core/src/billing";
 import { NodePlatform } from "./platform";
@@ -11,7 +11,7 @@ import { StripeBillingProvider } from "./billing";
 async function init() {
     setPlatform(new NodePlatform());
 
-    const config = {
+    const config = new ServerConfig({
         clientUrl: process.env.PL_CLIENT_URL || "https://localhost:8081",
         reportErrors: process.env.PL_REPORT_ERRORS || "",
         mfa: (process.env.PL_MFA as ("email" | "none")) || "email",
@@ -26,7 +26,7 @@ async function init() {
             vaults: -1,
             storage: 5
         }
-    };
+    });
     const messenger = new EmailMessenger({
         host: process.env.PL_EMAIL_SERVER || "",
         port: process.env.PL_EMAIL_PORT || "",

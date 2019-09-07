@@ -130,12 +130,6 @@ export class Session extends Serializable implements SessionInfo, Storable {
         const { signature, session, time } = r.auth;
         const data = (<Request>r).params || (<Response>r).result;
 
-        // Reject requests/responses older than 1 minute to mitigate replay attacks
-        const age = Date.now() - new Date(time).getTime();
-        if (age > 60 * 1000) {
-            return false;
-        }
-
         return this._verify(signature, session + "_" + time + "_" + marshal(data));
     }
 

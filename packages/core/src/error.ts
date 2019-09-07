@@ -34,6 +34,7 @@ export enum ErrorCode {
     INVALID_REQUEST = "invalid_request",
     OUTDATED_REVISION = "merge_conflict",
     MAX_REQUEST_SIZE_EXCEEDED = "max_request_size_exceeded",
+    MAX_REQUEST_AGE_EXCEEDED = "max_request_age_exceeded",
 
     // Quota errors
     ORG_QUOTA_EXCEEDED = "org_quota_exceeded",

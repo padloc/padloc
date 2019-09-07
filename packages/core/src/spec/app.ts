@@ -1,5 +1,5 @@
 import { App, AppState } from "../app";
-import { Server } from "../server";
+import { Server, ServerConfig } from "../server";
 import { StubMessenger } from "../messenger";
 import { EmailVerificationMessage, InviteCreatedMessage, MemberAddedMessage } from "../messages";
 import { DirectSender } from "../transport";
@@ -15,7 +15,7 @@ export function appSpec(): Spec {
     const clientUrl = "https://padloc.app";
     const messenger = new StubMessenger();
     const server = new Server(
-        { clientUrl, reportErrors: "support@padloc.app" },
+        new ServerConfig({ clientUrl, reportErrors: "support@padloc.app" }),
         new MemoryStorage(),
         messenger,
         new MemoryAttachmentStorage()

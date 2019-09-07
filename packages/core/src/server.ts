@@ -35,18 +35,30 @@ import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 const pendingAuths = new Map<string, SRPServer>();
 
 /** Server configuration */
-export interface ServerConfig {
+export class ServerConfig {
     /** URL where the client interface is hosted. Used for creating links into the application */
-    clientUrl: string;
+    clientUrl = "";
+
     /** Email address to report critical errors to */
-    reportErrors: string;
+    reportErrors = "";
 
     /** Multi-factor authentication mode used for login */
-    mfa: "email" | "none";
+    mfa: "email" | "none" = "email";
 
+    /** Maximum accepted request age */
+    maxRequestAge = 60 * 60 * 1000;
+
+    /** Default quota applied to new accounts */
     accountQuota?: Partial<AccountQuota>;
 
+    /** Default quota applied to new Orgs */
     orgQuota?: Partial<OrgQuota>;
+
+    constructor(vals?: Partial<ServerConfig>) {
+        if (vals) {
+            Object.assign(this, vals);
+        }
+    }
 }
 
 /**
@@ -1035,7 +1047,17 @@ export abstract class BaseServer {
 
         // Verify request signature
         if (!(await session.verify(req))) {
-            throw new Err(ErrorCode.INVALID_REQUEST);
+            throw new Err(ErrorCode.INVALID_REQUEST, "Failed to verify request signature!");
+        }
+
+        // Reject requests/responses older than a certain age to mitigate replay attacks
+        const age = Date.now() - new Date(req.auth.time).getTime();
+        if (age > this.config.maxRequestAge) {
+            throw new Err(
+                ErrorCode.MAX_REQUEST_AGE_EXCEEDED,
+                "The request was rejected because it's timestamp is too far in the past. " +
+                    "Please make sure your local clock is set to the correct time and try again!"
+            );
         }
 
         // Get account associated with this session
