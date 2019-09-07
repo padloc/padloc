@@ -9,7 +9,9 @@ export class Dialog<I, R> extends BaseElement {
 
     static closeAll() {
         for (const dialog of Dialog.openDialogs) {
-            dialog.open = false;
+            if (!dialog.preventAutoClose) {
+                dialog.done();
+            }
         }
     }
 
@@ -17,6 +19,8 @@ export class Dialog<I, R> extends BaseElement {
     open: boolean = false;
     @property()
     preventDismiss: boolean = false;
+    @property()
+    preventAutoClose: boolean = false;
 
     readonly hideApp: boolean = false;
 

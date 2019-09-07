@@ -14,6 +14,7 @@ export interface AlertOptions {
     preventDismiss?: boolean;
     hideIcon?: boolean;
     vertical?: boolean;
+    preventAutoClose?: boolean;
 }
 
 @element("pl-alert-dialog")
@@ -90,7 +91,8 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         preventDismiss = false,
         hideIcon = false,
         vertical = false,
-        icon
+        icon,
+        preventAutoClose
     }: AlertOptions = {}): Promise<number> {
         this.message = message;
         this.dialogTitle = title;
@@ -100,6 +102,9 @@ export class AlertDialog extends Dialog<AlertOptions, number> {
         this.hideIcon = hideIcon;
         this.vertical = vertical;
         this.icon = icon || this._icon(type);
+        if (typeof preventAutoClose !== "undefined") {
+            this.preventAutoClose = preventAutoClose;
+        }
 
         return super.show();
     }
