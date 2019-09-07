@@ -68,7 +68,6 @@ export class Signup extends StartForm {
         this._submitEmailButton.stop();
         this._verifyEmailButton.stop();
         this._submitPasswordButton.stop();
-        this._password = await generatePassphrase(4, " ", [app.state.device.locale]);
         setTimeout(() => (this._logo.reveal = true), 500);
     }
 
@@ -89,6 +88,17 @@ export class Signup extends StartForm {
             setTimeout(() => prevWrapper.setAttribute("hidden", ""), 1000);
         }
         this._step = step;
+
+        if (step === "password" && !this._password) {
+            this._generatePassphrase();
+        }
+    }
+
+    private async _generatePassphrase() {
+        this._password = await generatePassphrase(4, " ", [app.state.device.locale]);
+        const wrapper = this.$(".master-password");
+        wrapper.classList.add("reveal");
+        setTimeout(() => wrapper.classList.remove("reveal"), 2000);
     }
 
     static styles = [
@@ -124,7 +134,7 @@ export class Signup extends StartForm {
                 opacity: 0.7;
             }
 
-            .login {
+            .link {
                 text-decoration: underline;
                 cursor: pointer;
                 font-weight: bold;
@@ -140,7 +150,7 @@ export class Signup extends StartForm {
                 background: var(--shade-2-color);
                 font-family: var(--font-family-mono);
                 font-size: 120%;
-                padding: 20px 40px;
+                padding: 20px;
                 overflow-wrap: break-word;
             }
 
@@ -154,29 +164,27 @@ export class Signup extends StartForm {
                 color: rgba(0, 0, 0, 0.3);
             }
 
-            .master-password-edit {
-                font-size: 80%;
-                width: 35px;
-                height: 35px;
-                vertical-align: middle;
-                position: absolute;
-                right: 5px;
-                top: 0;
-                bottom: 0;
-                margin: auto;
-                z-index: 1;
-                text-shadow: none;
-                color: rgba(0, 0, 0, 0.3);
-            }
-
             .master-password:hover {
                 background: var(--shade-3-color);
             }
 
-            .master-password:not(:hover) .master-password-value,
-            .master-password:not(:hover) .master-password-edit,
-            .master-password:hover .master-password-cover {
+            .master-password > * {
+                transition: transform 0.2s cubic-bezier(1, -0.3, 0, 1.3), opacity 0.2s;
+            }
+
+            .master-password:not(:hover):not(.reveal) .master-password-value,
+            .master-password:hover .master-password-cover,
+            .master-password.reveal .master-password-cover {
                 opacity: 0;
+                transform: scale(0);
+            }
+
+            .hint.subtle {
+                opacity: 0.5;
+            }
+
+            [focused] + .hint.subtle {
+                opacity: 1;
             }
         `
     ];
@@ -237,7 +245,7 @@ export class Signup extends StartForm {
 
                 <div class="login-wrapper animate">
                     Already have an account?
-                    <span class="login" @click=${() => router.go("login")}>${$l("Sign In")}</span>
+                    <span class="link" @click=${() => router.go("login")}>${$l("Sign In")}</span>
                 </div>
             </div>
 
@@ -290,8 +298,9 @@ export class Signup extends StartForm {
                     <div class="hint animate">
                         ${$l(
                             "It's the last password you'll ever have to remember! " +
-                                "Your master password is used to protect your data and should not be known to anyone but you. " +
-                                "Without it, nobody will be able to access your data - not even us!"
+                                "Please memorize it and never reveal it to anyone (not even us)! " +
+                                "We recommend writing it down on a piece of paper and " +
+                                "storing it somewhere safe, at least until you have it safely memorized."
                         )}
                     </div>
 
@@ -300,12 +309,16 @@ export class Signup extends StartForm {
                             <span>${this._password}</span>
                         </div>
 
-                        <pl-icon icon="edit" class="master-password-edit tap" @click=${this._editMasterPassword}>
-                        </pl-icon>
-
                         <div class="master-password-cover">
                             ${isTouch() ? $l("[Tap To Reveal]") : $l("[Hover To Reveal]")}
                         </div>
+                    </div>
+
+                    <div class="hint animate">
+                        This random passphrase was generated just for you and is designed to be both secure and easy to
+                        remember. Don't like it?<br />
+                        <span class="link" @click=${this._generatePassphrase}>Try another one</span>
+                        or <span class="link" @click=${this._editMasterPassword}>choose your own</span>!
                     </div>
 
                     <pl-password-input
@@ -316,15 +329,6 @@ export class Signup extends StartForm {
                         @enter=${() => this._submitPassword()}
                     >
                     </pl-password-input>
-
-                    <div class="hint" hidden>
-                        ${$l(
-                            "For privacy and security reasons we don't keep " +
-                                "a record of you password which means we won't be able to help you recover your " +
-                                "data in case you forget it. We recommend writing it down on a piece of paper and " +
-                                "storing it somewhere safe, at least until you have it safely memorized."
-                        )}
-                    </div>
 
                     <pl-loading-button
                         id="submitPasswordButton"
