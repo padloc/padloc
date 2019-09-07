@@ -121,6 +121,9 @@ export class ExportDialog extends Dialog<void, void> {
         const a = document.createElement("a");
         a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
         a.download = fileName;
+        a.rel = "noopener";
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
     }
 }
