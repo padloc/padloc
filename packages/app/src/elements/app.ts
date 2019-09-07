@@ -187,6 +187,15 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 height: 30px;
             }
 
+            .menu-scrim {
+                ${mixins.fullbleed()}
+                z-index: 10;
+                background: var(--color-tertiary);
+                opacity: 0.3;
+                transition: opacity 0.3s;
+                display: none;
+            }
+
             @supports (-webkit-overflow-scrolling: touch) {
                 .offline {
                     padding-top: max(calc(env(safe-area-inset-top) - 8px), 8px);
@@ -215,6 +224,15 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
 
                 pl-menu {
                     transition: transform 0.3s cubic-bezier(0.6, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.6, 0, 0.2, 1);
+                }
+
+                .menu-scrim {
+                    display: block;
+                }
+
+                :host(:not([menu-open])) .menu-scrim {
+                    opacity: 0;
+                    pointer-events: none;
                 }
 
                 :host(:not([menu-open])) pl-menu {
@@ -256,13 +274,19 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                     <pl-menu></pl-menu>
 
                     <div class="views">
-                        <pl-settings ?showing=${this._view === this._settings}></pl-settings>
+                        <pl-settings></pl-settings>
 
-                        <pl-org-view ?showing=${this._view === this._orgView}></pl-org-view>
+                        <pl-org-view></pl-org-view>
 
-                        <pl-orgs-list ?showing=${this._view === this._orgs}></pl-orgs-list>
+                        <pl-orgs-list></pl-orgs-list>
 
-                        <pl-items-list ?showing=${this._view === this._items}></pl-items-list>
+                        <pl-items-list></pl-items-list>
+
+                        <div
+                            class="menu-scrim showing"
+                            @touchstart=${(e: MouseEvent) => this._closeMenu(e)}
+                            @click=${(e: MouseEvent) => this._closeMenu(e)}
+                        ></div>
                     </div>
                 </div>
 
@@ -296,6 +320,11 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     @listen("toggle-menu")
     _toggleMenu() {
         this._menuOpen = !this._menuOpen;
+    }
+
+    _closeMenu(e: MouseEvent) {
+        this._menuOpen = false;
+        e.preventDefault();
     }
 
     @listen("focus", window)
