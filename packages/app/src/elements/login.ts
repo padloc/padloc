@@ -69,7 +69,7 @@ export class Login extends StartForm {
                     type="email"
                     required
                     select-on-focus
-                    .label=${$l("Email Adress")}
+                    .label=${$l("Email Address")}
                     .value=${this._email}
                     class="animate tap"
                     @enter=${() => this._submit()}
