@@ -438,6 +438,8 @@ export class Signup extends StartForm {
                     throw e;
             }
         }
+
+        this._password = "";
     }
 
     private async _editMasterPassword(): Promise<void> {
