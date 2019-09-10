@@ -143,6 +143,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
 
             .views > * {
                 transition: opacity 0.4s;
+                border-radius: var(--border-radius);
                 ${mixins.fullbleed()}
             }
 

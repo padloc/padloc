@@ -12,6 +12,8 @@ export class OrgsList extends StateMixin(View) {
         css`
             :host {
                 background: var(--color-quaternary);
+                display: flex;
+                flex-direction: column;
             }
 
             .orgs {

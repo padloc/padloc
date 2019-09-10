@@ -205,7 +205,6 @@ export const shared = css`
         font-size: 120%;
         padding: 10px;
         background: var(--color-tertiary);
-        z-index: 1;
         border-bottom: solid 3px var(--color-shade-1);
         align-items: center;
         font-weight: bold;
