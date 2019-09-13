@@ -201,6 +201,8 @@ export class OrgSubscription extends StateMixin(BaseElement) {
             ? Math.max(0, Math.ceil((sub.periodEnd.getTime() - Date.now()) / 1000 / 60 / 60 / 24))
             : 0;
 
+        const itemCount = (app.mainVault && app.mainVault.items.size) || 0;
+
         return html`
             <div class="plan-name">
                 ${sub.plan.name}
@@ -247,14 +249,14 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                     : html`
                           <div
                               class="quota-item"
-                              ?warning=${account.quota.items !== -1 && app.mainVault!.items.size >= account.quota.items}
+                              ?warning=${account.quota.items !== -1 && itemCount >= account.quota.items}
                           >
                               <pl-icon icon="list"></pl-icon>
 
                               <div class="label">
                                   ${account.quota.items === -1
                                       ? $l("Unlimited")
-                                      : `${app.mainVault!.items.size} / ${account.quota.items}`}
+                                      : `${itemCount} / ${account.quota.items}`}
                               </div>
                           </div>
 
