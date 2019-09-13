@@ -288,11 +288,11 @@ export class Settings extends StateMixin(View) {
     }
 
     private _openWebsite() {
-        window.open("https://padlock.io", "_system");
+        window.open("https://padloc.app", "_system");
     }
 
     private _sendMail() {
-        window.open("mailto:support@padloc.io", "_system");
+        window.open("mailto:support@padloc.app", "_system");
     }
 
     private async _import() {
