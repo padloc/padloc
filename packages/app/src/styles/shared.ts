@@ -259,6 +259,11 @@ export const shared = css`
         font-family: var(--font-family-mono);
     }
 
+    pre {
+        font: inherit;
+        margin: 0;
+    }
+
     pl-dialog .message {
         padding: 15px;
         text-align: center;
