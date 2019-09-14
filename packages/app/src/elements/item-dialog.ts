@@ -1,4 +1,5 @@
 import { until } from "lit-html/directives/until";
+import { repeat } from "lit-html/directives/repeat";
 import { VaultItemID, Field } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { AttachmentInfo } from "@padloc/core/src/attachment";
@@ -327,7 +328,9 @@ export class ItemDialog extends Dialog<string, void> {
             <div class="content">
                 <pl-tags-input .editing=${this._editing} .vault=${this._vault} @move=${this._move}></pl-tags-input>
 
-                ${this._fields.map(
+                ${repeat(
+                    this._fields,
+                    field => `${this.itemId}_${field.name}_${field.type}`,
                     (field: Field, index: number) => html`
                         <pl-field
                             class="item"
