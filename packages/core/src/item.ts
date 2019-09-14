@@ -40,6 +40,8 @@ export interface FieldDef {
     icon: string;
     /** display name */
     name: string;
+    /** display formatting */
+    format?: (value: string, masked: boolean) => string;
 }
 
 /** Available field types and respective meta data */
@@ -62,6 +64,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         icon: "lock",
         get name() {
             return $l("Password");
+        },
+        format(value, masked) {
+            return masked ? value.replace(/./g, "\u2022") : value;
         }
     },
     url: {
@@ -92,6 +97,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         icon: "date",
         get name() {
             return $l("Date");
+        },
+        format(value) {
+            return new Date(value).toLocaleDateString();
         }
     },
     month: {
@@ -112,6 +120,16 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         icon: "credit",
         get name() {
             return $l("Credit Card Number");
+        },
+        format(value, masked) {
+            const parts = [];
+
+            for (let i = 0; i < value.length; i += 4) {
+                const part = value.slice(i, i + 4);
+                parts.push(masked && i < value.length - 4 ? part.replace(/./g, "\u2022") : part);
+            }
+
+            return parts.join(" ");
         }
     },
     phone: {
@@ -132,6 +150,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         icon: "lock",
         get name() {
             return $l("PIN");
+        },
+        format(value, masked) {
+            return masked ? value.replace(/./g, "\u2022") : value;
         }
     },
     totp: {

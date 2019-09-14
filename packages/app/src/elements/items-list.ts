@@ -9,7 +9,7 @@ import { setClipboard } from "../clipboard";
 import { app, router } from "../init";
 import { dialog, confirm } from "../dialog";
 import { mixins } from "../styles";
-import { mask, fileIcon, fileSize } from "../util";
+import { fileIcon, fileSize } from "../util";
 import { element, html, css, property, query, listen, observe } from "./base";
 import { View } from "./view";
 import { Input } from "./input";
@@ -787,7 +787,7 @@ export class ItemsList extends StateMixin(View) {
                                               `
                                             : html`
                                                   <div class="item-field-value">
-                                                      ${fieldDef.mask ? mask(f.value) : f.value}
+                                                      ${fieldDef.format ? fieldDef.format(f.value, true) : f.value}
                                                   </div>
                                               `}
                                     </div>

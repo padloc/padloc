@@ -1,7 +1,7 @@
 import { FieldType, FIELD_DEFS } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
-import { BaseElement, element, html, css, property, query } from "./base";
+import { BaseElement, element, html, css, property, query, observe } from "./base";
 import "./icon";
 import { Input } from "./input";
 import { Textarea } from "./textarea";
@@ -49,6 +49,11 @@ export class FieldElement extends BaseElement {
     focus() {
         const inputToFocus = this._nameInput.value ? this._valueInput : this._nameInput;
         inputToFocus.focus();
+    }
+
+    @observe("type")
+    _typeChanged() {
+        this._masked = this._fieldDef.mask;
     }
 
     static styles = [
@@ -166,6 +171,7 @@ export class FieldElement extends BaseElement {
     ];
 
     private _renderDisplayValue() {
+        const format = this._fieldDef.format || ((value: string, _masked: boolean) => value);
         switch (this.type) {
             case "totp":
                 return html`
@@ -173,7 +179,7 @@ export class FieldElement extends BaseElement {
                 `;
             default:
                 return html`
-                    <pre class="value-display">${this.value}</pre>
+                    <pre class="value-display">${format(this.value, this._masked)}</pre>
                 `;
         }
     }
