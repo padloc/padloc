@@ -36,17 +36,6 @@ export class FieldElement extends BaseElement {
         return FIELD_DEFS[this.type] || FIELD_DEFS.text;
     }
 
-    private get _editActions() {
-        switch (this.type) {
-            case "password":
-                return [{ icon: "generate", action: () => this.dispatch("generate") }];
-            case "totp":
-                return [{ icon: "qrcode", action: () => this.dispatch("get-totp-qr") }];
-            default:
-                return [];
-        }
-    }
-
     private get _fieldActions() {
         const actions = [{ icon: "copy", action: () => this.dispatch("copy") }];
 
@@ -109,12 +98,21 @@ export class FieldElement extends BaseElement {
                 top: 8px;
             }
 
+            .field-value {
+                display: flex;
+            }
+
+            .field-value > :not(:first-child) {
+                margin-left: 4px;
+            }
+
             .value-input, .value-display {
                 font-family: var(--font-family-mono);
                 font-size: 110%;
                 padding: 4px 8px;
                 line-height: 1.4em;
                 flex: 1;
+                width: 0;
             }
 
             .value-display {
@@ -193,6 +191,32 @@ export class FieldElement extends BaseElement {
                     >
                     </pl-textarea>
                 `;
+
+            case "totp":
+                return html`
+                    <pl-input
+                        class="value-input"
+                        .placeholder=${$l("Enter Secret")}
+                        type="text"
+                        @input=${() => (this.value = this._valueInput.value)}
+                        .value=${this.value}
+                    >
+                    </pl-input>
+                    <pl-icon icon="qrcode" class="tap" @click=${() => this.dispatch("get-totp-qr")}></pl-icon>
+                `
+            case "password":
+                return html`
+                    <pl-input
+                        class="value-input"
+                        .placeholder=${$l("Enter Password")}
+                        type="text"
+                        @input=${() => (this.value = this._valueInput.value)}
+                        .value=${this.value}
+                    >
+                    </pl-input>
+                    <pl-icon icon="generate" class="tap" @click=${() => this.dispatch("generate")}></pl-icon>
+                `
+
             default:
                 let inputType: string;
                 switch (this.type) {
@@ -238,12 +262,6 @@ export class FieldElement extends BaseElement {
                 </pl-icon>
 
                 <pl-icon icon="remove" class="tap" @click=${() => this.dispatch("remove")}> </pl-icon>
-
-                ${this._editActions.map(
-                    ({ icon, action }) => html`
-                        <pl-icon icon=${icon} class="tap" @click=${action}></pl-icon>
-                    `
-                )}
             </div>
 
             <div class="fields-container flex">
