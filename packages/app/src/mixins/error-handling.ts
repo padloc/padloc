@@ -23,9 +23,9 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
             error =
                 error instanceof Err
                     ? error
-                    : new Err(ErrorCode.UNKNOWN_ERROR, $l("An unexpected error occurred."), {
-                          error: error instanceof Error ? error : new Error(error.toString())
-                      });
+                    : error instanceof Error
+                    ? new Err(ErrorCode.UNKNOWN_ERROR, error.message, { error })
+                    : new Err(ErrorCode.UNKNOWN_ERROR, error.toString());
 
             switch (error.code) {
                 case ErrorCode.FAILED_CONNECTION:
@@ -50,7 +50,7 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                         const subject = "Padloc Error Report";
                         const message = `
 
------ ^^^ ----- enter your comment above ----- ^^^ -----
+----- enter your comment above -----
 
 IMPORTANT: Please verify that the message below does not contain any sensitive data before sending this email!
 

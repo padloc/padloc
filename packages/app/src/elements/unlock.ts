@@ -8,7 +8,7 @@ import { element, property, html, css, query } from "./base";
 import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input";
 import { LoadingButton } from "./loading-button";
-import { confirm, choose } from "../dialog";
+import { alert, confirm, choose } from "../dialog";
 import "./logo";
 
 @element("pl-unlock")
@@ -222,8 +222,12 @@ export class Unlock extends StartForm {
                 this.dispatch("enable-biometric-auth");
                 this._bioauthButton.stop();
             }
-        } catch (e) {
+        } catch (error) {
             this._bioauthButton.fail();
+            alert($l("Biometric unlock failed! Reason: {0}", error.message), {
+                title: $l("Failed To Unlock"),
+                type: "warning"
+            });
         }
     }
 }

@@ -615,14 +615,21 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             return;
         }
 
-        const authenticated = await biometricAuth();
+        try {
+            const authenticated = await biometricAuth();
 
-        if (!authenticated) {
-            alert($l("Biometric authentication failed! Canceling Setup."), {
-                title: $l("Biometric Unlock"),
+            if (!authenticated) {
+                alert($l("Biometric authentication failed! Canceling Setup."), {
+                    title: $l("Setup Failed"),
+                    type: "warning"
+                });
+                return;
+            }
+        } catch (e) {
+            alert($l("Biometric unlock failed! Canceling Setup. (Reason: {0})", e.message), {
+                title: $l("Setup Failed"),
                 type: "warning"
             });
-            return;
         }
 
         const password = await prompt($l("Please enter your master password!"), {

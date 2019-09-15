@@ -103,6 +103,8 @@ export class Err extends Error {
     }
 
     toString() {
-        return `${this.code}: ${this.message}`;
+        return `Error Code: ${this.code}:\nError Message: ${this.message}\nStack Trace:\n${
+            this.originalError ? this.originalError.stack : this.stack
+        }`;
     }
 }

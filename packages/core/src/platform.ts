@@ -88,6 +88,8 @@ export interface Platform {
     keyStoreGet(name: string): Promise<string>;
     keyStoreSet(name: string, val: string): Promise<void>;
     keyStoreDelete(name: string): Promise<void>;
+
+    composeEmail(addr: string, subject: string, message: string): Promise<void>;
 }
 
 /**
@@ -141,6 +143,10 @@ export class StubPlatform implements Platform {
     }
 
     async keyStoreDelete(_name: string) {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
+
+    async composeEmail(_addr: string, _subject: string, _message: string) {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
 }
@@ -203,4 +209,8 @@ export function keyStoreGet(name: string) {
 
 export function keyStoreDelete(name: string) {
     return platform.keyStoreDelete(name);
+}
+
+export function composeEmail(addr: string, subject: string, message: string) {
+    return platform.composeEmail(addr, subject, message);
 }
