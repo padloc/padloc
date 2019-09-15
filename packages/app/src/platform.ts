@@ -53,7 +53,7 @@ export class WebPlatform extends StubPlatform implements Platform {
             platform: (os.name && os.name.replace(" ", "")) || "",
             osVersion: (os.version && os.version.replace(" ", "")) || "",
             id: "",
-            appVersion: "",
+            appVersion: process.env.PL_VERSION || "",
             manufacturer: "",
             model: "",
             browser: browser.name || "",
@@ -128,5 +128,9 @@ export class WebPlatform extends StubPlatform implements Platform {
 
         this._qrVideo && (this._qrVideo.srcObject = null);
         this._qrCanvas.style.display = "none";
+    }
+
+    async composeEmail(addr: string, subj: string, msg: string) {
+        window.open(`mailto:${addr}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`, "_system");
     }
 }

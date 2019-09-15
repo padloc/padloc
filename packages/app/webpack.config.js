@@ -5,6 +5,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const WebpackPwaManifest = require("webpack-pwa-manifest");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
+const { version } = require("./package.json");
 
 module.exports = {
     entry: path.resolve(__dirname, "src/index.ts"),
@@ -38,7 +39,9 @@ module.exports = {
     plugins: [
         new EnvironmentPlugin({
             PL_SERVER_URL: `http://localhost:${process.env.PL_SERVER_PORT || 3000}`,
-            PL_STRIPE_PUBLIC_KEY: null
+            PL_STRIPE_PUBLIC_KEY: null,
+            PL_SUPPORT_EMAIL: "support@padloc.app",
+            PL_VERSION: version
         }),
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({

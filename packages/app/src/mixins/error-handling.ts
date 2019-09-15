@@ -1,5 +1,6 @@
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { composeEmail } from "@padloc/core/src/platform";
 import { app, router } from "../init";
 import { alert, confirm } from "../dialog";
 // import { notify } from "../elements/notification";
@@ -22,9 +23,9 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
             error =
                 error instanceof Err
                     ? error
-                    : error instanceof Error
-                    ? new Err(ErrorCode.UNKNOWN_ERROR, error.message, { error })
-                    : new Err(ErrorCode.UNKNOWN_ERROR, error.toString());
+                    : new Err(ErrorCode.UNKNOWN_ERROR, $l("An unexpected error occurred."), {
+                          error: error instanceof Error ? error : new Error(error.toString())
+                      });
 
             switch (error.code) {
                 case ErrorCode.FAILED_CONNECTION:
@@ -38,16 +39,31 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                     router.go("login");
                     return true;
                 default:
-                    await confirm(
+                    const confirmed = await confirm(
                         error.message || $l("Something went wrong. Please try again later!"),
-                        $l("Contact Support"),
+                        $l("Report Error"),
                         $l("Dismiss"),
                         { title: "Error", type: "warning", preventAutoClose: true }
-                    ).then(confirmed => {
-                        if (confirmed) {
-                            window.open(`mailto:support@padloc.io?subject=Server+Error+(${error.code})`);
-                        }
-                    });
+                    );
+                    if (confirmed) {
+                        const email = process.env.PL_SUPPORT_EMAIL || "";
+                        const subject = "Padloc Error Report";
+                        const message = `
+
+----- ^^^ ----- enter your comment above ----- ^^^ -----
+
+IMPORTANT: Please verify that the message below does not contain any sensitive data before sending this email!
+
+The following error occurred:
+
+${error}
+
+Device Info:
+
+${JSON.stringify(app.state.device.toRaw(), null, 4)}
+                        `;
+                        composeEmail(email, subject, message);
+                    }
                     return true;
             }
 

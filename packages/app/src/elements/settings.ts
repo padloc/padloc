@@ -1,5 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo } from "@padloc/core/src/billing";
+import { composeEmail } from "@padloc/core/src/platform";
 import { mixins } from "../styles";
 import { alert, confirm, prompt, dialog } from "../dialog";
 import { app, router } from "../init";
@@ -292,7 +293,20 @@ export class Settings extends StateMixin(View) {
     }
 
     private _sendMail() {
-        window.open("mailto:support@padloc.app", "_system");
+        const email = process.env.PL_SUPPORT_EMAIL || "";
+        const subject = "Padloc Support Request";
+        const message = `
+
+----- ^^^ ----- enter your message above ----- ^^^ -----
+
+NOTE: Below we have included some information about your device that may help
+us analyse any problems you may be having. If you're not comfortable sharing
+this data simply delete this of the email!
+
+Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
+`;
+
+        composeEmail(email, subject, message);
     }
 
     private async _import() {
