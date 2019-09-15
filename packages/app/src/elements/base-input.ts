@@ -1,5 +1,5 @@
 import { TemplateResult } from "lit-html";
-import { BaseElement, listen, html, css, query, property } from "./base";
+import { BaseElement, html, css, query, property } from "./base";
 import { shared } from "../styles";
 
 let activeInput: BaseInput | null = null;
@@ -86,8 +86,7 @@ export abstract class BaseInput extends BaseElement {
         }
     }
 
-    @listen("focus", ".input-element")
-    _focused(e: FocusEvent) {
+    protected _focused(e: FocusEvent) {
         e.stopPropagation();
         this.focused = true;
         activeInput = this;
@@ -99,8 +98,7 @@ export abstract class BaseInput extends BaseElement {
         }
     }
 
-    @listen("blur", ".input-element")
-    _blurred(e: FocusEvent) {
+    protected _blurred(e: FocusEvent) {
         e.stopPropagation();
         this.checkValidity();
         this.focused = false;
@@ -112,15 +110,13 @@ export abstract class BaseInput extends BaseElement {
         }
     }
 
-    @listen("change", ".input-element")
-    _changeHandler(e: Event) {
+    protected _changeHandler(e: Event) {
         e.stopPropagation();
         this.dispatch("change", { prevValue: this._prevValue, value: this.value }, true, true);
         this._prevValue = this.value;
     }
 
-    @listen("touchend")
-    _touchend(e: Event) {
+    protected _touchend(e: Event) {
         e.stopPropagation();
     }
 

@@ -45,8 +45,10 @@ export class Input extends BaseInput {
                 autocorrect="off"
                 type="${type}"
                 pattern="${pattern || ".*"}"
-                @focus=${(e: FocusEvent) => this._focused(e)}
-                @blur=${(e: FocusEvent) => this._blurred(e)}
+                @focus=${this._focused}
+                @blur=${this._blurred}
+                @change=${this._changeHandler}
+                @touchend=${this._touchend}
             />
         `;
     }

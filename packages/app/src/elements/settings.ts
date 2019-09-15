@@ -297,7 +297,7 @@ export class Settings extends StateMixin(View) {
         const subject = "Padloc Support Request";
         const message = `
 
------ ^^^ ----- enter your message above ----- ^^^ -----
+----- enter your message above -----
 
 NOTE: Below we have included some information about your device that may help
 us analyse any problems you may be having. If you're not comfortable sharing

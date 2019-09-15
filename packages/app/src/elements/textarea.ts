@@ -36,8 +36,10 @@ export class Textarea extends BaseInput {
                 spellcheck="false"
                 autocorrect="off"
                 rows="1"
-                @focus=${(e: FocusEvent) => this._focused(e)}
-                @blur=${(e: FocusEvent) => this._blurred(e)}
+                @focus=${this._focused}
+                @blur=${this._blurred}
+                @change=${this._changeHandler}
+                @touchend=${this._touchend}
             ></textarea>
         `;
     }
