@@ -1004,7 +1004,7 @@ export class App {
         if (this.account) {
             item.updatedBy = this.account.id;
         }
-        await this.addItems([item], vault);
+        this.addItems([item], vault);
         return item;
     }
 
