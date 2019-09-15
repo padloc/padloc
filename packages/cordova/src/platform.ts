@@ -50,7 +50,9 @@ export class CordovaPlatform extends WebPlatform implements Platform {
                         disableBackup: true
                     },
                     () => resolve(true),
-                    () => resolve(false)
+                    (e: any) => {
+                        reject(new Error(e.message));
+                    }
                 );
             } catch (e) {
                 reject(e);

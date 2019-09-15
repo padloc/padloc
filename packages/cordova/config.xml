@@ -23,9 +23,7 @@
     <preference name="BackupWebStorage" value="cloud" />
     <preference name="cordova-custom-config-autorestore" value="true" />
     <platform name="android">
-        <preference name="cdvMinSdkVersion" value="28" />
-        <preference name="android-targetSdkVersion" value="28" />
-        <preference name="android-minSdkVersion" value="28" />
+        <preference name="android-targetSdkVersion" value="29" />
         <icon density="ldpi" src="res/android/icon/app-icon-ldpi.png" />
         <icon density="mdpi" src="res/android/icon/app-icon-mdpi.png" />
         <icon density="hdpi" src="res/android/icon/app-icon-hdpi.png" />
@@ -102,7 +100,6 @@
         </config-file>
         <splash src="res/ios/splash/Default@3x~universal~anyany.png" />
     </platform>
-    <engine name="android" spec="^6.3.0" />
     <plugin name="cordova-plugin-app-version" spec="~0.1.9" />
     <plugin name="cordova-plugin-backbutton" spec="~0.3.0" />
     <plugin name="cordova-plugin-inappbrowser" spec="~1.4.0" />
