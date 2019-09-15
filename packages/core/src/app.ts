@@ -556,6 +556,10 @@ export class App {
             auth.verifier = srp.v!;
             await this.api.updateAuth(auth);
         });
+
+        if (await this.canRememberMasterPassword()) {
+            await this.unrememberMasterPassword();
+        }
     }
 
     /**
