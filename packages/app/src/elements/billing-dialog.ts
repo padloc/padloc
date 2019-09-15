@@ -252,6 +252,11 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                 opacity: 0.7;
                 font-family: var(--font-family-mono);
             }
+
+            .payment-disabled-message {
+                padding: 30px;
+                text-align: center;
+            }
         `
     ];
 
@@ -276,116 +281,130 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
             </header>
 
             <div class="content">
-                <div class="message">
-                    ${this.message}
-                </div>
-
-                <label>${$l("Payment Details")}</label>
-
-                <div class="card-wrapper item" ?hidden=${!this._editingPaymentMethod}>
-                    <slot></slot>
-                </div>
-
-                <div class="error item" ?hidden="${!this._error}">
-                    ${this._error}
-                </div>
-
-                ${paymentMethod
+                ${!app.billingConfig || app.billingConfig.disablePayment
                     ? html`
-                          <div class="payment-method item" ?hidden=${this._editingPaymentMethod}>
-                              <pl-icon icon="credit"></pl-icon>
-                              <div class="flex">
-                                  ${paymentMethod.name}
-                              </div>
-                              <pl-icon icon="edit" class="tap" @click=${this._editPaymentMethod}></pl-icon>
+                          <div class="payment-disabled-message">
+                              To update your billing info and payment method, please go to
+                              <strong>https://web.padloc.app</strong>!
                           </div>
                       `
-                    : html``}
+                    : html`
+                          <div class="message">
+                              ${this.message}
+                          </div>
 
-                <div ?hidden="condensed">
-                    <label>${$l("Billing Address")}</label>
+                          <label>${$l("Payment Details")}</label>
 
-                    <pl-input
-                        id="emailInput"
-                        class="item"
-                        .type="email"
-                        .placeholder=${$l("Billing Email")}
-                        .value=${email}
-                    ></pl-input>
+                          <div class="card-wrapper item" ?hidden=${!this._editingPaymentMethod}>
+                              <slot></slot>
+                          </div>
 
-                    <pl-input id="nameInput" class="item" .placeholder=${$l("Name")} .value=${name}></pl-input>
+                          <div class="error item" ?hidden="${!this._error}">
+                              ${this._error}
+                          </div>
 
-                    <pl-input
-                        id="streetInput"
-                        class="item"
-                        .placeholder=${$l("Address")}
-                        .value=${address.street}
-                    ></pl-input>
+                          ${paymentMethod
+                              ? html`
+                                    <div class="payment-method item" ?hidden=${this._editingPaymentMethod}>
+                                        <pl-icon icon="credit"></pl-icon>
+                                        <div class="flex">
+                                            ${paymentMethod.name}
+                                        </div>
+                                        <pl-icon icon="edit" class="tap" @click=${this._editPaymentMethod}></pl-icon>
+                                    </div>
+                                `
+                              : html``}
 
-                    <div class="city-wrapper">
-                        <pl-input
-                            id="zipInput"
-                            class="item"
-                            .placeholder=${$l("Postal Code")}
-                            .value=${address.postalCode}
-                        ></pl-input>
+                          <div ?hidden="condensed">
+                              <label>${$l("Billing Address")}</label>
 
-                        <pl-input
-                            id="cityInput"
-                            class="item"
-                            .placeholder=${$l("City")}
-                            .value=${address.city}
-                        ></pl-input>
-                    </div>
+                              <pl-input
+                                  id="emailInput"
+                                  class="item"
+                                  .type="email"
+                                  .placeholder=${$l("Billing Email")}
+                                  .value=${email}
+                              ></pl-input>
 
-                    <pl-select
-                        class="item"
-                        id="countrySelect"
-                        .options=${countryOptions}
-                        .selected=${countryOptions.find(c => c.code === address.country)}
-                    ></pl-select>
+                              <pl-input
+                                  id="nameInput"
+                                  class="item"
+                                  .placeholder=${$l("Name")}
+                                  .value=${name}
+                              ></pl-input>
 
-                    <label>${$l("Tax Info")}</label>
+                              <pl-input
+                                  id="streetInput"
+                                  class="item"
+                                  .placeholder=${$l("Address")}
+                                  .value=${address.street}
+                              ></pl-input>
 
-                    <pl-toggle-button
-                        class="item tap"
-                        reverse
-                        .label=${$l("This is a business")}
-                        value=${this._isBusiness}
-                        @change=${(e: CustomEvent) => (this._isBusiness = e.detail.value)}
-                    ></pl-toggle-button>
+                              <div class="city-wrapper">
+                                  <pl-input
+                                      id="zipInput"
+                                      class="item"
+                                      .placeholder=${$l("Postal Code")}
+                                      .value=${address.postalCode}
+                                  ></pl-input>
 
-                    <pl-input
-                        id="taxIdInput"
-                        class="item"
-                        .placeholder=${$l("Tax ID")}
-                        ?hidden=${!this._isBusiness}
-                    ></pl-input>
-                </div>
+                                  <pl-input
+                                      id="cityInput"
+                                      class="item"
+                                      .placeholder=${$l("City")}
+                                      .value=${address.city}
+                                  ></pl-input>
+                              </div>
 
-                <label>Coupon</label>
+                              <pl-select
+                                  class="item"
+                                  id="countrySelect"
+                                  .options=${countryOptions}
+                                  .selected=${countryOptions.find(c => c.code === address.country)}
+                              ></pl-select>
 
-                <div class="discount item" ?hidden=${!discount}>
-                    <span class="name">${discount && discount.name}</span>
-                    <span class="coupon">(${discount && discount.coupon})</span>
-                </div>
+                              <label>${$l("Tax Info")}</label>
 
-                <pl-input
-                    class="item"
-                    id="couponInput"
-                    placeholder=${$l("Coupon Code")}
-                    ?hidden=${!!discount}
-                ></pl-input>
+                              <pl-toggle-button
+                                  class="item tap"
+                                  reverse
+                                  .label=${$l("This is a business")}
+                                  value=${this._isBusiness}
+                                  @change=${(e: CustomEvent) => (this._isBusiness = e.detail.value)}
+                              ></pl-toggle-button>
 
-                <div class="actions">
-                    <pl-loading-button class="primary tap" id="submitButton" @click=${this._submit}>
-                        ${this.submitLabel}
-                    </pl-loading-button>
+                              <pl-input
+                                  id="taxIdInput"
+                                  class="item"
+                                  .placeholder=${$l("Tax ID")}
+                                  ?hidden=${!this._isBusiness}
+                              ></pl-input>
+                          </div>
 
-                    <button class="tap" @click=${() => this.done()} ?hidden=${this.condensed}>
-                        ${$l("Cancel")}
-                    </button>
-                </div>
+                          <label>Coupon</label>
+
+                          <div class="discount item" ?hidden=${!discount}>
+                              <span class="name">${discount && discount.name}</span>
+                              <span class="coupon">(${discount && discount.coupon})</span>
+                          </div>
+
+                          <pl-input
+                              class="item"
+                              id="couponInput"
+                              placeholder=${$l("Coupon Code")}
+                              ?hidden=${!!discount}
+                          ></pl-input>
+
+                          <div class="actions">
+                              <pl-loading-button class="primary tap" id="submitButton" @click=${this._submit}>
+                                  ${this.submitLabel}
+                              </pl-loading-button>
+
+                              <button class="tap" @click=${() => this.done()} ?hidden=${this.condensed}>
+                                  ${$l("Cancel")}
+                              </button>
+                          </div>
+                      `}
             </div>
         `;
     }

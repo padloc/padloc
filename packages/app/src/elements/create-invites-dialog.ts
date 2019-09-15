@@ -137,7 +137,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
                 text-align: left;
                 background: transparent;
                 font-size: var(--font-size-small);
-                height: 30px;
+                padding: 4px 8px;
             }
 
             .email-count {

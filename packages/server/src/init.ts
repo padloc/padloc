@@ -40,7 +40,7 @@ async function init() {
 
     let billingProvider: BillingProvider | undefined = undefined;
 
-    if (process.env.PL_STRIPE_SECRET) {
+    if (process.env.PL_BILLING_ENABLED === "true") {
         let billingPort = parseInt(process.env.PL_BILLING_PORT!);
         if (isNaN(billingPort)) {
             billingPort = 3001;
@@ -48,7 +48,7 @@ async function init() {
 
         const stripeProvider = new StripeBillingProvider(
             {
-                stripeSecret: process.env.PL_STRIPE_SECRET || "",
+                stripeSecret: process.env.PL_BILLING_STRIPE_SECRET || "",
                 port: billingPort
             },
             storage

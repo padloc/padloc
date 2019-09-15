@@ -130,6 +130,7 @@ export class AppState extends Storable {
 
 export interface BillingConfig {
     stripePublicKey: string;
+    disablePayment: boolean;
 }
 
 /**

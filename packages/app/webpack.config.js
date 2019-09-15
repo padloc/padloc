@@ -39,7 +39,9 @@ module.exports = {
     plugins: [
         new EnvironmentPlugin({
             PL_SERVER_URL: `http://localhost:${process.env.PL_SERVER_PORT || 3000}`,
-            PL_STRIPE_PUBLIC_KEY: null,
+            PL_BILLING_ENABLED: null,
+            PL_BILLING_DISABLE_PAYMENT: null,
+            PL_BILLING_STRIPE_PUBLIC_KEY: null,
             PL_SUPPORT_EMAIL: "support@padloc.app",
             PL_VERSION: version
         }),

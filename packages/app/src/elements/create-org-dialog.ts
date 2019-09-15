@@ -249,7 +249,6 @@ export class CreateOrgDialog extends Dialog<Plan | null, Org> {
 
             .quantity-input {
                 width: 60px;
-                height: 45px;
                 margin: 0;
                 font-weight: bold;
                 font-size: 1.5rem;
