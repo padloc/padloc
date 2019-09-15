@@ -23,6 +23,7 @@ services:
             - PL_BILLING_DISABLE_PAYMENT
             - PL_BILLING_STRIPE_SECRET
             - PL_BILLING_STRIPE_PUBLIC_KEY
+            - PL_MFA
         volumes:
             - ./data:/data
             - ./docs:/docs
