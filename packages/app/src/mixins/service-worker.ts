@@ -8,7 +8,9 @@ export function ServiceWorker<B extends Constructor<Object>>(baseClass: B) {
     return class extends baseClass {
         constructor(...args: any[]) {
             super(...args);
-            this.initSW();
+            if (!process.env.PL_DISABLE_SW) {
+                this.initSW();
+            }
         }
 
         private _wb: Workbox;
