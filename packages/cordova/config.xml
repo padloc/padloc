@@ -23,6 +23,7 @@
     <preference name="BackupWebStorage" value="cloud" />
     <preference name="cordova-custom-config-autorestore" value="true" />
     <platform name="android">
+        <preference name="android-minSdkVersion" value="21" />
         <preference name="android-targetSdkVersion" value="29" />
         <icon density="ldpi" src="res/android/icon/app-icon-ldpi.png" />
         <icon density="mdpi" src="res/android/icon/app-icon-mdpi.png" />
