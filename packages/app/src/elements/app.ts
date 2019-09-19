@@ -630,6 +630,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 title: $l("Setup Failed"),
                 type: "warning"
             });
+            return;
         }
 
         const password = await prompt($l("Please enter your master password!"), {
