@@ -1,4 +1,5 @@
-import { Platform } from "@padloc/core/src/platform";
+import { Platform, getCryptoProvider } from "@padloc/core/src/platform";
+import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebPlatform } from "@padloc/app/src/platform";
 import "cordova-plugin-qrscanner";
 
@@ -42,10 +43,12 @@ export class CordovaPlatform extends WebPlatform implements Platform {
 
     async biometricAuth(message?: string) {
         await cordovaReady;
-        return new Promise<boolean>((resolve, reject) => {
+        return new Promise<boolean>(async (resolve, reject) => {
             try {
                 Fingerprint.show(
                     {
+                        clientId: "Padloc",
+                        clientSecret: bytesToBase64(await getCryptoProvider().randomBytes(16)),
                         localizedReason: message,
                         disableBackup: true
                     },
