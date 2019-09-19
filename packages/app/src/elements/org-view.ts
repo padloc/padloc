@@ -452,7 +452,7 @@ export class OrgView extends StateMixin(View) {
                                     </li>
                                 `
                             )}
-                            <li class="new-button tap item" @click=${this._createVault}>
+                            <li class="new-button tap item" @click=${this._createVault} ?hidden=${!isAdmin}>
                                 <pl-icon icon="add"></pl-icon>
                                 <div>${$l("New Vault")}</div>
                             </li>

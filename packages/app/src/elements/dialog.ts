@@ -67,7 +67,8 @@ export class Dialog<I, R> extends BaseElement {
                 padding: 12px;
                 box-sizing: border-box;
                 perspective: 1000px;
-                transition: transform 400ms cubic-bezier(0.6, 0, 0.2, 1), opacity 400ms cubic-bezier(0.6, 0, 0.2, 1);
+                transition: transform 400ms cubic-bezier(0.08, 0.85, 0.3, 1.15) 0s,
+                    opacity 200ms cubic-bezier(0.6, 0, 0.2, 1) 0s;
             }
 
             .scrim {
@@ -117,6 +118,7 @@ export class Dialog<I, R> extends BaseElement {
             :host(:not([open])) .outer {
                 opacity: 0;
                 transform: scale(0.8);
+                transition: transform 200ms cubic-bezier(0.6, 0, 0.2, 1), opacity 200ms cubic-bezier(0.6, 0, 0.2, 1);
             }
 
             @supports (-webkit-overflow-scrolling: touch) {

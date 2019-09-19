@@ -183,6 +183,7 @@ export class CreateInvitesDialog extends Dialog<Org, Invite[]> {
 
                 <pl-input
                     .placeholder=${$l("Enter Email Address")}
+                    type="email"
                     @enter=${this._enter}
                     @input=${this._input}
                     @blur=${this._enter}

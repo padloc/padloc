@@ -898,7 +898,7 @@ export class App {
 
     private async _syncVault({ id }: { id: VaultID }, transform?: (vault: Vault) => any): Promise<Vault | null> {
         if (!this.account || this.account.locked) {
-            throw "Need to be logged in to sync vault";
+            return null;
         }
 
         const localVault = this.getVault(id);
