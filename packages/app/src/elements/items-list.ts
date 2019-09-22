@@ -215,7 +215,6 @@ export class ItemsList extends StateMixin(View) {
                 align-items: center;
                 margin: 6px;
                 cursor: pointer;
-                height: 99;
                 /*
                 box-shadow: rgba(0, 0, 0, 0.1) 0 1px 8px;
                 border: none;

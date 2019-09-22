@@ -171,6 +171,7 @@ export abstract class BaseInput extends BaseElement {
                 opacity: 0.5;
                 transition: transform 0.2s, color 0.2s, opacity 0.5s;
                 cursor: text;
+                pointer-events: none;
             }
 
             label[float] {
@@ -201,7 +202,7 @@ export abstract class BaseInput extends BaseElement {
         return html`
             ${this._renderInput()}
 
-            <label for="input" ?float=${focused || !!value || !!placeholder} ?hidden=${!label}>${label}</label>
+            <label ?float=${focused || !!value || !!placeholder} ?hidden=${!label}>${label}</label>
         `;
     }
 }

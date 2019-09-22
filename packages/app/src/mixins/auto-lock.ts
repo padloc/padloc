@@ -1,4 +1,3 @@
-import { debounce } from "@padloc/core/src/util";
 import { app } from "../init";
 
 type Constructor<T> = new (...args: any[]) => T;
@@ -14,10 +13,8 @@ export function AutoLock<B extends Constructor<Object>>(baseClass: B) {
 
         constructor(...args: any[]) {
             super(...args);
-            const moved = debounce(() => this._startTimer(), 300);
-            document.addEventListener("touchstart", moved, { passive: true });
-            document.addEventListener("keydown", moved);
-            document.addEventListener("mousemove", moved);
+            document.addEventListener("click", () => this._startTimer());
+            document.addEventListener("keydown", () => this._startTimer());
             document.addEventListener("pause", () => this._pause());
             document.addEventListener("resume", () => this._resume());
         }

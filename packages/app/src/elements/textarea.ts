@@ -9,7 +9,6 @@ export class Textarea extends BaseInput {
     autosize: boolean = false;
 
     updated() {
-        console.log("updated");
         if (this.autosize) {
             setTimeout(() => autosize(this._inputElement));
         }
@@ -24,7 +23,6 @@ export class Textarea extends BaseInput {
 
         return html`
             <textarea
-                id="input"
                 class="input-element"
                 .placeholder=${placeholder}
                 .tabIndex=${noTab ? "-1" : ""}

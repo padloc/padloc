@@ -32,7 +32,6 @@ export class Input extends BaseInput {
 
         return html`
             <input
-                id="input"
                 class="input-element"
                 .placeholder=${placeholder}
                 ?readonly=${readonly}
