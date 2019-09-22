@@ -17,6 +17,8 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
     @query("#templateSelect")
     private _templateSelect: Select<ItemTemplate>;
 
+    readonly preventDismiss = true;
+
     static styles = [
         ...Dialog.styles,
         css`
@@ -66,7 +68,7 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
                 <div class="actions">
                     <button @click=${() => this._enter()} class="primary tap">${$l("Create & Edit")}</button>
 
-                    <button @click=${() => this.dismiss()} class="tap">${$l("Cancel")}</button>
+                    <button @click=${() => this.done()} class="tap">${$l("Cancel")}</button>
                 </div>
             </div>
         `;
