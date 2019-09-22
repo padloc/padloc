@@ -35,26 +35,15 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
                 opacity: 1;
             }
 
-            .header {
-                padding: 12px;
-                background: var(--color-tertiary);
+            header {
                 box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 3px;
-                position: relative;
-                z-index: 1;
             }
 
-            .header > .name {
+            header > .name {
+                flex: 1;
                 font-weight: bold;
                 text-align: center;
                 ${mixins.ellipsis()}
-            }
-
-            .header > pl-icon {
-                position: absolute;
-                right: 4px;
-                top: 0;
-                bottom: 0;
-                margin: auto;
             }
 
             .info,
@@ -331,10 +320,10 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         }
 
         return html`
-            <div class="header">
+            <header>
                 <div class="name">${this.info.name}</div>
                 <pl-icon icon="close" class="tap" @click=${() => this.done()}></pl-icon>
-            </div>
+            </header>
 
             ${this._preview ||
                 html`
