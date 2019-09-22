@@ -1,6 +1,7 @@
 import { styleMap } from "lit-html/directives/style-map.js";
 import { hotp } from "@padloc/core/src/otp";
 import { base32ToBytes } from "@padloc/core/src/encoding";
+import { translate as $l } from "@padloc/locale/src/translate";
 import { shared } from "../styles";
 import { BaseElement, element, html, svg, css, property, observe } from "./base";
 import "./icon";
@@ -15,6 +16,9 @@ export class TOTP extends BaseElement {
 
     @property()
     private _token = "";
+
+    @property()
+    private _error = "";
 
     @property()
     private _age = 0;
@@ -53,6 +57,10 @@ export class TOTP extends BaseElement {
             .countdown circle.bg {
                 opacity: 0.2;
             }
+
+            .error {
+                color: var(--color-negative);
+            }
         `
     ];
 
@@ -70,7 +78,15 @@ export class TOTP extends BaseElement {
 
         const counter = Math.floor(time / 1000 / this.interval);
         if (counter !== this._counter) {
-            this._token = await hotp(base32ToBytes(this.secret), counter);
+            try {
+                this._token = await hotp(base32ToBytes(this.secret), counter);
+                this._error = "";
+            } catch (e) {
+                this._token = "";
+                this._error = $l("Invalid Code");
+                this._age = 0;
+                return;
+            }
             this._counter = counter;
         }
 
@@ -93,9 +109,15 @@ export class TOTP extends BaseElement {
 
     render() {
         return html`
-            <span>
-                ${this._token.substring(0, 3)}&nbsp;${this._token.substring(3, 6)}
-            </span>
+            ${this._error
+                ? html`
+                      <span class="error">${this._error}</span>
+                  `
+                : html`
+                      <span>
+                          ${this._token.substring(0, 3)}&nbsp;${this._token.substring(3, 6)}
+                      </span>
+                  `}
             ${svg`
                 <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this._token}>
                     <circle cx="5" cy="5" r="4" class="bg" />
