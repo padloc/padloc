@@ -460,6 +460,7 @@ export class ItemsList extends StateMixin(View) {
                     class="flex"
                     .placeholder=${$l("Type To Filter")}
                     id="filterInput"
+                    select-on-focus
                     @blur=${this._filterInputBlurred}
                     @input=${this._updateItems}
                     @escape=${this.cancelFilter}

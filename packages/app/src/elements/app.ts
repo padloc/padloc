@@ -522,6 +522,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         }
         // CTRL/CMD + F -> Filter
         else if (control && event.key === "f") {
+            router.go("items");
             shortcut = () => this._items.search();
         }
 
@@ -529,8 +530,6 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         if (shortcut) {
             shortcut();
             event.preventDefault();
-        } else if (!control && event.key.length === 1) {
-            this._items.search();
         }
     }
 
