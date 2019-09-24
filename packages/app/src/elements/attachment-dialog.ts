@@ -241,7 +241,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
             case "pdf":
                 this._objectUrl = await att.toObjectURL();
                 return html`
-                    <object class="preview pdf" type="application/pdf" data="${this._objectUrl}#view=Fit"></object>
+                    <object class="preview pdf" type="application/pdf" data="${this._objectUrl}"></object>
                 `;
             case "image":
                 this._objectUrl = await att.toObjectURL();
