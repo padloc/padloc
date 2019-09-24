@@ -98,6 +98,10 @@ export class Account extends PBES2Container implements Storable {
         return !this.privateKey;
     }
 
+    get masterKey() {
+        return this._key;
+    }
+
     /**
      * Generates the accounts [[privateKey]], [[publicKey]] and [[signingKey]] and
      * encrypts [[privateKey]] and [[singingKey]] using the master password.
@@ -127,9 +131,16 @@ export class Account extends PBES2Container implements Storable {
      */
     async unlock(password: string) {
         await super.unlock(password);
-        const { privateKey, signingKey } = unmarshal(bytesToString(await this.getData()));
-        this.privateKey = base64ToBytes(privateKey);
-        this.signingKey = base64ToBytes(signingKey);
+        await this._loadKeys();
+    }
+
+    /**
+     * Unlocks the account by providing the encryption key directly rather than
+     * deriving it fro the master password
+     */
+    async unlockWithMasterKey(key: Uint8Array) {
+        this._key = key;
+        await this._loadKeys();
     }
 
     /**
@@ -241,5 +252,11 @@ export class Account extends PBES2Container implements Storable {
         if (!verified) {
             throw new Err(ErrorCode.VERIFICATION_ERROR, `Failed to verify public key of ${org.name}!`);
         }
+    }
+
+    private async _loadKeys() {
+        const { privateKey, signingKey } = unmarshal(bytesToString(await this.getData()));
+        this.privateKey = base64ToBytes(privateKey);
+        this.signingKey = base64ToBytes(signingKey);
     }
 }

@@ -205,7 +205,7 @@ export class Unlock extends StartForm {
         this._bioauthButton.start();
 
         try {
-            if (await app.remembersMasterPassword()) {
+            if (await app.remembersMasterKey()) {
                 const authenticated = await biometricAuth();
 
                 if (!authenticated) {
@@ -213,11 +213,9 @@ export class Unlock extends StartForm {
                     return;
                 }
 
-                const [password] = await Promise.all([app.retrieveMasterPassword(), wait(1000)]);
+                await app.unlockWithRememberedMasterKey();
 
                 this._bioauthButton.success();
-                this._passwordInput.value = password;
-                this._submit();
             } else {
                 this.dispatch("enable-biometric-auth");
                 this._bioauthButton.stop();

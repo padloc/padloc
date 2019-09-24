@@ -633,28 +633,36 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             return;
         }
 
-        const password = await prompt($l("Please enter your master password!"), {
-            title: $l("Biometric Unlock"),
-            label: $l("Enter Master Password"),
-            type: "password",
-            validate: async pwd => {
-                try {
-                    await app.account!.unlock(pwd);
-                } catch (e) {
-                    throw $l("Wrong password! Please try again!");
+        if (app.account!.locked) {
+            const password = await prompt($l("Please enter your master password!"), {
+                title: $l("Biometric Unlock"),
+                label: $l("Enter Master Password"),
+                type: "password",
+                validate: async pwd => {
+                    try {
+                        await app.account!.unlock(pwd);
+                    } catch (e) {
+                        throw $l("Wrong password! Please try again!");
+                    }
+
+                    return pwd;
                 }
+            });
 
-                return pwd;
+            if (!password) {
+                return;
             }
-        });
 
-        if (!password) {
-            return;
+            await app.unlock(password);
         }
 
-        await app.rememberMasterPassword(password);
+        await app.rememberMasterKey();
 
-        alert($l("Biometric unlock activated successfully!"), { title: $l("Biometric Unlock"), type: "success" });
+        await alert($l("Biometric unlock activated successfully!"), {
+            title: $l("Biometric Unlock"),
+            type: "success",
+            preventAutoClose: true
+        });
     }
 }
 

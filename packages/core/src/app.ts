@@ -1,6 +1,6 @@
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Storage, Storable } from "./storage";
-import { Serializable } from "./encoding";
+import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
@@ -25,12 +25,22 @@ import {
 import { Client } from "./client";
 import { Sender } from "./transport";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { DeviceInfo, getDeviceInfo, isKeyStoreAvailable, keyStoreSet, keyStoreGet, keyStoreDelete } from "./platform";
+import {
+    DeviceInfo,
+    getDeviceInfo,
+    isKeyStoreAvailable,
+    keyStoreSet,
+    keyStoreGet,
+    keyStoreDelete,
+    getCryptoProvider
+} from "./platform";
 import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
 import { UpdateBillingParams } from "./billing";
+import { SimpleContainer } from "./container";
+import { AESKeyParams } from "./crypto";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -53,7 +63,6 @@ export class Settings extends Serializable {
     autoLockDelay: number = 5;
     /** Interval for automatic sync, in minutes */
     syncInterval: number = 1;
-    biometricAuth: boolean = false;
 }
 
 /** Application state */
@@ -87,6 +96,8 @@ export class AppState extends Storable {
     /** Whether the app has an internet connection at the moment */
     online = true;
 
+    rememberedMasterKey: SimpleContainer | null = null;
+
     /** All [[Tag]]s found within the users [[Vault]]s */
     get tags() {
         const tags = new Map<string, number>();
@@ -116,7 +127,7 @@ export class AppState extends Storable {
         return !!this.session;
     }
 
-    fromRaw({ settings, stats, device, session, account, orgs, vaults }: any) {
+    fromRaw({ settings, stats, device, session, account, orgs, vaults, rememberedMasterKey }: any) {
         this.settings.fromRaw(settings);
         this.stats.fromRaw(stats);
         this.device.fromRaw(device);
@@ -124,6 +135,7 @@ export class AppState extends Storable {
         this.account = (account && new Account().fromRaw(account)) || null;
         this.orgs = orgs.map((org: any) => new Org().fromRaw(org));
         this.vaults = vaults.map((vault: any) => new Vault().fromRaw(vault));
+        this.rememberedMasterKey = new SimpleContainer().fromRaw(rememberedMasterKey);
         return this;
     }
 }
@@ -314,14 +326,7 @@ export class App {
         // Unlock account using the master password
         await this.account.unlock(password);
 
-        // Unlock all vaults
-        await Promise.all(this.state.vaults.map(vault => vault.unlock(this.account!)));
-
-        // Notify state change
-        this.publish();
-
-        // Trigger sync
-        this.synchronize();
+        await this._unlocked();
     }
 
     /**
@@ -519,8 +524,8 @@ export class App {
     private async _logout() {
         this._cachedAuthInfo.clear();
 
-        if (await this.canRememberMasterPassword()) {
-            await this.unrememberMasterPassword();
+        if (await this.canRememberMasterKey()) {
+            await this.forgetMasterKey();
         }
 
         // Revoke session
@@ -558,8 +563,8 @@ export class App {
             await this.api.updateAuth(auth);
         });
 
-        if (await this.canRememberMasterPassword()) {
-            await this.unrememberMasterPassword();
+        if (await this.canRememberMasterKey()) {
+            await this.forgetMasterKey();
         }
     }
 
@@ -727,29 +732,44 @@ export class App {
         });
     }
 
-    canRememberMasterPassword() {
+    canRememberMasterKey() {
         return isKeyStoreAvailable();
     }
 
-    rememberMasterPassword(password: string) {
-        return keyStoreSet("master_password", password);
+    async rememberMasterKey() {
+        if (!this.account || this.account.locked) {
+            throw "App needs to be unlocked first";
+        }
+        const key = await getCryptoProvider().generateKey(new AESKeyParams());
+        await keyStoreSet("master_key_encryption_key", bytesToBase64(key));
+        const container = new SimpleContainer();
+        await container.unlock(key);
+        await container.setData(this.account.masterKey!);
+        this.setState({ rememberedMasterKey: container });
+        await this.save();
     }
 
-    retrieveMasterPassword() {
-        return keyStoreGet("master_password");
-    }
-
-    async remembersMasterPassword() {
+    async remembersMasterKey() {
         try {
-            const password = await this.retrieveMasterPassword();
-            return !!password;
+            return !!this.state.rememberedMasterKey && !!(await keyStoreGet("master_key_encryption_key"));
         } catch (e) {
             return false;
         }
     }
 
-    unrememberMasterPassword() {
-        return keyStoreDelete("master_password");
+    async forgetMasterKey() {
+        keyStoreDelete("master_key_encryption_key");
+        this.setState({ rememberedMasterKey: null });
+        await this.save();
+    }
+
+    async unlockWithRememberedMasterKey() {
+        const encryptedMasterKey = this.state.rememberedMasterKey!;
+        const key = base64ToBytes(await keyStoreGet("master_key_encryption_key"));
+        await encryptedMasterKey.unlock(key);
+        const masterKey = await encryptedMasterKey.getData();
+        await this.account!.unlockWithMasterKey(masterKey);
+        await this._unlocked();
     }
 
     /**
@@ -1431,5 +1451,16 @@ export class App {
         this.setState({ syncing: !!this._activeSyncPromises.size });
 
         return active;
+    }
+
+    private async _unlocked() {
+        // Unlock all vaults
+        await Promise.all(this.state.vaults.map(vault => vault.unlock(this.account!)));
+
+        // Notify state change
+        this.publish();
+
+        // Trigger sync
+        this.synchronize();
     }
 }
