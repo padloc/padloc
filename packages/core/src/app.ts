@@ -135,7 +135,7 @@ export class AppState extends Storable {
         this.account = (account && new Account().fromRaw(account)) || null;
         this.orgs = orgs.map((org: any) => new Org().fromRaw(org));
         this.vaults = vaults.map((vault: any) => new Vault().fromRaw(vault));
-        this.rememberedMasterKey = new SimpleContainer().fromRaw(rememberedMasterKey);
+        this.rememberedMasterKey = rememberedMasterKey && new SimpleContainer().fromRaw(rememberedMasterKey);
         return this;
     }
 }
