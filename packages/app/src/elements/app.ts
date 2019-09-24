@@ -9,7 +9,7 @@ import { AutoLock } from "../mixins/auto-lock";
 import { ErrorHandling } from "../mixins/error-handling";
 import { AutoSync } from "../mixins/auto-sync";
 import { ServiceWorker } from "../mixins/service-worker";
-import { BaseElement, html, css, property, query, listen, observe } from "./base";
+import { BaseElement, html, css, property, query, listen } from "./base";
 import "./icon";
 import { Input } from "./input";
 import { View } from "./view";
@@ -302,19 +302,20 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         super.stateChanged();
     }
 
-    @observe("locked")
-    _lockedChanged() {
-        if (this.locked) {
-            this.$(".wrapper").classList.remove("active");
-            this._inviteDialog.open = false;
-            clearDialogs();
-            clearClipboard();
-            this._routeChanged();
-        } else {
-            setTimeout(() => {
-                this.$(".wrapper").classList.add("active");
-                router.go(router.params.next || "", {});
-            }, 600);
+    updated(changes: Map<string, any>) {
+        if (changes.has("locked")) {
+            if (this.locked) {
+                this.$(".wrapper").classList.remove("active");
+                this._inviteDialog.open = false;
+                clearDialogs();
+                clearClipboard();
+                this._routeChanged();
+            } else {
+                setTimeout(() => {
+                    this.$(".wrapper").classList.add("active");
+                    router.go(router.params.next || "", {});
+                }, 600);
+            }
         }
     }
 
@@ -394,7 +395,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             if (path === "unlock") {
                 this._startView.unlock();
             } else {
-                router.go("unlock", path ? { next: path, nobio: "" } : undefined);
+                router.go("unlock", path ? { next: path, nobio: "1" } : undefined);
             }
             return;
         }
