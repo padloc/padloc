@@ -268,6 +268,14 @@ export class App {
         return this.state.online;
     }
 
+    get supportsBiometricUnlock() {
+        return this.state.device.supportsBioAuth && this.state.device.supportsKeyStore;
+    }
+
+    get remembersMasterKey() {
+        return !!this.state.rememberedMasterKey;
+    }
+
     private _queuedSyncPromises = new Map<string, Promise<void>>();
     private _activeSyncPromises = new Map<string, Promise<void>>();
 
@@ -579,6 +587,7 @@ export class App {
         if (this.account) {
             account.privateKey = this.account.privateKey;
             account.signingKey = this.account.signingKey;
+            account.masterKey = this.account.masterKey;
         }
 
         // Update and save state
@@ -747,14 +756,6 @@ export class App {
         await container.setData(this.account.masterKey!);
         this.setState({ rememberedMasterKey: container });
         await this.save();
-    }
-
-    async remembersMasterKey() {
-        try {
-            return !!this.state.rememberedMasterKey && !!(await keyStoreGet("master_key_encryption_key"));
-        } catch (e) {
-            return false;
-        }
     }
 
     async forgetMasterKey() {

@@ -35,12 +35,12 @@ export class DeviceInfo extends Serializable {
     /** The browser the application was loaded in, if applicable */
     browser: string = "";
 
+    supportsBioAuth: boolean = false;
+
+    supportsKeyStore: boolean = false;
+
     get description() {
         return this.browser ? $l("{0} on {1}", this.browser, this.platform) : $l("{0} Device", this.platform);
-    }
-
-    fromRaw({ platform, osVersion, id, appVersion, userAgent, locale, manufacturer, model, browser }: any) {
-        return super.fromRaw({ platform, osVersion, id, appVersion, userAgent, locale, manufacturer, model, browser });
     }
 
     validate() {

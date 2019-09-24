@@ -394,7 +394,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             if (path === "unlock") {
                 this._startView.unlock();
             } else {
-                router.go("unlock", path ? { next: path } : undefined);
+                router.go("unlock", path ? { next: path, nobio: "" } : undefined);
             }
             return;
         }

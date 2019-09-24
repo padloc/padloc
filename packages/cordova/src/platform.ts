@@ -92,4 +92,15 @@ export class CordovaPlatform extends WebPlatform implements Platform {
         const ss = await this._getSecureStorage();
         return new Promise<void>((resolve, reject) => ss.remove(resolve, reject, name));
     }
+
+    async getDeviceInfo() {
+        const [supportsBioAuth, supportsKeyStore] = await Promise.all([
+            this.isBiometricAuthAvailable(),
+            this.isKeyStoreAvailable()
+        ]);
+        return Object.assign(await super.getDeviceInfo(), {
+            supportsBioAuth,
+            supportsKeyStore
+        });
+    }
 }

@@ -172,6 +172,21 @@ export class Settings extends StateMixin(View) {
                     >
                     </pl-slider>
 
+                    ${app.supportsBiometricUnlock
+                        ? html`
+                              <h3>${$l("Biometric Unlock")}</h3>
+                              <pl-toggle-button
+                                  id="biometricUnlockButton"
+                                  .active=${app.remembersMasterKey}
+                                  .label=${$l("Enable Biometric Unlock")}
+                                  class="item tap"
+                                  reverse
+                                  @change=${this._toggleBiometricUnlock}
+                              >
+                              </pl-toggle-button>
+                          `
+                        : ""}
+
                     <h3>${$l("Import / Export")}</h3>
 
                     <button class="item tap" @click=${() => this._import()}>${$l("Import...")}</button>
@@ -377,6 +392,22 @@ Device Info: ${JSON.stringify(app.state.device.toRaw(), null, 4)}
 
         if (deleted) {
             router.go("");
+        }
+    }
+
+    private async _toggleBiometricUnlock(e: Event) {
+        e.stopPropagation();
+        const toggle = e.target as ToggleButton;
+        console.log(toggle.active);
+        if (toggle.active) {
+            this.dispatch("enable-biometric-auth");
+        } else {
+            const confirmed = await confirm($l("Are you sure you want to disable biometric unlock?"));
+            if (confirmed) {
+                await app.forgetMasterKey();
+            } else {
+                toggle.active = true;
+            }
         }
     }
 }

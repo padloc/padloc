@@ -102,6 +102,10 @@ export class Account extends PBES2Container implements Storable {
         return this._key;
     }
 
+    set masterKey(key: Uint8Array | undefined) {
+        this._key = key;
+    }
+
     /**
      * Generates the accounts [[privateKey]], [[publicKey]] and [[signingKey]] and
      * encrypts [[privateKey]] and [[singingKey]] using the master password.
@@ -213,6 +217,7 @@ export class Account extends PBES2Container implements Storable {
         const clone = super.clone();
         clone.privateKey = this.privateKey;
         clone.signingKey = this.signingKey;
+        clone._key = this._key;
         return clone;
     }
 

@@ -1,7 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { isBiometricAuthAvailable, biometricAuth } from "@padloc/core/src/platform";
-import { wait } from "@padloc/core/src/util";
+import { biometricAuth } from "@padloc/core/src/platform";
 import { app, router } from "../init";
 import { isTouch } from "../util";
 import { element, property, html, css, query } from "./base";
@@ -38,8 +37,19 @@ export class Unlock extends StartForm {
             setTimeout(() => this._passwordInput.focus(), 100);
         }
 
-        const [bioauthAvailable] = await Promise.all([isBiometricAuthAvailable(), wait(1000)]);
-        this._bioauthButton.classList.toggle("show", bioauthAvailable);
+        if (
+            app.account &&
+            app.account.locked &&
+            app.supportsBiometricUnlock &&
+            app.remembersMasterKey &&
+            !("nobio" in router.params)
+        ) {
+            this._bioAuth();
+        }
+
+        setTimeout(() => {
+            this._bioauthButton.classList.toggle("show", app.supportsBiometricUnlock);
+        }, 1000);
     }
 
     static styles = [
@@ -205,7 +215,7 @@ export class Unlock extends StartForm {
         this._bioauthButton.start();
 
         try {
-            if (await app.remembersMasterKey()) {
+            if (app.remembersMasterKey) {
                 const authenticated = await biometricAuth();
 
                 if (!authenticated) {
