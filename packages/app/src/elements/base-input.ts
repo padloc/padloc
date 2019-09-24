@@ -70,11 +70,17 @@ export abstract class BaseInput extends BaseElement {
 
     protected abstract _renderInput(): TemplateResult;
 
-    focus() {
+    async focus() {
+        if (!this._inputElement) {
+            await this.updateComplete;
+        }
         this._inputElement.focus();
     }
 
-    blur() {
+    async blur() {
+        if (!this._inputElement) {
+            await this.updateComplete;
+        }
         this._inputElement.blur();
     }
 
