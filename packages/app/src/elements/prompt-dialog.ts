@@ -150,7 +150,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
         this._confirmButton.stop();
         this._input.value = value;
 
-        setTimeout(() => this._input.focus(), 100);
+        setTimeout(() => this._input.focus(), 300);
 
         return super.show();
     }

@@ -107,7 +107,7 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
         this._nameInput.value = "";
         this._vaultSelect.selected = app.mainVault!;
         this._templateSelect.selected = template;
-        setTimeout(() => this._nameInput.focus(), 100);
+        setTimeout(() => this._nameInput.focus(), 300);
         return super.show();
     }
 }
