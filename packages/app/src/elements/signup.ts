@@ -186,6 +186,17 @@ export class Signup extends StartForm {
             [focused] + .hint.subtle {
                 opacity: 1;
             }
+
+            .password-actions {
+                margin: -20px 0 30px 0;
+            }
+
+            .password-action {
+                padding: 6px 10px;
+                margin: 0 4px;
+                font-size: var(--font-size-tiny);
+                font-weight: 600;
+            }
         `
     ];
 
@@ -315,10 +326,20 @@ export class Signup extends StartForm {
                     </div>
 
                     <div class="hint animate">
-                        This random passphrase was generated just for you and is designed to be both secure and easy to
-                        remember. Don't like it?<br />
-                        <span class="link" @click=${this._generatePassphrase}>Try another one</span>
-                        or <span class="link" @click=${this._editMasterPassword}>choose your own</span>!
+                        ${$l(
+                            "This random passphrase was generated just for you and is designed " +
+                                "to be both secure and easy to remember. Don't like it?"
+                        )}
+                    </div>
+
+                    <div class="password-actions animate">
+                        <button type="button" class="password-action tap" @click=${this._generatePassphrase}>
+                            ${$l("Try Another One")}
+                        </button>
+                        or
+                        <button type="button" class="password-action tap" @click=${this._editMasterPassword}>
+                            ${$l("Choose Your Own")}
+                        </button>
                     </div>
 
                     <pl-password-input
