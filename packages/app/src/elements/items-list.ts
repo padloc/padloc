@@ -707,7 +707,7 @@ export class ItemsList extends StateMixin(View) {
         const { item, vault, warning } = li;
         const tags = [];
 
-        if (!this.vault && vault.id !== app.mainVault!.id) {
+        if (!this.vault && app.mainVault && vault.id !== app.mainVault.id) {
             tags.push({ name: vault.name, icon: "", class: "highlight" });
         }
 
