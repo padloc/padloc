@@ -14,10 +14,6 @@ export class Textarea extends BaseInput {
         }
     }
 
-    checkValidity() {
-        return true;
-    }
-
     _renderInput() {
         const { placeholder, readonly, noTab, disabled, autocapitalize, required } = this;
 

@@ -55,4 +55,8 @@ export class Input extends BaseInput {
     checkValidity() {
         return this._inputElement && this._inputElement.checkValidity();
     }
+
+    reportValidity() {
+        return this._inputElement && this._inputElement.reportValidity();
+    }
 }

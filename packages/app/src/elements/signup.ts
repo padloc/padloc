@@ -370,12 +370,7 @@ export class Signup extends StartForm {
             return;
         }
 
-        this._emailInput.blur();
-
-        if (this._emailInput.invalid) {
-            await alert($l("Please enter a valid email address!"), {
-                type: "warning"
-            });
+        if (!this._emailInput.reportValidity()) {
             return;
         }
 

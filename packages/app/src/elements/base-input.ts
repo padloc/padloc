@@ -66,8 +66,6 @@ export abstract class BaseInput extends BaseElement {
         return activeInput;
     }
 
-    abstract checkValidity(): void;
-
     protected abstract _renderInput(): TemplateResult;
 
     async focus() {
@@ -106,7 +104,6 @@ export abstract class BaseInput extends BaseElement {
 
     protected _blurred(e: FocusEvent) {
         e.stopPropagation();
-        this.checkValidity();
         this.focused = false;
 
         this.dispatch("blur");

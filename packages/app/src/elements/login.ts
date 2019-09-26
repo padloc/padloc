@@ -110,6 +110,10 @@ export class Login extends StartForm {
             return;
         }
 
+        if (!this._emailInput.reportValidity()) {
+            return;
+        }
+
         this._emailInput.blur();
         this._passwordInput.blur();
 
