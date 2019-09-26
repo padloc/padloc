@@ -22,7 +22,7 @@ ${this.link}
 If you believe you may have received this email in error, please contact us at support@padloc.app
 
 Best,
-Martin`;
+The Padloc Team`;
     }
 
     get html() {
@@ -43,7 +43,7 @@ Martin`;
 
             ${p(`
                 Best,<br/>
-                Martin
+                The Padloc Team
             `)}
         `);
     }

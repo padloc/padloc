@@ -50,7 +50,7 @@ letter-spacing: 0.2em;\
 
             ${p(`
                 Best,<br/>
-                Martin
+                The Padloc Team
             `)}
         `);
     }
