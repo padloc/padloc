@@ -59,7 +59,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
             }
 
             .message {
-                margin: 10px 20px 20px 20px;
+                margin: 20px;
                 text-align: center;
             }
 

@@ -153,7 +153,7 @@ export const shared = css`
 
     h1 {
         font-size: 150%;
-        margin: 20px 20px 10px 20px;
+        margin: 20px;
     }
 
     h2 {

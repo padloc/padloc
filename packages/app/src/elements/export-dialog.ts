@@ -57,7 +57,12 @@ export class ExportDialog extends Dialog<void, void> {
             >
             </pl-select>
 
-            <pl-select id="formatSelect" .options=${supportedFormats} .label=${$l("Format")}></pl-select>
+            <pl-select
+                id="formatSelect"
+                .options=${supportedFormats}
+                .label=${$l("Format")}
+                @change=${() => this.requestUpdate()}
+            ></pl-select>
 
             <div class="csv-note" ?hidden=${this._formatSelect && this._formatSelect.selected !== CSV}>
                 ${$l(
@@ -75,7 +80,7 @@ export class ExportDialog extends Dialog<void, void> {
 
     async show() {
         await this.updateComplete;
-        this._formatSelect.selected = CSV;
+        this._formatSelect.selected = PBES2;
         this._vaultSelect.selected = app.mainVault!;
         return super.show();
     }
@@ -97,12 +102,36 @@ export class ExportDialog extends Dialog<void, void> {
             case PBES2.format:
                 this.open = false;
                 const password = await prompt($l("Please choose a password to protect this backup with!"), {
-                    type: "password"
+                    title: $l("Choose Password"),
+                    type: "password",
+                    placeholder: "Enter Password",
+                    validate: async val => {
+                        if (!val) {
+                            throw $l("Please choose a password!");
+                        }
+                        return val;
+                    }
                 });
-                this.open = true;
 
-                if (typeof password !== "string") {
-                    this.done();
+                if (!password) {
+                    this.open = true;
+                    return;
+                }
+
+                const repeated = await prompt($l("Please repeat the password!"), {
+                    title: $l("Choose Password"),
+                    type: "password",
+                    placeholder: "Repeat Password",
+                    validate: async val => {
+                        if (val !== password) {
+                            throw $l("Password not repeated correctly!");
+                        }
+                        return val;
+                    }
+                });
+
+                if (!repeated) {
+                    this.open = true;
                     return;
                 }
 

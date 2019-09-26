@@ -96,7 +96,8 @@ export class ImportDialog extends Dialog<string, void> {
             case imp.PADLOCK_LEGACY.format:
                 this.open = false;
                 const pwd = await prompt($l("This file is protected by a password."), {
-                    label: $l("Enter Password"),
+                    title: $l("Enter Password"),
+                    placeholder: $l("Enter Password"),
                     type: "password",
                     validate: async (pwd: string) => {
                         try {
@@ -122,7 +123,8 @@ export class ImportDialog extends Dialog<string, void> {
             case imp.PBES2.format:
                 this.open = false;
                 const pwd2 = await prompt($l("This file is protected by a password."), {
-                    label: $l("Enter Password"),
+                    title: $l("Enter Password"),
+                    placeholder: $l("Enter Password"),
                     type: "password",
                     validate: async (pwd: string) => {
                         try {
