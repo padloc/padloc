@@ -230,6 +230,10 @@ export class ItemsList extends StateMixin(View) {
                 padding: 0;
             }
 
+            .item .tags .tag-name {
+                max-width: 60px;
+            }
+
             .item-header {
                 height: 24px;
                 margin: 12px 12px 8px 12px;
@@ -700,21 +704,27 @@ export class ItemsList extends StateMixin(View) {
     }
 
     private _renderItem(li: ListItem) {
-        const { item, warning } = li;
+        const { item, vault, warning } = li;
         const tags = [];
 
-        // const vaultName = vault.toString();
-        // tags.push({ name: vaultName, icon: "", class: "highlight" });
-
-        if (warning) {
-            tags.push({ icon: "error", class: "tag warning", name: "" });
+        if (!this.vault && vault.id !== app.mainVault!.id) {
+            tags.push({ name: vault.name, icon: "", class: "highlight" });
         }
 
-        const t = item.tags.find(t => t === router.params.tag) || item.tags[0];
-        if (t) {
+        if (warning) {
+            tags.push({ icon: "error", class: "warning", name: "" });
+        }
+
+        if (item.tags.length === 1) {
+            const t = item.tags.find(t => t === router.params.tag) || item.tags[0];
             tags.push({
-                name: item.tags.length > 1 ? `${t} (+${item.tags.length - 1})` : t,
-                icon: "",
+                name: t,
+                class: ""
+            });
+        } else if (item.tags.length) {
+            tags.push({
+                icon: "tag",
+                name: item.tags.length.toString(),
                 class: ""
             });
         }
@@ -722,7 +732,7 @@ export class ItemsList extends StateMixin(View) {
         const attCount = (item.attachments && item.attachments.length) || 0;
         if (attCount) {
             tags.push({
-                name: "",
+                name: attCount.toString(),
                 icon: "attachment",
                 class: ""
             });
@@ -757,16 +767,23 @@ export class ItemsList extends StateMixin(View) {
                         </div>
 
                         <div class="tags small">
-                            ${tags.map(tag =>
-                                tag.icon
-                                    ? html`
-                                          <div class="tag ${tag.class}">
-                                              <pl-icon icon="${tag.icon}"></pl-icon>
-                                          </div>
-                                      `
-                                    : html`
-                                          <div class="ellipsis tag ${tag.class}">${tag.name}</div>
-                                      `
+                            ${tags.map(
+                                tag => html`
+                                    <div class="tag ${tag.class}">
+                                        ${tag.icon
+                                            ? html`
+                                                  <pl-icon icon="${tag.icon}"></pl-icon>
+                                              `
+                                            : ""}
+                                        ${tag.name
+                                            ? html`
+                                                  <div class="tag-name ellipsis">
+                                                      ${tag.name}
+                                                  </div>
+                                              `
+                                            : ""}
+                                    </div>
+                                `
                             )}
                         </div>
                     </div>
