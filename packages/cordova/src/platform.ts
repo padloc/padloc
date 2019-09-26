@@ -103,4 +103,18 @@ export class CordovaPlatform extends WebPlatform implements Platform {
             supportsKeyStore
         });
     }
+
+    async setClipboard(val: string): Promise<void> {
+        await cordovaReady;
+        return new Promise((resolve, reject) => {
+            cordova.plugins.clipboard.copy(val, resolve, reject);
+        });
+    }
+
+    async getClipboard(): Promise<string> {
+        await cordovaReady;
+        return new Promise((resolve, reject) => {
+            cordova.plugins.clipboard.paste(resolve, reject);
+        });
+    }
 }
