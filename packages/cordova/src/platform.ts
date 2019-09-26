@@ -7,6 +7,7 @@ const cordovaReady = new Promise(resolve => document.addEventListener("devicerea
 
 declare var Fingerprint: any;
 declare var cordova: any;
+declare var device: any;
 
 export class CordovaPlatform extends WebPlatform implements Platform {
     async scanQR() {
@@ -94,13 +95,19 @@ export class CordovaPlatform extends WebPlatform implements Platform {
     }
 
     async getDeviceInfo() {
+        await cordovaReady;
+        const { manufacturer, model, platform, version: osVersion } = device;
         const [supportsBioAuth, supportsKeyStore] = await Promise.all([
             this.isBiometricAuthAvailable(),
             this.isKeyStoreAvailable()
         ]);
         return Object.assign(await super.getDeviceInfo(), {
             supportsBioAuth,
-            supportsKeyStore
+            supportsKeyStore,
+            manufacturer,
+            model,
+            platform,
+            osVersion
         });
     }
 
