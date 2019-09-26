@@ -601,9 +601,9 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     }
 
     @listen("enable-biometric-auth")
-    async _enableBiometricAuth() {
+    async _enableBiometricAuth(e: CustomEvent) {
         const confirmed = await confirm(
-            $l("Do you want to enable biometric unlock for this device?"),
+            (e.detail && e.detail.message) || $l("Do you want to enable biometric unlock for this device?"),
             $l("Setup"),
             $l("Cancel"),
             {
@@ -612,6 +612,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         );
 
         if (!confirmed) {
+            app.forgetMasterKey();
             return;
         }
 
@@ -623,6 +624,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                     title: $l("Setup Failed"),
                     type: "warning"
                 });
+                app.forgetMasterKey();
                 return;
             }
         } catch (e) {
@@ -630,6 +632,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 title: $l("Setup Failed"),
                 type: "warning"
             });
+            app.forgetMasterKey();
             return;
         }
 
@@ -650,6 +653,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             });
 
             if (!password) {
+                app.forgetMasterKey();
                 return;
             }
 

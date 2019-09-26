@@ -223,7 +223,13 @@ export class Unlock extends StartForm {
                     return;
                 }
 
-                await app.unlockWithRememberedMasterKey();
+                try {
+                    await app.unlockWithRememberedMasterKey();
+                } catch (e) {
+                    this.dispatch("enable-biometric-auth", {
+                        message: $l("Biometric unlock expired. Complete setup to reeneable.")
+                    });
+                }
 
                 this._bioauthButton.success();
             } else {
