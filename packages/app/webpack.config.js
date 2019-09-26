@@ -49,7 +49,17 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: "Padloc",
-            template: path.resolve(__dirname, "index.html")
+            template: path.resolve(__dirname, "index.html"),
+            meta: {
+                "Content-Security-Policy": {
+                    "http-equiv": "Content-Security-Policy",
+                    content: `default-src 'self' ${process.env.PL_SERVER_URL} ${
+                        process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
+                    }; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self' blob: ${
+                        process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
+                    }; img-src 'self' blob:`
+                }
+            }
         }),
         new FaviconsWebpackPlugin(path.resolve(__dirname, "assets/icons/512.png")),
         new WebpackPwaManifest({
