@@ -256,7 +256,7 @@ export class PlIcon extends BaseElement {
             // }
 
             :host([icon="list"]) > div::before {
-                content: "\\f0ca";
+                content: "\\f550";
             }
 
             :host([icon="remove"]) > div::before {

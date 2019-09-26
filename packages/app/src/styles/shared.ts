@@ -227,6 +227,7 @@ export const shared = css`
         box-sizing: border-box;
         ${mixins.scroll()}
         overflow-x: hidden;
+        position: relative;
     }
 
     ul {
@@ -544,9 +545,6 @@ export const shared = css`
         ${mixins.fullbleed()}
         display: flex;
         flex-direction: column;
-        ${mixins.fullbleed()}
-        top: var(--row-height);
-        overflow: visible;
         align-items: center;
         justify-content: center;
         text-align: center;

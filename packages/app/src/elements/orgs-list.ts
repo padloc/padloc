@@ -116,9 +116,8 @@ export class OrgsList extends StateMixin(View) {
 
                     <div>
                         ${$l(
-                            "Create an organization to securely share and manage data " +
-                                "between a group of people like your family and friends, " +
-                                "teams or even entire companies!"
+                            "Organizations allow you to securely share passwords, documents and other data " +
+                                "within your family, team or any other kind of group!"
                         )}
                     </div>
 
