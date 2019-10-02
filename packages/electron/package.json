@@ -1,24 +1,30 @@
 {
   "name": "@padloc/electron",
-  "version": "3.0.0",
+  "version": "3.0.4",
   "description": "Electron Wrapper for Padloc app",
   "main": "main.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/padloc/padloc.git"
   },
-  "author": "",
+  "scripts": {
+    "build": "rm -r app && webpack && electron-builder",
+    "run": "electron/app/main.js"
+  },
+  "author": "MaKleSoft UG",
   "license": "GPL-3.0",
   "dependencies": {
     "@padloc/app": "^3.0.0",
     "@padloc/core": "^3.0.0",
-    "electron": "^6.0.7",
     "electron-store": "^4.0.0",
     "electron-updater": "^4.1.2"
   },
   "devDependencies": {
-    "electron-builder": "^21.2.0",
     "clean-webpack-plugin": "^3.0.0",
     "css-loader": "^3.0.0",
+    "electron": "^6.0.7",
+    "electron-builder": "^21.2.0",
+    "electron-notarize": "^0.1.1",
     "file-loader": "^4.0.0",
     "html-webpack-plugin": "^3.2.0",
     "style-loader": "^0.23.1",
@@ -26,7 +32,17 @@
     "webpack": "^4.35.3",
     "webpack-cli": "^3.3.5"
   },
-  "scripts": {
-    "build": "webpack"
+  "build": {
+    "appId": "app.padloc",
+    "directories": {
+      "app": "app"
+    },
+    "mac": {
+      "hardenedRuntime" : true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.plist",
+      "entitlementsInherit": "entitlements.plist"
+    },
+    "afterSign": "notarize.js"
   }
 }

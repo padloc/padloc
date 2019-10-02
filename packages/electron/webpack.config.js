@@ -1,7 +1,7 @@
 const path = require("path");
 const { EnvironmentPlugin, optimize } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { version } = require("./package.json");
+const { description, author, version } = require("./package.json");
 
 module.exports = [
     {
@@ -10,7 +10,7 @@ module.exports = [
             app: path.resolve(__dirname, "src/index.ts")
         },
         output: {
-            path: path.resolve(__dirname, "build"),
+            path: path.resolve(__dirname, "app"),
             filename: "[name].js",
             chunkFilename: "[name].chunk.js"
         },
@@ -70,7 +70,7 @@ module.exports = [
             main: path.resolve(__dirname, "src/main.ts")
         },
         output: {
-            path: path.resolve(__dirname, "build"),
+            path: path.resolve(__dirname, "app"),
             filename: "[name].js",
             chunkFilename: "[name].chunk.js"
         },
@@ -91,7 +91,22 @@ module.exports = [
             new EnvironmentPlugin({
                 PL_SERVER_URL: `http://localhost:${process.env.PL_SERVER_PORT || 3000}`,
                 PL_STRIPE_PUBLIC_KEY: null
-            })
+            }),
+            {
+                apply(compiler) {
+                    const package = JSON.stringify({ name: "Padloc", description, version, main: "main.js" });
+                    // emit is asynchronous hook, tapping into it using tapAsync, you can use tapPromise/tap(synchronous) as well
+                    compiler.hooks.emit.tapAsync("InjectAppPackage", (compilation, callback) => {
+                        // Insert this list into the webpack build as a new file asset:
+                        compilation.assets["package.json"] = {
+                            source: () => package,
+                            size: () => package.length
+                        };
+
+                        callback();
+                    });
+                }
+            }
         ]
     }
 ];

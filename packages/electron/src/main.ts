@@ -3,6 +3,9 @@ import { autoUpdater, UpdateInfo } from "electron-updater";
 import * as os from "os";
 import ElectronStore from "electron-store";
 
+const debug = process.argv.includes("--debug");
+console.log("args: ", process.argv, debug);
+
 const settings = new ElectronStore({
     name: "settings",
     defaults: {
@@ -23,7 +26,7 @@ async function updateReady(updateInfo: UpdateInfo) {
     const { response } = await dialog.showMessageBox(win, {
         message: "Install Update",
         detail:
-            `Padlock version ${updateInfo.version} has been downloaded. The update will be installed ` +
+            `Padloc version ${updateInfo.version} has been downloaded. The update will be installed ` +
             `the next time the app is launched.`,
         buttons: ["Install Later", "Install And Restart"],
         defaultId: 1
@@ -38,59 +41,61 @@ async function updateReady(updateInfo: UpdateInfo) {
 
 autoUpdater.on("update-downloaded", updateReady);
 
-// function htmlToText(html: string) {
-//     return html
-//         .replace(/<p>([\w\W]*?)<\/p>/g, "$1")
-//         .replace(/<\/?ul>/g, "")
-//         .replace(/<li>([\w\W]*?)<\/li>/g, "\u2022 $1");
-// }
+function htmlToText(html: string) {
+    return html
+        .replace(/<p>([\w\W]*?)<\/p>/g, "$1")
+        .replace(/<\/?ul>/g, "")
+        .replace(/<li>([\w\W]*?)<\/li>/g, "\u2022 $1");
+}
 
-// async function updateAvailable(versionInfo) {
-//     if (autoUpdater.autoDownload) {
-//         return;
-//     }
-//
-//     const { response, checkboxChecked } = await dialog.showMessageBox(null, {
-//         type: "info",
-//         message: `A new version of Padlock is available! (v${versionInfo.version})`,
-//         detail: htmlToText(versionInfo.releaseNotes),
-//         checkboxLabel: "Automatically download and install updates in the future (recommended)",
-//         buttons: ["Remind Me Later", "Download And Install"],
-//         defaultId: 1
-//     });
-//
-//     settings.set("autoDownloadUpdates", checkboxChecked);
-//
-//     if (response === 1) {
-//         autoUpdater.downloadUpdate();
-//
-//         dialog.showMessageBox({
-//             message: "Downloading Update...",
-//             detail: "The new version is being downloaded. You'll be notified when it is ready to be installed!"
-//         });
-//     }
-// }
+async function updateAvailable(versionInfo: UpdateInfo) {
+    if (autoUpdater.autoDownload) {
+        return;
+    }
 
-async function checkForUpdates(_manual = false) {
+    const { response, checkboxChecked } = await dialog.showMessageBox(win, {
+        type: "info",
+        message: `A new version of Padloc is available! (v${versionInfo.version})`,
+        detail: htmlToText(versionInfo.releaseNotes as string),
+        checkboxLabel: "Automatically download and install updates in the future (recommended)",
+        buttons: ["Remind Me Later", "Download And Install"],
+        defaultId: 1
+    });
+
+    settings.set("autoDownloadUpdates", checkboxChecked);
+
+    if (response === 1) {
+        autoUpdater.downloadUpdate();
+
+        dialog.showMessageBox(win, {
+            message: "Downloading Update...",
+            detail: "The new version is being downloaded. You'll be notified when it is ready to be installed!"
+        });
+    }
+}
+
+async function checkForUpdates(manual = false) {
     autoUpdater.autoDownload = settings.get("autoDownloadUpdates") as boolean;
     autoUpdater.allowPrerelease = settings.get("allowPrerelease") as boolean;
 
     const result = await autoUpdater.checkForUpdates();
-    // @ts-ignore
-    console.log("update available: ", result, autoUpdater.updateAvailable);
-    // if (autoUpdater.updateAvailable) {
-    //     updateAvailable(result.versionInfo);
-    // } else if (manual) {
-    //     const { checkboxChecked } = await dialog.showMessageBox(null, {
-    //         type: "info",
-    //         message: "No Updates Available",
-    //         detail: "Your version of Padlock is up to date.",
-    //         checkboxLabel: "Automatically download and install updates in the future (recommended)",
-    //         checkboxChecked: settings.get("autoDownloadUpdates") as boolean
-    //     });
-    //
-    //     settings.set("autoDownloadUpdates", checkboxChecked);
-    // }
+    const hasUpdate = typeof result.downloadPromise !== "undefined";
+
+    console.log(result, hasUpdate);
+
+    if (hasUpdate) {
+        updateAvailable(result.versionInfo);
+    } else if (manual) {
+        const { checkboxChecked } = await dialog.showMessageBox(win, {
+            type: "info",
+            message: "No Updates Available",
+            detail: "Your version of Padloc is up to date.",
+            checkboxLabel: "Automatically download and install updates in the future (recommended)",
+            checkboxChecked: settings.get("autoDownloadUpdates") as boolean
+        });
+
+        settings.set("autoDownloadUpdates", checkboxChecked);
+    }
 }
 
 function createWindow() {
@@ -109,16 +114,14 @@ function createWindow() {
         hasShadow: true,
         show: false,
         webPreferences: {
-            devTools: true
+            devTools: debug
         }
     });
 
     win.loadFile("index.html");
 
     win.once("ready-to-show", () => {
-        console.log("showing window");
         win.show();
-        win.webContents.openDevTools();
     });
 
     win.on("close", () => {
@@ -146,7 +149,7 @@ function createApplicationMenu() {
     };
 
     const appSubMenu: any[] =
-        os.platform() === "darwin" ? [{ role: "about" }] : [{ label: `Padlock v${app.getVersion()}`, enabled: false }];
+        os.platform() === "darwin" ? [{ role: "about" }] : [{ label: `Padloc v${app.getVersion()}`, enabled: false }];
 
     appSubMenu.push(checkForUpdatesItem);
 
@@ -154,21 +157,21 @@ function createApplicationMenu() {
         appSubMenu.push({ type: "separator" }, { role: "hide" }, { role: "hideothers" }, { role: "unhide" });
     }
 
-    // if (debug) {
-    //     appSubMenu.push(
-    //         { type: "separator" },
-    //         {
-    //             label: "Debug",
-    //             submenu: [
-    //                 {
-    //                     label: "Open Dev Tools",
-    //                     accelerator: "CmdOrCtrl+Shift+I",
-    //                     click: () => win.webContents.toggleDevTools()
-    //                 }
-    //             ]
-    //         }
-    //     );
-    // }
+    if (debug) {
+        appSubMenu.push(
+            { type: "separator" },
+            {
+                label: "Debug",
+                submenu: [
+                    {
+                        label: "Open Dev Tools",
+                        accelerator: "CmdOrCtrl+Shift+I",
+                        click: () => win.webContents.toggleDevTools()
+                    }
+                ]
+            }
+        );
+    }
 
     appSubMenu.push({ type: "separator" }, { role: "quit" });
 
