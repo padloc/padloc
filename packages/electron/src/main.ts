@@ -3,9 +3,7 @@ import { autoUpdater, UpdateInfo } from "electron-updater";
 import * as os from "os";
 import ElectronStore from "electron-store";
 
-declare var global: any;
-
-const settings = (global.settings = new ElectronStore({
+const settings = new ElectronStore({
     name: "settings",
     defaults: {
         autoDownloadUpdates: false,
@@ -16,7 +14,7 @@ const settings = (global.settings = new ElectronStore({
         },
         fullscreen: false
     }
-}));
+});
 
 let win: BrowserWindow;
 let updateOnQuit = false;
@@ -106,8 +104,8 @@ function createWindow() {
         fullscreen: settings.get("fullscreen") as boolean,
         fullscreenable: true,
         backgroundColor: "#59c6ff",
-        frame: false,
-        transparent: false,
+        // frame: false,
+        // transparent: false,
         hasShadow: true,
         show: false,
         webPreferences: {
