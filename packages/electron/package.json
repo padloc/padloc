@@ -43,6 +43,17 @@
       "entitlements": "entitlements.plist",
       "entitlementsInherit": "entitlements.plist"
     },
+    "win": {
+      "publisherName": "Open Source Developer, Martin Kleinschrodt",
+      "sign": "sign-win.js"
+    },
+    "linux": {
+      "category": "Utility"
+    },
+    "protocols": {
+      "name": "Padloc",
+      "schemes": ["padloc"]
+    },
     "afterSign": "notarize.js"
   }
 }

@@ -94,7 +94,7 @@ module.exports = [
             }),
             {
                 apply(compiler) {
-                    const package = JSON.stringify({ name: "Padloc", description, version, main: "main.js" });
+                    const package = JSON.stringify({ name: "Padloc", author, description, version, main: "main.js" });
                     // emit is asynchronous hook, tapping into it using tapAsync, you can use tapPromise/tap(synchronous) as well
                     compiler.hooks.emit.tapAsync("InjectAppPackage", (compilation, callback) => {
                         // Insert this list into the webpack build as a new file asset:
