@@ -9,8 +9,6 @@ import { LoadingButton } from "./loading-button";
 import { Input } from "./input";
 import { Select } from "./select";
 
-const stripeLoaded = loadScript("https://js.stripe.com/v3/", "Stripe");
-
 interface Params {
     condensed?: boolean;
     title?: string;
@@ -96,7 +94,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
             return;
         }
 
-        const Stripe = await stripeLoaded;
+        const Stripe = await loadScript("https://js.stripe.com/v3/", "Stripe");
 
         const stripe = (this._stripe = Stripe(stripePubKey));
         const elements = stripe.elements({

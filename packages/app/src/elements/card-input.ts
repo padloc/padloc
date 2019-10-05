@@ -2,8 +2,6 @@ import { loadScript } from "../util";
 import { shared } from "../styles";
 import { BaseElement, element, html, property, css } from "./base";
 
-const stripeLoaded = loadScript("https://js.stripe.com/v3/", "Stripe");
-
 @element("pl-card-input")
 export class CardInput extends BaseElement {
     @property()
@@ -32,7 +30,7 @@ export class CardInput extends BaseElement {
     async connectedCallback() {
         super.connectedCallback();
 
-        const Stripe = await stripeLoaded;
+        const Stripe = await loadScript("https://js.stripe.com/v3/", "Stripe");
 
         const stripe = (this._stripe = Stripe(this.stripePubKey));
         const elements = stripe.elements({
