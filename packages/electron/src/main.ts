@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, Menu, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, dialog, ipcMain, shell } from "electron";
 import { autoUpdater, UpdateInfo } from "electron-updater";
 import * as os from "os";
 import ElectronStore from "electron-store";
@@ -113,10 +113,15 @@ function createWindow() {
         // transparent: false,
         hasShadow: true,
         show: false,
+        autoHideMenuBar: true,
         webPreferences: {
             devTools: debug
         }
     });
+
+    if (debug) {
+        win.webContents.openDevTools();
+    }
 
     win.loadFile("index.html");
 
