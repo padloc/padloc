@@ -35,7 +35,8 @@
   "build": {
     "appId": "app.padloc",
     "directories": {
-      "app": "app"
+      "app": "app",
+      "buildResources": "res"
     },
     "mac": {
       "hardenedRuntime" : true,
