@@ -35,14 +35,17 @@ export class OrgSubscription extends StateMixin(BaseElement) {
 
     private async _update() {
         const sub = this._subscription;
-        if (!sub) {
-            this._updatePlan();
-            return;
-        }
 
-        if (!this.org && sub.plan.type === PlanType.Free) {
-            this.dispatch("get-premium");
-            return;
+        if (this.org) {
+            if (!sub) {
+                this._updatePlan();
+                return;
+            }
+        } else {
+            if (!sub || sub.plan.type === PlanType.Free) {
+                this.dispatch("get-premium");
+                return;
+            }
         }
 
         const canceled = sub.status === SubscriptionStatus.Canceled;
