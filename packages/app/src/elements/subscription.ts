@@ -10,6 +10,7 @@ import { BaseElement, element, property, html, css, query } from "./base";
 import "./icon";
 import { LoadingButton } from "./loading-button";
 import { UpdateSubscriptionDialog } from "./update-subscription-dialog";
+import { BillingDialog } from "./billing-dialog";
 
 @element("pl-subscription")
 export class OrgSubscription extends StateMixin(BaseElement) {
@@ -19,8 +20,14 @@ export class OrgSubscription extends StateMixin(BaseElement) {
     @dialog("pl-update-subscription-dialog")
     private _updateSubscriptionDialog: UpdateSubscriptionDialog;
 
+    @dialog("pl-billing-dialog")
+    private _billingDialog: BillingDialog;
+
     @query("#editButton")
     private _editButton: LoadingButton;
+
+    @query("#paymentButton")
+    private _paymentButton: LoadingButton;
 
     @query("#authButton")
     private _authButton: LoadingButton;
@@ -67,6 +74,27 @@ export class OrgSubscription extends StateMixin(BaseElement) {
 
     private _updatePlan() {
         this.org ? this._updateSubscriptionDialog.show(this.org) : this.dispatch("get-premium");
+    }
+
+    private async _updateBilling() {
+        if (this._paymentButton.state === "loading") {
+            return;
+        }
+
+        const billingInfo = this._billing!;
+
+        const params = await this._billingDialog.show({ billingInfo });
+        if (params) {
+            this._paymentButton.start();
+            try {
+                await app.updateBilling(params);
+                this._paymentButton.success();
+            } catch (e) {
+                this._paymentButton.fail();
+                alert(e.message || $l("Something went wrong. Please try again later!"), { type: "warning" });
+                throw e;
+            }
+        }
     }
 
     private async _do(fn: () => Promise<any>) {
@@ -326,6 +354,16 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                           @click=${this._authenticatePayment}
                           >${$l("Complete Payment")}</pl-loading-button
                       >
+                  `
+                : sub.status === SubscriptionStatus.Inactive
+                ? html`
+                      <pl-loading-button
+                          id="paymentButton"
+                          class="premium-button primary tap"
+                          @click=${this._updateBilling}
+                      >
+                          ${$l("Add Payment Method")}
+                      </pl-loading-button>
                   `
                 : this.org || sub.plan.type !== PlanType.Free
                 ? html`
