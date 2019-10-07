@@ -476,6 +476,13 @@ class Controller implements API {
         // Get existing org based on the id
         const org = await this.storage.get(Org, id);
 
+        if (org.frozen) {
+            throw new Err(
+                ErrorCode.ORG_FROZEN,
+                'You can not make any updates to an organization while it is in "frozen" state!'
+            );
+        }
+
         // Check the revision id to make sure the changes are based on the most
         // recent version stored on the server. This is to ensure continuity in
         // case two clients try to make changes to an organization at the same
@@ -679,6 +686,13 @@ class Controller implements API {
         // Vaults can only be updated by accounts that have explicit write access
         if (org && !org.canWrite(vault, account)) {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
+        }
+
+        if (org && org.frozen) {
+            throw new Err(
+                ErrorCode.ORG_FROZEN,
+                'You can not make any updates to a vault while it\'s organization is in "frozen" state!'
+            );
         }
 
         // Check the revision id to make sure the changes are based on the most

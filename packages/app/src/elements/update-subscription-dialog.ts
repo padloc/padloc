@@ -83,6 +83,7 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
         const plan = await this._choosePlanDialog.show();
         if (plan) {
             this.plan = plan;
+            this.quantity = plan.min;
         }
         this.open = true;
     }
@@ -176,7 +177,6 @@ export class UpdateSubscriptionDialog extends Dialog<Org, void> {
 
             .quantity-input {
                 width: 60px;
-                height: 45px;
                 margin: 0;
                 font-weight: bold;
                 font-size: 1.5rem;

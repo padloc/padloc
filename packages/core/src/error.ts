@@ -37,6 +37,7 @@ export enum ErrorCode {
     MAX_REQUEST_AGE_EXCEEDED = "max_request_age_exceeded",
 
     // Quota errors
+    ORG_FROZEN = "org_frozen",
     ORG_QUOTA_EXCEEDED = "org_quota_exceeded",
     MEMBER_QUOTA_EXCEEDED = "member_quota_exceeded",
     GROUP_QUOTA_EXCEEDED = "group_quota_exceeded",

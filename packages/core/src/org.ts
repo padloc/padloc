@@ -271,6 +271,13 @@ export class Org extends SharedContainer implements Storable {
      */
     revision: string = "";
 
+    /**
+     * Whether the organization is in "frozen" state. If an organization is
+     * frozen, groups, members and vaults assoziated with the Organization can
+     * not be updated.
+     */
+    frozen = false;
+
     quota: OrgQuota = new OrgQuota();
 
     billing?: BillingInfo;
@@ -308,6 +315,7 @@ export class Org extends SharedContainer implements Storable {
         vaults,
         invites,
         signingParams,
+        frozen,
         quota,
         billing,
         usedStorage,
@@ -322,6 +330,7 @@ export class Org extends SharedContainer implements Storable {
             name,
             owner,
             revision,
+            frozen,
             minMemberUpdated: new Date(minMemberUpdated),
             publicKey: publicKey && base64ToBytes(publicKey),
             members: members.map((m: any) => new OrgMember().fromRaw(m)),

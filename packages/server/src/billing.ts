@@ -101,7 +101,7 @@ function parseSubscription({
         members: quantity,
         paymentError,
         paymentRequiresAuth,
-        currentInvoice: (latest_invoice && latest_invoice.id) || ""
+        currentInvoice: (latest_invoice && !latest_invoice.paid && latest_invoice.id) || ""
     });
 }
 
@@ -219,8 +219,8 @@ export class StripeBillingProvider implements BillingProvider {
             try {
                 if (info.subscription) {
                     await this._stripe.subscriptions.update(info.subscription.id, {
-                        // trial_from_plan: true,
-                        trial_end: Math.floor(Date.now() / 1000) + 20,
+                        trial_from_plan: true,
+                        // trial_end: Math.floor(Date.now() / 1000) + 20,
                         // trial_end: "now",
                         ...params
                     } as Stripe.subscriptions.ISubscriptionUpdateOptions);
@@ -228,7 +228,7 @@ export class StripeBillingProvider implements BillingProvider {
                     await this._stripe.subscriptions.create({
                         customer: info.customerId,
                         trial_from_plan: true,
-                        // trial_end: "now",
+                        // trial_end: Math.floor(Date.now() / 1000) + 20,
                         ...params
                     } as Stripe.subscriptions.ISubscriptionCreationOptions);
                 }
@@ -241,11 +241,12 @@ export class StripeBillingProvider implements BillingProvider {
 
         const sub = acc.billing && acc.billing.subscription;
 
-        if (sub && sub.status === SubscriptionStatus.Inactive && paymentMethod && !sub.paymentRequiresAuth) {
+        if (sub && sub.currentInvoice && !sub.paymentRequiresAuth) {
             try {
                 await this._stripe.invoices.pay(sub.currentInvoice);
                 await this._sync(acc);
             } catch (e) {
+                await this._sync(acc);
                 throw new Err(ErrorCode.BILLING_ERROR, e.message);
             }
         }
@@ -300,6 +301,7 @@ export class StripeBillingProvider implements BillingProvider {
 
     private async _sync(acc: Account | Org): Promise<void> {
         let customer: Stripe.customers.ICustomer | undefined;
+        const freePlan = this._availablePlans.find(p => p.type === PlanType.Free);
 
         if (acc.billing) {
             try {
@@ -320,8 +322,6 @@ export class StripeBillingProvider implements BillingProvider {
 
         // @ts-ignore
         if (!customer || customer.deleted) {
-            const freePlan = this._availablePlans.find(p => p.type === PlanType.Free);
-
             customer = await this._stripe.customers.create({
                 // email: acc instanceof Account ? acc.email : undefined,
                 plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
@@ -343,24 +343,25 @@ export class StripeBillingProvider implements BillingProvider {
 
         const sub = acc.billing.subscription;
 
-        Object.assign(
-            acc.quota,
-            sub
-                ? {
-                      storage: sub.storage,
-                      items: sub.items,
-                      members: sub.members,
-                      groups: sub.groups,
-                      vaults: sub.vaults
-                  }
-                : {
-                      storage: 0,
-                      items: 50,
-                      members: 0,
-                      groups: 0,
-                      vaults: 0
-                  }
-        );
+        if (sub && sub.status !== SubscriptionStatus.Inactive) {
+            if (acc instanceof Account) {
+                acc.quota.storage = sub.storage;
+                acc.quota.items = sub.items;
+            } else {
+                acc.quota.storage = sub.storage;
+                acc.quota.members = sub.members;
+                acc.quota.groups = sub.groups;
+                acc.quota.vaults = sub.vaults;
+                acc.frozen = false;
+            }
+        } else {
+            if (acc instanceof Account) {
+                const { items, storage } = freePlan || { items: 50, storage: 0 };
+                Object.assign(acc.quota, { items, storage });
+            } else {
+                acc.frozen = true;
+            }
+        }
 
         await this.storage.save(acc);
     }

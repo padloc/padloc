@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { Org } from "@padloc/core/src/org";
-import { PlanType, SubscriptionStatus, UpdateBillingParams, Subscription } from "@padloc/core/src/billing";
+import { PlanType, SubscriptionStatus, UpdateBillingParams } from "@padloc/core/src/billing";
 import { shared } from "../styles";
 import { dialog, alert, choose } from "../dialog";
 import { fileSize, loadScript } from "../util";
@@ -113,11 +113,15 @@ export class OrgSubscription extends StateMixin(BaseElement) {
     }
 
     private async _cancelSubscription() {
-        this._do(() => app.updateBilling(new UpdateBillingParams({ cancel: true })));
+        this._do(() =>
+            app.updateBilling(new UpdateBillingParams({ org: (this.org && this.org.id) || undefined, cancel: true }))
+        );
     }
 
     private async _resumeSubscription() {
-        this._do(() => app.updateBilling(new UpdateBillingParams({ cancel: false })));
+        this._do(() =>
+            app.updateBilling(new UpdateBillingParams({ org: (this.org && this.org.id) || undefined, cancel: false }))
+        );
     }
 
     private async _authenticatePayment() {
@@ -222,21 +226,23 @@ export class OrgSubscription extends StateMixin(BaseElement) {
 
         const account = app.account!;
         const billing = this.org ? this.org.billing : account.billing;
-        const sub = (billing && billing.subscription) || new Subscription();
+        const sub = billing && billing.subscription;
 
-        const trialDays = sub.trialEnd
-            ? Math.max(0, Math.ceil((sub.trialEnd.getTime() - Date.now()) / 1000 / 60 / 60 / 24))
-            : 0;
+        const trialDays =
+            sub && sub.trialEnd
+                ? Math.max(0, Math.ceil((sub.trialEnd.getTime() - Date.now()) / 1000 / 60 / 60 / 24))
+                : 0;
 
-        const periodDays = sub.periodEnd
-            ? Math.max(0, Math.ceil((sub.periodEnd.getTime() - Date.now()) / 1000 / 60 / 60 / 24))
-            : 0;
+        const periodDays =
+            sub && sub.periodEnd
+                ? Math.max(0, Math.ceil((sub.periodEnd.getTime() - Date.now()) / 1000 / 60 / 60 / 24))
+                : 0;
 
         const itemCount = (app.mainVault && app.mainVault.items.size) || 0;
 
         return html`
             <div class="plan-name">
-                ${sub.plan.name}
+                ${(sub && sub.plan.name) || $l("No Plan Selected")}
             </div>
 
             <div class="quota">
@@ -299,54 +305,63 @@ export class OrgSubscription extends StateMixin(BaseElement) {
                               </div>
                           </div>
                       `}
-
-                <div class="quota-item">
-                    <pl-icon icon="dollar"></pl-icon>
-
-                    <div class="label">
-                        ${$l("{0} / Year", ((sub.members * sub.plan.cost) / 100).toFixed(2))}
-                    </div>
-                </div>
-
-                ${sub.status === SubscriptionStatus.Canceled
+                ${sub
                     ? html`
-                          <div class="quota-item" warning>
-                              <pl-icon icon="time"></pl-icon>
+                          <div class="quota-item">
+                              <pl-icon icon="dollar"></pl-icon>
 
                               <div class="label">
-                                  ${$l("Canceled ({0} days left)", periodDays.toString())}
+                                  ${$l("{0} / Year", ((sub.members * sub.plan.cost) / 100).toFixed(2))}
                               </div>
                           </div>
-                      `
-                    : sub.status === SubscriptionStatus.Inactive
-                    ? html`
-                          <div class="quota-item" warning>
-                              <pl-icon icon="error"></pl-icon>
 
-                              <div class="label">
-                                  ${sub.paymentRequiresAuth ? $l("Authentication Required") : $l("Inactive")}
-                              </div>
-                          </div>
-                      `
-                    : sub.status === SubscriptionStatus.Trialing
-                    ? html`
-                          <div class="quota-item" ?warning=${trialDays < 3}>
-                              <pl-icon icon="time"></pl-icon>
+                          ${sub.status === SubscriptionStatus.Canceled
+                              ? html`
+                                    <div class="quota-item" warning>
+                                        <pl-icon icon="time"></pl-icon>
 
-                              <div class="label">
-                                  ${$l("Trialing ({0} days left)", trialDays.toString())}
-                              </div>
-                          </div>
+                                        <div class="label">
+                                            ${$l("Canceled ({0} days left)", periodDays.toString())}
+                                        </div>
+                                    </div>
+                                `
+                              : sub.status === SubscriptionStatus.Inactive
+                              ? html`
+                                    <div class="quota-item" warning>
+                                        <pl-icon icon="error"></pl-icon>
+
+                                        <div class="label">
+                                            ${sub.paymentRequiresAuth ? $l("Authentication Required") : $l("Inactive")}
+                                        </div>
+                                    </div>
+                                `
+                              : sub.status === SubscriptionStatus.Trialing
+                              ? html`
+                                    <div class="quota-item" ?warning=${trialDays < 3}>
+                                        <pl-icon icon="time"></pl-icon>
+
+                                        <div class="label">
+                                            ${$l("Trialing ({0} days left)", trialDays.toString())}
+                                        </div>
+                                    </div>
+                                `
+                              : html``}
                       `
-                    : html``}
+                    : ""}
             </div>
 
-            ${sub.paymentError
+            ${sub && sub.paymentError
                 ? html`
                       <div class="error item">${sub.paymentError}</div>
                   `
                 : ""}
-            ${sub.paymentRequiresAuth
+            ${!sub
+                ? html`
+                      <button class="premium-button primary tap" @click=${this._updatePlan}>
+                          ${$l("Choose Plan")}
+                      </button>
+                  `
+                : sub.paymentRequiresAuth
                 ? html`
                       <pl-loading-button
                           id="authButton"
