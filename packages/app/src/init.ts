@@ -19,4 +19,4 @@ const billingConfig = billingEnabled
       }
     : undefined;
 export const app = (window.app = new App(new LocalStorage(), sender, billingConfig));
-export const router = (window.router = new Router(window.location.pathname.replace(/index.html$/, "")));
+export const router = (window.router = new Router());
