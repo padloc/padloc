@@ -4,7 +4,6 @@ import * as os from "os";
 import ElectronStore from "electron-store";
 
 const debug = process.argv.includes("--debug");
-console.log("args: ", process.argv, debug);
 
 const settings = new ElectronStore({
     name: "settings",
@@ -81,7 +80,9 @@ async function checkForUpdates(manual = false) {
     const result = await autoUpdater.checkForUpdates();
     const hasUpdate = typeof result.downloadPromise !== "undefined";
 
-    console.log(result, hasUpdate);
+    if (debug) {
+        console.log("update check result: ", result, hasUpdate);
+    }
 
     if (hasUpdate) {
         updateAvailable(result.versionInfo);
@@ -245,7 +246,6 @@ function createApplicationMenu() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", () => {
-    console.log("ready");
     createWindow();
     createApplicationMenu();
 
