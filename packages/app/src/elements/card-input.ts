@@ -1,6 +1,7 @@
 import { loadScript } from "../util";
 import { shared } from "../styles";
 import { BaseElement, element, html, property, css } from "./base";
+import Nunito from "../../assets/fonts/Nunito-Regular.ttf";
 
 @element("pl-card-input")
 export class CardInput extends BaseElement {
@@ -36,7 +37,10 @@ export class CardInput extends BaseElement {
         const elements = stripe.elements({
             fonts: [
                 {
-                    cssSrc: "https://fonts.googleapis.com/css?family=Nunito"
+                    src: `local("Nunito Regular"), local("Nunito-Regular"), url(${Nunito}) format("truetype")`,
+                    family: "Nunito",
+                    style: "normal",
+                    weight: 400
                 }
             ]
         });

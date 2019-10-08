@@ -8,6 +8,7 @@ import { Dialog } from "./dialog";
 import { LoadingButton } from "./loading-button";
 import { Input } from "./input";
 import { Select } from "./select";
+import Nunito from "../../assets/fonts/Nunito-Regular.ttf";
 
 interface Params {
     condensed?: boolean;
@@ -100,7 +101,10 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
         const elements = stripe.elements({
             fonts: [
                 {
-                    cssSrc: "https://fonts.googleapis.com/css?family=Nunito"
+                    src: `local("Nunito Regular"), local("Nunito-Regular"), url(${Nunito}) format("truetype")`,
+                    family: "Nunito",
+                    style: "normal",
+                    weight: 400
                 }
             ]
         });
