@@ -315,6 +315,11 @@ export class OrgView extends StateMixin(View) {
             .settings button {
                 width: 100%;
             }
+
+            .error.item button {
+                width: 100%;
+                margin-top: 8px;
+            }
         `
     ];
 
@@ -382,6 +387,21 @@ export class OrgView extends StateMixin(View) {
             <main>
                 <div class="wrapper">
                     <div ?hidden=${this._page !== "members"} class="subview">
+                        ${org.frozen
+                            ? html`
+                                  <div class="error item">
+                                      ${$l(
+                                          "This organization has been frozen due to an inactive subscription. " +
+                                              "While the organization is in this state, no updates can be made to any " +
+                                              "members, groups or vaults of this organization."
+                                      )}
+                                      <button class="tap" @click=${() => (this._page = "settings")}>
+                                          ${$l("Update Subscription")}
+                                      </button>
+                                  </div>
+                              `
+                            : ""}
+
                         <div class="search-wrapper item">
                             <pl-icon icon="search"></pl-icon>
                             <pl-input
@@ -424,6 +444,21 @@ export class OrgView extends StateMixin(View) {
                     </div>
 
                     <div ?hidden=${this._page !== "groups"} class="subview">
+                        ${org.frozen
+                            ? html`
+                                  <div class="error item">
+                                      ${$l(
+                                          "This organization currently does not have an active subscription " +
+                                              'and has been put in "frozen" state as a result. While in this state, ' +
+                                              "you won't be able to make any changes to members, groups or vaults of this " +
+                                              "organization."
+                                      )}
+                                      <button class="tap" ?hidden=${!isOwner} @click=${() => (this._page = "settings")}>
+                                          ${$l("Update Subscription")}
+                                      </button>
+                                  </div>
+                              `
+                            : ""}
                         <ul>
                             ${groups.map(
                                 group => html`
@@ -440,6 +475,21 @@ export class OrgView extends StateMixin(View) {
                     </div>
 
                     <div ?hidden=${this._page !== "vaults"} class="subview">
+                        ${org.frozen
+                            ? html`
+                                  <div class="error item">
+                                      ${$l(
+                                          "This organization currently does not have an active subscription " +
+                                              'and has been put in "frozen" state as a result. While in this state, ' +
+                                              "you won't be able to make any changes to members, groups or vaults of this " +
+                                              "organization."
+                                      )}
+                                      <button class="tap" ?hidden=${!isOwner} @click=${() => (this._page = "settings")}>
+                                          ${$l("Update Subscription")}
+                                      </button>
+                                  </div>
+                              `
+                            : ""}
                         <ul>
                             ${vaults.map(
                                 vault => html`
@@ -459,7 +509,19 @@ export class OrgView extends StateMixin(View) {
                         </ul>
                     </div>
 
-                    <div ?hidden=${this._page !== "settings" || !isOwner} class="subview settings">
+                    <div ?hidden=${this._page !== "settings"} class="subview settings">
+                        ${org.frozen
+                            ? html`
+                                  <div class="error item">
+                                      ${$l(
+                                          "This organization currently does not have an active subscription " +
+                                              'and has been put in "frozen" state as a result. While in this state, ' +
+                                              "you won't be able to make any changes to members, groups or vaults of this " +
+                                              "organization."
+                                      )}
+                                  </div>
+                              `
+                            : ""}
                         ${app.billingConfig
                             ? html`
                                   <h3>${$l("Subscription")}</h3>
