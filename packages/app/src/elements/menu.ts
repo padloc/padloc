@@ -1,5 +1,5 @@
 import { translate as $l } from "@padloc/locale/src/translate";
-import { PlanType } from "@padloc/core/src/billing";
+import { PlanType, SubscriptionStatus } from "@padloc/core/src/billing";
 import { app, router } from "../init";
 import { shared, mixins } from "../styles";
 import { StateMixin } from "../mixins/state";
@@ -154,6 +154,11 @@ export class Menu extends StateMixin(BaseElement) {
                 font-weight: semi-bold;
             }
 
+            li .warning-icon {
+                color: var(--color-negative);
+                margin-right: -8px;
+            }
+
             .detail.warning {
                 color: var(--color-negative);
                 opacity: 1;
@@ -200,6 +205,13 @@ export class Menu extends StateMixin(BaseElement) {
         const attCount = app.vaults.reduce((count, vault) => {
             return [...vault.items].reduce((c, item) => (item.attachments.length ? c + 1 : c), count);
         }, 0);
+
+        const showSettingsWarning =
+            app.billingConfig &&
+            app.account &&
+            app.account.billing &&
+            (!app.account.billing.subscription ||
+                app.account.billing.subscription.status === SubscriptionStatus.Inactive);
 
         return html`
             <div class="scroller">
@@ -298,6 +310,7 @@ export class Menu extends StateMixin(BaseElement) {
                                     <pl-icon icon="org"></pl-icon>
 
                                     <div>${org.name}</div>
+                                    <pl-icon class="warning-icon" icon="error" ?hidden=${!org.frozen}></pl-icon>
                                 </li>
                             `
                         )}
@@ -318,6 +331,8 @@ export class Menu extends StateMixin(BaseElement) {
                             <pl-icon icon="settings"></pl-icon>
 
                             <div>${$l("Settings")}</div>
+
+                            <pl-icon class="warning-icon" icon="error" ?hidden=${!showSettingsWarning}></pl-icon>
                         </li>
 
                         <li class="get-premium tap" @click=${this._getPremium} ?hidden=${!canUpgrade}>

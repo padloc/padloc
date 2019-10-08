@@ -104,6 +104,10 @@ export class OrgsList extends StateMixin(View) {
 
                                             <div>${org.vaults.length}</div>
                                         </div>
+
+                                        <div class="warning tag" ?hidden=${!org.frozen}>
+                                            <pl-icon icon="error"></pl-icon>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

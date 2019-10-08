@@ -391,9 +391,10 @@ export class OrgView extends StateMixin(View) {
                             ? html`
                                   <div class="error item">
                                       ${$l(
-                                          "This organization has been frozen due to an inactive subscription. " +
-                                              "While the organization is in this state, no updates can be made to any " +
-                                              "members, groups or vaults of this organization."
+                                          "This organization currently does not have an active subscription " +
+                                              'and has been put in "frozen" state as a result. While in this state, ' +
+                                              "you won't be able to make any changes to members, groups or vaults of this " +
+                                              "organization."
                                       )}
                                       <button class="tap" @click=${() => (this._page = "settings")}>
                                           ${$l("Update Subscription")}
