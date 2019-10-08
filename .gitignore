@@ -17,3 +17,4 @@ data
 packages/electron/build
 packages/electron/app
 packages/electron/dist
+*.env

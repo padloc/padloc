@@ -1,6 +1,6 @@
 {
   "name": "@padloc/electron",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Electron Wrapper for Padloc app",
   "main": "main.js",
   "repository": {
@@ -39,7 +39,7 @@
       "buildResources": "res"
     },
     "mac": {
-      "hardenedRuntime" : true,
+      "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "entitlements.plist",
       "entitlementsInherit": "entitlements.plist"
@@ -53,7 +53,9 @@
     },
     "protocols": {
       "name": "Padloc",
-      "schemes": ["padloc"]
+      "schemes": [
+        "padloc"
+      ]
     },
     "afterSign": "scripts/notarize.js"
   }
