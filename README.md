@@ -4,17 +4,18 @@ Simple, secure password and data management for individuals and teams (formerly 
 
 This repo is split into multiple packages:
 
-|                                   |                |
-| --------------------------------- | -------------- |
-| [@padloc/core](packages/core)     | Core Logic     |
-| [@padloc/app](packages/app)       | Web Client     |
-| [@padloc/server](packages/server) | Backend Server |
+|                                   |                                                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| [@padloc/core](packages/core)     | Core Logic                                                                                                          |
+| [@padloc/app](packages/app)       | Web-based UI components                                                                                             |
+| [@padloc/server](packages/server) | Backend Server                                                                                                      |
+| [@padloc/pwa](packages/pwa)       | [Progressive Web App](https://developers.google.com/web/progressive-web-apps) built on top of `@padloc/app` package |
 
 ## Get Started
 
 ```
-git clone https://github.com/padlock/padlock
-cd padlock
+git clone https://github.com/padloc/padloc
+cd padloc
 npm install
 ```
 
@@ -54,8 +55,8 @@ The node.js server and build commands are configured via environment variables:
 | -------------------- | ------------------------------------------------------------------------------------- |
 | `PL_SERVER_PORT`     | Which port to start the backend server on                                             |
 | `PL_SERVER_URL`      | URL the server will be available at. This will be used by the client for api requests |
-| `PL_CLIENT_PORT`     | Which port to host the client app at                                                  |
-| `PL_CLIENT_URL`      | URL of the client app. This will be used by the server to generate deep links.        |
+| `PL_PWA_PORT`        | Which port to host the pwa at                                                         |
+| `PL_PWA_URL`         | URL of the client app. This will be used by the server to generate deep links.        |
 | `PL_EMAIL_USER`      | SMTP user for sending emails.                                                         |
 | `PL_EMAIL_SERVER`    | SMTP server for sending emails                                                        |
 | `PL_EMAIL_PORT`      | SMTP port for sending emails                                                          |
