@@ -1,18 +1,11 @@
-version: "3"
+version: "3.7"
 services:
-    padloc:
+    server:
         build:
             context: .
-            args:
-                - SERVER_URL=$PL_SERVER_URL
-                - CLIENT_URL=$PL_CLIENT_URL
-                - BILLING_ENABLED=$PL_BILLING_ENABLED
-                - DISABLE_PAYMENT=$PL_BILLING_DISABLE_PAYMENT
-                - STRIPE_PUBLIC_KEY=$PL_BILLING_STRIPE_PUBLIC_KEY
-        ports:
-            - $PL_CLIENT_PORT:8080
-            - $PL_SERVER_PORT:3000
+            dockerfile: Dockerfile-server
         environment:
+            - PL_PWA_URL
             - PL_EMAIL_USER
             - PL_EMAIL_SERVER
             - PL_EMAIL_PORT
@@ -20,11 +13,25 @@ services:
             - PL_EMAIL_FROM
             - PL_REPORT_ERRORS
             - PL_BILLING_ENABLED
-            - PL_BILLING_DISABLE_PAYMENT
             - PL_BILLING_STRIPE_SECRET
-            - PL_BILLING_STRIPE_PUBLIC_KEY
             - PL_MFA
+        ports:
+            - $PL_SERVER_PORT:3000
         volumes:
             - ./data:/data
             - ./docs:/docs
-            - ./app:/app
+    pwa:
+        build:
+            context: .
+            dockerfile: Dockerfile-pwa
+        environment:
+            - PL_SERVER_URL
+            - PL_PWA_URL
+            - PL_BILLING_ENABLED
+            - PL_BILLING_DISABLE_PAYMENT
+            - PL_BILLING_STRIPE_PUBLIC_KEY
+        ports:
+            - $PL_PWA_PORT:8000
+        volumes:
+            - ./pwa:/pwa
+        command: ["build_and_start"]
