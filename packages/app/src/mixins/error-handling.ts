@@ -1,8 +1,8 @@
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { composeEmail } from "@padloc/core/src/platform";
-import { app, router } from "../init";
-import { alert, confirm } from "../dialog";
+import { app, router } from "../globals";
+import { alert, confirm } from "../lib/dialog";
 // import { notify } from "../elements/notification";
 
 type Constructor<T> = new (...args: any[]) => T;

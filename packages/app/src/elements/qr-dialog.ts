@@ -1,7 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { scanQR, stopScanQR } from "@padloc/core/src/platform";
 import { mixins } from "../styles";
-import { alert } from "../dialog";
+import { alert } from "../lib/dialog";
 import { element, html, css } from "./base";
 import { Dialog } from "./dialog";
 import { View } from "./view";

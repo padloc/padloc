@@ -1,9 +1,9 @@
 import { Vault } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { CSV, PBES2, ImportFormat } from "../import";
-import { supportedFormats, asCSV, asPBES2Container } from "../export";
-import { app } from "../init";
-import { prompt } from "../dialog";
+import { CSV, PBES2, ImportFormat } from "../lib/import";
+import { supportedFormats, asCSV, asPBES2Container } from "../lib/export";
+import { app } from "../globals";
+import { prompt } from "../lib/dialog";
 import { element, html, css, query } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";

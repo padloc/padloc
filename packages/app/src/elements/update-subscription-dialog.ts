@@ -1,8 +1,8 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { Org } from "@padloc/core/src/org";
 import { Plan, UpdateBillingParams } from "@padloc/core/src/billing";
-import { dialog } from "../dialog";
-import { app } from "../init";
+import { dialog } from "../lib/dialog";
+import { app } from "../globals";
 import { element, html, property, css, query } from "./base";
 import { Dialog } from "./dialog";
 import { LoadingButton } from "./loading-button";

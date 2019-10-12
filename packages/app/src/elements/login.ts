@@ -1,12 +1,12 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
-import { app, router } from "../init";
+import { app, router } from "../globals";
 import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { PasswordInput } from "./password-input";
 import { LoadingButton } from "./loading-button";
-import { alert, confirm, prompt } from "../dialog";
+import { alert, confirm, prompt } from "../lib/dialog";
 import "./logo";
 
 @element("pl-login")

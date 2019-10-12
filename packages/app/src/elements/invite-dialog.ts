@@ -1,9 +1,9 @@
 import { until } from "lit-html/directives/until";
 import { Invite } from "@padloc/core/src/invite";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { formatDateFromNow } from "../util";
-import { app, router } from "../init";
-import { alert, dialog } from "../dialog";
+import { formatDateFromNow } from "../lib/util";
+import { app, router } from "../globals";
+import { alert, dialog } from "../lib/dialog";
 import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
 import { LoadingButton } from "./loading-button";

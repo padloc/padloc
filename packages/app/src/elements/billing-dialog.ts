@@ -1,8 +1,8 @@
 import { countries } from "@padloc/locale/src/countries";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { BillingInfo, BillingAddress, UpdateBillingParams } from "@padloc/core/src/billing";
-import { loadScript } from "../util";
-import { app } from "../init";
+import { loadScript } from "../lib/util";
+import { app } from "../globals";
 import { element, html, property, query, css } from "./base";
 import { Dialog } from "./dialog";
 import { LoadingButton } from "./loading-button";

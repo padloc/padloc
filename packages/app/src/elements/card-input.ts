@@ -1,4 +1,4 @@
-import { loadScript } from "../util";
+import { loadScript } from "../lib/util";
 import { shared } from "../styles";
 import { BaseElement, element, html, property, css } from "./base";
 import Nunito from "../../assets/fonts/Nunito-Regular.ttf";

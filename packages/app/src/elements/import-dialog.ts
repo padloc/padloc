@@ -1,9 +1,9 @@
 import { Vault } from "@padloc/core/src/vault";
 import { VaultItem } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
-import * as imp from "../import";
-import { prompt, alert } from "../dialog";
-import { app } from "../init";
+import * as imp from "../lib/import";
+import { prompt, alert } from "../lib/dialog";
+import { app } from "../globals";
 import { element, html, css, query, property } from "./base";
 import { Select } from "./select";
 import { Dialog } from "./dialog";

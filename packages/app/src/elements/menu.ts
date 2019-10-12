@@ -1,6 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { PlanType, SubscriptionStatus } from "@padloc/core/src/billing";
-import { app, router } from "../init";
+import { app, router } from "../globals";
 import { shared, mixins } from "../styles";
 import { StateMixin } from "../mixins/state";
 import { BaseElement, element, property, html, css } from "./base";
@@ -268,7 +268,7 @@ export class Menu extends StateMixin(BaseElement) {
                             <div class="detail">${attCount}</div>
                         </li>
 
-                        ${this.state.tags.map(
+                        ${app.state.tags.map(
                             ([tag, count]) => html`
                                 <li
                                     class="sub-item tap"

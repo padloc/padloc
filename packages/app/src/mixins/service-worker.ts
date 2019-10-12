@@ -1,6 +1,6 @@
 import { Workbox } from "workbox-window";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { confirm } from "../dialog";
+import { confirm } from "../lib/dialog";
 
 type Constructor<T> = new (...args: any[]) => T;
 

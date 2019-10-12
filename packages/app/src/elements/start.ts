@@ -1,4 +1,4 @@
-import { app } from "../init";
+import { app } from "../globals";
 import { shared, mixins } from "../styles";
 import { StateMixin } from "../mixins/state";
 import { BaseElement, element, html, css, property, query } from "./base";

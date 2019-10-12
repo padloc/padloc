@@ -1,13 +1,13 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { EmailVerificationPurpose } from "@padloc/core/src/email-verification";
-import { app, router } from "../init";
+import { app, router } from "../globals";
 import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { LoadingButton } from "./loading-button";
-import { alert, choose, prompt } from "../dialog";
-import { passwordStrength } from "../util";
+import { alert, choose, prompt } from "../lib/dialog";
+import { passwordStrength } from "../lib/util";
 
 @element("pl-recover")
 export class Recover extends StartForm {

@@ -1,6 +1,6 @@
 import { Platform, getCryptoProvider } from "@padloc/core/src/platform";
 import { bytesToBase64 } from "@padloc/core/src/encoding";
-import { WebPlatform } from "@padloc/app/src/platform";
+import { WebPlatform } from "@padloc/app/src/lib/platform";
 import "cordova-plugin-qrscanner";
 
 const cordovaReady = new Promise(resolve => document.addEventListener("deviceready", resolve));

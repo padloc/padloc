@@ -1,4 +1,4 @@
-import { getSingleton } from "../singleton";
+import { getSingleton } from "../lib/singleton";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, css, property } from "./base";
 

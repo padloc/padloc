@@ -3,7 +3,7 @@ import { VaultID } from "@padloc/core/src/vault";
 import { Tag } from "@padloc/core/src/item";
 import { StateMixin } from "../mixins/state";
 import { shared, mixins } from "../styles";
-import { app, router } from "../init";
+import { app, router } from "../globals";
 import { BaseElement, element, css, property, html } from "./base";
 
 @element("pl-items-filter")
@@ -217,7 +217,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
 
                     <h4>${$l("Vaults")}</h4>
 
-                    ${this.state.vaults.map(
+                    ${app.vaults.map(
                         vault => html`
                             <button class="vault tap" @click=${() => this._select({ vault: vault.id })}>
                                 <pl-icon icon="vault"></pl-icon>
@@ -235,7 +235,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         ${$l("You don't have any tags yet.")}
                     </div>
 
-                    ${this.state.tags.map(
+                    ${app.state.tags.map(
                         ([tag, count]) => html`
                             <button class="filter-tag tap" @click=${() => this._select({ tag })}>
                                 <pl-icon icon="tag"></pl-icon>

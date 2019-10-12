@@ -1,13 +1,13 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { biometricAuth } from "@padloc/core/src/platform";
-import { app, router } from "../init";
-import { isTouch } from "../util";
+import { app, router } from "../globals";
+import { isTouch } from "../lib/util";
 import { element, property, html, css, query } from "./base";
 import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input";
 import { LoadingButton } from "./loading-button";
-import { alert, confirm, choose } from "../dialog";
+import { alert, confirm, choose } from "../lib/dialog";
 import "./logo";
 
 @element("pl-unlock")

@@ -1,5 +1,5 @@
 import { shared, mixins } from "../styles";
-import { animateElement } from "../animation";
+import { animateElement } from "../lib/animation";
 import { BaseElement, element, html, css, property, observe, listen } from "./base";
 import { Input } from "./input";
 

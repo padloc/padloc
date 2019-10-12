@@ -1,7 +1,7 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { Org } from "@padloc/core/src/org";
 import { Invite } from "@padloc/core/src/invite";
-import { app } from "../init";
+import { app } from "../globals";
 import { element, property, html, css, query } from "./base";
 import { Input } from "./input";
 import { Dialog } from "./dialog";

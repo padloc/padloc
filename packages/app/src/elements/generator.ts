@@ -1,7 +1,7 @@
 import { randomString, chars } from "@padloc/core/src/util";
 import { generatePassphrase, AVAILABLE_LANGUAGES } from "@padloc/core/src/diceware";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { app } from "../init";
+import { app } from "../globals";
 import { html, css, property, query, listen } from "./base";
 import { Dialog } from "./dialog";
 import { Slider } from "./slider";

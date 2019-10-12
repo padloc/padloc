@@ -1,4 +1,4 @@
-import { app } from "../init";
+import { app } from "../globals";
 
 type Constructor<T> = new (...args: any[]) => T;
 

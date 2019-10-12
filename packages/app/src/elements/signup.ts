@@ -1,15 +1,15 @@
 import { translate as $l } from "@padloc/locale/src/translate";
 import { ErrorCode } from "@padloc/core/src/error";
 import { generatePassphrase } from "@padloc/core/src/diceware";
-import { passwordStrength, isTouch } from "../util";
-import { app, router } from "../init";
+import { passwordStrength, isTouch } from "../lib/util";
+import { app, router } from "../globals";
 import { element, html, css, property, query } from "./base";
 import { StartForm } from "./start-form";
 import { Input } from "./input";
 import { PasswordInput } from "./password-input";
 import { LoadingButton } from "./loading-button";
 import { Generator } from "./generator";
-import { alert, choose, prompt, dialog } from "../dialog";
+import { alert, choose, prompt, dialog } from "../lib/dialog";
 import { mixins } from "../styles";
 import "./logo";
 

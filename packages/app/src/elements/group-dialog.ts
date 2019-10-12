@@ -1,7 +1,7 @@
 import { Org, OrgMember, Group } from "@padloc/core/src/org";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { app } from "../init";
-import { prompt } from "../dialog";
+import { app } from "../globals";
+import { prompt } from "../lib/dialog";
 import { element, html, css, property, query } from "./base";
 import { Dialog } from "./dialog";
 import { LoadingButton } from "./loading-button";

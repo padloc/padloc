@@ -1,10 +1,10 @@
 import { until } from "lit-html/directives/until";
 import { Invite } from "@padloc/core/src/invite";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { formatDateFromNow } from "../util";
+import { formatDateFromNow } from "../lib/util";
 import { shared } from "../styles";
-import { app } from "../init";
-import { dialog, alert } from "../dialog";
+import { app } from "../globals";
+import { dialog, alert } from "../lib/dialog";
 import { BaseElement, element, html, css, property, query } from "./base";
 import { LoadingButton } from "./loading-button";
 import { MemberDialog } from "./member-dialog";

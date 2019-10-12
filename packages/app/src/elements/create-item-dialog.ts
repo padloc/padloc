@@ -1,8 +1,8 @@
 import { Vault } from "@padloc/core/src/vault";
 import { VaultItem, ItemTemplate, ITEM_TEMPLATES } from "@padloc/core/src/item";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { app } from "../init";
-import { alert } from "../dialog";
+import { app } from "../globals";
+import { alert } from "../lib/dialog";
 import { element, html, css, query } from "./base";
 import { Input } from "./input";
 import { Select } from "./select";

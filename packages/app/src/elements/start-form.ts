@@ -1,6 +1,6 @@
 import { mixins, shared } from "../styles";
 import { BaseElement, css, query } from "./base";
-import { animateElement, animateCascade } from "../animation";
+import { animateElement, animateCascade } from "../lib/animation";
 import { Logo } from "./logo";
 import "./icon";
 
