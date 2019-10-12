@@ -7,10 +7,12 @@ const WebpackPwaManifest = require("webpack-pwa-manifest");
 const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const { version } = require("./package.json");
 
+const out = process.env.PL_PWA_DIR || path.resolve(__dirname, "dist");
+
 module.exports = {
     entry: path.resolve(__dirname, "src/index.ts"),
     output: {
-        path: path.resolve(__dirname, "dist"),
+        path: out,
         filename: "[name].js",
         chunkFilename: "[name].chunk.js",
         publicPath: "/"
@@ -49,7 +51,7 @@ module.exports = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             title: "Padloc",
-            template: path.resolve(__dirname, "index.html"),
+            template: path.resolve(__dirname, "src/index.html"),
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
@@ -61,7 +63,7 @@ module.exports = {
                 }
             }
         }),
-        new FaviconsWebpackPlugin(path.resolve(__dirname, "assets/icons/512.png")),
+        new FaviconsWebpackPlugin(path.resolve(__dirname, "assets/icon-512.png")),
         new WebpackPwaManifest({
             name: "Padloc Password Manager",
             short_name: "Padloc",
@@ -69,13 +71,13 @@ module.exports = {
             theme: "#59c6ff",
             icons: [
                 {
-                    src: path.resolve(__dirname, "assets/icons/512.png"),
+                    src: path.resolve(__dirname, "assets/icon-512.png"),
                     sizes: [96, 128, 192, 256, 384, 512]
                 }
             ]
         }),
         new InjectManifest({
-            swSrc: path.resolve(__dirname, "src/sw.ts"),
+            swSrc: path.resolve(__dirname, "../app/src/sw.ts"),
             swDest: "sw.js",
             exclude: [/favicon\.png$/, /\.map$/]
         })

@@ -1,9 +1,9 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 declare const workbox: typeof import("workbox-sw");
-declare const __WB_MANIFEST: any;
 
-workbox.precaching.precacheAndRoute(__WB_MANIFEST);
+// @ts-ignore
+workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
 
 workbox.routing.registerNavigationRoute(workbox.precaching.getCacheKeyForURL("index.html"));
 

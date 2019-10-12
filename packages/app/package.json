@@ -1,7 +1,6 @@
 {
   "name": "@padloc/app",
   "version": "3.0.5",
-  "main": "src/elements/app.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
   "dependencies": {
@@ -30,29 +29,8 @@
     "@types/workbox-window": "^4.3.1",
     "@types/zxcvbn": "^4.4.0",
     "chai": "^4.2.0",
-    "clean-webpack-plugin": "^3.0.0",
-    "css-loader": "^3.0.0",
-    "favicons-webpack-plugin": "^1.0.1",
-    "file-loader": "^4.0.0",
-    "html-webpack-plugin": "^3.2.0",
     "mocha": "^5.2.0",
-    "reflect-metadata": "^0.1.12",
-    "style-loader": "^1.0.0",
-    "ts-loader": "^6.0.4",
-    "ts-node": "^7.0.1",
-    "typescript": "^3.5.2",
-    "wct-mocha": "^1.0.0",
-    "webpack": "^4.35.3",
-    "webpack-cli": "^3.3.5",
-    "webpack-dev-server": "^3.7.2",
-    "webpack-pwa-manifest": "^4.0.0",
-    "workbox-cli": "^4.3.1",
-    "workbox-webpack-plugin": "^5.0.0-alpha.0"
+    "reflect-metadata": "^0.1.12"
   },
-  "description": "Padloc UI",
-  "scripts": {
-    "build": "webpack",
-    "start": "http-server dist -s -p $PL_CLIENT_PORT --proxy $PL_CLIENT_URL?",
-    "dev": "webpack-dev-server"
-  }
+  "description": "Padloc Web-Based UI package"
 }
