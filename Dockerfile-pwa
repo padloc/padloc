@@ -19,7 +19,7 @@ COPY packages/app/package*.json ./packages/app/
 COPY packages/core/package*.json ./packages/core/
 COPY packages/locale/package*.json ./packages/locale/
 
-# Install
+# Install dependencies and bootstrap packages
 RUN npm ci --unsafe-perm
 
 # Now copy over source files and assets
