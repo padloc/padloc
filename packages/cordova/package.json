@@ -69,7 +69,6 @@
     "webpack-cli": "^3.3.5"
   },
   "scripts": {
-    "build": "webpack",
-    "prepare": "cordova prepare"
+    "build": "webpack"
   }
 }
