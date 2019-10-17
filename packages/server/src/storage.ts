@@ -35,4 +35,36 @@ export class LevelDBStorage implements Storage {
     async clear() {
         throw "not implemented";
     }
+
+    async list<T extends Storable>(
+        cls: StorableConstructor<T>,
+        offset = 0,
+        limit: number = Infinity,
+        filter?: (obj: T) => boolean
+    ): Promise<T[]> {
+        return new Promise((resolve, reject) => {
+            const results: T[] = [];
+
+            this._db
+                .createValueStream()
+                .on("data", (data: string) => {
+                    try {
+                        const item = new cls().fromJSON(data);
+                        if (!filter || filter(item)) {
+                            if (offset) {
+                                offset--;
+                            } else {
+                                results.push(item);
+                            }
+                        }
+                        if (results.length >= limit) {
+                            resolve(results);
+                        }
+                    } catch (e) {}
+                })
+                .on("error", (err: Error) => reject(err))
+                .on("close", () => reject("Stream closed unexpectedly."))
+                .on("end", () => resolve(results));
+        });
+    }
 }

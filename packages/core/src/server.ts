@@ -78,7 +78,7 @@ export interface Context {
 /**
  * Controller class for processing api requests
  */
-class Controller implements API {
+export class Controller implements API {
     constructor(
         public context: Context,
         /** Server config */

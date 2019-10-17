@@ -29,6 +29,14 @@ export interface Storage {
 
     /** Deletes all data in this storage */
     clear(): Promise<void>;
+
+    /** Retrieves an object of type `T` based on its `id`*/
+    list<T extends Storable>(
+        cls: StorableConstructor<T>,
+        offset?: number,
+        limit?: number,
+        filter?: (obj: T) => boolean
+    ): Promise<T[]>;
 }
 
 /**
@@ -56,5 +64,38 @@ export class MemoryStorage implements Storage {
 
     async clear() {
         this._storage.clear();
+    }
+
+    async list<T extends Storable>(
+        cls: StorableConstructor<T>,
+        offset = 0,
+        limit: number = Infinity,
+        filter?: (obj: T) => boolean
+    ): Promise<T[]> {
+        const results: T[] = [];
+
+        const iter = this._storage[Symbol.iterator]();
+
+        for (let i = 0; i < offset; i++) {
+            iter.next();
+        }
+
+        let value: object;
+        let done: boolean;
+
+        while (
+            (({
+                value: [, value],
+                done
+            } = iter.next()),
+            !done && results.length < limit)
+        ) {
+            const item = new cls().fromRaw(value);
+            if (!filter || filter(item)) {
+                results.push();
+            }
+        }
+
+        return results;
     }
 }

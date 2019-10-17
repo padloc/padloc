@@ -24,4 +24,13 @@ export class LocalStorage implements Storage {
     async clear() {
         await localStorage.clear();
     }
+
+    async list<T extends Storable>(
+        _cls: StorableConstructor<T>,
+        _offset = 0,
+        _limit: number = Infinity,
+        _filter?: (obj: T) => boolean
+    ): Promise<T[]> {
+        throw new Err(ErrorCode.NOT_SUPPORTED);
+    }
 }

@@ -10,14 +10,26 @@ import { getCryptoProvider as getProvider } from "./platform";
 export type SessionID = string;
 
 /** Public session info (used for display purposes) */
-export interface SessionInfo {
-    id: string;
-    account: AccountID;
-    created: Date;
-    updated: Date;
-    lastUsed: Date;
+export class SessionInfo extends Serializable {
+    id: string = "";
+    account: AccountID = "";
+    created: Date = new Date(0);
+    updated: Date = new Date(0);
+    lastUsed: Date = new Date(0);
     expires?: Date;
     device?: DeviceInfo;
+
+    fromRaw({ id, account, created, updated, lastUsed, expires, device }: any) {
+        return super.fromRaw({
+            id,
+            account,
+            created: new Date(created),
+            updated: new Date(updated),
+            lastUsed: new Date(lastUsed),
+            expires: expires && new Date(expires),
+            device: device && new DeviceInfo().fromRaw(device)
+        });
+    }
 }
 
 /**
@@ -96,15 +108,15 @@ export class Session extends Serializable implements SessionInfo, Storable {
      * Public session info
      */
     get info(): SessionInfo {
-        return {
+        return new SessionInfo().fromRaw({
             id: this.id,
             account: this.account,
             created: this.created,
             updated: this.updated,
             lastUsed: this.lastUsed,
             expires: this.expires,
-            device: this.device
-        };
+            device: this.device && this.device.toRaw()
+        });
     }
 
     /**

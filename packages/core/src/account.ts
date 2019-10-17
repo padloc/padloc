@@ -207,7 +207,7 @@ export class Account extends PBES2Container implements Storable {
             quota: new AccountQuota().fromRaw(quota),
             billing: billing && new BillingInfo().fromRaw(billing),
             orgs,
-            sessions,
+            sessions: sessions.map((raw: any) => new SessionInfo().fromRaw(raw)),
             usedStorage: usedStorage || 0
         });
         return super.fromRaw(rest);
