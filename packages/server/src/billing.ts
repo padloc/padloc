@@ -177,24 +177,32 @@ export class StripeBillingProvider implements BillingProvider {
 
         const info = acc.billing!;
 
-        try {
-            await this._stripe.customers.update(info.customerId, {
-                email,
-                // @ts-ignore
-                name: address && address.name,
-                address: address && {
-                    line1: address.street,
-                    postal_code: address.postalCode,
-                    city: address.city,
-                    country: address.country
-                },
-                source: paymentMethod && paymentMethod.source,
-                coupon: coupon || undefined,
-                // @ts-ignore
-                metadata: { account, org }
-            });
-        } catch (e) {
-            throw new Err(ErrorCode.BILLING_ERROR, e.message);
+        const updatingInfo =
+            typeof email !== "undefined" ||
+            typeof paymentMethod !== "undefined" ||
+            typeof address !== "undefined" ||
+            typeof coupon !== "undefined";
+
+        if (updatingInfo) {
+            try {
+                await this._stripe.customers.update(info.customerId, {
+                    email,
+                    // @ts-ignore
+                    name: address && address.name,
+                    address: address && {
+                        line1: address.street,
+                        postal_code: address.postalCode,
+                        city: address.city,
+                        country: address.country
+                    },
+                    source: paymentMethod && paymentMethod.source,
+                    coupon: coupon || undefined,
+                    // @ts-ignore
+                    metadata: { account, org }
+                });
+            } catch (e) {
+                throw new Err(ErrorCode.BILLING_ERROR, e.message);
+            }
         }
 
         const params: any = {};
@@ -215,7 +223,9 @@ export class StripeBillingProvider implements BillingProvider {
             params.cancel_at_period_end = cancel;
         }
 
-        if (Object.keys(params).length) {
+        const updatingPlan = !!Object.keys(params).length;
+
+        if (updatingPlan) {
             try {
                 if (info.subscription) {
                     await this._stripe.subscriptions.update(info.subscription.id, {
@@ -237,7 +247,9 @@ export class StripeBillingProvider implements BillingProvider {
             }
         }
 
-        await this._sync(acc);
+        if (updatingInfo || updatingPlan) {
+            await this._sync(acc);
+        }
 
         const sub = acc.billing && acc.billing.subscription;
 
