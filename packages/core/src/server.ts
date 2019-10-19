@@ -1150,8 +1150,8 @@ export class Server extends BaseServer {
         super(config, storage, messenger);
     }
 
-    async _process(req: Request, res: Response, ctx: Context): Promise<void> {
-        const ctlr = new Controller(
+    makeController(ctx: Context) {
+        return new Controller(
             ctx,
             this.config,
             this.storage,
@@ -1159,6 +1159,10 @@ export class Server extends BaseServer {
             this.attachmentStorage,
             this.billingProvider
         );
+    }
+
+    async _process(req: Request, res: Response, ctx: Context): Promise<void> {
+        const ctlr = this.makeController(ctx);
         const method = req.method;
         const params = req.params || [];
 

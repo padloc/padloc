@@ -44,12 +44,16 @@ export class LevelDBStorage implements Storage {
     ): Promise<T[]> {
         return new Promise((resolve, reject) => {
             const results: T[] = [];
+            const kind = new cls().kind;
 
             this._db
-                .createValueStream()
-                .on("data", (data: string) => {
+                .createReadStream()
+                .on("data", ({ key, value }: { key: string; value: string }) => {
+                    if (key.indexOf(kind + "_") !== 0) {
+                        return;
+                    }
                     try {
-                        const item = new cls().fromJSON(data);
+                        const item = new cls().fromJSON(value);
                         if (!filter || filter(item)) {
                             if (offset) {
                                 offset--;
@@ -57,10 +61,14 @@ export class LevelDBStorage implements Storage {
                                 results.push(item);
                             }
                         }
-                        if (results.length >= limit) {
-                            resolve(results);
-                        }
-                    } catch (e) {}
+                    } catch (e) {
+                        console.error(
+                            `Failed to load ${key}:${JSON.stringify(JSON.parse(value), null, 4)} (Error: ${e})`
+                        );
+                    }
+                    if (results.length >= limit) {
+                        resolve(results);
+                    }
                 })
                 .on("error", (err: Error) => reject(err))
                 .on("close", () => reject("Stream closed unexpectedly."))
