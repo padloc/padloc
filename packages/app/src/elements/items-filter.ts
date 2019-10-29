@@ -20,6 +20,9 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     @property()
     attachments: boolean = false;
 
+    @property()
+    searching: boolean = false;
+
     @property({ reflect: true, attribute: "selecting" })
     private _selecting: Boolean = false;
 
@@ -75,6 +78,11 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                 width: 20px;
                 height: 20px;
                 margin-right: -6px;
+            }
+
+            button pl-icon.search-icon {
+                margin-right: 3px;
+                margin-left: -4px;
             }
 
             .list pl-icon {
@@ -184,6 +192,8 @@ export class ItemsFilter extends StateMixin(BaseElement) {
 
         return html`
             <button class="tap ${cl}" @click=${() => (this._selecting = !this._selecting)}>
+                <pl-icon icon="search" class="search-icon" ?hidden=${!this.searching}></pl-icon>
+
                 <div>${label}</div>
 
                 <pl-icon icon="dropdown"></pl-icon>

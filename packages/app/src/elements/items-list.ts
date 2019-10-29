@@ -109,12 +109,6 @@ export class ItemsList extends StateMixin(View) {
         this._updateItems();
     }
 
-    private _filterInputBlurred() {
-        if (!this._filterInput.value) {
-            setTimeout(() => (this._filterShowing = false), 100);
-        }
-    }
-
     async search() {
         this._filterShowing = true;
         await this.updateComplete;
@@ -181,8 +175,12 @@ export class ItemsList extends StateMixin(View) {
                 z-index: 10;
             }
 
+            header pl-input {
+                font-size: var(--font-size-default);
+                padding: 0 0 0 10px;
+            }
+
             pl-items-filter {
-                flex: 1;
                 min-width: 0;
             }
 
@@ -444,34 +442,50 @@ export class ItemsList extends StateMixin(View) {
                   text: $l("You don't have any items yet.")
               };
         return html`
-            <header ?hidden=${this._filterShowing}>
-                <pl-icon icon="menu" class="tap menu-button" @click=${() => this.dispatch("toggle-menu")}></pl-icon>
+            <header>
+                <pl-icon
+                    icon="menu"
+                    class="tap menu-button"
+                    @click=${() => this.dispatch("toggle-menu")}
+                    ?hidden=${this._filterShowing}
+                ></pl-icon>
+
+                <div class="spacer" ?hidden=${this._filterShowing}></div>
 
                 <pl-items-filter
                     .vault=${this.vault}
                     .tag=${this.tag}
                     .favorites=${this.favorites}
                     .attachments=${this.attachments}
+                    .searching=${this._filterShowing}
                 ></pl-items-filter>
 
-                <pl-icon icon="search" class="tap" @click=${() => this.search()}></pl-icon>
-            </header>
-
-            <header ?hidden=${!this._filterShowing}>
-                <pl-icon icon="search"></pl-icon>
+                <div class="spacer" ?hidden=${this._filterShowing}></div>
 
                 <pl-input
                     class="flex"
-                    .placeholder=${$l("Type To Filter")}
+                    .placeholder=${$l("Type To Search")}
                     id="filterInput"
                     select-on-focus
-                    @blur=${this._filterInputBlurred}
                     @input=${this._updateItems}
                     @escape=${this.cancelFilter}
+                    ?hidden=${!this._filterShowing}
                 >
                 </pl-input>
 
-                <pl-icon class="tap" icon="cancel" @click=${() => this.cancelFilter()}> </pl-icon>
+                <pl-icon
+                    icon="search"
+                    class="tap"
+                    @click=${() => this.search()}
+                    ?hidden=${this._filterShowing}
+                ></pl-icon>
+
+                <pl-icon
+                    class="tap"
+                    icon="cancel"
+                    @click=${() => this.cancelFilter()}
+                    ?hidden=${!this._filterShowing}
+                ></pl-icon>
             </header>
 
             <main id="main">
@@ -638,6 +652,7 @@ export class ItemsList extends StateMixin(View) {
         e.stopPropagation();
         this._attachmentDialog.show({ info: a, item: item.id });
     }
+
     private _getItems(): ListItem[] {
         const recentCount = 0;
 
