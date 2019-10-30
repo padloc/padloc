@@ -12,7 +12,7 @@ async function init() {
     setPlatform(new NodePlatform());
 
     const config = new ServerConfig({
-        clientUrl: process.env.PL_PWA_PORT || "https://localhost:8081",
+        clientUrl: process.env.PL_PWA_URL || "https://localhost:8081",
         reportErrors: process.env.PL_REPORT_ERRORS || "",
         mfa: (process.env.PL_MFA as ("email" | "none")) || "email",
         accountQuota: {
