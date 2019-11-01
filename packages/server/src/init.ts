@@ -12,7 +12,7 @@ async function init() {
     setPlatform(new NodePlatform());
 
     const config = new ServerConfig({
-        clientUrl: process.env.PL_PWA_URL || "https://localhost:8081",
+        clientUrl: process.env.PL_PWA_URL || `http://0.0.0.0:${process.env.PL_PWA_PORT || 8080}`,
         reportErrors: process.env.PL_REPORT_ERRORS || "",
         mfa: (process.env.PL_MFA as ("email" | "none")) || "email",
         accountQuota: {
@@ -34,8 +34,10 @@ async function init() {
         password: process.env.PL_EMAIL_PASSWORD || "",
         from: process.env.PL_EMAIL_FROM || ""
     });
-    const storage = new LevelDBStorage(process.env.PL_DB_PATH || "db");
-    const attachmentStorage = new FileSystemStorage({ path: process.env.PL_ATTACHMENTS_PATH || "attachments" });
+    const storage = new LevelDBStorage(process.env.PL_DB_PATH || process.env.PL_DATA_DIR || "data");
+    const attachmentStorage = new FileSystemStorage({
+        path: process.env.PL_ATTACHMENTS_PATH || process.env.PL_ATTACHMENTS_DIR || "attachments"
+    });
     // const billingProvider = new StubBillingProvider();
 
     let billingProvider: BillingProvider | undefined = undefined;

@@ -19,6 +19,7 @@ module.exports = {
     },
     mode: "development",
     devtool: "source-map",
+    stats: "minimal",
     resolve: {
         extensions: [".ts", ".js"]
     },
@@ -40,7 +41,7 @@ module.exports = {
     },
     plugins: [
         new EnvironmentPlugin({
-            PL_SERVER_URL: `http://localhost:${process.env.PL_SERVER_PORT || 3000}`,
+            PL_SERVER_URL: `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`,
             PL_BILLING_ENABLED: null,
             PL_BILLING_DISABLE_PAYMENT: null,
             PL_BILLING_STRIPE_PUBLIC_KEY: null,
@@ -86,6 +87,6 @@ module.exports = {
         contentBase: path.resolve(__dirname, "dist"),
         historyApiFallback: true,
         host: "0.0.0.0",
-        port: process.env.PL_CLIENT_PORT || 8080
+        port: process.env.PL_PWA_PORT || 8080
     }
 };

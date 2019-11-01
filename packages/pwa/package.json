@@ -29,7 +29,7 @@
   "scripts": {
     "build": "webpack",
     "dev": "webpack-dev-server",
-    "start": "http-server $PL_PWA_DIR -s -p $PL_PWA_PORT --proxy $PL_PWA_URL?",
-	"build_and_start": "npm run build && npm start"
+    "start": "http-server ${PL_PWA_DIR:-dist} -s -p ${PL_PWA_PORT:-8080} --proxy ${PL_PWA_URL:-http://0.0.0.0:${PL_PWA_PORT:-8080}}?",
+    "build_and_start": "npm run build && npm start"
   }
 }
