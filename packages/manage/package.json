@@ -1,0 +1,12 @@
+{
+  "name": "@padloc/manage",
+  "version": "3.0.6",
+  "description": "Padloc Server Mangement",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "@padloc/core": "^3.0.6"
+  }
+}
