@@ -15,12 +15,6 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
             super(...args);
             window.addEventListener("error", (e: ErrorEvent) => this.handleError(e.error));
             window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => this.handleError(e.reason));
-            setTimeout(() => {
-                throw "AAAARGH!!";
-            }, 2000);
-            setTimeout(() => {
-                throw "NOOOOO!!";
-            }, 2000);
         }
 
         async handleError(error: any) {
