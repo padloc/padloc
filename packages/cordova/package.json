@@ -1,6 +1,6 @@
 {
   "name": "app.padloc",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "displayName": "Padloc",
   "cordova": {
     "platforms": [
@@ -32,8 +32,8 @@
     }
   },
   "dependencies": {
-    "@padloc/app": "^3.0.6",
-    "@padloc/core": "^3.0.6",
+    "@padloc/app": "^3.0.7",
+    "@padloc/core": "^3.0.7",
     "cordova-android": "^8.1.0",
     "cordova-clipboard": "1.3.0",
     "cordova-electron": "^1.1.0",
