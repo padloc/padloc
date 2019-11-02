@@ -89,6 +89,8 @@ export class Err extends Error {
     status: number;
     /** The original error, if available */
     originalError?: Error;
+    /** Time when the error was created */
+    created = new Date();
 
     constructor(
         code: ErrorCode,
@@ -104,8 +106,8 @@ export class Err extends Error {
     }
 
     toString() {
-        return `Error Code: ${this.code}:\nError Message: ${this.message}\nStack Trace:\n${
-            this.originalError ? this.originalError.stack : this.stack
-        }`;
+        return `Time: ${this.created.toISOString()}\nError Code: ${this.code}:\nError Message: ${
+            this.message
+        }\nStack Trace:\n${this.originalError ? this.originalError.stack : this.stack}`;
     }
 }
