@@ -251,11 +251,11 @@ export class ItemDialog extends Dialog<string, void> {
                 min-width: 120px;
             }
 
-            [draggable="true"].dragging {
-                opacity: 0.5;
+            pl-field.dragging {
+                opacity: 0.2;
             }
 
-            :host(.dragging) .content > :not(.dragging) {
+            :host(.dragging) .content > * {
                 will-change: transform;
                 transition: transform 0.2s;
             }
@@ -264,8 +264,9 @@ export class ItemDialog extends Dialog<string, void> {
                 content: "";
                 display: block;
                 height: 30px;
-                border: dashed 1px var(--color-shade-4);
+                border: dashed 2px var(--color-primary);
                 width: 100%;
+                box-sizing: border-box;
                 position: absolute;
                 bottom: -45px;
                 border-radius: var(--border-radius);
