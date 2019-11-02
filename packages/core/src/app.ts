@@ -98,6 +98,8 @@ export class AppState extends Storable {
 
     rememberedMasterKey: SimpleContainer | null = null;
 
+    errors: Err[] = [];
+
     /** All [[Tag]]s found within the users [[Vault]]s */
     get tags() {
         const tags = new Map<string, number>();

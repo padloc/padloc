@@ -1,9 +1,7 @@
 import { Err, ErrorCode } from "@padloc/core/src/error";
 import { translate as $l } from "@padloc/locale/src/translate";
-import { composeEmail } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
-import { alert, confirm } from "../lib/dialog";
-// import { notify } from "../elements/notification";
+import { alert } from "../lib/dialog";
 
 type Constructor<T> = new (...args: any[]) => T;
 
@@ -17,6 +15,12 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
             super(...args);
             window.addEventListener("error", (e: ErrorEvent) => this.handleError(e.error));
             window.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => this.handleError(e.reason));
+            setTimeout(() => {
+                throw "AAAARGH!!";
+            }, 2000);
+            setTimeout(() => {
+                throw "NOOOOO!!";
+            }, 2000);
         }
 
         async handleError(error: any) {
@@ -39,32 +43,8 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                     router.go("login");
                     return true;
                 default:
-                    const confirmed = await confirm(
-                        error.message || $l("Something went wrong. Please try again later!"),
-                        $l("Report Error"),
-                        $l("Dismiss"),
-                        { title: "Error", type: "warning", preventAutoClose: true }
-                    );
-                    if (confirmed) {
-                        const email = process.env.PL_SUPPORT_EMAIL || "";
-                        const subject = "Padloc Error Report";
-                        const message = `
-
------ enter your comment above -----
-
-IMPORTANT: Please verify that the message below does not contain any sensitive data before sending this email!
-
-The following error occurred:
-
-${error}
-
-Device Info:
-
-${JSON.stringify(app.state.device.toRaw(), null, 4)}
-                        `;
-                        composeEmail(email, subject, message);
-                    }
-                    return true;
+                    app.state.errors.push(error);
+                    app.publish();
             }
 
             return false;

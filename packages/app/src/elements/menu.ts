@@ -2,15 +2,20 @@ import { translate as $l } from "@padloc/locale/src/translate";
 import { PlanType, SubscriptionStatus } from "@padloc/core/src/billing";
 import { app, router } from "../globals";
 import { shared, mixins } from "../styles";
+import { dialog } from "../lib/dialog";
 import { StateMixin } from "../mixins/state";
 import { BaseElement, element, property, html, css } from "./base";
 import "./logo";
 import "./spinner";
+import { ReportErrorsDialog } from "./report-errors-dialog";
 
 @element("pl-menu")
 export class Menu extends StateMixin(BaseElement) {
     @property()
     selected: string = "items";
+
+    @dialog("pl-report-errors-dialog")
+    _reportErrorsDialog: ReportErrorsDialog;
 
     private _goTo(path: string, params?: any) {
         this.dispatch("toggle-menu");
@@ -25,6 +30,10 @@ export class Menu extends StateMixin(BaseElement) {
     private _getPremium() {
         this.dispatch("get-premium");
         this.dispatch("toggle-menu");
+    }
+
+    private _reportErrors() {
+        this._reportErrorsDialog.show();
     }
 
     static styles = [
@@ -169,6 +178,15 @@ export class Menu extends StateMixin(BaseElement) {
                 background: var(--color-shade-2);
                 border-radius: 100%;
                 margin: 8px 16px;
+            }
+
+            .errors-button {
+                background: var(--color-negative);
+                padding: 0;
+                padding-right: 8px;
+                display: flex;
+                align-items: center;
+                font-weight: bold;
             }
 
             @supports (-webkit-overflow-scrolling: touch) {
@@ -348,7 +366,11 @@ export class Menu extends StateMixin(BaseElement) {
                 <pl-icon icon="lock" class="tap" @click=${this._lock}></pl-icon>
                 <pl-icon icon="refresh" class="tap" @click=${() => app.synchronize()}></pl-icon>
                 <div class="flex"></div>
-                <pl-spinner .active=${this.state.syncing} class="syncing"></pl-spinner>
+                <pl-spinner .active=${app.state.syncing} class="syncing"></pl-spinner>
+                <button class="errors-button tap" @click=${this._reportErrors} ?hidden=${!app.state.errors.length}>
+                    <pl-icon icon="error" class="warning-icon"></pl-icon>
+                    <div>${app.state.errors.length}</div>
+                </button>
             </div>
         `;
     }
