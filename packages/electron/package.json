@@ -8,7 +8,7 @@
     "url": "https://github.com/padloc/padloc.git"
   },
   "scripts": {
-    "build": "rm -r app && webpack && electron-builder",
+    "build": "rm -rf app && webpack && electron-builder",
     "run": "electron/app/main.js"
   },
   "author": "MaKleSoft UG",
@@ -24,7 +24,7 @@
     "css-loader": "^3.0.0",
     "electron": "^6.0.7",
     "electron-builder": "^21.2.0",
-    "electron-notarize": "^0.1.1",
+    "electron-notarize": "^0.2.0",
     "file-loader": "^4.0.0",
     "html-webpack-plugin": "^3.2.0",
     "style-loader": "^0.23.1",
