@@ -1,6 +1,6 @@
 // @ts-ignore
 import level from "level";
-import { Storage, Storable, StorableConstructor } from "@padloc/core/src/storage";
+import { Storage, Storable, StorableConstructor, StorageListOptions } from "@padloc/core/src/storage";
 import { Err, ErrorCode } from "@padloc/core/src/error";
 
 export class LevelDBStorage implements Storage {
@@ -38,16 +38,14 @@ export class LevelDBStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        offset = 0,
-        limit: number = Infinity,
-        filter?: (obj: T) => boolean
+        { offset = 0, limit = Infinity, filter, lt, gt }: StorageListOptions<T>
     ): Promise<T[]> {
         return new Promise((resolve, reject) => {
             const results: T[] = [];
             const kind = new cls().kind;
 
             this._db
-                .createReadStream()
+                .createReadStream({ lt, gt })
                 .on("data", ({ key, value }: { key: string; value: string }) => {
                     if (key.indexOf(kind + "_") !== 0) {
                         return;

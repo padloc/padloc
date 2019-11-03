@@ -14,6 +14,14 @@ export abstract class Storable extends Serializable {
  */
 export type StorableConstructor<T extends Storable> = new (...args: any[]) => T;
 
+export interface StorageListOptions<T> {
+    offset?: number;
+    limit?: number;
+    filter?: (obj: T) => boolean;
+    lt?: string;
+    gt?: string;
+}
+
 /**
  * Generic interface for data storage
  */
@@ -31,12 +39,7 @@ export interface Storage {
     clear(): Promise<void>;
 
     /** Retrieves an object of type `T` based on its `id`*/
-    list<T extends Storable>(
-        cls: StorableConstructor<T>,
-        offset?: number,
-        limit?: number,
-        filter?: (obj: T) => boolean
-    ): Promise<T[]>;
+    list<T extends Storable>(cls: StorableConstructor<T>, opts: StorageListOptions<T>): Promise<T[]>;
 }
 
 /**
@@ -68,17 +71,11 @@ export class MemoryStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        offset = 0,
-        limit: number = Infinity,
-        filter?: (obj: T) => boolean
+        { offset = 0, limit = Infinity, filter }: StorageListOptions<T>
     ): Promise<T[]> {
         const results: T[] = [];
 
         const iter = this._storage[Symbol.iterator]();
-
-        for (let i = 0; i < offset; i++) {
-            iter.next();
-        }
 
         let value: object;
         let done: boolean;
@@ -92,7 +89,13 @@ export class MemoryStorage implements Storage {
         ) {
             const item = new cls().fromRaw(value);
             if (!filter || filter(item)) {
-                results.push();
+                if (!filter || filter(item)) {
+                    if (offset) {
+                        offset--;
+                    } else {
+                        results.push(item);
+                    }
+                }
             }
         }
 
