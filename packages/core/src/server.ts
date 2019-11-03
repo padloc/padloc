@@ -12,7 +12,7 @@ import {
     GetAttachmentParams,
     DeleteAttachmentParams
 } from "./api";
-import { Storage } from "./storage";
+import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account } from "./account";
@@ -31,6 +31,7 @@ import { EmailVerificationMessage, InviteCreatedMessage, InviteAcceptedMessage, 
 import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing";
 import { AccountQuota, OrgQuota } from "./quota";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
+import { Logger } from "./log";
 
 const pendingAuths = new Map<string, SRPServer>();
 
@@ -87,20 +88,38 @@ export class Controller implements API {
         public storage: Storage,
         /** [[Messenger]] implemenation for sending messages to users */
         public messenger: Messenger,
+        public logger: Logger,
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public billingProvider?: BillingProvider
     ) {}
+
+    async log(type: string, data: any = {}) {
+        const acc = this.context.account;
+        this.logger.log(type, {
+            account: acc && { email: acc.email, id: acc.id, name: acc.name },
+            device: this.context.device && this.context.device.toRaw(),
+            ...data
+        });
+    }
 
     async requestEmailVerification({ email, purpose }: RequestEmailVerificationParams) {
         const v = new EmailVerification(email, purpose);
         await v.init();
         await this.storage.save(v);
         this.messenger.send(email, new EmailVerificationMessage(v));
+        this.log("verifyemail.request", { email, purpose });
     }
 
     async completeEmailVerification({ email, code }: CompleteEmailVerificationParams) {
-        return await this._checkEmailVerificationCode(email, code);
+        try {
+            const token = await this._checkEmailVerificationCode(email, code);
+            this.log("verifyemail.complete", { email, success: true });
+            return token;
+        } catch (e) {
+            this.log("verifyemail.complete", { email, success: false });
+            throw e;
+        }
     }
 
     async initAuth({ email, verify }: InitAuthParams): Promise<InitAuthResponse> {
@@ -113,6 +132,8 @@ export class Controller implements API {
                 throw e;
             }
         }
+
+        this.logger.log("auth.init", { email, account: auth && { email, id: auth.account } });
 
         const deviceTrusted =
             auth && this.context.device && auth.trustedDevices.some(({ id }) => id === this.context.device!.id);
@@ -156,6 +177,8 @@ export class Controller implements API {
         }
 
         await this.storage.save(auth);
+
+        this.log("auth.update");
     }
 
     async createSession({ account, A, M }: CreateSessionParams): Promise<Session> {
@@ -163,6 +186,7 @@ export class Controller implements API {
         const srp = pendingAuths.get(account);
 
         if (!srp) {
+            this.log("login", { account: { id: account }, success: false });
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
@@ -175,6 +199,7 @@ export class Controller implements API {
         // computed by the client and server are identical an can be used for
         // authentication.
         if (!equalCT(M, srp.M1!)) {
+            this.log("login", { account: { id: account }, success: false });
             throw new Err(ErrorCode.INVALID_CREDENTIALS);
         }
 
@@ -211,6 +236,8 @@ export class Controller implements API {
         // explicitly before returning.
         delete session.key;
 
+        this.log("login", { account: { email: acc.email, id: acc.id }, success: true });
+
         return session;
     }
 
@@ -227,6 +254,8 @@ export class Controller implements API {
         account.sessions.splice(i, 1);
 
         await Promise.all([this.storage.delete(session), this.storage.save(account)]);
+
+        this.log("logout");
     }
 
     async createAccount({ account, auth, verify }: CreateAccountParams): Promise<Account> {
@@ -280,11 +309,16 @@ export class Controller implements API {
             );
         }
 
-        return this.storage.get(Account, account.id);
+        account = await this.storage.get(Account, account.id);
+
+        this.log("account.create", { account: { email: account.email, id: account.id, name: account.name } });
+
+        return account;
     }
 
     async getAccount() {
         const { account } = this._requireAuth();
+        this.log("account.get");
         return account;
     }
 
@@ -320,6 +354,8 @@ export class Controller implements API {
                 await this.storage.save(org);
             }
         }
+
+        this.log("account.update");
 
         return account;
     }
@@ -371,6 +407,8 @@ export class Controller implements API {
         // Persist changes
         await Promise.all([this.storage.save(account), this.storage.save(auth), this.storage.save(mainVault)]);
 
+        this.log("account.recover", { account: { email: account.email, id: account.id, name: account.name } });
+
         return account;
     }
 
@@ -408,6 +446,8 @@ export class Controller implements API {
 
         // Delete account object
         await this.storage.delete(account);
+
+        this.log("account.delete");
     }
 
     async createOrg(org: Org) {
@@ -440,6 +480,8 @@ export class Controller implements API {
 
         await this.storage.save(org);
 
+        this.log("org.create", { org: { name: org.name, id: org.id, type: org.type } });
+
         return org;
     }
 
@@ -453,6 +495,8 @@ export class Controller implements API {
         if (org.owner !== account.id && !org.isMember(account)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
+
+        this.log("org.get", { org: { name: org.name, id: org.id, type: org.type } });
 
         return org;
     }
@@ -628,6 +672,8 @@ export class Controller implements API {
 
         await this.storage.save(org);
 
+        this.log("org.update", { org: { name: org.name, id: org.id, type: org.type } });
+
         return org;
     }
 
@@ -657,6 +703,8 @@ export class Controller implements API {
         }
 
         await this.storage.delete(org);
+
+        this.log("org.delete", { org: { name: org.name, id: org.id, type: org.type } });
     }
 
     async getVault(id: VaultID) {
@@ -670,6 +718,11 @@ export class Controller implements API {
         if ((org && !org.canRead(vault, account)) || (!org && vault.owner !== account.id)) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
+
+        this.log("vault.get", {
+            vault: { id: vault.id, name: vault.name },
+            org: org && { id: org.id, name: org.name, type: org.type }
+        });
 
         return vault;
     }
@@ -714,6 +767,11 @@ export class Controller implements API {
         // Persist changes
         await this.storage.save(vault);
 
+        this.log("vault.update", {
+            vault: { id: vault.id, name: vault.name },
+            org: org && { id: org.id, name: org.name, type: org.type }
+        });
+
         return vault;
     }
 
@@ -753,6 +811,11 @@ export class Controller implements API {
 
         // Persist cahnges
         await Promise.all([this.storage.save(vault), this.storage.save(org)]);
+
+        this.log("vault.create", {
+            vault: { id: vault.id, name: vault.name },
+            org: org && { id: org.id, name: org.name, type: org.type }
+        });
 
         return vault;
     }
@@ -794,6 +857,11 @@ export class Controller implements API {
         promises.push(this.storage.save(org));
 
         await Promise.all(promises);
+
+        this.log("vault.delete", {
+            vault: { id: vault.id, name: vault.name },
+            org: org && { id: org.id, name: org.name, type: org.type }
+        });
     }
 
     async getInvite({ org: orgId, id }: GetInviteParams) {
@@ -809,6 +877,11 @@ export class Controller implements API {
         ) {
             throw new Err(ErrorCode.NOT_FOUND);
         }
+
+        this.log("invite.get", {
+            invite: { id: invite.id, email: invite.email },
+            org: { id: org.id, name: org.name, type: org.type }
+        });
 
         return invite;
     }
@@ -848,6 +921,11 @@ export class Controller implements API {
 
         // Persist changes
         await this.storage.save(org);
+
+        this.log("invite.accept", {
+            invite: { id: invite.id, email: invite.email },
+            org: { id: org.id, name: org.name, type: org.type }
+        });
     }
 
     async createAttachment(att: Attachment) {
@@ -881,6 +959,12 @@ export class Controller implements API {
         await this._updateUsedStorage(org || account);
 
         return att;
+
+        this.log("attachment.create", {
+            attachment: { type: att.type, size: att.size, id: att.id },
+            vault: { id: vault.id, name: vault.name },
+            org: org && { id: org!.id, name: org!.name, type: org!.type }
+        });
     }
 
     async getAttachment({ id, vault: vaultId }: GetAttachmentParams) {
@@ -896,6 +980,12 @@ export class Controller implements API {
         }
 
         const att = await this.attachmentStorage.get(vaultId, id);
+
+        this.log("attachment.get", {
+            attachment: { type: att.type, size: att.size, id: att.id },
+            vault: { id: vault.id, name: vault.name },
+            org: org && { id: org!.id, name: org!.name, type: org!.type }
+        });
 
         return att;
     }
@@ -915,6 +1005,12 @@ export class Controller implements API {
         await this.attachmentStorage.delete(vaultId, id);
 
         await this._updateUsedStorage(org || account);
+
+        this.log("attachment.delete", {
+            attachment: { id },
+            vault: { id: vault.id, name: vault.name },
+            org: org && { id: org!.id, name: org!.name, type: org!.type }
+        });
     }
 
     async updateBilling(params: UpdateBillingParams) {
@@ -937,12 +1033,19 @@ export class Controller implements API {
         }
 
         await this.billingProvider.update(params);
+
+        this.log("billing.update", {
+            params: params.toRaw()
+        });
     }
 
     async getPlans() {
         if (!this.billingProvider) {
             throw new Err(ErrorCode.NOT_SUPPORTED);
         }
+
+        this.log("plans.get");
+
         return this.billingProvider.getPlans();
     }
 
@@ -1015,13 +1118,18 @@ export class Controller implements API {
 }
 
 export abstract class BaseServer {
-    constructor(public config: ServerConfig, public storage: Storage, public messenger: Messenger) {}
+    constructor(
+        public config: ServerConfig,
+        public storage: Storage,
+        public messenger: Messenger,
+        public logger: Logger
+    ) {}
 
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
         const res = new Response();
+        const context: Context = {};
         try {
-            const context: Context = {};
             context.device = req.device && new DeviceInfo().fromRaw(req.device);
             try {
                 await loadLanguage((context.device && context.device.locale) || "en");
@@ -1032,7 +1140,7 @@ export abstract class BaseServer {
                 await context.session.authenticate(res);
             }
         } catch (e) {
-            this._handleError(e, res);
+            this._handleError(e, req, res, context);
         }
         return res;
     }
@@ -1099,27 +1207,44 @@ export abstract class BaseServer {
         await Promise.all([this.storage.save(session), this.storage.save(account)]);
     }
 
-    private _handleError(e: Error, res: Response) {
-        if (e instanceof Err) {
-            res.error = {
-                code: e.code,
-                message: e.message
-            };
-        } else {
-            console.error(e.stack);
-            if (this.config.reportErrors) {
-                this.messenger.send(this.config.reportErrors, {
-                    title: "Padloc Error Notification",
-                    text: `The following error occurred at ${new Date().toString()}:\n\n${e.stack}`,
-                    html: ""
-                });
-            }
-            res.error = {
-                code: ErrorCode.SERVER_ERROR,
-                message:
-                    "Something went wrong while we were processing your request. " +
-                    "Our team has been notified and will resolve the problem as soon as possible!"
-            };
+    private _handleError(error: Error, req: Request, res: Response, context: Context) {
+        const e =
+            error instanceof Err
+                ? error
+                : new Err(
+                      ErrorCode.SERVER_ERROR,
+                      "Something went wrong while we were processing your request. " +
+                          "Our team has been notified and will resolve the problem as soon as possible!",
+                      { report: true, error }
+                  );
+
+        res.error = {
+            code: e.code,
+            message: e.message
+        };
+
+        const evt = this.logger.log("error", {
+            account: context.account && {
+                id: context.account.id,
+                email: context.account.email,
+                name: context.account.name
+            },
+            device: context.device && context.device.toRaw(),
+            error: e.toRaw(),
+            method: req.method,
+            request: e.report ? req : undefined
+        });
+
+        if (e.report && this.config.reportErrors) {
+            this.messenger.send(this.config.reportErrors, {
+                title: "Padloc Error Notification",
+                text:
+                    `The following error occurred at ${e.time}:\n\n` +
+                    `Code: ${e.code}\n` +
+                    `Message: ${e.message}\n` +
+                    `Event ID: ${evt.id}`,
+                html: ""
+            });
         }
     }
 }
@@ -1143,11 +1268,13 @@ export class Server extends BaseServer {
         storage: Storage,
         /** [[Messenger]] implemenation for sending messages to users */
         messenger: Messenger,
+        /** Logger to use */
+        public logger: Logger = new Logger(new VoidStorage()),
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
         public billingProvider?: BillingProvider
     ) {
-        super(config, storage, messenger);
+        super(config, storage, messenger, logger);
     }
 
     makeController(ctx: Context) {
@@ -1156,6 +1283,7 @@ export class Server extends BaseServer {
             this.config,
             this.storage,
             this.messenger,
+            this.logger,
             this.attachmentStorage,
             this.billingProvider
         );

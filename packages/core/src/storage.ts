@@ -20,6 +20,7 @@ export interface StorageListOptions<T> {
     filter?: (obj: T) => boolean;
     lt?: string;
     gt?: string;
+    reverse?: boolean;
 }
 
 /**
@@ -40,6 +41,18 @@ export interface Storage {
 
     /** Retrieves an object of type `T` based on its `id`*/
     list<T extends Storable>(cls: StorableConstructor<T>, opts: StorageListOptions<T>): Promise<T[]>;
+}
+
+export class VoidStorage implements Storage {
+    async save<T extends Storable>(_obj: T) {}
+    async get<T extends Storable>(_cls: StorableConstructor<T> | T, _id: string): Promise<T> {
+        throw new Err(ErrorCode.NOT_FOUND);
+    }
+    async delete<T extends Storable>(_obj: T) {}
+    async clear() {}
+    async list<T extends Storable>(_cls: StorableConstructor<T>, _opts: StorageListOptions<T>) {
+        return [];
+    }
 }
 
 /**
@@ -78,7 +91,7 @@ export class MemoryStorage implements Storage {
         const iter = this._storage[Symbol.iterator]();
 
         let value: object;
-        let done: boolean;
+        let done: boolean | undefined;
 
         while (
             (({

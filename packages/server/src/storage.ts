@@ -38,14 +38,14 @@ export class LevelDBStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { offset = 0, limit = Infinity, filter, lt, gt }: StorageListOptions<T>
+        { offset = 0, limit = Infinity, filter, lt, gt, reverse }: StorageListOptions<T>
     ): Promise<T[]> {
         return new Promise((resolve, reject) => {
             const results: T[] = [];
             const kind = new cls().kind;
 
             this._db
-                .createReadStream({ lt, gt })
+                .createReadStream({ lt, gt, reverse })
                 .on("data", ({ key, value }: { key: string; value: string }) => {
                     if (key.indexOf(kind + "_") !== 0) {
                         return;

@@ -69,6 +69,7 @@ For more configuration options, see [Configuration](#configuration)
 | `PL_PWA_DIR`         | `./packages/pwa/dist`            | Build directory for web client.                                                                           |
 | `PL_DATA_DIR`        | `./data`                         | Directory used by server for persistent data storage                                                      |
 | `PL_ATTACHMENTS_DIR` | `./attachments`                  | Directory used by server to store attachments                                                             |
+| `PL_LOGS_DIR`        | `./logs`                         | Directory used by server to store logs                                                                    |
 | `PL_EMAIL_USER`      | -                                | SMTP user for sending emails.                                                                             |
 | `PL_EMAIL_SERVER`    | -                                | SMTP server for sending emails                                                                            |
 | `PL_EMAIL_PORT`      | -                                | SMTP port for sending emails                                                                              |

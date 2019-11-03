@@ -57,23 +57,12 @@ export enum ErrorCode {
     BILLING_ERROR = "billing_error"
 }
 
-const messages = {
-    [ErrorCode.EMAIL_VERIFICATION_FAILED]: "Email verification failed.",
-    [ErrorCode.INVALID_CREDENTIALS]: "Username or password incorrect.",
-    [ErrorCode.ACCOUNT_EXISTS]: "This account already exists."
-};
-
-const statusCodes = {
-    [ErrorCode.BAD_REQUEST]: 400,
-    [ErrorCode.EMAIL_VERIFICATION_FAILED]: 400,
-    [ErrorCode.INVALID_SESSION]: 401,
-    [ErrorCode.SESSION_EXPIRED]: 401,
-    [ErrorCode.INVALID_CREDENTIALS]: 401,
-    [ErrorCode.INSUFFICIENT_PERMISSIONS]: 403,
-    [ErrorCode.NOT_FOUND]: 404,
-    [ErrorCode.DEPRECATED_API_VERSION]: 406,
-    [ErrorCode.ACCOUNT_EXISTS]: 409
-};
+export interface ErrorOptions {
+    report?: boolean;
+    display?: boolean;
+    status?: number;
+    error?: Error;
+}
 
 /**
  * Custom error class augmenting the built-in `Error` with some additional properties
@@ -85,28 +74,29 @@ export class Err extends Error {
     report: boolean;
     /** Wether or not this error shoudl be displayed to the user */
     display: boolean;
-    /** The associated status code, in case of HTTP errors */
-    status: number;
     /** The original error, if available */
     originalError?: Error;
     /** Time when the error was created */
-    created = new Date();
+    time = new Date();
 
-    constructor(
-        code: ErrorCode,
-        message?: string,
-        opts: { report?: boolean; display?: boolean; status?: number; error?: Error } = {}
-    ) {
-        super(message || messages[code] || (opts.error && opts.error.message) || "");
+    constructor(code: ErrorCode, message?: string, { report = false, display = false, error }: ErrorOptions = {}) {
+        super(message || (error && error.message) || "");
         this.code = code;
-        this.status = opts.status || statusCodes[code] || 500;
-        this.report = opts.report || false;
-        this.display = opts.report || false;
-        this.originalError = opts.error;
+        this.report = report;
+        this.display = display;
+        this.originalError = error;
+    }
+
+    toRaw() {
+        return {
+            code: this.code,
+            message: this.message,
+            stack: this.originalError ? this.originalError.stack : this.stack
+        };
     }
 
     toString() {
-        return `Time: ${this.created.toISOString()}\nError Code: ${this.code}:\nError Message: ${
+        return `Time: ${this.time.toISOString()}\nError Code: ${this.code}:\nError Message: ${
             this.message
         }\nStack Trace:\n${this.originalError ? this.originalError.stack : this.stack}`;
     }
