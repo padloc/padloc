@@ -3,7 +3,8 @@ import { setPlatform } from "@padloc/core/src/platform";
 import { BillingProvider } from "@padloc/core/src/billing";
 import { NodePlatform } from "./platform";
 import { HTTPReceiver } from "./http";
-import { LevelDBStorage } from "./storage";
+import { LevelDBStorage, DynamoDBStorage } from "./storage";
+import { CredentialProviderChain } from "aws-sdk";
 import { EmailMessenger } from "./messenger";
 import { FileSystemStorage } from "./attachment";
 import { StripeBillingProvider } from "./billing";
@@ -14,7 +15,7 @@ async function init() {
     const config = new ServerConfig({
         clientUrl: process.env.PL_PWA_URL || `http://0.0.0.0:${process.env.PL_PWA_PORT || 8080}`,
         reportErrors: process.env.PL_REPORT_ERRORS || "",
-        mfa: (process.env.PL_MFA as ("email" | "none")) || "email",
+        mfa: (process.env.PL_MFA as "email" | "none") || "email",
         accountQuota: {
             items: -1,
             storage: 1,
@@ -34,7 +35,21 @@ async function init() {
         password: process.env.PL_EMAIL_PASSWORD || "",
         from: process.env.PL_EMAIL_FROM || ""
     });
-    const storage = new LevelDBStorage(process.env.PL_DB_PATH || process.env.PL_DATA_DIR || "data");
+
+    let storage: any;
+    const provider = process.env.STORAGE_PROVIDER || "LevelDB";
+    if (provider == "LevelDB") {
+        console.log("Using LevelDB for Storage");
+        storage = new LevelDBStorage(process.env.PL_DB_PATH || process.env.PL_DATA_DIR || "data");
+    } else if (provider == "DynamoDB") {
+        console.log("Using DynamoDB for Storage");
+        storage = new DynamoDBStorage(
+            new CredentialProviderChain(),
+            process.env.AWS_REGION || "us-west-2",
+            process.env.AWS_DDB_TABLE || "padloc"
+        );
+    }
+
     const attachmentStorage = new FileSystemStorage({
         path: process.env.PL_ATTACHMENTS_PATH || process.env.PL_ATTACHMENTS_DIR || "attachments"
     });

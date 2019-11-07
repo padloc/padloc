@@ -19,3 +19,4 @@ packages/electron/app
 packages/electron/dist
 *.env
 packages/pwa/dist
+pwa
