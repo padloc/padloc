@@ -513,7 +513,7 @@ export class ItemsList extends StateMixin(View) {
             </div>
 
             <div class="fabs" ?hidden=${this.multiSelect}>
-                <pl-icon icon="checked" class="tap fab" @click=${() => this.selectAll()}></pl-icon>
+                <pl-icon icon="checked" class="tap fab" @click=${() => (this.multiSelect = true)}></pl-icon>
 
                 <div class="flex"></div>
 
