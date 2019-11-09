@@ -61,6 +61,10 @@ export async function randomString(length = 32, charSet = charSets.full) {
  * Taken from https://github.com/EFForg/OpenWireless/blob/master/app/js/diceware.js
  */
 export async function randomNumber(min: number = 0, max: number = 10): Promise<number> {
+    if (max < min) {
+        throw "Upper bound must be greater than or equal to lower bound!";
+    }
+
     let rval = 0;
     const range = max - min + 1;
     const bitsNeeded = Math.ceil(Math.log2(range));

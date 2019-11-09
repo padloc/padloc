@@ -15,6 +15,11 @@ export async function generatePassphrase(nWords = 4, separator = "-", languages 
         list.push(...(await getWordList(lang)));
     }
 
+    // Fall back to englisch if no word lists were found for provided languages
+    if (!list.length) {
+        list.push(...(await getWordList("en")));
+    }
+
     for (let i = 0; i < nWords; i++) {
         words.push(list[await randomNumber(0, list.length - 1)]);
     }
