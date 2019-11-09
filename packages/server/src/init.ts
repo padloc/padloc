@@ -8,6 +8,7 @@ import { LevelDBStorage } from "./storage";
 import { EmailMessenger } from "./messenger";
 import { FileSystemStorage } from "./attachment";
 import { StripeBillingProvider } from "./billing";
+import { ReplServer } from "./repl";
 
 async function init() {
     setPlatform(new NodePlatform());
@@ -74,6 +75,14 @@ async function init() {
 
     console.log(`Starting server on port ${port}`);
     new HTTPReceiver(port).listen(req => server.handle(req));
+
+    let replPort = parseInt(process.env.PL_REPL_PORT!);
+    if (!isNaN(replPort)) {
+        console.log(
+            `Starting REPL server on port ${replPort}\n` + "WARNING: Make sure this port is NOT publicly accessible."
+        );
+        new ReplServer(server).start(replPort);
+    }
 }
 
 init();

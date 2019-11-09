@@ -40,7 +40,7 @@ export interface Storage {
     clear(): Promise<void>;
 
     /** Retrieves an object of type `T` based on its `id`*/
-    list<T extends Storable>(cls: StorableConstructor<T>, opts: StorageListOptions<T>): Promise<T[]>;
+    list<T extends Storable>(cls: StorableConstructor<T>, opts?: StorageListOptions<T>): Promise<T[]>;
 }
 
 export class VoidStorage implements Storage {
@@ -50,7 +50,7 @@ export class VoidStorage implements Storage {
     }
     async delete<T extends Storable>(_obj: T) {}
     async clear() {}
-    async list<T extends Storable>(_cls: StorableConstructor<T>, _opts: StorageListOptions<T>) {
+    async list<T extends Storable>(_cls: StorableConstructor<T>, _opts?: StorageListOptions<T>) {
         return [];
     }
 }
@@ -84,7 +84,7 @@ export class MemoryStorage implements Storage {
 
     async list<T extends Storable>(
         cls: StorableConstructor<T>,
-        { offset = 0, limit = Infinity, filter }: StorageListOptions<T>
+        { offset = 0, limit = Infinity, filter }: StorageListOptions<T> = {}
     ): Promise<T[]> {
         const results: T[] = [];
 

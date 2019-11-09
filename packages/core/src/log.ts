@@ -51,7 +51,7 @@ export class Logger {
         return event;
     }
 
-    async getLogs({ from, to, offset = 0, limit = 100, type, reverse = true }: GetLogsOptions): Promise<Event[]> {
+    async getLogs({ from, to, offset = 0, limit = 100, type, reverse = true }: GetLogsOptions = {}): Promise<Event[]> {
         return this.storage.list(Event, {
             gt: from ? `event_${from.getTime()}` : undefined,
             lt: to ? `event_${to.getTime()}` : undefined,
@@ -62,5 +62,9 @@ export class Logger {
                 ? (evt: Event) => (type instanceof RegExp ? type.test(evt.type) : evt.type === type)
                 : undefined
         });
+    }
+
+    async getEvent(id: string) {
+        return this.storage.get(Event, id);
     }
 }

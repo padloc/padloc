@@ -290,7 +290,7 @@ export class Org extends SharedContainer implements Storable {
 
     usedStorage: number = 0;
 
-    toRaw() {
+    toRaw(): any {
         return {
             ...super.toRaw(["privateKey", "invitesKey"]),
             publicKey: this.publicKey && bytesToBase64(this.publicKey)

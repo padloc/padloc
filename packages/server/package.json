@@ -32,6 +32,7 @@
   },
   "scripts": {
     "start": "ts-node src/init.ts",
+    "repl": "ts-node src/init-repl-client.ts",
     "dev": "ts-node-dev src/init.ts"
   },
   "repository": {
