@@ -449,6 +449,7 @@ export class ItemDialog extends Dialog<string, void> {
             tags: this._tagsInput.tags
         });
         this._editing = false;
+        this._itemChanged();
     }
 
     private _getFields() {
