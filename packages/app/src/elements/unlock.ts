@@ -3,7 +3,7 @@ import { ErrorCode } from "@padloc/core/src/error";
 import { biometricAuth } from "@padloc/core/src/platform";
 import { app, router } from "../globals";
 import { isTouch } from "../lib/util";
-import { element, property, html, css, query } from "./base";
+import { element, property, html, css, query, listen } from "./base";
 import { StartForm } from "./start-form";
 import { PasswordInput } from "./password-input";
 import { LoadingButton } from "./loading-button";
@@ -33,7 +33,7 @@ export class Unlock extends StartForm {
         this._failedCount = 0;
         super.reset();
 
-        if (!isTouch) {
+        if (!isTouch()) {
             setTimeout(() => this._passwordInput.focus(), 100);
         }
 
@@ -243,5 +243,14 @@ export class Unlock extends StartForm {
                 type: "warning"
             });
         }
+    }
+
+    @listen("visibilitychange", document)
+    _focused() {
+        setTimeout(() => {
+            if (app.state.locked && this.classList.contains("showing") && document.visibilityState !== "hidden") {
+                this._passwordInput && this._passwordInput.focus();
+            }
+        }, 100);
     }
 }

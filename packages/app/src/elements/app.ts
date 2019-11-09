@@ -329,15 +329,6 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         e.preventDefault();
     }
 
-    @listen("focus", window)
-    _focused() {
-        setTimeout(() => {
-            if (this.locked) {
-                this._startView.focus();
-            }
-        }, 100);
-    }
-
     @listen("dialog-open")
     _dialogOpen(e: CustomEvent) {
         const dialog = e.target as Dialog<any, any>;
