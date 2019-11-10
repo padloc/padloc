@@ -168,6 +168,9 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     ];
 
     render() {
+        if (!app.mainVault) {
+            return html``;
+        }
         const { vault: vaultId, tag, favorites, attachments, recent } = this;
         const vault = app.getVault(vaultId);
         const cl = favorites
@@ -188,7 +191,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
             : attachments
             ? $l("Attachments")
             : vault
-            ? vault.toString()
+            ? vault.name
             : tag || $l("All Items");
         const accId = (app.account && app.account.id) || "";
 
@@ -253,19 +256,33 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         <div class="count">${favCount}</div>
                     </button>
 
-                    <h4>${$l("Vaults")}</h4>
+                    <button class="vault tap" @click=${() => this._select({ vault: app.mainVault!.id })}>
+                        <pl-icon icon="vault"></pl-icon>
+                        <div>
+                            ${$l("My Vault")}
+                        </div>
+                        <div class="count">${app.mainVault!.items.size}</div>
+                    </button>
 
-                    ${app.vaults.map(
-                        vault => html`
-                            <button class="vault tap" @click=${() => this._select({ vault: vault.id })}>
-                                <pl-icon icon="vault"></pl-icon>
-                                <div>
-                                    ${vault}
-                                </div>
-                                <div class="count">${vault.items.size}</div>
-                            </button>
-                        `
-                    )}
+                    ${app.orgs.map(org => {
+                        const vaults = app.vaults.filter(v => v.org && v.org.id === org.id);
+
+                        return html`
+                            <h4>${org.name}</h4>
+
+                            ${vaults.map(
+                                vault => html`
+                                    <button class="vault tap" @click=${() => this._select({ vault: vault.id })}>
+                                        <pl-icon icon="vault"></pl-icon>
+                                        <div>
+                                            ${vault.name}
+                                        </div>
+                                        <div class="count">${vault.items.size}</div>
+                                    </button>
+                                `
+                            )}
+                        `;
+                    })}
 
                     <h4>${$l("Tags")}</h4>
 

@@ -189,6 +189,12 @@ export class Menu extends StateMixin(BaseElement) {
                 font-weight: bold;
             }
 
+            .subsection-header {
+                margin: 12px 8px 6px 26px;
+                opacity: 0.7;
+                font-size: var(--font-size-tiny);
+            }
+
             @supports (-webkit-overflow-scrolling: touch) {
                 pl-logo {
                     margin-top: max(env(safe-area-inset-top), 15px);
@@ -203,6 +209,12 @@ export class Menu extends StateMixin(BaseElement) {
     ];
 
     render() {
+        const mainVault = app.mainVault;
+
+        if (!mainVault) {
+            return html``;
+        }
+
         const accId = (app.account && app.account.id) || "";
         const canUpgrade =
             app.account &&
@@ -212,6 +224,7 @@ export class Menu extends StateMixin(BaseElement) {
                 app.account.billing.subscription.plan.type === PlanType.Free);
 
         const itemsQuota = (app.account && app.account.quota.items) || -1;
+        const exceededItemsQuota = itemsQuota !== -1 && mainVault.items.size > itemsQuota;
 
         const favCount = app.vaults.reduce((count, vault) => {
             return [...vault.items].reduce(
@@ -274,23 +287,6 @@ export class Menu extends StateMixin(BaseElement) {
                             <div class="detail">${favCount}</div>
                         </li>
 
-                        ${app.vaults.map(vault => {
-                            const exceededQuota = app.mainVault && vault.id === app.mainVault!.id && itemsQuota !== -1;
-                            return html`
-                                <li
-                                    class="sub-item tap vault"
-                                    @click=${() => this._goTo("items", { vault: vault.id })}
-                                    ?selected=${this.selected === `vault/${vault.id}`}
-                                >
-                                    <pl-icon icon="vault"></pl-icon>
-                                    <div>${vault}</div>
-                                    <div class="detail ${exceededQuota ? "warning" : ""}">
-                                        ${exceededQuota ? `${vault.items.size} / ${itemsQuota}` : vault.items.size}
-                                    </div>
-                                </li>
-                            `;
-                        })}
-
                         <li
                             class="sub-item tap"
                             @click=${() => this._goTo("items", { attachments: true })}
@@ -303,21 +299,61 @@ export class Menu extends StateMixin(BaseElement) {
                             <div class="detail">${attCount}</div>
                         </li>
 
-                        ${app.state.tags.map(
-                            ([tag, count]) => html`
-                                <li
-                                    class="sub-item tap"
-                                    @click=${() => this._goTo("items", { tag })}
-                                    ?selected=${this.selected === `tag/${tag}`}
-                                >
-                                    <pl-icon icon="tag"></pl-icon>
+                        <li
+                            class="sub-item tap vault"
+                            @click=${() => this._goTo("items", { vault: mainVault.id })}
+                            ?selected=${this.selected === `vault/${mainVault.id}`}
+                        >
+                            <pl-icon icon="vault"></pl-icon>
+                            <div>${$l("My Vault")}</div>
+                            <div class="detail ${exceededItemsQuota ? "warning" : ""}">
+                                ${itemsQuota !== -1 ? `${mainVault.items.size} / ${itemsQuota}` : mainVault.items.size}
+                            </div>
+                        </li>
 
-                                    <div>${tag}</div>
+                        ${app.orgs.map(org => {
+                            const vaults = app.vaults.filter(v => v.org && v.org.id === org.id);
 
-                                    <div class="detail">${count}</div>
-                                </li>
-                            `
-                        )}
+                            return html`
+                                <div class="subsection">
+                                    <div class="subsection-header">${org.name}</div>
+                                    ${vaults.map(vault => {
+                                        return html`
+                                            <li
+                                                class="sub-item tap vault"
+                                                @click=${() => this._goTo("items", { vault: vault.id })}
+                                                ?selected=${this.selected === `vault/${vault.id}`}
+                                            >
+                                                <pl-icon icon="vault"></pl-icon>
+                                                <div>${vault.name}</div>
+                                                <div class="detail">
+                                                    ${vault.items.size}
+                                                </div>
+                                            </li>
+                                        `;
+                                    })}
+                                </div>
+                            `;
+                        })}
+
+                        <div class="subsection">
+                            <div class="subsection-header">${$l("Tags")}</div>
+                            ${app.state.tags.map(
+                                ([tag, count]) => html`
+                                    <li
+                                        class="sub-item tap"
+                                        @click=${() => this._goTo("items", { tag })}
+                                        ?selected=${this.selected === `tag/${tag}`}
+                                    >
+                                        <pl-icon icon="tag"></pl-icon>
+
+                                        <div>${tag}</div>
+
+                                        <div class="detail">${count}</div>
+                                    </li>
+                                `
+                            )}
+                        </div>
 
                         <li class="new sub-item tap" @click=${() => this.dispatch("create-item")}>
                             <pl-icon icon="add"></pl-icon>
