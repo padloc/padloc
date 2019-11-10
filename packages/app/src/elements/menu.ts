@@ -224,6 +224,11 @@ export class Menu extends StateMixin(BaseElement) {
             return [...vault.items].reduce((c, item) => (item.attachments.length ? c + 1 : c), count);
         }, 0);
 
+        const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
+        const recentCount = app.vaults.reduce((count, vault) => {
+            return [...vault.items].reduce((c, item) => (item.lastUsed > recentThreshold ? c + 1 : c), count);
+        }, 0);
+
         const showSettingsWarning =
             app.billingConfig &&
             app.account &&
@@ -243,6 +248,18 @@ export class Menu extends StateMixin(BaseElement) {
                             <pl-icon icon="list"></pl-icon>
 
                             <div>${$l("Items")}</div>
+                        </li>
+
+                        <li
+                            class="sub-item tap"
+                            @click=${() => this._goTo("items", { recent: true })}
+                            ?selected=${this.selected === "recent"}
+                        >
+                            <pl-icon icon="time"></pl-icon>
+
+                            <div>${$l("Recently Used")}</div>
+
+                            <div class="detail">${recentCount}</div>
                         </li>
 
                         <li

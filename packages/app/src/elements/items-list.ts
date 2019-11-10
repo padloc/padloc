@@ -60,6 +60,9 @@ export class ItemsList extends StateMixin(View) {
     attachments: boolean = false;
 
     @property()
+    recent: boolean = false;
+
+    @property()
     private _listItems: ListItem[] = [];
     // @property()
     // private _firstVisibleIndex: number = 0;
@@ -93,6 +96,7 @@ export class ItemsList extends StateMixin(View) {
     @observe("tag")
     @observe("favorites")
     @observe("attachments")
+    @observe("recent")
     async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
@@ -437,6 +441,11 @@ export class ItemsList extends StateMixin(View) {
                   icon: "favorite",
                   text: $l("You don't have any favorites yet.")
               }
+            : this.recent
+            ? {
+                  icon: "time",
+                  text: $l("You don't have any recently used items!")
+              }
             : {
                   icon: "list",
                   text: $l("You don't have any items yet.")
@@ -456,6 +465,7 @@ export class ItemsList extends StateMixin(View) {
                     .vault=${this.vault}
                     .tag=${this.tag}
                     .favorites=${this.favorites}
+                    .recent=${this.recent}
                     .attachments=${this.attachments}
                     .searching=${this._filterShowing}
                 ></pl-items-filter>
@@ -640,12 +650,13 @@ export class ItemsList extends StateMixin(View) {
         }
     }
 
-    private _copyField(item: VaultItem, index: number, e: Event) {
+    private _copyField({ vault, item }: ListItem, index: number, e: Event) {
         e.stopPropagation();
         setClipboard(item, item.fields[index]);
         const fieldEl = e.target as HTMLElement;
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
+        app.updateItem(vault, item, { lastUsed: new Date() });
     }
 
     private _openAttachment(a: AttachmentInfo, item: VaultItem, e: MouseEvent) {
@@ -654,10 +665,9 @@ export class ItemsList extends StateMixin(View) {
     }
 
     private _getItems(): ListItem[] {
-        const recentCount = 0;
-
-        const { vault: vaultId, tag, favorites, attachments } = this;
+        const { vault: vaultId, tag, favorites, attachments, recent } = this;
         const filter = (this._filterInput && this._filterInput.value) || "";
+        const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
 
         let items: ListItem[] = [];
 
@@ -673,6 +683,7 @@ export class ItemsList extends StateMixin(View) {
                     (!tag || item.tags.includes(tag)) &&
                     (!favorites || (item.favorited && item.favorited.includes(app.account!.id))) &&
                     (!attachments || !!item.attachments.length) &&
+                    (!recent || item.lastUsed > recentThreshold) &&
                     filterByString(filter || "", item)
                 ) {
                     items.push({
@@ -686,34 +697,11 @@ export class ItemsList extends StateMixin(View) {
             }
         }
 
-        const recent = items
-            .sort((a, b) => {
-                return (b.item.lastUsed || b.item.updated).getTime() - (a.item.lastUsed || a.item.updated).getTime();
-            })
-            .slice(0, recentCount);
-
-        items = items.slice(recentCount);
-
-        items = recent.concat(
-            items.sort((a, b) => {
-                const x = a.item.name.toLowerCase();
-                const y = b.item.name.toLowerCase();
-                return x > y ? 1 : x < y ? -1 : 0;
-            })
-        );
-
-        for (let i = 0, prev, curr; i < items.length; i++) {
-            prev = items[i - 1];
-            curr = items[i];
-
-            curr.section =
-                i < recentCount
-                    ? $l("Recently Used")
-                    : (curr.item && curr.item.name[0] && curr.item.name[0].toUpperCase()) || $l("No Name");
-
-            curr.firstInSection = !prev || prev.section !== curr.section;
-            prev && (prev.lastInSection = curr.section !== prev.section);
-        }
+        items.sort((a, b) => {
+            const x = a.item.name.toLowerCase();
+            const y = b.item.name.toLowerCase();
+            return x > y ? 1 : x < y ? -1 : 0;
+        });
 
         return items;
     }
@@ -807,7 +795,7 @@ export class ItemsList extends StateMixin(View) {
                         ${item.fields.map((f: Field, i: number) => {
                             const fieldDef = FIELD_DEFS[f.type] || FIELD_DEFS.text;
                             return html`
-                                <div class="item-field tap" @click=${(e: MouseEvent) => this._copyField(item, i, e)}>
+                                <div class="item-field tap" @click=${(e: MouseEvent) => this._copyField(li, i, e)}>
                                     <div class="item-field-label">
                                         <div class="item-field-name">
                                             <pl-icon icon="${fieldDef.icon}"></pl-icon>

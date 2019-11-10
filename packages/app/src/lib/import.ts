@@ -134,8 +134,8 @@ export async function asPadlockLegacy(data: string, password: string): Promise<V
                 name: record.name,
                 fields: record.fields,
                 tags: record.tags || [record.category],
-                updated: new Date(record.updated),
-                lastUsed: new Date(record.lastUsed),
+                updated: record.updated ? new Date(record.updated) : new Date(),
+                lastUsed: new Date(record.lastUsed || 0),
                 updatedBy: "",
                 attachments: [],
                 favorited: []
@@ -162,8 +162,8 @@ export async function asPBES2Container(data: string, password: string): Promise<
     const items = raw.items.map((item: any) => {
         return {
             ...item,
-            updated: new Date(item.updated),
-            lastUsed: new Date(item.lastUsed)
+            updated: item.updated ? new Date(item.updated) : new Date(),
+            lastUsed: new Date(item.lastUsed || 0)
         };
     });
 

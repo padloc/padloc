@@ -63,6 +63,8 @@ export class Settings extends Serializable {
     autoLockDelay: number = 5;
     /** Interval for automatic sync, in minutes */
     syncInterval: number = 1;
+    /** Time threshold used for filtering "recent" items, in days */
+    recentLimit: number = 7;
 }
 
 /** Application state */
@@ -1046,7 +1048,14 @@ export class App {
     async updateItem(
         vault: Vault,
         item: VaultItem,
-        upd: { name?: string; fields?: Field[]; tags?: Tag[]; attachments?: AttachmentInfo[]; favorite?: boolean }
+        upd: {
+            name?: string;
+            fields?: Field[];
+            tags?: Tag[];
+            attachments?: AttachmentInfo[];
+            favorite?: boolean;
+            lastUsed?: Date;
+        }
     ) {
         const account = this.account!;
 

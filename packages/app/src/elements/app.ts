@@ -413,12 +413,13 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
 
-            const { vault, tag, favorites, attachments } = router.params;
+            const { vault, tag, favorites, attachments, recent } = router.params;
             this._items.selected = id || "";
             this._items.vault = vault || "";
             this._items.tag = tag || "";
             this._items.favorites = favorites === "true";
             this._items.attachments = attachments === "true";
+            this._items.recent = recent === "true";
             this._openView(this._items);
 
             this._menu.selected = vault
@@ -427,6 +428,8 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 ? `tag/${tag}`
                 : favorites
                 ? "favorites"
+                : recent
+                ? "recent"
                 : attachments
                 ? "attachments"
                 : "items";
@@ -442,6 +445,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                     }
                     router.params = rest;
                 }
+                app.updateItem(item.vault, item.item, { lastUsed: new Date() });
             }
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
             const [, orgId, id] = match;

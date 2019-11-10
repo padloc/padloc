@@ -21,6 +21,9 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     attachments: boolean = false;
 
     @property()
+    recent: boolean = false;
+
+    @property()
     searching: boolean = false;
 
     @property({ reflect: true, attribute: "selecting" })
@@ -165,11 +168,23 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     ];
 
     render() {
-        const { vault: vaultId, tag, favorites, attachments } = this;
+        const { vault: vaultId, tag, favorites, attachments, recent } = this;
         const vault = app.getVault(vaultId);
-        const cl = favorites ? "favorites" : vault ? "vault" : attachments || tag ? "filter-tag" : "all";
+        const cl = favorites
+            ? "favorites"
+            : recent
+            ? "recent"
+            : vault
+            ? "vault"
+            : attachments
+            ? "attachments"
+            : tag
+            ? "filter-tag"
+            : "all";
         const label = favorites
             ? $l("Favorites")
+            : recent
+            ? $l("Recently Used")
             : attachments
             ? $l("Attachments")
             : vault
@@ -186,6 +201,11 @@ export class ItemsFilter extends StateMixin(BaseElement) {
 
         const attCount = app.vaults.reduce((count, vault) => {
             return [...vault.items].reduce((c, item) => (item.attachments.length ? c + 1 : c), count);
+        }, 0);
+
+        const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
+        const recentCount = app.vaults.reduce((count, vault) => {
+            return [...vault.items].reduce((c, item) => (item.lastUsed > recentThreshold ? c + 1 : c), count);
         }, 0);
 
         const totalCount = app.vaults.reduce((count, vault) => count + vault.items.size, 0);
@@ -209,20 +229,28 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                         <div class="count">${totalCount}</div>
                     </button>
 
+                    <button class="recent tap" @click=${() => this._select({ recent: true })}>
+                        <pl-icon icon="time"></pl-icon>
+                        <div>
+                            ${$l("Recently Used")}
+                        </div>
+                        <div class="count">${recentCount}</div>
+                    </button>
+
+                    <button class="attachments tap" @click=${() => this._select({ attachments: true })}>
+                        <pl-icon icon="attachment"></pl-icon>
+                        <div>
+                            ${$l("Attachments")}
+                        </div>
+                        <div class="count">${attCount}</div>
+                    </button>
+
                     <button class="favorites tap" @click=${() => this._select({ favorites: true })}>
                         <pl-icon icon="favorite"></pl-icon>
                         <div>
                             ${$l("Favorites")}
                         </div>
                         <div class="count">${favCount}</div>
-                    </button>
-
-                    <button class="filter-tag tap" @click=${() => this._select({ attachments: true })}>
-                        <pl-icon icon="attachment"></pl-icon>
-                        <div>
-                            ${$l("Attachments")}
-                        </div>
-                        <div class="count">${attCount}</div>
                     </button>
 
                     <h4>${$l("Vaults")}</h4>
@@ -265,11 +293,13 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         tag,
         vault,
         favorites,
+        recent,
         attachments
     }: {
         tag?: Tag;
         vault?: VaultID;
         favorites?: boolean;
+        recent?: boolean;
         attachments?: boolean;
     }) {
         const params: any = {};
@@ -284,6 +314,9 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         }
         if (attachments) {
             params.attachments = attachments;
+        }
+        if (recent) {
+            params.recent = recent;
         }
         router.go("items", params);
     }

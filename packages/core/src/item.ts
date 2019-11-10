@@ -233,7 +233,7 @@ export async function createVaultItem(name: string, fields?: Field[], tags?: Tag
         tags: tags || [],
         updated: new Date(),
         updatedBy: "",
-        lastUsed: new Date(),
+        lastUsed: new Date(0),
         attachments: [],
         favorited: []
     };
