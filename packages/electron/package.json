@@ -1,6 +1,6 @@
 {
   "name": "@padloc/electron",
-  "version": "3.0.8",
+  "version": "3.0.9",
   "description": "Electron Wrapper for Padloc app",
   "main": "main.js",
   "repository": {
@@ -14,8 +14,8 @@
   "author": "MaKleSoft UG",
   "license": "GPL-3.0",
   "dependencies": {
-    "@padloc/app": "^3.0.8",
-    "@padloc/core": "^3.0.7",
+    "@padloc/app": "^3.0.9",
+    "@padloc/core": "^3.0.9",
     "electron-store": "^4.0.0",
     "electron-updater": "^4.1.2"
   },
@@ -50,7 +50,9 @@
     },
     "linux": {
       "category": "Utility",
-      "target": ["AppImage"]
+      "target": [
+        "AppImage"
+      ]
     },
     "protocols": {
       "name": "Padloc",

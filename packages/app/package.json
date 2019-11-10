@@ -1,10 +1,10 @@
 {
   "name": "@padloc/app",
-  "version": "3.0.8",
+  "version": "3.0.9",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
   "dependencies": {
-    "@padloc/core": "^3.0.7",
+    "@padloc/core": "^3.0.9",
     "@padloc/locale": "^3.0.6",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "autosize": "^4.0.2",
