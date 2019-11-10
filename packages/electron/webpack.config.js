@@ -16,6 +16,7 @@ module.exports = [
         },
         mode: "development",
         devtool: "source-map",
+        stats: "minimal",
         resolve: {
             extensions: [".ts", ".js"]
         },
@@ -76,6 +77,7 @@ module.exports = [
         },
         mode: "development",
         devtool: "source-map",
+        stats: "minimal",
         resolve: {
             extensions: [".ts", ".js"]
         },

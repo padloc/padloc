@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "rm -rf app && webpack && electron-builder",
-    "run": "electron/app/main.js"
+    "start": "webpack && electron app/main.js"
   },
   "author": "MaKleSoft UG",
   "license": "GPL-3.0",
@@ -49,7 +49,8 @@
       "sign": "scripts/sign-win.js"
     },
     "linux": {
-      "category": "Utility"
+      "category": "Utility",
+      "target": ["AppImage"]
     },
     "protocols": {
       "name": "Padloc",
