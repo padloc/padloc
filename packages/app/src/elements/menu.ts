@@ -229,7 +229,6 @@ export class Menu extends StateMixin(BaseElement) {
                 app.account.billing.subscription.plan.type === PlanType.Free);
 
         const itemsQuota = app.getItemsQuota();
-        const exceededItemsQuota = itemsQuota !== -1 && mainVault.items.size > itemsQuota;
 
         const favCount = app.vaults.reduce((count, vault) => {
             return [...vault.items].reduce(

@@ -73,7 +73,7 @@ export class ImportDialog extends Dialog<string, void> {
 
             <pl-select id="vaultSelect" .options=${app.vaults} .label=${$l("Target Vault")}></pl-select>
 
-            <button @click=${() => this._import()} class="tap primary">
+            <button @click=${() => this._import()} class="tap primary" ?disabled=${!this._items.length}>
                 ${$l("Import {0} Items", this._items.length.toString())}
             </button>
         `;
@@ -147,11 +147,27 @@ export class ImportDialog extends Dialog<string, void> {
     }
 
     private async _import() {
-        this.done();
-        if (this._items.length) {
-            app.addItems(this._items, this._vaultSelect.selected!);
-            // this.dispatch("data-imported", { items: items });
-            alert($l("Successfully imported {0} items.", this._items.length.toString()), { type: "success" });
+        const vault = this._vaultSelect.selected!;
+
+        if (vault.items.size + this._items.length > app.getItemsQuota(vault)) {
+            this.done();
+            if (app.billingConfig) {
+                this.dispatch("get-premium", {
+                    message: $l(
+                        "The number of imported items exceeds your remaining quota. " +
+                            "Upgrade to Premium to get unlimited items for your private vault!"
+                    ),
+                    icon: "list"
+                });
+            } else {
+                alert($l("The number of imported items exceeds your remaining quota."), { type: "warning" });
+            }
+            return;
         }
+
+        app.addItems(this._items, vault);
+        // this.dispatch("data-imported", { items: items });
+        this.done();
+        alert($l("Successfully imported {0} items.", this._items.length.toString()), { type: "success" });
     }
 }
