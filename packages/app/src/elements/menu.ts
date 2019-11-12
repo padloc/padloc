@@ -157,10 +157,14 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             li .detail {
-                margin-left: 4px;
+                margin-left: 2px;
                 flex: none;
                 opacity: 0.7;
                 font-weight: semi-bold;
+                padding: 2px 6px;
+                margin-right: -4px;
+                opacity: 1;
+                border-radius: var(--border-radius);
             }
 
             li .warning-icon {
@@ -169,8 +173,9 @@ export class Menu extends StateMixin(BaseElement) {
             }
 
             .detail.warning {
-                color: var(--color-negative);
+                color: white;
                 opacity: 1;
+                background: var(--color-negative);
             }
 
             .separator {
@@ -223,7 +228,7 @@ export class Menu extends StateMixin(BaseElement) {
                 !app.account.billing.subscription ||
                 app.account.billing.subscription.plan.type === PlanType.Free);
 
-        const itemsQuota = (app.account && app.account.quota.items) || -1;
+        const itemsQuota = app.getItemsQuota();
         const exceededItemsQuota = itemsQuota !== -1 && mainVault.items.size > itemsQuota;
 
         const favCount = app.vaults.reduce((count, vault) => {
@@ -306,9 +311,17 @@ export class Menu extends StateMixin(BaseElement) {
                         >
                             <pl-icon icon="vault"></pl-icon>
                             <div>${$l("My Vault")}</div>
-                            <div class="detail ${exceededItemsQuota ? "warning" : ""}">
-                                ${itemsQuota !== -1 ? `${mainVault.items.size} / ${itemsQuota}` : mainVault.items.size}
-                            </div>
+                            ${itemsQuota !== -1
+                                ? html`
+                                      <div class="detail tap warning" @click=${this._getPremium}>
+                                          ${mainVault.items.size} / ${itemsQuota}
+                                      </div>
+                                  `
+                                : html`
+                                      <div class="detail">
+                                          ${mainVault.items.size}
+                                      </div>
+                                  `}
                         </li>
 
                         ${app.orgs.map(org => {

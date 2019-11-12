@@ -795,6 +795,10 @@ export class App {
         });
     }
 
+    isMainVault(vault: Vault) {
+        return this.account && this.account.mainVault === vault.id;
+    }
+
     /** Create a new [[Vault]] */
     async createVault(
         name: string,
@@ -1423,6 +1427,10 @@ export class App {
     async updateBilling(params: UpdateBillingParams) {
         await this.api.updateBilling(params);
         params.org ? await this.fetchOrg(params.org) : await this.fetchAccount();
+    }
+
+    getItemsQuota(vault: Vault = this.mainVault!) {
+        return this.isMainVault(vault) && !this.orgs.some(org => !org.frozen) ? this.account!.quota.items : -1;
     }
 
     /**

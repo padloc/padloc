@@ -76,21 +76,21 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
 
     private async _enter() {
         const vault = this._vaultSelect.selected!;
-        const quota = app.account!.quota;
 
-        if (vault.id === app.mainVault!.id && quota.items !== -1 && vault.items.size >= quota.items) {
+        if (vault.items.size >= app.getItemsQuota(vault)) {
             this.done();
             if (app.billingConfig) {
                 this.dispatch("get-premium", {
                     message: $l(
                         "You have reached the maximum number of items for this account. " +
-                            "Upgrade to Premium to get unlimited items for you private vault!"
+                            "Upgrade to Premium to get unlimited items for your private vault!"
                     ),
                     icon: "list"
                 });
             } else {
                 alert($l("You have reached the maximum number of items for this account!"), { type: "warning" });
             }
+            return;
         }
 
         const template = this._templateSelect.selected;
