@@ -245,14 +245,14 @@ const matchUrl = /url/i;
 const matchNote = /\n/;
 
 /** Guesses the most appropriate field type based on field name and value */
-export function guessFieldType(field: any): FieldType {
-    return field.masked || field.name.match(matchPassword)
+export function guessFieldType({ name = "", value = "", masked }: any): FieldType {
+    return masked || name.match(matchPassword)
         ? "password"
-        : field.name.match(matchUsername)
+        : name.match(matchUsername)
         ? "username"
-        : field.name.match(matchUrl)
+        : name.match(matchUrl)
         ? "url"
-        : field.value.match(matchNote)
+        : value.match(matchNote)
         ? "note"
         : "text";
 }
@@ -467,9 +467,10 @@ export class VaultItemCollection extends Collection<VaultItem> {
                     ...item,
                     lastUsed: new Date(item.lastUsed),
                     attachments: item.attachments || [],
-                    fields: item.fields.map((field: any) => ({
-                        ...field,
-                        type: field.type || guessFieldType(field)
+                    fields: item.fields.map(({ name = "", value = "", type }: any) => ({
+                        name: name,
+                        value: value,
+                        type: type || guessFieldType({ name, value })
                     }))
                 };
             })

@@ -128,14 +128,14 @@ export async function asPadlockLegacy(data: string, password: string): Promise<V
     const records = unmarshal(bytesToString(await container.getData())) as any[];
     const items = records
         .filter(({ removed }) => !removed)
-        .map(async record => {
+        .map(async ({ name = "Unnamed", fields = [], tags, category, updated, lastUsed }) => {
             return {
                 id: await uuid(),
-                name: record.name,
-                fields: record.fields,
-                tags: record.tags || [record.category],
-                updated: record.updated ? new Date(record.updated) : new Date(),
-                lastUsed: new Date(record.lastUsed || 0),
+                name,
+                fields,
+                tags: tags || [category],
+                updated: updated ? new Date(updated) : new Date(),
+                lastUsed: new Date(lastUsed || 0),
                 updatedBy: "",
                 attachments: [],
                 favorited: []
