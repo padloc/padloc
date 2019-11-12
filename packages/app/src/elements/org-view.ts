@@ -123,7 +123,7 @@ export class OrgView extends StateMixin(View) {
                         }
                         break;
                     case 1:
-                        const invite = await app.createInvites(org, [member.email], "confirm_membership")[0];
+                        const [invite] = await app.createInvites(org, [member.email], "confirm_membership");
                         router.go(`invite/${invite.org!.id}/${invite.id}`);
                         break;
                 }

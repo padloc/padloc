@@ -410,7 +410,10 @@ export class Org extends SharedContainer implements Storable {
 
         for (const group of this.getGroupsForVault(vault)) {
             for (const m of group.members) {
-                results.add(this.getMember(m)!);
+                const member = this.getMember(m);
+                if (member && member.role !== OrgRole.Suspended) {
+                    results.add(member);
+                }
             }
         }
 
@@ -531,8 +534,8 @@ export class Org extends SharedContainer implements Storable {
         delete this.encryptedData;
         await this.updateAccessors(this.members.filter(m => m.role === OrgRole.Owner));
 
-        // Resign groups and members
-        await Promise.all(this.members.map(each => this.sign(each)));
+        // Re-sign all members
+        await Promise.all(this.members.filter(m => m.role !== OrgRole.Suspended).map(m => this.addOrUpdateMember(m)));
     }
 
     /**
@@ -680,7 +683,7 @@ export class Org extends SharedContainer implements Storable {
         this.minMemberUpdated = new Date();
 
         // Re-sign all members
-        await Promise.all(this.members.map(m => this.addOrUpdateMember(m)));
+        await Promise.all(this.members.filter(m => m.role !== OrgRole.Suspended).map(m => this.addOrUpdateMember(m)));
     }
 
     toString() {
