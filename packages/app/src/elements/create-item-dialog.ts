@@ -76,8 +76,8 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
 
     private async _enter() {
         const vault = this._vaultSelect.selected!;
-
-        if (vault.items.size >= app.getItemsQuota(vault)) {
+        const quota = app.getItemsQuota(vault);
+        if (quota !== -1 && vault.items.size >= quota) {
             this.done();
             if (app.billingConfig) {
                 this.dispatch("get-premium", {

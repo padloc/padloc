@@ -148,8 +148,9 @@ export class ImportDialog extends Dialog<string, void> {
 
     private async _import() {
         const vault = this._vaultSelect.selected!;
+        const quota = app.getItemsQuota(vault);
 
-        if (vault.items.size + this._items.length > app.getItemsQuota(vault)) {
+        if (quota !== -1 && vault.items.size + this._items.length > quota) {
             this.done();
             if (app.billingConfig) {
                 this.dispatch("get-premium", {
