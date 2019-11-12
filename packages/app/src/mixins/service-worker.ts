@@ -18,7 +18,9 @@ export function ServiceWorker<B extends Constructor<Object>>(baseClass: B) {
         private async _updateReady() {
             const confirmed = await confirm(
                 $l("A new update is ready to install! Do you want to install it now?"),
-                $l("Install & Reload")
+                $l("Install & Reload"),
+                $l("Later"),
+                { preventAutoClose: true }
             );
 
             if (confirmed) {
