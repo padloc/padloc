@@ -430,6 +430,8 @@ class Controller implements API {
         org.id = await uuid();
         org.revision = await uuid();
         org.owner = account.id;
+        org.created = new Date();
+        org.updated = new Date();
 
         // set default org quota
         if (this.config.orgQuota) {
@@ -622,6 +624,7 @@ class Controller implements API {
 
         // Update revision
         org.revision = await uuid();
+        org.updated = new Date();
 
         await this.storage.save(org);
 

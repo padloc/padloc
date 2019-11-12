@@ -218,6 +218,12 @@ export class Org extends SharedContainer implements Storable {
     /** Organization name */
     name: string = "";
 
+    /** Creation date */
+    created: Date = new Date();
+
+    /** Last updated */
+    updated: Date = new Date();
+
     /** Public key used for verifying member signatures */
     publicKey!: RSAPublicKey;
 
@@ -307,6 +313,8 @@ export class Org extends SharedContainer implements Storable {
         type,
         name,
         owner,
+        created,
+        updated,
         revision,
         minMemberUpdated,
         publicKey,
@@ -331,6 +339,8 @@ export class Org extends SharedContainer implements Storable {
             owner,
             revision,
             frozen,
+            created: (created && new Date(created)) || new Date(),
+            updated: (updated && new Date(updated)) || new Date(),
             minMemberUpdated: new Date(minMemberUpdated),
             publicKey: publicKey && base64ToBytes(publicKey),
             members: members.map((m: any) => new OrgMember().fromRaw(m)),
