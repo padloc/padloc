@@ -1,6 +1,7 @@
 {
   "name": "@padloc/manage",
   "version": "3.0.10",
+  "private": true,
   "description": "Padloc Server Mangement",
   "main": "index.js",
   "scripts": {},

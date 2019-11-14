@@ -3,6 +3,7 @@
   "version": "3.0.10",
   "description": "Electron Wrapper for Padloc app",
   "main": "main.js",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/padloc/padloc.git"

@@ -1,17 +1,24 @@
 {
   "name": "@padloc/locale",
   "version": "3.0.6",
-  "description": "",
+  "description": "Package containing translations and wordlists for Padloc as well as various other localization tools",
   "main": "index.js",
+  "files": [
+    "src",
+    "res"
+  ],
   "scripts": {
     "extract": "ts-node src/extract.ts ../*/src/{**,.}/*.ts"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+  "license": "GPLv3",
   "devDependencies": {
-    "@types/yaml": "^1.0.2",
     "ts-node": "^8.3.0",
-    "typescript": "^3.5.3",
-    "yaml": "^1.6.0"
+    "typescript": "^3.5.3"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/padloc/padloc.git",
+    "directory": "packages/locale"
   }
 }

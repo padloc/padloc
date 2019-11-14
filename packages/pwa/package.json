@@ -3,6 +3,17 @@
   "version": "3.0.10",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
+  "private": true,
+  "files": [
+	"src",
+	"assets",
+	"tsconfig.json"
+  ],
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/padloc/padloc.git",
+    "directory": "packages/pwa"
+  },
   "dependencies": {
     "@padloc/app": "^3.0.10",
     "@padloc/core": "^3.0.10"

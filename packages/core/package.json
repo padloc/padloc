@@ -5,7 +5,6 @@
   "main": "index.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPLv3",
-  "private": false,
   "files": [
     "src",
     "vendor",
@@ -25,5 +24,10 @@
   "scripts": {
     "test": "cd test && mocha -r ts-node/register *.ts",
     "docs": "typedoc --out docs"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/padloc/padloc.git",
+    "directory": "packages/core"
   }
 }

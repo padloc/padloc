@@ -3,6 +3,18 @@
   "version": "3.0.10",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
+  "private": true,
+  "files": [
+	"src",
+	"assets",
+	"types",
+	"tsconfig.json"
+  ],
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/padloc/padloc.git",
+    "directory": "packages/app"
+  },
   "dependencies": {
     "@padloc/core": "^3.0.10",
     "@padloc/locale": "^3.0.6",
@@ -18,19 +30,20 @@
     "ua-parser-js": "^0.7.20",
     "workbox-sw": "^4.3.1",
     "workbox-window": "^4.3.1",
-    "zxcvbn": "^4.4.2"
-  },
-  "devDependencies": {
-    "@types/chai": "^4.1.7",
-    "@types/mocha": "^5.2.5",
+    "zxcvbn": "^4.4.2",
     "@types/papaparse": "^5.0.0",
     "@types/ua-parser-js": "^0.7.33",
     "@types/workbox-sw": "^4.2.0",
     "@types/workbox-window": "^4.3.1",
     "@types/zxcvbn": "^4.4.0",
-    "chai": "^4.2.0",
-    "mocha": "^5.2.0",
     "reflect-metadata": "^0.1.12"
+
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.5",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
   },
   "description": "Padloc Web-Based UI package"
 }

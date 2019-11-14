@@ -2,6 +2,7 @@
   "name": "app.padloc",
   "version": "3.0.10",
   "displayName": "Padloc",
+  "private": true,
   "cordova": {
     "platforms": [
       "electron",
