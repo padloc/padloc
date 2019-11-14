@@ -313,7 +313,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             } else {
                 setTimeout(() => {
                     this.$(".wrapper").classList.add("active");
-                    router.go(router.params.next || "", {});
+                    router.go(router.params.next || "", {}, true);
                 }, 600);
             }
         }
@@ -377,7 +377,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                     params.invite = org + "," + id;
                 }
 
-                router.go(params.verify ? "signup" : "login", params);
+                router.go(params.verify ? "signup" : "login", params, true);
             }
             return;
         }
@@ -386,7 +386,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             if (path === "unlock") {
                 this._startView.unlock();
             } else {
-                router.go("unlock", path ? { next: path, nobio: "1" } : undefined);
+                router.go("unlock", path ? { next: path, nobio: "1" } : undefined, true);
             }
             return;
         }
@@ -398,7 +398,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             const [, id] = match;
             const org = id && app.getOrg(id);
             if (id && !org) {
-                router.go("orgs");
+                router.go("orgs", undefined, true);
                 return;
             }
 
@@ -459,10 +459,10 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 this._inviteDialog.show(invite);
             } else {
                 await alert($l("Could not find invite! Did you use the correct link?"), { type: "warning" });
-                router.go("items");
+                router.go("items", undefined, true);
             }
         } else {
-            router.go("items");
+            router.go("items", undefined, true);
         }
     }
 
@@ -531,7 +531,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
 
     @listen("backbutton", document)
     _androidBack() {
-        if (router.canGoBack) {
+        if (!this.locked && router.canGoBack) {
             router.back();
         } else {
             navigator.Backbutton && navigator.Backbutton.goBack();

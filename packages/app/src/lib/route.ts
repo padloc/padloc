@@ -50,7 +50,7 @@ export class Router extends EventEmitter {
         return this.history.length > 1;
     }
 
-    go(path: string, params?: { [prop: string]: string }) {
+    go(path: string, params?: { [prop: string]: string }, replace = false) {
         const queryString = new URLSearchParams(params || this.params).toString();
 
         if (path !== this.path || queryString !== window.location.search) {
@@ -59,7 +59,11 @@ export class Router extends EventEmitter {
                 url += "?" + queryString;
             }
 
-            history.pushState({ historyIndex: this.history.length }, "", url);
+            if (replace) {
+                history.replaceState({ historyIndex: this.history.length - 1 }, "", url);
+            } else {
+                history.pushState({ historyIndex: this.history.length }, "", url);
+            }
             this._pathChanged();
         }
     }
