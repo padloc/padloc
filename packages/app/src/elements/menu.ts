@@ -432,9 +432,9 @@ export class Menu extends StateMixin(BaseElement) {
                 <pl-icon icon="refresh" class="tap" @click=${() => app.synchronize()}></pl-icon>
                 <div class="flex"></div>
                 <pl-spinner .active=${app.state.syncing} class="syncing"></pl-spinner>
-                <button class="errors-button tap" @click=${this._reportErrors} ?hidden=${!app.state.errors.length}>
+                <button class="errors-button tap" @click=${this._reportErrors} ?hidden=${!app.state._errors.length}>
                     <pl-icon icon="error" class="warning-icon"></pl-icon>
-                    <div>${app.state.errors.length}</div>
+                    <div>${app.state._errors.length}</div>
                 </button>
             </div>
         `;

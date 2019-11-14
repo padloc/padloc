@@ -17,7 +17,7 @@ IMPORTANT: Please verify that the message below does not contain any sensitive d
 
 The following errors occurred:
 
-${app.state.errors.join("\n\n")}
+${app.state._errors.join("\n\n")}
 
 Device Info:
 
@@ -28,7 +28,7 @@ ${JSON.stringify(app.state.device.toRaw(), null, 4)}
     }
 
     private _dismissErrors() {
-        app.setState({ errors: [] });
+        app.setState({ _errors: [] });
         this.done();
     }
 
@@ -50,14 +50,14 @@ ${JSON.stringify(app.state.device.toRaw(), null, 4)}
             </header>
 
             <div class="content">
-                <div class="error note item">${$l("{0} Errors Detected", app.state.errors.length.toString())}</div>
+                <div class="error note item">${$l("{0} Errors Detected", app.state._errors.length.toString())}</div>
                 <div class="message">
                     ${$l(
                         "Padloc has registered {0} errors during your use of the app. " +
                             "These errors may not have any impact on functionality and can often be ignored, " +
                             "but reporting them may help us diagnose problems, identify possible failure " +
                             "modes and generally improve the stability of the app.",
-                        app.state.errors.length.toString()
+                        app.state._errors.length.toString()
                     )}
                 </div>
                 <div class="actions">

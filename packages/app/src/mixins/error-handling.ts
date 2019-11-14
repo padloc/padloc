@@ -37,7 +37,7 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                     router.go("login");
                     return true;
                 default:
-                    app.state.errors.push(error);
+                    app.state._errors.push(error);
                     app.publish();
             }
 

@@ -100,7 +100,7 @@ export class AppState extends Storable {
 
     rememberedMasterKey: SimpleContainer | null = null;
 
-    errors: Err[] = [];
+    _errors: Err[] = [];
 
     /** All [[Tag]]s found within the users [[Vault]]s */
     get tags() {
