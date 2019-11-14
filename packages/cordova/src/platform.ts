@@ -8,6 +8,7 @@ const cordovaReady = new Promise(resolve => document.addEventListener("devicerea
 declare var Fingerprint: any;
 declare var cordova: any;
 declare var device: any;
+declare var plugins: any;
 
 export class CordovaPlatform extends WebPlatform implements Platform {
     async scanQR() {
@@ -123,5 +124,10 @@ export class CordovaPlatform extends WebPlatform implements Platform {
         return new Promise((resolve, reject) => {
             cordova.plugins.clipboard.paste(resolve, reject);
         });
+    }
+
+    async saveFile(fileName: string, type: string, data: Uint8Array) {
+        const url = `data:${type};df:${encodeURIComponent(fileName)};base64,${bytesToBase64(data, false)}`;
+        plugins.socialsharing.share(null, fileName, [url], null);
     }
 }

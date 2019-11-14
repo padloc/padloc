@@ -90,6 +90,8 @@ export interface Platform {
     keyStoreDelete(name: string): Promise<void>;
 
     composeEmail(addr: string, subject: string, message: string): Promise<void>;
+
+    saveFile(name: string, type: string, contents: Uint8Array): Promise<void>;
 }
 
 /**
@@ -149,6 +151,8 @@ export class StubPlatform implements Platform {
     async composeEmail(_addr: string, _subject: string, _message: string) {
         throw new Err(ErrorCode.NOT_SUPPORTED);
     }
+
+    async saveFile(_name: string, _type: string, _contents: Uint8Array) {}
 }
 
 let platform: Platform = new StubPlatform();
@@ -213,4 +217,8 @@ export function keyStoreDelete(name: string) {
 
 export function composeEmail(addr: string, subject: string, message: string) {
     return platform.composeEmail(addr, subject, message);
+}
+
+export function saveFile(name: string, type: string, contents: Uint8Array): Promise<void> {
+    return platform.saveFile(name, type, contents);
 }

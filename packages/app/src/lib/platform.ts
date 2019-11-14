@@ -1,4 +1,5 @@
 import { Platform, StubPlatform, DeviceInfo } from "@padloc/core/src/platform";
+import { bytesToBase64 } from "@padloc/core/src/encoding";
 import { WebCryptoProvider } from "./crypto";
 
 const browserInfo = (async () => {
@@ -132,5 +133,15 @@ export class WebPlatform extends StubPlatform implements Platform {
 
     async composeEmail(addr: string, subj: string, msg: string) {
         window.open(`mailto:${addr}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`, "_system");
+    }
+
+    async saveFile(name: string, type: string, contents: Uint8Array) {
+        const a = document.createElement("a");
+        a.href = `data:${type};base64,${bytesToBase64(contents)}`;
+        a.download = name;
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 }

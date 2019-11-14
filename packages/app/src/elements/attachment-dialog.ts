@@ -2,6 +2,7 @@ import { TemplateResult } from "lit-element";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { VaultItemID } from "@padloc/core/src/item";
 import { Attachment, AttachmentInfo } from "@padloc/core/src/attachment";
+import { saveFile } from "@padloc/core/src/platform";
 import { app } from "../globals";
 import { mixins } from "../styles";
 import { mediaType, fileIcon, fileSize } from "../lib/util";
@@ -278,15 +279,7 @@ export class AttachmentDialog extends Dialog<{ info?: AttachmentInfo; file?: Fil
         this.open = true;
 
         if (confirmed) {
-            const url = await this._attachment.toObjectURL();
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = this._attachment.name;
-            a.rel = "noopener";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            saveFile(this._attachment.name, this._attachment.type, await this._attachment.getData());
         }
     }
 

@@ -1,5 +1,7 @@
 import { Vault } from "@padloc/core/src/vault";
 import { translate as $l } from "@padloc/locale/src/translate";
+import { saveFile } from "@padloc/core/src/platform";
+import { stringToBytes } from "@padloc/core/src/encoding";
 import { CSV, PBES2, ImportFormat } from "../lib/import";
 import { supportedFormats, asCSV, asPBES2Container } from "../lib/export";
 import { app } from "../globals";
@@ -92,11 +94,13 @@ export class ExportDialog extends Dialog<void, void> {
         const date = new Date().toISOString().substr(0, 10);
         let data = "";
         let fileName = "";
+        let type = "text/plain";
 
         switch (this._formatSelect.selected.format) {
             case CSV.format:
                 data = await asCSV(items);
                 fileName = `${vault.name.replace(/ /g, "_")}_${date}.csv`;
+                type = "text/csv";
                 break;
 
             case PBES2.format:
@@ -142,17 +146,7 @@ export class ExportDialog extends Dialog<void, void> {
             default:
                 return;
         }
-        this._download(data, fileName);
+        saveFile(fileName, type, stringToBytes(data));
         this.done();
-    }
-
-    private async _download(data: string, fileName: string) {
-        const a = document.createElement("a");
-        a.href = `data:application/octet-stream,${encodeURIComponent(data)}`;
-        a.download = fileName;
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
     }
 }
