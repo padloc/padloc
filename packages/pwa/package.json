@@ -1,11 +1,11 @@
 {
   "name": "@padloc/pwa",
-  "version": "3.0.9",
+  "version": "3.0.10",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
   "dependencies": {
-    "@padloc/app": "^3.0.9",
-    "@padloc/core": "^3.0.9"
+    "@padloc/app": "^3.0.10",
+    "@padloc/core": "^3.0.10"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",
