@@ -5,6 +5,7 @@ import { Session } from "@padloc/core/src/session";
 import { Org, OrgRole } from "@padloc/core/src/org";
 import { Serializable } from "@padloc/core/src/encoding";
 import { PlanType, Subscription, SubscriptionStatus, UpdateBillingParams } from "@padloc/core/src/billing";
+import { ListEventsOptions } from "@padloc/core/src/log";
 import * as colors from "ansi-colors";
 import { formatDistanceToNow, format } from "date-fns";
 import repl from "repl";
@@ -105,10 +106,10 @@ function displayOrgItem(org: Org) {
     ].join(" ");
 }
 
-type ListAccountsOptions = StorageListOptions<Account> & { name?: string | RegExp; email?: string | RegExp };
+type ListAccountsOptions = StorageListOptions<Account> & { name?: string; email?: string };
 type ListOrgsOptions = StorageListOptions<Org> & {
-    name?: string | RegExp;
-    member?: { id?: string; name?: string | RegExp; email?: string | RegExp };
+    name?: string;
+    member?: { id?: string; name?: string; email?: string };
 };
 
 export class ReplSession {
@@ -148,6 +149,10 @@ export class ReplSession {
                 delete: this.wrap(this.deleteOrg),
                 syncBilling: this.wrap(this.syncOrgBilling)
             },
+            logs: {
+                list: this.wrap(this.listEvents),
+                get: this.wrap(this.getEvent)
+            },
             socket: this.socket
         });
         r.on("exit", () => this.socket.end());
@@ -170,8 +175,8 @@ export class ReplSession {
     }
 
     async listAccounts({ name = "", email = "", ...listOpts }: ListAccountsOptions = {}) {
-        const nameRgx = new RegExp(name);
-        const emailRgx = new RegExp(email);
+        const nameRgx = new RegExp(name, "i");
+        const emailRgx = new RegExp(email, "i");
         const filter = listOpts.filter || (() => true);
 
         listOpts.filter = (acc: Account) => nameRgx.test(acc.name) && emailRgx.test(acc.email) && filter(acc);
@@ -218,7 +223,8 @@ export class ReplSession {
 
     async syncAccountBilling(id: string) {
         const acc = await this.storage.get(Account, id);
-        return this.syncBilling(acc);
+        await this.syncBilling(acc);
+        this.print(displayAccountItem(await this.storage.get(Account, id)));
     }
 
     async showOrg(id: string) {
@@ -265,7 +271,8 @@ export class ReplSession {
 
     async syncOrgBilling(id: string) {
         const acc = await this.storage.get(Org, id);
-        return this.syncBilling(acc);
+        await this.syncBilling(acc);
+        this.print(displayOrgItem(await this.storage.get(Org, id)));
     }
 
     async syncBilling(acc: Account | Org) {
@@ -273,24 +280,22 @@ export class ReplSession {
             new UpdateBillingParams(acc instanceof Account ? { account: acc.id } : { org: acc.id })
         );
         this.print(colors.bold(`${colors.green("✓")} billing synced successfully`));
-        await this.storage.get(acc, acc.id);
-        this.print(acc instanceof Account ? displayAccountItem(acc) : displayOrgItem(acc));
     }
 
     async listOrgs({ name = "", member = {}, ...listOpts }: ListOrgsOptions = {}) {
-        name = name && new RegExp(name);
-        member.name = member.name && new RegExp(member.name);
-        member.email = member.email && new RegExp(member.email);
+        const nameReg = name && new RegExp(name, "i");
+        const mNameReg = member.name && new RegExp(member.name, "i");
+        const emailReg = member.email && new RegExp(member.email, "i");
 
         const filter = listOpts.filter || (() => true);
 
         listOpts.filter = (org: Org) =>
-            (!name || (name as RegExp).test(org.name)) &&
+            (!nameReg || nameReg.test(org.name)) &&
             org.members.some(
                 m =>
                     (!member.id || m.id === member.id) &&
-                    (!member.name || (member.name as RegExp).test(m.name)) &&
-                    (!member.email || (member.email as RegExp).test(m.email))
+                    (!mNameReg || mNameReg.test(m.name)) &&
+                    (!emailReg || (emailReg as RegExp).test(m.email))
             ) &&
             filter(org);
 
@@ -316,54 +321,31 @@ export class ReplSession {
 
         this.print([header, ...items].join("\n"));
     }
-    //
-    // orgSelected(org: Org) {
-    //     this.print("org selected: ", org.id);
-    // }
-    //
-    // async showLogs({ n = 30 }: { n?: number } = {}) {
-    //     const events = await this.server.logger.getLogs();
-    //     try {
-    //         const { index } = await prompt({
-    //             type: "autocomplete",
-    //             name: "index",
-    //             // @ts-ignore
-    //             limit: n,
-    //             message:
-    //                 `${colors.bold(events.length.toString())} Events found:\n` +
-    //                 [col("Time", 19), col("Type", 15), col("Account", 20)]
-    //                     .map(c => colors.bold.underline(c))
-    //                     .join(" ") +
-    //                 "\n",
-    //             choices: [
-    //                 ...events.map((e, index) => ({
-    //                     name: [
-    //                         col(format(e.time, "yyyy-MM-dd hh:mm:ss"), 19),
-    //                         colors.bold(col(e.type, 15)),
-    //                         col((e.data.account && e.data.account.email) || "N/A", 20),
-    //                         e.id
-    //                     ].join(" "),
-    //                     value: index
-    //                 })),
-    //                 {
-    //                     role: "separator"
-    //                 }
-    //             ]
-    //         });
-    //
-    //         await wait(1000);
-    //
-    //         return events[index];
-    //     } catch (e) {
-    //         await wait(1000);
-    //
-    //         return null;
-    //     }
-    // }
-    //
-    // async showEvent({ id }: { id: string }) {
-    //     this.print(await this.server.logger.getEvent(id));
-    // }
+
+    async listEvents(opts: ListEventsOptions) {
+        const events = await this.server.logger.listEvents(opts);
+
+        this.print(
+            [
+                `${colors.bold(events.length.toString())} Events found:`,
+                [col("Time", 19), col("Type", 15), col("Account", 20), col("ID", 50)]
+                    .map(c => colors.bold.underline(c))
+                    .join(" "),
+                ...events.map(e =>
+                    [
+                        col(format(e.time, "yyyy-MM-dd hh:mm:ss"), 19),
+                        colors.bold(col(e.type, 15)),
+                        col((e.data.account && e.data.account.email) || "N/A", 20),
+                        colors.dim(e.id)
+                    ].join(" ")
+                )
+            ].join("\n")
+        );
+    }
+
+    async getEvent(id: string) {
+        this.print(await this.server.logger.getEvent(id));
+    }
 }
 
 export class ReplServer {
@@ -386,12 +368,16 @@ export class ReplClient {
         socket.on("connect", () => {
             console.log("connection successful");
             process.stdin.resume();
-            process.stdin.setRawMode!(true);
+            if (process.stdin.setRawMode) {
+                process.stdin.setRawMode(true);
+            }
         });
 
         socket.on("close", function done() {
             console.log("connection closed");
-            process.stdin.setRawMode!(false);
+            if (process.stdin.setRawMode) {
+                process.stdin.setRawMode(false);
+            }
             process.stdin.pause();
             socket.removeListener("close", done);
         });

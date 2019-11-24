@@ -15,6 +15,8 @@ services:
             - PL_BILLING_ENABLED
             - PL_BILLING_STRIPE_SECRET
             - PL_MFA
+            - PL_REPL_PORT
+            - PL_REPL_HISTORY
         ports:
             - $PL_SERVER_PORT:3000
         volumes:

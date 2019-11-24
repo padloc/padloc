@@ -32,12 +32,14 @@ export class Event extends Storable {
     }
 }
 
-export interface GetLogsOptions {
+export interface ListEventsOptions {
     from?: Date;
     to?: Date;
     offset?: number;
     limit?: number;
-    type?: string | RegExp;
+    type?: string;
+    account?: string;
+    org?: string;
     reverse?: boolean;
 }
 
@@ -51,16 +53,32 @@ export class Logger {
         return event;
     }
 
-    async getLogs({ from, to, offset = 0, limit = 100, type, reverse = true }: GetLogsOptions = {}): Promise<Event[]> {
+    async listEvents({
+        from,
+        to,
+        offset = 0,
+        limit = 100,
+        type,
+        account,
+        org,
+        reverse = true
+    }: ListEventsOptions = {}): Promise<Event[]> {
+        const typeReg = type && new RegExp(type, "i");
+        const accReg = account && new RegExp(account, "i");
+        const orgReg = org && new RegExp(org, "i");
+
+        const filter = (e: Event) =>
+            (!typeReg || typeReg.test(e.type)) &&
+            (!accReg ||
+                (e.data.account && accReg.test(e.data.account.id + e.data.account.name + e.data.account.email))) &&
+            (!orgReg || (e.data.org && orgReg.test(e.data.org.id + e.data.org.name)));
         return this.storage.list(Event, {
             gt: from ? `event_${from.getTime()}` : undefined,
             lt: to ? `event_${to.getTime()}` : undefined,
             reverse,
             offset,
             limit,
-            filter: type
-                ? (evt: Event) => (type instanceof RegExp ? type.test(evt.type) : evt.type === type)
-                : undefined
+            filter
         });
     }
 

@@ -71,20 +71,6 @@ export class DeviceInfo extends Serializable {
         });
     }
 
-    validate() {
-        return (
-            typeof this.platform === "string" &&
-            typeof this.osVersion === "string" &&
-            typeof this.id === "string" &&
-            typeof this.appVersion === "string" &&
-            typeof this.userAgent === "string" &&
-            typeof this.locale === "string" &&
-            typeof this.manufacturer === "string" &&
-            typeof this.model === "string" &&
-            typeof this.browser === "string"
-        );
-    }
-
     constructor(props?: Partial<DeviceInfo>) {
         super();
         props && Object.assign(this, props);

@@ -48,10 +48,11 @@ export class LevelDBStorage implements Storage {
             typeof lt !== "undefined" && (opts.lt = lt);
             typeof gt !== "undefined" && (opts.gt = gt);
 
-            this._db
-                .createReadStream(opts)
+            const stream = this._db.createReadStream(opts);
+
+            stream
                 .on("data", ({ key, value }: { key: string; value: string }) => {
-                    if (key.indexOf(kind + "_") !== 0) {
+                    if (results.length >= limit || key.indexOf(kind + "_") !== 0) {
                         return;
                     }
                     try {
@@ -70,6 +71,7 @@ export class LevelDBStorage implements Storage {
                     }
                     if (results.length >= limit) {
                         resolve(results);
+                        stream.destroy();
                     }
                 })
                 .on("error", (err: Error) => reject(err))
