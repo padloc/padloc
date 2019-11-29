@@ -141,6 +141,9 @@ export class FieldElement extends BaseElement {
                 height: auto;
                 box-sizing: border-box;
                 background: none;
+            }
+
+            .value-input {
                 border: dashed 1px var(--color-shade-2);
             }
 
@@ -190,7 +193,7 @@ export class FieldElement extends BaseElement {
                 return html`
                     <pl-textarea
                         class="value-input"
-                        .placeholder=${$l("Enter Field Value")}
+                        .placeholder=${$l("Enter Notes Here")}
                         @input=${() => (this.value = this._valueInput.value)}
                         autosize
                         .value=${this.value}
@@ -245,7 +248,7 @@ export class FieldElement extends BaseElement {
                 return html`
                     <pl-input
                         class="value-input"
-                        .placeholder=${$l("Enter Field Value")}
+                        .placeholder=${$l("Enter Value Here")}
                         .type=${inputType}
                         .pattern=${this._fieldDef.pattern}
                         @input=${() => (this.value = this._valueInput.value)}
