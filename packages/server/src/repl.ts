@@ -328,14 +328,14 @@ export class ReplSession {
         this.print(
             [
                 `${colors.bold(events.length.toString())} Events found:`,
-                [col("Time", 19), col("Type", 15), col("Account", 20), col("ID", 50)]
+                [col("Time", 19), col("Type", 20), col("Account", 20), col("ID", 50)]
                     .map(c => colors.bold.underline(c))
                     .join(" "),
                 ...events.map(e =>
                     [
                         col(format(e.time, "yyyy-MM-dd hh:mm:ss"), 19),
-                        colors.bold(col(e.type, 15)),
-                        col((e.data.account && e.data.account.email) || "N/A", 20),
+                        colors.bold(col(e.type, 20)),
+                        col((e.data.account && e.data.account.email || e.data.email) || "N/A", 20),
                         colors.dim(e.id)
                     ].join(" ")
                 )

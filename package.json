@@ -27,7 +27,7 @@
     "server:start": "lerna run start --scope @padloc/server",
     "start": "npm run pwa:build && lerna run --scope '@padloc/{server,pwa}' --parallel start",
     "dev": "lerna run --parallel dev",
-    "repl": "lerna run repl --scope @padloc/server",
+    "repl": "cd packages/server && npm run repl && cd ../..",
     "test": "lerna run test"
   }
 }

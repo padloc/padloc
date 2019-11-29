@@ -22,3 +22,5 @@ packages/pwa/dist
 packages/server/logs
 packages/server/data
 packages/server/attachments
+logs
+pwa

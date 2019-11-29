@@ -57,7 +57,7 @@ export class Logger {
         from,
         to,
         offset = 0,
-        limit = 100,
+        limit = 50,
         type,
         account,
         org,
