@@ -21,14 +21,12 @@
     "@padloc/core": "^3.0.10",
     "@padloc/locale": "^3.0.6",
     "date-fns": "^2.5.0",
-    "enquirer": "^2.3.2",
     "fs-extra": "^7.0.1",
     "level": "^5.0.1",
     "nodemailer": "^4.6.7",
     "stripe": "^7.1.0",
     "ts-node": "^7.0.1",
-    "ansi-colors": "^4.1.1",
-    "vantage": "^1.7.0"
+    "ansi-colors": "^4.1.1"
   },
   "scripts": {
     "start": "ts-node src/init.ts",
