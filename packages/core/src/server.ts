@@ -209,6 +209,7 @@ export class Controller implements API {
         // Create a new session object
         const session = new Session();
         session.id = await uuid();
+        session.created = new Date();
         session.account = account;
         session.device = this.context.device;
         session.key = srp.K!;
