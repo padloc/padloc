@@ -306,7 +306,6 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         if (changes.has("locked")) {
             if (this.locked) {
                 this.$(".wrapper").classList.remove("active");
-                this._inviteDialog.open = false;
                 clearDialogs();
                 clearClipboard();
                 this._routeChanged();
