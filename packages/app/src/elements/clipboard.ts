@@ -1,14 +1,14 @@
+import { styleMap } from "lit-html/directives/style-map";
 import { VaultItem, Field } from "@padloc/core/src/item";
 import { setClipboard } from "@padloc/core/src/platform";
-import { translate as $l } from "@padloc/locale/src/translate";
 import { totp } from "@padloc/core/src/otp";
 import { base32ToBytes } from "@padloc/core/src/encoding";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, css, property } from "./base";
+import "./icon";
 
 @element("pl-clipboard")
 export class Clipboard extends BaseElement {
-
     @property() item: VaultItem | null = null;
     @property() field: Field | null = null;
     @property() private _tMinusClear: number = 0;
@@ -25,23 +25,34 @@ export class Clipboard extends BaseElement {
         css`
             :host {
                 display: flex;
-                text-align: center;
+                justify-content: center;
                 transition: transform 0.5s cubic-bezier(1, -0.3, 0, 1.3);
                 position: fixed;
-                left: 15px;
-                right: 15px;
+                left: 70px;
+                right: 70px;
                 bottom: 15px;
                 z-index: 100;
-                max-width: 400px;
-                margin: 0 auto;
+                pointer-events: none;
+            }
+
+            .inner {
+                display: flex;
+                align-items: center;
                 border-radius: var(--border-radius);
                 color: var(--color-background);
-                text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
-                ${ mixins.gradientHighlight(true) }
+                text-shadow: rgba(0, 0, 0, 0.2) 0 1px 0;
+                max-width: 100%;
+                box-shadow: rgba(0, 0, 0, 0.3) 0 1px 2px;
+                ${mixins.gradientHighlight(true)}
+                pointer-events: auto;
+            }
+
+            pl-icon {
+                flex: none;
             }
 
             :host(:not(.showing)) {
-                transform: translateY(130%);
+                transform: translateY(140%);
             }
 
             .content {
@@ -51,20 +62,48 @@ export class Clipboard extends BaseElement {
 
             .name {
                 font-weight: bold;
+                flex-grow: 1;
+                font-size: var(--font-size-tiny);
+                line-height: 15px;
+                margin: 4px 4px 4px 0;
+                text-align: center;
             }
 
-            button {
-                height: auto;
+            .clear-button {
+                padding: 0;
+                width: 36px;
+                height: 36px;
+                margin: 4px;
                 line-height: normal;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
-                border-radius: 0 var(--border-radius) var(--border-radius) 0;
+                border-radius: 100%;
+                font-size: 10px;
+                flex: none;
+                background: transparent;
+                position: relative;
+                font-weight: bold;
             }
 
             .countdown {
-                font-size: var(--font-size-small);
+                ${mixins.fullbleed()}
+                width: 32px;
+                height: 32px;
+                margin: auto;
+                border-radius: 100%;
+            }
+
+            .countdown circle {
+                transform-origin: center center;
+                transform: rotate(-90deg);
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 0.8;
+                stroke-dasharray: 25;
+                stroke-linecap: round;
+                transition: stroke-dashoffset 1s linear;
             }
         `
     ];
@@ -72,16 +111,42 @@ export class Clipboard extends BaseElement {
     render() {
         const { item, field, _tMinusClear } = this;
         return html`
-        <div class="content">
-            <div class="title">${ $l("Copied To Clipboard:") }</div>
-            <div class="name">${ item!.name } / ${ field!.name }</div>
-        </div>
+            <div class="inner">
+            <pl-icon icon="clipboard"></pl-icon>
 
-        <button class="tiles-2 tap" @click=${ () => this.clear() }>
-            <div><strong>${ $l("Clear") }</strong></div>
-            <div class="countdown">${ _tMinusClear }s</div>
-        </button>
-`;
+            <div class="name">${item!.name} / ${field!.name}</div>
+
+            <button class="clear-button tap" @click=${() => this.clear()}>
+                <svg class="countdown" viewBox="0 0 10 10">
+                    <defs>
+                        <filter id="shadow">
+                            <feOffset dx="-0.3" in="SourceAlpha" result="shadowOffsetOuter1"/>
+                            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0" in="shadowOffsetOuter1"/>
+                        </filter>
+                    </defs>
+
+                    <circle
+                        filter="url(#shadow)"
+                        cx="5"
+                        cy="5"
+                        r="4"
+                        style=${styleMap({ strokeDashoffset: ((1 - (_tMinusClear / 60)) * -25).toString() })}
+                    />
+
+                    <circle
+                        cx="5"
+                        cy="5"
+                        r="4"
+                        style=${styleMap({ strokeDashoffset: ((1 - (_tMinusClear / 60)) * -25).toString() })}
+                    />
+                </svg>
+
+                <div>
+                    ${_tMinusClear}s
+                </div>
+            </button>
+            </div>
+        `;
     }
 
     async set(item: VaultItem, field: Field, duration = 60) {
