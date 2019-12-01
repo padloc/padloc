@@ -811,10 +811,27 @@ export class App {
         vault.org = { id: org.id, name: org.name };
         vault = await this.api.createVault(vault);
 
-        await this.fetchOrg(org.id);
         await this.updateOrg(org.id, async (org: Org) => {
-            groups.forEach(({ name, readonly }) => org.getGroup(name)!.vaults.push({ id: vault.id, readonly }));
-            members.forEach(({ id, readonly }) => org.getMember({ id })!.vaults.push({ id: vault.id, readonly }));
+            groups.forEach(({ name, readonly }) => {
+                const group = org.getGroup(name);
+                if (!group) {
+                    setTimeout(() => {
+                        throw `Group not found: ${name}`;
+                    });
+                    return;
+                }
+                group.vaults.push({ id: vault.id, readonly });
+            });
+            members.forEach(({ id, readonly }) => {
+                const member = org.getMember({ id });
+                if (!member) {
+                    setTimeout(() => {
+                        throw `Member not found: ${id}`;
+                    });
+                    return;
+                }
+                member.vaults.push({ id: vault.id, readonly });
+            });
         });
 
         await this.synchronize();
