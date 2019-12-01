@@ -36,6 +36,21 @@ export function ErrorHandling<B extends Constructor<Object>>(baseClass: B) {
                     await alert($l("Your session has expired. Please log in again!"), { preventAutoClose: true });
                     router.go("login");
                     return true;
+
+                // These are expected to occur during a user lifecycle and can be ingored.
+                case ErrorCode.ACCOUNT_EXISTS:
+                case ErrorCode.EMAIL_VERIFICATION_REQUIRED:
+                case ErrorCode.EMAIL_VERIFICATION_FAILED:
+                case ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED:
+                case ErrorCode.ORG_FROZEN:
+                case ErrorCode.ORG_QUOTA_EXCEEDED:
+                case ErrorCode.MEMBER_QUOTA_EXCEEDED:
+                case ErrorCode.GROUP_QUOTA_EXCEEDED:
+                case ErrorCode.VAULT_QUOTA_EXCEEDED:
+                case ErrorCode.STORAGE_QUOTA_EXCEEDED:
+                case ErrorCode.BILLING_ERROR:
+                    return true;
+
                 default:
                     app.state._errors.push(error);
                     app.publish();
