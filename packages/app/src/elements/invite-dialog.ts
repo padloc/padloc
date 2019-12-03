@@ -315,6 +315,7 @@ export class InviteDialog extends Dialog<Invite, void> {
         try {
             await app.deleteInvite(this.invite!);
             this.invite = (await app.createInvites(org!, [this.invite!.email], this.invite!.purpose))[0];
+            router.go(`invite/${this.invite.org.id}/${this.invite.id}`, undefined, true);
             this._resendButton.success();
         } catch (e) {
             this._error = e.message || $l("Something went wrong. Please try again later!");
