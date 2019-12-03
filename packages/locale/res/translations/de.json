@@ -9,11 +9,11 @@
   ],
   [
     "Could not find invite! Did you use the correct link?",
-    ""
+    "Einladung nicht gefunden! Bitte stelle sicher, dass du die richtige URL verwendet hast!"
   ],
   [
     "Get Premium",
-    ""
+    "Premium Kaufen"
   ],
   [
     "Cancel",
@@ -21,15 +21,15 @@
   ],
   [
     "It looks like the app cannot connect to the Padloc servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
-    ""
+    "Die App kann sich gerade nicht mit den Padloc Servern verbinden, vermutlich aufgrund einer fehlenden Internetverbindung. Du kannst weiterhint auf deine Tresore zugreifen und Einträge ändern oder erstellen aber deine Ändernugen werden erst synchronisiert sobald du wieder online bist."
   ],
   [
     "You're Offline",
-    "Sie Sind Offline"
+    "Du Bist Offline"
   ],
   [
     "Do you want to enable biometric unlock for this device?",
-    "Wollen Sie biometrisches Entsperren für dieses Gerät aktivieren?"
+    "Willst du biometrisches Entsperren für dieses Gerät aktivieren?"
   ],
   [
     "Setup",
@@ -42,6 +42,14 @@
   [
     "Biometric authentication failed! Canceling Setup.",
     "Biometrische Authentifizierung fehlgeschlagen! Vorgang wird abgebrochen."
+  ],
+  [
+    "Setup Failed",
+    "Einrichtung Fehlgeschlagen"
+  ],
+  [
+    "Biometric unlock failed! Canceling Setup. (Reason: {0})",
+    "Biometrisches Entsperren fehlgeschlagen. Vorgang wird abgebrochen. (Grund: {0})"
   ],
   [
     "Please enter your master password!",
@@ -77,7 +85,7 @@
   ],
   [
     "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
-    ""
+    "Wist du diese Datei wirklich lokal speichern? WARNUNG: Die Datei liegt dann unverschlüsselt auf deiner Festplatte und kann potentiell von anderen geöffnet werden!"
   ],
   [
     "Save",
@@ -93,695 +101,751 @@
   ],
   [
     "Attachment Name",
-    ""
+    "Name des Anhangs"
   ],
   [
     "Please enter an attachment name!",
-    ""
+    "Bitten gib einen Name für diesen Anhang ein!"
   ],
   [
     "Unknown File Type",
-    ""
+    "Unbekannter Dateityp"
   ],
   [
     "downloading... {0}/{1}",
-    ""
+    "wird heruntergeladen... {0}/{1}"
   ],
   [
     "Unnamed",
-    ""
+    "Unbenannt"
   ],
   [
     "uploading... {0}/{1}",
-    ""
+    "wird hochgeladen {0}/{1}"
   ],
   [
     "Failed to upload!",
-    ""
+    "Upload Fehlgeschlagen!"
   ],
   [
     "Failed to download! Click to try again.",
-    ""
+    "Download Fehlgeschlagen! Bitte versuch es noch einmal."
   ],
   [
     "Update Billing Info",
-    ""
+    "Rechungsdaten Updaten"
   ],
   [
     "Select A Country",
-    ""
+    "Wähle Ein Land"
   ],
   [
     "Payment Details",
-    ""
+    "Zahlungsdetails"
   ],
   [
     "Billing Address",
-    ""
+    "Rechnungsadresse"
   ],
   [
     "Billing Email",
-    ""
+    "Rechnungsemail"
   ],
   [
     "Name",
-    ""
+    "Name"
   ],
   [
     "Address",
-    ""
+    "Adresse"
   ],
   [
     "Postal Code",
-    ""
+    "Postleitzahl"
   ],
   [
     "City",
-    ""
+    "Stadt"
   ],
   [
     "Tax Info",
-    ""
+    "Steuer"
   ],
   [
     "This is a business",
-    ""
+    "Dies ist ein Unternehmen"
   ],
   [
     "Tax ID",
-    ""
+    "Steuernummer"
   ],
   [
     "Coupon Code",
-    ""
+    "Gutscheincode"
   ],
   [
     "Add Later",
-    ""
+    "Später Hinzufügen"
   ],
   [
     "Something went wrong. Please try again later!",
-    ""
+    "Es ist ein Fehler aufgetreten. Bitte versuche es später noch einmal!"
   ],
   [
     "Add Payment Method",
-    ""
+    "Zahlungsmittel Hinzufügen"
   ],
   [
     "per user / month",
-    ""
+    "pro Nutzer / Monat"
   ],
   [
     "USD, billed annually",
-    ""
+    "USD, jährlich abgerechnet"
   ],
   [
     "Try For Free",
-    ""
-  ],
-  [
-    "Copied To Clipboard:",
-    ""
-  ],
-  [
-    "Clear",
-    ""
+    "Kostenlost Testen"
   ],
   [
     "Please enter at least one email address!",
-    ""
+    "Bitten gib deine Emailadresse ein!"
   ],
   [
     "You have entered too many email addresses! Please delete some before submitting!",
-    ""
+    "Du hast zu viele Emailadressen eingegeben! Bitte lösche einige before vor dem Abschicken!"
   ],
   [
     "Some of the emails you entered appear to be invalid!",
-    ""
+    "Einige der angebenen Emailadressen scheinen ungültig zu sein!"
   ],
   [
     "Something went wrong! Please try again later!",
-    ""
+    "Es ist ein Fehler aufgetreten. Bitte versuch es später noch einmal!"
   ],
   [
     "Invite New Members",
-    ""
+    "Neue Nutzer Einladen"
   ],
   [
     "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
-    ""
+    "Bitte gebe bis zu {0} Emailadressen ein für die Personen die du einladen möchtest, getrennt durch Leerzeichen oder Kommas."
   ],
   [
     "Enter Email Address",
-    ""
+    "Emailadresse Eingeben"
   ],
   [
     "Submit",
-    ""
+    "Abschicken"
   ],
   [
     "New Vault Item",
-    ""
+    "Neuen Tresoreintrag"
   ],
   [
     "Item Name",
-    ""
+    "Name"
   ],
   [
     "Template",
-    ""
+    "Vorlage"
   ],
   [
     "Vault",
-    ""
+    "Tresor"
   ],
   [
     "Create & Edit",
-    ""
+    "Erstellen & Bearbeiten"
   ],
   [
-    "You have reached the maximum number of items for this account. Upgrade to Premium to get unlimited items for you private vault!",
-    ""
+    "You have reached the maximum number of items for this account. Upgrade to Premium to get unlimited items for your private vault!",
+    "Du hast die maximale Anzahl and Einträgen für diesen Account erreicht. Bitte upgrade auf Premium um unbegrenzte Einträge für deinen persönlichen Tresor freizuschalten!"
   ],
   [
     "You have reached the maximum number of items for this account!",
-    ""
+    "Du hast die maximale Anzahl and Einträgen für diesen Account erreicht!"
   ],
   [
     "Please enter an organization name!",
-    ""
+    "Bitten geben einen Organisationsnamen ein!"
   ],
   [
     "Free For {0} Days",
-    ""
+    "{0} Tage Kostenlos"
   ],
   [
     "then",
-    ""
+    "dann"
   ],
   [
     "per month",
-    ""
+    "pro Monat"
   ],
   [
     "{0} min",
-    ""
+    "{0} min"
   ],
   [
     "{0} max",
-    ""
+    "{0} max"
   ],
   [
     "Seats",
-    ""
+    "Nutzer"
   ],
   [
     "Add Billing Info",
-    ""
+    "Zahlungsdaten Hinzufügen"
   ],
   [
     "Create Organization",
-    ""
+    "Organisation Erstellen"
   ],
   [
     "Organization Name",
-    ""
+    "Organisationsname"
   ],
   [
     "Create",
-    ""
+    "Erstellen"
   ],
   [
     "Export Data",
-    ""
+    "Daten Exportieren"
   ],
   [
     "Target Vault",
-    ""
+    "Zieltresor"
   ],
   [
     "Format",
-    ""
+    "Format"
   ],
   [
     "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
-    ""
+    "WARNUNG: Beim Export im CSV-Format weerden deine Daten unverschlüsselt gespeichert und können potentiell von jedem gelesen werden. Wir empfehlen deshalb Ihre Daten nur als verschlüsselte Datei zu exportieren!"
   ],
   [
     "Export {0} Items",
-    ""
+    "{0} Einträge Exportieren"
   ],
   [
     "Please choose a password to protect this backup with!",
-    ""
+    "Bitten wähle ein Passwort zum Sichern des Backups!"
+  ],
+  [
+    "Choose Password",
+    "Password Wählen"
+  ],
+  [
+    "Please choose a password!",
+    "Bitte wähle ein Passswort!"
+  ],
+  [
+    "Please repeat the password!",
+    "Bitte wiederholen Sie das Passwort!"
+  ],
+  [
+    "Password not repeated correctly!",
+    "Passwort nicht richtig wiederholt!"
   ],
   [
     "Choose A Field Type",
-    ""
+    "Wählen Sie einen Feldart"
   ],
   [
     "What kind of field you would like to add?",
-    ""
+    "Welche Art von Feld möchten Sie hinzufügen?"
+  ],
+  [
+    "Enter Notes Here",
+    "Hier kannst du deine Notizen eingeben."
+  ],
+  [
+    "Enter Secret",
+    "Code Eingeben"
+  ],
+  [
+    "Enter Password",
+    "Password Eigeben"
+  ],
+  [
+    "Enter Value Here",
+    "Wert Eingeben"
   ],
   [
     "Enter Field Name",
-    ""
+    "Feldname"
   ],
   [
-    "Enter Field Value",
-    ""
+    "Dash",
+    "Bindestrich"
+  ],
+  [
+    "Underscore",
+    "Unterstrich"
+  ],
+  [
+    "Slash",
+    "Querstrich"
+  ],
+  [
+    "Space",
+    "Leerzeichen"
   ],
   [
     "Generate Password",
-    ""
+    "Passwort Generieren"
   ],
   [
     "passphrase",
-    ""
+    "Zufällige Wörter"
   ],
   [
     "random string",
-    ""
+    "Zufällige Zeichen"
+  ],
+  [
+    "Word Separator",
+    "Worttrenner"
+  ],
+  [
+    "Language",
+    "Sprache"
   ],
   [
     "words",
-    ""
+    "Wörter"
   ],
   [
     "length",
-    ""
+    "Länge"
   ],
   [
     "Use",
-    ""
+    "Anwenden"
   ],
   [
     "Discard",
-    ""
+    "Vewerfen"
   ],
   [
     "Are you sure you want to delete this group?",
-    ""
+    "Bist du sicher dass du diese Gruppe löschen möchtest?"
   ],
   [
-    "Delete Vault",
+    "Delete Group",
     ""
   ],
   [
     "Type 'DELETE' to confirm",
-    ""
+    "Geben sie das Wort 'DELETE' ein."
   ],
   [
     "Enter Group Name",
-    ""
+    "Gruppennamen Eingeben"
   ],
   [
     "Search...",
-    ""
+    "Suche..."
   ],
   [
     "Import Data",
-    ""
+    "Daten Importieren"
   ],
   [
     "IMPORTANT: Before importing, please make sure that your CSV data is structured according to Padlocks specific requirements!",
-    ""
+    "WICHTIG: Before du die CSV-Datei importierst, stelle bitte sicher dass sie den Anforderungen enspricht!"
   ],
   [
     "Learn More",
-    ""
+    "Mehr Erfahren"
   ],
   [
     "Import {0} Items",
-    ""
+    "{0} Einträge Importieren"
   ],
   [
     "This file is protected by a password.",
-    ""
-  ],
-  [
-    "Enter Password",
-    ""
+    "Diese Datei ist Passwortgeschützt."
   ],
   [
     "Wrong Password",
-    ""
+    "Falsches Passwort"
+  ],
+  [
+    "The number of imported items exceeds your remaining quota. Upgrade to Premium to get unlimited items for your private vault!",
+    "Du hast die maximale Anzahl an Einträgen überschritten. Bitte upgrade auf Premium um unbegrentzte Einträge zu erhalten!"
+  ],
+  [
+    "The number of imported items exceeds your remaining quota.",
+    "Die Anzahl der importierten Einträge überschreitet die maximale Anzahl an Einträgen."
   ],
   [
     "Successfully imported {0} items.",
-    ""
+    "{0} Einträge wurden erfolgreich importiert."
   ],
   [
     "This invite has expired",
-    ""
+    "Diese Einladung ist abgelaufen."
   ],
   [
     "Accepted",
-    ""
+    "Angenommen"
   ],
   [
     "expires {0}",
-    ""
+    "läuft ab {0}"
   ],
   [
     "Confirm Membership",
-    ""
+    "Mitgliedschaft Bestätigen"
   ],
   [
     "Organization Invite",
-    ""
+    "Einladung"
   ],
   [
     "Please wait for an admin to complete the process. You will be notified as soon as you receive access.",
-    ""
+    "Bitte warte darauf dass ein Administrator deine Mitgliedschaft bestätigt. Die wirst benachrichtigt sobald du Zugriff erhälst."
   ],
   [
     "Enter Confirmation Code",
-    ""
+    "Bestätigungscode Eingeben"
   ],
   [
     "If you haven't received the confirmation code yet, please ask the organization owner to provide it to you!",
-    ""
+    "Falls du den Bestätigungscode noch nicht erhalten hast, erfrage ihn von der Besitzer der Organisation!"
   ],
   [
     "They will also need the following confirmation code, which you should communicate to them separately:",
-    ""
+    "Der folgende Bestätigungscode ist für die Annahme der Einladung erforderlich und sollte der Person separat mitgeteilt werden:"
   ],
   [
     "Resend",
-    ""
+    "Erneut Versenden"
   ],
   [
     "Please enter a confirmation code!",
-    ""
+    "Bitten gib den Bestätigungscode ein!"
   ],
   [
     "You have successfully accepted the invite. You'll be notified once you've been granted access.",
-    ""
+    "Du hast die Einladung erfolgreich angenommen und wirst benachrichtigt, sobald deine Mitgliedschaft bestätigt ist."
   ],
   [
     "Wrong confirmation code. Please try again!",
-    ""
+    "Falscher Bestätigungscode. Bitte versuche es noch einmal!"
   ],
   [
     "expired",
-    ""
+    "abgelaufen"
   ],
   [
     "accepted",
-    ""
+    "angenommen"
   ],
   [
     "{0}",
-    ""
+    "{0}"
   ],
   [
     "Confirm",
-    ""
+    "Bestätigen"
   ],
   [
     "Confirmation Code:",
-    ""
+    "Bestätigungscode:"
   ],
   [
     "Upgrade to Premium now and get 1GB of encrypted file storage!",
-    ""
+    "Jetzt auf Premium upgraden und 1GB verschlüsselten Dateienspeicher freischalten!"
   ],
   [
     "Enter Item Name",
-    ""
+    "Name des Eintrags"
   ],
   [
     "Field",
-    ""
+    "Feld"
   ],
   [
     "Attachment",
-    ""
+    "Anhang"
   ],
   [
     "Move",
-    ""
+    "Verschieben"
   ],
   [
     "by {0}",
-    ""
+    "von {0}"
   ],
   [
     "Are you sure you want to delete this item?",
-    ""
+    "Bist du sicher dass du diesen Eintrag löschen möchtest?"
   ],
   [
     "Items with attachments cannot be moved!",
-    ""
+    "Einträge mit Anhängen können nicht verschoben werden!"
   ],
   [
     "The selected file is too large! Only files of up to 5 MB are supported.",
-    ""
+    "Diese Datai ist zu groß! Das maximum ist 5 MB."
   ],
   [
     "File uploaded successfully!",
-    ""
+    "Datei erfolgreich hochgeladen!"
   ],
   [
     "Favorites",
-    ""
-  ],
-  [
-    "Attachments",
-    ""
-  ],
-  [
-    "All Items",
-    ""
-  ],
-  [
-    "Vaults",
-    ""
-  ],
-  [
-    "Tags",
-    ""
-  ],
-  [
-    "You don't have any tags yet.",
-    ""
-  ],
-  [
-    "Your search did not match any items.",
-    ""
-  ],
-  [
-    "This vault does not have any items yet.",
-    ""
-  ],
-  [
-    "You don't have any attachments yet.",
-    ""
-  ],
-  [
-    "You don't have any favorites yet.",
-    ""
-  ],
-  [
-    "You don't have any items yet.",
-    ""
-  ],
-  [
-    "Type To Filter",
-    ""
-  ],
-  [
-    "{0} items selected",
-    ""
-  ],
-  [
-    "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
-    ""
-  ],
-  [
-    "Yes",
-    ""
-  ],
-  [
-    "No",
-    ""
-  ],
-  [
-    "Are you sure you want to delete these items? This action can not be undone!",
-    ""
-  ],
-  [
-    "Delete {0} Items",
-    ""
-  ],
-  [
-    "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
-    ""
-  ],
-  [
-    "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
-    ""
+    "Favoriten"
   ],
   [
     "Recently Used",
-    ""
+    "Kürzlich Benutzt"
+  ],
+  [
+    "Attachments",
+    "Anhänge"
+  ],
+  [
+    "All Items",
+    "Alle Einträge"
+  ],
+  [
+    "My Vault",
+    "Mein Tresor"
+  ],
+  [
+    "Tags",
+    "Tags"
+  ],
+  [
+    "You don't have any tags yet.",
+    "Du hast noch keine Tags."
+  ],
+  [
+    "Your search did not match any items.",
+    "Deine Suche hat keine Treffer ergeben."
+  ],
+  [
+    "This vault does not have any items yet.",
+    "Dieser Tresor enthält noch keine Einträge."
+  ],
+  [
+    "You don't have any attachments yet.",
+    "Du hast noch keine Anhänge."
+  ],
+  [
+    "You don't have any favorites yet.",
+    "Du hast noch keine Favoriten."
+  ],
+  [
+    "You don't have any recently used items!",
+    "Du hast noch keine kürzlich benutzten Einträge!"
+  ],
+  [
+    "You don't have any items yet.",
+    "Du hast noch keine Einträge."
+  ],
+  [
+    "Type To Search",
+    "Suchen..."
+  ],
+  [
+    "{0} items selected",
+    "{0} Einträge selectiert"
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
+    "Einige der selectierten Einträgee sind aus Tresoren auf die du keinen Schreibzugriff hast und können nicht gelöscht werden. Möchtest du die restlichen Einträge trotzdem löschen?"
+  ],
+  [
+    "Yes",
+    "Ja"
+  ],
+  [
+    "No",
+    "Nein"
+  ],
+  [
+    "Are you sure you want to delete these items? This action can not be undone!",
+    "Bist du sicher dass du die Einträge löschen möchtest? Diese Aktion kann nicht rückgänging gemacht werden!"
+  ],
+  [
+    "Delete {0} Items",
+    "{0} Einträge Löschen"
+  ],
+  [
+    "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
+    "Einige der selectierten Einträge haben Anhänge und können nicht verschoben werden. Möchtest du die restlichen Einträge trotzdem verschieben? "
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
+    "Einige der selectierten Einträgee sind aus Tresoren auf die du keinen Schreibzugriff hast und können nicht verschoben werden. Möchtest du die restlichen Einträge trotzdem verschieben?"
   ],
   [
     "No Name",
-    ""
+    "Kein Name"
   ],
   [
     "copied",
-    ""
+    "kopiert"
   ],
   [
     "No Fields",
-    ""
+    "Keine Felder"
   ],
   [
     "This item has no fields.",
-    ""
+    "Dieser Eintrag hat keine Felder"
   ],
   [
     "Email Address",
-    ""
+    "Emailadresse"
   ],
   [
     "Master Password",
-    ""
+    "Masterpasswort"
   ],
   [
     "Login",
-    ""
+    "Einloggen"
   ],
   [
-    "New to Padlock?",
-    ""
+    "New to Padloc?",
+    "Neu bei Padloc?"
   ],
   [
     "Sign Up Now",
-    ""
+    "Jetzt Anmelden"
   ],
   [
     "Please enter a valid email address!",
-    ""
+    "Bitten gebe eine gültige Emailadresse ein!"
   ],
   [
     "Please enter the confirmation code sent to your email address to proceed!",
-    ""
+    "Bitte gebe den Bestätigungscode ein, der an deine Emailadresse versand wurde!"
   ],
   [
     "One Last Step!",
-    ""
+    "Ein Letzter Schritt!"
   ],
   [
     "Enter Verification Code",
-    ""
+    "Bestätiungscode Eingeben"
   ],
   [
     "Maximum number of tries exceeded! Please resubmit and try again!",
-    ""
+    "Maximale Anzahl an Versuchen überschritten! Bitte versuche es später erneut!"
   ],
   [
     "Wrong username or password. Please try again!",
-    ""
+    "Falscher Benutzername oder Password. Bitte versuche es erneut!"
   ],
   [
     "Can't remember your master password?",
-    ""
+    "Du kannst dich nicht an dein Masterpasswort erinnern?"
   ],
   [
     "Recover Account",
-    ""
+    "Account Wiederherstellen"
   ],
   [
     "Try Again",
-    ""
+    "Erneut Versuchen"
   ],
   [
     "An account with this email address does not exist!",
-    ""
+    "Es existiert kein Account mit dieser Emailadresse!"
   ],
   [
     "Sign Up",
-    ""
+    "Anmelden"
   ],
   [
     "Remove",
-    ""
+    "Entfernen"
   ],
   [
     "Suspend",
-    ""
+    "Sperren"
   ],
   [
     "Remove Admin",
-    ""
+    "Als Admin Entfernen"
   ],
   [
     "Make Admin",
-    ""
+    "Zum Admin Machen"
   ],
   [
     "Are you sure you want to remove this member from this organization?",
-    ""
+    "Bist du sicher dass du diesen Nutzer von der Organisation entfernen möchtest?"
   ],
   [
     "Remove Member",
-    ""
+    "Nutzer Entfernen"
   ],
   [
     "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
-    ""
+    "Bist du sicher dass du diesen Nutzer zum Admin machen möchtest? Admins können Tresore, Gruppen und Zugriffsberechtigungen verwalten."
   ],
   [
     "Are you sure you want to remove this member as admin?",
-    ""
+    "Bist du sicher dass du diesen Nutzer als Admin entfernen möchtest?"
   ],
   [
     "Are you sure you want to suspend this member?",
-    ""
+    "Bist du sicher dass du diesen Nutzer vorübergehend sperren möchtest?"
   ],
   [
     "Suspend Member",
-    ""
+    "Nutzer Vorübergehend Sperren"
   ],
   [
     "Groups",
-    ""
+    "Gruppen"
+  ],
+  [
+    "Vaults",
+    "Tresore"
   ],
   [
     "read",
-    ""
+    "lesen"
   ],
   [
     "write",
-    ""
+    "schreiben"
   ],
   [
     "Owner",
-    ""
+    "Besitzer"
   ],
   [
     "Admin",
-    ""
+    "Admin"
   ],
   [
     "Suspended",
-    ""
+    "Gesperrt"
   ],
   [
     "Items",
-    ""
+    "Einträge"
   ],
   [
     "Orgs & Teams",
-    ""
+    "Orgs & Teams"
   ],
   [
     "New Organization",
-    ""
+    "Neue Organisation"
   ],
   [
     "Settings",
@@ -789,427 +853,491 @@
   ],
   [
     "{0} Items",
-    ""
+    "{0} Einträge"
   ],
   [
     "Move {0} To",
-    ""
+    "{0} Verschieben Nach"
   ],
   [
     "No target vaults available!",
-    ""
+    "Keine anderen Tresore verfügbar!"
   ],
   [
     "Move Item",
-    ""
+    "Eintrag Verschieben"
   ],
   [
     "Move Items",
-    ""
+    "Einträge Verschieben"
   ],
   [
     "Successfully created {0} invites!",
-    ""
+    "Es wurden {0} Einladungen erfolgreich versendet!"
   ],
   [
     "Unsuspend",
-    ""
+    "Entsperren"
   ],
   [
     "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
-    ""
+    "Bist du sicher dass du diese Organisation löschen möchtest? Alle verküpften Tresore und die darin enthaltenen Daten gehen dabei verloren und können nicht wiederhergestellt werden!"
   ],
   [
     "Delete Organization",
-    ""
+    "Organisation Löschen"
   ],
   [
     "Rename Organization",
-    ""
+    "Organisation Umbenennen"
   ],
   [
     "Company Name",
-    ""
+    "Organisationsname"
   ],
   [
     "Please enter a name!",
-    ""
+    "Bitte gib einen Namen ein!"
   ],
   [
     "Do you want to rotate this organizations cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    ""
+    "Willst du die kryptographischen Schlüssel für diese Organisation durchwechseln? Dies erfordert zwar die erneute Bestätigung aller Mitgliedschaften führt aber zu keinen Datenverlust."
   ],
   [
     "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    ""
+    "Die kryptographischen Schlüssel der Organisation wurden erfolgreich durchgewechselt und Anfragen zur Bestätigung der Mitgliedschaft an alle Mitglieder versand."
   ],
   [
     "Members",
-    ""
+    "Mitglieder"
+  ],
+  [
+    "This organization currently does not have an active subscription and has been put in \"frozen\" state as a result. While in this state, you won't be able to make any changes to members, groups or vaults of this organization.",
+    "Diese Organisation hat momentan kein aktives Abonnement und wurde deshalb eingefroren. Du kannst also momentan keine Änderungen an Mitglieschaften, Gruppen oder Tresoren dieser Organisation machen."
+  ],
+  [
+    "Update Subscription",
+    "Abonnement Anpassen"
   ],
   [
     "New Group",
-    ""
+    "Neue Gruppe"
   ],
   [
     "New Vault",
-    ""
+    "Neuer Tresor"
   ],
   [
     "Subscription",
-    ""
+    "Abonnement"
   ],
   [
     "Billing Info",
-    ""
+    "Zahlungsdetails"
   ],
   [
     "Security",
-    ""
+    "Sicherheit"
   ],
   [
     "Rotate Cryptographic Keys",
-    ""
+    "Kryptgraphische Schlüssel Durchwechseln"
   ],
   [
     "General",
-    ""
+    "Allgemein"
   ],
   [
     "Change Organization Name",
-    ""
+    "Organisationsnamen Ändern"
   ],
   [
-    "Create an organization to securely share and manage data between a group of people like your family and friends, teams or even entire companies!",
-    ""
+    "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
+    "Organisationen ermöglichen dass sichere teilen von Passwörtern, Dokumenten und anderen Daten mit deiner Familie, Team order anderen Gruppen!"
   ],
   [
     "Start Trial",
-    ""
+    "Testphase Starten"
   ],
   [
     "Scan QR Code",
-    ""
+    "QR-Code Scannen"
   ],
   [
     "Failed to scan QR code. Error: ",
-    ""
+    "QR-Code wurde nicht erkannt. Fehler: "
   ],
   [
     "Please enter your email address and new master password.",
-    ""
-  ],
-  [
-    "Email Address",
-    ""
+    "Bitte gib deine Emailadresse und ein neues Masterpasswort ein."
   ],
   [
     "New Master Password",
-    ""
+    "Neues Master Passwort"
   ],
   [
     "WARNING: Weak Password!",
-    ""
+    "WARNUNG: Schwaches Passwort!"
   ],
   [
     "Repeat Master Password",
-    ""
+    "Passwort Wiederholen"
   ],
   [
     "IMPORTANT, READ CAREFULLY: Padloc is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
-    ""
+    "WICHTIG, BITTE SORFÄLTIG LESEN: Um die Sicherheit deiner Daten zu gewährleisten wurde Padloc so entworfen dass es für uns unmöglich ist auf die verschlüsselten Daten in deinen Tresoren zuzugreifen. Dies hat folgende Auswirkungen:"
   ],
   [
     "Any data stored in your private vault can not be recovered and will be permantently lost.",
-    ""
+    "Alle Daten in deinem persönlichen Tresor können nicht wiederhergestellt werden und gehen verloren."
   ],
   [
     "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
-    ""
+    "Alle Organisationsmitgliedschaften werden vorübergehend gesperrt und müssen vom Organsiationbesitzer erneut bestätigt werden."
   ],
   [
     "All members of organizations you own will be suspended temporarily until confirmed by you.",
-    ""
+    "Alle Mitglieder von Organisation die du erstellt hast werden vorübergehen gesperrt und müssen von dir erneut bestätigt werden."
   ],
   [
     "Please enter a master password!",
-    ""
+    "Bitte gib ein Masterpasswort ein!"
   ],
   [
     "You didn't repeat your master password correctly. Try again!",
-    ""
+    "Du hast dein Masterpasswort nicht richtig wiederholt. Bitte versuche es erneut!"
   ],
   [
     "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
-    ""
+    "Das Passwort, dass du gewählt hast ist schwach und stellt womöglich einen unzureichenden Schutz für deine Daten dar. Versuche es mit einem längeren Passwort und verwende eine Mischung aus Groß- und Kleinbuchstaben, Sonderzeichen und Zahlen!"
   ],
   [
     "Choose Different Password",
-    ""
+    "Anderes Passwort Wählen"
   ],
   [
     "Use Anyway",
-    ""
+    "Trotzdem Verwenden"
   ],
   [
     "WARNING: Weak Password",
-    ""
+    "WARNUNG: Schwaches Passwort"
   ],
   [
     "To complete the account recovery process, please enter the confirmation code sent to your email address!",
-    ""
+    "Um die Wiederherstellun deines Accounts abzuschließen gib bitte den Bestätigungscode ein der an deine Emailadresse verschickt wurde!"
   ],
   [
     "Account recovery successful!",
-    ""
+    "Account erfolgreich wiederhergestellt!"
+  ],
+  [
+    "Report Errors",
+    "Fehler Melden"
+  ],
+  [
+    "{0} Errors Detected",
+    "{0} Fehler Erkannt"
+  ],
+  [
+    "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
+    "Padloc hat {0} Fehler beim Ausführen der App erkannt. Diese Fehler haben womöglich keinen Einfluss auf die Funktionalität der App und können oft ignoriert werden. Das Melden der Fehler kann uns jedoch dabei helfen, mögliche Probleme zu identifieren und die Stabilität der App zu verbessern."
   ],
   [
     "Profile",
-    ""
+    "Profil"
   ],
   [
     "Log Out",
-    ""
+    "Abmelden"
   ],
   [
     "Change Master Password",
-    ""
+    "Masterpasswort Ändern"
   ],
   [
     "Auto Lock",
-    ""
+    "Automatische Sperrung"
   ],
   [
     "Lock Automatically",
-    ""
+    "Automatisch Sperren"
   ],
   [
     " min",
-    ""
+    " min"
   ],
   [
     "After",
-    ""
+    "Nach"
+  ],
+  [
+    "Enable Biometric Unlock",
+    "Biometrisches Entsperren Aktivieren"
   ],
   [
     "Import / Export",
-    ""
+    "Import / Export"
   ],
   [
     "Import...",
-    ""
+    "Importieren..."
   ],
   [
     "Export...",
-    ""
+    "Exportieren..."
   ],
   [
     "Support",
-    ""
+    "Hilfe"
   ],
   [
     "Website",
-    ""
+    "Webseite"
   ],
   [
     "Contact Support",
-    ""
+    "Support Kontaktieren"
   ],
   [
     "Danger Zone",
-    ""
+    "Gefahrenzone"
   ],
   [
     "Delete Account",
-    ""
+    "Account Löscheen"
   ],
   [
     "Edit Profile",
-    ""
+    "Profil Bearbeiten"
   ],
   [
     "Do you really want to log out?",
-    ""
+    "Bist du sicher dass du dich abmelden möchtest?"
   ],
   [
     "Please enter your current password!",
-    ""
+    "Bitte gib dein aktuelles Passwort ein!"
   ],
   [
     "Enter Current Password",
-    ""
+    "Aktuelles Passwort Eingeben"
   ],
   [
     "Now choose a new master password!",
-    ""
+    "Wähle nun ein neues Masterpasswort!"
   ],
   [
     "Enter New Password",
-    ""
+    "Neues Passwort Eingeben"
   ],
   [
     "Please enter a password!",
-    ""
+    "Bitte gibt ein Passwort ein!"
   ],
   [
     "Please confirm your new password!",
-    ""
+    "Bitte bestätige dein neues Passwort!"
   ],
   [
     "Repeat New Password",
-    ""
+    "Neues Passwort Wiederholen"
   ],
   [
     "Master password changed successfully.",
-    ""
+    "Masterpasswort erfolgreich geändert."
   ],
   [
     "Please enter your master password to proceed.",
-    ""
+    "Bitte gib dein neues Masterpasswort ein um fortzufahreen."
   ],
   [
     "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
-    ""
+    "Bist du sicher, dass du diesen Account löschen möchtest? Alle verknüpften Tresore und die darin enthaltenen Daten gehen dabei verloren und dein aktuelles Abonnement wird unmittelbar gekündigt. Diese Aktion kann nicht rückgängig gemacht werden!"
   ],
   [
-    "Welcome to Padloc! Let's get you started by creating an account for you. Already have one?",
-    ""
+    "Are you sure you want to disable biometric unlock?",
+    "Bist du sicher dass du biometrisches Entsperren deaktivieren möchtest?"
+  ],
+  [
+    "Welcome to Padloc! Let's get you started by creating an account for you.",
+    "Willkommen zu Padloc! Bevor du loslegen kannst müssen wir zunächst einen Account für dich estellen."
   ],
   [
     "Your email address serves as your username and allows us to get in touch with you. Don't worry, we would never send you any spam!",
-    ""
+    "Deine Emailadresse dient als Benutzername und als Mittel der Kontaktaufnahme. Keine Sorge, wir werden niemals Spam and dich versenden!"
   ],
   [
     "Your Name",
-    ""
+    "Dein Name"
   ],
   [
     "What should we call you?",
-    ""
+    "Wie sollen wir dich nennen?"
   ],
   [
     "Continue",
-    ""
+    "Weiter"
+  ],
+  [
+    "Already have an account?",
+    "Du hast bereits einen Account?"
+  ],
+  [
+    "Sign In",
+    "Einloggen"
   ],
   [
     "Confirm Your Email Address",
-    ""
+    "Bestätige Deine Emailadresse"
   ],
   [
     "Check your inbox! We sent you confirmation code to {0}. Please enter the code below to confirm your email address!",
-    ""
+    "Du hast Post! Wir haben einen Bestätigungscode an {0} versand. Bitte gibt den Code hier ein um deine Emailadresse zu bestätigen!"
   ],
   [
     "Confirmation Code",
-    ""
+    "Bestätigungscode"
   ],
   [
     "Say hello to your",
-    ""
+    "Sag Hallo zu deinem"
   ],
   [
-    "It's the last password you'll ever have to remember! Your master password is used to protect your data and should not be known to anyone but you. Without it, nobody will be able to access your data - not even us!",
-    ""
+    "It's the last password you'll ever have to remember! Please memorize it and never reveal it to anyone (not even us)! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
+    "Das letzte Passwort dass du dir je merken musst! Merke es dir gut und verrate es niemandem (auch nicht uns)! Wir empfehlen es auf ein Blatt Papier zu schreiben und an einem sicheren Ort zu verfahren, zumindest so lange bis du es sicher im Gedächnis hast!"
   ],
   [
     "[Tap To Reveal]",
-    ""
+    "[Zum Anzeigen Antippen]"
   ],
   [
     "[Hover To Reveal]",
-    ""
+    "[Zum Anzeigen Maus Hier Bewegen]"
   ],
   [
-    "For privacy and security reasons we don't keep a record of you password which means we won't be able to help you recover your data in case you forget it. We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
-    ""
+    "This random passphrase was generated just for you and is designed to be both secure and easy to remember. Don't like it?",
+    "Diese zufällige Wortfolge wurde für speziell für dich generiert und ist so gewählt dass sie sowohl sicher als auch leicht zu merken ist. Gefällt dir nicht?"
+  ],
+  [
+    "Try Another One",
+    "Neu Generieren"
+  ],
+  [
+    "Choose Your Own",
+    "Eigenes Wählen"
   ],
   [
     "An account with this email address already exists!",
-    ""
+    "Ein Account mit dieser Emailadresse existiert bereits!"
   ],
   [
     "Change Email",
-    ""
+    "Emailadresse Ändern"
   ],
   [
     "We recommend using a randomly generated password that is both strong and easy to remember.",
-    ""
+    "Wir empfehlten ein zufällig generiertes Passwort zu wähleen das sowohl sicher als auch leicht zu merken ist."
   ],
   [
     "Keep This One",
-    ""
+    "Passwort Beibehalten"
   ],
   [
     "Generate Another",
-    ""
+    "Anderes Generieren"
   ],
   [
     "Choose My Own",
-    ""
+    "Eigenes Passwort Wählen"
   ],
   [
     "Want A Different Master Password?",
-    ""
+    "Du willst ein anderes Masterpasswort?"
   ],
   [
     "Choose Own Master Password",
-    ""
+    "Eigenes Masterpasswort Wählen"
   ],
   [
     "Resume Subscription",
-    ""
+    "Abonnement Wiederaufnehmen"
   ],
   [
     "Cancel Subscription",
-    ""
+    "Abonnement Kündigen"
   ],
   [
     "Update Plan",
+    "Packet Ändern"
+  ],
+  [
+    "Are you sure you want to downgrade to the Free Plan?",
+    "Bist du sicher dass du auf das Kostenlos Packet downgraden möchtest?"
+  ],
+  [
+    "Downgrade",
     ""
+  ],
+  [
+    "No Plan Selected",
+    "Kein Packet Gewählt"
   ],
   [
     "Unlimited",
-    ""
+    "Unbegrenzt"
   ],
   [
     "{0} / Year",
-    ""
+    "{0} / Jahr"
   ],
   [
     "Canceled ({0} days left)",
-    ""
+    "Gekündigt ({0} Tage übrig)"
   ],
   [
     "Authentication Required",
-    ""
+    "Authentifizierung Benötigt"
   ],
   [
     "Inactive",
-    ""
+    "Pausiert"
   ],
   [
     "Trialing ({0} days left)",
-    ""
+    "Testphase ({0} Tage übrig)"
+  ],
+  [
+    "Choose Plan",
+    "Packet Wählen"
   ],
   [
     "Complete Payment",
+    "Zahlung Abschließen"
+  ],
+  [
+    "Downgrade To Free Plan",
     ""
   ],
   [
     "Add Tag",
-    ""
+    "Tag Hinzuf."
   ],
   [
     "Choose A Template",
-    ""
+    "Wähle Eine Vorlage"
   ],
   [
     "What kind of item you would like to add?",
-    ""
+    "Welche Art von Eintrag möchtest du erstellen?"
+  ],
+  [
+    "Invalid Code",
+    "Ungültiger Code"
   ],
   [
     "Logged In As",
-    ""
+    "Eingeloggt Als"
   ],
   [
     "Unlock",
@@ -1217,87 +1345,71 @@
   ],
   [
     "Wrong password! Please try again.",
-    ""
+    "Falsches Passwort! Bitte versuche es erneut."
   ],
   [
     "Logout / Switch Account",
-    ""
+    "Abmelden / Account Wechseln"
   ],
   [
     "Forgot Password",
-    ""
+    "Passwort Vergessen"
   ],
   [
     "Are you sure you want to log out of this account?",
-    ""
+    "Bist du sicher dass du dich von diesem Account abmelden möchtest?"
   ],
   [
-    "Update Subscription",
-    ""
+    "Biometric unlock expired. Complete setup to reeneable.",
+    "Biometrisches Entsperren Abgelaufen. Bitte richte es erneut eein."
+  ],
+  [
+    "Biometric unlock failed! Reason: {0}",
+    "Biometrischees Entsperren fehlgeschlagen! Grund: {0}"
+  ],
+  [
+    "Failed To Unlock",
+    "Entsperren Fehlgeschlagen"
   ],
   [
     "Update",
-    ""
+    "Updaten"
   ],
   [
     "Storage limit exceeded!",
-    ""
+    "Speicherlimit überschritten!"
   ],
   [
     "Upload failed! Please try again!",
-    ""
+    "Upload fehlgeschlagen! Bitte versuche es erneut!"
   ],
   [
     "Upload Attachment",
-    ""
+    "Anhang Hochladen"
   ],
   [
     "Unkown File Type",
-    ""
+    "Unbekannter Dateityp"
   ],
   [
     "Retry Upload",
-    ""
+    "Erneut Versuchen"
   ],
   [
     "Upload",
-    ""
+    "Upload"
   ],
   [
     "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
-    ""
+    "Bist du sicher dass du diesen Tresor löschen möchtest? Alle darin gespeicherten Daten gehen dabei verloren! Diese Aktion kann nicht rückgängig gemacht werden!"
+  ],
+  [
+    "Delete Vault",
+    "Tresor Löschen"
   ],
   [
     "Enter Vault Name",
-    ""
-  ],
-  [
-    "Your session has expired. Please log in again!",
-    ""
-  ],
-  [
-    "It seems are servers are over capacity right now. Please try again later!",
-    ""
-  ],
-  [
-    "You don't have sufficient permissions to perform this action!",
-    ""
-  ],
-  [
-    "Something went wrong while connecting to our servers. Please try again later!",
-    ""
-  ],
-  [
-    "Dismiss",
-    ""
-  ],
-  [
-    "A new update is ready to install! Do you want to install it now?",
-    ""
-  ],
-  [
-    "Install & Reload",
-    ""
+    "Tresornamen Eingeben"
   ],
   [
     "Username",
@@ -1316,6 +1428,22 @@
     "Notizen"
   ],
   [
+    "Your session has expired. Please log in again!",
+    "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an!"
+  ],
+  [
+    "A new update is ready to install! Do you want to install it now?",
+    "Eine neue Version ist verfügbar! Willst du diese jetzt installieren?"
+  ],
+  [
+    "Install & Reload",
+    "Installieren"
+  ],
+  [
+    "Later",
+    "Später"
+  ],
+  [
     "Date",
     "Datum"
   ],
@@ -1329,118 +1457,114 @@
   ],
   [
     "Phone Number",
-    ""
+    "Telefonnummer"
   ],
   [
     "PIN",
-    ""
+    "PIN"
   ],
   [
     "Two-Factor Token",
-    ""
+    "Zweifaktor-Code"
   ],
   [
     "Note",
-    ""
+    "Notiz"
   ],
   [
     "Other",
-    ""
+    "Sonstiges"
   ],
   [
     "Credit Card",
-    ""
+    "Kreditkarte"
   ],
   [
     "Card Number",
-    ""
+    "Kartennummer"
   ],
   [
     "Card Owner",
-    ""
+    "Karteninhaber"
   ],
   [
     "Valid Until",
-    ""
+    "Gültig Bis"
   ],
   [
     "CVC",
-    ""
+    "Sicherheitscode"
   ],
   [
     "Bank Account",
-    ""
+    "Bankkonto"
   ],
   [
     "Account Owner",
-    ""
+    "Kontoinhaber"
   ],
   [
     "IBAN",
-    ""
+    "IBAN"
   ],
   [
     "BIC",
-    ""
+    "BIC"
   ],
   [
     "Card PIN",
-    ""
+    "Karten-PIN"
   ],
   [
     "WIFI Password",
-    ""
+    "WLAN-Passwort"
   ],
   [
     "Passport",
-    ""
+    "Reisepass"
   ],
   [
     "Full Name",
-    ""
+    "Vor- und Zuname"
   ],
   [
     "Passport Number",
-    ""
+    "Reisepassnummer"
   ],
   [
     "Country",
-    ""
+    "Land"
   ],
   [
     "Birthdate",
-    ""
+    "Geburtstag"
   ],
   [
     "Birthplace",
-    ""
+    "Geburtsort"
   ],
   [
     "Issued On",
-    ""
+    "Ausstellungsdatum"
   ],
   [
     "Expires",
-    ""
+    "Verfallsdatum"
   ],
   [
     "Document",
-    ""
+    "Dokument"
   ],
   [
     "Custom",
-    ""
+    "Benutzerdefiniert"
   ],
   [
     "{0} on {1}",
-    ""
+    "{0} am {1}"
   ],
   [
     "{0} Device",
-    ""
-  ],
-  [
-    "My Vault",
-    ""
+    "{0} Gerät"
   ]
 ]

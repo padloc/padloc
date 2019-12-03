@@ -255,7 +255,7 @@ export class Signup extends StartForm {
                 <div flex></div>
 
                 <div class="login-wrapper animate">
-                    Already have an account?
+                    ${$l("Already have an account?")}
                     <span class="link" @click=${() => router.go("login")}>${$l("Sign In")}</span>
                 </div>
             </div>

@@ -93,7 +93,7 @@ export class Login extends StartForm {
                 <div class="error note" ?hidden=${!this._errorMessage}>${this._errorMessage}</div>
 
                 <div class="hint animate">
-                    ${$l("New to Padlock?")}
+                    ${$l("New to Padloc?")}
                 </div>
 
                 <button type="button" class="tap signup animate" @click=${() => router.go("signup")}>
