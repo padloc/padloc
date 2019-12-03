@@ -201,6 +201,7 @@ export class UpdateBillingParams extends Serializable {
     org?: OrgID;
     email?: string;
     plan?: string;
+    planType?: PlanType;
     members?: number;
     paymentMethod?: { name: string } & any;
     address?: BillingAddress;
@@ -214,12 +215,13 @@ export class UpdateBillingParams extends Serializable {
         }
     }
 
-    fromRaw({ account, email, org, plan, members, paymentMethod, coupon, address, cancel }: any) {
+    fromRaw({ account, email, org, plan, planType, members, paymentMethod, coupon, address, cancel }: any) {
         return super.fromRaw({
             email,
             account,
             org,
             plan,
+            planType,
             members,
             paymentMethod,
             coupon,

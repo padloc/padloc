@@ -166,7 +166,18 @@ export class StripeBillingProvider implements BillingProvider {
         this._startWebhook();
     }
 
-    async update({ account, org, email, plan, members, paymentMethod, address, coupon, cancel }: UpdateBillingParams) {
+    async update({
+        account,
+        org,
+        email,
+        plan,
+        planType,
+        members,
+        paymentMethod,
+        address,
+        coupon,
+        cancel
+    }: UpdateBillingParams) {
         if (!account && !org) {
             throw new Err(ErrorCode.BAD_REQUEST, "Either 'account' or 'org' parameter required!");
         }
@@ -210,7 +221,13 @@ export class StripeBillingProvider implements BillingProvider {
         if (typeof plan !== "undefined") {
             const planInfo = this._availablePlans.find(p => p.id === plan);
             if (!planInfo) {
-                throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan!");
+                throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan id!");
+            }
+            params.plan = planInfo.id;
+        } else if (typeof planType !== "undefined") {
+            const planInfo = this._availablePlans.find(p => p.type === planType);
+            if (!planInfo) {
+                throw new Err(ErrorCode.BAD_REQUEST, "Invalid plan type!");
             }
             params.plan = planInfo.id;
         }
