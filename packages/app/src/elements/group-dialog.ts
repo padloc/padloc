@@ -120,7 +120,7 @@ export class GroupDialog extends Dialog<InputType, void> {
 
         const deleted = await prompt($l("Are you sure you want to delete this group?"), {
             type: "destructive",
-            title: $l("Delete Vault"),
+            title: $l("Delete Group"),
             placeholder: $l("Type 'DELETE' to confirm"),
             confirmLabel: $l("Delete"),
             validate: async val => {
