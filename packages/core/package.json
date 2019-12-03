@@ -1,6 +1,6 @@
 {
   "name": "@padloc/core",
-  "version": "3.0.10",
+  "version": "3.0.11",
   "description": "padloc core module",
   "main": "index.js",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
@@ -11,7 +11,7 @@
     "tsconfig.json"
   ],
   "dependencies": {
-    "@padloc/locale": "^3.0.6"
+    "@padloc/locale": "^3.0.11"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",
@@ -26,8 +26,8 @@
     "docs": "typedoc --out docs"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/padloc/padloc.git",
+    "type": "git",
+    "url": "https://github.com/padloc/padloc.git",
     "directory": "packages/core"
   }
 }

@@ -1,23 +1,28 @@
 {
   "name": "@padloc/app",
-  "version": "3.0.10",
+  "version": "3.0.11",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
   "private": true,
   "files": [
-	"src",
-	"assets",
-	"types",
-	"tsconfig.json"
+    "src",
+    "assets",
+    "types",
+    "tsconfig.json"
   ],
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/padloc/padloc.git",
+    "type": "git",
+    "url": "https://github.com/padloc/padloc.git",
     "directory": "packages/app"
   },
   "dependencies": {
-    "@padloc/core": "^3.0.10",
-    "@padloc/locale": "^3.0.6",
+    "@padloc/core": "^3.0.11",
+    "@padloc/locale": "^3.0.11",
+    "@types/papaparse": "^5.0.0",
+    "@types/ua-parser-js": "^0.7.33",
+    "@types/workbox-sw": "^4.2.0",
+    "@types/workbox-window": "^4.3.1",
+    "@types/zxcvbn": "^4.4.0",
     "@webcomponents/webcomponentsjs": "^2.0.0",
     "autosize": "^4.0.2",
     "date-fns": "^1.30.1",
@@ -27,17 +32,11 @@
     "lit-html": "^1.0.0",
     "localforage": "^1.7.3",
     "papaparse": "^5.0.0",
+    "reflect-metadata": "^0.1.12",
     "ua-parser-js": "^0.7.20",
     "workbox-sw": "^4.3.1",
     "workbox-window": "^4.3.1",
-    "zxcvbn": "^4.4.2",
-    "@types/papaparse": "^5.0.0",
-    "@types/ua-parser-js": "^0.7.33",
-    "@types/workbox-sw": "^4.2.0",
-    "@types/workbox-window": "^4.3.1",
-    "@types/zxcvbn": "^4.4.0",
-    "reflect-metadata": "^0.1.12"
-
+    "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.7",

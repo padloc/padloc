@@ -1,6 +1,6 @@
 {
   "name": "@padloc/locale",
-  "version": "3.0.6",
+  "version": "3.0.11",
   "description": "Package containing translations and wordlists for Padloc as well as various other localization tools",
   "main": "index.js",
   "files": [
@@ -17,8 +17,8 @@
     "typescript": "^3.5.3"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/padloc/padloc.git",
+    "type": "git",
+    "url": "https://github.com/padloc/padloc.git",
     "directory": "packages/locale"
   }
 }

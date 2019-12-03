@@ -1,22 +1,22 @@
 {
   "name": "@padloc/pwa",
-  "version": "3.0.10",
+  "version": "3.0.11",
   "author": "Martin Kleinschrodt <martin@maklesoft.com>",
   "license": "GPL-3.0",
   "private": true,
   "files": [
-	"src",
-	"assets",
-	"tsconfig.json"
+    "src",
+    "assets",
+    "tsconfig.json"
   ],
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/padloc/padloc.git",
+    "type": "git",
+    "url": "https://github.com/padloc/padloc.git",
     "directory": "packages/pwa"
   },
   "dependencies": {
-    "@padloc/app": "^3.0.10",
-    "@padloc/core": "^3.0.10"
+    "@padloc/app": "^3.0.11",
+    "@padloc/core": "^3.0.11"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",
