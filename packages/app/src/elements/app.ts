@@ -40,6 +40,9 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     @property()
     loggedIn = false;
 
+    @property()
+    private _ready = false;
+
     @query("pl-start")
     private _startView: Start;
     @query("pl-settings")
@@ -80,8 +83,18 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     @property({ reflect: true, attribute: "menu-open" })
     private _menuOpen: boolean = false;
 
-    async firstUpdated() {
+    shouldUpdate() {
+        return this._ready;
+    }
+
+    constructor() {
+        super();
+        this.load();
+    }
+
+    async load() {
         await app.loaded;
+        this._ready = true;
         this._routeChanged();
         const spinner = document.querySelector(".spinner") as HTMLElement;
         spinner.style.display = "none";
