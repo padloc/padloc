@@ -221,12 +221,6 @@ export class Menu extends StateMixin(BaseElement) {
         }
 
         const accId = (app.account && app.account.id) || "";
-        const canUpgrade =
-            app.account &&
-            app.billingConfig &&
-            (!app.account.billing ||
-                !app.account.billing.subscription ||
-                app.account.billing.subscription.plan.type === PlanType.Free);
 
         const itemsQuota = app.getItemsQuota();
 
@@ -254,6 +248,14 @@ export class Menu extends StateMixin(BaseElement) {
             app.account.billing &&
             (!app.account.billing.subscription ||
                 app.account.billing.subscription.status === SubscriptionStatus.Inactive);
+
+        const showUpgradeButton =
+            app.account &&
+            app.billingConfig &&
+            (!app.account.billing ||
+                !app.account.billing.subscription ||
+                app.account.billing.subscription.plan.type === PlanType.Free) &&
+            itemsQuota !== -1;
 
         return html`
             <div class="scroller">
@@ -420,7 +422,7 @@ export class Menu extends StateMixin(BaseElement) {
                             <pl-icon class="warning-icon" icon="error" ?hidden=${!showSettingsWarning}></pl-icon>
                         </li>
 
-                        <li class="get-premium tap" @click=${this._getPremium} ?hidden=${!canUpgrade}>
+                        <li class="get-premium tap" @click=${this._getPremium} ?hidden=${!showUpgradeButton}>
                             <pl-icon icon="favorite"></pl-icon>
 
                             <div>${$l("Get Premium")}</div>
