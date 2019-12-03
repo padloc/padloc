@@ -199,7 +199,7 @@ export class StripeBillingProvider implements BillingProvider {
                 await this._stripe.customers.update(info.customerId, {
                     email,
                     // @ts-ignore
-                    name: address && address.name,
+                    name: (address && address.name) || acc.name,
                     address: address && {
                         line1: address.street,
                         postal_code: address.postalCode,
@@ -352,7 +352,8 @@ export class StripeBillingProvider implements BillingProvider {
         // @ts-ignore
         if (!customer || customer.deleted) {
             customer = await this._stripe.customers.create({
-                // email: acc instanceof Account ? acc.email : undefined,
+                email: acc instanceof Account ? acc.email : undefined,
+                name: acc.name,
                 plan: acc instanceof Account && freePlan ? freePlan.id : undefined,
                 metadata: {
                     account: acc instanceof Account ? acc.id : "",
@@ -363,14 +364,16 @@ export class StripeBillingProvider implements BillingProvider {
 
         acc.billing = parseCustomer(customer);
 
-        // if (acc instanceof Account && !acc.billing!.subscription && freePlan) {
-        //     await this._stripe.subscriptions.create({
-        //         customer: acc.billing!.customerId,
-        //         plan: freePlan.id
-        //     });
-        // }
+        let sub = acc.billing!.subscription;
 
-        const sub = acc.billing.subscription;
+        if (acc instanceof Account && !sub && freePlan) {
+            sub = acc.billing!.subscription = parseSubscription(
+                await this._stripe.subscriptions.create({
+                    customer: customer.id,
+                    plan: freePlan.id
+                })
+            );
+        }
 
         if (sub && sub.status !== SubscriptionStatus.Inactive) {
             if (acc instanceof Account) {
