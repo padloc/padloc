@@ -241,6 +241,8 @@ export class Menu extends StateMixin(BaseElement) {
             return [...vault.items].reduce((c, item) => (item.attachments.length ? c + 1 : c), count);
         }, 0);
 
+        const tags = app.state.tags;
+
         const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
         const recentCount = app.vaults.reduce((count, vault) => {
             return [...vault.items].reduce((c, item) => (item.lastUsed > recentThreshold ? c + 1 : c), count);
@@ -348,9 +350,9 @@ export class Menu extends StateMixin(BaseElement) {
                             `;
                         })}
 
-                        <div class="subsection">
+                        <div class="subsection" ?hidden=${!tags.length}>
                             <div class="subsection-header">${$l("Tags")}</div>
-                            ${app.state.tags.map(
+                            ${tags.map(
                                 ([tag, count]) => html`
                                     <li
                                         class="sub-item tap"
