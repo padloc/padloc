@@ -437,7 +437,7 @@
   ],
   [
     "Delete Group",
-    ""
+    "Gruppe Löschen"
   ],
   [
     "Type 'DELETE' to confirm",
@@ -1161,7 +1161,7 @@
   ],
   [
     "Welcome to Padloc! Let's get you started by creating an account for you.",
-    "Willkommen zu Padloc! Bevor du loslegen kannst müssen wir zunächst einen Account für dich estellen."
+    "Willkommen bei Padloc! Bevor du loslegen kannst müssen wir zunächst einen Account für dich estellen."
   ],
   [
     "Your email address serves as your username and allows us to get in touch with you. Don't worry, we would never send you any spam!",
@@ -1277,7 +1277,7 @@
   ],
   [
     "Downgrade",
-    ""
+    "Downgraden"
   ],
   [
     "No Plan Selected",
@@ -1317,7 +1317,7 @@
   ],
   [
     "Downgrade To Free Plan",
-    ""
+    "Packet Downgraden"
   ],
   [
     "Add Tag",
