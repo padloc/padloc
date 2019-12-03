@@ -577,7 +577,7 @@ export class Controller implements API {
 
         // New invites
         for (const invite of addedInvites) {
-            let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}`;
+            let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}?email=${invite.email}`;
 
             // If account does not exist yet, create a email verification code
             // and send it along with the url so they can skip that step
@@ -591,7 +591,7 @@ export class Controller implements API {
                 const v = new EmailVerification(invite.email);
                 await v.init();
                 await this.storage.save(v);
-                link += `?verify=${v.token}&email=${invite.email}`;
+                link += `&verify=${v.token}`;
             }
 
             // Send invite link to invitees email address
