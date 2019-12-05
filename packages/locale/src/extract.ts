@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
 import { resolve } from "path";
 import { execSync } from "child_process";
 import * as ts from "typescript";
@@ -109,7 +109,7 @@ export function toYAML({ language, date, commit, items }: Translation) {
     doc.contents = YAML.createNode(items.flatMap(item => [item.original, item.translation])) as any;
 
     for (const [i, item] of items.entries()) {
-        const node = (doc.contents as any).items[i*2];
+        const node = (doc.contents as any).items[i * 2];
         node.commentBefore = item.sources
             .map(
                 ({ file, line, character, comment }) => ` ${file}:${line},${character}${comment ? ` (${comment})` : ""}`
@@ -124,8 +124,8 @@ export function toYAML({ language, date, commit, items }: Translation) {
 export function fromYAML(str: string, language: string): Translation {
     const raw = YAML.parse(str) as string[];
     const items: TranslationItem[] = [];
-    for (let i = 0; i < raw.length; i+=2) {
-        items.push({original: raw[i], translation: raw[i+1], sources: []});
+    for (let i = 0; i < raw.length; i += 2) {
+        items.push({ original: raw[i], translation: raw[i + 1], sources: [] });
     }
     return {
         language,
@@ -145,7 +145,11 @@ ${toYAML(translation)}
 }
 
 export function toJSON(translation: Translation) {
-    return JSON.stringify(translation.items.map(({original, translation}) => [original, translation]), null, 2);
+    return JSON.stringify(
+        translation.items.map(({ original, translation }) => [original, translation]),
+        null,
+        2
+    );
 }
 
 export function fromJSON(str: string, language: string) {
@@ -192,7 +196,7 @@ export function merge(curr: Translation, prev: Translation) {
 
 export function updateTranslation(sources: string[], language: string, dest: string) {
     const destPath = resolve(dest, language + ".json");
-    const backupPath = resolve(dest, language + "_backup.json");
+    const backupPath = resolve(dest, language + ".backup.json");
 
     const translation = fromSource(sources, language);
 
@@ -205,6 +209,40 @@ export function updateTranslation(sources: string[], language: string, dest: str
     writeFileSync(destPath, toJSON(translation));
 }
 
-const [, , ...fileNames] = process.argv;
+function main() {
+    const translationsDir = resolve(__dirname, "../res/translations/");
+    const [, , ...args] = process.argv;
 
-updateTranslation(fileNames, "de", resolve(__dirname, "../res/translations/"));
+    const languages: string[] = [];
+    const files: string[] = [];
+
+    while (args.length) {
+        // Languages can be specified explictly using the "-l" flag
+        if (args[0] === "-l") {
+            if (!args[1]) {
+                throw "No language provided after -l flag";
+            }
+            languages.push(args[1]);
+            args.splice(0, 2);
+        } else {
+            files.push(args.shift() as string);
+        }
+    }
+
+    // If not languagese were specified explicitly, update all existing language files
+    if (!languages.length) {
+        for (const file of readdirSync(translationsDir)) {
+            const match = file.match(/^([^\.]+)\.json$/);
+            if (match) {
+                languages.push(match[1]);
+            }
+        }
+    }
+
+    for (const lang of languages) {
+        console.log("updating translation keys for language: " + lang);
+        updateTranslation(files, lang, translationsDir);
+    }
+}
+
+main();
