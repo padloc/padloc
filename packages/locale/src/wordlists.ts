@@ -29,5 +29,8 @@ export async function getWordList(lang: string): Promise<string[]> {
 
 export const AVAILABLE_LANGUAGES = [
     { value: "en", toString: () => "English" },
-    { value: "de", toString: () => "Deutsch" }
+    { value: "de", toString: () => "Deutsch" },
+    { value: "es", toString: () => "Español" },
+    { value: "pt", toString: () => "Português" },
+    { value: "fr", toString: () => "Français" }
 ];
