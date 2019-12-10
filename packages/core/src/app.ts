@@ -796,7 +796,7 @@ export class App {
     }
 
     isMainVault(vault: Vault) {
-        return this.account && this.account.mainVault === vault.id;
+        return vault && this.account && this.account.mainVault === vault.id;
     }
 
     /** Create a new [[Vault]] */
