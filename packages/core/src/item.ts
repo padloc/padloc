@@ -467,10 +467,10 @@ export class VaultItemCollection extends Collection<VaultItem> {
                     ...item,
                     lastUsed: new Date(item.lastUsed),
                     attachments: item.attachments || [],
-                    fields: item.fields.map(({ name = "", value = "", type }: any) => ({
+                    fields: item.fields.map(({ name = "", value = "", masked, type }: any) => ({
                         name: name,
                         value: value,
-                        type: type || guessFieldType({ name, value })
+                        type: type || guessFieldType({ name, value, masked })
                     }))
                 };
             })
