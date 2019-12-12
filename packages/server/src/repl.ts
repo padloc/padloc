@@ -142,12 +142,14 @@ export class ReplSession {
                 list: this.wrap(this.listAccounts),
                 get: this.wrap(this.showAccount),
                 delete: this.wrap(this.deleteAccount),
+                update: this.wrap(this.updateAccount),
                 syncBilling: this.wrap(this.syncAccountBilling)
             },
             orgs: {
                 list: this.wrap(this.listOrgs),
                 get: this.wrap(this.showOrg),
                 delete: this.wrap(this.deleteOrg),
+                update: this.wrap(this.updateOrg),
                 syncBilling: this.wrap(this.syncOrgBilling)
             },
             logs: {
@@ -212,10 +214,9 @@ export class ReplSession {
     }
 
     async showAccount(id: string) {
-        const { name, email, quota, billing, usedStorage, created, updated, sessions, orgs } = (await this.storage.get(
-            Account,
-            id
-        )).toRaw();
+        const { name, email, quota, billing, usedStorage, created, updated, sessions, orgs } = (
+            await this.storage.get(Account, id)
+        ).toRaw();
         this.print({ id, name, email, quota, usedStorage, created, updated, sessions, orgs, billing });
     }
 
@@ -232,19 +233,16 @@ export class ReplSession {
         this.print(displayAccountItem(await this.storage.get(Account, id)));
     }
 
+    async updateAccount(id: string, transform: (acc: Account) => Promise<Account | unknown>) {
+        const acc = await this.storage.get(Account, id);
+        const res = await transform(acc);
+        await this.storage.save(res instanceof Account ? res : acc);
+    }
+
     async showOrg(id: string) {
-        const {
-            name,
-            owner,
-            quota,
-            billing,
-            usedStorage,
-            created,
-            updated,
-            members,
-            groups,
-            vaults
-        } = (await this.storage.get(Org, id)).toRaw();
+        const { name, owner, quota, billing, usedStorage, created, updated, members, groups, vaults } = (
+            await this.storage.get(Org, id)
+        ).toRaw();
 
         const { email: ownerEmail, name: ownerName } = await this.storage.get(Account, owner);
         this.print({
@@ -327,6 +325,12 @@ export class ReplSession {
         this.print([header, ...items].join("\n"));
     }
 
+    async updateOrg(id: string, transform: (org: Org) => Promise<Org | unknown>) {
+        const org = await this.storage.get(Org, id);
+        const res = await transform(org);
+        await this.storage.save(res instanceof Org ? res : org);
+    }
+
     async listEvents(opts: ListEventsOptions) {
         const events = await this.server.logger.listEvents(opts);
 
@@ -340,7 +344,7 @@ export class ReplSession {
                     [
                         col(format(e.time, "yyyy-MM-dd hh:mm:ss"), 19),
                         colors.bold(col(e.type, 20)),
-                        col((e.data.account && e.data.account.email || e.data.email) || "N/A", 20),
+                        col((e.data.account && e.data.account.email) || e.data.email || "N/A", 20),
                         colors.dim(e.id)
                     ].join(" ")
                 )
