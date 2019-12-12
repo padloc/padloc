@@ -4,6 +4,7 @@ import { Account } from "@padloc/core/src/account";
 import { Session } from "@padloc/core/src/session";
 import { Org, OrgRole } from "@padloc/core/src/org";
 import { Serializable } from "@padloc/core/src/encoding";
+import { Vault } from "@padloc/core/src/vault";
 import { PlanType, Subscription, SubscriptionStatus, UpdateBillingParams } from "@padloc/core/src/billing";
 import { ListEventsOptions } from "@padloc/core/src/log";
 import * as colors from "ansi-colors";
@@ -153,7 +154,11 @@ export class ReplSession {
                 list: this.wrap(this.listEvents),
                 get: this.wrap(this.getEvent)
             },
-            socket: this.socket
+            socket: this.socket,
+            Account,
+            Org,
+            Session,
+            Vault
         });
         r.on("exit", () => this.socket.end());
     }
