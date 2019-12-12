@@ -6,7 +6,7 @@ export class MemberAddedMessage implements Message {
     constructor(public org: Org, public link: string) {}
 
     get title() {
-        return `You have sucessfully join ${ this.org.name } on Padloc!`;
+        return `You have successfully joined ${ this.org.name } on Padloc!`;
     }
 
     get text() {
