@@ -5,4 +5,5 @@ interface Navigator {
 interface Window {
     app: any;
     router: any;
+    getPlatform: any;
 }

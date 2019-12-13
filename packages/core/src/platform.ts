@@ -178,6 +178,13 @@ export function setPlatform(p: Platform) {
     platform = p;
 }
 
+/**
+ * Get the current [[Platform]] implemenation
+ */
+export function getPlatform() {
+    return platform;
+}
+
 /** Copies the given `text` to the system clipboard */
 export function getClipboard() {
     return platform.getClipboard();
