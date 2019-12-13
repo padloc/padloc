@@ -763,7 +763,9 @@ export class App {
     }
 
     async forgetMasterKey() {
-        keyStoreDelete("master_key_encryption_key");
+        try {
+            await keyStoreDelete("master_key_encryption_key");
+        } catch (e) {}
         this.setState({ rememberedMasterKey: null });
         await this.save();
     }
