@@ -1,6 +1,6 @@
 {
   "name": "@padloc/locale",
-  "version": "3.0.12",
+  "version": "3.0.13",
   "description": "Package containing translations and wordlists for Padloc as well as various other localization tools",
   "main": "index.js",
   "files": [
