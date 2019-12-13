@@ -286,8 +286,11 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
                 ${!app.billingConfig || app.billingConfig.disablePayment
                     ? html`
                           <div class="payment-disabled-message">
-                              To update your billing info and payment method, please go to
-                              <strong>https://web.padloc.app</strong>!
+                              ${$l(
+                                  'To update your billing info and payment method, please log in through our website (found under "Settings") ' +
+                                      "or contact us at "
+                              )}
+                              <a href="mailto:support@padloc.app">support@padloc.app</a>!
                           </div>
                       `
                     : html`
