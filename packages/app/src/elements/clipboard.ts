@@ -52,7 +52,7 @@ export class Clipboard extends BaseElement {
             }
 
             :host(:not(.showing)) {
-                transform: translateY(140%);
+                transform: translateY(150%);
             }
 
             .content {
@@ -105,6 +105,14 @@ export class Clipboard extends BaseElement {
                 stroke-linecap: round;
                 transition: stroke-dashoffset 1s linear;
             }
+
+            @supports (-webkit-overflow-scrolling: touch) {
+                :host {
+                    left: 80px;
+                    right: 80px;
+                    bottom: calc(env(safe-area-inset-bottom) / 1.5);
+                }
+            }
         `
     ];
 
@@ -130,14 +138,14 @@ export class Clipboard extends BaseElement {
                         cx="5"
                         cy="5"
                         r="4"
-                        style=${styleMap({ strokeDashoffset: ((1 - (_tMinusClear / 60)) * -25).toString() })}
+                        style=${styleMap({ strokeDashoffset: ((1 - (_tMinusClear / 60)) * 25).toString() })}
                     />
 
                     <circle
                         cx="5"
                         cy="5"
                         r="4"
-                        style=${styleMap({ strokeDashoffset: ((1 - (_tMinusClear / 60)) * -25).toString() })}
+                        style=${styleMap({ strokeDashoffset: ((1 - (_tMinusClear / 60)) * 25).toString() })}
                     />
                 </svg>
 
@@ -158,8 +166,6 @@ export class Clipboard extends BaseElement {
         const value = field.type === "totp" ? await totp(base32ToBytes(field.value)) : field.value;
         setClipboard(value);
 
-        this.classList.add("showing");
-
         const tStart = Date.now();
 
         this._tMinusClear = duration;
@@ -171,6 +177,8 @@ export class Clipboard extends BaseElement {
                 this._tMinusClear = Math.floor(dt / 1000);
             }
         }, 1000);
+
+        setTimeout(() => this.classList.add("showing"), 10);
 
         return new Promise(resolve => {
             this._resolve = resolve;
