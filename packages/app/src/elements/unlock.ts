@@ -27,6 +27,9 @@ export class Unlock extends StartForm {
     private _failedCount = 0;
 
     async reset() {
+        if (!this._passwordInput) {
+            return;
+        }
         this._passwordInput.value = "";
         this._errorMessage = "";
         this._unlockButton.stop();
