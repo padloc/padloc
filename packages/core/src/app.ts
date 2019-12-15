@@ -278,7 +278,7 @@ export class App {
     }
 
     get billingEnabled() {
-        return !!this.state.billingProvider;
+        return !!this.state.billingProvider && !(this.state.account && this.state.account.billingDisabled);
     }
 
     private _queuedSyncPromises = new Map<string, Promise<void>>();

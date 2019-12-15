@@ -86,6 +86,8 @@ export class Account extends PBES2Container implements Storable {
 
     quota: AccountQuota = new AccountQuota();
 
+    billingDisabled = false;
+
     billing?: BillingInfo;
 
     usedStorage: number = 0;
@@ -159,7 +161,7 @@ export class Account extends PBES2Container implements Storable {
     validate() {
         return (
             super.validate() &&
-            (typeof this.id === "string" &&
+            typeof this.id === "string" &&
                 typeof this.email === "string" &&
                 typeof this.name === "string" &&
                 typeof this.mainVault === "string" &&
@@ -168,7 +170,7 @@ export class Account extends PBES2Container implements Storable {
                 this.created instanceof Date &&
                 this.updated instanceof Date &&
                 this.publicKey instanceof Uint8Array &&
-                this.orgs.every(id => typeof id === "string"))
+                this.orgs.every(id => typeof id === "string")
         );
     }
 
@@ -191,6 +193,7 @@ export class Account extends PBES2Container implements Storable {
         revision,
         sessions,
         quota,
+        billingDisabled,
         billing,
         usedStorage,
         ...rest
@@ -205,6 +208,7 @@ export class Account extends PBES2Container implements Storable {
             updated: new Date(updated),
             publicKey: base64ToBytes(publicKey),
             quota: new AccountQuota().fromRaw(quota),
+            billingDisabled,
             billing: billing && new BillingInfo().fromRaw(billing),
             orgs,
             sessions: sessions.map((raw: any) => new SessionInfo().fromRaw(raw)),
