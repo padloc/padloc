@@ -83,13 +83,14 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
         // $l(
         //                     "Add your billing info now so you're all set to keep using Padloc once the trial period is over. Don't worry, you won't be charged yet!"
         //                 )
+        if (app.state.billingProvider && !this._stripe) {
+            this._initStripe();
+        }
         return super.show();
     }
 
-    async connectedCallback() {
-        super.connectedCallback();
-
-        const stripePubKey = app.billingConfig && app.billingConfig.stripePublicKey;
+    private async _initStripe() {
+        const stripePubKey = app.state.billingProvider && app.state.billingProvider.config.publicKey;
 
         if (!stripePubKey) {
             return;
@@ -283,7 +284,7 @@ export class BillingDialog extends Dialog<Params, UpdateBillingParams> {
             </header>
 
             <div class="content">
-                ${!app.billingConfig || app.billingConfig.disablePayment
+                ${!app.billingEnabled
                     ? html`
                           <div class="payment-disabled-message">
                               ${$l(

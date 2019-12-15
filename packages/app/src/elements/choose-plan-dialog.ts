@@ -13,9 +13,13 @@ export class ChoosePlanDialog extends Dialog<void, Plan> {
 
     async show() {
         const result = super.show();
-        this._plans = (await app.api.getPlans())
-            .filter(p => [PlanType.Family, PlanType.Team, PlanType.Business].includes(p.type))
-            .sort((a, b) => a.type - b.type);
+        if (!app.state.billingProvider) {
+            this.done();
+        } else {
+            this._plans = app.state.billingProvider.plans
+                .filter(p => [PlanType.Family, PlanType.Team, PlanType.Business].includes(p.type))
+                .sort((a, b) => a.type - b.type);
+        }
         return result;
     }
 

@@ -99,7 +99,7 @@ export class Settings extends StateMixin(View) {
     ];
 
     render() {
-        const { settings, billingConfig } = app;
+        const { settings, billingEnabled } = app;
         const account = app.account!;
         const billing = account.billing || new BillingInfo();
 
@@ -136,7 +136,7 @@ export class Settings extends StateMixin(View) {
                         ${$l("Change Master Password")}
                     </button>
 
-                    ${billingConfig
+                    ${billingEnabled
                         ? html`
                               <h3>${$l("Subscription")}</h3>
 

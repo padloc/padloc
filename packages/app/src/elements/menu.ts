@@ -243,7 +243,7 @@ export class Menu extends StateMixin(BaseElement) {
         }, 0);
 
         const showSettingsWarning =
-            app.billingConfig &&
+            app.billingEnabled &&
             app.account &&
             app.account.billing &&
             (!app.account.billing.subscription ||
@@ -251,7 +251,7 @@ export class Menu extends StateMixin(BaseElement) {
 
         const showUpgradeButton =
             app.account &&
-            app.billingConfig &&
+            app.billingEnabled &&
             (!app.account.billing ||
                 !app.account.billing.subscription ||
                 app.account.billing.subscription.plan.type === PlanType.Free) &&

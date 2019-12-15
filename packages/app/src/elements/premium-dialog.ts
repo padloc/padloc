@@ -54,11 +54,17 @@ export class PremiumDialog extends Dialog<void, void> {
     }
 
     async show() {
-        const plan = (await app.api.getPlans()).find(p => p.type === PlanType.Premium);
-        this.plan = plan!;
-        this._error = "";
-        this._updateBillingParams = null;
-        return super.show();
+        const result = super.show();
+        const plan =
+            app.state.billingProvider && app.state.billingProvider.plans.find(p => p.type === PlanType.Premium);
+        if (plan) {
+            this.plan = plan;
+            this._error = "";
+            this._updateBillingParams = null;
+        } else {
+            this.done();
+        }
+        return result;
     }
 
     private async _updateBillingInfo() {

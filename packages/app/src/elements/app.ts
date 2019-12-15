@@ -569,7 +569,7 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     async _createOrg() {
         let plan: Plan | null = null;
 
-        if (app.billingConfig) {
+        if (app.billingEnabled) {
             plan = await this._choosePlanDialog.show();
             if (!plan) {
                 return;

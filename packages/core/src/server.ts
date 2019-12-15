@@ -1041,13 +1041,13 @@ export class Controller implements API {
     }
 
     async getPlans() {
-        if (!this.billingProvider) {
-            throw new Err(ErrorCode.NOT_SUPPORTED);
-        }
+        this.log("billing.getPlans");
+        return this.billingProvider ? this.billingProvider.getInfo().plans : [];
+    }
 
-        this.log("plans.get");
-
-        return this.billingProvider.getPlans();
+    async getBillingProviders() {
+        this.log("billing.getProviders");
+        return this.billingProvider ? [this.billingProvider.getInfo()] : [];
     }
 
     private async _updateUsedStorage(acc: Org | Account) {
@@ -1416,6 +1416,11 @@ export class Server extends BaseServer {
             case "getPlans":
                 const plans = await ctlr.getPlans();
                 res.result = plans.map(p => p.toRaw());
+                break;
+
+            case "getBillingProviders":
+                const providers = await ctlr.getBillingProviders();
+                res.result = providers.map(p => p.toRaw());
                 break;
 
             default:

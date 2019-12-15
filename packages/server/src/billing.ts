@@ -6,6 +6,7 @@ import { Err, ErrorCode } from "@padloc/core/src/error";
 import { Storage } from "@padloc/core/src/storage";
 import {
     BillingProvider,
+    BillingProviderInfo,
     BillingInfo,
     Plan,
     PlanType,
@@ -19,8 +20,9 @@ import {
 import { readBody } from "./http";
 
 export interface StripeConfig {
-    stripeSecret: string;
-    port: number;
+    secretKey: string;
+    publicKey: string;
+    webhookPort: number;
 }
 
 function parsePlan({
@@ -158,7 +160,7 @@ export class StripeBillingProvider implements BillingProvider {
     private _availablePlans: Plan[] = [];
 
     constructor(public config: StripeConfig, public storage: Storage) {
-        this._stripe = new Stripe(config.stripeSecret);
+        this._stripe = new Stripe(config.secretKey);
     }
 
     async init() {
@@ -402,6 +404,16 @@ export class StripeBillingProvider implements BillingProvider {
         return [...this._availablePlans.values()];
     }
 
+    getInfo() {
+        const info = new BillingProviderInfo();
+        info.type = "stripe";
+        info.plans = [...this._availablePlans.values()];
+        info.config = {
+            publicKey: this.config.publicKey
+        };
+        return info;
+    }
+
     private async _startWebhook() {
         const server = createServer(async (httpReq, httpRes) => {
             httpRes.on("error", e => {
@@ -457,7 +469,7 @@ export class StripeBillingProvider implements BillingProvider {
             httpRes.end();
         });
 
-        server.listen(this.config.port);
+        server.listen(this.config.webhookPort);
     }
 
     private async _loadPlans() {

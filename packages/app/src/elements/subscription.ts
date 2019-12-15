@@ -158,7 +158,7 @@ export class OrgSubscription extends StateMixin(BaseElement) {
     }
 
     private async _authenticatePayment() {
-        const stripePubKey = app.billingConfig && app.billingConfig.stripePublicKey;
+        const stripePubKey = app.state.billingProvider && app.state.billingProvider.config.publicKey;
 
         if (!stripePubKey || this._authButton.state === "loading") {
             return;

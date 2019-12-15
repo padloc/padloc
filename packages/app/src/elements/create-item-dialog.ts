@@ -79,7 +79,7 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
         const quota = app.getItemsQuota(vault);
         if (quota !== -1 && vault.items.size >= quota) {
             this.done();
-            if (app.billingConfig) {
+            if (app.billingEnabled) {
                 this.dispatch("get-premium", {
                     message: $l(
                         "You have reached the maximum number of items for this account. " +

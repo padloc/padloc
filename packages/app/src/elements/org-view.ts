@@ -523,7 +523,7 @@ export class OrgView extends StateMixin(View) {
                                   </div>
                               `
                             : ""}
-                        ${app.billingConfig
+                        ${app.billingEnabled
                             ? html`
                                   <h3>${$l("Subscription")}</h3>
 

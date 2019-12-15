@@ -152,7 +152,7 @@ export class ImportDialog extends Dialog<string, void> {
 
         if (quota !== -1 && vault.items.size + this._items.length > quota) {
             this.done();
-            if (app.billingConfig) {
+            if (app.billingEnabled) {
                 this.dispatch("get-premium", {
                     message: $l(
                         "The number of imported items exceeds your remaining quota. " +

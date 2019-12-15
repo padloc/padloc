@@ -7,7 +7,7 @@ import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
 import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
 import { Attachment, AttachmentID } from "./attachment";
-import { Plan, UpdateBillingParams } from "./billing";
+import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
 
 /**
@@ -442,5 +442,5 @@ export interface API {
     deleteAttachment(attachment: DeleteAttachmentParams): Promise<void>;
 
     updateBilling(params: UpdateBillingParams): Promise<void>;
-    getPlans(): Promise<Plan[]>;
+    getBillingProviders(): Promise<BillingProviderInfo[]>;
 }

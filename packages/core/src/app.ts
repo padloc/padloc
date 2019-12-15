@@ -38,7 +38,7 @@ import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
-import { UpdateBillingParams } from "./billing";
+import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { SimpleContainer } from "./container";
 import { AESKeyParams } from "./crypto";
 
@@ -100,6 +100,8 @@ export class AppState extends Storable {
 
     rememberedMasterKey: SimpleContainer | null = null;
 
+    billingProvider: BillingProviderInfo | null = null;
+
     _errors: Err[] = [];
 
     /** All [[Tag]]s found within the users [[Vault]]s */
@@ -131,7 +133,7 @@ export class AppState extends Storable {
         return !!this.session;
     }
 
-    fromRaw({ settings, stats, device, session, account, orgs, vaults, rememberedMasterKey }: any) {
+    fromRaw({ settings, stats, device, session, account, orgs, vaults, rememberedMasterKey, billingProvider }: any) {
         this.settings.fromRaw(settings);
         this.stats.fromRaw(stats);
         this.device.fromRaw(device);
@@ -140,13 +142,9 @@ export class AppState extends Storable {
         this.orgs = orgs.map((org: any) => new Org().fromRaw(org));
         this.vaults = vaults.map((vault: any) => new Vault().fromRaw(vault));
         this.rememberedMasterKey = rememberedMasterKey && new SimpleContainer().fromRaw(rememberedMasterKey);
+        this.billingProvider = billingProvider && new BillingProviderInfo().fromRaw(billingProvider);
         return this;
     }
-}
-
-export interface BillingConfig {
-    stripePublicKey: string;
-    disablePayment: boolean;
 }
 
 /**
@@ -222,8 +220,7 @@ export class App {
         /** Persistent storage provider */
         public storage: Storage,
         /** Data transport provider */
-        sender: Sender,
-        public billingConfig?: BillingConfig
+        sender: Sender
     ) {
         this.api = new Client(this.state, sender, (_req, _res, err) => {
             const online = !err || err.code !== ErrorCode.FAILED_CONNECTION;
@@ -280,6 +277,10 @@ export class App {
         return !!this.state.rememberedMasterKey;
     }
 
+    get billingEnabled() {
+        return !!this.state.billingProvider;
+    }
+
     private _queuedSyncPromises = new Map<string, Promise<void>>();
     private _activeSyncPromises = new Map<string, Promise<void>>();
 
@@ -322,6 +323,8 @@ export class App {
         if (this.account) {
             this.fetchAccount();
         }
+
+        this.loadBillingProvider();
 
         // Notify state change
         this.publish();
@@ -1444,8 +1447,14 @@ export class App {
      */
 
     async updateBilling(params: UpdateBillingParams) {
+        params.provider = (this.state.billingProvider && this.state.billingProvider.type) || "";
         await this.api.updateBilling(params);
         params.org ? await this.fetchOrg(params.org) : await this.fetchAccount();
+    }
+
+    async loadBillingProvider() {
+        const providers = await this.api.getBillingProviders();
+        this.setState({ billingProvider: providers[0] || null });
     }
 
     getItemsQuota(vault: Vault = this.mainVault!) {

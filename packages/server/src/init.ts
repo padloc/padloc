@@ -16,7 +16,7 @@ async function init() {
     const config = new ServerConfig({
         clientUrl: process.env.PL_PWA_URL || `http://0.0.0.0:${process.env.PL_PWA_PORT || 8080}`,
         reportErrors: process.env.PL_REPORT_ERRORS || "",
-        mfa: (process.env.PL_MFA as ("email" | "none")) || "email",
+        mfa: (process.env.PL_MFA as "email" | "none") || "email",
         accountQuota: {
             items: -1,
             storage: 1,
@@ -55,8 +55,9 @@ async function init() {
 
         const stripeProvider = new StripeBillingProvider(
             {
-                stripeSecret: process.env.PL_BILLING_STRIPE_SECRET || "",
-                port: billingPort
+                secretKey: process.env.PL_BILLING_STRIPE_SECRET || "",
+                publicKey: process.env.PL_BILLING_STRIPE_PUBLIC_KEY || "",
+                webhookPort: billingPort
             },
             storage
         );
