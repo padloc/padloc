@@ -14,6 +14,7 @@ services:
             - PL_REPORT_ERRORS
             - PL_BILLING_ENABLED
             - PL_BILLING_STRIPE_SECRET
+            - PL_BILLING_STRIPE_PUBLIC_KEY
             - PL_MFA
             - PL_REPL_PORT
         ports:
@@ -30,9 +31,6 @@ services:
         environment:
             - PL_SERVER_URL
             - PL_PWA_URL
-            - PL_BILLING_ENABLED
-            - PL_BILLING_DISABLE_PAYMENT
-            - PL_BILLING_STRIPE_PUBLIC_KEY
         ports:
             - $PL_PWA_PORT:8000
         volumes:
