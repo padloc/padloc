@@ -92,6 +92,8 @@ export class Signup extends StartForm {
         if (step === "password" && !this._password) {
             this._generatePassphrase();
         }
+
+        setTimeout(() => this.requestUpdate(), 10);
     }
 
     private async _generatePassphrase() {
@@ -264,12 +266,11 @@ export class Signup extends StartForm {
                 <div flex></div>
 
                 <form>
-                    <h1 class="animate">${$l("Confirm Your Email Address")}</h1>
+                    <h1 class="animate">${$l("You've Got Mail!")}</h1>
 
                     <div class="hint animate">
                         ${$l(
-                            "Check your inbox! We sent you confirmation code to {0}. " +
-                                "Please enter the code below to confirm your email address!",
+                            "To verify your email address, please enter the confirmation code we sent to {0}.",
                             this._email
                         )}
                     </div>

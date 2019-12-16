@@ -140,6 +140,10 @@
     "Wähle Ein Land"
   ],
   [
+    "To update your billing info and payment method, please log in through our website (found under \"Settings\") or contact us at ",
+    ""
+  ],
+  [
     "Payment Details",
     "Zahlungsdetails"
   ],
@@ -1188,12 +1192,12 @@
     "Einloggen"
   ],
   [
-    "Confirm Your Email Address",
-    "Bestätige Deine Emailadresse"
+    "You've Got Mail!",
+    "Sie haben Post!"
   ],
   [
-    "Check your inbox! We sent you confirmation code to {0}. Please enter the code below to confirm your email address!",
-    "Du hast Post! Wir haben einen Bestätigungscode an {0} versand. Bitte gibt den Code hier ein um deine Emailadresse zu bestätigen!"
+    "To verify your email address, please enter the confirmation code we sent to {0}.",
+    "Um Ihre Emailadresse zu verifizieren, geben Sie bitte den Bestätigungscode ein, den wir an {0} gesendet haben."
   ],
   [
     "Confirmation Code",

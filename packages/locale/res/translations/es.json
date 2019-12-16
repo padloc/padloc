@@ -129,7 +129,7 @@
   ],
   [
     "Failed to download! Click to try again.",
-    "¡Fallo en la descarga! Click para intentarlo de nuevo" 
+    "¡Fallo en la descarga! Click para intentarlo de nuevo"
   ],
   [
     "Update Billing Info",
@@ -138,6 +138,10 @@
   [
     "Select A Country",
     "Selecciona Un País"
+  ],
+  [
+    "To update your billing info and payment method, please log in through our website (found under \"Settings\") or contact us at ",
+    ""
   ],
   [
     "Payment Details",
@@ -1188,12 +1192,12 @@
     "Iniciar Sesión"
   ],
   [
-    "Confirm Your Email Address",
-    "Confirmar Tu Dirección Email"
+    "You've Got Mail!",
+    "¡Tienes Correo!"
   ],
   [
-    "Check your inbox! We sent you confirmation code to {0}. Please enter the code below to confirm your email address!",
-    "¡Comprueba tu bandeja de entrada! Te hemos enviado tu código de confirmación a {0}. ¡Por favor, inserta el código abajo para confirmar tu dirección email!"
+    "To verify your email address, please enter the confirmation code we sent to {0}.",
+    "Para verificar tu dirección de correo electrónico, introduzca el código de confirmación que enviamos a {0}."
   ],
   [
     "Confirmation Code",

@@ -140,6 +140,10 @@
     ""
   ],
   [
+    "To update your billing info and payment method, please log in through our website (found under \"Settings\") or contact us at ",
+    ""
+  ],
+  [
     "Payment Details",
     ""
   ],
@@ -1188,11 +1192,11 @@
     ""
   ],
   [
-    "Confirm Your Email Address",
+    "You've Got Mail!",
     ""
   ],
   [
-    "Check your inbox! We sent you confirmation code to {0}. Please enter the code below to confirm your email address!",
+    "To verify your email address, please enter the confirmation code we sent to {0}.",
     ""
   ],
   [
