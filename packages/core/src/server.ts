@@ -959,13 +959,13 @@ export class Controller implements API {
 
         await this._updateUsedStorage(org || account);
 
-        return att;
-
         this.log("attachment.create", {
             attachment: { type: att.type, size: att.size, id: att.id },
             vault: { id: vault.id, name: vault.name },
             org: org && { id: org!.id, name: org!.name, type: org!.type }
         });
+
+        return att;
     }
 
     async getAttachment({ id, vault: vaultId }: GetAttachmentParams) {

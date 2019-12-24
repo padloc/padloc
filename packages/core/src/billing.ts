@@ -166,10 +166,6 @@ export class BillingAddress extends Serializable {
 export class Discount extends Serializable {
     name = "";
     coupon = "";
-
-    validate() {
-        return typeof this.name === "string" && typeof this.coupon === "string";
-    }
 }
 
 export class BillingInfo extends Serializable {

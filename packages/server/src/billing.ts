@@ -147,7 +147,7 @@ function parseCustomer({
     info.discount =
         (discount &&
             new Discount().fromRaw({
-                name: discount.coupon.name,
+                name: discount.coupon.name || "",
                 coupon: discount.coupon.id
             })) ||
         null;
