@@ -31,6 +31,8 @@ services:
         environment:
             - PL_SERVER_URL
             - PL_PWA_URL
+            - PL_BILLING_ENABLED
+            - PL_BILLING_STRIPE_PUBLIC_KEY
         ports:
             - $PL_PWA_PORT:8000
         volumes:
