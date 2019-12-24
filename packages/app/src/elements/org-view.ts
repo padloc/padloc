@@ -159,9 +159,8 @@ export class OrgView extends StateMixin(View) {
 
         if (deleted) {
             router.go("");
+            alert("Organization deleted successfully.", { type: "success" });
         }
-
-        alert("Organization deleted successfully.", { type: "success" });
     }
 
     private async _changeName() {
