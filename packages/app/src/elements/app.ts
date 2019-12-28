@@ -1,5 +1,5 @@
 import "../../assets/fonts/fonts.css";
-import { Plan } from "@padloc/core/src/billing";
+import { Plan, PlanType } from "@padloc/core/src/billing";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { biometricAuth } from "@padloc/core/src/platform";
 import { config, shared, mixins } from "../styles";
@@ -472,6 +472,30 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
             } else {
                 await alert($l("Could not find invite! Did you use the correct link?"), { type: "warning" });
                 router.go("items", undefined, true);
+            }
+        } else if ((match = path.match(/^plans?\/(.+)\/?$/))) {
+            const billingProvider = app.state.billingProvider;
+            if (!billingProvider) {
+                router.go("items", undefined, true);
+                return;
+            }
+
+            const planType = parseInt(match[1]);
+            if (planType === PlanType.Premium) {
+                await this._premiumDialog.show();
+                router.go("items", undefined, true);
+            } else {
+                const plan = billingProvider!.plans.find(p => p.type === planType);
+                if (plan && plan.type !== PlanType.Free) {
+                    const org = await this._createOrgDialog.show(plan);
+                    if (org) {
+                        router.go(`orgs/${org.id}`);
+                    } else {
+                        router.go("items", undefined, true);
+                    }
+                } else {
+                    router.go("items", undefined, true);
+                }
             }
         } else {
             router.go("items", undefined, true);
