@@ -8,6 +8,7 @@ const FaviconsWebpackPlugin = require("favicons-webpack-plugin");
 const { version } = require("./package.json");
 
 const out = process.env.PL_PWA_DIR || path.resolve(__dirname, "dist");
+const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 
 module.exports = {
     entry: path.resolve(__dirname, "src/index.ts"),
@@ -41,7 +42,7 @@ module.exports = {
     },
     plugins: [
         new EnvironmentPlugin({
-            PL_SERVER_URL: `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`,
+            PL_SERVER_URL: serverUrl,
             PL_BILLING_ENABLED: null,
             PL_BILLING_DISABLE_PAYMENT: null,
             PL_BILLING_STRIPE_PUBLIC_KEY: null,
@@ -56,7 +57,7 @@ module.exports = {
             meta: {
                 "Content-Security-Policy": {
                     "http-equiv": "Content-Security-Policy",
-                    content: `default-src 'self' ${process.env.PL_SERVER_URL} ${
+                    content: `default-src 'self' ${serverUrl} ${
                         process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
                     }; style-src 'self' 'unsafe-inline'; object-src 'self' blob:; frame-src 'self' blob: ${
                         process.env.PL_BILLING_ENABLED ? "https://*.stripe.com" : ""
