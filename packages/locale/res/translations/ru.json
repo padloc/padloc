@@ -1,0 +1,1574 @@
+[
+  [
+    "OK",
+    "OK"
+  ],
+  [
+    "o f f l i n e",
+    "о ф л а й н"
+  ],
+  [
+    "Could not find invite! Did you use the correct link?",
+    "Приглашение не найдено! Проверьте правильность ссылки."
+  ],
+  [
+    "Get Premium",
+    "Получить Премиум"
+  ],
+  [
+    "Cancel",
+    "Отмена"
+  ],
+  [
+    "It looks like the app cannot connect to the Padloc servers right now, probably due to a missing internet connection. You can still access your vaults and even create or edit Vault Items but your changes won't be synchronized until you're back online.",
+    "Похоже сейчас приложение не может соединиться с Padloc сервером, возможно отсутствует интернет соединение. У вас есть доступ к локальному хранилищу, вы можете создавать и редактировать записи, но они не будут синхронизированы до восстановления соединения с интернетом."
+  ],
+  [
+    "You're Offline",
+    "Нет соединения с интернетом"
+  ],
+  [
+    "Do you want to enable biometric unlock for this device?",
+    "Желаете включить биометрическую разблокировку для этого устройства?"
+  ],
+  [
+    "Setup",
+    "Настройка"
+  ],
+  [
+    "Biometric Unlock",
+    "Биометрическая разблокировка"
+  ],
+  [
+    "Biometric authentication failed! Canceling Setup.",
+    "Биометрическая аутентификация не удалась! Настройка прекращается."
+  ],
+  [
+    "Setup Failed",
+    "Настройка не удалась"
+  ],
+  [
+    "Biometric unlock failed! Canceling Setup. (Reason: {0})",
+    "Биометрическая аутентификация не удалась! Настройка прекращается. (Причина: {0})"
+  ],
+  [
+    "Please enter your master password!",
+    "Введите мастер-пароль!"
+  ],
+  [
+    "Enter Master Password",
+    "Ввод мастер пароля"
+  ],
+  [
+    "Wrong password! Please try again!",
+    "Неверный пароль! Попробуйте снова!"
+  ],
+  [
+    "Biometric unlock activated successfully!",
+    "Биометрическая разблокировка активирована успешно!"
+  ],
+  [
+    "Are you sure you want to delete this attachment?",
+    "Вы уверены, что желаете удалить это вложение?"
+  ],
+  [
+    "Delete",
+    "Удалить"
+  ],
+  [
+    "Delete Attachment",
+    "Удалить вложение"
+  ],
+  [
+    "Download failed!",
+    "Загрузка не удалась!"
+  ],
+  [
+    "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
+    "Желаете сохранить этот файл на диск? ВНИМАНИЕ: Файл, сохраненный на диске будет незашифрован и незащищен от просмотра!"
+  ],
+  [
+    "Save",
+    "Сохранить"
+  ],
+  [
+    "Save To Disk",
+    "Сохранить на диск"
+  ],
+  [
+    "Edit Name",
+    "Редактировать название"
+  ],
+  [
+    "Attachment Name",
+    "Название вложения"
+  ],
+  [
+    "Please enter an attachment name!",
+    "Введите название вложения"
+  ],
+  [
+    "Unknown File Type",
+    "Неизвестный тип файла"
+  ],
+  [
+    "downloading... {0}/{1}",
+    "загрузка... {0}/{1}"
+  ],
+  [
+    "Unnamed",
+    "Без названия"
+  ],
+  [
+    "uploading... {0}/{1}",
+    "закачка... {0}/{1}"
+  ],
+  [
+    "Failed to upload!",
+    "Закачка не удалась!"
+  ],
+  [
+    "Failed to download! Click to try again.",
+    "Загрузка не удалась! Щелкните, чтобы повторить попытку."
+  ],
+  [
+    "Update Billing Info",
+    "Обновление информации по выставлению счетов"
+  ],
+  [
+    "Select A Country",
+    "Выберите страну"
+  ],
+  [
+    "To update your billing info and payment method, please log in through our website (found under \"Settings\") or contact us at ",
+    "Для обновления информации по выставлению счетов и метода оплаты залогиньтесь на нашем сайте (доступно в разделе \"Настройки\") или свяжитесь с нами через "
+  ],
+  [
+    "Payment Details",
+    "Детали платежа"
+  ],
+  [
+    "Billing Address",
+    "Адрес для выставления счета"
+  ],
+  [
+    "Billing Email",
+    "Email для выставления счета"
+  ],
+  [
+    "Name",
+    "Имя"
+  ],
+  [
+    "Address",
+    "Адрес"
+  ],
+  [
+    "Postal Code",
+    "Почтовый индекс"
+  ],
+  [
+    "City",
+    "Город"
+  ],
+  [
+    "Tax Info",
+    "Налоговая информация"
+  ],
+  [
+    "This is a business",
+    "Это рабочий"
+  ],
+  [
+    "Tax ID",
+    "ИНН"
+  ],
+  [
+    "Coupon Code",
+    "Код купона"
+  ],
+  [
+    "Add Later",
+    "Добавить позднее"
+  ],
+  [
+    "Something went wrong. Please try again later!",
+    "Что-то пошло не так. Попробуйте позже!"
+  ],
+  [
+    "Add Payment Method",
+    "Добавить метод оплаты"
+  ],
+  [
+    "per user / month",
+    "на пользователя / в месяц"
+  ],
+  [
+    "USD, billed annually",
+    "USD, ежегодный платеж"
+  ],
+  [
+    "Try For Free",
+    "Попробуйте бесплатно"
+  ],
+  [
+    "Please enter at least one email address!",
+    "Пожалуйста, введите как минимум один email адрес!"
+  ],
+  [
+    "You have entered too many email addresses! Please delete some before submitting!",
+    "Вы ввели слишком много адресов! Удалите некоторые перед отправкой!"
+  ],
+  [
+    "Some of the emails you entered appear to be invalid!",
+    "Некоторые из введенных адресов некорректны!"
+  ],
+  [
+    "Something went wrong! Please try again later!",
+    "Что-то пошло не так! Попробуйте позже!"
+  ],
+  [
+    "Invite New Members",
+    "Пригласить новых членов"
+  ],
+  [
+    "Please enter up to {0} email addresses of the persons you would like to invite, separated by spaces or commas!",
+    "Введите до {0} email адресов людей, которых вы хотите пригласить, разделяя адреса пробелом или запятой!"
+  ],
+  [
+    "Enter Email Address",
+    "Введите email адрес"
+  ],
+  [
+    "Submit",
+    "Отправить"
+  ],
+  [
+    "New Vault Item",
+    "Новая запись в хранилище"
+  ],
+  [
+    "Item Name",
+    "Название записи"
+  ],
+  [
+    "Template",
+    "Шаблон"
+  ],
+  [
+    "Vault",
+    "Хранилище"
+  ],
+  [
+    "Create & Edit",
+    "Создать и редактировать"
+  ],
+  [
+    "You have reached the maximum number of items for this account. Upgrade to Premium to get unlimited items for your private vault!",
+    "Вы достигли максимума записей для этого аккаунта. Перейдите на Премиум чтобы получить неограниченное количество записей для приватного хранилища!"
+  ],
+  [
+    "You have reached the maximum number of items for this account!",
+    "Вы достигли максимума записей для этого аккаунта."
+  ],
+  [
+    "Please enter an organization name!",
+    "Введите название организации!"
+  ],
+  [
+    "Free For {0} Days",
+    "Бесплатно на {0} дней"
+  ],
+  [
+    "then",
+    "далее"
+  ],
+  [
+    "per month",
+    "на месяц"
+  ],
+  [
+    "{0} min",
+    "{0} min"
+  ],
+  [
+    "{0} max",
+    "{0} max"
+  ],
+  [
+    "Seats",
+    "Мест"
+  ],
+  [
+    "Add Billing Info",
+    "Добавить информацию для выставления счетов"
+  ],
+  [
+    "Create Organization",
+    "Создать организацию"
+  ],
+  [
+    "Organization Name",
+    "Название организации"
+  ],
+  [
+    "Create",
+    "Создать"
+  ],
+  [
+    "Export Data",
+    "Экспортировать данные"
+  ],
+  [
+    "Target Vault",
+    "Целевое хранилище"
+  ],
+  [
+    "Format",
+    "Формат"
+  ],
+  [
+    "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
+    "ВНИМАНИЕ: Экспорт в CSV формате сохранит данные незашифрованными, что значит, что их сможет прочесть кто угодно. Мы настоятельно рекомендуем экспортировать данные наиболее безопасным методом в виде зашифрованного файла!"
+  ],
+  [
+    "Export {0} Items",
+    "Экспорт {0} записей"
+  ],
+  [
+    "Please choose a password to protect this backup with!",
+    "Задайте пароль для защиты этого архива"
+  ],
+  [
+    "Choose Password",
+    "Задайте пароль"
+  ],
+  [
+    "Please choose a password!",
+    "Пожадуйста, задайте пароль!"
+  ],
+  [
+    "Please repeat the password!",
+    "Повторите пароль!"
+  ],
+  [
+    "Password not repeated correctly!",
+    "Пароли не совпадают!"
+  ],
+  [
+    "Choose A Field Type",
+    "Выберите тип поля"
+  ],
+  [
+    "What kind of field you would like to add?",
+    "Какого типа поле вы хотите добавить?"
+  ],
+  [
+    "Enter Notes Here",
+    "Добавьте заметки"
+  ],
+  [
+    "Enter Secret",
+    "Введите секрет"
+  ],
+  [
+    "Enter Password",
+    "Введите пароль"
+  ],
+  [
+    "Enter Value Here",
+    "Введите значение"
+  ],
+  [
+    "Enter Field Name",
+    "Введите название поля"
+  ],
+  [
+    "Dash",
+    "Тире"
+  ],
+  [
+    "Underscore",
+    "Подчеркивание"
+  ],
+  [
+    "Slash",
+    "Слэш"
+  ],
+  [
+    "Space",
+    "Пробел"
+  ],
+  [
+    "Generate Password",
+    "Сгенерировать пароль"
+  ],
+  [
+    "passphrase",
+    "парольная фраза"
+  ],
+  [
+    "random string",
+    "случайная строка"
+  ],
+  [
+    "Word Separator",
+    "Разделитель слов"
+  ],
+  [
+    "Language",
+    "Язык"
+  ],
+  [
+    "words",
+    "слова"
+  ],
+  [
+    "length",
+    "длина"
+  ],
+  [
+    "Use",
+    "Испольновать"
+  ],
+  [
+    "Discard",
+    "Отменить"
+  ],
+  [
+    "Are you sure you want to delete this group?",
+    "Вы уверены, что хотите удалить эту группу?"
+  ],
+  [
+    "Delete Group",
+    "Удалить группу"
+  ],
+  [
+    "Type 'DELETE' to confirm",
+    "Введите 'DELETE' для подтверждения"
+  ],
+  [
+    "Enter Group Name",
+    "Введите название группы"
+  ],
+  [
+    "Search...",
+    "Поиск..."
+  ],
+  [
+    "Import Data",
+    "Импорт данных"
+  ],
+  [
+    "IMPORTANT: Before importing, please make sure that your CSV data is structured according to Padlocks specific requirements!",
+    "ВНИМАНИЕ: Перед импортом убедитесь, что данные в CSV формате структурированы в соответствии с требованиями Padlock!"
+  ],
+  [
+    "Learn More",
+    "Узнать больше"
+  ],
+  [
+    "Import {0} Items",
+    "Импорт {0} записей"
+  ],
+  [
+    "This file is protected by a password.",
+    "Этот файл защищен паролем."
+  ],
+  [
+    "Wrong Password",
+    "Неверный пароль"
+  ],
+  [
+    "The number of imported items exceeds your remaining quota. Upgrade to Premium to get unlimited items for your private vault!",
+    "Количество импортированных записей превышает оставшийся лимит. Перейдите на Премиум, чтобы получить неограниченное количество записей в приватном хранилище!"
+  ],
+  [
+    "The number of imported items exceeds your remaining quota.",
+    "Количество импортированных записей превышает оставшийся лимит."
+  ],
+  [
+    "Successfully imported {0} items.",
+    "Успешно импортировано {0} записей."
+  ],
+  [
+    "This invite has expired",
+    "Срок действия этого приглашения истёк"
+  ],
+  [
+    "Accepted",
+    "Принято"
+  ],
+  [
+    "expires {0}",
+    "истекает {0}"
+  ],
+  [
+    "Confirm Membership",
+    "Подтвердить членство"
+  ],
+  [
+    "Organization Invite",
+    "Приглашение организации"
+  ],
+  [
+    "Please wait for an admin to complete the process. You will be notified as soon as you receive access.",
+    "Дождитесь подтверждения администратора для продолжения процесса. Вы будете уведомлены о получении доступа."
+  ],
+  [
+    "Enter Confirmation Code",
+    "Введите код подтверждения"
+  ],
+  [
+    "If you haven't received the confirmation code yet, please ask the organization owner to provide it to you!",
+    "Если вы еще не получили код подтверждения, запросите его у владельца вашей организации!"
+  ],
+  [
+    "They will also need the following confirmation code, which you should communicate to them separately:",
+    "Им также потребуется следующий код подтверждения, который вы должны сообщить им отдельно:"
+  ],
+  [
+    "Resend",
+    "Послать снова"
+  ],
+  [
+    "Please enter a confirmation code!",
+    "Введите код подтверждения!"
+  ],
+  [
+    "You have successfully accepted the invite. You'll be notified once you've been granted access.",
+    "Вы успешно подтвердили приглашение. Вы будете уведомлены, как только получите доступ."
+  ],
+  [
+    "Wrong confirmation code. Please try again!",
+    "Неверный код подтверждения. Попробуйте снова!"
+  ],
+  [
+    "expired",
+    "устарел"
+  ],
+  [
+    "accepted",
+    "принято"
+  ],
+  [
+    "{0}",
+    "{0}"
+  ],
+  [
+    "Confirm",
+    "Подтвердить"
+  ],
+  [
+    "Confirmation Code:",
+    "Код подтверждения:"
+  ],
+  [
+    "Upgrade to Premium now and get 1GB of encrypted file storage!",
+    "Перейдите на Премиум сейчас и получите 1Гб зашифрованного файлового хранилища!"
+  ],
+  [
+    "Enter Item Name",
+    "Введите название записи"
+  ],
+  [
+    "Field",
+    "Поле"
+  ],
+  [
+    "Attachment",
+    "Вложение"
+  ],
+  [
+    "Move",
+    "Переместить"
+  ],
+  [
+    "by {0}",
+    "по {0}"
+  ],
+  [
+    "Are you sure you want to delete this item?",
+    "Вы уверены, что хотите удалить эту запись?"
+  ],
+  [
+    "Items with attachments cannot be moved!",
+    "Записи с вложениями не могут быть перемещены!"
+  ],
+  [
+    "The selected file is too large! Only files of up to 5 MB are supported.",
+    "Выбранный файл слишком большой! Поддерживаются файлы до 5Мб."
+  ],
+  [
+    "File uploaded successfully!",
+    "Файл закачен успушно!"
+  ],
+  [
+    "Favorites",
+    "Избранное"
+  ],
+  [
+    "Recently Used",
+    "Недавние"
+  ],
+  [
+    "Attachments",
+    "Вложения"
+  ],
+  [
+    "All Items",
+    "Все записи"
+  ],
+  [
+    "My Vault",
+    "Моё хранилище"
+  ],
+  [
+    "Tags",
+    "Тэги"
+  ],
+  [
+    "You don't have any tags yet.",
+    "У вас нет ни одного тэга."
+  ],
+  [
+    "Your search did not match any items.",
+    "Поиск не дал результатов."
+  ],
+  [
+    "This vault does not have any items yet.",
+    "В этом хранилище нет записей."
+  ],
+  [
+    "You don't have any attachments yet.",
+    "У вас нет ни одного вложения."
+  ],
+  [
+    "You don't have any favorites yet.",
+    "У вас нет элементов в избранном."
+  ],
+  [
+    "You don't have any recently used items!",
+    "У вас нет недавного использованных записей!"
+  ],
+  [
+    "You don't have any items yet.",
+    "У вас нет записей."
+  ],
+  [
+    "Type To Search",
+    "Введите для поиска"
+  ],
+  [
+    "{0} items selected",
+    "{0} записей выбрано"
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be deleted. Do you want to proceed deleting the other items?",
+    "Некоторые выбранные записи находятся в хранилищах, к которым у вас нет доступа на запись, и не могут быть удалены. Удалить остальные записи?"
+  ],
+  [
+    "Yes",
+    "Да"
+  ],
+  [
+    "No",
+    "Нет"
+  ],
+  [
+    "Are you sure you want to delete these items? This action can not be undone!",
+    "Вы уверены, что следует удалить эти записи? Это действие необратимо!"
+  ],
+  [
+    "Delete {0} Items",
+    "Удалить {0} записей"
+  ],
+  [
+    "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
+    "Некоторыей выбранные записи имеют вложения и не могут быть перемещены. Переместить оставшиеся?"
+  ],
+  [
+    "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
+    "Некоторые выбранные записи находятся в хранилищах, к которым у вас нет доступа на запись, и не могут быть перемещены. Продолжить перемещение оставшихся?"
+  ],
+  [
+    "No Name",
+    "Без имени"
+  ],
+  [
+    "copied",
+    "скопировано"
+  ],
+  [
+    "No Fields",
+    "Нет полей"
+  ],
+  [
+    "This item has no fields.",
+    "Эта запись не имеет полей."
+  ],
+  [
+    "Email Address",
+    "Email адрес"
+  ],
+  [
+    "Master Password",
+    "Мастер пароль"
+  ],
+  [
+    "Login",
+    "Логин"
+  ],
+  [
+    "New to Padloc?",
+    "Впервые в Padloc?"
+  ],
+  [
+    "Sign Up Now",
+    "Зарегистрироваться"
+  ],
+  [
+    "Please enter a valid email address!",
+    "Введите действительный email!"
+  ],
+  [
+    "Please enter the confirmation code sent to your email address to proceed!",
+    "Введите код подтверждения, посланный на ващ email!"
+  ],
+  [
+    "One Last Step!",
+    "Еще один шаг!"
+  ],
+  [
+    "Enter Verification Code",
+    "Введите код подтверждения"
+  ],
+  [
+    "Maximum number of tries exceeded! Please resubmit and try again!",
+    "Превышено максимальное количество попыток! Переотправьте и попробуйте снова!"
+  ],
+  [
+    "Wrong username or password. Please try again!",
+    "Неверное имя пользователя или пароль! Попробуйте снова!"
+  ],
+  [
+    "Can't remember your master password?",
+    "Не можете вспомнить ваш мастер-пароль?"
+  ],
+  [
+    "Recover Account",
+    "Восстановить аккаунт"
+  ],
+  [
+    "Try Again",
+    "Попробуйте снова"
+  ],
+  [
+    "An account with this email address does not exist!",
+    "Аккаунт с указанным адресом не существует!"
+  ],
+  [
+    "Sign Up",
+    "Зарегистрироваться"
+  ],
+  [
+    "Remove",
+    "Удалить"
+  ],
+  [
+    "Suspend",
+    "Приостановить"
+  ],
+  [
+    "Remove Admin",
+    "Убрать права администратора"
+  ],
+  [
+    "Make Admin",
+    "Дать права администратора"
+  ],
+  [
+    "Are you sure you want to remove this member from this organization?",
+    "Вы уверены, что хотите удалить этого члена организации?"
+  ],
+  [
+    "Remove Member",
+    "Удалить члена организации"
+  ],
+  [
+    "Are you sure you want to make this member an admin? Admins can manage vaults, groups and permissions.",
+    "Вы уверены, что хотите предоставить этому члену организации права администратора? Администратор может управлять хранилищами, группами и правами."
+  ],
+  [
+    "Are you sure you want to remove this member as admin?",
+    "Вы уверены, что хотите убрать у этого пользователя права администратора?"
+  ],
+  [
+    "Are you sure you want to suspend this member?",
+    "Вы уверены, что хотите приостановить членство этого пользователя в организации?"
+  ],
+  [
+    "Suspend Member",
+    "Приостановить членство пользователя"
+  ],
+  [
+    "Groups",
+    "Группы"
+  ],
+  [
+    "Vaults",
+    "Хранилища"
+  ],
+  [
+    "read",
+    "читать"
+  ],
+  [
+    "write",
+    "писать"
+  ],
+  [
+    "Owner",
+    "Владелец"
+  ],
+  [
+    "Admin",
+    "Администратор"
+  ],
+  [
+    "Suspended",
+    "Приостановлен"
+  ],
+  [
+    "Items",
+    "Записи"
+  ],
+  [
+    "Orgs & Teams",
+    "Организации и комманды"
+  ],
+  [
+    "New Organization",
+    "Новая организация"
+  ],
+  [
+    "Settings",
+    "Настройки"
+  ],
+  [
+    "{0} Items",
+    "{0} записей"
+  ],
+  [
+    "Move {0} To",
+    "Переместить {0} в"
+  ],
+  [
+    "No target vaults available!",
+    "Нет доступных целевых хранилищ!"
+  ],
+  [
+    "Move Item",
+    "Переместить запись"
+  ],
+  [
+    "Move Items",
+    "Переместить записи"
+  ],
+  [
+    "Successfully created {0} invites!",
+    "{0} приглашений созданы успешно!"
+  ],
+  [
+    "Unsuspend",
+    "Разблокировать"
+  ],
+  [
+    "Are you sure you want to delete this organization? All associated vaults and the data within them will be lost! This action can not be undone.",
+    "Вы уверены, что хотите удалить эту организацию? Все хранилища организации и данные в них будут утеряны! Эта операция необратима!"
+  ],
+  [
+    "Delete Organization",
+    "Удалить организацию"
+  ],
+  [
+    "Rename Organization",
+    "Переименовать организацию"
+  ],
+  [
+    "Company Name",
+    "Название компании"
+  ],
+  [
+    "Please enter a name!",
+    "Пожалуйста, введите название!"
+  ],
+  [
+    "Do you want to rotate this organizations cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
+    "Вы хотите сменить крипторграфический ключ организации? Все члены организации должны будут заново подтвердить членство но все данные будут сохранены."
+  ],
+  [
+    "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
+    "Крипторграфический ключ организации изменен успешно, запросы на подтверждение разосланы членам организации."
+  ],
+  [
+    "Members",
+    "Члены организации"
+  ],
+  [
+    "This organization currently does not have an active subscription and has been put in \"frozen\" state as a result. While in this state, you won't be able to make any changes to members, groups or vaults of this organization.",
+    "Данная организация не имеет активной подписки и находится в \"замороженном\" состоянии. В этом состоянии вы не можете производить изменения членов организации, групп или хранилищ."
+  ],
+  [
+    "Update Subscription",
+    "Обновить подписку"
+  ],
+  [
+    "New Group",
+    "Новая группа"
+  ],
+  [
+    "New Vault",
+    "Новое хранилище"
+  ],
+  [
+    "Subscription",
+    "Подписка"
+  ],
+  [
+    "Billing Info",
+    "Платежная информация"
+  ],
+  [
+    "Security",
+    "Безопасность"
+  ],
+  [
+    "Rotate Cryptographic Keys",
+    "Сменить криптографический ключ"
+  ],
+  [
+    "General",
+    "Общие"
+  ],
+  [
+    "Change Organization Name",
+    "Сменить название организации"
+  ],
+  [
+    "Organizations allow you to securely share passwords, documents and other data within your family, team or any other kind of group!",
+    "Организации позволяют безопасно совместно использовать пароли, документы и другие данные в вашей семье, команде и любых других группах!"
+  ],
+  [
+    "Start Trial",
+    "Начать пробный период"
+  ],
+  [
+    "Scan QR Code",
+    "Сканировать QR-код"
+  ],
+  [
+    "Failed to scan QR code. Error: ",
+    "Не удалось отсканировать QR-код. Ошибка: "
+  ],
+  [
+    "Please enter your email address and new master password.",
+    "Введите ваш email адрес и новый мастер-пароль."
+  ],
+  [
+    "New Master Password",
+    "Новый мастер-пароль"
+  ],
+  [
+    "WARNING: Weak Password!",
+    "ВНИМАНИЕ: Слабый пароль!"
+  ],
+  [
+    "Repeat Master Password",
+    "Повторите мастер пароль"
+  ],
+  [
+    "IMPORTANT, READ CAREFULLY: Padloc is designed in a way that makes it impossible for us to access the data encrypted in any of your vaults even if we wanted to. While this is essential to ensuring the security of your data, it also has the following implications:",
+    "ВАЖНО, ПРОЧТИТЕ ВНИМАТЕЛЬНО: Padloc спроектирован так, что не позволяет нам получить доступ к зашифрованным данным в ваших хранилищах, даже в случае если бы мы захотели его получить. Это важно для обеспечения уверенности в безопасности ваших данных, но также подразумевает следующее:"
+  ],
+  [
+    "Any data stored in your private vault can not be recovered and will be permantently lost.",
+    "Все данные в вашем приватном хранилище не могут быть восстановлены и будут утеряны навсегда."
+  ],
+  [
+    "All your organization memberships will be suspended temporarily until confirmed by the organization owner.",
+    "Ваше членство во всех организациях будет приостановлено до подтверждения владельцем организации."
+  ],
+  [
+    "All members of organizations you own will be suspended temporarily until confirmed by you.",
+    "Членство всех пользователей в ваших организациях будет приостановлено до подтверждения вами."
+  ],
+  [
+    "Please enter a master password!",
+    "Введите ваш мастер-пароль!"
+  ],
+  [
+    "You didn't repeat your master password correctly. Try again!",
+    "Повторно введенный мастер-пароль не совпадает с первоначальным. Попробуйте снова!"
+  ],
+  [
+    "The password you entered is weak which makes it easier for attackers to break the encryption used to protect your data. Try to use a longer password or include a variation of uppercase, lowercase and special characters as well as numbers!",
+    "Вы ввели слабый пароль, что может позволить злоумышленникам взломать защиту ваших данных. Попробуйте использовать более длинный пароль или включить в него различные символы в разных регистрах и специальные символы!"
+  ],
+  [
+    "Choose Different Password",
+    "Выберите другой пароль"
+  ],
+  [
+    "Use Anyway",
+    "Использовать этот"
+  ],
+  [
+    "WARNING: Weak Password",
+    "ВНИМАНИЕ: Слабый пароль"
+  ],
+  [
+    "To complete the account recovery process, please enter the confirmation code sent to your email address!",
+    "Для завершения процесса восстановления аккаунта, введите код подтверждения высланный на ваш email!"
+  ],
+  [
+    "Account recovery successful!",
+    "Аккаунт успешно восстановлен!"
+  ],
+  [
+    "Report Errors",
+    "Сообщить об ошибке"
+  ],
+  [
+    "{0} Errors Detected",
+    "Ошибок обнаружено: {0}"
+  ],
+  [
+    "Padloc has registered {0} errors during your use of the app. These errors may not have any impact on functionality and can often be ignored, but reporting them may help us diagnose problems, identify possible failure modes and generally improve the stability of the app.",
+    "Padloc обнаружил {0} ошибок в работе приложения. Эти ошибки могут не оказывать влияния на функционал и скорее всего могут быть проигнорированы, но если вы сообщите нам о них, это поможет диагностировать возможные проблемы и улучшить функциональность и стабильность приложения."
+  ],
+  [
+    "Profile",
+    "Профиль"
+  ],
+  [
+    "Log Out",
+    "Выйти"
+  ],
+  [
+    "Change Master Password",
+    "Сменить мастер пароль"
+  ],
+  [
+    "Auto Lock",
+    "Автоматическая блокировка"
+  ],
+  [
+    "Lock Automatically",
+    "Блокировать автоматически"
+  ],
+  [
+    " min",
+    " min"
+  ],
+  [
+    "After",
+    "После"
+  ],
+  [
+    "Enable Biometric Unlock",
+    "Включить биометрическую разблокировку"
+  ],
+  [
+    "Import / Export",
+    "Импорт / Экспорт"
+  ],
+  [
+    "Import...",
+    "Импорт..."
+  ],
+  [
+    "Export...",
+    "Экспорт..."
+  ],
+  [
+    "Support",
+    "Поддержка"
+  ],
+  [
+    "Website",
+    "Сайт"
+  ],
+  [
+    "Contact Support",
+    "Контактная информация"
+  ],
+  [
+    "Danger Zone",
+    "Опасный раздел"
+  ],
+  [
+    "Delete Account",
+    "Удалить аккаунт"
+  ],
+  [
+    "Edit Profile",
+    "Редактировать профиль"
+  ],
+  [
+    "Do you really want to log out?",
+    "Вы действительно хотите выйти?"
+  ],
+  [
+    "Please enter your current password!",
+    "Введите ваш текущий пароль!"
+  ],
+  [
+    "Enter Current Password",
+    "Ввод текущего пароля"
+  ],
+  [
+    "Now choose a new master password!",
+    "Выберите новый мастер-пароль!"
+  ],
+  [
+    "Enter New Password",
+    "Ввод нового пароля"
+  ],
+  [
+    "Please enter a password!",
+    "Пожалуйста введите пароль!"
+  ],
+  [
+    "Please confirm your new password!",
+    "Подтвердите ваш новый пароль!"
+  ],
+  [
+    "Repeat New Password",
+    "Подтверждение пароля"
+  ],
+  [
+    "Master password changed successfully.",
+    "Мастер-пароль изменен успешно."
+  ],
+  [
+    "Please enter your master password to proceed.",
+    "Введите ваш мастер-пароль для продолжения."
+  ],
+  [
+    "Are you sure you want to delete this account? All associated vaults and the data within them will be lost and any active subscriptions will be canceled immediately. This action can not be undone!",
+    "Вы уверены, что хотите удалить этот аккаунт? Все хранилища этого аккаунта и данные в них будут потеряны, все активные подписки будут отменены. Эта операция необратима!"
+  ],
+  [
+    "Are you sure you want to disable biometric unlock?",
+    "Вы уверены, что хотите отключить биометическую разблокировку?"
+  ],
+  [
+    "Welcome to Padloc! Let's get you started by creating an account for you.",
+    "Добро пожаловать в Padloc! Давайте начнем с создания аккаунта для вас."
+  ],
+  [
+    "Your email address serves as your username and allows us to get in touch with you. Don't worry, we would never send you any spam!",
+    "Ваш Email адрес будет служить именем пользователя и позволит связаться с вами. Не беспокойтесь, мы не посылаем никакого спама!"
+  ],
+  [
+    "Your Name",
+    "Ваше имя"
+  ],
+  [
+    "What should we call you?",
+    "Как к вам обращаться?"
+  ],
+  [
+    "Continue",
+    "Продолжить"
+  ],
+  [
+    "Already have an account?",
+    "Уже есть аккаунт?"
+  ],
+  [
+    "Sign In",
+    "Войти"
+  ],
+  [
+    "You've Got Mail!",
+    "У вас есть сообщения!"
+  ],
+  [
+    "To verify your email address, please enter the confirmation code we sent to {0}.",
+    "Для проверки email, введите код подтверждения, который мы выслали на {0}."
+  ],
+  [
+    "Confirmation Code",
+    "Код подтверждения"
+  ],
+  [
+    "Say hello to your",
+    ""
+  ],
+  [
+    "It's the last password you'll ever have to remember! Please memorize it and never reveal it to anyone (not even us)! We recommend writing it down on a piece of paper and storing it somewhere safe, at least until you have it safely memorized.",
+    "Это последний пароль, который вам придется запомнить! Запомните его и никогда никому не сообщайте (даже нам)! Мы советуем записать его на бумаге и хранить в надежном месте, как минимум до тех пор пока вы его хорошо не запомните."
+  ],
+  [
+    "[Tap To Reveal]",
+    "[Нажмите чтобы показать]"
+  ],
+  [
+    "[Hover To Reveal]",
+    "[Наведите мышь, чтобы показать]"
+  ],
+  [
+    "This random passphrase was generated just for you and is designed to be both secure and easy to remember. Don't like it?",
+    "Этот случайный пароль сформирован для вас, так, чтобы быть надежным паролем и при этом легко запоминаться. Вам он не нравится?"
+  ],
+  [
+    "Try Another One",
+    "Попробуйте другой"
+  ],
+  [
+    "Choose Your Own",
+    "Задайте свой"
+  ],
+  [
+    "An account with this email address already exists!",
+    "Аккаунт с этим email уже существует!"
+  ],
+  [
+    "Change Email",
+    "Сменить email"
+  ],
+  [
+    "We recommend using a randomly generated password that is both strong and easy to remember.",
+    "Мы рекомендуем использовать случайно сгенерированный надежный пароль, который легко запомнить."
+  ],
+  [
+    "Keep This One",
+    "Использовать этот"
+  ],
+  [
+    "Generate Another",
+    "Сгенерировать другой"
+  ],
+  [
+    "Choose My Own",
+    "Задать мой собственный"
+  ],
+  [
+    "Want A Different Master Password?",
+    "Хотите другой мастер-пароль?"
+  ],
+  [
+    "Choose Own Master Password",
+    "Задайте свой мастер-пароль"
+  ],
+  [
+    "Resume Subscription",
+    "Возобновить подписку"
+  ],
+  [
+    "Cancel Subscription",
+    "Отменить подаиску"
+  ],
+  [
+    "Update Plan",
+    "Обновить тарифный план"
+  ],
+  [
+    "Are you sure you want to downgrade to the Free Plan?",
+    "Вы уверены, что хотите изменить тарифный план на бесплатный?"
+  ],
+  [
+    "Downgrade",
+    "Сменить тарифный план"
+  ],
+  [
+    "No Plan Selected",
+    "Тарифный план не выбран"
+  ],
+  [
+    "Unlimited",
+    "Без ограничений"
+  ],
+  [
+    "{0} / Год",
+    ""
+  ],
+  [
+    "Canceled ({0} days left)",
+    "Отменено ({0} дней осталось)"
+  ],
+  [
+    "Authentication Required",
+    "Требуется аутентификация"
+  ],
+  [
+    "Inactive",
+    "Неактивно"
+  ],
+  [
+    "Trialing ({0} days left)",
+    "Пробный период ({0} дней осталось)"
+  ],
+  [
+    "Choose Plan",
+    "Выберите тарифный план"
+  ],
+  [
+    "Complete Payment",
+    "Завершить платеж"
+  ],
+  [
+    "Downgrade To Free Plan",
+    "Понизить до бесплатного тарифа"
+  ],
+  [
+    "Add Tag",
+    "Добавить тег"
+  ],
+  [
+    "Choose A Template",
+    "Выберите шаблон"
+  ],
+  [
+    "What kind of item you would like to add?",
+    "Какой тип записи вы хотите добавить?"
+  ],
+  [
+    "Invalid Code",
+    "Неверный код"
+  ],
+  [
+    "Logged In As",
+    "Вход как"
+  ],
+  [
+    "Unlock",
+    "Разблокировать"
+  ],
+  [
+    "Wrong password! Please try again.",
+    "Неверный пароль! Попробуйте снова."
+  ],
+  [
+    "Logout / Switch Account",
+    "Выйти / Сменить аккаунт"
+  ],
+  [
+    "Forgot Password",
+    "Забыли пароль"
+  ],
+  [
+    "Are you sure you want to log out of this account?",
+    "Вы уверены, что хотите выйти из этого аккаунта?"
+  ],
+  [
+    "Biometric unlock expired. Complete setup to reeneable.",
+    "Биометрическая разблокировка устарела. Настройте ее заново."
+  ],
+  [
+    "Biometric unlock failed! Reason: {0}",
+    "Биометрическая разблокировка не удалась! Причина: {0}"
+  ],
+  [
+    "Failed To Unlock",
+    "Разблокировка не удалась"
+  ],
+  [
+    "Update",
+    "Обновить"
+  ],
+  [
+    "Storage limit exceeded!",
+    "Превышен лимит хранения!"
+  ],
+  [
+    "Upload failed! Please try again!",
+    "Закачка не удалась! Попробуйте снова!"
+  ],
+  [
+    "Upload Attachment",
+    "Закачка вложения"
+  ],
+  [
+    "Unkown File Type",
+    "Неизвестный тип файла"
+  ],
+  [
+    "Retry Upload",
+    "Повторить закачку"
+  ],
+  [
+    "Upload",
+    "Закачка"
+  ],
+  [
+    "Are you sure you want to delete this vault? All the data stored in it will be lost! This action can not be undone.",
+    "Вы уверены, что хотите удалить это хранилище? Все данные в хранилище будут потеряны! Это действие необратимо."
+  ],
+  [
+    "Delete Vault",
+    "Удалить хранилище"
+  ],
+  [
+    "Enter Vault Name",
+    "Введите название хранилища"
+  ],
+  [
+    "Username",
+    "Имя пользователя"
+  ],
+  [
+    "Password",
+    "Пароль"
+  ],
+  [
+    "URL",
+    "URL"
+  ],
+  [
+    "Notes",
+    "Заметки"
+  ],
+  [
+    "Your session has expired. Please log in again!",
+    "Ваша сессия устарела. Повторите вход!"
+  ],
+  [
+    "A new update is ready to install! Do you want to install it now?",
+    "Новые обновления готовы к установке! Хотите установить их сейчас?"
+  ],
+  [
+    "Install & Reload",
+    "Установить и перезагрузить"
+  ],
+  [
+    "Later",
+    "Позже"
+  ],
+  [
+    "Date",
+    "Дата"
+  ],
+  [
+    "Month",
+    "Месяц"
+  ],
+  [
+    "Credit Card Number",
+    "Номер кредитной карты"
+  ],
+  [
+    "Phone Number",
+    "Номер телефона"
+  ],
+  [
+    "PIN",
+    "PIN"
+  ],
+  [
+    "Two-Factor Token",
+    "Токен двухфакторной аутентификации"
+  ],
+  [
+    "Note",
+    "Заметки"
+  ],
+  [
+    "Other",
+    "Другое"
+  ],
+  [
+    "Credit Card",
+    "Кредитная карта"
+  ],
+  [
+    "Card Number",
+    "Номер карты"
+  ],
+  [
+    "Card Owner",
+    "Владелец карты"
+  ],
+  [
+    "Valid Until",
+    "Действительно до"
+  ],
+  [
+    "CVC",
+    "CVC"
+  ],
+  [
+    "Bank Account",
+    "Номер счета"
+  ],
+  [
+    "Account Owner",
+    "Владелец счета"
+  ],
+  [
+    "IBAN",
+    "IBAN"
+  ],
+  [
+    "BIC",
+    "BIC"
+  ],
+  [
+    "Card PIN",
+    "PIN карты"
+  ],
+  [
+    "WIFI Password",
+    "Пароль WiFi"
+  ],
+  [
+    "Passport",
+    "Паспорт"
+  ],
+  [
+    "Full Name",
+    "Полное имя"
+  ],
+  [
+    "Passport Number",
+    "Номер паспорта"
+  ],
+  [
+    "Country",
+    "Страна"
+  ],
+  [
+    "Birthdate",
+    "Дата рождения"
+  ],
+  [
+    "Birthplace",
+    "Место рождения"
+  ],
+  [
+    "Issued On",
+    "Выдан"
+  ],
+  [
+    "Expires",
+    "Истекает"
+  ],
+  [
+    "Document",
+    "Документ"
+  ],
+  [
+    "Custom",
+    "Другое"
+  ],
+  [
+    "{0} on {1}",
+    "{0} на {1}"
+  ],
+  [
+    "{0} Device",
+    "{0} Устройсво"
+  ]
+]
