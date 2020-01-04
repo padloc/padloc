@@ -85,7 +85,7 @@
   ],
   [
     "Do you want to save this file to your disk? WARNING: Doing this will leave the file exposed and unprotected on your harddrive!",
-    "Желаете сохранить этот файл на диск? ВНИМАНИЕ: Файл, сохраненный на диске будет незашифрован и незащищен от просмотра!"
+    "Желаете сохранить этот файл на диск? ВНИМАНИЕ: Файл, сохраненный на диске будет не зашифрован и не защищен от просмотра!"
   ],
   [
     "Save",
@@ -329,7 +329,7 @@
   ],
   [
     "WARNING: Exporting to CSV format will save your data without encyryption of any kind which means it can be read by anyone. We strongly recommend exporting your data as a secure, encrypted file, instead!",
-    "ВНИМАНИЕ: Экспорт в CSV формате сохранит данные незашифрованными, что значит, что их сможет прочесть кто угодно. Мы настоятельно рекомендуем экспортировать данные наиболее безопасным методом в виде зашифрованного файла!"
+    "ВНИМАНИЕ: Экспорт в CSV формате сохранит данные не зашифрованными, что значит, что их сможет прочесть кто угодно. Мы настоятельно рекомендуем экспортировать данные наиболее безопасным методом в виде зашифрованного файла!"
   ],
   [
     "Export {0} Items",
@@ -345,7 +345,7 @@
   ],
   [
     "Please choose a password!",
-    "Пожадуйста, задайте пароль!"
+    "Пожалуйста, задайте пароль!"
   ],
   [
     "Please repeat the password!",
@@ -429,7 +429,7 @@
   ],
   [
     "Use",
-    "Испольновать"
+    "Использовать"
   ],
   [
     "Discard",
@@ -601,7 +601,7 @@
   ],
   [
     "File uploaded successfully!",
-    "Файл закачен успушно!"
+    "Файл закачен успешно!"
   ],
   [
     "Favorites",
@@ -649,7 +649,7 @@
   ],
   [
     "You don't have any recently used items!",
-    "У вас нет недавного использованных записей!"
+    "У вас нет недавно использованных записей!"
   ],
   [
     "You don't have any items yet.",
@@ -685,7 +685,7 @@
   ],
   [
     "Some items in your selection have attachments and cannot be moved. Do you want to proceed moving the other items?",
-    "Некоторыей выбранные записи имеют вложения и не могут быть перемещены. Переместить оставшиеся?"
+    "Некоторые выбранные записи имеют вложения и не могут быть перемещены. Переместить оставшиеся?"
   ],
   [
     "Some items in your selection are from Vaults you don't have write access to and cannot be moved. Do you want to proceed moving the other items?",
@@ -733,7 +733,7 @@
   ],
   [
     "Please enter the confirmation code sent to your email address to proceed!",
-    "Введите код подтверждения, посланный на ващ email!"
+    "Введите код подтверждения, посланный на ваш email!"
   ],
   [
     "One Last Step!",
@@ -845,7 +845,7 @@
   ],
   [
     "Orgs & Teams",
-    "Организации и комманды"
+    "Организации и команды"
   ],
   [
     "New Organization",
@@ -905,11 +905,11 @@
   ],
   [
     "Do you want to rotate this organizations cryptographic keys? All organization memberships will have to be reconfirmed but no data will be lost.",
-    "Вы хотите сменить крипторграфический ключ организации? Все члены организации должны будут заново подтвердить членство но все данные будут сохранены."
+    "Вы хотите сменить криптографический ключ организации? Все члены организации должны будут заново подтвердить членство но все данные будут сохранены."
   ],
   [
     "The organizations cryptographic keys have been rotated successfully and membership confirmation requests for all members have been sent out.",
-    "Крипторграфический ключ организации изменен успешно, запросы на подтверждение разосланы членам организации."
+    "Криптографический ключ организации изменен успешно, запросы на подтверждение разосланы членам организации."
   ],
   [
     "Members",
@@ -1069,7 +1069,7 @@
   ],
   [
     " min",
-    " min"
+    " мин."
   ],
   [
     "After",
@@ -1101,7 +1101,7 @@
   ],
   [
     "Contact Support",
-    "Контактная информация"
+    "Написать в поддержку"
   ],
   [
     "Danger Zone",
@@ -1269,7 +1269,7 @@
   ],
   [
     "Cancel Subscription",
-    "Отменить подаиску"
+    "Отменить подписку"
   ],
   [
     "Update Plan",
@@ -1569,6 +1569,6 @@
   ],
   [
     "{0} Device",
-    "{0} Устройсво"
+    "{0} Устройств"
   ]
 ]
