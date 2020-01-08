@@ -5,6 +5,10 @@ type Constructor<T> = new (...args: any[]) => T;
 
 export const StateMixin = <T extends Constructor<BaseElement>>(baseElement: T) =>
     class extends baseElement {
+        get app() {
+            return app;
+        }
+
         get state() {
             return app.state;
         }

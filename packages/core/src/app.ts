@@ -32,7 +32,8 @@ import {
     keyStoreSet,
     keyStoreGet,
     keyStoreDelete,
-    getCryptoProvider
+    getCryptoProvider,
+    getStorage
 } from "./platform";
 import { uuid } from "./util";
 import { Client as SRPClient } from "./srp";
@@ -214,20 +215,23 @@ export class App {
     state = new AppState();
 
     /** Promise that is resolved when the app has been fully loaded */
-    loaded = this.load();
+    loaded: Promise<void>;
+
+    storage: Storage;
 
     constructor(
-        /** Persistent storage provider */
-        public storage: Storage,
         /** Data transport provider */
-        sender: Sender
+        sender: Sender,
+        storage = getStorage()
     ) {
+        this.storage = storage;
         this.api = new Client(this.state, sender, (_req, _res, err) => {
             const online = !err || err.code !== ErrorCode.FAILED_CONNECTION;
             if (online !== this.state.online) {
                 this.setState({ online });
             }
         });
+        this.loaded = this.load();
     }
 
     /** Promise that resolves once all current synchronization processes are complete */
@@ -778,7 +782,11 @@ export class App {
         const key = base64ToBytes(await keyStoreGet("master_key_encryption_key"));
         await encryptedMasterKey.unlock(key);
         const masterKey = await encryptedMasterKey.getData();
-        await this.account!.unlockWithMasterKey(masterKey);
+        await this.unlockWithMasterKey(masterKey);
+    }
+
+    async unlockWithMasterKey(key: Uint8Array) {
+        await this.account!.unlockWithMasterKey(key);
         await this._unlocked();
     }
 

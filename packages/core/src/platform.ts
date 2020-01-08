@@ -3,6 +3,7 @@ import { Serializable } from "./encoding";
 import { CryptoProvider } from "./crypto";
 import { Err, ErrorCode } from "./error";
 import { StubCryptoProvider } from "./stub-crypto-provider";
+import { Storage, MemoryStorage } from "./storage";
 
 /**
  * Object representing all information available for a given device.
@@ -92,6 +93,8 @@ export interface Platform {
 
     crypto: CryptoProvider;
 
+    storage: Storage;
+
     scanQR(): Promise<string>;
     stopScanQR(): Promise<void>;
 
@@ -113,6 +116,7 @@ export interface Platform {
  */
 export class StubPlatform implements Platform {
     crypto = new StubCryptoProvider();
+    storage: Storage = new MemoryStorage();
 
     async setClipboard(_val: string) {
         throw new Err(ErrorCode.NOT_SUPPORTED);
@@ -202,6 +206,10 @@ export function getDeviceInfo() {
 
 export function getCryptoProvider() {
     return platform.crypto;
+}
+
+export function getStorage() {
+    return platform.storage;
 }
 
 export function scanQR() {

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Padloc</title>
+        <meta charset="UTF-8" />
+
+        <style>
+            html,
+            body {
+                background: linear-gradient(rgb(89, 198, 255), rgb(7, 124, 185));
+                width: 350px;
+                height: 600px;
+                margin: 0;
+                overscroll-behavior: none;
+                color: #fff;
+            }
+
+            @keyframes spin {
+                from {
+                    stroke-dashoffset: 240;
+                }
+
+                to {
+                    stroke-dashoffset: 40;
+                }
+            }
+
+            @keyframes rotate {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .spinner {
+                width: 50px;
+                height: 50px;
+                position: absolute;
+                top: 0;
+                right: 0;
+                left: 0;
+                bottom: 0;
+                margin: auto;
+            }
+
+            .spinner circle {
+                fill: none;
+                stroke: currentColor;
+                stroke-linecap: round;
+                stroke-width: 10;
+                stroke-dasharray: 252;
+                transform-origin: center center;
+                will-change: transform;
+                animation: spin 1.5s cubic-bezier(0.44, 0.22, 0.64, 0.86) alternate infinite,
+                    rotate linear 1.2s infinite;
+            }
+        </style>
+
+    </head>
+    <body>
+        <svg viewBox="0 0 100 100" class="spinner">
+            <circle cx="50" cy="50" r="40" />
+        </svg>
+    </body>
+</html>

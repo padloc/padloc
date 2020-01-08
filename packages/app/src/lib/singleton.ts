@@ -3,7 +3,7 @@ let container: HTMLElement;
 
 export function getSingleton(elName: string) {
     if (!container) {
-        container = document.querySelector("pl-app") as HTMLElement;
+        container = document.querySelector("[singleton-container]") as HTMLElement;
     }
 
     let el = singletons[elName];

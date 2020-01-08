@@ -34,11 +34,14 @@ import { TemplateDialog } from "./template-dialog";
 //     document.addEventListener("deviceready", resolve);
 // });
 
-class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
+export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
     @property()
     locked = true;
     @property()
     loggedIn = false;
+
+    @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
+    readonly singletonContainer = true;
 
     @property()
     private _ready = false;
@@ -318,18 +321,37 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     updated(changes: Map<string, any>) {
         if (changes.has("locked")) {
             if (this.locked) {
-                this.$(".wrapper").classList.remove("active");
-                clearDialogs();
-                clearClipboard();
-                this._routeChanged();
+                this._locked();
             } else {
-                setTimeout(() => {
-                    this.$(".wrapper").classList.add("active");
-                    router.go(router.params.next || "", {}, true);
-                }, 600);
+                this._unlocked();
+            }
+        }
+
+        if (changes.has("loggedIn")) {
+            if (this.loggedIn) {
+                this._loggedIn();
+            } else {
+                this._loggedOut();
             }
         }
     }
+
+    protected _locked() {
+        this.$(".wrapper").classList.remove("active");
+        clearDialogs();
+        clearClipboard();
+        this._routeChanged();
+    }
+
+    protected _unlocked() {
+        setTimeout(() => {
+            this.$(".wrapper").classList.add("active");
+            router.go(router.params.next || "", {}, true);
+        }, 600);
+    }
+
+    protected _loggedIn() {}
+    protected _loggedOut() {}
 
     @listen("toggle-menu")
     _toggleMenu() {
