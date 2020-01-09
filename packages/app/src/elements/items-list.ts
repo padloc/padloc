@@ -657,6 +657,7 @@ export class ItemsList extends StateMixin(View) {
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
         app.updateItem(vault, item, { lastUsed: new Date() });
+        this.dispatch("auto-fill", { item, index });
     }
 
     private _openAttachment(a: AttachmentInfo, item: VaultItem, e: MouseEvent) {

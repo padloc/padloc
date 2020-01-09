@@ -1,14 +1,15 @@
 import { browser } from "webextension-polyfill-ts";
 import { setPlatform } from "@padloc/core/src/platform";
 import { App } from "@padloc/core/src/app";
-import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
+import { bytesToBase64, base64ToBytes, base32ToBytes } from "@padloc/core/src/encoding";
 import { AjaxSender } from "@padloc/app/src/lib/ajax";
+import { totp } from "@padloc/core/src/otp";
 import { ExtensionPlatform } from "./platform";
 import { Message } from "./message";
 
 setPlatform(new ExtensionPlatform());
 
-class Extension {
+class ExtensionBackground {
     app = new App(new AjaxSender(process.env.PL_SERVER_URL!));
 
     async init() {
@@ -25,6 +26,8 @@ class Extension {
                     break;
                 case "requestMasterKey":
                     return this.app.account && this.app.account.masterKey && bytesToBase64(this.app.account.masterKey) || null;
+                case "calcTOTP":
+                    return totp(base32ToBytes(msg.secret));
             }
         });
     }
@@ -36,7 +39,7 @@ class Extension {
 
     private _updateIcon() {
         if (!this.app.account) {
-            browser.browserAction.setIcon({ path: "icon-warning.png" });
+            browser.browserAction.setIcon({ path: "icon-locked.png" });
             browser.browserAction.setTitle({ title: "Please Log In" });
         } else {
             browser.browserAction.setIcon({ path: "icon.png" });
@@ -46,7 +49,7 @@ class Extension {
 }
 
 //@ts-ignore
-const extension = (window.extension = new Extension());
+const extension = (window.extension = new ExtensionBackground());
 
 extension.init();
 

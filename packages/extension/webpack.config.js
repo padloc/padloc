@@ -2,14 +2,16 @@ const path = require("path");
 const { EnvironmentPlugin } = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const { version, description } = require("./package.json");
+const { version } = require("./package.json");
+const manifest = require("./src/manifest.json");
 
 const serverUrl = process.env.PL_SERVER_URL || `http://0.0.0.0:${process.env.PL_SERVER_PORT || 3000}`;
 
 module.exports = {
     entry: {
         popup: path.resolve(__dirname, "src/popup.ts"),
-        background: path.resolve(__dirname, "src/background.ts")
+        background: path.resolve(__dirname, "src/background.ts"),
+        content: path.resolve(__dirname, "src/content.ts")
     },
     output: {
         path: path.resolve(__dirname, "dist"),
@@ -74,22 +76,8 @@ module.exports = {
                 compiler.hooks.emit.tap("Web Extension Manifest", compilation => {
                     const jsonString = JSON.stringify(
                         {
-                            name: "Padloc",
-                            version,
-                            description,
-                            manifest_version: 2,
-                            icons: {
-                                "128": "icon.png"
-                            },
-                            background: {
-                                scripts: ["background.js"],
-                                persistent: false
-                            },
-                            browser_action: {
-                                default_popup: "popup.html",
-                                default_icon: "icon.png"
-                            },
-                            permissions: ["storage", "unlimitedStorage"]
+                            ...manifest,
+                            version
                         },
                         null,
                         4

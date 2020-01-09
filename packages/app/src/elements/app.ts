@@ -43,8 +43,12 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
     readonly singletonContainer = true;
 
+    get router() {
+        return router;
+    }
+
     @property()
-    private _ready = false;
+    protected _ready = false;
 
     @query("pl-start")
     private _startView: Start;
@@ -97,6 +101,10 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     async load() {
         await app.loaded;
+        // Try syncing account so user can unlock with new password in case it has changed
+        if (app.state.loggedIn) {
+            app.fetchAccount();
+        }
         this._ready = true;
         this._routeChanged();
         const spinner = document.querySelector(".spinner") as HTMLElement;
@@ -343,11 +351,20 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         this._routeChanged();
     }
 
-    protected _unlocked() {
-        setTimeout(() => {
-            this.$(".wrapper").classList.add("active");
-            router.go(router.params.next || "", {}, true);
-        }, 600);
+    protected _unlocked(instant = false) {
+        setTimeout(
+            async () => {
+                if (!this.$(".wrapper")) {
+                    await this.updateComplete;
+                }
+
+                this.$(".wrapper").classList.add("active");
+                if (typeof router.params.next !== "undefined") {
+                    router.go(router.params.next, {}, true);
+                }
+            },
+            instant ? 0 : 600
+        );
     }
 
     protected _loggedIn() {}

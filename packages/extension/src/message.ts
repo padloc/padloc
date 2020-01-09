@@ -1,3 +1,5 @@
+import { VaultItem } from "@padloc/core/src/item";
+
 export type Message =
     | {
           type: "loggedIn";
@@ -12,4 +14,7 @@ export type Message =
           type: "unlocked";
           masterKey: string;
       }
-    | { type: "requestMasterKey" };
+    | { type: "requestMasterKey" }
+    | { type: "autoFill"; item: VaultItem; index: number }
+    | { type: "calcTOTP"; secret: string }
+    | { type: "isContentReady" };

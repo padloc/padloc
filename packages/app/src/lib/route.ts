@@ -44,6 +44,7 @@ export class Router extends EventEmitter {
             "",
             this.basePath + this.path + "?" + new URLSearchParams(params).toString()
         );
+        this.dispatch("params-changed", {params});
     }
 
     get canGoBack() {

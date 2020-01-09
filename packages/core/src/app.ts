@@ -323,11 +323,6 @@ export class App {
         // Save back to storage
         await this.storage.save(this.state);
 
-        // Try syncing account so user can unlock with new password in case it has changed
-        if (this.account) {
-            this.fetchAccount();
-        }
-
         this.loadBillingProvider();
 
         // Notify state change
