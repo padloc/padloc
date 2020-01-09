@@ -340,7 +340,7 @@ export class ItemDialog extends Dialog<string, void> {
                             .type=${field.type}
                             .editing=${this._editing}
                             @edit=${() => this._editField(index)}
-                            @copy=${() => setClipboard(this._item!, field)}
+                            @copy-clipboard=${() => setClipboard(this._item!, field)}
                             @remove=${() => this._removeField(index)}
                             @generate=${() => this._generateValue(index)}
                             @get-totp-qr=${() => this._getTotpQR(index)}

@@ -37,7 +37,7 @@ export class FieldElement extends BaseElement {
     }
 
     private get _fieldActions() {
-        const actions = [{ icon: "copy", action: () => this.dispatch("copy") }];
+        const actions = [{ icon: "copy", action: () => this.dispatch("copy-clipboard") }];
 
         if (this._fieldDef.mask) {
             actions.push({ icon: this._masked ? "show" : "hide", action: () => this._masked = !this._masked });
@@ -123,6 +123,7 @@ export class FieldElement extends BaseElement {
             .value-display {
                 white-space: pre-wrap;
                 overflow-wrap: break-word;
+                user-select: text;
             }
 
             .fields-container {
