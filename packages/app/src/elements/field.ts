@@ -121,7 +121,7 @@ export class FieldElement extends BaseElement {
             }
 
             .value-display {
-                white-space: normal;
+                white-space: pre-wrap;
                 overflow-wrap: break-word;
             }
 
