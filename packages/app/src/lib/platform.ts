@@ -137,7 +137,7 @@ export class WebPlatform extends StubPlatform implements Platform {
 
     async saveFile(name: string, type: string, contents: Uint8Array) {
         const a = document.createElement("a");
-        a.href = `data:${type};base64,${bytesToBase64(contents)}`;
+        a.href = `data:${type};base64,${bytesToBase64(contents, false)}`;
         a.download = name;
         a.rel = "noopener";
         document.body.appendChild(a);
