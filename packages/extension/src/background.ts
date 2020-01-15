@@ -4,6 +4,7 @@ import { App } from "@padloc/core/src/app";
 import { bytesToBase64, base64ToBytes, base32ToBytes } from "@padloc/core/src/encoding";
 import { AjaxSender } from "@padloc/app/src/lib/ajax";
 import { totp } from "@padloc/core/src/otp";
+import { debounce } from "@padloc/core/src/util";
 import { ExtensionPlatform } from "./platform";
 import { Message } from "./message";
 
@@ -11,6 +12,8 @@ setPlatform(new ExtensionPlatform());
 
 class ExtensionBackground {
     app = new App(new AjaxSender(process.env.PL_SERVER_URL!));
+
+    private _reload = debounce(() => this.app.reload(), 30000);
 
     async init() {
         this.app.subscribe(() => this._stateChanged());
@@ -30,10 +33,20 @@ class ExtensionBackground {
                     return totp(base32ToBytes(msg.secret));
             }
         });
+        const updateBadge = debounce(() => this._updateBadge(), 100);
+        browser.tabs.onUpdated.addListener(updateBadge);
+        browser.tabs.onActivated.addListener(updateBadge);
+    }
+
+    private async _updateBadge() {
+        const [tab] = await browser.tabs.query({currentWindow: true, active: true});
+        const count = tab &&  tab.url ? await this.app.state.index.matchUrl(tab.url) : [];
+        browser.browserAction.setBadgeText({text: count ? count.toString() : ""});
+        browser.browserAction.setBadgeBackgroundColor({color: "#ff6666"});
     }
 
     private _stateChanged() {
-        console.log("state changed!");
+        this._reload();
         this._updateIcon();
     }
 

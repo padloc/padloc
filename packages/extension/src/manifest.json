@@ -20,5 +20,5 @@
         "Nunito-SemiBold.ttf",
         "fontawesome-webfont.ttf"
     ],
-    "permissions": ["storage", "unlimitedStorage", "activeTab"]
+    "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab"]
 }

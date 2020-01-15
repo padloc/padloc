@@ -35,10 +35,18 @@ export class ExtensionApp extends App {
             }
         }
 
-        try {
-            const routerState = await this.app.storage.get(RouterState, "");
-            this.router.go(routerState.path, routerState.params, true);
-        } catch (e) {}
+        const [tab] = await browser.tabs.query({ active: true });
+        const url = tab && tab.url && new URL(tab.url);
+        this.app.state.currentHost = (url && url.host) || "";
+
+        if (this.app.state.currentHost && this.app.getItemsForHost(this.app.state.currentHost).length) {
+            this.router.go("items", { host: "true" }, true);
+        } else {
+            try {
+                const routerState = await this.app.storage.get(RouterState, "");
+                this.router.go(routerState.path, routerState.params, true);
+            } catch (e) {}
+        }
 
         this.router.addEventListener("route-changed", () => this._saveRouterState());
         this.router.addEventListener("params-changed", () => this._saveRouterState());
@@ -55,6 +63,7 @@ export class ExtensionApp extends App {
 
     _unlocked(instant = false) {
         super._unlocked(instant);
+
         if (!this.state.account || !this.state.account.masterKey) {
             return;
         }
@@ -62,6 +71,10 @@ export class ExtensionApp extends App {
             type: "unlocked",
             masterKey: bytesToBase64(this.state.account.masterKey)
         });
+
+        if (this.app.state.currentHost && this.app.getItemsForHost(this.app.state.currentHost).length) {
+            this.router.go("items", { host: "true" }, true);
+        }
     }
 
     _locked() {
@@ -86,7 +99,8 @@ export class ExtensionApp extends App {
     }
 
     private async _saveRouterState() {
-        await this.app.storage.save(new RouterState({ path: this.router.path, params: this.router.params }));
+        const { host, ...params } = this.router.params;
+        await this.app.storage.save(new RouterState({ path: this.router.path, params }));
     }
 
     private async _autoFill({ detail: { item, index } }: CustomEvent<{ item: VaultItem; index: number }>) {

@@ -397,6 +397,10 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     @listen("route-changed", router)
     async _routeChanged() {
+        if (!this._ready) {
+            return;
+        }
+
         Dialog.closeAll();
 
         await app.loaded;
@@ -464,13 +468,14 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
 
-            const { vault, tag, favorites, attachments, recent } = router.params;
+            const { vault, tag, favorites, attachments, recent, host } = router.params;
             this._items.selected = id || "";
             this._items.vault = vault || "";
             this._items.tag = tag || "";
             this._items.favorites = favorites === "true";
             this._items.attachments = attachments === "true";
             this._items.recent = recent === "true";
+            this._items.host = host === "true";
             this._openView(this._items);
 
             this._menu.selected = vault
@@ -483,6 +488,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 ? "recent"
                 : attachments
                 ? "attachments"
+                : host
+                ? "host"
                 : "items";
 
             const item = id && app.getItem(id);

@@ -24,6 +24,9 @@ export class ItemsFilter extends StateMixin(BaseElement) {
     recent: boolean = false;
 
     @property()
+    host: string = "";
+
+    @property()
     searching: boolean = false;
 
     @property({ reflect: true, attribute: "selecting" })
@@ -69,7 +72,8 @@ export class ItemsFilter extends StateMixin(BaseElement) {
                 border-bottom: solid 2px #222;
             }
 
-            button.favorites {
+            button.favorites,
+            button.host {
                 background: var(--color-negative);
                 color: var(--color-tertiary);
                 text-shadow: rgba(0, 0, 0, 0.2) 0 2px 0;
@@ -171,7 +175,7 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         if (!app.mainVault) {
             return html``;
         }
-        const { vault: vaultId, tag, favorites, attachments, recent } = this;
+        const { vault: vaultId, tag, favorites, attachments, recent, host } = this;
         const vault = app.getVault(vaultId);
         const cl = favorites
             ? "favorites"
@@ -183,6 +187,8 @@ export class ItemsFilter extends StateMixin(BaseElement) {
             ? "attachments"
             : tag
             ? "filter-tag"
+            : host
+            ? "host"
             : "all";
         const label = favorites
             ? $l("Favorites")
@@ -190,6 +196,8 @@ export class ItemsFilter extends StateMixin(BaseElement) {
             ? $l("Recently Used")
             : attachments
             ? $l("Attachments")
+            : host
+            ? this.state.currentHost
             : vault
             ? vault.name
             : tag || $l("All Items");
@@ -213,6 +221,8 @@ export class ItemsFilter extends StateMixin(BaseElement) {
 
         const totalCount = app.vaults.reduce((count, vault) => count + vault.items.size, 0);
 
+        const hostCount = this.state.currentHost ? app.getItemsForHost(this.state.currentHost).length : 0;
+
         return html`
             <button class="tap ${cl}" @click=${() => (this._selecting = !this._selecting)}>
                 <pl-icon icon="search" class="search-icon" ?hidden=${!this.searching}></pl-icon>
@@ -224,6 +234,14 @@ export class ItemsFilter extends StateMixin(BaseElement) {
 
             <div class="scrim" @click=${() => this._dismiss()}>
                 <div class="list ${cl}">
+                    <button class="host tap" @click=${() => this._select({ host: true })} ?hidden=${!hostCount}>
+                        <pl-icon icon="web"></pl-icon>
+                        <div>
+                            ${this.state.currentHost}
+                        </div>
+                        <div class="count">${hostCount}</div>
+                    </button>
+
                     <button class="all tap" @click=${() => this._select({})}>
                         <pl-icon icon="list"></pl-icon>
                         <div>
@@ -311,13 +329,15 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         vault,
         favorites,
         recent,
-        attachments
+        attachments,
+        host
     }: {
         tag?: Tag;
         vault?: VaultID;
         favorites?: boolean;
         recent?: boolean;
         attachments?: boolean;
+        host?: boolean;
     }) {
         const params: any = {};
         if (tag) {
@@ -334,6 +354,9 @@ export class ItemsFilter extends StateMixin(BaseElement) {
         }
         if (recent) {
             params.recent = recent;
+        }
+        if (host) {
+            params.host = host;
         }
         router.go("items", params);
     }

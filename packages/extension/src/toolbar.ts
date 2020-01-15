@@ -143,8 +143,8 @@ export class ExtensionToolbar extends BaseElement {
     constructor() {
         super();
         document.addEventListener("focusin", () => this._fillSelected());
+        document.addEventListener("focusout", () => (this._lastFilledInput = null));
         document.addEventListener("keydown", (e: KeyboardEvent) => this._keydown(e));
-        this._fillSelected();
     }
 
     async open(item: VaultItem, index = 0) {
@@ -152,7 +152,7 @@ export class ExtensionToolbar extends BaseElement {
         this._fieldIndex = index;
         await this.updateComplete;
         this.classList.add("showing");
-        // this._fillNext();
+        this._fillSelected();
     }
 
     close() {

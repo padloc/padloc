@@ -23,9 +23,9 @@ import "./totp";
 interface ListItem {
     item: VaultItem;
     vault: Vault;
-    section: string;
-    firstInSection: boolean;
-    lastInSection: boolean;
+    section?: string;
+    firstInSection?: boolean;
+    lastInSection?: boolean;
     warning?: boolean;
 }
 
@@ -63,6 +63,9 @@ export class ItemsList extends StateMixin(View) {
     recent: boolean = false;
 
     @property()
+    host: boolean = false;
+
+    @property()
     private _listItems: ListItem[] = [];
     // @property()
     // private _firstVisibleIndex: number = 0;
@@ -97,6 +100,7 @@ export class ItemsList extends StateMixin(View) {
     @observe("favorites")
     @observe("attachments")
     @observe("recent")
+    @observe("host")
     async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
@@ -466,6 +470,7 @@ export class ItemsList extends StateMixin(View) {
                     .tag=${this.tag}
                     .favorites=${this.favorites}
                     .recent=${this.recent}
+                    .host=${this.host}
                     .attachments=${this.attachments}
                     .searching=${this._filterShowing}
                 ></pl-items-filter>
@@ -666,34 +671,38 @@ export class ItemsList extends StateMixin(View) {
     }
 
     private _getItems(): ListItem[] {
-        const { vault: vaultId, tag, favorites, attachments, recent } = this;
+        const { vault: vaultId, tag, favorites, attachments, recent, host } = this;
         const filter = (this._filterInput && this._filterInput.value) || "";
         const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
 
         let items: ListItem[] = [];
 
-        for (const vault of this.state.vaults) {
-            // Filter by vault
-            if (vaultId && vault.id !== vaultId) {
-                continue;
-            }
+        if (host) {
+            items = this.app.getItemsForHost(this.app.state.currentHost);
+        } else {
+            for (const vault of this.state.vaults) {
+                // Filter by vault
+                if (vaultId && vault.id !== vaultId) {
+                    continue;
+                }
 
-            for (const item of vault.items) {
-                if (
-                    // filter by tag
-                    (!tag || item.tags.includes(tag)) &&
-                    (!favorites || (item.favorited && item.favorited.includes(app.account!.id))) &&
-                    (!attachments || !!item.attachments.length) &&
-                    (!recent || item.lastUsed > recentThreshold) &&
-                    filterByString(filter || "", item)
-                ) {
-                    items.push({
-                        vault,
-                        item,
-                        section: "",
-                        firstInSection: false,
-                        lastInSection: false
-                    });
+                for (const item of vault.items) {
+                    if (
+                        // filter by tag
+                        (!tag || item.tags.includes(tag)) &&
+                        (!favorites || (item.favorited && item.favorited.includes(app.account!.id))) &&
+                        (!attachments || !!item.attachments.length) &&
+                        (!recent || item.lastUsed > recentThreshold) &&
+                        filterByString(filter || "", item)
+                    ) {
+                        items.push({
+                            vault,
+                            item,
+                            section: "",
+                            firstInSection: false,
+                            lastInSection: false
+                        });
+                    }
                 }
             }
         }

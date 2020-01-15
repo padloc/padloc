@@ -1,6 +1,6 @@
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Storage, Storable } from "./storage";
-import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
+import { Serializable, bytesToBase64, base64ToBytes, stringToBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
@@ -41,7 +41,7 @@ import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
 import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { SimpleContainer } from "./container";
-import { AESKeyParams } from "./crypto";
+import { AESKeyParams, PBKDF2Params } from "./crypto";
 
 /** Various usage stats */
 export class Stats extends Serializable {
@@ -66,6 +66,68 @@ export class Settings extends Serializable {
     syncInterval: number = 1;
     /** Time threshold used for filtering "recent" items, in days */
     recentLimit: number = 7;
+}
+
+export interface HashedItem {
+    hosts: string[];
+}
+
+export class Index extends Serializable {
+    hashParams = new PBKDF2Params({ iterations: 1 });
+    items: HashedItem[] = [];
+
+    fromRaw({ hashParams, items }: any) {
+        this.hashParams.fromRaw(hashParams);
+        this.items = items;
+        return this;
+    }
+
+    async fromItems(items: VaultItem[]) {
+        const crypto = getCryptoProvider();
+
+        if (!this.hashParams.salt.length) {
+            this.hashParams.salt = await crypto.randomBytes(16);
+        }
+
+        this.items = (
+            await Promise.all(
+                items.map(async item => ({
+                    hosts: (
+                        await Promise.all(
+                            item.fields
+                                .filter(f => f.type === "url")
+                                .map(async f => {
+                                    try {
+                                        const url = new URL(f.value);
+                                        const hashedHost = await crypto.deriveKey(
+                                            stringToBytes(url.host),
+                                            this.hashParams
+                                        );
+                                        return bytesToBase64(hashedHost);
+                                    } catch (e) {
+                                        return null;
+                                    }
+                                })
+                        )
+                    ).filter(h => h !== null) as string[]
+                }))
+            )
+        ).filter(item => item.hosts.length);
+    }
+
+    async matchHost(host: string) {
+        const hashedHost = bytesToBase64(await getCryptoProvider().deriveKey(stringToBytes(host), this.hashParams));
+        return this.items.filter(item => item.hosts.some(h => h === hashedHost)).length;
+    }
+
+    async matchUrl(url: string) {
+        try {
+            const { host } = new URL(url);
+            return this.matchHost(host);
+        } catch (e) {
+            return 0;
+        }
+    }
 }
 
 /** Application state */
@@ -103,6 +165,10 @@ export class AppState extends Storable {
 
     billingProvider: BillingProviderInfo | null = null;
 
+    currentHost: string = "";
+
+    index = new Index();
+
     _errors: Err[] = [];
 
     /** All [[Tag]]s found within the users [[Vault]]s */
@@ -134,7 +200,18 @@ export class AppState extends Storable {
         return !!this.session;
     }
 
-    fromRaw({ settings, stats, device, session, account, orgs, vaults, rememberedMasterKey, billingProvider }: any) {
+    fromRaw({
+        settings,
+        stats,
+        device,
+        session,
+        account,
+        orgs,
+        vaults,
+        rememberedMasterKey,
+        billingProvider,
+        index
+    }: any) {
         this.settings.fromRaw(settings);
         this.stats.fromRaw(stats);
         this.device.fromRaw(device);
@@ -144,6 +221,9 @@ export class AppState extends Storable {
         this.vaults = vaults.map((vault: any) => new Vault().fromRaw(vault));
         this.rememberedMasterKey = rememberedMasterKey && new SimpleContainer().fromRaw(rememberedMasterKey);
         this.billingProvider = billingProvider && new BillingProviderInfo().fromRaw(billingProvider);
+        if (index) {
+            this.index.fromRaw(index);
+        }
         return this;
     }
 }
@@ -295,6 +375,10 @@ export class App {
     /** Save application state to persistent storage */
     async save() {
         await this.loaded;
+        if (!this.state.locked) {
+            await this.state.index.fromItems(this.state.vaults.flatMap(v => [...v.items]));
+        }
+
         await this.storage.save(this.state);
     }
 
@@ -327,6 +411,14 @@ export class App {
 
         // Notify state change
         this.publish();
+    }
+
+    async reload() {
+        const masterKey = this.account && this.account.masterKey;
+        await this.load();
+        if (masterKey) {
+            await this.unlockWithMasterKey(masterKey);
+        }
     }
 
     /**
@@ -552,7 +644,8 @@ export class App {
             account: null,
             session: null,
             vaults: [],
-            orgs: []
+            orgs: [],
+            index: new Index()
         });
         await this.save();
     }
@@ -1133,6 +1226,30 @@ export class App {
         await this.addItems(newItems, target);
         await this.deleteItems(items);
         return newItems;
+    }
+
+    getItemsForHost(host: string) {
+        const items: { vault: Vault; item: VaultItem }[] = [];
+        for (const vault of this.vaults) {
+            for (const item of vault.items) {
+                if (
+                    item.fields.some(field => {
+                        if (field.type !== "url") {
+                            return false;
+                        }
+
+                        try {
+                            return new URL(field.value).host === host;
+                        } catch (e) {
+                            return false;
+                        }
+                    })
+                ) {
+                    items.push({ vault, item });
+                }
+            }
+        }
+        return items;
     }
 
     /*
