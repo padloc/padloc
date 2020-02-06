@@ -44,14 +44,47 @@ const css = `
         }
     }
 
+    @keyframes highlight {
+        from {
+            opacity: 0;
+            transform: scale(1.1);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
     .ripple {
         position: absolute;
         z-index: 9999999;
         border-radius: 8px;
         background: #3bb7f9;
-        animation: ripple 1s both;
+        animation: ripple 0.8s both;
         pointer-events: none;
         will-change: transform, opacity;
+    }
+
+    .highlight {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 9999999;
+        border-radius: 8px;
+        border: solid 2px #3bb7f9;
+        box-sizing: border-box;
+        pointer-events: none;
+        will-change: transform, width, height, opacity;
+        animation: highlight 0.3s both;
+    }
+
+    .highlight.out {
+        animation-direction: reverse;
+    }
+
+    body.dragging {
+        cursor: grabbing !important;
     }
 `;
 

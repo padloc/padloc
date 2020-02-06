@@ -16,6 +16,8 @@ export class ExtensionToolbar extends BaseElement {
 
     private _lastFilledInput: HTMLInputElement | null = null;
 
+    private _highlightElement: HTMLDivElement;
+
     static styles = [
         config.cssVars,
         css`
@@ -43,6 +45,10 @@ export class ExtensionToolbar extends BaseElement {
             :host(:not(.showing)) {
                 transform: scale(0);
                 transition: transform 0.5s;
+            }
+
+            :host(.dragging) {
+                cursor: grabbing;
             }
 
             .inner {
@@ -73,7 +79,7 @@ export class ExtensionToolbar extends BaseElement {
             .hint {
                 opacity: 0.5;
                 font-size: 0.9em;
-                padding: 0 6px 6px 6px;
+                padding: 2px 6px 4px 6px;
             }
 
             .fields {
@@ -93,7 +99,39 @@ export class ExtensionToolbar extends BaseElement {
                 margin-right: 0.5em;
             }
 
-            button {
+            .field {
+                background: transparent;
+                color: inherit;
+                padding: 6px;
+                cursor: grab;
+                text-align: center;
+                border-radius: var(--border-radius);
+                display: flex;
+                align-items: center;
+                transition: background 0.3s, color 0.3s;
+                opacity: 0.999;
+            }
+
+            .field:active {
+                cursor: grabbing;
+            }
+
+            .field:not(:last-child) {
+                margin-right: 4px;
+            }
+
+            .field:hover {
+                /* box-shadow: rgba(0, 0, 0, 0.3) 0 0 4px; */
+                background: var(--color-primary);
+                color: var(--color-tertiary);
+            }
+
+            .field[active] {
+                background: var(--color-primary);
+                color: var(--color-tertiary);
+            }
+
+            button.close {
                 background: transparent;
                 color: inherit;
                 font-family: inherit;
@@ -108,22 +146,6 @@ export class ExtensionToolbar extends BaseElement {
                 border-radius: var(--border-radius);
                 display: flex;
                 align-items: center;
-            }
-
-            button:not(:last-child) {
-                margin-right: 4px;
-            }
-
-            button:hover:not([active]) {
-                background: #eee;
-            }
-
-            button[active] {
-                background: var(--color-primary);
-                color: var(--color-tertiary);
-            }
-
-            button.close {
                 padding: 0;
                 font-size: 0.9em;
                 border-radius: 100%;
@@ -137,14 +159,24 @@ export class ExtensionToolbar extends BaseElement {
                 font-family: "FontAwesome";
                 content: "\\f00d";
             }
+
+            button.close:hover {
+                background: #eee;
+            }
         `
     ];
 
     constructor() {
         super();
-        document.addEventListener("focusin", () => this._fillSelected());
-        document.addEventListener("focusout", () => (this._lastFilledInput = null));
+        // document.addEventListener("focusin", () => this._fillSelected());
+        // document.addEventListener("focusout", () => (this._lastFilledInput = null));
         document.addEventListener("keydown", (e: KeyboardEvent) => this._keydown(e));
+        // document.addEventListener("mousemove", (e: MouseEvent) => this._move(e));
+        document.addEventListener("dragenter", (e: DragEvent) => this._dragenter(e));
+        document.addEventListener("dragover", (e: DragEvent) => this._dragover(e));
+        document.addEventListener("dragleave", (e: DragEvent) => this._dragleave(e));
+        document.addEventListener("dragend", (e: DragEvent) => this._dragend(e));
+        document.addEventListener("drop", (e: DragEvent) => this._drop(e));
     }
 
     async open(item: VaultItem, index = 0) {
@@ -192,9 +224,8 @@ export class ExtensionToolbar extends BaseElement {
         }
     }
 
-    private async _fillIndex(index: number) {
+    private async _fillIndex(index: number, input: HTMLInputElement | null = this._getActiveInput()) {
         const field = this.item && this.item.fields[index];
-        const input = this._getActiveInput();
 
         if (!field || !input) {
             return false;
@@ -251,7 +282,30 @@ export class ExtensionToolbar extends BaseElement {
         });
         ripple.classList.add("ripple");
         document.body.appendChild(ripple);
-        setTimeout(() => document.body.removeChild(ripple), 500);
+        setTimeout(() => ripple.remove(), 800);
+    }
+
+    private _highlight(el: HTMLElement | null) {
+        if (this._highlightElement) {
+            const hel = this._highlightElement;
+            hel.classList.add("out");
+            setTimeout(() => hel.remove(), 500);
+        }
+
+        if (el) {
+            this._highlightElement = document.createElement("div");
+            this._highlightElement.classList.add("highlight");
+            document.body.appendChild(this._highlightElement);
+
+            const { left, top, width, height } = el.getBoundingClientRect();
+            Object.assign(this._highlightElement.style, {
+                top: `${top}px`,
+                left: `${left}px`,
+                width: width + "px",
+                height: height + "px",
+                opacity: 1
+            });
+        }
     }
 
     private _keydown({ code, ctrlKey, metaKey, altKey }: KeyboardEvent) {
@@ -274,8 +328,45 @@ export class ExtensionToolbar extends BaseElement {
         }
     }
 
+    private _dragstart(index: number) {
+        this._fieldIndex = index;
+        document.body.classList.add("dragging");
+        this.classList.add("dragging");
+    }
+
+    private _dragenter(e: DragEvent) {
+        const el = e.target as HTMLElement;
+        if (this._isElementFillable(el)) {
+            this._highlight(el);
+        } else {
+            this._highlight(null);
+        }
+    }
+
+    private _dragover(e: DragEvent) {
+        e.preventDefault();
+    }
+
+    private _dragleave(_e: DragEvent) {
+        // this._highlight(null);
+    }
+
+    private _dragend(_e: DragEvent) {
+        this._highlight(null);
+        document.body.classList.remove("dragging");
+        this.classList.remove("dragging");
+    }
+
+    private _drop(e: DragEvent) {
+        const el = e.target as HTMLElement;
+        if (this._isElementFillable(el)) {
+            this._fillIndex(this._fieldIndex, el as HTMLInputElement);
+        }
+    }
+
     // private _move(e: MouseEvent) {
     //     console.log("move", e);
+    //     console.log("hover", document.querySelectorAll("input:hover"));
     // }
     //
     // private _mousedown() {
@@ -305,22 +396,18 @@ export class ExtensionToolbar extends BaseElement {
                     </div>
                     <button class="close" @click=${this.close}></button>
                 </div>
-                <div class="hint">Click the desired form input to fill!</div>
+                <div class="hint">Drag & drop to fill!</div>
                 <div class="fields">
                     ${this.item.fields.map(
                         (field, index) => html`
-                            <button
-                                class="field"
-                                ?active=${index === this._fieldIndex}
-                                @click=${() => (this._fieldIndex = index)}
-                            >
+                            <div class="field" draggable="true" @dragstart=${() => this._dragstart(index)}>
                                 <div class="field-index">
                                     ${index + 1}
                                 </div>
                                 <div class="field-name">
                                     ${field.name}
                                 </div>
-                            </button>
+                            </div>
                         `
                     )}
                 </div>
