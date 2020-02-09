@@ -2,8 +2,9 @@ import { browser } from "webextension-polyfill-ts";
 // import { totp } from "@padloc/core/src/otp";
 // import { base32ToBytes } from "@padloc/core/src/encoding";
 import { config } from "@padloc/app/src/styles";
-import { BaseElement, html, property, css, element } from "@padloc/app/src/elements/base";
+import { BaseElement, html, property, css, element, query } from "@padloc/app/src/elements/base";
 import { VaultItem } from "@padloc/core/src/item";
+import { getPlatform } from "@padloc/core/src/platform";
 import "@padloc/app/src/elements/icon";
 
 @element("pl-extension-toolbar")
@@ -13,6 +14,12 @@ export class ExtensionToolbar extends BaseElement {
 
     @property()
     private _fieldIndex = 0;
+
+    @property()
+    private _platform = "";
+
+    @query(".usage-info")
+    private _info: HTMLDivElement;
 
     // private _lastFilledInput: HTMLInputElement | null = null;
 
@@ -53,12 +60,15 @@ export class ExtensionToolbar extends BaseElement {
 
             .inner {
                 pointer-events: auto;
-                border-radius: var(--border-radius);
+                min-width: 250px;
                 max-width: 100%;
+                position: relative;
+            }
+
+            .data {
+                border-radius: var(--border-radius);
                 background: var(--color-tertiary);
-                border: solid 1px #ddd;
-                border-bottom-width: 3px;
-                box-shadow: rgba(0, 0, 0, 0.1) 0 0 20px;
+                box-shadow: rgba(0, 0, 0, 0.3) 0 0 20px -5px;
                 padding: 4px;
             }
 
@@ -87,7 +97,7 @@ export class ExtensionToolbar extends BaseElement {
                 overflow-x: auto;
             }
 
-            .field-index {
+            .key {
                 background: rgba(0, 0, 0, 0.08);
                 border: solid 1px rgba(0, 0, 0, 0.1);
                 width: 1.5em;
@@ -96,7 +106,8 @@ export class ExtensionToolbar extends BaseElement {
                 border-radius: 4px;
                 border-bottom-width: 2px;
                 font-size: 0.7em;
-                margin-right: 0.5em;
+                text-align: center;
+                display: inline-block;
             }
 
             .field {
@@ -109,7 +120,12 @@ export class ExtensionToolbar extends BaseElement {
                 display: flex;
                 align-items: center;
                 transition: background 0.3s, color 0.3s;
+                flex: none;
                 opacity: 0.999;
+            }
+
+            .field-index {
+                margin-right: 0.5em;
             }
 
             .field:active {
@@ -131,7 +147,7 @@ export class ExtensionToolbar extends BaseElement {
                 color: var(--color-tertiary);
             }
 
-            button.close {
+            .header button {
                 background: transparent;
                 color: inherit;
                 font-family: inherit;
@@ -143,7 +159,6 @@ export class ExtensionToolbar extends BaseElement {
                 cursor: pointer;
                 text-align: center;
                 outline: none;
-                border-radius: var(--border-radius);
                 display: flex;
                 align-items: center;
                 padding: 0;
@@ -155,13 +170,53 @@ export class ExtensionToolbar extends BaseElement {
                 display: block;
             }
 
-            button.close::before {
+            .header button.close:hover {
+                background: #eee;
+            }
+
+            .header button.close::before {
                 font-family: "FontAwesome";
                 content: "\\f00d";
             }
 
-            button.close:hover {
-                background: #eee;
+            .header button.info::before {
+                font-family: "FontAwesome";
+                font-size: 0.9em;
+                content: "\\f129";
+            }
+
+            .header button.info:not(:hover) {
+                opacity: 0.5;
+            }
+
+            .usage-info {
+                position: absolute;
+                width: 100%;
+                top: 0;
+                left: 0;
+                background: #fafafa;
+                border-radius: var(--border-radius) var(--border-radius) 0 0;
+                box-shadow: rgba(0, 0, 0, 0.3) 0 0 10px -5px;
+                z-index: -1;
+                padding-bottom: 10px;
+                will-change: transform;
+                transition: transform 0.3s, opacity 0.3s;
+                opacity: 0;
+            }
+
+            .usage-info.showing {
+                transform: translate(0, calc(-100% + 10px));
+                opacity: 1;
+            }
+
+            .usage-info ul {
+                padding: 0 1em 0 2.5em;
+                line-height: 2em;
+            }
+
+            .hand-icon::before {
+                font-family: "FontAwesome";
+                content: "\\f256";
             }
         `
     ];
@@ -177,6 +232,9 @@ export class ExtensionToolbar extends BaseElement {
         document.addEventListener("dragleave", (e: DragEvent) => this._dragleave(e));
         document.addEventListener("dragend", (e: DragEvent) => this._dragend(e));
         document.addEventListener("drop", (e: DragEvent) => this._drop(e));
+        getPlatform()
+            .getDeviceInfo()
+            .then(info => (this._platform = info.platform));
     }
 
     async open(item: VaultItem, index?: number) {
@@ -365,6 +423,14 @@ export class ExtensionToolbar extends BaseElement {
         }
     }
 
+    private _showInfo() {
+        this._info.classList.add("showing");
+    }
+
+    private _hideInfo() {
+        this._info.classList.remove("showing");
+    }
+
     // private _move(e: MouseEvent) {
     //     console.log("move", e);
     //     console.log("hover", document.querySelectorAll("input:hover"));
@@ -391,26 +457,69 @@ export class ExtensionToolbar extends BaseElement {
 
         return html`
             <div class="inner">
-                <div class="header">
-                    <div class="title">
-                        ${this.item.name}
-                    </div>
-                    <button class="close" @click=${this.close}></button>
+                <div class="usage-info">
+                    <ul>
+                        <li>
+                            <span class="hand-icon"></span>
+                            &nbsp;<strong>Drag & Drop</strong> to fill
+                        </li>
+
+                        <li>
+                            <div class="key">${this._platform === "MacOS" ? "⌘" : "⌃"}</div>
+                            +
+                            <div class="key">⌥</div>
+                            +
+                            <div class="key">n</div>
+                            &nbsp;paste <strong>n</strong>th field
+                        </li>
+
+                        <li>
+                            <div class="key">${this._platform === "MacOS" ? "⌘" : "⌃"}</div>
+                            +
+                            <div class="key">⇧</div>
+                            +
+                            <div class="key">→</div>
+                            &nbsp;Open next item
+                        </li>
+
+                        <li>
+                            <div class="key">${this._platform === "MacOS" ? "⌘" : "⌃"}</div>
+                            +
+                            <div class="key">⇧</div>
+                            +
+                            <div class="key">←</div>
+                            &nbsp;Open prev. item
+                        </li>
+
+                        <li>
+                            <div class="key">⎋</div>
+                            &nbsp;Close item
+                        </li>
+                    </ul>
                 </div>
-                <div class="hint">Drag & drop to fill!</div>
-                <div class="fields">
-                    ${this.item.fields.map(
-                        (field, index) => html`
-                            <div class="field" draggable="true" @dragstart=${() => this._dragstart(index)}>
-                                <div class="field-index">
-                                    ${index + 1}
+
+                <div class="data">
+                    <div class="header">
+                        <div class="title">
+                            ${this.item.name}
+                        </div>
+                        <button class="info" @mouseenter=${this._showInfo} @mouseleave=${this._hideInfo}></button>
+                        <button class="close" @click=${this.close}></button>
+                    </div>
+                    <div class="fields">
+                        ${this.item.fields.map(
+                            (field, index) => html`
+                                <div class="field" draggable="true" @dragstart=${() => this._dragstart(index)}>
+                                    <div class="field-index key">
+                                        ${index + 1}
+                                    </div>
+                                    <div class="field-name">
+                                        ${field.name}
+                                    </div>
                                 </div>
-                                <div class="field-name">
-                                    ${field.name}
-                                </div>
-                            </div>
-                        `
-                    )}
+                            `
+                        )}
+                    </div>
                 </div>
             </div>
         `;
