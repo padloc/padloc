@@ -39,7 +39,7 @@ export class Router extends EventEmitter {
     }
 
     set params(params: { [prop: string]: string }) {
-        history.pushState(
+        history.replaceState(
             { historyIndex: this.history.length - 1 },
             "",
             this.basePath + this.path + "?" + new URLSearchParams(params).toString()

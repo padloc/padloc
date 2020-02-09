@@ -33,6 +33,5 @@ export async function messageTab(msg: Message) {
         }
 
         browser.tabs.sendMessage(activeTab.id!, msg);
-        window.close();
     }
 }
