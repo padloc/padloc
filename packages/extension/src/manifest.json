@@ -14,11 +14,16 @@
         "default_popup": "popup.html",
         "default_icon": "icon.png"
     },
-    "web_accessible_resources": [
-        "icon.png",
-        "Nunito-Regular.ttf",
-        "Nunito-SemiBold.ttf",
-        "fontawesome-webfont.ttf"
-    ],
-    "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab"]
+    "web_accessible_resources": ["icon.png", "Nunito-Regular.ttf", "Nunito-SemiBold.ttf", "fontawesome-webfont.ttf"],
+    "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab", "contextMenus"],
+    "commands": {
+        "_execute_browser_action": {
+            "suggested_key": {
+                "windows": "Ctrl+Shift+P",
+                "mac": "Command+Shift+P",
+                "chromeos": "Ctrl+Shift+P",
+                "linux": "Ctrl+Shift+P"
+            }
+        }
+    }
 }
