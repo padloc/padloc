@@ -4,6 +4,7 @@ import { debounce } from "@padloc/core/src/util";
 import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
 import { Storable } from "@padloc/core/src/storage";
 import { VaultItem } from "@padloc/core/src/item";
+import { messageTab } from "./message";
 
 const notifyStateChanged = debounce(() => {
     browser.runtime.sendMessage({
@@ -104,24 +105,12 @@ export class ExtensionApp extends App {
     }
 
     private async _autoFill({ detail: { item, index } }: CustomEvent<{ item: VaultItem; index: number }>) {
-        const [activeTab] = await browser.tabs.query({ active: true });
-        if (activeTab) {
-            let contentReady = false;
-            try {
-                contentReady = await browser.tabs.sendMessage(activeTab.id!, { type: "isContentReady" });
-            } catch (e) {}
-
-            if (!contentReady) {
-                await browser.tabs.executeScript(activeTab.id, { file: "/content.js" });
-            }
-
-            browser.tabs.sendMessage(activeTab.id!, {
-                type: "autoFill",
-                item,
-                index
-            });
-            window.close();
-        }
+        await messageTab({
+            type: "autoFill",
+            item,
+            index
+        });
+        window.close();
     }
 }
 

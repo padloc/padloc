@@ -1252,6 +1252,15 @@ export class App {
         return items;
     }
 
+    getItemsForUrl(url: string) {
+        try {
+            const { host } = new URL(url);
+            return this.getItemsForHost(host);
+        } catch (e) {
+            return [];
+        }
+    }
+
     /*
      * =========================
      *  ORGANIZATION MANAGEMENT

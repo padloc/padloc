@@ -14,7 +14,7 @@ export class ExtensionToolbar extends BaseElement {
     @property()
     private _fieldIndex = 0;
 
-    private _lastFilledInput: HTMLInputElement | null = null;
+    // private _lastFilledInput: HTMLInputElement | null = null;
 
     private _highlightElement: HTMLDivElement;
 
@@ -179,12 +179,13 @@ export class ExtensionToolbar extends BaseElement {
         document.addEventListener("drop", (e: DragEvent) => this._drop(e));
     }
 
-    async open(item: VaultItem, index = 0) {
+    async open(item: VaultItem, index?: number) {
         this.item = item;
-        this._fieldIndex = index;
         await this.updateComplete;
         this.classList.add("showing");
-        this._fillSelected();
+        if (typeof index === "number") {
+            this._fillIndex(index);
+        }
     }
 
     close() {
@@ -208,21 +209,21 @@ export class ExtensionToolbar extends BaseElement {
         const el = this._getActiveElement(document);
         return el && this._isElementFillable(el) ? (el as HTMLInputElement) : null;
     }
-
-    private async _fillSelected() {
-        const input = this._getActiveInput();
-
-        if (!this.item || input === this._lastFilledInput) {
-            return;
-        }
-
-        const filled = await this._fillIndex(this._fieldIndex);
-
-        if (filled) {
-            this._lastFilledInput = input;
-            this._fieldIndex = (this._fieldIndex + 1) % this.item.fields.length;
-        }
-    }
+    //
+    // private async _fillSelected() {
+    //     const input = this._getActiveInput();
+    //
+    //     if (!this.item || input === this._lastFilledInput) {
+    //         return;
+    //     }
+    //
+    //     const filled = await this._fillIndex(this._fieldIndex);
+    //
+    //     if (filled) {
+    //         this._lastFilledInput = input;
+    //         this._fieldIndex = (this._fieldIndex + 1) % this.item.fields.length;
+    //     }
+    // }
 
     private async _fillIndex(index: number, input: HTMLInputElement | null = this._getActiveInput()) {
         const field = this.item && this.item.fields[index];
