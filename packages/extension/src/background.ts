@@ -1,6 +1,7 @@
 import { browser, Menus } from "webextension-polyfill-ts";
 import { setPlatform } from "@padloc/core/src/platform";
 import { App } from "@padloc/core/src/app";
+import { VaultItem } from "@padloc/core/src/item";
 import { bytesToBase64, base64ToBytes, base32ToBytes } from "@padloc/core/src/encoding";
 import { AjaxSender } from "@padloc/app/src/lib/ajax";
 import { totp } from "@padloc/core/src/otp";
@@ -13,6 +14,8 @@ setPlatform(new ExtensionPlatform());
 class ExtensionBackground {
     app = new App(new AjaxSender(process.env.PL_SERVER_URL!));
 
+    private _currentItemIndex = -1;
+
     private _reload = debounce(() => this.app.reload(), 30000);
 
     async init() {
@@ -22,12 +25,12 @@ class ExtensionBackground {
                 case "loggedOut":
                 case "locked":
                     await this.app.load();
-                    this._updateBadge();
+                    this._update();
                     break;
                 case "unlocked":
                     await this.app.load();
                     await this.app.unlockWithMasterKey(base64ToBytes(msg.masterKey));
-                    this._updateBadge();
+                    this._update();
                     break;
                 case "requestMasterKey":
                     return (
@@ -38,31 +41,15 @@ class ExtensionBackground {
                     return totp(base32ToBytes(msg.secret));
             }
         });
-        const updateBadge = debounce(() => this._updateBadge(), 100);
+        const updateBadge = debounce(() => this._update(), 100);
         browser.tabs.onUpdated.addListener(updateBadge);
         browser.tabs.onActivated.addListener(updateBadge);
 
-        browser.contextMenus.onClicked.addListener(async ({ menuItemId }: Menus.OnClickData) => {
-            const match = (menuItemId as string).match(/^item\/([^\/]+)(?:\/(\d+))?$/);
+        browser.contextMenus.onClicked.addListener(({ menuItemId }: Menus.OnClickData) =>
+            this._contextMenuClicked(menuItemId as string)
+        );
 
-            console.log(match);
-
-            if (!match) {
-                return;
-            }
-
-            const [, id, index] = match;
-            const item = this.app.getItem(id);
-            if (!item) {
-                return;
-            }
-
-            messageTab({
-                type: "autoFill",
-                item: item.item,
-                index: index ? parseInt(index) : undefined
-            });
-        });
+        browser.commands.onCommand.addListener(command => this._executeCommand(command));
     }
 
     private async _getActiveTab() {
@@ -70,12 +57,62 @@ class ExtensionBackground {
         return tab || null;
     }
 
+    private async _contextMenuClicked(menuItemId: string) {
+        const match = menuItemId.match(/^item\/([^\/]+)(?:\/(\d+))?$/);
+
+        if (!match) {
+            return;
+        }
+
+        const [, id, index] = match;
+        const item = this.app.getItem(id);
+        if (!item) {
+            return;
+        }
+
+        this._openItem(item.item, index ? parseInt(index) : undefined);
+    }
+
+    private _openItem(item: VaultItem, index?: number) {
+        messageTab({
+            type: "autoFill",
+            item,
+            index
+        });
+    }
+
+    private async _executeCommand(command: string) {
+        const items = await this._getItemsForTab();
+
+        switch (command) {
+            case "open-next":
+                this._currentItemIndex = (this._currentItemIndex + 1) % items.length;
+                if (items[this._currentItemIndex]) {
+                    this._openItem(items[this._currentItemIndex].item);
+                }
+                break;
+            case "open-previous":
+                this._currentItemIndex = (this._currentItemIndex + items.length - 1) % items.length;
+                if (items[this._currentItemIndex]) {
+                    this._openItem(items[this._currentItemIndex].item);
+                }
+                break;
+        }
+    }
+
     private async _updateBadge() {
         const tab = await this._getActiveTab();
         const count = tab && tab.url ? await this.app.state.index.matchUrl(tab.url) : [];
         browser.browserAction.setBadgeText({ text: count ? count.toString() : "" });
         browser.browserAction.setBadgeBackgroundColor({ color: "#ff6666" });
+    }
 
+    private async _getItemsForTab() {
+        const tab = await this._getActiveTab();
+        return tab && tab.url ? this.app.getItemsForUrl(tab.url) : [];
+    }
+
+    private async _updateContextMenu() {
         await browser.contextMenus.removeAll();
 
         if (this.app.state.locked) {
@@ -86,9 +123,8 @@ class ExtensionBackground {
                 enabled: false,
                 contexts: ["all"]
             });
-        } else if (tab && tab.url) {
-            const items = this.app.getItemsForUrl(tab.url);
-            console.log("found items", items);
+        } else {
+            const items = await this._getItemsForTab();
             for (const { item } of items) {
                 await browser.contextMenus.create({
                     id: `item/${item.id}`,
@@ -108,6 +144,12 @@ class ExtensionBackground {
                 }
             }
         }
+    }
+
+    private async _update() {
+        this._updateBadge();
+        this._updateContextMenu();
+        this._currentItemIndex = -1;
     }
 
     private _stateChanged() {

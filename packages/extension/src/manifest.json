@@ -24,6 +24,18 @@
                 "chromeos": "Ctrl+Shift+P",
                 "linux": "Ctrl+Shift+P"
             }
+        },
+        "open-next": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+Right"
+            },
+            "description": "Open Next Vault Item"
+        },
+        "open-previous": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+Left"
+            },
+            "description": "Open Previous Vault Item"
         }
     }
 }
