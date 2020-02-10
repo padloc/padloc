@@ -5,6 +5,7 @@ import { config } from "@padloc/app/src/styles";
 import { BaseElement, html, property, css, element, query } from "@padloc/app/src/elements/base";
 import { VaultItem } from "@padloc/core/src/item";
 import { getPlatform } from "@padloc/core/src/platform";
+import { throttle } from "@padloc/core/src/util";
 import "@padloc/app/src/elements/icon";
 
 @element("pl-extension-toolbar")
@@ -21,7 +22,7 @@ export class ExtensionToolbar extends BaseElement {
     @query(".usage-info")
     private _info: HTMLDivElement;
 
-    // private _lastFilledInput: HTMLInputElement | null = null;
+    private _hoveredInput: HTMLInputElement | null = null;
 
     private _highlightElement: HTMLDivElement;
 
@@ -227,10 +228,14 @@ export class ExtensionToolbar extends BaseElement {
         // document.addEventListener("focusout", () => (this._lastFilledInput = null));
         document.addEventListener("keydown", (e: KeyboardEvent) => this._keydown(e));
         // document.addEventListener("mousemove", (e: MouseEvent) => this._move(e));
-        document.addEventListener("dragenter", (e: DragEvent) => this._dragenter(e));
+        // document.addEventListener("dragenter", (e: DragEvent) => this._dragenter(e));
         document.addEventListener("dragover", (e: DragEvent) => this._dragover(e));
-        document.addEventListener("dragleave", (e: DragEvent) => this._dragleave(e));
+        // document.addEventListener("dragleave", (e: DragEvent) => this._dragleave(e));
         document.addEventListener("dragend", (e: DragEvent) => this._dragend(e));
+        document.addEventListener(
+            "drag",
+            throttle((e: DragEvent) => this._drag(e), 50)
+        );
         document.addEventListener("drop", (e: DragEvent) => this._drop(e));
         getPlatform()
             .getDeviceInfo()
@@ -393,33 +398,72 @@ export class ExtensionToolbar extends BaseElement {
         this.classList.add("dragging");
     }
 
-    private _dragenter(e: DragEvent) {
-        const el = e.target as HTMLElement;
-        if (this._isElementFillable(el)) {
-            this._highlight(el);
-        } else {
-            this._highlight(null);
+    private _getFillableFromPoint(
+        root: Document | ShadowRoot,
+        x: number,
+        y: number,
+        depth = 0
+    ): HTMLInputElement | null {
+        const els = root.elementsFromPoint(x, y);
+
+        // Check all elements on this level first
+        const input = els.find(el => this._isElementFillable(el));
+
+        if (input) {
+            return input as HTMLInputElement;
+        }
+
+        // If no fillable elements on this level were found, go one level deeper
+        for (const el of els) {
+            if (el !== this && el.shadowRoot && el.shadowRoot !== root) {
+                const input = this._getFillableFromPoint(el.shadowRoot, x, y, depth + 1);
+                if (input) {
+                    return input;
+                }
+            }
+        }
+
+        // If nothing was found, return null
+        return null;
+    }
+
+    private _drag(e: DragEvent) {
+        e.preventDefault();
+        const input = this._getFillableFromPoint(document, e.clientX, e.clientY);
+        if (input !== this._hoveredInput) {
+            this._highlight(input);
+            this._hoveredInput = input;
         }
     }
+
+    // private _dragenter(e: DragEvent) {
+    //     const el = e.target as HTMLElement;
+    //     if (this._isElementFillable(el)) {
+    //         this._highlight(el);
+    //     } else {
+    //         this._highlight(null);
+    //     }
+    // }
 
     private _dragover(e: DragEvent) {
         e.preventDefault();
     }
 
-    private _dragleave(_e: DragEvent) {
-        // this._highlight(null);
-    }
+    // private _dragleave(_e: DragEvent) {
+    //     this._highlight(null);
+    // }
 
     private _dragend(_e: DragEvent) {
         this._highlight(null);
+        this._hoveredInput = null;
         document.body.classList.remove("dragging");
         this.classList.remove("dragging");
     }
 
-    private _drop(e: DragEvent) {
-        const el = e.target as HTMLElement;
-        if (this._isElementFillable(el)) {
-            this._fillIndex(this._fieldIndex, el as HTMLInputElement);
+    private _drop(_e: DragEvent) {
+        // const el = e.target as HTMLElement;
+        if (this._hoveredInput) {
+            this._fillIndex(this._fieldIndex, this._hoveredInput);
         }
     }
 
