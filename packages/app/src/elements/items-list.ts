@@ -286,6 +286,7 @@ export class ItemsList extends StateMixin(View) {
                 flex: 1;
                 border-radius: 8px;
                 max-width: calc(60%);
+                opacity: 0.999;
             }
 
             .item-field > * {
@@ -662,7 +663,16 @@ export class ItemsList extends StateMixin(View) {
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
         app.updateItem(vault, item, { lastUsed: new Date() });
-        this.dispatch("auto-fill", { item, index });
+        this.dispatch("field-clicked", { item, index });
+    }
+
+    private _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
+        // e.preventDefault();
+        // this.dispatch("auto-fill", { item, index, dragging: true });
+        // const field = item.fields[index];
+        // e.dataTransfer!.setData("text/plain", field.value);
+        this.dispatch("field-dragged", { item, index, event });
+        return true;
     }
 
     private _openAttachment(a: AttachmentInfo, item: VaultItem, e: MouseEvent) {
@@ -760,7 +770,7 @@ export class ItemsList extends StateMixin(View) {
         }
 
         return html`
-            <div class="item" ?selected=${item.id === this.selected} @click=${() => this.selectItem(li)}>
+            <div class="item" ?selected=${item.id === this.selected} @click="${() => this.selectItem(li)}}">
                 ${cache(
                     this.multiSelect
                         ? html`
@@ -805,7 +815,12 @@ export class ItemsList extends StateMixin(View) {
                         ${item.fields.map((f: Field, i: number) => {
                             const fieldDef = FIELD_DEFS[f.type] || FIELD_DEFS.text;
                             return html`
-                                <div class="item-field tap" @click=${(e: MouseEvent) => this._copyField(li, i, e)}>
+                                <div
+                                    class="item-field tap"
+                                    @click=${(e: MouseEvent) => this._copyField(li, i, e)}
+                                    draggable="true"
+                                    @dragstart=${(e: DragEvent) => this._dragFieldStart(li, i, e)}
+                                >
                                     <div class="item-field-label">
                                         <div class="item-field-name">
                                             <pl-icon icon="${fieldDef.icon}"></pl-icon>

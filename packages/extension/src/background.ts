@@ -1,7 +1,6 @@
 import { browser, Menus } from "webextension-polyfill-ts";
 import { setPlatform } from "@padloc/core/src/platform";
 import { App } from "@padloc/core/src/app";
-import { VaultItem } from "@padloc/core/src/item";
 import { bytesToBase64, base64ToBytes, base32ToBytes } from "@padloc/core/src/encoding";
 import { AjaxSender } from "@padloc/app/src/lib/ajax";
 import { totp } from "@padloc/core/src/otp";
@@ -14,7 +13,7 @@ setPlatform(new ExtensionPlatform());
 class ExtensionBackground {
     app = new App(new AjaxSender(process.env.PL_SERVER_URL!));
 
-    private _currentItemIndex = -1;
+    // private _currentItemIndex = -1;
 
     private _reload = debounce(() => this.app.reload(), 30000);
 
@@ -49,7 +48,7 @@ class ExtensionBackground {
             this._contextMenuClicked(menuItemId as string)
         );
 
-        browser.commands.onCommand.addListener(command => this._executeCommand(command));
+        // browser.commands.onCommand.addListener(command => this._executeCommand(command));
     }
 
     private async _getActiveTab() {
@@ -58,51 +57,63 @@ class ExtensionBackground {
     }
 
     private async _contextMenuClicked(menuItemId: string) {
+        if (menuItemId === "openPopup") {
+            browser.browserAction.openPopup();
+            return;
+        }
+
         const match = menuItemId.match(/^item\/([^\/]+)(?:\/(\d+))?$/);
 
         if (!match) {
             return;
         }
 
-        const [, id, index] = match;
+        const [, id, ind] = match;
         const item = this.app.getItem(id);
-        if (!item) {
+        const index = parseInt(ind);
+        if (!item || isNaN(index)) {
             return;
         }
 
-        this._openItem(item.item, index ? parseInt(index) : undefined);
-    }
-
-    private _openItem(item: VaultItem, index?: number) {
-        messageTab({
-            type: "autoFill",
-            item,
-            index
+        const field = item.item.fields[index];
+        const value = field.type === "totp" ? await totp(base32ToBytes(field.value)) : field.value;
+        await messageTab({
+            type: "fillActive",
+            value
         });
+
+        // this._openItem(item.item, index ? parseInt(index) : undefined);
     }
 
-    private async _executeCommand(command: string) {
-        const items = await this._getItemsForTab();
+    // private _openItem(item: VaultItem, index?: number) {
+    //     messageTab({
+    //         type: "autoFill",
+    //         item,
+    //         index
+    //     });
+    // }
 
-        switch (command) {
-            case "open-next":
-                this._currentItemIndex = (this._currentItemIndex + 1) % items.length;
-                if (items[this._currentItemIndex]) {
-                    this._openItem(items[this._currentItemIndex].item);
-                }
-                break;
-            case "open-previous":
-                this._currentItemIndex = (this._currentItemIndex + items.length - 1) % items.length;
-                if (items[this._currentItemIndex]) {
-                    this._openItem(items[this._currentItemIndex].item);
-                }
-                break;
-        }
-    }
+    // private async _executeCommand(command: string) {
+    //     const items = await this._getItemsForTab();
+    //
+    //     switch (command) {
+    //         case "open-next":
+    //             this._currentItemIndex = (this._currentItemIndex + 1) % items.length;
+    //             if (items[this._currentItemIndex]) {
+    //                 this._openItem(items[this._currentItemIndex].item);
+    //             }
+    //             break;
+    //         case "open-previous":
+    //             this._currentItemIndex = (this._currentItemIndex + items.length - 1) % items.length;
+    //             if (items[this._currentItemIndex]) {
+    //                 this._openItem(items[this._currentItemIndex].item);
+    //             }
+    //             break;
+    //     }
+    // }
 
     private async _updateBadge() {
-        const tab = await this._getActiveTab();
-        const count = tab && tab.url ? await this.app.state.index.matchUrl(tab.url) : [];
+        const count = await this._getCountForTab();
         browser.browserAction.setBadgeText({ text: count ? count.toString() : "" });
         browser.browserAction.setBadgeBackgroundColor({ color: "#ff6666" });
     }
@@ -112,16 +123,27 @@ class ExtensionBackground {
         return tab && tab.url ? this.app.getItemsForUrl(tab.url) : [];
     }
 
+    private async _getCountForTab() {
+        const tab = await this._getActiveTab();
+        return tab && tab.url ? await this.app.state.index.matchUrl(tab.url) : 0;
+    }
+
     private async _updateContextMenu() {
         await browser.contextMenus.removeAll();
 
+        const openPopupAvailable = typeof browser.browserAction.openPopup === "function";
+        const count = await this._getCountForTab();
+
+        if (!count || !this.app.state.loggedIn) {
+            return;
+        }
+
         if (this.app.state.locked) {
             browser.contextMenus.create({
-                id: "test",
-                type: "normal",
-                title: "Unlock to enable!",
-                enabled: false,
-                contexts: ["all"]
+                id: "openPopup",
+                title: `${count > 1 ? `${count} items` : "1 item" } found${!openPopupAvailable ? " (unlock to view)" : ""}`,
+                enabled: openPopupAvailable,
+                contexts: ["editable"]
             });
         } else {
             const items = await this._getItemsForTab();
@@ -129,8 +151,7 @@ class ExtensionBackground {
                 await browser.contextMenus.create({
                     id: `item/${item.id}`,
                     title: item.name,
-                    type: "normal",
-                    contexts: ["all"]
+                    contexts: ["editable"]
                 });
 
                 for (const [index, field] of item.fields.entries()) {
@@ -138,7 +159,6 @@ class ExtensionBackground {
                         parentId: `item/${item.id}`,
                         id: `item/${item.id}/${index}`,
                         title: field.name,
-                        type: "normal",
                         contexts: ["editable"]
                     });
                 }
@@ -149,7 +169,7 @@ class ExtensionBackground {
     private async _update() {
         this._updateBadge();
         this._updateContextMenu();
-        this._currentItemIndex = -1;
+        // this._currentItemIndex = -1;
     }
 
     private _stateChanged() {

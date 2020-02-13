@@ -1,9 +1,10 @@
 import { browser } from "webextension-polyfill-ts";
 import { App } from "@padloc/app/src/elements/app";
 import { debounce } from "@padloc/core/src/util";
-import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
+import { bytesToBase64, base64ToBytes, base32ToBytes } from "@padloc/core/src/encoding";
 import { Storable } from "@padloc/core/src/storage";
 import { VaultItem } from "@padloc/core/src/item";
+import { totp } from "@padloc/core/src/otp";
 import { messageTab } from "./message";
 
 const notifyStateChanged = debounce(() => {
@@ -52,7 +53,23 @@ export class ExtensionApp extends App {
         this.router.addEventListener("route-changed", () => this._saveRouterState());
         this.router.addEventListener("params-changed", () => this._saveRouterState());
 
-        this.addEventListener("auto-fill", (e: any) => this._autoFill(e));
+        this.addEventListener("field-clicked", (e: any) => this._fieldClicked(e));
+        this.addEventListener("field-dragged", (e: any) => this._fieldDragged(e));
+
+        // this._autoFill(
+        //     new CustomEvent("auto-fill", {
+        //         detail: {
+        //             item: {
+        //                 name: "Test",
+        //                 fields: [
+        //                     { name: "username", value: "martin@maklesoft.com" },
+        //                     { name: "password", value: "mypassword" }
+        //                 ]
+        //             } as VaultItem,
+        //             index: 0
+        //         }
+        //     })
+        // );
 
         return super.load();
     }
@@ -104,13 +121,45 @@ export class ExtensionApp extends App {
         await this.app.storage.save(new RouterState({ path: this.router.path, params }));
     }
 
-    private async _autoFill({ detail: { item, index } }: CustomEvent<{ item: VaultItem; index: number }>) {
-        await messageTab({
-            type: "autoFill",
-            item,
-            index
+    private async _fieldClicked({ detail: { item, index } }: CustomEvent<{ item: VaultItem; index: number }>) {
+        const field = item.fields[index];
+        const value = field.type === "totp" ? await totp(base32ToBytes(field.value)) : field.value;
+        const filled = await messageTab({
+            type: "fillActive",
+            value
         });
-        window.close();
+
+        if (filled) {
+            window.close();
+        }
+    }
+
+    private async _fieldDragged({
+        detail: { item, index, event }
+    }: CustomEvent<{ item: VaultItem; index: number; event: DragEvent }>) {
+        const dragleave = () => {
+            document.body.style.width = "0";
+            document.body.style.height = "0";
+            document.body.style.opacity = "0";
+        };
+
+        const dragend = () => {
+            document.body.style.width = "";
+            document.body.style.height = "";
+            document.body.style.opacity = "1";
+            document.removeEventListener("dragleave", dragleave);
+        };
+
+        document.addEventListener("dragleave", dragleave, { once: true });
+        event.target!.addEventListener("dragend", dragend, { once: true });
+
+        const field = item.fields[index];
+        const value = field.type === "totp" ? await totp(base32ToBytes(field.value)) : field.value;
+
+        await messageTab({
+            type: "fillOnDrop",
+            value
+        });
     }
 }
 

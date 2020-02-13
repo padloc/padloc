@@ -1,27 +1,19 @@
 import { browser } from "webextension-polyfill-ts";
-import { VaultItem } from "@padloc/core/src/item";
 
 export type Message =
-    | {
-          type: "loggedIn";
-      }
-    | {
-          type: "loggedOut";
-      }
-    | {
-          type: "locked";
-      }
-    | {
-          type: "unlocked";
-          masterKey: string;
-      }
+    | { type: "loggedIn" }
+    | { type: "loggedOut" }
+    | { type: "locked" }
+    | { type: "unlocked"; masterKey: string }
     | { type: "requestMasterKey" }
-    | { type: "autoFill"; item: VaultItem; index?: number }
+    | { type: "fillActive"; value: string }
+    | { type: "fillOnDrop"; value: string }
     | { type: "calcTOTP"; secret: string }
-    | { type: "isContentReady" };
+    | { type: "isContentReady" }
+    | { type: "hasActiveInput" };
 
 export async function messageTab(msg: Message) {
-    const [activeTab] = await browser.tabs.query({ active: true });
+    const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
     if (activeTab) {
         let contentReady = false;
         try {
@@ -32,6 +24,8 @@ export async function messageTab(msg: Message) {
             await browser.tabs.executeScript(activeTab.id, { file: "/content.js" });
         }
 
-        browser.tabs.sendMessage(activeTab.id!, msg);
+        return browser.tabs.sendMessage(activeTab.id!, msg);
+    } else {
+        return Promise.resolve();
     }
 }
