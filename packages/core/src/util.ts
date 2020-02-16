@@ -106,7 +106,19 @@ export function debounce(fn: (...args: any[]) => any, delay: number) {
 
     return function(...args: any[]) {
         clearTimeout(timeout);
-        timeout = window.setTimeout(() => fn(args), delay);
+        timeout = window.setTimeout(() => fn(...args), delay);
+    };
+}
+
+export function throttle(fn: (...args: any[]) => any, limit: number) {
+    let throttling = false;
+
+    return function(...args: any[]) {
+        if (!throttling) {
+            fn(...args);
+            throttling = true;
+            setTimeout(() => (throttling = false), limit);
+        }
     };
 }
 

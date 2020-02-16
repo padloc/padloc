@@ -105,7 +105,8 @@ export class Menu extends StateMixin(BaseElement) {
                 font-size: 90%;
             }
 
-            .favorites {
+            .favorites,
+            .host {
                 --color-highlight: var(--color-negative);
                 --color-foreground: var(--color-tertiary);
             }
@@ -242,6 +243,8 @@ export class Menu extends StateMixin(BaseElement) {
             return [...vault.items].reduce((c, item) => (item.lastUsed > recentThreshold ? c + 1 : c), count);
         }, 0);
 
+        const hostCount = this.state.currentHost ? this.app.getItemsForHost(this.state.currentHost).length : 0;
+
         const showSettingsWarning =
             app.billingEnabled &&
             app.account &&
@@ -269,6 +272,19 @@ export class Menu extends StateMixin(BaseElement) {
                             <pl-icon icon="list"></pl-icon>
 
                             <div>${$l("Items")}</div>
+                        </li>
+
+                        <li
+                            class="sub-item tap favorites"
+                            @click=${() => this._goTo("items", { host: true })}
+                            ?selected=${this.selected === "host"}
+                            ?hidden=${!hostCount}
+                        >
+                            <pl-icon icon="web"></pl-icon>
+
+                            <div>${this.app.state.currentHost}</div>
+
+                            <div class="detail">${hostCount}</div>
                         </li>
 
                         <li

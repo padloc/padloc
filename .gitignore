@@ -24,3 +24,4 @@ packages/server/attachments
 /logs
 /pwa
 /data
+packages/extension/dist

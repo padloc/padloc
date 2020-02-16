@@ -1,0 +1,41 @@
+{
+    "name": "Padloc",
+    "version": "1.0.0",
+    "description": "Padloc Browser Extension",
+    "manifest_version": 2,
+    "icons": {
+        "128": "icon.png"
+    },
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },
+    "browser_action": {
+        "default_popup": "popup.html",
+        "default_icon": "icon.png"
+    },
+    "web_accessible_resources": ["icon.png", "Nunito-Regular.ttf", "Nunito-SemiBold.ttf", "fontawesome-webfont.ttf"],
+    "permissions": ["storage", "unlimitedStorage", "tabs", "activeTab", "contextMenus"],
+    "commands": {
+        "_execute_browser_action": {
+            "suggested_key": {
+                "windows": "Ctrl+Shift+P",
+                "mac": "Command+Shift+P",
+                "chromeos": "Ctrl+Shift+P",
+                "linux": "Ctrl+Shift+P"
+            }
+        },
+        "open-next": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+Right"
+            },
+            "description": "Open Next Vault Item"
+        },
+        "open-previous": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+Left"
+            },
+            "description": "Open Previous Vault Item"
+        }
+    }
+}

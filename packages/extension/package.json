@@ -1,0 +1,42 @@
+{
+  "name": "@padloc/extension",
+  "version": "3.0.13",
+  "description": "Padloc Progressive Web App",
+  "author": "Martin Kleinschrodt <martin@maklesoft.com>",
+  "license": "GPL-3.0",
+  "private": true,
+  "files": [
+    "src",
+    "assets",
+    "tsconfig.json"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/padloc/padloc.git",
+    "directory": "packages/pwa"
+  },
+  "dependencies": {
+    "@padloc/app": "^3.0.13",
+    "@padloc/core": "^3.0.13",
+    "@webcomponents/webcomponentsjs": "^2.4.1",
+    "lit-element": "^2.2.1",
+    "webextension-polyfill-ts": "^0.11.0"
+  },
+  "devDependencies": {
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^3.0.0",
+    "favicons-webpack-plugin": "^2.1.0",
+    "file-loader": "^4.0.0",
+    "html-webpack-plugin": "^3.2.0",
+    "http-server": "^0.11.1",
+    "style-loader": "^1.0.0",
+    "ts-loader": "^6.0.4",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.7.4",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.5"
+  },
+  "scripts": {
+    "build": "webpack"
+  }
+}

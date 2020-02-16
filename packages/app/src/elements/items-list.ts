@@ -23,9 +23,9 @@ import "./totp";
 interface ListItem {
     item: VaultItem;
     vault: Vault;
-    section: string;
-    firstInSection: boolean;
-    lastInSection: boolean;
+    section?: string;
+    firstInSection?: boolean;
+    lastInSection?: boolean;
     warning?: boolean;
 }
 
@@ -63,6 +63,9 @@ export class ItemsList extends StateMixin(View) {
     recent: boolean = false;
 
     @property()
+    host: boolean = false;
+
+    @property()
     private _listItems: ListItem[] = [];
     // @property()
     // private _firstVisibleIndex: number = 0;
@@ -97,6 +100,7 @@ export class ItemsList extends StateMixin(View) {
     @observe("favorites")
     @observe("attachments")
     @observe("recent")
+    @observe("host")
     async stateChanged() {
         // Clear items from selection that are no longer in list (due to filtering)
         for (const id of this._multiSelect.keys()) {
@@ -282,6 +286,7 @@ export class ItemsList extends StateMixin(View) {
                 flex: 1;
                 border-radius: 8px;
                 max-width: calc(60%);
+                opacity: 0.999;
             }
 
             .item-field > * {
@@ -466,6 +471,7 @@ export class ItemsList extends StateMixin(View) {
                     .tag=${this.tag}
                     .favorites=${this.favorites}
                     .recent=${this.recent}
+                    .host=${this.host}
                     .attachments=${this.attachments}
                     .searching=${this._filterShowing}
                 ></pl-items-filter>
@@ -657,6 +663,16 @@ export class ItemsList extends StateMixin(View) {
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
         app.updateItem(vault, item, { lastUsed: new Date() });
+        this.dispatch("field-clicked", { item, index });
+    }
+
+    private _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
+        // e.preventDefault();
+        // this.dispatch("auto-fill", { item, index, dragging: true });
+        // const field = item.fields[index];
+        // e.dataTransfer!.setData("text/plain", field.value);
+        this.dispatch("field-dragged", { item, index, event });
+        return true;
     }
 
     private _openAttachment(a: AttachmentInfo, item: VaultItem, e: MouseEvent) {
@@ -665,34 +681,38 @@ export class ItemsList extends StateMixin(View) {
     }
 
     private _getItems(): ListItem[] {
-        const { vault: vaultId, tag, favorites, attachments, recent } = this;
+        const { vault: vaultId, tag, favorites, attachments, recent, host } = this;
         const filter = (this._filterInput && this._filterInput.value) || "";
         const recentThreshold = new Date(Date.now() - app.settings.recentLimit * 24 * 60 * 60 * 1000);
 
         let items: ListItem[] = [];
 
-        for (const vault of this.state.vaults) {
-            // Filter by vault
-            if (vaultId && vault.id !== vaultId) {
-                continue;
-            }
+        if (host) {
+            items = this.app.getItemsForHost(this.app.state.currentHost);
+        } else {
+            for (const vault of this.state.vaults) {
+                // Filter by vault
+                if (vaultId && vault.id !== vaultId) {
+                    continue;
+                }
 
-            for (const item of vault.items) {
-                if (
-                    // filter by tag
-                    (!tag || item.tags.includes(tag)) &&
-                    (!favorites || (item.favorited && item.favorited.includes(app.account!.id))) &&
-                    (!attachments || !!item.attachments.length) &&
-                    (!recent || item.lastUsed > recentThreshold) &&
-                    filterByString(filter || "", item)
-                ) {
-                    items.push({
-                        vault,
-                        item,
-                        section: "",
-                        firstInSection: false,
-                        lastInSection: false
-                    });
+                for (const item of vault.items) {
+                    if (
+                        // filter by tag
+                        (!tag || item.tags.includes(tag)) &&
+                        (!favorites || (item.favorited && item.favorited.includes(app.account!.id))) &&
+                        (!attachments || !!item.attachments.length) &&
+                        (!recent || item.lastUsed > recentThreshold) &&
+                        filterByString(filter || "", item)
+                    ) {
+                        items.push({
+                            vault,
+                            item,
+                            section: "",
+                            firstInSection: false,
+                            lastInSection: false
+                        });
+                    }
                 }
             }
         }
@@ -750,7 +770,7 @@ export class ItemsList extends StateMixin(View) {
         }
 
         return html`
-            <div class="item" ?selected=${item.id === this.selected} @click=${() => this.selectItem(li)}>
+            <div class="item" ?selected=${item.id === this.selected} @click="${() => this.selectItem(li)}}">
                 ${cache(
                     this.multiSelect
                         ? html`
@@ -795,7 +815,12 @@ export class ItemsList extends StateMixin(View) {
                         ${item.fields.map((f: Field, i: number) => {
                             const fieldDef = FIELD_DEFS[f.type] || FIELD_DEFS.text;
                             return html`
-                                <div class="item-field tap" @click=${(e: MouseEvent) => this._copyField(li, i, e)}>
+                                <div
+                                    class="item-field tap"
+                                    @click=${(e: MouseEvent) => this._copyField(li, i, e)}
+                                    draggable="true"
+                                    @dragstart=${(e: DragEvent) => this._dragFieldStart(li, i, e)}
+                                >
                                     <div class="item-field-label">
                                         <div class="item-field-name">
                                             <pl-icon icon="${fieldDef.icon}"></pl-icon>

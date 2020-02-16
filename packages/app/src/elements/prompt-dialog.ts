@@ -15,6 +15,7 @@ export interface PromptOptions {
     placeholder?: string;
     label?: string;
     type?: string;
+    pattern?: string;
     confirmLabel?: string;
     cancelLabel?: string;
     preventDismiss?: boolean;
@@ -40,6 +41,8 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
     preventDismiss: boolean = true;
     @property({ reflect: true })
     type: string = defaultType;
+    @property()
+    pattern: string = "";
     @property()
     validate?: (val: string, input: Input) => Promise<string>;
     @property()
@@ -92,6 +95,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
                     .type=${this.type}
                     .placeholder=${this.placeholder}
                     .label=${this.label}
+                    .pattern=${this.pattern}
                     @enter=${() => this._confirmButton.click()}
                 >
                 </pl-input>
@@ -131,6 +135,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
         label = "",
         value = "",
         type = defaultType,
+        pattern = "",
         confirmLabel = defaultConfirmLabel,
         cancelLabel = defaultCancelLabel,
         preventDismiss = true,
@@ -139,6 +144,7 @@ export class PromptDialog extends Dialog<PromptOptions, string | null> {
         this.title = title;
         this.message = message;
         this.type = type;
+        this.pattern = pattern;
         this.placeholder = placeholder;
         this.label = label;
         this.confirmLabel = confirmLabel;

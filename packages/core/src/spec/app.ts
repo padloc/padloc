@@ -7,6 +7,7 @@ import { MemoryStorage } from "../storage";
 import { MemoryAttachmentStorage } from "../attachment";
 import { ErrorCode } from "../error";
 import { OrgType } from "../org";
+import { Logger } from "../log";
 import { Spec, assertResolve, assertReject } from "./spec";
 
 export function appSpec(): Spec {
@@ -18,10 +19,11 @@ export function appSpec(): Spec {
         new ServerConfig({ clientUrl, reportErrors: "support@padloc.app" }),
         new MemoryStorage(),
         messenger,
+        new Logger(new MemoryStorage()),
         new MemoryAttachmentStorage()
     );
-    const app = new App(new MemoryStorage(), new DirectSender(server));
-    const otherApp = new App(new MemoryStorage(), new DirectSender(server));
+    const app = new App(new DirectSender(server));
+    const otherApp = new App(new DirectSender(server));
 
     const user = {
         email: "lengden@olga.com",
@@ -99,9 +101,9 @@ export function appSpec(): Spec {
             assert.equal(invite.email, otherUser.email);
             const inviteMessage = messenger.lastMessage(otherUser.email) as InviteCreatedMessage;
             assert.instanceOf(inviteMessage, InviteCreatedMessage);
-            const linkPattern = new RegExp(`${clientUrl}/invite/${org.id}/${invite.id}\\?verify=(.*)&email=(.*)`);
+            const linkPattern = new RegExp(`${clientUrl}/invite/${org.id}/${invite.id}\\?email=(.*)&verify=(.*)`);
             assert.match(inviteMessage.link, linkPattern);
-            const [, verify, email] = inviteMessage.link.match(linkPattern)!;
+            const [, email, verify] = inviteMessage.link.match(linkPattern)!;
 
             assert.equal(email, invite.email);
 
@@ -267,7 +269,7 @@ export function appSpec(): Spec {
         });
 
         test("Login", async () => {
-            const app = new App(new MemoryStorage(), new DirectSender(server));
+            const app = new App(new DirectSender(server));
             await assertReject(
                 assert,
                 () => app.login(user.email, user.password),

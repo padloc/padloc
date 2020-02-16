@@ -35,6 +35,7 @@ export class TOTP extends BaseElement {
                 user-select: text;
                 -webkit-user-select: text;
                 font: inherit;
+                white-space: normal !important;
             }
 
             .countdown {

@@ -14,10 +14,6 @@ export class Login extends StartForm {
     @property()
     private _errorMessage: string;
 
-    private get _email() {
-        return router.params.email || "";
-    }
-
     @query("#emailInput")
     private _emailInput: Input;
     @query("#passwordInput")
@@ -27,12 +23,18 @@ export class Login extends StartForm {
 
     private _failedCount = 0;
 
+    private _verificationToken?: string;
+
     async reset() {
         await this.updateComplete;
+        this._emailInput.value = router.params.email || "";
         this._passwordInput.value = "";
         this._loginButton.stop();
         this._failedCount = 0;
         super.reset();
+        if (router.params.verifying) {
+            this._verifyEmail();
+        }
     }
 
     static styles = [
@@ -70,7 +72,6 @@ export class Login extends StartForm {
                     required
                     select-on-focus
                     .label=${$l("Email Address")}
-                    .value=${this._email}
                     class="animate tap"
                     @enter=${() => this._submit()}
                 >
@@ -105,7 +106,41 @@ export class Login extends StartForm {
         `;
     }
 
-    private async _submit(verificationToken?: string): Promise<void> {
+    private async _verifyEmail() {
+        router.params = { ...router.params, email: this._emailInput.value, verifying: "1" };
+
+        const verify = await prompt(
+            $l("Please enter the confirmation code sent to your email address to proceed!"),
+            {
+                title: $l("One Last Step!"),
+                placeholder: $l("Enter Verification Code"),
+                confirmLabel: $l("Submit"),
+                type: "number",
+                pattern: "[0-9]*",
+                validate: async (code: string) => {
+                    try {
+                        return await app.completeEmailVerification(this._emailInput.value, code);
+                    } catch (e) {
+                        if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
+                            alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
+                                type: "warning"
+                            });
+                            return "";
+                        }
+                        throw e.message || e.code || e.toString();
+                    }
+                }
+            }
+        );
+
+        if (verify) {
+            this._verificationToken = verify;
+        }
+
+        return verify;
+    }
+
+    private async _submit(): Promise<void> {
         if (this._loginButton.state === "loading") {
             return;
         }
@@ -137,7 +172,7 @@ export class Login extends StartForm {
         this._errorMessage = "";
         this._loginButton.start();
         try {
-            await app.login(email, password, verificationToken);
+            await app.login(email, password, this._verificationToken);
             this._loginButton.success();
             this.done();
         } catch (e) {
@@ -146,30 +181,9 @@ export class Login extends StartForm {
                     this._loginButton.stop();
 
                     await app.requestEmailVerification(email);
+                    const verify = await this._verifyEmail();
 
-                    const verify = await prompt(
-                        $l("Please enter the confirmation code sent to your email address to proceed!"),
-                        {
-                            title: $l("One Last Step!"),
-                            placeholder: $l("Enter Verification Code"),
-                            confirmLabel: $l("Submit"),
-                            validate: async (code: string) => {
-                                try {
-                                    return await app.completeEmailVerification(email, code);
-                                } catch (e) {
-                                    if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
-                                        alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
-                                            type: "warning"
-                                        });
-                                        return "";
-                                    }
-                                    throw e.message || e.code || e.toString();
-                                }
-                            }
-                        }
-                    );
-
-                    return verify ? this._submit(verify) : undefined;
+                    return verify ? this._submit() : undefined;
                 case ErrorCode.INVALID_CREDENTIALS:
                     this._errorMessage = $l("Wrong username or password. Please try again!");
                     this._loginButton.fail();

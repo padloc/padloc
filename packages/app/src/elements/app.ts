@@ -34,14 +34,21 @@ import { TemplateDialog } from "./template-dialog";
 //     document.addEventListener("deviceready", resolve);
 // });
 
-class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
+export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseElement))))) {
     @property()
     locked = true;
     @property()
     loggedIn = false;
 
+    @property({ type: Boolean, reflect: true, attribute: "singleton-container" })
+    readonly singletonContainer = true;
+
+    get router() {
+        return router;
+    }
+
     @property()
-    private _ready = false;
+    protected _ready = false;
 
     @query("pl-start")
     private _startView: Start;
@@ -94,6 +101,10 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
 
     async load() {
         await app.loaded;
+        // Try syncing account so user can unlock with new password in case it has changed
+        if (app.state.loggedIn) {
+            app.fetchAccount();
+        }
         this._ready = true;
         this._routeChanged();
         const spinner = document.querySelector(".spinner") as HTMLElement;
@@ -318,18 +329,46 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
     updated(changes: Map<string, any>) {
         if (changes.has("locked")) {
             if (this.locked) {
-                this.$(".wrapper").classList.remove("active");
-                clearDialogs();
-                clearClipboard();
-                this._routeChanged();
+                this._locked();
             } else {
-                setTimeout(() => {
-                    this.$(".wrapper").classList.add("active");
-                    router.go(router.params.next || "", {}, true);
-                }, 600);
+                this._unlocked();
+            }
+        }
+
+        if (changes.has("loggedIn")) {
+            if (this.loggedIn) {
+                this._loggedIn();
+            } else {
+                this._loggedOut();
             }
         }
     }
+
+    protected _locked() {
+        this.$(".wrapper").classList.remove("active");
+        clearDialogs();
+        clearClipboard();
+        this._routeChanged();
+    }
+
+    protected _unlocked(instant = false) {
+        setTimeout(
+            async () => {
+                if (!this.$(".wrapper")) {
+                    await this.updateComplete;
+                }
+
+                this.$(".wrapper").classList.add("active");
+                if (typeof router.params.next !== "undefined") {
+                    router.go(router.params.next, {}, true);
+                }
+            },
+            instant ? 0 : 600
+        );
+    }
+
+    protected _loggedIn() {}
+    protected _loggedOut() {}
 
     @listen("toggle-menu")
     _toggleMenu() {
@@ -358,6 +397,10 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
 
     @listen("route-changed", router)
     async _routeChanged() {
+        if (!this._ready) {
+            return;
+        }
+
         Dialog.closeAll();
 
         await app.loaded;
@@ -425,13 +468,14 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
         } else if ((match = path.match(/^items(?:\/([^\/]+))?$/))) {
             const [, id] = match;
 
-            const { vault, tag, favorites, attachments, recent } = router.params;
+            const { vault, tag, favorites, attachments, recent, host } = router.params;
             this._items.selected = id || "";
             this._items.vault = vault || "";
             this._items.tag = tag || "";
             this._items.favorites = favorites === "true";
             this._items.attachments = attachments === "true";
             this._items.recent = recent === "true";
+            this._items.host = host === "true";
             this._openView(this._items);
 
             this._menu.selected = vault
@@ -444,6 +488,8 @@ class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLock(BaseE
                 ? "recent"
                 : attachments
                 ? "attachments"
+                : host
+                ? "host"
                 : "items";
 
             const item = id && app.getItem(id);
