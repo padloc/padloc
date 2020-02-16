@@ -97,16 +97,14 @@ export class Index extends Serializable {
                             item.fields
                                 .filter(f => f.type === "url")
                                 .map(async f => {
+                                    // try to parse host from url. if url is not valid,
+                                    // assume the url field contains just the domain.
+                                    let host = f.value;
                                     try {
-                                        const url = new URL(f.value);
-                                        const hashedHost = await crypto.deriveKey(
-                                            stringToBytes(url.host),
-                                            this.hashParams
-                                        );
-                                        return bytesToBase64(hashedHost);
-                                    } catch (e) {
-                                        return null;
-                                    }
+                                        host = new URL(f.value).host;
+                                    } catch (e) {}
+                                    const hashedHost = await crypto.deriveKey(stringToBytes(host), this.hashParams);
+                                    return bytesToBase64(hashedHost);
                                 })
                         )
                     ).filter(h => h !== null) as string[]
@@ -120,10 +118,18 @@ export class Index extends Serializable {
         return this.items.filter(item => item.hosts.some(h => h === hashedHost)).length;
     }
 
+    async fuzzyMatchHost(host: string) {
+        // Try exact match first, then try to add/remove "www."
+        return (
+            (await this.matchHost(host)) ||
+            (host.startsWith("www.") ? this.matchHost(host.slice(4)) : this.matchHost("www." + host))
+        );
+    }
+
     async matchUrl(url: string) {
         try {
             const { host } = new URL(url);
-            return this.matchHost(host);
+            return this.fuzzyMatchHost(host);
         } catch (e) {
             return 0;
         }
@@ -1238,11 +1244,15 @@ export class App {
                             return false;
                         }
 
+                        // Try to parse host from url. If field value is not a valid URL,
+                        // assume its the bare host name
+                        let h = field.value;
                         try {
-                            return new URL(field.value).host === host;
-                        } catch (e) {
-                            return false;
-                        }
+                            h = new URL(field.value).host;
+                        } catch (e) {}
+
+                        // If host doesn't match exactly, try with/without "www."
+                        return h === host || (host.startsWith("www.") ? host.slice(4) === h : "www." + host === h);
                     })
                 ) {
                     items.push({ vault, item });
