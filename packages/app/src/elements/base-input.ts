@@ -149,6 +149,7 @@ export abstract class BaseInput extends BaseElement {
                 min-height: inherit;
                 line-height: inherit;
                 caret-color: currentColor;
+                cursor: inherit;
             }
 
             textarea {

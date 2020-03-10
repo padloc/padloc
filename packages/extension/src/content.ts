@@ -1,6 +1,6 @@
 import "@webcomponents/webcomponentsjs";
 import { browser } from "webextension-polyfill-ts";
-import { throttle } from "@padloc/core/src/util";
+// import { throttle } from "@padloc/core/src/util";
 import { Message } from "./message";
 
 const css = `
@@ -97,9 +97,9 @@ const css = `
 `;
 
 class ExtensionContent {
-    private _hoveredInput: HTMLInputElement | null = null;
-
-    private _highlightElement: HTMLDivElement;
+    // private _hoveredInput: HTMLInputElement | null = null;
+    //
+    // private _highlightElement: HTMLDivElement;
 
     async init() {
         const style = document.createElement("style");
@@ -114,38 +114,38 @@ class ExtensionContent {
             case "fillActive":
                 // console.log("autofill", msg);
                 return Promise.resolve(this._fill(msg.value));
-            case "fillOnDrop":
-                // console.log("autofill", msg);
-                return new Promise(resolve => {
-                    let timeout: number;
-
-                    const dragover = (e: DragEvent) => {
-                        // console.log("dragover", performance.now());
-                        if (timeout) {
-                            clearTimeout(timeout);
-                        }
-                        this._updateHovered(e);
-                    };
-
-                    const dragleave = () => {
-                        // console.log("dragleave", performance.now());
-                        timeout = window.setTimeout(() => {
-                            if (this._hoveredInput) {
-                                resolve(this._fill(msg.value, this._hoveredInput));
-                            } else {
-                                resolve(false);
-                            }
-
-                            this._highlight(null);
-                            this._hoveredInput = null;
-                            document.removeEventListener("dragover", dragover);
-                            document.removeEventListener("dragleave", dragleave);
-                        }, 100);
-                    };
-
-                    document.addEventListener("dragover", dragover);
-                    document.addEventListener("dragleave", dragleave);
-                });
+            // case "fillOnDrop":
+            //     // console.log("autofill", msg);
+            //     return new Promise(resolve => {
+            //         let timeout: number;
+            //
+            //         const dragover = (e: DragEvent) => {
+            //             // console.log("dragover", performance.now());
+            //             if (timeout) {
+            //                 clearTimeout(timeout);
+            //             }
+            //             this._updateHovered(e);
+            //         };
+            //
+            //         const dragleave = () => {
+            //             // console.log("dragleave", performance.now());
+            //             timeout = window.setTimeout(() => {
+            //                 if (this._hoveredInput) {
+            //                     resolve(this._fill(msg.value, this._hoveredInput));
+            //                 } else {
+            //                     resolve(false);
+            //                 }
+            //
+            //                 this._highlight(null);
+            //                 this._hoveredInput = null;
+            //                 document.removeEventListener("dragover", dragover);
+            //                 document.removeEventListener("dragleave", dragleave);
+            //             }, 100);
+            //         };
+            //
+            //         document.addEventListener("dragover", dragover);
+            //         document.addEventListener("dragleave", dragleave);
+            //     });
             case "hasActiveInput":
                 const activeInput = this._getActiveInput();
                 // console.log("has active input", activeInput);
@@ -178,6 +178,8 @@ class ExtensionContent {
         }
 
         input.value = value;
+
+        // Do some song and dance for various frameworks that expect input events
         input.dispatchEvent(
             new KeyboardEvent("keydown", {
                 bubbles: true,
@@ -198,48 +200,48 @@ class ExtensionContent {
         );
         input.dispatchEvent(new Event("input", { bubbles: true }));
         input.dispatchEvent(new Event("change", { bubbles: true }));
-        this._ripple(input);
+        // this._ripple(input);
         return true;
     }
 
-    private _ripple(el: HTMLElement) {
-        const { left, top, width, height } = el.getBoundingClientRect();
-        const ripple = document.createElement("div");
-        const { scrollTop, scrollLeft } = document.documentElement;
-        Object.assign(ripple.style, {
-            top: `${top + scrollTop}px`,
-            left: `${left + scrollLeft}px`,
-            width: width + "px",
-            height: height + "px"
-        });
-        ripple.classList.add("ripple");
-        document.body.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 800);
-    }
+    // private _ripple(el: HTMLElement) {
+    //     const { left, top, width, height } = el.getBoundingClientRect();
+    //     const ripple = document.createElement("div");
+    //     const { scrollTop, scrollLeft } = document.documentElement;
+    //     Object.assign(ripple.style, {
+    //         top: `${top + scrollTop}px`,
+    //         left: `${left + scrollLeft}px`,
+    //         width: width + "px",
+    //         height: height + "px"
+    //     });
+    //     ripple.classList.add("ripple");
+    //     document.body.appendChild(ripple);
+    //     setTimeout(() => ripple.remove(), 800);
+    // }
 
-    private _highlight(el: HTMLElement | null) {
-        if (this._highlightElement) {
-            const hel = this._highlightElement;
-            hel.classList.add("out");
-            setTimeout(() => hel.remove(), 500);
-        }
-
-        if (el) {
-            this._highlightElement = document.createElement("div");
-            this._highlightElement.classList.add("highlight");
-            document.body.appendChild(this._highlightElement);
-
-            const { left, top, width, height } = el.getBoundingClientRect();
-            const { scrollTop, scrollLeft } = document.documentElement;
-            Object.assign(this._highlightElement.style, {
-                top: `${top + scrollTop}px`,
-                left: `${left + scrollLeft}px`,
-                width: width + "px",
-                height: height + "px",
-                opacity: 1
-            });
-        }
-    }
+    // private _highlight(el: HTMLElement | null) {
+    //     if (this._highlightElement) {
+    //         const hel = this._highlightElement;
+    //         hel.classList.add("out");
+    //         setTimeout(() => hel.remove(), 500);
+    //     }
+    //
+    //     if (el) {
+    //         this._highlightElement = document.createElement("div");
+    //         this._highlightElement.classList.add("highlight");
+    //         document.body.appendChild(this._highlightElement);
+    //
+    //         const { left, top, width, height } = el.getBoundingClientRect();
+    //         const { scrollTop, scrollLeft } = document.documentElement;
+    //         Object.assign(this._highlightElement.style, {
+    //             top: `${top + scrollTop}px`,
+    //             left: `${left + scrollLeft}px`,
+    //             width: width + "px",
+    //             height: height + "px",
+    //             opacity: 1
+    //         });
+    //     }
+    // }
 
     // private _keydown({ code, ctrlKey, metaKey, altKey }: KeyboardEvent) {
     //     if (code === "Escape") {
@@ -267,43 +269,43 @@ class ExtensionContent {
     //     this.classList.add("dragging");
     // }
 
-    private _getFillableFromPoint(
-        root: Document | ShadowRoot,
-        x: number,
-        y: number,
-        depth = 0
-    ): HTMLInputElement | null {
-        const els = root.elementsFromPoint(x, y);
+    // private _getFillableFromPoint(
+    //     root: Document | ShadowRoot,
+    //     x: number,
+    //     y: number,
+    //     depth = 0
+    // ): HTMLInputElement | null {
+    //     const els = root.elementsFromPoint(x, y);
+    //
+    //     // Check all elements on this level first
+    //     const input = els.find(el => this._isElementFillable(el));
+    //
+    //     if (input) {
+    //         return input as HTMLInputElement;
+    //     }
+    //
+    //     // If no fillable elements on this level were found, go one level deeper
+    //     for (const el of els) {
+    //         if (el.shadowRoot && el.shadowRoot !== root) {
+    //             const input = this._getFillableFromPoint(el.shadowRoot, x, y, depth + 1);
+    //             if (input) {
+    //                 return input;
+    //             }
+    //         }
+    //     }
+    //
+    //     // If nothing was found, return null
+    //     return null;
+    // }
 
-        // Check all elements on this level first
-        const input = els.find(el => this._isElementFillable(el));
-
-        if (input) {
-            return input as HTMLInputElement;
-        }
-
-        // If no fillable elements on this level were found, go one level deeper
-        for (const el of els) {
-            if (el.shadowRoot && el.shadowRoot !== root) {
-                const input = this._getFillableFromPoint(el.shadowRoot, x, y, depth + 1);
-                if (input) {
-                    return input;
-                }
-            }
-        }
-
-        // If nothing was found, return null
-        return null;
-    }
-
-    private _updateHovered = throttle((e: DragEvent) => {
-        // console.log("update hovered", performance.now());
-        const input = this._getFillableFromPoint(document, e.clientX, e.clientY);
-        if (input !== this._hoveredInput) {
-            this._highlight(input);
-            this._hoveredInput = input;
-        }
-    }, 50);
+    // private _updateHovered = throttle((e: DragEvent) => {
+    //     // console.log("update hovered", performance.now());
+    //     const input = this._getFillableFromPoint(document, e.clientX, e.clientY);
+    //     if (input !== this._hoveredInput) {
+    //         this._highlight(input);
+    //         this._hoveredInput = input;
+    //     }
+    // }, 50);
 }
 
 if (typeof window.extension === "undefined") {

@@ -1,8 +1,6 @@
 import { styleMap } from "lit-html/directives/style-map";
-import { VaultItem, Field } from "@padloc/core/src/item";
+import { VaultItem, Field, transformedValue } from "@padloc/core/src/item";
 import { setClipboard } from "@padloc/core/src/platform";
-import { totp } from "@padloc/core/src/otp";
-import { base32ToBytes } from "@padloc/core/src/encoding";
 import { shared, mixins } from "../styles";
 import { BaseElement, element, html, css, property } from "./base";
 import "./icon";
@@ -163,7 +161,7 @@ export class Clipboard extends BaseElement {
         this.item = item;
         this.field = field;
 
-        const value = field.type === "totp" ? await totp(base32ToBytes(field.value)) : field.value;
+        const value = await transformedValue(field);
         setClipboard(value);
 
         const tStart = Date.now();

@@ -1,10 +1,10 @@
 import { browser, Menus } from "webextension-polyfill-ts";
 import { setPlatform } from "@padloc/core/src/platform";
 import { App } from "@padloc/core/src/app";
-import { bytesToBase64, base64ToBytes, base32ToBytes } from "@padloc/core/src/encoding";
+import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
 import { AjaxSender } from "@padloc/app/src/lib/ajax";
-import { totp } from "@padloc/core/src/otp";
 import { debounce } from "@padloc/core/src/util";
+import { transformedValue } from "@padloc/core/src/item";
 import { ExtensionPlatform } from "./platform";
 import { Message, messageTab } from "./message";
 
@@ -36,8 +36,8 @@ class ExtensionBackground {
                         (this.app.account && this.app.account.masterKey && bytesToBase64(this.app.account.masterKey)) ||
                         null
                     );
-                case "calcTOTP":
-                    return totp(base32ToBytes(msg.secret));
+                // case "calcTOTP":
+                //     return totp(base32ToBytes(msg.secret));
             }
         });
         const updateBadge = debounce(() => this._update(), 100);
@@ -76,7 +76,7 @@ class ExtensionBackground {
         }
 
         const field = item.item.fields[index];
-        const value = field.type === "totp" ? await totp(base32ToBytes(field.value)) : field.value;
+        const value = await transformedValue(field);
         await messageTab({
             type: "fillActive",
             value

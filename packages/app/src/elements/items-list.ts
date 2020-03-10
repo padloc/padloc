@@ -282,6 +282,7 @@ export class ItemsList extends StateMixin(View) {
             .item-field {
                 cursor: pointer;
                 font-size: var(--font-size-tiny);
+                background: var(--color-tertiary);
                 position: relative;
                 flex: 1;
                 border-radius: 8px;
@@ -666,11 +667,7 @@ export class ItemsList extends StateMixin(View) {
         this.dispatch("field-clicked", { item, index });
     }
 
-    private _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
-        // e.preventDefault();
-        // this.dispatch("auto-fill", { item, index, dragging: true });
-        // const field = item.fields[index];
-        // e.dataTransfer!.setData("text/plain", field.value);
+    private async _dragFieldStart({ item }: ListItem, index: number, event: DragEvent) {
         this.dispatch("field-dragged", { item, index, event });
         return true;
     }

@@ -2,6 +2,7 @@ import "../../assets/fonts/fonts.css";
 import { Plan, PlanType } from "@padloc/core/src/billing";
 import { translate as $l } from "@padloc/locale/src/translate";
 import { biometricAuth } from "@padloc/core/src/platform";
+import { VaultItem } from "@padloc/core/src/item";
 import { config, shared, mixins } from "../styles";
 import { app, router } from "../globals";
 import { StateMixin } from "../mixins/state";
@@ -29,6 +30,7 @@ import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { PremiumDialog } from "./premium-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
 import { TemplateDialog } from "./template-dialog";
+import { TOTPElement } from "./totp";
 
 // const cordovaReady = new Promise(resolve => {
 //     document.addEventListener("deviceready", resolve);
@@ -744,6 +746,17 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             type: "success",
             preventAutoClose: true
         });
+    }
+
+    @listen("field-dragged")
+    protected async _fieldDragged({
+        detail: { event, item, index }
+    }: CustomEvent<{ item: VaultItem; index: number; event: DragEvent }>) {
+        const field = item.fields[index];
+        const target = event.target as HTMLElement;
+        const totp: TOTPElement | null =
+            target.querySelector("pl-totp") || (target.shadowRoot && target.shadowRoot.querySelector("pl-totp"));
+        event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);
     }
 }
 

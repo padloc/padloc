@@ -7,7 +7,7 @@ import { BaseElement, element, html, svg, css, property, observe } from "./base"
 import "./icon";
 
 @element("pl-totp")
-export class TOTP extends BaseElement {
+export class TOTPElement extends BaseElement {
     @property()
     secret: string = "";
 
@@ -15,7 +15,7 @@ export class TOTP extends BaseElement {
     interval = 30;
 
     @property()
-    private _token = "";
+    token = "";
 
     @property()
     private _error = "";
@@ -70,7 +70,7 @@ export class TOTP extends BaseElement {
         window.clearTimeout(this._updateTimeout);
 
         if (!this.secret) {
-            this._token = "";
+            this.token = "";
             this._age = 0;
             return;
         }
@@ -80,10 +80,10 @@ export class TOTP extends BaseElement {
         const counter = Math.floor(time / 1000 / this.interval);
         if (counter !== this._counter) {
             try {
-                this._token = await hotp(base32ToBytes(this.secret), counter);
+                this.token = await hotp(base32ToBytes(this.secret), counter);
                 this._error = "";
             } catch (e) {
-                this._token = "";
+                this.token = "";
                 this._error = $l("Invalid Code");
                 this._age = 0;
                 return;
@@ -116,11 +116,11 @@ export class TOTP extends BaseElement {
                   `
                 : html`
                       <span>
-                          ${this._token.substring(0, 3)}&nbsp;${this._token.substring(3, 6)}
+                          ${this.token.substring(0, 3)}&nbsp;${this.token.substring(3, 6)}
                       </span>
                   `}
             ${svg`
-                <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this._token}>
+                <svg class="countdown" viewBox="0 0 10 10" ?hidden=${!this.token}>
                     <circle cx="5" cy="5" r="4" class="bg" />
                     <circle
                         cx="5"

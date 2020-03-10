@@ -1,4 +1,6 @@
 import { translate as $l } from "@padloc/locale/src/translate";
+import { base32ToBytes } from "./encoding";
+import { totp } from "./otp";
 import { uuid } from "./util";
 import { Collection, CollectionItem } from "./collection";
 import { AccountID } from "./account";
@@ -42,6 +44,8 @@ export interface FieldDef {
     name: string;
     /** display formatting */
     format?: (value: string, masked: boolean) => string;
+    /** for values that need to be prepared before being copied / filled */
+    transform?: (value: string) => Promise<string>;
 }
 
 /** Available field types and respective meta data */
@@ -163,6 +167,9 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         icon: "totp",
         get name() {
             return $l("Two-Factor Token");
+        },
+        async transform(value: string) {
+            return await totp(base32ToBytes(value));
         }
     },
     note: {
@@ -476,4 +483,9 @@ export class VaultItemCollection extends Collection<VaultItem> {
             })
         });
     }
+}
+
+export async function transformedValue(field: Field) {
+    const type = FIELD_DEFS[field.type] || FIELD_DEFS.text;
+    return type.transform ? await type.transform(field.value) : field.value;
 }

@@ -56,6 +56,15 @@ export class FieldElement extends BaseElement {
         this._masked = this._fieldDef.mask;
     }
 
+    @observe("editing")
+    _editingChanged() {
+        if (!this.editing) {
+            this.setAttribute("draggable", "true");
+        } else {
+            this.removeAttribute("draggable");
+        }
+    }
+
     static styles = [
         shared,
         css`
@@ -63,6 +72,7 @@ export class FieldElement extends BaseElement {
                 display: flex;
                 border-radius: 8px;
                 min-height: 80px;
+                opacity: 0.999;
             }
 
             .field-buttons {
@@ -124,6 +134,7 @@ export class FieldElement extends BaseElement {
                 white-space: pre-wrap;
                 overflow-wrap: break-word;
                 user-select: text;
+                cursor: text;
             }
 
             .fields-container {
@@ -152,11 +163,12 @@ export class FieldElement extends BaseElement {
                 border: none;
             }
 
-            .drag-handle {
+            :host([draggable]),
+            :host([draggable]) .name-input {
                 cursor: grab;
             }
 
-            .drag-handle:active {
+            :host([draggable]):active {
                 cursor: grabbing;
             }
 

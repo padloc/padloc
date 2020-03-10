@@ -251,10 +251,6 @@ export class ItemDialog extends Dialog<string, void> {
                 min-width: 120px;
             }
 
-            pl-field.dragging {
-                opacity: 0.2;
-            }
-
             :host(.dragging) .content > * {
                 will-change: transform;
                 transition: transform 0.2s;
@@ -611,12 +607,11 @@ export class ItemDialog extends Dialog<string, void> {
         return false;
     }
 
-    private _dragstart(e: DragEvent, index: number) {
-        // console.log("dragstart", e);
+    private async _dragstart(event: DragEvent, index: number) {
+        // console.log("dragstart", event);
         this._draggingIndex = index;
-        e.dataTransfer!.effectAllowed = "move";
-        e.dataTransfer!.setData("text/plain", "foo");
-        (e.target as HTMLElement).classList.add("dragging");
+        this.dispatch("field-dragged", { item: this._item, index, event });
+        (event.target as HTMLElement).classList.add("dragging");
         this.classList.add("dragging");
     }
 
