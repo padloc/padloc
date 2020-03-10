@@ -1,4 +1,4 @@
-import { browser, Menus } from "webextension-polyfill-ts";
+import { browser, Menus, Runtime } from "webextension-polyfill-ts";
 import { setPlatform } from "@padloc/core/src/platform";
 import { App } from "@padloc/core/src/app";
 import { bytesToBase64, base64ToBytes } from "@padloc/core/src/encoding";
@@ -19,7 +19,13 @@ class ExtensionBackground {
 
     async init() {
         this.app.subscribe(() => this._stateChanged());
-        browser.runtime.onMessage.addListener(async (msg: Message) => {
+        browser.runtime.onMessage.addListener(async (msg: Message, sender: Runtime.MessageSender) => {
+            if (sender.tab) {
+                // Communication with content-scripts is one-way, to we ignore
+                // messages from them, just to be safe
+                return;
+            }
+
             switch (msg.type) {
                 case "loggedOut":
                 case "locked":
