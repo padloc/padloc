@@ -1,6 +1,15 @@
-import * as platform from "@padloc/core/src/platform";
+import { setPlatform } from "@padloc/core/src/platform";
 import { ElectronPlatform } from "./platform";
-import "@padloc/app/src/elements/app";
 
-platform.setPlatform(new ElectronPlatform());
-window.router.basePath = window.location.pathname.replace(/index.html$/, "");
+(async () => {
+    setPlatform(new ElectronPlatform());
+
+    await import("@padloc/app/src/elements/app");
+
+    window.router.basePath = window.location.pathname.replace(/index.html$/, "");
+
+    window.onload = () => {
+        const app = document.createElement("pl-app");
+        document.body.appendChild(app);
+    };
+})();
