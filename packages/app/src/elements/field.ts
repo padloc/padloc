@@ -172,15 +172,13 @@ export class FieldElement extends BaseElement {
                 cursor: grabbing;
             }
 
-            @media (hover: none) {
-                .drag-handle {
-                    display: none;
-                }
-            }
-
             @supports (-webkit-overflow-scrolling: touch) {
                 .field-header pl-icon {
                     top: 11px;
+                }
+
+                .drag-handle {
+                    display: none;
                 }
             }
         `
