@@ -363,6 +363,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 this.$(".wrapper").classList.add("active");
                 if (typeof router.params.next !== "undefined") {
                     router.go(router.params.next, {}, true);
+                } else {
+                    this._routeChanged();
                 }
             },
             instant ? 0 : 600
