@@ -103,6 +103,11 @@ export class Index extends Serializable {
                                     try {
                                         host = new URL(f.value).host;
                                     } catch (e) {}
+
+                                    if (!host) {
+                                        return null;
+                                    }
+
                                     const hashedHost = await crypto.deriveKey(stringToBytes(host), this.hashParams);
                                     return bytesToBase64(hashedHost);
                                 })
