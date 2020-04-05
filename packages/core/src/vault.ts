@@ -56,11 +56,11 @@ export class Vault extends SharedContainer implements Storable {
     validate() {
         return (
             super.validate() &&
-            (typeof this.id === "string" &&
-                typeof this.name === "string" &&
-                (!this.org || (typeof this.org.id === "string" && typeof this.org.name === "string")) &&
-                typeof this.owner === "string" &&
-                typeof this.revision === "string")
+            typeof this.id === "string" &&
+            typeof this.name === "string" &&
+            (!this.org || (typeof this.org.id === "string" && typeof this.org.name === "string")) &&
+            typeof this.owner === "string" &&
+            typeof this.revision === "string"
         );
     }
 
@@ -84,8 +84,11 @@ export class Vault extends SharedContainer implements Storable {
      * needs to be unlocked and the account must have access to this vault.
      */
     async unlock(account: Account) {
-        await super.unlock(account);
-        if (this.encryptedData) {
+        if (!this.accessors.length) {
+            await this.updateAccessors([account]);
+            await this.commit();
+        } else {
+            await super.unlock(account);
             this.items.fromBytes(await this.getData());
         }
     }
@@ -119,5 +122,11 @@ export class Vault extends SharedContainer implements Storable {
 
     toString() {
         return this.org ? `${this.org.name} / ${this.name}` : this.name;
+    }
+
+    clone() {
+        const clone = super.clone();
+        clone.items = this.items.clone();
+        return clone;
     }
 }

@@ -97,6 +97,12 @@ export abstract class BaseContainer extends Serializable {
             encryptedData: encryptedData ? base64ToBytes(encryptedData) : undefined
         });
     }
+
+    clone() {
+        const clone = super.clone();
+        clone._key = this._key;
+        return clone;
+    }
 }
 
 /**

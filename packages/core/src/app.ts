@@ -951,7 +951,7 @@ export class App {
     }
 
     /** Update [[Vault]] name and access (not the vaults contents) */
-    async updateVault(
+    async updateVaultAccess(
         /** Organization owning the vault */
         orgId: OrgID,
         /** The vault id */
@@ -1006,8 +1006,8 @@ export class App {
     }
 
     /** Synchronize the given [[Vault]] */
-    async syncVault(vault: { id: VaultID }, transform?: (vault: Vault) => any): Promise<Vault> {
-        return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault, transform));
+    async syncVault(vault: { id: VaultID }): Promise<Vault> {
+        return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault));
     }
 
     /** Synchronize all vaults the current user has access to. */
@@ -1043,33 +1043,23 @@ export class App {
         await Promise.all(promises);
     }
 
-    /** Whether the current user has write permissions to the given `vault`. */
-    hasWritePermissions(vault: Vault) {
-        // No organization means its the users private vault so they naturally have write access
-        if (!vault.org) {
-            return true;
-        }
-
-        const org = this.getOrg(vault.org.id)!;
-        return org.canWrite(vault, this.account!);
-    }
-
-    private async _syncVault({ id }: { id: VaultID }, transform?: (vault: Vault) => any): Promise<Vault | null> {
-        if (!this.account || this.account.locked) {
+    async fetchVault({ id }: { id: VaultID }): Promise<Vault | null> {
+        if (!this.account) {
+            console.error("need to be logged in to fetch vault!");
             return null;
         }
 
         const localVault = this.getVault(id);
+
         let remoteVault: Vault;
         let result: Vault;
 
         try {
             // Fetch and unlock remote vault
             remoteVault = await this.api.getVault(id);
-            if (remoteVault.encryptedData) {
-                await remoteVault.unlock(this.account);
-            }
+            await remoteVault.unlock(this.account);
         } catch (e) {
+            console.error("failed to fetch vault", id, e);
             return null;
         }
 
@@ -1082,59 +1072,92 @@ export class App {
             result = remoteVault;
         }
 
-        const org = result.org && this.getOrg(result.org.id);
-
-        // Skip update if
-        // - Member does not have write access to vault
-        // - Vault belongs to an org and account membership is suspended
-        // - Vault belongs to an org with "frozen" status
-        if (
-            !org ||
-            (!org.frozen &&
-                org.getMember(this.account)!.role !== OrgRole.Suspended &&
-                org.canWrite(result, this.account))
-        ) {
-            // Update vault accessors
-            if (org) {
-                // Look up which members should have access to this vault
-                const accessors = org.getAccessors(result);
-
-                // Verify member details
-                await this.account.verifyOrg(org);
-                await org.verifyAll(accessors);
-
-                // Update accessors
-                await result.updateAccessors(accessors);
-            } else {
-                await result.updateAccessors([this.account]);
-            }
-
-            // Commit changes done during merge
-            await result.commit();
-
-            // Apply any additional changes
-            if (transform) {
-                transform(result);
-            }
-
-            // Push updated vault object to [[Server]]
-            try {
-                await this.api.updateVault(result);
-            } catch (e) {
-                // The server will reject the update if the vault revision does
-                // not match the current revision on the server, in which case we'll
-                // have to fetch the current vault version and try again.
-                if (e.code === ErrorCode.OUTDATED_REVISION) {
-                    return this._syncVault({ id });
-                }
-                throw e;
-            }
-        }
-
-        // Save vault locally
         await this.saveVault(result);
 
         return result;
+    }
+
+    async updateVault({ id }: { id: VaultID }): Promise<Vault | null> {
+        if (!this.account) {
+            console.error("need to be logged in to update vault!");
+            return null;
+        }
+
+        let vault = this.getVault(id);
+
+        if (!vault) {
+            console.error("vault not found!");
+            return null;
+        }
+
+        vault = vault.clone();
+
+        // Update accessors
+        if (vault.org) {
+            const org = this.getOrg(vault.org.id);
+            if (!org) {
+                console.log("org not found!");
+                return null;
+            }
+
+            if (org.frozen) {
+                console.log("org is frozen. update not permitted");
+                return null;
+            }
+
+            if (!org.canWrite(vault, this.account)) {
+                console.error("account does not have permission to update");
+                return null;
+            }
+
+            // Look up which members should have access to this vault
+            const accessors = org.getAccessors(vault);
+
+            // Verify member details
+            await this.account.verifyOrg(org);
+            await org.verifyAll(accessors);
+
+            // Update accessors
+            await vault.updateAccessors(accessors);
+        } else {
+            await vault.updateAccessors([this.account]);
+        }
+
+        // Push updated vault object to [[Server]]
+        try {
+            const { revision, updated } = await this.api.updateVault(vault);
+            vault.revision = revision;
+            vault.updated = updated;
+            this.putVault(vault);
+            await this.save();
+            return vault;
+        } catch (e) {
+            // The server will reject the update if the vault revision does
+            // not match the current revision on the server, in which case we'll
+            // have to fetch the current vault version and try again.
+            if (e.code === ErrorCode.OUTDATED_REVISION) {
+                console.log("vault is outdated");
+                await this.fetchVault({ id });
+                return this.updateVault({ id });
+            }
+            throw e;
+        }
+    }
+
+    /** Whether the current user has write permissions to the given `vault`. */
+    hasWritePermissions(vault: Vault) {
+        // No organization means its the users private vault so they naturally have write access
+        if (!vault.org) {
+            return true;
+        }
+
+        const org = this.getOrg(vault.org.id)!;
+        return org.canWrite(vault, this.account!);
+    }
+
+    private async _syncVault({ id }: { id: VaultID }): Promise<Vault | null> {
+        await this.fetchVault({ id });
+        return this.updateVault({ id });
     }
 
     /**
