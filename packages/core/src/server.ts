@@ -1242,6 +1242,8 @@ export abstract class BaseServer {
         public logger: Logger
     ) {}
 
+    private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();
+
     /** Handles an incoming [[Request]], processing it and constructing a [[Reponse]] */
     async handle(req: Request) {
         const res = new Response();
@@ -1252,7 +1254,15 @@ export abstract class BaseServer {
                 await loadLanguage((context.device && context.device.locale) || "en");
             } catch (e) {}
             await this._authenticate(req, context);
-            await this._process(req, res, context);
+
+            const done = await this._addToQueue(context);
+
+            try {
+                await this._process(req, res, context);
+            } finally {
+                done();
+            }
+
             if (context.session) {
                 await context.session.authenticate(res);
             }
@@ -1263,6 +1273,30 @@ export abstract class BaseServer {
     }
 
     abstract _process(req: Request, res: Response, ctx: Context): Promise<void>;
+
+    private async _addToQueue(context: Context) {
+        if (!context.account) {
+            return () => {};
+        }
+
+        const account = context.account;
+        const resolveFuncs: (() => void)[] = [];
+        const promises: Promise<void>[] = [];
+
+        for (const { id } of [account, ...account.orgs]) {
+            const promise = this._requestQueue.get(id);
+            if (promise) {
+                promises.push(promise);
+            }
+            this._requestQueue.set(id, new Promise(resolve => resolveFuncs.push(resolve)));
+        }
+
+        console.log(`waiting for ${promises.length} requests`);
+        await Promise.all(promises);
+        console.log("done waiting");
+
+        return () => resolveFuncs.forEach(resolve => resolve());
+    }
 
     private async _authenticate(req: Request, ctx: Context) {
         if (!req.auth) {
