@@ -69,14 +69,22 @@ export class Account extends PBES2Container implements Storable {
      */
     signingKey!: HMACKey;
 
-    /** ID of the accounts main or "private" [[Vault]]. */
-    mainVault: VaultID = "";
-
     /** List of currently active sessions */
     sessions: SessionInfo[] = [];
 
+    /** ID of the accounts main or "private" [[Vault]]. */
+    mainVault: {
+        id: VaultID;
+        name?: string;
+        revision?: string;
+    } = { id: "" };
+
     /** IDs of all organizations this account is a member of */
-    orgs: OrgID[] = [];
+    orgs: {
+        id: OrgID;
+        name?: string;
+        revision?: string;
+    }[] = [];
 
     /**
      * Revision id used for ensuring continuity when synchronizing the account
@@ -158,22 +166,6 @@ export class Account extends PBES2Container implements Storable {
         delete this.signingKey;
     }
 
-    validate() {
-        return (
-            super.validate() &&
-            typeof this.id === "string" &&
-                typeof this.email === "string" &&
-                typeof this.name === "string" &&
-                typeof this.mainVault === "string" &&
-                typeof this.revision === "string" &&
-                typeof this.usedStorage === "number" &&
-                this.created instanceof Date &&
-                this.updated instanceof Date &&
-                this.publicKey instanceof Uint8Array &&
-                this.orgs.every(id => typeof id === "string")
-        );
-    }
-
     toRaw(): any {
         return {
             ...super.toRaw(["privateKey", "signingKey"]),
@@ -202,7 +194,7 @@ export class Account extends PBES2Container implements Storable {
             id,
             email,
             name,
-            mainVault,
+            mainVault: typeof mainVault === "string" ? { id: mainVault } : mainVault,
             revision,
             created: new Date(created),
             updated: new Date(updated),
@@ -210,7 +202,7 @@ export class Account extends PBES2Container implements Storable {
             quota: new AccountQuota().fromRaw(quota),
             billingDisabled,
             billing: billing && new BillingInfo().fromRaw(billing),
-            orgs,
+            orgs: orgs.map((org: any) => (typeof org === "string" ? { id: org } : org)),
             sessions: sessions.map((raw: any) => new SessionInfo().fromRaw(raw)),
             usedStorage: usedStorage || 0
         });

@@ -357,7 +357,7 @@ export class App {
 
     /** The current users main, or "private" [[Vault]] */
     get mainVault(): Vault | null {
-        return (this.account && this.getVault(this.account.mainVault)) || null;
+        return (this.account && this.getVault(this.account.mainVault.id)) || null;
     }
 
     get online() {
@@ -908,7 +908,7 @@ export class App {
     }
 
     isMainVault(vault: Vault) {
-        return vault && this.account && this.account.mainVault === vault.id;
+        return vault && this.account && this.account.mainVault.id === vault.id;
     }
 
     /** Create a new [[Vault]] */
@@ -1006,7 +1006,7 @@ export class App {
     }
 
     /** Synchronize the given [[Vault]] */
-    async syncVault(vault: { id: VaultID }): Promise<Vault> {
+    async syncVault(vault: { id: VaultID; name?: string; revision?: string }): Promise<Vault> {
         return this._queueSync(vault, (vault: { id: VaultID }) => this._syncVault(vault));
     }
 
@@ -1017,33 +1017,33 @@ export class App {
         }
 
         // Sync private vault
-        const promises = [this.syncVault({ id: this.account.mainVault })] as Promise<any>[];
+        const promises = [this.syncVault(this.account.mainVault)] as Promise<any>[];
 
         // Sync vaults assigned to through organizations
         for (const org of this.state.orgs) {
             // Sync all vaults for this organization
-            for (const id of org.getVaultsForMember(this.account)) {
-                promises.push(this.syncVault({ id }));
+            for (const vault of org.getVaultsForMember(this.account)) {
+                promises.push(this.syncVault(vault));
             }
         }
 
         // clean up vaults the user no longer has access to
-        const removeVaults: string[] = [];
+        const removeVaults = new Set<VaultID>();
         for (const vault of this.state.vaults) {
             const org = vault.org && this.getOrg(vault.org.id);
-            if (vault.id !== this.account.mainVault && (!org || !org.canRead(vault, this.account))) {
-                removeVaults.push(vault.id);
+            if (vault.id !== this.account.mainVault.id && (!org || !org.canRead(vault, this.account))) {
+                removeVaults.add(vault.id);
             }
         }
 
         await this.setState({
-            vaults: this.state.vaults.filter(v => !removeVaults.includes(v.id))
+            vaults: this.state.vaults.filter(v => !removeVaults.has(v.id))
         });
 
         await Promise.all(promises);
     }
 
-    async fetchVault({ id }: { id: VaultID }): Promise<Vault | null> {
+    async fetchVault({ id, revision }: { id: VaultID; revision?: string }): Promise<Vault | null> {
         if (!this.account) {
             console.error("need to be logged in to fetch vault!");
             return null;
@@ -1051,12 +1051,24 @@ export class App {
 
         const localVault = this.getVault(id);
 
+        if (localVault && revision && localVault.revision === revision) {
+            console.log("vault revision hasn't changed, skipping fetch...");
+            return localVault;
+        }
+
         let remoteVault: Vault;
         let result: Vault;
 
         try {
             // Fetch and unlock remote vault
             remoteVault = await this.api.getVault(id);
+
+            // // If remote vault has same revision as local vault, there is no reason to update
+            // if (localVault && localVault.revision === remoteVault.revision) {
+            //     console.log("remote vault revision hasn't changed. skipping merge...");
+            //     return localVault;
+            // }
+
             await remoteVault.unlock(this.account);
         } catch (e) {
             console.error("failed to fetch vault", id, e);
@@ -1092,14 +1104,22 @@ export class App {
 
         vault = vault.clone();
 
-        // Update accessors
-        if (vault.org) {
-            const org = this.getOrg(vault.org.id);
-            if (!org) {
-                console.log("org not found!");
-                return null;
-            }
+        const org = vault.org && this.getOrg(vault.org.id);
 
+        if (org && vault.org) {
+            console.log("updating vault org vault", org.revision, vault.org.revision);
+        }
+
+        // // Make sure the organization revision matches the one the vault is based on
+        // if (vault.org && (!org || org.revision !== vault.org.revision)) {
+        //     console.log("org revision does not match org info on vault, fetch org update!");
+        //     await this.fetchOrg(vault.org);
+        //     await this.fetchVault({ id });
+        //     return this.updateVault(vault);
+        // }
+
+        // Update accessors
+        if (org) {
             if (org.frozen) {
                 console.log("org is frozen. update not permitted");
                 return null;
@@ -1125,10 +1145,22 @@ export class App {
 
         // Push updated vault object to [[Server]]
         try {
-            const { revision, updated } = await this.api.updateVault(vault);
+            const { revision, updated, org: orgInfo } = await this.api.updateVault(vault);
             vault.revision = revision;
             vault.updated = updated;
+            vault.org = orgInfo;
             this.putVault(vault);
+
+            if (org) {
+                org.revision = orgInfo!.revision!;
+                console.log("updating org revision", orgInfo);
+                org.vaults.find(v => v.id === vault!.id)!.revision = revision;
+                this.putOrg(org);
+                this.account.orgs.find(o => o.id === org.id)!.revision = orgInfo!.revision;
+            } else {
+                this.account.mainVault.revision = revision;
+            }
+
             await this.save();
             return vault;
         } catch (e) {
@@ -1155,9 +1187,9 @@ export class App {
         return org.canWrite(vault, this.account!);
     }
 
-    private async _syncVault({ id }: { id: VaultID }): Promise<Vault | null> {
-        await this.fetchVault({ id });
-        return this.updateVault({ id });
+    private async _syncVault(vault: { id: VaultID; revision?: string }): Promise<Vault | null> {
+        await this.fetchVault(vault);
+        return this.updateVault(vault);
     }
 
     /**
@@ -1222,7 +1254,7 @@ export class App {
         }
 
         vault.items.update({ ...item, ...upd, updatedBy: this.account!.id, favorited: [...favorited] });
-        this.saveVault(vault);
+        await this.saveVault(vault);
         await this.syncVault(vault);
     }
 
@@ -1240,15 +1272,23 @@ export class App {
             attachments.push(...item.item.attachments);
         }
 
+        const promises: Promise<void>[] = [];
+
         // Delete all attachments for this item
-        await Promise.all(attachments.map(att => this.api.deleteAttachment(new DeleteAttachmentParams(att))));
+        promises.push(...attachments.map(att => this.api.deleteAttachment(new DeleteAttachmentParams(att))));
 
         // Remove items from their respective vaults
         for (const [vault, items] of grouped.entries()) {
-            vault.items.remove(...items);
-            this.saveVault(vault);
-            await this.syncVault(vault);
+            promises.push(
+                (async () => {
+                    vault.items.remove(...items);
+                    await this.saveVault(vault);
+                    await this.syncVault(vault);
+                })()
+            );
         }
+
+        await Promise.all(promises);
     }
 
     /** Move `items` from their current vault to the `target` vault */
@@ -1326,8 +1366,7 @@ export class App {
         await org.initialize(this.account!);
         org = await this.api.updateOrg(org);
         await this.fetchAccount();
-        await this.fetchOrg(org.id);
-        return this.getOrg(org.id)!;
+        return this.fetchOrg(org);
     }
 
     /** Fetch all organizations the current account is a member of */
@@ -1337,17 +1376,23 @@ export class App {
         }
 
         try {
-            await Promise.all(this.account.orgs.map(id => this.fetchOrg(id)));
+            await Promise.all(this.account.orgs.map(org => this.fetchOrg(org)));
         } catch (e) {}
 
         // Remove orgs that the account is no longer a member of
-        this.setState({ orgs: this.state.orgs.filter(org => this.account!.orgs.includes(org.id)) });
+        this.setState({ orgs: this.state.orgs.filter(org => this.account!.orgs.some(o => o.id === org.id)) });
     }
 
     /** Fetch the [[Org]]anization object with the given `id` */
-    async fetchOrg(id: OrgID) {
-        const org = await this.api.getOrg(id);
+    async fetchOrg({ id, revision }: { id: OrgID; revision?: string }) {
         const existing = this.getOrg(id);
+
+        if (existing && existing.revision === revision) {
+            console.log("org revision hasn't changed, skipping fetch...");
+            return existing;
+        }
+
+        const org = await this.api.getOrg(id);
 
         // Verify that the updated organization object has a `minMemberUpdated`
         // property equal to or higher than the previous (local) one.
@@ -1378,7 +1423,8 @@ export class App {
             // If organizaton has been updated since last fetch,
             // get the current version and then retry
             if (e.code === ErrorCode.OUTDATED_REVISION) {
-                await this.fetchOrg(id);
+                console.log("org outdated revision");
+                await this.fetchOrg({ id });
                 return this.updateOrg(id, transform);
             } else {
                 throw e;
@@ -1497,9 +1543,12 @@ export class App {
      * Create a new [[Invite]]
      */
     async createInvites({ id }: Org, emails: string[], purpose?: InvitePurpose) {
-        const invites: Invite[] = [];
+        let invites: Invite[] = [];
+        console.log("create invites", ...emails);
         await this.updateOrg(id, async (org: Org) => {
+            console.log("update org", ...emails);
             await org.unlock(this.account!);
+            invites = [];
             for (const email of emails) {
                 const invite = new Invite(email, purpose);
                 await invite.initialize(org, this.account!);
@@ -1616,7 +1665,7 @@ export class App {
     async updateBilling(params: UpdateBillingParams) {
         params.provider = (this.state.billingProvider && this.state.billingProvider.type) || "";
         await this.api.updateBilling(params);
-        params.org ? await this.fetchOrg(params.org) : await this.fetchAccount();
+        params.org ? await this.fetchOrg({ id: params.org }) : await this.fetchAccount();
     }
 
     async loadBillingProvider() {

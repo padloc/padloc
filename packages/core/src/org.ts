@@ -266,7 +266,7 @@ export class Org extends SharedContainer implements Storable {
     groups: Group[] = [];
 
     /** Shared [[Vault]]s owned by this organization */
-    vaults: { id: VaultID; name: string }[] = [];
+    vaults: { id: VaultID; name: string; revision?: string }[] = [];
 
     /** Pending [[Invite]]s */
     invites: Invite[] = [];
@@ -300,11 +300,11 @@ export class Org extends SharedContainer implements Storable {
     validate() {
         return (
             super.validate() &&
-            (typeof this.name === "string" &&
-                typeof this.revision === "string" &&
-                typeof this.id === "string" &&
-                this.minMemberUpdated instanceof Date &&
-                this.vaults.every(({ id, name }: any) => typeof id === "string" && typeof name === "string"))
+            typeof this.name === "string" &&
+            typeof this.revision === "string" &&
+            typeof this.id === "string" &&
+            this.minMemberUpdated instanceof Date &&
+            this.vaults.every(({ id, name }: any) => typeof id === "string" && typeof name === "string")
         );
     }
 
@@ -383,10 +383,12 @@ export class Org extends SharedContainer implements Storable {
 
     /** Get all members of a given `group` */
     getMembersForGroup(group: Group): OrgMember[] {
-        return group.members
-            .map(m => this.getMember(m))
-            // Filter out undefined members
-            .filter(m => !!m) as OrgMember[];
+        return (
+            group.members
+                .map(m => this.getMember(m))
+                // Filter out undefined members
+                .filter(m => !!m) as OrgMember[]
+        );
     }
 
     /** Get all [[Group]]s the given [[Account]] is a member of */
@@ -436,7 +438,7 @@ export class Org extends SharedContainer implements Storable {
             }
         }
 
-        return [...results];
+        return this.vaults.filter(v => results.has(v.id));
     }
 
     /** Check whether the given `account` has read access to a `vault` */

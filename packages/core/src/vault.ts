@@ -17,7 +17,7 @@ export class Vault extends SharedContainer implements Storable {
     id: VaultID = "";
 
     /** The [[Org]] this vault belongs to (if a shared vault) */
-    org?: { id: OrgID; name: string };
+    org?: { id: OrgID; name: string; revision?: string };
 
     /** Vault name */
     name = "";

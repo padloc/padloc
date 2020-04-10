@@ -15,7 +15,7 @@ import {
 import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
-import { Account } from "./account";
+import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
 import { EmailVerification } from "./email-verification";
 import { Request, Response } from "./transport";
@@ -290,7 +290,7 @@ export class Controller implements API {
         vault.owner = account.id;
         vault.created = new Date();
         vault.updated = new Date();
-        account.mainVault = vault.id;
+        account.mainVault = { id: vault.id };
 
         // Set default account quota
         if (this.config.accountQuota) {
@@ -349,7 +349,7 @@ export class Controller implements API {
         // corresponding member object on all organizations this account is a
         // member of.
         if (nameChanged) {
-            for (const id of account.orgs) {
+            for (const { id } of account.orgs) {
                 const org = await this.storage.get(Org, id);
                 org.getMember(account)!.name = name;
                 await this.storage.save(org);
@@ -380,7 +380,7 @@ export class Controller implements API {
 
         // Create a new private vault, discarding the old one
         const mainVault = new Vault();
-        mainVault.id = account.mainVault;
+        mainVault.id = account.mainVault.id;
         mainVault.name = $l("My Vault");
         mainVault.owner = account.id;
         mainVault.created = new Date();
@@ -396,7 +396,7 @@ export class Controller implements API {
         // Suspend memberships for all orgs that the account is not the owner of.
         // Since the accounts public key has changed, they will need to go through
         // the invite flow again to confirm their membership.
-        for (const id of account.orgs) {
+        for (const { id } of account.orgs) {
             const org = await this.storage.get(Org, id);
             if (!org.isOwner(account)) {
                 const member = org.getMember(account)!;
@@ -417,7 +417,7 @@ export class Controller implements API {
         const { account } = this._requireAuth();
 
         // Make sure that the account is not owner of any organizations
-        const orgs = await Promise.all(account.orgs.map(org => this.storage.get(Org, org)));
+        const orgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
         if (orgs.some(org => org.isOwner(account))) {
             throw new Err(
                 ErrorCode.BAD_REQUEST,
@@ -458,7 +458,7 @@ export class Controller implements API {
             throw new Err(ErrorCode.BAD_REQUEST, "Please provide an organization name!");
         }
 
-        const existingOrgs = await Promise.all(account.orgs.map(id => this.storage.get(Org, id)));
+        const existingOrgs = await Promise.all(account.orgs.map(({ id }) => this.storage.get(Org, id)));
         const ownedOrgs = existingOrgs.filter(o => o.owner === account.id);
 
         if (account.quota.orgs !== -1 && ownedOrgs.length >= account.quota.orgs) {
@@ -575,44 +575,20 @@ export class Controller implements API {
             );
         }
 
-        // New invites
-        for (const invite of addedInvites) {
-            let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}?email=${invite.email}`;
-
-            // If account does not exist yet, create a email verification code
-            // and send it along with the url so they can skip that step
-            try {
-                await this.storage.get(Auth, invite.email);
-            } catch (e) {
-                if (e.code !== ErrorCode.NOT_FOUND) {
-                    throw e;
-                }
-                // account does not exist yet; add verification code to link
-                const v = new EmailVerification(invite.email);
-                await v.init();
-                await this.storage.save(v);
-                link += `&verify=${v.token}`;
-            }
-
-            // Send invite link to invitees email address
-            this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
+        // Check members quota
+        if (org.quota.members !== -1 && members.length > org.quota.members) {
+            throw new Err(
+                ErrorCode.MEMBER_QUOTA_EXCEEDED,
+                "You have reached the maximum number of members for this organization!"
+            );
         }
 
-        // Removed members
-        for (const { id } of removedMembers) {
-            const acc = await this.storage.get(Account, id);
-            acc.orgs = acc.orgs.filter(id => id !== org.id);
-            await this.storage.save(acc);
-        }
-
-        // Update any changed vault names
-        for (const { id, name } of org.vaults) {
-            const newVaultEntry = vaults.find(v => v.id === id);
-            if (newVaultEntry && newVaultEntry.name !== name) {
-                const vault = await this.storage.get(Vault, id);
-                vault.name = newVaultEntry.name;
-                await this.storage.save(vault);
-            }
+        // Check groups quota
+        if (org.quota.groups !== -1 && groups.length > org.quota.groups) {
+            throw new Err(
+                ErrorCode.GROUP_QUOTA_EXCEEDED,
+                "You have reached the maximum number of groups for this organization!"
+            );
         }
 
         Object.assign(org, {
@@ -636,30 +612,51 @@ export class Controller implements API {
             });
         }
 
-        // Check members quota
-        if (org.quota.members !== -1 && members.length > org.quota.members) {
-            throw new Err(
-                ErrorCode.MEMBER_QUOTA_EXCEEDED,
-                "You have reached the maximum number of members for this organization!"
+        const promises: Promise<void>[] = [];
+
+        // New invites
+        for (const invite of addedInvites) {
+            promises.push(
+                (async () => {
+                    let link = `${this.config.clientUrl}/invite/${org.id}/${invite.id}?email=${invite.email}`;
+
+                    // If account does not exist yet, create a email verification code
+                    // and send it along with the url so they can skip that step
+                    try {
+                        await this.storage.get(Auth, invite.email);
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+                        // account does not exist yet; add verification code to link
+                        const v = new EmailVerification(invite.email);
+                        await v.init();
+                        await this.storage.save(v);
+                        link += `&verify=${v.token}`;
+                    }
+
+                    // Send invite link to invitees email address
+                    this.messenger.send(invite.email, new InviteCreatedMessage(invite, link));
+                })()
             );
         }
 
-        // Check groups quota
-        if (org.quota.groups !== -1 && groups.length > org.quota.groups) {
-            throw new Err(
-                ErrorCode.GROUP_QUOTA_EXCEEDED,
-                "You have reached the maximum number of groups for this organization!"
+        // Removed members
+        for (const { id } of removedMembers) {
+            promises.push(
+                (async () => {
+                    const acc = await this.storage.get(Account, id);
+                    acc.orgs = acc.orgs.filter(o => o.id !== org.id);
+                    await this.storage.save(acc);
+                })()
             );
         }
 
-        // Added members
+        await this._updateOrgRevision(org);
+
+        // Send a notification email to let the new member know they've been added
         for (const member of addedMembers) {
-            const acc = await this.storage.get(Account, member.id);
-            acc.orgs.push(org.id);
-            await this.storage.save(acc);
-
             if (member.id !== account.id) {
-                // Send a notification email to let the new member know they've been added
                 this.messenger.send(
                     member.email,
                     new MemberAddedMessage(org, `${this.config.clientUrl}/org/${org.id}`)
@@ -667,9 +664,7 @@ export class Controller implements API {
             }
         }
 
-        // Update revision
-        org.revision = await uuid();
-        org.updated = new Date();
+        await Promise.all(promises);
 
         await this.storage.save(org);
 
@@ -694,7 +689,7 @@ export class Controller implements API {
         await Promise.all(
             org.members.map(async member => {
                 const acc = await this.storage.get(Account, member.id);
-                acc.orgs = acc.orgs.filter(id => id !== org.id);
+                acc.orgs = acc.orgs.filter(({ id }) => id !== org.id);
                 await this.storage.save(acc);
             })
         );
@@ -759,21 +754,74 @@ export class Controller implements API {
         if (revision !== vault.revision) {
             throw new Err(ErrorCode.OUTDATED_REVISION);
         }
-        vault.revision = await uuid();
 
         // Update vault properties
         Object.assign(vault, { keyParams, encryptionParams, accessors, encryptedData });
+
+        // update revision
+        vault.revision = await uuid();
         vault.updated = new Date();
 
-        // Persist changes
-        await this.storage.save(vault);
+        if (org) {
+            // Update vault revision on org
+            const vaultInfo = org.vaults.find(v => v.id === vault.id);
+
+            if (!vaultInfo) {
+                throw new Err(ErrorCode.BAD_REQUEST, "Vault not found in organization and cannot be updated.");
+            }
+
+            vaultInfo.revision = vault.revision;
+
+            // Persist changes
+            await this.storage.save(vault);
+
+            // Update Org revision (since vault info has changed)
+            await this._updateOrgRevision(org);
+            await this.storage.save(org);
+            // const vaultInfo = org.vaults.find(v => v.id === vault.id);
+            //
+            // if (vaultInfo) {
+            //     // Update vault revision on org
+            //     vaultInfo.revision = vault.revision;
+            //
+            //     // Bump org revision (so accounts get the updated vault revision as well)
+            //     org.revision = await uuid();
+            //     vault.org = {
+            //         id: org.id,
+            //         name: org.name,
+            //         revision: org.revision
+            //     };
+            //
+            //     await this.storage.save(org);
+            //
+            //     // Org revision has changed to we need to update the relevant org info objects
+            //     // on all member accounts as well
+            //     await Promise.all(
+            //         org.members.map(async ({ id }) => {
+            //             const acc = await this.storage.get(Account, id);
+            //             const orgInfo = acc.orgs.find(o => o.id === org.id);
+            //             if (orgInfo) {
+            //                 orgInfo.revision = org.revision;
+            //             }
+            //             await this.storage.save(acc);
+            //         })
+            //     );
+            // }
+        } else {
+            // Persist changes
+            await this.storage.save(vault);
+
+            // Update main vault revision info on account
+            account.mainVault.revision = vault.revision;
+            await this.storage.save(account);
+        }
 
         this.log("vault.update", {
             vault: { id: vault.id, name: vault.name },
             org: org && { id: org.id, name: org.name, type: org.type }
         });
 
-        return vault;
+        return this.storage.get(Vault, vault.id);
     }
 
     async createVault(vault: Vault) {
@@ -840,14 +888,14 @@ export class Controller implements API {
             throw new Err(ErrorCode.INSUFFICIENT_PERMISSIONS);
         }
 
-        // Delete vault
-        const promises = [this.storage.delete(vault)];
-
         // Delete all attachments associated with this vault
-        promises.push(this.attachmentStorage.deleteAll(vault.id));
+        await this.attachmentStorage.deleteAll(vault.id);
 
         // Remove vault from org
         org.vaults = org.vaults.filter(v => v.id !== vault.id);
+        org.revision = await uuid();
+
+        await this._updateOrgRevision(org);
 
         // Remove any assignments to this vault from members and groups
         for (const each of [...org.getGroupsForVault(vault), ...org.getMembersForVault(vault)]) {
@@ -855,9 +903,10 @@ export class Controller implements API {
         }
 
         // Save org
-        promises.push(this.storage.save(org));
+        await this.storage.save(org);
 
-        await Promise.all(promises);
+        // Delete vault
+        await this.storage.delete(vault);
 
         this.log("vault.delete", {
             vault: { id: vault.id, name: vault.name },
@@ -919,6 +968,8 @@ export class Controller implements API {
 
         // Update invite object
         org.invites[org.invites.indexOf(existing)] = invite;
+
+        await this._updateOrgRevision(org);
 
         // Persist changes
         await this.storage.save(org);
@@ -1051,9 +1102,9 @@ export class Controller implements API {
     }
 
     private async _updateUsedStorage(acc: Org | Account) {
-        const vaults = acc instanceof Org ? acc.vaults.map(v => v.id) : [acc.mainVault];
+        const vaults = acc instanceof Org ? acc.vaults : [acc.mainVault];
 
-        const usedStorage = (await Promise.all(vaults.map(id => this.attachmentStorage.getUsage(id)))).reduce(
+        const usedStorage = (await Promise.all(vaults.map(({ id }) => this.attachmentStorage.getUsage(id)))).reduce(
             (sum: number, each: number) => sum + each,
             0
         );
@@ -1115,6 +1166,71 @@ export class Controller implements API {
         }
 
         await this.storage.delete(ev);
+    }
+
+    private async _updateOrgRevision(org: Org) {
+        console.log("update org revision", org.id, org.revision);
+
+        org.revision = await uuid();
+        org.updated = new Date();
+
+        const promises: Promise<void>[] = [];
+
+        const deletedVaults = new Set<VaultID>();
+        const deletedMembers = new Set<AccountID>();
+
+        // Updated related vaults
+        for (const { id, name } of org.vaults) {
+            promises.push(
+                (async () => {
+                    try {
+                        const vault = await this.storage.get(Vault, id);
+                        vault.name = name;
+                        vault.org = {
+                            id: org.id,
+                            name: org.name,
+                            revision: org.revision
+                        };
+                        await this.storage.save(vault);
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+
+                        deletedVaults.add(id);
+                    }
+                })()
+            );
+        }
+
+        // Update org info on members
+        for (const member of org.members) {
+            promises.push(
+                (async () => {
+                    try {
+                        const acc = await this.storage.get(Account, member.id);
+
+                        acc.orgs = [
+                            ...acc.orgs.filter(o => o.id !== org.id),
+                            { id: org.id, name: org.name, revision: org.revision }
+                        ];
+
+                        await this.storage.save(acc);
+                    } catch (e) {
+                        if (e.code !== ErrorCode.NOT_FOUND) {
+                            throw e;
+                        }
+
+                        deletedMembers.add(member.id);
+                    }
+                })()
+            );
+        }
+
+        await Promise.all(promises);
+
+        org.vaults = org.vaults.filter(v => !deletedVaults.has(v.id));
+        org.members = org.members.filter(m => !deletedMembers.has(m.id));
     }
 }
 
