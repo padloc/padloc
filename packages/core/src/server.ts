@@ -652,7 +652,7 @@ export class Controller implements API {
             );
         }
 
-        await this._updateOrgRevision(org);
+        await this._updateMetaData(org);
 
         // Send a notification email to let the new member know they've been added
         for (const member of addedMembers) {
@@ -762,55 +762,14 @@ export class Controller implements API {
         vault.revision = await uuid();
         vault.updated = new Date();
 
+        // Persist changes
+        await this.storage.save(vault);
+
         if (org) {
-            // Update vault revision on org
-            const vaultInfo = org.vaults.find(v => v.id === vault.id);
-
-            if (!vaultInfo) {
-                throw new Err(ErrorCode.BAD_REQUEST, "Vault not found in organization and cannot be updated.");
-            }
-
-            vaultInfo.revision = vault.revision;
-
-            // Persist changes
-            await this.storage.save(vault);
-
             // Update Org revision (since vault info has changed)
-            await this._updateOrgRevision(org);
+            await this._updateMetaData(org);
             await this.storage.save(org);
-            // const vaultInfo = org.vaults.find(v => v.id === vault.id);
-            //
-            // if (vaultInfo) {
-            //     // Update vault revision on org
-            //     vaultInfo.revision = vault.revision;
-            //
-            //     // Bump org revision (so accounts get the updated vault revision as well)
-            //     org.revision = await uuid();
-            //     vault.org = {
-            //         id: org.id,
-            //         name: org.name,
-            //         revision: org.revision
-            //     };
-            //
-            //     await this.storage.save(org);
-            //
-            //     // Org revision has changed to we need to update the relevant org info objects
-            //     // on all member accounts as well
-            //     await Promise.all(
-            //         org.members.map(async ({ id }) => {
-            //             const acc = await this.storage.get(Account, id);
-            //             const orgInfo = acc.orgs.find(o => o.id === org.id);
-            //             if (orgInfo) {
-            //                 orgInfo.revision = org.revision;
-            //             }
-            //             await this.storage.save(acc);
-            //         })
-            //     );
-            // }
         } else {
-            // Persist changes
-            await this.storage.save(vault);
-
             // Update main vault revision info on account
             account.mainVault.revision = vault.revision;
             await this.storage.save(account);
@@ -899,7 +858,7 @@ export class Controller implements API {
             each.vaults = each.vaults.filter(v => v.id !== vault.id);
         }
 
-        await this._updateOrgRevision(org);
+        await this._updateMetaData(org);
 
         // Save org
         await this.storage.save(org);
@@ -968,7 +927,7 @@ export class Controller implements API {
         // Update invite object
         org.invites[org.invites.indexOf(existing)] = invite;
 
-        await this._updateOrgRevision(org);
+        await this._updateMetaData(org);
 
         // Persist changes
         await this.storage.save(org);
@@ -1167,7 +1126,7 @@ export class Controller implements API {
         await this.storage.delete(ev);
     }
 
-    private async _updateOrgRevision(org: Org) {
+    private async _updateMetaData(org: Org) {
         console.log("update org revision", org.id, org.revision);
 
         org.revision = await uuid();
@@ -1179,24 +1138,26 @@ export class Controller implements API {
         const deletedMembers = new Set<AccountID>();
 
         // Updated related vaults
-        for (const { id, name } of org.vaults) {
+        for (const vaultInfo of org.vaults) {
             promises.push(
                 (async () => {
                     try {
-                        const vault = await this.storage.get(Vault, id);
-                        vault.name = name;
+                        const vault = await this.storage.get(Vault, vaultInfo.id);
+                        vault.name = vaultInfo.name;
                         vault.org = {
                             id: org.id,
                             name: org.name,
                             revision: org.revision
                         };
                         await this.storage.save(vault);
+
+                        vaultInfo.revision = vault.revision;
                     } catch (e) {
                         if (e.code !== ErrorCode.NOT_FOUND) {
                             throw e;
                         }
 
-                        deletedVaults.add(id);
+                        deletedVaults.add(vaultInfo.id);
                     }
                 })()
             );
@@ -1215,6 +1176,8 @@ export class Controller implements API {
                         ];
 
                         await this.storage.save(acc);
+
+                        member.name = acc.name;
                     } catch (e) {
                         if (e.code !== ErrorCode.NOT_FOUND) {
                             throw e;

@@ -1082,7 +1082,7 @@ export class App {
         return result;
     }
 
-    async updateVault({ id }: { id: VaultID }): Promise<Vault | null> {
+    async updateVault({ id }: { id: VaultID }, secondTry?: boolean): Promise<Vault | null> {
         if (!this.account) {
             console.error("need to be logged in to update vault!");
             return null;
@@ -1095,6 +1095,11 @@ export class App {
             return null;
         }
 
+        if (!vault.items.changed.size) {
+            // No changes - skipping update
+            return vault;
+        }
+
         vault = vault.clone();
         vault.items.changed.clear();
         await vault.commit();
@@ -1104,9 +1109,17 @@ export class App {
         // // Make sure the organization revision matches the one the vault is based on
         if (vault.org && (!org || org.revision !== vault.org.revision)) {
             console.log("org revision does not match org info on vault, fetch org update!");
+
+            if (secondTry) {
+                throw org
+                    ? `Revision number of org ${org.name} (${org.id}) does not match with meta data on vault ${vault.name} (${vault.id})}`
+                    : `Could not update vault ${vault.name} (${vault.id}) because the corresponding organization could not be found.`;
+            }
+
+            // Get the latest organization and vault info, then try again
             await this.fetchOrg(vault.org);
             await this.fetchVault({ id });
-            return this.updateVault(vault);
+            return this.updateVault(vault, true);
         }
 
         // Update accessors
