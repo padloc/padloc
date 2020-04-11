@@ -12,7 +12,9 @@ suite("Collection", () => {
     const coll2 = new Collection<TestItem>();
 
     function merge() {
+        coll2.changed.clear();
         coll1.merge(coll2);
+        coll1.changed.clear();
         coll2.merge(coll1);
     }
 
@@ -57,8 +59,8 @@ suite("Collection", () => {
 
         merge();
 
-        assert.equal(coll1.get("2")!.value, "Edited Second");
-        assert.equal(coll2.get("2")!.value, "Edited Second");
+        assert.equal(coll1.get("2")!.value, "Edited First");
+        assert.equal(coll2.get("2")!.value, "Edited First");
     });
 
     test("simultaneous edit and remove", async () => {
@@ -71,4 +73,15 @@ suite("Collection", () => {
         assert.isNotNull(coll2.get("2"));
         assert.equal(coll2.get("2")!.value, "Edited Again");
     });
+
+    // test("simultaneous edit and remove", async () => {
+    //     coll1.update({ ...coll1.get("2")!, value: "Edited Again" });
+    //     await wait(10);
+    //     coll2.remove(coll2.get("2")!);
+    //
+    //     merge();
+    //
+    //     assert.isNotNull(coll2.get("2"));
+    //     assert.equal(coll2.get("2")!.value, "Edited Again");
+    // });
 });

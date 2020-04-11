@@ -35,7 +35,7 @@ export function appSpec(): Spec {
         name: "Max Mustermann",
         password: "password"
     };
-    // let sharedVaultID = "";
+    let sharedVaultID = "";
     // let otherVaultID = "";
 
     return (test, assert) => {
@@ -129,18 +129,17 @@ export function appSpec(): Spec {
             await app.createGroup(org, "Everyone", org.members)!;
             const group = app.state.orgs[0].getGroup("Everyone")!;
             assert.ok(group);
-            await app.createVault("Another Vault", app.state.orgs[0], [], [{ name: group.name, readonly: false }]);
+            const vault = await app.createVault(
+                "Another Vault",
+                app.state.orgs[0],
+                [],
+                [{ name: group.name, readonly: false }]
+            );
+            sharedVaultID = vault.id;
             await otherApp.synchronize();
             assert.equal(otherApp.vaults.length, 2);
         });
-        //
-        // test("Add Member To Subvault", async () => {
-        //     app.state.vaults[2].addMember(app.state.vaults[1].members.get(otherApp.account!.id)!);
-        //     await app.syncVault(app.state.vaults[2]);
-        //     await otherApp.synchronize();
-        //     assert.equal(otherApp.vaults.length, 3);
-        // });
-        //
+
         // test("Make Admin", async () => {
         //     const vault = app.getVault(sharedVaultID)!;
         //     const member = vault.members.get(otherApp.account!.id)!;
@@ -188,27 +187,29 @@ export function appSpec(): Spec {
         //     assert.equal(app.items.length, 1);
         // });
         //
-        // test("Simulataneous Edit", async () => {
-        //     const [item1, item2] = await Promise.all([
-        //         app.createItem("Added Item 1", app.getVault(sharedVaultID)!),
-        //         otherApp.createItem("Added Item 2", otherApp.getVault(sharedVaultID)!)
-        //     ]);
-        //     await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
-        //
-        //     assert.ok(app.getItem(item2.id));
-        //     assert.ok(otherApp.getItem(item1.id));
-        //
-        //     await app.updateItem(app.getVault(sharedVaultID)!, item1, { name: "Edited Item" });
-        //     const item3 = await app.createItem("Added Item 3", app.getVault(sharedVaultID)!);
-        //     await otherApp.deleteItems([{ vault: otherApp.getVault(sharedVaultID)!, item: item2 }]);
-        //
-        //     await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
-        //     await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
-        //
-        //     assert.isNull(app.getItem(item2.id));
-        //     assert.ok(otherApp.getItem(item3.id));
-        //     assert.equal(otherApp.getItem(item1.id)!.item.name, "Edited Item");
-        // });
+        test("Simulataneous Edit", async () => {
+            const [item1, item2] = await Promise.all([
+                app.createItem("Added Item 1", app.getVault(sharedVaultID)!),
+                otherApp.createItem("Added Item 2", otherApp.getVault(sharedVaultID)!)
+            ]);
+
+            await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
+            await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
+
+            assert.ok(app.getItem(item2.id), "Created item from second app should should show up in first app");
+            assert.ok(otherApp.getItem(item1.id), "Created item from first app should should show up in second app");
+
+            await app.updateItem(app.getVault(sharedVaultID)!, item1, { name: "Edited Item" });
+            const item3 = await app.createItem("Added Item 3", app.getVault(sharedVaultID)!);
+            await otherApp.deleteItems([{ vault: otherApp.getVault(sharedVaultID)!, item: item2 }]);
+
+            await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
+            await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
+
+            assert.isNull(app.getItem(item2.id));
+            assert.ok(otherApp.getItem(item3.id), "Created Item show up other instance");
+            assert.equal(otherApp.getItem(item1.id)!.item.name, "Edited Item");
+        });
         //
         // test("Archive Vault", async () => {
         //     let vault = await app.createVault("Test");
