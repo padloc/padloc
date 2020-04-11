@@ -893,14 +893,13 @@ export class Controller implements API {
 
         // Remove vault from org
         org.vaults = org.vaults.filter(v => v.id !== vault.id);
-        org.revision = await uuid();
-
-        await this._updateOrgRevision(org);
 
         // Remove any assignments to this vault from members and groups
         for (const each of [...org.getGroupsForVault(vault), ...org.getMembersForVault(vault)]) {
             each.vaults = each.vaults.filter(v => v.id !== vault.id);
         }
+
+        await this._updateOrgRevision(org);
 
         // Save org
         await this.storage.save(org);

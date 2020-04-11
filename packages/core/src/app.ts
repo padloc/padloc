@@ -1062,13 +1062,6 @@ export class App {
         try {
             // Fetch and unlock remote vault
             remoteVault = await this.api.getVault(id);
-
-            // // If remote vault has same revision as local vault, there is no reason to update
-            // if (localVault && localVault.revision === remoteVault.revision) {
-            //     console.log("remote vault revision hasn't changed. skipping merge...");
-            //     return localVault;
-            // }
-
             await remoteVault.unlock(this.account);
         } catch (e) {
             console.error("failed to fetch vault", id, e);
@@ -1108,22 +1101,18 @@ export class App {
 
         const org = vault.org && this.getOrg(vault.org.id);
 
-        if (org && vault.org) {
-            console.log("updating vault org vault", org.revision, vault.org.revision);
-        }
-
         // // Make sure the organization revision matches the one the vault is based on
-        // if (vault.org && (!org || org.revision !== vault.org.revision)) {
-        //     console.log("org revision does not match org info on vault, fetch org update!");
-        //     await this.fetchOrg(vault.org);
-        //     await this.fetchVault({ id });
-        //     return this.updateVault(vault);
-        // }
+        if (vault.org && (!org || org.revision !== vault.org.revision)) {
+            console.log("org revision does not match org info on vault, fetch org update!");
+            await this.fetchOrg(vault.org);
+            await this.fetchVault({ id });
+            return this.updateVault(vault);
+        }
 
         // Update accessors
         if (org) {
             if (org.frozen) {
-                console.log("org is frozen. update not permitted");
+                console.error("org is frozen. update not permitted");
                 return null;
             }
 
