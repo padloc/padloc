@@ -1103,6 +1103,8 @@ export class App {
         }
 
         vault = vault.clone();
+        vault.items.changed.clear();
+        await vault.commit();
 
         const org = vault.org && this.getOrg(vault.org.id);
 

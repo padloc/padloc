@@ -5,19 +5,12 @@ export interface CollectionItem {
     updated?: Date;
 }
 
-export interface CollectionChanges<T> {
-    added: T[];
-    updated: T[];
-    removed: T[];
-}
-
 /**
  * A collection of items, used for consolidating changes made independently
  * across multiple instances through "merging".
  */
 export class Collection<T extends CollectionItem> extends Serializable implements Iterable<T> {
-    /** Time of last merge, essential for merging logic */
-    lastMerged: Date = new Date(0);
+    changed = new Set<string>();
 
     /** Number of items in this Collection */
     get size() {
@@ -44,6 +37,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         for (const item of items) {
             item.updated = new Date();
             this._items.set(item.id, item);
+            this.changed.add(item.id);
         }
     }
 
@@ -53,6 +47,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
     remove(...items: T[]) {
         for (const item of items) {
             this._items.delete(item.id);
+            this.changed.add(item.id);
         }
     }
 
@@ -60,73 +55,27 @@ export class Collection<T extends CollectionItem> extends Serializable implement
      * Merges in changes from another [[Collection]] instance.
      */
     merge(coll: Collection<T>) {
-        const changes: CollectionChanges<T> = {
-            added: [],
-            updated: [],
-            removed: []
-        };
-        const forwardChanges: CollectionChanges<T> = {
-            added: [],
-            updated: [],
-            removed: []
-        };
-
+        // Delete any items from this collection that don't
+        // exist in the other collection and haven't been changed recently
         for (const item of this) {
-            // If item does not exist in other collection and was
-            // not updated since last merge, that means someone else removed
-            // it (as opposed to us adding it) and we need to delete it
-            if (!coll.get(item.id)) {
-                if (item.updated! <= this.lastMerged) {
-                    this.remove(item);
-                    changes.removed.push(item);
-                } else {
-                    item.updated! = new Date();
-                    forwardChanges.added.push(item);
-                }
+            if (!this.changed.has(item.id) && !coll.get(item.id)) {
+                console.log("can't find item. deleting...");
+                this._items.delete(item.id);
             }
         }
 
+        // Get changes items from other collection (but only if they haven't recently changed locally)
         for (const item of coll) {
-            const existing = this.get(item.id);
-            if (!existing) {
-                // Item does not exist locally. that means either it has been added remotely
-                // or removed locally. Let's find out which...
-                if (item.updated! > this.lastMerged) {
-                    // item has been added or updated after last merge so we'll keep it
-                    // even if we may have deleted it locally
-                    this._items.set(item.id, item);
-                    changes.added.push(item);
-                } else {
-                    // othwerwise we assume we've removed it and drop it
-                    forwardChanges.removed.push(item);
-                }
-            } else if (existing) {
-                if (item.updated! > existing.updated!) {
-                    // Remote item is more recent, use it
-                    this._items.set(item.id, item);
-                    changes.updated.push(item);
-                } else if (item.updated! < existing.updated!) {
-                    // Ours is more recent, keep ours
-                    forwardChanges.updated.push(existing);
-                }
+            if (!this.changed.has(item.id)) {
+                this._items.set(item.id, item);
             }
         }
-
-        if (!forwardChanges.added.length && !forwardChanges.updated.length && !forwardChanges.removed.length) {
-            // No changes occurred locally, so we'll just overwrite the lastMerged date with the remote one
-            this.lastMerged = coll.lastMerged;
-        } else {
-            // We've made changes locally, so we need to update the lastMerged property
-            this.lastMerged = new Date();
-        }
-
-        return changes;
     }
 
     toRaw() {
         return {
-            lastMerged: this.lastMerged,
-            items: Array.from(this)
+            items: Array.from(this),
+            changed: [...this.changed]
         };
     }
 
@@ -137,7 +86,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
             }
         }
         this._items = new Map(raw.items.map((item: any) => [item.id, item] as [string, T]));
-        this.lastMerged = new Date(raw.lastMerged);
+        this.changed = new Set<string>(raw.changed);
         return this;
     }
 

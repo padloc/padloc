@@ -113,11 +113,10 @@ export class Vault extends SharedContainer implements Storable {
      * instances. Specifically, this can be used during synchronization with a [[Server]]
      * to determine whether an update needs to be pushed back.
      */
-    merge(vault: Vault): boolean {
+    merge(vault: Vault) {
         this.items.merge(vault.items);
         this.name = vault.name;
         this.revision = vault.revision;
-        return this.items.lastMerged !== vault.items.lastMerged;
     }
 
     toString() {
