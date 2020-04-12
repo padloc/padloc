@@ -110,14 +110,34 @@ export function debounce(fn: (...args: any[]) => any, delay: number) {
     };
 }
 
-export function throttle(fn: (...args: any[]) => any, limit: number) {
-    let throttling = false;
+// export function throttle(fn: (...args: any[]) => any, delay: number) {
+//     let throttling = false;
+//     let lastCall = args: any[];
+//
+//     return function(...args: any[]) {
+//         if (!throttling) {
+//             fn(...args);
+//             throttling = true;
+//             setTimeout(() => (throttling = false), delay);
+//         }
+//     };
+// }
 
-    return function(...args: any[]) {
-        if (!throttling) {
+export function throttle(fn: (...args: any[]) => any, delay: number) {
+    let lastCall: any;
+    let lastRan: number;
+    return (...args: any[]) => {
+        if (!lastRan) {
             fn(...args);
-            throttling = true;
-            setTimeout(() => (throttling = false), limit);
+            lastRan = Date.now();
+        } else {
+            clearTimeout(lastCall);
+            lastCall = setTimeout(() => {
+                if (Date.now() - lastRan >= delay) {
+                    fn(...args);
+                    lastRan = Date.now();
+                }
+            }, delay - (Date.now() - lastRan));
         }
     };
 }

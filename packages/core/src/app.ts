@@ -35,7 +35,7 @@ import {
     getCryptoProvider,
     getStorage
 } from "./platform";
-import { uuid } from "./util";
+import { uuid, throttle } from "./util";
 import { Client as SRPClient } from "./srp";
 import { Err, ErrorCode } from "./error";
 import { Attachment, AttachmentInfo } from "./attachment";
@@ -487,11 +487,11 @@ export class App {
     /**
      * Notifies all subscribers of a [[state]] change
      */
-    publish() {
+    publish = throttle(() => {
         for (const fn of this._subscriptions) {
             fn(this.state);
         }
-    }
+    }, 1000);
 
     /**
      * Updates the app [[state]]
