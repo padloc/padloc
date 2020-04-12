@@ -1031,7 +1031,10 @@ export class App {
         const removeVaults = new Set<VaultID>();
         for (const vault of this.state.vaults) {
             const org = vault.org && this.getOrg(vault.org.id);
-            if (vault.id !== this.account.mainVault.id && (!org || !org.canRead(vault, this.account))) {
+            if (
+                vault.id !== this.account.mainVault.id &&
+                (!org || !org.vaults.find(v => v.id === vault.id) || !org.canRead(vault, this.account))
+            ) {
                 removeVaults.add(vault.id);
             }
         }
@@ -1052,7 +1055,6 @@ export class App {
         const localVault = this.getVault(id);
 
         if (localVault && revision && localVault.revision === revision) {
-            console.log("vault revision hasn't changed, skipping fetch...");
             return localVault;
         }
 
@@ -1084,16 +1086,10 @@ export class App {
 
     async updateVault({ id }: { id: VaultID }, secondTry?: boolean): Promise<Vault | null> {
         if (!this.account) {
-            console.error("need to be logged in to update vault!");
-            return null;
+            throw "need to be logged in to update vault!";
         }
 
-        let vault = this.getVault(id);
-
-        if (!vault) {
-            console.error("vault not found!");
-            return null;
-        }
+        let vault = this.getVault(id)!;
 
         if (!vault.items.changed.size) {
             // No changes - skipping update
@@ -1108,8 +1104,6 @@ export class App {
 
         // // Make sure the organization revision matches the one the vault is based on
         if (vault.org && (!org || org.revision !== vault.org.revision)) {
-            console.log("org revision does not match org info on vault, fetch org update!");
-
             if (secondTry) {
                 throw org
                     ? `Revision number of org ${org.name} (${org.id}) does not match with meta data on vault ${vault.name} (${vault.id})}`
@@ -1157,7 +1151,6 @@ export class App {
 
             if (org) {
                 org.revision = orgInfo!.revision!;
-                console.log("updating org revision", orgInfo);
                 org.vaults.find(v => v.id === vault!.id)!.revision = revision;
                 this.putOrg(org);
                 this.account.orgs.find(o => o.id === org.id)!.revision = orgInfo!.revision;
@@ -1172,7 +1165,6 @@ export class App {
             // not match the current revision on the server, in which case we'll
             // have to fetch the current vault version and try again.
             if (e.code === ErrorCode.OUTDATED_REVISION) {
-                console.log("vault is outdated");
                 await this.fetchVault({ id });
                 return this.updateVault({ id });
             }
@@ -1215,14 +1207,15 @@ export class App {
     }
 
     /** Adds a number of `items` to the given `vault` */
-    async addItems(items: VaultItem[], vault: Vault = this.mainVault!) {
+    async addItems(items: VaultItem[], { id }: { id: VaultID }) {
+        const vault = this.getVault(id)!;
         vault.items.update(...items);
         await this.saveVault(vault);
         this.syncVault(vault);
     }
 
     /** Creates a new [[VaultItem]] */
-    async createItem(name: string, vault: Vault = this.mainVault!, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
+    async createItem(name: string, vault: { id: VaultID }, fields?: Field[], tags?: Tag[]): Promise<VaultItem> {
         fields = fields || [
             { name: $l("Username"), value: "", type: "username" },
             { name: $l("Password"), value: "", type: "password" },
@@ -1238,7 +1231,6 @@ export class App {
 
     /** Update a given [[VaultItem]]s name, fields, tags and attachments */
     async updateItem(
-        vault: Vault,
         item: VaultItem,
         upd: {
             name?: string;
@@ -1250,6 +1242,8 @@ export class App {
         }
     ) {
         const account = this.account!;
+
+        const { vault } = this.getItem(item.id)!;
 
         let favorited = new Set(item.favorited);
 
@@ -1263,17 +1257,20 @@ export class App {
     }
 
     /** Delete a number of `items` */
-    async deleteItems(items: { item: VaultItem; vault: Vault }[]) {
+    async deleteItems(items: VaultItem[]) {
         const attachments: AttachmentInfo[] = [];
 
         // Group items by vault
         const grouped = new Map<Vault, VaultItem[]>();
         for (const item of items) {
-            if (!grouped.has(item.vault)) {
-                grouped.set(item.vault, []);
+            const { vault } = this.getItem(item.id)!;
+
+            if (!grouped.has(vault)) {
+                grouped.set(vault, []);
             }
-            grouped.get(item.vault)!.push(item.item);
-            attachments.push(...item.item.attachments);
+
+            grouped.get(vault)!.push(item);
+            attachments.push(...item.attachments);
         }
 
         const promises: Promise<void>[] = [];
@@ -1296,11 +1293,11 @@ export class App {
     }
 
     /** Move `items` from their current vault to the `target` vault */
-    async moveItems(items: { item: VaultItem; vault: Vault }[], target: Vault) {
-        if (items.some(item => !!item.item.attachments.length)) {
+    async moveItems(items: VaultItem[], target: Vault) {
+        if (items.some(item => !!item.attachments.length)) {
             throw "Items with attachments cannot be moved!";
         }
-        const newItems = await Promise.all(items.map(async i => ({ ...i.item, id: await uuid() })));
+        const newItems = await Promise.all(items.map(async item => ({ ...item, id: await uuid() })));
         await this.addItems(newItems, target);
         await this.deleteItems(items);
         return newItems;
@@ -1392,7 +1389,6 @@ export class App {
         const existing = this.getOrg(id);
 
         if (existing && existing.revision === revision) {
-            console.log("org revision hasn't changed, skipping fetch...");
             return existing;
         }
 
@@ -1427,7 +1423,6 @@ export class App {
             // If organizaton has been updated since last fetch,
             // get the current version and then retry
             if (e.code === ErrorCode.OUTDATED_REVISION) {
-                console.log("org outdated revision");
                 await this.fetchOrg({ id });
                 return this.updateOrg(id, transform);
             } else {
@@ -1548,9 +1543,7 @@ export class App {
      */
     async createInvites({ id }: Org, emails: string[], purpose?: InvitePurpose) {
         let invites: Invite[] = [];
-        console.log("create invites", ...emails);
         await this.updateOrg(id, async (org: Org) => {
-            console.log("update org", ...emails);
             await org.unlock(this.account!);
             invites = [];
             for (const email of emails) {
@@ -1638,7 +1631,7 @@ export class App {
 
         (async () => {
             await att.uploadProgress!.completed;
-            this.updateItem(vault, item, { attachments: [...item.attachments, att.info] });
+            this.updateItem(item, { attachments: [...item.attachments, att.info] });
         })();
 
         return att;
@@ -1649,7 +1642,7 @@ export class App {
     }
 
     async deleteAttachment(itemId: VaultItemID, att: Attachment | AttachmentInfo): Promise<void> {
-        const { vault, item } = this.getItem(itemId)!;
+        const { item } = this.getItem(itemId)!;
         try {
             await this.api.deleteAttachment(new DeleteAttachmentParams(att));
         } catch (e) {
@@ -1657,7 +1650,7 @@ export class App {
                 throw e;
             }
         }
-        await this.updateItem(vault, item, { attachments: item.attachments.filter(a => a.id !== att.id) });
+        await this.updateItem(item, { attachments: item.attachments.filter(a => a.id !== att.id) });
     }
 
     /**

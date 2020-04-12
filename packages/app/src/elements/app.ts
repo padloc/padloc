@@ -507,7 +507,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                     }
                     router.params = rest;
                 }
-                app.updateItem(item.vault, item.item, { lastUsed: new Date() });
+                app.updateItem(item.item, { lastUsed: new Date() });
             }
         } else if ((match = path.match(/^invite\/([^\/]+)\/([^\/]+)$/))) {
             const [, orgId, id] = match;

@@ -439,7 +439,7 @@ export class ItemDialog extends Dialog<string, void> {
     }
 
     save() {
-        app.updateItem(this._vault!, this._item!, {
+        app.updateItem(this._item!, {
             name: this._nameInput.value,
             fields: this._getFields(),
             tags: this._tagsInput.tags
@@ -475,7 +475,7 @@ export class ItemDialog extends Dialog<string, void> {
             type: "destructive"
         });
         if (confirmed) {
-            app.deleteItems([{ vault: this._vault!, item: this._item! }]);
+            app.deleteItems([this._item!]);
             router.go("items");
         } else {
             this.open = true;
@@ -578,7 +578,7 @@ export class ItemDialog extends Dialog<string, void> {
     }
 
     private _setFavorite(favorite: boolean) {
-        app.updateItem(this._vault!, this._item!, { favorite });
+        app.updateItem(this._item!, { favorite });
         this.requestUpdate();
     }
 

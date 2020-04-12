@@ -1253,9 +1253,7 @@ export abstract class BaseServer {
             this._requestQueue.set(id, new Promise(resolve => resolveFuncs.push(resolve)));
         }
 
-        console.log(`waiting for ${promises.length} requests`);
         await Promise.all(promises);
-        console.log("done waiting");
 
         return () => resolveFuncs.forEach(resolve => resolve());
     }

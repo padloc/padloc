@@ -614,7 +614,7 @@ export class ItemsList extends StateMixin(View) {
             { type: "destructive" }
         );
         if (confirmed) {
-            await app.deleteItems(selected);
+            await app.deleteItems(selected.map(i => i.item));
             this.cancelMultiSelect();
         }
     }
@@ -657,13 +657,13 @@ export class ItemsList extends StateMixin(View) {
         }
     }
 
-    private _copyField({ vault, item }: ListItem, index: number, e: Event) {
+    private _copyField({ item }: ListItem, index: number, e: Event) {
         e.stopPropagation();
         setClipboard(item, item.fields[index]);
         const fieldEl = e.target as HTMLElement;
         fieldEl.classList.add("copied");
         setTimeout(() => fieldEl.classList.remove("copied"), 1000);
-        app.updateItem(vault, item, { lastUsed: new Date() });
+        app.updateItem(item, { lastUsed: new Date() });
         this.dispatch("field-clicked", { item, index });
     }
 
