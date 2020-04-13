@@ -1052,7 +1052,7 @@ export class App {
             return null;
         }
 
-        const localVault = this.getVault(id);
+        let localVault = this.getVault(id);
 
         if (localVault && revision && localVault.revision === revision) {
             return localVault;
@@ -1072,7 +1072,7 @@ export class App {
 
         // Merge changes
         if (localVault) {
-            result = localVault.clone();
+            result = this.getVault(id)!;
             await result.unlock(this.account);
             result.merge(remoteVault);
         } else {
@@ -1084,27 +1084,29 @@ export class App {
         return result;
     }
 
-    async updateVault({ id }: { id: VaultID }, secondTry?: boolean): Promise<Vault | null> {
+    async updateVault({ id }: { id: VaultID }, tries = 0): Promise<Vault | null> {
         if (!this.account) {
             throw "need to be logged in to update vault!";
         }
 
         let vault = this.getVault(id)!;
 
-        if (!vault.items.changed.size) {
+        if (!vault.items.hasChanges) {
             // No changes - skipping update
             return vault;
         }
 
+        const updateStarted = new Date();
         vault = vault.clone();
-        vault.items.changed.clear();
+
+        vault.items.clearChanges();
         await vault.commit();
 
         const org = vault.org && this.getOrg(vault.org.id);
 
         // // Make sure the organization revision matches the one the vault is based on
         if (vault.org && (!org || org.revision !== vault.org.revision)) {
-            if (secondTry) {
+            if (tries > 3) {
                 throw org
                     ? `Revision number of org ${org.name} (${org.id}) does not match with meta data on vault ${vault.name} (${vault.id})}`
                     : `Could not update vault ${vault.name} (${vault.id}) because the corresponding organization could not be found.`;
@@ -1113,7 +1115,7 @@ export class App {
             // Get the latest organization and vault info, then try again
             await this.fetchOrg(vault.org);
             await this.fetchVault({ id });
-            return this.updateVault(vault, true);
+            return this.updateVault(vault, tries + 1);
         }
 
         // Update accessors
@@ -1143,23 +1145,28 @@ export class App {
 
         // Push updated vault object to [[Server]]
         try {
-            const { revision, updated, org: orgInfo } = await this.api.updateVault(vault);
-            vault.revision = revision;
-            vault.updated = updated;
-            vault.org = orgInfo;
-            this.putVault(vault);
+            vault = await this.api.updateVault(vault);
+            await vault.unlock(this.account);
+
+            const existing = this.getVault(vault.id)!;
+            existing.items.clearChanges(updateStarted);
+
+            existing.merge(vault);
+
+            this.putVault(existing);
 
             if (org) {
-                org.revision = orgInfo!.revision!;
-                org.vaults.find(v => v.id === vault!.id)!.revision = revision;
+                org.revision = vault.org!.revision!;
+                org.vaults.find(v => v.id === vault!.id)!.revision = vault.revision;
                 this.putOrg(org);
-                this.account.orgs.find(o => o.id === org.id)!.revision = orgInfo!.revision;
+                this.account.orgs.find(o => o.id === org.id)!.revision = org.revision;
             } else {
-                this.account.mainVault.revision = revision;
+                this.account.mainVault.revision = vault.revision;
             }
 
             await this.save();
-            return vault;
+
+            return existing;
         } catch (e) {
             // The server will reject the update if the vault revision does
             // not match the current revision on the server, in which case we'll
@@ -1225,7 +1232,9 @@ export class App {
         if (this.account) {
             item.updatedBy = this.account.id;
         }
-        this.addItems([item], vault);
+
+        await this.addItems([item], vault);
+
         return item;
     }
 

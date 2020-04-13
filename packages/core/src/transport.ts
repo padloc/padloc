@@ -2,6 +2,7 @@ import { Serializable } from "./encoding";
 import { Server } from "./server";
 import { DeviceInfo } from "./platform";
 import { EventEmitter } from "./event-target";
+import { wait } from "./util";
 
 /** RPC request object */
 export class Request extends Serializable {
@@ -94,7 +95,8 @@ export interface Receiver {
 export class DirectSender implements Sender {
     constructor(private server: Server) {}
 
-    send(req: Request) {
+    async send(req: Request) {
+        await wait(10);
         return this.server.handle(req);
     }
 }

@@ -1127,8 +1127,6 @@ export class Controller implements API {
     }
 
     private async _updateMetaData(org: Org) {
-        console.log("update org revision", org.id, org.revision);
-
         org.revision = await uuid();
         org.updated = new Date();
 

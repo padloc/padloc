@@ -12,9 +12,9 @@ suite("Collection", () => {
     const coll2 = new Collection<TestItem>();
 
     function merge() {
-        coll2.changed.clear();
+        coll2.clearChanges();
         coll1.merge(coll2);
-        coll1.changed.clear();
+        coll1.clearChanges();
         coll2.merge(coll1);
     }
 

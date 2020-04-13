@@ -10,14 +10,17 @@ export interface CollectionItem {
  * across multiple instances through "merging".
  */
 export class Collection<T extends CollectionItem> extends Serializable implements Iterable<T> {
-    changed = new Set<string>();
-
     /** Number of items in this Collection */
     get size() {
         return this._items.size;
     }
 
+    get hasChanges() {
+        return !!this._changes.size;
+    }
+
     private _items: Map<string, T>;
+    private _changes = new Map<string, Date>();
 
     constructor(items: T[] = []) {
         super();
@@ -37,7 +40,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         for (const item of items) {
             item.updated = new Date();
             this._items.set(item.id, item);
-            this.changed.add(item.id);
+            this._changes.set(item.id, item.updated);
         }
     }
 
@@ -47,7 +50,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
     remove(...items: T[]) {
         for (const item of items) {
             this._items.delete(item.id);
-            this.changed.add(item.id);
+            this._changes.set(item.id, new Date());
         }
     }
 
@@ -58,16 +61,23 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         // Delete any items from this collection that don't
         // exist in the other collection and haven't been changed recently
         for (const item of this) {
-            if (!this.changed.has(item.id) && !coll.get(item.id)) {
-                console.log("can't find item. deleting...");
+            if (!this._changes.has(item.id) && !coll.get(item.id)) {
                 this._items.delete(item.id);
             }
         }
 
         // Get changes items from other collection (but only if they haven't recently changed locally)
         for (const item of coll) {
-            if (!this.changed.has(item.id)) {
+            if (!this._changes.has(item.id)) {
                 this._items.set(item.id, item);
+            }
+        }
+    }
+
+    clearChanges(before?: Date) {
+        for (const [id, changed] of this._changes.entries()) {
+            if (!before || changed <= before) {
+                this._changes.delete(id);
             }
         }
     }
@@ -75,7 +85,7 @@ export class Collection<T extends CollectionItem> extends Serializable implement
     toRaw() {
         return {
             items: Array.from(this),
-            changed: [...this.changed]
+            changes: [...this._changes]
         };
     }
 
@@ -86,7 +96,9 @@ export class Collection<T extends CollectionItem> extends Serializable implement
             }
         }
         this._items = new Map(raw.items.map((item: any) => [item.id, item] as [string, T]));
-        this.changed = new Set<string>(raw.changed);
+        this._changes = new Map<string, Date>(
+            raw.changes && raw.changes.map(([id, date]: [string, string]) => [id, new Date(date)])
+        );
         return this;
     }
 

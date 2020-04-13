@@ -64,7 +64,7 @@ export function appSpec(): Spec {
         });
 
         test("Create Personal Vault Item", async () => {
-            const item = await app.createItem("My First Item");
+            const item = await app.createItem("My First Item", app.mainVault!);
             assert.equal(app.mainVault!.items.size, 1, "Item count should be 1.");
             assert.ok(app.getItem(item.id), "Item should be accessible by ID.");
             assert.equal(app.getItem(item.id)!.item, item);
@@ -189,8 +189,8 @@ export function appSpec(): Spec {
         //
         test("Simulataneous Edit", async () => {
             const [item1, item2] = await Promise.all([
-                app.createItem("Added Item 1", app.getVault(sharedVaultID)!),
-                otherApp.createItem("Added Item 2", otherApp.getVault(sharedVaultID)!)
+                app.createItem("Added Item 1", { id: sharedVaultID }),
+                otherApp.createItem("Added Item 2", { id: sharedVaultID })
             ]);
 
             await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
@@ -199,9 +199,9 @@ export function appSpec(): Spec {
             assert.ok(app.getItem(item2.id), "Created item from second app should should show up in first app");
             assert.ok(otherApp.getItem(item1.id), "Created item from first app should should show up in second app");
 
-            await app.updateItem(app.getVault(sharedVaultID)!, item1, { name: "Edited Item" });
+            await app.updateItem(item1, { name: "Edited Item" });
             const item3 = await app.createItem("Added Item 3", app.getVault(sharedVaultID)!);
-            await otherApp.deleteItems([{ vault: otherApp.getVault(sharedVaultID)!, item: item2 }]);
+            await otherApp.deleteItems([item2]);
 
             await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
             await Promise.all([app.syncVault({ id: sharedVaultID }), otherApp.syncVault({ id: sharedVaultID })]);
