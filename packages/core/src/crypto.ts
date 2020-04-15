@@ -18,9 +18,9 @@ export class AESEncryptionParams extends Serializable {
     iv: Uint8Array = new Uint8Array();
     additionalData = new Uint8Array();
 
-    toRaw() {
+    _toRaw(version: string | undefined) {
         return {
-            ...super.toRaw(),
+            ...super._toRaw(version),
             iv: bytesToBase64(this.iv),
             additionalData: bytesToBase64(this.additionalData)
         };
@@ -34,8 +34,8 @@ export class AESEncryptionParams extends Serializable {
         );
     }
 
-    fromRaw({ algorithm, tagSize, keySize, iv, additionalData }: any) {
-        return super.fromRaw({
+    _fromRaw({ algorithm, tagSize, keySize, iv, additionalData }: any) {
+        return super._fromRaw({
             algorithm,
             tagSize,
             keySize,
@@ -52,10 +52,6 @@ export class AESKeyParams extends Serializable {
     validate() {
         return this.algorithm !== "AES" && this.keySize !== 256;
     }
-
-    fromRaw({ algorithm, keySize }: any) {
-        return super.fromRaw({ algorithm, keySize });
-    }
 }
 
 export class HMACKeyParams extends Serializable {
@@ -65,10 +61,6 @@ export class HMACKeyParams extends Serializable {
     validate() {
         return this.algorithm === "HMAC" && this.keySize === 256;
     }
-
-    fromRaw({ algorithm, keySize }: any) {
-        return super.fromRaw({ algorithm, keySize });
-    }
 }
 
 export class RSAKeyParams extends Serializable {
@@ -77,9 +69,9 @@ export class RSAKeyParams extends Serializable {
     publicExponent: Uint8Array = new Uint8Array([0x01, 0x00, 0x01]);
     hash: "SHA-256" = "SHA-256";
 
-    toRaw() {
+    _toRaw(version: string | undefined) {
         return {
-            ...super.toRaw(),
+            ...super._toRaw(version),
             publicExponent: bytesToBase64(this.publicExponent)
         };
     }
@@ -93,8 +85,8 @@ export class RSAKeyParams extends Serializable {
         );
     }
 
-    fromRaw({ algorithm, modulusLength, publicExponent, hash }: any) {
-        return super.fromRaw({ algorithm, modulusLength, publicExponent: base64ToBytes(publicExponent), hash });
+    _fromRaw({ algorithm, modulusLength, publicExponent, hash }: any) {
+        return super._fromRaw({ algorithm, modulusLength, publicExponent: base64ToBytes(publicExponent), hash });
     }
 }
 
@@ -110,9 +102,9 @@ export class PBKDF2Params extends Serializable {
         props && Object.assign(this, props);
     }
 
-    toRaw() {
+    _toRaw(version: string | undefined) {
         return {
-            ...super.toRaw(),
+            ...super._toRaw(version),
             salt: bytesToBase64(this.salt)
         };
     }
@@ -128,8 +120,8 @@ export class PBKDF2Params extends Serializable {
         );
     }
 
-    fromRaw({ algorithm, hash, keySize, iterations, salt }: any) {
-        return super.fromRaw({ algorithm, hash, keySize, iterations, salt: base64ToBytes(salt) });
+    _fromRaw({ algorithm, hash, keySize, iterations, salt }: any) {
+        return super._fromRaw({ algorithm, hash, keySize, iterations, salt: base64ToBytes(salt) });
     }
 }
 
@@ -140,10 +132,6 @@ export class RSAEncryptionParams extends Serializable {
     validate() {
         return this.algorithm === "RSA-OAEP" && this.hash === "SHA-256";
     }
-
-    fromRaw({ algorithm, hash }: any) {
-        return super.fromRaw({ algorithm, hash });
-    }
 }
 
 export class RSASigningParams extends Serializable {
@@ -153,10 +141,6 @@ export class RSASigningParams extends Serializable {
 
     validate() {
         return this.algorithm === "RSA-PSS" && this.hash === "SHA-256" && this.saltLength === 32;
-    }
-
-    fromRaw({ algorithm, hash, saltLength }: any) {
-        return super.fromRaw({ algorithm, hash, saltLength });
     }
 }
 
@@ -173,10 +157,6 @@ export class HMACParams extends Serializable {
     validate() {
         return this.algorithm === "HMAC" && this.hash === "SHA-256" && this.keySize === 256;
     }
-
-    fromRaw({ algorithm, hash, keySize }: any) {
-        return super.fromRaw({ algorithm, hash, keySize });
-    }
 }
 
 export class HashParams extends Serializable {
@@ -189,10 +169,6 @@ export class HashParams extends Serializable {
 
     validate() {
         return ["SHA-1", "SHA-256"].includes(this.algorithm);
-    }
-
-    fromRaw({ algorithm }: any) {
-        return super.fromRaw({ algorithm });
     }
 }
 

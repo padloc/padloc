@@ -19,8 +19,8 @@ export class SessionInfo extends Serializable {
     expires?: Date;
     device?: DeviceInfo;
 
-    fromRaw({ id, account, created, updated, lastUsed, expires, device }: any) {
-        return super.fromRaw({
+    protected _fromRaw({ id, account, created, updated, lastUsed, expires, device }: any) {
+        return super._fromRaw({
             id,
             account,
             created: new Date(created),
@@ -79,7 +79,7 @@ export class SessionInfo extends Serializable {
  *                              ▼               ▼
  * ```
  */
-export class Session extends Serializable implements SessionInfo, Storable {
+export class Session extends Serializable implements Storable {
     /** Unique identifier */
     id: string = "";
 
@@ -157,23 +157,24 @@ export class Session extends Serializable implements SessionInfo, Storable {
         );
     }
 
-    toRaw() {
+    protected _toRaw(version: string | undefined) {
         return {
-            ...super.toRaw(),
+            ...super._toRaw(version),
             key: this.key ? bytesToBase64(this.key) : undefined
         };
     }
 
-    fromRaw({ id, account, created, updated, lastUsed, expires, device, key }: any) {
-        this.id = id;
-        this.account = account;
-        this.created = new Date(created);
-        this.updated = new Date(updated);
-        this.lastUsed = new Date(lastUsed);
-        this.expires = expires && new Date(expires);
-        this.device = device ? new DeviceInfo().fromRaw(device) : undefined;
-        this.key = key ? base64ToBytes(key) : undefined;
-        return super.fromRaw({});
+    protected _fromRaw({ id, account, created, updated, lastUsed, expires, device, key }: any) {
+        return super._fromRaw({
+            id,
+            account,
+            created: new Date(created),
+            updated: new Date(updated),
+            lastUsed: new Date(lastUsed),
+            expires: expires && new Date(expires),
+            device: device ? new DeviceInfo().fromRaw(device) : undefined,
+            key: key ? base64ToBytes(key) : undefined
+        });
     }
 
     private async _sign(message: string): Promise<string> {

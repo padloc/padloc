@@ -48,11 +48,10 @@ export class Stats extends Serializable {
     /** Time of last sync */
     lastSync?: Date;
 
-    fromRaw({ lastSync }: any) {
+    protected _fromRaw({ lastSync }: any) {
         Object.assign(this, {
             lastSync: new Date(lastSync)
         });
-        return this;
     }
 }
 
@@ -76,10 +75,9 @@ export class Index extends Serializable {
     hashParams = new PBKDF2Params({ iterations: 1 });
     items: HashedItem[] = [];
 
-    fromRaw({ hashParams, items }: any) {
+    protected _fromRaw({ hashParams, ...rest }: any) {
         this.hashParams.fromRaw(hashParams);
-        this.items = items;
-        return this;
+        return super._fromRaw(rest);
     }
 
     async fromItems(items: VaultItem[]) {
@@ -211,7 +209,7 @@ export class AppState extends Storable {
         return !!this.session;
     }
 
-    fromRaw({
+    protected _fromRaw({
         settings,
         stats,
         device,
@@ -235,7 +233,6 @@ export class AppState extends Storable {
         if (index) {
             this.index.fromRaw(index);
         }
-        return this;
     }
 }
 

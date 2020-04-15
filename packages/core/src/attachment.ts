@@ -146,11 +146,6 @@ export class Attachment extends SimpleContainer {
     validate() {
         return typeof this.id === "string" && typeof this.vault === "string" && typeof this.size === "number";
     }
-
-    fromRaw({ id, vault, size, ...rest }: any) {
-        Object.assign(this, { id, vault, size });
-        return super.fromRaw(rest);
-    }
 }
 
 export interface AttachmentStorage {

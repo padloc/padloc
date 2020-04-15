@@ -54,8 +54,8 @@ export class CreateAccountParams extends Serializable {
         );
     }
 
-    fromRaw({ account, auth, verify, invite }: any) {
-        return super.fromRaw({
+    protected _fromRaw({ account, auth, verify, invite }: any) {
+        return super._fromRaw({
             verify,
             invite,
             account: account && new Account().fromRaw(account),
@@ -86,8 +86,8 @@ export class RecoverAccountParams extends Serializable {
         return typeof this.verify === "string";
     }
 
-    fromRaw({ account, auth, verify }: any) {
-        return super.fromRaw({ verify, account: new Account().fromRaw(account), auth: new Auth().fromRaw(auth) });
+    protected _fromRaw({ account, auth, verify }: any) {
+        return super._fromRaw({ verify, account: new Account().fromRaw(account), auth: new Auth().fromRaw(auth) });
     }
 }
 
@@ -109,10 +109,6 @@ export class RequestEmailVerificationParams extends Serializable {
     validate() {
         return typeof this.email === "string" && this.purpose in EmailVerificationPurpose;
     }
-
-    fromRaw({ email, purpose }: any) {
-        return super.fromRaw({ email, purpose });
-    }
 }
 
 /**
@@ -132,10 +128,6 @@ export class CompleteEmailVerificationParams extends Serializable {
 
     validate() {
         return typeof this.email === "string" || typeof this.code === "string";
-    }
-
-    fromRaw({ email, code }: any) {
-        return super.fromRaw({ email, code });
     }
 }
 
@@ -161,10 +153,6 @@ export class InitAuthParams extends Serializable {
             typeof this.email === "string" && (typeof this.verify === "string" || typeof this.verify === "undefined")
         );
     }
-
-    fromRaw({ email, verify }: any) {
-        return super.fromRaw({ email, verify });
-    }
 }
 
 /**
@@ -185,17 +173,17 @@ export class InitAuthResponse extends Serializable {
         props && Object.assign(this, props);
     }
 
-    fromRaw({ account, keyParams, B }: any) {
-        return super.fromRaw({
+    protected _fromRaw({ account, keyParams, B }: any) {
+        return super._fromRaw({
             account,
             keyParams: new PBKDF2Params().fromRaw(keyParams),
             B: base64ToBytes(B)
         });
     }
 
-    toRaw() {
+    protected _toRaw(version: string | undefined) {
         return {
-            ...super.toRaw(),
+            ...super._toRaw(version),
             B: bytesToBase64(this.B)
         };
     }
@@ -223,7 +211,7 @@ export class CreateSessionParams extends Serializable {
         return typeof this.account === "string";
     }
 
-    toRaw() {
+    protected _toRaw() {
         return {
             account: this.account,
             M: bytesToBase64(this.M),
@@ -231,8 +219,8 @@ export class CreateSessionParams extends Serializable {
         };
     }
 
-    fromRaw({ account, M, A }: any) {
-        return super.fromRaw({ account, M: base64ToBytes(M), A: base64ToBytes(A) });
+    protected _fromRaw({ account, M, A }: any) {
+        return super._fromRaw({ account, M: base64ToBytes(M), A: base64ToBytes(A) });
     }
 }
 

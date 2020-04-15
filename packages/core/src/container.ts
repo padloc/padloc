@@ -16,7 +16,7 @@ import { getCryptoProvider as getProvider } from "./platform";
  * an object for holding data encrypted using a symmetric cipher. Implementations
  * vary mostly in how the encryption key is generated. Sub classes must implement
  * the [[unlock]] method and may likely also want to augment [[lock]], [[validate]],
- * [[fromRaw]] and [[toRaw]].
+ * [[_fromRaw]] and [[_toRaw]].
  */
 export abstract class BaseContainer extends Serializable {
     /** Parameters used for encryption of content data */
@@ -80,9 +80,9 @@ export abstract class BaseContainer extends Serializable {
         delete this._key;
     }
 
-    toRaw(exclude: string[] = []) {
+    protected _toRaw(version: string | undefined) {
         return {
-            ...super.toRaw(exclude),
+            ...super._toRaw(version),
             encryptedData: this.encryptedData ? bytesToBase64(this.encryptedData) : undefined
         };
     }
@@ -91,9 +91,9 @@ export abstract class BaseContainer extends Serializable {
         return typeof this.encryptedData === "undefined" || this.encryptedData instanceof Uint8Array;
     }
 
-    fromRaw({ encryptionParams, encryptedData }: any) {
+    protected _fromRaw({ encryptionParams, encryptedData }: any) {
         this.encryptionParams.fromRaw(encryptionParams);
-        return super.fromRaw({
+        return super._fromRaw({
             encryptedData: encryptedData ? base64ToBytes(encryptedData) : undefined
         });
     }
@@ -134,9 +134,9 @@ export class PBES2Container extends BaseContainer {
         this._key = await getProvider().deriveKey(stringToBytes(password), this.keyParams);
     }
 
-    fromRaw({ keyParams, ...rest }: any) {
+    protected _fromRaw({ keyParams, ...rest }: any) {
         this.keyParams.fromRaw(keyParams);
-        return super.fromRaw(rest);
+        return super._fromRaw(rest);
     }
 }
 
@@ -153,7 +153,7 @@ export class Accessor extends Serializable {
     /** Shared key encrypted with the public key of the entity associated with the `Accessor` object */
     encryptedKey: Uint8Array = new Uint8Array();
 
-    toRaw() {
+    protected _toRaw() {
         return {
             id: this.id,
             encryptedKey: bytesToBase64(this.encryptedKey)
@@ -164,8 +164,8 @@ export class Accessor extends Serializable {
         return typeof this.id === "string" && this.encryptedKey instanceof Uint8Array;
     }
 
-    fromRaw({ id, encryptedKey }: any) {
-        return super.fromRaw({ id, encryptedKey: base64ToBytes(encryptedKey) });
+    protected _fromRaw({ id, encryptedKey }: any) {
+        return super._fromRaw({ id, encryptedKey: base64ToBytes(encryptedKey) });
     }
 }
 
@@ -243,9 +243,9 @@ export class SharedContainer extends BaseContainer {
         );
     }
 
-    fromRaw({ keyParams, accessors, ...rest }: any) {
+    protected _fromRaw({ keyParams, accessors, ...rest }: any) {
         this.keyParams.fromRaw(keyParams);
         this.accessors = accessors.map((a: any) => new Accessor().fromRaw(a));
-        return super.fromRaw(rest);
+        return super._fromRaw(rest);
     }
 }

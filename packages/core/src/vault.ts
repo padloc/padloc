@@ -47,11 +47,7 @@ export class Vault extends SharedContainer implements Storable {
      */
     items = new VaultItemCollection();
 
-    toRaw() {
-        // The `items` property is considered secret and should therefore be
-        // excluded from serialization
-        return super.toRaw(["items"]);
-    }
+    protected readonly exclude = ["items"];
 
     validate() {
         return (

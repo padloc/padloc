@@ -215,7 +215,7 @@ export class Controller implements API {
         session.key = srp.K!;
 
         // Add the session to the list of active sessions
-        acc.sessions.push(session);
+        acc.sessions.push(session.info);
 
         // Persist changes
         await Promise.all([this.storage.save(session), this.storage.save(acc)]);
@@ -1209,7 +1209,7 @@ export abstract class BaseServer {
         const res = new Response();
         const context: Context = {};
         try {
-            context.device = req.device && new DeviceInfo().fromRaw(req.device);
+            context.device = req.device;
             try {
                 await loadLanguage((context.device && context.device.locale) || "en");
             } catch (e) {}

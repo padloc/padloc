@@ -67,14 +67,10 @@ export class EmailVerification extends Serializable implements Storable {
         );
     }
 
-    fromRaw({ email, code, token, created, purpose, tries }: any) {
-        return super.fromRaw({
-            email,
-            code,
-            token,
-            purpose,
-            tries,
-            created: new Date(created)
+    protected _fromRaw({ created, ...rest }: any) {
+        return super._fromRaw({
+            created: new Date(created),
+            ...rest
         });
     }
 }

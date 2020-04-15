@@ -56,10 +56,6 @@ export class PaymentMethod extends Serializable {
     validate() {
         return typeof this.id === "string" && typeof this.name === "string";
     }
-
-    fromRaw({ id, name }: any) {
-        return super.fromRaw({ id, name });
-    }
 }
 
 export enum SubscriptionStatus {
@@ -87,39 +83,11 @@ export class Subscription extends Serializable {
     paymentRequiresAuth?: string;
     currentInvoice: string = "";
 
-    fromRaw({
-        id,
-        status,
-        account,
-        plan,
-        members,
-        items,
-        storage,
-        groups,
-        vaults,
-        org,
-        trialEnd,
-        periodEnd,
-        paymentError,
-        paymentRequiresAuth,
-        currentInvoice
-    }: any) {
+    protected _fromRaw({ plan, trialEnd, periodEnd, ...rest }: any) {
         this.plan.fromRaw(plan);
-        return super.fromRaw({
-            id,
-            status,
-            account,
-            members,
-            storage,
-            groups,
-            vaults,
-            items,
-            org,
+        return super._fromRaw({
             trialEnd: trialEnd && new Date(trialEnd),
-            periodEnd: new Date(periodEnd),
-            paymentError,
-            paymentRequiresAuth,
-            currentInvoice
+            ...rest
         });
     }
 
@@ -178,16 +146,13 @@ export class BillingInfo extends Serializable {
     address: BillingAddress = new BillingAddress();
     discount: Discount | null = null;
 
-    fromRaw({ customerId, account, org, email, subscription, paymentMethod, address, discount }: any) {
-        return super.fromRaw({
+    protected _fromRaw({ subscription, paymentMethod, address, discount, ...rest }: any) {
+        return super._fromRaw({
             subscription: (subscription && new Subscription().fromRaw(subscription)) || null,
-            customerId,
-            account,
-            org,
-            email,
             address: (address && new BillingAddress().fromRaw(address)) || new BillingAddress(),
             paymentMethod: paymentMethod ? new PaymentMethod().fromRaw(paymentMethod) : null,
-            discount: discount ? new Discount().fromRaw(discount) : null
+            discount: discount ? new Discount().fromRaw(discount) : null,
+            ...rest
         });
     }
 }
@@ -212,19 +177,10 @@ export class UpdateBillingParams extends Serializable {
         }
     }
 
-    fromRaw({ provider, account, email, org, plan, planType, members, paymentMethod, coupon, address, cancel }: any) {
-        return super.fromRaw({
-            provider,
-            email,
-            account,
-            org,
-            plan,
-            planType,
-            members,
-            paymentMethod,
-            coupon,
+    protected _fromRaw({ address, ...rest }: any) {
+        return super._fromRaw({
             address: address && new BillingAddress().fromRaw(address),
-            cancel
+            ...rest
         });
     }
 
@@ -249,11 +205,10 @@ export class BillingProviderInfo extends Serializable {
         [param: string]: string;
     } = {};
 
-    fromRaw({ type, plans, config }: any) {
+    fromRaw({ plans, ...rest }: any) {
         return super.fromRaw({
-            type,
-            config,
-            plans: plans.map((plan: any) => new Plan().fromRaw(plan))
+            plans: plans.map((plan: any) => new Plan().fromRaw(plan)),
+            ...rest
         });
     }
 }

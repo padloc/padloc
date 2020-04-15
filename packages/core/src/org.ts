@@ -86,9 +86,9 @@ export class OrgMember extends Serializable {
         this.role = typeof role !== "undefined" && role in OrgRole ? role : OrgRole.Member;
     }
 
-    toRaw(): any {
+    protected _toRaw(version: string | undefined): any {
         return {
-            ...super.toRaw(),
+            ...super._toRaw(version),
             publicKey: bytesToBase64(this.publicKey),
             signature: bytesToBase64(this.signature),
             orgSignature: bytesToBase64(this.orgSignature)
@@ -109,8 +109,8 @@ export class OrgMember extends Serializable {
         );
     }
 
-    fromRaw({ id, name, email, publicKey, signature, orgSignature, role, vaults, updated }: any) {
-        return super.fromRaw({
+    protected _fromRaw({ id, name, email, publicKey, signature, orgSignature, role, vaults, updated }: any) {
+        return super._fromRaw({
             id,
             name,
             email,
@@ -146,8 +146,8 @@ export class Group extends Serializable {
         );
     }
 
-    fromRaw({ name, members, vaults }: any) {
-        return super.fromRaw({
+    protected _fromRaw({ name, members, vaults }: any) {
+        return super._fromRaw({
             name,
             members,
             vaults
@@ -290,9 +290,11 @@ export class Org extends SharedContainer implements Storable {
 
     usedStorage: number = 0;
 
-    toRaw(): any {
+    protected readonly exclude = ["privateKey", "invitesKey"];
+
+    protected _toRaw(version: string | undefined): any {
         return {
-            ...super.toRaw(["privateKey", "invitesKey"]),
+            ...super._toRaw(version),
             publicKey: this.publicKey && bytesToBase64(this.publicKey)
         };
     }
@@ -308,7 +310,7 @@ export class Org extends SharedContainer implements Storable {
         );
     }
 
-    fromRaw({
+    protected _fromRaw({
         id,
         type,
         name,
@@ -351,7 +353,7 @@ export class Org extends SharedContainer implements Storable {
             usedStorage: usedStorage || 0
         });
 
-        return super.fromRaw(rest);
+        return super._fromRaw(rest);
     }
 
     /** Whether the given [[Account]] is an [[OrgRole.Owner]] */

@@ -100,6 +100,9 @@ export class Account extends PBES2Container implements Storable {
 
     usedStorage: number = 0;
 
+    /** Exclude private key and signing key from being serialized */
+    protected readonly exclude = ["privateKey", "signingKey"];
+
     /**
      * Whether or not this Account object is current "locked" or, in other words,
      * whether the `privateKey` and `signingKey` properties have been decrypted.
@@ -166,14 +169,14 @@ export class Account extends PBES2Container implements Storable {
         delete this.signingKey;
     }
 
-    toRaw(): any {
+    protected _toRaw(version: string | undefined): any {
         return {
-            ...super.toRaw(["privateKey", "signingKey"]),
+            ...super._toRaw(version),
             publicKey: bytesToBase64(this.publicKey)
         };
     }
 
-    fromRaw({
+    protected _fromRaw({
         id,
         created,
         updated,
@@ -194,7 +197,7 @@ export class Account extends PBES2Container implements Storable {
             id,
             email,
             name,
-            mainVault: typeof mainVault === "string" ? { id: mainVault } : mainVault,
+            mainVault,
             revision,
             created: new Date(created),
             updated: new Date(updated),
@@ -202,11 +205,11 @@ export class Account extends PBES2Container implements Storable {
             quota: new AccountQuota().fromRaw(quota),
             billingDisabled,
             billing: billing && new BillingInfo().fromRaw(billing),
-            orgs: orgs.map((org: any) => (typeof org === "string" ? { id: org } : org)),
+            orgs,
             sessions: sessions.map((raw: any) => new SessionInfo().fromRaw(raw)),
             usedStorage: usedStorage || 0
         });
-        return super.fromRaw(rest);
+        return super._fromRaw(rest);
     }
 
     clone() {

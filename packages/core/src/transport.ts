@@ -15,9 +15,9 @@ export class Request extends Serializable {
     /** Info about the device the request is coming from */
     device?: DeviceInfo;
 
-    fromRaw({ method, params, auth, device }: any) {
+    protected _fromRaw({ method, params, auth, device }: any) {
         this.device = device && new DeviceInfo().fromRaw(device);
-        return super.fromRaw({ method, params, auth });
+        return super._fromRaw({ method, params, auth });
     }
 
     validate() {
@@ -42,8 +42,8 @@ export class Response extends Serializable {
     /** Data used to authenticate the response */
     auth?: Authentication;
 
-    fromRaw({ result, error, auth }: any) {
-        return super.fromRaw({ result, error, auth });
+    protected _fromRaw({ result, error, auth }: any) {
+        return super._fromRaw({ result, error, auth });
     }
 
     validate() {

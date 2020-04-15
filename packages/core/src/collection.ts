@@ -82,24 +82,23 @@ export class Collection<T extends CollectionItem> extends Serializable implement
         }
     }
 
-    toRaw() {
+    protected _toRaw() {
         return {
             items: Array.from(this),
             changes: [...this._changes]
         };
     }
 
-    fromRaw(raw: any) {
-        for (const item of raw.items) {
+    protected _fromRaw({ items, changes }: any) {
+        for (const item of items) {
             if (!(item.updated instanceof Date)) {
                 item.updated = new Date(item.updated);
             }
         }
-        this._items = new Map(raw.items.map((item: any) => [item.id, item] as [string, T]));
+        this._items = new Map(items.map((item: any) => [item.id, item] as [string, T]));
         this._changes = new Map<string, Date>(
-            raw.changes && raw.changes.map(([id, date]: [string, string]) => [id, new Date(date)])
+            changes && changes.map(([id, date]: [string, string]) => [id, new Date(date)])
         );
-        return this;
     }
 
     [Symbol.iterator]() {

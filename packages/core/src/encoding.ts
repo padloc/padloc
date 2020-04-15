@@ -1,5 +1,6 @@
 import { Err, ErrorCode } from "./error";
 import { toByteArray, fromByteArray, byteLength, isBase64 } from "./base64";
+import { upgrade, downgrade } from "./migrations";
 
 export { bytesToBase32, base32ToBytes } from "./base32";
 
@@ -57,6 +58,8 @@ export class Serializable {
         return this.constructor.name.toLowerCase();
     }
 
+    protected readonly exclude: string[] = [];
+
     /**
      * This is called during deserialization and should verify that all
      * properties have been populated with values of the correct type.
@@ -68,28 +71,12 @@ export class Serializable {
 
     /**
      * Creates a raw javascript object representation of the class, which
-     * can be used for storage or data transmission. The default implementation
-     * simply copies all iterable properties with the exception of property
-     * names passed in the `exclude` parameter. Recursively calls [[toRaw]] for
-     * any properties that are also instances of `Serializable`.
-     * The base implementation should be sufficient for most purposes but
-     * can be overwritten by subclasses for customized behavior.
+     * can be used for storage or data transmission. Also handles "downgrading" to previous
+     * versions. Use [[_toRaw]] for subclass-specific behavior.
      */
-    toRaw(exclude: string[] = []): object {
-        const raw = {} as any;
-        for (const [prop, val] of Object.entries(this)) {
-            if (prop.startsWith("_") || exclude.includes(prop)) {
-                continue;
-            }
-
-            if (val && typeof val === "object" && typeof val.toRaw === "function") {
-                raw[prop] = val.toRaw();
-            } else if (Array.isArray(val)) {
-                raw[prop] = val.map((each: any) => (each instanceof Serializable ? each.toRaw() : each));
-            } else {
-                raw[prop] = val;
-            }
-        }
+    toRaw(version?: string): any {
+        let raw = this._toRaw(version);
+        raw = downgrade(this.kind, raw, version);
         return raw;
     }
 
@@ -99,12 +86,15 @@ export class Serializable {
      * raw object via `Object.assign` so subclasses should explictly process
      * any propertyies that need special treatment.
      *
-     * The base implementation also takes are of validation so subclasses
-     * should either call `super.fromRaw` or take care of validation
-     * themselves.
+     * Also takes are of validation and "upgrading" in case the raw object
+     * has an old version. Use the protected [[_fromRaw]] method to implement
+     * subclass-specific behavior.
      */
     fromRaw(raw: any): this {
-        Object.assign(this, raw);
+        raw = upgrade(this.kind, raw);
+
+        this._fromRaw(raw);
+
         try {
             if (!this.validate()) {
                 console.log("failed to validate", this.kind, raw);
@@ -151,7 +141,49 @@ export class Serializable {
         // @ts-ignore: This causes a typescript warning for some reason but works fine in practice
         return new this.constructor().fromRaw(this.toRaw());
     }
+
+    /**
+     * Transform this object into a raw javascript object used for
+     * serialization.  The default implementation simply copies all iterable
+     * properties not included in the [[exlude]] array and calls [[toRaw]] on
+     * any properties that are themselfes instances of [[Serializable]].  This
+     * method should be overwritten by subclasses if certain properties require
+     * special treatment.
+     */
+    protected _toRaw(version: string | undefined): any {
+        let raw = {} as any;
+
+        for (const [prop, val] of Object.entries(this)) {
+            if (prop.startsWith("_") || prop === "exclude" || this.exclude.includes(prop)) {
+                continue;
+            }
+
+            if (val && typeof val === "object" && typeof val.toRaw === "function") {
+                raw[prop] = val.toRaw(version);
+            } else if (Array.isArray(val)) {
+                raw[prop] = val.map((each: any) => (each instanceof Serializable ? each.toRaw(version) : each));
+            } else {
+                raw[prop] = val;
+            }
+        }
+
+        return raw;
+    }
+
+    /**
+     * Restore values from a raw object. The default implementation simply copies over
+     * all iterable properties from the base object. Overwrite this method for properties
+     * that require special treatment
+     */
+    protected _fromRaw(raw: any) {
+        Object.assign(this, raw);
+    }
 }
+
+/**
+ * Generic type representing the constructor of a class extending [[Serializable]]
+ */
+export type SerializableConstructor = new (...args: any[]) => Serializable;
 
 /**
  * Creates a string from a raw javascript object

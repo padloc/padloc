@@ -238,21 +238,21 @@ export class Invite extends SimpleContainer {
     validate() {
         return (
             super.validate() &&
-            (typeof this.id === "string" &&
-                typeof this.email === "string" &&
-                ["join_org", "confirm_membership"].includes(this.purpose) &&
-                typeof this.org === "object" &&
-                typeof this.org.id === "string" &&
-                typeof this.org.name === "string" &&
-                (!this.invitee || (typeof this.invitee.id === "string" && typeof this.invitee.name === "string")) &&
-                typeof this.invitedBy === "object" &&
-                typeof this.invitedBy.id === "string" &&
-                typeof this.invitedBy.name === "string" &&
-                typeof this.invitedBy.email === "string")
+            typeof this.id === "string" &&
+            typeof this.email === "string" &&
+            ["join_org", "confirm_membership"].includes(this.purpose) &&
+            typeof this.org === "object" &&
+            typeof this.org.id === "string" &&
+            typeof this.org.name === "string" &&
+            (!this.invitee || (typeof this.invitee.id === "string" && typeof this.invitee.name === "string")) &&
+            typeof this.invitedBy === "object" &&
+            typeof this.invitedBy.id === "string" &&
+            typeof this.invitedBy.name === "string" &&
+            typeof this.invitedBy.email === "string"
         );
     }
 
-    fromRaw({
+    protected _fromRaw({
         id,
         created,
         expires,
@@ -286,12 +286,12 @@ export class Invite extends SimpleContainer {
             created: new Date(created),
             expires: new Date(expires)
         });
-        return super.fromRaw(rest);
+        return super._fromRaw(rest);
     }
 
-    toRaw() {
+    protected _toRaw(version: string | undefined) {
         return {
-            ...super.toRaw(),
+            ...super._toRaw(version),
             org: this.org && {
                 ...this.org,
                 publicKey: bytesToBase64(this.org.publicKey),

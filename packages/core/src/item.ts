@@ -466,8 +466,8 @@ export class VaultItemCollection extends Collection<VaultItem> {
         return [...tags];
     }
 
-    fromRaw(raw: any) {
-        return super.fromRaw({
+    protected _fromRaw(raw: any) {
+        return super._fromRaw({
             ...raw,
             items: raw.items.map((item: any) => {
                 return {

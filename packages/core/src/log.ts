@@ -24,8 +24,8 @@ export class Event extends Storable {
         return `${this.time.getTime()}_${this.uuid}`;
     }
 
-    fromRaw({ time, ...rest }: any) {
-        return super.fromRaw({
+    protected _fromRaw({ time, ...rest }: any) {
+        return super._fromRaw({
             time: new Date(time),
             ...rest
         });

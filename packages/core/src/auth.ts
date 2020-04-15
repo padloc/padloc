@@ -31,9 +31,9 @@ export class Auth extends Serializable implements Storable {
         super();
     }
 
-    toRaw() {
+    protected _toRaw(version: string | undefined) {
         return {
-            ...super.toRaw(),
+            ...super._toRaw(version),
             verifier: this.verifier ? bytesToBase64(this.verifier) : undefined
         };
     }
@@ -46,8 +46,8 @@ export class Auth extends Serializable implements Storable {
         );
     }
 
-    fromRaw({ email, account, verifier, keyParams, trustedDevices }: any) {
-        return super.fromRaw({
+    protected _fromRaw({ email, account, verifier, keyParams, trustedDevices }: any) {
+        return super._fromRaw({
             email,
             account,
             verifier: (verifier && base64ToBytes(verifier)) || undefined,
