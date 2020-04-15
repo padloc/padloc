@@ -4,6 +4,7 @@ import { createTransport, Transporter, TransportOptions } from "nodemailer";
 export interface EmailOptions {
     host: string;
     port: string;
+    secure: boolean;
     user: string;
     password: string;
     from?: string;
@@ -16,7 +17,7 @@ export class EmailMessenger implements Messenger {
         this.transporter = createTransport({
             host: opts.host,
             port: opts.port,
-            secure: false,
+            secure: opts.secure,
             auth: {
                 user: opts.user,
                 pass: opts.password

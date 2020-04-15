@@ -73,6 +73,7 @@ For more configuration options, see [Configuration](#configuration)
 | `PL_EMAIL_USER`      | -                                | SMTP user for sending emails.                                                                             |
 | `PL_EMAIL_SERVER`    | -                                | SMTP server for sending emails                                                                            |
 | `PL_EMAIL_PORT`      | -                                | SMTP port for sending emails                                                                              |
+| `PL_EMAIL_SECURE`    | `false`                          | SMTP use secured connection for sending emails                                                            |
 | `PL_EMAIL_PASSWORD`  | -                                | SMTP password for sending email                                                                           |
 | `PL_REPORT_ERRORS`   | -                                | Email address used for reporting unexpected errors in the backend.                                        |
 

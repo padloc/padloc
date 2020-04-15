@@ -32,6 +32,7 @@ async function init() {
     const messenger = new EmailMessenger({
         host: process.env.PL_EMAIL_SERVER || "",
         port: process.env.PL_EMAIL_PORT || "",
+        secure: process.env.PL_EMAIL_SECURE === "true",
         user: process.env.PL_EMAIL_USER || "",
         password: process.env.PL_EMAIL_PASSWORD || "",
         from: process.env.PL_EMAIL_FROM || ""
