@@ -1,4 +1,4 @@
-import { Serializable, stringToBytes, base64ToBytes, bytesToBase64 } from "./encoding";
+import { Serializable, stringToBytes, AsBytes, AsSerializable } from "./encoding";
 import { PBKDF2Params } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
 import { DeviceInfo } from "./platform";
@@ -13,14 +13,17 @@ export class Auth extends Serializable implements Storable {
     account: AccountID = "";
 
     /** Verifier used for SRP session negotiation */
+    @AsBytes()
     verifier?: Uint8Array;
 
     /**
      * Key derivation params used by the client to compute session key from the
      * users master password
      * */
+    @AsSerializable(PBKDF2Params)
     keyParams = new PBKDF2Params();
 
+    @AsSerializable(DeviceInfo)
     trustedDevices: DeviceInfo[] = [];
 
     get id() {
@@ -29,32 +32,6 @@ export class Auth extends Serializable implements Storable {
 
     constructor(public email: string = "") {
         super();
-    }
-
-    protected _toRaw(version: string | undefined) {
-        return {
-            ...super._toRaw(version),
-            verifier: this.verifier ? bytesToBase64(this.verifier) : undefined
-        };
-    }
-
-    validate() {
-        return (
-            typeof this.email === "string" &&
-            typeof this.account === "string" &&
-            (typeof this.verifier === "undefined" || this.verifier instanceof Uint8Array)
-        );
-    }
-
-    protected _fromRaw({ email, account, verifier, keyParams, trustedDevices }: any) {
-        return super._fromRaw({
-            email,
-            account,
-            verifier: (verifier && base64ToBytes(verifier)) || undefined,
-            keyParams: new PBKDF2Params().fromRaw(keyParams),
-            trustedDevices:
-                (trustedDevices && trustedDevices.map((device: any) => new DeviceInfo().fromRaw(device))) || []
-        });
     }
 
     /**

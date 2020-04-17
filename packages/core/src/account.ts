@@ -5,7 +5,11 @@ import {
     bytesToBase64,
     concatBytes,
     marshal,
-    unmarshal
+    unmarshal,
+    AsSerializable,
+    AsBytes,
+    AsDate,
+    Exclude
 } from "./encoding";
 import { RSAPublicKey, RSAPrivateKey, RSAKeyParams, HMACKey, HMACParams, HMACKeyParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
@@ -42,12 +46,15 @@ export class Account extends PBES2Container implements Storable {
     name = "";
 
     /** When the account was created */
+    @AsDate()
     created = new Date();
 
     /** when the account was last updated */
+    @AsDate()
     updated = new Date();
 
     /** The accounts public key */
+    @AsBytes()
     publicKey!: RSAPublicKey;
 
     /**
@@ -57,6 +64,7 @@ export class Account extends PBES2Container implements Storable {
      * **IMPORTANT**: This property is considered **secret**
      * and should never stored or transmitted in plain text
      */
+    @Exclude()
     privateKey!: RSAPrivateKey;
 
     /**
@@ -67,9 +75,11 @@ export class Account extends PBES2Container implements Storable {
      *
      * @secret
      */
+    @Exclude()
     signingKey!: HMACKey;
 
     /** List of currently active sessions */
+    @AsSerializable(SessionInfo)
     sessions: SessionInfo[] = [];
 
     /** ID of the accounts main or "private" [[Vault]]. */
@@ -92,16 +102,15 @@ export class Account extends PBES2Container implements Storable {
      */
     revision: string = "";
 
+    @AsSerializable(AccountQuota)
     quota: AccountQuota = new AccountQuota();
 
     billingDisabled = false;
 
+    @AsSerializable(BillingInfo)
     billing?: BillingInfo;
 
     usedStorage: number = 0;
-
-    /** Exclude private key and signing key from being serialized */
-    protected readonly exclude = ["privateKey", "signingKey"];
 
     /**
      * Whether or not this Account object is current "locked" or, in other words,
@@ -169,49 +178,6 @@ export class Account extends PBES2Container implements Storable {
         delete this.signingKey;
     }
 
-    protected _toRaw(version: string | undefined): any {
-        return {
-            ...super._toRaw(version),
-            publicKey: bytesToBase64(this.publicKey)
-        };
-    }
-
-    protected _fromRaw({
-        id,
-        created,
-        updated,
-        email,
-        name,
-        mainVault,
-        publicKey,
-        orgs,
-        revision,
-        sessions,
-        quota,
-        billingDisabled,
-        billing,
-        usedStorage,
-        ...rest
-    }: any) {
-        Object.assign(this, {
-            id,
-            email,
-            name,
-            mainVault,
-            revision,
-            created: new Date(created),
-            updated: new Date(updated),
-            publicKey: base64ToBytes(publicKey),
-            quota: new AccountQuota().fromRaw(quota),
-            billingDisabled,
-            billing: billing && new BillingInfo().fromRaw(billing),
-            orgs,
-            sessions: sessions.map((raw: any) => new SessionInfo().fromRaw(raw)),
-            usedStorage: usedStorage || 0
-        });
-        return super._fromRaw(rest);
-    }
-
     clone() {
         const clone = super.clone();
         clone.privateKey = this.privateKey;
@@ -264,3 +230,6 @@ export class Account extends PBES2Container implements Storable {
         this.signingKey = base64ToBytes(signingKey);
     }
 }
+
+// @ts-ignore
+typeof window !== "undefined" && (window.Account = Account);

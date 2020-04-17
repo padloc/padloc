@@ -3,6 +3,7 @@ import { Storable } from "./storage";
 import { VaultItemCollection } from "./item";
 import { Account, AccountID } from "./account";
 import { OrgID } from "./org";
+import { Exclude, AsDate } from "./encoding";
 
 /** Unique identifier for [[Vault]] objects */
 export type VaultID = string;
@@ -26,9 +27,11 @@ export class Vault extends SharedContainer implements Storable {
     owner: AccountID = "";
 
     /** Time of creation */
+    @AsDate()
     created = new Date(0);
 
     /** Time of last update */
+    @AsDate()
     updated = new Date(0);
 
     /**
@@ -45,34 +48,8 @@ export class Vault extends SharedContainer implements Storable {
      * **IMPORTANT**: This property is considered **secret**
      * and should never stored or transmitted in plain text
      */
+    @Exclude()
     items = new VaultItemCollection();
-
-    protected readonly exclude = ["items"];
-
-    validate() {
-        return (
-            super.validate() &&
-            typeof this.id === "string" &&
-            typeof this.name === "string" &&
-            (!this.org || (typeof this.org.id === "string" && typeof this.org.name === "string")) &&
-            typeof this.owner === "string" &&
-            typeof this.revision === "string"
-        );
-    }
-
-    fromRaw({ id, name, owner, org, created, updated, archived, revision, ...rest }: any) {
-        Object.assign(this, {
-            id,
-            name,
-            owner,
-            org,
-            revision,
-            created: new Date(created),
-            updated: new Date(updated)
-        });
-
-        return super.fromRaw(rest);
-    }
 
     /**
      * Unlocks the vault with the given `account`, decrypting the data stored in the vault

@@ -6,7 +6,11 @@ import {
     Serializable,
     unmarshal,
     marshal,
-    concatBytes
+    concatBytes,
+    AsSerializable,
+    AsBytes,
+    AsDate,
+    Exclude
 } from "./encoding";
 import { RSAPrivateKey, RSAPublicKey, AESKey, RSAKeyParams, AESKeyParams, RSASigningParams } from "./crypto";
 import { getCryptoProvider as getProvider } from "./platform";
@@ -60,12 +64,15 @@ export class OrgMember extends Serializable {
     email = "";
 
     /** public key of the corresponding [[Account]] */
+    @AsBytes()
     publicKey!: RSAPublicKey;
 
     /** signature used by other members to verify [[id]], [[email]] and [[publicKey]] */
+    @AsBytes()
     signature!: Uint8Array;
 
     /** signature used by the member to verify [[Org.id]] and [[Org.publickey]] of the organization */
+    @AsBytes()
     orgSignature!: Uint8Array;
 
     /** vaults assigned to this member */
@@ -78,49 +85,13 @@ export class OrgMember extends Serializable {
     role: OrgRole = OrgRole.Member;
 
     /** time the member was last updated */
+    @AsDate()
     updated = new Date(0);
 
     constructor({ id, name, email, publicKey, signature, orgSignature, role, updated }: Partial<OrgMember> = {}) {
         super();
         Object.assign(this, { id, name, email, publicKey, signature, orgSignature, updated });
         this.role = typeof role !== "undefined" && role in OrgRole ? role : OrgRole.Member;
-    }
-
-    protected _toRaw(version: string | undefined): any {
-        return {
-            ...super._toRaw(version),
-            publicKey: bytesToBase64(this.publicKey),
-            signature: bytesToBase64(this.signature),
-            orgSignature: bytesToBase64(this.orgSignature)
-        };
-    }
-
-    validate() {
-        return (
-            typeof this.id === "string" &&
-            typeof this.name === "string" &&
-            typeof this.email === "string" &&
-            this.role in OrgRole &&
-            this.updated instanceof Date &&
-            this.publicKey instanceof Uint8Array &&
-            this.signature instanceof Uint8Array &&
-            this.orgSignature instanceof Uint8Array &&
-            this.vaults.every(({ id, readonly }: any) => typeof id === "string" && typeof readonly === "boolean")
-        );
-    }
-
-    protected _fromRaw({ id, name, email, publicKey, signature, orgSignature, role, vaults, updated }: any) {
-        return super._fromRaw({
-            id,
-            name,
-            email,
-            publicKey: base64ToBytes(publicKey),
-            signature: base64ToBytes(signature),
-            orgSignature: base64ToBytes(orgSignature),
-            role,
-            vaults,
-            updated: new Date(updated)
-        });
     }
 }
 
@@ -137,22 +108,6 @@ export class Group extends Serializable {
         id: VaultID;
         readonly: boolean;
     }[] = [];
-
-    validate() {
-        return (
-            typeof this.name === "string" &&
-            this.members.every(({ id }: any) => typeof id === "string") &&
-            this.vaults.every(({ id, readonly }: any) => typeof id === "string" && typeof readonly === "boolean")
-        );
-    }
-
-    protected _fromRaw({ name, members, vaults }: any) {
-        return super._fromRaw({
-            name,
-            members,
-            vaults
-        });
-    }
 }
 
 /** Unique identifier for [[Org]]s */
@@ -219,12 +174,15 @@ export class Org extends SharedContainer implements Storable {
     name: string = "";
 
     /** Creation date */
+    @AsDate()
     created: Date = new Date();
 
     /** Last updated */
+    @AsDate()
     updated: Date = new Date();
 
     /** Public key used for verifying member signatures */
+    @AsBytes()
     publicKey!: RSAPublicKey;
 
     /**
@@ -234,6 +192,7 @@ export class Org extends SharedContainer implements Storable {
      * **IMPORTANT**: This property is considered **secret**
      * and should never stored or transmitted in plain text
      */
+    @Exclude()
     privateKey!: RSAPrivateKey;
 
     /**
@@ -243,6 +202,7 @@ export class Org extends SharedContainer implements Storable {
      * **IMPORTANT**: This property is considered **secret**
      * and should never stored or transmitted in plain text
      */
+    @Exclude()
     invitesKey!: AESKey;
 
     /**
@@ -254,21 +214,26 @@ export class Org extends SharedContainer implements Storable {
      * clients should verify that updated organization object always have a
      * [[Org.minMemberUpdated]] value equal to or higher than the previous one.
      */
+    @AsDate()
     minMemberUpdated: Date = new Date();
 
     /** Parameters for creating member signatures */
+    @AsSerializable(RSASigningParams)
     signingParams = new RSASigningParams();
 
     /** Array of organization members */
+    @AsSerializable(OrgMember)
     members: OrgMember[] = [];
 
     /** This organizations [[Group]]s. */
+    @AsSerializable(Group)
     groups: Group[] = [];
 
     /** Shared [[Vault]]s owned by this organization */
     vaults: { id: VaultID; name: string; revision?: string }[] = [];
 
     /** Pending [[Invite]]s */
+    @AsSerializable(Invite)
     invites: Invite[] = [];
 
     /**
@@ -284,77 +249,13 @@ export class Org extends SharedContainer implements Storable {
      */
     frozen = false;
 
+    @AsSerializable(OrgQuota)
     quota: OrgQuota = new OrgQuota();
 
+    @AsSerializable(BillingInfo)
     billing?: BillingInfo;
 
     usedStorage: number = 0;
-
-    protected readonly exclude = ["privateKey", "invitesKey"];
-
-    protected _toRaw(version: string | undefined): any {
-        return {
-            ...super._toRaw(version),
-            publicKey: this.publicKey && bytesToBase64(this.publicKey)
-        };
-    }
-
-    validate() {
-        return (
-            super.validate() &&
-            typeof this.name === "string" &&
-            typeof this.revision === "string" &&
-            typeof this.id === "string" &&
-            this.minMemberUpdated instanceof Date &&
-            this.vaults.every(({ id, name }: any) => typeof id === "string" && typeof name === "string")
-        );
-    }
-
-    protected _fromRaw({
-        id,
-        type,
-        name,
-        owner,
-        created,
-        updated,
-        revision,
-        minMemberUpdated,
-        publicKey,
-        members,
-        groups,
-        vaults,
-        invites,
-        signingParams,
-        frozen,
-        quota,
-        billing,
-        usedStorage,
-        ...rest
-    }: any) {
-        this.signingParams.fromRaw(signingParams);
-        quota && this.quota.fromRaw(quota);
-
-        Object.assign(this, {
-            id,
-            type,
-            name,
-            owner,
-            revision,
-            frozen,
-            created: (created && new Date(created)) || new Date(),
-            updated: (updated && new Date(updated)) || new Date(),
-            minMemberUpdated: new Date(minMemberUpdated),
-            publicKey: publicKey && base64ToBytes(publicKey),
-            members: members.map((m: any) => new OrgMember().fromRaw(m)),
-            groups: groups.map((g: any) => new Group().fromRaw(g)),
-            invites: invites.map((g: any) => new Invite().fromRaw(g)),
-            vaults,
-            billing: billing && new BillingInfo().fromRaw(billing),
-            usedStorage: usedStorage || 0
-        });
-
-        return super._fromRaw(rest);
-    }
 
     /** Whether the given [[Account]] is an [[OrgRole.Owner]] */
     isOwner(m: { id: AccountID }) {

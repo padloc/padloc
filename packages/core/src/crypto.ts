@@ -1,4 +1,4 @@
-import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
+import { Serializable, AsBytes } from "./encoding";
 
 // Default number of pbkdf2 iterations
 export const PBKDF2_ITER_DEFAULT = 5e4;
@@ -15,16 +15,12 @@ export class AESEncryptionParams extends Serializable {
     algorithm: "AES-GCM" | "AES-CCM" = "AES-GCM";
     tagSize: 64 | 96 | 128 = 128;
     keySize: 256 = 256;
-    iv: Uint8Array = new Uint8Array();
-    additionalData = new Uint8Array();
 
-    _toRaw(version: string | undefined) {
-        return {
-            ...super._toRaw(version),
-            iv: bytesToBase64(this.iv),
-            additionalData: bytesToBase64(this.additionalData)
-        };
-    }
+    @AsBytes()
+    iv: Uint8Array = new Uint8Array();
+
+    @AsBytes()
+    additionalData = new Uint8Array();
 
     validate() {
         return (
@@ -33,16 +29,6 @@ export class AESEncryptionParams extends Serializable {
             [256].includes(this.keySize)
         );
     }
-
-    _fromRaw({ algorithm, tagSize, keySize, iv, additionalData }: any) {
-        return super._fromRaw({
-            algorithm,
-            tagSize,
-            keySize,
-            iv: base64ToBytes(iv),
-            additionalData: base64ToBytes(additionalData)
-        });
-    }
 }
 
 export class AESKeyParams extends Serializable {
@@ -50,7 +36,7 @@ export class AESKeyParams extends Serializable {
     keySize: 256 = 256;
 
     validate() {
-        return this.algorithm !== "AES" && this.keySize !== 256;
+        return this.algorithm === "AES" && this.keySize === 256;
     }
 }
 
@@ -66,15 +52,10 @@ export class HMACKeyParams extends Serializable {
 export class RSAKeyParams extends Serializable {
     algorithm: "RSA" = "RSA";
     modulusLength: 2048 = 2048;
-    publicExponent: Uint8Array = new Uint8Array([0x01, 0x00, 0x01]);
     hash: "SHA-256" = "SHA-256";
 
-    _toRaw(version: string | undefined) {
-        return {
-            ...super._toRaw(version),
-            publicExponent: bytesToBase64(this.publicExponent)
-        };
-    }
+    @AsBytes()
+    publicExponent: Uint8Array = new Uint8Array([0x01, 0x00, 0x01]);
 
     validate() {
         return (
@@ -84,10 +65,6 @@ export class RSAKeyParams extends Serializable {
             this.publicExponent instanceof Uint8Array
         );
     }
-
-    _fromRaw({ algorithm, modulusLength, publicExponent, hash }: any) {
-        return super._fromRaw({ algorithm, modulusLength, publicExponent: base64ToBytes(publicExponent), hash });
-    }
 }
 
 export class PBKDF2Params extends Serializable {
@@ -95,18 +72,13 @@ export class PBKDF2Params extends Serializable {
     hash: "SHA-256" = "SHA-256";
     keySize: 256 = 256;
     iterations: number = PBKDF2_ITER_DEFAULT;
+
+    @AsBytes()
     salt: Uint8Array = new Uint8Array();
 
     constructor(props?: Partial<PBKDF2Params>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    _toRaw(version: string | undefined) {
-        return {
-            ...super._toRaw(version),
-            salt: bytesToBase64(this.salt)
-        };
     }
 
     validate() {
@@ -118,10 +90,6 @@ export class PBKDF2Params extends Serializable {
             this.iterations < PBKDF2_ITER_MAX &&
             this.salt instanceof Uint8Array
         );
-    }
-
-    _fromRaw({ algorithm, hash, keySize, iterations, salt }: any) {
-        return super._fromRaw({ algorithm, hash, keySize, iterations, salt: base64ToBytes(salt) });
     }
 }
 

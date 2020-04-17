@@ -1,6 +1,6 @@
 import { loadLanguage } from "@padloc/locale/src/translate";
 import { Storage, Storable } from "./storage";
-import { Serializable, bytesToBase64, base64ToBytes, stringToBytes } from "./encoding";
+import { Serializable, AsDate, AsSerializable, bytesToBase64, base64ToBytes, stringToBytes } from "./encoding";
 import { Invite, InvitePurpose } from "./invite";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID, OrgType, OrgMember, OrgRole, Group } from "./org";
@@ -46,13 +46,8 @@ import { AESKeyParams, PBKDF2Params } from "./crypto";
 /** Various usage stats */
 export class Stats extends Serializable {
     /** Time of last sync */
+    @AsDate()
     lastSync?: Date;
-
-    protected _fromRaw({ lastSync }: any) {
-        Object.assign(this, {
-            lastSync: new Date(lastSync)
-        });
-    }
 }
 
 /** Various application settings */
@@ -72,13 +67,10 @@ export interface HashedItem {
 }
 
 export class Index extends Serializable {
+    @AsSerializable(PBKDF2Params)
     hashParams = new PBKDF2Params({ iterations: 1 });
-    items: HashedItem[] = [];
 
-    protected _fromRaw({ hashParams, ...rest }: any) {
-        this.hashParams.fromRaw(hashParams);
-        return super._fromRaw(rest);
-    }
+    items: HashedItem[] = [];
 
     async fromItems(items: VaultItem[]) {
         const crypto = getCryptoProvider();
@@ -144,24 +136,31 @@ export class AppState extends Storable {
     id = "app-state";
 
     /** Application Settings */
+    @AsSerializable(Settings)
     settings = new Settings();
 
-    /** Usage datra */
+    /** Usage data */
+    @AsSerializable(Stats)
     stats = new Stats();
 
     /** Info about current device */
+    @AsSerializable(DeviceInfo)
     device = new DeviceInfo();
 
     /** Current [[Session]] */
+    @AsSerializable(Session)
     session: Session | null = null;
 
     /** Currently logged in [[Account]] */
+    @AsSerializable(Account)
     account: Account | null = null;
 
     /** All organizations the current [[account]] is a member of. */
+    @AsSerializable(Org)
     orgs: Org[] = [];
 
     /** All vaults the current [[account]] has access to. */
+    @AsSerializable(Vault)
     vaults: Vault[] = [];
 
     /** Whether a sync is currently in process. */
@@ -170,13 +169,16 @@ export class AppState extends Storable {
     /** Whether the app has an internet connection at the moment */
     online = true;
 
+    @AsSerializable(SimpleContainer)
     rememberedMasterKey: SimpleContainer | null = null;
 
+    @AsSerializable(BillingProviderInfo)
     billingProvider: BillingProviderInfo | null = null;
 
     currentHost: string = "";
 
-    index = new Index();
+    @AsSerializable(Index)
+    index: Index = new Index();
 
     _errors: Err[] = [];
 
@@ -207,32 +209,6 @@ export class AppState extends Storable {
     /** Whether a user is logged in */
     get loggedIn() {
         return !!this.session;
-    }
-
-    protected _fromRaw({
-        settings,
-        stats,
-        device,
-        session,
-        account,
-        orgs,
-        vaults,
-        rememberedMasterKey,
-        billingProvider,
-        index
-    }: any) {
-        this.settings.fromRaw(settings);
-        this.stats.fromRaw(stats);
-        this.device.fromRaw(device);
-        this.session = (session && new Session().fromRaw(session)) || null;
-        this.account = (account && new Account().fromRaw(account)) || null;
-        this.orgs = orgs.map((org: any) => new Org().fromRaw(org));
-        this.vaults = vaults.map((vault: any) => new Vault().fromRaw(vault));
-        this.rememberedMasterKey = rememberedMasterKey && new SimpleContainer().fromRaw(rememberedMasterKey);
-        this.billingProvider = billingProvider && new BillingProviderInfo().fromRaw(billingProvider);
-        if (index) {
-            this.index.fromRaw(index);
-        }
     }
 }
 

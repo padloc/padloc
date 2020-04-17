@@ -4,6 +4,73 @@ import { upgrade, downgrade } from "./migrations";
 
 export { bytesToBase32, base32ToBytes } from "./base32";
 
+export interface SerializationOptions {
+    property: string;
+    toProperty: string;
+    exclude: boolean;
+    fromRaw: (raw: any) => any;
+    toRaw: (val: any, version?: string) => any;
+}
+
+function registerSerializationOptions(proto: Serializable, property: string, opts: Partial<SerializationOptions>) {
+    if (!proto.hasOwnProperty("_propertySerializationOptions")) {
+        const parentOptions = proto._propertySerializationOptions || [];
+        proto._propertySerializationOptions = parentOptions ? [...parentOptions] : [];
+    }
+
+    // proto._propertySerializationOptions = proto._propertySerializationOptions.filter(o => o.property === property);
+
+    proto._propertySerializationOptions.unshift(
+        Object.assign(
+            {
+                property,
+                toProperty: property,
+                exclude: false,
+                toRaw: () => {},
+                fromRaw: () => {}
+            },
+            opts
+        )
+    );
+}
+
+/**
+ * Decorator for defining request handler methods
+ */
+export function AsSerializable(cls: SerializableConstructor, toProperty?: string) {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            toProperty: toProperty || prop,
+            toRaw: (val: Serializable, version?: string) => val.toRaw(version),
+            fromRaw: (raw: any) => new cls().fromRaw(raw)
+        });
+}
+
+export function AsBytes(toProperty?: string) {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            toProperty: toProperty || prop,
+            toRaw: (val: any) => bytesToBase64(val),
+            fromRaw: (raw: any) => base64ToBytes(raw)
+        });
+}
+
+export function AsDate(toProperty?: string) {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            toProperty: toProperty || prop,
+            toRaw: (val: Date) => val.toISOString(),
+            fromRaw: (raw: string) => new Date(raw)
+        });
+}
+
+export function Exclude() {
+    return (proto: Serializable, prop: string) =>
+        registerSerializationOptions(proto, prop, {
+            exclude: true
+        });
+}
+
 /**
  * Base class for "serializable" classes, i.e. classes that can be serialized
  * into a plain javascript object, JSON string or byte sequence which can be
@@ -58,7 +125,7 @@ export class Serializable {
         return this.constructor.name.toLowerCase();
     }
 
-    protected readonly exclude: string[] = [];
+    _propertySerializationOptions!: SerializationOptions[];
 
     /**
      * This is called during deserialization and should verify that all
@@ -76,6 +143,7 @@ export class Serializable {
      */
     toRaw(version?: string): any {
         let raw = this._toRaw(version);
+        raw.kind = this.kind;
         raw = downgrade(this.kind, raw, version);
         return raw;
     }
@@ -91,6 +159,7 @@ export class Serializable {
      * subclass-specific behavior.
      */
     fromRaw(raw: any): this {
+        // raw.kind = raw.kind || this.kind;
         raw = upgrade(this.kind, raw);
 
         this._fromRaw(raw);
@@ -154,11 +223,17 @@ export class Serializable {
         let raw = {} as any;
 
         for (const [prop, val] of Object.entries(this)) {
-            if (prop.startsWith("_") || prop === "exclude" || this.exclude.includes(prop)) {
+            const opts =
+                this._propertySerializationOptions &&
+                this._propertySerializationOptions.find(opts => opts.property === prop);
+
+            if (prop.startsWith("_") || (opts && opts.exclude)) {
                 continue;
             }
 
-            if (val && typeof val === "object" && typeof val.toRaw === "function") {
+            if (opts && typeof val !== "undefined" && val !== null) {
+                raw[opts.property] = Array.isArray(val) ? val.map(v => opts.toRaw(v)) : opts.toRaw(val);
+            } else if (val && typeof val === "object" && typeof val.toRaw === "function") {
                 raw[prop] = val.toRaw(version);
             } else if (Array.isArray(val)) {
                 raw[prop] = val.map((each: any) => (each instanceof Serializable ? each.toRaw(version) : each));
@@ -176,7 +251,21 @@ export class Serializable {
      * that require special treatment
      */
     protected _fromRaw(raw: any) {
-        Object.assign(this, raw);
+        for (const [prop, val] of Object.entries(raw)) {
+            if (prop === "kind") {
+                return;
+            }
+
+            const opts =
+                this._propertySerializationOptions &&
+                this._propertySerializationOptions.find(opts => opts.toProperty === prop);
+
+            if (opts && typeof val !== "undefined" && val !== null) {
+                this[opts.property] = Array.isArray(val) ? val.map(v => opts.fromRaw(v)) : opts.fromRaw(val);
+            } else {
+                this[prop] = val;
+            }
+        }
     }
 }
 

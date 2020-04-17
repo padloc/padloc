@@ -1,72 +1,56 @@
-import { Serializable } from "./encoding";
+import { Serializable, AsSerializable, AsDate, AsBytes } from "./encoding";
 import { Server } from "./server";
 import { DeviceInfo } from "./platform";
 import { EventEmitter } from "./event-target";
 import { wait } from "./util";
+
+/** Authentication data */
+export class RequestAuthentication extends Serializable {
+    /** The id of the [[Session]] used for authentication */
+    session: string = "";
+    /** A time stamp of the request/response time */
+
+    @AsDate()
+    time!: Date;
+
+    /** The signature used to verify the authentiation */
+    @AsBytes()
+    signature!: Uint8Array;
+
+    constructor(vals: Partial<RequestAuthentication> = {}) {
+        super();
+        Object.assign(this, vals);
+    }
+}
 
 /** RPC request object */
 export class Request extends Serializable {
     /** Name of the method call */
     method: string = "";
     /** Arguments for the method */
+
     params?: any[];
+
     /** Data used to authenticate the request */
-    auth?: Authentication;
+    @AsSerializable(RequestAuthentication)
+    auth?: RequestAuthentication;
+
     /** Info about the device the request is coming from */
+    @AsSerializable(DeviceInfo)
     device?: DeviceInfo;
-
-    protected _fromRaw({ method, params, auth, device }: any) {
-        this.device = device && new DeviceInfo().fromRaw(device);
-        return super._fromRaw({ method, params, auth });
-    }
-
-    validate() {
-        const { method, params, auth, device } = this;
-        return (
-            typeof method === "string" && (typeof params === "undefined" || Array.isArray(params)),
-            (typeof auth === "undefined" ||
-                (typeof auth.session === "string" &&
-                    typeof auth.time === "string" &&
-                    typeof auth.signature === "string")) &&
-                (typeof device === "undefined" || device instanceof DeviceInfo)
-        );
-    }
 }
 
 /** RPC response object */
 export class Response extends Serializable {
     /** The result of the RPC call */
     result: any = null;
+
     /** Error info, if an error occurred while processing the request */
     error?: Error;
+
     /** Data used to authenticate the response */
-    auth?: Authentication;
-
-    protected _fromRaw({ result, error, auth }: any) {
-        return super._fromRaw({ result, error, auth });
-    }
-
-    validate() {
-        const { error, auth } = this;
-        return (
-            (typeof error === "undefined" ||
-                (["string", "number"].includes(typeof error.code) && typeof error.message === "string")) &&
-            (typeof auth === "undefined" ||
-                (typeof auth.session === "string" &&
-                    typeof auth.time === "string" &&
-                    typeof auth.signature === "string"))
-        );
-    }
-}
-
-/** Authentication data */
-export interface Authentication {
-    /** The id of the [[Session]] used for authentication */
-    session: string;
-    /** A time stamp of the request/response time */
-    time: string;
-    /** The signature used to verify the authentiation */
-    signature: string;
+    @AsSerializable(RequestAuthentication)
+    auth?: RequestAuthentication;
 }
 
 /** Error info */

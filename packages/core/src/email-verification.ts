@@ -1,4 +1,4 @@
-import { Serializable, bytesToBase64 } from "./encoding";
+import { Serializable, bytesToBase64, AsDate } from "./encoding";
 import { getCryptoProvider as getProvider } from "./platform";
 import { Storable } from "./storage";
 import { randomNumber } from "./util";
@@ -16,6 +16,7 @@ export enum EmailVerificationPurpose {
  */
 export class EmailVerification extends Serializable implements Storable {
     /** Time of creation */
+    @AsDate()
     created = new Date();
 
     /**
@@ -54,23 +55,5 @@ export class EmailVerification extends Serializable implements Storable {
         // Create random 16-byte verification token
         this.token = bytesToBase64(await getProvider().randomBytes(16));
         this.tries = 0;
-    }
-
-    validate() {
-        return (
-            typeof this.email === "string" &&
-            typeof this.code === "string" &&
-            typeof this.token === "string" &&
-            this.purpose in EmailVerificationPurpose &&
-            typeof this.tries === "number" &&
-            this.created instanceof Date
-        );
-    }
-
-    protected _fromRaw({ created, ...rest }: any) {
-        return super._fromRaw({
-            created: new Date(created),
-            ...rest
-        });
     }
 }

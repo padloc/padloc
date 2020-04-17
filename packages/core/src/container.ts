@@ -1,4 +1,4 @@
-import { Serializable, stringToBytes, base64ToBytes, bytesToBase64 } from "./encoding";
+import { Serializable, stringToBytes, AsBytes, AsSerializable } from "./encoding";
 import { Err, ErrorCode } from "./error";
 import {
     PBKDF2Params,
@@ -20,9 +20,11 @@ import { getCryptoProvider as getProvider } from "./platform";
  */
 export abstract class BaseContainer extends Serializable {
     /** Parameters used for encryption of content data */
+    @AsSerializable(AESEncryptionParams)
     encryptionParams: AESEncryptionParams = new AESEncryptionParams();
 
     /** Encrypted data */
+    @AsBytes()
     encryptedData?: Uint8Array;
 
     /**
@@ -80,24 +82,6 @@ export abstract class BaseContainer extends Serializable {
         delete this._key;
     }
 
-    protected _toRaw(version: string | undefined) {
-        return {
-            ...super._toRaw(version),
-            encryptedData: this.encryptedData ? bytesToBase64(this.encryptedData) : undefined
-        };
-    }
-
-    validate() {
-        return typeof this.encryptedData === "undefined" || this.encryptedData instanceof Uint8Array;
-    }
-
-    protected _fromRaw({ encryptionParams, encryptedData }: any) {
-        this.encryptionParams.fromRaw(encryptionParams);
-        return super._fromRaw({
-            encryptedData: encryptedData ? base64ToBytes(encryptedData) : undefined
-        });
-    }
-
     clone() {
         const clone = super.clone();
         clone._key = this._key;
@@ -122,6 +106,7 @@ export class SimpleContainer extends BaseContainer {
  */
 export class PBES2Container extends BaseContainer {
     /** Parameters used for key derivation */
+    @AsSerializable(PBKDF2Params)
     keyParams: PBKDF2Params = new PBKDF2Params();
 
     /**
@@ -132,11 +117,6 @@ export class PBES2Container extends BaseContainer {
             this.keyParams.salt = await getProvider().randomBytes(16);
         }
         this._key = await getProvider().deriveKey(stringToBytes(password), this.keyParams);
-    }
-
-    protected _fromRaw({ keyParams, ...rest }: any) {
-        this.keyParams.fromRaw(keyParams);
-        return super._fromRaw(rest);
     }
 }
 
@@ -151,22 +131,8 @@ export class Accessor extends Serializable {
     id: string = "";
 
     /** Shared key encrypted with the public key of the entity associated with the `Accessor` object */
+    @AsBytes()
     encryptedKey: Uint8Array = new Uint8Array();
-
-    protected _toRaw() {
-        return {
-            id: this.id,
-            encryptedKey: bytesToBase64(this.encryptedKey)
-        };
-    }
-
-    validate() {
-        return typeof this.id === "string" && this.encryptedKey instanceof Uint8Array;
-    }
-
-    protected _fromRaw({ id, encryptedKey }: any) {
-        return super._fromRaw({ id, encryptedKey: base64ToBytes(encryptedKey) });
-    }
 }
 
 /**
@@ -179,9 +145,11 @@ export class Accessor extends Serializable {
  */
 export class SharedContainer extends BaseContainer {
     /** Parameters used to wrap the shared encryption key */
+    @AsSerializable(RSAEncryptionParams)
     keyParams: RSAEncryptionParams = new RSAEncryptionParams();
 
     /** The ids and encrypted keys of all accessors */
+    @AsSerializable(Accessor)
     accessors: Accessor[] = [];
 
     /**
@@ -241,11 +209,5 @@ export class SharedContainer extends BaseContainer {
                 return accessor;
             })
         );
-    }
-
-    protected _fromRaw({ keyParams, accessors, ...rest }: any) {
-        this.keyParams.fromRaw(keyParams);
-        this.accessors = accessors.map((a: any) => new Accessor().fromRaw(a));
-        return super._fromRaw(rest);
     }
 }

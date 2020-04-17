@@ -51,7 +51,7 @@ export function upgrade(kind: string, raw: any, version: string = LATEST_VERSION
         const transform = migration.transforms[kind];
         raw = transform ? transform.up(raw) : raw;
         raw.version = migration.to;
-        return upgrade(kind, raw, version);
+        return upgrade(raw, version);
     } else {
         raw.version = version;
         return raw;
@@ -67,7 +67,7 @@ export function downgrade(kind: string, raw: any, version: string = LATEST_VERSI
         const transform = migration.transforms[kind];
         raw = transform ? transform.down(raw) : raw;
         raw.version = migration.from;
-        return downgrade(kind, raw, version);
+        return downgrade(raw, version);
     } else {
         raw.version = version;
         return raw;

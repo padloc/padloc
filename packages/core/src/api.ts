@@ -5,7 +5,7 @@ import { EmailVerificationPurpose } from "./email-verification";
 import { Vault, VaultID } from "./vault";
 import { Org, OrgID } from "./org";
 import { Invite, InviteID } from "./invite";
-import { Serializable, bytesToBase64, base64ToBytes } from "./encoding";
+import { Serializable, SerializableConstructor, AsBytes, AsSerializable } from "./encoding";
 import { Attachment, AttachmentID } from "./attachment";
 import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
@@ -15,12 +15,14 @@ import { PBKDF2Params } from "./crypto";
  */
 export class CreateAccountParams extends Serializable {
     /** The [[Account]] object containing the relevant information */
+    @AsSerializable(Account)
     account!: Account;
 
     /**
      * An [[Auth]] object container the verifier and authentication params
      * required for subsequent authentication
      */
+    @AsSerializable(Auth)
     auth!: Auth;
 
     /**
@@ -43,25 +45,6 @@ export class CreateAccountParams extends Serializable {
         super();
         props && Object.assign(this, props);
     }
-
-    validate() {
-        return (
-            typeof this.verify === "string" &&
-            (typeof this.invite === "undefined" ||
-                (typeof this.invite === "object" &&
-                    typeof this.invite.id === "string" &&
-                    typeof this.invite.org === "string"))
-        );
-    }
-
-    protected _fromRaw({ account, auth, verify, invite }: any) {
-        return super._fromRaw({
-            verify,
-            invite,
-            account: account && new Account().fromRaw(account),
-            auth: auth && new Auth().fromRaw(auth)
-        });
-    }
 }
 
 /**
@@ -69,9 +52,11 @@ export class CreateAccountParams extends Serializable {
  */
 export class RecoverAccountParams extends Serializable {
     /** The newly initialized [[Account]] object */
+    @AsSerializable(Account)
     account!: Account;
 
     /** The new authentication parameters */
+    @AsSerializable(Auth)
     auth!: Auth;
 
     /** An email verification token obtained from [[API.completeEmailVerification]] */
@@ -80,14 +65,6 @@ export class RecoverAccountParams extends Serializable {
     constructor(props?: Partial<RecoverAccountParams>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    validate() {
-        return typeof this.verify === "string";
-    }
-
-    protected _fromRaw({ account, auth, verify }: any) {
-        return super._fromRaw({ verify, account: new Account().fromRaw(account), auth: new Auth().fromRaw(auth) });
     }
 }
 
@@ -105,10 +82,6 @@ export class RequestEmailVerificationParams extends Serializable {
         super();
         props && Object.assign(this, props);
     }
-
-    validate() {
-        return typeof this.email === "string" && this.purpose in EmailVerificationPurpose;
-    }
 }
 
 /**
@@ -124,10 +97,6 @@ export class CompleteEmailVerificationParams extends Serializable {
     constructor(props?: Partial<CompleteEmailVerificationParams>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    validate() {
-        return typeof this.email === "string" || typeof this.code === "string";
     }
 }
 
@@ -147,12 +116,6 @@ export class InitAuthParams extends Serializable {
         super();
         props && Object.assign(this, props);
     }
-
-    validate() {
-        return (
-            typeof this.email === "string" && (typeof this.verify === "string" || typeof this.verify === "undefined")
-        );
-    }
 }
 
 /**
@@ -163,29 +126,16 @@ export class InitAuthResponse extends Serializable {
     account: AccountID = "";
 
     /** The key derivation parameters used for authentication */
+    @AsSerializable(PBKDF2Params)
     keyParams: PBKDF2Params = new PBKDF2Params();
 
     /** A random value used for SRP session negotiation */
+    @AsBytes()
     B!: Uint8Array;
 
     constructor(props?: Partial<InitAuthResponse>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    protected _fromRaw({ account, keyParams, B }: any) {
-        return super._fromRaw({
-            account,
-            keyParams: new PBKDF2Params().fromRaw(keyParams),
-            B: base64ToBytes(B)
-        });
-    }
-
-    protected _toRaw(version: string | undefined) {
-        return {
-            ...super._toRaw(version),
-            B: bytesToBase64(this.B)
-        };
     }
 }
 
@@ -197,30 +147,16 @@ export class CreateSessionParams extends Serializable {
     account!: AccountID;
 
     /** Verification value used for SRP session negotiation */
+    @AsBytes()
     M!: Uint8Array;
 
     /** Random value used form SRP session negotiation */
+    @AsBytes()
     A!: Uint8Array;
 
     constructor(props?: Partial<CreateSessionParams>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    validate() {
-        return typeof this.account === "string";
-    }
-
-    protected _toRaw() {
-        return {
-            account: this.account,
-            M: bytesToBase64(this.M),
-            A: bytesToBase64(this.A)
-        };
-    }
-
-    protected _fromRaw({ account, M, A }: any) {
-        return super._fromRaw({ account, M: base64ToBytes(M), A: base64ToBytes(A) });
     }
 }
 
@@ -238,10 +174,6 @@ export class GetInviteParams extends Serializable {
         super();
         props && Object.assign(this, props);
     }
-
-    validate() {
-        return typeof this.org === "string" && typeof this.id === "string";
-    }
 }
 
 /**
@@ -257,10 +189,6 @@ export class GetAttachmentParams extends Serializable {
     constructor(props?: Partial<GetAttachmentParams>) {
         super();
         props && Object.assign(this, props);
-    }
-
-    validate() {
-        return typeof this.vault === "string" && typeof this.id === "string";
     }
 }
 

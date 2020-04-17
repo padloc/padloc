@@ -1,3 +1,4 @@
+import { AsDate } from "./encoding";
 import { Storage, Storable } from "./storage";
 
 /**
@@ -13,6 +14,7 @@ function uuid() {
 }
 
 export class Event extends Storable {
+    @AsDate()
     time: Date = new Date();
     uuid: string = "";
 
@@ -22,13 +24,6 @@ export class Event extends Storable {
 
     get id() {
         return `${this.time.getTime()}_${this.uuid}`;
-    }
-
-    protected _fromRaw({ time, ...rest }: any) {
-        return super._fromRaw({
-            time: new Date(time),
-            ...rest
-        });
     }
 }
 
