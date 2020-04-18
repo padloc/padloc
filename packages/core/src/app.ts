@@ -1604,23 +1604,38 @@ export class App {
     async createAttachment(itemId: VaultItemID, file: File, name?: string): Promise<Attachment> {
         const { vault, item } = this.getItem(itemId)!;
 
-        let att = new Attachment({ vault: vault.id });
+        const att = new Attachment({ vault: vault.id });
         await att.fromFile(file);
         if (name) {
             att.name = name;
         }
-        att = await this.api.createAttachment(att);
 
-        (async () => {
-            await att.uploadProgress!.completed;
+        const promise = this.api.createAttachment(att);
+
+        att.uploadProgress = promise.progress;
+
+        promise.then(id => {
+            att.id = id;
             this.updateItem(item, { attachments: [...item.attachments, att.info] });
-        })();
+            promise.progress!.complete();
+        });
 
         return att;
     }
 
     async downloadAttachment(att: AttachmentInfo) {
-        return this.api.getAttachment(new GetAttachmentParams(att));
+        const attachment = new Attachment(att);
+
+        const promise = this.api.getAttachment(new GetAttachmentParams(att));
+
+        attachment.downloadProgress = promise.progress;
+
+        promise.then(att => {
+            attachment.fromRaw(att.toRaw());
+            promise.progress!.complete();
+        });
+
+        return attachment;
     }
 
     async deleteAttachment(itemId: VaultItemID, att: Attachment | AttachmentInfo): Promise<void> {

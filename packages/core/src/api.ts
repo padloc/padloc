@@ -9,6 +9,7 @@ import { Serializable, SerializableConstructor, AsBytes, AsSerializable } from "
 import { Attachment, AttachmentID } from "./attachment";
 import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
+import { RequestProgress } from "./transport";
 
 /**
  * Api parameters for creating a new Account to be used with [[API.createAccount]].
@@ -194,82 +195,147 @@ export class GetAttachmentParams extends Serializable {
 
 export class DeleteAttachmentParams extends GetAttachmentParams {}
 
+interface HandlerDefinition {
+    method: string;
+    input?: SerializableConstructor;
+    output?: SerializableConstructor;
+}
+
+/**
+ * Decorator for defining request handler methods
+ */
+function Handler(
+    input: SerializableConstructor | StringConstructor | undefined,
+    output: SerializableConstructor | StringConstructor | undefined
+) {
+    return (proto: API, method: string) => {
+        if (!proto.handlerDefinitions) {
+            proto.handlerDefinitions = [];
+        }
+        proto.handlerDefinitions.push({
+            method,
+            input: input === String ? undefined : (input as SerializableConstructor | undefined),
+            output: output === String ? undefined : (output as SerializableConstructor | undefined)
+        });
+    };
+}
+
+export type PromiseWithProgress<T> = Promise<T> & { progress?: RequestProgress };
+
 /**
  * Transport-agnostic interface defining communication
  * between [[Client]] and [[Server]] instances.
  */
-export interface API {
+export class API {
+    handlerDefinitions!: HandlerDefinition[];
+
     /**
      * Request verification of a given email address. This will send a verification code
      * to the email in question which can then be exchanged for a verification token via
      * [[completeEmailVerification]].
      */
-    requestEmailVerification(params: RequestEmailVerificationParams): Promise<void>;
+    @Handler(RequestEmailVerificationParams, undefined)
+    requestEmailVerification(_params: RequestEmailVerificationParams): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Complete the email verification process by providing a verification code received
      * via email. Returns a verification token that can be used in other api calls like
      * [[createAccount]] or [[recoverAccount]].
      */
-    completeEmailVerification(params: CompleteEmailVerificationParams): Promise<string>;
+    @Handler(CompleteEmailVerificationParams, String)
+    completeEmailVerification(_params: CompleteEmailVerificationParams): PromiseWithProgress<string> {
+        throw "Not implemented";
+    }
 
     /**
      * Initiate the login procedure for a given account by requesting the authentication params
      * which are required for proceeding with [[createSession]].
      */
-    initAuth(params: InitAuthParams): Promise<InitAuthResponse>;
+    @Handler(InitAuthParams, InitAuthResponse)
+    initAuth(_params: InitAuthParams): PromiseWithProgress<InitAuthResponse> {
+        throw "Not implemented";
+    }
 
     /**
      * Update the authentication params stored on the server. This is usually used
      * in case a users master password has changed.
      */
-    updateAuth(params: Auth): Promise<void>;
+    @Handler(Auth, undefined)
+    updateAuth(_params: Auth): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Create new [[Session]] which can be used to authenticate future request
      */
-    createSession(params: CreateSessionParams): Promise<Session>;
+    @Handler(CreateSessionParams, Session)
+    createSession(_params: CreateSessionParams): PromiseWithProgress<Session> {
+        throw "Not implemented";
+    }
 
     /**
      * Revoke a [[Session]], effectively logging out any client authenticated with it
      */
-    revokeSession(id: SessionID): Promise<void>;
+    @Handler(String, undefined)
+    revokeSession(_id: SessionID): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Create a new [[Account]]
      */
-    createAccount(params: CreateAccountParams): Promise<Account>;
+    @Handler(CreateAccountParams, Account)
+    createAccount(_params: CreateAccountParams): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
 
     /**
      * Get the [[Account]] associated with the current session
      *
      * @authentication_required
      */
-    getAccount(): Promise<Account>;
+    @Handler(undefined, Account)
+    getAccount(): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
 
     /**
      * Update the [[Account]] associated with the current session.
      *
      * @authentication_required
      */
-    updateAccount(account: Account): Promise<Account>;
+    @Handler(Account, Account)
+    updateAccount(_account: Account): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
 
     /**
      * Initiate account recovery
      */
-    recoverAccount(params: RecoverAccountParams): Promise<Account>;
+    @Handler(RecoverAccountParams, Account)
+    recoverAccount(_params: RecoverAccountParams): PromiseWithProgress<Account> {
+        throw "Not implemented";
+    }
 
     /**
      * Delete current account
      */
-    deleteAccount(): Promise<void>;
+    @Handler(undefined, undefined)
+    deleteAccount(): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Create a new [[Org]]
      *
      * @authentication_required
      */
-    createOrg(params: Org): Promise<Org>;
+    @Handler(Org, Org)
+    createOrg(_params: Org): PromiseWithProgress<Org> {
+        throw "Not implemented";
+    }
 
     /**
      * Get the [[Org]] for a given `id`.
@@ -278,7 +344,10 @@ export interface API {
      *
      * Requires the authenticated account to be a member of the given organization
      */
-    getOrg(id: OrgID): Promise<Org>;
+    @Handler(undefined, Org)
+    getOrg(_id: OrgID): PromiseWithProgress<Org> {
+        throw "Not implemented";
+    }
 
     /**
      * Updates a given [[Org]]
@@ -288,9 +357,15 @@ export interface API {
      * Updating members, organization name or pubic/private keys requires the [[OrgRole.Owner]]
      * role, while any other changes require the [[OrgRole.Admin]] role.
      */
-    updateOrg(org: Org): Promise<Org>;
+    @Handler(Org, Org)
+    updateOrg(_org: Org): PromiseWithProgress<Org> {
+        throw "Not implemented";
+    }
 
-    deleteOrg(id: OrgID): Promise<void>;
+    @Handler(String, undefined)
+    deleteOrg(_id: OrgID): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Create a new vault
@@ -299,7 +374,10 @@ export interface API {
      *
      * Requires the [[OrgRole.Admin]] role on the associated organization
      */
-    createVault(vault: Vault): Promise<Vault>;
+    @Handler(Vault, Vault)
+    createVault(_vault: Vault): PromiseWithProgress<Vault> {
+        throw "Not implemented";
+    }
 
     /**
      * Get the [[Vault]] with the given `id`
@@ -310,7 +388,10 @@ export interface API {
      * be assigned to the given vault either directly or through a [[Group]].
      * Otherwise, only access to the accounts private vault is allowed.
      */
-    getVault(id: VaultID): Promise<Vault>;
+    @Handler(String, Vault)
+    getVault(_id: VaultID): PromiseWithProgress<Vault> {
+        throw "Not implemented";
+    }
 
     /**
      * Update the given [[Vault]]
@@ -322,7 +403,10 @@ export interface API {
      * and have explicit write access. Otherwise, only access to the accounts
      * private vault is allowed.
      */
-    updateVault(vault: Vault): Promise<Vault>;
+    @Handler(Vault, Vault)
+    updateVault(_vault: Vault): PromiseWithProgress<Vault> {
+        throw "Not implemented";
+    }
 
     /**
      * Delete the [[Vault]] with the given `id`
@@ -332,7 +416,10 @@ export interface API {
      * Requires at least the [[OrgRole.Admin]] role on the organization the vault
      * belongs to. Private vaults cannot be deleted.
      */
-    deleteVault(id: VaultID): Promise<void>;
+    @Handler(String, undefined)
+    deleteVault(_id: VaultID): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
     /**
      * Get an [[Invite]].
@@ -342,7 +429,10 @@ export interface API {
      * Requires the authenticated account to either be an [[OrgRole.Owner]] of
      * the associated organization or the recipient of the invite.
      */
-    getInvite(params: GetInviteParams): Promise<Invite>;
+    @Handler(GetInviteParams, Invite)
+    getInvite(_params: GetInviteParams): PromiseWithProgress<Invite> {
+        throw "Not implemented";
+    }
 
     /**
      * Accept an [[Invite]]
@@ -351,12 +441,33 @@ export interface API {
      *
      * Requires the authenticated account to be the recipient of the invite.
      */
-    acceptInvite(invite: Invite): Promise<void>;
+    @Handler(Invite, undefined)
+    acceptInvite(_invite: Invite): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
 
-    createAttachment(attachment: Attachment): Promise<Attachment>;
-    getAttachment(attachment: GetAttachmentParams): Promise<Attachment>;
-    deleteAttachment(attachment: DeleteAttachmentParams): Promise<void>;
+    @Handler(Attachment, String)
+    createAttachment(_attachment: Attachment): PromiseWithProgress<AttachmentID> {
+        throw "Not implemented";
+    }
 
-    updateBilling(params: UpdateBillingParams): Promise<void>;
-    getBillingProviders(): Promise<BillingProviderInfo[]>;
+    @Handler(GetAttachmentParams, Attachment)
+    getAttachment(_attachment: GetAttachmentParams): PromiseWithProgress<Attachment> {
+        throw "Not implemented";
+    }
+
+    @Handler(DeleteAttachmentParams, undefined)
+    deleteAttachment(_attachment: DeleteAttachmentParams): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    @Handler(UpdateBillingParams, undefined)
+    updateBilling(_params: UpdateBillingParams): PromiseWithProgress<void> {
+        throw "Not implemented";
+    }
+
+    @Handler(undefined, BillingProviderInfo)
+    getBillingProviders(): PromiseWithProgress<BillingProviderInfo[]> {
+        throw "Not implemented";
+    }
 }
