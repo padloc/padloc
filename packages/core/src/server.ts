@@ -103,13 +103,15 @@ export class Controller extends API {
             throw new Err(ErrorCode.INVALID_REQUEST);
         }
 
+        const clientVersion = (req.device && req.device.appVersion) || undefined;
+
         const param = req.params && req.params[0];
 
         const input = def.input && param ? new def.input().fromRaw(param) : param;
 
         const result = await this[def.method](input);
 
-        const toRaw = (obj: any) => (obj instanceof Serializable ? obj.toRaw() : obj);
+        const toRaw = (obj: any) => (obj instanceof Serializable ? obj.toRaw(clientVersion) : obj);
 
         return Array.isArray(result) ? result.map(toRaw) : toRaw(result);
     }

@@ -39,7 +39,7 @@ export class Client extends API {
                 const progress = new RequestProgress();
                 const promise = this.call(
                     method,
-                    [input instanceof Serializable ? input.toRaw() : input],
+                    typeof input === "undefined" ? [] : [input instanceof Serializable ? input.toRaw() : input],
                     progress
                 ).then(res => {
                     return output
