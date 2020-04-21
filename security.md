@@ -216,7 +216,7 @@ The **Account** object represents an individual Padloc user and is central to
 Padlocs encryption and authentication mechanisms. Each **Account** holds the
 following information:
 
--   The users **email address** is not only used as a communication channel but,
+-   The user's **email address** is not only used as a communication channel but,
     more importantly, serves as a unique, human-verifiable identifier for each
     Padloc user.
 -   A RSA **private key** and **public key** pair is used in places where a user
@@ -328,7 +328,7 @@ Every time a **Vault** participant encrypts the vault data, they perform
 the following steps:
 
 1. Determine accessors based on organization structure.
-2. Verify each accessors identity and public key (see [Verifying
+2. Verify each accessor's identity and public key (see [Verifying
    Members](#verifying-members))
 3. Encrypt the data using the steps outlined in [Shared-Key Encryption](#shared-key-encryption)
 
@@ -352,7 +352,7 @@ information:
     invite verification code during [key
     exchange](#trustless-server-mediated-key-exchange)
 
-The organizations **private key** and **invites key** are considered secret
+The organization's **private key** and **invites key** are considered secret
 and need therefore be encrypted at rest. For this, the organization acts as a
 [Shared Crypto Container](#shared-key-encryption) with the [organization
 owners](#owner) acting as accessors.
@@ -444,13 +444,13 @@ new member. The key exchange is performed as follows:
 
 ##### Notes:
 
--   In practice, the members account id and email and the organization id are
+-   In practice, the member's account id and email and the organization id are
     included in the respective signatures to protect these from tempering as
     well.
 
 -   Since `p` needs to be sufficiently short to be conveniently entered by
     hand, it can potentially be guessed by eavesdroppers which would allow them
-    to successfully perform a man-in-the-middle attach by injecting their own
+    to successfully perform a man-in-the-middle attack by injecting their own
     public key. This is mitigated by using a sufficiently large iteration count `i`
     and invalidating key exchanges after a certain amount of time.
 
@@ -507,7 +507,7 @@ can verify the public key of any other member as follows.
 
 1. Verify the organizations public key using the organization signature created
    with their own HMAC key
-2. Verify the other members public key using the organizations public key.
+2. Verify the other member's public key using the organization's public key.
 
 ```
 ┏━━━━━━━━━━━━━━┓                  ┏━━━━━━━━━━━━━━┓                 ┏━━━━━━━━━━━━━━┓
@@ -581,15 +581,15 @@ access to user data, ensure payload integrity and enforce user permissions.
 A variation of the [Secure Remote
 Password](https://tools.ietf.org/html/rfc2945) protocol is used to authenticate
 users and establish a secure connection between client and server without
-exposing the users master password.
+exposing the user's master password.
 
 ### User Signup
 
 Whenever a user creates a Padloc account, the following steps take place:
 
-1. Let **`u`** and **`p`** be the users **email address** and **master password**, respectively.
+1. Let **`u`** and **`p`** be the user's **email address** and **master password**, respectively.
 2. The **client `C`** sends **`u`** to the server **`S`**.
-3. The server sends an email **verification code `c`** to the users email address.
+3. The server sends an email **verification code `c`** to the user's email address.
 4. **`C`** chooses a **random salt `s`** and **iteration count `i`**
 5. **`C`** generates **`x = PBKDF2(p, s, i)`** and the **password verifier `v = v(x)`**\*
 6. **`C`** sends **`u`**, **`v`**, **`s`**, **`i`** and **`c`** to **`S`**
@@ -745,7 +745,7 @@ order to eavesdrop on the connection and/or temper with messages in transit.
 
 MITM attacks may be launched in a multitude of ways, and even with technlogies
 like TLS, it is very hard to completely rule out that other parties may be
-listening in on the connection or even trying temper with the messages
+listening in on the connection or even trying to tamper with the messages
 exchanged. Therefore, steps should be taken not only to mitigate the risk of a
 successful MITM attack, but also to ensure that even in case of an insecure
 connection, an attacker may never get access to any sensitive information or
@@ -754,8 +754,8 @@ compromise the security of the application in any other way.
 -   Communication between the Padloc client and server is always secured through
     [Transport Layer Security](https://en.wikipedia.org/wiki/Transport_Layer_Security).
 -   No sensitive information is ever transmitted in plain text.
--   Transmitted data is protected from tempering through Padlocs strong [Authentication Mechanism](#authentication-and-data-transfer).
--   Padlocs [Key Exchange Mechanism](#trustless-server-mediated-key-exchange) is designed to be secure even over an untrusted connection.
+-   Transmitted data is protected from tampering through Padloc's strong [Authentication Mechanism](#authentication-and-data-transfer).
+-   Padloc's [Key Exchange Mechanism](#trustless-server-mediated-key-exchange) is designed to be secure even over an untrusted connection.
 
 ### Phishing
 
@@ -796,7 +796,7 @@ a very minimum, too costly to be worthwhile.
 
 [[TODO]]
 
-### Password spraying
+### Password Spraying
 
 [[TODO]]
 
