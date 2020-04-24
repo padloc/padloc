@@ -503,14 +503,14 @@ export class ItemDialog extends Dialog<string, void> {
 
     private async _addField() {
         this.open = false;
-        const fieldType = await this._fieldTypeDialog.show();
+        const fieldDef = await this._fieldTypeDialog.show();
         this.open = true;
 
-        if (!fieldType) {
+        if (!fieldDef) {
             return;
         }
 
-        this._fields.push({ name: "", value: "", type: fieldType });
+        this._fields.push({ name: fieldDef.name, value: "", type: fieldDef.type });
         this.requestUpdate();
         await this.updateComplete;
         setTimeout(() => this._fieldInputs[this._fields.length - 1].focus(), 100);

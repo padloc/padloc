@@ -166,7 +166,7 @@ export const FIELD_DEFS: { [t in FieldType]: FieldDef } = {
         multiline: false,
         icon: "totp",
         get name() {
-            return $l("Two-Factor Token");
+            return $l("2FA Token");
         },
         async transform(value: string) {
             return await totp(base32ToBytes(value));
