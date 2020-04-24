@@ -21,6 +21,8 @@ export class Dialog<I, R> extends BaseElement {
     preventDismiss: boolean = false;
     @property()
     preventAutoClose: boolean = false;
+    @property()
+    dismissOnTapOutside: boolean = true;
 
     readonly hideApp: boolean = false;
 
@@ -134,7 +136,7 @@ export class Dialog<I, R> extends BaseElement {
         return html`
             <div class="scrim"></div>
 
-            <div class="outer" @click=${() => this.dismiss()}>
+            <div class="outer" @click=${this._tappedOutside}>
                 ${this.renderBefore()}
                 <div id="inner" class="inner" @click=${(e: Event) => e.stopPropagation()}>
                     ${this.renderContent()}
@@ -199,6 +201,12 @@ export class Dialog<I, R> extends BaseElement {
         }
 
         this.dispatch(this.open ? "dialog-open" : "dialog-close", { dialog: this }, true, true);
+    }
+
+    private _tappedOutside() {
+        if (this.dismissOnTapOutside) {
+            this.dismiss();
+        }
     }
 
     dismiss() {

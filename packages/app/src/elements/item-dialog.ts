@@ -9,7 +9,7 @@ import { alert, confirm, dialog } from "../lib/dialog";
 import { app, router } from "../globals";
 import { setClipboard } from "../lib/clipboard";
 import { animateCascade } from "../lib/animation";
-import { element, html, css, property, query, queryAll } from "./base";
+import { element, html, css, property, query, queryAll, observe } from "./base";
 import { Dialog } from "./dialog";
 import "./icon";
 import { Input } from "./input";
@@ -29,6 +29,9 @@ export class ItemDialog extends Dialog<string, void> {
     @property()
     itemId: VaultItemID = "";
 
+    @property()
+    isNew: boolean = false;
+
     get _item() {
         const found = (this.itemId && app.getItem(this.itemId)) || null;
         return found && found.item;
@@ -40,7 +43,7 @@ export class ItemDialog extends Dialog<string, void> {
     }
 
     @property({ reflect: true, attribute: "editing" })
-    private _editing: Boolean = false;
+    private _editing: boolean = false;
 
     @property()
     private _fields: Field[] = [];
@@ -109,6 +112,9 @@ export class ItemDialog extends Dialog<string, void> {
 
     dismiss() {
         super.dismiss();
+        if (this.isNew) {
+            app.deleteItems([this._item!]);
+        }
         router.go("items");
     }
 
@@ -231,6 +237,10 @@ export class ItemDialog extends Dialog<string, void> {
                 background: rgba(255, 255, 255, 0.9);
             }
 
+            .actions {
+                grid-template-columns: 1fr 1fr;
+            }
+
             .actions > button {
                 font-size: var(--font-size-small);
                 background: none;
@@ -306,7 +316,7 @@ export class ItemDialog extends Dialog<string, void> {
 
         return html`
             <header>
-                <pl-icon icon="backward" class="tap close-icon" @click=${this.dismiss}></pl-icon>
+                <pl-icon icon="close" class="tap close-icon" @click=${this.dismiss} ?hidden=${this._editing}></pl-icon>
                 <pl-input
                     id="nameInput"
                     class="name flex"
@@ -428,14 +438,18 @@ export class ItemDialog extends Dialog<string, void> {
         }
         this._editing = true;
         await this.updateComplete;
-        this._nameInput.focus();
+        setTimeout(() => this._nameInput.focus(), 100);
     }
 
     async cancelEdit() {
-        this._fields = this._getFields();
-        await this.updateComplete;
-        this._editing = false;
-        this._itemChanged();
+        if (this.isNew) {
+            this.dismiss();
+        } else {
+            this._fields = this._getFields();
+            await this.updateComplete;
+            this._editing = false;
+            this._itemChanged();
+        }
     }
 
     save() {
@@ -446,6 +460,11 @@ export class ItemDialog extends Dialog<string, void> {
         });
         this._editing = false;
         this._itemChanged();
+    }
+
+    @observe("_editing")
+    _editingChanged() {
+        this.dismissOnTapOutside = !this._editing;
     }
 
     private _getFields() {

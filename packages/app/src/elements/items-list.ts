@@ -282,12 +282,19 @@ export class ItemsList extends StateMixin(View) {
             .item-field {
                 cursor: pointer;
                 font-size: var(--font-size-tiny);
-                background: var(--color-tertiary);
                 position: relative;
                 flex: 1;
                 border-radius: 8px;
                 max-width: calc(60%);
                 opacity: 0.999;
+            }
+
+            .item-field.dragging {
+                background: var(--color-tertiary);
+            }
+
+            .item-field.dragging::after {
+                background: none;
             }
 
             .item-field > * {

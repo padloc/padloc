@@ -29,7 +29,6 @@ import { CreateOrgDialog } from "./create-org-dialog";
 import { ChoosePlanDialog } from "./choose-plan-dialog";
 import { PremiumDialog } from "./premium-dialog";
 import { CreateItemDialog } from "./create-item-dialog";
-import { TemplateDialog } from "./template-dialog";
 import { TOTPElement } from "./totp";
 
 // const cordovaReady = new Promise(resolve => {
@@ -82,9 +81,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     @dialog("pl-create-item-dialog")
     private _createItemDialog: CreateItemDialog;
-
-    @dialog("pl-template-dialog")
-    private _templateDialog: TemplateDialog;
 
     @property()
     private _view: View | null;
@@ -498,14 +494,15 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
             const item = id && app.getItem(id);
             if (item) {
+                const { newitem, edit, addattachment, ...rest } = router.params;
+                router.params = rest;
+                this._itemDialog.isNew = typeof newitem !== "undefined";
                 this._itemDialog.show(item.item.id);
-                const { edit, addattachment, ...rest } = router.params;
                 if (typeof edit !== "undefined") {
                     this._itemDialog.edit();
-                    if (typeof addattachment !== "undefined") {
+                    if (this._itemDialog.isNew && typeof addattachment !== "undefined") {
                         this._itemDialog.addAttachment();
                     }
-                    router.params = rest;
                 }
                 app.updateItem(item.item, { lastUsed: new Date() });
             }
@@ -626,17 +623,7 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     @listen("create-item")
     async _newItem() {
-        const template = await this._templateDialog.show();
-        if (template) {
-            const item = await this._createItemDialog.show(template);
-            if (item) {
-                const params = { ...router.params, edit: "true" } as any;
-                if (template.attachment) {
-                    params.addattachment = "true";
-                }
-                router.go(`items/${item.id}`, params);
-            }
-        }
+        await this._createItemDialog.show();
     }
 
     @listen("create-org")
@@ -756,6 +743,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
     }: CustomEvent<{ item: VaultItem; index: number; event: DragEvent }>) {
         const field = item.fields[index];
         const target = event.target as HTMLElement;
+        target.classList.add("dragging");
+        target.addEventListener("dragend", () => target.classList.remove("dragging"), { once: true });
         const totp: TOTPElement | null =
             target.querySelector("pl-totp") || (target.shadowRoot && target.shadowRoot.querySelector("pl-totp"));
         event.dataTransfer!.setData("text/plain", field.type === "totp" && totp ? totp.token : field.value);
