@@ -590,7 +590,6 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
             return;
         }
 
-        let shortcut;
         const control = event.ctrlKey || event.metaKey;
 
         // ESCAPE -> Back
@@ -599,16 +598,12 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
                 Dialog.closeAll();
             }
         }
-        // CTRL/CMD + F -> Filter
+        // CTRL/CMD (+ Shift) + F -> Search (All)
         else if (control && event.key === "f") {
-            router.go("items");
-            shortcut = () => this._items.search();
-        }
-
-        // If one of the shortcuts matches, execute it and prevent the default behaviour
-        if (shortcut) {
-            shortcut();
             event.preventDefault();
+            const { vault, tags, recent, favorites, attachments, ...rest } = router.params;
+            router.go("items", event.shiftKey ? rest : { vault, tags, recent, favorites, attachments, ...rest });
+            this._items.search();
         }
     }
 
