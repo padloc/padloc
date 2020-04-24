@@ -8,12 +8,12 @@ import { Select } from "./select";
 import { Dialog } from "./dialog";
 
 @element("pl-create-item-dialog")
-export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
+export class CreateItemDialog extends Dialog<Vault, VaultItem> {
     @query("#vaultSelect")
     private _vaultSelect: Select<Vault>;
 
     @property()
-    private _template: ItemTemplate;
+    private _template: ItemTemplate = ITEM_TEMPLATES[0];
 
     readonly preventDismiss = true;
 
@@ -150,10 +150,9 @@ export class CreateItemDialog extends Dialog<ItemTemplate, VaultItem> {
         router.go(`items/${item.id}`, params);
     }
 
-    async show(template: ItemTemplate = ITEM_TEMPLATES[0]) {
+    async show(vault: Vault = app.mainVault!) {
         await this.updateComplete;
-        this._vaultSelect.selected = app.mainVault!;
-        this._template = template;
+        this._vaultSelect.selected = vault;
         return super.show();
     }
 }

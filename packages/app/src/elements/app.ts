@@ -618,7 +618,8 @@ export class App extends ServiceWorker(StateMixin(AutoSync(ErrorHandling(AutoLoc
 
     @listen("create-item")
     async _newItem() {
-        await this._createItemDialog.show();
+        const vault = (router.params.vault && app.getVault(router.params.vault)) || undefined;
+        await this._createItemDialog.show(vault);
     }
 
     @listen("create-org")
