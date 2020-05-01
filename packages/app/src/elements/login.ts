@@ -109,32 +109,31 @@ export class Login extends StartForm {
     private async _verifyEmail() {
         router.params = { ...router.params, email: this._emailInput.value, verifying: "1" };
 
-        const verify = await prompt(
-            $l("Please enter the confirmation code sent to your email address to proceed!"),
-            {
-                title: $l("One Last Step!"),
-                placeholder: $l("Enter Verification Code"),
-                confirmLabel: $l("Submit"),
-                type: "number",
-                pattern: "[0-9]*",
-                validate: async (code: string) => {
-                    try {
-                        return await app.completeEmailVerification(this._emailInput.value, code);
-                    } catch (e) {
-                        if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
-                            alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
-                                type: "warning"
-                            });
-                            return "";
-                        }
-                        throw e.message || e.code || e.toString();
+        const verify = await prompt($l("Please enter the confirmation code sent to your email address to proceed!"), {
+            title: $l("One Last Step!"),
+            placeholder: $l("Enter Verification Code"),
+            confirmLabel: $l("Submit"),
+            type: "number",
+            pattern: "[0-9]*",
+            validate: async (code: string) => {
+                try {
+                    return await app.completeEmailVerification(this._emailInput.value, code);
+                } catch (e) {
+                    if (e.code === ErrorCode.EMAIL_VERIFICATION_TRIES_EXCEEDED) {
+                        alert($l("Maximum number of tries exceeded! Please resubmit and try again!"), {
+                            type: "warning"
+                        });
+                        return "";
                     }
+                    throw e.message || e.code || e.toString();
                 }
             }
-        );
+        });
 
         if (verify) {
             this._verificationToken = verify;
+            const { email, verifying, ...rest } = router.params;
+            router.params = rest;
         }
 
         return verify;
