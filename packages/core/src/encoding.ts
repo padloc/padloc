@@ -59,7 +59,13 @@ export function AsDate(toProperty?: string) {
     return (proto: Serializable, prop: string) =>
         registerSerializationOptions(proto, prop, {
             toProperty: toProperty || prop,
-            toRaw: (val: Date) => val.toISOString(),
+            toRaw: (val: Date) => {
+                try {
+                    return val.toISOString();
+                } catch (e) {
+                    return null;
+                }
+            },
             fromRaw: (raw: string) => new Date(raw)
         });
 }
@@ -253,7 +259,7 @@ export class Serializable {
     protected _fromRaw(raw: any) {
         for (const [prop, val] of Object.entries(raw)) {
             if (prop === "kind") {
-                return;
+                continue;
             }
 
             const opts =
