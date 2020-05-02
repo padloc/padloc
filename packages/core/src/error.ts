@@ -54,7 +54,10 @@ export enum ErrorCode {
     NOT_FOUND = "not_found",
     INVALID_CSV = "invalid_csv",
 
-    BILLING_ERROR = "billing_error"
+    BILLING_ERROR = "billing_error",
+
+    // Special code for indicating that legacy account exists
+    FOUND_LEGACY = "found_legacy"
 }
 
 export interface ErrorOptions {

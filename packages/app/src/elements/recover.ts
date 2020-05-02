@@ -256,6 +256,7 @@ export class Recover extends StartForm {
             await app.recoverAccount({ email, password, verify });
             this._submitButton.success();
             await alert($l("Account recovery successful!"), { type: "success" });
+            router.go("login");
         } catch (e) {
             this._submitButton.fail();
             throw e;

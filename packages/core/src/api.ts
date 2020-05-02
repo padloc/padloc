@@ -9,6 +9,7 @@ import { Serializable, SerializableConstructor, AsBytes, AsSerializable } from "
 import { Attachment, AttachmentID } from "./attachment";
 import { BillingProviderInfo, UpdateBillingParams } from "./billing";
 import { PBKDF2Params } from "./crypto";
+import { PBES2Container } from "./container";
 import { RequestProgress } from "./transport";
 
 /**
@@ -194,6 +195,15 @@ export class GetAttachmentParams extends Serializable {
 }
 
 export class DeleteAttachmentParams extends GetAttachmentParams {}
+
+export class GetLegacyDataParams {
+    constructor(vals: Partial<GetLegacyDataParams> = {}) {
+        Object.assign(this, vals);
+    }
+
+    email: string = "";
+    verify?: string;
+}
 
 interface HandlerDefinition {
     method: string;
@@ -468,6 +478,11 @@ export class API {
 
     @Handler(undefined, BillingProviderInfo)
     getBillingProviders(): PromiseWithProgress<BillingProviderInfo[]> {
+        throw "Not implemented";
+    }
+
+    @Handler(undefined, PBES2Container)
+    getLegacyData(_params: GetLegacyDataParams): PromiseWithProgress<PBES2Container> {
         throw "Not implemented";
     }
 }

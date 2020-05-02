@@ -17,6 +17,10 @@ const steps = ["", "verify", "password"];
 
 @element("pl-signup")
 export class Signup extends StartForm {
+    protected get _verificationToken() {
+        return router.params.verify || "";
+    }
+
     @property()
     private _password: string = "";
 
@@ -26,10 +30,6 @@ export class Signup extends StartForm {
 
     private get _name() {
         return router.params.name || "";
-    }
-
-    private get _verificationToken() {
-        return router.params.verify || "";
     }
 
     private get _invite() {
@@ -450,6 +450,10 @@ export class Signup extends StartForm {
                         router.go("signup", params);
                         this._emailInput.focus();
                     }
+                    return;
+                case ErrorCode.FOUND_LEGACY:
+                    await this._migrateAccount(email, password);
+                    this._submitPasswordButton.stop();
                     return;
                 default:
                     throw e;

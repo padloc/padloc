@@ -10,14 +10,15 @@ import {
     CreateSessionParams,
     GetInviteParams,
     GetAttachmentParams,
-    DeleteAttachmentParams
+    DeleteAttachmentParams,
+    GetLegacyDataParams
 } from "./api";
 import { Storage, VoidStorage } from "./storage";
 import { Attachment, AttachmentStorage } from "./attachment";
 import { Session, SessionID } from "./session";
 import { Account, AccountID } from "./account";
 import { Auth } from "./auth";
-import { EmailVerification } from "./email-verification";
+import { EmailVerification, EmailVerificationPurpose } from "./email-verification";
 import { Request, Response } from "./transport";
 import { Err, ErrorCode } from "./error";
 import { Vault, VaultID } from "./vault";
@@ -32,6 +33,7 @@ import { BillingProvider, UpdateBillingParams, BillingAddress } from "./billing"
 import { AccountQuota, OrgQuota } from "./quota";
 import { loadLanguage, translate as $l } from "@padloc/locale/src/translate";
 import { Logger } from "./log";
+import { PBES2Container } from "./container";
 
 const pendingAuths = new Map<string, SRPServer>();
 
@@ -76,6 +78,10 @@ export interface Context {
     device?: DeviceInfo;
 }
 
+export interface LegacyServer {
+    getStore(email: string): Promise<PBES2Container | null>;
+}
+
 /**
  * Controller class for processing api requests
  */
@@ -91,7 +97,8 @@ export class Controller extends API {
         public logger: Logger,
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
-        public billingProvider?: BillingProvider
+        public billingProvider?: BillingProvider,
+        public legacyServer?: LegacyServer
     ) {
         super();
     }
@@ -169,6 +176,9 @@ export class Controller extends API {
         }
 
         if (!auth) {
+            // Check if the user has a legacy account
+            await this._checkForLegacyAccount(email, verify!);
+
             // The user has successfully verified their email address so it's safe to
             // tell them that this account doesn't exist.
             throw new Err(ErrorCode.NOT_FOUND, "An account with this email does not exist!");
@@ -294,6 +304,8 @@ export class Controller extends API {
             }
         }
 
+        await this._checkForLegacyAccount(account.email, verify);
+
         // Most of the account object is constructed locally but account id and
         // revision are exclusively managed by the server
         account.id = await uuid();
@@ -342,6 +354,7 @@ export class Controller extends API {
     async getAccount() {
         const { account } = this._requireAuth();
         this.log("account.get");
+
         return account;
     }
 
@@ -1081,6 +1094,35 @@ export class Controller extends API {
         return this.billingProvider ? [this.billingProvider.getInfo()] : [];
     }
 
+    async getLegacyData({ email, verify }: GetLegacyDataParams) {
+        if (verify) {
+            this._checkEmailVerificationToken(email, verify);
+        } else {
+            const { account } = this._requireAuth();
+            if (account.email !== email) {
+                throw new Err(ErrorCode.BAD_REQUEST);
+            }
+        }
+
+        if (!this.legacyServer) {
+            throw new Err(ErrorCode.INVALID_REQUEST, "This Padloc instance does not support this feature!");
+        }
+
+        const data = await this.legacyServer.getStore(email);
+
+        if (!data) {
+            throw new Err(ErrorCode.NOT_FOUND, "No legacy account found.");
+        }
+
+        // Reset verification token so the user does not have to undergo validation
+        // again if they want to create an account
+        const emailVerification = new EmailVerification(email);
+        emailVerification.token = verify!;
+        await this.storage.save(emailVerification);
+
+        return data;
+    }
+
     private async _updateUsedStorage(acc: Org | Account) {
         const vaults = acc instanceof Org ? acc.vaults : [acc.mainVault];
 
@@ -1214,6 +1256,21 @@ export class Controller extends API {
         org.vaults = org.vaults.filter(v => !deletedVaults.has(v.id));
         org.members = org.members.filter(m => !deletedMembers.has(m.id));
     }
+
+    private async _checkForLegacyAccount(email: string, verify: string) {
+        const legacyData = this.legacyServer && (await this.legacyServer.getStore(email));
+        if (legacyData) {
+            // Reset verification token so the user does not have to undergo validation
+            // again if they want to create an account
+            const emailVerification = new EmailVerification(email, EmailVerificationPurpose.GetLegacyData);
+            emailVerification.token = verify!;
+            await this.storage.save(emailVerification);
+            throw new Err(
+                ErrorCode.FOUND_LEGACY,
+                "An account with this email does not exist but we've found a legacy account with the same email address!"
+            );
+        }
+    }
 }
 
 /**
@@ -1236,7 +1293,8 @@ export class Server {
         public logger: Logger = new Logger(new VoidStorage()),
         /** Attachment storage */
         public attachmentStorage: AttachmentStorage,
-        public billingProvider?: BillingProvider
+        public billingProvider?: BillingProvider,
+        public legacyServer?: LegacyServer
     ) {}
 
     private _requestQueue = new Map<AccountID | OrgID, Promise<void>>();
@@ -1249,7 +1307,8 @@ export class Server {
             this.messenger,
             this.logger,
             this.attachmentStorage,
-            this.billingProvider
+            this.billingProvider,
+            this.legacyServer
         );
     }
 

@@ -9,6 +9,7 @@ import { EmailMessenger } from "./messenger";
 import { FileSystemStorage } from "./attachment";
 import { StripeBillingProvider } from "./billing";
 import { ReplServer } from "./repl";
+import { NodeLegacyServer } from "./legacy";
 
 async function init() {
     setPlatform(new NodePlatform());
@@ -73,7 +74,16 @@ async function init() {
         port = 3000;
     }
 
-    const server = new Server(config, storage, messenger, logger, attachmentStorage, billingProvider);
+    let legacyServer: NodeLegacyServer | undefined = undefined;
+
+    if (process.env.PL_LEGACY_URL && process.env.PL_LEGACY_KEY) {
+        legacyServer = new NodeLegacyServer({
+            url: process.env.PL_LEGACY_URL,
+            key: process.env.PL_LEGACY_KEY
+        });
+    }
+
+    const server = new Server(config, storage, messenger, logger, attachmentStorage, billingProvider, legacyServer);
 
     console.log(`Starting server on port ${port}`);
     new HTTPReceiver(port).listen(req => server.handle(req));

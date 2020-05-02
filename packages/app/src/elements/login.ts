@@ -23,8 +23,6 @@ export class Login extends StartForm {
 
     private _failedCount = 0;
 
-    private _verificationToken?: string;
-
     async reset() {
         await this.updateComplete;
         this._emailInput.value = router.params.email || "";
@@ -152,7 +150,7 @@ export class Login extends StartForm {
         this._passwordInput.blur();
 
         const email = this._emailInput.value;
-        const password = this._passwordInput.value;
+        let password = this._passwordInput.value;
 
         if (this._emailInput.invalid) {
             this._errorMessage = $l("Please enter a valid email address!");
@@ -215,6 +213,10 @@ export class Login extends StartForm {
                     if (signup) {
                         router.go("signup", { email });
                     }
+                    return;
+                case ErrorCode.FOUND_LEGACY:
+                    await this._migrateAccount(email, password);
+                    this._loginButton.stop();
                     return;
                 default:
                     this._loginButton.fail();

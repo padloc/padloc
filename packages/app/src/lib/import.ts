@@ -124,7 +124,10 @@ export function isPadlockV1(data: string): boolean {
 export async function asPadlockLegacy(data: string, password: string): Promise<VaultItem[]> {
     const container = parseLegacyContainer(unmarshal(data));
     await container.unlock(password);
+    return importLegacyContainer(container);
+}
 
+export async function importLegacyContainer(container: PBES2Container) {
     const records = unmarshal(bytesToString(await container.getData())) as any[];
     const items = records
         .filter(({ removed }) => !removed)
@@ -139,7 +142,7 @@ export async function asPadlockLegacy(data: string, password: string): Promise<V
                 updatedBy: "",
                 attachments: [],
                 favorited: []
-            };
+            } as VaultItem;
         });
 
     return Promise.all(items);

@@ -6,7 +6,8 @@ import { randomNumber } from "./util";
 export enum EmailVerificationPurpose {
     Signup,
     Login,
-    Recover
+    Recover,
+    GetLegacyData
 }
 
 /**

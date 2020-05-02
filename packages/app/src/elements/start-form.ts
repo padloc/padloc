@@ -1,6 +1,12 @@
+import { translate as $l } from "@padloc/locale/src/translate";
+import { GetLegacyDataParams } from "@padloc/core/src/api";
+import { VaultItem } from "@padloc/core/src/item";
 import { mixins, shared } from "../styles";
 import { BaseElement, css, query } from "./base";
 import { animateElement, animateCascade } from "../lib/animation";
+import { alert, prompt } from "../lib/dialog";
+import { importLegacyContainer } from "../lib/import";
+import { app } from "../globals";
 import { Logo } from "./logo";
 import "./icon";
 
@@ -67,8 +73,10 @@ const styles = css`
 export abstract class StartForm extends BaseElement {
     static styles = [shared, styles];
 
+    protected _verificationToken: string;
+
     @query("pl-logo")
-    _logo: Logo;
+    protected _logo: Logo;
 
     protected _animateIn(nodes: Iterable<Node | Element>) {
         return animateCascade(nodes, {
@@ -105,5 +113,67 @@ export abstract class StartForm extends BaseElement {
 
     rumble() {
         animateElement(this.$("form"), { animation: "rumble", duration: 200, clear: true });
+    }
+
+    protected async _migrateAccount(email: string, password: string) {
+        const choice = await alert(
+            $l(
+                "You don't have a Padloc 3 account yet but we've found " +
+                    "a Padlock 2 account for this email address! " +
+                    "Would you like to migrate your account to Padloc 3 now? " +
+                    "Please note that your legacy account will be deleted in the " +
+                    "process (meaning you wont be able to sync with older versions " +
+                    "of the app anymore)!"
+            ),
+            {
+                title: "Account Migration",
+                icon: "user",
+                options: [$l("Migrate"), $l("Learn More"), $l("Cancel")]
+            }
+        );
+
+        if (choice !== 0) {
+            return;
+        }
+
+        const legacyData = await app.api.getLegacyData(
+            new GetLegacyDataParams({
+                email,
+                verify: this._verificationToken
+            })
+        );
+
+        let items: VaultItem[] | null = null;
+        try {
+            await legacyData.unlock(password);
+            items = await importLegacyContainer(legacyData);
+        } catch (e) {
+            password = await prompt($l("Please enter the password for your old account!"), {
+                title: $l("Migrating Account"),
+                placeholder: $l("Enter Master Password"),
+                confirmLabel: $l("Submit"),
+                type: "password",
+                preventAutoClose: true,
+                validate: async (password: string) => {
+                    try {
+                        await legacyData.unlock(password);
+                        items = await importLegacyContainer(legacyData);
+                    } catch (e) {
+                        throw $l("Wrong password! Please try again!");
+                    }
+                    return password;
+                }
+            });
+        }
+
+        if (items && password) {
+            await app.signup({ email, password, verify: this._verificationToken!, name: "" });
+            await app.addItems(items, app.mainVault!);
+            alert($l("Account migrated successfully!"), { type: "success" });
+        } else {
+            alert($l("Unfortunately we could not complete migration of your data."), {
+                type: "warning"
+            });
+        }
     }
 }
